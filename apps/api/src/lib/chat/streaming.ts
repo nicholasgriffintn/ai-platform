@@ -3,7 +3,6 @@ import { handleToolCalls } from "../chat/tools";
 import type { ConversationManager } from "../conversationManager";
 import { Guardrails } from "../guardrails";
 
-// Track Anthropic tool calls being built up
 interface AnthropicToolState {
 	id: string;
 	name: string;
@@ -43,7 +42,7 @@ export function createStreamWithPostProcessing(
 	let postProcessingDone = false;
 	let buffer = "";
 	let currentEventType = "";
-	// Track Anthropic tool use blocks
+	// Special handling just for Anthropic - because they have to be difficult for some reason and stream the input independently of the tool_use event.
 	const currentAnthropicTools: Record<string, AnthropicToolState> = {};
 
 	const guardrails = Guardrails.getInstance(env);
@@ -227,6 +226,7 @@ export function createStreamWithPostProcessing(
 									"content_block_stop",
 								].includes(currentEventType)
 							) {
+								// Special handling for Anthropic - because they're special.
 								const forwardEvent = new TextEncoder().encode(
 									`data: ${JSON.stringify({
 										type: currentEventType,
