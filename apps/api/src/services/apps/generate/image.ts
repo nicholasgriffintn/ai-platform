@@ -1,7 +1,7 @@
 import {
 	getTextToImageSystemPrompt,
 	type imagePrompts,
-} from "../../../lib/prompts";
+} from "../../../lib/prompts/image";
 import { AIProviderFactory } from "../../../providers/factory";
 import type { IEnv } from "../../../types";
 

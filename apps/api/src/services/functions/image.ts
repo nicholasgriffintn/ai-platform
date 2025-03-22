@@ -1,4 +1,4 @@
-import { imagePrompts } from "../../lib/prompts";
+import { imagePrompts } from "../../lib/prompts/image";
 import type { IFunction, IRequest } from "../../types";
 import {
 	type ImageGenerationParams,

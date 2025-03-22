@@ -1,4 +1,3 @@
-import { imagePrompts } from "../../lib/prompts";
 import type { IFunction, IRequest } from "../../types";
 import {
 	type SpeechGenerationParams,
