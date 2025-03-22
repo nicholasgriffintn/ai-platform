@@ -11,6 +11,7 @@ import { BaseProvider } from "./base";
 
 export class BedrockProvider extends BaseProvider {
 	name = "bedrock";
+	supportsStreaming = false;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);

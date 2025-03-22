@@ -4,6 +4,7 @@ import { BaseProvider } from "./base";
 
 export class AnthropicProvider extends BaseProvider {
 	name = "anthropic";
+	supportsStreaming = false;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);

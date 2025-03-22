@@ -1,3 +1,4 @@
+import { AIProviderFactory } from "~/providers/factory";
 import { availableFunctions } from "../../services/functions";
 import type { ChatCompletionParameters, IBody, IEnv } from "../../types";
 import { getModelConfigByMatchingModel } from "../models";
@@ -86,13 +87,9 @@ export function mapParametersToProvider(
 		modelConfig = getModelConfigByMatchingModel(params.model);
 	}
 
-	// TODO: To make life easier, we are only enabling streaming for mistral and text models, we should expand this over time
-	if (
-		params.stream &&
-		providerName === "mistral" &&
-		modelConfig.type.length === 1 &&
-		modelConfig.type[0] === "text"
-	) {
+	const provider = AIProviderFactory.getProvider(providerName);
+
+	if (params.stream && provider.supportsStreaming) {
 		commonParams.stream = true;
 	}
 

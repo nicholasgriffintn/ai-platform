@@ -28,6 +28,7 @@ export type ModelConfigItem = {
 	isFeatured?: boolean;
 	supportsResponseFormat?: boolean;
 	supportsArtifacts?: boolean;
+	supportsStreaming?: boolean;
 };
 
 export type ModelConfig = {

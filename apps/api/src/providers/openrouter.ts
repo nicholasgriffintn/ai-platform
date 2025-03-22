@@ -4,6 +4,7 @@ import { BaseProvider } from "./base";
 
 export class OpenRouterProvider extends BaseProvider {
 	name = "openrouter";
+	supportsStreaming = false;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);

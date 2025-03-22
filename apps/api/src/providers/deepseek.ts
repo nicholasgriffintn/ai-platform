@@ -4,6 +4,7 @@ import { BaseProvider } from "./base";
 
 export class DeepSeekProvider extends BaseProvider {
 	name = "deepseek";
+	supportsStreaming = false;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);

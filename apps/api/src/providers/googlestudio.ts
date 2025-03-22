@@ -4,6 +4,7 @@ import { BaseProvider } from "./base";
 
 export class GoogleStudioProvider extends BaseProvider {
 	name = "google-ai-studio";
+	supportsStreaming = false;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);

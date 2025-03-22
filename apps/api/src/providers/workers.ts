@@ -9,6 +9,7 @@ import { BaseProvider } from "./base";
 
 export class WorkersProvider extends BaseProvider {
 	name = "workers-ai";
+	supportsStreaming = false;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);

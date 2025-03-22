@@ -58,6 +58,9 @@ app.post(
 					"application/json": {
 						schema: resolver(z.object({})),
 					},
+					"text/event-stream": {
+						schema: resolver(z.string()),
+					},
 				},
 			},
 		},

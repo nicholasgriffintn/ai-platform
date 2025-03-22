@@ -4,6 +4,7 @@ import { BaseProvider } from "./base";
 
 export class OllamaProvider extends BaseProvider {
 	name = "ollama";
+	supportsStreaming = false;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);

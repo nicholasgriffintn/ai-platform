@@ -4,6 +4,7 @@ import { BaseProvider } from "./base";
 
 export class GrokProvider extends BaseProvider {
 	name = "grok";
+	supportsStreaming = false;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);

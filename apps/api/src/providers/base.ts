@@ -8,11 +8,13 @@ import { fetchAIResponse } from "./fetch";
 
 export interface AIProvider {
 	name: string;
+	supportsStreaming: boolean;
 	getResponse(params: ChatCompletionParameters): Promise<any>;
 }
 
 export abstract class BaseProvider implements AIProvider {
 	abstract name: string;
+	abstract supportsStreaming: boolean;
 
 	/**
 	 * Validates common parameters and provider-specific requirements

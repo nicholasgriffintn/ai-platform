@@ -6,6 +6,7 @@ import { fetchAIResponse } from "./fetch";
 
 export class ReplicateProvider extends BaseProvider {
 	name = "replicate";
+	supportsStreaming = false;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);

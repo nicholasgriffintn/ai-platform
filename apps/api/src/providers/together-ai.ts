@@ -4,6 +4,7 @@ import { BaseProvider } from "./base";
 
 export class TogetherAiProvider extends BaseProvider {
 	name = "together-ai";
+	supportsStreaming = false;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);

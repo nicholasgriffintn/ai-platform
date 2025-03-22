@@ -38,13 +38,7 @@ export async function getAIResponse({
 	);
 
 	let shouldStream = false;
-	// TODO: To make life easier, we are only enabling streaming for mistral and text models, we should expand this over time
-	if (
-		params.stream &&
-		provider.name === "mistral" &&
-		modelConfig.type.length === 1 &&
-		modelConfig.type[0] === "text"
-	) {
+	if (params.stream && provider.supportsStreaming) {
 		shouldStream = true;
 	}
 

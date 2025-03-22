@@ -4,6 +4,7 @@ import { BaseProvider } from "./base";
 
 export class MistralProvider extends BaseProvider {
 	name = "mistral";
+	supportsStreaming = true;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);
