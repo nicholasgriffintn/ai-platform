@@ -46,12 +46,7 @@ export const ChatMessage = ({
 		return null;
 	}
 
-	if (
-		!message.content &&
-		!message.reasoning &&
-		!message.promptAnalysis &&
-		!isToolResponse
-	) {
+	if (!message.content && !message.reasoning && !isToolResponse) {
 		return null;
 	}
 
