@@ -77,7 +77,17 @@ export function createStreamWithPostProcessing(
 								data.choices[0]?.finish_reason === "stop" &&
 								!postProcessingDone
 							) {
-								if (data.choices[0]?.message?.content && !fullContent) {
+								if (data.choices[0]?.delta?.content) {
+									fullContent += data.choices[0].delta.content;
+
+									const contentDeltaEvent = new TextEncoder().encode(
+										`data: ${JSON.stringify({
+											type: "content_block_delta",
+											content: data.choices[0].delta.content,
+										})}\n\n`,
+									);
+									controller.enqueue(contentDeltaEvent);
+								} else if (data.choices[0]?.message?.content && !fullContent) {
 									fullContent = data.choices[0].message.content;
 
 									const contentDeltaEvent = new TextEncoder().encode(
