@@ -1,5 +1,5 @@
 import { Github, Loader2 } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 
 import { Button, TextInput } from "~/components/ui";
 import { Dialog, DialogContent } from "~/components/ui/Dialog";
@@ -25,6 +25,12 @@ export const LoginModal = ({
 	const { setHasApiKey } = useChatStore();
 	const { isAuthenticated, isLoading, loginWithGithub } = useAuthStatus();
 
+	useEffect(() => {
+		if (isAuthenticated && open) {
+			onKeySubmit();
+		}
+	}, [isAuthenticated, open, onKeySubmit]);
+
 	if (isLoading) {
 		return (
 			<Dialog open={open} onOpenChange={onOpenChange} width="480px">
@@ -41,7 +47,6 @@ export const LoginModal = ({
 	}
 
 	if (isAuthenticated) {
-		onKeySubmit();
 		return (
 			<Dialog open={open} onOpenChange={onOpenChange} width="480px">
 				<DialogContent>
