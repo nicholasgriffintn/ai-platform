@@ -4,7 +4,7 @@ import { BaseProvider } from "./base";
 
 export class GithubModelsProvider extends BaseProvider {
 	name = "github-models";
-	supportsStreaming = false;
+	supportsStreaming = true;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);
