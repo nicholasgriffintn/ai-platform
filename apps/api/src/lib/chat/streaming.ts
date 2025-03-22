@@ -3,6 +3,14 @@ import { handleToolCalls } from "../chat/tools";
 import type { ConversationManager } from "../conversationManager";
 import { Guardrails } from "../guardrails";
 
+// Track Anthropic tool calls being built up
+interface AnthropicToolState {
+	id: string;
+	name: string;
+	accumulatedInput: string;
+	isComplete: boolean;
+}
+
 export function createStreamWithPostProcessing(
 	providerStream: ReadableStream,
 	options: {
@@ -35,6 +43,8 @@ export function createStreamWithPostProcessing(
 	let postProcessingDone = false;
 	let buffer = "";
 	let currentEventType = "";
+	// Track Anthropic tool use blocks
+	const currentAnthropicTools: Record<string, AnthropicToolState> = {};
 
 	const guardrails = Guardrails.getInstance(env);
 
@@ -226,10 +236,91 @@ export function createStreamWithPostProcessing(
 								controller.enqueue(forwardEvent);
 
 								if (
+									currentEventType === "content_block_start" &&
+									data.content_block?.type === "tool_use" &&
+									!isRestricted
+								) {
+									currentAnthropicTools[data.index] = {
+										id: data.content_block.id,
+										name: data.content_block.name,
+										accumulatedInput: "",
+										isComplete: false,
+									};
+								}
+
+								if (
+									currentEventType === "content_block_stop" &&
+									data.index !== undefined &&
+									currentAnthropicTools[data.index] &&
+									!currentAnthropicTools[data.index].isComplete
+								) {
+									currentAnthropicTools[data.index].isComplete = true;
+
+									const toolState = currentAnthropicTools[data.index];
+									let parsedInput = {};
+									try {
+										if (toolState.accumulatedInput) {
+											parsedInput = JSON.parse(toolState.accumulatedInput);
+										}
+									} catch (e) {
+										console.error("Failed to parse tool input:", e);
+									}
+
+									const toolCall = {
+										id: toolState.id,
+										function: {
+											name: toolState.name,
+											arguments: JSON.stringify(parsedInput),
+										},
+									};
+
+									const toolStartEvent = new TextEncoder().encode(
+										`data: ${JSON.stringify({
+											type: "tool_use_start",
+											tool_id: toolCall.id,
+											tool_name: toolCall.function.name,
+										})}\n\n`,
+									);
+									controller.enqueue(toolStartEvent);
+
+									const toolDeltaEvent = new TextEncoder().encode(
+										`data: ${JSON.stringify({
+											type: "tool_use_delta",
+											tool_id: toolCall.id,
+											parameters: toolCall.function.arguments,
+										})}\n\n`,
+									);
+									controller.enqueue(toolDeltaEvent);
+
+									const toolStopEvent = new TextEncoder().encode(
+										`data: ${JSON.stringify({
+											type: "tool_use_stop",
+											tool_id: toolCall.id,
+										})}\n\n`,
+									);
+									controller.enqueue(toolStopEvent);
+
+									toolCallsData.push(toolCall);
+								}
+
+								if (
 									currentEventType === "message_stop" &&
 									!postProcessingDone
 								) {
 									await handlePostProcessing();
+								}
+							}
+
+							if (
+								data.type === "content_block_delta" &&
+								data.delta?.type === "input_json_delta" &&
+								data.index !== undefined &&
+								currentAnthropicTools[data.index] &&
+								!isRestricted
+							) {
+								if (data.delta.partial_json) {
+									currentAnthropicTools[data.index].accumulatedInput +=
+										data.delta.partial_json;
 								}
 							}
 

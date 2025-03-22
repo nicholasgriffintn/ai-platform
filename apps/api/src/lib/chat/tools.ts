@@ -63,6 +63,10 @@ export const handleToolCalls = async (
 				request: req,
 			});
 
+			if (!result) {
+				return;
+			}
+
 			const formattedResponse = formatToolResponse(
 				functionName,
 				result.content || "",

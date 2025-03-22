@@ -124,14 +124,22 @@ export function mapParametersToProvider(
 				enabledTools.includes(func.name),
 			);
 
-			commonParams.tools = filteredFunctions.map((func) => ({
-				type: "function",
-				function: {
+			if (providerName === "anthropic") {
+				commonParams.tools = filteredFunctions.map((func) => ({
 					name: func.name,
 					description: func.description,
-					parameters: func.parameters,
-				},
-			}));
+					input_schema: func.parameters,
+				}));
+			} else {
+				commonParams.tools = filteredFunctions.map((func) => ({
+					type: "function",
+					function: {
+						name: func.name,
+						description: func.description,
+						parameters: func.parameters,
+					},
+				}));
+			}
 
 			if (
 				providerName === "openai" &&
@@ -344,15 +352,6 @@ export function mapParametersToProvider(
 					presence_penalty: params.presence_penalty,
 					stop: params.stop,
 				},
-			};
-		}
-		case "huggingface": {
-			return {
-				model: params.model,
-				temperature: params.temperature,
-				max_new_tokens: params.max_tokens,
-				messages: params.messages,
-				stream: params.stream,
 			};
 		}
 		default:

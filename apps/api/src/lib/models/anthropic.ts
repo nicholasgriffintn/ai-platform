@@ -8,6 +8,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		name: "Claude 3.5 Sonnet",
 		matchingModel: "claude-3-5-sonnet-latest",
 		type: ["text"],
+		supportsFunctions: true,
 	}),
 
 	createModelConfig("claude-3.7-sonnet", PROVIDER, {
@@ -30,6 +31,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		supportsFunctions: true,
 	}),
 
 	createModelConfig("claude-3.5-haiku", PROVIDER, {
@@ -69,5 +71,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		multimodal: true,
 		isFeatured: true,
 		includedInRouter: true,
+		supportsFunctions: true,
 	}),
 ]);
