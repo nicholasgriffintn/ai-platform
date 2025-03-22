@@ -34,6 +34,7 @@ export function createStreamWithPostProcessing(
 	let usageData: any = null;
 	let postProcessingDone = false;
 	let buffer = "";
+	let currentEventType = "";
 
 	const guardrails = Guardrails.getInstance(env);
 
@@ -41,17 +42,23 @@ export function createStreamWithPostProcessing(
 		new TransformStream({
 			async transform(chunk, controller) {
 				const text = new TextDecoder().decode(chunk);
-
 				buffer += text;
 
-				const events = buffer.split("\n\n");
-				buffer = events.pop() || "";
+				const lines = buffer.split("\n");
+				buffer = lines.pop() || "";
 
-				for (const event of events) {
-					if (!event.trim()) continue;
+				for (const line of lines) {
+					if (!line.trim()) {
+						continue;
+					}
 
-					if (event.startsWith("data: ")) {
-						const dataStr = event.substring(6).trim();
+					if (line.startsWith("event: ")) {
+						currentEventType = line.substring(7).trim();
+						continue;
+					}
+
+					if (line.startsWith("data: ")) {
+						const dataStr = line.substring(6).trim();
 
 						if (dataStr === "[DONE]") {
 							if (!postProcessingDone) {
@@ -90,12 +97,87 @@ export function createStreamWithPostProcessing(
 								controller.enqueue(contentDeltaEvent);
 							}
 
+							if (
+								data.type === "content_block_delta" &&
+								data.delta &&
+								data.delta.type === "text_delta"
+							) {
+								fullContent += data.delta.text;
+
+								const contentDeltaEvent = new TextEncoder().encode(
+									`data: ${JSON.stringify({
+										type: "content_block_delta",
+										content: data.delta.text,
+									})}\n\n`,
+								);
+								controller.enqueue(contentDeltaEvent);
+							} else if (
+								currentEventType === "content_block_delta" &&
+								data.delta &&
+								data.delta.type === "text_delta"
+							) {
+								fullContent += data.delta.text;
+
+								const contentDeltaEvent = new TextEncoder().encode(
+									`data: ${JSON.stringify({
+										type: "content_block_delta",
+										content: data.delta.text,
+									})}\n\n`,
+								);
+								controller.enqueue(contentDeltaEvent);
+							} else if (
+								data.content &&
+								currentEventType === "content_block_delta"
+							) {
+								fullContent += data.content;
+							}
+
+							if (!fullContent && data.content) {
+								fullContent += data.content;
+							}
+
+							if (
+								data.message?.content &&
+								Array.isArray(data.message.content)
+							) {
+								for (const block of data.message.content) {
+									if (block.type === "text" && block.text) {
+										fullContent += block.text;
+									}
+								}
+							}
+
 							if (data.citations) {
 								citationsResponse = data.citations;
 							}
 
 							if (data.usage) {
 								usageData = data.usage;
+							}
+
+							if (
+								[
+									"message_start",
+									"message_delta",
+									"message_stop",
+									"content_block_start",
+									"content_block_stop",
+								].includes(currentEventType)
+							) {
+								const forwardEvent = new TextEncoder().encode(
+									`data: ${JSON.stringify({
+										type: currentEventType,
+										...data,
+									})}\n\n`,
+								);
+								controller.enqueue(forwardEvent);
+
+								if (
+									currentEventType === "message_stop" &&
+									!postProcessingDone
+								) {
+									await handlePostProcessing();
+								}
 							}
 
 							let toolCalls = null;
@@ -144,7 +226,7 @@ export function createStreamWithPostProcessing(
 								toolCallsData = [...toolCallsData, ...toolCalls];
 							}
 						} catch (parseError) {
-							console.error("Parse error", parseError);
+							console.error("Parse error", parseError, "on data:", dataStr);
 						}
 					}
 				}

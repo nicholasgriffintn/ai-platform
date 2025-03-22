@@ -4,7 +4,7 @@ import { BaseProvider } from "./base";
 
 export class OpenAIProvider extends BaseProvider {
 	name = "openai";
-	supportsStreaming = false;
+	supportsStreaming = true;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);
