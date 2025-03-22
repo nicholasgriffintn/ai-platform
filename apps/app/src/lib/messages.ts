@@ -53,14 +53,20 @@ export function formatMessageContent(messageContent: string): {
 } {
 	let reasoning = "";
 	const analysisMatch = messageContent.match(/<analysis>(.*?)<\/analysis>/s);
+	const thinkMatch = messageContent.match(/<think>(.*?)<\/think>/s);
 
 	if (analysisMatch) {
 		reasoning = analysisMatch[1].trim();
 	}
 
+	if (thinkMatch) {
+		reasoning = thinkMatch[1].trim();
+	}
+
 	let cleanedContent = messageContent;
 
 	cleanedContent = cleanedContent.replace(/<analysis>.*?<\/analysis>/gs, "");
+	cleanedContent = cleanedContent.replace(/<think>.*?<\/think>/gs, "");
 
 	const answerRegex = /<answer>([\s\S]*?)(<\/answer>|$)/g;
 	let match = answerRegex.exec(cleanedContent);

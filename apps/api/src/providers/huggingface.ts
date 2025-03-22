@@ -4,7 +4,7 @@ import { BaseProvider } from "./base";
 
 export class HuggingFaceProvider extends BaseProvider {
 	name = "huggingface";
-	supportsStreaming = false;
+	supportsStreaming = true;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);

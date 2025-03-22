@@ -346,6 +346,15 @@ export function mapParametersToProvider(
 				},
 			};
 		}
+		case "huggingface": {
+			return {
+				model: params.model,
+				temperature: params.temperature,
+				max_new_tokens: params.max_tokens,
+				messages: params.messages,
+				stream: params.stream,
+			};
+		}
 		default:
 			return commonParams;
 	}

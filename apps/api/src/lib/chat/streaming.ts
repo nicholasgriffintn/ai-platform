@@ -44,8 +44,6 @@ export function createStreamWithPostProcessing(
 				const text = new TextDecoder().decode(chunk);
 				buffer += text;
 
-				console.log("text", text);
-
 				const lines = buffer.split("\n");
 				buffer = lines.pop() || "";
 
@@ -71,6 +69,20 @@ export function createStreamWithPostProcessing(
 
 						try {
 							const data = JSON.parse(dataStr);
+
+							if (data.error) {
+								const errorEvent = new TextEncoder().encode(
+									`data: ${JSON.stringify({
+										type: "error",
+										error: data.error,
+									})}\n\n`,
+								);
+								controller.enqueue(errorEvent);
+								controller.enqueue(
+									new TextEncoder().encode("data: [DONE]\n\n"),
+								);
+								return;
+							}
 
 							if (
 								data.choices &&

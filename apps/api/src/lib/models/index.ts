@@ -13,6 +13,7 @@ import { grokModelConfig } from "./grok";
 import { groqModelConfig } from "./groq";
 import { huggingfaceModelConfig } from "./huggingface";
 import { mistralModelConfig } from "./mistral";
+import { ollamaModelConfig } from "./ollama";
 import { openaiModelConfig } from "./openai";
 import { openrouterModelConfig } from "./openrouter";
 import { perplexityModelConfig } from "./perplexity";
@@ -29,6 +30,7 @@ const modelConfig: ModelConfig = {
 	...openaiModelConfig,
 	...anthropicModelConfig,
 	...mistralModelConfig,
+	...ollamaModelConfig,
 	...bedrockModelConfig,
 	...deepseekModelConfig,
 	...githubModelsConfig,
