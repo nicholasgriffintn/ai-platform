@@ -4,7 +4,7 @@ import { BaseProvider } from "./base";
 
 export class PerplexityProvider extends BaseProvider {
 	name = "perplexity-ai";
-	supportsStreaming = false;
+	supportsStreaming = true;
 
 	protected validateParams(params: ChatCompletionParameters): void {
 		super.validateParams(params);

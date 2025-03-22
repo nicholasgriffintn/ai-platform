@@ -44,6 +44,8 @@ export function createStreamWithPostProcessing(
 				const text = new TextDecoder().decode(chunk);
 				buffer += text;
 
+				console.log("text", text);
+
 				const lines = buffer.split("\n");
 				buffer = lines.pop() || "";
 
@@ -69,6 +71,35 @@ export function createStreamWithPostProcessing(
 
 						try {
 							const data = JSON.parse(dataStr);
+
+							if (
+								data.choices &&
+								data.choices[0]?.finish_reason === "stop" &&
+								!postProcessingDone
+							) {
+								if (data.choices[0]?.message?.content && !fullContent) {
+									fullContent = data.choices[0].message.content;
+
+									const contentDeltaEvent = new TextEncoder().encode(
+										`data: ${JSON.stringify({
+											type: "content_block_delta",
+											content: fullContent,
+										})}\n\n`,
+									);
+									controller.enqueue(contentDeltaEvent);
+								}
+
+								if (data.usage) {
+									usageData = data.usage;
+								}
+
+								if (data.citations) {
+									citationsResponse = data.citations;
+								}
+
+								await handlePostProcessing();
+								continue;
+							}
 
 							if (data.response !== undefined) {
 								fullContent += data.response;
