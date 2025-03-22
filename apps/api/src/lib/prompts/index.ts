@@ -1,5 +1,6 @@
-import type { IBody, IUser } from "../../types";
+import type { ChatMode, IBody, IUser } from "../../types";
 import { getModelConfigByMatchingModel } from "../models";
+import { returnCoachingPrompt } from "./coaching";
 import { returnCodingPrompt } from "./coding";
 import { getTextToImageSystemPrompt } from "./image";
 import { returnStandardPrompt } from "./standard";
@@ -10,6 +11,11 @@ export function getSystemPrompt(
 	model: string,
 	user?: IUser,
 ): string {
+	if (request.mode === "prompt_coach") {
+		const prompt = returnCoachingPrompt();
+		return prompt;
+	}
+
 	const modelConfig = getModelConfigByMatchingModel(model);
 	const supportsFunctions = modelConfig?.supportsFunctions || false;
 	const supportsArtifacts = modelConfig?.supportsArtifacts || false;

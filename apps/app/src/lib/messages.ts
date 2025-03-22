@@ -12,6 +12,9 @@ export function normalizeMessage(message: Message): Message {
 		if (formatted.reasoning && !reasoning) {
 			newReasoning = formatted.reasoning;
 		}
+
+		const formattedContent = formattedMessageContent(content as string);
+		content = formattedContent.content;
 	} else if (
 		content &&
 		!Array.isArray(content) &&
@@ -92,6 +95,49 @@ export const formattedMessageContent = (originalContent: string) => {
 	let content = originalContent;
 	const reasoning = [];
 	const artifacts = [];
+
+	const promptAnalysisRegex =
+		/<prompt_analysis>([\s\S]*?)(<\/prompt_analysis>|$)/g;
+	const promptAnalysisMatch = promptAnalysisRegex.exec(content);
+	let analysisContent = "";
+
+	if (promptAnalysisMatch !== null) {
+		const analysisText = promptAnalysisMatch[1].trim();
+		analysisContent += `**Analysis**: \n${analysisText}\n\n`;
+		content = content.replace(promptAnalysisMatch[0], "");
+	}
+
+	const revisedPromptRegex =
+		/<revised_prompt>([\s\S]*?)(<\/revised_prompt>|$)/g;
+	const revisedPromptMatch = revisedPromptRegex.exec(content);
+	if (revisedPromptMatch !== null) {
+		const revisedText = revisedPromptMatch[1].trim();
+		analysisContent += `**Revised Prompt**: \n${revisedText}\n\n`;
+		content = content.replace(revisedPromptMatch[0], "");
+	}
+
+	const suggestionsRegex = /<suggestions>([\s\S]*?)(<\/suggestions>|$)/g;
+	const suggestionsMatch = suggestionsRegex.exec(content);
+	if (suggestionsMatch !== null) {
+		const suggestionsText = suggestionsMatch[1].trim();
+		analysisContent += `**Suggestions**: \n${suggestionsText}\n\n`;
+		content = content.replace(suggestionsMatch[0], "");
+	}
+
+	const questionsRegex = /<questions>([\s\S]*?)(<\/questions>|$)/g;
+	const questionsMatch = questionsRegex.exec(content);
+	if (questionsMatch !== null) {
+		const questionsText = questionsMatch[1].trim();
+		analysisContent += `**Questions**: \n${questionsText}\n\n`;
+		content = content.replace(questionsMatch[0], "");
+	}
+
+	if (analysisContent) {
+		if (content.trim()) {
+			analysisContent += "---\n\n";
+		}
+		content = analysisContent + content;
+	}
 
 	const thinkRegex = /<think>([\s\S]*?)(<\/think>|$)/g;
 	while (true) {

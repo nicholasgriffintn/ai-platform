@@ -84,6 +84,12 @@ export const createChatCompletionsJsonSchema = z.object({
 		.openapi({
 			description: "A list of messages comprising the conversation so far.",
 		}),
+	mode: z
+		.enum(["normal", "prompt_coach", "local", "remote", "no_system"])
+		.optional()
+		.openapi({
+			description: "The mode of the chat completion.",
+		}),
 	temperature: z.number().min(0).max(2).default(1).optional().openapi({
 		description:
 			"What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.",

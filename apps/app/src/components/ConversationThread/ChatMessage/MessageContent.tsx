@@ -154,86 +154,86 @@ export const MessageContent = memo(
 				}
 			};
 
-			if (typeof message.content === "string") {
-				return renderTextContent(
-					message.content,
-					message.reasoning,
-					handleArtifactOpen,
-				);
-			}
+			return (
+				<>
+					{typeof message.content === "string" ? (
+						renderTextContent(
+							message.content,
+							message.reasoning,
+							handleArtifactOpen,
+						)
+					) : Array.isArray(message.content) ? (
+						<div className="space-y-4">
+							{message.content.map((item: MessageContentType, i: number) => {
+								if (item.type === "text" && item.text) {
+									return renderTextContent(
+										item.text,
+										message.reasoning,
+										onArtifactOpen,
+										`text-${i}`,
+									);
+								}
 
-			if (Array.isArray(message.content)) {
-				const artifacts: ArtifactProps[] = message.content
-					.filter((item) => item.type === "artifact" && item.artifact)
-					.map((item) => {
-						const artifact = (item as any).artifact;
-						return {
-							identifier: artifact.identifier,
-							type: artifact.type,
-							language: artifact.language,
-							title: artifact.title,
-							content: artifact.content,
-						};
-					});
+								if (item.type === "image_url" && item.image_url) {
+									return renderImageContent(item.image_url.url, i);
+								}
 
-				const isArtifactCombinable = canCombineArtifacts(artifacts);
+								if (item.type === "artifact" && item.artifact) {
+									const artifacts: ArtifactProps[] = Array.isArray(
+										message.content,
+									)
+										? message.content
+												.filter(
+													(contentItem) =>
+														contentItem.type === "artifact" &&
+														contentItem.artifact,
+												)
+												.map((contentItem) => {
+													const artifact = (contentItem as any).artifact;
+													return {
+														identifier: artifact.identifier,
+														type: artifact.type,
+														language: artifact.language,
+														title: artifact.title,
+														content: artifact.content,
+													};
+												})
+										: [];
 
-				return (
-					<div className="space-y-4">
-						{message.content.map((item: MessageContentType, i: number) => {
-							if (item.type === "text" && item.text) {
-								return renderTextContent(
-									item.text,
-									message.reasoning,
-									onArtifactOpen,
-									`text-${i}`,
-								);
-							}
+									const isArtifactCombinable = canCombineArtifacts(artifacts);
 
-							if (item.type === "image_url" && item.image_url) {
-								return renderImageContent(item.image_url.url, i);
-							}
+									return (
+										<ArtifactCallout
+											key={`artifact-item-${item.artifact.identifier}`}
+											identifier={item.artifact.identifier}
+											type={item.artifact.type}
+											language={item.artifact.language}
+											title={item.artifact.title}
+											content={item.artifact.content}
+											onOpen={handleArtifactOpen}
+											isCombinable={isArtifactCombinable}
+											combinableCount={artifacts.length}
+										/>
+									);
+								}
 
-							if (item.type === "artifact" && item.artifact) {
-								return (
-									<ArtifactCallout
-										key={`artifact-item-${item.artifact.identifier}`}
-										identifier={item.artifact.identifier}
-										type={item.artifact.type}
-										language={item.artifact.language}
-										title={item.artifact.title}
-										content={item.artifact.content}
-										onOpen={handleArtifactOpen}
-										isCombinable={isArtifactCombinable}
-										combinableCount={artifacts.length}
-									/>
-								);
-							}
-
-							return null;
-						})}
-					</div>
-				);
-			}
-
-			if (
-				message.data &&
-				"attachments" in message.data &&
-				message.data.attachments
-			) {
-				return (
-					<div className="space-y-4">
-						{message.data.attachments.map((attachment: any, i: number) => {
-							if (attachment.type === "image") {
-								return renderImageContent(attachment.url, i);
-							}
-							return null;
-						})}
-					</div>
-				);
-			}
-
-			return null;
+								return null;
+							})}
+						</div>
+					) : message.data &&
+						"attachments" in message.data &&
+						message.data.attachments ? (
+						<div className="space-y-4">
+							{message.data.attachments.map((attachment: any, i: number) => {
+								if (attachment.type === "image") {
+									return renderImageContent(attachment.url, i);
+								}
+								return null;
+							})}
+						</div>
+					) : null}
+				</>
+			);
 		}, [message.content, message.reasoning, message.data, onArtifactOpen]);
 
 		return content;

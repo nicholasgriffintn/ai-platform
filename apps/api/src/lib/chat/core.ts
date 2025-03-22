@@ -11,6 +11,7 @@ import { Guardrails } from "../guardrails";
 import { ModelRouter } from "../modelRouter";
 import { getModelConfig } from "../models";
 import { getSystemPrompt } from "../prompts";
+import { processPromptCoachMode } from "./prompt_coach";
 import { getAIResponse } from "./responses";
 import { createStreamWithPostProcessing } from "./streaming";
 import { handleToolCalls } from "./tools";
@@ -67,13 +68,13 @@ export async function processChatRequest(options: CoreChatOptions) {
 		}
 
 		const lastMessage = messages[messages.length - 1];
-		const messageContent = Array.isArray(lastMessage.content)
+		const lastMessageContent = Array.isArray(lastMessage.content)
 			? lastMessage.content
 			: [{ type: "text" as const, text: lastMessage.content as string }];
 
-		const textContent =
-			messageContent.find((c) => c.type === "text")?.text || "";
-		const imageAttachments: Attachment[] = messageContent
+		const lastMessageContentText =
+			lastMessageContent.find((c) => c.type === "text")?.text || "";
+		const imageAttachments: Attachment[] = lastMessageContent
 			.filter(
 				(
 					c,
@@ -92,7 +93,7 @@ export async function processChatRequest(options: CoreChatOptions) {
 			requestedModel ||
 			(await ModelRouter.selectModel(
 				env,
-				textContent,
+				lastMessageContentText,
 				imageAttachments,
 				budget_constraint,
 			));
@@ -106,8 +107,6 @@ export async function processChatRequest(options: CoreChatOptions) {
 		}
 		const matchedModel = modelConfig.matchingModel;
 
-		const guardrails = Guardrails.getInstance(env);
-		const embedding = Embedding.getInstance(env);
 		const conversationManager = ConversationManager.getInstance({
 			database: env.DB,
 			userId: user?.id,
@@ -116,7 +115,37 @@ export async function processChatRequest(options: CoreChatOptions) {
 			store,
 		});
 
-		const inputValidation = await guardrails.validateInput(textContent);
+		const { userMessage, currentMode, additionalMessages } =
+			await processPromptCoachMode(
+				{
+					mode,
+					userMessage: lastMessageContentText,
+					completion_id,
+				},
+				conversationManager,
+			);
+		console.log({
+			userMessage,
+			currentMode,
+			additionalMessages,
+		});
+
+		const finalUserMessage =
+			typeof userMessage === "string"
+				? userMessage
+				: currentMode === "prompt_coach"
+					? userMessage
+					: lastMessageContentText;
+
+		const embedding = Embedding.getInstance(env);
+
+		const finalMessage =
+			use_rag === true && currentMode !== "prompt_coach"
+				? await embedding.augmentPrompt(finalUserMessage, rag_options)
+				: finalUserMessage;
+
+		const guardrails = Guardrails.getInstance(env);
+		const inputValidation = await guardrails.validateInput(finalUserMessage);
 		if (!inputValidation.isValid) {
 			return {
 				validation: "input",
@@ -128,19 +157,14 @@ export async function processChatRequest(options: CoreChatOptions) {
 			};
 		}
 
-		const finalMessage =
-			use_rag === true
-				? await embedding.augmentPrompt(textContent, rag_options)
-				: textContent;
-
 		const messageToStore: Message = {
 			role: lastMessage.role,
-			content: use_rag === true ? finalMessage : textContent,
+			content: finalMessage,
 			id: Math.random().toString(36).substring(2, 7),
 			timestamp: Date.now(),
 			model: matchedModel,
 			platform: platform || "api",
-			mode,
+			mode: currentMode,
 		};
 		await conversationManager.add(completion_id, messageToStore);
 
@@ -153,14 +177,21 @@ export async function processChatRequest(options: CoreChatOptions) {
 				timestamp: Date.now(),
 				model: matchedModel,
 				platform: platform || "api",
-				mode,
+				mode: currentMode,
 			};
 			await conversationManager.add(completion_id, attachmentMessage);
 		}
 
-		const systemPromptFromMessages = messages.find(
-			(message) => message.role === ("system" as ChatRole),
-		);
+		if (additionalMessages.length > 0) {
+			for (const message of additionalMessages) {
+				await conversationManager.add(completion_id, message);
+			}
+		}
+
+		const systemPromptFromMessages =
+			currentMode !== "prompt_coach"
+				? messages.find((message) => message.role === ("system" as ChatRole))
+				: undefined;
 
 		const systemMessage =
 			system_prompt ||
@@ -170,11 +201,12 @@ export async function processChatRequest(options: CoreChatOptions) {
 				: getSystemPrompt(
 						{
 							completion_id: completion_id,
-							input: textContent,
+							input: finalMessage,
 							model: matchedModel,
 							date: new Date().toISOString().split("T")[0],
 							response_mode: response_mode,
 							location,
+							mode: currentMode,
 						},
 						matchedModel,
 						user?.id ? user : undefined,
@@ -185,20 +217,27 @@ export async function processChatRequest(options: CoreChatOptions) {
 				? { ...msg, content: [{ type: "text" as const, text: finalMessage }] }
 				: msg,
 		);
+		const fullChatMessages =
+			currentMode === "prompt_coach"
+				? [...chatMessages, ...additionalMessages]
+				: chatMessages;
+		const filteredChatMessages = fullChatMessages.filter(
+			(msg) => msg.role !== ("system" as ChatRole),
+		);
+
+		const finalSystemMessage = currentMode === "no_system" ? "" : systemMessage;
 
 		const response = await getAIResponse({
 			app_url,
-			system_prompt: mode === "no_system" ? "" : systemMessage,
+			system_prompt: finalSystemMessage,
 			env,
 			user: user?.id ? user : undefined,
 			disable_functions,
 			completion_id,
-			messages: chatMessages.filter(
-				(msg) => msg.role !== ("system" as ChatRole),
-			),
+			messages: filteredChatMessages,
 			message: finalMessage,
 			model: matchedModel,
-			mode,
+			mode: currentMode,
 			should_think,
 			response_format,
 			lang,
@@ -230,7 +269,7 @@ export async function processChatRequest(options: CoreChatOptions) {
 					platform: platform || "api",
 					user,
 					app_url,
-					mode,
+					mode: currentMode,
 					isRestricted,
 				},
 				conversationManager,
@@ -296,7 +335,7 @@ export async function processChatRequest(options: CoreChatOptions) {
 			content: response.response,
 			citations: response.citations || null,
 			log_id: env.AI.aiGatewayLogId || response.log_id,
-			mode,
+			mode: currentMode,
 			id: Math.random().toString(36).substring(2, 7),
 			timestamp: Date.now(),
 			model: matchedModel,

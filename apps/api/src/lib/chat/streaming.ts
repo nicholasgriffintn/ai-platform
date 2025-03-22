@@ -1,4 +1,4 @@
-import type { ChatMode, IEnv, IUser, Message, Platform } from "../../types";
+import type { ChatMode, IEnv, IUser, Platform } from "../../types";
 import { handleToolCalls } from "../chat/tools";
 import type { ConversationManager } from "../conversationManager";
 import { Guardrails } from "../guardrails";

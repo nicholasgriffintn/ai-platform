@@ -1,37 +1,41 @@
-import type { ChatInput, ChatMode, IBody, Message } from "../../types";
+import type { ChatMode, Message } from "../../types";
 import type { ConversationManager } from "../conversationManager";
 
 export const processPromptCoachMode = async (
-	request: IBody,
+	options: {
+		mode: ChatMode;
+		userMessage: string;
+		completion_id: string;
+	},
 	conversationManager: ConversationManager,
 ): Promise<{
-	userMessage: ChatInput;
+	userMessage: string;
 	currentMode: ChatMode;
 	additionalMessages: Message[];
 }> => {
-	if (!request || !conversationManager) {
+	if (!options || !conversationManager) {
 		throw new Error(
-			"Invalid input: request and conversationManager are required",
+			"Invalid input: options and conversationManager are required",
 		);
 	}
 
-	const modeWithFallback = request.mode || "normal";
+	const modeWithFallback = options.mode || "normal";
 
 	const isNoSystemMode = modeWithFallback === "no_system";
 	const isNotPromptCoachMode =
 		modeWithFallback !== "prompt_coach" ||
-		(typeof request.input === "string" &&
-			request.input.toLowerCase() !== "use this prompt");
+		(typeof options.userMessage === "string" &&
+			options.userMessage.toLowerCase() !== "use this prompt");
 
 	if (isNoSystemMode || isNotPromptCoachMode) {
 		return {
-			userMessage: request.input,
+			userMessage: options.userMessage,
 			currentMode: modeWithFallback,
 			additionalMessages: [],
 		};
 	}
 
-	const messageHistory = await conversationManager.get(request.completion_id);
+	const messageHistory = await conversationManager.get(options.completion_id);
 	const lastAssistantMessage = messageHistory
 		.slice()
 		.reverse()
@@ -39,7 +43,7 @@ export const processPromptCoachMode = async (
 
 	if (!lastAssistantMessage || typeof lastAssistantMessage !== "string") {
 		return {
-			userMessage: request.input,
+			userMessage: options.userMessage,
 			currentMode: modeWithFallback,
 			additionalMessages: [],
 		};
@@ -51,14 +55,14 @@ export const processPromptCoachMode = async (
 
 	if (!match) {
 		return {
-			userMessage: request.input,
+			userMessage: options.userMessage,
 			currentMode: modeWithFallback,
 			additionalMessages: [],
 		};
 	}
 
 	const userMessage = match[1].trim();
-	await conversationManager.add(request.completion_id, {
+	await conversationManager.add(options.completion_id, {
 		role: "user",
 		content: userMessage,
 		mode: "normal",
