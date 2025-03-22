@@ -421,8 +421,8 @@ export function useChatManager() {
 
 			const handleMessageUpdate = (
 				content: string,
-				toolResponses?: Message[],
 				reasoning?: string,
+				toolResponses?: Message[],
 			) => {
 				response = content;
 
@@ -477,7 +477,8 @@ export function useChatManager() {
 						chatMode,
 						chatSettings,
 						controller.signal,
-						(text, toolResponses) => handleMessageUpdate(text, toolResponses),
+						(text, reasoning, toolResponses) =>
+							handleMessageUpdate(text, reasoning, toolResponses),
 						shouldStore,
 					);
 

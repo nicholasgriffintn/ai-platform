@@ -305,46 +305,12 @@ export function createStreamWithPostProcessing(
 							}
 						}
 
-						let toolResults: Message[] = [];
-						if (toolCallsData.length > 0 && !isRestricted) {
-							const results = await handleToolCalls(
-								completion_id,
-								{ response: fullContent, tool_calls: toolCallsData },
-								conversationManager,
-								{
-									env,
-									request: {
-										completion_id,
-										input: fullContent,
-										model,
-										date: new Date().toISOString().split("T")[0],
-									},
-									app_url,
-									user: user?.id ? user : undefined,
-								},
-								isRestricted ?? false,
-							);
-
-							toolResults = results;
-						}
-
 						const contentStopEvent = new TextEncoder().encode(
 							`data: ${JSON.stringify({
 								type: "content_block_stop",
 							})}\n\n`,
 						);
 						controller.enqueue(contentStopEvent);
-
-						for (const toolResult of toolResults) {
-							const toolResponseChunk = new TextEncoder().encode(
-								`data: ${JSON.stringify({
-									type: "tool_response",
-									tool_id: toolResult.id,
-									result: toolResult,
-								})}\n\n`,
-							);
-							controller.enqueue(toolResponseChunk);
-						}
 
 						const logId = env.AI?.aiGatewayLogId;
 
@@ -386,6 +352,37 @@ export function createStreamWithPostProcessing(
 							})}\n\n`,
 						);
 						controller.enqueue(messageStopEvent);
+
+						if (toolCallsData.length > 0 && !isRestricted) {
+							const toolResults = await handleToolCalls(
+								completion_id,
+								{ response: fullContent, tool_calls: toolCallsData },
+								conversationManager,
+								{
+									env,
+									request: {
+										completion_id,
+										input: fullContent,
+										model,
+										date: new Date().toISOString().split("T")[0],
+									},
+									app_url,
+									user: user?.id ? user : undefined,
+								},
+								isRestricted ?? false,
+							);
+
+							for (const toolResult of toolResults) {
+								const toolResponseChunk = new TextEncoder().encode(
+									`data: ${JSON.stringify({
+										type: "tool_response",
+										tool_id: toolResult.id,
+										result: toolResult,
+									})}\n\n`,
+								);
+								controller.enqueue(toolResponseChunk);
+							}
+						}
 
 						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
 					} catch (error) {

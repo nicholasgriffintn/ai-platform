@@ -197,7 +197,11 @@ class ApiService {
 		mode: ChatMode,
 		chatSettings: ChatSettings,
 		signal: AbortSignal,
-		onProgress: (text: string, toolResponses?: Message[]) => void,
+		onProgress: (
+			text: string,
+			reasoning?: string,
+			toolResponses?: Message[],
+		) => void,
 		store = true,
 		streamingEnabled = true,
 	): Promise<Message> {
@@ -309,7 +313,7 @@ class ApiService {
 
 								if (parsedData.type === "content_block_delta") {
 									content += parsedData.content;
-									onProgress(content);
+									onProgress(content, reasoning);
 								} else if (parsedData.type === "tool_use_start") {
 									pendingToolCalls[parsedData.tool_id] = {
 										id: parsedData.tool_id,
@@ -352,7 +356,7 @@ class ApiService {
 									});
 
 									toolResponses.push(toolResponse);
-									onProgress(content, toolResponses);
+									onProgress("", "", toolResponses);
 								} else if (
 									parsedData.type === "message_delta" &&
 									parsedData.usage
