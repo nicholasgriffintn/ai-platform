@@ -6,6 +6,7 @@ import { formattedMessageContent } from "~/lib/messages";
 import type { Message, MessageContent as MessageContentType } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactCallout } from "../Artifacts/ArtifactCallout";
+import { CitationList } from "./CitationList";
 import { ReasoningSection } from "./ReasoningSection";
 
 interface MessageContentProps {
@@ -36,6 +37,7 @@ const canCombineArtifacts = (artifacts: ArtifactProps[]): boolean => {
 const renderTextContent = (
 	textContent: string,
 	messageReasoning: Message["reasoning"] | undefined,
+	messageCitations: Message["citations"] | undefined,
 	onArtifactOpen?: (
 		artifact: ArtifactProps,
 		combine?: boolean,
@@ -104,6 +106,9 @@ const renderTextContent = (
 					<ReasoningSection reasoning={reasoningProps} />
 				)}
 				<div key={key} className="space-y-2">
+					{messageCitations && messageCitations.length > 0 && (
+						<CitationList citations={messageCitations} />
+					)}
 					{renderedParts}
 				</div>
 			</>
@@ -114,6 +119,9 @@ const renderTextContent = (
 		<>
 			{(reasoning?.length > 0 || messageReasoning) && (
 				<ReasoningSection reasoning={reasoningProps} />
+			)}
+			{messageCitations && messageCitations.length > 0 && (
+				<CitationList citations={messageCitations} />
 			)}
 			<MemoizedMarkdown key={key}>{content}</MemoizedMarkdown>
 		</>
@@ -160,6 +168,7 @@ export const MessageContent = memo(
 						renderTextContent(
 							message.content,
 							message.reasoning,
+							message.citations,
 							handleArtifactOpen,
 						)
 					) : Array.isArray(message.content) ? (
@@ -169,6 +178,7 @@ export const MessageContent = memo(
 									return renderTextContent(
 										item.text,
 										message.reasoning,
+										message.citations,
 										onArtifactOpen,
 										`text-${i}`,
 									);
@@ -234,7 +244,13 @@ export const MessageContent = memo(
 					) : null}
 				</>
 			);
-		}, [message.content, message.reasoning, message.data, onArtifactOpen]);
+		}, [
+			message.content,
+			message.reasoning,
+			message.data,
+			message.citations,
+			onArtifactOpen,
+		]);
 
 		return content;
 	},

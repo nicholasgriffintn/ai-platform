@@ -124,11 +124,6 @@ export async function processChatRequest(options: CoreChatOptions) {
 				},
 				conversationManager,
 			);
-		console.log({
-			userMessage,
-			currentMode,
-			additionalMessages,
-		});
 
 		const finalUserMessage =
 			typeof userMessage === "string"

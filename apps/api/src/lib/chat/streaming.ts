@@ -430,6 +430,7 @@ export function createStreamWithPostProcessing(
 							},
 							log_id: logId,
 							usage: usageData,
+							citations: citationsResponse,
 						};
 
 						const metadataEvent = new TextEncoder().encode(

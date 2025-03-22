@@ -357,12 +357,16 @@ class ApiService {
 
 									toolResponses.push(toolResponse);
 									onProgress("", "", toolResponses);
-								} else if (
-									parsedData.type === "message_delta" &&
-									parsedData.usage
-								) {
-									usage = parsedData.usage;
-									logId = parsedData.log_id;
+								} else if (parsedData.type === "message_delta") {
+									if (parsedData.usage) {
+										usage = parsedData.usage;
+									}
+									if (parsedData.log_id) {
+										logId = parsedData.log_id;
+									}
+									if (parsedData.citations) {
+										citations = parsedData.citations;
+									}
 								} else {
 									console.error("Unknown event type:", parsedData.type);
 								}

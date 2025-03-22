@@ -216,12 +216,12 @@ const REACT_SANDBOX_TEMPLATE = `
         
         // Access the component from the global scope and render it
         if (typeof window[componentName] === 'function') {
-          console.log("Component found:", componentName);
+          console.info("Component found:", componentName);
           const root = ReactDOM.createRoot(document.getElementById('root'));
           root.render(React.createElement(window[componentName]));
         } else {
           console.error("Component not found:", componentName);
-          console.log("Available global functions:", Object.keys(window).filter(k => typeof window[k] === 'function').join(", "));
+          console.info("Available global functions:", Object.keys(window).filter(k => typeof window[k] === 'function').join(", "));
           throw new Error('Component "' + componentName + '" not found or not a function');
         }
       } catch (error) {
