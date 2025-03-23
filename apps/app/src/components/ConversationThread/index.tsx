@@ -122,9 +122,12 @@ export const ConversationThread = () => {
 		handlePanelClose,
 	]);
 
-	const handleSubmit = async (e: FormEvent, imageData?: string) => {
+	const handleSubmit = async (
+		e: FormEvent,
+		attachmentData?: { type: string; data: string; name?: string },
+	) => {
 		e.preventDefault();
-		if (!input.trim() && !imageData) {
+		if (!input.trim() && !attachmentData) {
 			return;
 		}
 
@@ -132,7 +135,7 @@ export const ConversationThread = () => {
 			const originalInput = input;
 			setInput("");
 
-			const result = await sendMessage(input, imageData);
+			const result = await sendMessage(input, attachmentData);
 			if (result?.status === "error") {
 				setInput(originalInput);
 			} else {

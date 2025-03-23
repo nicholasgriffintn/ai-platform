@@ -10,4 +10,5 @@ export const ROUTES = {
 	DYNAMIC_APPS: "/dynamic-apps",
 	SEARCH: "/search",
 	TOOLS: "/tools",
+	UPLOADS: "/uploads",
 } as const;

@@ -146,6 +146,7 @@ export class PromptAnalyzer {
 			estimatedOutputTokens: Math.max(0, analysis.estimatedOutputTokens || 0),
 			needsFunctions: !!analysis.needsFunctions,
 			hasImages: false,
+			hasDocuments: false,
 		};
 	}
 
@@ -201,6 +202,7 @@ export class PromptAnalyzer {
 			...aiAnalysis,
 			budget_constraint,
 			hasImages: !!attachments?.some((a) => a.type === "image"),
+			hasDocuments: !!attachments?.some((a) => a.type === "document"),
 		};
 	}
 

@@ -9,6 +9,7 @@ export enum ErrorType {
 	UNKNOWN_ERROR = "UNKNOWN_ERROR",
 	EXTERNAL_API_ERROR = "EXTERNAL_API_ERROR",
 	FORBIDDEN = "FORBIDDEN",
+	UNAUTHORIZED = "UNAUTHORIZED",
 }
 
 export class AssistantError extends Error {

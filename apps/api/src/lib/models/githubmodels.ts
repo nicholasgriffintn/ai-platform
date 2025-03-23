@@ -45,7 +45,7 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 5,
 		speed: 3,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
 	},

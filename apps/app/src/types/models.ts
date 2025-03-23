@@ -23,6 +23,7 @@ export type ModelConfigItem = {
 	includedInRouter?: boolean;
 	isFeatured?: boolean;
 	hasThinking?: boolean;
+	supportsDocuments?: boolean;
 };
 
 export type ModelConfig = {

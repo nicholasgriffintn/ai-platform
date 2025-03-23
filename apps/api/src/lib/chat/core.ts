@@ -89,12 +89,30 @@ export async function processChatRequest(options: CoreChatOptions) {
 				detail: c.image_url.detail === "auto" ? undefined : c.image_url.detail,
 			}));
 
+		const documentAttachments: Attachment[] = lastMessageContent
+			.filter(
+				(
+					c,
+				): c is {
+					type: "document_url";
+					document_url: { url: string; name?: string };
+				} =>
+					c.type === "document_url" && "document_url" in c && !!c.document_url,
+			)
+			.map((c) => ({
+				type: "document",
+				url: c.document_url.url,
+				name: c.document_url.name,
+			}));
+
+		const allAttachments = [...imageAttachments, ...documentAttachments];
+
 		const selectedModel =
 			requestedModel ||
 			(await ModelRouter.selectModel(
 				env,
 				lastMessageContentText,
-				imageAttachments,
+				allAttachments,
 				budget_constraint,
 			));
 
@@ -163,11 +181,11 @@ export async function processChatRequest(options: CoreChatOptions) {
 		};
 		await conversationManager.add(completion_id, messageToStore);
 
-		if (imageAttachments.length > 0) {
+		if (allAttachments.length > 0) {
 			const attachmentMessage: Message = {
 				role: lastMessage.role,
-				content: "Attached images",
-				data: { attachments: imageAttachments },
+				content: "Attachments",
+				data: { attachments: allAttachments },
 				id: Math.random().toString(36).substring(2, 7),
 				timestamp: Date.now(),
 				model: matchedModel,

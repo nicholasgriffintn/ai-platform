@@ -1,3 +1,4 @@
+import { File } from "lucide-react";
 import { memo, useMemo } from "react";
 import type { ReactNode } from "react";
 
@@ -128,23 +129,48 @@ const renderTextContent = (
 	);
 };
 
-const MemoizedImage = memo(
-	({ imageUrl, index }: { imageUrl: string; index?: number }) => (
+const renderImageContent = (imageUrl: string, index?: number): ReactNode => {
+	return (
 		<div
-			key={index !== undefined ? `image-${index}` : undefined}
-			className="rounded-lg overflow-hidden"
+			key={`image-attachment-${index ?? 0}`}
+			className="relative overflow-hidden rounded-lg"
 		>
 			<img
 				src={imageUrl}
-				alt="User uploaded content in conversation"
-				className="max-w-full max-h-[300px] object-contain"
+				alt="Attached content"
+				className="max-h-48 w-auto object-contain"
+				crossOrigin="anonymous"
 			/>
 		</div>
-	),
-);
+	);
+};
 
-const renderImageContent = (imageUrl: string, index?: number): ReactNode => {
-	return <MemoizedImage imageUrl={imageUrl} index={index} />;
+const renderDocumentContent = (
+	documentUrl: string,
+	documentName?: string,
+	index?: number,
+): ReactNode => {
+	return (
+		<div
+			key={`document-attachment-${index ?? 0}`}
+			className="flex items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+		>
+			<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
+				<File size={20} />
+			</div>
+			<div className="overflow-hidden text-sm">
+				<p className="truncate font-medium">{documentName || "Document"}</p>
+				<a
+					href={documentUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-xs text-blue-500 hover:underline"
+				>
+					Download document
+				</a>
+			</div>
+		</div>
+	);
 };
 
 export const MessageContent = memo(
@@ -237,6 +263,13 @@ export const MessageContent = memo(
 							{message.data.attachments.map((attachment: any, i: number) => {
 								if (attachment.type === "image") {
 									return renderImageContent(attachment.url, i);
+								}
+								if (attachment.type === "document") {
+									return renderDocumentContent(
+										attachment.url,
+										attachment.name,
+										i,
+									);
 								}
 								return null;
 							})}

@@ -29,6 +29,7 @@ import dynamicApps from "./routes/dynamic-apps";
 import models from "./routes/models";
 import search from "./routes/search";
 import tools from "./routes/tools";
+import uploads from "./routes/uploads";
 import webhooks from "./routes/webhooks";
 
 const app = new Hono();
@@ -182,6 +183,7 @@ app.route(ROUTES.TOOLS, tools);
 app.route(ROUTES.AUDIO, audio);
 app.route(ROUTES.DYNAMIC_APPS, dynamicApps);
 app.route(ROUTES.SEARCH, search);
+app.route(ROUTES.UPLOADS, uploads);
 
 /**
  * Global 404 handler

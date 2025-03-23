@@ -3,7 +3,12 @@ import type { IUser } from "./user";
 
 export type Platform = "web" | "mobile" | "api" | "dynamic-apps";
 
-export type ContentType = "text" | "image_url" | "audio_url" | "thinking";
+export type ContentType =
+	| "text"
+	| "image_url"
+	| "audio_url"
+	| "thinking"
+	| "document_url";
 export type ChatRole = "user" | "assistant" | "tool" | "developer";
 export type ChatMode =
 	| "normal"
@@ -23,15 +28,20 @@ export type MessageContent = {
 	audio_url?: {
 		url: string;
 	};
+	document_url?: {
+		url: string;
+		name?: string;
+	};
 	thinking?: string;
 	signature?: string;
 	image?: number[] | string;
 };
 
 export type Attachment = {
-	type: "image";
+	type: "image" | "document";
 	url: string;
 	detail?: "low" | "high";
+	name?: string;
 };
 
 export interface Message {

@@ -238,6 +238,16 @@ export class MessageFormatter {
 				},
 			};
 		}
+		if (item.type === "document_url" && item.document_url?.url) {
+			return {
+				type: "document",
+				source: {
+					type: "url",
+					url: item.document_url.url,
+				},
+			};
+		}
+
 		return item;
 	}
 

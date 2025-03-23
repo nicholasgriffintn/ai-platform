@@ -29,6 +29,7 @@ export type ModelConfigItem = {
 	supportsResponseFormat?: boolean;
 	supportsArtifacts?: boolean;
 	supportsStreaming?: boolean;
+	supportsDocuments?: boolean;
 };
 
 export type ModelConfig = {
@@ -41,6 +42,7 @@ export interface PromptRequirements {
 	estimatedInputTokens: number;
 	estimatedOutputTokens: number;
 	hasImages: boolean;
+	hasDocuments?: boolean;
 	needsFunctions: boolean;
 	budget_constraint?: number;
 }

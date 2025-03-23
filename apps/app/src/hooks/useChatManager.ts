@@ -603,8 +603,11 @@ export function useChatManager() {
 	);
 
 	const sendMessage = useCallback(
-		async (input: string, imageData?: string) => {
-			if (!input.trim() && !imageData) {
+		async (
+			input: string,
+			attachmentData?: { type: string; data: string; name?: string },
+		) => {
+			if (!input.trim() && !attachmentData) {
 				return {
 					status: "error",
 					response: "",
@@ -615,22 +618,35 @@ export function useChatManager() {
 			startLoading("stream-response", "Generating response...");
 
 			let userMessage: Message;
-			if (imageData) {
+			if (attachmentData) {
+				const contentItems: any[] = [
+					{
+						type: "text",
+						text: input.trim(),
+					},
+				];
+
+				if (attachmentData.type === "image") {
+					contentItems.push({
+						type: "image_url",
+						image_url: {
+							url: attachmentData.data,
+							detail: "auto",
+						},
+					});
+				} else if (attachmentData.type === "document") {
+					contentItems.push({
+						type: "document_url",
+						document_url: {
+							url: attachmentData.data,
+							name: attachmentData.name,
+						},
+					});
+				}
+
 				userMessage = normalizeMessage({
 					role: "user",
-					content: [
-						{
-							type: "text",
-							text: input.trim(),
-						},
-						{
-							type: "image_url",
-							image_url: {
-								url: imageData,
-								detail: "auto",
-							},
-						},
-					],
+					content: contentItems,
 					id: crypto.randomUUID(),
 					created: Date.now(),
 					model,

@@ -23,11 +23,15 @@ export interface ChatSettings {
 }
 
 export interface MessageContent {
-	type: "text" | "image_url" | "artifact";
+	type: "text" | "image_url" | "artifact" | "document_url";
 	text?: string;
 	image_url?: {
 		url: string;
 		detail?: "auto" | "low" | "high";
+	};
+	document_url?: {
+		url: string;
+		name?: string;
 	};
 	artifact?: {
 		identifier: string;
@@ -52,6 +56,7 @@ export interface MessageData {
 	attachments?: Array<{
 		type: string;
 		url: string;
+		name?: string;
 	}>;
 }
 

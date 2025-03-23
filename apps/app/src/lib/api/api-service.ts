@@ -512,6 +512,46 @@ class ApiService {
 
 		return await response.json();
 	}
+
+	async uploadFile(
+		file: File,
+		fileType: "image" | "document",
+	): Promise<{ url: string; type: string; name: string }> {
+		const apiKey = await apiKeyService.getApiKey();
+
+		if (!apiKey) {
+			throw new Error("API key not found");
+		}
+
+		const headers = {
+			Authorization: `Bearer ${apiKey}`,
+		};
+		const formData = new FormData();
+		formData.append("file", file);
+		formData.append("file_type", fileType);
+
+		const response = await fetch(`${API_BASE_URL}/uploads`, {
+			method: "POST",
+			headers,
+			credentials: "include",
+			body: formData,
+		});
+
+		if (!response.ok) {
+			const errorData = await response
+				.json()
+				.catch(() => ({ error: response.statusText }));
+			const errorMessage =
+				typeof errorData === "object" &&
+				errorData !== null &&
+				"error" in errorData
+					? String(errorData.error)
+					: response.statusText;
+			throw new Error(`Failed to upload file: ${errorMessage}`);
+		}
+
+		return await response.json();
+	}
 }
 
 export const apiService = ApiService.getInstance();

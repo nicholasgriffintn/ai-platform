@@ -24,33 +24,61 @@ export const createChatCompletionsJsonSchema = z.object({
 					.union([
 						z.string(),
 						z.array(
-							z.object({
-								type: z.enum(["text", "image_url", "input_audio"]),
-								text: z.string().optional(),
-								image_url: z
-									.object({
-										url: z.string().url().openapi({
-											description:
-												"Either a URL for the image or the base64 encoded data for the image.",
-										}),
-										detail: z
-											.enum(["auto", "low", "high"])
-											.optional()
-											.default("auto")
-											.openapi({
-												description: "The detail level of the image.",
+							z
+								.object({
+									type: z.enum([
+										"text",
+										"image_url",
+										"input_audio",
+										"document_url",
+									]),
+									text: z.string().optional(),
+									document_url: z
+										.object({
+											url: z.string().url().openapi({
+												description: "The URL of the document.",
 											}),
-									})
-									.optional(),
-								input_audio: z
-									.object({
-										data: z.string().optional().openapi({
-											description: "Base64 encoded audio data.",
-										}),
-										format: z.enum(["wav", "mp3"]).optional(),
-									})
-									.optional(),
-							}),
+											name: z.string().optional().openapi({
+												description: "The name of the document.",
+											}),
+										})
+										.optional(),
+									image_url: z
+										.object({
+											url: z.string().url().openapi({
+												description:
+													"Either a URL for the image or the base64 encoded data for the image.",
+											}),
+											detail: z
+												.enum(["auto", "low", "high"])
+												.optional()
+												.default("auto")
+												.openapi({
+													description: "The detail level of the image.",
+												}),
+										})
+										.optional(),
+									input_audio: z
+										.object({
+											data: z.string().optional().openapi({
+												description: "Base64 encoded audio data.",
+											}),
+											format: z.enum(["wav", "mp3"]).optional(),
+										})
+										.optional(),
+								})
+								.refine(
+									(obj) => {
+										if (obj.type === "document_url") return !!obj.document_url;
+										if (obj.type === "image_url") return !!obj.image_url;
+										if (obj.type === "input_audio") return !!obj.input_audio;
+										return true;
+									},
+									{
+										message: "Field is required based on the specified type",
+										path: ["type"],
+									},
+								),
 						),
 					])
 					.openapi({
