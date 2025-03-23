@@ -4,6 +4,7 @@ import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
 import { requireAuth } from "../middleware/auth";
+import { createRouteLogger } from "../middleware/loggerMiddleware";
 import type { IEnv } from "../types";
 import { textToSpeechSchema, transcribeFormSchema } from "./schemas/audio";
 
@@ -12,10 +13,20 @@ import { handleTranscribe } from "../services/audio/transcribe";
 
 const app = new Hono();
 
+const routeLogger = createRouteLogger("AUDIO");
+
 /**
  * Global middleware to check authentication
  */
 app.use("/*", requireAuth);
+
+/**
+ * Global middleware to add route-specific logging
+ */
+app.use("/*", (c, next) => {
+	routeLogger.info(`Processing audio route: ${c.req.path}`);
+	return next();
+});
 
 // TODO: Expand this to be able to provide more capability for the model settings.
 app.post(

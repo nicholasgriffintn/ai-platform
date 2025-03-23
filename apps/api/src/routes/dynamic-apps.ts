@@ -3,6 +3,7 @@ import { describeRoute } from "hono-openapi";
 import { z } from "zod";
 
 import { requireAuth } from "../middleware/auth";
+import { createRouteLogger } from "../middleware/loggerMiddleware";
 import {
 	executeDynamicApp,
 	getDynamicAppById,
@@ -13,7 +14,17 @@ import type { IRequest } from "../types/chat";
 
 const dynamicApps = new Hono();
 
+const routeLogger = createRouteLogger("DYNAMIC_APPS");
+
 dynamicApps.use("*", requireAuth);
+
+/**
+ * Global middleware to add route-specific logging
+ */
+dynamicApps.use("*", (c, next) => {
+	routeLogger.info(`Processing dynamic-apps route: ${c.req.path}`);
+	return next();
+});
 
 dynamicApps.get(
 	"/",

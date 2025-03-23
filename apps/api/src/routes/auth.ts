@@ -5,6 +5,7 @@ import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
 import { requireAuth } from "../middleware/auth";
+import { createRouteLogger } from "../middleware/loggerMiddleware";
 import { generateJwtToken } from "../services/auth/jwt";
 import {
 	createOrUpdateGithubUser,
@@ -21,6 +22,16 @@ import {
 } from "./schemas/auth";
 
 const app = new Hono();
+
+const routeLogger = createRouteLogger("AUTH");
+
+/**
+ * Global middleware to add route-specific logging
+ */
+app.use("/*", (c, next) => {
+	routeLogger.info(`Processing auth route: ${c.req.path}`);
+	return next();
+});
 
 app.get(
 	"/github",
@@ -72,7 +83,7 @@ app.get(
 	}),
 	zValidator("query", githubCallbackSchema),
 	async (c: Context) => {
-		const { code } = c.req.valid("query" as never);
+		const { code } = c.req.valid("query" as never) as { code: string };
 
 		if (!c.env.GITHUB_CLIENT_ID || !c.env.GITHUB_CLIENT_SECRET) {
 			throw new AssistantError(

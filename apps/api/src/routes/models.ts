@@ -11,8 +11,19 @@ import {
 	getModelsByCapability,
 	getModelsByType,
 } from "../lib/models";
+import { createRouteLogger } from "../middleware/loggerMiddleware";
 
 const app = new Hono();
+
+const routeLogger = createRouteLogger("MODELS");
+
+/**
+ * Global middleware to add route-specific logging
+ */
+app.use("/*", (c, next) => {
+	routeLogger.info(`Processing models route: ${c.req.path}`);
+	return next();
+});
 
 app.get(
 	"/",
@@ -61,7 +72,9 @@ app.get(
 		}),
 	),
 	async (context: Context) => {
-		const { capability } = context.req.valid("param" as never);
+		const { capability } = context.req.valid("param" as never) as {
+			capability: string;
+		};
 
 		const models = getModelsByCapability(capability);
 
@@ -101,7 +114,7 @@ app.get(
 		}),
 	),
 	async (context: Context) => {
-		const { type } = context.req.valid("param" as never);
+		const { type } = context.req.valid("param" as never) as { type: string };
 
 		const models = getModelsByType(type);
 
@@ -128,7 +141,7 @@ app.get(
 		}),
 	),
 	async (context: Context) => {
-		const { id } = context.req.valid("param" as never);
+		const { id } = context.req.valid("param" as never) as { id: string };
 
 		const model = getModelConfig(id);
 

@@ -5,9 +5,9 @@ import { openAPISpecs } from "hono-openapi";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { cors } from "hono/cors";
-import { logger } from "hono/logger";
 
 import { authMiddleware } from "./middleware/auth";
+import { loggerMiddleware } from "./middleware/loggerMiddleware";
 import { rateLimit } from "./middleware/rateLimit";
 import auth from "./routes/auth";
 import { metricsParamsSchema, statusResponseSchema } from "./routes/schemas";
@@ -17,6 +17,7 @@ import {
 	ErrorType,
 	handleAIServiceError,
 } from "./utils/errors";
+import { LogLevel, getLogger } from "./utils/logger";
 
 import { autoRegisterDynamicApps } from "./services/dynamic-apps/auto-register-apps";
 
@@ -29,6 +30,14 @@ import models from "./routes/models";
 import search from "./routes/search";
 import tools from "./routes/tools";
 import webhooks from "./routes/webhooks";
+
+// Initialize logger
+const logger = getLogger({
+	level: LogLevel.INFO,
+	prefix: "API",
+});
+
+logger.info("Application starting");
 
 const app = new Hono();
 
@@ -52,15 +61,15 @@ app.use(
 );
 
 /**
- * Global middleware to log the request method and URL
- */
-app.use("*", logger());
-
-/**
  * Global middleware to check if the user is authenticated
  * and if they are, set the user in the context
  */
 app.use("*", authMiddleware);
+
+/**
+ * Global middleware for logging
+ */
+app.use("*", loggerMiddleware);
 
 /**
  * Global middleware to rate limit requests
@@ -183,6 +192,12 @@ app.notFound((c) => c.json({ status: "not found" }, 404));
  * Global error handler
  */
 app.onError((err, c) => {
+	logger.error("Global error handler caught an error", {
+		error: err.message,
+		stack: err.stack,
+		path: c.req.path,
+	});
+
 	if (err instanceof AssistantError) {
 		return handleAIServiceError(err);
 	}

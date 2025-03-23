@@ -1,9 +1,12 @@
 // TODO: This file is messy, but refactoring it is a lot of work.
 
 import type { ChatMode, IEnv, IUser, Platform } from "../../types";
+import { getLogger } from "../../utils/logger";
 import { handleToolCalls } from "../chat/tools";
 import type { ConversationManager } from "../conversationManager";
 import { Guardrails } from "../guardrails";
+
+const logger = getLogger({ prefix: "CHAT_STREAMING" });
 
 export function createStreamWithPostProcessing(
 	providerStream: ReadableStream,
@@ -276,7 +279,7 @@ export function createStreamWithPostProcessing(
 											parsedInput = JSON.parse(toolState.accumulatedInput);
 										}
 									} catch (e) {
-										console.error("Failed to parse tool input:", e);
+										logger.error("Failed to parse tool input:", e);
 									}
 
 									const toolCall = {
@@ -320,7 +323,7 @@ export function createStreamWithPostProcessing(
 							) {
 								const deltaToolCalls = data.choices[0].delta.tool_calls;
 
-								console.log("deltaToolCalls", deltaToolCalls);
+								logger.debug("deltaToolCalls", deltaToolCalls);
 
 								// Accumulate tool calls from this delta
 								for (const toolCall of deltaToolCalls) {
@@ -364,7 +367,10 @@ export function createStreamWithPostProcessing(
 								toolCallsData = [...toolCallsData, ...data.tool_calls];
 							}
 						} catch (parseError) {
-							console.error("Parse error", parseError, "on data:", dataStr);
+							logger.error("Parse error on data", {
+								error: parseError,
+								data: dataStr,
+							});
 						}
 					}
 				}
@@ -516,7 +522,7 @@ export function createStreamWithPostProcessing(
 
 						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
 					} catch (error) {
-						console.error("Error in stream post-processing:", error);
+						logger.error("Error in stream post-processing:", error);
 					}
 				}
 			},

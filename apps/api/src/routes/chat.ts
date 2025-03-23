@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { ConversationManager } from "../lib/conversationManager";
 import { allowRestrictedPaths } from "../middleware/auth";
+import { createRouteLogger } from "../middleware/loggerMiddleware";
 import { requireTurnstileToken } from "../middleware/turnstile";
 import { handleChatCompletionFeedbackSubmission } from "../services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "../services/completions/checkChatCompletion";
@@ -36,6 +37,16 @@ import {
 } from "./schemas/chat";
 
 const app = new Hono();
+
+const routeLogger = createRouteLogger("CHAT");
+
+/**
+ * Global middleware to add route-specific logging
+ */
+app.use("/*", (c, next) => {
+	routeLogger.info(`Processing chat route: ${c.req.path}`);
+	return next();
+});
 
 /**
  * Global middleware to check authentication and set access level

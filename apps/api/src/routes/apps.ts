@@ -4,6 +4,7 @@ import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
 import { requireAuth } from "../middleware/auth";
+import { createRouteLogger } from "../middleware/loggerMiddleware";
 import {
 	type Params as AnalyseArticleParams,
 	analyseArticle,
@@ -102,6 +103,16 @@ import {
 } from "./schemas/apps";
 
 const app = new Hono();
+
+const routeLogger = createRouteLogger("APPS");
+
+/**
+ * Global middleware to add route-specific logging
+ */
+app.use("/*", (c, next) => {
+	routeLogger.info(`Processing apps route: ${c.req.path}`);
+	return next();
+});
 
 /**
  * Global middleware to check authentication
