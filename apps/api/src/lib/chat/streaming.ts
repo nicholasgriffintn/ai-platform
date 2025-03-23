@@ -146,7 +146,7 @@ export function createStreamWithPostProcessing(
 								data.choices &&
 								data.choices.length > 0 &&
 								data.choices[0].delta &&
-								data.choices[0].delta.content
+								data.choices[0].delta.content !== undefined
 							) {
 								fullContent += data.choices[0].delta.content;
 
@@ -157,6 +157,24 @@ export function createStreamWithPostProcessing(
 									})}\n\n`,
 								);
 								controller.enqueue(contentDeltaEvent);
+
+								// Fix for Perplexity Sonar models that end with an empty sting because they're special.
+								if (
+									data.model?.includes("sonar") &&
+									data.choices[0].delta.content === "" &&
+									!postProcessingDone
+								) {
+									if (data.usage) {
+										usageData = data.usage;
+									}
+
+									if (data.citations) {
+										citationsResponse = data.citations;
+									}
+
+									await handlePostProcessing();
+									continue;
+								}
 							}
 
 							if (
