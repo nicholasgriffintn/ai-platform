@@ -464,6 +464,14 @@ export function createStreamWithPostProcessing(
 								controller.enqueue(toolStopEvent);
 							}
 
+							const toolResponseStartEvent = new TextEncoder().encode(
+								`data: ${JSON.stringify({
+									type: "tool_response_start",
+									tool_calls: toolCallsData,
+								})}\n\n`,
+							);
+							controller.enqueue(toolResponseStartEvent);
+
 							const toolResults = await handleToolCalls(
 								completion_id,
 								{ response: fullContent || "", tool_calls: toolCallsData },
@@ -492,6 +500,13 @@ export function createStreamWithPostProcessing(
 								);
 								controller.enqueue(toolResponseChunk);
 							}
+
+							const toolResponseEndEvent = new TextEncoder().encode(
+								`data: ${JSON.stringify({
+									type: "tool_response_end",
+								})}\n\n`,
+							);
+							controller.enqueue(toolResponseEndEvent);
 						}
 
 						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
