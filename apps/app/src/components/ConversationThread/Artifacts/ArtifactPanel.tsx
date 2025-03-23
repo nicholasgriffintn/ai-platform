@@ -64,6 +64,11 @@ const ContentViewer = ({
 	onCopy: () => void;
 	copied: boolean;
 }) => {
+	const isMarkdown =
+		artifact.type === "text/markdown" ||
+		artifact.language?.toLowerCase() === "markdown" ||
+		artifact.language?.toLowerCase() === "md";
+
 	return (
 		<div className="p-4 flex-1 overflow-auto">
 			<div className="mb-2 text-xs text-zinc-500 dark:text-zinc-400 flex justify-between items-center">
@@ -92,7 +97,9 @@ const ContentViewer = ({
 			<div className="artifact-content-full">
 				<div className="prose dark:prose-invert max-w-none">
 					<MemoizedMarkdown>
-						{`\`\`\`${artifact.language}\n${artifact.content}\n\`\`\``}
+						{isMarkdown
+							? artifact.content
+							: `\`\`\`${artifact.language}\n${artifact.content}\n\`\`\``}
 					</MemoizedMarkdown>
 				</div>
 			</div>
