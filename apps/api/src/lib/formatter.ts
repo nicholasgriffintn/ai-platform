@@ -232,9 +232,11 @@ export class MessageFormatter {
 			return {
 				type: "image",
 				source: {
-					type: "base64",
-					media_type: MessageFormatter.resolveType(item.image_url.url),
-					data: MessageFormatter.getBase64FromUrl(item.image_url.url),
+					type: "url",
+					url: item.image_url.url,
+				},
+				cache_control: {
+					type: "ephemeral",
 				},
 			};
 		}
@@ -244,6 +246,9 @@ export class MessageFormatter {
 				source: {
 					type: "url",
 					url: item.document_url.url,
+				},
+				cache_control: {
+					type: "ephemeral",
 				},
 			};
 		}
