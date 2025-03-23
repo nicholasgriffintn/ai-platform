@@ -1,0 +1,27 @@
+---
+description: Instructions on how to comment
+globs: *.ts, *.tsx, *.js, *.jsx
+alwaysApply: false
+---
+# Code Commenting Guidelines:
+- Comment should always explain why something is done, not what is done.
+- Code should be treated as documentation, only add comments when absoletely necessary.
+- Use clear and concise language, avoid redundancy.
+- Keep comments up-to-date and in sync with the code.
+- Do not remove `TODO` comments unelss you are explicitly asked to.
+
+## Inline Comments
+
+```
+// ✅ Good comment: Explains complex business logic
+if (user.role === 'admin' && !isHoliday) {
+  // Administrators have special permissions on non-holidays
+  grantSpecialAccess();
+}
+
+// ❌ Bad comment: States the obvious
+// Check if the user is an administrator
+if (user.role === 'admin') {
+  // ...
+}
+```

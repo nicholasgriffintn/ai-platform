@@ -1,0 +1,12 @@
+---
+description: Querying data from APIs
+globs: apps/app/**/*.tsx,apps/metrics/**/*.tsx
+alwaysApply: false
+---
+# Querying Data
+- Always use `@tanstack/react-query` for data fetching and querying
+- Use the native JavaScript fetch library
+
+# Mutating data
+
+- Whenever we are submitting data, we should use Zod to validate it

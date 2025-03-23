@@ -1,0 +1,10 @@
+---
+description: Instructions on how to work with the API application
+globs: apps/api/**/*
+alwaysApply: false
+---
+## API:
+- We use Hono for our framework, always use that.
+- We are using CloudFlare Workers, don't use Node modules, instead reach for Web Standards by default.
+- Be sure to always consider input santisation whenever we are taking input from a user.
+- Avoid external dependencies unless explicity asked to add them.
