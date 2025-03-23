@@ -31,14 +31,6 @@ import search from "./routes/search";
 import tools from "./routes/tools";
 import webhooks from "./routes/webhooks";
 
-// Initialize logger
-const logger = getLogger({
-	level: LogLevel.INFO,
-	prefix: "API",
-});
-
-logger.info("Application starting");
-
 const app = new Hono();
 
 autoRegisterDynamicApps();
@@ -75,6 +67,14 @@ app.use("*", loggerMiddleware);
  * Global middleware to rate limit requests
  */
 app.use("*", rateLimit);
+
+// Initialize logger
+const logger = getLogger({
+	level: LogLevel.INFO,
+	prefix: "API",
+});
+
+logger.info("Application starting");
 
 app.get(
 	"/",

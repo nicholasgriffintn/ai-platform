@@ -48,10 +48,13 @@ export function createStreamWithPostProcessing(
 		new TransformStream({
 			async transform(chunk, controller) {
 				const text = new TextDecoder().decode(chunk);
+				logger.debug("Received chunk", { text });
 				buffer += text;
 
 				const lines = buffer.split("\n");
 				buffer = lines.pop() || "";
+
+				logger.debug(`Processing ${lines.length} lines`);
 
 				for (const line of lines) {
 					if (!line.trim()) {
@@ -59,15 +62,31 @@ export function createStreamWithPostProcessing(
 					}
 
 					if (line.startsWith("event: ")) {
+						logger.debug("Processing event", { line });
 						currentEventType = line.substring(7).trim();
 						continue;
 					}
 
 					if (line.startsWith("data: ")) {
+						logger.debug("Processing data", { line });
 						const dataStr = line.substring(6).trim();
 
 						if (dataStr === "[DONE]") {
 							if (!postProcessingDone) {
+								// Check if we have accumulated tool calls that haven't been processed yet
+								if (
+									Object.keys(currentToolCalls).length > 0 &&
+									toolCallsData.length === 0
+								) {
+									logger.debug(
+										"Processing accumulated tool calls before [DONE]",
+										{ currentToolCalls },
+									);
+									const completeToolCalls = Object.values(currentToolCalls);
+									toolCallsData = completeToolCalls;
+								}
+
+								logger.debug("Received [DONE] event, handling post-processing");
 								await handlePostProcessing();
 							}
 							continue;
@@ -87,6 +106,7 @@ export function createStreamWithPostProcessing(
 								controller.enqueue(
 									new TextEncoder().encode("data: [DONE]\n\n"),
 								);
+								logger.error("Error in data", { error: data.error });
 								return;
 							}
 
@@ -125,6 +145,8 @@ export function createStreamWithPostProcessing(
 								if (data.citations) {
 									citationsResponse = data.citations;
 								}
+
+								logger.debug("Received stop event, handling post-processing");
 
 								await handlePostProcessing();
 								continue;
@@ -171,6 +193,11 @@ export function createStreamWithPostProcessing(
 									}
 
 									await handlePostProcessing();
+
+									logger.debug(
+										"Received empty string, handling post-processing",
+									);
+
 									continue;
 								}
 							}
@@ -297,6 +324,9 @@ export function createStreamWithPostProcessing(
 									currentEventType === "message_stop" &&
 									!postProcessingDone
 								) {
+									logger.debug(
+										"Reached message stop, handling post-processing",
+									);
 									await handlePostProcessing();
 								}
 							}
@@ -323,7 +353,7 @@ export function createStreamWithPostProcessing(
 							) {
 								const deltaToolCalls = data.choices[0].delta.tool_calls;
 
-								logger.debug("deltaToolCalls", deltaToolCalls);
+								logger.debug("Received delta tool calls", { deltaToolCalls });
 
 								// Accumulate tool calls from this delta
 								for (const toolCall of deltaToolCalls) {
@@ -357,6 +387,8 @@ export function createStreamWithPostProcessing(
 								if (
 									data.choices[0].finish_reason?.toLowerCase() === "tool_calls"
 								) {
+									logger.debug("Received final chunk, processing tool calls");
+
 									const completeToolCalls = Object.values(currentToolCalls);
 									toolCallsData = completeToolCalls;
 
@@ -388,6 +420,9 @@ export function createStreamWithPostProcessing(
 								await guardrails.validateOutput(fullContent);
 
 							if (!outputValidation.isValid) {
+								logger.debug("Output validation failed", {
+									outputValidation,
+								});
 								guardrailsFailed = true;
 								guardrailError =
 									outputValidation.rawResponse?.blockedResponse ||
@@ -446,6 +481,7 @@ export function createStreamWithPostProcessing(
 						controller.enqueue(messageStopEvent);
 
 						if (toolCallsData.length > 0 && !isRestricted) {
+							logger.debug("Processing tool calls", { toolCallsData });
 							// Emit tool use events for each tool call
 							for (const toolCall of toolCallsData) {
 								const toolStartEvent = new TextEncoder().encode(
@@ -500,6 +536,8 @@ export function createStreamWithPostProcessing(
 								},
 								isRestricted ?? false,
 							);
+
+							logger.debug("Tool results", { toolResults });
 
 							for (const toolResult of toolResults) {
 								const toolResponseChunk = new TextEncoder().encode(

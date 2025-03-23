@@ -13,8 +13,7 @@ interface LoggerOptions {
 
 class Logger {
 	private static instance: Logger;
-	private static readonly defaultLevel = LogLevel.INFO;
-	private static startTime = Date.now();
+	private static readonly defaultLevel = LogLevel.DEBUG;
 	private level: LogLevel;
 	private prefix: string;
 
