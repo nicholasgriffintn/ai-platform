@@ -1,3 +1,5 @@
+// TODO: This file is messy, but refactoring it is a lot of work.
+
 import type { ChatMode, IEnv, IUser, Platform } from "../../types";
 import { handleToolCalls } from "../chat/tools";
 import type { ConversationManager } from "../conversationManager";
@@ -44,6 +46,8 @@ export function createStreamWithPostProcessing(
 	let currentEventType = "";
 	// Special handling just for Anthropic - because they have to be difficult for some reason and stream the input independently of the tool_use event.
 	const currentAnthropicTools: Record<string, AnthropicToolState> = {};
+	// Track OpenAI tool calls that are streamed in chunks
+	const openAIToolCalls: Record<string, any> = {};
 
 	const guardrails = Guardrails.getInstance(env);
 
@@ -258,7 +262,7 @@ export function createStreamWithPostProcessing(
 									data.content_block?.type === "tool_use" &&
 									!isRestricted
 								) {
-									currentAnthropicTools[data.index] = {
+									openAIToolCalls[data.index] = {
 										id: data.content_block.id,
 										name: data.content_block.name,
 										accumulatedInput: "",
@@ -269,12 +273,12 @@ export function createStreamWithPostProcessing(
 								if (
 									currentEventType === "content_block_stop" &&
 									data.index !== undefined &&
-									currentAnthropicTools[data.index] &&
-									!currentAnthropicTools[data.index].isComplete
+									openAIToolCalls[data.index] &&
+									!openAIToolCalls[data.index].isComplete
 								) {
-									currentAnthropicTools[data.index].isComplete = true;
+									openAIToolCalls[data.index].isComplete = true;
 
-									const toolState = currentAnthropicTools[data.index];
+									const toolState = openAIToolCalls[data.index];
 									let parsedInput = {};
 									try {
 										if (toolState.accumulatedInput) {
@@ -333,59 +337,63 @@ export function createStreamWithPostProcessing(
 								data.type === "content_block_delta" &&
 								data.delta?.type === "input_json_delta" &&
 								data.index !== undefined &&
-								currentAnthropicTools[data.index] &&
+								openAIToolCalls[data.index] &&
 								!isRestricted
 							) {
 								if (data.delta.partial_json) {
-									currentAnthropicTools[data.index].accumulatedInput +=
+									openAIToolCalls[data.index].accumulatedInput +=
 										data.delta.partial_json;
 								}
 							}
 
-							let toolCalls = null;
-							if (data.tool_calls && !isRestricted) {
-								toolCalls = data.tool_calls;
-							} else if (
+							if (
 								data.choices &&
 								data.choices.length > 0 &&
 								data.choices[0].delta &&
 								data.choices[0].delta.tool_calls &&
 								!isRestricted
 							) {
-								toolCalls = data.choices[0].delta.tool_calls;
-							}
+								const deltaToolCalls = data.choices[0].delta.tool_calls;
 
-							if (toolCalls) {
-								for (const toolCall of toolCalls) {
-									const toolStartEvent = new TextEncoder().encode(
-										`data: ${JSON.stringify({
-											type: "tool_use_start",
-											tool_id: toolCall.id,
-											tool_name: toolCall.function?.name || toolCall.name,
-										})}\n\n`,
-									);
-									controller.enqueue(toolStartEvent);
+								// Accumulate tool calls from this delta
+								for (const toolCall of deltaToolCalls) {
+									const index = toolCall.index;
 
-									const toolDeltaEvent = new TextEncoder().encode(
-										`data: ${JSON.stringify({
-											type: "tool_use_delta",
-											tool_id: toolCall.id,
-											parameters:
-												toolCall.function?.arguments || toolCall.parameters,
-										})}\n\n`,
-									);
-									controller.enqueue(toolDeltaEvent);
+									// Initialize tool call if it's new
+									if (!openAIToolCalls[index]) {
+										openAIToolCalls[index] = {
+											id: toolCall.id,
+											function: {
+												name: toolCall.function?.name || "",
+												arguments: "",
+											},
+										};
+									}
 
-									const toolStopEvent = new TextEncoder().encode(
-										`data: ${JSON.stringify({
-											type: "tool_use_stop",
-											tool_id: toolCall.id,
-										})}\n\n`,
-									);
-									controller.enqueue(toolStopEvent);
+									// Accumulate arguments
+									if (toolCall.function) {
+										if (toolCall.function.name) {
+											openAIToolCalls[index].function.name =
+												toolCall.function.name;
+										}
+										if (toolCall.function.arguments) {
+											openAIToolCalls[index].function.arguments +=
+												toolCall.function.arguments;
+										}
+									}
 								}
 
-								toolCallsData = [...toolCallsData, ...toolCalls];
+								// If this is the final chunk, process the complete tool calls
+								if (data.choices[0].finish_reason === "tool_calls") {
+									const completeToolCalls = Object.values(openAIToolCalls);
+									toolCallsData = completeToolCalls;
+
+									// Don't emit events here - we'll do it in handlePostProcessing
+									await handlePostProcessing();
+								}
+							} else if (data.tool_calls && !isRestricted) {
+								// Handle non-OpenAI tool calls (direct format)
+								toolCallsData = [...toolCallsData, ...data.tool_calls];
 							}
 						} catch (parseError) {
 							console.error("Parse error", parseError, "on data:", dataStr);
@@ -464,15 +472,44 @@ export function createStreamWithPostProcessing(
 						controller.enqueue(messageStopEvent);
 
 						if (toolCallsData.length > 0 && !isRestricted) {
+							// Emit tool use events for each tool call
+							for (const toolCall of toolCallsData) {
+								const toolStartEvent = new TextEncoder().encode(
+									`data: ${JSON.stringify({
+										type: "tool_use_start",
+										tool_id: toolCall.id,
+										tool_name: toolCall.function?.name || "",
+									})}\n\n`,
+								);
+								controller.enqueue(toolStartEvent);
+
+								const toolDeltaEvent = new TextEncoder().encode(
+									`data: ${JSON.stringify({
+										type: "tool_use_delta",
+										tool_id: toolCall.id,
+										parameters: toolCall.function?.arguments || "{}",
+									})}\n\n`,
+								);
+								controller.enqueue(toolDeltaEvent);
+
+								const toolStopEvent = new TextEncoder().encode(
+									`data: ${JSON.stringify({
+										type: "tool_use_stop",
+										tool_id: toolCall.id,
+									})}\n\n`,
+								);
+								controller.enqueue(toolStopEvent);
+							}
+
 							const toolResults = await handleToolCalls(
 								completion_id,
-								{ response: fullContent, tool_calls: toolCallsData },
+								{ response: fullContent || "", tool_calls: toolCallsData },
 								conversationManager,
 								{
 									env,
 									request: {
 										completion_id,
-										input: fullContent,
+										input: fullContent || "",
 										model,
 										date: new Date().toISOString().split("T")[0],
 									},
