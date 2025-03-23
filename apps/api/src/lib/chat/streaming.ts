@@ -89,7 +89,8 @@ export function createStreamWithPostProcessing(
 
 							if (
 								data.choices &&
-								data.choices[0]?.finish_reason === "stop" &&
+								(data.choices[0]?.finish_reason?.toLowerCase() === "stop" ||
+									data.choices[0]?.finish_reason?.toLowerCase() === "length") &&
 								!postProcessingDone
 							) {
 								if (data.choices[0]?.delta?.content) {
@@ -319,6 +320,8 @@ export function createStreamWithPostProcessing(
 							) {
 								const deltaToolCalls = data.choices[0].delta.tool_calls;
 
+								console.log("deltaToolCalls", deltaToolCalls);
+
 								// Accumulate tool calls from this delta
 								for (const toolCall of deltaToolCalls) {
 									const index = toolCall.index;
@@ -348,7 +351,9 @@ export function createStreamWithPostProcessing(
 								}
 
 								// If this is the final chunk, process the complete tool calls
-								if (data.choices[0].finish_reason === "tool_calls") {
+								if (
+									data.choices[0].finish_reason?.toLowerCase() === "tool_calls"
+								) {
 									const completeToolCalls = Object.values(currentToolCalls);
 									toolCallsData = completeToolCalls;
 
