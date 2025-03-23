@@ -375,8 +375,6 @@ class ApiService {
 									if (parsedData.citations) {
 										citations = parsedData.citations;
 									}
-								} else {
-									console.error("Unknown event type:", parsedData.type);
 								}
 							} catch (e) {
 								console.error("Error parsing SSE data:", e, data);

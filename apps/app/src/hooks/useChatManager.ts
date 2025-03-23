@@ -413,7 +413,13 @@ export function useChatManager() {
 	);
 
 	const generateResponse = useCallback(
-		async (messages: Message[], conversationId: string): Promise<string> => {
+		async (
+			messages: Message[],
+			conversationId: string,
+		): Promise<{
+			status: "success" | "error";
+			response: string;
+		}> => {
 			const isLocal = chatMode === "local";
 			let response = "";
 
@@ -487,7 +493,7 @@ export function useChatManager() {
 							? assistantMessage.content
 							: assistantMessage.content.map((item) => item.text).join("");
 
-					response = messageContent;
+					response = messageContent || "";
 
 					await updateAssistantMessage(
 						conversationId,
@@ -531,7 +537,10 @@ export function useChatManager() {
 					}, 0);
 				}
 
-				return response;
+				return {
+					status: "success",
+					response,
+				};
 			} catch (error) {
 				if (controller.signal.aborted) {
 					throw new Error("Request aborted");
@@ -596,7 +605,10 @@ export function useChatManager() {
 	const sendMessage = useCallback(
 		async (input: string, imageData?: string) => {
 			if (!input.trim() && !imageData) {
-				return false;
+				return {
+					status: "error",
+					response: "",
+				};
 			}
 
 			setStreamStarted(true);

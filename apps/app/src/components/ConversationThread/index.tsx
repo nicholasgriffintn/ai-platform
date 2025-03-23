@@ -133,7 +133,7 @@ export const ConversationThread = () => {
 			setInput("");
 
 			const result = await sendMessage(input, imageData);
-			if (!result) {
+			if (result?.status === "error") {
 				setInput(originalInput);
 			} else {
 				setTimeout(() => {
