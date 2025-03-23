@@ -129,6 +129,85 @@ export class ConversationManager {
 	}
 
 	/**
+	 * Add multiple messages to a conversation in batch
+	 */
+	async addBatch(
+		conversation_id: string,
+		messages: Message[],
+	): Promise<Message[]> {
+		if (!messages.length) return [];
+
+		if (!this.store) {
+			return messages.map((message) => ({
+				...message,
+				id: message.id || this.generateId(),
+				timestamp: message.timestamp || Date.now(),
+				model: message.model || this.model,
+				platform: message.platform || this.platform,
+			}));
+		}
+
+		if (!this.userId) {
+			throw new AssistantError(
+				"User ID is required to store conversations",
+				ErrorType.AUTHENTICATION_ERROR,
+			);
+		}
+
+		let conversation = await this.db.getConversation(conversation_id);
+
+		if (!conversation) {
+			conversation = await this.db.createConversation(
+				conversation_id,
+				this.userId,
+				"New Conversation",
+			);
+		} else if (conversation.user_id !== this.userId) {
+			throw new AssistantError(
+				"You don't have permission to update this conversation",
+				ErrorType.FORBIDDEN,
+			);
+		}
+
+		const newMessages = messages.map((message) => ({
+			...message,
+			id: message.id || this.generateId(),
+			timestamp: message.timestamp || Date.now(),
+			model: message.model || this.model,
+			platform: message.platform || this.platform,
+		}));
+
+		const createPromises = newMessages.map((message) => {
+			let content: string;
+			if (typeof message.content === "object") {
+				content = JSON.stringify(message.content);
+			} else {
+				content = message.content || "";
+			}
+
+			return this.db.createMessage(
+				message.id as string,
+				conversation_id,
+				message.role,
+				content,
+				message,
+			);
+		});
+
+		await Promise.all(createPromises);
+
+		if (newMessages.length > 0) {
+			const lastMessage = newMessages[newMessages.length - 1];
+			await this.db.updateConversationAfterMessage(
+				conversation_id,
+				lastMessage.id as string,
+			);
+		}
+
+		return newMessages;
+	}
+
+	/**
 	 * Update existing messages in a conversation
 	 */
 	async update(conversation_id: string, messages: Message[]): Promise<void> {

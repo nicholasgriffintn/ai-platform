@@ -112,8 +112,6 @@ export const useChatStore = create<ChatStore>()(
 
 			// Initialization
 			initializeStore: async (completionId?: string) => {
-				console.info("Initializing store");
-
 				const apiKey = await apiKeyService.getApiKey();
 				set({ hasApiKey: !!apiKey });
 

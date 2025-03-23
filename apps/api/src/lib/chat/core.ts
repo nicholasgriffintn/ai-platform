@@ -29,7 +29,7 @@ export async function processChatRequest(options: CoreChatOptions) {
 			env,
 			user,
 			disable_functions,
-			completion_id = `chat_${Date.now()}`,
+			completion_id,
 			messages,
 			model: requestedModel,
 			mode = "normal",
@@ -158,7 +158,7 @@ export async function processChatRequest(options: CoreChatOptions) {
 				: finalUserMessage;
 
 		const guardrails = Guardrails.getInstance(env);
-		const inputValidation = await guardrails.validateInput(finalUserMessage);
+		const inputValidation = await guardrails.validateInput(finalMessage);
 		if (!inputValidation.isValid) {
 			return {
 				validation: "input",
@@ -179,7 +179,8 @@ export async function processChatRequest(options: CoreChatOptions) {
 			platform: platform || "api",
 			mode: currentMode,
 		};
-		await conversationManager.add(completion_id, messageToStore);
+
+		const messagesToStore: Message[] = [messageToStore];
 
 		if (allAttachments.length > 0) {
 			const attachmentMessage: Message = {
@@ -192,48 +193,70 @@ export async function processChatRequest(options: CoreChatOptions) {
 				platform: platform || "api",
 				mode: currentMode,
 			};
-			await conversationManager.add(completion_id, attachmentMessage);
+			messagesToStore.push(attachmentMessage);
 		}
 
 		if (additionalMessages.length > 0) {
-			for (const message of additionalMessages) {
-				await conversationManager.add(completion_id, message);
-			}
+			messagesToStore.push(...additionalMessages);
 		}
 
-		const systemPromptFromMessages =
-			currentMode !== "prompt_coach"
-				? messages.find((message) => message.role === ("system" as ChatRole))
-				: undefined;
+		await conversationManager.addBatch(completion_id, messagesToStore);
 
-		const systemMessage =
-			system_prompt ||
-			(systemPromptFromMessages?.content &&
-				typeof systemPromptFromMessages.content === "string")
-				? (systemPromptFromMessages.content as string)
-				: getSystemPrompt(
+		let systemMessage = "";
+
+		if (currentMode !== "no_system") {
+			if (system_prompt) {
+				// Use the provided system prompt if available
+				systemMessage = system_prompt;
+			} else {
+				// Check for system message in chat history
+				const systemPromptFromMessages =
+					currentMode !== "prompt_coach"
+						? messages.find(
+								(message) => message.role === ("system" as ChatRole),
+							)
+						: undefined;
+
+				if (
+					systemPromptFromMessages?.content &&
+					typeof systemPromptFromMessages.content === "string"
+				) {
+					systemMessage = systemPromptFromMessages.content;
+				} else {
+					// Generate a default system prompt if none provided
+					systemMessage = getSystemPrompt(
 						{
-							completion_id: completion_id,
+							completion_id,
 							input: finalMessage,
 							model: matchedModel,
 							date: new Date().toISOString().split("T")[0],
-							response_mode: response_mode,
+							response_mode,
 							location,
 							mode: currentMode,
 						},
 						matchedModel,
 						user?.id ? user : undefined,
 					);
+				}
+			}
+		}
 
-		const chatMessages = messages.map((msg, index) =>
-			index === messages.length - 1 && use_rag
-				? { ...msg, content: [{ type: "text" as const, text: finalMessage }] }
-				: msg,
-		);
+		const chatMessages = messages.map((msg, index) => {
+			// Transform the last message if using RAG
+			if (index === messages.length - 1 && use_rag) {
+				return {
+					...msg,
+					content: [{ type: "text" as const, text: finalMessage }],
+				};
+			}
+			return msg;
+		});
+
 		const fullChatMessages =
 			currentMode === "prompt_coach"
 				? [...chatMessages, ...additionalMessages]
 				: chatMessages;
+
 		const filteredChatMessages = fullChatMessages.filter(
 			(msg) => msg.role !== ("system" as ChatRole),
 		);

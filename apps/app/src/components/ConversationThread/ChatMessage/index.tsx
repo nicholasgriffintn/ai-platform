@@ -26,7 +26,6 @@ export const ChatMessage = ({
 		artifacts?: ArtifactProps[],
 	) => void;
 }) => {
-	console.debug("ChatMessage", message);
 	const { copied, copy } = useCopyToClipboard();
 	const [feedbackState, setFeedbackState] = useState<
 		"none" | "liked" | "disliked"

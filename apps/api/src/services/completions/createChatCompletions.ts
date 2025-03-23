@@ -24,6 +24,9 @@ export const handleCreateChatCompletions = async (req: {
 		);
 	}
 
+	const completionIdWithFallback =
+		request.completion_id || `chat_${Date.now()}`;
+
 	const result = await processChatRequest({
 		platform: request.platform,
 		app_url,
@@ -31,7 +34,7 @@ export const handleCreateChatCompletions = async (req: {
 		env,
 		user,
 		disable_functions: request.disable_functions,
-		completion_id: request.completion_id,
+		completion_id: completionIdWithFallback,
 		messages: request.messages,
 		model: request.model,
 		mode: request.mode,
@@ -64,7 +67,7 @@ export const handleCreateChatCompletions = async (req: {
 
 	if ("validation" in result) {
 		return {
-			id: env.AI.aiGatewayLogId || result.completion_id || `chat_${Date.now()}`,
+			id: env.AI.aiGatewayLogId || completionIdWithFallback,
 			log_id: env.AI.aiGatewayLogId,
 			object: "chat.completion",
 			created: Date.now(),
@@ -101,7 +104,7 @@ export const handleCreateChatCompletions = async (req: {
 	}
 
 	return {
-		id: env.AI.aiGatewayLogId || result.completion_id || `chat_${Date.now()}`,
+		id: env.AI.aiGatewayLogId || completionIdWithFallback,
 		log_id: env.AI.aiGatewayLogId,
 		object: "chat.completion",
 		created: Date.now(),

@@ -41,17 +41,11 @@ const app = new Hono();
 const routeLogger = createRouteLogger("CHAT");
 
 /**
- * Global middleware to add route-specific logging
- */
-app.use("/*", (c, next) => {
-	routeLogger.info(`Processing chat route: ${c.req.path}`);
-	return next();
-});
-
-/**
- * Global middleware to check authentication and set access level
+ * Global middleware
  */
 app.use("/*", async (context: Context, next: Next) => {
+	routeLogger.info(`Processing chat route: ${context.req.path}`);
+
 	await allowRestrictedPaths(context, next);
 });
 

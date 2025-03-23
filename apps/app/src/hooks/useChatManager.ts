@@ -53,9 +53,6 @@ export function useChatManager() {
 
 			if (chatMode === "local" && matchingModel?.provider === "web-llm") {
 				try {
-					console.debug(
-						`[useChatManager] Starting initialization for model ${model}`,
-					);
 					initializingRef.current = true;
 
 					startLoading(
@@ -73,9 +70,6 @@ export function useChatManager() {
 						if (!mounted) return;
 
 						const progressPercent = Math.round(progress.progress * 100);
-						console.debug(
-							`[useChatManager] Model initialization progress: ${progressPercent}%, ${progress.text}`,
-						);
 
 						updateLoading(
 							loadingId,
@@ -83,10 +77,6 @@ export function useChatManager() {
 							progress.text || `Loading ${matchingModel.name || model}...`,
 						);
 					});
-
-					console.debug(
-						`[useChatManager] Model ${model} initialization complete`,
-					);
 				} catch (error) {
 					console.error("[useChatManager] Failed to initialize WebLLM:", error);
 					if (mounted) {
@@ -97,9 +87,6 @@ export function useChatManager() {
 					if (mounted) {
 						stopLoading(loadingId);
 						initializingRef.current = false;
-						console.debug(
-							`[useChatManager] Initialization state cleared for ${model}`,
-						);
 					}
 				}
 			} else if (initializingRef.current) {

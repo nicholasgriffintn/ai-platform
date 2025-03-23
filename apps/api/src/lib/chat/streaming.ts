@@ -8,6 +8,10 @@ import { Guardrails } from "../guardrails";
 
 const logger = getLogger({ prefix: "CHAT_STREAMING" });
 
+/**
+ * Creates a transformed stream that handles post-processing of AI responses
+ * With support for tool calls and guardrails
+ */
 export function createStreamWithPostProcessing(
 	providerStream: ReadableStream,
 	options: {
@@ -48,13 +52,10 @@ export function createStreamWithPostProcessing(
 		new TransformStream({
 			async transform(chunk, controller) {
 				const text = new TextDecoder().decode(chunk);
-				logger.debug("Received chunk", { text });
 				buffer += text;
 
 				const lines = buffer.split("\n");
 				buffer = lines.pop() || "";
-
-				logger.debug(`Processing ${lines.length} lines`);
 
 				for (const line of lines) {
 					if (!line.trim()) {
@@ -62,13 +63,11 @@ export function createStreamWithPostProcessing(
 					}
 
 					if (line.startsWith("event: ")) {
-						logger.debug("Processing event", { line });
 						currentEventType = line.substring(7).trim();
 						continue;
 					}
 
 					if (line.startsWith("data: ")) {
-						logger.debug("Processing data", { line });
 						const dataStr = line.substring(6).trim();
 
 						if (dataStr === "[DONE]") {
@@ -78,15 +77,10 @@ export function createStreamWithPostProcessing(
 									Object.keys(currentToolCalls).length > 0 &&
 									toolCallsData.length === 0
 								) {
-									logger.debug(
-										"Processing accumulated tool calls before [DONE]",
-										{ currentToolCalls },
-									);
 									const completeToolCalls = Object.values(currentToolCalls);
 									toolCallsData = completeToolCalls;
 								}
 
-								logger.debug("Received [DONE] event, handling post-processing");
 								await handlePostProcessing();
 							}
 							continue;
@@ -146,8 +140,6 @@ export function createStreamWithPostProcessing(
 									citationsResponse = data.citations;
 								}
 
-								logger.debug("Received stop event, handling post-processing");
-
 								await handlePostProcessing();
 								continue;
 							}
@@ -193,10 +185,6 @@ export function createStreamWithPostProcessing(
 									}
 
 									await handlePostProcessing();
-
-									logger.debug(
-										"Received empty string, handling post-processing",
-									);
 
 									continue;
 								}
@@ -324,9 +312,6 @@ export function createStreamWithPostProcessing(
 									currentEventType === "message_stop" &&
 									!postProcessingDone
 								) {
-									logger.debug(
-										"Reached message stop, handling post-processing",
-									);
 									await handlePostProcessing();
 								}
 							}
@@ -352,8 +337,6 @@ export function createStreamWithPostProcessing(
 								!isRestricted
 							) {
 								const deltaToolCalls = data.choices[0].delta.tool_calls;
-
-								logger.debug("Received delta tool calls", { deltaToolCalls });
 
 								// Accumulate tool calls from this delta
 								for (const toolCall of deltaToolCalls) {
@@ -387,8 +370,6 @@ export function createStreamWithPostProcessing(
 								if (
 									data.choices[0].finish_reason?.toLowerCase() === "tool_calls"
 								) {
-									logger.debug("Received final chunk, processing tool calls");
-
 									const completeToolCalls = Object.values(currentToolCalls);
 									toolCallsData = completeToolCalls;
 
@@ -411,6 +392,7 @@ export function createStreamWithPostProcessing(
 					try {
 						postProcessingDone = true;
 
+						// Validate output with guardrails
 						let guardrailsFailed = false;
 						let guardrailError = "";
 						let violations: any[] = [];
@@ -431,6 +413,7 @@ export function createStreamWithPostProcessing(
 							}
 						}
 
+						// Send content stop event
 						const contentStopEvent = new TextEncoder().encode(
 							`data: ${JSON.stringify({
 								type: "content_block_stop",
@@ -453,6 +436,7 @@ export function createStreamWithPostProcessing(
 							usage: usageData,
 						});
 
+						// Prepare and send metadata event
 						const metadata = {
 							type: "message_delta",
 							nonce: Math.random().toString(36).substring(2, 7),
@@ -481,7 +465,6 @@ export function createStreamWithPostProcessing(
 						controller.enqueue(messageStopEvent);
 
 						if (toolCallsData.length > 0 && !isRestricted) {
-							logger.debug("Processing tool calls", { toolCallsData });
 							// Emit tool use events for each tool call
 							for (const toolCall of toolCallsData) {
 								const toolStartEvent = new TextEncoder().encode(
@@ -536,8 +519,6 @@ export function createStreamWithPostProcessing(
 								},
 								isRestricted ?? false,
 							);
-
-							logger.debug("Tool results", { toolResults });
 
 							for (const toolResult of toolResults) {
 								const toolResponseChunk = new TextEncoder().encode(

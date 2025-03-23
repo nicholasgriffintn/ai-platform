@@ -4,7 +4,6 @@ import { AssistantError, ErrorType } from "../utils/errors";
 
 export async function requireTurnstileToken(context: Context, next: Next) {
 	if (context.env.REQUIRE_TURNSTILE_TOKEN !== "true") {
-		console.warn("[Turnstile Middleware] Warning: Token is not required");
 		return next();
 	}
 
