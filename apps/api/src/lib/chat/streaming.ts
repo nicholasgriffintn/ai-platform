@@ -5,13 +5,6 @@ import { handleToolCalls } from "../chat/tools";
 import type { ConversationManager } from "../conversationManager";
 import { Guardrails } from "../guardrails";
 
-interface AnthropicToolState {
-	id: string;
-	name: string;
-	accumulatedInput: string;
-	isComplete: boolean;
-}
-
 export function createStreamWithPostProcessing(
 	providerStream: ReadableStream,
 	options: {
@@ -44,10 +37,7 @@ export function createStreamWithPostProcessing(
 	let postProcessingDone = false;
 	let buffer = "";
 	let currentEventType = "";
-	// Special handling just for Anthropic - because they have to be difficult for some reason and stream the input independently of the tool_use event.
-	const currentAnthropicTools: Record<string, AnthropicToolState> = {};
-	// Track OpenAI tool calls that are streamed in chunks
-	const openAIToolCalls: Record<string, any> = {};
+	const currentToolCalls: Record<string, any> = {};
 
 	const guardrails = Guardrails.getInstance(env);
 
@@ -162,7 +152,7 @@ export function createStreamWithPostProcessing(
 								);
 								controller.enqueue(contentDeltaEvent);
 
-								// Fix for Perplexity Sonar models that end with an empty sting because they're special.
+								// Fix for Perplexity Sonar models that end with an empty string.
 								if (
 									data.model?.includes("sonar") &&
 									data.choices[0].delta.content === "" &&
@@ -248,7 +238,7 @@ export function createStreamWithPostProcessing(
 									"content_block_stop",
 								].includes(currentEventType)
 							) {
-								// Special handling for Anthropic - because they're special.
+								// Special handling for Anthropic for event types.
 								const forwardEvent = new TextEncoder().encode(
 									`data: ${JSON.stringify({
 										type: currentEventType,
@@ -262,7 +252,7 @@ export function createStreamWithPostProcessing(
 									data.content_block?.type === "tool_use" &&
 									!isRestricted
 								) {
-									openAIToolCalls[data.index] = {
+									currentToolCalls[data.index] = {
 										id: data.content_block.id,
 										name: data.content_block.name,
 										accumulatedInput: "",
@@ -273,12 +263,12 @@ export function createStreamWithPostProcessing(
 								if (
 									currentEventType === "content_block_stop" &&
 									data.index !== undefined &&
-									openAIToolCalls[data.index] &&
-									!openAIToolCalls[data.index].isComplete
+									currentToolCalls[data.index] &&
+									!currentToolCalls[data.index].isComplete
 								) {
-									openAIToolCalls[data.index].isComplete = true;
+									currentToolCalls[data.index].isComplete = true;
 
-									const toolState = openAIToolCalls[data.index];
+									const toolState = currentToolCalls[data.index];
 									let parsedInput = {};
 									try {
 										if (toolState.accumulatedInput) {
@@ -296,32 +286,6 @@ export function createStreamWithPostProcessing(
 										},
 									};
 
-									const toolStartEvent = new TextEncoder().encode(
-										`data: ${JSON.stringify({
-											type: "tool_use_start",
-											tool_id: toolCall.id,
-											tool_name: toolCall.function.name,
-										})}\n\n`,
-									);
-									controller.enqueue(toolStartEvent);
-
-									const toolDeltaEvent = new TextEncoder().encode(
-										`data: ${JSON.stringify({
-											type: "tool_use_delta",
-											tool_id: toolCall.id,
-											parameters: toolCall.function.arguments,
-										})}\n\n`,
-									);
-									controller.enqueue(toolDeltaEvent);
-
-									const toolStopEvent = new TextEncoder().encode(
-										`data: ${JSON.stringify({
-											type: "tool_use_stop",
-											tool_id: toolCall.id,
-										})}\n\n`,
-									);
-									controller.enqueue(toolStopEvent);
-
 									toolCallsData.push(toolCall);
 								}
 
@@ -337,11 +301,11 @@ export function createStreamWithPostProcessing(
 								data.type === "content_block_delta" &&
 								data.delta?.type === "input_json_delta" &&
 								data.index !== undefined &&
-								openAIToolCalls[data.index] &&
+								currentToolCalls[data.index] &&
 								!isRestricted
 							) {
 								if (data.delta.partial_json) {
-									openAIToolCalls[data.index].accumulatedInput +=
+									currentToolCalls[data.index].accumulatedInput +=
 										data.delta.partial_json;
 								}
 							}
@@ -360,8 +324,8 @@ export function createStreamWithPostProcessing(
 									const index = toolCall.index;
 
 									// Initialize tool call if it's new
-									if (!openAIToolCalls[index]) {
-										openAIToolCalls[index] = {
+									if (!currentToolCalls[index]) {
+										currentToolCalls[index] = {
 											id: toolCall.id,
 											function: {
 												name: toolCall.function?.name || "",
@@ -373,11 +337,11 @@ export function createStreamWithPostProcessing(
 									// Accumulate arguments
 									if (toolCall.function) {
 										if (toolCall.function.name) {
-											openAIToolCalls[index].function.name =
+											currentToolCalls[index].function.name =
 												toolCall.function.name;
 										}
 										if (toolCall.function.arguments) {
-											openAIToolCalls[index].function.arguments +=
+											currentToolCalls[index].function.arguments +=
 												toolCall.function.arguments;
 										}
 									}
@@ -385,10 +349,9 @@ export function createStreamWithPostProcessing(
 
 								// If this is the final chunk, process the complete tool calls
 								if (data.choices[0].finish_reason === "tool_calls") {
-									const completeToolCalls = Object.values(openAIToolCalls);
+									const completeToolCalls = Object.values(currentToolCalls);
 									toolCallsData = completeToolCalls;
 
-									// Don't emit events here - we'll do it in handlePostProcessing
 									await handlePostProcessing();
 								}
 							} else if (data.tool_calls && !isRestricted) {
