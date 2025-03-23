@@ -149,8 +149,12 @@ class ApiService {
 		const headers = await this.getHeaders();
 
 		const formattedMessages = messages.map((msg) => ({
+			id: msg.id,
 			role: msg.role,
 			content: msg.content,
+			data: msg.data,
+			name: msg.name,
+			tool_calls: msg.tool_calls,
 		}));
 
 		const response = await fetch(
@@ -208,22 +212,26 @@ class ApiService {
 		const headers = await this.getHeaders();
 		const { selectedTools } = useToolsStore.getState();
 
-		const filteredMessages = messages.filter((msg) => msg.role !== "tool");
-
-		const formattedMessages = filteredMessages.map((msg) => {
+		const formattedMessages = messages.map((msg) => {
 			if (Array.isArray(msg.content)) {
 				return {
+					id: msg.id || undefined,
 					role: msg.role,
 					content: msg.content,
+					data: msg.data || undefined,
+					name: msg.name || undefined,
 				};
 			}
 
 			return {
+				id: msg.id || undefined,
 				role: msg.role,
 				content:
 					typeof msg.content === "string"
 						? msg.content
 						: JSON.stringify(msg.content),
+				data: msg.data || undefined,
+				name: msg.name || undefined,
 			};
 		});
 
