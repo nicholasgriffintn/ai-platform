@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { apiService } from "~/lib/api-service";
+import { apiService } from "~/lib/api/api-service";
 
 export const TOOLS_QUERY_KEY = "tools";
 

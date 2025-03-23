@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { apiKeyService } from "~/lib/api-key";
+import { apiKeyService } from "~/lib/api/api-key";
 import { defaultModel } from "~/lib/models";
 import type { ChatMode, ChatSettings } from "~/types";
 

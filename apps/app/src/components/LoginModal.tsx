@@ -5,7 +5,7 @@ import { Button, TextInput } from "~/components/ui";
 import { Dialog, DialogContent } from "~/components/ui/Dialog";
 import { APP_NAME } from "~/constants";
 import { useAuthStatus } from "~/hooks/useAuth";
-import { apiKeyService } from "~/lib/api-key";
+import { apiKeyService } from "~/lib/api/api-key";
 import { useChatStore } from "~/state/stores/chatStore";
 
 interface LoginModalProps {

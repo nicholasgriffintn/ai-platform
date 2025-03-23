@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 
-import { apiService } from "~/lib/api-service";
+import { apiService } from "~/lib/api/api-service";
 
 interface UseVoiceRecorderProps {
 	onTranscribe: (data: {

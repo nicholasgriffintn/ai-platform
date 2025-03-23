@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { authService } from "~/lib/auth-service";
+import { authService } from "~/lib/api/auth-service";
 import { useChatStore } from "~/state/stores/chatStore";
 
 export const AppInitializer = ({ children }: { children: React.ReactNode }) => {

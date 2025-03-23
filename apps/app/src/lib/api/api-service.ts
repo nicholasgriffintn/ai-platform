@@ -1,4 +1,4 @@
-import { apiKeyService } from "~/lib/api-key";
+import { apiKeyService } from "~/lib/api/api-key";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type {
@@ -8,8 +8,8 @@ import type {
 	Message,
 	ModelConfig,
 } from "~/types";
-import { API_BASE_URL } from "../constants";
-import { formatMessageContent, normalizeMessage } from "./messages";
+import { API_BASE_URL } from "../../constants";
+import { formatMessageContent, normalizeMessage } from "../messages";
 
 class ApiService {
 	private static instance: ApiService;

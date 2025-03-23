@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
-import { apiService } from "~/lib/api-service";
+import { apiService } from "~/lib/api/api-service";
 import type { ChatRole, Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
 import { MessageActions } from "./MessageActions";

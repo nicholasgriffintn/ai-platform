@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "~/constants";
-import { apiKeyService } from "~/lib/api-key";
+import { apiKeyService } from "~/lib/api/api-key";
 import type { User } from "~/types";
 
 class AuthService {
