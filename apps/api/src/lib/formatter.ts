@@ -59,6 +59,22 @@ export class MessageFormatter {
 		return messages.map((message) => {
 			const content = MessageFormatter.formatContent(message.content, provider);
 
+			if (message.role === "tool") {
+				let stringifiedData;
+				if (message.data) {
+					try {
+						stringifiedData = JSON.stringify(message.data);
+					} catch (error) {
+						stringifiedData = "";
+					}
+				}
+
+				return {
+					role: "assistant",
+					content: `[Tool Response: ${message.name || "unknown"}] ${typeof content === "string" ? content : JSON.stringify(content)} ${stringifiedData ? `\n\nData: ${stringifiedData}` : ""}`,
+				};
+			}
+
 			switch (provider) {
 				case "google-ai-studio":
 					return {
