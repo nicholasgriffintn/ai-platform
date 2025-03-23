@@ -93,22 +93,22 @@ export function createStreamWithPostProcessing(
 								!postProcessingDone
 							) {
 								if (data.choices[0]?.delta?.content) {
-									fullContent += data.choices[0].delta.content;
+									fullContent += data.choices[0].delta.content || "";
 
 									const contentDeltaEvent = new TextEncoder().encode(
 										`data: ${JSON.stringify({
 											type: "content_block_delta",
-											content: data.choices[0].delta.content,
+											content: data.choices[0].delta.content || "",
 										})}\n\n`,
 									);
 									controller.enqueue(contentDeltaEvent);
 								} else if (data.choices[0]?.message?.content && !fullContent) {
-									fullContent = data.choices[0].message.content;
+									fullContent = data.choices[0].message.content || "";
 
 									const contentDeltaEvent = new TextEncoder().encode(
 										`data: ${JSON.stringify({
 											type: "content_block_delta",
-											content: fullContent,
+											content: fullContent || "",
 										})}\n\n`,
 									);
 									controller.enqueue(contentDeltaEvent);
@@ -127,12 +127,12 @@ export function createStreamWithPostProcessing(
 							}
 
 							if (data.response !== undefined) {
-								fullContent += data.response;
+								fullContent += data.response || "";
 
 								const contentDeltaEvent = new TextEncoder().encode(
 									`data: ${JSON.stringify({
 										type: "content_block_delta",
-										content: data.response,
+										content: data.response || "",
 									})}\n\n`,
 								);
 								controller.enqueue(contentDeltaEvent);
@@ -142,12 +142,12 @@ export function createStreamWithPostProcessing(
 								data.choices[0].delta &&
 								data.choices[0].delta.content !== undefined
 							) {
-								fullContent += data.choices[0].delta.content;
+								fullContent += data.choices[0].delta.content || "";
 
 								const contentDeltaEvent = new TextEncoder().encode(
 									`data: ${JSON.stringify({
 										type: "content_block_delta",
-										content: data.choices[0].delta.content,
+										content: data.choices[0].delta.content || "",
 									})}\n\n`,
 								);
 								controller.enqueue(contentDeltaEvent);
@@ -176,12 +176,12 @@ export function createStreamWithPostProcessing(
 								data.delta &&
 								data.delta.type === "text_delta"
 							) {
-								fullContent += data.delta.text;
+								fullContent += data.delta.text || "";
 
 								const contentDeltaEvent = new TextEncoder().encode(
 									`data: ${JSON.stringify({
 										type: "content_block_delta",
-										content: data.delta.text,
+										content: data.delta.text || "",
 									})}\n\n`,
 								);
 								controller.enqueue(contentDeltaEvent);
@@ -190,12 +190,12 @@ export function createStreamWithPostProcessing(
 								data.delta &&
 								data.delta.type === "text_delta"
 							) {
-								fullContent += data.delta.text;
+								fullContent += data.delta.text || "";
 
 								const contentDeltaEvent = new TextEncoder().encode(
 									`data: ${JSON.stringify({
 										type: "content_block_delta",
-										content: data.delta.text,
+										content: data.delta.text || "",
 									})}\n\n`,
 								);
 								controller.enqueue(contentDeltaEvent);
@@ -203,11 +203,11 @@ export function createStreamWithPostProcessing(
 								data.content &&
 								currentEventType === "content_block_delta"
 							) {
-								fullContent += data.content;
+								fullContent += data.content || "";
 							}
 
 							if (!fullContent && data.content) {
-								fullContent += data.content;
+								fullContent += data.content || "";
 							}
 
 							if (
@@ -216,7 +216,7 @@ export function createStreamWithPostProcessing(
 							) {
 								for (const block of data.message.content) {
 									if (block.type === "text" && block.text) {
-										fullContent += block.text;
+										fullContent += block.text || "";
 									}
 								}
 							}
