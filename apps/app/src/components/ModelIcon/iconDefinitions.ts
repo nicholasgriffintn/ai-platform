@@ -25,6 +25,7 @@ export const MODEL_ICONS: Record<string, string> = {
 	midjourney: "midjourney",
 	meta: "meta",
 	stability: "stability",
+	sonar: "perplexity",
 };
 
 export const PROVIDER_ICONS: Record<string, string> = {
