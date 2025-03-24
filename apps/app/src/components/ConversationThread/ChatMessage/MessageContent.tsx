@@ -39,6 +39,7 @@ const renderTextContent = (
   textContent: string,
   messageReasoning: Message["reasoning"] | undefined,
   messageCitations: Message["citations"] | undefined,
+  messageData: Message["data"] | undefined,
   onArtifactOpen?: (
     artifact: ArtifactProps,
     combine?: boolean,
@@ -101,6 +102,21 @@ const renderTextContent = (
       }
     }
 
+    if (messageData) {
+      if (messageData.attachments?.length > 0) {
+        for (const attachment of messageData.attachments) {
+          if (attachment.type === "image") {
+            renderedParts.push(renderImageContent(attachment.url));
+          }
+          if (attachment.type === "document") {
+            renderedParts.push(
+              renderDocumentContent(attachment.url, attachment.name),
+            );
+          }
+        }
+      }
+    }
+
     return (
       <>
         {(reasoning?.length > 0 || messageReasoning) && (
@@ -125,6 +141,19 @@ const renderTextContent = (
         <CitationList citations={messageCitations} />
       )}
       <MemoizedMarkdown key={key}>{content}</MemoizedMarkdown>
+      {messageData && messageData.attachments?.length > 0 && (
+        <div className="space-y-4">
+          {messageData.attachments.map((attachment: any, i: number) => {
+            if (attachment.type === "image") {
+              return renderImageContent(attachment.url, i);
+            }
+            if (attachment.type === "document") {
+              return renderDocumentContent(attachment.url, attachment.name, i);
+            }
+            return null;
+          })}
+        </div>
+      )}
     </>
   );
 };
@@ -195,6 +224,7 @@ export const MessageContent = memo(
               message.content,
               message.reasoning,
               message.citations,
+              message.data,
               handleArtifactOpen,
             )
           ) : Array.isArray(message.content) ? (
@@ -205,6 +235,7 @@ export const MessageContent = memo(
                     item.text,
                     message.reasoning,
                     message.citations,
+                    message.data,
                     onArtifactOpen,
                     `text-${i}`,
                   );
