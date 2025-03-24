@@ -95,40 +95,65 @@ export class MessageFormatter {
     content: Message["content"],
     provider: string,
   ): any {
-    if (!Array.isArray(content)) {
-      return content;
-    }
+    const contentArray = Array.isArray(content) ? content : [content];
 
     switch (provider) {
       case "google-ai-studio":
-        return content.map((item) =>
+        return contentArray.map((item) =>
           MessageFormatter.formatGoogleAIContent(item),
         );
       case "anthropic":
-        return content.map((item) =>
+        return contentArray.map((item) =>
           MessageFormatter.formatAnthropicContent(item),
         );
       case "bedrock":
-        return content.map((item) =>
+        return contentArray.map((item) =>
           MessageFormatter.formatBedrockContent(item),
         );
       case "workers-ai":
       case "ollama":
       case "github-models": {
-        const imageItem = content.find((item) => item.type === "image_url");
-        if (imageItem?.image_url?.url) {
+        const imageItem = contentArray.find(
+          (item) =>
+            typeof item === "object" &&
+            "type" in item &&
+            item.type === "image_url",
+        );
+
+        if (
+          imageItem &&
+          typeof imageItem === "object" &&
+          "image_url" in imageItem &&
+          imageItem.image_url &&
+          typeof imageItem.image_url === "object" &&
+          "url" in imageItem.image_url
+        ) {
           return {
-            text: content
-              .filter((item) => item.type === "text")
-              .map((item) => item.text)
+            text: contentArray
+              .filter(
+                (item) =>
+                  typeof item === "object" &&
+                  "type" in item &&
+                  item.type === "text",
+              )
+              .map((item) =>
+                typeof item === "object" && "text" in item ? item.text : "",
+              )
               .join("\n"),
             image: MessageFormatter.getBase64FromUrl(imageItem.image_url.url),
           };
         }
 
-        return content
-          .filter((item) => item.type === "text")
-          .map((item) => item.text)
+        return contentArray
+          .filter(
+            (item) =>
+              typeof item === "object" &&
+              "type" in item &&
+              item.type === "text",
+          )
+          .map((item) =>
+            typeof item === "object" && "text" in item ? item.text : "",
+          )
           .join("\n");
       }
       default:
@@ -259,6 +284,9 @@ export class MessageFormatter {
   private static formatBedrockContent(item: MessageContent): any {
     if (item.type === "text") {
       return { text: item.text };
+    }
+    if (typeof item === "string") {
+      return { text: item };
     }
     return item;
   }

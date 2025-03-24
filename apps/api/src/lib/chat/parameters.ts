@@ -441,22 +441,23 @@ export async function mapParametersToProvider(
         };
       }
 
+      const supportsFunctions = modelConfig?.supportsFunctions || false;
+
       return {
-        ...(params.system_prompt && {
-          system: [{ text: params.system_prompt }],
+        ...(commonParams.system_prompt && {
+          system: [{ text: commonParams.system_prompt }],
         }),
-        messages: params.messages,
+        messages: commonParams.messages,
         inferenceConfig: {
-          temperature: params.temperature,
-          max_new_tokens: params.max_tokens,
-          top_p: params.top_p,
-          top_k: params.top_k,
-          seed: params.seed,
-          repetition_penalty: params.repetition_penalty,
-          frequency_penalty: params.frequency_penalty,
-          presence_penalty: params.presence_penalty,
-          stop: params.stop,
+          temperature: commonParams.temperature,
+          maxTokens: commonParams.max_tokens,
+          topP: commonParams.top_p,
         },
+        ...(supportsFunctions && {
+          toolConfig: {
+            tools: commonParams.tools,
+          },
+        }),
       };
     }
     default:

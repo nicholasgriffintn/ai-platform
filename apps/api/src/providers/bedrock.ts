@@ -29,7 +29,7 @@ export class BedrockProvider extends BaseProvider {
 
   protected getEndpoint(params: ChatCompletionParameters): string {
     const region = "us-east-1";
-    return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/invoke`;
+    return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/converse`;
   }
 
   protected getHeaders(): Record<string, string> {
@@ -73,7 +73,7 @@ export class BedrockProvider extends BaseProvider {
 
         const signedUrl = new URL(presignedRequest.url);
         signedUrl.host = "gateway.ai.cloudflare.com";
-        signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/invoke`;
+        signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/converse`;
 
         const response = await fetch(signedUrl, {
           method: "POST",

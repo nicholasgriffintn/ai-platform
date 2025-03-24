@@ -71,7 +71,7 @@ export const handleToolCalls = async (
         functionArgs = rawArgs || {};
       }
 
-      let result;
+      let result: any;
       try {
         result = await handleFunctions({
           completion_id,

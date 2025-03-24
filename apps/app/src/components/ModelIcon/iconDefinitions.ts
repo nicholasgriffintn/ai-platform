@@ -19,6 +19,7 @@ export const MODEL_ICONS: Record<string, string> = {
   deepseek: "deepseek",
   "lm-studio": "lm-studio",
   ai21: "ai21",
+  jamba: "ai21",
   baai: "baai",
   bytedance: "bytedance",
   hunyuan: "hunyuan",
@@ -26,6 +27,8 @@ export const MODEL_ICONS: Record<string, string> = {
   meta: "meta",
   stability: "stability",
   sonar: "perplexity",
+  titan: "bedrock",
+  nova: "bedrock",
 };
 
 export const PROVIDER_ICONS: Record<string, string> = {

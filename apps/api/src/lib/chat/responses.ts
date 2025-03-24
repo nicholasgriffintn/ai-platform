@@ -30,6 +30,11 @@ export async function getAIResponse({
       ? messages.filter((msg: Message) => !msg.mode || msg.mode === "normal")
       : messages;
 
+  console.log({
+    location: "getAIResponse",
+    provider: provider.name,
+  });
+
   const formattedMessages = formatMessages(
     provider.name,
     filteredMessages,
