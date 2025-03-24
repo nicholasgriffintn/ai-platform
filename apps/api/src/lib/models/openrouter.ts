@@ -73,4 +73,13 @@ export const openrouterModelConfig: ModelConfig = {
     provider: "openrouter",
     type: ["text"],
   },
+  "deepseek-v3": {
+    name: "DeepSeek V3",
+    matchingModel: "deepseek/deepseek-chat-v3-0324:free",
+    description:
+      "DeepSeek V3, a 685B-parameter, mixture-of-experts model, is the latest iteration of the flagship chat model family from the DeepSeek team.",
+    provider: "openrouter",
+    type: ["text"],
+    isFree: true,
+  },
 };
