@@ -68,7 +68,15 @@ export function getModelConfigByMatchingModel(matchingModel: string) {
 }
 
 export function getModels() {
-  return modelConfig;
+  return Object.entries(modelConfig).reduce(
+    (acc, [key, model]) => {
+      if (!model.beta) {
+        acc[key] = model;
+      }
+      return acc;
+    },
+    {} as typeof modelConfig,
+  );
 }
 
 export function getFreeModels() {

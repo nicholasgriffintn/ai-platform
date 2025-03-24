@@ -33,6 +33,7 @@ export const bedrockModelConfig: ModelConfig = {
       "Amazon Nova Canvas is a state-of-the-art image generation model that creates professional grade images from text or images provided in prompts. Amazon Nova Canvas also provides features that make it easy to edit images using text inputs, controls for adjusting color scheme and layout, and built-in controls to support safe and responsible use of AI.",
     provider: "bedrock",
     type: ["image-to-image"],
+    beta: true,
   },
   "nova-reel": {
     name: "Amazon Nova Reel",
@@ -41,6 +42,7 @@ export const bedrockModelConfig: ModelConfig = {
       "Amazon Nova Reel is a state-of-the-art video generation model that allows customers to easily create high quality video from text and images. Amazon Nova Reel supports use of natural language prompts to control visual style and pacing, including camera motion control, and built-in controls to support safe and responsible use of AI.",
     provider: "bedrock",
     type: ["text-to-video", "image-to-video"],
+    beta: true,
   },
   "embed-english": {
     name: "Cohere Embed English",
@@ -93,6 +95,7 @@ export const bedrockModelConfig: ModelConfig = {
     matchingModel: "amazon.titan-image-generator-v1",
     provider: "bedrock",
     type: ["text-to-image", "image-to-image"],
+    beta: true,
   },
   "titan-multimodal-embeddings": {
     name: "Amazon Titan Multimodal Embeddings",

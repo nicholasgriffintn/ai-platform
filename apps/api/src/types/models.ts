@@ -30,6 +30,7 @@ export type ModelConfigItem = {
   supportsArtifacts?: boolean;
   supportsStreaming?: boolean;
   supportsDocuments?: boolean;
+  beta?: boolean;
 };
 
 export type ModelConfig = {
