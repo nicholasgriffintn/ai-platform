@@ -40,7 +40,7 @@ export class BedrockProvider extends BaseProvider {
     this.validateParams(params);
 
     const bedrockUrl = this.getEndpoint(params);
-    const body = mapParametersToProvider(params, "bedrock");
+    const body = await mapParametersToProvider(params, "bedrock");
 
     return trackProviderMetrics({
       provider: this.name,

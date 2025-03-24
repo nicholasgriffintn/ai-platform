@@ -211,8 +211,9 @@ export interface CreateChatCompletionsResponse {
     message: {
       role: ChatRole;
       content: string;
-      tool_calls?: any[];
-      citations?: any[] | null;
+      data?: Record<string, any>;
+      tool_calls?: Record<string, any>[];
+      citations?: string[] | null;
     };
     finish_reason: string;
   }>;

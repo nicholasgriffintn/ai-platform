@@ -209,9 +209,11 @@ export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
       const hasIncompatibleProvider = model.provider === "ollama";
       const hasIncompatibleType =
         model.type.includes("embedding") ||
+        model.type.includes("reranking") ||
         model.type.includes("image-to-image") ||
         model.type.includes("video-to-video") ||
-        model.type.includes("speech");
+        model.type.includes("speech") ||
+        model.type.includes("text-to-speech");
       const isIncompatible = hasIncompatibleProvider || hasIncompatibleType;
 
       if (

@@ -2,6 +2,7 @@ import { File } from "lucide-react";
 import { memo, useMemo } from "react";
 import type { ReactNode } from "react";
 
+import { ImageModal } from "~/components/ui/ImageModal";
 import { MemoizedMarkdown } from "~/components/ui/Markdown";
 import { formattedMessageContent } from "~/lib/messages";
 import type { Message, MessageContent as MessageContentType } from "~/types";
@@ -113,6 +114,9 @@ const renderTextContent = (
               renderDocumentContent(attachment.url, attachment.name),
             );
           }
+          if (attachment.type) {
+            renderedParts.push(`[[CONTENT:${attachment.url}]]`);
+          }
         }
       }
     }
@@ -150,7 +154,7 @@ const renderTextContent = (
             if (attachment.type === "document") {
               return renderDocumentContent(attachment.url, attachment.name, i);
             }
-            return null;
+            return `[[CONTENT:${attachment.url}]]`;
           })}
         </div>
       )}
@@ -164,11 +168,10 @@ const renderImageContent = (imageUrl: string, index?: number): ReactNode => {
       key={`image-attachment-${index ?? 0}`}
       className="relative overflow-hidden rounded-lg"
     >
-      <img
+      <ImageModal
         src={imageUrl}
         alt="Attached content"
-        className="max-h-48 w-auto object-contain"
-        crossOrigin="anonymous"
+        thumbnailClassName="rounded-lg"
       />
     </div>
   );

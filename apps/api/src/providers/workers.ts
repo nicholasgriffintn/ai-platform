@@ -2,6 +2,7 @@ import { gatewayId } from "../constants/app";
 import { mapParametersToProvider } from "../lib/chat/parameters";
 import { getModelConfigByMatchingModel } from "../lib/models";
 import { trackProviderMetrics } from "../lib/monitoring";
+import { StorageService } from "../lib/storage";
 import { uploadAudioFromChat, uploadImageFromChat } from "../lib/upload";
 import type { ChatCompletionParameters } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
@@ -30,7 +31,13 @@ export class WorkersProvider extends BaseProvider {
       throw new AssistantError("Missing model", ErrorType.PARAMS_ERROR);
     }
 
-    const body = mapParametersToProvider(params, "workers-ai");
+    const storageService = new StorageService(env.ASSETS_BUCKET);
+    const body = await mapParametersToProvider(
+      params,
+      "workers-ai",
+      storageService,
+      env.PUBLIC_ASSETS_URL,
+    );
 
     return trackProviderMetrics({
       provider: "workers-ai",
@@ -78,8 +85,15 @@ export class WorkersProvider extends BaseProvider {
 
             return {
               response: "Image Generated.",
-              url: `${baseAssetsUrl}/${imageKey}`,
-              key: upload,
+              data: {
+                attachments: [
+                  {
+                    type: "image",
+                    url: `${baseAssetsUrl}/${imageKey}`,
+                    key: upload,
+                  },
+                ],
+              },
             };
           } catch (error) {
             console.error(error);
@@ -110,8 +124,15 @@ export class WorkersProvider extends BaseProvider {
 
             return {
               response: "Audio Generated.",
-              url: `${baseAssetsUrl}/${audioKey}`,
-              key: upload,
+              data: {
+                attachments: [
+                  {
+                    type: "audio",
+                    url: `${baseAssetsUrl}/${audioKey}`,
+                    key: upload,
+                  },
+                ],
+              },
             };
           } catch (error) {
             console.error(error);

@@ -261,6 +261,7 @@ class ApiService {
     let buffer = "";
 
     let content = "";
+    let messageData = null;
     let reasoning = "";
     let citations = null;
     let usage = null;
@@ -282,8 +283,8 @@ class ApiService {
       id = data.id || crypto.randomUUID();
       created = data.created || Date.now();
       logId = data.log_id || null;
-
       content = data.choices?.[0]?.message?.content || "";
+      messageData = data.choices?.[0]?.message?.data || null;
       reasoning = data.choices?.[0]?.message?.reasoning || "";
       toolCalls.push(...(data.choices?.[0]?.message?.tool_calls || []));
       citations = data.choices?.[0]?.message?.citations || null;
@@ -404,6 +405,7 @@ class ApiService {
     return normalizeMessage({
       role: "assistant",
       content,
+      data: messageData,
       reasoning: reasoning
         ? {
             collapsed: false,

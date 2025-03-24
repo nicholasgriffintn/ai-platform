@@ -115,7 +115,8 @@ export const handleCreateChatCompletions = async (req: {
         message: {
           role: "assistant",
           content: result.response.response,
-          tool_calls: result.response.tool_calls,
+          data: result.response.data || null,
+          tool_calls: result.response.tool_calls || null,
           citations: result.response.citations || null,
         },
         finish_reason: result.response.tool_calls?.length

@@ -370,6 +370,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       role: "assistant",
       content: response.response,
       citations: response.citations || null,
+      data: response.data || null,
       log_id: env.AI.aiGatewayLogId || response.log_id,
       mode: currentMode,
       id: Math.random().toString(36).substring(2, 7),

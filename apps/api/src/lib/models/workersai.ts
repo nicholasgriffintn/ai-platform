@@ -24,14 +24,6 @@ export const workersAiModelConfig: ModelConfig = {
     provider: "workers-ai",
     type: ["text-to-speech"],
   },
-  "phi-2": {
-    name: "Phi 2",
-    matchingModel: "@cf/microsoft/phi-2",
-    description:
-      "Phi-2 is a Transformer-based model with a next-word prediction objective, trained on 1.4T tokens from multiple passes on a mixture of Synthetic and Web datasets for NLP and coding.",
-    provider: "workers-ai",
-    type: ["text"],
-  },
   "llama-3.3-70b-instruct": {
     name: "Meta Llama 3.3 70B Instruct",
     matchingModel: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",

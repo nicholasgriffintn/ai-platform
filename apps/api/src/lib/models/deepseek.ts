@@ -39,18 +39,4 @@ export const deepseekModelConfig: ModelConfig = {
     includedInRouter: true,
     supportsArtifacts: true,
   },
-  "deepseek-coder-6.7b": {
-    name: "DeepSeek Coder 6.7B",
-    matchingModel: "@hf/thebloke/deepseek-coder-6.7b-instruct-awq",
-    description:
-      "Deepseek Coder is composed of a series of code language models, each trained from scratch on 2T tokens, with a composition of 87% code and 13% natural language in both English and Chinese.",
-    provider: "workers-ai",
-    type: ["coding"],
-    card: "https://www.prompthub.us/models/deepseek-coder-6.7b",
-    contextWindow: 64000,
-    maxTokens: 8000,
-    costPer1kInputTokens: 0.00014,
-    costPer1kOutputTokens: 0.00028,
-    supportsArtifacts: true,
-  },
 };

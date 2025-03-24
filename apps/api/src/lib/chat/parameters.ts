@@ -2,6 +2,7 @@ import { AIProviderFactory } from "~/providers/factory";
 import { availableFunctions } from "../../services/functions";
 import type { ChatCompletionParameters, IBody, IEnv } from "../../types";
 import { getModelConfigByMatchingModel } from "../models";
+import type { StorageService } from "../storage";
 
 /**
  * Extracts chat completion parameters from request body
@@ -63,10 +64,12 @@ export function mergeParametersWithDefaults(
 /**
  * Provider-specific parameter transformations
  */
-export function mapParametersToProvider(
+export async function mapParametersToProvider(
   params: ChatCompletionParameters,
   providerName: string,
-): Record<string, any> {
+  storageService?: StorageService,
+  assetsUrl?: string,
+): Promise<Record<string, any>> {
   const commonParams: Record<string, any> = {
     model: params.model,
     messages: params.messages,
@@ -89,7 +92,8 @@ export function mapParametersToProvider(
 
   const provider = AIProviderFactory.getProvider(providerName);
 
-  if (params.stream && provider.supportsStreaming) {
+  const modelTypeIsText = modelConfig?.type?.includes("text");
+  if (params.stream && provider.supportsStreaming && modelTypeIsText) {
     commonParams.stream = true;
   }
 
@@ -160,53 +164,154 @@ export function mapParametersToProvider(
     case "workers-ai": {
       const type = modelConfig?.type || ["text"];
 
-      return {
-        ...(type.includes("image-to-text") ||
+      let imageData;
+      if (
+        type.includes("image-to-text") ||
         type.includes("image-to-image") ||
         type.includes("image-to-text") ||
         type.includes("text-to-image") ||
         type.includes("text-to-speech")
-          ? {
-              prompt:
-                Array.isArray(params.messages[0].content) &&
-                "text" in params.messages[0].content[0]
-                  ? params.messages[0].content[0].text
-                  : // @ts-ignore - types of wrong
-                    params.messages[0].content?.text,
-              image: (() => {
-                try {
-                  const imageContent =
-                    Array.isArray(params.messages[0].content) &&
-                    params.messages[0].content[1] &&
-                    "image_url" in params.messages[0].content[1]
-                      ? // @ts-ignore - types of wrong
-                        params.messages[0].content[1].image_url.url
-                      : // @ts-ignore - types of wrong
-                        params.messages[0].content?.image;
+      ) {
+        if (
+          params.messages.length > 2 ||
+          (params.messages.length === 2 &&
+            params.messages[0].role !== ("system" as any))
+        ) {
+          return null;
+        }
 
-                  if (type.includes("image-to-text")) {
-                    const base64Data = imageContent;
-                    const binary = atob(base64Data);
-                    const array = new Uint8Array(binary.length);
-                    for (let i = 0; i < binary.length; i++) {
-                      array[i] = binary.charCodeAt(i);
-                    }
-                    return Array.from(array);
-                  }
+        try {
+          const imageContent =
+            Array.isArray(params.messages[0].content) &&
+            params.messages[0].content[1] &&
+            "image_url" in params.messages[0].content[1]
+              ? // @ts-ignore - types of wrong
+                params.messages[0].content[1].image_url.url
+              : // @ts-ignore - types of wrong
+                params.messages[0].content?.image;
 
-                  return imageContent;
-                } catch (error) {
-                  console.error(error);
+          if (imageContent) {
+            const isUrl = imageContent.startsWith("http");
+
+            if (type.includes("image-to-text")) {
+              let base64Data = null;
+              if (isUrl) {
+                const imageKeyFromUrl = imageContent.replace(assetsUrl, "");
+                const imageData =
+                  await storageService?.getObject(imageKeyFromUrl);
+                base64Data = imageData;
+              } else {
+                base64Data = imageContent;
+              }
+
+              if (!base64Data) {
+                console.error("No image data found");
+                imageData = null;
+              } else {
+                const binary = atob(base64Data);
+                const array = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) {
+                  array[i] = binary.charCodeAt(i);
                 }
-              })(),
+
+                if (array.length === 0) {
+                  console.error("No image data found");
+                  imageData = null;
+                } else {
+                  imageData = Array.from(array);
+                }
+              }
+            } else {
+              imageData = imageContent;
             }
-          : {
-              ...commonParams,
-              stop: params.stop,
-              n: params.n,
-              random_seed: params.seed,
-              messages: params.messages,
-            }),
+          }
+        } catch (error) {
+          console.error(error);
+          imageData = null;
+        }
+
+        let prompt = null;
+
+        // Check if the first message is a system message
+        if (
+          params.messages.length >= 2 &&
+          params.messages[0].role === ("system" as any)
+        ) {
+          let systemContent = "";
+          if (Array.isArray(params.messages[0].content)) {
+            const contentItem = params.messages[0].content[0];
+            if (contentItem && typeof contentItem === "object") {
+              if (contentItem.type === "text" && contentItem.text) {
+                systemContent = contentItem.text;
+              } else if ("text" in contentItem) {
+                systemContent = contentItem.text;
+              }
+            }
+          } else if (typeof params.messages[0].content === "string") {
+            systemContent = params.messages[0].content;
+          } else {
+            // @ts-ignore - types might be wrong
+            systemContent = params.messages[0].content?.text || "";
+          }
+
+          let userContent = "";
+          if (Array.isArray(params.messages[1].content)) {
+            const contentItem = params.messages[1].content[0];
+            if (contentItem && typeof contentItem === "object") {
+              if (contentItem.type === "text" && contentItem.text) {
+                userContent = contentItem.text;
+              } else if ("text" in contentItem) {
+                userContent = contentItem.text;
+              }
+            }
+          } else if (typeof params.messages[1].content === "string") {
+            userContent = params.messages[1].content;
+          } else {
+            // @ts-ignore - types might be wrong
+            userContent = params.messages[1].content?.text || "";
+          }
+
+          // Combine system and user messages
+          prompt = `${systemContent}\n\n${userContent}`;
+        } else {
+          // Handle regular case (no system message)
+          if (Array.isArray(params.messages[0].content)) {
+            const contentItem = params.messages[0].content[0];
+            if (contentItem && typeof contentItem === "object") {
+              if (contentItem.type === "text" && contentItem.text) {
+                prompt = contentItem.text;
+              } else if ("text" in contentItem) {
+                prompt = contentItem.text;
+              }
+            }
+          } else if (typeof params.messages[0].content === "string") {
+            prompt = params.messages[0].content;
+          } else {
+            // @ts-ignore - types might be wrong
+            prompt = params.messages[0].content?.text;
+          }
+        }
+
+        if (!prompt) {
+          console.error("No prompt found");
+          return {
+            prompt: "",
+            image: imageData,
+          };
+        }
+
+        return {
+          prompt,
+          image: imageData,
+        };
+      }
+
+      return {
+        ...commonParams,
+        stop: params.stop,
+        n: params.n,
+        random_seed: params.seed,
+        messages: params.messages,
       };
     }
     case "openai": {

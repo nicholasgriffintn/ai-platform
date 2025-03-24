@@ -13,6 +13,8 @@ import "~/styles/github-dark.css";
 import { useAutoscroll } from "~/hooks/useAutoscroll";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
+import { useModels } from "~/hooks/useModels";
+import { useError } from "~/state/contexts/ErrorContext";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ArtifactProps } from "~/types/artifact";
@@ -24,10 +26,12 @@ import { ScrollButton } from "./ScrollButton";
 import { WelcomeScreen } from "./WelcomeScreen";
 
 export const ConversationThread = () => {
-  const { currentConversationId } = useChatStore();
+  const { currentConversationId, model } = useChatStore();
   const { data: currentConversation } = useChat(currentConversationId);
   const { streamStarted, controller, sendMessage, abortStream } =
     useChatManager();
+  const { addError } = useError();
+  const { data: apiModels } = useModels();
 
   const [input, setInput] = useState<string>("");
   const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(
@@ -128,6 +132,17 @@ export const ConversationThread = () => {
   ) => {
     e.preventDefault();
     if (!input.trim() && !attachmentData) {
+      return;
+    }
+
+    // For text-to-image models, only allow the first message
+    const isTextToImageModel =
+      apiModels?.[model]?.type?.includes("text-to-image");
+    if (isTextToImageModel && messages.length > 0) {
+      addError(
+        "Text-to-image models only support one message per conversation. Please start a new conversation.",
+        "error",
+      );
       return;
     }
 
