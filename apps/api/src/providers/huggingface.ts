@@ -3,21 +3,21 @@ import { AssistantError, ErrorType } from "../utils/errors";
 import { BaseProvider } from "./base";
 
 export class HuggingFaceProvider extends BaseProvider {
-	name = "huggingface";
-	supportsStreaming = true;
+  name = "huggingface";
+  supportsStreaming = true;
 
-	protected validateParams(params: ChatCompletionParameters): void {
-		super.validateParams(params);
+  protected validateParams(params: ChatCompletionParameters): void {
+    super.validateParams(params);
 
-		if (!params.env.HUGGINGFACE_TOKEN || !params.env.AI_GATEWAY_TOKEN) {
-			throw new AssistantError(
-				"Missing HUGGINGFACE_TOKEN or AI_GATEWAY_TOKEN",
-				ErrorType.CONFIGURATION_ERROR,
-			);
-		}
-	}
+    if (!params.env.HUGGINGFACE_TOKEN || !params.env.AI_GATEWAY_TOKEN) {
+      throw new AssistantError(
+        "Missing HUGGINGFACE_TOKEN or AI_GATEWAY_TOKEN",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+  }
 
-	/*
+  /*
 		TODO: Need to support requesting later
 
 		{
@@ -26,20 +26,20 @@ export class HuggingFaceProvider extends BaseProvider {
 		}
 	*/
 
-	protected getEndpoint(params: ChatCompletionParameters): string {
-		return `${params.model}/v1/chat/completions`;
-	}
+  protected getEndpoint(params: ChatCompletionParameters): string {
+    return `${params.model}/v1/chat/completions`;
+  }
 
-	protected getHeaders(
-		params: ChatCompletionParameters,
-	): Record<string, string> {
-		return {
-			"cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-			Authorization: `Bearer ${params.env.HUGGINGFACE_TOKEN || ""}`,
-			"Content-Type": "application/json",
-			"cf-aig-metadata": JSON.stringify({
-				email: params.user?.email || "anonymous@undefined.computer",
-			}),
-		};
-	}
+  protected getHeaders(
+    params: ChatCompletionParameters,
+  ): Record<string, string> {
+    return {
+      "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
+      Authorization: `Bearer ${params.env.HUGGINGFACE_TOKEN || ""}`,
+      "Content-Type": "application/json",
+      "cf-aig-metadata": JSON.stringify({
+        email: params.user?.email || "anonymous@undefined.computer",
+      }),
+    };
+  }
 }

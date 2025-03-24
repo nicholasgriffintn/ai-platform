@@ -5,58 +5,58 @@ import { getModelConfigByMatchingModel } from "../models";
 import { mergeParametersWithDefaults } from "./parameters";
 
 export async function getAIResponse({
-	app_url,
-	system_prompt,
-	env,
-	user,
-	mode,
-	model,
-	messages,
-	message,
-	enabled_tools,
-	...params
+  app_url,
+  system_prompt,
+  env,
+  user,
+  mode,
+  model,
+  messages,
+  message,
+  enabled_tools,
+  ...params
 }: ChatCompletionParameters) {
-	if (!model) {
-		throw new Error("Model is required");
-	}
+  if (!model) {
+    throw new Error("Model is required");
+  }
 
-	const modelConfig = getModelConfigByMatchingModel(model);
-	const provider = AIProviderFactory.getProvider(
-		modelConfig?.provider || "workers-ai",
-	);
+  const modelConfig = getModelConfigByMatchingModel(model);
+  const provider = AIProviderFactory.getProvider(
+    modelConfig?.provider || "workers-ai",
+  );
 
-	const filteredMessages =
-		mode === "normal"
-			? messages.filter((msg: Message) => !msg.mode || msg.mode === "normal")
-			: messages;
+  const filteredMessages =
+    mode === "normal"
+      ? messages.filter((msg: Message) => !msg.mode || msg.mode === "normal")
+      : messages;
 
-	const formattedMessages = formatMessages(
-		provider.name,
-		filteredMessages,
-		system_prompt,
-		model,
-	);
+  const formattedMessages = formatMessages(
+    provider.name,
+    filteredMessages,
+    system_prompt,
+    model,
+  );
 
-	let shouldStream = false;
-	if (params.stream && provider.supportsStreaming) {
-		shouldStream = true;
-	}
+  let shouldStream = false;
+  if (params.stream && provider.supportsStreaming) {
+    shouldStream = true;
+  }
 
-	const parameters = mergeParametersWithDefaults({
-		...params,
-		model,
-		messages: formattedMessages,
-		message,
-		mode,
-		app_url,
-		system_prompt,
-		env,
-		user,
-		stream: shouldStream,
-		enabled_tools,
-	});
+  const parameters = mergeParametersWithDefaults({
+    ...params,
+    model,
+    messages: formattedMessages,
+    message,
+    mode,
+    app_url,
+    system_prompt,
+    env,
+    user,
+    stream: shouldStream,
+    enabled_tools,
+  });
 
-	const response = await provider.getResponse(parameters);
+  const response = await provider.getResponse(parameters);
 
-	return response;
+  return response;
 }

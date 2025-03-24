@@ -5,63 +5,63 @@ import type { ArtifactProps } from "~/types/artifact";
 import { LoadingIndicator, SandboxIframe } from "./shared";
 
 export const removeDefaultExport = (
-	input: string,
+  input: string,
 ): {
-	modifiedInput: string;
-	exportedName: string | null;
+  modifiedInput: string;
+  exportedName: string | null;
 } => {
-	const defaultExportWithDeclarationRegex =
-		/export\s+default\s+function\s+([A-Za-z0-9_]+)\s*\([^)]*\)\s*{[^}]*}/;
+  const defaultExportWithDeclarationRegex =
+    /export\s+default\s+function\s+([A-Za-z0-9_]+)\s*\([^)]*\)\s*{[^}]*}/;
 
-	const defaultExportRegex = /export\s+default\s+([A-Za-z0-9_]+);?/;
+  const defaultExportRegex = /export\s+default\s+([A-Za-z0-9_]+);?/;
 
-	let match = input.match(defaultExportWithDeclarationRegex);
-	let exportedName: string | null = null;
-	let modifiedInput = input;
+  let match = input.match(defaultExportWithDeclarationRegex);
+  let exportedName: string | null = null;
+  let modifiedInput = input;
 
-	if (match) {
-		exportedName = match[1];
-		modifiedInput = modifiedInput
-			.replace(/export\s+default\s+function/, "function")
-			.trim();
-	} else {
-		match = input.match(defaultExportRegex);
-		if (match) {
-			exportedName = match[1];
-			modifiedInput = modifiedInput.replace(defaultExportRegex, "").trim();
-		}
-	}
+  if (match) {
+    exportedName = match[1];
+    modifiedInput = modifiedInput
+      .replace(/export\s+default\s+function/, "function")
+      .trim();
+  } else {
+    match = input.match(defaultExportRegex);
+    if (match) {
+      exportedName = match[1];
+      modifiedInput = modifiedInput.replace(defaultExportRegex, "").trim();
+    }
+  }
 
-	return { modifiedInput, exportedName };
+  return { modifiedInput, exportedName };
 };
 
 const memoizedTransformations = new Map<
-	string,
-	{ transpiledCode: string; componentName: string | null }
+  string,
+  { transpiledCode: string; componentName: string | null }
 >();
 
 let babelInstance: typeof BabelType | null = null;
 
 const loadBabel = async (): Promise<typeof BabelType> => {
-	if (babelInstance) return babelInstance;
+  if (babelInstance) return babelInstance;
 
-	const module = await import("@babel/standalone");
-	babelInstance = module;
-	return module;
+  const module = await import("@babel/standalone");
+  babelInstance = module;
+  return module;
 };
 
 const transformComponentCode = async (code: string) => {
-	const cachedResult = memoizedTransformations.get(code);
-	if (cachedResult) {
-		return cachedResult;
-	}
+  const cachedResult = memoizedTransformations.get(code);
+  if (cachedResult) {
+    return cachedResult;
+  }
 
-	const { modifiedInput: codeWithoutExports, exportedName: componentName } =
-		removeDefaultExport(code);
+  const { modifiedInput: codeWithoutExports, exportedName: componentName } =
+    removeDefaultExport(code);
 
-	const safeComponentName = componentName || "ReactComponent";
+  const safeComponentName = componentName || "ReactComponent";
 
-	const wrapperCode = `
+  const wrapperCode = `
 // Handle imports with UMD
 ${codeWithoutExports}
 
@@ -71,28 +71,28 @@ if (typeof ${safeComponentName} !== 'undefined') {
 }
 `;
 
-	const babel = await loadBabel();
-	const transpiledCode = babel.transform(wrapperCode, {
-		presets: ["react"],
-		plugins: [
-			[
-				"transform-modules-umd",
-				{
-					globals: {
-						react: "React",
-						"react-dom": "ReactDOM",
-					},
-				},
-			],
-		],
-	}).code;
+  const babel = await loadBabel();
+  const transpiledCode = babel.transform(wrapperCode, {
+    presets: ["react"],
+    plugins: [
+      [
+        "transform-modules-umd",
+        {
+          globals: {
+            react: "React",
+            "react-dom": "ReactDOM",
+          },
+        },
+      ],
+    ],
+  }).code;
 
-	const result = {
-		transpiledCode: transpiledCode || "",
-		componentName: safeComponentName,
-	};
-	memoizedTransformations.set(code, result);
-	return result;
+  const result = {
+    transpiledCode: transpiledCode || "",
+    componentName: safeComponentName,
+  };
+  memoizedTransformations.set(code, result);
+  return result;
 };
 
 const REACT_SANDBOX_TEMPLATE = `
@@ -244,73 +244,73 @@ const REACT_SANDBOX_TEMPLATE = `
 `;
 
 export function ReactSandbox({
-	code,
-	css,
-	setPreviewError,
-	iframeKey,
+  code,
+  css,
+  setPreviewError,
+  iframeKey,
 }: {
-	code: ArtifactProps;
-	css?: ArtifactProps;
-	setPreviewError: (error: string | null) => void;
-	iframeKey: number;
+  code: ArtifactProps;
+  css?: ArtifactProps;
+  setPreviewError: (error: string | null) => void;
+  iframeKey: number;
 }) {
-	const [documentContent, setDocumentContent] = useState<string | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
+  const [documentContent, setDocumentContent] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-	useEffect(() => {
-		let isMounted = true;
-		setIsLoading(true);
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
 
-		const prepareDocument = async () => {
-			let doc = REACT_SANDBOX_TEMPLATE;
+    const prepareDocument = async () => {
+      let doc = REACT_SANDBOX_TEMPLATE;
 
-			if (css) {
-				doc = doc.replace("<CSS_CODE_PLACEHOLDER>", css.content);
-			} else {
-				doc = doc.replace("<CSS_CODE_PLACEHOLDER>", "");
-			}
+      if (css) {
+        doc = doc.replace("<CSS_CODE_PLACEHOLDER>", css.content);
+      } else {
+        doc = doc.replace("<CSS_CODE_PLACEHOLDER>", "");
+      }
 
-			try {
-				const { transpiledCode, componentName } = await transformComponentCode(
-					code.content,
-				);
+      try {
+        const { transpiledCode, componentName } = await transformComponentCode(
+          code.content,
+        );
 
-				doc = doc.replace("<COMPONENT_CODE_PLACEHOLDER>", transpiledCode || "");
-				doc = doc.replace(
-					"<COMPONENT_NAME_PLACEHOLDER>",
-					componentName || "null",
-				);
-			} catch (err) {
-				console.error("Error transforming:", err);
-				doc = doc.replace(
-					"<COMPONENT_CODE_PLACEHOLDER>",
-					"console.error('Error transforming JSX.');",
-				);
-				doc = doc.replace("<COMPONENT_NAME_PLACEHOLDER>", "null");
-			}
+        doc = doc.replace("<COMPONENT_CODE_PLACEHOLDER>", transpiledCode || "");
+        doc = doc.replace(
+          "<COMPONENT_NAME_PLACEHOLDER>",
+          componentName || "null",
+        );
+      } catch (err) {
+        console.error("Error transforming:", err);
+        doc = doc.replace(
+          "<COMPONENT_CODE_PLACEHOLDER>",
+          "console.error('Error transforming JSX.');",
+        );
+        doc = doc.replace("<COMPONENT_NAME_PLACEHOLDER>", "null");
+      }
 
-			if (isMounted) {
-				setDocumentContent(doc);
-				setIsLoading(false);
-			}
-		};
+      if (isMounted) {
+        setDocumentContent(doc);
+        setIsLoading(false);
+      }
+    };
 
-		prepareDocument();
+    prepareDocument();
 
-		return () => {
-			isMounted = false;
-		};
-	}, [code, css]);
+    return () => {
+      isMounted = false;
+    };
+  }, [code, css]);
 
-	if (isLoading) {
-		return <LoadingIndicator />;
-	}
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
 
-	return (
-		<SandboxIframe
-			documentContent={documentContent}
-			iframeKey={iframeKey}
-			setPreviewError={setPreviewError}
-		/>
-	);
+  return (
+    <SandboxIframe
+      documentContent={documentContent}
+      iframeKey={iframeKey}
+      setPreviewError={setPreviewError}
+    />
+  );
 }

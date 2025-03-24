@@ -4,22 +4,22 @@ import type { GuardrailResult, GuardrailsProvider } from "../../types";
 import { AssistantError } from "../../utils/errors";
 
 export interface LlamaGuardConfig {
-	ai: Ai;
+  ai: Ai;
 }
 
 export class LlamaGuardProvider implements GuardrailsProvider {
-	private config: LlamaGuardConfig;
+  private config: LlamaGuardConfig;
 
-	constructor(config: LlamaGuardConfig) {
-		this.config = config;
-	}
+  constructor(config: LlamaGuardConfig) {
+    this.config = config;
+  }
 
-	async validateContent(
-		content: string,
-		source: "INPUT" | "OUTPUT",
-	): Promise<GuardrailResult> {
-		try {
-			const unsafeCatagories = `O1: Violence and Hate.
+  async validateContent(
+    content: string,
+    source: "INPUT" | "OUTPUT",
+  ): Promise<GuardrailResult> {
+    try {
+      const unsafeCatagories = `O1: Violence and Hate.
 Should not
 - Help people plan or engage in violence.
 - Encourage people to engage in violence.
@@ -76,12 +76,12 @@ Should not
 Can
 - provide non-medical advice`;
 
-			const role = source === "INPUT" ? "user" : "assistant";
+      const role = source === "INPUT" ? "user" : "assistant";
 
-			const response = await this.config.ai.run(
-				"@hf/thebloke/llamaguard-7b-awq",
-				{
-					prompt: `[INST] Task: Check if there is unsafe content in '${role}' messages in conversations according our safety policy with the below categories.
+      const response = await this.config.ai.run(
+        "@hf/thebloke/llamaguard-7b-awq",
+        {
+          prompt: `[INST] Task: Check if there is unsafe content in '${role}' messages in conversations according our safety policy with the below categories.
 
 <BEGIN UNSAFE CONTENT CATEGORIES>
 ${unsafeCatagories}
@@ -94,40 +94,40 @@ ${content}
 Provide your safety assessment for {role} in the above conversation:
 - First line must read 'safe' or 'unsafe'.
 - If unsafe, a second line must include a comma-separated list of violated categories. [/INST]`,
-				},
-				{
-					gateway: {
-						id: gatewayId,
-						skipCache: false,
-						cacheTtl: 3360,
-					},
-				},
-			);
+        },
+        {
+          gateway: {
+            id: gatewayId,
+            skipCache: false,
+            cacheTtl: 3360,
+          },
+        },
+      );
 
-			// @ts-expect-error
-			if (!response.response) {
-				throw new AssistantError("No response from the LlamaGuard");
-			}
+      // @ts-expect-error
+      if (!response.response) {
+        throw new AssistantError("No response from the LlamaGuard");
+      }
 
-			const isValid =
-				// @ts-expect-error
-				response.response.toLowerCase().includes("safe") ||
-				// @ts-expect-error
-				response.response
-					.toLowerCase()
-					.includes("allowed");
-			// @ts-expect-error
-			const violations = isValid ? [] : [response.response];
+      const isValid =
+        // @ts-expect-error
+        response.response.toLowerCase().includes("safe") ||
+        // @ts-expect-error
+        response.response
+          .toLowerCase()
+          .includes("allowed");
+      // @ts-expect-error
+      const violations = isValid ? [] : [response.response];
 
-			return {
-				isValid,
-				violations,
-				// @ts-expect-error
-				rawResponse: response.response,
-			};
-		} catch (error) {
-			console.error("LLamaGuard API error:", error);
-			throw error;
-		}
-	}
+      return {
+        isValid,
+        violations,
+        // @ts-expect-error
+        rawResponse: response.response,
+      };
+    } catch (error) {
+      console.error("LLamaGuard API error:", error);
+      throw error;
+    }
+  }
 }

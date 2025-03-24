@@ -1,149 +1,149 @@
 import { processChatRequest } from "~/lib/chat/core";
 import type {
-	ChatCompletionParameters,
-	CreateChatCompletionsResponse,
-	IEnv,
-	IUser,
+  ChatCompletionParameters,
+  CreateChatCompletionsResponse,
+  IEnv,
+  IUser,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export const handleCreateChatCompletions = async (req: {
-	env: IEnv;
-	request: ChatCompletionParameters;
-	user?: IUser;
-	app_url?: string;
-	isRestricted?: boolean;
+  env: IEnv;
+  request: ChatCompletionParameters;
+  user?: IUser;
+  app_url?: string;
+  isRestricted?: boolean;
 }): Promise<CreateChatCompletionsResponse | Response> => {
-	const { env, request, user, app_url, isRestricted } = req;
-	const isStreaming = !!request.stream;
+  const { env, request, user, app_url, isRestricted } = req;
+  const isStreaming = !!request.stream;
 
-	if (!request.messages?.length) {
-		throw new AssistantError(
-			"Missing required parameter: messages",
-			ErrorType.PARAMS_ERROR,
-		);
-	}
+  if (!request.messages?.length) {
+    throw new AssistantError(
+      "Missing required parameter: messages",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
 
-	const completionIdWithFallback =
-		request.completion_id || `chat_${Date.now()}`;
+  const completionIdWithFallback =
+    request.completion_id || `chat_${Date.now()}`;
 
-	const result = await processChatRequest({
-		platform: request.platform,
-		app_url,
-		system_prompt: request.system_prompt,
-		env,
-		user,
-		disable_functions: request.disable_functions,
-		completion_id: completionIdWithFallback,
-		messages: request.messages,
-		model: request.model,
-		mode: request.mode,
-		should_think: request.should_think,
-		response_format: request.response_format,
-		use_rag: request.use_rag,
-		rag_options: request.rag_options,
-		response_mode: request.response_mode,
-		budget_constraint: request.budget_constraint,
-		location: request.location || undefined,
-		lang: request.lang,
-		temperature: request.temperature,
-		max_tokens: request.max_tokens,
-		top_p: request.top_p,
-		top_k: request.top_k,
-		seed: request.seed,
-		repetition_penalty: request.repetition_penalty,
-		frequency_penalty: request.frequency_penalty,
-		presence_penalty: request.presence_penalty,
-		n: request.n,
-		stream: isStreaming,
-		stop: request.stop,
-		logit_bias: request.logit_bias,
-		metadata: request.metadata,
-		reasoning_effort: request.reasoning_effort,
-		store: request.store,
-		enabled_tools: request.enabled_tools,
-		isRestricted,
-	});
+  const result = await processChatRequest({
+    platform: request.platform,
+    app_url,
+    system_prompt: request.system_prompt,
+    env,
+    user,
+    disable_functions: request.disable_functions,
+    completion_id: completionIdWithFallback,
+    messages: request.messages,
+    model: request.model,
+    mode: request.mode,
+    should_think: request.should_think,
+    response_format: request.response_format,
+    use_rag: request.use_rag,
+    rag_options: request.rag_options,
+    response_mode: request.response_mode,
+    budget_constraint: request.budget_constraint,
+    location: request.location || undefined,
+    lang: request.lang,
+    temperature: request.temperature,
+    max_tokens: request.max_tokens,
+    top_p: request.top_p,
+    top_k: request.top_k,
+    seed: request.seed,
+    repetition_penalty: request.repetition_penalty,
+    frequency_penalty: request.frequency_penalty,
+    presence_penalty: request.presence_penalty,
+    n: request.n,
+    stream: isStreaming,
+    stop: request.stop,
+    logit_bias: request.logit_bias,
+    metadata: request.metadata,
+    reasoning_effort: request.reasoning_effort,
+    store: request.store,
+    enabled_tools: request.enabled_tools,
+    isRestricted,
+  });
 
-	if ("validation" in result) {
-		return {
-			id: env.AI.aiGatewayLogId || completionIdWithFallback,
-			log_id: env.AI.aiGatewayLogId,
-			object: "chat.completion",
-			created: Date.now(),
-			model: result.selectedModel,
-			choices: [
-				{
-					index: 0,
-					message: {
-						role: "assistant",
-						content: result.error,
-					},
-					finish_reason: "content_filter",
-				},
-			],
-			usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
-		};
-	}
+  if ("validation" in result) {
+    return {
+      id: env.AI.aiGatewayLogId || completionIdWithFallback,
+      log_id: env.AI.aiGatewayLogId,
+      object: "chat.completion",
+      created: Date.now(),
+      model: result.selectedModel,
+      choices: [
+        {
+          index: 0,
+          message: {
+            role: "assistant",
+            content: result.error,
+          },
+          finish_reason: "content_filter",
+        },
+      ],
+      usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+    };
+  }
 
-	if (isStreaming && "stream" in result) {
-		return new Response(result.stream, {
-			headers: {
-				"Content-Type": "text/event-stream",
-				"Cache-Control": "no-cache",
-				Connection: "keep-alive",
-			},
-		});
-	}
+  if (isStreaming && "stream" in result) {
+    return new Response(result.stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
+  }
 
-	if (!result.response) {
-		throw new AssistantError(
-			"No response generated by the model",
-			ErrorType.EXTERNAL_API_ERROR,
-		);
-	}
+  if (!result.response) {
+    throw new AssistantError(
+      "No response generated by the model",
+      ErrorType.EXTERNAL_API_ERROR,
+    );
+  }
 
-	return {
-		id: env.AI.aiGatewayLogId || completionIdWithFallback,
-		log_id: env.AI.aiGatewayLogId,
-		object: "chat.completion",
-		created: Date.now(),
-		model: result.selectedModel,
-		choices: [
-			{
-				index: 0,
-				message: {
-					role: "assistant",
-					content: result.response.response,
-					tool_calls: result.response.tool_calls,
-					citations: result.response.citations || null,
-				},
-				finish_reason: result.response.tool_calls?.length
-					? "tool_calls"
-					: "stop",
-			},
-			...(result.toolResponses?.map((toolResponse, index) => ({
-				index: index + 1,
-				message: {
-					id: toolResponse.id,
-					log_id: env.AI.aiGatewayLogId,
-					role: toolResponse.role,
-					name: toolResponse.name,
-					content: Array.isArray(toolResponse.content)
-						? toolResponse.content.map((c) => c.text || "").join("\n")
-						: toolResponse.content,
-					citations: toolResponse.citations || null,
-					data: toolResponse.data || null,
-					status: toolResponse.status || "unknown",
-					timestamp: toolResponse.timestamp,
-				},
-				finish_reason: "tool_result",
-			})) || []),
-		],
-		usage: result.response.usage || {
-			prompt_tokens: 0,
-			completion_tokens: 0,
-			total_tokens: 0,
-		},
-	};
+  return {
+    id: env.AI.aiGatewayLogId || completionIdWithFallback,
+    log_id: env.AI.aiGatewayLogId,
+    object: "chat.completion",
+    created: Date.now(),
+    model: result.selectedModel,
+    choices: [
+      {
+        index: 0,
+        message: {
+          role: "assistant",
+          content: result.response.response,
+          tool_calls: result.response.tool_calls,
+          citations: result.response.citations || null,
+        },
+        finish_reason: result.response.tool_calls?.length
+          ? "tool_calls"
+          : "stop",
+      },
+      ...(result.toolResponses?.map((toolResponse, index) => ({
+        index: index + 1,
+        message: {
+          id: toolResponse.id,
+          log_id: env.AI.aiGatewayLogId,
+          role: toolResponse.role,
+          name: toolResponse.name,
+          content: Array.isArray(toolResponse.content)
+            ? toolResponse.content.map((c) => c.text || "").join("\n")
+            : toolResponse.content,
+          citations: toolResponse.citations || null,
+          data: toolResponse.data || null,
+          status: toolResponse.status || "unknown",
+          timestamp: toolResponse.timestamp,
+        },
+        finish_reason: "tool_result",
+      })) || []),
+    ],
+    usage: result.response.usage || {
+      prompt_tokens: 0,
+      completion_tokens: 0,
+      total_tokens: 0,
+    },
+  };
 };

@@ -1,10 +1,10 @@
 import {
-	type FormEvent,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 
 import "~/styles/scrollbar.css";
@@ -24,209 +24,209 @@ import { ScrollButton } from "./ScrollButton";
 import { WelcomeScreen } from "./WelcomeScreen";
 
 export const ConversationThread = () => {
-	const { currentConversationId } = useChatStore();
-	const { data: currentConversation } = useChat(currentConversationId);
-	const { streamStarted, controller, sendMessage, abortStream } =
-		useChatManager();
+  const { currentConversationId } = useChatStore();
+  const { data: currentConversation } = useChat(currentConversationId);
+  const { streamStarted, controller, sendMessage, abortStream } =
+    useChatManager();
 
-	const [input, setInput] = useState<string>("");
-	const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(
-		null,
-	);
-	const [isPanelVisible, setIsPanelVisible] = useState(false);
-	const [currentArtifacts, setCurrentArtifacts] = useState<ArtifactProps[]>([]);
-	const [isCombinedPanel, setIsCombinedPanel] = useState(false);
+  const [input, setInput] = useState<string>("");
+  const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(
+    null,
+  );
+  const [isPanelVisible, setIsPanelVisible] = useState(false);
+  const [currentArtifacts, setCurrentArtifacts] = useState<ArtifactProps[]>([]);
+  const [isCombinedPanel, setIsCombinedPanel] = useState(false);
 
-	const isStreamLoading = useIsLoading("stream-response");
-	const isModelInitializing = useIsLoading("model-init");
+  const isStreamLoading = useIsLoading("stream-response");
+  const isModelInitializing = useIsLoading("model-init");
 
-	const messages = useMemo(
-		() => currentConversation?.messages || [],
-		[currentConversation?.messages],
-	);
+  const messages = useMemo(
+    () => currentConversation?.messages || [],
+    [currentConversation?.messages],
+  );
 
-	const {
-		messagesEndRef,
-		messagesContainerRef,
-		forceScrollToBottom,
-		showScrollButton,
-	} = useAutoscroll({
-		dependency: currentConversationId,
-	});
+  const {
+    messagesEndRef,
+    messagesContainerRef,
+    forceScrollToBottom,
+    showScrollButton,
+  } = useAutoscroll({
+    dependency: currentConversationId,
+  });
 
-	const chatInputRef = useRef<ChatInputHandle>(null);
+  const chatInputRef = useRef<ChatInputHandle>(null);
 
-	const handleArtifactOpen = (
-		artifact: ArtifactProps,
-		combine?: boolean,
-		artifacts?: ArtifactProps[],
-	) => {
-		setCurrentArtifact(artifact);
-		setIsPanelVisible(true);
+  const handleArtifactOpen = (
+    artifact: ArtifactProps,
+    combine?: boolean,
+    artifacts?: ArtifactProps[],
+  ) => {
+    setCurrentArtifact(artifact);
+    setIsPanelVisible(true);
 
-		if (combine && artifacts && artifacts.length > 1) {
-			setCurrentArtifacts(artifacts);
-			setIsCombinedPanel(true);
-			return;
-		}
-	};
+    if (combine && artifacts && artifacts.length > 1) {
+      setCurrentArtifacts(artifacts);
+      setIsCombinedPanel(true);
+      return;
+    }
+  };
 
-	const handlePanelClose = useCallback(() => {
-		setIsPanelVisible(false);
-		setIsCombinedPanel(false);
+  const handlePanelClose = useCallback(() => {
+    setIsPanelVisible(false);
+    setIsCombinedPanel(false);
 
-		setTimeout(() => {
-			setCurrentArtifact(null);
-			setCurrentArtifacts([]);
-		}, 300);
-	}, []);
+    setTimeout(() => {
+      setCurrentArtifact(null);
+      setCurrentArtifacts([]);
+    }, 300);
+  }, []);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: This is intentional
-	useEffect(() => {
-		if (isPanelVisible) {
-			handlePanelClose();
-		}
-	}, [currentConversationId]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: This is intentional
+  useEffect(() => {
+    if (isPanelVisible) {
+      handlePanelClose();
+    }
+  }, [currentConversationId]);
 
-	useEffect(() => {
-		const handleKeyPress = (e: KeyboardEvent) => {
-			if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-				e.preventDefault();
-				if (input.trim() && !isStreamLoading && !isModelInitializing) {
-					handleSubmit(e as unknown as FormEvent);
-				}
-			}
-			if (e.key === "Escape") {
-				if (isPanelVisible) {
-					handlePanelClose();
-				} else if (controller) {
-					abortStream();
-					setTimeout(() => {
-						chatInputRef.current?.focus();
-					}, 0);
-				}
-			}
-		};
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (input.trim() && !isStreamLoading && !isModelInitializing) {
+          handleSubmit(e as unknown as FormEvent);
+        }
+      }
+      if (e.key === "Escape") {
+        if (isPanelVisible) {
+          handlePanelClose();
+        } else if (controller) {
+          abortStream();
+          setTimeout(() => {
+            chatInputRef.current?.focus();
+          }, 0);
+        }
+      }
+    };
 
-		window.addEventListener("keydown", handleKeyPress);
-		return () => {
-			window.removeEventListener("keydown", handleKeyPress);
-		};
-	}, [
-		input,
-		isStreamLoading,
-		isModelInitializing,
-		controller,
-		abortStream,
-		isPanelVisible,
-		handlePanelClose,
-	]);
+    window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [
+    input,
+    isStreamLoading,
+    isModelInitializing,
+    controller,
+    abortStream,
+    isPanelVisible,
+    handlePanelClose,
+  ]);
 
-	const handleSubmit = async (
-		e: FormEvent,
-		attachmentData?: { type: string; data: string; name?: string },
-	) => {
-		e.preventDefault();
-		if (!input.trim() && !attachmentData) {
-			return;
-		}
+  const handleSubmit = async (
+    e: FormEvent,
+    attachmentData?: { type: string; data: string; name?: string },
+  ) => {
+    e.preventDefault();
+    if (!input.trim() && !attachmentData) {
+      return;
+    }
 
-		try {
-			const originalInput = input;
-			setInput("");
+    try {
+      const originalInput = input;
+      setInput("");
 
-			const result = await sendMessage(input, attachmentData);
-			if (result?.status === "error") {
-				setInput(originalInput);
-			} else {
-				setTimeout(() => {
-					chatInputRef.current?.focus();
-				}, 0);
-			}
-		} catch (error) {
-			console.error("Failed to send message:", error);
-		}
-	};
+      const result = await sendMessage(input, attachmentData);
+      if (result?.status === "error") {
+        setInput(originalInput);
+      } else {
+        setTimeout(() => {
+          chatInputRef.current?.focus();
+        }, 0);
+      }
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
+  };
 
-	const handleTranscribe = async (data: {
-		response: {
-			content: string;
-		};
-	}) => {
-		setInput(data.response.content);
-	};
+  const handleTranscribe = async (data: {
+    response: {
+      content: string;
+    };
+  }) => {
+    setInput(data.response.content);
+  };
 
-	const handleToolInteraction = (
-		toolName: string,
-		action: "useAsPrompt",
-		data: Record<string, any>,
-	) => {
-		switch (toolName) {
-			case "web_search":
-				if (action === "useAsPrompt") {
-					setInput(data.question);
-				}
-				break;
-			default:
-				break;
-		}
-	};
+  const handleToolInteraction = (
+    toolName: string,
+    action: "useAsPrompt",
+    data: Record<string, any>,
+  ) => {
+    switch (toolName) {
+      case "web_search":
+        if (action === "useAsPrompt") {
+          setInput(data.question);
+        }
+        break;
+      default:
+        break;
+    }
+  };
 
-	const showWelcomeScreen =
-		messages.length === 0 &&
-		!currentConversationId &&
-		!isStreamLoading &&
-		!streamStarted;
+  const showWelcomeScreen =
+    messages.length === 0 &&
+    !currentConversationId &&
+    !isStreamLoading &&
+    !streamStarted;
 
-	return (
-		<div
-			className={`flex flex-col h-[calc(100%-3rem)] w-full ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
-		>
-			<div
-				ref={messagesContainerRef}
-				className={`relative flex-1 overflow-x-hidden ${showWelcomeScreen ? "flex items-center" : "overflow-y-scroll"}`}
-			>
-				<div className="w-full px-4 max-w-2xl mx-auto">
-					{showWelcomeScreen ? (
-						<WelcomeScreen setInput={setInput} />
-					) : (
-						<MessageList
-							messagesEndRef={messagesEndRef}
-							onToolInteraction={handleToolInteraction}
-							onArtifactOpen={handleArtifactOpen}
-						/>
-					)}
-				</div>
+  return (
+    <div
+      className={`flex flex-col h-[calc(100%-3rem)] w-full ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
+    >
+      <div
+        ref={messagesContainerRef}
+        className={`relative flex-1 overflow-x-hidden ${showWelcomeScreen ? "flex items-center" : "overflow-y-scroll"}`}
+      >
+        <div className="w-full px-4 max-w-2xl mx-auto">
+          {showWelcomeScreen ? (
+            <WelcomeScreen setInput={setInput} />
+          ) : (
+            <MessageList
+              messagesEndRef={messagesEndRef}
+              onToolInteraction={handleToolInteraction}
+              onArtifactOpen={handleArtifactOpen}
+            />
+          )}
+        </div>
 
-				{showScrollButton && currentConversationId && (
-					<ScrollButton onClick={forceScrollToBottom} />
-				)}
-			</div>
+        {showScrollButton && currentConversationId && (
+          <ScrollButton onClick={forceScrollToBottom} />
+        )}
+      </div>
 
-			<div className="px-4">
-				<div className="max-w-2xl mx-auto">
-					<ChatInput
-						ref={chatInputRef}
-						input={input}
-						setInput={setInput}
-						handleSubmit={handleSubmit}
-						isLoading={isStreamLoading || isModelInitializing}
-						streamStarted={streamStarted}
-						controller={controller}
-						onTranscribe={handleTranscribe}
-					/>
-				</div>
-			</div>
+      <div className="px-4">
+        <div className="max-w-2xl mx-auto">
+          <ChatInput
+            ref={chatInputRef}
+            input={input}
+            setInput={setInput}
+            handleSubmit={handleSubmit}
+            isLoading={isStreamLoading || isModelInitializing}
+            streamStarted={streamStarted}
+            controller={controller}
+            onTranscribe={handleTranscribe}
+          />
+        </div>
+      </div>
 
-			<FooterInfo isPanelVisible={isPanelVisible} />
+      <FooterInfo isPanelVisible={isPanelVisible} />
 
-			<ArtifactPanel
-				artifact={currentArtifact}
-				artifacts={currentArtifacts}
-				onClose={handlePanelClose}
-				isVisible={isPanelVisible}
-				isCombined={isCombinedPanel}
-			/>
-		</div>
-	);
+      <ArtifactPanel
+        artifact={currentArtifact}
+        artifacts={currentArtifacts}
+        onClose={handlePanelClose}
+        isVisible={isPanelVisible}
+        isCombined={isCombinedPanel}
+      />
+    </div>
+  );
 };

@@ -6,31 +6,31 @@ export const abstractParrot = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="
 export type LogoVariant = "default" | "minimalist" | "tropical" | "abstract";
 
 export interface LogoProps {
-	variant?: LogoVariant;
-	className?: string;
+  variant?: LogoVariant;
+  className?: string;
 }
 
 export function Logo({ variant = "default", className = "" }: LogoProps) {
-	const logoSvg = (() => {
-		switch (variant) {
-			case "minimalist":
-				return minimalistParrot;
-			case "tropical":
-				return tropicalParrot;
-			case "abstract":
-				return abstractParrot;
-			default:
-				return defaultParrot;
-		}
-	})();
+  const logoSvg = (() => {
+    switch (variant) {
+      case "minimalist":
+        return minimalistParrot;
+      case "tropical":
+        return tropicalParrot;
+      case "abstract":
+        return abstractParrot;
+      default:
+        return defaultParrot;
+    }
+  })();
 
-	return (
-		<div
-			className={className}
-			// biome-ignore lint/security/noDangerouslySetInnerHtml: it's hard coded
-			dangerouslySetInnerHTML={{ __html: logoSvg }}
-			role="img"
-			aria-label="Polychat Logo"
-		/>
-	);
+  return (
+    <div
+      className={className}
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: it's hard coded
+      dangerouslySetInnerHTML={{ __html: logoSvg }}
+      role="img"
+      aria-label="Polychat Logo"
+    />
+  );
 }

@@ -1,5 +1,5 @@
 export function returnCoachingPrompt(): string {
-	return `You are an AI assistant specialized in helping users create effective prompts for various AI tasks. Your goal is to guide users through an iterative process of prompt improvement. 
+  return `You are an AI assistant specialized in helping users create effective prompts for various AI tasks. Your goal is to guide users through an iterative process of prompt improvement. 
 
 The initial prompt to improve was provided by the user in their message.
 

@@ -13,9 +13,9 @@ import auth from "./routes/auth";
 import { metricsParamsSchema, statusResponseSchema } from "./routes/schemas";
 import { handleGetMetrics } from "./services/metrics/getMetrics";
 import {
-	AssistantError,
-	ErrorType,
-	handleAIServiceError,
+  AssistantError,
+  ErrorType,
+  handleAIServiceError,
 } from "./utils/errors";
 import { LogLevel, getLogger } from "./utils/logger";
 
@@ -40,17 +40,17 @@ autoRegisterDynamicApps();
  * Global middleware to enable CORS
  */
 app.use(
-	"*",
-	cors({
-		origin: (origin, c) => {
-			if (!origin) return "*";
-			if (origin.includes("polychat.app")) return origin;
-			if (origin.includes("localhost")) return origin;
-			return "*";
-		},
-		allowMethods: ["GET", "POST", "PUT", "DELETE"],
-		credentials: true,
-	}),
+  "*",
+  cors({
+    origin: (origin, c) => {
+      if (!origin) return "*";
+      if (origin.includes("polychat.app")) return origin;
+      if (origin.includes("localhost")) return origin;
+      return "*";
+    },
+    allowMethods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  }),
 );
 
 /**
@@ -71,104 +71,104 @@ app.use("*", rateLimit);
 
 // Initialize logger
 const logger = getLogger({
-	level: LogLevel.INFO,
-	prefix: "API",
+  level: LogLevel.INFO,
+  prefix: "API",
 });
 
 logger.info("Application starting");
 
 app.get(
-	"/",
-	apiReference({
-		pageTitle: "Polychat API Reference",
-		theme: "saturn",
-		url: "/openapi",
-	}),
+  "/",
+  apiReference({
+    pageTitle: "Polychat API Reference",
+    theme: "saturn",
+    url: "/openapi",
+  }),
 );
 
 app.get(
-	"/openapi",
-	openAPISpecs(app, {
-		documentation: {
-			info: {
-				title: "Polychat API",
-				version: "0.0.1",
-				description:
-					"An AI assistant that combines multiple AI models alongside purpose built tools and applications.",
-			},
-			components: {
-				securitySchemes: {
-					bearerAuth: {
-						type: "http",
-						scheme: "bearer",
-						bearerFormat: "JWT",
-					},
-				},
-			},
-			security: [
-				{
-					bearerAuth: [],
-				},
-			],
-			servers: [
-				{
-					url: "https://api.polychat.app",
-					description: "production",
-				},
-				{
-					url: "http://localhost:8787",
-					description: "development",
-				},
-			],
-		},
-	}),
+  "/openapi",
+  openAPISpecs(app, {
+    documentation: {
+      info: {
+        title: "Polychat API",
+        version: "0.0.1",
+        description:
+          "An AI assistant that combines multiple AI models alongside purpose built tools and applications.",
+      },
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: "http",
+            scheme: "bearer",
+            bearerFormat: "JWT",
+          },
+        },
+      },
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
+      servers: [
+        {
+          url: "https://api.polychat.app",
+          description: "production",
+        },
+        {
+          url: "http://localhost:8787",
+          description: "development",
+        },
+      ],
+    },
+  }),
 );
 
 app.get(
-	"/status",
-	describeRoute({
-		description: "Check if the API is running",
-		responses: {
-			200: {
-				description: "API is running",
-				content: {
-					"application/json": {
-						schema: resolver(statusResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	(c) => c.json({ status: "ok" }),
+  "/status",
+  describeRoute({
+    description: "Check if the API is running",
+    responses: {
+      200: {
+        description: "API is running",
+        content: {
+          "application/json": {
+            schema: resolver(statusResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  (c) => c.json({ status: "ok" }),
 );
 
 app.get(
-	"/metrics",
-	describeRoute({
-		description: "Get metrics from Analytics Engine",
-		responses: {
-			200: {
-				description: "Metrics retrieved successfully",
-				content: {
-					"application/json": {},
-				},
-			},
-		},
-	}),
-	zValidator("query", metricsParamsSchema),
-	async (context: Context) => {
-		const query = context.req.query();
+  "/metrics",
+  describeRoute({
+    description: "Get metrics from Analytics Engine",
+    responses: {
+      200: {
+        description: "Metrics retrieved successfully",
+        content: {
+          "application/json": {},
+        },
+      },
+    },
+  }),
+  zValidator("query", metricsParamsSchema),
+  async (context: Context) => {
+    const query = context.req.query();
 
-		const metricsResponse = await handleGetMetrics(context, {
-			limit: Number(query.limit) || 100,
-			interval: query.interval || "1",
-			timeframe: query.timeframe || "24",
-			type: query.type,
-			status: query.status,
-		});
+    const metricsResponse = await handleGetMetrics(context, {
+      limit: Number(query.limit) || 100,
+      interval: query.interval || "1",
+      timeframe: query.timeframe || "24",
+      type: query.type,
+      status: query.status,
+    });
 
-		return context.json({ metrics: metricsResponse });
-	},
+    return context.json({ metrics: metricsResponse });
+  },
 );
 
 /**
@@ -194,18 +194,18 @@ app.notFound((c) => c.json({ status: "not found" }, 404));
  * Global error handler
  */
 app.onError((err, c) => {
-	logger.error("Global error handler caught an error", {
-		error: err.message,
-		stack: err.stack,
-		path: c.req.path,
-	});
+  logger.error("Global error handler caught an error", {
+    error: err.message,
+    stack: err.stack,
+    path: c.req.path,
+  });
 
-	if (err instanceof AssistantError) {
-		return handleAIServiceError(err);
-	}
+  if (err instanceof AssistantError) {
+    return handleAIServiceError(err);
+  }
 
-	const error = AssistantError.fromError(err, ErrorType.UNKNOWN_ERROR);
-	return handleAIServiceError(error);
+  const error = AssistantError.fromError(err, ErrorType.UNKNOWN_ERROR);
+  return handleAIServiceError(error);
 });
 
 export default app;

@@ -3,59 +3,59 @@ import type { IRequest, Message } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
 
 export const handleReplicateWebhook = async (
-	req: IRequest,
-	id: string,
+  req: IRequest,
+  id: string,
 ): Promise<Message[]> => {
-	const { env, request } = req;
+  const { env, request } = req;
 
-	if (!env.DB) {
-		throw new AssistantError("Missing DB binding", ErrorType.PARAMS_ERROR);
-	}
+  if (!env.DB) {
+    throw new AssistantError("Missing DB binding", ErrorType.PARAMS_ERROR);
+  }
 
-	if (!request) {
-		throw new AssistantError("Missing request", ErrorType.PARAMS_ERROR);
-	}
+  if (!request) {
+    throw new AssistantError("Missing request", ErrorType.PARAMS_ERROR);
+  }
 
-	const conversationManager = ConversationManager.getInstance({
-		database: env.DB,
-		model: "replicate",
-		platform: "api",
-	});
+  const conversationManager = ConversationManager.getInstance({
+    database: env.DB,
+    model: "replicate",
+    platform: "api",
+  });
 
-	const item = await conversationManager.getFromWebhook(id);
+  const item = await conversationManager.getFromWebhook(id);
 
-	if (!item?.length) {
-		throw new AssistantError("Item not found", ErrorType.PARAMS_ERROR);
-	}
+  if (!item?.length) {
+    throw new AssistantError("Item not found", ErrorType.PARAMS_ERROR);
+  }
 
-	const matchingMessage = item.find(
-		(message) => message?.data?.id === request?.id,
-	);
+  const matchingMessage = item.find(
+    (message) => message?.data?.id === request?.id,
+  );
 
-	if (!matchingMessage) {
-		throw new AssistantError(
-			`Message from ${id} with item id ${request?.id} not found`,
-			ErrorType.PARAMS_ERROR,
-		);
-	}
+  if (!matchingMessage) {
+    throw new AssistantError(
+      `Message from ${id} with item id ${request?.id} not found`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
 
-	const updatedMessage = {
-		...matchingMessage,
-		data: {
-			...matchingMessage.data,
-			...request,
-		},
-	};
+  const updatedMessage = {
+    ...matchingMessage,
+    data: {
+      ...matchingMessage.data,
+      ...request,
+    },
+  };
 
-	const messages = item.map((message) => {
-		if (message?.data?.id === request?.id) {
-			return updatedMessage;
-		}
+  const messages = item.map((message) => {
+    if (message?.data?.id === request?.id) {
+      return updatedMessage;
+    }
 
-		return message;
-	});
+    return message;
+  });
 
-	await conversationManager.updateFromWebhook(id, messages);
+  await conversationManager.updateFromWebhook(id, messages);
 
-	return item;
+  return item;
 };

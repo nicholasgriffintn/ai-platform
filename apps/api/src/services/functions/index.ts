@@ -13,49 +13,49 @@ import { get_weather } from "./weather";
 import { web_search } from "./web_search";
 
 export const availableFunctions: IFunction[] = [
-	get_weather,
-	create_video,
-	create_music,
-	create_image,
-	web_search,
-	extract_content,
-	capture_screenshot,
-	create_speech,
-	tutor,
-	think,
+  get_weather,
+  create_video,
+  create_music,
+  create_image,
+  web_search,
+  extract_content,
+  capture_screenshot,
+  create_speech,
+  tutor,
+  think,
 ];
 
 export const handleFunctions = async ({
-	completion_id,
-	app_url,
-	functionName,
-	args,
-	request,
-	conversationManager,
+  completion_id,
+  app_url,
+  functionName,
+  args,
+  request,
+  conversationManager,
 }: {
-	completion_id: string;
-	app_url: string | undefined;
-	functionName: string;
-	args: unknown;
-	request: IRequest;
-	conversationManager?: ConversationManager;
+  completion_id: string;
+  app_url: string | undefined;
+  functionName: string;
+  args: unknown;
+  request: IRequest;
+  conversationManager?: ConversationManager;
 }): Promise<IFunctionResponse> => {
-	const foundFunction = availableFunctions.find(
-		(func) => func.name === functionName,
-	);
+  const foundFunction = availableFunctions.find(
+    (func) => func.name === functionName,
+  );
 
-	if (!foundFunction) {
-		throw new AssistantError(
-			`Function ${functionName} not found`,
-			ErrorType.PARAMS_ERROR,
-		);
-	}
+  if (!foundFunction) {
+    throw new AssistantError(
+      `Function ${functionName} not found`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
 
-	return foundFunction.function(
-		completion_id,
-		args,
-		request,
-		app_url,
-		conversationManager,
-	);
+  return foundFunction.function(
+    completion_id,
+    args,
+    request,
+    app_url,
+    conversationManager,
+  );
 };
