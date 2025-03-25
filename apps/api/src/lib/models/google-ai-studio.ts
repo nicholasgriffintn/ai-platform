@@ -16,6 +16,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
     contextWindow: 1000000,
     supportsArtifacts: true,
     isFeatured: true,
+    isFree: true,
   },
   "gemini-2.0-flash": {
     name: "Gemini 2.0 Flash",
@@ -39,6 +40,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
     includedInRouter: true,
     supportsArtifacts: true,
     supportsSearchGrounding: true,
+    isFree: true,
   },
   "gemini-2.0-flash-lite": {
     name: "Gemini 2.0 Flash Lite",
@@ -50,5 +52,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
     strengths: ["coding", "analysis", "math", "multilingual"],
     contextWindow: 1000000,
     supportsArtifacts: true,
+    isFree: true,
   },
 };
