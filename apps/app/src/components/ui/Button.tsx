@@ -8,7 +8,8 @@ export type ButtonVariant =
   | "icon"
   | "iconActive"
   | "destructive"
-  | "link";
+  | "link"
+  | "outline";
 
 export type ButtonSize = "xs" | "sm" | "md" | "lg" | "icon";
 
@@ -49,6 +50,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         "p-2 rounded-lg bg-off-white-highlight dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100",
       destructive: "bg-red-800 text-white hover:bg-red-900 shadow-sm",
       link: "text-blue-500 hover:text-blue-600 hover:underline p-0",
+      outline: "border border-zinc-300 dark:border-zinc-700",
     };
 
     const sizeStyles: Record<ButtonSize, string> = {

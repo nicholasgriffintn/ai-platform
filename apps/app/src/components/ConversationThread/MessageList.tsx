@@ -9,38 +9,44 @@ import {
   useLoadingProgress,
 } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
+import type { Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
 import { ChatMessage } from "./ChatMessage";
 import { MessageSkeleton } from "./MessageSkeleton";
+import { ShareButton } from "./ShareButton";
 
 interface MessageListProps {
-  messagesEndRef: React.RefObject<HTMLDivElement | null>;
-  onToolInteraction: (
+  messagesEndRef?: React.RefObject<HTMLDivElement | null>;
+  onToolInteraction?: (
     toolName: string,
     action: "useAsPrompt",
     data: Record<string, any>,
   ) => void;
-  onArtifactOpen: (
+  onArtifactOpen?: (
     artifact: ArtifactProps,
     combine?: boolean,
     artifacts?: ArtifactProps[],
   ) => void;
+  messages?: Message[];
+  isSharedView?: boolean;
 }
 
 export const MessageList = ({
   messagesEndRef,
   onToolInteraction,
   onArtifactOpen,
+  messages: propMessages,
+  isSharedView = false,
 }: MessageListProps) => {
   const { currentConversationId } = useChatStore();
 
   const { data: conversation, isLoading: isLoadingConversation } = useChat(
-    currentConversationId,
+    !isSharedView ? currentConversationId : undefined,
   );
 
   const { streamStarted } = useChatManager();
 
-  const messages = conversation?.messages || [];
+  const messages = propMessages || conversation?.messages || [];
 
   const isStreamLoading = useIsLoading("stream-response");
   const isModelInitializing = useIsLoading("model-init");
@@ -60,14 +66,23 @@ export const MessageList = ({
       aria-label="Conversation messages"
       aria-atomic="false"
     >
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
-          <MessagesSquare size={16} />
-          <span>{conversation?.title || "New conversation"}</span>
-        </h2>
-      </div>
+      {!isSharedView && (
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+            <MessagesSquare size={16} />
+            <span>{conversation?.title || "New conversation"}</span>
+          </h2>
+          {currentConversationId && (
+            <ShareButton
+              conversationId={currentConversationId}
+              isPublic={conversation?.is_public}
+              shareId={conversation?.share_id}
+            />
+          )}
+        </div>
+      )}
 
-      {isLoadingConversation ? (
+      {!isSharedView && isLoadingConversation ? (
         <div className="py-4 space-y-4">
           {[...Array(3)].map((_, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: It's a key for the skeleton
@@ -82,14 +97,15 @@ export const MessageList = ({
               message={message}
               onToolInteraction={onToolInteraction}
               onArtifactOpen={onArtifactOpen}
+              isSharedView={isSharedView}
             />
           ))}
-          {(isStreamLoading || streamStarted) && (
+          {!isSharedView && (isStreamLoading || streamStarted) && (
             <div className="flex justify-center py-4">
               <LoadingSpinner message={streamLoadingMessage} />
             </div>
           )}
-          {isModelInitializing && (
+          {!isSharedView && isModelInitializing && (
             <div className="flex justify-center py-4">
               <LoadingSpinner
                 message={modelInitMessage}
@@ -99,7 +115,7 @@ export const MessageList = ({
           )}
         </>
       )}
-      <div ref={messagesEndRef} />
+      {messagesEndRef && <div ref={messagesEndRef} />}
     </div>
   );
 };

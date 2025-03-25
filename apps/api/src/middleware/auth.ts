@@ -97,13 +97,22 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
       /^\/chat\/completions\/[^\/]+\/check$/.test(path) && method === "POST";
     const isFeedbackPath =
       /^\/chat\/completions\/[^\/]+\/feedback$/.test(path) && method === "POST";
+    const isSharePath =
+      /^\/chat\/completions\/[^\/]+\/share$/.test(path) && method === "POST";
+    const isUnsharePath =
+      /^\/chat\/completions\/[^\/]+\/unshare$/.test(path) && method === "POST";
+    const isGetSharedPath =
+      /^\/chat\/shared\/[^\/]+$/.test(path) && method === "GET";
 
     const isAllowedPath =
       isGenerateTitlePath ||
       isUpdatePath ||
       isDeletePath ||
       isCheckPath ||
-      isFeedbackPath;
+      isFeedbackPath ||
+      isSharePath ||
+      isUnsharePath ||
+      isGetSharedPath;
 
     if (path === "/chat/completions" && method === "POST") {
       try {

@@ -6,5 +6,6 @@ export default [
   route("/auth/callback", "pages/auth/callback.tsx"),
   route("/terms", "pages/terms.tsx"),
   route("/privacy", "pages/privacy.tsx"),
+  route("/s/:share_id", "pages/shared/[share_id].tsx"),
   route("*?", "pages/catchall.tsx"),
 ] satisfies RouteConfig;

@@ -13,7 +13,10 @@ import { handleCreateChatCompletions } from "../services/completions/createChatC
 import { handleDeleteChatCompletion } from "../services/completions/deleteChatCompletion";
 import { handleGenerateChatCompletionTitle } from "../services/completions/generateChatCompletionTitle";
 import { handleGetChatCompletion } from "../services/completions/getChatCompletion";
+import { handleGetSharedConversation } from "../services/completions/getSharedConversation";
 import { handleListChatCompletions } from "../services/completions/listChatCompletions";
+import { handleShareConversation } from "../services/completions/shareConversation";
+import { handleUnshareConversation } from "../services/completions/unshareConversation";
 import { handleUpdateChatCompletion } from "../services/completions/updateChatCompletion";
 import type {
   ChatCompletionParameters,
@@ -30,8 +33,11 @@ import {
   generateChatCompletionTitleJsonSchema,
   generateChatCompletionTitleParamsSchema,
   getChatCompletionParamsSchema,
+  getSharedConversationParamsSchema,
+  shareConversationParamsSchema,
   submitChatCompletionFeedbackJsonSchema,
   submitChatCompletionFeedbackParamsSchema,
+  unshareConversationParamsSchema,
   updateChatCompletionJsonSchema,
   updateChatCompletionParamsSchema,
 } from "./schemas/chat";
@@ -469,6 +475,127 @@ app.post(
     return context.json({
       response,
     });
+  },
+);
+
+app.post(
+  "/completions/:completion_id/share",
+  describeRoute({
+    tags: ["chat"],
+    title: "Share a conversation publicly",
+    description:
+      "Make a conversation publicly accessible via a unique share link",
+    responses: {
+      200: {
+        description: "Response",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                share_id: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("param", shareConversationParamsSchema),
+  async (context: Context) => {
+    const { completion_id } = context.req.valid("param" as never) as {
+      completion_id: string;
+    };
+    const userContext = context.get("user");
+
+    const result = await handleShareConversation(
+      {
+        env: context.env as IEnv,
+        user: userContext,
+      },
+      completion_id,
+    );
+
+    return context.json(result);
+  },
+);
+
+app.delete(
+  "/completions/:completion_id/share",
+  describeRoute({
+    tags: ["chat"],
+    title: "Unshare a conversation",
+    description: "Make a previously shared conversation private",
+    responses: {
+      200: {
+        description: "Response",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                success: z.boolean(),
+              }),
+            ),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("param", unshareConversationParamsSchema),
+  async (context: Context) => {
+    const { completion_id } = context.req.valid("param" as never) as {
+      completion_id: string;
+    };
+    const userContext = context.get("user");
+
+    const result = await handleUnshareConversation(
+      {
+        env: context.env as IEnv,
+        user: userContext,
+      },
+      completion_id,
+    );
+
+    return context.json(result);
+  },
+);
+
+app.get(
+  "/shared/:share_id",
+  describeRoute({
+    tags: ["chat"],
+    title: "Access a shared conversation",
+    description:
+      "Get messages from a publicly shared conversation using its share ID",
+    responses: {
+      200: {
+        description: "Response",
+        content: {
+          "application/json": {
+            schema: resolver(z.object({})),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("param", getSharedConversationParamsSchema),
+  async (context: Context) => {
+    const { share_id } = context.req.valid("param" as never) as {
+      share_id: string;
+    };
+
+    const limit = Number.parseInt(context.req.query("limit") || "50", 10);
+    const after = context.req.query("after");
+
+    const result = await handleGetSharedConversation(
+      {
+        env: context.env as IEnv,
+      },
+      share_id,
+      limit,
+      after,
+    );
+
+    return context.json(result);
   },
 );
 

@@ -356,3 +356,15 @@ export const submitChatCompletionFeedbackJsonSchema = z.object({
   log_id: z.string().min(1, "log_id is required"),
   feedback: z.number(),
 });
+
+export const shareConversationParamsSchema = z.object({
+  completion_id: z.string().min(1),
+});
+
+export const unshareConversationParamsSchema = z.object({
+  completion_id: z.string().min(1),
+});
+
+export const getSharedConversationParamsSchema = z.object({
+  share_id: z.string().min(1),
+});

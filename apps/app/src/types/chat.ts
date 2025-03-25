@@ -116,4 +116,6 @@ export interface Conversation {
   updated_at?: string;
   last_message_at?: string;
   isLocalOnly?: boolean;
+  is_public?: boolean;
+  share_id?: string;
 }

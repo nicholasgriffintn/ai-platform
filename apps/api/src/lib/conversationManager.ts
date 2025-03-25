@@ -582,4 +582,129 @@ export class ConversationManager {
   private generateId(): string {
     return Math.random().toString(36).substring(2, 7);
   }
+
+  /**
+   * Generate a unique ID for sharing a conversation
+   */
+  generateShareId(): string {
+    return crypto.randomUUID();
+  }
+
+  /**
+   * Make a conversation public by setting is_public to true and generating a share_id
+   */
+  async shareConversation(
+    conversation_id: string,
+  ): Promise<{ share_id: string }> {
+    if (!this.userId) {
+      throw new AssistantError(
+        "User ID is required to share conversations",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const conversation = await this.db.getConversation(conversation_id);
+
+    if (!conversation) {
+      throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
+    }
+
+    if (conversation.user_id !== this.userId) {
+      throw new AssistantError(
+        "You don't have permission to share this conversation",
+        ErrorType.FORBIDDEN,
+      );
+    }
+
+    const share_id =
+      (conversation.share_id as string) || this.generateShareId();
+
+    const updatedConversation = await this.db.updateConversation(
+      conversation_id,
+      {
+        is_public: 1,
+        share_id,
+      },
+    );
+
+    if (!updatedConversation) {
+      throw new AssistantError(
+        "Failed to share conversation",
+        ErrorType.UNKNOWN_ERROR,
+      );
+    }
+
+    return { share_id };
+  }
+
+  /**
+   * Make a conversation private by setting is_public to false
+   */
+  async unshareConversation(conversation_id: string): Promise<void> {
+    if (!this.userId) {
+      throw new AssistantError(
+        "User ID is required to unshare conversations",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const conversation = await this.db.getConversation(conversation_id);
+
+    if (!conversation) {
+      throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
+    }
+
+    if (conversation.user_id !== this.userId) {
+      throw new AssistantError(
+        "You don't have permission to unshare this conversation",
+        ErrorType.FORBIDDEN,
+      );
+    }
+
+    const updatedConversation = await this.db.updateConversation(
+      conversation_id,
+      {
+        is_public: 0,
+      },
+    );
+
+    if (!updatedConversation) {
+      throw new AssistantError(
+        "Failed to unshare conversation",
+        ErrorType.UNKNOWN_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get a publicly shared conversation by its share_id without requiring authentication
+   */
+  async getPublicConversation(
+    share_id: string,
+    limit = 50,
+    after?: string,
+  ): Promise<Message[]> {
+    const conversation = await this.db.getConversationByShareId(share_id);
+
+    if (!conversation) {
+      throw new AssistantError(
+        "Shared conversation not found",
+        ErrorType.NOT_FOUND,
+      );
+    }
+
+    if (!conversation.is_public) {
+      throw new AssistantError(
+        "This conversation is not publicly shared",
+        ErrorType.FORBIDDEN,
+      );
+    }
+
+    const messages = await this.db.getMessages(
+      conversation.id as string,
+      limit,
+      after,
+    );
+    return messages.map((message) => this.formatMessage(message));
+  }
 }

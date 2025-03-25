@@ -320,10 +320,19 @@ export class Database {
     conversationId: string,
   ): Promise<Record<string, unknown> | null> {
     const result = await this.db
-      .prepare(`
-      SELECT * FROM conversation WHERE id = ?
-    `)
+      .prepare("SELECT * FROM conversation WHERE id = ?")
       .bind(conversationId)
+      .first();
+
+    return result;
+  }
+
+  public async getConversationByShareId(
+    shareId: string,
+  ): Promise<Record<string, unknown> | null> {
+    const result = await this.db
+      .prepare("SELECT * FROM conversation WHERE share_id = ?")
+      .bind(shareId)
       .first();
 
     return result;
@@ -392,6 +401,8 @@ export class Database {
       "last_message_id",
       "last_message_at",
       "message_count",
+      "is_public",
+      "share_id",
     ];
     const setClause = allowedFields
       .filter((field) => updates[field] !== undefined)
@@ -528,26 +539,43 @@ export class Database {
     after?: string,
   ): Promise<Record<string, unknown>[]> {
     let query = `
-      SELECT * FROM message 
-      WHERE conversation_id = ?
+      SELECT * FROM message WHERE conversation_id = ?
+      ORDER BY created_at ASC
     `;
 
-    const params = [conversationId];
+    const params: Array<string | number> = [conversationId];
 
     if (after) {
-      query += " AND id > ?";
+      query = `
+        SELECT * FROM message
+        WHERE conversation_id = ? AND id > ?
+        ORDER BY created_at ASC
+      `;
       params.push(after);
     }
 
-    query += " ORDER BY created_at ASC LIMIT ?";
-    params.push(limit.toString());
+    if (limit) {
+      query += " LIMIT ?";
+      params.push(limit);
+    }
 
     const result = await this.db
       .prepare(query)
       .bind(...params)
       .all();
 
-    return result.results as Record<string, unknown>[];
+    return result.results || [];
+  }
+
+  /**
+   * Get messages for a conversation - alias for getConversationMessages to be used by public conversations
+   */
+  public async getMessages(
+    conversationId: string,
+    limit = 50,
+    after?: string,
+  ): Promise<Record<string, unknown>[]> {
+    return this.getConversationMessages(conversationId, limit, after);
   }
 
   public async updateMessage(

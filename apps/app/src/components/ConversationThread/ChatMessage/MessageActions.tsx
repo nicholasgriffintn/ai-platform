@@ -11,6 +11,7 @@ interface MessageActionsProps {
   feedbackState: "none" | "liked" | "disliked";
   isSubmittingFeedback: boolean;
   submitFeedback: (value: 1 | -1) => Promise<void>;
+  isSharedView: boolean;
 }
 
 export const MessageActions = ({
@@ -20,6 +21,7 @@ export const MessageActions = ({
   feedbackState,
   isSubmittingFeedback,
   submitFeedback,
+  isSharedView = false,
 }: MessageActionsProps) => {
   return (
     <div className="flex flex-wrap justify-end items-center gap-2">
@@ -49,7 +51,7 @@ export const MessageActions = ({
           />
         )}
       </div>
-      {message.role !== "user" && message.log_id && (
+      {!isSharedView && message.role !== "user" && message.log_id && (
         <div className="flex items-center space-x-1">
           <span className="text-xs text-zinc-600 dark:text-zinc-300">
             Helpful?

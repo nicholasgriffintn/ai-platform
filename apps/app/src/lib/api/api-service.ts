@@ -435,6 +435,36 @@ class ApiService {
     }
   }
 
+  async shareConversation(
+    completion_id: string,
+  ): Promise<{ share_id: string }> {
+    const headers = await this.getHeaders();
+
+    const response = await fetch(
+      `${API_BASE_URL}/chat/completions/${completion_id}/share`,
+      this.getFetchOptions("POST", headers),
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to share conversation: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async unshareConversation(completion_id: string): Promise<void> {
+    const headers = await this.getHeaders();
+
+    const response = await fetch(
+      `${API_BASE_URL}/chat/completions/${completion_id}/share`,
+      this.getFetchOptions("DELETE", headers),
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to unshare conversation: ${response.statusText}`);
+    }
+  }
+
   async submitFeedback(
     completion_id: string,
     log_id: string,

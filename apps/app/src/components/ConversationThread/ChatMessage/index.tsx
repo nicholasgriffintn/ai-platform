@@ -13,6 +13,7 @@ export const ChatMessage = ({
   message,
   onToolInteraction,
   onArtifactOpen,
+  isSharedView = false,
 }: {
   message: Message;
   onToolInteraction?: (
@@ -25,6 +26,7 @@ export const ChatMessage = ({
     combine?: boolean,
     artifacts?: ArtifactProps[],
   ) => void;
+  isSharedView?: boolean;
 }) => {
   const { copied, copy } = useCopyToClipboard();
   const [feedbackState, setFeedbackState] = useState<
@@ -64,7 +66,7 @@ export const ChatMessage = ({
   };
 
   const submitFeedback = async (value: 1 | -1) => {
-    if (!message.log_id || isSubmittingFeedback) return;
+    if (!message.log_id || isSubmittingFeedback || isSharedView) return;
 
     setIsSubmittingFeedback(true);
     try {
@@ -140,6 +142,7 @@ export const ChatMessage = ({
                 feedbackState={feedbackState}
                 isSubmittingFeedback={isSubmittingFeedback}
                 submitFeedback={submitFeedback}
+                isSharedView={isSharedView}
               />
             )}
         </div>
