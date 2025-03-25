@@ -356,10 +356,12 @@ export async function mapParametersToProvider(
         messages: formatDeepSeekMessages(params),
       };
     }
+    case "google-ai-studio":
     case "googlestudio":
       return {
         model: params.model,
         contents: formatGoogleStudioContents(params),
+        tools: commonParams.tools,
         systemInstruction: {
           role: "system",
           parts: [
@@ -499,18 +501,14 @@ function formatDeepSeekMessages(params: ChatCompletionParameters): any[] {
 function formatGoogleStudioContents(params: ChatCompletionParameters): any[] {
   const contents = [];
 
-  if (params.system_prompt) {
-    contents.push({
-      role: "system",
-      parts: [{ text: params.system_prompt }],
-    });
-  }
-
   // biome-ignore lint/complexity/noForEach: It Works.
   params.messages.forEach((message) => {
+    console.log(JSON.stringify(message, null, 2));
     contents.push({
-      role: message.role,
-      parts: [{ text: message.content }],
+      role: message.role === "assistant" ? "model" : message.role,
+      parts: message.parts.map((part) => ({
+        text: part,
+      })),
     });
   });
 

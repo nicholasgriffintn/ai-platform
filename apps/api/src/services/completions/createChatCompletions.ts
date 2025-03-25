@@ -141,10 +141,11 @@ export const handleCreateChatCompletions = async (req: {
         finish_reason: "tool_result",
       })) || []),
     ],
-    usage: result.response.usage || {
-      prompt_tokens: 0,
-      completion_tokens: 0,
-      total_tokens: 0,
-    },
+    usage: result.response.usage ||
+      result.response.usageMetadata || {
+        prompt_tokens: 0,
+        completion_tokens: 0,
+        total_tokens: 0,
+      },
   };
 };

@@ -132,8 +132,8 @@ export function createStreamWithPostProcessing(
                   controller.enqueue(contentDeltaEvent);
                 }
 
-                if (data.usage) {
-                  usageData = data.usage;
+                if (data.usage || data.usageMetadata) {
+                  usageData = data.usage || data.usageMetadata;
                 }
 
                 if (data.citations) {
@@ -176,8 +176,8 @@ export function createStreamWithPostProcessing(
                   data.choices[0].delta.content === "" &&
                   !postProcessingDone
                 ) {
-                  if (data.usage) {
-                    usageData = data.usage;
+                  if (data.usage || data.usageMetadata) {
+                    usageData = data.usage || data.usageMetadata;
                   }
 
                   if (data.citations) {

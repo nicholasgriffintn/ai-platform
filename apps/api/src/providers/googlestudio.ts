@@ -18,8 +18,7 @@ export class GoogleStudioProvider extends BaseProvider {
   }
 
   protected getEndpoint(params: ChatCompletionParameters): string {
-    const isBeta = params.model?.includes("gemini-exp");
-    return `${isBeta ? "v1beta" : "v1"}/models/${params.model}:generateContent`;
+    return `v1beta/models/${params.model}:generateContent`;
   }
 
   protected getHeaders(

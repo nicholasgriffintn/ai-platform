@@ -31,6 +31,7 @@ export type ModelConfigItem = {
   supportsStreaming?: boolean;
   supportsDocuments?: boolean;
   beta?: boolean;
+  supportsSearchGrounding?: boolean;
 };
 
 export type ModelConfig = {

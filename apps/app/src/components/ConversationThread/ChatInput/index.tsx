@@ -71,6 +71,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     } | null>(null);
     const [isMultimodalModel, setIsMultimodalModel] = useState(false);
     const [supportsDocuments, setSupportsDocuments] = useState(false);
+    const [supportsFunctions, setSupportsFunctions] = useState(false);
     const { data: apiModels } = useModels();
     const [isUploading, setIsUploading] = useState(false);
 
@@ -95,6 +96,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       if (!apiModels || !model) {
         setIsMultimodalModel(false);
         setSupportsDocuments(false);
+        setSupportsFunctions(false);
         return;
       }
 
@@ -104,6 +106,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         modelData?.multimodal || modelData?.type?.includes("image-to-text");
       setIsMultimodalModel(!!isMultimodal);
       setSupportsDocuments(!!modelData?.supportsDocuments);
+      setSupportsFunctions(!!modelData?.supportsFunctions);
     }, [model, apiModels]);
 
     const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -412,7 +415,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                 <ModelSelector isDisabled={isLoading} mono={true} />
               </div>
               <div className="flex-shrink-0">
-                <ChatSettingsComponent isDisabled={isLoading} />
+                <ChatSettingsComponent
+                  isDisabled={isLoading}
+                  supportsFunctions={supportsFunctions}
+                />
               </div>
             </div>
           </div>

@@ -24,7 +24,10 @@ interface ChatSettingsProps {
   isDisabled?: boolean;
 }
 
-export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
+export const ChatSettings = ({
+  isDisabled = false,
+  supportsFunctions = false,
+}: ChatSettingsProps) => {
   const {
     isPro,
     chatSettings,
@@ -211,7 +214,7 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
         aria-label="Open chat settings"
       />
 
-      {isPro && <ToolSelector isDisabled={isDisabled} />}
+      {isPro && supportsFunctions && <ToolSelector isDisabled={isDisabled} />}
 
       {isPro && (
         <Button
