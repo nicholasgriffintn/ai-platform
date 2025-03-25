@@ -1,6 +1,6 @@
 import type { ChatMode, ModelConfig, ModelConfigItem } from "~/types";
 
-export const defaultModel = "mistral-small";
+export const defaultModel = "mistral-large";
 
 export const webLLMModels: ModelConfig = {
   "Llama-3.2-1B-Instruct-q4f32_1-MLC": {
