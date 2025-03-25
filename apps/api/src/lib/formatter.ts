@@ -106,25 +106,27 @@ export class MessageFormatter {
     content: Message["content"],
     provider: string,
   ): any {
-    const contentArray = Array.isArray(content) ? content : [content];
+    if (!Array.isArray(content)) {
+      return content;
+    }
 
     switch (provider) {
       case "google-ai-studio":
-        return contentArray.map((item) =>
+        return content.map((item) =>
           MessageFormatter.formatGoogleAIContent(item),
         );
       case "anthropic":
-        return contentArray.map((item) =>
+        return content.map((item) =>
           MessageFormatter.formatAnthropicContent(item),
         );
       case "bedrock":
-        return contentArray.map((item) =>
+        return content.map((item) =>
           MessageFormatter.formatBedrockContent(item),
         );
       case "workers-ai":
       case "ollama":
       case "github-models": {
-        const imageItem = contentArray.find(
+        const imageItem = content.find(
           (item) =>
             typeof item === "object" &&
             "type" in item &&
@@ -140,7 +142,7 @@ export class MessageFormatter {
           "url" in imageItem.image_url
         ) {
           return {
-            text: contentArray
+            text: content
               .filter(
                 (item) =>
                   typeof item === "object" &&
@@ -155,7 +157,7 @@ export class MessageFormatter {
           };
         }
 
-        return contentArray
+        return content
           .filter(
             (item) =>
               typeof item === "object" &&

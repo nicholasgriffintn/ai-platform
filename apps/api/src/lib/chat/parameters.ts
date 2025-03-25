@@ -403,7 +403,7 @@ export async function mapParametersToProvider(
 
       if (isVideoType) {
         return {
-          messages: params.messages,
+          messages: formatBedrockMessages(params),
           taskType: "TEXT_VIDEO",
           textToVideoParams: {
             text:
@@ -449,7 +449,7 @@ export async function mapParametersToProvider(
         ...(commonParams.system_prompt && {
           system: [{ text: commonParams.system_prompt }],
         }),
-        messages: commonParams.messages,
+        messages: formatBedrockMessages(params),
         inferenceConfig: {
           temperature: commonParams.temperature,
           maxTokens: commonParams.max_tokens,
@@ -503,14 +503,26 @@ function formatGoogleStudioContents(params: ChatCompletionParameters): any[] {
 
   // biome-ignore lint/complexity/noForEach: It Works.
   params.messages.forEach((message) => {
-    console.log(JSON.stringify(message, null, 2));
     contents.push({
       role: message.role === "assistant" ? "model" : message.role,
-      parts: message.parts.map((part) => ({
-        text: part,
-      })),
+      parts: message.parts,
     });
   });
 
   return contents;
+}
+
+/**
+ * Format messages for Bedrock models
+ */
+function formatBedrockMessages(params: ChatCompletionParameters): any[] {
+  return params.messages.map((message) => ({
+    role: message.role,
+    content: [
+      {
+        type: "text",
+        text: message.content,
+      },
+    ],
+  }));
 }

@@ -38,7 +38,7 @@ export const MessageList = ({
   messages: propMessages,
   isSharedView = false,
 }: MessageListProps) => {
-  const { currentConversationId } = useChatStore();
+  const { currentConversationId, isAuthenticated } = useChatStore();
 
   const { data: conversation, isLoading: isLoadingConversation } = useChat(
     !isSharedView ? currentConversationId : undefined,
@@ -72,7 +72,7 @@ export const MessageList = ({
             <MessagesSquare size={16} />
             <span>{conversation?.title || "New conversation"}</span>
           </h2>
-          {currentConversationId && (
+          {currentConversationId && isAuthenticated && (
             <ShareButton
               conversationId={currentConversationId}
               isPublic={conversation?.is_public}
