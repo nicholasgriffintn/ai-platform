@@ -78,6 +78,17 @@ export interface Message {
     prompt_tokens: number;
     completion_tokens: number;
     total_tokens: number;
+    promptTokenCount: number;
+    candidatesTokensDetails: {
+      modality: string;
+      tokenCount: number;
+    }[];
+    candidatesTokenCount: number;
+    totalTokenCount: number;
+    promptTokensDetails: {
+      modality: string;
+      tokenCount: number;
+    }[];
   };
   log_id?: string;
   name?: string;

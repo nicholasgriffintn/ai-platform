@@ -22,6 +22,7 @@ import { ToolSelector } from "./ToolSelector";
 
 interface ChatSettingsProps {
   isDisabled?: boolean;
+  supportsFunctions?: boolean;
 }
 
 export const ChatSettings = ({

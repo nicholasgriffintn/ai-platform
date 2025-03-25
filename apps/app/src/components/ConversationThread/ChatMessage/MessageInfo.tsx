@@ -32,9 +32,58 @@ export const MessageInfo = ({ message, buttonClassName }: MessageInfoProps) => {
           <div className="space-y-1">
             <p className="font-medium">Token Usage:</p>
             <ul className="list-disc pl-4 space-y-0.5">
-              <li>Prompt: {message.usage.prompt_tokens}</li>
-              <li>Completion: {message.usage.completion_tokens}</li>
-              <li>Total: {message.usage.total_tokens}</li>
+              {message.usage.prompt_tokens ||
+                (message.usage.promptTokenCount && (
+                  <li>
+                    Prompt:{" "}
+                    {message.usage.prompt_tokens ||
+                      message.usage.promptTokenCount}
+                  </li>
+                ))}
+              {message.usage.completion_tokens ||
+                (message.usage.candidatesTokenCount && (
+                  <li>
+                    Completion:{" "}
+                    {message.usage.completion_tokens ||
+                      message.usage.candidatesTokenCount}
+                  </li>
+                ))}
+              {message.usage.total_tokens ||
+                (message.usage.totalTokenCount && (
+                  <li>
+                    Total:{" "}
+                    {message.usage.total_tokens ||
+                      message.usage.totalTokenCount}
+                  </li>
+                ))}
+              {message.usage?.promptTokensDetails && (
+                <li>
+                  Prompt Details: {(() => {
+                    const details = message.usage.promptTokensDetails;
+                    return details.map((detail, i) => (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                      <span key={i}>
+                        {detail.modality}: {detail.tokenCount}
+                        {i < details.length - 1 ? ", " : ""}
+                      </span>
+                    ));
+                  })()}
+                </li>
+              )}
+              {message.usage?.candidatesTokensDetails && (
+                <li>
+                  Completion Details: {(() => {
+                    const details = message.usage.candidatesTokensDetails;
+                    return details.map((detail, i) => (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                      <span key={i}>
+                        {detail.modality}: {detail.tokenCount}
+                        {i < details.length - 1 ? ", " : ""}
+                      </span>
+                    ));
+                  })()}
+                </li>
+              )}
             </ul>
           </div>
         )}
