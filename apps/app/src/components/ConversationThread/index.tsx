@@ -201,7 +201,7 @@ export const ConversationThread = () => {
         ref={messagesContainerRef}
         className={`relative flex-1 overflow-x-hidden ${showWelcomeScreen ? "flex items-center" : "overflow-y-scroll"}`}
       >
-        <div className="mx-auto flex w-full max-w-3xl grow flex-col gap-8 py-8">
+        <div className="mx-auto flex w-full max-w-3xl grow flex-col gap-8 px-4 py-8">
           {showWelcomeScreen ? (
             <WelcomeScreen setInput={setInput} />
           ) : (
