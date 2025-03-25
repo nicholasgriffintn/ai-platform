@@ -83,6 +83,17 @@ export class MessageFormatter {
             content: "",
           };
         default:
+          if (
+            Array.isArray(content) &&
+            content.length === 1 &&
+            typeof content[0] === "string"
+          ) {
+            return {
+              role: message.role,
+              content: content[0],
+            };
+          }
+
           return {
             role: message.role,
             content,
