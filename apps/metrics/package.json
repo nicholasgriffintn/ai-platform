@@ -29,13 +29,13 @@
 		"react-dom": "19.0.0",
 		"recharts": "2.15.1",
 		"tailwind-merge": "3.0.2",
-		"tailwindcss": "4.0.15"
+		"tailwindcss": "4.0.16"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@cloudflare/workers-types": "4.20250321.0",
 		"@tailwindcss/typography": "0.5.16",
-		"@tailwindcss/vite": "4.0.15",
+		"@tailwindcss/vite": "4.0.16",
 		"@testing-library/jest-dom": "6.6.3",
 		"@testing-library/react": "16.2.0",
 		"@types/react": "19.0.12",
