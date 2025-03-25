@@ -64,6 +64,10 @@ This project is organized as a monorepo with multiple applications:
   - [Web LLM](https://github.com/mlc-ai/web-llm) support for completely offline usage
 - The API is deployed as a Cloudflare Worker and the frontend is deployed with Cloudflare Assets
 
+Here's a quick video demo that I made while messing around with a tool, it might be useful:
+
+https://github.com/user-attachments/assets/640d0738-efc6-46ee-9c13-783df9725a7f
+
 ## Setup and Installation
 
 ### Getting Started
