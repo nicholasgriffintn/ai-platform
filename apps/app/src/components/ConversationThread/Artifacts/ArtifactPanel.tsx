@@ -257,14 +257,14 @@ export const ArtifactPanel = ({
         <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-700">
           <div className="flex items-center gap-2 text-zinc-900 dark:text-zinc-100 min-w-0 flex-1 overflow-hidden">
             {icon}
-            <h3
+            <span
               id="artifact-panel-title"
               className="font-semibold text-lg text-zinc-900 dark:text-zinc-100 truncate"
             >
               {allArtifacts.length > 1
                 ? `Combined Artifacts (${allArtifacts.length})`
                 : currentArtifact.title || "Artifact"}
-            </h3>
+            </span>
           </div>
           <div className="flex gap-2 flex-shrink-0 ml-2">
             {!showFileTabs && (

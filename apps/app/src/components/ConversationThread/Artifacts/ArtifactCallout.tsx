@@ -74,9 +74,9 @@ export const ArtifactCallout = memo(
           <div className="flex items-start gap-2">
             <div className="flex-shrink-0 mt-1">{icon}</div>
             <div className="flex-grow min-w-0">
-              <h3 className="text-sm font-medium truncate">
+              <span className="text-sm font-medium truncate">
                 {title || "Artifact"}
-              </h3>
+              </span>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Click here to open the {isCode ? "code" : "file"}
               </p>

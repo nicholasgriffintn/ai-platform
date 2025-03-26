@@ -2,6 +2,9 @@ import { MessagesSquare, PlusCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 
+import "~/styles/scrollbar.css";
+import "~/styles/github.css";
+import "~/styles/github-dark.css";
 import { ArtifactPanel } from "~/components/ConversationThread/Artifacts/ArtifactPanel";
 import { MessageList } from "~/components/ConversationThread/MessageList";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
@@ -131,32 +134,32 @@ export default function SharedConversationPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-off-white dark:bg-zinc-900">
-      <header className="sticky top-0 z-10 border-b border-zinc-200 bg-off-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <div className="flex items-center">
-            <MessagesSquare
-              size={20}
-              className="mr-2 text-zinc-600 dark:text-zinc-400"
-            />
-            <h1 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
-              Shared Conversation
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            >
-              <PlusCircle size={16} />
-              <span>New Chat</span>
-            </Link>
-          </div>
-        </div>
-      </header>
-
       <div
-        className={`flex flex-col h-[calc(100vh-4rem)] w-full ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
+        className={`flex flex-col h-[calc(100vh)] w-full ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
       >
+        <header className="sticky top-0 z-10 border-b border-zinc-200 bg-off-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+          <div className="mx-auto flex max-w-3xl items-center justify-between">
+            <div className="flex items-center">
+              <MessagesSquare
+                size={20}
+                className="mr-2 text-zinc-600 dark:text-zinc-400"
+              />
+              <h1 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+                Shared Conversation
+              </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              >
+                <PlusCircle size={16} />
+                <span>New Chat</span>
+              </Link>
+            </div>
+          </div>
+        </header>
+
         <div
           ref={messagesContainerRef}
           className="relative flex-1 overflow-x-hidden overflow-y-scroll"
