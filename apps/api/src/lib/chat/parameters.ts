@@ -357,11 +357,38 @@ export async function mapParametersToProvider(
       };
     }
     case "google-ai-studio":
-    case "googlestudio":
+    case "googlestudio": {
+      const enabledTools = (params.enabled_tools || []).filter(
+        (tool) =>
+          !(tool === "web_search" && modelConfig?.supportsSearchGrounding),
+      );
+      const tools = [];
+
+      if (
+        modelConfig?.supportsCodeExecution &&
+        enabledTools.includes("code_execution")
+      ) {
+        tools.push({
+          code_execution: {},
+        });
+      } else if (
+        modelConfig?.supportsSearchGrounding &&
+        enabledTools.includes("search_grounding")
+      ) {
+        tools.push({
+          google_search: {},
+        });
+      }
+      /* if (modelConfig?.supportsFunctions) {
+        tools.push({
+          function_declarations: commonParams.tools,
+        });
+      } */
+
       return {
         model: params.model,
         contents: formatGoogleStudioContents(params),
-        tools: commonParams.tools,
+        tools: modelConfig?.supportsFunctions ? tools : undefined,
         systemInstruction: {
           role: "system",
           parts: [
@@ -394,6 +421,7 @@ export async function mapParametersToProvider(
           stopSequences: params.stop,
         },
       };
+    }
     case "bedrock": {
       const type = modelConfig?.type || ["text"];
       const isImageType =

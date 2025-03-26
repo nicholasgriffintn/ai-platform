@@ -13,6 +13,7 @@ export interface ChatSettings {
   useRAG?: boolean;
   responseMode?: ResponseMode;
   localOnly?: boolean;
+  enabledTools?: string[];
   ragOptions?: {
     topK?: number;
     scoreThreshold?: number;

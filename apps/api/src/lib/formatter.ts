@@ -391,8 +391,30 @@ export class ResponseFormatter {
   }
 
   private static formatGoogleStudioResponse(data: any): any {
-    const response = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    return { ...data, response };
+    if (!data.candidates || !data.candidates[0]?.content?.parts) {
+      return { ...data, response: "" };
+    }
+
+    const parts = data.candidates[0].content.parts;
+
+    let textResponse = "";
+
+    parts.forEach((part: any, index: number) => {
+      if (part.text) {
+        textResponse += (textResponse ? "\n" : "") + part.text;
+      } else if (part.executableCode) {
+        const code = part.executableCode;
+        const language = code.language?.toLowerCase() || "code";
+        textResponse += `\n\n<artifact identifier="executable-code-${index}" type="application/code" language="${language}" title="Executable ${language} Code">${code.code}</artifact>`;
+      } else if (part.codeExecutionResult) {
+        const result = part.codeExecutionResult;
+        if (result.output) {
+          textResponse += `\n\n${result.output}\n\n`;
+        }
+      }
+    });
+
+    return { ...data, response: textResponse };
   }
 
   private static formatOllamaResponse(data: any): any {

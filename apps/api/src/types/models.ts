@@ -32,6 +32,7 @@ export type ModelConfigItem = {
   supportsDocuments?: boolean;
   beta?: boolean;
   supportsSearchGrounding?: boolean;
+  supportsCodeExecution?: boolean;
 };
 
 export type ModelConfig = {

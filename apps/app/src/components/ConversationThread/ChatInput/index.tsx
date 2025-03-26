@@ -28,6 +28,7 @@ import { apiService } from "~/lib/api/api-service";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ModelConfigItem } from "~/types";
 import { ChatSettings as ChatSettingsComponent } from "./ChatSettings";
+import { ToolToggles } from "./ChatSettings/ToolToggles";
 import { ModelSelector } from "./ModelSelector";
 
 export interface ChatInputHandle {
@@ -411,8 +412,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
           <div className="border-t border-zinc-200 dark:border-zinc-700 mt-2 px-3 pb-3 pt-3">
             <div className="flex items-center justify-between gap-1 sm:gap-2">
-              <div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none">
+              <div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
                 <ModelSelector isDisabled={isLoading} mono={true} />
+                <ToolToggles isDisabled={isLoading} />
               </div>
               <div className="flex-shrink-0">
                 <ChatSettingsComponent

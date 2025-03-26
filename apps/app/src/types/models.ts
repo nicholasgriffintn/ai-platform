@@ -24,6 +24,8 @@ export type ModelConfigItem = {
   isFeatured?: boolean;
   hasThinking?: boolean;
   supportsDocuments?: boolean;
+  supportsSearchGrounding?: boolean;
+  supportsCodeExecution?: boolean;
 };
 
 export type ModelConfig = {

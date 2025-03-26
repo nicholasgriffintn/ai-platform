@@ -12,6 +12,7 @@ const defaultSettings: ChatSettings = {
   presence_penalty: 0,
   frequency_penalty: 0,
   useRAG: false,
+  enabledTools: [],
   ragOptions: {
     topK: 3,
     scoreThreshold: 0.5,
