@@ -10,6 +10,8 @@ Check out my write up on this project [here](https://nicholasgriffin.dev/blog/bu
 
 ![A screenshot of a chat in the frontend application](./docs/images/chat.png)
 
+## Example Chats
+
 Here are some example chats that you can try out:
 
 - [Generation of a new React component](https://polychat.app/s/d27e1e2a-3ddf-495c-9b4f-d6866786f945)
