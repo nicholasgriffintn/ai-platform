@@ -9,7 +9,7 @@ export const AppInitializer = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const user = authService.getUser();
     if (user) {
-      setIsPro(user.plan === "pro");
+      setIsPro(user.plan_id === "pro");
     }
   }, [setIsPro]);
 

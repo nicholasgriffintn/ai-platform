@@ -28,7 +28,7 @@ export function useAuthStatus() {
         setHasApiKey(!!token);
 
         const user = authService.getUser();
-        setIsPro(user?.plan === "pro");
+        setIsPro(user?.plan_id === "pro");
       } else {
         setIsPro(false);
       }

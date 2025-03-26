@@ -7,15 +7,7 @@ import { AssistantError, ErrorType } from "../../utils/errors";
 /**
  * Map database result to User type
  */
-function mapToUser(
-  result: Record<string, unknown>,
-  allowedUsernames?: string[],
-): User {
-  // TODO: Get this from the database when we have plans
-  const isProPlan = allowedUsernames?.includes(
-    result.github_username as string,
-  );
-
+function mapToUser(result: Record<string, unknown>): User {
   return {
     id: result.id as number,
     name: result.name as string | null,
@@ -31,7 +23,7 @@ function mapToUser(
     updated_at: result.updated_at as string,
     setup_at: result.setup_at as string | null,
     terms_accepted_at: result.terms_accepted_at as string | null,
-    plan: isProPlan ? "pro" : "free",
+    plan_id: result.plan_id as string | null,
   };
 }
 
@@ -66,14 +58,13 @@ export async function getUserBySessionId(
   sessionId: string,
 ): Promise<User | null> {
   try {
-    const { DB, ALLOWED_USERNAMES } = env;
+    const { DB } = env;
     const database = Database.getInstance(DB);
     const result = await database.getUserBySessionId(sessionId);
 
     if (!result) return null;
 
-    const allowedUsernames = ALLOWED_USERNAMES?.split(",");
-    return mapToUser(result, allowedUsernames);
+    return mapToUser(result);
   } catch (error) {
     console.error("Error getting user by session ID:", error);
     throw new AssistantError(
@@ -158,9 +149,7 @@ export async function createOrUpdateGithubUser(
       };
     }
 
-    const userByEmail = (await database.getUserByEmail(
-      userData.email,
-    )) as User | null;
+    const userByEmail = await database.getUserByEmail(userData.email);
 
     if (userByEmail) {
       await database.createOauthAccount(

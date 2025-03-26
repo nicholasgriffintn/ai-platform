@@ -51,7 +51,6 @@ export interface IEnv {
   ACCESS_TOKEN?: string;
   JWT_SECRET?: string;
   AUTH_REDIRECT_URL?: string;
-  ALLOWED_USERNAMES?: string;
   CARTESIA_API_KEY?: string;
   ELEVENLABS_API_KEY?: string;
   TOGETHER_AI_API_KEY?: string;

@@ -7,6 +7,17 @@ import {
   text,
 } from "drizzle-orm/sqlite-core";
 
+export const plans = sqliteTable("plans", {
+  id: text().primaryKey(),
+  name: text(),
+  description: text(),
+  price: integer(),
+  created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+  updated_at: text()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+});
+
 export const user = sqliteTable("user", {
   id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
   name: text(),
@@ -24,6 +35,9 @@ export const user = sqliteTable("user", {
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   setup_at: text(),
   terms_accepted_at: text(),
+  plan_id: text()
+    .references(() => plans.id)
+    .default("free"),
 });
 
 export type User = typeof user.$inferSelect;

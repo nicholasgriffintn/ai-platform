@@ -20,5 +20,5 @@ export interface User {
   updated_at: string;
   setup_at: string | null;
   terms_accepted_at: string | null;
-  plan: "free" | "pro";
+  plan_id: string | null;
 }

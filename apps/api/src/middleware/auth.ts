@@ -39,12 +39,9 @@ export async function authMiddleware(context: Context, next: Next) {
         context.env.JWT_SECRET!,
       );
 
-      // TODO: At some point, have user plans and check that
-      const username = user?.github_username;
-      const allowedUsernames = context.env.ALLOWED_USERNAMES?.split(",");
-      const isAllowed = allowedUsernames?.includes(username);
+      const isProPlan = user?.plan_id === "pro";
 
-      if (user && isAllowed) {
+      if (user && isProPlan) {
         isRestricted = false;
       }
     } catch (error) {

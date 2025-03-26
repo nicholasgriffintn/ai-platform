@@ -3,5 +3,5 @@ export interface User {
   name: string;
   github_username: string;
   email?: string;
-  plan: "free" | "pro";
+  plan_id: "free" | "pro";
 }

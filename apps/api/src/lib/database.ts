@@ -1,5 +1,6 @@
 import type { D1Database } from "@cloudflare/workers-types";
 
+import type { User } from "../types/user";
 import { AssistantError } from "../utils/errors";
 
 export class Database {
@@ -64,15 +65,13 @@ export class Database {
     return result;
   }
 
-  public async getUserByEmail(
-    email: string,
-  ): Promise<Record<string, unknown> | null> {
+  public async getUserByEmail(email: string): Promise<User | null> {
     const result = await this.db
       .prepare("SELECT * FROM user WHERE email = ?")
       .bind(email)
       .first();
 
-    return result;
+    return result as unknown as User | null;
   }
 
   public async updateUser(
