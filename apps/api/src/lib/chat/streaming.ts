@@ -155,11 +155,17 @@ export function createStreamWithPostProcessing(
                 continue;
               }
 
-              // Process text content from chunk
-              const contentDelta = StreamingFormatter.extractContentFromChunk(
-                formattedData,
-                currentEventType,
-              );
+              let contentDelta = "";
+
+              // For Perplexity and OpenAI-like streaming, use the delta directly
+              if (data.choices?.[0]?.delta?.content !== undefined) {
+                contentDelta = data.choices[0].delta.content;
+              } else {
+                contentDelta = StreamingFormatter.extractContentFromChunk(
+                  formattedData,
+                  currentEventType,
+                );
+              }
 
               if (contentDelta) {
                 fullContent += contentDelta;
