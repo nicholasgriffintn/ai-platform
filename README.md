@@ -10,6 +10,15 @@ Check out my write up on this project [here](https://nicholasgriffin.dev/blog/bu
 
 ![A screenshot of a chat in the frontend application](./docs/images/chat.png)
 
+Here are some example chats that you can try out:
+
+- [Generation of a new React component](https://polychat.app/s/d27e1e2a-3ddf-495c-9b4f-d6866786f945)
+- [Code generation and execution](https://polychat.app/s/51fb196d-7def-4922-94d8-08e7ee86989d)
+- [Web search integration](https://polychat.app/s/aa7f6433-fdf8-4a56-bbe8-83fcf5715354)
+- [Perplexity Deep Research](https://polychat.app/s/643fcf03-6849-4cbf-8643-abf93660e6dc)
+- [Combined artifact previews](https://polychat.app/s/b2137aac-bea5-4dbe-912b-e5ca107cbeca)
+- [Markdown formatting](https://polychat.app/s/0ccff6c7-7b62-4936-b18a-c05a098ef7e1)
+
 ## Project Structure
 
 This project is organized as a monorepo with multiple applications:
@@ -63,10 +72,6 @@ This project is organized as a monorepo with multiple applications:
   - Configure settings and models
   - [Web LLM](https://github.com/mlc-ai/web-llm) support for completely offline usage
 - The API is deployed as a Cloudflare Worker and the frontend is deployed with Cloudflare Assets
-
-Here's a quick video demo that I made while messing around with a tool, it might be useful:
-
-https://github.com/user-attachments/assets/640d0738-efc6-46ee-9c13-783df9725a7f
 
 ## Setup and Installation
 
