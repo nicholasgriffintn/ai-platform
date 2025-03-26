@@ -438,25 +438,11 @@ export class StreamingFormatter {
    * Checks if a streaming chunk indicates completion
    */
   static isCompletionIndicated(data: any): boolean {
-    // OpenAI style completion
-    if (
-      data.choices?.[0]?.finish_reason?.toLowerCase() === "stop" ||
-      data.choices?.[0]?.finish_reason?.toLowerCase() === "length" ||
-      data.choices?.[0]?.finish_reason?.toLowerCase() === "tool_calls"
-    ) {
-      return true;
-    }
+    const finishReason =
+      data.choices?.[0]?.finish_reason?.toLowerCase() ||
+      data.choices?.[0]?.finishReason?.toLowerCase();
 
-    // Anthropic style completion
-    if (data.type === "message_stop") {
-      return true;
-    }
-
-    // Empty content from Perplexity Sonar models
-    if (
-      data.model?.includes("sonar") &&
-      data.choices?.[0]?.delta?.content === ""
-    ) {
+    if (finishReason === "stop" || finishReason === "length") {
       return true;
     }
 
