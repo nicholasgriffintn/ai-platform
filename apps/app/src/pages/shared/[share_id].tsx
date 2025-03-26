@@ -2,6 +2,9 @@ import { MessagesSquare, PlusCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 
+import "~/styles/scrollbar.css";
+import "~/styles/github.css";
+import "~/styles/github-dark.css";
 import { ArtifactPanel } from "~/components/ConversationThread/Artifacts/ArtifactPanel";
 import { MessageList } from "~/components/ConversationThread/MessageList";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
