@@ -320,6 +320,162 @@ interface ResponseFormatOptions {
   type?: string[];
 }
 
+/**
+ * Utilities for formatting streaming responses
+ * Handles specific streaming event types and partial content
+ */
+// biome-ignore lint/complexity/noStaticOnlyClass: Utility class with static methods
+export class StreamingFormatter {
+  /**
+   * Extract text content from a streaming chunk of data
+   */
+  static extractContentFromChunk(data: any, currentEventType = "") {
+    // First check if the data was already formatted
+    if (data.response !== undefined) {
+      return data.response;
+    }
+
+    // OpenAI-like streaming streaming format
+    if (data.choices?.[0]?.delta?.content !== undefined) {
+      return data.choices[0].delta.content || "";
+    }
+
+    // Regular OpenAI-like message format
+    if (data.choices?.[0]?.message?.content) {
+      return data.choices[0].message.content;
+    }
+
+    // Anthropic like text_delta format
+    if (data.delta?.type === "text_delta" && data.delta.text) {
+      return data.delta.text;
+    }
+
+    // Anthropic like text_delta format in content_block_delta
+    if (
+      currentEventType === "content_block_delta" &&
+      data.delta?.type === "text_delta"
+    ) {
+      return data.delta.text || "";
+    }
+
+    // Direct content provided
+    if (typeof data.content === "string") {
+      return data.content;
+    }
+
+    // Array of content blocks Anthropic-like streaming
+    if (Array.isArray(data.message?.content)) {
+      return data.message.content
+        .filter((block: any) => block.type === "text" && block.text)
+        .map((block: any) => block.text)
+        .join("");
+    }
+
+    // Ollama-like format
+    if (data.message?.content) {
+      return data.message.content;
+    }
+
+    // Direct text field provided
+    if (data.text) {
+      return data.text;
+    }
+
+    // empty string for unrecognized formats
+    return "";
+  }
+
+  /**
+   * Detect if a chunk contains a tool call initialization or update
+   */
+  static extractToolCall(data: any, currentEventType = "") {
+    // OpenAI-like tool calls
+    if (data.choices?.[0]?.delta?.tool_calls) {
+      return {
+        format: "openai",
+        toolCalls: data.choices[0].delta.tool_calls,
+      };
+    }
+
+    // Anthropic-like tool_use blocks
+    if (
+      currentEventType === "content_block_start" &&
+      data.content_block?.type === "tool_use"
+    ) {
+      return {
+        format: "anthropic",
+        id: data.content_block.id,
+        name: data.content_block.name,
+        index: data.index,
+      };
+    }
+
+    // Anthropic-like tool input updates
+    if (
+      currentEventType === "content_block_delta" &&
+      data.delta?.type === "input_json_delta" &&
+      data.index !== undefined
+    ) {
+      return {
+        format: "anthropic_delta",
+        index: data.index,
+        partial_json: data.delta.partial_json || "",
+      };
+    }
+
+    // Other direct tool_calls formats
+    if (data.tool_calls) {
+      return {
+        format: "direct",
+        toolCalls: data.tool_calls,
+      };
+    }
+
+    return null;
+  }
+
+  /**
+   * Checks if a streaming chunk indicates completion
+   */
+  static isCompletionIndicated(data: any): boolean {
+    const finishReason =
+      data.choices?.[0]?.finish_reason?.toLowerCase() ||
+      data.choices?.[0]?.finishReason?.toLowerCase();
+
+    if (finishReason === "stop" || finishReason === "length") {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Extract usage information from a response
+   */
+  static extractUsageData(data: any): any {
+    if (data.usage) {
+      return data.usage;
+    }
+
+    if (data.usageMetadata) {
+      return data.usageMetadata;
+    }
+
+    return null;
+  }
+
+  /**
+   * Extract citations from a response
+   */
+  static extractCitations(data: any): any[] {
+    if (Array.isArray(data.citations)) {
+      return data.citations;
+    }
+
+    return [];
+  }
+}
+
 // biome-ignore lint/complexity/noStaticOnlyClass: CBA
 export class ResponseFormatter {
   /**
@@ -360,7 +516,64 @@ export class ResponseFormatter {
       "together-ai": ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
     };
 
-    return formatters[provider] || ((data) => data);
+    return formatters[provider] || ResponseFormatter.formatGenericResponse;
+  }
+
+  /**
+   * Format generic/unknown provider responses
+   * Attempts to extract content from common response formats
+   */
+  private static formatGenericResponse(data: any): any {
+    // Handle the most common response shapes
+    if (data.response !== undefined) {
+      return data; // Already has response field
+    }
+
+    if (data.choices?.[0]) {
+      if (data.choices[0].message?.content) {
+        return { ...data, response: data.choices[0].message.content };
+      }
+      if (data.choices[0].delta?.content !== undefined) {
+        return { ...data, response: data.choices[0].delta.content || "" };
+      }
+      if (data.choices[0].text) {
+        return { ...data, response: data.choices[0].text };
+      }
+    }
+
+    if (data.delta?.text) {
+      return { ...data, response: data.delta.text };
+    }
+
+    if (data.content && typeof data.content === "string") {
+      return { ...data, response: data.content };
+    }
+
+    if (data.content && Array.isArray(data.content)) {
+      const textContent = data.content
+        .filter((item: any) => item.text)
+        .map((item: any) => item.text)
+        .join(" ");
+
+      return { ...data, response: textContent || "" };
+    }
+
+    if (data.message?.content) {
+      if (typeof data.message.content === "string") {
+        return { ...data, response: data.message.content };
+      }
+      if (Array.isArray(data.message.content)) {
+        const textContent = data.message.content
+          .filter((item: any) => item.type === "text" && item.text)
+          .map((item: any) => item.text)
+          .join(" ");
+
+        return { ...data, response: textContent || "" };
+      }
+    }
+
+    // Last resort fallback
+    return { ...data, response: "" };
   }
 
   private static formatOpenAIResponse(data: any): any {

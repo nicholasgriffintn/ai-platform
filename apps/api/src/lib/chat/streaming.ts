@@ -1,10 +1,10 @@
-// TODO: This file is messy, but refactoring it is a lot of work.
-
 import type { ChatMode, IEnv, IUser, Platform } from "../../types";
 import { getLogger } from "../../utils/logger";
 import { handleToolCalls } from "../chat/tools";
 import type { ConversationManager } from "../conversationManager";
+import { ResponseFormatter, StreamingFormatter } from "../formatter";
 import { Guardrails } from "../guardrails";
+import { getModelConfigByMatchingModel } from "../models";
 
 const logger = getLogger({ prefix: "CHAT_STREAMING" });
 
@@ -47,6 +47,7 @@ export function createStreamWithPostProcessing(
   const currentToolCalls: Record<string, any> = {};
 
   const guardrails = Guardrails.getInstance(env);
+  const modelConfig = getModelConfigByMatchingModel(model);
 
   return providerStream.pipeThrough(
     new TransformStream({
@@ -104,150 +105,137 @@ export function createStreamWithPostProcessing(
                 return;
               }
 
+              // Use ResponseFormatter to standardize the response format
+              const formattedData = ResponseFormatter.formatResponse(
+                data,
+                platform,
+                {
+                  model,
+                  type: modelConfig?.type,
+                },
+              );
+
+              // Check if this chunk indicates completion
               if (
-                data.choices &&
-                (data.choices[0]?.finish_reason?.toLowerCase() === "stop" ||
-                  data.choices[0]?.finish_reason?.toLowerCase() === "length") &&
+                StreamingFormatter.isCompletionIndicated(data) &&
                 !postProcessingDone
               ) {
-                if (data.choices[0]?.delta?.content) {
-                  fullContent += data.choices[0].delta.content || "";
+                // Extract content if present
+                const contentDelta = StreamingFormatter.extractContentFromChunk(
+                  data,
+                  currentEventType,
+                );
+                if (contentDelta) {
+                  fullContent += contentDelta;
 
                   const contentDeltaEvent = new TextEncoder().encode(
                     `data: ${JSON.stringify({
                       type: "content_block_delta",
-                      content: data.choices[0].delta.content || "",
-                    })}\n\n`,
-                  );
-                  controller.enqueue(contentDeltaEvent);
-                } else if (data.choices[0]?.message?.content && !fullContent) {
-                  fullContent = data.choices[0].message.content || "";
-
-                  const contentDeltaEvent = new TextEncoder().encode(
-                    `data: ${JSON.stringify({
-                      type: "content_block_delta",
-                      content: fullContent || "",
+                      content: contentDelta,
                     })}\n\n`,
                   );
                   controller.enqueue(contentDeltaEvent);
                 }
 
-                if (data.usage || data.usageMetadata) {
-                  usageData = data.usage || data.usageMetadata;
+                // Extract usage data
+                const extractedUsage =
+                  StreamingFormatter.extractUsageData(data);
+                if (extractedUsage) {
+                  usageData = extractedUsage;
                 }
 
-                if (data.citations) {
-                  citationsResponse = data.citations;
+                // Extract citations
+                const extractedCitations =
+                  StreamingFormatter.extractCitations(data);
+                if (extractedCitations.length > 0) {
+                  citationsResponse = extractedCitations;
                 }
 
                 await handlePostProcessing();
                 continue;
               }
 
-              if (data.response !== undefined) {
-                fullContent += data.response || "";
+              let contentDelta = "";
+
+              // For Perplexity and OpenAI-like streaming, use the delta directly
+              if (data.choices?.[0]?.delta?.content !== undefined) {
+                contentDelta = data.choices[0].delta.content;
+              } else {
+                contentDelta = StreamingFormatter.extractContentFromChunk(
+                  formattedData,
+                  currentEventType,
+                );
+              }
+
+              if (contentDelta) {
+                fullContent += contentDelta;
 
                 const contentDeltaEvent = new TextEncoder().encode(
                   `data: ${JSON.stringify({
                     type: "content_block_delta",
-                    content: data.response || "",
+                    content: contentDelta,
                   })}\n\n`,
                 );
                 controller.enqueue(contentDeltaEvent);
-              } else if (
-                data.choices &&
-                data.choices.length > 0 &&
-                data.choices[0].delta &&
-                data.choices[0].delta.content !== undefined
-              ) {
-                fullContent += data.choices[0].delta.content || "";
+              }
 
-                const contentDeltaEvent = new TextEncoder().encode(
-                  `data: ${JSON.stringify({
-                    type: "content_block_delta",
-                    content: data.choices[0].delta.content || "",
-                  })}\n\n`,
-                );
-                controller.enqueue(contentDeltaEvent);
+              // Process tool calls
+              const toolCallData = StreamingFormatter.extractToolCall(
+                data,
+                currentEventType,
+              );
+              if (toolCallData && !isRestricted) {
+                if (toolCallData.format === "openai") {
+                  const deltaToolCalls = toolCallData.toolCalls;
 
-                // Fix for Perplexity Sonar models that end with an empty string.
-                if (
-                  data.model?.includes("sonar") &&
-                  data.choices[0].delta.content === "" &&
-                  !postProcessingDone
-                ) {
-                  if (data.usage || data.usageMetadata) {
-                    usageData = data.usage || data.usageMetadata;
+                  // Accumulate tool calls from this delta
+                  for (const toolCall of deltaToolCalls) {
+                    const index = toolCall.index;
+
+                    // Initialize tool call if it's new
+                    if (!currentToolCalls[index]) {
+                      currentToolCalls[index] = {
+                        id: toolCall.id,
+                        function: {
+                          name: toolCall.function?.name || "",
+                          arguments: "",
+                        },
+                      };
+                    }
+
+                    // Accumulate arguments
+                    if (toolCall.function) {
+                      if (toolCall.function.name) {
+                        currentToolCalls[index].function.name =
+                          toolCall.function.name;
+                      }
+                      if (toolCall.function.arguments) {
+                        currentToolCalls[index].function.arguments +=
+                          toolCall.function.arguments;
+                      }
+                    }
                   }
-
-                  if (data.citations) {
-                    citationsResponse = data.citations;
+                } else if (toolCallData.format === "anthropic") {
+                  currentToolCalls[toolCallData.index] = {
+                    id: toolCallData.id,
+                    name: toolCallData.name,
+                    accumulatedInput: "",
+                    isComplete: false,
+                  };
+                } else if (toolCallData.format === "anthropic_delta") {
+                  if (
+                    currentToolCalls[toolCallData.index] &&
+                    toolCallData.partial_json
+                  ) {
+                    currentToolCalls[toolCallData.index].accumulatedInput +=
+                      toolCallData.partial_json;
                   }
-
-                  await handlePostProcessing();
-
-                  continue;
+                } else if (toolCallData.format === "direct") {
+                  toolCallsData = [...toolCallsData, ...toolCallData.toolCalls];
                 }
               }
 
-              if (
-                data.type === "content_block_delta" &&
-                data.delta &&
-                data.delta.type === "text_delta"
-              ) {
-                fullContent += data.delta.text || "";
-
-                const contentDeltaEvent = new TextEncoder().encode(
-                  `data: ${JSON.stringify({
-                    type: "content_block_delta",
-                    content: data.delta.text || "",
-                  })}\n\n`,
-                );
-                controller.enqueue(contentDeltaEvent);
-              } else if (
-                currentEventType === "content_block_delta" &&
-                data.delta &&
-                data.delta.type === "text_delta"
-              ) {
-                fullContent += data.delta.text || "";
-
-                const contentDeltaEvent = new TextEncoder().encode(
-                  `data: ${JSON.stringify({
-                    type: "content_block_delta",
-                    content: data.delta.text || "",
-                  })}\n\n`,
-                );
-                controller.enqueue(contentDeltaEvent);
-              } else if (
-                data.content &&
-                currentEventType === "content_block_delta"
-              ) {
-                fullContent += data.content || "";
-              }
-
-              if (!fullContent && data.content) {
-                fullContent += data.content || "";
-              }
-
-              if (
-                data.message?.content &&
-                Array.isArray(data.message.content)
-              ) {
-                for (const block of data.message.content) {
-                  if (block.type === "text" && block.text) {
-                    fullContent += block.text || "";
-                  }
-                }
-              }
-
-              if (data.citations) {
-                citationsResponse = data.citations;
-              }
-
-              if (data.usage) {
-                usageData = data.usage;
-              }
-
+              // Handle Anthropic-specific event types
               if (
                 [
                   "message_start",
@@ -257,7 +245,7 @@ export function createStreamWithPostProcessing(
                   "content_block_stop",
                 ].includes(currentEventType)
               ) {
-                // Special handling for Anthropic for event types.
+                // Forward the event
                 const forwardEvent = new TextEncoder().encode(
                   `data: ${JSON.stringify({
                     type: currentEventType,
@@ -266,24 +254,13 @@ export function createStreamWithPostProcessing(
                 );
                 controller.enqueue(forwardEvent);
 
-                if (
-                  currentEventType === "content_block_start" &&
-                  data.content_block?.type === "tool_use" &&
-                  !isRestricted
-                ) {
-                  currentToolCalls[data.index] = {
-                    id: data.content_block.id,
-                    name: data.content_block.name,
-                    accumulatedInput: "",
-                    isComplete: false,
-                  };
-                }
-
+                // Handle content block stop for tool calls
                 if (
                   currentEventType === "content_block_stop" &&
                   data.index !== undefined &&
                   currentToolCalls[data.index] &&
-                  !currentToolCalls[data.index].isComplete
+                  !currentToolCalls[data.index].isComplete &&
+                  !isRestricted
                 ) {
                   currentToolCalls[data.index].isComplete = true;
 
@@ -308,6 +285,7 @@ export function createStreamWithPostProcessing(
                   toolCallsData.push(toolCall);
                 }
 
+                // Handle message stop event
                 if (
                   currentEventType === "message_stop" &&
                   !postProcessingDone
@@ -316,68 +294,16 @@ export function createStreamWithPostProcessing(
                 }
               }
 
-              if (
-                data.type === "content_block_delta" &&
-                data.delta?.type === "input_json_delta" &&
-                data.index !== undefined &&
-                currentToolCalls[data.index] &&
-                !isRestricted
-              ) {
-                if (data.delta.partial_json) {
-                  currentToolCalls[data.index].accumulatedInput +=
-                    data.delta.partial_json;
-                }
+              // Extract citations and usage data
+              const extractedCitations =
+                StreamingFormatter.extractCitations(data);
+              if (extractedCitations.length > 0) {
+                citationsResponse = extractedCitations;
               }
 
-              if (
-                data.choices &&
-                data.choices.length > 0 &&
-                data.choices[0].delta &&
-                data.choices[0].delta.tool_calls &&
-                !isRestricted
-              ) {
-                const deltaToolCalls = data.choices[0].delta.tool_calls;
-
-                // Accumulate tool calls from this delta
-                for (const toolCall of deltaToolCalls) {
-                  const index = toolCall.index;
-
-                  // Initialize tool call if it's new
-                  if (!currentToolCalls[index]) {
-                    currentToolCalls[index] = {
-                      id: toolCall.id,
-                      function: {
-                        name: toolCall.function?.name || "",
-                        arguments: "",
-                      },
-                    };
-                  }
-
-                  // Accumulate arguments
-                  if (toolCall.function) {
-                    if (toolCall.function.name) {
-                      currentToolCalls[index].function.name =
-                        toolCall.function.name;
-                    }
-                    if (toolCall.function.arguments) {
-                      currentToolCalls[index].function.arguments +=
-                        toolCall.function.arguments;
-                    }
-                  }
-                }
-
-                // If this is the final chunk, process the complete tool calls
-                if (
-                  data.choices[0].finish_reason?.toLowerCase() === "tool_calls"
-                ) {
-                  const completeToolCalls = Object.values(currentToolCalls);
-                  toolCallsData = completeToolCalls;
-
-                  await handlePostProcessing();
-                }
-              } else if (data.tool_calls && !isRestricted) {
-                // Handle non-OpenAI tool calls (direct format)
-                toolCallsData = [...toolCallsData, ...data.tool_calls];
+              const extractedUsage = StreamingFormatter.extractUsageData(data);
+              if (extractedUsage) {
+                usageData = extractedUsage;
               }
             } catch (parseError) {
               logger.error("Parse error on data", {
