@@ -335,22 +335,22 @@ export class StreamingFormatter {
       return data.response;
     }
 
-    // OpenAI streaming format
+    // OpenAI-like streaming streaming format
     if (data.choices?.[0]?.delta?.content !== undefined) {
       return data.choices[0].delta.content || "";
     }
 
-    // Regular OpenAI message format
+    // Regular OpenAI-like message format
     if (data.choices?.[0]?.message?.content) {
       return data.choices[0].message.content;
     }
 
-    // Anthropic's text_delta format
+    // Anthropic like text_delta format
     if (data.delta?.type === "text_delta" && data.delta.text) {
       return data.delta.text;
     }
 
-    // Claude specific format in content_block_delta
+    // Anthropic like text_delta format in content_block_delta
     if (
       currentEventType === "content_block_delta" &&
       data.delta?.type === "text_delta"
@@ -358,12 +358,12 @@ export class StreamingFormatter {
       return data.delta.text || "";
     }
 
-    // Direct content field
+    // Direct content provided
     if (typeof data.content === "string") {
       return data.content;
     }
 
-    // Array of content blocks (Anthropic/Claude)
+    // Array of content blocks Anthropic-like streaming
     if (Array.isArray(data.message?.content)) {
       return data.message.content
         .filter((block: any) => block.type === "text" && block.text)
@@ -371,17 +371,17 @@ export class StreamingFormatter {
         .join("");
     }
 
-    // Ollama format
+    // Ollama-like format
     if (data.message?.content) {
       return data.message.content;
     }
 
-    // Direct text field
+    // Direct text field provided
     if (data.text) {
       return data.text;
     }
 
-    // Last resort - empty string for unrecognized formats
+    // empty string for unrecognized formats
     return "";
   }
 
@@ -389,7 +389,7 @@ export class StreamingFormatter {
    * Detect if a chunk contains a tool call initialization or update
    */
   static extractToolCall(data: any, currentEventType = "") {
-    // OpenAI tool calls
+    // OpenAI-like tool calls
     if (data.choices?.[0]?.delta?.tool_calls) {
       return {
         format: "openai",
@@ -397,7 +397,7 @@ export class StreamingFormatter {
       };
     }
 
-    // Anthropic tool_use blocks
+    // Anthropic-like tool_use blocks
     if (
       currentEventType === "content_block_start" &&
       data.content_block?.type === "tool_use"
@@ -410,7 +410,7 @@ export class StreamingFormatter {
       };
     }
 
-    // Anthropic tool input updates
+    // Anthropic-like tool input updates
     if (
       currentEventType === "content_block_delta" &&
       data.delta?.type === "input_json_delta" &&
