@@ -1,5 +1,5 @@
 import { Check, Copy, Share2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "~/components/ui/Button";
 import {
@@ -36,6 +36,20 @@ export const ShareButton = ({
   );
   const { addError } = useError();
   const { copied, copy } = useCopyToClipboard();
+
+  useEffect(() => {
+    if (shareId) {
+      setCurrentShareId(shareId);
+    } else {
+      setCurrentShareId(undefined);
+    }
+
+    if (isPublic) {
+      setCurrentIsPublic(true);
+    } else {
+      setCurrentIsPublic(false);
+    }
+  }, [shareId, isPublic]);
 
   const handleShareClick = async () => {
     if (!conversationId) return;

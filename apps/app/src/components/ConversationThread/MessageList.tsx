@@ -72,13 +72,16 @@ export const MessageList = ({
             <MessagesSquare size={16} />
             <span>{conversation?.title || "New conversation"}</span>
           </h2>
-          {currentConversationId && isAuthenticated && (
-            <ShareButton
-              conversationId={currentConversationId}
-              isPublic={conversation?.is_public}
-              shareId={conversation?.share_id}
-            />
-          )}
+          {!conversation?.isLocalOnly &&
+            !isLoadingConversation &&
+            currentConversationId &&
+            isAuthenticated && (
+              <ShareButton
+                conversationId={currentConversationId}
+                isPublic={conversation?.is_public}
+                shareId={conversation?.share_id}
+              />
+            )}
         </div>
       )}
 
