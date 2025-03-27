@@ -37,7 +37,7 @@ export class PromptBuilder {
   }
 
   startSection(title?: string): PromptBuilder {
-    this.parts.push("\n\n");
+    this.parts.push("\n");
     if (title) {
       this.parts.push(`${title}:\n`);
     }

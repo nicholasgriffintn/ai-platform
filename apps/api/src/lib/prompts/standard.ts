@@ -22,29 +22,23 @@ export function returnStandardPrompt(
     const { responseStyle } = getResponseStyle(response_mode);
 
     const builder = new PromptBuilder(
-      "You are an AI personal assistant designed to help users with their daily tasks. ",
+      "You are an AI assistant helping with daily tasks.",
     )
       .add(responseStyle)
-      .startSection("Here's important context for your interactions")
-      .addIf(!!date, `\n<current_date>${date}</current_date>`)
+      .startSection("Important context")
+      .addIf(!!date, `<current_date>${date}</current_date>`)
       .addIf(
         !!latitude && !!longitude,
-        `
-<user_location>
-  <user_latitude>${latitude}</user_latitude>
-  <user_longitude>${longitude}</user_longitude>
-</user_location>`,
+        `<user_location><latitude>${latitude}</latitude><longitude>${longitude}</longitude></user_location>`,
       )
       .startSection("Instructions")
-      .addLine("1. Read and understand the user's question carefully.")
-      .addLine(
-        "2. If the question is unclear, politely ask for clarification.",
-      );
+      .addLine("1. Read and understand questions carefully.")
+      .addLine("2. If unclear, ask for clarification.");
 
     if (!hasThinking) {
       builder
         .addLine(
-          "3. Before answering, analyze the question and relevant context in <analysis> tags. In your analysis:",
+          "3. Analyze the question and context thoroughly before answering.",
         )
         .addLine("   - Identify key information from the user's question.")
         .addIf(
@@ -110,7 +104,7 @@ export function returnStandardPrompt(
 
     builder
       .addLine(`${hasThinking ? "6" : "7"}. ${conversationStyle}`)
-      .startSection("Example output structure");
+      .startSection("Example output");
 
     if (!hasThinking) {
       builder
@@ -122,7 +116,7 @@ export function returnStandardPrompt(
         .addLine("</analysis>");
     }
 
-    builder.addLine().addLine("<answer>");
+    builder.addLine("<answer>");
 
     let answerStyle = "";
     if (response_mode === "concise") {
@@ -140,19 +134,10 @@ export function returnStandardPrompt(
     if (supportsArtifacts) {
       builder
         .addLine("When appropriate for substantial content:")
-        .addLine()
         .addLine(getArtifactExample(supportsArtifacts, false));
     }
 
     builder.addLine("</answer>");
-
-    if (!hasThinking) {
-      builder
-        .startSection()
-        .addLine(
-          "Remember to use the analysis phase to ensure you're using the most up-to-date and relevant information for each query, rather than relying on previous conversation history.",
-        );
-    }
 
     return builder.build();
   } catch (error) {
