@@ -2,7 +2,12 @@ import { useState } from "react";
 import { Favicon } from "~/components/ui/Favicon";
 
 interface CitationListProps {
-  citations: string[];
+  citations:
+    | {
+        url: string;
+        title?: string;
+      }[]
+    | string[];
   maxDisplayed?: number;
 }
 
@@ -30,7 +35,7 @@ export const CitationList = ({
       <div className="flex">
         {displayedCitations.map((url, index) => (
           <div
-            key={url}
+            key={typeof url === "string" ? url : url.url}
             className={`
               flex-shrink-0 -ml-2 first:ml-0 relative
               ${hoveredIndex === index ? "z-10" : "z-0"}
@@ -38,10 +43,10 @@ export const CitationList = ({
             `}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
-            title={url}
+            title={typeof url === "string" ? url : url.title || url.url}
           >
             <a
-              href={url}
+              href={typeof url === "string" ? url : url.url}
               target="_blank"
               rel="noopener noreferrer"
               className={`
@@ -49,10 +54,10 @@ export const CitationList = ({
                 ${hoveredIndex === index ? "transform scale-125" : ""}
                 transition-all duration-200 ease-in-out
               `}
-              aria-label={`Citation source: ${url}`}
+              aria-label={`Citation source: ${typeof url === "string" ? url : url.title || url.url}`}
             >
               <Favicon
-                url={url}
+                url={typeof url === "string" ? url : url.title || url.url}
                 className={`
                   w-6 h-6 rounded-full border border-zinc-200 dark:border-zinc-700 
                   bg-white object-contain p-[2px]

@@ -38,9 +38,12 @@ export const SearchGroundingSection = ({
   }
 
   const sources = searchGrounding.groundingChunks || [];
-  const sourceUrls = sources
-    .filter((source) => source.web?.uri)
-    .map((source) => source.web?.uri as string);
+  const sourceUrls = sources.map((source) => {
+    return {
+      url: source.web?.uri,
+      title: source.web?.title,
+    };
+  });
 
   return (
     <div className="mb-4 mt-2">
