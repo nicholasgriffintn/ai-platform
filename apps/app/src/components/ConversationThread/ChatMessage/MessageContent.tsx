@@ -49,10 +49,8 @@ const renderTextContent = (
   ) => void,
   key?: string,
 ): ReactNode => {
-  const { content, reasoning, artifacts } = formattedMessageContent(
-    textContent,
-    messageData,
-  );
+  const { content, reasoning, artifacts } =
+    formattedMessageContent(textContent);
 
   const hasOpenReasoning = reasoning.some((item) => item.isOpen);
 

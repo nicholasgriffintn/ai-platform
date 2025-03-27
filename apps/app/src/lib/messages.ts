@@ -88,10 +88,7 @@ export function formatMessageContent(messageContent: string): {
   };
 }
 
-export const formattedMessageContent = (
-  originalContent: string,
-  messageData?: any,
-) => {
+export const formattedMessageContent = (originalContent: string) => {
   let content = originalContent;
   const reasoning = [];
   const artifacts = [];
