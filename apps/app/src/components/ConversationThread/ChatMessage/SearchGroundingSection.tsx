@@ -1,5 +1,3 @@
-import { Search } from "lucide-react";
-
 import { CitationList } from "./CitationList";
 
 interface SearchGroundingProps {
@@ -38,12 +36,14 @@ export const SearchGroundingSection = ({
   }
 
   const sources = searchGrounding.groundingChunks || [];
-  const sourceUrls = sources.map((source) => {
-    return {
-      url: source.web?.uri,
-      title: source.web?.title,
-    };
-  });
+  const sourceUrls = sources
+    .map((source) => {
+      return {
+        url: source.web?.uri || "",
+        title: source.web?.title || "",
+      };
+    })
+    .filter((source) => source.url);
 
   return (
     <div className="mb-4 mt-2">
