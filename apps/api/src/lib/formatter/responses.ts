@@ -158,7 +158,27 @@ export class ResponseFormatter {
       }
     });
 
-    return { ...data, response: textResponse };
+    let newData = data.data;
+    const searchGrounding = data.candidates[0].groundingMetadata;
+    if (searchGrounding) {
+      if (!newData) {
+        newData = {};
+      }
+
+      // Remove the searchEntryPoint renderedContent and groundingSupports from the searchGrounding
+      const cleanedSearchGrounding = {
+        ...searchGrounding,
+        searchEntryPoint: {
+          ...searchGrounding.searchEntryPoint,
+          renderedContent: undefined,
+        },
+        groundingSupports: {},
+      };
+
+      newData.searchGrounding = cleanedSearchGrounding;
+    }
+
+    return { ...data, response: textResponse, data: newData };
   }
 
   private static formatOllamaResponse(data: any): any {

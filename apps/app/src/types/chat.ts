@@ -59,6 +59,27 @@ export interface MessageData {
     url: string;
     name?: string;
   }>;
+  searchGrounding?: {
+    searchEntryPoint?: {
+      renderedContent: string;
+    };
+    groundingChunks?: Array<{
+      web?: {
+        uri: string;
+        title: string;
+      };
+    }>;
+    groundingSupports?: Array<{
+      segment: {
+        startIndex: number;
+        endIndex: number;
+        text: string;
+      };
+      groundingChunkIndices: number[];
+      confidenceScores: number[];
+    }>;
+    webSearchQueries?: string[];
+  };
 }
 
 export interface Message {

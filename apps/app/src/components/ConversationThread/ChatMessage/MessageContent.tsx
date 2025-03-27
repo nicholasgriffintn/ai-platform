@@ -10,6 +10,7 @@ import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactCallout } from "../Artifacts/ArtifactCallout";
 import { CitationList } from "./CitationList";
 import { ReasoningSection } from "./ReasoningSection";
+import { SearchGroundingSection } from "./SearchGroundingSection";
 
 interface MessageContentProps {
   message: Message;
@@ -48,8 +49,10 @@ const renderTextContent = (
   ) => void,
   key?: string,
 ): ReactNode => {
-  const { content, reasoning, artifacts } =
-    formattedMessageContent(textContent);
+  const { content, reasoning, artifacts } = formattedMessageContent(
+    textContent,
+    messageData,
+  );
 
   const hasOpenReasoning = reasoning.some((item) => item.isOpen);
 
@@ -130,6 +133,11 @@ const renderTextContent = (
           {messageCitations && messageCitations.length > 0 && (
             <CitationList citations={messageCitations} />
           )}
+          {messageData?.searchGrounding && (
+            <SearchGroundingSection
+              searchGrounding={messageData.searchGrounding}
+            />
+          )}
           {renderedParts}
         </div>
       </>
@@ -143,6 +151,9 @@ const renderTextContent = (
       )}
       {messageCitations && messageCitations.length > 0 && (
         <CitationList citations={messageCitations} />
+      )}
+      {messageData?.searchGrounding && (
+        <SearchGroundingSection searchGrounding={messageData.searchGrounding} />
       )}
       <MemoizedMarkdown key={key}>{content}</MemoizedMarkdown>
       {messageData && messageData.attachments?.length > 0 && (
