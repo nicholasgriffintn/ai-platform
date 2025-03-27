@@ -122,7 +122,6 @@ class ApiService {
     }
 
     const messages = conversation.messages;
-    const title = conversation.title;
 
     const transformedMessages = messages.map((msg: any) =>
       normalizeMessage(msg),
@@ -130,8 +129,10 @@ class ApiService {
 
     return {
       id: completion_id,
-      title,
+      title: conversation.title,
       messages: transformedMessages,
+      is_public: conversation.is_public,
+      share_id: conversation.share_id,
     };
   }
 
