@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 
-const rehypePlugins = [rehypeHighlight];
+const rehypePlugins = [() => rehypeHighlight({ detect: true })];
 const remarkPlugins = [remarkGfm];
 
 type CodeProps = ComponentPropsWithoutRef<"code"> & { node?: unknown };
@@ -26,7 +26,7 @@ export function Markdown({
   className,
 }: { children: string; className?: string }) {
   const markdownClassName = useMemo(
-    () => `prose dark:prose-invert prose-zinc ${className || ""}`,
+    () => `markdown prose dark:prose-invert prose-zinc ${className || ""}`,
     [className],
   );
 
