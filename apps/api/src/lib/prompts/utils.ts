@@ -43,36 +43,14 @@ export function getResponseStyle(response_mode = "normal"): {
   }
 }
 
-export function getArtifactInstructions(
+export function getArtifactExample(
   supportsArtifacts = false,
   forCode = false,
 ): string {
   if (!supportsArtifacts) return "";
 
   return forCode
-    ? `
-You can create and reference artifacts for code and other technical content. Artifacts are ideal for substantial, self-contained code that users might modify or reuse.
-
-Good code artifacts are:
-- Complete, working solutions (>15 lines)
-- Self-contained scripts or modules
-- Code intended for reuse or modification
-- Well-structured implementations with proper organization
-
-Don't use artifacts for:
-- Simple one-liners or small examples
-- Code snippets used to illustrate a concept
-- Minor modifications to existing code
-- Incomplete code fragments
-
-When creating a code artifact:
-1. First determine if the code is substantial and self-contained enough for an artifact.
-2. Wrap the content in <artifact> tags with these attributes:
-   - identifier: A descriptive id using kebab-case (e.g., "sorting-algorithm")
-   - type: Use "application/code" for code with a language attribute
-   - title: A brief title describing what the code does
-
-Example code artifact:
+    ? `Example code artifact:
 <artifact identifier="factorial-script" type="application/code" language="python" title="Recursive factorial implementation">
 def factorial(n):
     if n == 0:
@@ -83,50 +61,50 @@ def factorial(n):
 # Example usage
 result = factorial(5)
 print(f"Factorial of 5 is {result}")
-</artifact>
-
-You can also create other artifact types when appropriate:
-- "text/markdown" for documentation
-- "text/html" for web content
-- "image/svg+xml" for diagrams
-- "application/mermaid" for flowcharts and diagrams
-`
-    : `
-You can create and reference artifacts during conversations. Artifacts are for substantial, self-contained content that might be modified or reused.
-
-Good artifacts are:
-- Substantial content (>15 lines)
-- Self-contained content that can be understood without conversation context
-- Content intended for eventual use outside the conversation
-- Content likely to be referenced or reused
-
-Don't use artifacts for:
-- Simple, short content or brief code snippets
-- Primarily explanatory or illustrative content
-- Suggestions or feedback on existing artifacts
-- Content dependent on the conversation context
-
-When creating an artifact:
-1. First determine if it's artifact-worthy based on the criteria above.
-2. Wrap the content in <artifact> tags with these attributes:
-   - identifier: A descriptive id using kebab-case (e.g., "example-code-snippet")
-   - type: Specifies the content type:
-     - "application/code" for code, with a language attribute
-     - "text/markdown" for formatted documents
-     - "text/html" for HTML content
-     - "image/svg+xml" for SVG images
-     - "application/mermaid" for Mermaid diagrams
-   - title: A brief title describing the content
-
-Example artifact:
+</artifact>`
+    : `Example artifact:
 <artifact identifier="factorial-script" type="application/code" language="python" title="Simple factorial script">
 def factorial(n):
     if n == 0:
         return 1
     else:
         return n * factorial(n - 1)
-</artifact>
-`;
+</artifact>`;
+}
+
+export function getArtifactInstructions(
+  supportsArtifacts = false,
+  forCode = false,
+  startIndex = 1,
+): string {
+  if (!supportsArtifacts) return "";
+
+  return forCode
+    ? `${startIndex}. When creating code artifacts:
+   a. Only use artifacts for substantial content:
+      - Complete, working solutions (>15 lines)
+      - Self-contained scripts or modules
+      - Code intended for reuse or modification
+   b. Don't use artifacts for simple snippets, examples, or incomplete code
+   c. Structure the artifact with these attributes:
+      - identifier: A descriptive kebab-case id (e.g., "sorting-algorithm")
+      - type: Use "application/code" with a language attribute
+      - title: A brief description of what the code does
+   d. Consider other artifact types when appropriate:
+      - "text/markdown" for documentation
+      - "text/html" for web content
+      - "image/svg+xml" for diagrams
+      - "application/mermaid" for flowcharts`
+    : `${startIndex}. When creating artifacts:
+   a. Only use artifacts for substantial content:
+      - Self-contained content (>15 lines)
+      - Content that can be understood without conversation context
+      - Content intended for use outside the conversation
+   b. Don't use artifacts for simple snippets, explanations, or context-dependent content
+   c. Structure the artifact with these attributes:
+      - identifier: A descriptive kebab-case id (e.g., "example-code-snippet")
+      - type: Appropriate content type ("application/code", "text/markdown", etc.)
+      - title: A brief description of the content`;
 }
 
 /**

@@ -1,51 +1,65 @@
 import { PromptBuilder } from "./builder";
-import { getArtifactInstructions, getResponseStyle } from "./utils";
+import {
+  getArtifactExample,
+  getArtifactInstructions,
+  getResponseStyle,
+} from "./utils";
 
 export function returnCodingPrompt(
   response_mode = "normal",
   supportsArtifacts?: boolean,
+  hasThinking?: boolean,
 ): string {
   const {
     responseStyle,
     problemBreakdownInstructions,
     answerFormatInstructions,
   } = getResponseStyle(response_mode);
-  const artifactInstructions = getArtifactInstructions(supportsArtifacts, true);
 
   const builder = new PromptBuilder(
     "You are an experienced software developer tasked with answering coding questions or generating code based on user requests. Your responses should be professional, accurate, and tailored to the specified programming language when applicable. ",
   )
     .add(responseStyle)
-    .startSection()
-    .addLine(
-      `Before providing your final answer, wrap your analysis in <problem_breakdown> tags to break down the problem, plan your approach, and analyze any code you generate. ${problemBreakdownInstructions} This will ensure a thorough and well-considered response.`,
-    )
-    .addIf(supportsArtifacts, artifactInstructions)
+    .startSection();
+
+  if (!hasThinking) {
+    builder.addLine(
+      `Before providing your final answer, wrap your analysis in <analysis> tags to break down the problem, plan your approach, and analyze any code you generate. ${problemBreakdownInstructions} This will ensure a thorough and well-considered response.`,
+    );
+  }
+
+  builder
     .startSection("Follow these steps when responding")
     .addLine()
     .addLine("1. Carefully read and understand the coding question or request.")
     .addLine(
       "2. If the question is unclear or lacks necessary information, politely ask for clarification.",
-    )
-    .addLine("3. In your problem breakdown:")
-    .addLine("   a. Break down the problem into smaller components.")
-    .addLine("   b. List any assumptions you're making about the problem.")
-    .addLine(
-      "   c. Plan your approach to solving the problem or generating the code.",
-    )
-    .addLine("   d. Write pseudocode for your solution.")
-    .addLine(
-      "   e. Consider potential edge cases or limitations of your solution.",
-    )
-    .addLine(
-      "   f. If generating code, write it out and then analyze it for correctness, efficiency, and adherence to best practices.",
-    )
-    .addIf(
-      supportsArtifacts,
-      "   g. Determine if the code would benefit from being presented as an artifact.",
-    )
-    .addLine()
-    .addLine("4. When answering coding questions:")
+    );
+
+  if (!hasThinking) {
+    builder
+      .addLine("3. In your problem breakdown:")
+      .addLine("   a. Break down the problem into smaller components.")
+      .addLine("   b. List any assumptions you're making about the problem.")
+      .addLine(
+        "   c. Plan your approach to solving the problem or generating the code.",
+      )
+      .addLine("   d. Write pseudocode for your solution.")
+      .addLine(
+        "   e. Consider potential edge cases or limitations of your solution.",
+      )
+      .addLine(
+        "   f. If generating code, write it out and then analyze it for correctness, efficiency, and adherence to best practices.",
+      )
+      .addIf(
+        supportsArtifacts,
+        "   g. Determine if the code would benefit from being presented as an artifact.",
+      )
+      .addLine();
+  }
+
+  builder
+    .addLine(`${hasThinking ? "3" : "4"}. When answering coding questions:`)
     .addLine(
       "   - Provide a clear and concise explanation of the concept or solution.",
     )
@@ -56,7 +70,7 @@ export function returnCodingPrompt(
       "   - Include code examples to illustrate your points when appropriate.",
     )
     .addLine()
-    .addLine("5. When generating code:")
+    .addLine(`${hasThinking ? "4" : "5"}. When generating code:`)
     .addLine(
       "   - Ensure the code adheres to best practices and conventions for the specified programming language.",
     )
@@ -72,7 +86,9 @@ export function returnCodingPrompt(
       "   - For substantial code solutions, consider using an artifact tag.",
     )
     .addLine()
-    .addLine("6. Format your final response as follows:")
+    .addLine(
+      `${hasThinking ? "5" : "6"}. Format your final response as follows:`,
+    )
     .addLine(
       "   a. Begin with a brief introduction addressing the user's question or request.",
     )
@@ -85,42 +101,40 @@ export function returnCodingPrompt(
     )
     .addLine()
     .addLine(
-      `7. Wrap your entire response in <answer> tags. ${answerFormatInstructions}`,
+      `${hasThinking ? "6" : "7"}. Wrap your entire response in <answer> tags. ${answerFormatInstructions}`,
+    )
+    .addIf(
+      supportsArtifacts,
+      getArtifactInstructions(supportsArtifacts, false, hasThinking ? 7 : 8),
     )
     .addLine()
     .addLine(
       "If you're unsure about any aspect of the question or if it's beyond your expertise, admit that you don't know or cannot provide an accurate answer. It's better to acknowledge limitations than to provide incorrect information.",
     )
-    .startSection("Example output structure")
-    .addLine()
-    .addLine("<problem_breakdown>")
-    .addLine(
-      "[Your analysis of the problem, approach planning, and code analysis]",
-    )
-    .addLine("</problem_breakdown>")
-    .addLine()
+    .addLine();
+
+  builder
     .addLine("<answer>")
+    .startSection("Example output structure:")
+    .addLine()
     .addLine("[Brief introduction addressing the user's question or request]")
     .addLine();
 
+  if (!hasThinking) {
+    builder
+      .addLine("<analysis>")
+      .addLine(
+        "[Your analysis of the problem, approach planning, and code analysis]",
+      )
+      .addLine("</analysis>")
+      .addLine();
+  }
+
   if (supportsArtifacts) {
     builder
-      .addLine("For substantial code solutions:")
-      .addLine(
-        '<artifact identifier="solution-code" type="application/code" language="javascript" title="Complete solution">',
-      )
-      .addLine("// Complete, self-contained implementation")
-      .addLine("function example() {")
-      .addLine("  // Implementation details")
-      .addLine("  const result = process(input);")
-      .addLine("  return result;")
-      .addLine("}")
-      .addLine("")
-      .addLine("// Additional helper functions if needed")
-      .addLine("function process(data) {")
-      .addLine("  // Processing logic")
-      .addLine("}")
-      .addLine("</artifact>");
+      .addLine()
+      .addLine(getArtifactExample(supportsArtifacts, true))
+      .addLine();
   } else {
     builder.addLine("[Explanation or code solution]");
   }

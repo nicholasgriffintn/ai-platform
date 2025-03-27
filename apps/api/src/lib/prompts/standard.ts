@@ -1,12 +1,17 @@
 import type { IBody, IUser } from "~/types";
 import { PromptBuilder } from "./builder";
-import { getArtifactInstructions, getResponseStyle } from "./utils";
+import {
+  getArtifactExample,
+  getArtifactInstructions,
+  getResponseStyle,
+} from "./utils";
 
 export function returnStandardPrompt(
   request: IBody,
   user?: IUser,
   supportsFunctions?: boolean,
   supportsArtifacts?: boolean,
+  hasThinking?: boolean,
 ): string {
   try {
     const latitude = request.location?.latitude || user?.latitude;
@@ -15,7 +20,6 @@ export function returnStandardPrompt(
     const response_mode = request.response_mode || "normal";
 
     const { responseStyle } = getResponseStyle(response_mode);
-    const artifactInstructions = getArtifactInstructions(supportsArtifacts);
 
     const builder = new PromptBuilder(
       "You are an AI personal assistant designed to help users with their daily tasks. ",
@@ -31,31 +35,36 @@ export function returnStandardPrompt(
   <user_longitude>${longitude}</user_longitude>
 </user_location>`,
       )
-      .addIf(supportsArtifacts, artifactInstructions)
       .startSection("Instructions")
       .addLine("1. Read and understand the user's question carefully.")
-      .addLine("2. If the question is unclear, politely ask for clarification.")
       .addLine(
-        "3. Before answering, analyze the question and relevant context in <analysis> tags. In your analysis:",
-      )
-      .addLine("   - Identify key information from the user's question.")
-      .addIf(
-        supportsFunctions,
-        "   - Determine whether the query can be resolved directly or if a tool is required. Use the description of the tool to help you decide.",
-      )
-      .addIf(
-        supportsFunctions,
-        "   - Use a tool only if it directly aligns with the user's request or is necessary to resolve the query accurately and efficiently.",
-      )
-      .addIf(
-        supportsFunctions,
-        "   - If the task can be effectively answered without a tool, prioritize a manual response.",
-      )
-      .addIf(
-        supportsArtifacts,
-        "   - Determine if the response would benefit from using an artifact based on the criteria above.",
-      )
-      .addLine("   - It's OK for this section to be quite long.");
+        "2. If the question is unclear, politely ask for clarification.",
+      );
+
+    if (!hasThinking) {
+      builder
+        .addLine(
+          "3. Before answering, analyze the question and relevant context in <analysis> tags. In your analysis:",
+        )
+        .addLine("   - Identify key information from the user's question.")
+        .addIf(
+          supportsFunctions,
+          "   - Determine whether the query can be resolved directly or if a tool is required. Use the description of the tool to help you decide.",
+        )
+        .addIf(
+          supportsFunctions,
+          "   - Use a tool only if it directly aligns with the user's request or is necessary to resolve the query accurately and efficiently.",
+        )
+        .addIf(
+          supportsFunctions,
+          "   - If the task can be effectively answered without a tool, prioritize a manual response.",
+        )
+        .addIf(
+          supportsArtifacts,
+          "   - Determine if the response would benefit from using an artifact based on the criteria above.",
+        )
+        .addLine("   - It's OK for this section to be quite long.");
+    }
 
     let responseModeInstruction = "";
     if (response_mode === "concise") {
@@ -73,11 +82,17 @@ export function returnStandardPrompt(
     }
 
     builder
-      .addLine(`4. ${responseModeInstruction}`)
+      .addLine(`${hasThinking ? "3" : "4"}. ${responseModeInstruction}`)
       .addLine(
-        "5. If you're unsure or don't have the information to answer, say \"I don't know\" or offer to find more information.",
+        `${hasThinking ? "4" : "5"}. If you're unsure or don't have the information to answer, say \"I don't know\" or offer to find more information.`,
       )
-      .addLine("6. Always respond in plain text, not computer code.");
+      .addLine(
+        `${hasThinking ? "5" : "6"}. Always respond in plain text, not computer code.`,
+      )
+      .addIf(
+        supportsArtifacts,
+        getArtifactInstructions(supportsArtifacts, false, hasThinking ? 6 : 7),
+      );
 
     let conversationStyle = "";
     if (response_mode === "concise") {
@@ -94,16 +109,20 @@ export function returnStandardPrompt(
     }
 
     builder
-      .addLine(`7. ${conversationStyle}`)
-      .startSection("Example output structure")
-      .addLine()
-      .addLine("<analysis>")
-      .addLine(
-        "[Your detailed analysis of the question, considering context and required information]",
-      )
-      .addLine("</analysis>")
-      .addLine()
-      .addLine("<answer>");
+      .addLine(`${hasThinking ? "6" : "7"}. ${conversationStyle}`)
+      .startSection("Example output structure");
+
+    if (!hasThinking) {
+      builder
+        .addLine("Example analysis:")
+        .addLine("<analysis>")
+        .addLine(
+          "[Your detailed analysis of the question, considering context and required information]",
+        )
+        .addLine("</analysis>");
+    }
+
+    builder.addLine().addLine("<answer>");
 
     let answerStyle = "";
     if (response_mode === "concise") {
@@ -120,24 +139,20 @@ export function returnStandardPrompt(
 
     if (supportsArtifacts) {
       builder
-        .addLine()
         .addLine("When appropriate for substantial content:")
         .addLine()
-        .addLine(
-          '<artifact identifier="example-content" type="text/markdown" title="Detailed information">',
-        )
-        .addLine(
-          "[Substantial, self-contained content that can be referenced or reused]",
-        )
-        .addLine("</artifact>");
+        .addLine(getArtifactExample(supportsArtifacts, false));
     }
 
-    builder
-      .addLine("</answer>")
-      .startSection()
-      .addLine(
-        "Remember to use the analysis phase to ensure you're using the most up-to-date and relevant information for each query, rather than relying on previous conversation history.",
-      );
+    builder.addLine("</answer>");
+
+    if (!hasThinking) {
+      builder
+        .startSection()
+        .addLine(
+          "Remember to use the analysis phase to ensure you're using the most up-to-date and relevant information for each query, rather than relying on previous conversation history.",
+        );
+    }
 
     return builder.build();
   } catch (error) {

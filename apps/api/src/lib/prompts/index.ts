@@ -1,4 +1,4 @@
-import type { ChatMode, IBody, IUser } from "../../types";
+import type { IBody, IUser } from "../../types";
 import { getModelConfigByMatchingModel } from "../models";
 import { returnCoachingPrompt } from "./coaching";
 import { returnCodingPrompt } from "./coding";
@@ -19,6 +19,7 @@ export function getSystemPrompt(
   const modelConfig = getModelConfigByMatchingModel(model);
   const supportsFunctions = modelConfig?.supportsFunctions || false;
   const supportsArtifacts = modelConfig?.supportsArtifacts || false;
+  const hasThinking = modelConfig?.hasThinking || false;
   const response_mode = request.response_mode || "normal";
 
   if (!modelConfig) {
@@ -27,6 +28,7 @@ export function getSystemPrompt(
       user,
       supportsFunctions,
       supportsArtifacts,
+      hasThinking,
     );
   }
 
@@ -34,7 +36,7 @@ export function getSystemPrompt(
 
   const isCodingModel = modelConfig.type.includes("coding");
   if (isCodingModel && !isTextModel) {
-    return returnCodingPrompt(response_mode, supportsArtifacts);
+    return returnCodingPrompt(response_mode, supportsArtifacts, hasThinking);
   }
 
   const isTextToImageModel = modelConfig.type.includes("text-to-image");
@@ -51,6 +53,7 @@ export function getSystemPrompt(
     user,
     supportsFunctions,
     supportsArtifacts,
+    hasThinking,
   );
 }
 
