@@ -35,7 +35,7 @@ export const ToolSelector = ({
           "flex items-center gap-2 rounded-md py-1.5 px-2.5 transition-colors",
           "text-sm text-zinc-600 dark:text-zinc-400",
           "hover:bg-zinc-100 dark:hover:bg-zinc-800",
-          "disabled:opacity-50 disabled:cursor-not-allowed",
+          "cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
         )}
         title="Manage AI tools"
         aria-label="Manage AI tools"

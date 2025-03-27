@@ -235,7 +235,7 @@ export const ModelSelector = ({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label="Select a model"
-        className={`cursor-pointer disabled:cursor-not-allowed flex items-center gap-2 rounded-md ${minimal ? "px-2 py-1" : "px-3 py-1.5"} bg-zinc-900 text-zinc-100 hover:bg-zinc-800`}
+        className={`cursor-pointer disabled:cursor-not-allowed flex items-center gap-2 rounded-md ${minimal ? "px-2 py-1" : "px-3 py-1.5"} bg-off-white-highlight dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors`}
       >
         {isModelLoading ? (
           <div className="flex items-center gap-2">
