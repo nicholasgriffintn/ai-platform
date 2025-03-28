@@ -12,6 +12,13 @@ export default async function handleRequest(
 ) {
   let shellRendered = false;
   const userAgent = request.headers.get("user-agent");
+  const host = request.headers.get("host");
+  const isLocalhost = host?.startsWith("localhost");
+
+  responseHeaders.set(
+    "Content-Security-Policy",
+    `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src assistant-assets.nickgriffin.uk icons.duckduckgo.com 'self' data:; connect-src 'self' ${isLocalhost ? "localhost:8787" : "api.polychat.app"};`,
+  );
 
   const body = await renderToReadableStream(
     <ServerRouter context={routerContext} url={request.url} />,
