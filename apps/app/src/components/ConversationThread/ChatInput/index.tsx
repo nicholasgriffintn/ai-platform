@@ -49,7 +49,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     { handleSubmit, isLoading, streamStarted, controller, onTranscribe },
     ref,
   ) => {
-    const { model, chatInput, setChatInput } = useChatStore();
+    const { model, chatInput, setChatInput, isMobile } = useChatStore();
     const { isPro, currentConversationId } = useChatStore();
     const { isRecording, isTranscribing, startRecording, stopRecording } =
       useVoiceRecorder({ onTranscribe });
@@ -99,6 +99,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     }, [model, apiModels]);
 
     const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+      if (isMobile && e.key === "Enter") {
+        return;
+      }
+
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         clearSelectedAttachment();
@@ -109,8 +113,23 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       }
       if (e.key === "Enter" && e.shiftKey) {
         e.preventDefault();
-        setChatInput(`${chatInput}\n`);
+        const textarea = textareaRef.current;
+        if (textarea) {
+          const cursorPosition = textarea.selectionStart;
+          const textBeforeCursor = chatInput.substring(0, cursorPosition);
+          const textAfterCursor = chatInput.substring(cursorPosition);
+          setChatInput(`${textBeforeCursor}\n${textAfterCursor}`);
+
+          setTimeout(() => {
+            textarea.selectionStart = textarea.selectionEnd =
+              cursorPosition + 1;
+          }, 0);
+        }
       }
+    };
+
+    const handleTextAreaInput = (e: ChangeEvent<HTMLTextAreaElement>) => {
+      setChatInput(e.target.value);
     };
 
     const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -270,7 +289,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                 id="message-input"
                 ref={textareaRef}
                 value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
+                onChange={handleTextAreaInput}
                 onKeyDown={handleKeyDown}
                 placeholder={
                   !currentConversationId
@@ -406,7 +425,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                 </div>
                 <ToolToggles isDisabled={isLoading} />
               </div>
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 flex items-center gap-2">
+                {!isMobile && (
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">
+                    Shift+Enter for new line
+                  </span>
+                )}
                 <ChatSettingsComponent
                   isDisabled={isLoading}
                   supportsFunctions={supportsFunctions}
