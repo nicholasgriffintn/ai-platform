@@ -1,5 +1,5 @@
-import { CloudOff, Computer, Settings, Sparkles } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Settings } from "lucide-react";
+import { useRef, useState } from "react";
 
 import {
   Button,
@@ -15,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/Dialog";
-import { defaultModel } from "~/lib/models";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatSettings as ChatSettingsType } from "~/types";
 import { ToolSelector } from "./ToolSelector";
@@ -29,60 +28,11 @@ export const ChatSettings = ({
   isDisabled = false,
   supportsFunctions = false,
 }: ChatSettingsProps) => {
-  const {
-    isPro,
-    chatSettings,
-    setChatSettings,
-    chatMode,
-    setChatMode,
-    setModel,
-  } = useChatStore();
+  const { isPro, chatSettings, setChatSettings } = useChatStore();
   const [showSettings, setShowSettings] = useState(false);
-  const [useLocalModel, setUseLocalModel] = useState(chatMode === "local");
-  const [localOnly, setLocalOnly] = useState(chatSettings.localOnly || false);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
   const responseSelectRef = useRef<HTMLSelectElement>(null);
   const [activeTab, setActiveTab] = useState<"basic" | "advanced">("basic");
-
-  useEffect(() => {
-    setUseLocalModel(chatMode === "local");
-    setLocalOnly(chatSettings.localOnly || false);
-  }, [chatMode, chatSettings.localOnly]);
-
-  const handleEnableLocalModels = () => {
-    const newValue = !useLocalModel;
-    setUseLocalModel(newValue);
-    setChatMode(newValue ? "local" : "remote");
-
-    if (newValue) {
-      setLocalOnly(true);
-      setChatSettings({
-        ...chatSettings,
-        localOnly: true,
-      });
-      setModel("");
-    } else {
-      setLocalOnly(false);
-      setChatSettings({
-        ...chatSettings,
-        localOnly: false,
-      });
-      setModel(defaultModel);
-    }
-  };
-
-  const handleLocalOnlyToggle = () => {
-    if (useLocalModel && localOnly) {
-      return;
-    }
-
-    const newValue = !localOnly;
-    setLocalOnly(newValue);
-    setChatSettings({
-      ...chatSettings,
-      localOnly: newValue,
-    });
-  };
 
   const handleSettingChange = (
     key: keyof ChatSettingsType,
@@ -166,14 +116,6 @@ export const ChatSettings = ({
   return (
     <div className="flex items-center">
       <Button
-        variant={useLocalModel ? "iconActive" : "icon"}
-        icon={<Computer className="h-4 w-4" />}
-        onClick={handleEnableLocalModels}
-        title={useLocalModel ? "Use Remote Models" : "Use Local Models"}
-        aria-label={useLocalModel ? "Use Remote Models" : "Use Local Models"}
-      />
-
-      <Button
         ref={settingsButtonRef}
         variant="icon"
         icon={<Settings className="h-4 w-4" />}
@@ -186,30 +128,6 @@ export const ChatSettings = ({
       />
 
       {isPro && supportsFunctions && <ToolSelector isDisabled={isDisabled} />}
-
-      {isPro && (
-        <Button
-          variant={localOnly ? "iconActive" : "icon"}
-          icon={<CloudOff className="h-4 w-4" />}
-          onClick={handleLocalOnlyToggle}
-          disabled={useLocalModel}
-          title={
-            useLocalModel
-              ? "Local models are always stored locally"
-              : localOnly
-                ? "Store on server"
-                : "Local-only (not stored on server)"
-          }
-          aria-label={
-            useLocalModel
-              ? "Local models are always stored locally"
-              : localOnly
-                ? "Store on server"
-                : "Local-only (not stored on server)"
-          }
-          className={useLocalModel ? "opacity-50 cursor-not-allowed" : ""}
-        />
-      )}
 
       <Dialog open={showSettings} onOpenChange={setShowSettings} width="640px">
         <DialogContent>

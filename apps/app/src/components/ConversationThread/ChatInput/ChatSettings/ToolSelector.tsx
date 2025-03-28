@@ -28,24 +28,20 @@ export const ToolSelector = ({
 
   return (
     <>
-      <button
+      <Button
+        variant="icon"
+        icon={<Blocks className="h-4 w-4" />}
         onClick={() => setIsOpen(true)}
         disabled={isDisabled}
-        className={cn(
-          "flex items-center gap-2 rounded-md py-1.5 px-2.5 transition-colors",
-          "text-sm text-zinc-600 dark:text-zinc-400",
-          "hover:bg-zinc-100 dark:hover:bg-zinc-800",
-          "cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
-        )}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
         title="Manage AI tools"
         aria-label="Manage AI tools"
-        type="button"
       >
-        <Blocks size={16} className="flex-shrink-0" />
         <span className="flex items-center justify-center h-5 min-w-5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-xs px-1">
           {selectedTools.length}
         </span>
-      </button>
+      </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>

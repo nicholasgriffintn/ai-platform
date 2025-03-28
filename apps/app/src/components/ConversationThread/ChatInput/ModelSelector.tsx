@@ -2,6 +2,7 @@ import {
   BrainCircuit,
   ChevronDown,
   ChevronUp,
+  Computer,
   Crown,
   Eye,
   Hammer,
@@ -39,7 +40,15 @@ export const ModelSelector = ({
   minimal = false,
   mono = false,
 }: ModelSelectorProps) => {
-  const { isPro, model, setModel, chatMode } = useChatStore();
+  const {
+    isPro,
+    model,
+    setModel,
+    chatMode,
+    setChatMode,
+    chatSettings,
+    setChatSettings,
+  } = useChatStore();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllModels, setShowAllModels] = useState(false);
@@ -90,6 +99,27 @@ export const ModelSelector = ({
       searchInputRef.current.focus();
     }
   }, [isOpen]);
+
+  const handleToggleModelSource = () => {
+    const newChatMode = chatMode === "local" ? "remote" : "local";
+    setChatMode(newChatMode);
+
+    if (newChatMode === "local") {
+      // When switching to local, set localOnly to true and clear model
+      setChatSettings({
+        ...chatSettings,
+        localOnly: true,
+      });
+      setModel("");
+    } else {
+      // When switching to remote, set localOnly to false and set default model
+      setChatSettings({
+        ...chatSettings,
+        localOnly: false,
+      });
+      setModel(defaultModel);
+    }
+  };
 
   const featuredModels = Object.values(filteredModels).filter((model) => {
     return featuredModelIds[model.id];
@@ -435,6 +465,46 @@ export const ModelSelector = ({
                 </fieldset>
               </div>
             )}
+          </div>
+
+          <div className="p-2 border-t border-zinc-200 dark:border-zinc-700">
+            <div className="flex items-center justify-between">
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                Model Source:
+              </div>
+              <div className="flex items-center">
+                <button
+                  type="button"
+                  className={`flex items-center justify-center gap-1 py-1 px-2 rounded text-xs ${
+                    chatMode === "remote"
+                      ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-200"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+                  }`}
+                  onClick={() =>
+                    chatMode !== "remote" && handleToggleModelSource()
+                  }
+                  aria-pressed={chatMode === "remote"}
+                >
+                  Remote
+                </button>
+                <span className="mx-1 text-zinc-400">|</span>
+                <button
+                  type="button"
+                  className={`flex items-center justify-center gap-1 py-1 px-2 rounded text-xs ${
+                    chatMode === "local"
+                      ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-200"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+                  }`}
+                  onClick={() =>
+                    chatMode !== "local" && handleToggleModelSource()
+                  }
+                  aria-pressed={chatMode === "local"}
+                >
+                  <Computer className="h-3 w-3" />
+                  Local
+                </button>
+              </div>
+            </div>
           </div>
         </dialog>
       )}
