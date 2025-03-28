@@ -9,9 +9,9 @@ import {
   isRouteErrorResponse,
 } from "react-router";
 
-import "~/styles/index.css";
 import { AppInitializer } from "~/components/AppInitializer";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
+import { ServiceWorkerRegistration } from "~/components/ServiceWorkerRegistration";
 import ErrorToast from "~/components/ui/ErrorToast";
 import ErrorRoute from "~/pages/error";
 import { ErrorProvider } from "~/state/contexts/ErrorContext";
@@ -97,6 +97,7 @@ export default function Root() {
           <AppInitializer>
             <Outlet />
             <ErrorToast />
+            <ServiceWorkerRegistration />
           </AppInitializer>
         </LoadingProvider>
       </ErrorProvider>
