@@ -108,7 +108,7 @@ export default function Root() {
 
 export function HydrateFallback() {
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
+    <div className="flex flex-col items-center justify-center h-[calc(100vh-10rem)]">
       <LoadingSpinner />
     </div>
   );
