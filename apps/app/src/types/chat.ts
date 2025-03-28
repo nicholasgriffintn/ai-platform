@@ -1,6 +1,6 @@
 export type ChatRole = "user" | "assistant" | "system" | "tool";
 
-export type ChatMode = "remote" | "local" | "prompt_coach" | "tool";
+export type ChatMode = "remote" | "local" | "tool";
 
 export type ResponseMode = "normal" | "concise" | "explanatory" | "formal";
 

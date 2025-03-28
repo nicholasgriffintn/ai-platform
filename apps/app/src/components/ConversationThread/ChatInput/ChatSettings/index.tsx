@@ -38,7 +38,6 @@ export const ChatSettings = ({
     setModel,
   } = useChatStore();
   const [showSettings, setShowSettings] = useState(false);
-  const [promptCoach, setPromptCoach] = useState(chatMode === "prompt_coach");
   const [useLocalModel, setUseLocalModel] = useState(chatMode === "local");
   const [localOnly, setLocalOnly] = useState(chatSettings.localOnly || false);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
@@ -46,7 +45,6 @@ export const ChatSettings = ({
   const [activeTab, setActiveTab] = useState<"basic" | "advanced">("basic");
 
   useEffect(() => {
-    setPromptCoach(chatMode === "prompt_coach");
     setUseLocalModel(chatMode === "local");
     setLocalOnly(chatSettings.localOnly || false);
   }, [chatMode, chatSettings.localOnly]);
@@ -71,17 +69,6 @@ export const ChatSettings = ({
       });
       setModel(defaultModel);
     }
-  };
-
-  const handleEnablePromptCoach = () => {
-    if (useLocalModel) {
-      setPromptCoach(false);
-      return;
-    }
-
-    const newValue = !promptCoach;
-    setPromptCoach(newValue);
-    setChatMode(newValue ? "prompt_coach" : "remote");
   };
 
   const handleLocalOnlyToggle = () => {
@@ -184,23 +171,6 @@ export const ChatSettings = ({
         onClick={handleEnableLocalModels}
         title={useLocalModel ? "Use Remote Models" : "Use Local Models"}
         aria-label={useLocalModel ? "Use Remote Models" : "Use Local Models"}
-      />
-
-      <Button
-        variant={promptCoach ? "iconActive" : "icon"}
-        icon={<Sparkles className="h-4 w-4" />}
-        onClick={handleEnablePromptCoach}
-        disabled={useLocalModel}
-        title={
-          promptCoach
-            ? "Disable Prompt Enhancement"
-            : "Enable Prompt Enhancement"
-        }
-        aria-label={
-          promptCoach
-            ? "Disable Prompt Enhancement"
-            : "Enable Prompt Enhancement"
-        }
       />
 
       <Button
