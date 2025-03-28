@@ -17,7 +17,7 @@ export default async function handleRequest(
 
   responseHeaders.set(
     "Content-Security-Policy",
-    `default-src 'self'; script-src challenges.cloudflare.com 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src assistant-assets.nickgriffin.uk icons.duckduckgo.com 'self' data:; connect-src 'self' ${isLocalhost ? "localhost:8787" : "api.polychat.app"};`,
+    `default-src 'self'; script-src challenges.cloudflare.com https://unpkg.com/react@18/umd/react.development.js https://unpkg.com/react-dom@18/umd/react-dom.development.js 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src assistant-assets.nickgriffin.uk icons.duckduckgo.com 'self' data:; connect-src 'self' ${isLocalhost ? "localhost:8787" : "api.polychat.app"};`,
   );
 
   const body = await renderToReadableStream(
