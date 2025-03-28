@@ -58,12 +58,13 @@ export const SearchGroundingSection = ({
                 <div
                   // biome-ignore lint/suspicious/noArrayIndexKey: There's no ID provided
                   key={`query-${index}`}
-                  className="text-xs bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-full text-zinc-700 dark:text-zinc-300 hover:underline"
+                  className="text-xs bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-full text-zinc-700 dark:text-zinc-300"
                 >
                   <a
                     href={`https://www.google.com/search?q=${query}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="hover:underline"
                   >
                     {query}
                   </a>
