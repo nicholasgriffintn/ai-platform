@@ -1,6 +1,13 @@
 import { APP_NAME, CONTACT_LINK, PRIVACY_EFFECTIVE_DATE } from "~/constants";
 import { AppLayout } from "~/layouts/AppLayout";
 
+export function meta() {
+  return [
+    { title: "Privacy Policy - Polychat" },
+    { name: "description", content: "Privacy Policy for Polychat" },
+  ];
+}
+
 export default function Privacy() {
   return (
     <AppLayout>

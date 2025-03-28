@@ -3,6 +3,13 @@ import type { FC } from "react";
 import { DynamicApps } from "~/components/Apps";
 import { AppLayout } from "~/layouts/AppLayout";
 
+export function meta() {
+  return [
+    { title: "Apps - Polychat" },
+    { name: "description", content: "Apps for Polychat" },
+  ];
+}
+
 const DynamicAppsRoute: FC = () => {
   return (
     <AppLayout>

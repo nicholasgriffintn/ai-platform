@@ -4,6 +4,13 @@ import { useNavigate } from "react-router";
 
 import { useAuthStatus } from "~/hooks/useAuth";
 
+export function meta() {
+  return [
+    { title: "Authentication Callback - Polychat" },
+    { name: "description", content: "Authentication callback for Polychat" },
+  ];
+}
+
 const AuthCallback = () => {
   const navigate = useNavigate();
   const { isLoading } = useAuthStatus();

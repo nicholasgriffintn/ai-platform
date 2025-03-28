@@ -12,6 +12,13 @@ import { API_BASE_URL } from "~/constants";
 import type { Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
 
+export function meta() {
+  return [
+    { title: "Shared Conversation - Polychat" },
+    { name: "description", content: "Shared conversation from Polychat" },
+  ];
+}
+
 export default function SharedConversationPage() {
   const { share_id } = useParams();
   const [messages, setMessages] = useState<Message[]>([]);

@@ -60,6 +60,8 @@ export interface ChatStore {
   setChatSettings: (settings: ChatSettings) => void;
   showSearch: boolean;
   setShowSearch: (showSearch: boolean) => void;
+  chatInput: string;
+  setChatInput: (query: string) => void;
 
   // Initialization
   initializeStore: (completionId?: string) => Promise<void>;
@@ -87,6 +89,8 @@ export const useChatStore = create<ChatStore>()(
         set({ showKeyboardShortcuts }),
       showSearch: false,
       setShowSearch: (showSearch) => set({ showSearch }),
+      chatInput: "",
+      setChatInput: (query) => set({ chatInput: query }),
 
       // Authentication state
       hasApiKey: false,

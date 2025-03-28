@@ -6,6 +6,13 @@ import {
 } from "~/constants";
 import { AppLayout } from "~/layouts/AppLayout";
 
+export function meta() {
+  return [
+    { title: "Terms of Service - Polychat" },
+    { name: "description", content: "Terms of Service for Polychat" },
+  ];
+}
+
 export default function Terms() {
   return (
     <AppLayout>

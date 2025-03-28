@@ -27,6 +27,15 @@ const queryClient = new QueryClient({
   },
 });
 
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Polychat",
+  description: "Chat with multiple AI models from one place",
+  url: "https://polychat.app",
+  applicationCategory: "AIApplication",
+};
+
 export function Layout({
   children,
 }: {
@@ -38,6 +47,15 @@ export function Layout({
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Polychat - AI Assistant</title>
+        <meta
+          name="description"
+          content="Chat with multiple AI models from one place"
+        />
+
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+
         <link
           rel="icon"
           type="image/png"
@@ -52,6 +70,13 @@ export function Layout({
           href="/apple-touch-icon.png"
         />
         <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#000000" />
+        <link
+          rel="search"
+          type="application/opensearchdescription+xml"
+          title="Polychat"
+          href="/opensearch.xml"
+        />
         <Meta />
         <Links />
       </head>

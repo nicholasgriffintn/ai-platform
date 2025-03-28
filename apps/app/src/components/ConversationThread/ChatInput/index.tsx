@@ -36,8 +36,6 @@ export interface ChatInputHandle {
 }
 
 interface ChatInputProps {
-  input: string;
-  setInput: Dispatch<SetStateAction<string>>;
   handleSubmit: (
     e: FormEvent,
     attachmentData?: { type: string; data: string; name?: string },
@@ -50,18 +48,10 @@ interface ChatInputProps {
 
 export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
   (
-    {
-      input,
-      setInput,
-      handleSubmit,
-      isLoading,
-      streamStarted,
-      controller,
-      onTranscribe,
-    },
+    { handleSubmit, isLoading, streamStarted, controller, onTranscribe },
     ref,
   ) => {
-    const { model } = useChatStore();
+    const { model, chatInput, setChatInput } = useChatStore();
     const { isPro, currentConversationId } = useChatStore();
     const { isRecording, isTranscribing, startRecording, stopRecording } =
       useVoiceRecorder({ onTranscribe });
@@ -91,7 +81,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         textareaRef.current.style.height = "auto";
         textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
       }
-    }, [input]);
+    }, [chatInput]);
 
     useEffect(() => {
       if (!apiModels || !model) {
@@ -121,7 +111,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       }
       if (e.key === "Enter" && e.shiftKey) {
         e.preventDefault();
-        setInput((prev: string) => `${prev}\n`);
+        setChatInput(`${chatInput}\n`);
       }
     };
 
@@ -281,8 +271,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
               <textarea
                 id="message-input"
                 ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={
                   !currentConversationId
@@ -393,7 +383,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                       type="submit"
                       onClick={handleFormSubmit}
                       disabled={
-                        (!input?.trim() && !selectedAttachment) ||
+                        (!chatInput?.trim() && !selectedAttachment) ||
                         isLoading ||
                         isUploading
                       }

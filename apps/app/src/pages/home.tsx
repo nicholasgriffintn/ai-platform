@@ -12,6 +12,7 @@ export default function Home() {
     setIsMobile,
     showSearch,
     setShowSearch,
+    setChatInput,
   } = useChatStore();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: We only want to initialize the store when the component mounts
@@ -19,6 +20,12 @@ export default function Home() {
     const init = async () => {
       const searchParams = new URLSearchParams(window.location.search);
       const completionId = searchParams.get("completion_id");
+      const query = searchParams.get("query");
+
+      if (query) {
+        setChatInput(query);
+      }
+
       await initializeStore(completionId || undefined);
     };
 

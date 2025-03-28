@@ -26,14 +26,14 @@ import { ScrollButton } from "./ScrollButton";
 import { WelcomeScreen } from "./WelcomeScreen";
 
 export const ConversationThread = () => {
-  const { currentConversationId, model } = useChatStore();
+  const { currentConversationId, model, chatInput, setChatInput } =
+    useChatStore();
   const { data: currentConversation } = useChat(currentConversationId);
   const { streamStarted, controller, sendMessage, abortStream } =
     useChatManager();
   const { addError } = useError();
   const { data: apiModels } = useModels();
 
-  const [input, setInput] = useState<string>("");
   const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(
     null,
   );
@@ -96,7 +96,7 @@ export const ConversationThread = () => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
-        if (input.trim() && !isStreamLoading && !isModelInitializing) {
+        if (chatInput.trim() && !isStreamLoading && !isModelInitializing) {
           handleSubmit(e as unknown as FormEvent);
         }
       }
@@ -117,7 +117,7 @@ export const ConversationThread = () => {
       window.removeEventListener("keydown", handleKeyPress);
     };
   }, [
-    input,
+    chatInput,
     isStreamLoading,
     isModelInitializing,
     controller,
@@ -131,7 +131,7 @@ export const ConversationThread = () => {
     attachmentData?: { type: string; data: string; name?: string },
   ) => {
     e.preventDefault();
-    if (!input.trim() && !attachmentData) {
+    if (!chatInput.trim() && !attachmentData) {
       return;
     }
 
@@ -147,12 +147,12 @@ export const ConversationThread = () => {
     }
 
     try {
-      const originalInput = input;
-      setInput("");
+      const originalInput = chatInput;
+      setChatInput("");
 
-      const result = await sendMessage(input, attachmentData);
+      const result = await sendMessage(chatInput, attachmentData);
       if (result?.status === "error") {
-        setInput(originalInput);
+        setChatInput(originalInput);
       } else {
         setTimeout(() => {
           chatInputRef.current?.focus();
@@ -168,7 +168,7 @@ export const ConversationThread = () => {
       content: string;
     };
   }) => {
-    setInput(data.response.content);
+    setChatInput(data.response.content);
   };
 
   const handleToolInteraction = (
@@ -179,7 +179,7 @@ export const ConversationThread = () => {
     switch (toolName) {
       case "web_search":
         if (action === "useAsPrompt") {
-          setInput(data.question);
+          setChatInput(data.question);
         }
         break;
       default:
@@ -203,7 +203,7 @@ export const ConversationThread = () => {
       >
         <div className="mx-auto flex w-full max-w-3xl grow flex-col gap-8 px-4 py-8">
           {showWelcomeScreen ? (
-            <WelcomeScreen setInput={setInput} />
+            <WelcomeScreen setInput={setChatInput} />
           ) : (
             <MessageList
               messagesEndRef={messagesEndRef}
@@ -222,8 +222,6 @@ export const ConversationThread = () => {
         <div className="max-w-3xl mx-auto">
           <ChatInput
             ref={chatInputRef}
-            input={input}
-            setInput={setInput}
             handleSubmit={handleSubmit}
             isLoading={isStreamLoading || isModelInitializing}
             streamStarted={streamStarted}
