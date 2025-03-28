@@ -224,7 +224,7 @@ export const ModelSelector = ({
 
   return (
     <div
-      className="flex-1 relative"
+      className="flex-1 relative min-w-0 max-w-full"
       ref={dropdownRef}
       onKeyDown={handleKeyDown}
     >
@@ -235,14 +235,14 @@ export const ModelSelector = ({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label="Select a model"
-        className={`cursor-pointer disabled:cursor-not-allowed flex items-center gap-2 rounded-md ${minimal ? "px-2 py-1" : "px-3 py-1.5"} bg-off-white-highlight dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors`}
+        className={`cursor-pointer disabled:cursor-not-allowed flex items-center gap-2 rounded-md w-full ${minimal ? "px-2 py-1" : "px-3 py-1.5"} bg-off-white-highlight dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors`}
       >
         {isModelLoading ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full min-w-0">
             <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
             {!minimal && (
               <span
-                className="text-sm max-w-[250px] truncate"
+                className="text-sm max-w-[250px] truncate w-full"
                 title={selectedModelInfo?.name || "Select model"}
               >
                 {modelLoadingMessage}{" "}
@@ -261,7 +261,7 @@ export const ModelSelector = ({
             />
             {!minimal && (
               <span
-                className="text-sm max-w-[250px] truncate"
+                className="text-sm max-w-[250px] truncate w-full"
                 title={selectedModelInfo?.name || "Select model"}
               >
                 {selectedModelInfo?.name || "Select model"}
