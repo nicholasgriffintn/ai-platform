@@ -104,7 +104,9 @@ export const ChatMessage = ({
           }
 				`}
       >
-        <div className="flex flex-col gap-2 px-3 py-2">
+        <div
+          className={`flex flex-col gap-2 py-2 ${message.role === "user" ? "px-3" : ""}`}
+        >
           <div className="flex items-start gap-2">
             {message.role === "assistant" && message.model && (
               <div className="flex-shrink-0 mr-2 mt-1">
