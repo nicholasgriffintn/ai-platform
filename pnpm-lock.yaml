@@ -94,8 +94,8 @@ importers:
         specifier: 5.1.25
         version: 5.1.25
       lucide-react:
-        specifier: 0.484.0
-        version: 0.484.0(react@19.0.0)
+        specifier: 0.485.0
+        version: 0.485.0(react@19.0.0)
       react:
         specifier: 19.0.0
         version: 19.0.0
@@ -201,7 +201,7 @@ importers:
     dependencies:
       drizzle-orm:
         specifier: 0.41.0
-        version: 0.41.0(@cloudflare/workers-types@4.20250321.0)(better-sqlite3@11.9.1)(gel@2.0.1)
+        version: 0.41.0(@cloudflare/workers-types@4.20250327.0)(better-sqlite3@11.9.1)(gel@2.0.1)
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20250313.0
@@ -246,8 +246,8 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       lucide-react:
-        specifier: 0.484.0
-        version: 0.484.0(react@19.0.0)
+        specifier: 0.485.0
+        version: 0.485.0(react@19.0.0)
       react:
         specifier: 19.0.0
         version: 19.0.0
@@ -595,9 +595,6 @@ packages:
     engines: {node: '>=16'}
     cpu: [x64]
     os: [win32]
-
-  '@cloudflare/workers-types@4.20250321.0':
-    resolution: {integrity: sha512-jPwtZJC7tVFOwFazuwq96be8haTnY9qik8hJ+oLFi50d9LTWPPrnrNHC4OxZmJTEcPIAy0y1WFZHe8C/b7xFXQ==}
 
   '@cloudflare/workers-types@4.20250327.0':
     resolution: {integrity: sha512-rkoGnSY/GgBLCuhjZMIC3mt0jjqqvL17uOK92OI4eivmE+pMFOAchowDxIWOzDyYe5vwNCakbCeIM/FrSmwGJA==}
@@ -3361,8 +3358,8 @@ packages:
     resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
     engines: {node: '>=12'}
 
-  lucide-react@0.484.0:
-    resolution: {integrity: sha512-oZy8coK9kZzvqhSgfbGkPtTgyjpBvs3ukLgDPv14dSOZtBtboryWF5o8i3qen7QbGg7JhiJBz5mK1p8YoMZTLQ==}
+  lucide-react@0.485.0:
+    resolution: {integrity: sha512-NvyQJ0LKyyCxL23nPKESlr/jmz8r7fJO1bkuptSNYSy0s8VVj4ojhX0YAgmE1e0ewfxUZjIlZpvH+otfTnla8Q==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -5020,9 +5017,6 @@ snapshots:
     optional: true
 
   '@cloudflare/workerd-windows-64@1.20250321.0':
-    optional: true
-
-  '@cloudflare/workers-types@4.20250321.0':
     optional: true
 
   '@cloudflare/workers-types@4.20250327.0': {}
@@ -6746,9 +6740,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.41.0(@cloudflare/workers-types@4.20250321.0)(better-sqlite3@11.9.1)(gel@2.0.1):
+  drizzle-orm@0.41.0(@cloudflare/workers-types@4.20250327.0)(better-sqlite3@11.9.1)(gel@2.0.1):
     optionalDependencies:
-      '@cloudflare/workers-types': 4.20250321.0
+      '@cloudflare/workers-types': 4.20250327.0
       better-sqlite3: 11.9.1
       gel: 2.0.1
 
@@ -7434,7 +7428,7 @@ snapshots:
 
   lru-cache@7.18.3: {}
 
-  lucide-react@0.484.0(react@19.0.0):
+  lucide-react@0.485.0(react@19.0.0):
     dependencies:
       react: 19.0.0
 
