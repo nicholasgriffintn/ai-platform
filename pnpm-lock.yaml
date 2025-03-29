@@ -79,11 +79,11 @@ importers:
         specifier: 7.3.0
         version: 7.3.0(react-router@7.3.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(typescript@5.8.2)
       '@tanstack/react-query':
-        specifier: 5.69.3
-        version: 5.69.3(react@19.0.0)
+        specifier: 5.70.0
+        version: 5.70.0(react@19.0.0)
       '@tanstack/react-query-devtools':
-        specifier: 5.69.3
-        version: 5.69.3(@tanstack/react-query@5.69.3(react@19.0.0))(react@19.0.0)
+        specifier: 5.70.0
+        version: 5.70.0(@tanstack/react-query@5.70.0(react@19.0.0))(react@19.0.0)
       clsx:
         specifier: 2.1.1
         version: 2.1.1
@@ -201,7 +201,7 @@ importers:
     dependencies:
       drizzle-orm:
         specifier: 0.41.0
-        version: 0.41.0(@cloudflare/workers-types@4.20250321.0)(better-sqlite3@11.9.1)(gel@2.0.1)
+        version: 0.41.0(@cloudflare/workers-types@4.20250327.0)(better-sqlite3@11.9.1)(gel@2.0.1)
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20250313.0
@@ -234,11 +234,11 @@ importers:
         specifier: 1.1.2
         version: 1.1.2(@types/react@19.0.12)(react@19.0.0)
       '@tanstack/react-query':
-        specifier: 5.69.3
-        version: 5.69.3(react@19.0.0)
+        specifier: 5.70.0
+        version: 5.70.0(react@19.0.0)
       '@tanstack/react-query-devtools':
-        specifier: 5.69.3
-        version: 5.69.3(@tanstack/react-query@5.69.3(react@19.0.0))(react@19.0.0)
+        specifier: 5.70.0
+        version: 5.70.0(@tanstack/react-query@5.70.0(react@19.0.0))(react@19.0.0)
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
@@ -595,9 +595,6 @@ packages:
     engines: {node: '>=16'}
     cpu: [x64]
     os: [win32]
-
-  '@cloudflare/workers-types@4.20250321.0':
-    resolution: {integrity: sha512-jPwtZJC7tVFOwFazuwq96be8haTnY9qik8hJ+oLFi50d9LTWPPrnrNHC4OxZmJTEcPIAy0y1WFZHe8C/b7xFXQ==}
 
   '@cloudflare/workers-types@4.20250327.0':
     resolution: {integrity: sha512-rkoGnSY/GgBLCuhjZMIC3mt0jjqqvL17uOK92OI4eivmE+pMFOAchowDxIWOzDyYe5vwNCakbCeIM/FrSmwGJA==}
@@ -2017,20 +2014,20 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6
 
-  '@tanstack/query-core@5.69.2':
-    resolution: {integrity: sha512-+spKBqGMSxVMhYPMHr4L7efc4CDdb0Y8nE4UxP/FjV4V3ajP3uhBsh0T7pSuObBgYkU+nY1PRkJhKNmwlHmkUg==}
+  '@tanstack/query-core@5.70.0':
+    resolution: {integrity: sha512-ZkkjQAZjI6nS5OyAmaSQafQXK180Xvp0lZYk4BzrnskkTV8On3zSJUxOIXnh0h/8EgqRkCA9i879DiJovA1kGw==}
 
   '@tanstack/query-devtools@5.67.2':
     resolution: {integrity: sha512-O4QXFFd7xqp6EX7sdvc9tsVO8nm4lpWBqwpgjpVLW5g7IeOY6VnS/xvs/YzbRhBVkKTMaJMOUGU7NhSX+YGoNg==}
 
-  '@tanstack/react-query-devtools@5.69.3':
-    resolution: {integrity: sha512-BQ37OAnG4+2zZjz7ot2A6FIerOOVMTQaMgAgcZYyxKNHrwTEsQ4e+vpmticBig4NUSK3CNSD4wGPVqSEppe+Bw==}
+  '@tanstack/react-query-devtools@5.70.0':
+    resolution: {integrity: sha512-jFtpA3mnUoVn/ic1EVxmA6qG7z8S19nchsHciMCWOvC1Z2Mt8f0wbl1p8hNvrBpzWywZa+Hl0AxMVs48psUvhg==}
     peerDependencies:
-      '@tanstack/react-query': ^5.69.3
+      '@tanstack/react-query': ^5.70.0
       react: ^18 || ^19
 
-  '@tanstack/react-query@5.69.3':
-    resolution: {integrity: sha512-EozCj1aFM/c827GQbVnvEt2x80oBax1vd2e5s/2EDeD469AZW9BPAyRK9VVyD0I1yvO6vOI+tPKXXFcadbSXvA==}
+  '@tanstack/react-query@5.70.0':
+    resolution: {integrity: sha512-z0tx1zz2CQ6nTm+fCaOp93FqsFjNgXtOy+4mC5ifQ4B+rJiMD0AGfJrYSGh/OuefhrzTYDAbkGUAGw6JzkWy8g==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -5022,9 +5019,6 @@ snapshots:
   '@cloudflare/workerd-windows-64@1.20250321.0':
     optional: true
 
-  '@cloudflare/workers-types@4.20250321.0':
-    optional: true
-
   '@cloudflare/workers-types@4.20250327.0': {}
 
   '@cspotcode/source-map-support@0.8.1':
@@ -6145,19 +6139,19 @@ snapshots:
       tailwindcss: 4.0.17
       vite: 6.2.3(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)
 
-  '@tanstack/query-core@5.69.2': {}
+  '@tanstack/query-core@5.70.0': {}
 
   '@tanstack/query-devtools@5.67.2': {}
 
-  '@tanstack/react-query-devtools@5.69.3(@tanstack/react-query@5.69.3(react@19.0.0))(react@19.0.0)':
+  '@tanstack/react-query-devtools@5.70.0(@tanstack/react-query@5.70.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@tanstack/query-devtools': 5.67.2
-      '@tanstack/react-query': 5.69.3(react@19.0.0)
+      '@tanstack/react-query': 5.70.0(react@19.0.0)
       react: 19.0.0
 
-  '@tanstack/react-query@5.69.3(react@19.0.0)':
+  '@tanstack/react-query@5.70.0(react@19.0.0)':
     dependencies:
-      '@tanstack/query-core': 5.69.2
+      '@tanstack/query-core': 5.70.0
       react: 19.0.0
 
   '@testing-library/dom@10.4.0':
@@ -6746,9 +6740,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.41.0(@cloudflare/workers-types@4.20250321.0)(better-sqlite3@11.9.1)(gel@2.0.1):
+  drizzle-orm@0.41.0(@cloudflare/workers-types@4.20250327.0)(better-sqlite3@11.9.1)(gel@2.0.1):
     optionalDependencies:
-      '@cloudflare/workers-types': 4.20250321.0
+      '@cloudflare/workers-types': 4.20250327.0
       better-sqlite3: 11.9.1
       gel: 2.0.1
 
