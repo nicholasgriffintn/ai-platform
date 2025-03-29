@@ -120,7 +120,7 @@ export const message = sqliteTable(
       .references(() => conversation.id),
     parent_message_id: text(),
     role: text({
-      enum: ["user", "assistant", "system", "tool"],
+      enum: ["user", "assistant", "system", "tool", "developer"],
     }).notNull(),
     content: text().notNull(),
     name: text(),
@@ -134,10 +134,10 @@ export const message = sqliteTable(
     status: text(),
     timestamp: integer(),
     platform: text({
-      enum: ["web", "mobile", "api"],
+      enum: ["web", "mobile", "api", "dynamic-apps"],
     }),
     mode: text({
-      enum: ["chat", "tool"],
+      enum: ["normal", "local", "remote", "prompt_coach", "no_system"],
     }),
     log_id: text(),
     data: text({
@@ -163,3 +163,52 @@ export const message = sqliteTable(
 );
 
 export type Message = typeof message.$inferSelect;
+
+export const userSettings = sqliteTable(
+  "user_settings",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    nickname: text(),
+    job_role: text(),
+    traits: text(),
+    preferences: text(),
+    tracking_enabled: integer({ mode: "boolean" }).default(true),
+    public_key: text(),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    userIdIdx: index("user_settings_user_id_idx").on(table.user_id),
+  }),
+);
+
+export type UserSettings = typeof userSettings.$inferSelect;
+
+export const modelSettings = sqliteTable(
+  "model_settings",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    model_id: text().default("default"),
+    enabled: integer({ mode: "boolean" }).default(true),
+    api_key: text(),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    userIdIdx: index("model_settings_user_id_idx").on(table.user_id),
+    modelIdIdx: index("model_settings_model_id_idx").on(table.model_id),
+    enabledIdx: index("model_settings_enabled_idx").on(table.enabled),
+  }),
+);
+
+export type ModelSettings = typeof modelSettings.$inferSelect;
