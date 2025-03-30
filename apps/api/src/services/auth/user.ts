@@ -1,7 +1,5 @@
-import type { D1Database } from "@cloudflare/workers-types";
-
-import { Database } from "../../lib/database";
-import type { IEnv, User } from "../../types";
+import type { Database } from "../../lib/database";
+import type { User } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
 
 /**
@@ -31,11 +29,10 @@ function mapToUser(result: Record<string, unknown>): User {
  * Get a user by their GitHub user ID
  */
 export async function getUserByGithubId(
-  db: D1Database,
+  database: Database,
   githubId: string,
 ): Promise<User | null> {
   try {
-    const database = Database.getInstance(db);
     const result = await database.getUserByGithubId(githubId);
 
     if (!result) return null;
@@ -54,12 +51,10 @@ export async function getUserByGithubId(
  * Get a user by their session ID
  */
 export async function getUserBySessionId(
-  env: IEnv,
+  database: Database,
   sessionId: string,
 ): Promise<User | null> {
   try {
-    const { DB } = env;
-    const database = Database.getInstance(DB);
     const result = await database.getUserBySessionId(sessionId);
 
     if (!result) return null;
@@ -78,11 +73,10 @@ export async function getUserBySessionId(
  * Get a user by their ID
  */
 export async function getUserById(
-  db: D1Database,
+  database: Database,
   userId: number,
 ): Promise<User | null> {
   try {
-    const database = Database.getInstance(db);
     const result = await database.getUserById(userId);
 
     if (!result) return null;
@@ -97,11 +91,16 @@ export async function getUserById(
   }
 }
 
+export async function createUserSettings(database: Database, userId: number) {
+  const result = await database.createUserSettings(userId);
+  return result;
+}
+
 /**
  * Create or update a user from GitHub data
  */
 export async function createOrUpdateGithubUser(
-  db: D1Database,
+  database: Database,
   userData: {
     githubId: string;
     username: string;
@@ -116,9 +115,7 @@ export async function createOrUpdateGithubUser(
   },
 ): Promise<User> {
   try {
-    const existingUser = await getUserByGithubId(db, userData.githubId);
-
-    const database = Database.getInstance(db);
+    const existingUser = await getUserByGithubId(database, userData.githubId);
 
     if (existingUser) {
       await database.updateUser(existingUser.id, {
@@ -202,13 +199,11 @@ export async function createOrUpdateGithubUser(
  * Create a new session for a user
  */
 export async function createSession(
-  db: D1Database,
+  database: Database,
   userId: number,
   expiresInDays = 7,
 ): Promise<string> {
   try {
-    const database = Database.getInstance(db);
-
     const sessionId = crypto.randomUUID();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + expiresInDays);
@@ -229,11 +224,10 @@ export async function createSession(
  * Delete a session
  */
 export async function deleteSession(
-  db: D1Database,
+  database: Database,
   sessionId: string,
 ): Promise<void> {
   try {
-    const database = Database.getInstance(db);
     await database.deleteSession(sessionId);
   } catch (error) {
     console.error("Error deleting session:", error);

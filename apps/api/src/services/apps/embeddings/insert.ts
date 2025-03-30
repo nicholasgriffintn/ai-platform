@@ -39,7 +39,7 @@ export const insertEmbedding = async (
     let uniqueId;
     const newMetadata = { ...metadata, title };
 
-    const database = Database.getInstance(env.DB);
+    const database = Database.getInstance(env);
 
     if (type === "blog") {
       const blogExists = await database.getEmbeddingIdByType(id, "blog");

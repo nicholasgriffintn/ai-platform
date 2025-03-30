@@ -1,4 +1,5 @@
 import { ConversationManager } from "../../lib/conversationManager";
+import { Database } from "../../lib/database";
 import type { IRequest } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
 
@@ -27,8 +28,10 @@ export const handleDeleteChatCompletion = async (
     );
   }
 
+  const database = Database.getInstance(env);
+
   const conversationManager = ConversationManager.getInstance({
-    database: env.DB,
+    database,
     userId: user.id,
   });
 

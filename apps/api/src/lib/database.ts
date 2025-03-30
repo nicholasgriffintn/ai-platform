@@ -1,32 +1,67 @@
-import type { D1Database } from "@cloudflare/workers-types";
+import { decodeBase64 } from "hono/utils/encode";
 
-import type { User } from "../types/user";
+import type { IEnv, User } from "../types";
+import { bufferToBase64 } from "../utils/base64";
 import { AssistantError } from "../utils/errors";
 
 export class Database {
-  private db: D1Database;
+  private env: IEnv;
   private static instance: Database;
 
-  private constructor(db: D1Database) {
-    if (!db) {
+  private constructor(env: IEnv) {
+    if (!env?.DB) {
       throw new Error("Database not configured");
     }
-
-    this.db = db;
+    this.env = env;
   }
 
-  public static getInstance(db: D1Database): Database {
+  public static getInstance(env: IEnv): Database {
     if (!Database.instance) {
-      Database.instance = new Database(db);
+      Database.instance = new Database(env);
     }
     return Database.instance;
+  }
+
+  private async getServerEncryptionKey() {
+    if (!this.env.PRIVATE_KEY) {
+      throw new Error("Server key not configured");
+    }
+
+    return await crypto.subtle.importKey(
+      "raw",
+      decodeBase64(this.env.PRIVATE_KEY),
+      { name: "AES-GCM" },
+      false,
+      ["encrypt", "decrypt"],
+    );
+  }
+
+  private async encryptWithServerKey(data: JsonWebKey): Promise<{
+    iv: string;
+    data: string;
+  }> {
+    const key = await this.getServerEncryptionKey();
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encryptedData = await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv },
+      key,
+      new TextEncoder().encode(JSON.stringify(data)),
+    );
+
+    return {
+      iv: bufferToBase64(iv),
+      data: bufferToBase64(new Uint8Array(encryptedData)),
+    };
   }
 
   public async getUserByGithubId(
     githubId: string,
   ): Promise<Record<string, unknown> | null> {
-    const result = await this.db
-      .prepare(`
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
       SELECT u.* FROM user u
       JOIN oauth_account oa ON u.id = oa.user_id
       WHERE oa.provider_id = 'github' AND oa.provider_user_id = ?
@@ -40,8 +75,11 @@ export class Database {
   public async getUserBySessionId(
     sessionId: string,
   ): Promise<Record<string, unknown> | null> {
-    const result = await this.db
-      .prepare(`
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
       SELECT u.* FROM user u
       JOIN session s ON u.id = s.user_id
       WHERE s.id = ? AND s.expires_at > datetime('now')
@@ -55,8 +93,11 @@ export class Database {
   public async getUserById(
     userId: number,
   ): Promise<Record<string, unknown> | null> {
-    const result = await this.db
-      .prepare(`
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
       SELECT * FROM user WHERE id = ?
     `)
       .bind(userId)
@@ -66,8 +107,13 @@ export class Database {
   }
 
   public async getUserByEmail(email: string): Promise<User | null> {
-    const result = await this.db
-      .prepare("SELECT * FROM user WHERE email = ?")
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(
+      "SELECT * FROM user WHERE email = ?",
+    )
       .bind(email)
       .first();
 
@@ -78,8 +124,11 @@ export class Database {
     userId: number,
     userData: Record<string, unknown>,
   ): Promise<void> {
-    const result = await this.db
-      .prepare(`
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
         UPDATE user 
         SET 
           name = ?, 
@@ -118,8 +167,11 @@ export class Database {
     providerId: string,
     providerUserId: string,
   ): Promise<void> {
-    const result = await this.db
-      .prepare(`
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
           INSERT INTO oauth_account (provider_id, provider_user_id, user_id)
           VALUES ('github', ?, ?)
         `)
@@ -135,8 +187,11 @@ export class Database {
     userId: number,
     userData: Record<string, unknown>,
   ): Promise<void> {
-    const result = await this.db
-      .prepare(`
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
           UPDATE user 
           SET 
             github_username = ?,
@@ -168,11 +223,56 @@ export class Database {
     }
   }
 
+  public async createUserSettings(userId: number): Promise<void> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const keyPair = await crypto.subtle.generateKey(
+      {
+        name: "RSA-OAEP",
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: "SHA-256",
+      },
+      true,
+      ["encrypt", "decrypt"],
+    );
+
+    const privateKey = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
+    const encryptedPrivateKey = await this.encryptWithServerKey(privateKey);
+    const encryptedPrivateKeyString = JSON.stringify(encryptedPrivateKey);
+
+    const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+    const stringifiedPrivateKey = JSON.stringify(publicKey);
+
+    const userSettingsId = crypto.randomUUID();
+
+    const result = await this.env.DB.prepare(`
+      INSERT INTO user_settings (id, user_id, public_key, private_key)
+      VALUES (?, ?, ?, ?)
+    `)
+      .bind(
+        userSettingsId,
+        userId,
+        stringifiedPrivateKey,
+        encryptedPrivateKeyString,
+      )
+      .run();
+
+    if (!result.success) {
+      throw new AssistantError("Error creating user settings in the database");
+    }
+  }
+
   public async createUser(
     userData: Record<string, unknown>,
   ): Promise<Record<string, unknown> | null> {
-    const result = await this.db
-      .prepare(`
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
           INSERT INTO user (
             name, 
             avatar_url, 
@@ -206,6 +306,8 @@ export class Database {
       throw new AssistantError("Error creating user in the database");
     }
 
+    await this.createUserSettings(result.id as number);
+
     return result;
   }
 
@@ -214,8 +316,11 @@ export class Database {
     userId: number,
     expiresAt: Date,
   ): Promise<void> {
-    const result = await this.db
-      .prepare(`
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
       INSERT INTO session (id, user_id, expires_at)
       VALUES (?, ?, ?)
     `)
@@ -228,8 +333,11 @@ export class Database {
   }
 
   public async deleteSession(sessionId: string): Promise<void> {
-    const result = await this.db
-      .prepare(`
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
       DELETE FROM session
       WHERE id = ?
     `)
@@ -245,12 +353,16 @@ export class Database {
     id: string,
     type?: string,
   ): Promise<Record<string, unknown> | null> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
     const query = type
       ? "SELECT id, metadata, type, title, content FROM embedding WHERE id = ?1 AND type = ?2"
       : "SELECT id, metadata, type, title, content FROM embedding WHERE id = ?1";
     const stmt = type
-      ? await this.db.prepare(query).bind(id, type)
-      : await this.db.prepare(query).bind(id);
+      ? await this.env.DB.prepare(query).bind(id, type)
+      : await this.env.DB.prepare(query).bind(id);
     const record = await stmt.first();
 
     return record;
@@ -260,8 +372,13 @@ export class Database {
     id: string,
     type: string,
   ): Promise<Record<string, unknown> | null> {
-    const record = await this.db
-      .prepare("SELECT id FROM embedding WHERE id = ?1 AND type = ?2")
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const record = await this.env.DB.prepare(
+      "SELECT id FROM embedding WHERE id = ?1 AND type = ?2",
+    )
       .bind(id, type)
       .first();
 
@@ -275,11 +392,13 @@ export class Database {
     content: string,
     type: string,
   ): Promise<void> {
-    const database = await this.db
-      .prepare(
-        "INSERT INTO embedding (id, metadata, title, content, type) VALUES (?1, ?2, ?3, ?4, ?5)",
-      )
-      .bind(id, JSON.stringify(metadata), title, content, type);
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const database = await this.env.DB.prepare(
+      "INSERT INTO embedding (id, metadata, title, content, type) VALUES (?1, ?2, ?3, ?4, ?5)",
+    ).bind(id, JSON.stringify(metadata), title, content, type);
     const result = await database.run();
 
     if (!result.success) {
@@ -293,8 +412,11 @@ export class Database {
     title?: string,
     options: Record<string, unknown> = {},
   ): Promise<Record<string, unknown> | null> {
-    const result = await this.db
-      .prepare(`
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
       INSERT INTO conversation (
         id, 
         user_id, 
@@ -318,8 +440,13 @@ export class Database {
   public async getConversation(
     conversationId: string,
   ): Promise<Record<string, unknown> | null> {
-    const result = await this.db
-      .prepare("SELECT * FROM conversation WHERE id = ?")
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(
+      "SELECT * FROM conversation WHERE id = ?",
+    )
       .bind(conversationId)
       .first();
 
@@ -329,8 +456,13 @@ export class Database {
   public async getConversationByShareId(
     shareId: string,
   ): Promise<Record<string, unknown> | null> {
-    const result = await this.db
-      .prepare("SELECT * FROM conversation WHERE share_id = ?")
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(
+      "SELECT * FROM conversation WHERE share_id = ?",
+    )
       .bind(shareId)
       .first();
 
@@ -348,13 +480,19 @@ export class Database {
     pageNumber: number;
     pageSize: number;
   }> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
     const offset = (page - 1) * limit;
 
     const countQuery = includeArchived
       ? "SELECT COUNT(*) as total FROM conversation WHERE user_id = ?"
       : "SELECT COUNT(*) as total FROM conversation WHERE user_id = ? AND is_archived = 0";
 
-    const countResult = await this.db.prepare(countQuery).bind(userId).first();
+    const countResult = await this.env.DB.prepare(countQuery)
+      .bind(userId)
+      .first();
 
     const total = (countResult?.total as number) || 0;
     const totalPages = Math.ceil(total / limit);
@@ -377,8 +515,7 @@ export class Database {
 				LIMIT ? OFFSET ?
 			`;
 
-    const conversations = await this.db
-      .prepare(listQuery)
+    const conversations = await this.env.DB.prepare(listQuery)
       .bind(userId, limit, offset)
       .all();
 
@@ -394,6 +531,10 @@ export class Database {
     conversationId: string,
     updates: Record<string, unknown>,
   ): Promise<D1Result<Record<string, unknown>> | null> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
     const allowedFields = [
       "title",
       "is_archived",
@@ -418,8 +559,7 @@ export class Database {
 
     values.push(conversationId);
 
-    const result = await this.db
-      .prepare(`
+    const result = await this.env.DB.prepare(`
       UPDATE conversation 
       SET ${setClause}, updated_at = datetime('now')
       WHERE id = ?
@@ -435,17 +575,27 @@ export class Database {
   }
 
   public async deleteConversation(conversationId: string): Promise<void> {
-    await this.db
-      .prepare("DELETE FROM message WHERE conversation_id = ?")
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const deleteMessagesResult = await this.env.DB.prepare(
+      "DELETE FROM message WHERE conversation_id = ?",
+    )
       .bind(conversationId)
       .run();
 
-    const result = await this.db
-      .prepare("DELETE FROM conversation WHERE id = ?")
+    if (!deleteMessagesResult.success) {
+      throw new AssistantError("Error deleting messages from the database");
+    }
+
+    const deleteConversationResult = await this.env.DB.prepare(
+      "DELETE FROM conversation WHERE id = ?",
+    )
       .bind(conversationId)
       .run();
 
-    if (!result.success) {
+    if (!deleteConversationResult.success) {
       throw new AssistantError("Error deleting conversation from the database");
     }
   }
@@ -457,6 +607,10 @@ export class Database {
     content: string | Record<string, unknown>,
     messageData: Record<string, unknown> = {},
   ): Promise<Record<string, unknown> | null> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
     const contentStr =
       typeof content === "object" ? JSON.stringify(content) : content;
 
@@ -469,8 +623,7 @@ export class Database {
     const data = messageData.data ? JSON.stringify(messageData.data) : null;
     const usage = messageData.usage ? JSON.stringify(messageData.usage) : null;
 
-    const result = await this.db
-      .prepare(`
+    const result = await this.env.DB.prepare(`
       INSERT INTO message (
         id, 
         conversation_id, 
@@ -524,8 +677,13 @@ export class Database {
   public async getMessage(
     messageId: string,
   ): Promise<Record<string, unknown> | null> {
-    const result = await this.db
-      .prepare("SELECT * FROM message WHERE id = ?")
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(
+      "SELECT * FROM message WHERE id = ?",
+    )
       .bind(messageId)
       .first();
 
@@ -537,6 +695,10 @@ export class Database {
     limit = 50,
     after?: string,
   ): Promise<Record<string, unknown>[]> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
     let query = `
       SELECT * FROM message WHERE conversation_id = ?
       ORDER BY created_at ASC
@@ -558,8 +720,7 @@ export class Database {
       params.push(limit);
     }
 
-    const result = await this.db
-      .prepare(query)
+    const result = await this.env.DB.prepare(query)
       .bind(...params)
       .all();
 
@@ -581,6 +742,10 @@ export class Database {
     messageId: string,
     updates: Record<string, unknown>,
   ): Promise<void> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
     const allowedFields = [
       "content",
       "status",
@@ -616,8 +781,7 @@ export class Database {
 
     values.push(messageId);
 
-    const result = await this.db
-      .prepare(`
+    const result = await this.env.DB.prepare(`
       UPDATE message 
       SET ${setClause}, updated_at = datetime('now')
       WHERE id = ?
@@ -631,8 +795,11 @@ export class Database {
   }
 
   public async deleteMessage(messageId: string): Promise<void> {
-    const result = await this.db
-      .prepare("DELETE FROM message WHERE id = ?")
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare("DELETE FROM message WHERE id = ?")
       .bind(messageId)
       .run();
 
@@ -645,6 +812,10 @@ export class Database {
     parentMessageId: string,
     limit = 50,
   ): Promise<Record<string, unknown>[]> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
     const query = `
       SELECT * FROM message 
       WHERE parent_message_id = ?
@@ -652,8 +823,7 @@ export class Database {
       LIMIT ?
     `;
 
-    const result = await this.db
-      .prepare(query)
+    const result = await this.env.DB.prepare(query)
       .bind(parentMessageId, limit.toString())
       .all();
 
@@ -664,8 +834,11 @@ export class Database {
     conversationId: string,
     messageId: string,
   ): Promise<void> {
-    const result = await this.db
-      .prepare(`
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
       UPDATE conversation 
       SET 
         last_message_id = ?,
@@ -688,6 +861,10 @@ export class Database {
     limit = 25,
     offset = 0,
   ): Promise<Record<string, unknown>[]> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
     const searchQuery = `
       SELECT c.* 
       FROM conversation c
@@ -706,8 +883,7 @@ export class Database {
 
     const searchTerm = `%${query}%`;
 
-    const result = await this.db
-      .prepare(searchQuery)
+    const result = await this.env.DB.prepare(searchQuery)
       .bind(userId, searchTerm, searchTerm, limit.toString(), offset.toString())
       .all();
 
@@ -720,6 +896,10 @@ export class Database {
     limit = 25,
     offset = 0,
   ): Promise<Record<string, unknown>[]> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
     const searchQuery = `
       SELECT m.* 
       FROM message m
@@ -732,8 +912,7 @@ export class Database {
 
     const searchTerm = `%${query}%`;
 
-    const result = await this.db
-      .prepare(searchQuery)
+    const result = await this.env.DB.prepare(searchQuery)
       .bind(userId, searchTerm, limit.toString(), offset.toString())
       .all();
 
@@ -745,8 +924,11 @@ export class Database {
     conversation_id: string;
     user_id: number;
   } | null> {
-    const result = await this.db
-      .prepare(`
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
 				SELECT m.*, c.id as conversation_id, c.user_id 
 				FROM message m
 				JOIN conversation c ON m.conversation_id = c.id

@@ -57,4 +57,5 @@ export interface IEnv {
   PUBLIC_ASSETS_URL?: string;
   PUBLIC_ASSETS_BUCKET?: string;
   SERPER_API_KEY?: string;
+  PRIVATE_KEY?: string;
 }

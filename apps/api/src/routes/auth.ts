@@ -4,6 +4,7 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
+import { Database } from "../lib/database";
 import { requireAuth } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
 import { generateJwtToken } from "../services/auth/jwt";
@@ -20,7 +21,6 @@ import {
   jwtTokenResponseSchema,
   userSchema,
 } from "./schemas/auth";
-
 const app = new Hono();
 
 const routeLogger = createRouteLogger("AUTH");
@@ -83,16 +83,16 @@ app.get(
   }),
   zValidator("query", githubCallbackSchema),
   async (c: Context) => {
-    const { code } = c.req.valid("query" as never) as { code: string };
-
-    if (!c.env.GITHUB_CLIENT_ID || !c.env.GITHUB_CLIENT_SECRET) {
-      throw new AssistantError(
-        "Missing GitHub OAuth configuration",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
-
     try {
+      const { code } = c.req.valid("query" as never) as { code: string };
+
+      if (!c.env.GITHUB_CLIENT_ID || !c.env.GITHUB_CLIENT_SECRET) {
+        throw new AssistantError(
+          "Missing GitHub OAuth configuration",
+          ErrorType.CONFIGURATION_ERROR,
+        );
+      }
+
       const tokenResponse = await fetch(
         "https://github.com/login/oauth/access_token",
         {
@@ -143,7 +143,9 @@ app.get(
         );
       }
 
-      const user = await createOrUpdateGithubUser(c.env.DB, {
+      const database = Database.getInstance(c.env);
+
+      const user = await createOrUpdateGithubUser(database, {
         githubId: githubUser.id.toString(),
         username: githubUser.login,
         email: primaryEmail,
@@ -210,7 +212,9 @@ app.get(
       return c.json({ user: null });
     }
 
-    const user = await getUserBySessionId(c.env, finalSessionId);
+    const database = Database.getInstance(c.env);
+
+    const user = await getUserBySessionId(database, finalSessionId);
 
     if (!user) {
       throw new AssistantError(

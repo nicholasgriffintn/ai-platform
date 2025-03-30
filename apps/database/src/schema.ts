@@ -177,6 +177,7 @@ export const userSettings = sqliteTable(
     preferences: text(),
     tracking_enabled: integer({ mode: "boolean" }).default(true),
     public_key: text(),
+    private_key: text(),
     created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
     updated_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)

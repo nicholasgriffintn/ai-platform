@@ -1,4 +1,5 @@
 import { ConversationManager } from "../../lib/conversationManager";
+import { Database } from "../../lib/database";
 import type { AppSchema } from "../../types/app-schema";
 import type { IRequest } from "../../types/chat";
 import { handleFunctions } from "../functions";
@@ -70,8 +71,10 @@ export const executeDynamicApp = async (
 
   const { env, user } = req;
 
+  const database = Database.getInstance(env);
+
   const conversationManager = ConversationManager.getInstance({
-    database: env.DB,
+    database,
     userId: user?.id,
     store: !!user?.id,
     platform: "dynamic-apps",

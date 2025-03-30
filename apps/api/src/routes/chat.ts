@@ -4,6 +4,7 @@ import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
 import { ConversationManager } from "../lib/conversationManager";
+import { Database } from "../lib/database";
 import { allowRestrictedPaths } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
 import { requireTurnstileToken } from "../middleware/turnstile";
@@ -171,8 +172,10 @@ app.get(
     const limit = Number.parseInt(context.req.query("limit") || "50", 10);
     const after = context.req.query("after");
 
+    const database = Database.getInstance(context.env);
+
     const conversationManager = ConversationManager.getInstance({
-      database: context.env.DB,
+      database,
       userId: userContext.id,
     });
 
@@ -211,8 +214,10 @@ app.get(
     const { message_id } = context.req.param();
     const userContext = context.get("user");
 
+    const database = Database.getInstance(context.env);
+
     const conversationManager = ConversationManager.getInstance({
-      database: context.env.DB,
+      database,
       userId: userContext.id,
     });
 

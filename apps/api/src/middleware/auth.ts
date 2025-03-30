@@ -1,5 +1,6 @@
 import type { Context, Next } from "hono";
 
+import { Database } from "../lib/database";
 import { getModelConfigByModel } from "../lib/models";
 import { getUserByJwtToken } from "../services/auth/jwt";
 import { getUserBySessionId } from "../services/auth/user";
@@ -27,7 +28,10 @@ export async function authMiddleware(context: Context, next: Next) {
   const isJwtToken = authToken?.split(".").length === 3;
 
   if (sessionId) {
-    user = await getUserBySessionId(context.env, sessionId);
+    const database = Database.getInstance(context.env);
+
+    user = await getUserBySessionId(database, sessionId);
+
     if (user) {
       isRestricted = false;
     }

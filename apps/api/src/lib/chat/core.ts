@@ -6,6 +6,7 @@ import type {
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { ConversationManager } from "../conversationManager";
+import { Database } from "../database";
 import { Embedding } from "../embedding";
 import { Guardrails } from "../guardrails";
 import { ModelRouter } from "../modelRouter";
@@ -125,8 +126,10 @@ export async function processChatRequest(options: CoreChatOptions) {
     }
     const matchedModel = modelConfig.matchingModel;
 
+    const database = Database.getInstance(env);
+
     const conversationManager = ConversationManager.getInstance({
-      database: env.DB,
+      database,
       userId: user?.id,
       model: matchedModel,
       platform,

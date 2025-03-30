@@ -1,4 +1,5 @@
 import { ConversationManager } from "../../lib/conversationManager";
+import { Database } from "../../lib/database";
 import type { IEnv, Message } from "../../types";
 
 interface GetSharedConversationRequest {
@@ -11,8 +12,10 @@ export async function handleGetSharedConversation(
   limit = 50,
   after?: string,
 ): Promise<{ messages: Message[]; share_id: string }> {
+  const database = Database.getInstance(env);
+
   const conversationManager = ConversationManager.getInstance({
-    database: env.DB,
+    database,
   });
 
   const messages = await conversationManager.getPublicConversation(

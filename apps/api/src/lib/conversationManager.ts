@@ -1,25 +1,23 @@
-import type { D1Database } from "@cloudflare/workers-types";
-
-import type { Message, MessageContent, Platform } from "../types";
+import type { IEnv, Message, MessageContent, Platform } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
-import { Database } from "./database";
+import type { Database } from "./database";
 
 export class ConversationManager {
   private static instance: ConversationManager;
-  private db: Database;
+  private database: Database;
   private model?: string;
   private platform?: Platform;
   private store?: boolean = true;
   private userId?: number;
 
   private constructor(
-    db: Database,
+    database: Database,
     userId?: number,
     model?: string,
     platform?: Platform,
     store?: boolean,
   ) {
-    this.db = db;
+    this.database = database;
     this.userId = userId;
     this.model = model;
     this.platform = platform || "api";
@@ -33,24 +31,22 @@ export class ConversationManager {
     platform,
     store,
   }: {
-    database: D1Database;
+    database: Database;
     userId?: number;
     model?: string;
     platform?: Platform;
     store?: boolean;
   }): ConversationManager {
-    const db = Database.getInstance(database);
-
     if (!ConversationManager.instance) {
       ConversationManager.instance = new ConversationManager(
-        db,
+        database,
         userId,
         model,
         platform,
         store ?? true,
       );
     } else {
-      ConversationManager.instance.db = db;
+      ConversationManager.instance.database = database;
       ConversationManager.instance.userId = userId;
       ConversationManager.instance.model = model;
       ConversationManager.instance.platform = platform;
@@ -82,10 +78,10 @@ export class ConversationManager {
       );
     }
 
-    let conversation = await this.db.getConversation(conversation_id);
+    let conversation = await this.database.getConversation(conversation_id);
 
     if (!conversation) {
-      conversation = await this.db.createConversation(
+      conversation = await this.database.createConversation(
         conversation_id,
         this.userId,
         "New Conversation",
@@ -112,7 +108,7 @@ export class ConversationManager {
       content = newMessage.content || "";
     }
 
-    await this.db.createMessage(
+    await this.database.createMessage(
       newMessage.id as string,
       conversation_id,
       newMessage.role,
@@ -120,7 +116,7 @@ export class ConversationManager {
       newMessage,
     );
 
-    await this.db.updateConversationAfterMessage(
+    await this.database.updateConversationAfterMessage(
       conversation_id,
       newMessage.id as string,
     );
@@ -154,10 +150,10 @@ export class ConversationManager {
       );
     }
 
-    let conversation = await this.db.getConversation(conversation_id);
+    let conversation = await this.database.getConversation(conversation_id);
 
     if (!conversation) {
-      conversation = await this.db.createConversation(
+      conversation = await this.database.createConversation(
         conversation_id,
         this.userId,
         "New Conversation",
@@ -185,7 +181,7 @@ export class ConversationManager {
         content = message.content || "";
       }
 
-      return this.db.createMessage(
+      return this.database.createMessage(
         message.id as string,
         conversation_id,
         message.role,
@@ -198,7 +194,7 @@ export class ConversationManager {
 
     if (newMessages.length > 0) {
       const lastMessage = newMessages[newMessages.length - 1];
-      await this.db.updateConversationAfterMessage(
+      await this.database.updateConversationAfterMessage(
         conversation_id,
         lastMessage.id as string,
       );
@@ -222,7 +218,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.db.getConversation(conversation_id);
+    const conversation = await this.database.getConversation(conversation_id);
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
     }
@@ -258,7 +254,7 @@ export class ConversationManager {
       }
 
       if (Object.keys(updates).length > 0) {
-        await this.db.updateMessage(message.id, updates);
+        await this.database.updateMessage(message.id, updates);
       }
     }
   }
@@ -283,7 +279,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.db.getConversation(conversation_id);
+    const conversation = await this.database.getConversation(conversation_id);
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
     }
@@ -295,7 +291,7 @@ export class ConversationManager {
       );
     }
 
-    const messages = await this.db.getConversationMessages(
+    const messages = await this.database.getConversationMessages(
       conversation_id,
       limit,
       after,
@@ -324,7 +320,7 @@ export class ConversationManager {
       );
     }
 
-    const result = await this.db.getUserConversations(
+    const result = await this.database.getUserConversations(
       this.userId,
       limit,
       page,
@@ -359,7 +355,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.db.getConversation(conversation_id);
+    const conversation = await this.database.getConversation(conversation_id);
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
     }
@@ -371,7 +367,7 @@ export class ConversationManager {
       );
     }
 
-    const dbMessages = await this.db.getConversationMessages(
+    const dbMessages = await this.database.getConversationMessages(
       conversation.id as string,
     );
 
@@ -406,7 +402,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.db.getConversation(conversation_id);
+    const conversation = await this.database.getConversation(conversation_id);
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
     }
@@ -428,9 +424,10 @@ export class ConversationManager {
       updateObj.is_archived = updates.archived;
     }
 
-    await this.db.updateConversation(conversation_id, updateObj);
+    await this.database.updateConversation(conversation_id, updateObj);
 
-    const updatedConversation = await this.db.getConversation(conversation_id);
+    const updatedConversation =
+      await this.database.getConversation(conversation_id);
     return updatedConversation || {};
   }
 
@@ -447,7 +444,7 @@ export class ConversationManager {
       );
     }
 
-    const result = await this.db.getMessageById(message_id);
+    const result = await this.database.getMessageById(message_id);
 
     if (!result) {
       throw new AssistantError("Message not found", ErrorType.NOT_FOUND);
@@ -477,12 +474,13 @@ export class ConversationManager {
       return [];
     }
 
-    const conversation = await this.db.getConversation(conversation_id);
+    const conversation = await this.database.getConversation(conversation_id);
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
     }
 
-    const messages = await this.db.getConversationMessages(conversation_id);
+    const messages =
+      await this.database.getConversationMessages(conversation_id);
 
     return messages.map((dbMessage) => this.formatMessage(dbMessage));
   }
@@ -499,7 +497,7 @@ export class ConversationManager {
       return;
     }
 
-    const conversation = await this.db.getConversation(conversation_id);
+    const conversation = await this.database.getConversation(conversation_id);
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
     }
@@ -528,7 +526,7 @@ export class ConversationManager {
       }
 
       if (Object.keys(updates).length > 0) {
-        await this.db.updateMessage(message.id, updates);
+        await this.database.updateMessage(message.id, updates);
       }
     }
   }
@@ -603,7 +601,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.db.getConversation(conversation_id);
+    const conversation = await this.database.getConversation(conversation_id);
 
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -619,7 +617,7 @@ export class ConversationManager {
     const share_id =
       (conversation.share_id as string) || this.generateShareId();
 
-    const updatedConversation = await this.db.updateConversation(
+    const updatedConversation = await this.database.updateConversation(
       conversation_id,
       {
         is_public: 1,
@@ -648,7 +646,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.db.getConversation(conversation_id);
+    const conversation = await this.database.getConversation(conversation_id);
 
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -661,7 +659,7 @@ export class ConversationManager {
       );
     }
 
-    const updatedConversation = await this.db.updateConversation(
+    const updatedConversation = await this.database.updateConversation(
       conversation_id,
       {
         is_public: 0,
@@ -684,7 +682,7 @@ export class ConversationManager {
     limit = 50,
     after?: string,
   ): Promise<Message[]> {
-    const conversation = await this.db.getConversationByShareId(share_id);
+    const conversation = await this.database.getConversationByShareId(share_id);
 
     if (!conversation) {
       throw new AssistantError(
@@ -700,7 +698,7 @@ export class ConversationManager {
       );
     }
 
-    const messages = await this.db.getMessages(
+    const messages = await this.database.getMessages(
       conversation.id as string,
       limit,
       after,
