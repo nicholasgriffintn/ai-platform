@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 import {
   APP_NAME,
   CONTACT_LINK,
@@ -35,6 +37,42 @@ export default function Terms() {
             use these services only for lawful purposes and in a manner that
             does not violate the rights of, or restrict or inhibit the use and
             enjoyment of, the Service by any third party.
+          </p>
+          <h3>2.1 Age Requirements</h3>
+          <p>
+            You must be at least 18 years of age to use our services without
+            permission. By using our services you represent that you are above
+            the minimum age required by the laws of your country. If you are
+            under the age of 18, you represent that you have your parent or
+            guardian's permission to use the Service and they have read and
+            agreed to these Terms on your behalf.
+          </p>
+          <h3>2.2 Service Description</h3>
+          <p>
+            {APP_NAME} is an AI-powered chatbot that allows users to interact
+            with artificial intelligence language models. We utilize various AI
+            technologies. The service provides automated responses to queries
+            and facilitates interactive discussions.
+          </p>
+          <p>
+            You acknowledge that:
+            <ul>
+              <li>
+                The outputs generated might not always be accurate, complete, or
+                up-to-date
+              </li>
+              <li>
+                All outputs and responses are provided on an "as is" basis
+              </li>
+              <li>
+                {APP_NAME} is not a substitute for professional or expert advice
+              </li>
+            </ul>
+          </p>
+          <p>
+            We may update, improve, or change the functionality of {APP_NAME} at
+            our discretion and without obligation. We do not guarantee that any
+            specific feature will always be available.
           </p>
 
           <h2>3. Account Responsibilities</h2>
@@ -75,6 +113,29 @@ export default function Terms() {
               code
             </li>
           </ul>
+          <h3>4.1 AI Technology Limitations</h3>
+          <p>
+            You acknowledge that:
+            <ul>
+              <li>
+                Our Service uses artificial intelligence technology that may not
+                always provide accurate or complete information
+              </li>
+              <li>
+                The AI may occasionally generate unexpected, inappropriate, or
+                inaccurate responses
+              </li>
+              <li>
+                You should not rely solely on our AI for critical decisions
+                related to health, finances, legal matters, or other significant
+                concerns
+              </li>
+              <li>
+                We do not guarantee specific outcomes or results from using our
+                AI Service
+              </li>
+            </ul>
+          </p>
 
           <h2>5. Intellectual Property</h2>
           <p>
@@ -82,6 +143,21 @@ export default function Terms() {
             but not limited to design, text, graphics, interfaces, and code, are
             owned by {APP_NAME} or its licensors and are protected by copyright,
             trademark, and other intellectual property laws.
+          </p>
+          <h3>5.1 User Content License</h3>
+          <p>
+            By submitting or transmitting any content ("User Content") to{" "}
+            {APP_NAME}, you grant us a non-exclusive, worldwide, royalty-free,
+            sublicensable, and transferable license to store, display, process,
+            and use your User Content in connection with providing and improving
+            the Service.
+          </p>
+          <h3>5.2 Trademarks</h3>
+          <p>
+            All trademarks, service marks, logos, trade names, and any other
+            proprietary designations belonging to {APP_NAME} used herein are our
+            trademarks. Nothing in these Terms gives you the right to use any of
+            our trademarks, logos, or brand elements.
           </p>
 
           <h2>6. Limitation of Liability</h2>
@@ -93,11 +169,19 @@ export default function Terms() {
           </p>
 
           <h2>7. Termination</h2>
+          <p>These Terms remain in effect as long as you use {APP_NAME}.</p>
+          <h3>7.1 Termination by You</h3>
+          <p>You may stop using our Service at any time.</p>
+          <h3>7.2 Termination by Us</h3>
           <p>
             We reserve the right to suspend or terminate your access to the
             Service, without prior notice or liability, for any reason,
-            including breach of these Terms. Upon termination, your right to use
-            the Service will immediately cease.
+            including breach of these Terms.
+          </p>
+          <h3>7.3 Effect of Termination</h3>
+          <p>
+            Upon termination, your rights to use our Service will immediately
+            cease, and you must discontinue all use of the Service.
           </p>
 
           <h2>8. Changes to Terms</h2>
@@ -110,8 +194,9 @@ export default function Terms() {
 
           <h2>9. Privacy</h2>
           <p>
-            Your use of our Service is also governed by our Privacy Policy,
-            which is incorporated into these Terms by reference.
+            Your use of our Service is also governed by our{" "}
+            <Link to="/privacy">Privacy Policy</Link>, which is incorporated
+            into these Terms by reference.
           </p>
 
           <h2>10. Governing Law</h2>
@@ -119,6 +204,26 @@ export default function Terms() {
             These Terms shall be governed by and construed in accordance with
             the laws of the {JURISDICTION}, without regard to its conflict of
             law provisions.
+          </p>
+          <h3>10.1 Dispute Resolution</h3>
+          <p>
+            If you have a dispute with us:
+            <ul>
+              <li>
+                Please contact us first at{" "}
+                <a href={CONTACT_LINK}>{CONTACT_LINK}</a> to attempt informal
+                resolution
+              </li>
+              <li>
+                If the matter cannot be resolved informally within 30 days,
+                either party may pursue litigation in the courts of the{" "}
+                {JURISDICTION}
+              </li>
+              <li>
+                Nothing in these Terms prevents you from filing a complaint with
+                relevant regulatory authorities
+              </li>
+            </ul>
           </p>
 
           <h2>11. Disclaimer</h2>
@@ -130,13 +235,29 @@ export default function Terms() {
             decisions of any kind.
           </p>
 
-          <h2>12. Contact Us</h2>
+          <h2>12. Indemnification</h2>
+          <p>
+            You agree to defend, indemnify, and hold harmless {APP_NAME} and its
+            affiliates, officers, directors, employees, and agents, from and
+            against all claims, damages, liabilities, losses, costs, and
+            expenses (including reasonable attorneys' fees) arising out of or in
+            any way connected with:
+          </p>
+          <ul>
+            <li>
+              Your use of our Service or any activities under your account;
+            </li>
+            <li>Your breach or alleged breach of these Terms;</li>
+            <li>Your violation of any law or the rights of a third party.</li>
+          </ul>
+
+          <h2>13. Contact Us</h2>
           <p>
             If you have any questions about these Terms, please contact me at{" "}
             <a href={CONTACT_LINK}>{CONTACT_LINK}</a>.
           </p>
 
-          <h2>13. Effective Date</h2>
+          <h2>14. Effective Date</h2>
           <p>
             These Terms of Service are effective as of {TERMS_EFFECTIVE_DATE}.
           </p>
