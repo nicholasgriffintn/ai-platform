@@ -36,7 +36,10 @@ export class BedrockProvider extends BaseProvider {
     return {};
   }
 
-  async getResponse(params: ChatCompletionParameters): Promise<any> {
+  async getResponse(
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<any> {
     this.validateParams(params);
 
     const bedrockUrl = this.getEndpoint(params);
@@ -140,6 +143,8 @@ export class BedrockProvider extends BaseProvider {
         repetition_penalty: params.repetition_penalty,
         frequency_penalty: params.frequency_penalty,
       },
+      userId,
+      completion_id: params.completion_id,
     });
   }
 }

@@ -57,7 +57,7 @@ export async function getAIResponse({
     enabled_tools,
   });
 
-  const response = await provider.getResponse(parameters);
+  const response = await provider.getResponse(parameters, user?.id);
 
   return response;
 }

@@ -324,8 +324,11 @@ export function createStreamWithPostProcessing(
             let violations: any[] = [];
 
             if (fullContent) {
-              const outputValidation =
-                await guardrails.validateOutput(fullContent);
+              const outputValidation = await guardrails.validateOutput(
+                fullContent,
+                user?.id,
+                completion_id,
+              );
 
               if (!outputValidation.isValid) {
                 logger.debug("Output validation failed", {

@@ -38,7 +38,9 @@ export async function rateLimit(context: Context, next: Next) {
     );
   }
 
-  trackUsageMetric(user?.id || "anonymous", context.env.ANALYTICS);
+  const name = pathname.split("/").pop();
+
+  trackUsageMetric(user?.id || "anonymous", name, context.env.ANALYTICS);
 
   return next();
 }

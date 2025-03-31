@@ -9,7 +9,7 @@ import { fetchAIResponse } from "./fetch";
 export interface AIProvider {
   name: string;
   supportsStreaming: boolean;
-  getResponse(params: ChatCompletionParameters): Promise<any>;
+  getResponse(params: ChatCompletionParameters, userId?: number): Promise<any>;
 }
 
 export abstract class BaseProvider implements AIProvider {
@@ -55,7 +55,10 @@ export abstract class BaseProvider implements AIProvider {
    * Main method to get response from the provider
    * Implements the template method pattern
    */
-  async getResponse(params: ChatCompletionParameters): Promise<any> {
+  async getResponse(
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<any> {
     this.validateParams(params);
 
     const endpoint = this.getEndpoint(params);
@@ -90,6 +93,8 @@ export abstract class BaseProvider implements AIProvider {
         repetition_penalty: params.repetition_penalty,
         frequency_penalty: params.frequency_penalty,
       },
+      userId,
+      completion_id: params.completion_id,
     });
   }
 }

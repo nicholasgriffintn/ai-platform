@@ -98,6 +98,7 @@ export class Embedding {
     query: string,
     options?: RagOptions,
     env?: IEnv,
+    userId?: number,
   ): Promise<string> {
     try {
       const relevantDocs = await trackRagMetrics(
@@ -110,6 +111,7 @@ export class Embedding {
           }),
         env?.ANALYTICS,
         { query, method: "augment_prompt_search" },
+        userId,
       );
 
       if (!relevantDocs.length) {

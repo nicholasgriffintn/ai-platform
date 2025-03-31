@@ -82,17 +82,18 @@ export class Monitoring {
 }
 
 export function trackUsageMetric(
-  userId: string,
+  userId: number,
+  name?: string,
   analyticsEngine?: AnalyticsEngineDataset,
 ): void {
   const monitor = Monitoring.getInstance(analyticsEngine);
-  const traceId = crypto.randomUUID();
+  const traceId = userId.toString();
 
   monitor.recordMetric({
     traceId,
     timestamp: Date.now(),
     type: "usage",
-    name: "user_usage",
+    name: name || "user_usage",
     value: 1,
     metadata: {
       userId,
@@ -107,6 +108,8 @@ export function trackProviderMetrics<T>({
   operation,
   analyticsEngine,
   settings,
+  userId,
+  completion_id,
 }: {
   provider: string;
   model: string;
@@ -126,14 +129,17 @@ export function trackProviderMetrics<T>({
     input_tokens: number;
     output_tokens: number;
   };
+  userId?: number;
+  completion_id?: string;
 }): Promise<T> {
   const startTime = performance.now();
   const monitor = Monitoring.getInstance(analyticsEngine);
-  const traceId = crypto.randomUUID();
+  const traceId = completion_id || crypto.randomUUID();
 
   return operation()
     .then((result: any) => {
       const metrics = {
+        userId: userId?.toString() || "anonymous",
         provider,
         model,
         latency: performance.now() - startTime,
@@ -188,16 +194,19 @@ export function trackGuardrailViolation(
   violationName: string,
   details: Record<string, any>,
   analyticsEngine?: AnalyticsEngineDataset,
+  userId?: number,
+  completion_id?: string,
 ): void {
   const monitor = Monitoring.getInstance(analyticsEngine);
-  const traceId = crypto.randomUUID();
+  const traceId = completion_id || crypto.randomUUID();
+
   monitor.recordMetric({
     traceId,
     timestamp: Date.now(),
     type: "guardrail",
     name: "guardrail_violation",
     value: 0,
-    metadata: { violationName, details },
+    metadata: { violationName, details, userId },
     status: "info",
   });
 }
@@ -206,10 +215,12 @@ export function trackRagMetrics(
   operation: () => Promise<any>,
   analyticsEngine?: AnalyticsEngineDataset,
   details?: Record<string, any>,
+  userId?: number,
+  completion_id?: string,
 ): Promise<any> {
   const startTime = performance.now();
   const monitor = Monitoring.getInstance(analyticsEngine);
-  const traceId = crypto.randomUUID();
+  const traceId = completion_id || crypto.randomUUID();
 
   return operation()
     .then((result) => {
@@ -220,7 +231,7 @@ export function trackRagMetrics(
         type: "performance",
         name: "rag",
         value: latency,
-        metadata: { result, details },
+        metadata: { result, details, userId },
         status: "success",
       });
       return result;
@@ -247,10 +258,12 @@ export function trackModelRoutingMetrics<T>(
   operation: () => Promise<T>,
   analyticsEngine?: AnalyticsEngineDataset,
   details?: Record<string, any>,
+  userId?: number,
+  completion_id?: string,
 ): Promise<T> {
   const startTime = performance.now();
   const monitor = Monitoring.getInstance(analyticsEngine);
-  const traceId = crypto.randomUUID();
+  const traceId = completion_id || crypto.randomUUID();
 
   return operation()
     .then((result) => {
@@ -261,7 +274,7 @@ export function trackModelRoutingMetrics<T>(
         type: "performance",
         name: "model_routing",
         value: latency,
-        metadata: { details, result },
+        metadata: { details, result, userId },
         status: "success",
       });
       return result;

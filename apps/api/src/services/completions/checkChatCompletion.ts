@@ -68,8 +68,16 @@ export const handleCheckChatCompletion = async (
   const guardrails = Guardrails.getInstance(env);
   const validation =
     roleToCheck === "user"
-      ? await guardrails.validateInput(messageHistoryAsString)
-      : await guardrails.validateOutput(messageHistoryAsString);
+      ? await guardrails.validateInput(
+          messageHistoryAsString,
+          user.id,
+          completion_id,
+        )
+      : await guardrails.validateOutput(
+          messageHistoryAsString,
+          user.id,
+          completion_id,
+        );
 
   return {
     content: validation.isValid

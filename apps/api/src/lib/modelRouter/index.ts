@@ -158,6 +158,8 @@ export class ModelRouter {
     prompt: string,
     attachments?: Attachment[],
     budget_constraint?: number,
+    userId?: number,
+    completion_id?: string,
   ): Promise<string> {
     return trackModelRoutingMetrics(
       async () => {
@@ -173,6 +175,8 @@ export class ModelRouter {
       },
       env.ANALYTICS,
       { prompt },
+      userId,
+      completion_id,
     ).catch((error) => {
       console.error("Error in model selection:", error);
       return defaultModel;

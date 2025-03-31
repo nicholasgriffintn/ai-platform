@@ -45,30 +45,50 @@ export class Guardrails {
     return Guardrails.instance;
   }
 
-  async validateInput(message: string): Promise<GuardrailResult> {
+  async validateInput(
+    message: string,
+    userId?: number,
+    completionId?: string,
+  ): Promise<GuardrailResult> {
     if (this.env.GUARDRAILS_ENABLED === "false") {
       return { isValid: true, violations: [] };
     }
     const result = await this.provider.validateContent(message, "INPUT");
     if (!result.isValid && result.violations.length > 0) {
-      trackGuardrailViolation("input_violation", {
-        message,
-        violations: result.violations,
-      });
+      trackGuardrailViolation(
+        "input_violation",
+        {
+          message,
+          violations: result.violations,
+        },
+        this.env.ANALYTICS,
+        userId,
+        completionId,
+      );
     }
     return result;
   }
 
-  async validateOutput(response: string): Promise<GuardrailResult> {
+  async validateOutput(
+    response: string,
+    userId?: number,
+    completionId?: string,
+  ): Promise<GuardrailResult> {
     if (this.env.GUARDRAILS_ENABLED === "false") {
       return { isValid: true, violations: [] };
     }
     const result = await this.provider.validateContent(response, "OUTPUT");
     if (!result.isValid && result.violations.length > 0) {
-      trackGuardrailViolation("output_violation", {
-        response,
-        violations: result.violations,
-      });
+      trackGuardrailViolation(
+        "output_violation",
+        {
+          response,
+          violations: result.violations,
+        },
+        this.env.ANALYTICS,
+        userId,
+        completionId,
+      );
     }
     return result;
   }

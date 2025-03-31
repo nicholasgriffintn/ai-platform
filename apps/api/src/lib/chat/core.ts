@@ -115,6 +115,8 @@ export async function processChatRequest(options: CoreChatOptions) {
         lastMessageContentText,
         allAttachments,
         budget_constraint,
+        user?.id,
+        completion_id,
       ));
 
     const modelConfig = getModelConfig(selectedModel);
@@ -157,11 +159,20 @@ export async function processChatRequest(options: CoreChatOptions) {
 
     const finalMessage =
       use_rag === true && currentMode !== "prompt_coach"
-        ? await embedding.augmentPrompt(finalUserMessage, rag_options)
+        ? await embedding.augmentPrompt(
+            finalUserMessage,
+            rag_options,
+            env,
+            user?.id,
+          )
         : finalUserMessage;
 
     const guardrails = Guardrails.getInstance(env);
-    const inputValidation = await guardrails.validateInput(finalMessage);
+    const inputValidation = await guardrails.validateInput(
+      finalMessage,
+      user?.id,
+      completion_id,
+    );
     if (!inputValidation.isValid) {
       return {
         validation: "input",
@@ -331,6 +342,8 @@ export async function processChatRequest(options: CoreChatOptions) {
     if (response.response) {
       const outputValidation = await guardrails.validateOutput(
         response.response,
+        user?.id,
+        completion_id,
       );
       if (!outputValidation.isValid) {
         return {
