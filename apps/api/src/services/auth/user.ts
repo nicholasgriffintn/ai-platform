@@ -70,6 +70,25 @@ export async function getUserBySessionId(
 }
 
 /**
+ * Get a user's settings
+ */
+export async function getUserSettings(
+  database: Database,
+  userId: number,
+): Promise<Record<string, unknown> | null> {
+  try {
+    const result = await database.getUserSettings(userId);
+    return result;
+  } catch (error) {
+    console.error("Error getting user settings:", error);
+    throw new AssistantError(
+      "Failed to retrieve user settings",
+      ErrorType.UNKNOWN_ERROR,
+    );
+  }
+}
+
+/**
  * Get a user by their ID
  */
 export async function getUserById(

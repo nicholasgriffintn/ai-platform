@@ -1,10 +1,11 @@
 import { forwardRef } from "react";
-import type { InputHTMLAttributes } from "react";
+import type { TextareaHTMLAttributes } from "react";
 
 import { cn } from "~/lib/utils";
 import { FormLabel } from "./FormLabel";
 
-export interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface TextAreaProps
+  extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   description?: string;
   className?: string;
@@ -12,7 +13,7 @@ export interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
   disabled?: boolean;
 }
 
-export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
+export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
   (
     {
       label,
@@ -28,7 +29,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     return (
       <div className={cn("space-y-1", fullWidth && "w-full")}>
         {label && <FormLabel htmlFor={id}>{label}</FormLabel>}
-        <input
+        <textarea
           ref={ref}
           id={id}
           className={cn(
@@ -49,4 +50,4 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   },
 );
 
-TextInput.displayName = "TextInput";
+TextArea.displayName = "TextArea";

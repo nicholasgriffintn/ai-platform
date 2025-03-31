@@ -1,10 +1,12 @@
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { LoginModal } from "~/components/LoginModal";
+import { UserSettingsForm } from "~/components/UserSettingsForm";
 import { Button } from "~/components/ui/Button";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { AppLayout } from "~/layouts/AppLayout";
 import { cn } from "~/lib/utils";
+import { Banner } from "../components/ui/Banner";
 
 export function meta() {
   return [
@@ -14,8 +16,14 @@ export function meta() {
 }
 
 export default function ProfilePage() {
-  const { isAuthenticated, isLoading, user, logout, isLoggingOut } =
-    useAuthStatus();
+  const {
+    isAuthenticated,
+    isLoading,
+    user,
+    userSettings,
+    logout,
+    isLoggingOut,
+  } = useAuthStatus();
   const [activeTab, setActiveTab] = useState("account");
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
@@ -34,7 +42,7 @@ export default function ProfilePage() {
 
   const tabs = [
     { id: "account", label: "Account" },
-    { id: "customization", label: "Customization" },
+    { id: "customisation", label: "Customisation" },
     { id: "history", label: "Chat History" },
     { id: "models", label: "Models" },
   ];
@@ -246,22 +254,23 @@ export default function ProfilePage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="text-zinc-500 dark:text-zinc-400">
-                          TODO: Coming soon
+                          <Banner>TODO: Coming soon</Banner>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {activeTab === "customization" && (
+                  {activeTab === "customisation" && (
                     <div>
                       <h2 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">
-                        Customize Chat
+                        Customise Chat
                       </h2>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="text-zinc-500 dark:text-zinc-400">
-                          TODO: Coming soon
-                        </div>
+                      <div className="space-y-6">
+                        <UserSettingsForm
+                          userSettings={userSettings}
+                          isAuthenticated={isAuthenticated}
+                        />
                       </div>
                     </div>
                   )}
@@ -274,7 +283,7 @@ export default function ProfilePage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="text-zinc-500 dark:text-zinc-400">
-                          TODO: Coming soon
+                          <Banner>TODO: Coming soon</Banner>
                         </div>
                       </div>
                     </div>
@@ -288,7 +297,7 @@ export default function ProfilePage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="text-zinc-500 dark:text-zinc-400">
-                          TODO: Coming soon
+                          <Banner>TODO: Coming soon</Banner>
                         </div>
                       </div>
                     </div>

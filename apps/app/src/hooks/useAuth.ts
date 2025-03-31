@@ -6,6 +6,7 @@ import { useChatStore } from "~/state/stores/chatStore";
 export const AUTH_QUERY_KEYS = {
   authStatus: ["auth", "status"],
   user: ["auth", "user"],
+  userSettings: ["auth", "userSettings"],
 };
 
 export function useAuthStatus() {
@@ -17,7 +18,7 @@ export function useAuthStatus() {
   } = useChatStore();
   const queryClient = useQueryClient();
 
-  const { data: isAuthenticated, isLoading } = useQuery({
+  const { data: isAuthenticated, isLoading: isAuthLoading } = useQuery({
     queryKey: AUTH_QUERY_KEYS.authStatus,
     queryFn: async () => {
       const isAuth = await authService.checkAuthStatus();
@@ -39,9 +40,16 @@ export function useAuthStatus() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const { data: user } = useQuery({
+  const { data: user, isLoading: isUserLoading } = useQuery({
     queryKey: AUTH_QUERY_KEYS.user,
     queryFn: () => authService.getUser(),
+    enabled: !!isAuthenticated,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  const { data: userSettings, isLoading: isUserSettingsLoading } = useQuery({
+    queryKey: AUTH_QUERY_KEYS.userSettings,
+    queryFn: () => authService.getUserSettings(),
     enabled: !!isAuthenticated,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -69,12 +77,24 @@ export function useAuthStatus() {
     },
   });
 
+  const updateUserSettingsMutation = useMutation({
+    mutationFn: async (settings: Partial<any>) => {
+      return await authService.updateUserSettings(settings);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.userSettings });
+    },
+  });
+
   return {
     isAuthenticated: !!isAuthenticated,
-    isLoading,
+    isLoading: isAuthLoading || isUserLoading || isUserSettingsLoading,
     user,
+    userSettings,
     loginWithGithub,
     logout: logoutMutation.mutate,
     isLoggingOut: logoutMutation.isPending,
+    updateUserSettings: updateUserSettingsMutation.mutate,
+    isUpdatingUserSettings: updateUserSettingsMutation.isPending,
   };
 }

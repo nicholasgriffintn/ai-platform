@@ -13,6 +13,7 @@ import {
   createSession,
   deleteSession,
   getUserBySessionId,
+  getUserSettings,
 } from "../services/auth/user";
 import { AssistantError, ErrorType } from "../utils/errors";
 import {
@@ -215,6 +216,7 @@ app.get(
     const database = Database.getInstance(c.env);
 
     const user = await getUserBySessionId(database, finalSessionId);
+    const userSettings = await getUserSettings(database, user?.id);
 
     if (!user) {
       throw new AssistantError(
@@ -223,7 +225,7 @@ app.get(
       );
     }
 
-    return c.json({ user });
+    return c.json({ user, userSettings });
   },
 );
 

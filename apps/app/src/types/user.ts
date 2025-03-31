@@ -14,3 +14,11 @@ export interface User {
   github_url: string;
   bio: string;
 }
+
+export interface UserSettings {
+  id: string;
+  nickname: string;
+  job_role: string;
+  traits: string;
+  preferences: string;
+}

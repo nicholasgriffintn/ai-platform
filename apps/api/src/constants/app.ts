@@ -11,4 +11,5 @@ export const ROUTES = {
   SEARCH: "/search",
   TOOLS: "/tools",
   UPLOADS: "/uploads",
+  USER: "/user",
 } as const;

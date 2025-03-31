@@ -223,48 +223,6 @@ export class Database {
     }
   }
 
-  public async createUserSettings(userId: number): Promise<void> {
-    if (!this.env.DB) {
-      throw new Error("DB is not configured");
-    }
-
-    const keyPair = await crypto.subtle.generateKey(
-      {
-        name: "RSA-OAEP",
-        modulusLength: 2048,
-        publicExponent: new Uint8Array([1, 0, 1]),
-        hash: "SHA-256",
-      },
-      true,
-      ["encrypt", "decrypt"],
-    );
-
-    const privateKey = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
-    const encryptedPrivateKey = await this.encryptWithServerKey(privateKey);
-    const encryptedPrivateKeyString = JSON.stringify(encryptedPrivateKey);
-
-    const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
-    const stringifiedPrivateKey = JSON.stringify(publicKey);
-
-    const userSettingsId = crypto.randomUUID();
-
-    const result = await this.env.DB.prepare(`
-      INSERT INTO user_settings (id, user_id, public_key, private_key)
-      VALUES (?, ?, ?, ?)
-    `)
-      .bind(
-        userSettingsId,
-        userId,
-        stringifiedPrivateKey,
-        encryptedPrivateKeyString,
-      )
-      .run();
-
-    if (!result.success) {
-      throw new AssistantError("Error creating user settings in the database");
-    }
-  }
-
   public async createUser(
     userData: Record<string, unknown>,
   ): Promise<Record<string, unknown> | null> {
@@ -347,6 +305,102 @@ export class Database {
     if (!result) {
       throw new AssistantError("Error deleting session in the database");
     }
+  }
+
+  public async createUserSettings(userId: number): Promise<void> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const keyPair = await crypto.subtle.generateKey(
+      {
+        name: "RSA-OAEP",
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: "SHA-256",
+      },
+      true,
+      ["encrypt", "decrypt"],
+    );
+
+    const privateKey = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
+    const encryptedPrivateKey = await this.encryptWithServerKey(privateKey);
+    const encryptedPrivateKeyString = JSON.stringify(encryptedPrivateKey);
+
+    const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+    const stringifiedPrivateKey = JSON.stringify(publicKey);
+
+    const userSettingsId = crypto.randomUUID();
+
+    const result = await this.env.DB.prepare(`
+      INSERT INTO user_settings (id, user_id, public_key, private_key)
+      VALUES (?, ?, ?, ?)
+    `)
+      .bind(
+        userSettingsId,
+        userId,
+        stringifiedPrivateKey,
+        encryptedPrivateKeyString,
+      )
+      .run();
+
+    if (!result.success) {
+      throw new AssistantError("Error creating user settings in the database");
+    }
+  }
+
+  public async updateUserSettings(
+    userId: number,
+    settings: Record<string, unknown>,
+  ): Promise<void> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
+      UPDATE user_settings
+      SET 
+        nickname = ?,
+        job_role = ?,
+        traits = ?,
+        preferences = ?,
+        tracking_enabled = ?,
+        updated_at = datetime('now')
+      WHERE user_id = ?
+    `)
+      .bind(
+        settings.nickname,
+        settings.job_role,
+        settings.traits,
+        settings.preferences,
+        settings.tracking_enabled !== undefined
+          ? settings.tracking_enabled
+            ? 1
+            : 0
+          : null,
+        userId,
+      )
+      .run();
+
+    if (!result.success) {
+      throw new AssistantError("Error updating user settings in the database");
+    }
+  }
+
+  public async getUserSettings(
+    userId: number,
+  ): Promise<Record<string, unknown> | null> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    const result = await this.env.DB.prepare(`
+      SELECT id, nickname, job_role, traits, preferences, tracking_enabled FROM user_settings WHERE user_id = ?
+    `)
+      .bind(userId)
+      .first();
+
+    return result;
   }
 
   public async getEmbedding(
