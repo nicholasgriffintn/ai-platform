@@ -10,16 +10,13 @@ export function returnCodingPrompt(
   supportsArtifacts?: boolean,
   hasThinking?: boolean,
 ): string {
-  const {
-    responseStyle,
-    problemBreakdownInstructions,
-    answerFormatInstructions,
-  } = getResponseStyle(response_mode);
+  const { traits, problemBreakdownInstructions, answerFormatInstructions } =
+    getResponseStyle(response_mode);
 
   const builder = new PromptBuilder(
     "You are an experienced software developer tasked with answering coding questions or generating code based on user requests. Your responses should be professional, accurate, and tailored to the specified programming language when applicable. ",
   )
-    .add(responseStyle)
+    .add(`You should use the following traits when responding: ${traits}`)
     .startSection();
 
   if (!hasThinking) {
