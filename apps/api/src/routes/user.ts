@@ -7,9 +7,13 @@ import { Database } from "../lib/database";
 import { requireAuth } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { updateUserSettingsSchema } from "./schemas/user";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("USER");
+
+// Require authentication for all routes
+app.use("/*", requireAuth);
 
 /**
  * Global middleware to add route-specific logging
@@ -19,16 +23,6 @@ app.use("/*", (c, next) => {
   return next();
 });
 
-// Define the schema for updating user settings
-const updateUserSettingsSchema = z.object({
-  nickname: z.string().nullable().optional(),
-  job_role: z.string().nullable().optional(),
-  traits: z.string().nullable().optional(),
-  preferences: z.string().nullable().optional(),
-  tracking_enabled: z.boolean().optional(),
-});
-
-// Create the endpoint
 app.put(
   "/settings",
   describeRoute({
@@ -53,7 +47,6 @@ app.put(
       },
     },
   }),
-  requireAuth,
   zValidator("json", updateUserSettingsSchema),
   async (c: Context) => {
     const settings = c.req.valid("json" as never) as z.infer<
