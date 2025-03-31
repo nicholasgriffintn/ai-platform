@@ -227,7 +227,7 @@ export async function processChatRequest(options: CoreChatOptions) {
           systemMessage = systemPromptFromMessages.content;
         } else {
           // Generate a default system prompt if none provided
-          systemMessage = getSystemPrompt(
+          systemMessage = await getSystemPrompt(
             {
               completion_id,
               input: finalMessage,

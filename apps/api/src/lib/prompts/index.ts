@@ -6,11 +6,11 @@ import { getTextToImageSystemPrompt } from "./image";
 import { returnStandardPrompt } from "./standard";
 import { emptyPrompt } from "./utils";
 
-export function getSystemPrompt(
+export async function getSystemPrompt(
   request: IBody,
   model: string,
   user?: IUser,
-): string {
+): Promise<string> {
   if (request.mode === "prompt_coach") {
     const prompt = returnCoachingPrompt();
     return prompt;
@@ -23,7 +23,7 @@ export function getSystemPrompt(
   const response_mode = request.response_mode || "normal";
 
   if (!modelConfig) {
-    return returnStandardPrompt(
+    return await returnStandardPrompt(
       request,
       user,
       supportsFunctions,

@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from "react";
 
-import { Banner, Button, TextArea, TextInput } from "~/components/ui";
+import { Button, TextArea, TextInput } from "~/components/ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 
 interface UserSettingsFormProps {
@@ -32,14 +32,6 @@ export function UserSettingsForm({
     }));
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: checked,
-    }));
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSaveSuccess(false);
@@ -65,10 +57,6 @@ export function UserSettingsForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Banner>
-        <span className="font-medium">TODO:</span>
-        <span className="ml-2">This is coming soon, we're working on it!</span>
-      </Banner>
       <div>
         <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
           Personalised responses
@@ -89,7 +77,6 @@ export function UserSettingsForm({
             onChange={handleChange}
             placeholder="Enter nickname"
             className="w-full"
-            disabled={true}
           />
         </div>
 
@@ -107,7 +94,6 @@ export function UserSettingsForm({
             onChange={handleChange}
             placeholder="Enter your job role"
             className="w-full"
-            disabled={true}
           />
         </div>
 
@@ -124,7 +110,6 @@ export function UserSettingsForm({
             value={formData.traits}
             onChange={handleChange}
             placeholder="Describe your traits or personality"
-            disabled={true}
           />
         </div>
 
@@ -141,7 +126,6 @@ export function UserSettingsForm({
             value={formData.preferences}
             onChange={handleChange}
             placeholder="Your preferences for chat interactions"
-            disabled={true}
           />
         </div>
       </div>

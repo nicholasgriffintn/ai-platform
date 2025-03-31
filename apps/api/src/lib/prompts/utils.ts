@@ -1,12 +1,48 @@
-export function getResponseStyle(response_mode = "normal"): {
-  responseStyle: string;
+export function getResponseStyle(
+  response_mode = "normal",
+  hasThinking = false,
+  supportsFunctions = false,
+  supportsArtifacts = false,
+): {
+  traits: string;
+  preferences: string;
   problemBreakdownInstructions?: string;
   answerFormatInstructions?: string;
 } {
+  let instructions = `1. Read and understand questions carefully.
+  2. If unclear, ask for clarification.`;
+
+  if (hasThinking) {
+    instructions += `3. Analyze the question and context thoroughly before answering.
+    4.1. Identify key information from the user's question.`;
+
+    if (supportsFunctions) {
+      instructions += `4.2. Determine whether the query can be resolved directly or if a tool is required. Use the description of the tool to help you decide.
+      4.3. If a tool is required, use it to answer the question.
+      4.4. If the task can be effectively answered without a tool, prioritize a manual response.`;
+    }
+
+    if (supportsArtifacts) {
+      instructions +=
+        "4.5. Determine if the response would benefit from using an artifact based on the criteria above.";
+    }
+
+    instructions += "4.6. It's OK for this section to be quite long.";
+  }
+
+  instructions +=
+    "5. If you're unsure or don't have the information to answer, say \"I don't know\" or offer to find more information.";
+  instructions += "6. Always respond in plain text, not computer code.";
+
+  if (supportsArtifacts) {
+    instructions += getArtifactInstructions(supportsArtifacts, false, 6);
+  }
+
   switch (response_mode) {
     case "concise":
       return {
-        responseStyle:
+        traits: "concise, specific, friendly, helpful",
+        preferences:
           "Your responses should be concise, specific, friendly, and helpful. Aim for 1-2 sentences when possible.",
         problemBreakdownInstructions:
           "Keep your problem breakdown brief, focusing only on the most critical aspects of the problem.",
@@ -15,7 +51,8 @@ export function getResponseStyle(response_mode = "normal"): {
       };
     case "explanatory":
       return {
-        responseStyle:
+        traits: "detailed, explanatory, comprehensive, examples",
+        preferences:
           "Your responses should be detailed and explanatory, breaking down concepts thoroughly and providing comprehensive information. Include examples where helpful.",
         problemBreakdownInstructions:
           "Provide a thorough problem breakdown with detailed explanations of your thought process and approach.",
@@ -24,7 +61,8 @@ export function getResponseStyle(response_mode = "normal"): {
       };
     case "formal":
       return {
-        responseStyle:
+        traits: "formal, professional, structured, technical",
+        preferences:
           "Your responses should be formal, professional, and structured. Use proper terminology and maintain a respectful, business-like tone.",
         problemBreakdownInstructions:
           "Structure your problem breakdown formally, using proper technical terminology and a methodical approach.",
@@ -33,7 +71,8 @@ export function getResponseStyle(response_mode = "normal"): {
       };
     default:
       return {
-        responseStyle:
+        traits: "conversational, balanced, friendly, helpful",
+        preferences:
           "Your responses should be conversational, balanced in detail, friendly, and helpful.",
         problemBreakdownInstructions:
           "Provide a balanced problem breakdown that covers the important aspects without being overly verbose.",
