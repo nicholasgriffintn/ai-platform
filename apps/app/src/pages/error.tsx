@@ -26,7 +26,7 @@ export default function ErrorRoute({
                   <div className="text-base font-semibold text-zinc-600 dark:text-zinc-200 ml-2 truncate">
                     <Link
                       to="/"
-                      className="hover:text-zinc-700 dark:hover:text-zinc-300 hover:underline no-underline"
+                      className="hover:text-zinc-700 dark:hover:text-zinc-300 no-underline"
                     >
                       {APP_NAME}
                     </Link>

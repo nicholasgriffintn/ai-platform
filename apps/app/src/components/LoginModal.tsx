@@ -150,11 +150,11 @@ export const LoginModal = ({
 
             <div className="mt-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
               By continuing, you agree to our{" "}
-              <a href="/terms" className="text-blue-600 hover:underline">
+              <a href="/terms" className="text-blue-600">
                 Terms of Service
               </a>{" "}
               and{" "}
-              <a href="/privacy" className="text-blue-600 hover:underline">
+              <a href="/privacy" className="text-blue-600">
                 Privacy Policy
               </a>
             </div>

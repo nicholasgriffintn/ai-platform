@@ -205,7 +205,7 @@ const renderDocumentContent = (
           href={documentUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-blue-500 hover:underline"
+          className="text-xs text-blue-500"
         >
           Download document
         </a>

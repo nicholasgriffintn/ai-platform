@@ -100,7 +100,7 @@ export default function ProfilePage() {
                       href={`https://github.com/${user.github_username}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-indigo-500"
+                      className="text-zinc-700 dark:text-zinc-300"
                     >
                       @{user.github_username}
                     </a>
@@ -222,7 +222,7 @@ export default function ProfilePage() {
                               }
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-indigo-600 dark:text-indigo-400 hover:underline"
+                              className="text-zinc-700 dark:text-zinc-300"
                             >
                               {user.site}
                             </a>
@@ -238,7 +238,7 @@ export default function ProfilePage() {
                               href={`https://twitter.com/${user.twitter_username}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-indigo-600 dark:text-indigo-400 hover:underline"
+                              className="text-zinc-700 dark:text-zinc-300"
                             >
                               @{user.twitter_username}
                             </a>

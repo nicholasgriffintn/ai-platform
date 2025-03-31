@@ -47,7 +47,7 @@ export const ChatNavbar = ({ showSidebarToggle = true }: ChatNavbarProps) => {
     <>
       <Link
         to="/apps"
-        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-lg"
+        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-lg no-underline"
         onClick={() => setIsMobileMenuOpen(false)}
       >
         <Grid size={16} />
@@ -57,7 +57,7 @@ export const ChatNavbar = ({ showSidebarToggle = true }: ChatNavbarProps) => {
         href="https://metrics.polychat.app/"
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-lg"
+        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-lg no-underline"
         onClick={() => setIsMobileMenuOpen(false)}
       >
         <BarChart2 size={16} />
@@ -87,7 +87,7 @@ export const ChatNavbar = ({ showSidebarToggle = true }: ChatNavbarProps) => {
           <h1 className="text-base font-semibold text-zinc-600 dark:text-zinc-200 ml-2 truncate">
             <Link
               to="/"
-              className="hover:text-zinc-700 dark:hover:text-zinc-300 hover:underline no-underline"
+              className="hover:text-zinc-700 dark:hover:text-zinc-300 no-underline"
             >
               {APP_NAME}
             </Link>

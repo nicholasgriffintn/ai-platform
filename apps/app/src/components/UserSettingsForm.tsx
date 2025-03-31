@@ -149,7 +149,6 @@ export function UserSettingsForm({
           type="submit"
           variant="primary"
           disabled={isUpdatingUserSettings}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white"
         >
           {isUpdatingUserSettings ? "Saving..." : "Save Settings"}
         </Button>

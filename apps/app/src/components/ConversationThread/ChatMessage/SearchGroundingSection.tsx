@@ -64,7 +64,6 @@ export const SearchGroundingSection = ({
                     href={`https://www.google.com/search?q=${query}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:underline"
                   >
                     {query}
                   </a>

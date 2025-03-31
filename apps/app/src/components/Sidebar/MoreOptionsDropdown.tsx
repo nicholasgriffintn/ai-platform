@@ -33,12 +33,12 @@ export const MoreOptionsDropdown = ({
       }
     >
       <DropdownMenuItem icon={<FileText size={16} />}>
-        <Link to="/terms" className="block w-full">
+        <Link to="/terms" className="block w-full no-underline">
           Terms
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem icon={<FileText size={16} />}>
-        <Link to="/privacy" className="block w-full">
+        <Link to="/privacy" className="block w-full no-underline">
           Privacy
         </Link>
       </DropdownMenuItem>
@@ -47,7 +47,7 @@ export const MoreOptionsDropdown = ({
           href="https://github.com/nicholasgriffintn/personal-ai-assistant"
           target="_blank"
           rel="noopener noreferrer"
-          className="block w-full"
+          className="block w-full no-underline"
         >
           <span className="flex items-center justify-between">
             GitHub <ExternalLink size={16} />
