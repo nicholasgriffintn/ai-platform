@@ -110,6 +110,7 @@ export function UserSettingsForm({
             value={formData.traits}
             onChange={handleChange}
             placeholder="Describe your traits or personality"
+            rows={4}
           />
         </div>
 
@@ -126,6 +127,7 @@ export function UserSettingsForm({
             value={formData.preferences}
             onChange={handleChange}
             placeholder="Your preferences for chat interactions"
+            rows={4}
           />
         </div>
       </div>
