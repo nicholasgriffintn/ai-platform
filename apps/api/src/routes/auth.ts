@@ -159,7 +159,7 @@ app.get(
         site: githubUser.blog || undefined,
       });
 
-      const sessionId = await createSession(c.env.DB, user.id);
+      const sessionId = await createSession(database, user.id);
 
       c.header(
         "Set-Cookie",
@@ -255,7 +255,9 @@ app.post(
     const sessionId = sessionMatch ? sessionMatch[1] : null;
 
     if (sessionId) {
-      await deleteSession(c.env.DB, sessionId);
+      const database = Database.getInstance(c.env);
+
+      await deleteSession(database, sessionId);
 
       c.header(
         "Set-Cookie",
