@@ -1,13 +1,16 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
-import { z } from "zod";
+import type { z } from "zod";
 
 import { Database } from "../lib/database";
 import { requireAuth } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
 import { AssistantError, ErrorType } from "../utils/errors";
-import { updateUserSettingsSchema } from "./schemas/user";
+import {
+  updateUserSettingsResponseSchema,
+  updateUserSettingsSchema,
+} from "./schemas/user";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("USER");
@@ -33,12 +36,7 @@ app.put(
         description: "User settings updated successfully",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                success: z.boolean(),
-                message: z.string(),
-              }),
-            ),
+            schema: resolver(updateUserSettingsResponseSchema),
           },
         },
       },
@@ -67,6 +65,42 @@ app.put(
     return c.json({
       success: true,
       message: "User settings updated successfully",
+    });
+  },
+);
+
+app.get(
+  "/models",
+  describeRoute({
+    tags: ["user"],
+    summary: "Get the models that the user has enabled",
+    responses: {
+      200: {
+        description: "Models retrieved successfully",
+        content: {
+          "application/json": {
+            schema: resolver(updateUserSettingsResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  async (c: Context) => {
+    const user = c.get("user");
+
+    if (!user) {
+      throw new AssistantError(
+        "Authentication required",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const database = Database.getInstance(c.env);
+    const models = await database.getUserEnabledModels(user.id);
+
+    return c.json({
+      success: true,
+      models,
     });
   },
 );
