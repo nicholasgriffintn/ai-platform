@@ -109,7 +109,7 @@ export function UserSettingsForm({
             name="traits"
             value={formData.traits}
             onChange={handleChange}
-            placeholder="Describe your traits or personality"
+            placeholder="Describe the traits or personality that the AI should have"
             rows={4}
           />
         </div>

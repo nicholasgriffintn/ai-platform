@@ -13,6 +13,16 @@ export class BaseRepository {
 
   protected async runQuery<T>(
     query: string,
+    params: any[],
+    returnFirst: true,
+  ): Promise<T | null>;
+  protected async runQuery<T>(
+    query: string,
+    params?: any[],
+    returnFirst?: false,
+  ): Promise<T[]>;
+  protected async runQuery<T>(
+    query: string,
     params: any[] = [],
     returnFirst = false,
   ): Promise<T | T[] | null> {
@@ -26,11 +36,11 @@ export class BaseRepository {
 
       if (returnFirst) {
         const result = await bound.first();
-        return (result as T) || null;
+        return result as T | null;
       }
 
       const result = await bound.all();
-      return (result.results as T[]) || [];
+      return result.results as T[];
     } catch (error: any) {
       console.error("Database query error:", error);
       throw new AssistantError(

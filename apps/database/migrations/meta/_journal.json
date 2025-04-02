@@ -50,6 +50,13 @@
       "when": 1743212110777,
       "tag": "0006_abnormal_hex",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1743555416995,
+      "tag": "0007_confused_absorbing_man",
+      "breakpoints": true
     }
   ]
 }

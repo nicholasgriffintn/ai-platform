@@ -12,7 +12,7 @@ export class UserRepository extends BaseRepository {
       [githubId],
       true,
     );
-    return result as Promise<Record<string, unknown> | null>;
+    return result;
   }
 
   public async getUserBySessionId(
@@ -25,7 +25,7 @@ export class UserRepository extends BaseRepository {
       [sessionId],
       true,
     );
-    return result as Promise<Record<string, unknown> | null>;
+    return result;
   }
 
   public async getUserById(
@@ -36,7 +36,7 @@ export class UserRepository extends BaseRepository {
       [userId],
       true,
     );
-    return result as Promise<Record<string, unknown> | null>;
+    return result;
   }
 
   public async getUserByEmail(email: string): Promise<User | null> {
@@ -113,7 +113,7 @@ export class UserRepository extends BaseRepository {
       ],
       true,
     );
-    return result as Promise<Record<string, unknown> | null>;
+    return result;
   }
 
   public async updateUserWithGithubData(

@@ -8,6 +8,7 @@ import { requireAuth } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
 import { AssistantError, ErrorType } from "../utils/errors";
 import {
+  storeProviderApiKeySchema,
   updateUserSettingsResponseSchema,
   updateUserSettingsSchema,
 } from "./schemas/user";
@@ -101,6 +102,49 @@ app.get(
     return c.json({
       success: true,
       models,
+    });
+  },
+);
+
+app.post(
+  "/store-provider-api-key",
+  describeRoute({
+    tags: ["user"],
+    summary: "Store provider API key",
+    responses: {
+      200: {
+        description: "Provider API key stored successfully",
+        content: {
+          "application/json": {
+            schema: resolver(updateUserSettingsResponseSchema),
+          },
+        },
+      },
+      401: {
+        description: "Authentication required",
+      },
+    },
+  }),
+  zValidator("json", storeProviderApiKeySchema),
+  async (c: Context) => {
+    const user = c.get("user");
+    const { providerId, apiKey } = c.req.valid("json" as never) as z.infer<
+      typeof storeProviderApiKeySchema
+    >;
+
+    if (!user) {
+      throw new AssistantError(
+        "Authentication required",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const database = Database.getInstance(c.env);
+    await database.storeProviderApiKey(user.id, providerId, apiKey);
+
+    return c.json({
+      success: true,
+      message: "Provider API key stored successfully",
     });
   },
 );

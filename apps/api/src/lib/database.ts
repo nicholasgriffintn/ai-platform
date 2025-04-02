@@ -125,6 +125,25 @@ export class Database {
     return this.repositories.userSettings.getUserEnabledModels(userId);
   }
 
+  public async storeProviderApiKey(
+    userId: number,
+    providerId: string,
+    apiKey: string,
+  ): Promise<void> {
+    return this.repositories.userSettings.storeProviderApiKey(
+      userId,
+      providerId,
+      apiKey,
+    );
+  }
+
+  public async getProviderApiKey(
+    userId: number,
+    providerId: string,
+  ): Promise<string | null> {
+    return this.repositories.userSettings.getProviderApiKey(userId, providerId);
+  }
+
   // Embedding methods
   public async getEmbedding(
     id: string,

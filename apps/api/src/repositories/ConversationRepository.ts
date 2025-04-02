@@ -20,7 +20,7 @@ export class ConversationRepository extends BaseRepository {
       [conversationId, userId, title || null],
       true,
     );
-    return result as Promise<Record<string, unknown> | null>;
+    return result;
   }
 
   public async getConversation(
@@ -31,7 +31,7 @@ export class ConversationRepository extends BaseRepository {
       [conversationId],
       true,
     );
-    return result as Promise<Record<string, unknown> | null>;
+    return result;
   }
 
   public async getConversationByShareId(
@@ -42,7 +42,7 @@ export class ConversationRepository extends BaseRepository {
       [shareId],
       true,
     );
-    return result as Promise<Record<string, unknown> | null>;
+    return result;
   }
 
   public async getUserConversations(

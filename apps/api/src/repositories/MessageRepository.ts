@@ -63,7 +63,7 @@ export class MessageRepository extends BaseRepository {
       ],
       true,
     );
-    return result as Promise<Record<string, unknown> | null>;
+    return result;
   }
 
   public async getMessage(
@@ -74,7 +74,7 @@ export class MessageRepository extends BaseRepository {
       [messageId],
       true,
     );
-    return result as Promise<Record<string, unknown> | null>;
+    return result;
   }
 
   public async getConversationMessages(

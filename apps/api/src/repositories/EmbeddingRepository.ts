@@ -12,7 +12,7 @@ export class EmbeddingRepository extends BaseRepository {
     const params = type ? [id, type] : [id];
 
     const result = this.runQuery<Record<string, unknown>>(query, params, true);
-    return result as Promise<Record<string, unknown> | null>;
+    return result;
   }
 
   public async getEmbeddingIdByType(
@@ -24,7 +24,7 @@ export class EmbeddingRepository extends BaseRepository {
       [id, type],
       true,
     );
-    return result as Promise<Record<string, unknown> | null>;
+    return result;
   }
 
   public async insertEmbedding(

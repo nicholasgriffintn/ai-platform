@@ -36,6 +36,19 @@ export class UserSettingsRepository extends BaseRepository {
     };
   }
 
+  private async decryptWithServerKey(encryptedData: string): Promise<string> {
+    const key = await this.getServerEncryptionKey();
+    const { iv, data } = JSON.parse(encryptedData);
+
+    const decryptedData = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: decodeBase64(iv) },
+      key,
+      decodeBase64(data),
+    );
+
+    return new TextDecoder().decode(decryptedData);
+  }
+
   public async createUserSettings(userId: number): Promise<void> {
     const keyPair = await crypto.subtle.generateKey(
       {
@@ -53,19 +66,14 @@ export class UserSettingsRepository extends BaseRepository {
     const encryptedPrivateKeyString = JSON.stringify(encryptedPrivateKey);
 
     const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
-    const stringifiedPrivateKey = JSON.stringify(publicKey);
+    const publicKeyString = JSON.stringify(publicKey);
 
     const userSettingsId = crypto.randomUUID();
 
     await this.executeRun(
       `INSERT INTO user_settings (id, user_id, public_key, private_key)
        VALUES (?, ?, ?, ?)`,
-      [
-        userSettingsId,
-        userId,
-        stringifiedPrivateKey,
-        encryptedPrivateKeyString,
-      ],
+      [userSettingsId, userId, publicKeyString, encryptedPrivateKeyString],
     );
   }
 
@@ -106,7 +114,7 @@ export class UserSettingsRepository extends BaseRepository {
       [userId],
       true,
     );
-    return result as Promise<Record<string, unknown> | null>;
+    return result;
   }
 
   public async getUserEnabledModels(
@@ -142,5 +150,126 @@ export class UserSettingsRepository extends BaseRepository {
       },
       [] as Record<string, unknown>[],
     );
+  }
+
+  public async storeProviderApiKey(
+    userId: number,
+    providerId: string,
+    apiKey: string,
+  ): Promise<void> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    if (!userId || !providerId || !apiKey) {
+      throw new Error("Invalid parameters");
+    }
+
+    const existingProviderSettings = await this.runQuery<{ id: string }>(
+      "SELECT id FROM provider_settings WHERE user_id = ? AND provider_id = ?",
+      [userId, providerId],
+      true,
+    );
+
+    if (existingProviderSettings) {
+      throw new Error(
+        "Provider settings already exist, please delete them first.",
+      );
+    }
+
+    const result = await this.runQuery<{ public_key: string }>(
+      "SELECT public_key FROM user_settings WHERE user_id = ?",
+      [userId],
+      true,
+    );
+
+    if (!result?.public_key) {
+      throw new Error("Public key not found");
+    }
+
+    const publicKeyJwk = JSON.parse(result.public_key);
+
+    const publicKey = await crypto.subtle.importKey(
+      "jwk",
+      publicKeyJwk,
+      {
+        name: "RSA-OAEP",
+        hash: "SHA-256",
+      },
+      false,
+      ["encrypt"],
+    );
+
+    const encryptedData = await crypto.subtle.encrypt(
+      { name: "RSA-OAEP" },
+      publicKey,
+      new TextEncoder().encode(apiKey),
+    );
+
+    const encryptedApiKey = bufferToBase64(new Uint8Array(encryptedData));
+
+    const providerSettingsId = crypto.randomUUID();
+
+    await this.executeRun(
+      "INSERT INTO provider_settings (id, user_id, provider_id, api_key, enabled) VALUES (?, ?, ?, ?, ?)",
+      [providerSettingsId, userId, providerId, encryptedApiKey, 1],
+    );
+  }
+
+  public async getProviderApiKey(
+    userId: number,
+    providerId: string,
+  ): Promise<string | null> {
+    if (!this.env.DB) {
+      throw new Error("DB is not configured");
+    }
+
+    if (!userId || !providerId) {
+      throw new Error("Invalid parameters");
+    }
+
+    const userSettings = await this.runQuery<{ private_key: string }>(
+      "SELECT private_key FROM user_settings WHERE user_id = ?",
+      [userId],
+      true,
+    );
+
+    if (!userSettings?.private_key) {
+      throw new Error("Private key not found");
+    }
+
+    const decryptedPrivateKeyString = await this.decryptWithServerKey(
+      userSettings.private_key,
+    );
+    const privateKeyJwk = JSON.parse(decryptedPrivateKeyString);
+
+    const privateKey = await crypto.subtle.importKey(
+      "jwk",
+      privateKeyJwk,
+      {
+        name: "RSA-OAEP",
+        hash: "SHA-256",
+      },
+      true,
+      ["decrypt"],
+    );
+
+    const result = await this.runQuery<{ api_key: string }>(
+      "SELECT api_key FROM provider_settings WHERE user_id = ? AND provider_id = ?",
+      [userId, providerId],
+      true,
+    );
+
+    if (!result?.api_key) {
+      return null;
+    }
+
+    const decryptedApiKey = await crypto.subtle.decrypt(
+      { name: "RSA-OAEP" },
+      privateKey,
+      decodeBase64(result.api_key),
+    );
+
+    return new TextDecoder().decode(decryptedApiKey);
   }
 }

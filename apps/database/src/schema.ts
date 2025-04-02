@@ -190,6 +190,31 @@ export const userSettings = sqliteTable(
 
 export type UserSettings = typeof userSettings.$inferSelect;
 
+export const providerSettings = sqliteTable(
+  "provider_settings",
+  {
+    id: text().primaryKey(),
+    provider_id: text().notNull(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    api_key: text(),
+    enabled: integer({ mode: "boolean" }).default(false),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    userIdIdx: index("provider_settings_user_id_idx").on(table.user_id),
+    providerIdIdx: index("provider_settings_provider_id_idx").on(
+      table.provider_id,
+    ),
+  }),
+);
+
+export type ProviderSettings = typeof providerSettings.$inferSelect;
+
 export const modelSettings = sqliteTable(
   "model_settings",
   {

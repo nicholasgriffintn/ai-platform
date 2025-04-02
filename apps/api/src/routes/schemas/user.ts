@@ -12,3 +12,8 @@ export const updateUserSettingsSchema = z.object({
   preferences: z.string().nullable().optional(),
   tracking_enabled: z.boolean().optional(),
 });
+
+export const storeProviderApiKeySchema = z.object({
+  providerId: z.string(),
+  apiKey: z.string(),
+});
