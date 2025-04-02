@@ -1,4 +1,5 @@
 import { decodeBase64 } from "hono/utils/encode";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { getModels } from "../lib/models";
 import { bufferToBase64 } from "../utils/base64";
 import { BaseRepository } from "./BaseRepository";
@@ -6,7 +7,10 @@ import { BaseRepository } from "./BaseRepository";
 export class UserSettingsRepository extends BaseRepository {
   private async getServerEncryptionKey() {
     if (!this.env.PRIVATE_KEY) {
-      throw new Error("Server key not configured");
+      throw new AssistantError(
+        "Server key not configured",
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
 
     return await crypto.subtle.importKey(
@@ -22,59 +26,83 @@ export class UserSettingsRepository extends BaseRepository {
     iv: string;
     data: string;
   }> {
-    const key = await this.getServerEncryptionKey();
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encryptedData = await crypto.subtle.encrypt(
-      { name: "AES-GCM", iv },
-      key,
-      new TextEncoder().encode(JSON.stringify(data)),
-    );
+    try {
+      const key = await this.getServerEncryptionKey();
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encryptedData = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv },
+        key,
+        new TextEncoder().encode(JSON.stringify(data)),
+      );
 
-    return {
-      iv: bufferToBase64(iv),
-      data: bufferToBase64(new Uint8Array(encryptedData)),
-    };
+      return {
+        iv: bufferToBase64(iv),
+        data: bufferToBase64(new Uint8Array(encryptedData)),
+      };
+    } catch (error) {
+      throw new AssistantError(
+        "Failed to encrypt data",
+        ErrorType.UNKNOWN_ERROR,
+      );
+    }
   }
 
   private async decryptWithServerKey(encryptedData: string): Promise<string> {
-    const key = await this.getServerEncryptionKey();
-    const { iv, data } = JSON.parse(encryptedData);
+    try {
+      const key = await this.getServerEncryptionKey();
+      const { iv, data } = JSON.parse(encryptedData);
 
-    const decryptedData = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: decodeBase64(iv) },
-      key,
-      decodeBase64(data),
-    );
+      const decryptedData = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: decodeBase64(iv) },
+        key,
+        decodeBase64(data),
+      );
 
-    return new TextDecoder().decode(decryptedData);
+      return new TextDecoder().decode(decryptedData);
+    } catch (error) {
+      throw new AssistantError(
+        "Failed to decrypt data",
+        ErrorType.UNKNOWN_ERROR,
+      );
+    }
   }
 
   public async createUserSettings(userId: number): Promise<void> {
-    const keyPair = await crypto.subtle.generateKey(
-      {
-        name: "RSA-OAEP",
-        modulusLength: 2048,
-        publicExponent: new Uint8Array([1, 0, 1]),
-        hash: "SHA-256",
-      },
-      true,
-      ["encrypt", "decrypt"],
-    );
+    try {
+      const keyPair = await crypto.subtle.generateKey(
+        {
+          name: "RSA-OAEP",
+          modulusLength: 3072,
+          publicExponent: new Uint8Array([1, 0, 1]),
+          hash: "SHA-256",
+        },
+        true,
+        ["encrypt", "decrypt"],
+      );
 
-    const privateKey = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
-    const encryptedPrivateKey = await this.encryptWithServerKey(privateKey);
-    const encryptedPrivateKeyString = JSON.stringify(encryptedPrivateKey);
+      const privateKey = await crypto.subtle.exportKey(
+        "jwk",
+        keyPair.privateKey,
+      );
+      const encryptedPrivateKey = await this.encryptWithServerKey(privateKey);
+      const encryptedPrivateKeyString = JSON.stringify(encryptedPrivateKey);
 
-    const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
-    const publicKeyString = JSON.stringify(publicKey);
+      const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+      const publicKeyString = JSON.stringify(publicKey);
 
-    const userSettingsId = crypto.randomUUID();
+      const userSettingsId = crypto.randomUUID();
 
-    await this.executeRun(
-      `INSERT INTO user_settings (id, user_id, public_key, private_key)
-       VALUES (?, ?, ?, ?)`,
-      [userSettingsId, userId, publicKeyString, encryptedPrivateKeyString],
-    );
+      await this.executeRun(
+        `INSERT INTO user_settings (id, user_id, public_key, private_key)
+         VALUES (?, ?, ?, ?)`,
+        [userSettingsId, userId, publicKeyString, encryptedPrivateKeyString],
+      );
+    } catch (error) {
+      throw new AssistantError(
+        "Failed to create user settings",
+        ErrorType.UNKNOWN_ERROR,
+      );
+    }
   }
 
   public async updateUserSettings(
@@ -158,62 +186,84 @@ export class UserSettingsRepository extends BaseRepository {
     apiKey: string,
   ): Promise<void> {
     if (!this.env.DB) {
-      throw new Error("DB is not configured");
-    }
-
-    if (!userId || !providerId || !apiKey) {
-      throw new Error("Invalid parameters");
-    }
-
-    const existingProviderSettings = await this.runQuery<{ id: string }>(
-      "SELECT id FROM provider_settings WHERE user_id = ? AND provider_id = ?",
-      [userId, providerId],
-      true,
-    );
-
-    if (existingProviderSettings) {
-      throw new Error(
-        "Provider settings already exist, please delete them first.",
+      throw new AssistantError(
+        "Database is not configured",
+        ErrorType.CONFIGURATION_ERROR,
       );
     }
 
-    const result = await this.runQuery<{ public_key: string }>(
-      "SELECT public_key FROM user_settings WHERE user_id = ?",
-      [userId],
-      true,
-    );
-
-    if (!result?.public_key) {
-      throw new Error("Public key not found");
+    if (!userId || !providerId || !apiKey) {
+      throw new AssistantError(
+        "Missing required parameters",
+        ErrorType.PARAMS_ERROR,
+      );
     }
 
-    const publicKeyJwk = JSON.parse(result.public_key);
+    try {
+      const existingProviderSettings = await this.runQuery<{ id: string }>(
+        "SELECT id FROM provider_settings WHERE user_id = ? AND provider_id = ?",
+        [userId, providerId],
+        true,
+      );
 
-    const publicKey = await crypto.subtle.importKey(
-      "jwk",
-      publicKeyJwk,
-      {
-        name: "RSA-OAEP",
-        hash: "SHA-256",
-      },
-      false,
-      ["encrypt"],
-    );
+      if (existingProviderSettings) {
+        throw new AssistantError(
+          "Provider settings already exist",
+          ErrorType.PARAMS_ERROR,
+        );
+      }
 
-    const encryptedData = await crypto.subtle.encrypt(
-      { name: "RSA-OAEP" },
-      publicKey,
-      new TextEncoder().encode(apiKey),
-    );
+      const result = await this.runQuery<{ public_key: string }>(
+        "SELECT public_key FROM user_settings WHERE user_id = ?",
+        [userId],
+        true,
+      );
 
-    const encryptedApiKey = bufferToBase64(new Uint8Array(encryptedData));
+      if (!result?.public_key) {
+        throw new AssistantError(
+          "User settings not found",
+          ErrorType.NOT_FOUND,
+        );
+      }
 
-    const providerSettingsId = crypto.randomUUID();
+      const publicKeyJwk = JSON.parse(result.public_key);
 
-    await this.executeRun(
-      "INSERT INTO provider_settings (id, user_id, provider_id, api_key, enabled) VALUES (?, ?, ?, ?, ?)",
-      [providerSettingsId, userId, providerId, encryptedApiKey, 1],
-    );
+      const publicKey = await crypto.subtle.importKey(
+        "jwk",
+        publicKeyJwk,
+        {
+          name: "RSA-OAEP",
+          hash: "SHA-256",
+        },
+        false,
+        ["encrypt"],
+      );
+
+      const encryptedData = await crypto.subtle.encrypt(
+        {
+          name: "RSA-OAEP",
+          label: new TextEncoder().encode("provider-api-key"),
+        },
+        publicKey,
+        new TextEncoder().encode(apiKey),
+      );
+
+      const encryptedApiKey = bufferToBase64(new Uint8Array(encryptedData));
+      const providerSettingsId = crypto.randomUUID();
+
+      await this.executeRun(
+        "INSERT INTO provider_settings (id, user_id, provider_id, api_key, enabled) VALUES (?, ?, ?, ?, ?)",
+        [providerSettingsId, userId, providerId, encryptedApiKey, 1],
+      );
+    } catch (error) {
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+      throw new AssistantError(
+        "Failed to store provider API key",
+        ErrorType.UNKNOWN_ERROR,
+      );
+    }
   }
 
   public async getProviderApiKey(
@@ -221,55 +271,77 @@ export class UserSettingsRepository extends BaseRepository {
     providerId: string,
   ): Promise<string | null> {
     if (!this.env.DB) {
-      throw new Error("DB is not configured");
+      throw new AssistantError(
+        "Database is not configured",
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
 
     if (!userId || !providerId) {
-      throw new Error("Invalid parameters");
+      throw new AssistantError(
+        "Missing required parameters",
+        ErrorType.PARAMS_ERROR,
+      );
     }
 
-    const userSettings = await this.runQuery<{ private_key: string }>(
-      "SELECT private_key FROM user_settings WHERE user_id = ?",
-      [userId],
-      true,
-    );
+    try {
+      const userSettings = await this.runQuery<{ private_key: string }>(
+        "SELECT private_key FROM user_settings WHERE user_id = ?",
+        [userId],
+        true,
+      );
 
-    if (!userSettings?.private_key) {
-      throw new Error("Private key not found");
+      if (!userSettings?.private_key) {
+        throw new AssistantError(
+          "User settings not found",
+          ErrorType.NOT_FOUND,
+        );
+      }
+
+      const decryptedPrivateKeyString = await this.decryptWithServerKey(
+        userSettings.private_key,
+      );
+      const privateKeyJwk = JSON.parse(decryptedPrivateKeyString);
+
+      const privateKey = await crypto.subtle.importKey(
+        "jwk",
+        privateKeyJwk,
+        {
+          name: "RSA-OAEP",
+          hash: "SHA-256",
+        },
+        true,
+        ["decrypt"],
+      );
+
+      const result = await this.runQuery<{ api_key: string }>(
+        "SELECT api_key FROM provider_settings WHERE user_id = ? AND provider_id = ?",
+        [userId, providerId],
+        true,
+      );
+
+      if (!result?.api_key) {
+        return null;
+      }
+
+      const decryptedApiKey = await crypto.subtle.decrypt(
+        {
+          name: "RSA-OAEP",
+          label: new TextEncoder().encode("provider-api-key"),
+        },
+        privateKey,
+        decodeBase64(result.api_key),
+      );
+
+      return new TextDecoder().decode(decryptedApiKey);
+    } catch (error) {
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+      throw new AssistantError(
+        "Failed to retrieve provider API key",
+        ErrorType.UNKNOWN_ERROR,
+      );
     }
-
-    const decryptedPrivateKeyString = await this.decryptWithServerKey(
-      userSettings.private_key,
-    );
-    const privateKeyJwk = JSON.parse(decryptedPrivateKeyString);
-
-    const privateKey = await crypto.subtle.importKey(
-      "jwk",
-      privateKeyJwk,
-      {
-        name: "RSA-OAEP",
-        hash: "SHA-256",
-      },
-      true,
-      ["decrypt"],
-    );
-
-    const result = await this.runQuery<{ api_key: string }>(
-      "SELECT api_key FROM provider_settings WHERE user_id = ? AND provider_id = ?",
-      [userId, providerId],
-      true,
-    );
-
-    if (!result?.api_key) {
-      return null;
-    }
-
-    const decryptedApiKey = await crypto.subtle.decrypt(
-      { name: "RSA-OAEP" },
-      privateKey,
-      decodeBase64(result.api_key),
-    );
-
-    return new TextDecoder().decode(decryptedApiKey);
   }
 }
