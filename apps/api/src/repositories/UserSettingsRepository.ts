@@ -1,6 +1,7 @@
 import { decodeBase64 } from "hono/utils/encode";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getDefaultProviders, getModels, getProviders } from "../lib/models";
+import { getModels } from "../lib/models";
+import { AIProviderFactory } from "../providers/factory";
 import { bufferToBase64 } from "../utils/base64";
 import { BaseRepository } from "./BaseRepository";
 
@@ -345,8 +346,8 @@ export class UserSettingsRepository extends BaseRepository {
   }
 
   public async createUserProviderSettings(userId: number): Promise<void> {
-    const providers = getProviders();
-    const defaultProviders = getDefaultProviders();
+    const providers = AIProviderFactory.getProviders();
+    const defaultProviders = AIProviderFactory.getDefaultProviders();
 
     await Promise.all(
       providers.map(async (provider) => {

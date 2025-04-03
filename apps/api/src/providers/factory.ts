@@ -78,6 +78,30 @@ export class AIProviderFactory {
   }
 
   /**
+   * Get the configurable providers
+   */
+  static getConfigurableProviders(): string[] {
+    const ignoredProviders = [
+      "bedrock",
+      "ollama",
+      "workers-ai",
+      "google",
+      "googleai",
+      "github",
+    ];
+    return AIProviderFactory.getProviders().filter((provider) => {
+      return !ignoredProviders.includes(provider);
+    });
+  }
+
+  /**
+   * Get the default providers
+   */
+  static getDefaultProviders(): string[] {
+    return ["mistral", "workersai"];
+  }
+
+  /**
    * Get a provider by name
    * Falls back to workers provider if not found
    */

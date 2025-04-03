@@ -13,7 +13,12 @@ interface ProviderModalState {
 }
 
 export function ProfileProvidersTab() {
-  const { providerSettings, isLoadingProviderSettings } = useUser();
+  const {
+    providerSettings,
+    isLoadingProviderSettings,
+    syncProviders,
+    isSyncingProviders,
+  } = useUser();
   const [modalState, setModalState] = useState<ProviderModalState>({
     open: false,
     providerId: "",
@@ -43,6 +48,15 @@ export function ProfileProvidersTab() {
       </h2>
 
       <div className="space-y-4">
+        {!isLoadingProviderSettings && (
+          <Button
+            variant="secondary"
+            onClick={() => syncProviders()}
+            disabled={isSyncingProviders}
+          >
+            {isSyncingProviders ? "Syncing..." : "Sync Providers"}
+          </Button>
+        )}
         {isLoadingProviderSettings ? (
           <div className="flex justify-center py-10">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent" />

@@ -45,30 +45,6 @@ const modelConfig: ModelConfig = {
   ...googleAiStudioModelConfig,
 };
 
-export function getProviders() {
-  return [
-    "openai",
-    "anthropic",
-    "mistral",
-    "ollama",
-    "bedrock",
-    "deepseek",
-    "github",
-    "grok",
-    "groq",
-    "huggingface",
-    "openrouter",
-    "perplexity",
-    "workersai",
-    "togetherai",
-    "googleai",
-  ];
-}
-
-export function getDefaultProviders() {
-  return ["mistral", "workersai"];
-}
-
 export function getModelConfig(model?: string) {
   return (model && modelConfig[model]) || modelConfig[defaultModel];
 }

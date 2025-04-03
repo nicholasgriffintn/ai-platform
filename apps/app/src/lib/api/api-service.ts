@@ -620,6 +620,19 @@ class ApiService {
 
     return response.json();
   }
+
+  async syncProviders(): Promise<void> {
+    const headers = await this.getHeaders();
+
+    const response = await fetch(
+      `${API_BASE_URL}/user/sync-providers`,
+      this.getFetchOptions("POST", headers),
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to sync providers: ${response.statusText}`);
+    }
+  }
 }
 
 export const apiService = ApiService.getInstance();

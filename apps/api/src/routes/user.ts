@@ -177,4 +177,30 @@ app.get(
   },
 );
 
+app.post(
+  "/sync-providers",
+  describeRoute({
+    tags: ["user"],
+    summary: "Sync providers",
+  }),
+  async (c: Context) => {
+    const user = c.get("user");
+
+    if (!user) {
+      throw new AssistantError(
+        "Authentication required",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const database = Database.getInstance(c.env);
+    await database.createUserProviderSettings(user.id);
+
+    return c.json({
+      success: true,
+      message: "Providers synced successfully",
+    });
+  },
+);
+
 export default app;

@@ -32,10 +32,23 @@ export function useUser() {
     },
   });
 
+  const syncProvidersMutation = useMutation({
+    mutationFn: async () => {
+      await apiService.syncProviders();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: USER_QUERY_KEYS.providerSettings,
+      });
+    },
+  });
+
   return {
     providerSettings: providerSettings?.providers,
     isLoadingProviderSettings,
     storeProviderApiKey: storeProviderApiKeyMutation.mutate,
     isStoringProviderApiKey: storeProviderApiKeyMutation.isPending,
+    syncProviders: syncProvidersMutation.mutate,
+    isSyncingProviders: syncProvidersMutation.isPending,
   };
 }
