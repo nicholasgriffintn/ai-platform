@@ -84,6 +84,7 @@ export class AIProviderFactory {
     const ignoredProviders = [
       "bedrock",
       "ollama",
+      "workers",
       "workers-ai",
       "google",
       "googleai",
