@@ -6,12 +6,16 @@ export class AnthropicProvider extends BaseProvider {
   name = "anthropic";
   supportsStreaming = true;
 
+  protected getProviderKeyName(): string {
+    return "ANTHROPIC_API_KEY";
+  }
+
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
 
-    if (!params.env.ANTHROPIC_API_KEY || !params.env.AI_GATEWAY_TOKEN) {
+    if (!params.env.AI_GATEWAY_TOKEN) {
       throw new AssistantError(
-        "Missing ANTHROPIC_API_KEY or AI_GATEWAY_TOKEN",
+        "Missing AI_GATEWAY_TOKEN",
         ErrorType.CONFIGURATION_ERROR,
       );
     }
@@ -21,12 +25,14 @@ export class AnthropicProvider extends BaseProvider {
     return "v1/messages";
   }
 
-  protected getHeaders(
+  protected async getHeaders(
     params: ChatCompletionParameters,
-  ): Record<string, string> {
+  ): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.user?.id);
+
     return {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-      "x-api-key": params.env.ANTHROPIC_API_KEY || "",
+      "x-api-key": apiKey,
       "anthropic-version": "2023-06-01",
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify({

@@ -1,4 +1,4 @@
-import type { IEnv, Message, MessageContent, Platform } from "../types";
+import type { Message, MessageContent, Platform } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
 import type { Database } from "./database";
 

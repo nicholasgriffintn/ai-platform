@@ -6,12 +6,16 @@ export class GrokProvider extends BaseProvider {
   name = "grok";
   supportsStreaming = true;
 
+  protected getProviderKeyName(): string {
+    return "GROK_API_KEY";
+  }
+
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
 
-    if (!params.env.GROK_API_KEY || !params.env.AI_GATEWAY_TOKEN) {
+    if (!params.env.AI_GATEWAY_TOKEN) {
       throw new AssistantError(
-        "Missing GROK_API_KEY or AI_GATEWAY_TOKEN",
+        "Missing AI_GATEWAY_TOKEN",
         ErrorType.CONFIGURATION_ERROR,
       );
     }
@@ -21,12 +25,14 @@ export class GrokProvider extends BaseProvider {
     return "v1/chat/completions";
   }
 
-  protected getHeaders(
+  protected async getHeaders(
     params: ChatCompletionParameters,
-  ): Record<string, string> {
+  ): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.user?.id);
+
     return {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-      Authorization: `Bearer ${params.env.GROK_API_KEY || ""}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify({
         email: params.user?.email || "anonymous@undefined.computer",

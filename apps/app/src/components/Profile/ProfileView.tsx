@@ -6,7 +6,7 @@ import { cn } from "~/lib/utils";
 import { ProfileAccountTab } from "./Tabs/ProfileAccountTab";
 import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab";
 import { ProfileHistoryTab } from "./Tabs/ProfileHistoryTab";
-import { ProfileModelsTab } from "./Tabs/ProfileModelsTab";
+import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab";
 
 export function ProfileView() {
   const { user, logout, isLoggingOut } = useAuthStatus();
@@ -20,7 +20,7 @@ export function ProfileView() {
     { id: "account", label: "Account" },
     { id: "customisation", label: "Customisation" },
     { id: "history", label: "Chat History" },
-    { id: "models", label: "Models" },
+    { id: "providers", label: "Providers" },
   ];
 
   return (
@@ -99,7 +99,7 @@ export function ProfileView() {
 
             {activeTab === "history" && <ProfileHistoryTab />}
 
-            {activeTab === "models" && <ProfileModelsTab />}
+            {activeTab === "providers" && <ProfileProvidersTab />}
           </div>
         </div>
       </div>

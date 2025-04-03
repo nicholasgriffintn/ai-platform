@@ -2,6 +2,7 @@ import { mapParametersToProvider } from "../lib/chat/parameters";
 import { ResponseFormatter } from "../lib/formatter";
 import { getModelConfigByMatchingModel } from "../lib/models";
 import { trackProviderMetrics } from "../lib/monitoring";
+import { UserSettingsRepository } from "../repositories/UserSettingsRepository";
 import type { ChatCompletionParameters } from "../types/chat";
 import { AssistantError, ErrorType } from "../utils/errors";
 import { fetchAIResponse } from "./fetch";
@@ -15,6 +16,44 @@ export interface AIProvider {
 export abstract class BaseProvider implements AIProvider {
   abstract name: string;
   abstract supportsStreaming: boolean;
+
+  /**
+   * Gets the environment variable name for the provider's API key
+   */
+  protected abstract getProviderKeyName(): string;
+
+  /**
+   * Gets the API key for the provider, checking user settings first
+   */
+  protected async getApiKey(
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<string> {
+    if (userId && params.env.DB) {
+      const userSettingsRepo = new UserSettingsRepository(params.env);
+      try {
+        const apiKey = await userSettingsRepo.getProviderApiKey(
+          userId,
+          this.name,
+        );
+        if (apiKey) {
+          return apiKey;
+        }
+      } catch (error) {
+        console.warn(`Failed to get user API key for ${this.name}:`, error);
+      }
+    }
+
+    const envKey = params.env[this.getProviderKeyName()];
+    if (!envKey) {
+      throw new AssistantError(
+        `Missing ${this.getProviderKeyName()}`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    return envKey;
+  }
 
   /**
    * Validates common parameters and provider-specific requirements
@@ -36,7 +75,7 @@ export abstract class BaseProvider implements AIProvider {
    */
   protected abstract getHeaders(
     params: ChatCompletionParameters,
-  ): Record<string, string>;
+  ): Promise<Record<string, string>> | Record<string, string>;
 
   /**
    * Formats the response from the API call
@@ -62,7 +101,7 @@ export abstract class BaseProvider implements AIProvider {
     this.validateParams(params);
 
     const endpoint = this.getEndpoint(params);
-    const headers = this.getHeaders(params);
+    const headers = await this.getHeaders(params);
 
     return trackProviderMetrics({
       provider: this.name,

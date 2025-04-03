@@ -6,12 +6,16 @@ export class OpenAIProvider extends BaseProvider {
   name = "openai";
   supportsStreaming = true;
 
+  protected getProviderKeyName(): string {
+    return "OPENAI_API_KEY";
+  }
+
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
 
-    if (!params.env.OPENAI_API_KEY || !params.env.AI_GATEWAY_TOKEN) {
+    if (!params.env.AI_GATEWAY_TOKEN) {
       throw new AssistantError(
-        "Missing OPENAI_API_KEY or AI_GATEWAY_TOKEN",
+        "Missing AI_GATEWAY_TOKEN",
         ErrorType.CONFIGURATION_ERROR,
       );
     }
@@ -21,12 +25,14 @@ export class OpenAIProvider extends BaseProvider {
     return "chat/completions";
   }
 
-  protected getHeaders(
+  protected async getHeaders(
     params: ChatCompletionParameters,
-  ): Record<string, string> {
+  ): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.user?.id);
+
     return {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-      Authorization: `Bearer ${params.env.OPENAI_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify({
         email: params.user?.email || "anonymous@undefined.computer",

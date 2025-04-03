@@ -8,16 +8,16 @@ export class ReplicateProvider extends BaseProvider {
   name = "replicate";
   supportsStreaming = false;
 
+  protected getProviderKeyName(): string {
+    return "REPLICATE_API_TOKEN";
+  }
+
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
 
-    if (
-      !params.env.REPLICATE_API_TOKEN ||
-      !params.env.AI_GATEWAY_TOKEN ||
-      !params.env.WEBHOOK_SECRET
-    ) {
+    if (!params.env.AI_GATEWAY_TOKEN || !params.env.WEBHOOK_SECRET) {
       throw new AssistantError(
-        "Missing REPLICATE_API_TOKEN or WEBHOOK_SECRET or AI_GATEWAY_TOKEN",
+        "Missing AI_GATEWAY_TOKEN or WEBHOOK_SECRET",
         ErrorType.CONFIGURATION_ERROR,
       );
     }
@@ -39,12 +39,14 @@ export class ReplicateProvider extends BaseProvider {
     return "v1/predictions";
   }
 
-  protected getHeaders(
+  protected async getHeaders(
     params: ChatCompletionParameters,
-  ): Record<string, string> {
+  ): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.user?.id);
+
     return {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-      Authorization: `Token ${params.env.REPLICATE_API_TOKEN || ""}`,
+      Authorization: `Token ${apiKey}`,
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify({
         email: params.user?.email || "anonymous@undefined.computer",
@@ -59,7 +61,7 @@ export class ReplicateProvider extends BaseProvider {
     this.validateParams(params);
 
     const endpoint = this.getEndpoint();
-    const headers = this.getHeaders(params);
+    const headers = await this.getHeaders(params);
 
     const base_webhook_url =
       params.app_url || "https://chat-api.nickgriffin.uk";

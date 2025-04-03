@@ -6,15 +6,12 @@ export class TogetherAiProvider extends BaseProvider {
   name = "together-ai";
   supportsStreaming = true;
 
+  protected getProviderKeyName(): string {
+    return "TOGETHER_AI_API_KEY";
+  }
+
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
-
-    if (!params.env.TOGETHER_AI_API_KEY) {
-      throw new AssistantError(
-        "Missing TOGETHER_AI_API_KEY",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
   }
 
   protected getEndpoint(): string {
@@ -22,12 +19,14 @@ export class TogetherAiProvider extends BaseProvider {
     return `${togetherAiUrl}/chat/completions`;
   }
 
-  protected getHeaders(
+  protected async getHeaders(
     params: ChatCompletionParameters,
-  ): Record<string, string> {
+  ): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.user?.id);
+
     return {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${params.env.TOGETHER_AI_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
     };
   }
 }

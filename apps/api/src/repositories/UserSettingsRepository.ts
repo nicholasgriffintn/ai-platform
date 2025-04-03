@@ -1,6 +1,6 @@
 import { decodeBase64 } from "hono/utils/encode";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getModels } from "../lib/models";
+import { getDefaultProviders, getModels, getProviders } from "../lib/models";
 import { bufferToBase64 } from "../utils/base64";
 import { BaseRepository } from "./BaseRepository";
 
@@ -201,14 +201,14 @@ export class UserSettingsRepository extends BaseRepository {
 
     try {
       const existingProviderSettings = await this.runQuery<{ id: string }>(
-        "SELECT id FROM provider_settings WHERE user_id = ? AND provider_id = ?",
+        "SELECT id FROM provider_settings WHERE user_id = ? AND id = ?",
         [userId, providerId],
         true,
       );
 
-      if (existingProviderSettings) {
+      if (!existingProviderSettings) {
         throw new AssistantError(
-          "Provider settings already exist",
+          "Provider settings not found",
           ErrorType.PARAMS_ERROR,
         );
       }
@@ -249,11 +249,10 @@ export class UserSettingsRepository extends BaseRepository {
       );
 
       const encryptedApiKey = bufferToBase64(new Uint8Array(encryptedData));
-      const providerSettingsId = crypto.randomUUID();
 
       await this.executeRun(
-        "INSERT INTO provider_settings (id, user_id, provider_id, api_key, enabled) VALUES (?, ?, ?, ?, ?)",
-        [providerSettingsId, userId, providerId, encryptedApiKey, 1],
+        "UPDATE provider_settings SET api_key = ?, enabled = 1 WHERE user_id = ? AND id = ?",
+        [encryptedApiKey, userId, existingProviderSettings.id],
       );
     } catch (error) {
       if (error instanceof AssistantError) {
@@ -343,5 +342,52 @@ export class UserSettingsRepository extends BaseRepository {
         ErrorType.UNKNOWN_ERROR,
       );
     }
+  }
+
+  public async createUserProviderSettings(userId: number): Promise<void> {
+    const providers = getProviders();
+    const defaultProviders = getDefaultProviders();
+
+    await Promise.all(
+      providers.map(async (provider) => {
+        const existingSettings = await this.runQuery<{ id: string }>(
+          "SELECT id FROM provider_settings WHERE user_id = ? AND provider_id = ?",
+          [userId, provider],
+          true,
+        );
+
+        if (existingSettings) {
+          return;
+        }
+
+        const providerSettingsId = crypto.randomUUID();
+
+        const isEnabled = defaultProviders.includes(provider);
+
+        await this.executeRun(
+          "INSERT INTO provider_settings (id, user_id, provider_id, enabled) VALUES (?, ?, ?, ?)",
+          [providerSettingsId, userId, provider, isEnabled ? 1 : 0],
+        );
+      }),
+    );
+  }
+
+  public async getUserProviderSettings(
+    userId: number,
+  ): Promise<Record<string, unknown>[]> {
+    const result = await this.runQuery<{
+      id: string;
+      provider_id: string;
+      enabled: number;
+    }>(
+      "SELECT id, provider_id, enabled FROM provider_settings WHERE user_id = ?",
+      [userId],
+    );
+
+    return result.map((provider) => ({
+      id: provider.id,
+      provider_id: provider.provider_id,
+      enabled: provider.enabled === 1,
+    }));
   }
 }

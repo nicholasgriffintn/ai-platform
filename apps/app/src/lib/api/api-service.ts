@@ -585,6 +585,41 @@ class ApiService {
 
     return await response.json();
   }
+
+  async storeProviderApiKey(providerId: string, apiKey: string): Promise<void> {
+    const headers = await this.getHeaders();
+
+    const response = await fetch(
+      `${API_BASE_URL}/user/store-provider-api-key`,
+      this.getFetchOptions("POST", headers, {
+        providerId,
+        apiKey,
+      }),
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to store provider API key: ${response.statusText}`,
+      );
+    }
+  }
+
+  async getProviderSettings(): Promise<{ providers: Record<string, any> }> {
+    const headers = await this.getHeaders();
+
+    const response = await fetch(
+      `${API_BASE_URL}/user/providers`,
+      this.getFetchOptions("GET", headers),
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to get provider settings: ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
 }
 
 export const apiService = ApiService.getInstance();

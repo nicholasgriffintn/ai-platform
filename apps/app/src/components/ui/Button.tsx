@@ -2,6 +2,7 @@ import { type ButtonHTMLAttributes, type ReactNode, forwardRef } from "react";
 import { cn } from "~/lib/utils";
 
 export type ButtonVariant =
+  | "default"
   | "primary"
   | "secondary"
   | "ghost"
@@ -26,7 +27,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
-      variant = "primary",
+      variant = "default",
       size = "md",
       icon,
       fullWidth = false,
@@ -40,6 +41,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const variantStyles: Record<ButtonVariant, string> = {
+      default: "bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm",
       primary: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
       secondary:
         "bg-off-white-highlight dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600",

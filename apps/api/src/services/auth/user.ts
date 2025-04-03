@@ -115,6 +115,14 @@ export async function createUserSettings(database: Database, userId: number) {
   return result;
 }
 
+export async function createUserProviderSettings(
+  database: Database,
+  userId: number,
+) {
+  const result = await database.createUserProviderSettings(userId);
+  return result;
+}
+
 /**
  * Create or update a user from GitHub data
  */

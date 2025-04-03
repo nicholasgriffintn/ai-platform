@@ -6,15 +6,12 @@ export class GithubModelsProvider extends BaseProvider {
   name = "github-models";
   supportsStreaming = true;
 
+  protected getProviderKeyName(): string {
+    return "GITHUB_MODELS_API_TOKEN";
+  }
+
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
-
-    if (!params.env.GITHUB_MODELS_API_TOKEN) {
-      throw new AssistantError(
-        "Missing GITHUB_MODELS_API_TOKEN",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
   }
 
   protected getEndpoint(): string {
@@ -22,12 +19,14 @@ export class GithubModelsProvider extends BaseProvider {
     return `${githubModelsUrl}/chat/completions`;
   }
 
-  protected getHeaders(
+  protected async getHeaders(
     params: ChatCompletionParameters,
-  ): Record<string, string> {
+  ): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.user?.id);
+
     return {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${params.env.GITHUB_MODELS_API_TOKEN}`,
+      Authorization: `Bearer ${apiKey}`,
     };
   }
 }

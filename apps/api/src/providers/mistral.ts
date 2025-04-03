@@ -6,12 +6,16 @@ export class MistralProvider extends BaseProvider {
   name = "mistral";
   supportsStreaming = true;
 
+  protected getProviderKeyName(): string {
+    return "MISTRAL_API_KEY";
+  }
+
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
 
     if (!params.env.MISTRAL_API_KEY || !params.env.AI_GATEWAY_TOKEN) {
       throw new AssistantError(
-        "Missing MISTRAL_API_KEY or AI_GATEWAY_TOKEN",
+        "Missing AI_GATEWAY_TOKEN",
         ErrorType.CONFIGURATION_ERROR,
       );
     }
@@ -21,12 +25,14 @@ export class MistralProvider extends BaseProvider {
     return "v1/chat/completions";
   }
 
-  protected getHeaders(
+  protected async getHeaders(
     params: ChatCompletionParameters,
-  ): Record<string, string> {
+  ): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.user?.id);
+
     return {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-      Authorization: `Bearer ${params.env.MISTRAL_API_KEY || ""}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify({
         email: params.user?.email || "anonymous@undefined.computer",

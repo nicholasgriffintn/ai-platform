@@ -12,6 +12,10 @@ export class WorkersProvider extends BaseProvider {
   name = "workers-ai";
   supportsStreaming = true;
 
+  protected getProviderKeyName(): string {
+    return null;
+  }
+
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
   }

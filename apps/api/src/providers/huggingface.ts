@@ -6,12 +6,16 @@ export class HuggingFaceProvider extends BaseProvider {
   name = "huggingface";
   supportsStreaming = true;
 
+  protected getProviderKeyName(): string {
+    return "HUGGINGFACE_TOKEN";
+  }
+
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
 
-    if (!params.env.HUGGINGFACE_TOKEN || !params.env.AI_GATEWAY_TOKEN) {
+    if (!params.env.AI_GATEWAY_TOKEN) {
       throw new AssistantError(
-        "Missing HUGGINGFACE_TOKEN or AI_GATEWAY_TOKEN",
+        "Missing AI_GATEWAY_TOKEN",
         ErrorType.CONFIGURATION_ERROR,
       );
     }
@@ -30,12 +34,14 @@ export class HuggingFaceProvider extends BaseProvider {
     return `${params.model}/v1/chat/completions`;
   }
 
-  protected getHeaders(
+  protected async getHeaders(
     params: ChatCompletionParameters,
-  ): Record<string, string> {
+  ): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.user?.id);
+
     return {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-      Authorization: `Bearer ${params.env.HUGGINGFACE_TOKEN || ""}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify({
         email: params.user?.email || "anonymous@undefined.computer",

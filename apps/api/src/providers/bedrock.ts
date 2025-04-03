@@ -13,6 +13,10 @@ export class BedrockProvider extends BaseProvider {
   name = "bedrock";
   supportsStreaming = false;
 
+  protected getProviderKeyName(): string {
+    return null;
+  }
+
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
 

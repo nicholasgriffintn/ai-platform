@@ -149,4 +149,32 @@ app.post(
   },
 );
 
+app.get(
+  "/providers",
+  describeRoute({
+    tags: ["user"],
+    summary: "Get the providers that the user has enabled",
+  }),
+  async (c: Context) => {
+    const user = c.get("user");
+
+    if (!user) {
+      throw new AssistantError(
+        "Authentication required",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const database = Database.getInstance(c.env);
+    const userProviderSettings = await database.getUserProviderSettings(
+      user.id,
+    );
+
+    return c.json({
+      success: true,
+      providers: userProviderSettings,
+    });
+  },
+);
+
 export default app;

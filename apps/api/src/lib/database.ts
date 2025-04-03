@@ -79,6 +79,10 @@ export class Database {
       await this.repositories.userSettings.createUserSettings(
         user.id as number,
       );
+
+      await this.repositories.userSettings.createUserProviderSettings(
+        user.id as number,
+      );
     }
 
     return user;
@@ -104,6 +108,10 @@ export class Database {
   // User settings methods
   public async createUserSettings(userId: number): Promise<void> {
     return this.repositories.userSettings.createUserSettings(userId);
+  }
+
+  public async createUserProviderSettings(userId: number): Promise<void> {
+    return this.repositories.userSettings.createUserProviderSettings(userId);
   }
 
   public async updateUserSettings(
@@ -142,6 +150,12 @@ export class Database {
     providerId: string,
   ): Promise<string | null> {
     return this.repositories.userSettings.getProviderApiKey(userId, providerId);
+  }
+
+  public async getUserProviderSettings(
+    userId: number,
+  ): Promise<Record<string, unknown>[]> {
+    return this.repositories.userSettings.getUserProviderSettings(userId);
   }
 
   // Embedding methods

@@ -6,12 +6,16 @@ export class GoogleStudioProvider extends BaseProvider {
   name = "google-ai-studio";
   supportsStreaming = false;
 
+  protected getProviderKeyName(): string {
+    return "GOOGLE_STUDIO_API_KEY";
+  }
+
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
 
-    if (!params.env.GOOGLE_STUDIO_API_KEY || !params.env.AI_GATEWAY_TOKEN) {
+    if (!params.env.AI_GATEWAY_TOKEN) {
       throw new AssistantError(
-        "Missing GOOGLE_STUDIO_API_KEY or AI_GATEWAY_TOKEN",
+        "Missing AI_GATEWAY_TOKEN",
         ErrorType.CONFIGURATION_ERROR,
       );
     }
@@ -21,12 +25,14 @@ export class GoogleStudioProvider extends BaseProvider {
     return `v1beta/models/${params.model}:generateContent`;
   }
 
-  protected getHeaders(
+  protected async getHeaders(
     params: ChatCompletionParameters,
-  ): Record<string, string> {
+  ): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.user?.id);
+
     return {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-      "x-goog-api-key": params.env.GOOGLE_STUDIO_API_KEY || "",
+      "x-goog-api-key": apiKey,
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify({
         email: params.user?.email || "anonymous@undefined.computer",
