@@ -27,7 +27,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
-		"@cloudflare/workers-types": "4.20250403.0",
+		"@cloudflare/workers-types": "4.20250404.0",
 		"@types/node": "22.13.17",
 		"typescript": "5.8.2",
 		"vitest": "3.1.1",
