@@ -16,4 +16,5 @@ export const updateUserSettingsSchema = z.object({
 export const storeProviderApiKeySchema = z.object({
   providerId: z.string(),
   apiKey: z.string(),
+  secretKey: z.string().nullable().optional(),
 });

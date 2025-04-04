@@ -6,6 +6,8 @@ import { bufferToBase64 } from "../utils/base64";
 import { BaseRepository } from "./BaseRepository";
 
 export class UserSettingsRepository extends BaseRepository {
+  private static readonly CREDENTIALS_DELIMITER = "::@@::";
+
   private async getServerEncryptionKey() {
     if (!this.env.PRIVATE_KEY) {
       throw new AssistantError(
@@ -185,6 +187,7 @@ export class UserSettingsRepository extends BaseRepository {
     userId: number,
     providerId: string,
     apiKey: string,
+    secretKey?: string,
   ): Promise<void> {
     if (!this.env.DB) {
       throw new AssistantError(
@@ -240,13 +243,17 @@ export class UserSettingsRepository extends BaseRepository {
         ["encrypt"],
       );
 
+      const keyToEncrypt = secretKey
+        ? `${apiKey}${UserSettingsRepository.CREDENTIALS_DELIMITER}${secretKey}`
+        : apiKey;
+
       const encryptedData = await crypto.subtle.encrypt(
         {
           name: "RSA-OAEP",
           label: new TextEncoder().encode("provider-api-key"),
         },
         publicKey,
-        new TextEncoder().encode(apiKey),
+        new TextEncoder().encode(keyToEncrypt),
       );
 
       const encryptedApiKey = bufferToBase64(new Uint8Array(encryptedData));

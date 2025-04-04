@@ -586,7 +586,11 @@ class ApiService {
     return await response.json();
   }
 
-  async storeProviderApiKey(providerId: string, apiKey: string): Promise<void> {
+  async storeProviderApiKey(
+    providerId: string,
+    apiKey: string,
+    secretKey?: string,
+  ): Promise<void> {
     const headers = await this.getHeaders();
 
     const response = await fetch(
@@ -594,6 +598,7 @@ class ApiService {
       this.getFetchOptions("POST", headers, {
         providerId,
         apiKey,
+        secretKey,
       }),
     );
 

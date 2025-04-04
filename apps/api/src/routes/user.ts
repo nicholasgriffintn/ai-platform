@@ -128,9 +128,9 @@ app.post(
   zValidator("json", storeProviderApiKeySchema),
   async (c: Context) => {
     const user = c.get("user");
-    const { providerId, apiKey } = c.req.valid("json" as never) as z.infer<
-      typeof storeProviderApiKeySchema
-    >;
+    const { providerId, apiKey, secretKey } = c.req.valid(
+      "json" as never,
+    ) as z.infer<typeof storeProviderApiKeySchema>;
 
     if (!user) {
       throw new AssistantError(
@@ -140,7 +140,7 @@ app.post(
     }
 
     const database = Database.getInstance(c.env);
-    await database.storeProviderApiKey(user.id, providerId, apiKey);
+    await database.storeProviderApiKey(user.id, providerId, apiKey, secretKey);
 
     return c.json({
       success: true,

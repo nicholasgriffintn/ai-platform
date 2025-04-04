@@ -6,6 +6,14 @@ import { Card } from "~/components/ui/Card";
 import { useUser } from "~/hooks/useUser";
 import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal";
 
+interface ProviderSetting {
+  id: string;
+  provider_id: string;
+  name?: string;
+  description?: string;
+  enabled: boolean;
+}
+
 interface ProviderModalState {
   open: boolean;
   providerId: string;
@@ -72,33 +80,41 @@ export function ProfileProvidersTab() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                      {provider.name || provider.provider_id}
+                      {(provider as ProviderSetting).name ||
+                        (provider as ProviderSetting).provider_id}
                     </h3>
-                    {provider.description && (
+                    {(provider as ProviderSetting).description && (
                       <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        {provider.description}
+                        {(provider as ProviderSetting).description}
                       </p>
                     )}
                   </div>
                   <Button
-                    variant={provider.enabled ? "secondary" : "default"}
+                    variant={
+                      (provider as ProviderSetting).enabled
+                        ? "secondary"
+                        : "default"
+                    }
                     size="sm"
                     onClick={() =>
                       handleEnableProvider(
-                        provider.id,
-                        provider.name || provider.provider_id,
+                        (provider as ProviderSetting).id,
+                        (provider as ProviderSetting).name ||
+                          (provider as ProviderSetting).provider_id,
                       )
                     }
                     className="flex items-center gap-2"
                     icon={
-                      provider.enabled ? (
+                      (provider as ProviderSetting).enabled ? (
                         <Power className="h-4 w-4" />
                       ) : (
                         <Plus className="h-4 w-4" />
                       )
                     }
                   >
-                    {provider.enabled ? "Configure" : "Enable"}
+                    {(provider as ProviderSetting).enabled
+                      ? "Configure"
+                      : "Enable"}
                   </Button>
                 </div>
               </Card>

@@ -137,11 +137,13 @@ export class Database {
     userId: number,
     providerId: string,
     apiKey: string,
+    secretKey?: string,
   ): Promise<void> {
     return this.repositories.userSettings.storeProviderApiKey(
       userId,
       providerId,
       apiKey,
+      secretKey,
     );
   }
 

@@ -5,6 +5,7 @@ import { mapParametersToProvider } from "../lib/chat/parameters";
 import { getModelConfigByMatchingModel } from "../lib/models";
 import { trackProviderMetrics } from "../lib/monitoring";
 import { uploadImageFromChat } from "../lib/upload";
+import { UserSettingsRepository } from "../repositories/UserSettingsRepository";
 import type { ChatCompletionParameters } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
 import { BaseProvider } from "./base";
@@ -14,18 +15,32 @@ export class BedrockProvider extends BaseProvider {
   supportsStreaming = false;
 
   protected getProviderKeyName(): string {
-    return null;
+    return "bedrock";
+  }
+
+  private parseAwsCredentials(apiKey: string): {
+    accessKey: string;
+    secretKey: string;
+  } {
+    const delimiter = "::@@::";
+    const parts = apiKey.split(delimiter);
+
+    if (parts.length !== 2) {
+      throw new AssistantError(
+        "Invalid AWS credentials format",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    return { accessKey: parts[0], secretKey: parts[1] };
   }
 
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
 
-    const accessKey = params.env.BEDROCK_AWS_ACCESS_KEY;
-    const secretKey = params.env.BEDROCK_AWS_SECRET_KEY;
-
-    if (!accessKey || !secretKey || !params.env.AI_GATEWAY_TOKEN) {
+    if (!params.env.AI_GATEWAY_TOKEN) {
       throw new AssistantError(
-        "Missing AWS_ACCESS_KEY or AWS_SECRET_KEY or AI_GATEWAY_TOKEN",
+        "Missing AI_GATEWAY_TOKEN",
         ErrorType.CONFIGURATION_ERROR,
       );
     }
@@ -53,8 +68,29 @@ export class BedrockProvider extends BaseProvider {
       provider: this.name,
       model: params.model as string,
       operation: async () => {
-        const accessKey = params.env.BEDROCK_AWS_ACCESS_KEY || "";
-        const secretKey = params.env.BEDROCK_AWS_SECRET_KEY || "";
+        let accessKey = params.env.BEDROCK_AWS_ACCESS_KEY || "";
+        let secretKey = params.env.BEDROCK_AWS_SECRET_KEY || "";
+
+        if (userId) {
+          try {
+            const userApiKey = await this.getApiKey(params, userId);
+            if (userApiKey) {
+              const credentials = this.parseAwsCredentials(userApiKey);
+              if (credentials.accessKey) {
+                accessKey = credentials.accessKey;
+              }
+              if (credentials.secretKey) {
+                secretKey = credentials.secretKey;
+              }
+            }
+          } catch (error) {
+            console.warn(
+              "Failed to get user AWS credentials, using environment variables:",
+              error,
+            );
+          }
+        }
+
         const region = "us-east-1";
 
         const awsClient = new AwsClient({

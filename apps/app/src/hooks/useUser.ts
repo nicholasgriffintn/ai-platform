@@ -19,11 +19,13 @@ export function useUser() {
     mutationFn: async ({
       providerId,
       apiKey,
+      secretKey,
     }: {
       providerId: string;
       apiKey: string;
+      secretKey?: string;
     }) => {
-      await apiService.storeProviderApiKey(providerId, apiKey);
+      await apiService.storeProviderApiKey(providerId, apiKey, secretKey);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

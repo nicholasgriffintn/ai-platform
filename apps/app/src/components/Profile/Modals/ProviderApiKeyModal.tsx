@@ -25,13 +25,21 @@ export function ProviderApiKeyModal({
   providerName,
 }: ProviderApiKeyModalProps) {
   const [apiKey, setApiKey] = useState("");
+  const [secretKey, setSecretKey] = useState("");
   const { storeProviderApiKey, isStoringProviderApiKey } = useUser();
+
+  const isBedrockProvider = providerName.toLowerCase().includes("bedrock");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await storeProviderApiKey({ providerId, apiKey });
+      await storeProviderApiKey({
+        providerId,
+        apiKey,
+        secretKey: isBedrockProvider ? secretKey : undefined,
+      });
       setApiKey("");
+      setSecretKey("");
       onOpenChange(false);
     } catch (error) {
       console.error("Failed to store API key:", error);
@@ -48,8 +56,10 @@ export function ProviderApiKeyModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Enter your API key for {providerName}. This will be securely stored
-            and used for making requests.
+            {isBedrockProvider
+              ? `Enter your AWS Access Key ID and Secret Access Key for ${providerName}.`
+              : `Enter your API key for ${providerName}.`}
+            This will be securely stored and used for making requests.
           </p>
 
           <TextInput
@@ -57,12 +67,29 @@ export function ProviderApiKeyModal({
             autoComplete="off"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder="Enter your API key"
-            label="API Key"
-            description="Your API key will be encrypted before being stored"
+            placeholder={
+              isBedrockProvider
+                ? "Enter your AWS Access Key ID"
+                : "Enter your API key"
+            }
+            label={isBedrockProvider ? "AWS Access Key ID" : "API Key"}
+            description="Your credentials will be encrypted before being stored"
             required
             disabled={isStoringProviderApiKey}
           />
+
+          {isBedrockProvider && (
+            <TextInput
+              type="password"
+              autoComplete="off"
+              value={secretKey}
+              onChange={(e) => setSecretKey(e.target.value)}
+              placeholder="Enter your AWS Secret Access Key"
+              label="AWS Secret Access Key"
+              required
+              disabled={isStoringProviderApiKey}
+            />
+          )}
 
           <div className="flex justify-end space-x-2">
             <Button
@@ -75,7 +102,11 @@ export function ProviderApiKeyModal({
             </Button>
             <Button
               type="submit"
-              disabled={!apiKey || isStoringProviderApiKey}
+              disabled={
+                !apiKey ||
+                (isBedrockProvider && !secretKey) ||
+                isStoringProviderApiKey
+              }
               isLoading={isStoringProviderApiKey}
             >
               Save

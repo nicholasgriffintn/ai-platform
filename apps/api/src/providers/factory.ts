@@ -82,7 +82,6 @@ export class AIProviderFactory {
    */
   static getConfigurableProviders(): string[] {
     const ignoredProviders = [
-      "bedrock",
       "ollama",
       "workers",
       "workers-ai",
