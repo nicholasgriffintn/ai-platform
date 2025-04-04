@@ -56,22 +56,6 @@ export const bedrockModelConfig: ModelConfig = {
     provider: "bedrock",
     type: ["embedding"],
   },
-  command: {
-    name: "Cohere Command",
-    matchingModel: "cohere.command-text-v14",
-    description:
-      "An instruction-following conversational model that performs language tasks with high quality, more reliably and with a longer context than our base generative models.",
-    provider: "bedrock",
-    type: ["text", "instruct"],
-  },
-  "command-light": {
-    name: "Cohere Command Light",
-    matchingModel: "cohere.command-light-text-v14",
-    description:
-      "A smaller, faster version of command. Almost as capable, but a lot faster.",
-    provider: "bedrock",
-    type: ["text", "instruct"],
-  },
   "command-r": {
     name: "Cohere Command R",
     matchingModel: "cohere.command-r-v1:0",
