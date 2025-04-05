@@ -140,8 +140,6 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
             ErrorType.AUTHENTICATION_ERROR,
           );
         }
-
-        context.set("parsedBody", body);
       } catch (error) {
         if (error instanceof AssistantError) {
           throw error;
