@@ -71,4 +71,20 @@ export const togetherAiModelConfig: ModelConfig = {
     type: ["text"],
     isFree: true,
   },
+  "llama-4-maverick-instruct": {
+    name: "Llama 4 Maverick Instruct",
+    description:
+      "Llama 4 Maverick is a large language model that uses an optimized transformer architecture. The tuned versions use supervised fine-tuning (SFT) and reinforcement learning with human feedback (RLHF) to align with human preferences for helpfulness and safety.",
+    matchingModel: "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+    provider: "together-ai",
+    type: ["text"],
+    strengths: ["chat", "analysis", "creative", "multilingual", "coding"],
+    contextComplexity: 4,
+    reliability: 4,
+    speed: 4,
+    contextWindow: 10000000,
+    isFeatured: true,
+    includedInRouter: true,
+    multimodal: true,
+  },
 };
