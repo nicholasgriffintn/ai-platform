@@ -1,3 +1,4 @@
+import type { D1Result } from "@cloudflare/workers-types";
 import { RepositoryManager } from "../repositories";
 import type { IEnv, User } from "../types";
 

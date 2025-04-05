@@ -77,6 +77,10 @@ export async function getUserSettings(
   userId: number,
 ): Promise<Record<string, unknown> | null> {
   try {
+    if (!userId) {
+      return null;
+    }
+
     const result = await database.getUserSettings(userId);
     return result;
   } catch (error) {

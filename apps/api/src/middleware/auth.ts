@@ -38,7 +38,7 @@ export async function authMiddleware(context: Context, next: Next) {
   } else if (isJwtToken && hasJwtSecret) {
     try {
       user = await getUserByJwtToken(
-        context.env.DB,
+        context.env,
         authToken,
         context.env.JWT_SECRET!,
       );

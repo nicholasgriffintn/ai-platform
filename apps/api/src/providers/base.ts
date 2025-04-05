@@ -107,7 +107,8 @@ export abstract class BaseProvider implements AIProvider {
       provider: this.name,
       model: params.model as string,
       operation: async () => {
-        const body = await mapParametersToProvider(params, this.name);
+        const body =
+          params.body || (await mapParametersToProvider(params, this.name));
         const data = await fetchAIResponse(
           this.name,
           endpoint,

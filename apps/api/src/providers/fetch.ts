@@ -38,11 +38,13 @@ export async function fetchAIResponse(
 
     const gateway = env.AI.gateway(gatewayId);
 
+    // @ts-expect-error - types seem to be wrong
     response = await gateway.run({
-      provider: provider,
+      provider,
       endpoint: endpointOrUrl,
-      headers: headers,
+      headers,
       query: bodyWithTools,
+      // @ts-expect-error - types seem to be wrong
       config: {
         requestTimeout: options.requestTimeout,
         maxAttempts: options.maxAttempts,

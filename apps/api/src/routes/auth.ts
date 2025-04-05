@@ -7,7 +7,7 @@ import { z } from "zod";
 import { Database } from "../lib/database";
 import { requireAuth } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
-import { generateJwtToken } from "../services/auth/jwt";
+import { generateJwtToken, getUserByJwtToken } from "../services/auth/jwt";
 import {
   createOrUpdateGithubUser,
   createSession,
@@ -15,6 +15,7 @@ import {
   getUserBySessionId,
   getUserSettings,
 } from "../services/auth/user";
+import type { User } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
 import {
   githubCallbackSchema,
@@ -22,6 +23,7 @@ import {
   jwtTokenResponseSchema,
   userSchema,
 } from "./schemas/auth";
+
 const app = new Hono();
 
 const routeLogger = createRouteLogger("AUTH");
@@ -215,8 +217,13 @@ app.get(
 
     const database = Database.getInstance(c.env);
 
-    const user = await getUserBySessionId(database, finalSessionId);
-    const userSettings = await getUserSettings(database, user?.id);
+    let user: User | null = null;
+
+    if (headerSessionId) {
+      user = await getUserByJwtToken(c.env, headerSessionId, c.env.JWT_SECRET!);
+    } else if (sessionId) {
+      user = await getUserBySessionId(database, sessionId);
+    }
 
     if (!user) {
       throw new AssistantError(
@@ -224,6 +231,8 @@ app.get(
         ErrorType.AUTHENTICATION_ERROR,
       );
     }
+
+    const userSettings = await getUserSettings(database, user?.id);
 
     return c.json({ user, userSettings });
   },

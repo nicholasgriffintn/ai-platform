@@ -1,3 +1,10 @@
+import type {
+  Ai,
+  AnalyticsEngineDataset,
+  D1Database,
+  Vectorize,
+} from "@cloudflare/workers-types";
+
 export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<
   T,
   Exclude<keyof T, Keys>

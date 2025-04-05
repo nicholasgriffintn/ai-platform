@@ -1,7 +1,7 @@
-import type { D1Database } from "@cloudflare/workers-types";
 import jwt from "@tsndr/cloudflare-worker-jwt";
 
-import type { User } from "../../types";
+import { Database } from "../../lib/database";
+import type { IEnv, User } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
 import { getUserById } from "./user";
 
@@ -77,7 +77,7 @@ export async function verifyJwtToken(
  * Get a user by their JWT token
  */
 export async function getUserByJwtToken(
-  db: D1Database,
+  env: IEnv,
   token: string,
   secret: string,
 ): Promise<User | null> {
@@ -85,7 +85,8 @@ export async function getUserByJwtToken(
     const decoded = await verifyJwtToken(token, secret);
     const userId = Number.parseInt(decoded.payload.sub, 10);
 
-    return await getUserById(db, userId);
+    const database = Database.getInstance(env);
+    return await getUserById(database, userId);
   } catch (error) {
     if (error instanceof AssistantError) {
       throw error;

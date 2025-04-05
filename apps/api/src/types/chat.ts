@@ -165,7 +165,7 @@ interface AIResponseParamsBase extends AIControlParams {
   // The ID of the completion to use for the response.
   completion_id?: string;
   // The messages to use for the response.
-  messages: Message[];
+  messages?: Message[];
   // The message to use for the response.
   message?: string;
   // The model to use for the response.
@@ -195,12 +195,20 @@ interface AIResponseParamsBase extends AIControlParams {
   enabled_tools?: string[];
   // Additional options for the response.
   options?: Record<string, any>;
+  // The body of the request.
+  body?: Record<string, any>;
 }
 
-export type ChatCompletionParameters = RequireAtLeastOne<
+export type ChatCompletionParametersWithModel = RequireAtLeastOne<
   AIResponseParamsBase,
   "model" | "version"
 >;
+
+export type ChatCompletionParameters = RequireAtLeastOne<
+  AIResponseParamsBase,
+  "body" | "messages" | "message"
+> &
+  RequireAtLeastOne<AIResponseParamsBase, "model" | "version">;
 
 export interface CreateChatCompletionsResponse {
   id: string;

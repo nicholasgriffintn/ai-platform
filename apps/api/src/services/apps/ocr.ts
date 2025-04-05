@@ -1,4 +1,5 @@
 import { StorageService } from "../../lib/storage";
+import { AIProviderFactory } from "../../providers/factory";
 import type { IRequest } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
 import { convertMarkdownToHtml } from "../../utils/markdown";
@@ -50,13 +51,13 @@ export const performOcr = async (
 
     const requestId = params.id || crypto.randomUUID();
 
-    const response = await fetch("https://api.mistral.ai/v1/ocr", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${req.env.MISTRAL_API_KEY}`,
-      },
-      body: JSON.stringify({
+    const provider = AIProviderFactory.getProvider("mistral");
+
+    const response = await provider.getResponse({
+      env: req.env,
+      completion_id: requestId,
+      model: params.model || "mistral-ocr-latest",
+      body: {
         document: params.document,
         model: params.model || "mistral-ocr-latest",
         id: requestId,
@@ -64,29 +65,21 @@ export const performOcr = async (
         include_image_base64: params.include_image_base64 ?? true,
         image_limit: params.image_limit,
         image_min_size: params.image_min_size,
-      }),
+      },
+      store: false,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new AssistantError(
-        `Mistral API error: ${response.statusText} - ${errorText}`,
-        ErrorType.EXTERNAL_API_ERROR,
-      );
-    }
-
-    const data = (await response.json()) as any;
-    console.debug("Received OCR response with pages:", data.pages?.length);
+    console.debug("Received OCR response with pages:", response.pages?.length);
 
     const storageService = new StorageService(req.env.ASSETS_BUCKET);
 
     if (params.output_format === "json") {
       const jsonUrl = await storageService.uploadObject(
         `ocr/${requestId}/output.json`,
-        JSON.stringify(data),
+        JSON.stringify(response),
         {
           contentType: "application/json",
-          contentLength: JSON.stringify(data).length,
+          contentLength: JSON.stringify(response).length,
         },
       );
 
@@ -99,7 +92,7 @@ export const performOcr = async (
       };
     }
 
-    const imagesFromPages = data.pages.flatMap(
+    const imagesFromPages = response.pages.flatMap(
       (page: any) => page.images || [],
     );
     const imageMap: Record<string, string> = {};
@@ -112,8 +105,8 @@ export const performOcr = async (
     }
 
     let allMarkdown = "";
-    for (let i = 0; i < data.pages.length; i++) {
-      const page = data.pages[i];
+    for (let i = 0; i < response.pages.length; i++) {
+      const page = response.pages[i];
       let pageContent = page.markdown || page.text || "";
 
       for (const [imageId, imageBase64] of Object.entries(imageMap)) {
@@ -131,7 +124,7 @@ export const performOcr = async (
     if (params.output_format === "html") {
       const htmlContent = convertMarkdownToHtml(allMarkdown);
 
-      data.html = `<!DOCTYPE html>
+      response.html = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -164,10 +157,10 @@ ${htmlContent}
 
       const htmlUrl = await storageService.uploadObject(
         `ocr/${requestId}/output.html`,
-        data.html,
+        response.html,
         {
           contentType: "text/html",
-          contentLength: data.html.length,
+          contentLength: response.html.length,
         },
       );
 
