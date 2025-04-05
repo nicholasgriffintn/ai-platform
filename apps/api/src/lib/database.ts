@@ -125,6 +125,10 @@ export class Database {
   public async getUserSettings(
     userId: number,
   ): Promise<Record<string, unknown> | null> {
+    if (!userId) {
+      return null;
+    }
+
     return this.repositories.userSettings.getUserSettings(userId);
   }
 
