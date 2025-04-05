@@ -33,42 +33,17 @@ export const handleTextToSpeech = async (
   let response: string | { response: string; url: string };
 
   if (provider === "elevenlabs") {
-    if (!env.ELEVENLABS_API_KEY) {
-      throw new AssistantError(
-        "Missing ELEVENLABS_API_KEY",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
-    const elevenlabs = new ElevenLabsService(env);
+    const elevenlabs = new ElevenLabsService(env, user);
     response = await elevenlabs.synthesizeSpeech(input, storage, slug);
   } else if (provider === "cartesia") {
-    if (!env.AI_GATEWAY_TOKEN) {
-      throw new AssistantError(
-        "Missing AI_GATEWAY_TOKEN for Cartesia",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
-    const cartesia = new CartesiaService(env);
+    const cartesia = new CartesiaService(env, user);
     response = await cartesia.synthesizeSpeech(input, storage, slug);
   } else if (provider === "polly") {
-    if (!env.POLLY_ACCESS_KEY_ID || !env.POLLY_SECRET_ACCESS_KEY) {
-      throw new AssistantError(
-        "Missing Polly credentials",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
-    const polly = new PollyService({
-      accessKeyId: env.POLLY_ACCESS_KEY_ID,
-      secretAccessKey: env.POLLY_SECRET_ACCESS_KEY,
-      region: env.AWS_REGION || "us-east-1",
-    });
+    const polly = new PollyService(env, user);
 
     response = await polly.synthesizeSpeech(input, storage, slug);
   } else {
-    const melotts = new MelottsService(env);
+    const melotts = new MelottsService(env, user);
 
     response = await melotts.synthesizeSpeech(input, lang);
   }

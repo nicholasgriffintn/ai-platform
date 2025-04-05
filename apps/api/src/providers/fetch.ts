@@ -43,7 +43,6 @@ export async function fetchAIResponse(
       endpoint: endpointOrUrl,
       headers: headers,
       query: bodyWithTools,
-      // @ts-expect-error - types seem to be wrong
       config: {
         requestTimeout: options.requestTimeout,
         maxAttempts: options.maxAttempts,

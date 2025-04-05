@@ -1,7 +1,9 @@
 import { AnthropicProvider } from "./anthropic";
 import type { AIProvider } from "./base";
 import { BedrockProvider } from "./bedrock";
+import { CertesiaProvider } from "./certesia";
 import { DeepSeekProvider } from "./deepseek";
+import { ElevenLabsProvider } from "./elevenlabs";
 import { GithubModelsProvider } from "./github";
 import { GoogleStudioProvider } from "./googlestudio";
 import { GrokProvider } from "./grok";
@@ -12,6 +14,7 @@ import { OllamaProvider } from "./ollama";
 import { OpenAIProvider } from "./openai";
 import { OpenRouterProvider } from "./openrouter";
 import { PerplexityProvider } from "./perplexity";
+import { PollyProvider } from "./polly";
 import { ReplicateProvider } from "./replicate";
 import { TogetherAiProvider } from "./together-ai";
 import { WorkersProvider } from "./workers";
@@ -49,6 +52,9 @@ export class AIProviderFactory {
     },
     { key: "deepseek", provider: new DeepSeekProvider() },
     { key: "together-ai", provider: new TogetherAiProvider() },
+    { key: "certesia", provider: new CertesiaProvider() },
+    { key: "elevenlabs", provider: new ElevenLabsProvider() },
+    { key: "polly", provider: new PollyProvider() },
   ];
 
   /**

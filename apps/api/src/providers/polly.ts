@@ -4,17 +4,27 @@ import { gatewayId } from "../constants/app";
 import { mapParametersToProvider } from "../lib/chat/parameters";
 import { getModelConfigByMatchingModel } from "../lib/models";
 import { trackProviderMetrics } from "../lib/monitoring";
+import type { StorageService } from "../lib/storage";
 import { uploadImageFromChat } from "../lib/upload";
 import type { ChatCompletionParameters } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
 import { BaseProvider } from "./base";
 
-export class BedrockProvider extends BaseProvider {
-  name = "bedrock";
+interface PollyResponse {
+  SynthesisTask: {
+    TaskId: string;
+    TaskStatus: string;
+    TaskStatusReason?: string;
+    OutputUri?: string;
+  };
+}
+
+export class PollyProvider extends BaseProvider {
+  name = "polly";
   supportsStreaming = false;
 
   protected getProviderKeyName(): string {
-    return "bedrock";
+    return "polly";
   }
 
   private parseAwsCredentials(apiKey: string): {
@@ -36,18 +46,11 @@ export class BedrockProvider extends BaseProvider {
 
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
-
-    if (!params.env.AI_GATEWAY_TOKEN) {
-      throw new AssistantError(
-        "Missing AI_GATEWAY_TOKEN",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
   }
 
   protected getEndpoint(params: ChatCompletionParameters): string {
-    const region = "us-east-1";
-    return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/converse`;
+    const region = params.env.AWS_REGION || "us-east-1";
+    return `https://polly.${region}.amazonaws.com/v1/synthesisTasks`;
   }
 
   protected getHeaders(): Record<string, string> {
@@ -60,8 +63,7 @@ export class BedrockProvider extends BaseProvider {
   ): Promise<any> {
     this.validateParams(params);
 
-    const bedrockUrl = this.getEndpoint(params);
-    const body = await mapParametersToProvider(params, "bedrock");
+    const pollyUrl = this.getEndpoint(params);
 
     return trackProviderMetrics({
       provider: this.name,
@@ -95,82 +97,84 @@ export class BedrockProvider extends BaseProvider {
         const awsClient = new AwsClient({
           accessKeyId: accessKey,
           secretAccessKey: secretKey,
-          region,
-          service: "bedrock",
+          region: region,
         });
 
-        const presignedRequest = await awsClient.sign(bedrockUrl, {
+        const response = await awsClient.fetch(pollyUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(body),
-        });
-
-        if (!presignedRequest.url) {
-          throw new AssistantError(
-            "Failed to get presigned request from Bedrock",
-          );
-        }
-
-        const signedUrl = new URL(presignedRequest.url);
-        signedUrl.host = "gateway.ai.cloudflare.com";
-        signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/converse`;
-
-        const response = await fetch(signedUrl, {
-          method: "POST",
-          headers: presignedRequest.headers,
-          body: JSON.stringify(body),
+          body: JSON.stringify({
+            Text: params.message,
+            OutputFormat: "mp3",
+            VoiceId: params.model,
+            Engine: "long-form",
+            TextType: "ssml",
+            OutputS3BucketName: "polly-text-to-speech-input",
+            OutputS3KeyPrefix: `polly/${params.options?.slug}`,
+          }),
         });
 
         if (!response.ok) {
-          throw new AssistantError("Failed to get response from Bedrock");
+          throw new Error(
+            `Polly API error: ${response.status} ${response.statusText}`,
+          );
         }
 
-        const data = (await response.json()) as any;
+        const data = (await response.json()) as PollyResponse;
 
-        const modelConfig = getModelConfigByMatchingModel(params.model || "");
-        const type = modelConfig?.type || ["text"];
-        const isImageType =
-          type.includes("text-to-image") || type.includes("image-to-image");
-        const isVideoType =
-          type.includes("text-to-video") || type.includes("image-to-video");
+        const taskId = data.SynthesisTask.TaskId;
 
-        if (isVideoType) {
-          return {
-            response: data,
-          };
-        }
+        while (true) {
+          const taskResponse = await awsClient.fetch(`${pollyUrl}/${taskId}`, {
+            method: "GET",
+          });
 
-        if (isImageType) {
-          const images = data.images;
-
-          if (!images) {
-            throw new AssistantError("No images returned from Bedrock");
+          if (!taskResponse.ok) {
+            throw new Error(
+              `Failed to check task status: ${taskResponse.status}`,
+            );
           }
 
-          const imageId = Math.random().toString(36);
-          const imageKey = `${params.model}/${imageId}.png`;
+          const taskData = (await taskResponse.json()) as PollyResponse;
+          const status = taskData.SynthesisTask.TaskStatus;
 
-          await uploadImageFromChat(images[0], params.env, imageKey);
+          if (status === "completed") {
+            if (!taskData.SynthesisTask.OutputUri) {
+              throw new Error("Output URI is missing");
+            }
 
-          const baseAssetsUrl = params.env.PUBLIC_ASSETS_URL || "";
-          return {
-            response: `Image Generated: [${imageId}](${baseAssetsUrl}/${imageKey})`,
-            data: {
-              url: `${baseAssetsUrl}/${imageKey}`,
-              key: imageKey,
-            },
-          };
+            const s3Response = await awsClient.fetch(
+              taskData.SynthesisTask.OutputUri,
+              { method: "GET" },
+            );
+
+            if (!s3Response.ok) {
+              throw new Error(
+                `Failed to fetch audio from S3: ${s3Response.status}`,
+              );
+            }
+
+            const audioBuffer = await s3Response.arrayBuffer();
+            const audioKey = `audio/${params.options?.slug}.mp3`;
+
+            await params.options?.storageService?.uploadObject(
+              audioKey,
+              new Uint8Array(audioBuffer),
+            );
+
+            return audioKey;
+          }
+
+          if (status === "failed") {
+            throw new Error(
+              `Task failed: ${taskData.SynthesisTask.TaskStatusReason}`,
+            );
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 5000));
         }
-
-        if (!data.output?.message?.content?.[0]?.text) {
-          throw new AssistantError("No content returned from Bedrock");
-        }
-
-        return {
-          response: data.output.message.content[0].text,
-        };
       },
       analyticsEngine: params.env?.ANALYTICS,
       settings: {

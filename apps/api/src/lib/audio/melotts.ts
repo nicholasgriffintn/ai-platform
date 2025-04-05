@@ -1,11 +1,13 @@
 import { AIProviderFactory } from "../../providers/factory";
-import type { IEnv } from "../../types";
-import type { StorageService } from "../storage";
+import type { IEnv, IUser } from "../../types";
 
 export class MelottsService {
   private readonly provider = AIProviderFactory.getProvider("workers-ai");
 
-  constructor(private readonly env: IEnv) {
+  constructor(
+    private readonly env: IEnv,
+    private readonly user: IUser,
+  ) {
     this.provider = AIProviderFactory.getProvider("workers-ai");
   }
 
@@ -26,6 +28,7 @@ export class MelottsService {
         ],
         lang,
         env: this.env,
+        user: this.user,
       });
 
       return response;

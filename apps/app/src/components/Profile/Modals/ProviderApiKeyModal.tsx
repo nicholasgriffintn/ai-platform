@@ -28,7 +28,9 @@ export function ProviderApiKeyModal({
   const [secretKey, setSecretKey] = useState("");
   const { storeProviderApiKey, isStoringProviderApiKey } = useUser();
 
-  const isBedrockProvider = providerName.toLowerCase().includes("bedrock");
+  const isBedrockProvider =
+    providerName.toLowerCase() === "polly" ||
+    providerName.toLowerCase() === "bedrock";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
