@@ -100,4 +100,18 @@ export const groqModelConfig: ModelConfig = {
     provider: "groq",
     type: ["guardrails"],
   },
+  "llama-4-scout-17b": {
+    name: "Groq Meta Llama 4 Scout 17B",
+    matchingModel: "meta-llama/llama-4-scout-17b-16e-instruct",
+    provider: "groq",
+    type: ["text"],
+    isFeatured: true,
+    includedInRouter: true,
+    multimodal: true,
+    contextWindow: 10000000,
+    strengths: ["chat", "analysis", "creative", "multilingual"],
+    contextComplexity: 4,
+    reliability: 4,
+    speed: 5,
+  },
 };
