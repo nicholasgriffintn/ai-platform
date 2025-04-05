@@ -82,7 +82,7 @@ export const togetherAiModelConfig: ModelConfig = {
     contextComplexity: 4,
     reliability: 4,
     speed: 4,
-    contextWindow: 10000000,
+    contextWindow: 1000000,
     isFeatured: true,
     includedInRouter: true,
     multimodal: true,
