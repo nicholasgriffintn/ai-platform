@@ -532,7 +532,7 @@ class ApiService {
     const formData = new FormData();
     formData.append("audio", audioBlob);
 
-    const response = await fetch(`${API_BASE_URL}/chat/transcribe`, {
+    const response = await fetch(`${API_BASE_URL}/audio/transcribe`, {
       method: "POST",
       headers,
       credentials: "include",
