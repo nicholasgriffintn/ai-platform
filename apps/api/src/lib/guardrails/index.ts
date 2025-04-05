@@ -11,7 +11,9 @@ export class Guardrails {
   private constructor(env: IEnv) {
     this.env = env;
 
-    if (env.GUARDRAILS_PROVIDER === "bedrock") {
+    if (env.GUARDRAILS_ENABLED === "false") {
+      this.provider = null;
+    } else if (env.GUARDRAILS_PROVIDER === "bedrock") {
       if (
         !env.BEDROCK_AWS_ACCESS_KEY ||
         !env.BEDROCK_AWS_SECRET_KEY ||
