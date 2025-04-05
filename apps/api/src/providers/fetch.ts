@@ -61,7 +61,7 @@ export async function fetchAIResponse(
   }
 
   if (!response.ok) {
-    console.error(await response.text());
+    console.error("Error response:", await response.text());
     throw new AssistantError(
       `Failed to get response for ${provider} from ${endpointOrUrl}`,
     );

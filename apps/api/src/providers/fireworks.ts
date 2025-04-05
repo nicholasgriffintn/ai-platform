@@ -1,12 +1,12 @@
 import type { ChatCompletionParameters } from "../types";
 import { BaseProvider } from "./base";
 
-export class TogetherAiProvider extends BaseProvider {
-  name = "together-ai";
+export class FireworksProvider extends BaseProvider {
+  name = "fireworks";
   supportsStreaming = true;
 
   protected getProviderKeyName(): string {
-    return "TOGETHER_AI_API_KEY";
+    return "FIREWORKS_API_KEY";
   }
 
   protected validateParams(params: ChatCompletionParameters): void {
@@ -14,8 +14,8 @@ export class TogetherAiProvider extends BaseProvider {
   }
 
   protected getEndpoint(): string {
-    const togetherAiUrl = "https://api.together.xyz/v1";
-    return `${togetherAiUrl}/chat/completions`;
+    const fireworksUrl = "https://api.fireworks.ai/inference/v1";
+    return `${fireworksUrl}/chat/completions`;
   }
 
   protected async getHeaders(

@@ -8,6 +8,7 @@ import {
 import { anthropicModelConfig } from "./anthropic";
 import { bedrockModelConfig } from "./bedrock";
 import { deepseekModelConfig } from "./deepseek";
+import { fireworksModelConfig } from "./fireworks";
 import { githubModelsConfig } from "./githubmodels";
 import { googleAiStudioModelConfig } from "./google-ai-studio";
 import { grokModelConfig } from "./grok";
@@ -43,6 +44,7 @@ const modelConfig: ModelConfig = {
   ...workersAiModelConfig,
   ...togetherAiModelConfig,
   ...googleAiStudioModelConfig,
+  ...fireworksModelConfig,
 };
 
 export function getModelConfig(model?: string) {

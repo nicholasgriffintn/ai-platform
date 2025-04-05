@@ -4,6 +4,7 @@ import { BedrockProvider } from "./bedrock";
 import { CertesiaProvider } from "./certesia";
 import { DeepSeekProvider } from "./deepseek";
 import { ElevenLabsProvider } from "./elevenlabs";
+import { FireworksProvider } from "./fireworks";
 import { GithubModelsProvider } from "./github";
 import { GoogleStudioProvider } from "./googlestudio";
 import { GrokProvider } from "./grok";
@@ -55,6 +56,7 @@ export class AIProviderFactory {
     { key: "certesia", provider: new CertesiaProvider() },
     { key: "elevenlabs", provider: new ElevenLabsProvider() },
     { key: "polly", provider: new PollyProvider() },
+    { key: "fireworks", provider: new FireworksProvider() },
   ];
 
   /**
