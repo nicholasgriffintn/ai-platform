@@ -6,7 +6,6 @@ import { create_image } from "./image";
 import { create_music } from "./music";
 import { capture_screenshot } from "./screenshot";
 import { create_speech } from "./speech";
-import { think } from "./think";
 import { tutor } from "./tutor";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
@@ -22,7 +21,6 @@ export const availableFunctions: IFunction[] = [
   capture_screenshot,
   create_speech,
   tutor,
-  think,
 ];
 
 export const handleFunctions = async ({
