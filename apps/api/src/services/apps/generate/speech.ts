@@ -1,5 +1,5 @@
 import { AIProviderFactory } from "../../../providers/factory";
-import type { IEnv } from "../../../types";
+import type { IEnv, IUser } from "../../../types";
 
 export interface SpeechGenerationParams {
   prompt: string;
@@ -18,11 +18,13 @@ export async function generateSpeech({
   app_url,
   env,
   args,
+  user,
 }: {
   completion_id: string;
   app_url: string | undefined;
   env: IEnv;
   args: SpeechGenerationParams;
+  user: IUser;
 }): Promise<SpeechResponse> {
   if (!args.prompt) {
     return {
@@ -54,6 +56,7 @@ export async function generateSpeech({
       ],
       lang: args.lang || "en",
       env: env,
+      user: user,
     });
 
     return {

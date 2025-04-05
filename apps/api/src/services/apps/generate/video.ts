@@ -1,5 +1,5 @@
 import { AIProviderFactory } from "../../../providers/factory";
-import type { IEnv } from "../../../types";
+import type { IEnv, IUser } from "../../../types";
 
 export interface VideoGenerationParams {
   prompt: string;
@@ -25,11 +25,13 @@ export async function generateVideo({
   app_url,
   env,
   args,
+  user,
 }: {
   completion_id: string;
   app_url: string | undefined;
   env: IEnv;
   args: VideoGenerationParams;
+  user: IUser;
 }): Promise<VideoResponse> {
   try {
     if (!args.prompt) {
@@ -57,6 +59,7 @@ export async function generateVideo({
         },
       ],
       env: env,
+      user: user,
     });
 
     return {

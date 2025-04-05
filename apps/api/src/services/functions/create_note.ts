@@ -45,6 +45,7 @@ export const create_note: IFunction = {
         ...args,
       },
       env: req.env,
+      user: req.user,
     });
 
     if (!response.data) {

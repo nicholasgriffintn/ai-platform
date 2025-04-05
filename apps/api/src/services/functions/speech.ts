@@ -36,6 +36,7 @@ export const create_speech: IFunction = {
       app_url,
       env: req.env,
       args,
+      user: req.user,
     });
 
     return response;

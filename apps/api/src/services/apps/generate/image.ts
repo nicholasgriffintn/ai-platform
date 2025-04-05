@@ -3,7 +3,7 @@ import {
   type imagePrompts,
 } from "../../../lib/prompts/image";
 import { AIProviderFactory } from "../../../providers/factory";
-import type { IEnv } from "../../../types";
+import type { IEnv, IUser } from "../../../types";
 
 export interface ImageGenerationParams {
   prompt: string;
@@ -23,11 +23,13 @@ export async function generateImage({
   app_url,
   env,
   args,
+  user,
 }: {
   completion_id: string;
   app_url: string | undefined;
   env: IEnv;
   args: ImageGenerationParams;
+  user: IUser;
 }): Promise<ImageResponse> {
   if (!args.prompt) {
     return {
@@ -70,6 +72,7 @@ export async function generateImage({
         },
       ],
       env: env,
+      user: user,
     });
 
     return {

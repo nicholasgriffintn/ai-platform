@@ -42,6 +42,7 @@ export const create_image: IFunction = {
       app_url,
       env: req.env,
       args,
+      user: req.user,
     });
 
     return response;
