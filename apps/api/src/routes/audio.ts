@@ -5,11 +5,11 @@ import { z } from "zod";
 
 import { requireAuth } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
-import type { IEnv } from "../types";
-import { textToSpeechSchema, transcribeFormSchema } from "./schemas/audio";
-
 import { handleTextToSpeech } from "../services/audio/speech";
 import { handleTranscribe } from "../services/audio/transcribe";
+import type { IEnv } from "../types";
+import { textToSpeechSchema, transcribeFormSchema } from "./schemas/audio";
+import { apiResponseSchema } from "./schemas/shared";
 
 const app = new Hono();
 
@@ -37,10 +37,23 @@ app.post(
     description: "Transcribes audio into the input language.",
     responses: {
       200: {
-        description: "Response",
+        description: "Transcription result with extracted text",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
           },
         },
       },
@@ -72,6 +85,29 @@ app.post(
     tags: ["audio"],
     title: "Create speech",
     description: "Generates audio from the input text.",
+    responses: {
+      200: {
+        description: "Speech generation result with audio URL",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
   }),
   zValidator("json", textToSpeechSchema),
   async (context: Context) => {

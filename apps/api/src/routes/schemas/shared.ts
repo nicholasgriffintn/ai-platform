@@ -18,3 +18,18 @@ export const messageSchema = z.object({
   timestamp: z.number().optional(),
   platform: z.enum(["web", "mobile", "api"]).optional(),
 });
+
+export const apiResponseSchema = z.object({
+  response: z.object({
+    status: z.enum(["success", "error"]),
+    name: z.string().optional(),
+    content: z.string().nullable().optional(),
+    data: z.any().optional(),
+  }),
+});
+
+export const errorResponseSchema = z.object({
+  error: z.string(),
+  type: z.string(),
+  statusCode: z.number().optional(),
+});

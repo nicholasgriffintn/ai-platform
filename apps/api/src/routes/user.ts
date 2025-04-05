@@ -1,7 +1,7 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
-import type { z } from "zod";
+import { z } from "zod";
 
 import { Database } from "../lib/database";
 import { requireAuth } from "../middleware/auth";
@@ -27,11 +27,50 @@ app.use("/*", (c, next) => {
   return next();
 });
 
+// Common response schemas
+const errorResponseSchema = z.object({
+  error: z.string(),
+  type: z.string(),
+});
+
+const successResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+});
+
+const modelsResponseSchema = z.object({
+  success: z.boolean(),
+  models: z.array(z.string()),
+});
+
+const providersResponseSchema = z.object({
+  success: z.boolean(),
+  providers: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      type: z.string(),
+      enabled: z.boolean(),
+      hasApiKey: z.boolean().optional(),
+    }),
+  ),
+});
+
 app.put(
   "/settings",
   describeRoute({
     tags: ["user"],
     summary: "Update user settings",
+    description: "Updates various user preferences and settings",
+    requestBody: {
+      description: "User settings to update",
+      required: true,
+      content: {
+        "application/json": {
+          schema: resolver(updateUserSettingsSchema),
+        },
+      },
+    },
     responses: {
       200: {
         description: "User settings updated successfully",
@@ -41,8 +80,21 @@ app.put(
           },
         },
       },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
       401: {
         description: "Authentication required",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
       },
     },
   }),
@@ -75,12 +127,22 @@ app.get(
   describeRoute({
     tags: ["user"],
     summary: "Get the models that the user has enabled",
+    description:
+      "Returns a list of model IDs that the user has enabled for use",
     responses: {
       200: {
-        description: "Models retrieved successfully",
+        description: "List of enabled models",
         content: {
           "application/json": {
-            schema: resolver(updateUserSettingsResponseSchema),
+            schema: resolver(modelsResponseSchema),
+          },
+        },
+      },
+      401: {
+        description: "Authentication required",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -111,17 +173,40 @@ app.post(
   describeRoute({
     tags: ["user"],
     summary: "Store provider API key",
+    description: "Stores a provider API key for the authenticated user",
+    requestBody: {
+      description: "Provider API key details",
+      required: true,
+      content: {
+        "application/json": {
+          schema: resolver(storeProviderApiKeySchema),
+        },
+      },
+    },
     responses: {
       200: {
         description: "Provider API key stored successfully",
         content: {
           "application/json": {
-            schema: resolver(updateUserSettingsResponseSchema),
+            schema: resolver(successResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
       401: {
         description: "Authentication required",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
       },
     },
   }),
@@ -154,6 +239,25 @@ app.get(
   describeRoute({
     tags: ["user"],
     summary: "Get the providers that the user has enabled",
+    description: "Returns a list of providers and their settings for the user",
+    responses: {
+      200: {
+        description: "List of provider settings",
+        content: {
+          "application/json": {
+            schema: resolver(providersResponseSchema),
+          },
+        },
+      },
+      401: {
+        description: "Authentication required",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+    },
   }),
   async (c: Context) => {
     const user = c.get("user");
@@ -182,6 +286,25 @@ app.post(
   describeRoute({
     tags: ["user"],
     summary: "Sync providers",
+    description: "Synchronizes available providers for the user",
+    responses: {
+      200: {
+        description: "Providers synced successfully",
+        content: {
+          "application/json": {
+            schema: resolver(successResponseSchema),
+          },
+        },
+      },
+      401: {
+        description: "Authentication required",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+    },
   }),
   async (c: Context) => {
     const user = c.get("user");

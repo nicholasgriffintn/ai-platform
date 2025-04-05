@@ -75,7 +75,7 @@ import {
   type DeepWebSearchParams,
   performDeepWebSearch,
 } from "../services/apps/web-search";
-import type { IEnv } from "../types";
+import type { IEnv, IFunctionResponse, IWeather } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
 import {
   articleAnalyzeSchema,
@@ -101,6 +101,7 @@ import {
   videoGenerationSchema,
   weatherQuerySchema,
 } from "./schemas/apps";
+import { apiResponseSchema } from "./schemas/shared";
 
 const app = new Hono();
 
@@ -126,10 +127,23 @@ app.post(
     description: "Insert an embedding into the database",
     responses: {
       200: {
-        description: "Response",
+        description: "Success response for embedding insertion",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
           },
         },
       },
@@ -166,10 +180,23 @@ app.get(
     description: "Query embeddings from the database",
     responses: {
       200: {
-        description: "Response",
+        description: "Success response with embedding query results",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
           },
         },
       },
@@ -202,6 +229,29 @@ app.post(
   describeRoute({
     tags: ["apps"],
     description: "Delete embeddings from the database",
+    responses: {
+      200: {
+        description: "Success response for embedding deletion",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
   }),
   zValidator("json", deleteEmbeddingSchema),
   async (context: Context) => {
@@ -234,10 +284,61 @@ app.get(
     description: "Get the weather for a location",
     responses: {
       200: {
-        description: "Response",
+        description: "Weather information for the specified location",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(
+              z.object({
+                response: z.object({
+                  status: z.enum(["success", "error"]),
+                  name: z.string(),
+                  content: z.string(),
+                  data: z
+                    .object({
+                      cod: z.number(),
+                      main: z.object({
+                        temp: z.number(),
+                        feels_like: z.number(),
+                        temp_min: z.number(),
+                        temp_max: z.number(),
+                        pressure: z.number(),
+                        humidity: z.number(),
+                      }),
+                      weather: z.array(
+                        z.object({
+                          main: z.string(),
+                          description: z.string(),
+                        }),
+                      ),
+                      wind: z.object({
+                        speed: z.number(),
+                        deg: z.number(),
+                      }),
+                      clouds: z.object({
+                        all: z.number(),
+                      }),
+                      sys: z.object({
+                        country: z.string(),
+                      }),
+                      name: z.string(),
+                    })
+                    .optional(),
+                }),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or invalid coordinates",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
           },
         },
       },
@@ -275,10 +376,23 @@ app.post(
     description: "Generate an image",
     responses: {
       200: {
-        description: "Response",
+        description: "Generated image result",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
           },
         },
       },
@@ -292,12 +406,14 @@ app.post(
 
     const newUrl = new URL(context.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
+    const user = context.get("user");
 
     const response = await generateImage({
       completion_id,
       env: context.env as IEnv,
       args: body,
       app_url,
+      user,
     });
 
     if (response.status === "error") {
@@ -337,12 +453,14 @@ app.post(
 
     const newUrl = new URL(context.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
+    const user = context.get("user");
 
     const response = await generateVideo({
       completion_id,
       env: context.env as IEnv,
       args: body,
       app_url,
+      user,
     });
 
     if (response.status === "error") {
@@ -383,11 +501,14 @@ app.post(
     const newUrl = new URL(context.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
+    const user = context.get("user");
+
     const response = await generateMusic({
       completion_id,
       env: context.env as IEnv,
       args: body,
       app_url,
+      user,
     });
 
     if (response.status === "error") {
@@ -428,11 +549,14 @@ app.post(
     const newUrl = new URL(context.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
+    const user = context.get("user");
+
     const response = await generateSpeech({
       completion_id,
       env: context.env as IEnv,
       args: body,
       app_url,
+      user,
     });
 
     if (response.status === "error") {
@@ -837,14 +961,42 @@ app.post(
     description: "Extract text from an image using Mistral's OCR API",
     responses: {
       200: {
-        description: "OCR result",
+        description: "OCR result with extracted text",
         content: {
           "application/json": {
-            schema: z.object({
-              status: z.string(),
-              data: z.object({}).optional(),
-              error: z.string().optional(),
-            }),
+            schema: resolver(
+              z.object({
+                status: z.string(),
+                data: z
+                  .object({
+                    text: z.string().optional(),
+                    pages: z
+                      .array(
+                        z.object({
+                          page_num: z.number(),
+                          text: z.string(),
+                          elements: z.array(z.any()).optional(),
+                        }),
+                      )
+                      .optional(),
+                  })
+                  .optional(),
+                error: z.string().optional(),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
           },
         },
       },
@@ -868,7 +1020,30 @@ app.post(
   "/web-search",
   describeRoute({
     tags: ["apps"],
-    description: "Web search",
+    description: "Perform a deep web search",
+    responses: {
+      200: {
+        description: "Web search results",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
   }),
   zValidator("json", deepWebSearchSchema),
   async (context: Context) => {
@@ -891,7 +1066,30 @@ app.post(
   "/tutor",
   describeRoute({
     tags: ["apps"],
-    description: "Tutor",
+    description: "Get tutoring on a specific topic",
+    responses: {
+      200: {
+        description: "Tutoring response with educational content",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
   }),
   zValidator("json", tutorSchema),
   async (context: Context) => {

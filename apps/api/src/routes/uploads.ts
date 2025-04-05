@@ -8,6 +8,7 @@ import { requireAuth } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
 import type { IEnv } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { errorResponseSchema } from "./schemas/shared";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("UPLOADS");
@@ -33,12 +34,50 @@ app.post(
     tags: ["uploads"],
     title: "Upload file",
     description: "Upload an image or document to the server",
+    requestBody: {
+      description: "Multipart form data containing file",
+      required: true,
+      content: {
+        "multipart/form-data": {
+          schema: z.object({
+            file: z.any().refine((file) => file && file instanceof File, {
+              message: "File is required",
+            }),
+            file_type: z.enum(["image", "document"]),
+          }),
+        },
+      },
+    },
     responses: {
       200: {
-        description: "Response with file URL",
+        description: "File upload successful, returns the URL",
         content: {
           "application/json": {
             schema: resolver(uploadResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or invalid file",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      401: {
+        description: "Authentication required",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      500: {
+        description: "Server error or storage failure",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },

@@ -1,5 +1,7 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
+import { resolver } from "hono-openapi/zod";
+import { z } from "zod";
 
 import { availableFunctions } from "~/services/functions";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
@@ -16,12 +18,49 @@ app.use("/*", (c, next) => {
   return next();
 });
 
+// Define common response schemas
+const toolSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+});
+
+const toolsResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  data: z.array(toolSchema),
+});
+
+const errorResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  error: z.string().optional(),
+});
+
 app.get(
   "/",
   describeRoute({
     tags: ["tools"],
     title: "List Tools",
     description: "Lists the currently available tools.",
+    responses: {
+      200: {
+        description: "List of available tools with their details",
+        content: {
+          "application/json": {
+            schema: resolver(toolsResponseSchema),
+          },
+        },
+      },
+      500: {
+        description: "Server error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+    },
   }),
   async (context: Context) => {
     const toolIds = availableFunctions.map((tool) => {

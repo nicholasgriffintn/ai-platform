@@ -56,6 +56,42 @@ app.use("/*", async (context: Context, next: Next) => {
   await allowRestrictedPaths(context, next);
 });
 
+// Define common response schemas
+const errorResponseSchema = z.object({
+  error: z.string(),
+  type: z.string(),
+});
+
+const messageSchema = z.object({
+  id: z.string(),
+  role: z.enum(["user", "assistant", "system", "function"]),
+  content: z.union([z.string(), z.array(z.any())]),
+  name: z.string().optional(),
+  function_call: z.any().optional(),
+  timestamp: z.number().optional(),
+});
+
+const chatCompletionResponseSchema = z.object({
+  id: z.string(),
+  object: z.string(),
+  created: z.number(),
+  model: z.string(),
+  choices: z.array(
+    z.object({
+      index: z.number(),
+      message: messageSchema,
+      finish_reason: z.string().nullable(),
+    }),
+  ),
+  usage: z
+    .object({
+      prompt_tokens: z.number(),
+      completion_tokens: z.number(),
+      total_tokens: z.number(),
+    })
+    .optional(),
+});
+
 app.post(
   "/completions",
   describeRoute({
@@ -65,13 +101,29 @@ app.post(
       "Creates a model response for the given chat conversation. Please note that parameter support can differ depending on the model used to generate the response.",
     responses: {
       200: {
-        description: "Response",
+        description: "Chat completion response with model generation",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(chatCompletionResponseSchema),
           },
           "text/event-stream": {
             schema: resolver(z.string()),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      401: {
+        description: "Authentication error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -117,10 +169,38 @@ app.get(
       "Get a stored chat completion. Only chat completions that have been created with the store parameter set to true will be returned.",
     responses: {
       200: {
-        description: "Response",
+        description: "Chat completion details",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(
+              z.object({
+                id: z.string(),
+                title: z.string().nullable(),
+                created_at: z.string(),
+                updated_at: z.string(),
+                model: z.string(),
+                is_archived: z.boolean(),
+                user_id: z.string().nullable(),
+                share_id: z.string().nullable(),
+                settings: z.record(z.any()).optional(),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      404: {
+        description: "Completion not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -154,10 +234,31 @@ app.get(
       "Get the messages in a stored chat completion. Only chat completions that have been created with the store parameter set to true will be returned.",
     responses: {
       200: {
-        description: "Response",
+        description: "Messages for the specified chat completion",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(
+              z.object({
+                messages: z.array(messageSchema),
+                conversation_id: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      404: {
+        description: "Completion not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -201,10 +302,36 @@ app.get(
     description: "Get a single message by ID",
     responses: {
       200: {
-        description: "Response",
+        description: "Message details with conversation ID",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(
+              z.object({
+                id: z.string(),
+                role: z.enum(["user", "assistant", "system", "function"]),
+                content: z.union([z.string(), z.array(z.any())]),
+                name: z.string().optional(),
+                function_call: z.any().optional(),
+                timestamp: z.number().optional(),
+                conversation_id: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      404: {
+        description: "Message not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -240,10 +367,37 @@ app.get(
       "List stored chat completions. Only chat completions that have been stored with the store parameter set to true will be returned.",
     responses: {
       200: {
-        description: "Response",
+        description: "List of chat completions with pagination metadata",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(
+              z.object({
+                data: z.array(
+                  z.object({
+                    id: z.string(),
+                    title: z.string().nullable(),
+                    created_at: z.string(),
+                    updated_at: z.string(),
+                    model: z.string(),
+                    is_archived: z.boolean(),
+                    user_id: z.string(),
+                    share_id: z.string().nullable(),
+                  }),
+                ),
+                total: z.number(),
+                page: z.number(),
+                limit: z.number(),
+                pages: z.number(),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -281,10 +435,31 @@ app.post(
       "Generate a title for a chat completion and then update the metadata with the title.",
     responses: {
       200: {
-        description: "Response",
+        description: "Generated title with update status",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(
+              z.object({
+                success: z.boolean(),
+                title: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      404: {
+        description: "Completion not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -327,10 +502,40 @@ app.put(
       "Modify a stored chat completion. Only chat completions that have been created with the store parameter set to true can be modified.",
     responses: {
       200: {
-        description: "Response",
+        description: "Updated completion details",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(
+              z.object({
+                success: z.boolean(),
+                data: z.object({
+                  id: z.string(),
+                  title: z.string().nullable(),
+                  created_at: z.string(),
+                  updated_at: z.string(),
+                  model: z.string(),
+                  is_archived: z.boolean(),
+                  user_id: z.string(),
+                  share_id: z.string().nullable(),
+                }),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      404: {
+        description: "Completion not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -369,10 +574,30 @@ app.delete(
       "Delete a stored chat completion. Only chat completions that have been created with the store parameter set to true can be deleted.",
     responses: {
       200: {
-        description: "Response",
+        description: "Deletion status",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(
+              z.object({
+                success: z.boolean(),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      404: {
+        description: "Completion not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -406,10 +631,35 @@ app.post(
     description: "Check a chat against guardrails",
     responses: {
       200: {
-        description: "Response",
+        description: "Guardrail check results",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(
+              z.object({
+                response: z.object({
+                  status: z.string(),
+                  flagged: z.boolean(),
+                  reasons: z.array(z.string()).optional(),
+                  category: z.array(z.string()).optional(),
+                }),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      404: {
+        description: "Completion not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -450,10 +700,33 @@ app.post(
     title: "Submit feedback about a chat completion",
     responses: {
       200: {
-        description: "Response",
+        description: "Feedback submission status",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(
+              z.object({
+                response: z.object({
+                  status: z.string(),
+                  message: z.string(),
+                }),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      404: {
+        description: "Completion not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -492,7 +765,7 @@ app.post(
       "Make a conversation publicly accessible via a unique share link",
     responses: {
       200: {
-        description: "Response",
+        description: "Share ID for accessing the conversation",
         content: {
           "application/json": {
             schema: resolver(
@@ -500,6 +773,22 @@ app.post(
                 share_id: z.string(),
               }),
             ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      404: {
+        description: "Completion not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -532,7 +821,7 @@ app.delete(
     description: "Make a previously shared conversation private",
     responses: {
       200: {
-        description: "Response",
+        description: "Unshare operation result",
         content: {
           "application/json": {
             schema: resolver(
@@ -540,6 +829,22 @@ app.delete(
                 success: z.boolean(),
               }),
             ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      404: {
+        description: "Completion or share not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -573,10 +878,37 @@ app.get(
       "Get messages from a publicly shared conversation using its share ID",
     responses: {
       200: {
-        description: "Response",
+        description: "Shared conversation messages and metadata",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(
+              z.object({
+                messages: z.array(messageSchema),
+                conversation: z.object({
+                  id: z.string(),
+                  title: z.string().nullable(),
+                  created_at: z.string(),
+                  model: z.string(),
+                }),
+                share_id: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      404: {
+        description: "Shared conversation not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },

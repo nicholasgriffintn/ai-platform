@@ -1,5 +1,6 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
+import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
 
 import { requireAuth } from "../middleware/auth";
@@ -26,6 +27,21 @@ dynamicApps.use("*", (c, next) => {
   return next();
 });
 
+// Common error response schema
+const errorResponseSchema = z.object({
+  error: z.string(),
+  message: z.string().optional(),
+});
+
+// Basic app info schema
+const appInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  icon: z.string().optional(),
+  category: z.string().optional(),
+});
+
 dynamicApps.get(
   "/",
   describeRoute({
@@ -38,15 +54,15 @@ dynamicApps.get(
         description: "List of dynamic apps",
         content: {
           "application/json": {
-            schema: z.array(
-              z.object({
-                id: z.string(),
-                name: z.string(),
-                description: z.string(),
-                icon: z.string().optional(),
-                category: z.string().optional(),
-              }),
-            ),
+            schema: resolver(z.array(appInfoSchema)),
+          },
+        },
+      },
+      401: {
+        description: "Authentication required",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -77,12 +93,33 @@ dynamicApps.get(
         description: "Dynamic app schema",
         content: {
           "application/json": {
-            schema: appSchema,
+            schema: resolver(appSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      401: {
+        description: "Authentication required",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
       404: {
         description: "App not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
       },
     },
   }),
@@ -120,7 +157,7 @@ dynamicApps.post(
       description: "Form data for the app",
       content: {
         "application/json": {
-          schema: z.record(z.any()),
+          schema: resolver(z.record(z.any())),
         },
       },
     },
@@ -129,18 +166,41 @@ dynamicApps.post(
         description: "App execution result",
         content: {
           "application/json": {
-            schema: z.record(z.any()),
+            schema: resolver(z.record(z.any())),
           },
         },
       },
       400: {
         description: "Invalid form data",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      401: {
+        description: "Authentication required",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
       },
       404: {
         description: "App not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
       },
       500: {
         description: "Execution error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
       },
     },
   }),

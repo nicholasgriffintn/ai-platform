@@ -51,6 +51,32 @@ app.get(
           },
         },
       },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+      500: {
+        description: "Server error, such as missing configuration",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
     },
   }),
   zValidator("query", githubLoginSchema),
@@ -79,6 +105,32 @@ app.get(
         content: {
           "application/json": {
             schema: resolver(z.object({})),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or invalid code",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+      401: {
+        description: "Authentication error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
           },
         },
       },
@@ -193,7 +245,25 @@ app.get(
         description: "Returns the current user's information",
         content: {
           "application/json": {
-            schema: resolver(userSchema),
+            schema: resolver(
+              z.object({
+                user: userSchema.nullable(),
+                userSettings: z.record(z.any()).optional(),
+              }),
+            ),
+          },
+        },
+      },
+      401: {
+        description: "Invalid or expired session",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
           },
         },
       },
@@ -256,6 +326,19 @@ app.post(
           },
         },
       },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
     },
   }),
   async (c: Context) => {
@@ -296,9 +379,29 @@ app.get(
       },
       401: {
         description: "Authentication required",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
       },
       500: {
         description: "JWT secret not configured",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
       },
     },
   }),

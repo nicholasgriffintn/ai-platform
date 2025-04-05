@@ -1,12 +1,12 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
+import { z } from "zod";
 
 import { webhookAuth } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
 import { handleReplicateWebhook } from "../services/webhooks/replicate";
 import type { IBody, IEnv } from "../types";
-import { messageSchema } from "./schemas/shared";
 import {
   replicateWebhookJsonSchema,
   replicateWebhookQuerySchema,
@@ -29,17 +29,79 @@ app.use("/*", (c, next) => {
  */
 app.use("/*", webhookAuth);
 
+const webhookResponseSchema = z.object({
+  status: z.enum(["success", "error"]),
+  message: z.string(),
+});
+
+const errorResponseSchema = z.object({
+  error: z.string(),
+  type: z.string(),
+});
+
 app.post(
   "/replicate",
   describeRoute({
     tags: ["webhooks"],
-    description: "Respond to a replicate webhook request",
+    summary: "Handle Replicate webhook",
+    description:
+      "Process webhook callbacks from Replicate for asynchronous model runs",
+    parameters: [
+      {
+        name: "completion_id",
+        in: "query",
+        required: true,
+        schema: z.string(),
+        description: "The ID of the completion to update",
+      },
+    ],
+    requestBody: {
+      description: "Webhook data from Replicate",
+      required: true,
+      content: {
+        "application/json": {
+          schema: resolver(replicateWebhookJsonSchema),
+        },
+      },
+    },
     responses: {
       200: {
-        description: "Response containing the status of the webhook request",
+        description: "Webhook processed successfully",
         content: {
           "application/json": {
-            schema: resolver(messageSchema),
+            schema: resolver(webhookResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      401: {
+        description: "Unauthorized - invalid webhook secret",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      404: {
+        description: "Completion not found",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      500: {
+        description: "Server error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
           },
         },
       },
