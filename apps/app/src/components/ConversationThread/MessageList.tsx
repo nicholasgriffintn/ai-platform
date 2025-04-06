@@ -67,10 +67,12 @@ export const MessageList = ({
       aria-atomic="false"
     >
       {!isSharedView && (
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
-            <MessagesSquare size={16} />
-            <span>{conversation?.title || "New conversation"}</span>
+        <div className="flex items-center mb-3">
+          <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-2 min-w-0 truncate flex-grow">
+            <MessagesSquare size={16} className="flex-shrink-0" />
+            <span className="truncate">
+              {conversation?.title || "New conversation"}
+            </span>
           </h2>
           {!conversation?.isLocalOnly &&
             !isLoadingConversation &&
@@ -80,6 +82,7 @@ export const MessageList = ({
                 conversationId={currentConversationId}
                 isPublic={conversation?.is_public}
                 shareId={conversation?.share_id}
+                className="flex-shrink-0"
               />
             )}
         </div>

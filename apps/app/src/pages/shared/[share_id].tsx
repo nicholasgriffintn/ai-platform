@@ -158,7 +158,7 @@ export default function SharedConversationPage() {
             <div className="flex items-center gap-2">
               <Link
                 to="/"
-                className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="no-underline inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
                 <PlusCircle size={16} />
                 <span>New Chat</span>

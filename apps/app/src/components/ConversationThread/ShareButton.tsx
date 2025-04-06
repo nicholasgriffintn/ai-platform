@@ -18,12 +18,14 @@ interface ShareButtonProps {
   conversationId: string;
   isPublic?: boolean;
   shareId?: string;
+  className?: string;
 }
 
 export const ShareButton = ({
   conversationId,
   isPublic,
   shareId,
+  className,
 }: ShareButtonProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
@@ -98,13 +100,18 @@ export const ShareButton = ({
         variant="ghost"
         size="sm"
         onClick={() => setIsOpen(true)}
-        className="text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+        className={cn(
+          "text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200",
+          className,
+        )}
         title={
           currentIsPublic ? "Manage shared conversation" : "Share conversation"
         }
         icon={<Share2 className="h-3.5 w-3.5" />}
       >
-        <span>{currentIsPublic ? "Manage share" : "Share"}</span>
+        <span className="whitespace-nowrap">
+          {currentIsPublic ? "Manage" : "Share"}
+        </span>
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
