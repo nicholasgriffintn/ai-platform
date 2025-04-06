@@ -175,6 +175,12 @@ export const userSettings = sqliteTable(
     job_role: text(),
     traits: text(),
     preferences: text(),
+    guardrails_enabled: integer({ mode: "boolean" }).default(false),
+    guardrails_provider: text({
+      enum: ["bedrock", "llamaguard"],
+    }).default("llamaguard"),
+    bedrock_guardrail_id: text(),
+    bedrock_guardrail_version: text(),
     tracking_enabled: integer({ mode: "boolean" }).default(true),
     public_key: text(),
     private_key: text(),

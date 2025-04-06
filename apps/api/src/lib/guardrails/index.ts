@@ -3,6 +3,7 @@ import type {
   GuardrailsProvider,
   IEnv,
   IUser,
+  IUserSettings,
 } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
 import { trackGuardrailViolation } from "../monitoring";
@@ -12,16 +13,16 @@ export class Guardrails {
   private static instance: Guardrails;
   private provider: GuardrailsProvider;
   private env: IEnv;
-  private user?: IUser;
+  private userSettings: IUserSettings;
 
-  private constructor(env: IEnv, user?: IUser) {
+  private constructor(env: IEnv, user?: IUser, userSettings?: IUserSettings) {
     this.env = env;
-    this.user = user;
+    this.userSettings = userSettings;
 
-    if (env.GUARDRAILS_ENABLED === "false") {
+    if (!userSettings?.guardrails_enabled) {
       this.provider = null;
-    } else if (env.GUARDRAILS_PROVIDER === "bedrock") {
-      if (!env.BEDROCK_GUARDRAIL_ID) {
+    } else if (userSettings?.guardrails_provider === "bedrock") {
+      if (!userSettings.bedrock_guardrail_id) {
         throw new AssistantError(
           "Missing required guardrail ID",
           ErrorType.PARAMS_ERROR,
@@ -31,8 +32,8 @@ export class Guardrails {
       this.provider = GuardrailsProviderFactory.getProvider(
         "bedrock",
         {
-          guardrailId: env.BEDROCK_GUARDRAIL_ID,
-          guardrailVersion: env.BEDROCK_GUARDRAIL_VERSION || "DRAFT",
+          guardrailId: userSettings.bedrock_guardrail_id,
+          guardrailVersion: userSettings.bedrock_guardrail_version || "1",
           region: env.AWS_REGION || "us-east-1",
           accessKeyId: env.BEDROCK_AWS_ACCESS_KEY,
           secretAccessKey: env.BEDROCK_AWS_SECRET_KEY,
@@ -48,9 +49,13 @@ export class Guardrails {
     }
   }
 
-  public static getInstance(env: IEnv, user?: IUser): Guardrails {
+  public static getInstance(
+    env: IEnv,
+    user?: IUser,
+    userSettings?: IUserSettings,
+  ): Guardrails {
     if (!Guardrails.instance) {
-      Guardrails.instance = new Guardrails(env, user);
+      Guardrails.instance = new Guardrails(env, user, userSettings);
     }
     return Guardrails.instance;
   }
@@ -60,7 +65,7 @@ export class Guardrails {
     userId?: number,
     completionId?: string,
   ): Promise<GuardrailResult> {
-    if (this.env.GUARDRAILS_ENABLED === "false") {
+    if (!this.userSettings?.guardrails_enabled) {
       return { isValid: true, violations: [] };
     }
     const result = await this.provider.validateContent(message, "INPUT");
@@ -84,7 +89,7 @@ export class Guardrails {
     userId?: number,
     completionId?: string,
   ): Promise<GuardrailResult> {
-    if (this.env.GUARDRAILS_ENABLED === "false") {
+    if (!this.userSettings?.guardrails_enabled) {
       return { isValid: true, violations: [] };
     }
     const result = await this.provider.validateContent(response, "OUTPUT");

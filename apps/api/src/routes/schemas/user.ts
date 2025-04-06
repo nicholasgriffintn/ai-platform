@@ -11,6 +11,10 @@ export const updateUserSettingsSchema = z.object({
   traits: z.string().nullable().optional(),
   preferences: z.string().nullable().optional(),
   tracking_enabled: z.boolean().optional(),
+  guardrails_enabled: z.boolean().optional(),
+  guardrails_provider: z.string().optional(),
+  bedrock_guardrail_id: z.string().optional(),
+  bedrock_guardrail_version: z.string().optional(),
 });
 
 export const storeProviderApiKeySchema = z.object({

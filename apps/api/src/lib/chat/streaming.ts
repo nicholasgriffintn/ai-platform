@@ -1,4 +1,10 @@
-import type { ChatMode, IEnv, IUser, Platform } from "../../types";
+import type {
+  ChatMode,
+  IEnv,
+  IUser,
+  IUserSettings,
+  Platform,
+} from "../../types";
 import { getLogger } from "../../utils/logger";
 import { handleToolCalls } from "../chat/tools";
 import type { ConversationManager } from "../conversationManager";
@@ -12,7 +18,7 @@ const logger = getLogger({ prefix: "CHAT_STREAMING" });
  * Creates a transformed stream that handles post-processing of AI responses
  * With support for tool calls and guardrails
  */
-export function createStreamWithPostProcessing(
+export async function createStreamWithPostProcessing(
   providerStream: ReadableStream,
   options: {
     env: IEnv;
@@ -20,18 +26,20 @@ export function createStreamWithPostProcessing(
     model: string;
     platform?: Platform;
     user?: IUser;
+    userSettings?: IUserSettings;
     app_url?: string;
     mode?: ChatMode;
     isRestricted?: boolean;
   },
   conversationManager: ConversationManager,
-): ReadableStream {
+): Promise<ReadableStream> {
   const {
     env,
     completion_id,
     model,
     platform = "api",
     user,
+    userSettings,
     app_url,
     mode,
     isRestricted,
@@ -46,7 +54,7 @@ export function createStreamWithPostProcessing(
   let currentEventType = "";
   const currentToolCalls: Record<string, any> = {};
 
-  const guardrails = Guardrails.getInstance(env, user);
+  const guardrails = Guardrails.getInstance(env, user, userSettings);
   const modelConfig = getModelConfigByMatchingModel(model);
 
   return providerStream.pipeThrough(

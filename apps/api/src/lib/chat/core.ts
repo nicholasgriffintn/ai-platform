@@ -167,7 +167,8 @@ export async function processChatRequest(options: CoreChatOptions) {
           )
         : finalUserMessage;
 
-    const guardrails = Guardrails.getInstance(env, user);
+    const userSettings = await database.getUserSettings(user?.id);
+    const guardrails = Guardrails.getInstance(env, user, userSettings);
     const inputValidation = await guardrails.validateInput(
       finalMessage,
       user?.id,
@@ -250,6 +251,7 @@ export async function processChatRequest(options: CoreChatOptions) {
             },
             matchedModel,
             user?.id ? user : undefined,
+            userSettings,
           );
         }
       }
@@ -310,7 +312,7 @@ export async function processChatRequest(options: CoreChatOptions) {
     });
 
     if (response instanceof ReadableStream) {
-      const transformedStream = createStreamWithPostProcessing(
+      const transformedStream = await createStreamWithPostProcessing(
         response,
         {
           env,
@@ -318,6 +320,7 @@ export async function processChatRequest(options: CoreChatOptions) {
           model: matchedModel,
           platform: platform || "api",
           user,
+          userSettings,
           app_url,
           mode: currentMode,
           isRestricted,

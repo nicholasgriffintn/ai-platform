@@ -1,6 +1,6 @@
 import type { D1Result } from "@cloudflare/workers-types";
 import { RepositoryManager } from "../repositories";
-import type { IEnv, User } from "../types";
+import type { IEnv, IUserSettings, User } from "../types";
 
 export class Database {
   private env: IEnv;
@@ -122,9 +122,7 @@ export class Database {
     return this.repositories.userSettings.updateUserSettings(userId, settings);
   }
 
-  public async getUserSettings(
-    userId: number,
-  ): Promise<Record<string, unknown> | null> {
+  public async getUserSettings(userId: number): Promise<IUserSettings | null> {
     if (!userId) {
       return null;
     }

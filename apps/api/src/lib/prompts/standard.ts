@@ -1,19 +1,16 @@
-import { Database } from "~/lib/database";
-import type { IBody, IUser } from "~/types";
+import type { IBody, IUser, IUserSettings } from "~/types";
 import { PromptBuilder } from "./builder";
 import { getArtifactExample, getResponseStyle } from "./utils";
 
 export async function returnStandardPrompt(
   request: IBody,
   user?: IUser,
+  userSettings?: IUserSettings,
   supportsFunctions?: boolean,
   supportsArtifacts?: boolean,
   hasThinking?: boolean,
 ): Promise<string> {
   try {
-    const database = Database.getInstance(request.env);
-
-    const userSettings = await database.getUserSettings(user?.id);
     const userNickname = userSettings?.nickname || null;
     const userJobRole = userSettings?.job_role || null;
     const userTraits = userSettings?.traits || null;

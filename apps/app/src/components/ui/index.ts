@@ -9,3 +9,4 @@ export * from "./Checkbox";
 export * from "./Select";
 export * from "./Dialog";
 export * from "./Banner";
+export * from "./Switch";

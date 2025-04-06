@@ -33,11 +33,7 @@ export interface IEnv {
   OPENROUTER_API_KEY?: string;
   BEDROCK_AWS_ACCESS_KEY?: string;
   BEDROCK_AWS_SECRET_KEY?: string;
-  BEDROCK_GUARDRAIL_ID: string;
-  BEDROCK_GUARDRAIL_VERSION?: string;
   AWS_REGION?: string;
-  GUARDRAILS_ENABLED?: string;
-  GUARDRAILS_PROVIDER?: string;
   OPENAI_API_KEY?: string;
   GOOGLE_STUDIO_API_KEY?: string;
   EMBEDDING_PROVIDER?: string;

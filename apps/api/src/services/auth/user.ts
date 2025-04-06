@@ -1,5 +1,5 @@
 import type { Database } from "../../lib/database";
-import type { User } from "../../types";
+import type { IUserSettings, User } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
 
 /**
@@ -75,7 +75,7 @@ export async function getUserBySessionId(
 export async function getUserSettings(
   database: Database,
   userId: number,
-): Promise<Record<string, unknown> | null> {
+): Promise<IUserSettings | null> {
   try {
     if (!userId) {
       return null;

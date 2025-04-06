@@ -1,4 +1,4 @@
-import type { IBody, IUser } from "../../types";
+import type { IBody, IUser, IUserSettings } from "../../types";
 import { getModelConfigByMatchingModel } from "../models";
 import { returnCoachingPrompt } from "./coaching";
 import { returnCodingPrompt } from "./coding";
@@ -10,6 +10,7 @@ export async function getSystemPrompt(
   request: IBody,
   model: string,
   user?: IUser,
+  userSettings?: IUserSettings,
 ): Promise<string> {
   if (request.mode === "prompt_coach") {
     const prompt = returnCoachingPrompt();
@@ -26,6 +27,7 @@ export async function getSystemPrompt(
     return await returnStandardPrompt(
       request,
       user,
+      userSettings,
       supportsFunctions,
       supportsArtifacts,
       hasThinking,
@@ -51,6 +53,7 @@ export async function getSystemPrompt(
   return returnStandardPrompt(
     request,
     user,
+    userSettings,
     supportsFunctions,
     supportsArtifacts,
     hasThinking,

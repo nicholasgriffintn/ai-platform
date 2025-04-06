@@ -2,6 +2,7 @@ import { decodeBase64 } from "hono/utils/encode";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getModels } from "../lib/models";
 import { AIProviderFactory } from "../providers/factory";
+import type { IUserSettings } from "../types";
 import { bufferToBase64 } from "../utils/base64";
 import { BaseRepository } from "./BaseRepository";
 
@@ -120,6 +121,10 @@ export class UserSettingsRepository extends BaseRepository {
          traits = ?,
          preferences = ?,
          tracking_enabled = ?,
+         guardrails_enabled = ?,
+         guardrails_provider = ?,
+         bedrock_guardrail_id = ?,
+         bedrock_guardrail_version = ?,
          updated_at = datetime('now')
        WHERE user_id = ?`,
       [
@@ -132,16 +137,22 @@ export class UserSettingsRepository extends BaseRepository {
             ? 1
             : 0
           : null,
+        settings.guardrails_enabled !== undefined
+          ? settings.guardrails_enabled
+            ? 1
+            : 0
+          : null,
+        settings.guardrails_provider,
+        settings.bedrock_guardrail_id,
+        settings.bedrock_guardrail_version,
         userId,
       ],
     );
   }
 
-  public async getUserSettings(
-    userId: number,
-  ): Promise<Record<string, unknown> | null> {
-    const result = this.runQuery<Record<string, unknown>>(
-      "SELECT id, nickname, job_role, traits, preferences, tracking_enabled FROM user_settings WHERE user_id = ?",
+  public async getUserSettings(userId: number): Promise<IUserSettings | null> {
+    const result = this.runQuery<IUserSettings>(
+      "SELECT id, nickname, job_role, traits, preferences, tracking_enabled, guardrails_enabled, guardrails_provider, bedrock_guardrail_id, bedrock_guardrail_version FROM user_settings WHERE user_id = ?",
       [userId],
       true,
     );

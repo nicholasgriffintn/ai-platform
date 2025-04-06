@@ -5,6 +5,17 @@ export interface IUser {
   id: number;
 }
 
+export interface IUserSettings {
+  guardrails_enabled: boolean;
+  guardrails_provider: string;
+  bedrock_guardrail_id: string | null;
+  bedrock_guardrail_version: string | null;
+  nickname: string | null;
+  job_role: string | null;
+  traits: string | null;
+  preferences: string | null;
+}
+
 export interface User {
   id: number;
   name: string | null;

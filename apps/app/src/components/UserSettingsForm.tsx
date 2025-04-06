@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from "react";
 
-import { Button, TextArea, TextInput } from "~/components/ui";
+import { Button, Select, Switch, TextArea, TextInput } from "~/components/ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 
 interface UserSettingsFormProps {
@@ -18,6 +18,10 @@ export function UserSettingsForm({
     job_role: userSettings?.job_role || "",
     traits: userSettings?.traits || "",
     preferences: userSettings?.preferences || "",
+    guardrails_enabled: userSettings?.guardrails_enabled || false,
+    guardrails_provider: userSettings?.guardrails_provider || "llamaguard",
+    bedrock_guardrail_id: userSettings?.bedrock_guardrail_id || "",
+    bedrock_guardrail_version: userSettings?.bedrock_guardrail_version || "1",
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -130,6 +134,93 @@ export function UserSettingsForm({
             rows={4}
           />
         </div>
+      </div>
+      <div>
+        <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
+          Guardrails
+        </h3>
+      </div>
+      <div className="space-y-4">
+        <div>
+          <label
+            htmlFor="guardrails_enabled"
+            className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+          >
+            Guardrails Enabled
+          </label>
+          <Switch
+            id="guardrails_enabled"
+            checked={formData.guardrails_enabled}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                guardrails_enabled: e.target.checked,
+              }))
+            }
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="guardrails_provider"
+            className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+          >
+            Guardrails Provider
+          </label>
+          <Select
+            id="guardrails_provider"
+            name="guardrails_provider"
+            value={formData.guardrails_provider}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                guardrails_provider: e.target.value,
+              })
+            }
+          >
+            <option value="llamaguard">LlamaGuard</option>
+            <option value="bedrock">Bedrock</option>
+          </Select>
+        </div>
+        {formData.guardrails_provider === "bedrock" && (
+          <>
+            <div>
+              <label
+                htmlFor="bedrock_guardrail_id"
+                className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+              >
+                Guardrail ID
+              </label>
+              <TextInput
+                id="bedrock_guardrail_id"
+                name="bedrock_guardrail_id"
+                value={formData.bedrock_guardrail_id}
+                onChange={handleChange}
+                placeholder="Enter the guardrail ID"
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="bedrock_guardrail_version"
+                className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+              >
+                Guardrail Version
+              </label>
+              <TextInput
+                id="bedrock_guardrail_version"
+                name="bedrock_guardrail_version"
+                value={formData.bedrock_guardrail_version}
+                onChange={handleChange}
+                placeholder="Enter the guardrail version"
+                className="w-full"
+              />
+            </div>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Please note that you will also need to configure the api key for
+              your guardrail provider in the providers section for this to work.
+            </p>
+          </>
+        )}
       </div>
 
       {saveSuccess && (
