@@ -151,7 +151,7 @@ export const ChatSidebar = ({
                 }
               }}
             >
-              <div className="w-full overflow-hidden pr-1 group-hover:w-[calc(100%-60px)] transition-all duration-200 flex items-center">
+              <div className="md:w-full md:group-hover:w-[calc(100%-60px)] w-[calc(100%-60px)] overflow-hidden pr-1 transition-all duration-200 flex items-center">
                 {(conversation.isLocalOnly || localOnlyMode) && (
                   <span className="mr-2 text-xs text-blue-500 dark:text-blue-400 inline-flex items-center flex-shrink-0">
                     <CloudOff size={14} className="mr-1" />
@@ -163,7 +163,7 @@ export const ChatSidebar = ({
                 </span>
               </div>
               {conversation.id && (
-                <div className="absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center space-x-1 bg-inherit">
+                <div className="absolute right-2 md:opacity-0 md:group-hover:opacity-100 opacity-100 transition-opacity duration-200 flex items-center space-x-1 bg-inherit">
                   <Button
                     type="button"
                     variant="icon"
