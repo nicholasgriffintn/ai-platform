@@ -167,7 +167,7 @@ export async function processChatRequest(options: CoreChatOptions) {
           )
         : finalUserMessage;
 
-    const guardrails = Guardrails.getInstance(env);
+    const guardrails = Guardrails.getInstance(env, user);
     const inputValidation = await guardrails.validateInput(
       finalMessage,
       user?.id,

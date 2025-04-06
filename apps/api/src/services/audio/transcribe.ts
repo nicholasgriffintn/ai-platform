@@ -1,5 +1,5 @@
 import { gatewayId } from "../../constants/app";
-import type { IEnv, IFunctionResponse } from "../../types";
+import type { IEnv, IFunctionResponse, IUser } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
 
 type TranscribeRequest = {

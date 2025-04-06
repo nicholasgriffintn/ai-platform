@@ -1,4 +1,9 @@
-import type { GuardrailResult, GuardrailsProvider, IEnv } from "../../types";
+import type {
+  GuardrailResult,
+  GuardrailsProvider,
+  IEnv,
+  IUser,
+} from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
 import { trackGuardrailViolation } from "../monitoring";
 import { GuardrailsProviderFactory } from "./factory";
@@ -7,31 +12,34 @@ export class Guardrails {
   private static instance: Guardrails;
   private provider: GuardrailsProvider;
   private env: IEnv;
+  private user?: IUser;
 
-  private constructor(env: IEnv) {
+  private constructor(env: IEnv, user?: IUser) {
     this.env = env;
+    this.user = user;
 
     if (env.GUARDRAILS_ENABLED === "false") {
       this.provider = null;
     } else if (env.GUARDRAILS_PROVIDER === "bedrock") {
-      if (
-        !env.BEDROCK_AWS_ACCESS_KEY ||
-        !env.BEDROCK_AWS_SECRET_KEY ||
-        !env.BEDROCK_GUARDRAIL_ID
-      ) {
+      if (!env.BEDROCK_GUARDRAIL_ID) {
         throw new AssistantError(
-          "Missing required AWS credentials or guardrail ID",
+          "Missing required guardrail ID",
           ErrorType.PARAMS_ERROR,
         );
       }
 
-      this.provider = GuardrailsProviderFactory.getProvider("bedrock", {
-        guardrailId: env.BEDROCK_GUARDRAIL_ID,
-        guardrailVersion: env.BEDROCK_GUARDRAIL_VERSION || "DRAFT",
-        region: env.AWS_REGION || "us-east-1",
-        accessKeyId: env.BEDROCK_AWS_ACCESS_KEY,
-        secretAccessKey: env.BEDROCK_AWS_SECRET_KEY,
-      });
+      this.provider = GuardrailsProviderFactory.getProvider(
+        "bedrock",
+        {
+          guardrailId: env.BEDROCK_GUARDRAIL_ID,
+          guardrailVersion: env.BEDROCK_GUARDRAIL_VERSION || "DRAFT",
+          region: env.AWS_REGION || "us-east-1",
+          accessKeyId: env.BEDROCK_AWS_ACCESS_KEY,
+          secretAccessKey: env.BEDROCK_AWS_SECRET_KEY,
+          env,
+        },
+        user,
+      );
     } else {
       // Default to LlamaGuard if no specific provider is set
       this.provider = GuardrailsProviderFactory.getProvider("llamaguard", {
@@ -40,9 +48,9 @@ export class Guardrails {
     }
   }
 
-  public static getInstance(env: IEnv): Guardrails {
+  public static getInstance(env: IEnv, user?: IUser): Guardrails {
     if (!Guardrails.instance) {
-      Guardrails.instance = new Guardrails(env);
+      Guardrails.instance = new Guardrails(env, user);
     }
     return Guardrails.instance;
   }

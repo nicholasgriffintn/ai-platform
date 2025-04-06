@@ -46,7 +46,7 @@ export function createStreamWithPostProcessing(
   let currentEventType = "";
   const currentToolCalls: Record<string, any> = {};
 
-  const guardrails = Guardrails.getInstance(env);
+  const guardrails = Guardrails.getInstance(env, user);
   const modelConfig = getModelConfigByMatchingModel(model);
 
   return providerStream.pipeThrough(

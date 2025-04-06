@@ -65,7 +65,7 @@ export const handleCheckChatCompletion = async (
 
   const roleToCheck = role || "user";
 
-  const guardrails = Guardrails.getInstance(env);
+  const guardrails = Guardrails.getInstance(env, user);
   const validation =
     roleToCheck === "user"
       ? await guardrails.validateInput(

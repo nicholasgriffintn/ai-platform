@@ -1,34 +1,55 @@
 import { AwsClient } from "aws4fetch";
 
-import type { GuardrailResult, GuardrailsProvider } from "../../types";
+import { UserSettingsRepository } from "../../repositories/UserSettingsRepository";
+import type {
+  GuardrailResult,
+  GuardrailsProvider,
+  IEnv,
+  IUser,
+} from "../../types";
 
 export interface BedrockGuardrailsConfig {
   guardrailId: string;
   guardrailVersion?: string;
   region?: string;
-  accessKeyId: string;
-  secretAccessKey: string;
+  accessKeyId?: string;
+  secretAccessKey?: string;
+  env: IEnv;
 }
 
 export class BedrockGuardrailsProvider implements GuardrailsProvider {
-  private aws: AwsClient;
   private guardrailId: string;
   private guardrailVersion: string;
   private region: string;
   private bedrockRuntimeEndpoint: string;
+  private env: IEnv;
+  private user?: IUser;
+  private defaultAccessKeyId: string;
+  private defaultSecretAccessKey: string;
 
-  constructor(config: BedrockGuardrailsConfig) {
+  constructor(config: BedrockGuardrailsConfig, user?: IUser) {
     this.guardrailId = config.guardrailId;
     this.guardrailVersion = config.guardrailVersion || "DRAFT";
     this.region = config.region || "us-east-1";
     this.bedrockRuntimeEndpoint = `https://bedrock-runtime.${this.region}.amazonaws.com`;
+    this.env = config.env;
+    this.user = user;
+    this.defaultAccessKeyId = config.accessKeyId || "";
+    this.defaultSecretAccessKey = config.secretAccessKey || "";
+  }
 
-    this.aws = new AwsClient({
-      accessKeyId: config.accessKeyId,
-      secretAccessKey: config.secretAccessKey,
-      region: this.region,
-      service: "bedrock",
-    });
+  private parseAwsCredentials(apiKey: string): {
+    accessKey: string;
+    secretKey: string;
+  } {
+    const delimiter = "::@@::";
+    const parts = apiKey.split(delimiter);
+
+    if (parts.length !== 2) {
+      throw new Error("Invalid AWS credentials format");
+    }
+
+    return { accessKey: parts[0], secretKey: parts[1] };
   }
 
   async validateContent(
@@ -36,6 +57,39 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
     source: "INPUT" | "OUTPUT",
   ): Promise<GuardrailResult> {
     try {
+      let accessKeyId = this.defaultAccessKeyId;
+      let secretAccessKey = this.defaultSecretAccessKey;
+
+      // Try to get user credentials if available
+      if (this.user?.id && this.env.DB) {
+        try {
+          const userSettingsRepo = new UserSettingsRepository(this.env);
+          const userApiKey = await userSettingsRepo.getProviderApiKey(
+            this.user.id,
+            "bedrock",
+          );
+
+          if (userApiKey) {
+            const credentials = this.parseAwsCredentials(userApiKey);
+            accessKeyId = credentials.accessKey;
+            secretAccessKey = credentials.secretKey;
+          }
+        } catch (error) {
+          console.warn("Failed to get user API key for bedrock:", error);
+        }
+      }
+
+      if (!accessKeyId || !secretAccessKey) {
+        throw new Error("No valid credentials found");
+      }
+
+      const aws = new AwsClient({
+        accessKeyId,
+        secretAccessKey,
+        region: this.region,
+        service: "bedrock",
+      });
+
       const url = `${this.bedrockRuntimeEndpoint}/guardrail/${this.guardrailId}/version/${this.guardrailVersion}/apply`;
 
       const body = JSON.stringify({
@@ -49,7 +103,7 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
         ],
       });
 
-      const response = await this.aws.fetch(url, {
+      const response = await aws.fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

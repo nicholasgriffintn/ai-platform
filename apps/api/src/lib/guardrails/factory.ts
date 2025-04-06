@@ -1,4 +1,4 @@
-import type { GuardrailsProvider } from "../../types";
+import type { GuardrailsProvider, IUser } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
 import {
   type BedrockGuardrailsConfig,
@@ -11,6 +11,7 @@ export class GuardrailsProviderFactory {
   static getProvider(
     type: string,
     config: BedrockGuardrailsConfig | LlamaGuardConfig,
+    user?: IUser,
   ): GuardrailsProvider {
     switch (type) {
       case "bedrock":
@@ -20,7 +21,7 @@ export class GuardrailsProviderFactory {
             ErrorType.PARAMS_ERROR,
           );
         }
-        return new BedrockGuardrailsProvider(config);
+        return new BedrockGuardrailsProvider(config, user);
       case "llamaguard":
         if (!("ai" in config)) {
           throw new AssistantError(
