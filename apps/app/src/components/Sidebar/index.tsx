@@ -41,6 +41,7 @@ export const ChatSidebar = ({
     isPro,
     localOnlyMode,
     setLocalOnlyMode,
+    isMobile,
   } = useChatStore();
 
   const { showKeyboardShortcuts, setShowKeyboardShortcuts } = useChatStore();
@@ -54,7 +55,7 @@ export const ChatSidebar = ({
   const handleConversationClick = (id: string | undefined) => {
     setCurrentConversationId(id);
 
-    if (window.matchMedia("(max-width: 768px)").matches) {
+    if (isMobile) {
       setSidebarVisible(false);
     }
   };
