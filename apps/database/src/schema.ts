@@ -181,6 +181,11 @@ export const userSettings = sqliteTable(
     }).default("llamaguard"),
     bedrock_guardrail_id: text(),
     bedrock_guardrail_version: text(),
+    embedding_provider: text({
+      enum: ["bedrock", "vectorize"],
+    }).default("vectorize"),
+    bedrock_knowledge_base_id: text(),
+    bedrock_knowledge_base_custom_data_source_id: text(),
     tracking_enabled: integer({ mode: "boolean" }).default(true),
     public_key: text(),
     private_key: text(),

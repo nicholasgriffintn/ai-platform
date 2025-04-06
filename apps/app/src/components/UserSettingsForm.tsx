@@ -22,6 +22,10 @@ export function UserSettingsForm({
     guardrails_provider: userSettings?.guardrails_provider || "llamaguard",
     bedrock_guardrail_id: userSettings?.bedrock_guardrail_id || "",
     bedrock_guardrail_version: userSettings?.bedrock_guardrail_version || "1",
+    embedding_provider: userSettings?.embedding_provider || "vectorize",
+    bedrock_knowledge_base_id: userSettings?.bedrock_knowledge_base_id || "",
+    bedrock_knowledge_base_custom_data_source_id:
+      userSettings?.bedrock_knowledge_base_custom_data_source_id || "",
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -217,7 +221,77 @@ export function UserSettingsForm({
             </div>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
               Please note that you will also need to configure the api key for
-              your guardrail provider in the providers section for this to work.
+              Bedrock in the providers section for this to work.
+            </p>
+          </>
+        )}
+      </div>
+
+      <div>
+        <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
+          Embeddings (RAG)
+        </h3>
+      </div>
+      <div className="space-y-4">
+        <div>
+          <label
+            htmlFor="embedding_provider"
+            className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+          >
+            Embedding Provider
+          </label>
+          <Select
+            id="embedding_provider"
+            name="embedding_provider"
+            value={formData.embedding_provider}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                embedding_provider: e.target.value,
+              })
+            }
+          >
+            <option value="vectorize">Vectorize</option>
+            <option value="bedrock">Bedrock</option>
+          </Select>
+        </div>
+        {formData.embedding_provider === "bedrock" && (
+          <>
+            <div>
+              <label
+                htmlFor="bedrock_knowledge_base_id"
+                className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+              >
+                Knowledge Base ID
+              </label>
+              <TextInput
+                id="bedrock_knowledge_base_id"
+                name="bedrock_knowledge_base_id"
+                value={formData.bedrock_knowledge_base_id}
+                onChange={handleChange}
+                placeholder="Enter the knowledge base ID"
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="bedrock_knowledge_base_custom_data_source_id"
+                className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+              >
+                Custom Data Source ID
+              </label>
+              <TextInput
+                id="bedrock_knowledge_base_custom_data_source_id"
+                name="bedrock_knowledge_base_custom_data_source_id"
+                value={formData.bedrock_knowledge_base_custom_data_source_id}
+                onChange={handleChange}
+                placeholder="Enter the custom data source ID"
+                className="w-full"
+              />
+            </div>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Please note that you will also need to configure the api key for
+              Bedrock in the providers section for this to work.
             </p>
           </>
         )}

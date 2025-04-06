@@ -1,3 +1,4 @@
+import { Database } from "../../lib/database";
 import { Embedding } from "../../lib/embedding";
 import type { IRequest } from "../../types";
 
@@ -88,7 +89,13 @@ export const extractContent = async (
 
     if (params.should_vectorize && data.results.length > 0) {
       try {
-        const embedding = Embedding.getInstance(req.env);
+        const database = Database.getInstance(req.env);
+        const userSettings = await database.getUserSettings(req.user?.id);
+        const embedding = Embedding.getInstance(
+          req.env,
+          req.user,
+          userSettings,
+        );
         const vectors = await Promise.all(
           data.results.map(async (r) => {
             const id = await generateShortId(r.url);

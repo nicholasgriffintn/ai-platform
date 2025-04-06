@@ -71,6 +71,13 @@
       "when": 1743902075434,
       "tag": "0009_kind_colossus",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1743903839633,
+      "tag": "0010_keen_titanium_man",
+      "breakpoints": true
     }
   ]
 }

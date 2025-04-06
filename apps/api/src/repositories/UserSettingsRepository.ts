@@ -125,6 +125,9 @@ export class UserSettingsRepository extends BaseRepository {
          guardrails_provider = ?,
          bedrock_guardrail_id = ?,
          bedrock_guardrail_version = ?,
+         embedding_provider = ?,
+         bedrock_knowledge_base_id = ?,
+         bedrock_knowledge_base_custom_data_source_id = ?,
          updated_at = datetime('now')
        WHERE user_id = ?`,
       [
@@ -145,6 +148,9 @@ export class UserSettingsRepository extends BaseRepository {
         settings.guardrails_provider,
         settings.bedrock_guardrail_id,
         settings.bedrock_guardrail_version,
+        settings.embedding_provider,
+        settings.bedrock_knowledge_base_id,
+        settings.bedrock_knowledge_base_custom_data_source_id,
         userId,
       ],
     );
@@ -152,7 +158,7 @@ export class UserSettingsRepository extends BaseRepository {
 
   public async getUserSettings(userId: number): Promise<IUserSettings | null> {
     const result = this.runQuery<IUserSettings>(
-      "SELECT id, nickname, job_role, traits, preferences, tracking_enabled, guardrails_enabled, guardrails_provider, bedrock_guardrail_id, bedrock_guardrail_version FROM user_settings WHERE user_id = ?",
+      "SELECT id, nickname, job_role, traits, preferences, tracking_enabled, guardrails_enabled, guardrails_provider, bedrock_guardrail_id, bedrock_guardrail_version, embedding_provider, bedrock_knowledge_base_id, bedrock_knowledge_base_custom_data_source_id FROM user_settings WHERE user_id = ?",
       [userId],
       true,
     );

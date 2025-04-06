@@ -15,6 +15,9 @@ export const updateUserSettingsSchema = z.object({
   guardrails_provider: z.string().optional(),
   bedrock_guardrail_id: z.string().optional(),
   bedrock_guardrail_version: z.string().optional(),
+  embedding_provider: z.string().optional(),
+  bedrock_knowledge_base_id: z.string().optional(),
+  bedrock_knowledge_base_custom_data_source_id: z.string().optional(),
 });
 
 export const storeProviderApiKeySchema = z.object({

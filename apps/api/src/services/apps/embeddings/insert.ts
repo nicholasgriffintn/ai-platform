@@ -69,7 +69,8 @@ export const insertEmbedding = async (
       throw new AssistantError("No unique ID found");
     }
 
-    const embedding = Embedding.getInstance(env);
+    const userSettings = await database.getUserSettings(req.user?.id);
+    const embedding = Embedding.getInstance(env, req.user, userSettings);
 
     const generated = await embedding.generate(
       type,

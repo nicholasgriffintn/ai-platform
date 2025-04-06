@@ -155,7 +155,9 @@ export async function processChatRequest(options: CoreChatOptions) {
           ? userMessage
           : lastMessageContentText;
 
-    const embedding = Embedding.getInstance(env);
+    const userSettings = await database.getUserSettings(user?.id);
+
+    const embedding = Embedding.getInstance(env, user, userSettings);
 
     const finalMessage =
       use_rag === true && currentMode !== "prompt_coach"
@@ -167,7 +169,6 @@ export async function processChatRequest(options: CoreChatOptions) {
           )
         : finalUserMessage;
 
-    const userSettings = await database.getUserSettings(user?.id);
     const guardrails = Guardrails.getInstance(env, user, userSettings);
     const inputValidation = await guardrails.validateInput(
       finalMessage,

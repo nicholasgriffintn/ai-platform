@@ -36,9 +36,6 @@ export interface IEnv {
   AWS_REGION?: string;
   OPENAI_API_KEY?: string;
   GOOGLE_STUDIO_API_KEY?: string;
-  EMBEDDING_PROVIDER?: string;
-  BEDROCK_KNOWLEDGE_BASE_ID?: string;
-  BEDROCK_KNOWLEDGE_BASE_CUSTOM_DATA_SOURCE_ID?: string;
   GROQ_API_KEY?: string;
   ANALYTICS_API_KEY?: string;
   OLLAMA_ENABLED?: string;

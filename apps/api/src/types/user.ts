@@ -10,6 +10,9 @@ export interface IUserSettings {
   guardrails_provider: string;
   bedrock_guardrail_id: string | null;
   bedrock_guardrail_version: string | null;
+  embedding_provider: string;
+  bedrock_knowledge_base_id: string | null;
+  bedrock_knowledge_base_custom_data_source_id: string | null;
   nickname: string | null;
   job_role: string | null;
   traits: string | null;

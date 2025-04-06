@@ -1,3 +1,4 @@
+import { Database } from "../../../lib/database";
 import { Embedding } from "../../../lib/embedding";
 import { AssistantError, ErrorType } from "../../../utils/errors";
 
@@ -14,7 +15,9 @@ export const queryEmbeddings = async (req: any): Promise<any> => {
       );
     }
 
-    const embedding = Embedding.getInstance(env);
+    const database = Database.getInstance(env);
+    const userSettings = await database.getUserSettings(req.user?.id);
+    const embedding = Embedding.getInstance(env, req.user, userSettings);
 
     const matchesWithContent = await embedding.searchSimilar(query, {
       namespace,

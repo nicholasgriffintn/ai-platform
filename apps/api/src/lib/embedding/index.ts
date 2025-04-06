@@ -6,8 +6,15 @@ import type {
   VectorizeVector,
 } from "@cloudflare/workers-types";
 
-import type { EmbeddingProvider, IEnv, RagOptions } from "../../types";
+import type {
+  EmbeddingProvider,
+  IEnv,
+  IUser,
+  IUserSettings,
+  RagOptions,
+} from "../../types";
 import { AssistantError } from "../../utils/errors";
+import { Database } from "../database";
 import { trackRagMetrics } from "../monitoring";
 import { EmbeddingProviderFactory } from "./factory";
 
@@ -15,42 +22,57 @@ export class Embedding {
   private static instance: Embedding;
   private provider: EmbeddingProvider;
   private env: IEnv;
+  private user?: IUser;
 
-  private constructor(env: IEnv) {
+  private constructor(env: IEnv, user?: IUser, userSettings?: IUserSettings) {
     this.env = env;
+    this.user = user;
 
-    if (env.EMBEDDING_PROVIDER === "bedrock") {
+    if (userSettings?.embedding_provider === "bedrock") {
       if (
-        !env.BEDROCK_AWS_ACCESS_KEY ||
-        !env.BEDROCK_AWS_SECRET_KEY ||
-        !env.BEDROCK_KNOWLEDGE_BASE_ID ||
-        !env.BEDROCK_KNOWLEDGE_BASE_CUSTOM_DATA_SOURCE_ID
+        !userSettings.bedrock_knowledge_base_id ||
+        !userSettings.bedrock_knowledge_base_custom_data_source_id
       ) {
         throw new AssistantError(
           "Missing required AWS credentials or knowledge base IDs",
         );
       }
 
-      this.provider = EmbeddingProviderFactory.getProvider("bedrock", {
-        knowledgeBaseId: this.env.BEDROCK_KNOWLEDGE_BASE_ID || "",
-        knowledgeBaseCustomDataSourceId:
-          this.env.BEDROCK_KNOWLEDGE_BASE_CUSTOM_DATA_SOURCE_ID || "",
-        region: this.env.AWS_REGION || "us-east-1",
-        accessKeyId: this.env.BEDROCK_AWS_ACCESS_KEY || "",
-        secretAccessKey: this.env.BEDROCK_AWS_SECRET_KEY || "",
-      });
+      this.provider = EmbeddingProviderFactory.getProvider(
+        "bedrock",
+        {
+          knowledgeBaseId: userSettings.bedrock_knowledge_base_id,
+          knowledgeBaseCustomDataSourceId:
+            userSettings.bedrock_knowledge_base_custom_data_source_id,
+          region: this.env.AWS_REGION || "us-east-1",
+          accessKeyId: this.env.BEDROCK_AWS_ACCESS_KEY || "",
+          secretAccessKey: this.env.BEDROCK_AWS_SECRET_KEY || "",
+        },
+        this.env,
+        this.user,
+      );
     } else {
-      this.provider = EmbeddingProviderFactory.getProvider("vectorize", {
-        ai: this.env.AI,
-        db: this.env.DB,
-        vector_db: this.env.VECTOR_DB,
-      });
+      const database = Database.getInstance(this.env);
+      this.provider = EmbeddingProviderFactory.getProvider(
+        "vectorize",
+        {
+          ai: this.env.AI,
+          vector_db: this.env.VECTOR_DB,
+          database,
+        },
+        this.env,
+        this.user,
+      );
     }
   }
 
-  public static getInstance(env: IEnv): Embedding {
+  public static getInstance(
+    env: IEnv,
+    user?: IUser,
+    userSettings?: IUserSettings,
+  ): Embedding {
     if (!Embedding.instance) {
-      Embedding.instance = new Embedding(env);
+      Embedding.instance = new Embedding(env, user, userSettings);
     }
     return Embedding.instance;
   }

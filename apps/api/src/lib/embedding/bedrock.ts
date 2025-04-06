@@ -1,9 +1,12 @@
 import { AwsClient } from "aws4fetch";
+import { UserSettingsRepository } from "../../repositories/UserSettingsRepository";
 import type {
   EmbeddingMutationResult,
   EmbeddingProvider,
   EmbeddingQueryResult,
   EmbeddingVector,
+  IEnv,
+  IUser,
   RagOptions,
 } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
@@ -17,27 +20,41 @@ export interface BedrockEmbeddingProviderConfig {
 }
 
 export class BedrockEmbeddingProvider implements EmbeddingProvider {
-  private aws: AwsClient;
   private knowledgeBaseId: string;
   private knowledgeBaseCustomDataSourceId?: string;
   private region: string;
   private agentEndpoint: string;
   private agentRuntimeEndpoint: string;
+  private env: IEnv;
+  private user?: IUser;
+  private defaultAccessKeyId: string;
+  private defaultSecretAccessKey: string;
 
-  constructor(config: BedrockEmbeddingProviderConfig) {
+  constructor(config: BedrockEmbeddingProviderConfig, env: IEnv, user?: IUser) {
     this.knowledgeBaseId = config.knowledgeBaseId;
     this.knowledgeBaseCustomDataSourceId =
       config.knowledgeBaseCustomDataSourceId;
     this.region = config.region || "us-east-1";
     this.agentEndpoint = `https://bedrock-agent.${this.region}.amazonaws.com`;
     this.agentRuntimeEndpoint = `https://bedrock-agent-runtime.${this.region}.amazonaws.com`;
+    this.env = env;
+    this.user = user;
+    this.defaultAccessKeyId = config.accessKeyId || "";
+    this.defaultSecretAccessKey = config.secretAccessKey || "";
+  }
 
-    this.aws = new AwsClient({
-      accessKeyId: config.accessKeyId,
-      secretAccessKey: config.secretAccessKey,
-      region: this.region,
-      service: "bedrock",
-    });
+  private parseAwsCredentials(apiKey: string): {
+    accessKey: string;
+    secretKey: string;
+  } {
+    const delimiter = "::@@::";
+    const parts = apiKey.split(delimiter);
+
+    if (parts.length !== 2) {
+      throw new Error("Invalid AWS credentials format");
+    }
+
+    return { accessKey: parts[0], secretKey: parts[1] };
   }
 
   async generate(
@@ -65,6 +82,43 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
       console.error("Bedrock Embedding API error:", error);
       throw error;
     }
+  }
+
+  async getAwsClient() {
+    let accessKeyId = this.defaultAccessKeyId;
+    let secretAccessKey = this.defaultSecretAccessKey;
+
+    // Try to get user credentials if available
+    if (this.user?.id && this.env.DB) {
+      try {
+        const userSettingsRepo = new UserSettingsRepository(this.env);
+        const userApiKey = await userSettingsRepo.getProviderApiKey(
+          this.user.id,
+          "bedrock",
+        );
+
+        if (userApiKey) {
+          const credentials = this.parseAwsCredentials(userApiKey);
+          accessKeyId = credentials.accessKey;
+          secretAccessKey = credentials.secretKey;
+        }
+      } catch (error) {
+        console.warn("Failed to get user API key for bedrock:", error);
+      }
+    }
+
+    if (!accessKeyId || !secretAccessKey) {
+      throw new Error("No valid credentials found");
+    }
+
+    const aws = new AwsClient({
+      accessKeyId,
+      secretAccessKey,
+      region: this.region,
+      service: "bedrock",
+    });
+
+    return aws;
   }
 
   async insert(
@@ -104,7 +158,8 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
       })),
     });
 
-    const response = await this.aws.fetch(url, {
+    const aws = await this.getAwsClient();
+    const response = await aws.fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -156,7 +211,8 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
       },
     });
 
-    const response = await this.aws.fetch(url, {
+    const aws = await this.getAwsClient();
+    const response = await aws.fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

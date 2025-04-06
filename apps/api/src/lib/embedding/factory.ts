@@ -1,4 +1,4 @@
-import type { EmbeddingProvider } from "../../types";
+import type { EmbeddingProvider, IEnv, IUser } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
 import {
   BedrockEmbeddingProvider,
@@ -14,6 +14,8 @@ export class EmbeddingProviderFactory {
   static getProvider(
     type: string,
     config: VectorizeEmbeddingProviderConfig | BedrockEmbeddingProviderConfig,
+    env: IEnv,
+    user?: IUser,
   ): EmbeddingProvider {
     switch (type) {
       case "bedrock":
@@ -23,7 +25,7 @@ export class EmbeddingProviderFactory {
             ErrorType.CONFIGURATION_ERROR,
           );
         }
-        return new BedrockEmbeddingProvider(config);
+        return new BedrockEmbeddingProvider(config, env, user);
       case "vectorize":
         if (!("ai" in config)) {
           throw new AssistantError(

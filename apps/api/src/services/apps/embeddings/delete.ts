@@ -1,3 +1,4 @@
+import { Database } from "../../../lib/database";
 import { Embedding } from "../../../lib/embedding";
 import type { IRequest } from "../../../types";
 import { AssistantError, ErrorType } from "../../../utils/errors";
@@ -24,7 +25,9 @@ export const deleteEmbedding = async (
       );
     }
 
-    const embedding = Embedding.getInstance(env);
+    const database = Database.getInstance(env);
+    const userSettings = await database.getUserSettings(req.user?.id);
+    const embedding = Embedding.getInstance(env, req.user, userSettings);
 
     const result = await embedding.delete(ids);
 
