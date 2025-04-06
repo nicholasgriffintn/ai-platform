@@ -264,6 +264,7 @@ class ApiService {
     let content = "";
     let messageData = null;
     let reasoning = "";
+    let thinking = "";
     let citations = null;
     let usage = null;
     let id = null;
@@ -324,6 +325,8 @@ class ApiService {
                 if (parsedData.type === "content_block_delta") {
                   content += parsedData.content;
                   onProgress(content, reasoning);
+                } else if (parsedData.type === "thinking_delta") {
+                  thinking += parsedData.thinking || "";
                 } else if (parsedData.type === "tool_use_start") {
                   pendingToolCalls[parsedData.tool_id] = {
                     id: parsedData.tool_id,
@@ -401,6 +404,11 @@ class ApiService {
       reasoning = extractedReasoning;
 
       onProgress(content);
+    }
+
+    // If we have thinking content, use it as reasoning
+    if (thinking) {
+      reasoning = thinking;
     }
 
     return normalizeMessage({

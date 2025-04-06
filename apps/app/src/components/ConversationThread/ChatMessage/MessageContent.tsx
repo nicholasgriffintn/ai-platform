@@ -229,12 +229,27 @@ export const MessageContent = memo(
         }
       };
 
+      let thinkingContent = "";
+
+      if (Array.isArray(message.content)) {
+        const thinkingBlock = message.content.find(
+          (item: MessageContentType) => item.type === "thinking",
+        );
+
+        if (thinkingBlock) {
+          thinkingContent = (thinkingBlock as any).thinking || "";
+        }
+      }
+
       return (
         <>
           {typeof message.content === "string" ? (
             renderTextContent(
               message.content,
-              message.reasoning,
+              message.reasoning || {
+                content: thinkingContent,
+                collapsed: true,
+              },
               message.citations,
               message.data,
               handleArtifactOpen,
@@ -245,7 +260,10 @@ export const MessageContent = memo(
                 if (item.type === "text" && item.text) {
                   return renderTextContent(
                     item.text,
-                    message.reasoning,
+                    message.reasoning || {
+                      content: thinkingContent,
+                      collapsed: true,
+                    },
                     message.citations,
                     message.data,
                     onArtifactOpen,

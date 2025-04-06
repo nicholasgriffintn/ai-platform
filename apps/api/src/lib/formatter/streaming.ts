@@ -64,6 +64,34 @@ export class StreamingFormatter {
   }
 
   /**
+   * Extract thinking content from a streaming chunk of data
+   */
+  static extractThinkingFromChunk(data: any, currentEventType = "") {
+    // Check for Anthropic thinking_delta format
+    if (
+      currentEventType === "content_block_delta" &&
+      data.delta?.type === "thinking_delta" &&
+      data.delta.thinking
+    ) {
+      return data.delta.thinking || "";
+    }
+
+    // Check for Anthropic signature_delta format
+    if (
+      currentEventType === "content_block_delta" &&
+      data.delta?.type === "signature_delta" &&
+      data.delta.signature
+    ) {
+      return {
+        type: "signature",
+        signature: data.delta.signature,
+      };
+    }
+
+    return null;
+  }
+
+  /**
    * Detect if a chunk contains a tool call initialization or update
    */
   static extractToolCall(data: any, currentEventType = "") {

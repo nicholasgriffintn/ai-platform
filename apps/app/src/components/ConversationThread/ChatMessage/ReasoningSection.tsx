@@ -13,11 +13,17 @@ interface ReasoningSectionProps {
 export const ReasoningSection = ({ reasoning }: ReasoningSectionProps) => {
   const [collapsed, setCollapsed] = useState(reasoning.collapsed);
 
+  const content = reasoning.content;
+
   useEffect(() => {
     if (reasoning.collapsed === false && collapsed === true) {
       setCollapsed(false);
     }
   }, [reasoning.collapsed, collapsed]);
+
+  if (!content || content.trim() === "") {
+    return null;
+  }
 
   return (
     <div className="mb-2">
@@ -35,7 +41,7 @@ export const ReasoningSection = ({ reasoning }: ReasoningSectionProps) => {
       {!collapsed && (
         <div>
           <MemoizedMarkdown className="prose dark:prose-invert prose-zinc prose-xs text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            {reasoning.content}
+            {content}
           </MemoizedMarkdown>
         </div>
       )}

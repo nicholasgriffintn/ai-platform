@@ -82,11 +82,20 @@ export class ResponseFormatter {
 
     if (data.content && Array.isArray(data.content)) {
       const textContent = data.content
-        .filter((item: any) => item.text)
+        .filter((item: any) => item.type === "text" && item.text)
         .map((item: any) => item.text)
         .join(" ");
 
-      return { ...data, response: textContent || "" };
+      const thinkingContent = data.content.find(
+        (item: any) => item.type === "thinking" && item.thinking,
+      );
+
+      return {
+        ...data,
+        response: textContent || "",
+        thinking: thinkingContent?.thinking || "",
+        signature: thinkingContent?.signature || "",
+      };
     }
 
     if (data.message?.content) {
@@ -99,7 +108,16 @@ export class ResponseFormatter {
           .map((item: any) => item.text)
           .join(" ");
 
-        return { ...data, response: textContent || "" };
+        const thinkingContent = data.message.content.find(
+          (item: any) => item.type === "thinking" && item.thinking,
+        );
+
+        return {
+          ...data,
+          response: textContent || "",
+          thinking: thinkingContent?.thinking || "",
+          signature: thinkingContent?.signature || "",
+        };
       }
     }
 
@@ -127,11 +145,24 @@ export class ResponseFormatter {
       return { ...data, response: "" };
     }
 
-    const response = data.content
-      .map((content: { text: string }) => content.text)
+    // Extract text content from all text blocks
+    const textContent = data.content
+      .filter((content: any) => content.type === "text" && content.text)
+      .map((content: any) => content.text)
       .join(" ");
 
-    return { ...data, response };
+    // Check for thinking content
+    const thinkingContent = data.content.find(
+      (content: any) => content.type === "thinking" && content.thinking,
+    );
+
+    // Return formatted response
+    return {
+      ...data,
+      response: textContent,
+      thinking: thinkingContent?.thinking || "",
+      signature: thinkingContent?.signature || "",
+    };
   }
 
   private static formatGoogleStudioResponse(data: any): any {

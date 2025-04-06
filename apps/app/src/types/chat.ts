@@ -24,7 +24,7 @@ export interface ChatSettings {
 }
 
 export interface MessageContent {
-  type: "text" | "image_url" | "artifact" | "document_url";
+  type: "text" | "image_url" | "artifact" | "document_url" | "thinking";
   text?: string;
   image_url?: {
     url: string;
@@ -41,6 +41,8 @@ export interface MessageContent {
     title?: string;
     content: string;
   };
+  thinking?: string;
+  signature?: string;
 }
 
 export interface MessageData {

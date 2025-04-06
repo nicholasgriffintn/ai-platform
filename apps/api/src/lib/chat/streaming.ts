@@ -46,6 +46,8 @@ export async function createStreamWithPostProcessing(
   } = options;
 
   let fullContent = "";
+  let fullThinking = "";
+  let signature = "";
   let citationsResponse = [];
   let toolCallsData: any[] = [];
   let usageData: any = null;
@@ -185,6 +187,35 @@ export async function createStreamWithPostProcessing(
                   })}\n\n`,
                 );
                 controller.enqueue(contentDeltaEvent);
+              }
+
+              const thinkingData = StreamingFormatter.extractThinkingFromChunk(
+                data,
+                currentEventType,
+              );
+
+              if (thinkingData) {
+                if (typeof thinkingData === "string") {
+                  fullThinking += thinkingData;
+
+                  const thinkingDeltaEvent = new TextEncoder().encode(
+                    `data: ${JSON.stringify({
+                      type: "thinking_delta",
+                      thinking: thinkingData,
+                    })}\n\n`,
+                  );
+                  controller.enqueue(thinkingDeltaEvent);
+                } else if (thinkingData.type === "signature") {
+                  signature = thinkingData.signature;
+
+                  const signatureDeltaEvent = new TextEncoder().encode(
+                    `data: ${JSON.stringify({
+                      type: "signature_delta",
+                      signature: thinkingData.signature,
+                    })}\n\n`,
+                  );
+                  controller.enqueue(signatureDeltaEvent);
+                }
               }
 
               // Process tool calls
@@ -360,9 +391,34 @@ export async function createStreamWithPostProcessing(
 
             const logId = env.AI?.aiGatewayLogId;
 
+            // Create the assistant message content with possible thinking
+            let messageContent: string | Array<any> = fullContent;
+
+            // If we have thinking or signature, use structured content
+            if (fullThinking || signature) {
+              const contentBlocks = [];
+
+              if (fullThinking) {
+                contentBlocks.push({
+                  type: "thinking",
+                  thinking: fullThinking,
+                  signature: signature || "",
+                });
+              }
+
+              if (fullContent) {
+                contentBlocks.push({
+                  type: "text",
+                  text: fullContent,
+                });
+              }
+
+              messageContent = contentBlocks;
+            }
+
             await conversationManager.add(completion_id, {
               role: "assistant",
-              content: fullContent,
+              content: messageContent,
               citations: citationsResponse,
               log_id: logId,
               mode,
