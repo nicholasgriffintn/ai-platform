@@ -52,6 +52,14 @@ export const ChatSidebar = ({
 
   const categorizedChats = categorizeChatsByDate(conversations);
 
+  const handleNewChatClick = () => {
+    clearCurrentConversation();
+
+    if (isMobile) {
+      setSidebarVisible(false);
+    }
+  };
+
   const handleConversationClick = (id: string | undefined) => {
     setCurrentConversationId(id);
 
@@ -290,7 +298,7 @@ export const ChatSidebar = ({
                   <Button
                     type="button"
                     variant="primary"
-                    onClick={clearCurrentConversation}
+                    onClick={handleNewChatClick}
                     className="w-full bg-zinc-900 hover:bg-black dark:bg-zinc-800 dark:hover:bg-zinc-700"
                     icon={<SquarePen size={20} />}
                   >
