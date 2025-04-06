@@ -1,11 +1,12 @@
 import type { ChatMode, Message } from "../../types";
+import { AssistantError, ErrorType } from "../../utils/errors";
 import type { ConversationManager } from "../conversationManager";
 
 export const processPromptCoachMode = async (
   options: {
     mode: ChatMode;
     userMessage: string;
-    completion_id: string;
+    completion_id?: string;
   },
   conversationManager: ConversationManager,
 ): Promise<{
@@ -13,9 +14,17 @@ export const processPromptCoachMode = async (
   currentMode: ChatMode;
   additionalMessages: Message[];
 }> => {
+  if (options.mode === "prompt_coach" && !options.completion_id) {
+    throw new AssistantError(
+      "Completion ID is required for prompt coach mode",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+
   if (!options || !conversationManager) {
-    throw new Error(
+    throw new AssistantError(
       "Invalid input: options and conversationManager are required",
+      ErrorType.PARAMS_ERROR,
     );
   }
 

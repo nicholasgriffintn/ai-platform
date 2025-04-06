@@ -1,6 +1,7 @@
 import type { D1Result } from "@cloudflare/workers-types";
 import { RepositoryManager } from "../repositories";
 import type { IEnv, IUserSettings, User } from "../types";
+import { AssistantError, ErrorType } from "../utils/errors";
 
 export class Database {
   private env: IEnv;
@@ -9,7 +10,10 @@ export class Database {
 
   private constructor(env: IEnv) {
     if (!env?.DB) {
-      throw new Error("Database not configured");
+      throw new AssistantError(
+        "Database not configured",
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
     this.env = env;
     this.repositories = RepositoryManager.getInstance(env);

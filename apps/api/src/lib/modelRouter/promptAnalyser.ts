@@ -107,7 +107,10 @@ export class PromptAnalyzer {
     }[];
   }): PromptRequirements {
     if (!analysisResponse?.choices?.length) {
-      throw new Error("No valid AI response received");
+      throw new AssistantError(
+        "No valid AI response received",
+        ErrorType.PROVIDER_ERROR,
+      );
     }
 
     const content = analysisResponse.choices[0].message.content;
@@ -117,7 +120,10 @@ export class PromptAnalyzer {
       !requirementsAnalysis.expectedComplexity ||
       !requirementsAnalysis.requiredCapabilities
     ) {
-      throw new Error("Incomplete or invalid AI analysis");
+      throw new AssistantError(
+        "Incomplete or invalid AI analysis",
+        ErrorType.PROVIDER_ERROR,
+      );
     }
 
     return PromptAnalyzer.normalizeRequirements(requirementsAnalysis);

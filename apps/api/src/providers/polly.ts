@@ -1,11 +1,6 @@
 import { AwsClient } from "aws4fetch";
 
-import { gatewayId } from "../constants/app";
-import { mapParametersToProvider } from "../lib/chat/parameters";
-import { getModelConfigByMatchingModel } from "../lib/models";
 import { trackProviderMetrics } from "../lib/monitoring";
-import type { StorageService } from "../lib/storage";
-import { uploadImageFromChat } from "../lib/upload";
 import type { ChatCompletionParameters } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
 import { BaseProvider } from "./base";
@@ -117,8 +112,11 @@ export class PollyProvider extends BaseProvider {
         });
 
         if (!response.ok) {
-          throw new Error(
-            `Polly API error: ${response.status} ${response.statusText}`,
+          const errorBody = await response.text();
+          throw new AssistantError(
+            `Polly API Error (${response.status}): ${errorBody || response.statusText}`,
+            ErrorType.PROVIDER_ERROR,
+            response.status,
           );
         }
 
@@ -132,8 +130,10 @@ export class PollyProvider extends BaseProvider {
           });
 
           if (!taskResponse.ok) {
-            throw new Error(
+            throw new AssistantError(
               `Failed to check task status: ${taskResponse.status}`,
+              ErrorType.PROVIDER_ERROR,
+              taskResponse.status,
             );
           }
 
@@ -142,7 +142,10 @@ export class PollyProvider extends BaseProvider {
 
           if (status === "completed") {
             if (!taskData.SynthesisTask.OutputUri) {
-              throw new Error("Output URI is missing");
+              throw new AssistantError(
+                "Polly synthesis task failed or output URI is missing",
+                ErrorType.PROVIDER_ERROR,
+              );
             }
 
             const s3Response = await awsClient.fetch(
@@ -151,8 +154,11 @@ export class PollyProvider extends BaseProvider {
             );
 
             if (!s3Response.ok) {
-              throw new Error(
-                `Failed to fetch audio from S3: ${s3Response.status}`,
+              const errorBody = await s3Response.text();
+              throw new AssistantError(
+                `Error fetching Polly audio from S3 (${s3Response.status}): ${errorBody || s3Response.statusText}`,
+                ErrorType.EXTERNAL_API_ERROR,
+                s3Response.status,
               );
             }
 
@@ -168,8 +174,9 @@ export class PollyProvider extends BaseProvider {
           }
 
           if (status === "failed") {
-            throw new Error(
+            throw new AssistantError(
               `Task failed: ${taskData.SynthesisTask.TaskStatusReason}`,
+              ErrorType.PROVIDER_ERROR,
             );
           }
 

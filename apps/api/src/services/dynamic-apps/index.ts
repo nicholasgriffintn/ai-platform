@@ -1,3 +1,4 @@
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { ConversationManager } from "../../lib/conversationManager";
 import { Database } from "../../lib/database";
 import type { AppSchema } from "../../types/app-schema";
@@ -13,7 +14,10 @@ const dynamicApps = new Map<string, AppSchema>();
  */
 export const registerDynamicApp = (app: AppSchema): AppSchema => {
   if (dynamicApps.has(app.id)) {
-    throw new Error(`App with ID ${app.id} already exists`);
+    throw new AssistantError(
+      `App with ID ${app.id} already exists`,
+      ErrorType.PARAMS_ERROR,
+    );
   }
 
   dynamicApps.set(app.id, app);
@@ -64,7 +68,11 @@ export const executeDynamicApp = async (
   const app = dynamicApps.get(id);
 
   if (!app) {
-    throw new Error(`App with ID ${id} not found`);
+    throw new AssistantError(
+      `App with ID ${id} not found`,
+      ErrorType.NOT_FOUND,
+      404,
+    );
   }
 
   validateFormData(app, formData);
@@ -133,14 +141,20 @@ const validateFormData = (
           formData[field.id] === null ||
           formData[field.id] === "")
       ) {
-        throw new Error(`Required field ${field.id} is missing`);
+        throw new AssistantError(
+          `Required field ${field.id} is missing`,
+          ErrorType.PARAMS_ERROR,
+        );
       }
     }
   }
 
   for (const key of Object.keys(formData)) {
     if (!fieldIds.includes(key)) {
-      throw new Error(`Unknown field ${key} in form data`);
+      throw new AssistantError(
+        `Unknown field ${key} in form data`,
+        ErrorType.PARAMS_ERROR,
+      );
     }
   }
 
@@ -168,15 +182,19 @@ const validateField = (
     case "text":
     case "textarea":
       if (typeof value !== "string") {
-        throw new Error(`Field ${field.id} must be a string`);
+        throw new AssistantError(
+          `Field ${field.id} must be a string`,
+          ErrorType.PARAMS_ERROR,
+        );
       }
 
       if (
         validation?.minLength !== undefined &&
         value.length < validation.minLength
       ) {
-        throw new Error(
+        throw new AssistantError(
           `Field ${field.id} must be at least ${validation.minLength} characters`,
+          ErrorType.PARAMS_ERROR,
         );
       }
 
@@ -184,8 +202,9 @@ const validateField = (
         validation?.maxLength !== undefined &&
         value.length > validation.maxLength
       ) {
-        throw new Error(
+        throw new AssistantError(
           `Field ${field.id} must be at most ${validation.maxLength} characters`,
+          ErrorType.PARAMS_ERROR,
         );
       }
 
@@ -193,50 +212,70 @@ const validateField = (
         validation?.pattern !== undefined &&
         !new RegExp(validation.pattern).test(value)
       ) {
-        throw new Error(
+        throw new AssistantError(
           `Field ${field.id} does not match the required pattern`,
+          ErrorType.PARAMS_ERROR,
         );
       }
       break;
 
     case "number":
       if (typeof value !== "number") {
-        throw new Error(`Field ${field.id} must be a number`);
+        throw new AssistantError(
+          `Field ${field.id} must be a number`,
+          ErrorType.PARAMS_ERROR,
+        );
       }
 
       if (validation?.min !== undefined && value < validation.min) {
-        throw new Error(`Field ${field.id} must be at least ${validation.min}`);
+        throw new AssistantError(
+          `Field ${field.id} must be at least ${validation.min}`,
+          ErrorType.PARAMS_ERROR,
+        );
       }
 
       if (validation?.max !== undefined && value > validation.max) {
-        throw new Error(`Field ${field.id} must be at most ${validation.max}`);
+        throw new AssistantError(
+          `Field ${field.id} must be at most ${validation.max}`,
+          ErrorType.PARAMS_ERROR,
+        );
       }
       break;
 
     case "select":
       if (typeof value !== "string") {
-        throw new Error(`Field ${field.id} must be a string`);
+        throw new AssistantError(
+          `Field ${field.id} must be a string`,
+          ErrorType.PARAMS_ERROR,
+        );
       }
 
       if (
         validation?.options &&
         !validation.options.some((option) => option.value === value)
       ) {
-        throw new Error(`Field ${field.id} has an invalid option value`);
+        throw new AssistantError(
+          `Field ${field.id} has an invalid option value`,
+          ErrorType.PARAMS_ERROR,
+        );
       }
       break;
 
     case "multiselect":
       if (!Array.isArray(value)) {
-        throw new Error(`Field ${field.id} must be an array`);
+        throw new AssistantError(
+          `Field ${field.id} must be an array`,
+          ErrorType.PARAMS_ERROR,
+        );
       }
 
       if (validation?.options) {
         const validValues = validation.options.map((option) => option.value);
         for (const item of value) {
           if (!validValues.includes(item)) {
-            throw new Error(
+            throw new AssistantError(
               `Field ${field.id} has an invalid option value: ${item}`,
+              ErrorType.PARAMS_ERROR,
             );
           }
         }
@@ -245,19 +284,28 @@ const validateField = (
 
     case "checkbox":
       if (typeof value !== "boolean") {
-        throw new Error(`Field ${field.id} must be a boolean`);
+        throw new AssistantError(
+          `Field ${field.id} must be a boolean`,
+          ErrorType.PARAMS_ERROR,
+        );
       }
       break;
 
     case "date":
       if (!(value instanceof Date) && Number.isNaN(Date.parse(value))) {
-        throw new Error(`Field ${field.id} must be a valid date`);
+        throw new AssistantError(
+          `Field ${field.id} must be a valid date`,
+          ErrorType.PARAMS_ERROR,
+        );
       }
       break;
 
     case "file":
       if (value === undefined) {
-        throw new Error(`Field ${field.id} must have a file`);
+        throw new AssistantError(
+          `Field ${field.id} must have a file`,
+          ErrorType.PARAMS_ERROR,
+        );
       }
       break;
   }

@@ -51,7 +51,10 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
     const parts = apiKey.split(delimiter);
 
     if (parts.length !== 2) {
-      throw new Error("Invalid AWS credentials format");
+      throw new AssistantError(
+        "Invalid AWS credentials format",
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
 
     return { accessKey: parts[0], secretKey: parts[1] };
@@ -108,7 +111,10 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
     }
 
     if (!accessKeyId || !secretAccessKey) {
-      throw new Error("No valid credentials found");
+      throw new AssistantError(
+        "No valid credentials found",
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
 
     const aws = new AwsClient({
@@ -169,8 +175,10 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(
+      throw new AssistantError(
         `Bedrock Knowledge Base API error: ${response.statusText} - ${errorText}`,
+        ErrorType.PROVIDER_ERROR,
+        response.status,
       );
     }
 
@@ -222,8 +230,10 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(
+      throw new AssistantError(
         `Bedrock Knowledge Base API error: ${response.statusText} - ${errorText}`,
+        ErrorType.PROVIDER_ERROR,
+        response.status,
       );
     }
 

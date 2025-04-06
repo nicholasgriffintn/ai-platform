@@ -54,7 +54,10 @@ export const handleToolCalls = async (
     try {
       functionName = toolCall.function?.name || toolCall.name;
       if (!functionName) {
-        throw new Error("Invalid tool call: missing function name");
+        throw new AssistantError(
+          "Invalid tool call: missing function name",
+          ErrorType.PARAMS_ERROR,
+        );
       }
 
       const rawArgs = toolCall.function?.arguments || toolCall.arguments;

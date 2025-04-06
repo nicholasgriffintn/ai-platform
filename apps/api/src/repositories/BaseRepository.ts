@@ -1,12 +1,15 @@
 import type { IEnv } from "../types";
-import { AssistantError } from "../utils/errors";
+import { AssistantError, ErrorType } from "../utils/errors";
 
 export class BaseRepository {
   protected env: IEnv;
 
   constructor(env: IEnv) {
     if (!env?.DB) {
-      throw new Error("Database not configured");
+      throw new AssistantError(
+        "Database not configured",
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
     this.env = env;
   }
@@ -27,7 +30,10 @@ export class BaseRepository {
     returnFirst = false,
   ): Promise<T | T[] | null> {
     if (!this.env.DB) {
-      throw new Error("DB is not configured");
+      throw new AssistantError(
+        "DB is not configured in runQuery",
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
 
     try {
@@ -45,6 +51,9 @@ export class BaseRepository {
       console.error("Database query error:", error);
       throw new AssistantError(
         `Error executing database query: ${error.message}`,
+        ErrorType.UNKNOWN_ERROR,
+        500,
+        { originalError: error },
       );
     }
   }
@@ -54,7 +63,10 @@ export class BaseRepository {
     params: any[] = [],
   ): Promise<D1Result<unknown>> {
     if (!this.env.DB) {
-      throw new Error("DB is not configured");
+      throw new AssistantError(
+        "DB is not configured in executeRun",
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
 
     try {
@@ -63,14 +75,25 @@ export class BaseRepository {
       const result = await bound.run();
 
       if (!result.success) {
-        throw new AssistantError("Database operation failed");
+        throw new AssistantError(
+          "Database operation failed",
+          ErrorType.UNKNOWN_ERROR,
+          500,
+          { meta: result.meta },
+        );
       }
 
       return result;
     } catch (error: any) {
+      if (error instanceof AssistantError) {
+        throw error;
+      }
       console.error("Database execution error:", error);
       throw new AssistantError(
         `Error executing database operation: ${error.message}`,
+        ErrorType.UNKNOWN_ERROR,
+        500,
+        { originalError: error },
       );
     }
   }

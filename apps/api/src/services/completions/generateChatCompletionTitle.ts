@@ -13,7 +13,10 @@ export const handleGenerateChatCompletionTitle = async (
   const { env, user } = req;
 
   if (!env.AI) {
-    throw new Error("AI binding is not available");
+    throw new AssistantError(
+      "AI binding is not available",
+      ErrorType.CONFIGURATION_ERROR,
+    );
   }
 
   if (!env.DB) {

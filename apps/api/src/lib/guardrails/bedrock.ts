@@ -6,7 +6,9 @@ import type {
   GuardrailsProvider,
   IEnv,
   IUser,
+  IUserSettings,
 } from "../../types";
+import { AssistantError, ErrorType } from "../../utils/errors";
 
 export interface BedrockGuardrailsConfig {
   guardrailId: string;
@@ -46,7 +48,10 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
     const parts = apiKey.split(delimiter);
 
     if (parts.length !== 2) {
-      throw new Error("Invalid AWS credentials format");
+      throw new AssistantError(
+        "Invalid AWS credentials format",
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
 
     return { accessKey: parts[0], secretKey: parts[1] };
@@ -80,7 +85,10 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
       }
 
       if (!accessKeyId || !secretAccessKey) {
-        throw new Error("No valid credentials found");
+        throw new AssistantError(
+          "No valid credentials found for Bedrock Guardrails",
+          ErrorType.CONFIGURATION_ERROR,
+        );
       }
 
       const aws = new AwsClient({
@@ -112,9 +120,17 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Bedrock Guardrails API error: ${response.statusText} - ${errorText}`,
+        const errorBody = await response.text();
+        console.error(
+          "Bedrock Guardrails API Error:",
+          response.status,
+          response.statusText,
+          errorBody,
+        );
+        throw new AssistantError(
+          `Bedrock Guardrails API error (${response.status}): ${errorBody || response.statusText}`,
+          ErrorType.PROVIDER_ERROR,
+          response.status,
         );
       }
 
@@ -164,8 +180,14 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
         rawResponse: data,
       };
     } catch (error) {
-      console.error("Bedrock Guardrails API error:", error);
-      throw error;
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+      console.error("Error validating content with Bedrock Guardrails:", error);
+      throw new AssistantError(
+        `Failed to validate content with Bedrock Guardrails: ${error instanceof Error ? error.message : String(error)}`,
+        ErrorType.PROVIDER_ERROR,
+      );
     }
   }
 }
