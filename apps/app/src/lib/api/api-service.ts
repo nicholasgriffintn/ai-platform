@@ -490,7 +490,12 @@ class ApiService {
 
   async fetchModels(): Promise<ModelConfig> {
     try {
-      const response = await fetch(`${API_BASE_URL}/models`);
+      const response = await fetch(`${API_BASE_URL}/models`, {
+        method: "GET",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+
       if (!response.ok) {
         throw new Error(`Failed to fetch models: ${response.statusText}`);
       }

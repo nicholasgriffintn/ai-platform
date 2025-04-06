@@ -3,9 +3,11 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
+import { Database } from "../lib/database";
 import {
   availableCapabilities,
   availableModelTypes,
+  getFreeModels,
   getModelConfig,
   getModels,
   getModelsByCapability,
@@ -15,12 +17,68 @@ import { createRouteLogger } from "../middleware/loggerMiddleware";
 
 const app = new Hono();
 
+async function filterModelsForUser(allModels: Record<string, any>, c: Context) {
+  const user = c.get("user");
+  const freeModels = getFreeModels();
+  const freeModelIds = new Set(Object.keys(freeModels));
+  const alwaysEnabledProviders = new Set(["workers-ai", "mistral"]);
+
+  if (!user) {
+    routeLogger.debug("No user context found, returning only free models.");
+    const filteredModels: Record<string, any> = {};
+    for (const modelId in allModels) {
+      if (
+        freeModelIds.has(modelId) ||
+        alwaysEnabledProviders.has(allModels[modelId].provider)
+      ) {
+        filteredModels[modelId] = allModels[modelId];
+      }
+    }
+    return filteredModels;
+  }
+
+  try {
+    const database = Database.getInstance(c.env);
+
+    const userProviderSettings = await database.getUserProviderSettings(
+      user.id,
+    );
+
+    const enabledProviders = new Map(
+      userProviderSettings
+        .filter((p) => p.enabled)
+        .map((p) => [p.provider_id, true]),
+    );
+
+    const filteredModels: Record<string, any> = {};
+
+    for (const modelId in allModels) {
+      const model = allModels[modelId];
+      const isFree = freeModelIds.has(modelId);
+      const isEnabled =
+        alwaysEnabledProviders.has(model.provider) ||
+        enabledProviders.has(model.provider);
+
+      if (isFree || isEnabled) {
+        filteredModels[modelId] = model;
+      }
+    }
+
+    return filteredModels;
+  } catch (error) {
+    routeLogger.error(
+      `Error during model filtering for user ${user.id}: ${error}`,
+    );
+    return freeModels;
+  }
+}
+
 const routeLogger = createRouteLogger("MODELS");
 
 /**
  * Global middleware to add route-specific logging
  */
-app.use("/*", (c, next) => {
+app.use("/*", (c: Context, next) => {
   routeLogger.info(`Processing models route: ${c.req.path}`);
   return next();
 });
@@ -51,7 +109,7 @@ const modelSchema = z.object({
 const modelsResponseSchema = z.object({
   success: z.boolean(),
   message: z.string(),
-  data: z.array(modelSchema),
+  data: z.record(z.string(), modelSchema),
 });
 
 const modelResponseSchema = z.object({
@@ -93,12 +151,13 @@ app.get(
     },
   }),
   async (context: Context) => {
-    const models = getModels();
+    const allModels = getModels();
+    const filteredModels = await filterModelsForUser(allModels, context);
 
     return context.json({
       success: true,
       message: "Models fetched successfully",
-      data: models,
+      data: filteredModels,
     });
   },
 );
@@ -190,12 +249,16 @@ app.get(
       capability: string;
     };
 
-    const models = getModelsByCapability(capability);
+    const modelsByCapability = getModelsByCapability(capability);
+    const filteredModels = await filterModelsForUser(
+      modelsByCapability,
+      context,
+    );
 
     return context.json({
       success: true,
       message: "Models fetched successfully",
-      data: models,
+      data: filteredModels,
     });
   },
 );
@@ -285,12 +348,13 @@ app.get(
   async (context: Context) => {
     const { type } = context.req.valid("param" as never) as { type: string };
 
-    const models = getModelsByType(type);
+    const modelsByType = getModelsByType(type);
+    const filteredModels = await filterModelsForUser(modelsByType, context);
 
     return context.json({
       success: true,
       message: "Models fetched successfully",
-      data: models,
+      data: filteredModels,
     });
   },
 );
