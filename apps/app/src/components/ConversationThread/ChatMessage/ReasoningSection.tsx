@@ -35,8 +35,8 @@ export const ReasoningSection = ({ reasoning }: ReasoningSectionProps) => {
         className="cursor-pointer flex items-center text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
         aria-label="Toggle reasoning"
       >
-        {!collapsed ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
         <span>Reasoning</span>
+        {!collapsed ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
       </button>
       {!collapsed && (
         <div>
