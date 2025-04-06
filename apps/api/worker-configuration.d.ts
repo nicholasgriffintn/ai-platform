@@ -37,6 +37,7 @@ interface Env {
   DEEPGRAM_API_KEY: string;
   GROQ_API_KEY: string;
   ANALYTICS_API_KEY: string;
+  LOG_LEVEL?: string;
   ASSETS_BUCKET: R2Bucket;
   DB: D1Database;
   ANALYTICS: AnalyticsEngineDataset;

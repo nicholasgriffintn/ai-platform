@@ -42,10 +42,26 @@ class Logger {
     message: string,
     ...args: any[]
   ): string {
-    let formattedMessage = `[${level}]${this.prefix ? ` [${this.prefix}]` : ""} ${message}`;
+    const timestamp = new Date().toISOString();
 
+    const logObject: Record<string, any> = {
+      timestamp,
+      level,
+      prefix: this.prefix || undefined,
+      message,
+    };
+
+    if (args.length > 0 && typeof args[0] === "object") {
+      // Merge the first object argument with our log object
+      Object.assign(logObject, args[0]);
+
+      // Remove these if they were added as separate properties to avoid duplication
+      args.shift();
+    }
+
+    // Add remaining args as an array if any exist
     if (args.length > 0) {
-      const metaArgs = args.map((arg) => {
+      logObject.additionalArgs = args.map((arg) => {
         if (typeof arg === "object") {
           try {
             return JSON.stringify(arg);
@@ -55,10 +71,9 @@ class Logger {
         }
         return String(arg);
       });
-      formattedMessage = `${formattedMessage} ${metaArgs.join(" ")}`;
     }
 
-    return formattedMessage;
+    return JSON.stringify(logObject);
   }
 
   private log(
