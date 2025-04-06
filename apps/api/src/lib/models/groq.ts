@@ -100,7 +100,7 @@ export const groqModelConfig: ModelConfig = {
     provider: "groq",
     type: ["guardrails"],
   },
-  "llama-4-scout-17b": {
+  "groq-llama-4-scout-17b": {
     name: "Groq Llama 4 Scout 17B",
     matchingModel: "meta-llama/llama-4-scout-17b-16e-instruct",
     provider: "groq",

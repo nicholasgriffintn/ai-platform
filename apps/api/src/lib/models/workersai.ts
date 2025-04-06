@@ -58,6 +58,16 @@ export const workersAiModelConfig: ModelConfig = {
     type: ["text"],
     supportsResponseFormat: true,
   },
+  "llama-4-scout-17b": {
+    name: "Meta Llama 4 Scout 17B",
+    matchingModel: "@cf/meta/llama-4-scout-17b-16e-instruct",
+    description:
+      "Meta's Llama 4 Scout is a 17 billion parameter model with 16 experts that is natively multimodal. These models leverage a mixture-of-experts architecture to offer industry-leading performance in text and image understanding.",
+    provider: "workers-ai",
+    type: ["text"],
+    supportsFunctions: true,
+    isFeatured: true,
+  },
   "hermes-2-pro-mistral-7b": {
     name: "Hermes 2 Pro Mistral 7B",
     matchingModel: "@hf/nousresearch/hermes-2-pro-mistral-7b",
