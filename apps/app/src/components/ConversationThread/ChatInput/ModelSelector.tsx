@@ -2,6 +2,7 @@ import {
   BrainCircuit,
   ChevronDown,
   ChevronUp,
+  Cloud,
   Computer,
   Crown,
   Eye,
@@ -485,6 +486,7 @@ export const ModelSelector = ({
                   }
                   aria-pressed={chatMode === "remote"}
                 >
+                  <Cloud className="h-3 w-3" />
                   Remote
                 </button>
                 <span className="mx-1 text-zinc-400">|</span>
