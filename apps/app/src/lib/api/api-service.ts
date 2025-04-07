@@ -562,7 +562,8 @@ class ApiService {
   async uploadFile(
     file: File,
     fileType: "image" | "document",
-  ): Promise<{ url: string; type: string; name: string }> {
+    options?: { convertToMarkdown?: boolean },
+  ): Promise<{ url: string; type: string; name: string; markdown?: string }> {
     const apiKey = await apiKeyService.getApiKey();
 
     if (!apiKey) {
@@ -575,6 +576,10 @@ class ApiService {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("file_type", fileType);
+
+    if (options?.convertToMarkdown) {
+      formData.append("convert_to_markdown", "true");
+    }
 
     const response = await fetch(`${API_BASE_URL}/uploads`, {
       method: "POST",

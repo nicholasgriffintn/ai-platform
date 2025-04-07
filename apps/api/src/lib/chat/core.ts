@@ -106,6 +106,24 @@ export async function processChatRequest(options: CoreChatOptions) {
         name: c.document_url.name,
       }));
 
+    const markdownAttachments: Attachment[] = lastMessageContent
+      .filter(
+        (
+          c,
+        ): c is {
+          type: "markdown_document";
+          markdown_document: { markdown: string; name?: string };
+        } =>
+          c.type === "markdown_document" &&
+          "markdown_document" in c &&
+          !!c.markdown_document,
+      )
+      .map((c) => ({
+        type: "markdown_document",
+        markdown: c.markdown_document.markdown,
+        name: c.markdown_document.name,
+      }));
+
     const allAttachments = [...imageAttachments, ...documentAttachments];
 
     const selectedModel =
@@ -169,9 +187,17 @@ export async function processChatRequest(options: CoreChatOptions) {
           )
         : finalUserMessage;
 
+    // Add markdown document content as context to the message sent to API only
+    const messageWithContext =
+      markdownAttachments.length > 0
+        ? `${finalMessage}\n\nContext from attached documents:\n${markdownAttachments
+            .map((doc) => `${doc.name ? `# ${doc.name}\n` : ""}${doc.markdown}`)
+            .join("\n\n")}`
+        : finalMessage;
+
     const guardrails = Guardrails.getInstance(env, user, userSettings);
     const inputValidation = await guardrails.validateInput(
-      finalMessage,
+      messageWithContext,
       user?.id,
       completion_id,
     );
@@ -188,7 +214,7 @@ export async function processChatRequest(options: CoreChatOptions) {
 
     const messageToStore: Message = {
       role: lastMessage.role,
-      content: finalMessage,
+      content: finalMessage, // Store original message without context
       id: Math.random().toString(36).substring(2, 7),
       timestamp: Date.now(),
       model: matchedModel,
@@ -288,7 +314,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       disable_functions,
       completion_id,
       messages: filteredChatMessages,
-      message: finalMessage,
+      message: messageWithContext, // Send message with context to API
       model: matchedModel,
       mode: currentMode,
       should_think,

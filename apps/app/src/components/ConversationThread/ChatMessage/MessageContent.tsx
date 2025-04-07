@@ -112,7 +112,12 @@ const renderTextContent = (
           }
           if (attachment.type === "document") {
             renderedParts.push(
-              renderDocumentContent(attachment.url, attachment.name),
+              renderDocumentContent(
+                attachment.url,
+                attachment.name,
+                undefined,
+                attachment.isMarkdown,
+              ),
             );
           }
           if (attachment.type) {
@@ -161,7 +166,12 @@ const renderTextContent = (
               return renderImageContent(attachment.url, i);
             }
             if (attachment.type === "document") {
-              return renderDocumentContent(attachment.url, attachment.name, i);
+              return renderDocumentContent(
+                attachment.url,
+                attachment.name,
+                i,
+                attachment.isMarkdown,
+              );
             }
             return `[[CONTENT:${attachment.url}]]`;
           })}
@@ -190,26 +200,32 @@ const renderDocumentContent = (
   documentUrl: string,
   documentName?: string,
   index?: number,
+  isMarkdown?: boolean,
 ): ReactNode => {
   return (
     <div
       key={`document-attachment-${index ?? 0}`}
-      className="flex items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+      className="flex flex-col items-start gap-2 border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 bg-zinc-50 dark:bg-zinc-800/50 text-sm"
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
-        <File size={20} />
+      <div className="flex items-center gap-2">
+        <File className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+        <span className="text-zinc-700 dark:text-zinc-300">
+          {documentName || "Document"}
+          {isMarkdown && (
+            <span className="text-xs ml-2 italic">(converted to text)</span>
+          )}
+        </span>
       </div>
-      <div className="overflow-hidden text-sm">
-        <p className="truncate font-medium">{documentName || "Document"}</p>
+      {documentUrl && (
         <a
           href={documentUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-blue-500"
+          className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
         >
-          Download document
+          View document
         </a>
-      </div>
+      )}
     </div>
   );
 };
@@ -330,6 +346,7 @@ export const MessageContent = memo(
                     attachment.url,
                     attachment.name,
                     i,
+                    attachment.isMarkdown,
                   );
                 }
                 return null;
