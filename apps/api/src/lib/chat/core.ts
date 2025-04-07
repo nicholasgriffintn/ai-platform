@@ -124,7 +124,11 @@ export async function processChatRequest(options: CoreChatOptions) {
         name: c.markdown_document.name,
       }));
 
-    const allAttachments = [...imageAttachments, ...documentAttachments];
+    const allAttachments = [
+      ...imageAttachments,
+      ...documentAttachments,
+      ...markdownAttachments,
+    ];
 
     const selectedModel =
       requestedModel ||
@@ -187,7 +191,6 @@ export async function processChatRequest(options: CoreChatOptions) {
           )
         : finalUserMessage;
 
-    // Add markdown document content as context to the message sent to API only
     const messageWithContext =
       markdownAttachments.length > 0
         ? `${finalMessage}\n\nContext from attached documents:\n${markdownAttachments
@@ -214,7 +217,7 @@ export async function processChatRequest(options: CoreChatOptions) {
 
     const messageToStore: Message = {
       role: lastMessage.role,
-      content: finalMessage, // Store original message without context
+      content: finalMessage,
       id: Math.random().toString(36).substring(2, 7),
       timestamp: Date.now(),
       model: matchedModel,
@@ -285,11 +288,23 @@ export async function processChatRequest(options: CoreChatOptions) {
     }
 
     const chatMessages = messages.map((msg, index) => {
-      // Transform the last message if using RAG
-      if (index === messages.length - 1 && use_rag) {
+      // Transform the last message if using RAG or has markdown attachments
+      if (index === messages.length - 1) {
+        let messageText = msg.content;
+
+        // Use RAG-augmented message if RAG is enabled
+        if (use_rag && currentMode !== "prompt_coach") {
+          messageText = finalMessage;
+        }
+
+        // Use message with markdown context if markdown attachments exist
+        if (markdownAttachments.length > 0) {
+          messageText = messageWithContext;
+        }
+
         return {
           ...msg,
-          content: [{ type: "text" as const, text: finalMessage }],
+          content: messageText,
         };
       }
       return msg;
@@ -314,7 +329,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       disable_functions,
       completion_id,
       messages: filteredChatMessages,
-      message: messageWithContext, // Send message with context to API
+      message: messageWithContext,
       model: matchedModel,
       mode: currentMode,
       should_think,
