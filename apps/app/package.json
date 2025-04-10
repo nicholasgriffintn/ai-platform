@@ -44,7 +44,7 @@
 		"@capacitor/cli": "7.2.0",
 		"@capacitor/core": "7.2.0",
 		"@capacitor/ios": "7.2.0",
-		"@cloudflare/workers-types": "4.20250409.0",
+		"@cloudflare/workers-types": "4.20250410.0",
 		"@react-router/dev": "7.5.0",
 		"@tailwindcss/typography": "0.5.16",
 		"@tailwindcss/vite": "4.1.3",
