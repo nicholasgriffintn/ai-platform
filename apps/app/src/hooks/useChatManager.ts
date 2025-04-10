@@ -592,7 +592,12 @@ export function useChatManager() {
   const sendMessage = useCallback(
     async (
       input: string,
-      attachmentData?: { type: string; data: string; name?: string },
+      attachmentData?: {
+        type: string;
+        data: string;
+        name?: string;
+        markdown?: string;
+      },
     ) => {
       if (!input.trim() && !attachmentData) {
         return {
@@ -626,6 +631,17 @@ export function useChatManager() {
             type: "document_url",
             document_url: {
               url: attachmentData.data,
+              name: attachmentData.name,
+            },
+          });
+        } else if (
+          attachmentData.type === "markdown_document" &&
+          attachmentData.markdown
+        ) {
+          contentItems.push({
+            type: "markdown_document",
+            markdown_document: {
+              markdown: attachmentData.markdown,
               name: attachmentData.name,
             },
           });

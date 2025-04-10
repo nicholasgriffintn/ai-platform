@@ -31,6 +31,7 @@ export const createChatCompletionsJsonSchema = z.object({
                     "image_url",
                     "input_audio",
                     "document_url",
+                    "markdown_document",
                   ]),
                   text: z.string().optional(),
                   document_url: z
@@ -40,6 +41,13 @@ export const createChatCompletionsJsonSchema = z.object({
                       }),
                       name: z.string().optional().openapi({
                         description: "The name of the document.",
+                      }),
+                    })
+                    .optional(),
+                  markdown_document: z
+                    .object({
+                      markdown: z.string().openapi({
+                        description: "The markdown content of the document.",
                       }),
                     })
                     .optional(),
@@ -72,6 +80,8 @@ export const createChatCompletionsJsonSchema = z.object({
                     if (obj.type === "document_url") return !!obj.document_url;
                     if (obj.type === "image_url") return !!obj.image_url;
                     if (obj.type === "input_audio") return !!obj.input_audio;
+                    if (obj.type === "markdown_document")
+                      return !!obj.markdown_document;
                     return true;
                   },
                   {

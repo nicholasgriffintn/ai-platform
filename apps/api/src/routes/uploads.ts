@@ -3,6 +3,7 @@ import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
 
+import { convertToMarkdownViaCloudflare } from "../lib/documentConverter";
 import { StorageService } from "../lib/storage";
 import { requireAuth } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
@@ -24,8 +25,9 @@ app.use("/*", (c, next) => {
 
 const uploadResponseSchema = z.object({
   url: z.string(),
-  type: z.enum(["image", "document"]),
+  type: z.enum(["image", "document", "markdown_document"]),
   name: z.string().optional(),
+  markdown: z.string().optional(),
 });
 
 app.post(
@@ -142,9 +144,21 @@ app.post(
 
       const allowedMimeTypes = {
         image: ["image/jpeg", "image/png", "image/gif", "image/webp"],
-        document: ["application/pdf"],
+        document: [
+          "application/pdf",
+          "text/html",
+          "application/xml",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-excel.sheet.macroenabled.12",
+          "application/vnd.ms-excel.sheet.binary.macroenabled.12",
+          "application/vnd.ms-excel",
+          "application/vnd.oasis.opendocument.spreadsheet",
+          "text/csv",
+          "application/vnd.apple.numbers",
+        ],
       };
 
+      // Check if the file type is allowed
       if (!allowedMimeTypes[fileType].includes(file.type)) {
         throw new AssistantError(
           `Invalid file type. Allowed types for ${fileType}: ${allowedMimeTypes[fileType].join(", ")}`,
@@ -153,6 +167,24 @@ app.post(
         );
       }
 
+      // Convert to markdown if needed - only for non-PDF documents
+      let shouldConvertToMarkdown = false;
+      let markdownContent = "";
+
+      // For documents other than PDFs, or if the model doesn't support native documents
+      const fileTypeParam = formData.get("convert_to_markdown") as
+        | string
+        | null;
+      const convertToMarkdown = fileTypeParam === "true";
+      const isPdf = file.type === "application/pdf";
+
+      // Always convert non-PDF documents to markdown
+      // Only convert PDFs if explicitly requested
+      if (fileType === "document" && (!isPdf || convertToMarkdown)) {
+        shouldConvertToMarkdown = true;
+      }
+
+      // Continue with normal upload for all files
       const fileExtension = file.type.split("/")[1];
       const userId = user?.id || "anonymous";
       const userIdSanitized =
@@ -210,15 +242,46 @@ app.post(
       }
 
       const fileUrl = `${baseAssetsUrl}/${key}`;
+
+      if (shouldConvertToMarkdown) {
+        try {
+          const { result, error } = await convertToMarkdownViaCloudflare(
+            env,
+            fileUrl,
+            file.name,
+          );
+
+          if (error) {
+            routeLogger.error("Failed to convert document to markdown", {
+              error,
+            });
+          } else if (result) {
+            markdownContent = result;
+            routeLogger.info("Document converted to markdown successfully");
+          }
+        } catch (markdownError) {
+          routeLogger.error("Error in markdown conversion", {
+            error:
+              markdownError instanceof Error
+                ? markdownError.message
+                : String(markdownError),
+            stack:
+              markdownError instanceof Error ? markdownError.stack : undefined,
+          });
+        }
+      }
+
       routeLogger.info("File upload complete", {
         url: fileUrl,
-        type: fileType,
+        type: markdownContent ? "markdown_document" : fileType,
+        convertedToMarkdown: !!markdownContent,
       });
 
       return context.json({
         url: fileUrl,
-        type: fileType,
+        type: markdownContent ? "markdown_document" : fileType,
         name: file.name,
+        markdown: markdownContent || undefined,
       });
     } catch (error) {
       const errorMessage =

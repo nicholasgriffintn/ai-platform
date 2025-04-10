@@ -57,6 +57,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       type: string;
       data: string;
       name?: string;
+      markdown?: string;
     } | null>(null);
     const [isMultimodalModel, setIsMultimodalModel] = useState(false);
     const [supportsDocuments, setSupportsDocuments] = useState(false);
@@ -136,38 +137,16 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       const file = e.target.files?.[0];
       if (!file) return;
 
-      if (file.type === "application/pdf") {
-        if (!supportsDocuments) {
-          alert("This model does not support document uploads");
-          return;
-        }
+      try {
+        setIsUploading(true);
 
-        try {
-          setIsUploading(true);
-
-          const { url, name } = await apiService.uploadFile(file, "document");
-
-          setSelectedAttachment({
-            type: "document",
-            data: url,
-            name: name || file.name,
-          });
-        } catch (error) {
-          console.error("Failed to upload document:", error);
-          alert(
-            `Failed to upload document: ${error instanceof Error ? error.message : "Unknown error"}`,
-          );
-        } finally {
-          setIsUploading(false);
-        }
-      } else if (file.type.startsWith("image/")) {
-        if (!isMultimodalModel) {
-          alert("This model does not support image uploads");
-          return;
-        }
-
-        try {
-          setIsUploading(true);
+        // Handle image uploads
+        if (file.type.startsWith("image/")) {
+          if (!isMultimodalModel) {
+            alert("This model does not support image uploads");
+            setIsUploading(false);
+            return;
+          }
 
           const { url } = await apiService.uploadFile(file, "image");
 
@@ -175,17 +154,70 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
             type: "image",
             data: url,
           });
-        } catch (error) {
-          console.error("Failed to upload image:", error);
-          alert(
-            `Failed to upload image: ${error instanceof Error ? error.message : "Unknown error"}`,
-          );
-        } finally {
           setIsUploading(false);
+          return;
         }
-      } else {
-        alert("Unsupported file type");
-        return;
+
+        // Handle PDF documents
+        if (file.type === "application/pdf") {
+          // If model supports documents natively, upload as document
+          if (supportsDocuments) {
+            const { url, name } = await apiService.uploadFile(file, "document");
+            setSelectedAttachment({
+              type: "document",
+              data: url,
+              name: name || file.name,
+            });
+          }
+          // Otherwise convert PDF to markdown
+          else {
+            const { url, name, markdown, type } = await apiService.uploadFile(
+              file,
+              "document",
+              { convertToMarkdown: true },
+            );
+
+            if (type === "markdown_document" && markdown) {
+              setSelectedAttachment({
+                type: "markdown_document",
+                data: url,
+                name: name || file.name,
+                markdown: markdown,
+              });
+            } else {
+              alert(
+                "This model does not support document uploads and conversion failed",
+              );
+            }
+          }
+          setIsUploading(false);
+          return;
+        }
+
+        // Handle all other document types - always convert to markdown
+        const { url, name, markdown, type } = await apiService.uploadFile(
+          file,
+          "document",
+          { convertToMarkdown: true },
+        );
+
+        if (type === "markdown_document" && markdown) {
+          setSelectedAttachment({
+            type: "markdown_document",
+            data: url,
+            name: name || file.name,
+            markdown: markdown,
+          });
+        } else {
+          alert("Unsupported file type or conversion failed");
+        }
+      } catch (error) {
+        console.error("Failed to upload file:", error);
+        alert(
+          `Failed to upload file: ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
+      } finally {
+        setIsUploading(false);
       }
     };
 
@@ -202,16 +234,14 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     };
 
     const getFileTypeAccept = () => {
-      if (isMultimodalModel && supportsDocuments) {
-        return "image/*,application/pdf";
-      }
+      let fileTypes =
+        "text/html,application/xml,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroenabled.12,application/vnd.ms-excel.sheet.binary.macroenabled.12,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet,text/csv,application/vnd.apple.numbers,application/pdf";
+
       if (isMultimodalModel) {
-        return "image/*";
+        fileTypes += ",image/*";
       }
-      if (supportsDocuments) {
-        return "application/pdf";
-      }
-      return "";
+
+      return fileTypes;
     };
 
     const getUploadButtonIcon = () => {
@@ -228,7 +258,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       if (supportsDocuments) {
         return <File className="h-4 w-4" />;
       }
-      return null;
+      return <Paperclip className="h-4 w-4" />;
     };
 
     const getAttachmentIconAndLabel = () => {
@@ -244,18 +274,25 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           label: "Image attached",
         };
       }
-      if (selectedAttachment?.type === "document") {
+      if (
+        selectedAttachment?.type === "document" ||
+        selectedAttachment?.type === "markdown_document"
+      ) {
         return {
           preview: (
             <File className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
           ),
-          label: selectedAttachment.name || "Document attached",
+          label:
+            selectedAttachment?.type === "markdown_document"
+              ? `${selectedAttachment.name || "Document"} (converted to text)`
+              : selectedAttachment.name || "Document attached",
         };
       }
       return { preview: null, label: "" };
     };
 
-    const canUploadFiles = isMultimodalModel || supportsDocuments;
+    const canUploadFiles = true;
+
     const { preview, label } = selectedAttachment
       ? getAttachmentIconAndLabel()
       : { preview: null, label: "" };

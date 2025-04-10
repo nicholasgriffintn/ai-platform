@@ -8,7 +8,8 @@ export type ContentType =
   | "image_url"
   | "audio_url"
   | "thinking"
-  | "document_url";
+  | "document_url"
+  | "markdown_document";
 export type ChatRole = "user" | "assistant" | "tool" | "developer";
 export type ChatMode =
   | "normal"
@@ -38,10 +39,11 @@ export type MessageContent = {
 };
 
 export type Attachment = {
-  type: "image" | "document";
-  url: string;
+  type: "image" | "document" | "markdown_document";
+  url?: string;
   detail?: "low" | "high";
   name?: string;
+  markdown?: string;
 };
 
 export interface Message {

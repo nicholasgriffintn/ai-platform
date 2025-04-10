@@ -45,6 +45,14 @@ export interface MessageContent {
   signature?: string;
 }
 
+export type Attachment = {
+  type: "image" | "document";
+  url: string;
+  detail?: "low" | "high";
+  name?: string;
+  isMarkdown?: boolean;
+};
+
 export interface MessageData {
   responseType?: "table" | "json" | "text" | "template" | "custom";
   responseDisplay?: {
@@ -56,11 +64,7 @@ export interface MessageData {
   };
   icon?: string;
   formattedName?: string;
-  attachments?: Array<{
-    type: string;
-    url: string;
-    name?: string;
-  }>;
+  attachments?: Attachment[];
   searchGrounding?: {
     searchEntryPoint?: {
       renderedContent: string;
