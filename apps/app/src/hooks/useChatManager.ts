@@ -420,10 +420,11 @@ export function useChatManager() {
         response = content;
 
         if (toolResponses && toolResponses.length > 0) {
-          // biome-ignore lint/complexity/noForEach: <explanation>
-          toolResponses.forEach((toolResponse) => {
-            addMessageToConversation(conversationId, toolResponse);
-          });
+          setTimeout(() => {
+            for (const toolResponse of toolResponses) {
+              addMessageToConversation(conversationId, toolResponse);
+            }
+          }, 0);
         } else {
           updateAssistantMessage(conversationId, content, reasoning);
         }
@@ -434,6 +435,7 @@ export function useChatManager() {
           const handleProgress = (text: string) => {
             response += text;
             assistantResponseRef.current = response;
+
             updateAssistantMessage(conversationId, response);
           };
 
@@ -441,7 +443,7 @@ export function useChatManager() {
           const lastMessageContent =
             typeof lastMessage.content === "string"
               ? lastMessage.content
-              : lastMessage.content.map((item) => item.text).join("");
+              : lastMessage.content.map((item) => item.text || "").join("");
 
           response = await webLLMService.current.generate(
             String(conversationId),
@@ -459,9 +461,7 @@ export function useChatManager() {
             !localOnlyMode &&
             !chatSettings.localOnly;
 
-          const normalizedMessages = messages.map((msg) =>
-            normalizeMessage(msg),
-          );
+          const normalizedMessages = messages.map(normalizeMessage);
 
           const assistantMessage = await apiService.streamChatCompletions(
             conversationId,
@@ -470,15 +470,16 @@ export function useChatManager() {
             chatMode,
             chatSettings,
             controller.signal,
-            (text, reasoning, toolResponses) =>
-              handleMessageUpdate(text, reasoning, toolResponses),
+            handleMessageUpdate,
             shouldStore,
           );
 
           const messageContent =
             typeof assistantMessage.content === "string"
               ? assistantMessage.content
-              : assistantMessage.content.map((item) => item.text).join("");
+              : assistantMessage.content
+                  .map((item) => item.text || "")
+                  .join("");
 
           response = messageContent || "";
 
@@ -609,30 +610,42 @@ export function useChatManager() {
       setStreamStarted(true);
       startLoading("stream-response", "Generating response...");
 
-      let userMessage: Message;
-      if (attachmentData) {
-        const contentItems: any[] = [
-          {
-            type: "text",
-            text: input.trim(),
-          },
-        ];
+      const userMessageId = crypto.randomUUID();
+      const currentTime = Date.now();
 
-        if (attachmentData.type === "image") {
-          contentItems.push({
-            type: "image_url",
-            image_url: {
-              url: attachmentData.data,
-              detail: "auto",
+      const prepareUserMessage = () => {
+        if (attachmentData) {
+          const contentItems: any[] = [
+            {
+              type: "text",
+              text: input.trim(),
             },
-          });
-        } else if (attachmentData.type === "document") {
-          contentItems.push({
-            type: "document_url",
-            document_url: {
-              url: attachmentData.data,
-              name: attachmentData.name,
-            },
+          ];
+
+          if (attachmentData.type === "image") {
+            contentItems.push({
+              type: "image_url",
+              image_url: {
+                url: attachmentData.data,
+                detail: "auto",
+              },
+            });
+          } else if (attachmentData.type === "document") {
+            contentItems.push({
+              type: "document_url",
+              document_url: {
+                url: attachmentData.data,
+                name: attachmentData.name,
+              },
+            });
+          }
+
+          return normalizeMessage({
+            role: "user",
+            content: contentItems,
+            id: userMessageId,
+            created: currentTime,
+            model,
           });
         } else if (
           attachmentData.type === "markdown_document" &&
@@ -647,53 +660,49 @@ export function useChatManager() {
           });
         }
 
-        userMessage = normalizeMessage({
-          role: "user",
-          content: contentItems,
-          id: crypto.randomUUID(),
-          created: Date.now(),
-          model,
-        });
-      } else {
-        userMessage = normalizeMessage({
+        return normalizeMessage({
           role: "user",
           content: input.trim(),
-          id: crypto.randomUUID(),
-          created: Date.now(),
+          id: userMessageId,
+          created: currentTime,
           model,
         });
-      }
-
-      let conversationId = currentConversationId;
-      if (!conversationId) {
-        conversationId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-        startNewConversation(conversationId);
-      }
-
-      await queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY] });
-      await queryClient.cancelQueries({
-        queryKey: [CHATS_QUERY_KEY, conversationId],
-        exact: true,
-      });
-
-      const previousConversation = queryClient.getQueryData<Conversation>([
-        CHATS_QUERY_KEY,
-        conversationId,
-      ]);
-
-      await addMessageToConversation(conversationId, userMessage);
-
-      let updatedMessages: Message[] = [];
-      if (
-        !previousConversation ||
-        previousConversation?.messages?.length === 0
-      ) {
-        updatedMessages = [userMessage];
-      } else {
-        updatedMessages = [...previousConversation.messages, userMessage];
-      }
+      };
 
       try {
+        let conversationId = currentConversationId;
+        if (!conversationId) {
+          conversationId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+          startNewConversation(conversationId);
+        }
+
+        const userMessage = prepareUserMessage();
+
+        const cancelQueries = async () => {
+          await Promise.all([
+            queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY] }),
+            queryClient.cancelQueries({
+              queryKey: [CHATS_QUERY_KEY, conversationId],
+              exact: true,
+            }),
+          ]);
+        };
+
+        const previousConversation = queryClient.getQueryData<Conversation>([
+          CHATS_QUERY_KEY,
+          conversationId,
+        ]);
+
+        const cancelPromise = cancelQueries();
+
+        await addMessageToConversation(conversationId, userMessage);
+
+        await cancelPromise;
+
+        const updatedMessages = previousConversation?.messages?.length
+          ? [...previousConversation.messages, userMessage]
+          : [userMessage];
+
         const response = await streamResponse(updatedMessages, conversationId);
         return response;
       } catch (error) {

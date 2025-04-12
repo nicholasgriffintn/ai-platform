@@ -182,4 +182,22 @@ export const workersAiModelConfig: ModelConfig = {
     provider: "workers-ai",
     type: ["reranking"],
   },
+  "gemma-3-12b-it": {
+    name: "Gemma 3 12B IT",
+    matchingModel: "@cf/google/gemma-3-12b-it",
+    provider: "workers-ai",
+    type: ["text"],
+  },
+  "qwq-32b": {
+    name: "QWQ 32B",
+    matchingModel: "@cf/qwen/qwq-32b",
+    provider: "workers-ai",
+    type: ["text"],
+  },
+  "qwen2.5-coder-32b": {
+    name: "Qwen 2.5 Coder 32B",
+    matchingModel: "@cf/qwen/qwen2.5-coder-32b-instruct",
+    provider: "workers-ai",
+    type: ["coding"],
+  },
 };

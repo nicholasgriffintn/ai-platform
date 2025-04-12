@@ -94,20 +94,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     supportsArtifacts: true,
   }),
 
-  createModelConfig("gpt-4-turbo", PROVIDER, {
-    name: "OpenAI GPT-4 Turbo",
-    matchingModel: "gpt-4-turbo",
-    type: ["text"],
-    supportsFunctions: true,
-  }),
-
-  createModelConfig("gpt-4", PROVIDER, {
-    name: "OpenAI GPT-4",
-    matchingModel: "gpt-4",
-    type: ["text"],
-    supportsFunctions: true,
-  }),
-
   createModelConfig("gpt-4.5", PROVIDER, {
     name: "OpenAI GPT-4.5",
     matchingModel: "gpt-4.5-preview",
@@ -129,11 +115,5 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     includedInRouter: true,
     supportsResponseFormat: true,
     supportsArtifacts: true,
-  }),
-
-  createModelConfig("gpt-3.5-turbo", PROVIDER, {
-    name: "OpenAI GPT-3.5 Turbo",
-    matchingModel: "gpt-3.5-turbo",
-    type: ["text"],
   }),
 ]);

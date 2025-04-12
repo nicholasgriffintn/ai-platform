@@ -9,14 +9,6 @@ export const openrouterModelConfig: ModelConfig = {
     provider: "openrouter",
     type: ["text"],
   },
-  "qwq-32b": {
-    name: "QwQ 32B",
-    matchingModel: "qwen/qwq-32b-preview",
-    description:
-      "QwQ is an experimental research model focused on advancing AI reasoning capabilities.",
-    provider: "openrouter",
-    type: ["text"],
-  },
   "mythomax-l2-13b": {
     name: "Mythomax L2 13B",
     matchingModel: "gryphe/mythomax-l2-13b",
