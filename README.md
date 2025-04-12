@@ -65,6 +65,7 @@ This project is organized as a monorepo with multiple applications:
 - Prompt Coaching
 - Monitoring with Cloudflare Analytics Engine
 - Media uploading to Cloudflare R2
+- [Conversation to Markdown for models that don't support native PDF or other document uploads](https://nicholasgriffin.dev/blog/using-markdown-conversion-to-add-documents-to-ai-chat-context)
 - Multiple authentication methods:
   - GitHub OAuth
   - Session-based authentication
