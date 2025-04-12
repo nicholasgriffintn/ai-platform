@@ -134,11 +134,31 @@ export class WebAuthnRepository extends BaseRepository {
     passkeyId: number,
     userId: number,
   ): Promise<boolean> {
-    const result = await this.executeRun(
-      "DELETE FROM passkey WHERE id = ? AND user_id = ?",
-      [passkeyId, userId],
-    );
+    try {
+      await this.executeRun("BEGIN TRANSACTION", []);
 
-    return result !== null && typeof result === "object";
+      const passkey = await this.runQuery<Record<string, unknown>>(
+        "SELECT id FROM passkey WHERE id = ? AND user_id = ? LIMIT 1",
+        [passkeyId, userId],
+        true,
+      );
+
+      if (!passkey) {
+        await this.executeRun("ROLLBACK", []);
+        return false;
+      }
+
+      await this.executeRun(
+        "DELETE FROM passkey WHERE id = ? AND user_id = ?",
+        [passkeyId, userId],
+      );
+
+      await this.executeRun("COMMIT", []);
+      return true;
+    } catch (error) {
+      await this.executeRun("ROLLBACK", []);
+      console.error("Transaction error in deletePasskey:", error);
+      return false;
+    }
   }
 }

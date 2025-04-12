@@ -453,7 +453,13 @@ app.get(
 );
 
 const rpName = "Polychat";
-const rpID = (c) => new URL(c.req.url).hostname;
+const rpID = (c) => {
+  const hostname = new URL(c.req.url).hostname;
+  // For localhost or development environments, use a fixed value
+  return hostname === "localhost" || hostname.includes("127.0.0.1")
+    ? "localhost"
+    : hostname;
+};
 const getOrigin = (c) => {
   const url = new URL(c.req.url);
   return `${url.protocol}//${url.host}`;

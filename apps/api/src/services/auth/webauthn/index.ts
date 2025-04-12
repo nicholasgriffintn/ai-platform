@@ -242,11 +242,27 @@ export async function verifyAndRegisterPasskey(
 
     if (verified && registrationInfo) {
       const { credential } = registrationInfo;
+      const credentialId = Buffer.from(credential.id).toString("base64url");
+
+      const existingCredentials = await getUserPasskeys(database, user.id);
+      const duplicateCredential = existingCredentials.find(
+        (cred) => cred.credential_id === credentialId,
+      );
+
+      if (duplicateCredential) {
+        console.warn(
+          `Attempt to register duplicate credential ID: ${credentialId}`,
+        );
+        throw new AssistantError(
+          "This passkey is already registered",
+          ErrorType.AUTHENTICATION_ERROR,
+        );
+      }
 
       await registerPasskey(
         database,
         user.id,
-        Buffer.from(credential.id).toString("base64url"),
+        credentialId,
         credential.publicKey,
         credential.counter,
         registrationInfo.credentialDeviceType,
