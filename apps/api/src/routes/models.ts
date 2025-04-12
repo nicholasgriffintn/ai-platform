@@ -21,7 +21,10 @@ async function filterModelsForUser(allModels: Record<string, any>, c: Context) {
   const user = c.get("user");
   const freeModels = getFreeModels();
   const freeModelIds = new Set(Object.keys(freeModels));
-  const alwaysEnabledProviders = new Set(["workers-ai", "mistral"]);
+  const alwaysEnabledProvidersEnvVar = c.env.ALWAYS_ENABLED_PROVIDERS;
+  const alwaysEnabledProviders = new Set(
+    alwaysEnabledProvidersEnvVar?.split(",") || [],
+  );
 
   if (!user) {
     routeLogger.debug("No user context found, returning only free models.");
