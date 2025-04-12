@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "react-router dev",
+    "dev:scan": "pnpm dev & npx react-scan@latest localhost:5173",
     "build": "pnpm run typecheck && react-router build",
     "start": "wrangler dev",
     "watch": "react-router build --watch",
