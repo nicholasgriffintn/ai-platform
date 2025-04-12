@@ -92,11 +92,18 @@ export const ConversationThread = () => {
     }
   }, [currentConversationId]);
 
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
+  const canSubmit = useMemo(
+    () => chatInput.trim() && !isStreamLoading && !isModelInitializing,
+    [chatInput, isStreamLoading, isModelInitializing],
+  );
+
+  const handleKeyPress = useCallback(
+    (e: KeyboardEvent) => {
+      if (isStreamLoading || isModelInitializing) return;
+
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
-        if (chatInput.trim() && !isStreamLoading && !isModelInitializing) {
+        if (canSubmit) {
           handleSubmit(e as unknown as FormEvent);
         }
       }
@@ -110,21 +117,24 @@ export const ConversationThread = () => {
           }, 0);
         }
       }
-    };
+    },
+    [
+      canSubmit,
+      controller,
+      abortStream,
+      isPanelVisible,
+      handlePanelClose,
+      isStreamLoading,
+      isModelInitializing,
+    ],
+  );
 
+  useEffect(() => {
     window.addEventListener("keydown", handleKeyPress);
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
     };
-  }, [
-    chatInput,
-    isStreamLoading,
-    isModelInitializing,
-    controller,
-    abortStream,
-    isPanelVisible,
-    handlePanelClose,
-  ]);
+  }, [handleKeyPress]);
 
   const handleSubmit = async (
     e: FormEvent,
