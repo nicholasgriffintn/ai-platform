@@ -16,6 +16,7 @@ import { processPromptCoachMode } from "./prompt_coach";
 import { getAIResponse } from "./responses";
 import { createStreamWithPostProcessing } from "./streaming";
 import { handleToolCalls } from "./tools";
+import { checkContextWindowLimits } from "./utils";
 
 type CoreChatOptions = ChatCompletionParameters & {
   isRestricted?: boolean;
@@ -106,7 +107,29 @@ export async function processChatRequest(options: CoreChatOptions) {
         name: c.document_url.name,
       }));
 
-    const allAttachments = [...imageAttachments, ...documentAttachments];
+    const markdownAttachments: Attachment[] = lastMessageContent
+      .filter(
+        (
+          c,
+        ): c is {
+          type: "markdown_document";
+          markdown_document: { markdown: string; name?: string };
+        } =>
+          c.type === "markdown_document" &&
+          "markdown_document" in c &&
+          !!c.markdown_document,
+      )
+      .map((c) => ({
+        type: "markdown_document",
+        markdown: c.markdown_document.markdown,
+        name: c.markdown_document.name,
+      }));
+
+    const allAttachments = [
+      ...imageAttachments,
+      ...documentAttachments,
+      ...markdownAttachments,
+    ];
 
     const selectedModel =
       requestedModel ||
@@ -169,9 +192,18 @@ export async function processChatRequest(options: CoreChatOptions) {
           )
         : finalUserMessage;
 
+    const messageWithContext =
+      markdownAttachments.length > 0
+        ? `${finalMessage}\n\nContext from attached documents:\n${markdownAttachments
+            .map((doc) => `${doc.name ? `# ${doc.name}\n` : ""}${doc.markdown}`)
+            .join("\n\n")}`
+        : finalMessage;
+
+    checkContextWindowLimits(messages, messageWithContext, modelConfig);
+
     const guardrails = Guardrails.getInstance(env, user, userSettings);
     const inputValidation = await guardrails.validateInput(
-      finalMessage,
+      messageWithContext,
       user?.id,
       completion_id,
     );
@@ -259,11 +291,23 @@ export async function processChatRequest(options: CoreChatOptions) {
     }
 
     const chatMessages = messages.map((msg, index) => {
-      // Transform the last message if using RAG
-      if (index === messages.length - 1 && use_rag) {
+      // Transform the last message if using RAG or has markdown attachments
+      if (index === messages.length - 1) {
+        let messageText = msg.content;
+
+        // Use RAG-augmented message if RAG is enabled
+        if (use_rag && currentMode !== "prompt_coach") {
+          messageText = finalMessage;
+        }
+
+        // Use message with markdown context if markdown attachments exist
+        if (markdownAttachments.length > 0) {
+          messageText = messageWithContext;
+        }
+
         return {
           ...msg,
-          content: [{ type: "text" as const, text: finalMessage }],
+          content: messageText,
         };
       }
       return msg;
@@ -288,7 +332,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       disable_functions,
       completion_id,
       messages: filteredChatMessages,
-      message: finalMessage,
+      message: messageWithContext,
       model: matchedModel,
       mode: currentMode,
       should_think,
