@@ -10,6 +10,7 @@ export enum ErrorType {
   EXTERNAL_API_ERROR = "EXTERNAL_API_ERROR",
   FORBIDDEN = "FORBIDDEN",
   UNAUTHORIZED = "UNAUTHORIZED",
+  CONTEXT_WINDOW_EXCEEDED = "CONTEXT_WINDOW_EXCEEDED",
 }
 
 export class AssistantError extends Error {
@@ -61,6 +62,8 @@ export function handleAIServiceError(error: AssistantError): Response {
     case ErrorType.RATE_LIMIT_ERROR:
       return Response.json({ error: error.message }, { status: 429 });
     case ErrorType.AUTHENTICATION_ERROR:
+    case ErrorType.UNAUTHORIZED:
+    case ErrorType.FORBIDDEN:
       return Response.json({ error: error.message }, { status: 401 });
     case ErrorType.PARAMS_ERROR:
       return Response.json({ error: error.message }, { status: 400 });
@@ -69,6 +72,11 @@ export function handleAIServiceError(error: AssistantError): Response {
     case ErrorType.PROVIDER_ERROR:
       console.error("Provider error:", error.message, error.context);
       return Response.json({ error: error.message }, { status: 500 });
+    case ErrorType.EXTERNAL_API_ERROR:
+      console.error("External API error:", error.message, error.context);
+      return Response.json({ error: error.message }, { status: 500 });
+    case ErrorType.CONTEXT_WINDOW_EXCEEDED:
+      return Response.json({ error: error.message }, { status: 413 });
     default:
       console.error("Unknown error:", error.message, error.context);
 

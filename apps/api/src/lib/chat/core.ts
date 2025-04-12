@@ -16,6 +16,7 @@ import { processPromptCoachMode } from "./prompt_coach";
 import { getAIResponse } from "./responses";
 import { createStreamWithPostProcessing } from "./streaming";
 import { handleToolCalls } from "./tools";
+import { checkContextWindowLimits } from "./utils";
 
 type CoreChatOptions = ChatCompletionParameters & {
   isRestricted?: boolean;
@@ -197,6 +198,8 @@ export async function processChatRequest(options: CoreChatOptions) {
             .map((doc) => `${doc.name ? `# ${doc.name}\n` : ""}${doc.markdown}`)
             .join("\n\n")}`
         : finalMessage;
+
+    checkContextWindowLimits(messages, messageWithContext, modelConfig);
 
     const guardrails = Guardrails.getInstance(env, user, userSettings);
     const inputValidation = await guardrails.validateInput(
