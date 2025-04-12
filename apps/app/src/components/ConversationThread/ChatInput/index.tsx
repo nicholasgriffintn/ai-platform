@@ -245,19 +245,23 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     };
 
     const getUploadButtonIcon = () => {
-      if (isMultimodalModel && supportsDocuments) {
+      if (isMultimodalModel) {
         return (
           <span className="flex space-x-1">
-            <Paperclip className="h-4 w-4" />
+            <Image className="h-4 w-4" />
+            {supportsDocuments ? (
+              <File className="h-4 w-4" />
+            ) : (
+              <Paperclip className="h-4 w-4" />
+            )}
           </span>
         );
       }
-      if (isMultimodalModel) {
-        return <Image className="h-4 w-4" />;
-      }
+
       if (supportsDocuments) {
         return <File className="h-4 w-4" />;
       }
+
       return <Paperclip className="h-4 w-4" />;
     };
 
@@ -376,8 +380,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                               onClick={() => fileInputRef.current?.click()}
                               disabled={isLoading || isUploading}
                               className="cursor-pointer p-1.5 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                              title={`Upload ${isMultimodalModel && supportsDocuments ? "File" : isMultimodalModel ? "Image" : "Document"}`}
-                              aria-label={`Upload ${isMultimodalModel && supportsDocuments ? "File" : isMultimodalModel ? "Image" : "Document"}`}
+                              title={`Upload ${isMultimodalModel ? "an Image or Document" : "a Document"}`}
+                              aria-label={`Upload ${isMultimodalModel ? "an Image or Document" : "a Document"}`}
                               variant="icon"
                               aria-haspopup="dialog"
                               aria-controls="file-upload"
