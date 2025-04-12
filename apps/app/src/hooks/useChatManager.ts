@@ -613,15 +613,15 @@ export function useChatManager() {
       const userMessageId = crypto.randomUUID();
       const currentTime = Date.now();
 
+      const contentItems: any[] = [
+        {
+          type: "text",
+          text: input.trim(),
+        },
+      ];
+
       const prepareUserMessage = () => {
         if (attachmentData) {
-          const contentItems: any[] = [
-            {
-              type: "text",
-              text: input.trim(),
-            },
-          ];
-
           if (attachmentData.type === "image") {
             contentItems.push({
               type: "image_url",
@@ -640,23 +640,25 @@ export function useChatManager() {
             });
           }
 
+          if (
+            attachmentData?.type === "markdown_document" &&
+            attachmentData?.markdown
+          ) {
+            contentItems.push({
+              type: "markdown_document",
+              markdown_document: {
+                markdown: attachmentData.markdown,
+                name: attachmentData.name,
+              },
+            });
+          }
+
           return normalizeMessage({
             role: "user",
             content: contentItems,
             id: userMessageId,
             created: currentTime,
             model,
-          });
-        } else if (
-          attachmentData.type === "markdown_document" &&
-          attachmentData.markdown
-        ) {
-          contentItems.push({
-            type: "markdown_document",
-            markdown_document: {
-              markdown: attachmentData.markdown,
-              name: attachmentData.name,
-            },
           });
         }
 
