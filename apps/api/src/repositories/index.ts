@@ -7,6 +7,7 @@ import { MessageRepository } from "./MessageRepository";
 import { SessionRepository } from "./SessionRepository";
 import { UserRepository } from "./UserRepository";
 import { UserSettingsRepository } from "./UserSettingsRepository";
+import { WebAuthnRepository } from "./WebAuthnRepository";
 
 export {
   BaseRepository,
@@ -16,6 +17,7 @@ export {
   SessionRepository,
   UserRepository,
   UserSettingsRepository,
+  WebAuthnRepository,
 };
 
 export class RepositoryManager {
@@ -28,6 +30,7 @@ export class RepositoryManager {
   private conversationRepo: ConversationRepository;
   private messageRepo: MessageRepository;
   private embeddingRepo: EmbeddingRepository;
+  private webAuthnRepo: WebAuthnRepository;
 
   private constructor(env: IEnv) {
     this.env = env;
@@ -37,6 +40,7 @@ export class RepositoryManager {
     this.conversationRepo = new ConversationRepository(env);
     this.messageRepo = new MessageRepository(env);
     this.embeddingRepo = new EmbeddingRepository(env);
+    this.webAuthnRepo = new WebAuthnRepository(env);
   }
 
   public static getInstance(env: IEnv): RepositoryManager {
@@ -68,5 +72,9 @@ export class RepositoryManager {
 
   public get embeddings(): EmbeddingRepository {
     return this.embeddingRepo;
+  }
+
+  public get webAuthn(): WebAuthnRepository {
+    return this.webAuthnRepo;
   }
 }

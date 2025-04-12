@@ -6,6 +6,7 @@ import { cn } from "~/lib/utils";
 import { ProfileAccountTab } from "./Tabs/ProfileAccountTab";
 import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab";
 import { ProfileHistoryTab } from "./Tabs/ProfileHistoryTab";
+import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab";
 import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab";
 
 export function ProfileView() {
@@ -18,6 +19,7 @@ export function ProfileView() {
 
   const tabs = [
     { id: "account", label: "Account" },
+    { id: "passkeys", label: "Passkeys" },
     { id: "customisation", label: "Customisation" },
     { id: "history", label: "Chat History" },
     { id: "providers", label: "Providers" },
@@ -94,6 +96,8 @@ export function ProfileView() {
 
           <div className="bg-white dark:bg-zinc-800 rounded-lg shadow p-6">
             {activeTab === "account" && <ProfileAccountTab />}
+
+            {activeTab === "passkeys" && <ProfilePasskeysTab />}
 
             {activeTab === "customisation" && <ProfileCustomisationTab />}
 

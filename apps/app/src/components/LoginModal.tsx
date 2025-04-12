@@ -1,11 +1,13 @@
-import { Github, Loader2 } from "lucide-react";
+import { Github, KeySquare, Loader2 } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 
 import { Button, TextInput } from "~/components/ui";
 import { Dialog, DialogContent } from "~/components/ui/Dialog";
 import { APP_NAME } from "~/constants";
 import { useAuthStatus } from "~/hooks/useAuth";
+import { usePasskeys } from "~/hooks/usePasskeys";
 import { apiKeyService } from "~/lib/api/api-key";
+import { authService } from "~/lib/api/auth-service";
 import { useChatStore } from "~/state/stores/chatStore";
 
 interface LoginModalProps {
@@ -24,6 +26,16 @@ export const LoginModal = ({
   const [awaitingGithubLogin, setAwaitingGithubLogin] = useState(false);
   const { setHasApiKey } = useChatStore();
   const { isAuthenticated, isLoading, loginWithGithub } = useAuthStatus();
+  const { authenticateWithPasskey, isAuthenticatingWithPasskey } =
+    usePasskeys();
+  const [passkeysSupported, setPasskeysSupported] = useState(false);
+
+  useEffect(() => {
+    const checkPasskeySupport = async () => {
+      setPasskeysSupported(authService.isPasskeySupported());
+    };
+    checkPasskeySupport();
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && open) {
@@ -64,6 +76,20 @@ export const LoginModal = ({
     setAwaitingGithubLogin(true);
     await loginWithGithub();
     setAwaitingGithubLogin(false);
+  };
+
+  const handlePasskeyLogin = async () => {
+    try {
+      const result = await authenticateWithPasskey(undefined);
+      if (result?.verified) {
+        onKeySubmit();
+      } else {
+        setError("Passkey authentication failed");
+      }
+    } catch (error) {
+      setError("Passkey authentication failed. Please try another method.");
+      console.error("Passkey authentication error:", error);
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -112,6 +138,20 @@ export const LoginModal = ({
             >
               Sign in with GitHub
             </Button>
+
+            {passkeysSupported && (
+              <Button
+                type="button"
+                variant="primary"
+                onClick={handlePasskeyLogin}
+                className="w-full border border-zinc-300 dark:border-zinc-700 bg-white text-zinc-900 hover:bg-zinc-50 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+                disabled={isAuthenticatingWithPasskey}
+                icon={<KeySquare size={18} />}
+                isLoading={isAuthenticatingWithPasskey}
+              >
+                Sign in with Passkey
+              </Button>
+            )}
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

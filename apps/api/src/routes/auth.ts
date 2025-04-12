@@ -1,4 +1,8 @@
 import { Octokit } from "@octokit/rest";
+import type {
+  AuthenticationResponseJSON,
+  RegistrationResponseJSON,
+} from "@simplewebauthn/types";
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
@@ -15,6 +19,14 @@ import {
   getUserBySessionId,
   getUserSettings,
 } from "../services/auth/user";
+import {
+  deletePasskey,
+  generatePasskeyAuthenticationOptions,
+  generatePasskeyRegistrationOptions,
+  getUserPasskeys,
+  verifyAndRegisterPasskey,
+  verifyPasskeyAuthentication,
+} from "../services/auth/webauthn";
 import type { User } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
 import {
@@ -23,6 +35,12 @@ import {
   jwtTokenResponseSchema,
   userSchema,
 } from "./schemas/auth";
+import {
+  authenticationOptionsSchema,
+  authenticationVerificationSchema,
+  registrationOptionsSchema,
+  registrationVerificationSchema,
+} from "./schemas/webAuthN";
 
 const app = new Hono();
 
@@ -431,6 +449,379 @@ app.get(
       expires_in: expiresIn,
       token_type: "Bearer",
     });
+  },
+);
+
+const rpName = "Polychat";
+const rpID = (c) => new URL(c.req.url).hostname;
+const getOrigin = (c) => {
+  const url = new URL(c.req.url);
+  return `${url.protocol}//${url.host}`;
+};
+
+app.post(
+  "/webauthn/registration/options",
+  describeRoute({
+    tags: ["auth"],
+    summary: "Generate WebAuthn registration options",
+    responses: {
+      200: {
+        description: "Returns registration options for the authenticator",
+        content: {
+          "application/json": {
+            schema: resolver(z.any()),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
+  }),
+  requireAuth,
+  zValidator("json", registrationOptionsSchema),
+  async (c: Context) => {
+    const user = c.get("user");
+
+    if (!user) {
+      throw new AssistantError(
+        "Authentication required",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const database = Database.getInstance(c.env);
+
+    const options = await generatePasskeyRegistrationOptions(
+      database,
+      user,
+      rpName,
+      rpID(c),
+    );
+
+    return c.json(options);
+  },
+);
+
+app.post(
+  "/webauthn/registration/verification",
+  describeRoute({
+    tags: ["auth"],
+    summary: "Verify WebAuthn registration response",
+    responses: {
+      200: {
+        description: "Registration successful",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                verified: z.boolean(),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Invalid verification response",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
+  }),
+  requireAuth,
+  zValidator("json", registrationVerificationSchema),
+  async (c: Context) => {
+    const user = c.get("user");
+
+    if (!user) {
+      throw new AssistantError(
+        "Authentication required",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const database = Database.getInstance(c.env);
+    const { response } = await c.req.json<{
+      response: RegistrationResponseJSON;
+    }>();
+
+    const verified = await verifyAndRegisterPasskey(
+      database,
+      user,
+      response,
+      getOrigin(c),
+      rpID(c),
+    );
+
+    return c.json({ verified });
+  },
+);
+
+app.post(
+  "/webauthn/authentication/options",
+  describeRoute({
+    tags: ["auth"],
+    summary: "Generate WebAuthn authentication options",
+    responses: {
+      200: {
+        description: "Returns authentication options for the authenticator",
+        content: {
+          "application/json": {
+            schema: resolver(z.any()),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("json", authenticationOptionsSchema),
+  async (c: Context) => {
+    const { username } = await c.req.json<{ username?: string }>();
+    const database = Database.getInstance(c.env);
+
+    const options = await generatePasskeyAuthenticationOptions(
+      database,
+      rpID(c),
+      username,
+    );
+
+    return c.json(options);
+  },
+);
+
+app.post(
+  "/webauthn/authentication/verification",
+  describeRoute({
+    tags: ["auth"],
+    summary: "Verify WebAuthn authentication response",
+    responses: {
+      200: {
+        description: "Authentication successful, returns user session",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                verified: z.boolean(),
+                user: userSchema.optional(),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Invalid verification response",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("json", authenticationVerificationSchema),
+  async (c: Context) => {
+    const database = Database.getInstance(c.env);
+    const requestData = await c.req.json<{
+      response: AuthenticationResponseJSON;
+    }>();
+
+    const { verified, user } = await verifyPasskeyAuthentication(
+      database,
+      requestData.response,
+      getOrigin(c),
+      rpID(c),
+    );
+
+    if (verified && user && user.id) {
+      const sessionId = await createSession(database, user.id);
+
+      c.header(
+        "Set-Cookie",
+        `session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`,
+      ); // 7 days
+    }
+
+    return c.json({ verified, user });
+  },
+);
+
+app.get(
+  "/webauthn/passkeys",
+  describeRoute({
+    tags: ["auth"],
+    summary: "Get all passkeys for the authenticated user",
+    responses: {
+      200: {
+        description: "List of user's passkeys",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.array(
+                z.object({
+                  id: z.number(),
+                  device_type: z.string(),
+                  created_at: z.string(),
+                  backed_up: z.boolean(),
+                }),
+              ),
+            ),
+          },
+        },
+      },
+      401: {
+        description: "Authentication required",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
+  }),
+  requireAuth,
+  async (c: Context) => {
+    const user = c.get("user");
+
+    if (!user) {
+      throw new AssistantError(
+        "Authentication required",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const database = Database.getInstance(c.env);
+
+    const passkeys = await getUserPasskeys(database, user.id);
+
+    const formattedPasskeys = passkeys.map((passkey) => ({
+      id: passkey.id,
+      device_type: passkey.device_type,
+      created_at: passkey.created_at,
+      backed_up: Boolean(passkey.backed_up),
+    }));
+
+    return c.json(formattedPasskeys);
+  },
+);
+
+app.delete(
+  "/webauthn/passkeys/:id",
+  describeRoute({
+    tags: ["auth"],
+    summary: "Delete a passkey for the authenticated user",
+    responses: {
+      200: {
+        description: "Passkey deleted successfully",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                success: z.boolean(),
+              }),
+            ),
+          },
+        },
+      },
+      401: {
+        description: "Authentication required",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                error: z.string(),
+                type: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
+  }),
+  requireAuth,
+  async (c: Context) => {
+    const user = c.get("user");
+
+    if (!user) {
+      throw new AssistantError(
+        "Authentication required",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const passkeyId = Number.parseInt(c.req.param("id"), 10);
+
+    if (Number.isNaN(passkeyId)) {
+      throw new AssistantError(
+        "Invalid passkey ID",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const database = Database.getInstance(c.env);
+
+    const success = await deletePasskey(database, passkeyId, user.id);
+
+    if (!success) {
+      throw new AssistantError(
+        "Failed to delete passkey or passkey not found",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    return c.json({ success });
   },
 );
 
