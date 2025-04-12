@@ -162,6 +162,9 @@ const renderTextContent = (
       {messageData && messageData.attachments?.length > 0 && (
         <div className="space-y-4">
           {messageData.attachments.map((attachment: any, i: number) => {
+            if (!attachment.url) {
+              return null;
+            }
             if (attachment.type === "image") {
               return renderImageContent(attachment.url, i);
             }
