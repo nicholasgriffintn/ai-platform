@@ -1,4 +1,6 @@
 import type { AuthenticatorTransportFuture } from "@simplewebauthn/types";
+
+import { encodeBase64Url } from "~/lib/base64url";
 import { BaseRepository } from "./BaseRepository";
 
 export class WebAuthnRepository extends BaseRepository {
@@ -91,10 +93,7 @@ export class WebAuthnRepository extends BaseRepository {
     transports?: AuthenticatorTransportFuture[],
   ): Promise<void> {
     try {
-      const publicKeyBase64 = btoa(String.fromCharCode(...publicKey))
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_")
-        .replace(/=+$/, "");
+      const publicKeyBase64 = encodeBase64Url(publicKey);
 
       await this.executeRun(
         `INSERT INTO passkey (

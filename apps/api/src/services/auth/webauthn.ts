@@ -11,6 +11,7 @@ import type {
   PublicKeyCredentialRequestOptionsJSON,
   RegistrationResponseJSON,
 } from "@simplewebauthn/types";
+import { decodeBase64Url } from "~/lib/base64url";
 import type { Database } from "~/lib/database";
 import type { User } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
@@ -343,31 +344,18 @@ export async function verifyPasskeyAuthentication(
 
     const { credential, user } = passkeyWithUser;
 
-    const clientDataText = atob(response.response.clientDataJSON);
+    const clientDataBytes = decodeBase64Url(response.response.clientDataJSON);
+    const clientDataText = new TextDecoder().decode(clientDataBytes);
     const clientData = JSON.parse(clientDataText);
     const challengeFromClient = clientData.challenge;
 
-    const storedChallenge = await getWebAuthnChallenge(
+    const expectedChallenge = await getWebAuthnChallenge(
       database,
       challengeFromClient,
     );
 
-    if (!storedChallenge || storedChallenge !== challengeFromClient) {
-      throw new AssistantError(
-        "Authentication challenge mismatch, not found, or expired",
-        ErrorType.AUTHENTICATION_ERROR,
-      );
-    }
-
-    const expectedChallenge = storedChallenge;
-
     const publicKeyString = credential.public_key as string;
-    const base64 = publicKeyString.replace(/-/g, "+").replace(/_/g, "/");
-    const binaryString = atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
+    const publicKeyBytes = decodeBase64Url(publicKeyString);
 
     const verification = await verifyAuthenticationResponse({
       response,
@@ -377,7 +365,7 @@ export async function verifyPasskeyAuthentication(
       requireUserVerification: true,
       credential: {
         id: credentialID,
-        publicKey: bytes,
+        publicKey: publicKeyBytes,
         counter: credential.counter as number,
       },
     });
