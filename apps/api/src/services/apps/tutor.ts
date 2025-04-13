@@ -85,7 +85,7 @@ export async function completeTutorRequest(
       content: systemPrompt,
       timestamp: Date.now(),
       platform: "api",
-      model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      model: "mistral-large-latest",
     });
 
     await conversationManager.add(new_completion_id, {
@@ -93,14 +93,14 @@ export async function completeTutorRequest(
       content: query,
       timestamp: Date.now(),
       platform: "api",
-      model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      model: "mistral-large-latest",
     });
   }
 
   const answerResponse = await provider.getResponse({
     env: env,
     completion_id: new_completion_id,
-    model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    model: "mistral-large-latest",
     messages: [
       {
         role: "system" as ChatRole,
@@ -129,7 +129,7 @@ export async function completeTutorRequest(
       status: "success",
       timestamp: Date.now(),
       platform: "api",
-      model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      model: "mistral-large-latest",
     });
 
     await conversationManager.updateConversation(new_completion_id, {
