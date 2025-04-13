@@ -39,10 +39,9 @@ export class Database {
     return this.repositories.users.getUserBySessionId(sessionId);
   }
 
-  public async getUserById(
-    userId: number,
-  ): Promise<Record<string, unknown> | null> {
-    return this.repositories.users.getUserById(userId);
+  public async getUserById(userId: number): Promise<User | null> {
+    const result = await this.repositories.users.getUserById(userId);
+    return result as unknown as User | null;
   }
 
   public async getUserByEmail(email: string): Promise<User | null> {
@@ -446,5 +445,48 @@ export class Database {
     userId: number,
   ): Promise<boolean> {
     return this.repositories.webAuthn.deletePasskey(passkeyId, userId);
+  }
+
+  // MagicLinkNonce methods
+
+  /**
+   * Creates a new magic link nonce.
+   */
+  public async createMagicLinkNonce(
+    nonce: string,
+    userId: number,
+    expiresAt: Date,
+  ): Promise<void> {
+    return this.repositories.magicLinkNonces.createNonce(
+      nonce,
+      userId,
+      expiresAt,
+    );
+  }
+
+  /**
+   * Attempts to find and consume (delete) a magic link nonce.
+   * Returns true if the nonce was valid and consumed, false otherwise.
+   */
+  public async consumeMagicLinkNonce(
+    nonce: string,
+    userId: number,
+  ): Promise<boolean> {
+    const foundNonce = await this.repositories.magicLinkNonces.findNonce(
+      nonce,
+      userId,
+    );
+
+    if (!foundNonce) {
+      return false;
+    }
+
+    try {
+      await this.repositories.magicLinkNonces.deleteNonce(nonce);
+      return true;
+    } catch (error) {
+      console.error(`Error consuming nonce ${nonce}:`, error);
+      return false;
+    }
   }
 }

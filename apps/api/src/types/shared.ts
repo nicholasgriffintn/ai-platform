@@ -48,9 +48,8 @@ export interface IEnv {
   BROWSER_RENDERING_API_KEY?: string;
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;
-  ACCESS_TOKEN?: string;
   JWT_SECRET?: string;
-  AUTH_REDIRECT_URL?: string;
+  EMAIL_JWT_SECRET?: string;
   CARTESIA_API_KEY?: string;
   ELEVENLABS_API_KEY?: string;
   TOGETHER_AI_API_KEY?: string;

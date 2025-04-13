@@ -11,7 +11,6 @@ import { AssistantError, ErrorType } from "../utils/errors";
  * Authentication middleware that supports session-based, token-based, and JWT auth
  */
 export async function authMiddleware(context: Context, next: Next) {
-  const hasLegacyToken = !!context.env.ACCESS_TOKEN;
   const hasJwtSecret = !!context.env.JWT_SECRET;
 
   let isRestricted = true;
@@ -39,7 +38,7 @@ export async function authMiddleware(context: Context, next: Next) {
     try {
       user = await getUserByJwtToken(
         context.env,
-        authToken,
+        authToken!,
         context.env.JWT_SECRET!,
       );
 
@@ -51,8 +50,6 @@ export async function authMiddleware(context: Context, next: Next) {
     } catch (error) {
       console.error("JWT authentication failed:", error);
     }
-  } else if (hasLegacyToken && authToken === context.env.ACCESS_TOKEN) {
-    isRestricted = false;
   }
 
   context.set("user", user);

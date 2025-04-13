@@ -104,7 +104,7 @@ export async function getUserById(
 
     if (!result) return null;
 
-    return mapToUser(result);
+    return result;
   } catch (error) {
     console.error("Error getting user by ID:", error);
     throw new AssistantError(

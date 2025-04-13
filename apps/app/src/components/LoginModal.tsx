@@ -1,4 +1,4 @@
-import { Github, KeySquare, Loader2 } from "lucide-react";
+import { Github, KeySquare, Loader2, Mail } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 
 import { Button, TextInput } from "~/components/ui";
@@ -22,6 +22,9 @@ export const LoginModal = ({
   onKeySubmit,
 }: LoginModalProps) => {
   const [apiKey, setApiKey] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailSubmitted, setEmailSubmitted] = useState(false);
+  const [isRequestingLink, setIsRequestingLink] = useState(false);
   const [error, setError] = useState("");
   const [awaitingGithubLogin, setAwaitingGithubLogin] = useState(false);
   const { setHasApiKey } = useChatStore();
@@ -43,34 +46,32 @@ export const LoginModal = ({
     }
   }, [isAuthenticated, open, onKeySubmit]);
 
-  if (isLoading) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange} width="480px">
-        <DialogContent>
-          <div className="flex flex-col items-center justify-center gap-4 py-8">
-            <Loader2 size={32} className="animate-spin text-blue-600" />
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Checking authentication status...
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+  const handleMagicLinkRequest = async () => {
+    setError("");
+    setEmailSubmitted(false);
 
-  if (isAuthenticated) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange} width="480px">
-        <DialogContent>
-          <div className="p-6">
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
-              You are already signed in.
-            </h2>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+    if (!email || !email.includes("@")) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    setIsRequestingLink(true);
+    try {
+      const result = await authService.requestMagicLink(email);
+      if (result.success) {
+        setEmailSubmitted(true);
+      } else {
+        setError(
+          result.error || "Failed to send magic link. Please try again.",
+        );
+      }
+    } catch (err: any) {
+      setError("An unexpected error occurred. Please try again.");
+      console.error("Magic link request error:", err);
+    } finally {
+      setIsRequestingLink(false);
+    }
+  };
 
   const handleGithubLogin = async () => {
     setAwaitingGithubLogin(true);
@@ -113,6 +114,35 @@ export const LoginModal = ({
     }
   };
 
+  if (isLoading) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange} width="480px">
+        <DialogContent>
+          <div className="flex flex-col items-center justify-center gap-4 py-8">
+            <Loader2 size={32} className="animate-spin text-blue-600" />
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Checking authentication status...
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (isAuthenticated) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange} width="480px">
+        <DialogContent>
+          <div className="p-6">
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
+              You are already signed in.
+            </h2>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange} width="480px">
       <DialogContent>
@@ -123,7 +153,8 @@ export const LoginModal = ({
                 Sign in to {APP_NAME}
               </h2>
               <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                Sign in with GitHub or enter your API key to continue.
+                Sign in with GitHub, Passkey, Magic Link, or enter your API key
+                to continue.
               </p>
             </div>
 
@@ -164,29 +195,40 @@ export const LoginModal = ({
               </div>
             </div>
 
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-2">
               <TextInput
-                id="apiKey"
-                label="API Key"
-                type="password"
-                value={apiKey}
+                id="email"
+                label="Email Address"
+                type="email"
+                value={email}
                 onChange={(e) => {
-                  setApiKey(e.target.value);
+                  setEmail(e.target.value);
                   setError("");
+                  setEmailSubmitted(false);
                 }}
-                placeholder="Enter your API key"
-                className={error ? "border-red-500" : ""}
+                placeholder="Enter your email address"
+                className={error && email.length > 0 ? "border-red-500" : ""}
                 description={error || undefined}
+                disabled={isRequestingLink}
               />
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-full"
-                isLoading={isLoading}
-              >
-                Submit
-              </Button>
-            </form>
+              {emailSubmitted ? (
+                <p className="text-sm text-green-600 dark:text-green-400">
+                  Check your email for a magic link to sign in!
+                </p>
+              ) : (
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={handleMagicLinkRequest}
+                  className="w-full"
+                  isLoading={isRequestingLink}
+                  icon={<Mail size={18} />}
+                  disabled={!email}
+                >
+                  Sign in with Email
+                </Button>
+              )}
+            </div>
 
             <div className="mt-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
               By continuing, you agree to our{" "}

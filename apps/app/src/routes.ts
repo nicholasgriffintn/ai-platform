@@ -8,5 +8,6 @@ export default [
   route("/terms", "pages/terms.tsx"),
   route("/privacy", "pages/privacy.tsx"),
   route("/s/:share_id", "pages/shared/[share_id].tsx"),
+  route("/auth/verify-magic-link", "pages/auth/verify-magic-link.tsx"),
   route("*?", "pages/catchall.tsx"),
 ] satisfies RouteConfig;

@@ -13,6 +13,11 @@ import { requireAuth } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
 import { generateJwtToken, getUserByJwtToken } from "../services/auth/jwt";
 import {
+  generateMagicLinkToken,
+  sendMagicLinkEmail,
+  verifyMagicLinkToken,
+} from "../services/auth/magicLink";
+import {
   createOrUpdateGithubUser,
   createSession,
   deleteSession,
@@ -238,7 +243,7 @@ app.get(
         `session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`,
       ); // 7 days
 
-      const redirectUri = c.env.AUTH_REDIRECT_URL;
+      const redirectUri = `${c.env.APP_BASE_URL}/auth/callback`;
       return c.redirect(redirectUri);
     } catch (error: any) {
       if (error instanceof AssistantError) {
@@ -827,6 +832,210 @@ app.delete(
     }
 
     return c.json({ success });
+  },
+);
+
+const magicLinkRequestSchema = z.object({
+  email: z.string().email("Invalid email format"),
+});
+
+app.post(
+  "/magic-link/request",
+  describeRoute({
+    tags: ["auth"],
+    summary: "Request a magic login link",
+    request: {
+      body: {
+        content: {
+          "application/json": {
+            schema: magicLinkRequestSchema,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Magic link email sent successfully",
+        content: {
+          "application/json": {
+            schema: resolver(z.object({ success: z.boolean() })),
+          },
+        },
+      },
+      400: { description: "Invalid email or user not found" },
+      500: { description: "Server error (e.g., email sending failed)" },
+    },
+  }),
+  zValidator("json", magicLinkRequestSchema),
+  async (c: Context) => {
+    const { email } = c.req.valid("json" as never) as { email: string };
+
+    if (!c.env.EMAIL_JWT_SECRET) {
+      throw new AssistantError(
+        "JWT secret not configured",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    const database = Database.getInstance(c.env);
+    let user = await database.getUserByEmail(email);
+
+    if (!user) {
+      console.log(`No user found for ${email}, attempting to create one.`);
+      try {
+        const newUserResult = await database.createUser({ email });
+        if (!newUserResult) {
+          console.error(`Failed to create user for email: ${email}`);
+          return c.json({ success: true });
+        }
+        user = newUserResult as unknown as User;
+      } catch (creationError: any) {
+        console.error(`Error creating user for email ${email}:`, creationError);
+        return c.json({ success: true });
+      }
+    }
+
+    if (user) {
+      const { token, nonce } = await generateMagicLinkToken(
+        user.id.toString(),
+        email,
+        c.env.EMAIL_JWT_SECRET,
+      );
+
+      const nonceExpiresAt = new Date(
+        Date.now() + MAGIC_LINK_EXPIRATION_MINUTES * 60 * 1000,
+      );
+
+      try {
+        await database.createMagicLinkNonce(nonce, user.id, nonceExpiresAt);
+      } catch (dbError) {
+        console.error(
+          `Failed to store magic link nonce for ${email}:`,
+          dbError,
+        );
+        return c.json({ success: true });
+      }
+
+      const baseUrl = c.env.APP_BASE_URL;
+      if (!baseUrl) {
+        console.error("APP_BASE_URL environment variable is not set.");
+        return c.json({ success: true });
+      }
+      const frontendVerificationUrl = `${baseUrl}/auth/verify-magic-link?token=${token}&nonce=${nonce}`;
+
+      try {
+        await sendMagicLinkEmail(c, email, frontendVerificationUrl);
+        return c.json({ success: true });
+      } catch (error: any) {
+        console.error(`Failed sending magic link to ${email}:`, error);
+        return c.json({ success: true });
+      }
+    } else {
+      console.error(`Failed to find or create user for email: ${email}`);
+      return c.json({ success: true });
+    }
+  },
+);
+
+const MAGIC_LINK_EXPIRATION_MINUTES = 15;
+
+const magicLinkVerifySchema = z.object({
+  token: z.string(),
+  nonce: z.string(),
+});
+
+app.post(
+  "/magic-link/verify",
+  describeRoute({
+    tags: ["auth"],
+    summary: "Verify magic link token and nonce, logs user in",
+    request: {
+      body: {
+        content: {
+          "application/json": {
+            schema: magicLinkVerifySchema,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Login successful",
+        content: {
+          "application/json": {
+            schema: resolver(z.object({ success: z.boolean() })),
+          },
+        },
+      },
+      400: { description: "Missing or invalid token/nonce in body" },
+      401: { description: "Invalid or expired token/nonce" },
+    },
+  }),
+  zValidator("json", magicLinkVerifySchema),
+  async (c: Context) => {
+    const { token, nonce } = c.req.valid("json" as never) as {
+      token: string;
+      nonce: string;
+    };
+
+    if (!c.env.EMAIL_JWT_SECRET) {
+      throw new AssistantError(
+        "JWT secret not configured",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    const userIdString = await verifyMagicLinkToken(
+      token,
+      c.env.EMAIL_JWT_SECRET,
+    );
+
+    if (!userIdString) {
+      throw new AssistantError(
+        "Invalid or expired magic link token",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const userId = Number.parseInt(userIdString, 10);
+    if (Number.isNaN(userId)) {
+      console.error(`Invalid userId parsed from token: ${userIdString}`);
+      throw new AssistantError(
+        "Invalid user identifier in token",
+        ErrorType.INTERNAL_ERROR,
+      );
+    }
+
+    const database = Database.getInstance(c.env);
+
+    const nonceConsumed = await database.consumeMagicLinkNonce(nonce, userId);
+    if (!nonceConsumed) {
+      console.warn(
+        `Invalid or already used nonce presented for user ${userId}`,
+      );
+      throw new AssistantError(
+        "Invalid or expired magic link.",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const user = await database.getUserById(userId);
+
+    if (!user) {
+      throw new AssistantError(
+        "User not found for valid token",
+        ErrorType.INTERNAL_ERROR,
+      );
+    }
+
+    const sessionId = await createSession(database, user.id);
+
+    c.header(
+      "Set-Cookie",
+      `session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`,
+    ); // 7 days
+
+    return c.json({ success: true });
   },
 );
 

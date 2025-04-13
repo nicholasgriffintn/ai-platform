@@ -3,6 +3,7 @@ import type { IEnv } from "../types";
 import { BaseRepository } from "./BaseRepository";
 import { ConversationRepository } from "./ConversationRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
+import { MagicLinkNonceRepository } from "./MagicLinkNonceRepository";
 import { MessageRepository } from "./MessageRepository";
 import { SessionRepository } from "./SessionRepository";
 import { UserRepository } from "./UserRepository";
@@ -18,6 +19,7 @@ export {
   UserRepository,
   UserSettingsRepository,
   WebAuthnRepository,
+  MagicLinkNonceRepository,
 };
 
 export class RepositoryManager {
@@ -31,6 +33,7 @@ export class RepositoryManager {
   private messageRepo: MessageRepository;
   private embeddingRepo: EmbeddingRepository;
   private webAuthnRepo: WebAuthnRepository;
+  private magicLinkNonceRepo: MagicLinkNonceRepository;
 
   private constructor(env: IEnv) {
     this.env = env;
@@ -41,6 +44,7 @@ export class RepositoryManager {
     this.messageRepo = new MessageRepository(env);
     this.embeddingRepo = new EmbeddingRepository(env);
     this.webAuthnRepo = new WebAuthnRepository(env);
+    this.magicLinkNonceRepo = new MagicLinkNonceRepository(env);
   }
 
   public static getInstance(env: IEnv): RepositoryManager {
@@ -76,5 +80,9 @@ export class RepositoryManager {
 
   public get webAuthn(): WebAuthnRepository {
     return this.webAuthnRepo;
+  }
+
+  public get magicLinkNonces(): MagicLinkNonceRepository {
+    return this.magicLinkNonceRepo;
   }
 }

@@ -3,6 +3,14 @@ import { apiKeyService } from "~/lib/api/api-key";
 import type { User, UserSettings } from "~/types";
 import { fetchApi } from "./fetch-wrapper";
 
+interface MagicLinkSuccessResponse {
+  success: boolean;
+}
+
+interface MagicLinkErrorResponse {
+  error: string;
+}
+
 class AuthService {
   private static instance: AuthService;
   private user: User | null = null;
@@ -140,6 +148,68 @@ class AuthService {
     } catch (error) {
       console.error("Error updating user settings:", error);
       return false;
+    }
+  }
+
+  public async requestMagicLink(
+    email: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await fetchApi("/auth/magic-link/request", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const errorData = (await response
+          .json()
+          .catch(() => ({}))) as Partial<MagicLinkErrorResponse>;
+        return {
+          success: false,
+          error: errorData.error || "Failed to request magic link.",
+        };
+      }
+
+      const data = (await response.json()) as MagicLinkSuccessResponse;
+      return { success: data.success };
+    } catch (error: any) {
+      console.error("Error requesting magic link:", error);
+      return {
+        success: false,
+        error: error.message || "An unexpected error occurred.",
+      };
+    }
+  }
+
+  public async verifyMagicLink(
+    token: string,
+    nonce: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await fetchApi("/auth/magic-link/verify", {
+        method: "POST",
+        body: JSON.stringify({ token, nonce }),
+      });
+
+      const data = (await response.json()) as {
+        success: boolean;
+        error?: string;
+      };
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error || "Failed to verify magic link.",
+        };
+      }
+
+      return { success: data.success };
+    } catch (error: any) {
+      console.error("Error verifying magic link:", error);
+      return {
+        success: false,
+        error: error.message || "An unexpected error occurred.",
+      };
     }
   }
 }

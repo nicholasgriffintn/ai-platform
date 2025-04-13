@@ -28,10 +28,8 @@ export class UserRepository extends BaseRepository {
     return result;
   }
 
-  public async getUserById(
-    userId: number,
-  ): Promise<Record<string, unknown> | null> {
-    const result = this.runQuery<Record<string, unknown>>(
+  public async getUserById(userId: number): Promise<User | null> {
+    const result = this.runQuery<User>(
       "SELECT * FROM user WHERE id = ?",
       [userId],
       true,
@@ -45,7 +43,7 @@ export class UserRepository extends BaseRepository {
       [email],
       true,
     );
-    return result as Promise<User | null>;
+    return result;
   }
 
   public async updateUser(
@@ -104,7 +102,7 @@ export class UserRepository extends BaseRepository {
         userData.name || null,
         userData.avatarUrl || null,
         userData.email,
-        userData.username,
+        userData.username || null,
         userData.company || null,
         userData.location || null,
         userData.bio || null,

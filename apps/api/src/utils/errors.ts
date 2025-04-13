@@ -11,6 +11,8 @@ export enum ErrorType {
   FORBIDDEN = "FORBIDDEN",
   UNAUTHORIZED = "UNAUTHORIZED",
   CONTEXT_WINDOW_EXCEEDED = "CONTEXT_WINDOW_EXCEEDED",
+  EMAIL_SEND_FAILED = "EMAIL_SEND_FAILED",
+  INTERNAL_ERROR = "INTERNAL_ERROR",
 }
 
 export class AssistantError extends Error {
@@ -77,8 +79,18 @@ export function handleAIServiceError(error: AssistantError): Response {
       return Response.json({ error: error.message }, { status: 500 });
     case ErrorType.CONTEXT_WINDOW_EXCEEDED:
       return Response.json({ error: error.message }, { status: 413 });
+    case ErrorType.EMAIL_SEND_FAILED:
+      console.error("Email send failed:", error.message);
+      return Response.json({ error: error.message }, { status: 500 });
+    case ErrorType.INTERNAL_ERROR:
+      console.error("Internal error:", error.message);
+      return Response.json({ error: error.message }, { status: 500 });
     default:
-      console.error("Unknown error:", error.message, error.context);
+      console.error(
+        `${error.type || "Unknown error"}:`,
+        error.message,
+        error.context,
+      );
 
       return Response.json(
         { error: error.message },

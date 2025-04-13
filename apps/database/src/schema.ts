@@ -297,3 +297,21 @@ export const webauthnChallenge = sqliteTable(
 );
 
 export type WebAuthnChallenge = typeof webauthnChallenge.$inferSelect;
+
+export const magicLinkNonces = sqliteTable(
+  "magic_link_nonce",
+  {
+    nonce: text("nonce").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  },
+  (table) => ({
+    userIdx: index("magic_link_nonce_user_idx").on(table.userId),
+    expiresIdx: index("magic_link_nonce_expires_idx").on(table.expiresAt),
+  }),
+);
+
+export type MagicLinkNonce = typeof magicLinkNonces.$inferSelect;
+export type NewMagicLinkNonce = typeof magicLinkNonces.$inferInsert;
