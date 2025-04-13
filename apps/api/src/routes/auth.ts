@@ -454,13 +454,15 @@ app.get(
 
 const rpName = "Polychat";
 const rpID = (c) => {
-  const hostname = new URL(c.req.url).hostname;
-  // For localhost or development environments, use a fixed value
-  return hostname === "localhost" || hostname.includes("127.0.0.1")
-    ? "localhost"
-    : hostname;
+  const isDev = c.env.ENV === "development" || c.env.NODE_ENV === "development";
+  return isDev ? "localhost" : "polychat.app";
 };
 const getOrigin = (c) => {
+  const isDev = c.env.ENV === "development" || c.env.NODE_ENV === "development";
+  if (isDev) {
+    return "https://localhost:5173";
+  }
+
   const url = new URL(c.req.url);
   return `${url.protocol}//${url.host}`;
 };

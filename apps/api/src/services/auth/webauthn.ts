@@ -259,15 +259,23 @@ export async function verifyAndRegisterPasskey(
         );
       }
 
-      await registerPasskey(
-        database,
-        user.id,
-        credentialId,
-        credential.publicKey,
-        credential.counter,
-        registrationInfo.credentialDeviceType,
-        registrationInfo.credentialBackedUp,
-      );
+      try {
+        await registerPasskey(
+          database,
+          user.id,
+          credentialId,
+          credential.publicKey,
+          credential.counter,
+          registrationInfo.credentialDeviceType,
+          registrationInfo.credentialBackedUp,
+        );
+      } catch (err) {
+        console.error("Database error during passkey registration:", err);
+        throw new AssistantError(
+          "Failed to save passkey to database",
+          ErrorType.UNKNOWN_ERROR,
+        );
+      }
 
       await deleteWebAuthnChallenge(database, challenge, user.id);
     }
@@ -371,6 +379,9 @@ export async function verifyPasskeyAuthentication(
       );
     }
 
+    const publicKeyString = credential.public_key as string;
+    const publicKey = Buffer.from(publicKeyString, "base64");
+
     const verification = await verifyAuthenticationResponse({
       response,
       expectedChallenge: challenge,
@@ -379,7 +390,7 @@ export async function verifyPasskeyAuthentication(
       requireUserVerification: true,
       credential: {
         id: credentialID,
-        publicKey: credential.public_key as Uint8Array,
+        publicKey: publicKey,
         counter: credential.counter as number,
       },
     });

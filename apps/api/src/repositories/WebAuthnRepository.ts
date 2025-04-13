@@ -76,26 +76,33 @@ export class WebAuthnRepository extends BaseRepository {
     backedUp: boolean,
     transports?: AuthenticatorTransportFuture[],
   ): Promise<void> {
-    await this.executeRun(
-      `INSERT INTO passkey (
-        user_id, 
-        credential_id, 
-        public_key, 
-        counter, 
-        device_type, 
-        backed_up, 
-        transports
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        userId,
-        credentialId,
-        publicKey,
-        counter,
-        deviceType,
-        backedUp ? 1 : 0,
-        transports ? JSON.stringify(transports) : null,
-      ],
-    );
+    try {
+      const publicKeyBase64 = Buffer.from(publicKey).toString("base64");
+
+      await this.executeRun(
+        `INSERT INTO passkey (
+          user_id, 
+          credential_id, 
+          public_key, 
+          counter, 
+          device_type, 
+          backed_up, 
+          transports
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          userId,
+          credentialId,
+          publicKeyBase64,
+          counter,
+          deviceType,
+          backedUp ? 1 : 0,
+          transports ? JSON.stringify(transports) : null,
+        ],
+      );
+    } catch (error) {
+      console.error("Error creating passkey:", error);
+      throw error;
+    }
   }
 
   public async getPasskeysByUserId(
