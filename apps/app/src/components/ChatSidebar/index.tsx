@@ -9,7 +9,6 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { KeyboardShortcutsHelp } from "~/components/KeyboardShortcutsHelp";
 import { Button } from "~/components/ui";
 import {
   useChats,
