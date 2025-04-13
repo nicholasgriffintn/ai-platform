@@ -1,14 +1,12 @@
 import { Github, KeySquare, Loader2, Mail } from "lucide-react";
-import { type FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button, TextInput } from "~/components/ui";
 import { Dialog, DialogContent } from "~/components/ui/Dialog";
 import { APP_NAME } from "~/constants";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { usePasskeys } from "~/hooks/usePasskeys";
-import { apiKeyService } from "~/lib/api/api-key";
 import { authService } from "~/lib/api/auth-service";
-import { useChatStore } from "~/state/stores/chatStore";
 
 interface LoginModalProps {
   open: boolean;
@@ -21,13 +19,11 @@ export const LoginModal = ({
   onOpenChange,
   onKeySubmit,
 }: LoginModalProps) => {
-  const [apiKey, setApiKey] = useState("");
   const [email, setEmail] = useState("");
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [isRequestingLink, setIsRequestingLink] = useState(false);
   const [error, setError] = useState("");
   const [awaitingGithubLogin, setAwaitingGithubLogin] = useState(false);
-  const { setHasApiKey } = useChatStore();
   const { isAuthenticated, isLoading, loginWithGithub } = useAuthStatus();
   const { authenticateWithPasskey, isAuthenticatingWithPasskey } =
     usePasskeys();
@@ -90,27 +86,6 @@ export const LoginModal = ({
     } catch (error) {
       setError("Passkey authentication failed. Please try another method.");
       console.error("Passkey authentication error:", error);
-    }
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!apiKey.trim()) {
-      setError("API key is required");
-      return;
-    }
-
-    if (!apiKeyService.validateApiKey(apiKey)) {
-      setError("Invalid API key format");
-      return;
-    }
-
-    try {
-      await apiKeyService.setApiKey(apiKey);
-      setHasApiKey(true);
-      onKeySubmit();
-    } catch (error) {
-      setError("Failed to save API key securely");
     }
   };
 
