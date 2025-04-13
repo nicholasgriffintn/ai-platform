@@ -1,7 +1,9 @@
-import { Home } from "lucide-react";
+import { Home, Loader2, LogOut } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 
+import { Button } from "~/components/ui";
+import { useAuthStatus } from "~/hooks/useAuth";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { LoginModal } from "../LoginModal";
@@ -13,6 +15,7 @@ import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab";
 import { ProfileHistoryTab } from "./Tabs/ProfileHistoryTab";
 import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab";
 import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab";
+
 interface ProfileSidebarItem {
   id: string;
   label: string;
@@ -44,6 +47,7 @@ export function ProfileSidebar({
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const handleOpenLoginModal = () => setIsLoginModalOpen(true);
   const { sidebarVisible, isMobile, setSidebarVisible } = useChatStore();
+  const { isAuthenticated, logout, isLoggingOut } = useAuthStatus();
 
   return (
     <>
@@ -94,6 +98,26 @@ export function ProfileSidebar({
                     </button>
                   </li>
                 ))}
+                {isAuthenticated && (
+                  <li>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => logout()}
+                      disabled={isLoggingOut}
+                      className="w-full"
+                      icon={
+                        isLoggingOut ? (
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin flex-shrink-0" />
+                        ) : (
+                          <LogOut className="mr-2 h-5 w-5 flex-shrink-0" />
+                        )
+                      }
+                    >
+                      <span>Logout</span>
+                    </Button>
+                  </li>
+                )}
               </ul>
             </nav>
             <SidebarFooter
