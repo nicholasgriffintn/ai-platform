@@ -70,7 +70,11 @@ app.use("*", loggerMiddleware);
 /**
  * Global middleware to apply CSRF protection
  */
-app.use(csrf());
+app.use(
+  csrf({
+    origin,
+  }),
+);
 
 /**
  * Global middleware to check if the user is authenticated
