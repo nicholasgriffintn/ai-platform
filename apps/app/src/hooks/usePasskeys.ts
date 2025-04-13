@@ -6,9 +6,10 @@ import type {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/types";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { API_BASE_URL } from "~/constants";
 import { authService } from "~/lib/api/auth-service";
+import { AUTH_QUERY_KEYS } from "./useAuth";
 
 interface Passkey {
   id: number;
@@ -33,6 +34,8 @@ interface DeleteResponse {
 }
 
 export const usePasskeys = () => {
+  const queryClient = useQueryClient();
+
   const registerPasskeyMutation = useMutation({
     mutationFn: async () => {
       const isAuth = await authService.checkAuthStatus();
@@ -143,6 +146,9 @@ export const usePasskeys = () => {
 
       if (verification.verified) {
         await authService.checkAuthStatus();
+        await queryClient.invalidateQueries({
+          queryKey: AUTH_QUERY_KEYS.authStatus,
+        });
       }
 
       return verification;
