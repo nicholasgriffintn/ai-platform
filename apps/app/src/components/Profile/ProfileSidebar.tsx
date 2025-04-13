@@ -1,5 +1,8 @@
+import { Home } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 
+import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { LoginModal } from "../LoginModal";
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
@@ -10,7 +13,6 @@ import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab";
 import { ProfileHistoryTab } from "./Tabs/ProfileHistoryTab";
 import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab";
 import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab";
-
 interface ProfileSidebarItem {
   id: string;
   label: string;
@@ -61,6 +63,21 @@ export function ProfileSidebar({
             <SidebarHeader showCloudButton={false} />
             <nav className="flex-1 overflow-y-auto p-2 pb-[50px]">
               <ul className="space-y-1">
+                <li>
+                  <Link
+                    to="/"
+                    className={cn(
+                      "block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ease-in-out",
+                      "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900",
+                      "dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
+                      "no-underline",
+                      "flex items-center",
+                    )}
+                  >
+                    <Home className="mr-2 h-5 w-5 flex-shrink-0" />
+                    <span>Back to Home</span>
+                  </Link>
+                </li>
                 {profileSidebarItems.map((item) => (
                   <li key={item.id}>
                     <button
