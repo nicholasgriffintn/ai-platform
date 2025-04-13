@@ -115,7 +115,7 @@ export async function performDeepWebSearch(
       content: systemPrompt,
       timestamp: Date.now(),
       platform: "api",
-      model: "mistral-large-latest",
+      model: "@cf/google/gemma-3-12b-it",
     });
 
     await conversationManager.add(new_completion_id, {
@@ -123,14 +123,14 @@ export async function performDeepWebSearch(
       content: query,
       timestamp: Date.now(),
       platform: "api",
-      model: "mistral-large-latest",
+      model: "@cf/google/gemma-3-12b-it",
     });
   }
 
   const answerResponse = await provider.getResponse({
     env: env,
     completion_id,
-    model: "mistral-large-latest",
+    model: "@cf/google/gemma-3-12b-it",
     messages: [
       {
         role: "system" as ChatRole,
@@ -158,7 +158,7 @@ export async function performDeepWebSearch(
       name: "web_search",
       timestamp: Date.now(),
       platform: "api",
-      model: "mistral-large-latest",
+      model: "@cf/google/gemma-3-12b-it",
     });
 
     await conversationManager.updateConversation(new_completion_id, {
