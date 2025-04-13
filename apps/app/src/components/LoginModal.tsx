@@ -128,8 +128,7 @@ export const LoginModal = ({
                 Sign in to {APP_NAME}
               </h2>
               <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                Sign in with GitHub, Passkey, Magic Link, or enter your API key
-                to continue.
+                Sign in with GitHub, Passkey, or use a Magic Link to continue.
               </p>
             </div>
 
