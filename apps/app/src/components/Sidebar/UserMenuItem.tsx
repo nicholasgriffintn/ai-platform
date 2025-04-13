@@ -7,10 +7,10 @@ import { useAuthStatus } from "~/hooks/useAuth";
 import { useChatStore } from "~/state/stores/chatStore";
 
 type UserMenuItemProps = {
-  onEnterApiKey: () => void;
+  onOpenLoginModal: () => void;
 };
 
-export function UserMenuItem({ onEnterApiKey }: UserMenuItemProps) {
+export function UserMenuItem({ onOpenLoginModal }: UserMenuItemProps) {
   const { isAuthenticated } = useChatStore();
   const { user, isLoggingOut, isLoading } = useAuthStatus();
   const [isMounted, setIsMounted] = useState(false);
@@ -39,7 +39,7 @@ export function UserMenuItem({ onEnterApiKey }: UserMenuItemProps) {
         <Button
           type="button"
           variant="ghost"
-          onClick={onEnterApiKey}
+          onClick={onOpenLoginModal}
           className="cursor-pointer flex items-center justify-center p-2 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md"
           icon={<KeyRound size={16} />}
         >

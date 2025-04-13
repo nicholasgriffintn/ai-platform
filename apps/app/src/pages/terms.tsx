@@ -1,12 +1,13 @@
 import { Link } from "react-router";
 
+import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import {
   APP_NAME,
   CONTACT_LINK,
   JURISDICTION,
   TERMS_EFFECTIVE_DATE,
 } from "~/constants";
-import { AppLayout } from "~/layouts/AppLayout";
+import { SidebarLayout } from "~/layouts/SidebarLayout";
 
 export function meta() {
   return [
@@ -17,7 +18,7 @@ export function meta() {
 
 export default function Terms() {
   return (
-    <AppLayout>
+    <SidebarLayout sidebarContent={<StandardSidebarContent />}>
       <div className="container mx-auto px-4 py-8 overflow-y-auto">
         <h1 className="text-4xl font-bold mb-4 text-zinc-900 dark:text-white">
           Terms of Service
@@ -263,6 +264,6 @@ export default function Terms() {
           </p>
         </div>
       </div>
-    </AppLayout>
+    </SidebarLayout>
   );
 }

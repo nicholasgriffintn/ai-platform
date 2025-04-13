@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
+import { ChatSidebar } from "~/components/ChatSidebar";
 import { ConversationThread } from "~/components/ConversationThread";
 import { SearchDialog } from "~/components/SearchDialog";
-import { AppLayout } from "~/layouts/AppLayout";
+import { SidebarLayout } from "~/layouts/SidebarLayout";
 import { useChatStore } from "~/state/stores/chatStore";
 
 export default function Home() {
@@ -14,6 +15,8 @@ export default function Home() {
     setShowSearch,
     setChatInput,
   } = useChatStore();
+
+  const [_isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: We only want to initialize the store when the component mounts
   useEffect(() => {
@@ -44,10 +47,14 @@ export default function Home() {
     return () => window.removeEventListener("resize", checkMobile);
   }, [setSidebarVisible, setIsMobile]);
 
+  const chatSidebar = (
+    <ChatSidebar onOpenLoginModal={() => setIsLoginModalOpen(true)} />
+  );
+
   return (
-    <AppLayout isChat={true}>
+    <SidebarLayout sidebarContent={chatSidebar}>
       <div className="flex flex-row flex-grow flex-1 overflow-hidden relative h-full">
-        <div className="flex flex-col flex-grow h-full w-[calc(100%-16rem)]">
+        <div className="flex flex-col flex-grow h-full w-full">
           <div className="flex-1 overflow-hidden relative">
             <ConversationThread />
           </div>
@@ -55,6 +62,6 @@ export default function Home() {
       </div>
 
       <SearchDialog isOpen={showSearch} onClose={() => setShowSearch(false)} />
-    </AppLayout>
+    </SidebarLayout>
   );
 }

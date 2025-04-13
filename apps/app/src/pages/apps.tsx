@@ -1,7 +1,8 @@
 import type { FC } from "react";
 
 import { DynamicApps } from "~/components/Apps";
-import { AppLayout } from "~/layouts/AppLayout";
+import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { SidebarLayout } from "~/layouts/SidebarLayout";
 
 export function meta() {
   return [
@@ -12,7 +13,7 @@ export function meta() {
 
 const DynamicAppsRoute: FC = () => {
   return (
-    <AppLayout>
+    <SidebarLayout sidebarContent={<StandardSidebarContent />}>
       <div
         className="bg-off-white-highlight dark:bg-zinc-800/80 border-l-4 border-blue-500 text-zinc-700 dark:text-zinc-200 p-4 mb-6"
         role="alert"
@@ -31,7 +32,7 @@ const DynamicAppsRoute: FC = () => {
         </p>
       </div>
       <DynamicApps />
-    </AppLayout>
+    </SidebarLayout>
   );
 };
 

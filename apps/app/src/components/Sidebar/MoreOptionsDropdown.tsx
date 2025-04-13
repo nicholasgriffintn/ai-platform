@@ -14,12 +14,14 @@ interface MoreOptionsDropdownProps {
   position?: "top" | "bottom";
   onShowKeyboardShortcuts: () => void;
   onClearAllMessages: () => void;
+  disableClearAllMessages?: boolean;
 }
 
 export const MoreOptionsDropdown = ({
   position = "bottom",
   onShowKeyboardShortcuts,
   onClearAllMessages,
+  disableClearAllMessages = false,
 }: MoreOptionsDropdownProps) => {
   return (
     <DropdownMenu
@@ -63,9 +65,14 @@ export const MoreOptionsDropdown = ({
       >
         Keyboard Shortcuts
       </DropdownMenuItem>
-      <DropdownMenuItem icon={<Trash size={16} />} onClick={onClearAllMessages}>
-        Clear All Messages
-      </DropdownMenuItem>
+      {!disableClearAllMessages && (
+        <DropdownMenuItem
+          icon={<Trash size={16} />}
+          onClick={onClearAllMessages}
+        >
+          Clear All Messages
+        </DropdownMenuItem>
+      )}
     </DropdownMenu>
   );
 };

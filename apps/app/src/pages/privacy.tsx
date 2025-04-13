@@ -1,5 +1,6 @@
+import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import { APP_NAME, CONTACT_LINK, PRIVACY_EFFECTIVE_DATE } from "~/constants";
-import { AppLayout } from "~/layouts/AppLayout";
+import { SidebarLayout } from "~/layouts/SidebarLayout";
 
 export function meta() {
   return [
@@ -10,7 +11,7 @@ export function meta() {
 
 export default function Privacy() {
   return (
-    <AppLayout>
+    <SidebarLayout sidebarContent={<StandardSidebarContent />}>
       <div className="container mx-auto px-4 py-8 overflow-y-auto">
         <h1 className="text-4xl font-bold mb-4 text-zinc-900 dark:text-white">
           Privacy Policy
@@ -304,6 +305,6 @@ export default function Privacy() {
           </p>
         </div>
       </div>
-    </AppLayout>
+    </SidebarLayout>
   );
 }
