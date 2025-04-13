@@ -12,8 +12,8 @@ import type {
   RegistrationResponseJSON,
 } from "@simplewebauthn/types";
 import type { Database } from "~/lib/database";
-import type { User } from "../../../types";
-import { AssistantError, ErrorType } from "../../../utils/errors";
+import type { User } from "../../types";
+import { AssistantError, ErrorType } from "../../utils/errors";
 
 export async function saveWebAuthnChallenge(
   database: Database,
@@ -267,7 +267,6 @@ export async function verifyAndRegisterPasskey(
         credential.counter,
         registrationInfo.credentialDeviceType,
         registrationInfo.credentialBackedUp,
-        undefined,
       );
 
       await deleteWebAuthnChallenge(database, challenge, user.id);
