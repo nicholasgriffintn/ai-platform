@@ -293,7 +293,7 @@ export async function verifyAndRegisterPasskey(
   } catch (error: any) {
     console.error("Error verifying passkey registration:", error);
     throw new AssistantError(
-      `WebAuthn registration failed: ${error.message}`,
+      "WebAuthn verifyAndRegisterPasskey failed",
       ErrorType.AUTHENTICATION_ERROR,
     );
   }
@@ -391,7 +391,7 @@ export async function verifyPasskeyAuthentication(
       throw error;
     }
     throw new AssistantError(
-      `WebAuthn authentication failed: ${error.message}`,
+      "WebAuthn authentication failed",
       ErrorType.AUTHENTICATION_ERROR,
     );
   }
