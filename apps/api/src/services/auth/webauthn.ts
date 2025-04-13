@@ -25,7 +25,7 @@ export async function saveWebAuthnChallenge(
   } catch (error) {
     console.error("Error saving WebAuthn challenge:", error);
     throw new AssistantError(
-      "Failed to save WebAuthn challenge",
+      `Failed to save WebAuthn challenge: ${error}`,
       ErrorType.UNKNOWN_ERROR,
     );
   }
@@ -188,6 +188,13 @@ export async function generatePasskeyRegistrationOptions(
   rpID: string,
 ): Promise<PublicKeyCredentialCreationOptionsJSON> {
   try {
+    if (!user.id) {
+      throw new AssistantError(
+        "User ID is required",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
     const existingCredentials = await getUserPasskeys(database, user.id);
 
     const options = await generateRegistrationOptions({
@@ -242,7 +249,8 @@ export async function verifyAndRegisterPasskey(
 
     if (verified && registrationInfo) {
       const { credential } = registrationInfo;
-      const credentialId = Buffer.from(credential.id).toString("base64url");
+
+      const credentialId = response.rawId || response.id;
 
       const existingCredentials = await getUserPasskeys(database, user.id);
       const duplicateCredential = existingCredentials.find(
@@ -293,49 +301,14 @@ export async function verifyAndRegisterPasskey(
 export async function generatePasskeyAuthenticationOptions(
   database: Database,
   rpID: string,
-  username?: string,
 ): Promise<PublicKeyCredentialRequestOptionsJSON> {
   try {
-    let userId;
-
-    if (username) {
-      const user = await database.getUserByEmail(username);
-
-      if (!user) {
-        throw new AssistantError(
-          "User not found",
-          ErrorType.AUTHENTICATION_ERROR,
-        );
-      }
-
-      userId = user.id;
-    }
-
-    let allowCredentials: {
-      id: string;
-      type: "public-key";
-      transports?: AuthenticatorTransportFuture[];
-    }[] = [];
-
-    if (userId) {
-      const credentials = await getUserPasskeys(database, userId);
-
-      allowCredentials = credentials.map((cred) => ({
-        id: cred.credential_id as string,
-        type: "public-key" as const,
-        transports: cred.transports
-          ? JSON.parse(cred.transports as string)
-          : undefined,
-      }));
-    }
-
     const options = await generateAuthenticationOptions({
       rpID,
       userVerification: "preferred",
-      allowCredentials,
     });
 
-    await saveWebAuthnChallenge(database, options.challenge, userId);
+    await saveWebAuthnChallenge(database, options.challenge);
 
     return options;
   } catch (error) {
@@ -370,27 +343,41 @@ export async function verifyPasskeyAuthentication(
 
     const { credential, user } = passkeyWithUser;
 
-    const challenge = await getWebAuthnChallenge(database);
+    const clientDataText = atob(response.response.clientDataJSON);
+    const clientData = JSON.parse(clientDataText);
+    const challengeFromClient = clientData.challenge;
 
-    if (!challenge) {
+    const storedChallenge = await getWebAuthnChallenge(
+      database,
+      challengeFromClient,
+    );
+
+    if (!storedChallenge || storedChallenge !== challengeFromClient) {
       throw new AssistantError(
-        "Authentication challenge expired or not found",
+        "Authentication challenge mismatch, not found, or expired",
         ErrorType.AUTHENTICATION_ERROR,
       );
     }
 
+    const expectedChallenge = storedChallenge;
+
     const publicKeyString = credential.public_key as string;
-    const publicKey = Buffer.from(publicKeyString, "base64");
+    const base64 = publicKeyString.replace(/-/g, "+").replace(/_/g, "/");
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
 
     const verification = await verifyAuthenticationResponse({
       response,
-      expectedChallenge: challenge,
+      expectedChallenge,
       expectedOrigin,
       expectedRPID,
       requireUserVerification: true,
       credential: {
         id: credentialID,
-        publicKey: publicKey,
+        publicKey: bytes,
         counter: credential.counter as number,
       },
     });
@@ -404,7 +391,7 @@ export async function verifyPasskeyAuthentication(
         authenticationInfo.newCounter,
       );
 
-      await deleteWebAuthnChallenge(database, challenge);
+      await deleteWebAuthnChallenge(database, expectedChallenge);
 
       return { verified, user };
     }

@@ -10,17 +10,31 @@ export class WebAuthnRepository extends BaseRepository {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes);
 
-    const query = userId
-      ? `INSERT INTO webauthn_challenge (user_id, challenge, expires_at)
-         VALUES (?, ?, ?)`
-      : `INSERT INTO webauthn_challenge (challenge, expires_at)
-         VALUES (?, ?)`;
-
-    const params = userId
-      ? [userId, challenge, expiresAt.toISOString()]
-      : [challenge, expiresAt.toISOString()];
-
-    await this.executeRun(query, params);
+    try {
+      if (userId) {
+        // Delete existing challenges for the user first
+        await this.executeRun(
+          "DELETE FROM webauthn_challenge WHERE user_id = ?",
+          [userId],
+        );
+        // Then insert the new challenge
+        await this.executeRun(
+          `INSERT INTO webauthn_challenge (user_id, challenge, expires_at)
+           VALUES (?, ?, ?)`,
+          [userId, challenge, expiresAt.toISOString()],
+        );
+      } else {
+        // Insert anonymous challenge
+        await this.executeRun(
+          `INSERT INTO webauthn_challenge (challenge, expires_at)
+           VALUES (?, ?)`,
+          [challenge, expiresAt.toISOString()],
+        );
+      }
+    } catch (error) {
+      console.error("Error in createChallenge:", error);
+      throw new Error("Failed to create challenge");
+    }
   }
 
   public async getChallenge(
@@ -77,7 +91,10 @@ export class WebAuthnRepository extends BaseRepository {
     transports?: AuthenticatorTransportFuture[],
   ): Promise<void> {
     try {
-      const publicKeyBase64 = Buffer.from(publicKey).toString("base64");
+      const publicKeyBase64 = btoa(String.fromCharCode(...publicKey))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
 
       await this.executeRun(
         `INSERT INTO passkey (
@@ -142,29 +159,14 @@ export class WebAuthnRepository extends BaseRepository {
     userId: number,
   ): Promise<boolean> {
     try {
-      await this.executeRun("BEGIN TRANSACTION", []);
-
-      const passkey = await this.runQuery<Record<string, unknown>>(
-        "SELECT id FROM passkey WHERE id = ? AND user_id = ? LIMIT 1",
-        [passkeyId, userId],
-        true,
-      );
-
-      if (!passkey) {
-        await this.executeRun("ROLLBACK", []);
-        return false;
-      }
-
-      await this.executeRun(
+      const result = await this.executeRun(
         "DELETE FROM passkey WHERE id = ? AND user_id = ?",
         [passkeyId, userId],
       );
 
-      await this.executeRun("COMMIT", []);
-      return true;
+      return result?.success && result?.meta?.changes > 0;
     } catch (error) {
-      await this.executeRun("ROLLBACK", []);
-      console.error("Transaction error in deletePasskey:", error);
+      console.error("Error deleting passkey:", error);
       return false;
     }
   }

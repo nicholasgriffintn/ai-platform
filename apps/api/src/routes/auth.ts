@@ -463,8 +463,7 @@ const getOrigin = (c) => {
     return "https://localhost:5173";
   }
 
-  const url = new URL(c.req.url);
-  return `${url.protocol}//${url.host}`;
+  return "https://polychat.app";
 };
 
 app.post(
@@ -501,7 +500,7 @@ app.post(
   async (c: Context) => {
     const user = c.get("user");
 
-    if (!user) {
+    if (!user?.id) {
       throw new AssistantError(
         "Authentication required",
         ErrorType.AUTHENTICATION_ERROR,
@@ -559,7 +558,7 @@ app.post(
   async (c: Context) => {
     const user = c.get("user");
 
-    if (!user) {
+    if (!user?.id) {
       throw new AssistantError(
         "Authentication required",
         ErrorType.AUTHENTICATION_ERROR,
@@ -614,13 +613,11 @@ app.post(
   }),
   zValidator("json", authenticationOptionsSchema),
   async (c: Context) => {
-    const { username } = await c.req.json<{ username?: string }>();
     const database = Database.getInstance(c.env);
 
     const options = await generatePasskeyAuthenticationOptions(
       database,
       rpID(c),
-      username,
     );
 
     return c.json(options);

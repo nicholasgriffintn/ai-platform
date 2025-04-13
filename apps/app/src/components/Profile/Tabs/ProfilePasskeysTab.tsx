@@ -181,7 +181,7 @@ export function ProfilePasskeysTab() {
           </div>
           <div className="flex justify-end gap-3">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() => setIsConfirmDeleteOpen(false)}
             >
               Cancel
