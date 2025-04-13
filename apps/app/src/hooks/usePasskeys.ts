@@ -93,8 +93,11 @@ export const usePasskeys = () => {
     },
   });
 
-  const authenticateWithPasskeyMutation = useMutation({
-    mutationFn: async (username?: string) => {
+  const authenticateWithPasskeyMutation = useMutation<
+    VerificationResponse,
+    Error
+  >({
+    mutationFn: async () => {
       const optionsResponse = await fetch(
         `${API_BASE_URL}/auth/webauthn/authentication/options`,
         {
@@ -102,7 +105,7 @@ export const usePasskeys = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(username ? { username } : {}),
+          body: "{}",
         },
       );
 
@@ -206,7 +209,7 @@ export const usePasskeys = () => {
     isRegisteringPasskey: registerPasskeyMutation.isPending,
     registerPasskeyError: registerPasskeyMutation.error,
 
-    authenticateWithPasskey: authenticateWithPasskeyMutation.mutate,
+    authenticateWithPasskey: authenticateWithPasskeyMutation.mutateAsync,
     isAuthenticatingWithPasskey: authenticateWithPasskeyMutation.isPending,
     authenticateWithPasskeyError: authenticateWithPasskeyMutation.error,
 

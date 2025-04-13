@@ -80,7 +80,7 @@ export const LoginModal = ({
 
   const handlePasskeyLogin = async () => {
     try {
-      const result = await authenticateWithPasskey(undefined);
+      const result = await authenticateWithPasskey();
       if (result?.verified) {
         onKeySubmit();
       } else {
