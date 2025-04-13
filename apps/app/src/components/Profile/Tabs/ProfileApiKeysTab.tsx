@@ -189,127 +189,136 @@ export function ProfileApiKeysTab() {
   };
 
   return (
-    <div className="space-y-8">
-      <Card>
-        <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Generate New API Key
-          </h3>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Create a new key to use with external applications or scripts.
-          </p>
-        </div>
-        <div className="p-6">
-          <form onSubmit={handleGenerateKey} className="space-y-4">
-            <TextInput
-              id="new-api-key-name"
-              label="Key Name (Optional)"
-              placeholder="e.g., My Script Key"
-              value={newApiKeyName}
-              onChange={(e) => setNewApiKeyName(e.target.value)}
-              disabled={isCreatingApiKey}
-            />
-            {errorCreatingApiKey && (
-              <p className="text-sm text-red-600 dark:text-red-400">
-                Error: {errorCreatingApiKey.message}
-              </p>
-            )}
-            <Button type="submit" variant="primary" disabled={isCreatingApiKey}>
-              {isCreatingApiKey ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Plus className="mr-2 h-4 w-4" /> Generate Key
-                </>
+    <div>
+      <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">
+        API Keys
+      </h1>
+      <div className="space-y-8">
+        <Card>
+          <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              Generate New API Key
+            </h3>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Create a new key to use with external applications or scripts.
+            </p>
+          </div>
+          <div className="p-6">
+            <form onSubmit={handleGenerateKey} className="space-y-4">
+              <TextInput
+                id="new-api-key-name"
+                label="Key Name (Optional)"
+                placeholder="e.g., My Script Key"
+                value={newApiKeyName}
+                onChange={(e) => setNewApiKeyName(e.target.value)}
+                disabled={isCreatingApiKey}
+              />
+              {errorCreatingApiKey && (
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  Error: {errorCreatingApiKey.message}
+                </p>
               )}
-            </Button>
-          </form>
-        </div>
-      </Card>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={isCreatingApiKey}
+              >
+                {isCreatingApiKey ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" /> Generate Key
+                  </>
+                )}
+              </Button>
+            </form>
+          </div>
+        </Card>
 
-      <Card>
-        <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Existing API Keys
-          </h3>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Manage your existing API keys. Remember to delete keys that are no
-            longer needed.
-          </p>
-        </div>
-        <div className="p-6">
-          {isLoadingApiKeys ? (
-            <div className="flex items-center justify-center py-6">
-              <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
-              <span className="ml-2 text-zinc-500 dark:text-zinc-400">
-                Loading keys...
-              </span>
-            </div>
-          ) : errorLoadingApiKeys ? (
-            <p className="text-center text-red-600 dark:text-red-400 py-6">
-              Error loading API keys: {errorLoadingApiKeys.message}
+        <Card>
+          <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              Existing API Keys
+            </h3>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Manage your existing API keys. Remember to delete keys that are no
+              longer needed.
             </p>
-          ) : apiKeys.length === 0 ? (
-            <p className="text-center text-zinc-500 dark:text-zinc-400 py-6">
-              You haven't generated any API keys yet.
-            </p>
-          ) : (
-            <ul className="space-y-3">
-              {apiKeys.map((key) => (
-                <li
-                  key={key.id}
-                  className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-md"
-                >
-                  <div>
-                    <p className="font-medium text-zinc-800 dark:text-zinc-100">
-                      {key.name}
-                    </p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                      Created: {formatDate(key.created_at)}
-                    </p>
-                  </div>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteClick(key.id, key.name)}
-                    disabled={isDeletingApiKey && keyToDelete?.id === key.id}
-                    aria-label={`Delete API key ${key.name}`}
-                    title={`Delete API key ${key.name}`}
+          </div>
+          <div className="p-6">
+            {isLoadingApiKeys ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+                <span className="ml-2 text-zinc-500 dark:text-zinc-400">
+                  Loading keys...
+                </span>
+              </div>
+            ) : errorLoadingApiKeys ? (
+              <p className="text-center text-red-600 dark:text-red-400 py-6">
+                Error loading API keys: {errorLoadingApiKeys.message}
+              </p>
+            ) : apiKeys.length === 0 ? (
+              <p className="text-center text-zinc-500 dark:text-zinc-400 py-6">
+                You haven't generated any API keys yet.
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {apiKeys.map((key) => (
+                  <li
+                    key={key.id}
+                    className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-md"
                   >
-                    {isDeletingApiKey && keyToDelete?.id === key.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </Card>
+                    <div>
+                      <p className="font-medium text-zinc-800 dark:text-zinc-100">
+                        {key.name}
+                      </p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Created: {formatDate(key.created_at)}
+                      </p>
+                    </div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteClick(key.id, key.name)}
+                      disabled={isDeletingApiKey && keyToDelete?.id === key.id}
+                      aria-label={`Delete API key ${key.name}`}
+                      title={`Delete API key ${key.name}`}
+                    >
+                      {isDeletingApiKey && keyToDelete?.id === key.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </Card>
 
-      {generatedKeyInfo && (
-        <GeneratedApiKeyModal
-          isOpen={!!generatedKeyInfo}
-          onClose={() => setGeneratedKeyInfo(null)}
-          apiKey={generatedKeyInfo.key}
-          apiKeyName={generatedKeyInfo.name}
-        />
-      )}
+        {generatedKeyInfo && (
+          <GeneratedApiKeyModal
+            isOpen={!!generatedKeyInfo}
+            onClose={() => setGeneratedKeyInfo(null)}
+            apiKey={generatedKeyInfo.key}
+            apiKeyName={generatedKeyInfo.name}
+          />
+        )}
 
-      {keyToDelete && (
-        <ConfirmDeleteModal
-          isOpen={!!keyToDelete}
-          onClose={() => setKeyToDelete(null)}
-          onConfirm={handleConfirmDelete}
-          apiKeyName={keyToDelete.name}
-          isDeleting={isDeletingApiKey && keyToDelete?.id === keyToDelete.id}
-        />
-      )}
+        {keyToDelete && (
+          <ConfirmDeleteModal
+            isOpen={!!keyToDelete}
+            onClose={() => setKeyToDelete(null)}
+            onConfirm={handleConfirmDelete}
+            apiKeyName={keyToDelete.name}
+            isDeleting={isDeletingApiKey && keyToDelete?.id === keyToDelete.id}
+          />
+        )}
+      </div>
     </div>
   );
 }

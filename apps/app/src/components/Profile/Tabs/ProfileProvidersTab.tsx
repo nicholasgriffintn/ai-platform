@@ -51,9 +51,9 @@ export function ProfileProvidersTab() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">
+      <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">
         Available Providers
-      </h2>
+      </h1>
 
       <div className="space-y-4">
         {!isLoadingProviderSettings && (

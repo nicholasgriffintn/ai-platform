@@ -55,9 +55,9 @@ export function ProfilePasskeysTab() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
+        <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
           Passkeys
-        </h2>
+        </h1>
         {passkeySupported && (
           <Button
             onClick={handleAddPasskey}

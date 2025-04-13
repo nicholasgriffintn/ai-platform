@@ -7,9 +7,9 @@ export function ProfileAccountTab() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">
+      <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">
         Account
-      </h2>
+      </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="flex flex-col items-center md:col-span-1">
