@@ -17,6 +17,7 @@ export const bedrockModelConfig: ModelConfig = {
       "Amazon Nova Micro is a text only model that delivers the lowest latency responses at very low cost. It is highly performant at language understanding, translation, reasoning, code completion, brainstorming, and mathematical problem-solving. With its generation speed of over 200 tokens per second, Amazon Nova Micro is ideal for applications that require fast responses.",
     provider: "bedrock",
     type: ["text"],
+    includedInRouter: true,
   },
   "nova-pro": {
     name: "Amazon Nova Pro",

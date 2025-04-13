@@ -187,6 +187,7 @@ export const workersAiModelConfig: ModelConfig = {
     matchingModel: "@cf/google/gemma-3-12b-it",
     provider: "workers-ai",
     type: ["text"],
+    includedInRouter: true,
   },
   "qwq-32b": {
     name: "QWQ 32B",
@@ -199,5 +200,6 @@ export const workersAiModelConfig: ModelConfig = {
     matchingModel: "@cf/qwen/qwen2.5-coder-32b-instruct",
     provider: "workers-ai",
     type: ["coding"],
+    includedInRouter: true,
   },
 };

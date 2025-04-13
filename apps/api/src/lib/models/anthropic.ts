@@ -18,7 +18,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     reliability: 5,
     speed: 4,
     multimodal: true,
-    includedInRouter: true,
     supportsArtifacts: true,
     supportsFunctions: true,
     supportsDocuments: true,
@@ -88,7 +87,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 5,
     isFeatured: false,
-    includedInRouter: true,
   }),
 
   createModelConfig("claude-3-opus", PROVIDER, {
@@ -108,7 +106,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     speed: 3,
     multimodal: true,
     isFeatured: false,
-    includedInRouter: true,
     supportsFunctions: true,
     supportsDocuments: true,
   }),

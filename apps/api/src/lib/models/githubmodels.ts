@@ -46,7 +46,6 @@ export const githubModelsConfig: ModelConfig = {
     reliability: 5,
     speed: 3,
     isFeatured: false,
-    includedInRouter: true,
     supportsArtifacts: true,
   },
   "Phi-3.5-mini-instruct": {

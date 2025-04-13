@@ -18,6 +18,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
     supportsArtifacts: true,
     isFeatured: true,
     isFree: true,
+    includedInRouter: true,
   },
   "gemini-2.0-flash": {
     name: "Gemini 2.0 Flash",
