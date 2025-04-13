@@ -1,5 +1,6 @@
 import type { IEnv } from "../types";
 
+import { ApiKeyRepository } from "./ApiKeyRepository";
 import { BaseRepository } from "./BaseRepository";
 import { ConversationRepository } from "./ConversationRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
@@ -20,6 +21,7 @@ export {
   UserSettingsRepository,
   WebAuthnRepository,
   MagicLinkNonceRepository,
+  ApiKeyRepository,
 };
 
 export class RepositoryManager {
@@ -34,6 +36,7 @@ export class RepositoryManager {
   private embeddingRepo: EmbeddingRepository;
   private webAuthnRepo: WebAuthnRepository;
   private magicLinkNonceRepo: MagicLinkNonceRepository;
+  private apiKeyRepo: ApiKeyRepository;
 
   private constructor(env: IEnv) {
     this.env = env;
@@ -45,6 +48,7 @@ export class RepositoryManager {
     this.embeddingRepo = new EmbeddingRepository(env);
     this.webAuthnRepo = new WebAuthnRepository(env);
     this.magicLinkNonceRepo = new MagicLinkNonceRepository(env);
+    this.apiKeyRepo = new ApiKeyRepository(env);
   }
 
   public static getInstance(env: IEnv): RepositoryManager {
@@ -84,5 +88,9 @@ export class RepositoryManager {
 
   public get magicLinkNonces(): MagicLinkNonceRepository {
     return this.magicLinkNonceRepo;
+  }
+
+  public get apiKeys(): ApiKeyRepository {
+    return this.apiKeyRepo;
   }
 }

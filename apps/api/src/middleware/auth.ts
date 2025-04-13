@@ -34,6 +34,20 @@ export async function authMiddleware(context: Context, next: Next) {
     if (user) {
       isRestricted = false;
     }
+  } else if (authToken?.startsWith("ak_")) {
+    try {
+      const database = Database.getInstance(context.env);
+      const userId = await database.findUserIdByApiKey(authToken);
+      if (userId) {
+        const foundUser = await database.getUserById(userId);
+        if (foundUser) {
+          user = foundUser;
+          isRestricted = false;
+        }
+      }
+    } catch (error) {
+      console.error("API Key authentication check failed:", error);
+    }
   } else if (isJwtToken && hasJwtSecret) {
     try {
       user = await getUserByJwtToken(

@@ -33,3 +33,8 @@ export const errorResponseSchema = z.object({
   type: z.string(),
   statusCode: z.number().optional(),
 });
+
+export const successResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+});

@@ -645,6 +645,53 @@ class ApiService {
       throw new Error(`Failed to sync providers: ${response.statusText}`);
     }
   }
+
+  async getUserApiKeys(): Promise<
+    { id: string; name: string; created_at: string }[]
+  > {
+    const headers = await this.getHeaders();
+    const response = await fetchApi("/user/api-keys", {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get API keys: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async createApiKey(
+    name?: string,
+  ): Promise<{ apiKey: string; id: string; name: string; created_at: string }> {
+    const headers = await this.getHeaders();
+    const response = await fetchApi("/user/api-keys", {
+      method: "POST",
+      headers,
+      body: { name },
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: response.statusText }));
+      const errorMessage = (errorData as any)?.error || response.statusText;
+      throw new Error(`Failed to create API key: ${errorMessage}`);
+    }
+    return response.json();
+  }
+
+  async deleteApiKey(keyId: string): Promise<void> {
+    const headers = await this.getHeaders();
+    const response = await fetchApi(`/user/api-keys/${keyId}`, {
+      method: "DELETE",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete API key: ${response.statusText}`);
+    }
+  }
 }
 
 export const apiService = ApiService.getInstance();

@@ -1,5 +1,6 @@
 import type { D1Result } from "@cloudflare/workers-types";
 import { RepositoryManager } from "../repositories";
+import type { ApiKeyMetadata } from "../repositories/ApiKeyRepository";
 import type { IEnv, IUserSettings, User } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
 
@@ -488,5 +489,37 @@ export class Database {
       console.error(`Error consuming nonce ${nonce}:`, error);
       return false;
     }
+  }
+
+  // API key methods
+  public async getUserApiKeys(userId: number): Promise<ApiKeyMetadata[]> {
+    if (!userId) {
+      throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
+    }
+    return this.repositories.apiKeys.getUserApiKeys(userId);
+  }
+
+  public async createApiKey(
+    userId: number,
+    name?: string,
+  ): Promise<{ plaintextKey: string; metadata: ApiKeyMetadata }> {
+    if (!userId) {
+      throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
+    }
+    return this.repositories.apiKeys.createApiKey(userId, name);
+  }
+
+  public async deleteApiKey(userId: number, apiKeyId: string): Promise<void> {
+    if (!userId || !apiKeyId) {
+      throw new AssistantError(
+        "User ID and API Key ID are required",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+    return this.repositories.apiKeys.deleteApiKey(userId, apiKeyId);
+  }
+
+  public async findUserIdByApiKey(apiKey: string): Promise<number | null> {
+    return this.repositories.apiKeys.findUserIdByApiKey(apiKey);
   }
 }

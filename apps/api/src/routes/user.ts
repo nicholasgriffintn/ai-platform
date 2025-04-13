@@ -7,11 +7,13 @@ import { Database } from "../lib/database";
 import { requireAuth } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { errorResponseSchema, successResponseSchema } from "./schemas/shared";
 import {
   storeProviderApiKeySchema,
   updateUserSettingsResponseSchema,
   updateUserSettingsSchema,
 } from "./schemas/user";
+import apiKeys from "./user/apiKeys";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("USER");
@@ -28,16 +30,6 @@ app.use("/*", (c, next) => {
 });
 
 // Common response schemas
-const errorResponseSchema = z.object({
-  error: z.string(),
-  type: z.string(),
-});
-
-const successResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-});
-
 const modelsResponseSchema = z.object({
   success: z.boolean(),
   models: z.array(z.string()),
@@ -325,5 +317,7 @@ app.post(
     });
   },
 );
+
+app.route("/api-keys", apiKeys);
 
 export default app;

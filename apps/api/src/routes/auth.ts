@@ -293,41 +293,20 @@ app.get(
     },
   }),
   async (c: Context) => {
-    const cookies = c.req.header("Cookie") || "";
-    const sessionMatch = cookies.match(/session=([^;]+)/);
-    const sessionId = sessionMatch ? sessionMatch[1] : null;
-
-    const authHeader = c.req.header("Authorization");
-    const headerSessionId = authHeader?.startsWith("Bearer ")
-      ? authHeader.split("Bearer ")[1]
-      : null;
-
-    const finalSessionId = sessionId || headerSessionId;
-
-    if (!finalSessionId) {
-      return c.json({ user: null });
-    }
-
-    const database = Database.getInstance(c.env);
-
-    let user: User | null = null;
-
-    if (headerSessionId) {
-      user = await getUserByJwtToken(c.env, headerSessionId, c.env.JWT_SECRET!);
-    } else if (sessionId) {
-      user = await getUserBySessionId(database, sessionId);
-    }
+    const user = c.get("user") as User | undefined;
 
     if (!user) {
-      throw new AssistantError(
-        "Invalid or expired session",
-        ErrorType.AUTHENTICATION_ERROR,
-      );
+      return c.json({ user: null, userSettings: null });
     }
 
-    const userSettings = await getUserSettings(database, user?.id);
-
-    return c.json({ user, userSettings });
+    try {
+      const database = Database.getInstance(c.env);
+      const userSettings = await getUserSettings(database, user.id);
+      return c.json({ user, userSettings });
+    } catch (error) {
+      console.error(`Error fetching user settings for user ${user.id}:`, error);
+      return c.json({ user, userSettings: null });
+    }
   },
 );
 

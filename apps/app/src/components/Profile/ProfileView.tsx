@@ -4,6 +4,7 @@ import { Button } from "~/components/ui/Button";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { cn } from "~/lib/utils";
 import { ProfileAccountTab } from "./Tabs/ProfileAccountTab";
+import { ProfileApiKeysTab } from "./Tabs/ProfileApiKeysTab";
 import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab";
 import { ProfileHistoryTab } from "./Tabs/ProfileHistoryTab";
 import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab";
@@ -23,6 +24,7 @@ export function ProfileView() {
     { id: "customisation", label: "Customisation" },
     { id: "history", label: "Chat History" },
     { id: "providers", label: "Providers" },
+    { id: "apiKeys", label: "API Keys" },
   ];
 
   return (
@@ -104,6 +106,8 @@ export function ProfileView() {
             {activeTab === "history" && <ProfileHistoryTab />}
 
             {activeTab === "providers" && <ProfileProvidersTab />}
+
+            {activeTab === "apiKeys" && <ProfileApiKeysTab />}
           </div>
         </div>
       </div>

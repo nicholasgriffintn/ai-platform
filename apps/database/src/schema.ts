@@ -201,6 +201,29 @@ export const userSettings = sqliteTable(
 
 export type UserSettings = typeof userSettings.$inferSelect;
 
+export const userApiKeys = sqliteTable(
+  "user_api_keys",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    api_key: text().notNull(),
+    hashed_key: text().notNull().unique(),
+    name: text().default("API Key"),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    userIdIdx: index("user_api_keys_user_id_idx").on(table.user_id),
+    hashedKeyIdx: index("user_api_keys_hashed_key_idx").on(table.hashed_key),
+  }),
+);
+
+export type UserApiKeys = typeof userApiKeys.$inferSelect;
+
 export const providerSettings = sqliteTable(
   "provider_settings",
   {
