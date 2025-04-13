@@ -20,6 +20,25 @@ class AuthService {
     window.location.href = `${API_BASE_URL}/auth/github`;
   }
 
+  public isPasskeySupported(): boolean {
+    return (
+      window.PublicKeyCredential !== undefined &&
+      typeof window.PublicKeyCredential === "function"
+    );
+  }
+
+  public async isConditionalUISupported(): Promise<boolean> {
+    if (!this.isPasskeySupported()) {
+      return false;
+    }
+
+    try {
+      return await window.PublicKeyCredential.isConditionalMediationAvailable();
+    } catch (e) {
+      return false;
+    }
+  }
+
   public async checkAuthStatus(): Promise<boolean> {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/me`, {

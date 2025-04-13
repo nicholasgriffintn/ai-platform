@@ -249,3 +249,51 @@ export const modelSettings = sqliteTable(
 );
 
 export type ModelSettings = typeof modelSettings.$inferSelect;
+
+export const passkey = sqliteTable(
+  "passkey",
+  {
+    id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    credential_id: text().notNull().unique(),
+    public_key: text().notNull(),
+    counter: integer().notNull(),
+    device_type: text().notNull(),
+    backed_up: integer({ mode: "boolean" }).notNull(),
+    transports: text({
+      mode: "json",
+    }),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    userIdIdx: index("passkey_user_id_idx").on(table.user_id),
+    credentialIdIdx: index("passkey_credential_id_idx").on(table.credential_id),
+  }),
+);
+
+export type Passkey = typeof passkey.$inferSelect;
+
+export const webauthnChallenge = sqliteTable(
+  "webauthn_challenge",
+  {
+    id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+    user_id: integer().references(() => user.id),
+    challenge: text().notNull(),
+    expires_at: text().notNull(),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("webauthn_challenge_user_id_idx").on(table.user_id),
+    challengeIdx: index("webauthn_challenge_challenge_idx").on(table.challenge),
+    expiresAtIdx: index("webauthn_challenge_expires_at_idx").on(
+      table.expires_at,
+    ),
+  }),
+);
+
+export type WebAuthnChallenge = typeof webauthnChallenge.$inferSelect;

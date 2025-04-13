@@ -46,7 +46,8 @@ export class Database {
   }
 
   public async getUserByEmail(email: string): Promise<User | null> {
-    return this.repositories.users.getUserByEmail(email);
+    const result = await this.repositories.users.getUserByEmail(email);
+    return result as unknown as User | null;
   }
 
   public async updateUser(
@@ -303,9 +304,6 @@ export class Database {
     );
   }
 
-  /**
-   * Get messages for a conversation - alias for getConversationMessages to be used by public conversations
-   */
   public async getMessages(
     conversationId: string,
     limit = 50,
@@ -366,5 +364,87 @@ export class Database {
     user_id: number;
   } | null> {
     return this.repositories.messages.getMessageById(messageId);
+  }
+
+  // WebAuthn methods
+  public async createWebAuthnChallenge(
+    challenge: string,
+    userId?: number,
+    expiresInMinutes = 5,
+  ): Promise<void> {
+    return this.repositories.webAuthn.createChallenge(
+      challenge,
+      userId,
+      expiresInMinutes,
+    );
+  }
+
+  public async getWebAuthnChallenge(
+    challenge: string,
+    userId?: number,
+  ): Promise<{ challenge: string } | null> {
+    return this.repositories.webAuthn.getChallenge(challenge, userId);
+  }
+
+  public async getWebAuthnChallengeByUserId(
+    userId: number,
+  ): Promise<{ challenge: string } | null> {
+    return this.repositories.webAuthn.getChallengeByUserId(userId);
+  }
+
+  public async deleteWebAuthnChallenge(
+    challenge: string,
+    userId?: number,
+  ): Promise<void> {
+    return this.repositories.webAuthn.deleteChallenge(challenge, userId);
+  }
+
+  public async createPasskey(
+    userId: number,
+    credentialId: string,
+    publicKey: Uint8Array,
+    counter: number,
+    deviceType: string,
+    backedUp: boolean,
+    transports?: any[],
+  ): Promise<void> {
+    return this.repositories.webAuthn.createPasskey(
+      userId,
+      credentialId,
+      publicKey,
+      counter,
+      deviceType,
+      backedUp,
+      transports,
+    );
+  }
+
+  public async getPasskeysByUserId(
+    userId: number,
+  ): Promise<Record<string, unknown>[]> {
+    return this.repositories.webAuthn.getPasskeysByUserId(userId);
+  }
+
+  public async getPasskeyByCredentialId(
+    credentialId: string,
+  ): Promise<Record<string, unknown> | null> {
+    return this.repositories.webAuthn.getPasskeyByCredentialId(credentialId);
+  }
+
+  public async updatePasskeyCounter(
+    credentialId: string,
+    counter: number,
+  ): Promise<void> {
+    return this.repositories.webAuthn.updatePasskeyCounter(
+      credentialId,
+      counter,
+    );
+  }
+
+  public async deletePasskey(
+    passkeyId: number,
+    userId: number,
+  ): Promise<boolean> {
+    return this.repositories.webAuthn.deletePasskey(passkeyId, userId);
   }
 }

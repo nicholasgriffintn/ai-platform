@@ -1,36 +1,38 @@
 {
-	"name": "@assistant/api",
-	"license": "Apache-2.0",
-	"version": "0.0.1",
-	"private": true,
-	"main": "src/index.ts",
-	"scripts": {
-		"deploy": "wrangler deploy src/index.ts --name=assistant",
-		"dev": "wrangler dev src/index.ts",
-		"start": "wrangler dev src/index.ts",
-		"test": "vitest",
-		"cf-typegen": "wrangler types",
-		"format": "pnpm biome format --write ./src",
-		"lint": "pnpm biome lint ./src",
-		"check": "pnpm biome check ./src"
-	},
-	"dependencies": {
-		"@hono/zod-validator": "0.4.3",
-		"@octokit/rest": "21.1.1",
-		"@scalar/hono-api-reference": "^0.8.0",
-		"@tsndr/cloudflare-worker-jwt": "3.1.4",
-		"aws4fetch": "1.0.20",
-		"hono": "4.7.6",
-		"hono-openapi": "0.4.6",
-		"zod": "3.24.2",
-		"zod-openapi": "4.2.4"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
-		"@cloudflare/workers-types": "4.20250412.0",
-		"@types/node": "22.14.1",
-		"typescript": "5.8.3",
-		"vitest": "3.1.1",
-		"wrangler": "4.10.0"
-	}
+  "name": "@assistant/api",
+  "license": "Apache-2.0",
+  "version": "0.0.1",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "deploy": "wrangler deploy src/index.ts --name=assistant",
+    "dev": "wrangler dev src/index.ts",
+    "start": "wrangler dev src/index.ts",
+    "test": "vitest",
+    "cf-typegen": "wrangler types",
+    "format": "pnpm biome format --write ./src",
+    "lint": "pnpm biome lint ./src",
+    "check": "pnpm biome check ./src"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "0.4.3",
+    "@octokit/rest": "21.1.1",
+    "@scalar/hono-api-reference": "^0.8.0",
+    "@simplewebauthn/server": "^13.1.1",
+    "@tsndr/cloudflare-worker-jwt": "3.1.4",
+    "aws4fetch": "1.0.20",
+    "hono": "4.7.6",
+    "hono-openapi": "0.4.6",
+    "zod": "3.24.2",
+    "zod-openapi": "4.2.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@cloudflare/workers-types": "4.20250412.0",
+    "@simplewebauthn/types": "^12.0.0",
+    "@types/node": "22.14.1",
+    "typescript": "5.8.3",
+    "vitest": "3.1.1",
+    "wrangler": "4.10.0"
+  }
 }
