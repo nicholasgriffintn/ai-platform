@@ -68,9 +68,10 @@ This project is organized as a monorepo with multiple applications:
 - [Conversation to Markdown for models that don't support native PDF or other document uploads](https://nicholasgriffin.dev/blog/using-markdown-conversion-to-add-documents-to-ai-chat-context)
 - Multiple authentication methods:
   - GitHub OAuth
+  - Magic Link
+  - Passkeys
   - Session-based authentication
   - JWT authentication
-  - API token authentication
 - A frontend application built with React and TailwindCSS
   - Uses the API app for authentication and AI requests
   - Retrieves and displays conversations and makes it easy to create new ones
