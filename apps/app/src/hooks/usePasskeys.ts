@@ -7,8 +7,8 @@ import type {
   PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { API_BASE_URL } from "~/constants";
 import { authService } from "~/lib/api/auth-service";
+import { fetchApi } from "~/lib/api/fetch-wrapper";
 import { AUTH_QUERY_KEYS } from "./useAuth";
 
 interface Passkey {
@@ -43,15 +43,11 @@ export const usePasskeys = () => {
         throw new Error("User must be authenticated to register a passkey");
       }
 
-      const optionsResponse = await fetch(
-        `${API_BASE_URL}/auth/webauthn/registration/options`,
+      const optionsResponse = await fetchApi(
+        "/auth/webauthn/registration/options",
         {
           method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({}),
+          body: {},
         },
       );
 
@@ -66,17 +62,11 @@ export const usePasskeys = () => {
         optionsJSON: options,
       });
 
-      const verificationResponse = await fetch(
-        `${API_BASE_URL}/auth/webauthn/registration/verification`,
+      const verificationResponse = await fetchApi(
+        "/auth/webauthn/registration/verification",
         {
           method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            response: attestationResponse,
-          }),
+          body: { response: attestationResponse },
         },
       );
 
@@ -101,14 +91,11 @@ export const usePasskeys = () => {
     Error
   >({
     mutationFn: async () => {
-      const optionsResponse = await fetch(
-        `${API_BASE_URL}/auth/webauthn/authentication/options`,
+      const optionsResponse = await fetchApi(
+        "/auth/webauthn/authentication/options",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: "{}",
+          body: {},
         },
       );
 
@@ -123,17 +110,11 @@ export const usePasskeys = () => {
         optionsJSON: options,
       });
 
-      const verificationResponse = await fetch(
-        `${API_BASE_URL}/auth/webauthn/authentication/verification`,
+      const verificationResponse = await fetchApi(
+        "/auth/webauthn/authentication/verification",
         {
           method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            response: assertionResponse,
-          }),
+          body: { response: assertionResponse },
         },
       );
 
@@ -163,9 +144,8 @@ export const usePasskeys = () => {
         return [];
       }
 
-      const response = await fetch(`${API_BASE_URL}/auth/webauthn/passkeys`, {
+      const response = await fetchApi("/auth/webauthn/passkeys", {
         method: "GET",
-        credentials: "include",
       });
 
       if (!response.ok) {
@@ -179,13 +159,9 @@ export const usePasskeys = () => {
 
   const deletePasskeyMutation = useMutation({
     mutationFn: async (passkeyId: number) => {
-      const response = await fetch(
-        `${API_BASE_URL}/auth/webauthn/passkeys/${passkeyId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
-      );
+      const response = await fetchApi(`/auth/webauthn/passkeys/${passkeyId}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) {
         throw new Error("Failed to delete passkey");

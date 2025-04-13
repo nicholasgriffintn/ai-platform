@@ -8,8 +8,8 @@ import type {
   Message,
   ModelConfig,
 } from "~/types";
-import { API_BASE_URL } from "../../constants";
 import { formatMessageContent, normalizeMessage } from "../messages";
+import { fetchApi } from "./fetch-wrapper";
 
 class ApiService {
   private static instance: ApiService;
@@ -27,7 +27,6 @@ class ApiService {
     const { turnstileToken } = useChatStore.getState();
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
       "X-Turnstile-Token": turnstileToken || "na",
     };
 
@@ -39,27 +38,14 @@ class ApiService {
     return headers;
   }
 
-  private getFetchOptions(
-    method: string,
-    headers: Record<string, string>,
-    body?: any,
-  ): RequestInit {
-    return {
-      method,
-      headers,
-      credentials: "include",
-      body: body ? JSON.stringify(body) : undefined,
-    };
-  }
-
   async listChats(): Promise<Conversation[]> {
     const headers = await this.getHeaders();
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/chat/completions`,
-        this.getFetchOptions("GET", headers),
-      );
+      const response = await fetchApi("/chat/completions", {
+        method: "GET",
+        headers,
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to list chats: ${response.statusText}`);
@@ -102,10 +88,10 @@ class ApiService {
   async getChat(completion_id: string): Promise<Conversation> {
     const headers = await this.getHeaders();
 
-    const response = await fetch(
-      `${API_BASE_URL}/chat/completions/${completion_id}`,
-      this.getFetchOptions("GET", headers),
-    );
+    const response = await fetchApi(`/chat/completions/${completion_id}`, {
+      method: "GET",
+      headers,
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to get chat: ${response.statusText}`);
@@ -158,12 +144,16 @@ class ApiService {
       tool_calls: msg.tool_calls,
     }));
 
-    const response = await fetch(
-      `${API_BASE_URL}/chat/completions/${completion_id}/generate-title`,
-      this.getFetchOptions("POST", headers, {
-        completion_id,
-        messages: formattedMessages,
-      }),
+    const response = await fetchApi(
+      `/chat/completions/${completion_id}/generate-title`,
+      {
+        method: "POST",
+        headers,
+        body: {
+          completion_id,
+          messages: formattedMessages,
+        },
+      },
     );
 
     if (!response.ok) {
@@ -180,12 +170,16 @@ class ApiService {
   ): Promise<void> {
     const headers = await this.getHeaders();
 
-    const updateResponse = await fetch(
-      `${API_BASE_URL}/chat/completions/${completion_id}`,
-      this.getFetchOptions("PUT", headers, {
-        completion_id,
-        title: newTitle,
-      }),
+    const updateResponse = await fetchApi(
+      `/chat/completions/${completion_id}`,
+      {
+        method: "PUT",
+        headers,
+        body: {
+          completion_id,
+          title: newTitle,
+        },
+      },
     );
 
     if (!updateResponse.ok) {
@@ -236,8 +230,10 @@ class ApiService {
       };
     });
 
-    const response = await fetch(`${API_BASE_URL}/chat/completions`, {
-      ...this.getFetchOptions("POST", headers, {
+    const response = await fetchApi("/chat/completions", {
+      method: "POST",
+      headers,
+      body: {
         completion_id,
         model,
         mode,
@@ -248,7 +244,7 @@ class ApiService {
         stream: streamingEnabled,
         enabled_tools: selectedTools,
         ...chatSettings,
-      }),
+      },
       signal,
     });
 
@@ -406,7 +402,6 @@ class ApiService {
       onProgress(content);
     }
 
-    // If we have thinking content, use it as reasoning
     if (thinking) {
       reasoning = thinking;
     }
@@ -434,10 +429,10 @@ class ApiService {
   async deleteConversation(completion_id: string): Promise<void> {
     const headers = await this.getHeaders();
 
-    const response = await fetch(
-      `${API_BASE_URL}/chat/completions/${completion_id}`,
-      this.getFetchOptions("DELETE", headers),
-    );
+    const response = await fetchApi(`/chat/completions/${completion_id}`, {
+      method: "DELETE",
+      headers,
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to delete chat: ${response.statusText}`);
@@ -449,9 +444,12 @@ class ApiService {
   ): Promise<{ share_id: string }> {
     const headers = await this.getHeaders();
 
-    const response = await fetch(
-      `${API_BASE_URL}/chat/completions/${completion_id}/share`,
-      this.getFetchOptions("POST", headers),
+    const response = await fetchApi(
+      `/chat/completions/${completion_id}/share`,
+      {
+        method: "POST",
+        headers,
+      },
     );
 
     if (!response.ok) {
@@ -464,9 +462,12 @@ class ApiService {
   async unshareConversation(completion_id: string): Promise<void> {
     const headers = await this.getHeaders();
 
-    const response = await fetch(
-      `${API_BASE_URL}/chat/completions/${completion_id}/share`,
-      this.getFetchOptions("DELETE", headers),
+    const response = await fetchApi(
+      `/chat/completions/${completion_id}/unshare`,
+      {
+        method: "POST",
+        headers,
+      },
     );
 
     if (!response.ok) {
@@ -482,13 +483,17 @@ class ApiService {
   ): Promise<void> {
     const headers = await this.getHeaders();
 
-    const response = await fetch(
-      `${API_BASE_URL}/chat/completions/${completion_id}/feedback`,
-      this.getFetchOptions("POST", headers, {
-        log_id,
-        feedback,
-        score,
-      }),
+    const response = await fetchApi(
+      `/chat/completions/${completion_id}/feedback`,
+      {
+        method: "POST",
+        headers,
+        body: {
+          log_id,
+          feedback,
+          score,
+        },
+      },
     );
 
     if (!response.ok) {
@@ -498,10 +503,8 @@ class ApiService {
 
   async fetchModels(): Promise<ModelConfig> {
     try {
-      const response = await fetch(`${API_BASE_URL}/models`, {
+      const response = await fetchApi("/models", {
         method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) {
@@ -518,7 +521,9 @@ class ApiService {
 
   async fetchTools(): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/tools`);
+      const response = await fetchApi("/tools", {
+        method: "GET",
+      });
       if (!response.ok) {
         throw new Error(`Failed to fetch tools: ${response.statusText}`);
       }
@@ -532,23 +537,14 @@ class ApiService {
   }
 
   async transcribeAudio(audioBlob: Blob): Promise<any> {
-    const apiKey = await apiKeyService.getApiKey();
+    const headers = await this.getHeaders();
 
-    if (!apiKey) {
-      throw new Error("API key not found");
-    }
-
-    const headers = {
-      Authorization: `Bearer ${apiKey}`,
-      "X-User-Email": "anonymous@undefined.computer",
-    };
     const formData = new FormData();
     formData.append("audio", audioBlob);
 
-    const response = await fetch(`${API_BASE_URL}/audio/transcribe`, {
+    const response = await fetchApi("/audio/transcribe", {
       method: "POST",
       headers,
-      credentials: "include",
       body: formData,
     });
 
@@ -564,15 +560,8 @@ class ApiService {
     fileType: "image" | "document",
     options?: { convertToMarkdown?: boolean },
   ): Promise<{ url: string; type: string; name: string; markdown?: string }> {
-    const apiKey = await apiKeyService.getApiKey();
+    const headers = await this.getHeaders();
 
-    if (!apiKey) {
-      throw new Error("API key not found");
-    }
-
-    const headers = {
-      Authorization: `Bearer ${apiKey}`,
-    };
     const formData = new FormData();
     formData.append("file", file);
     formData.append("file_type", fileType);
@@ -581,10 +570,9 @@ class ApiService {
       formData.append("convert_to_markdown", "true");
     }
 
-    const response = await fetch(`${API_BASE_URL}/uploads`, {
+    const response = await fetchApi("/uploads", {
       method: "POST",
       headers,
-      credentials: "include",
       body: formData,
     });
 
@@ -611,14 +599,15 @@ class ApiService {
   ): Promise<void> {
     const headers = await this.getHeaders();
 
-    const response = await fetch(
-      `${API_BASE_URL}/user/store-provider-api-key`,
-      this.getFetchOptions("POST", headers, {
+    const response = await fetchApi("/user/store-provider-api-key", {
+      method: "POST",
+      headers,
+      body: {
         providerId,
         apiKey,
         secretKey,
-      }),
-    );
+      },
+    });
 
     if (!response.ok) {
       throw new Error(
@@ -630,10 +619,10 @@ class ApiService {
   async getProviderSettings(): Promise<{ providers: Record<string, any> }> {
     const headers = await this.getHeaders();
 
-    const response = await fetch(
-      `${API_BASE_URL}/user/providers`,
-      this.getFetchOptions("GET", headers),
-    );
+    const response = await fetchApi("/user/providers", {
+      method: "GET",
+      headers,
+    });
 
     if (!response.ok) {
       throw new Error(
@@ -647,10 +636,10 @@ class ApiService {
   async syncProviders(): Promise<void> {
     const headers = await this.getHeaders();
 
-    const response = await fetch(
-      `${API_BASE_URL}/user/sync-providers`,
-      this.getFetchOptions("POST", headers),
-    );
+    const response = await fetchApi("/user/sync-providers", {
+      method: "POST",
+      headers,
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to sync providers: ${response.statusText}`);

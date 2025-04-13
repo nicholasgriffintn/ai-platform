@@ -5,6 +5,7 @@ import { openAPISpecs } from "hono-openapi";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { cors } from "hono/cors";
+import { csrf } from "hono/csrf";
 
 import { authMiddleware } from "./middleware/auth";
 import { loggerMiddleware } from "./middleware/loggerMiddleware";
@@ -35,7 +36,12 @@ import webhooks from "./routes/webhooks";
 
 const app = new Hono();
 
-autoRegisterDynamicApps();
+const origin = (origin, c) => {
+  if (!origin) return "*";
+  if (origin.includes("polychat.app")) return origin;
+  if (origin.includes("localhost")) return origin;
+  return "*";
+};
 
 /**
  * Global middleware to enable CORS
@@ -43,16 +49,28 @@ autoRegisterDynamicApps();
 app.use(
   "*",
   cors({
-    origin: (origin, c) => {
-      if (!origin) return "*";
-      if (origin.includes("polychat.app")) return origin;
-      if (origin.includes("localhost")) return origin;
-      return "*";
-    },
-    allowMethods: ["GET", "POST", "PUT", "DELETE"],
+    origin,
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-CSRF-Token",
+      "x-turnstile-token",
+    ],
     credentials: true,
+    maxAge: 86400,
   }),
 );
+
+/**
+ * Global middleware for logging
+ */
+app.use("*", loggerMiddleware);
+
+/**
+ * Global middleware to apply CSRF protection
+ */
+app.use(csrf());
 
 /**
  * Global middleware to check if the user is authenticated
@@ -61,14 +79,11 @@ app.use(
 app.use("*", authMiddleware);
 
 /**
- * Global middleware for logging
- */
-app.use("*", loggerMiddleware);
-
-/**
  * Global middleware to rate limit requests
  */
 app.use("*", rateLimit);
+
+autoRegisterDynamicApps();
 
 // Initialize logger
 const logger = getLogger({

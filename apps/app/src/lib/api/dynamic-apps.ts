@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "~/constants";
+import { fetchApi } from "./fetch-wrapper";
 
 export interface AppSchema {
   id: string;
@@ -53,12 +53,8 @@ export interface AppListItem {
 
 export const fetchDynamicApps = async (): Promise<AppListItem[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/dynamic-apps`, {
+    const response = await fetchApi("/dynamic-apps", {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
     });
 
     if (!response.ok) {
@@ -74,12 +70,8 @@ export const fetchDynamicApps = async (): Promise<AppListItem[]> => {
 
 export const fetchDynamicAppById = async (id: string): Promise<AppSchema> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/dynamic-apps/${id}`, {
+    const response = await fetchApi(`/dynamic-apps/${id}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
     });
 
     if (!response.ok) {
@@ -98,13 +90,9 @@ export const executeDynamicApp = async (
   formData: Record<string, any>,
 ): Promise<Record<string, any>> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/dynamic-apps/${id}/execute`, {
+    const response = await fetchApi(`/dynamic-apps/${id}/execute`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(formData),
+      body: formData,
     });
 
     if (!response.ok) {

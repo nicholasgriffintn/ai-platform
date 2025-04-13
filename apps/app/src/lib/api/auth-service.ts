@@ -1,6 +1,7 @@
 import { API_BASE_URL } from "~/constants";
 import { apiKeyService } from "~/lib/api/api-key";
 import type { User, UserSettings } from "~/types";
+import { fetchApi } from "./fetch-wrapper";
 
 class AuthService {
   private static instance: AuthService;
@@ -41,12 +42,8 @@ class AuthService {
 
   public async checkAuthStatus(): Promise<boolean> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      const response = await fetchApi("/auth/me", {
         method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
       });
 
       if (!response.ok) {
@@ -75,12 +72,8 @@ class AuthService {
 
   public async getToken(): Promise<string | null> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/token`, {
+      const response = await fetchApi("/auth/token", {
         method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
       });
 
       if (!response.ok) {
@@ -102,12 +95,8 @@ class AuthService {
 
   public async logout(): Promise<boolean> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+      const response = await fetchApi("/auth/logout", {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
       });
 
       if (response.ok) {
@@ -136,20 +125,15 @@ class AuthService {
     settings: Partial<UserSettings>,
   ): Promise<boolean> {
     try {
-      const response = await fetch(`${API_BASE_URL}/user/settings`, {
+      const response = await fetchApi("/user/settings", {
         method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(settings),
+        body: settings,
       });
 
       if (!response.ok) {
         return false;
       }
 
-      // Update local copy of user settings
       await this.checkAuthStatus();
 
       return true;
