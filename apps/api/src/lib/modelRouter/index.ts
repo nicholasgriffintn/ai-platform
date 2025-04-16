@@ -148,12 +148,14 @@ export class ModelRouter {
   }
 
   private static selectBestModel(modelScores: ModelScore[]): string {
-    if (modelScores[0].score === 0) {
+    const suitableModels = modelScores.filter((model) => model.score > 0);
+
+    if (suitableModels.length === 0) {
       console.warn("No suitable model found. Falling back to default model.");
       return defaultModel;
     }
 
-    return modelScores[0].model;
+    return suitableModels[0].model;
   }
 
   public static async selectModel(

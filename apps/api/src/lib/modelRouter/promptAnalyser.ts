@@ -67,6 +67,7 @@ export class PromptAnalyzer {
         { role: "user", content: prompt },
       ],
       user,
+      response_format: { type: "json_object" },
     });
   }
 
@@ -90,18 +91,16 @@ export class PromptAnalyzer {
       {} as Record<string, Record<string, string[]>>,
     );
 
-    return `Analyze the given prompt and return a JSON object with the following properties:
-      - expectedComplexity: number 1-5 indicating task complexity
-      - requiredCapabilities: array of required model capabilities from ${JSON.stringify(availableCapabilities, null, 2)}
-      - estimatedInputTokens: estimated number of input tokens
-      - estimatedOutputTokens: estimated number of output tokens
-      - needsFunctions: boolean indicating if the task requires function calling based on the available tools: ${JSON.stringify(
-        availableFunctions,
-        null,
-        2,
-      )}
-      
-      Base the analysis on these categorized keywords: ${JSON.stringify(categorizedKeywords, null, 2)}`;
+    return `You are an AI assistant analyzing a user prompt. Respond ONLY with a valid JSON object matching the following structure:
+{
+  "expectedComplexity": number, // 1-5 indicating task complexity
+  "requiredCapabilities": string[], // array of required model capabilities from ${JSON.stringify(availableCapabilities)}
+  "estimatedInputTokens": number, // estimated number of input tokens
+  "estimatedOutputTokens": number, // estimated number of output tokens
+  "needsFunctions": boolean // true if the task requires function calling based on available tools: ${JSON.stringify(availableFunctions)}
+}
+
+Base your analysis on the prompt and these categorized keywords: ${JSON.stringify(categorizedKeywords, null, 2)}. Ensure the output is nothing but the JSON object itself.`;
   }
 
   private static validateAndParseAnalysis(analysisResponse: {
@@ -119,82 +118,45 @@ export class PromptAnalyzer {
     }
 
     const content = analysisResponse.choices[0].message.content;
-    const requirementsAnalysis = PromptAnalyzer.parseAnalysisContent(content);
+    // Strip markdown code fences if present
+    const cleanedContent = content
+      .replace(/^```json\n?/, "")
+      .replace(/\n?```$/, "");
+    let requirementsAnalysis: Partial<PromptRequirements>;
+
+    try {
+      // Parse the cleaned content
+      requirementsAnalysis = JSON.parse(cleanedContent);
+    } catch (error) {
+      console.error(
+        "Failed to parse JSON response:",
+        error,
+        "Original Content:",
+        content,
+        "Cleaned Content:",
+        cleanedContent,
+      );
+      throw new AssistantError(
+        "Invalid JSON response from AI analysis",
+        ErrorType.PROVIDER_ERROR,
+      );
+    }
 
     if (
-      !requirementsAnalysis.expectedComplexity ||
-      !requirementsAnalysis.requiredCapabilities
+      typeof requirementsAnalysis.expectedComplexity !== "number" ||
+      !Array.isArray(requirementsAnalysis.requiredCapabilities)
     ) {
+      console.error(
+        "Incomplete or invalid AI analysis structure:",
+        requirementsAnalysis,
+      );
       throw new AssistantError(
-        "Incomplete or invalid AI analysis",
+        "Incomplete or invalid AI analysis structure",
         ErrorType.PROVIDER_ERROR,
       );
     }
 
     return PromptAnalyzer.normalizeRequirements(requirementsAnalysis);
-  }
-
-  private static parseAnalysisContent(
-    content: string,
-  ): Partial<PromptRequirements> {
-    let jsonString: string | null = null;
-
-    const markdownMatch = content.match(/```json\\s*(\\{[\\s\\S]+?\\})\\s*```/);
-    if (markdownMatch?.[1]) {
-      jsonString = markdownMatch[1];
-    } else {
-      const firstBraceIndex = content.indexOf("{");
-      if (firstBraceIndex !== -1) {
-        let braceCount = 0;
-        let lastBraceIndex = -1;
-        for (let i = firstBraceIndex; i < content.length; i++) {
-          if (content[i] === "{") {
-            braceCount++;
-          } else if (content[i] === "}") {
-            braceCount--;
-            if (braceCount === 0) {
-              lastBraceIndex = i;
-              break;
-            }
-          }
-        }
-
-        if (lastBraceIndex !== -1) {
-          const potentialJson = content.substring(
-            firstBraceIndex,
-            lastBraceIndex + 1,
-          );
-          try {
-            JSON.parse(potentialJson);
-            jsonString = potentialJson;
-          } catch (e) {
-            console.warn(
-              "Potential JSON block failed validation:",
-              potentialJson,
-              e,
-            );
-          }
-        }
-      }
-    }
-
-    if (jsonString) {
-      try {
-        return JSON.parse(jsonString);
-      } catch (error) {
-        console.error(
-          "Failed to parse extracted JSON:",
-          error,
-          "JSON String:",
-          jsonString,
-          "Original content:",
-          content,
-        );
-      }
-    }
-
-    console.warn("Falling back to markdown parsing for content:", content);
-    return PromptAnalyzer.parseMarkdownResponse(content);
   }
 
   private static normalizeRequirements(
@@ -270,62 +232,5 @@ export class PromptAnalyzer {
       hasImages: !!attachments?.some((a) => a.type === "image"),
       hasDocuments: !!attachments?.some((a) => a.type === "document"),
     };
-  }
-
-  private static parseMarkdownResponse(
-    content: string,
-  ): Partial<PromptRequirements> {
-    const requirements: Partial<PromptRequirements> = {};
-
-    const complexityMatch = content.match(
-      /\*\*expectedComplexity\*\*:\s*(\d+)/i,
-    );
-    if (complexityMatch) {
-      const complexity = Number.parseInt(complexityMatch[1]);
-      if (complexity >= 1 && complexity <= 5) {
-        requirements.expectedComplexity = complexity as 1 | 2 | 3 | 4 | 5;
-      }
-    }
-
-    const capabilitiesMatch = content.match(
-      /\*\*requiredCapabilities\*\*:\s*\[(.*?)\]/i,
-    );
-    if (capabilitiesMatch) {
-      type Capability = (typeof availableCapabilities)[number];
-
-      const capabilities = capabilitiesMatch[1]
-        .split(",")
-        .map((s) => s.trim().replace(/["\s]/g, ""))
-        .filter((cap): cap is Capability =>
-          availableCapabilities.includes(cap as Capability),
-        );
-      requirements.requiredCapabilities = capabilities;
-    }
-
-    const inputTokensMatch = content.match(
-      /\*\*estimatedInputTokens\*\*:\s*(\d+)/i,
-    );
-    if (inputTokensMatch) {
-      requirements.estimatedInputTokens = Number.parseInt(inputTokensMatch[1]);
-    }
-
-    const outputTokensMatch = content.match(
-      /\*\*estimatedOutputTokens\*\*:\s*(\d+)/i,
-    );
-    if (outputTokensMatch) {
-      requirements.estimatedOutputTokens = Number.parseInt(
-        outputTokensMatch[1],
-      );
-    }
-
-    const needsFunctionsMatch = content.match(
-      /\*\*needsFunctions\*\*:\s*(true|false)/i,
-    );
-    if (needsFunctionsMatch) {
-      requirements.needsFunctions =
-        needsFunctionsMatch[1].toLowerCase() === "true";
-    }
-
-    return requirements;
   }
 }
