@@ -33,6 +33,6 @@
 		"wrangler": "^4.0.0"
 	},
 	"peerDependencies": {
-		"drizzle-orm": "0.41.0"
+		"drizzle-orm": "0.42.0"
 	}
 }
