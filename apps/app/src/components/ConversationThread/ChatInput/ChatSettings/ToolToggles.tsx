@@ -14,9 +14,11 @@ export const ToolToggles = ({
   const { toggleTool, selectedTools } = useToolsStore();
   const { data: apiModels } = useModels();
 
-  const supportsFunctions = apiModels?.[model]?.supportsFunctions;
-  const supportsSearchGrounding = apiModels?.[model]?.supportsSearchGrounding;
-  const supportsCodeExecution = apiModels?.[model]?.supportsCodeExecution;
+  const modelCapabilities = model ? apiModels?.[model] : undefined;
+
+  const supportsFunctions = modelCapabilities?.supportsFunctions;
+  const supportsSearchGrounding = modelCapabilities?.supportsSearchGrounding;
+  const supportsCodeExecution = modelCapabilities?.supportsCodeExecution;
 
   const toggleCodeExecution = () => {
     if (!supportsCodeExecution) return;
