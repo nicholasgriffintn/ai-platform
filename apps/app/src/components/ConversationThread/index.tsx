@@ -147,7 +147,7 @@ export const ConversationThread = () => {
 
     // For text-to-image models, only allow the first message
     const isTextToImageModel =
-      apiModels?.[model]?.type?.includes("text-to-image");
+      model !== null && apiModels?.[model]?.type?.includes("text-to-image");
     if (isTextToImageModel && messages.length > 0) {
       addError(
         "Text-to-image models only support one message per conversation. Please start a new conversation.",

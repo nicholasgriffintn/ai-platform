@@ -138,7 +138,7 @@ export async function processChatRequest(options: CoreChatOptions) {
         lastMessageContentText,
         allAttachments,
         budget_constraint,
-        user?.id,
+        user,
         completion_id,
       ));
 

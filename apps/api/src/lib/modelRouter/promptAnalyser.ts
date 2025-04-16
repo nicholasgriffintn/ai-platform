@@ -5,6 +5,7 @@ import type {
   Attachment,
   ChatRole,
   IEnv,
+  IUser,
   PromptRequirements,
 } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
@@ -14,7 +15,7 @@ import { availableCapabilities } from "../models";
 // biome-ignore lint/complexity/noStaticOnlyClass: I don't care
 export class PromptAnalyzer {
   private static readonly DEFAULT_PROVIDER = "groq";
-  private static readonly DEFAULT_MODEL = "llama-3.3-70b-specdec";
+  private static readonly DEFAULT_MODEL = "llama-3.3-70b-versatile";
 
   private static readonly FILTERS = {
     coding: new KeywordFilter(KeywordFilter.getAllCodingKeywords()),
@@ -25,6 +26,7 @@ export class PromptAnalyzer {
     env: IEnv,
     prompt: string,
     keywords: string[],
+    user: IUser,
   ): Promise<PromptRequirements> {
     try {
       const provider = AIProviderFactory.getProvider(
@@ -35,6 +37,7 @@ export class PromptAnalyzer {
         env,
         prompt,
         keywords,
+        user,
       );
       return PromptAnalyzer.validateAndParseAnalysis(analysisResponse);
     } catch (error) {
@@ -50,6 +53,7 @@ export class PromptAnalyzer {
     env: IEnv,
     prompt: string,
     keywords: string[],
+    user: IUser,
   ) {
     return provider.getResponse({
       env,
@@ -62,6 +66,7 @@ export class PromptAnalyzer {
         },
         { role: "user", content: prompt },
       ],
+      user,
     });
   }
 
@@ -132,10 +137,63 @@ export class PromptAnalyzer {
   private static parseAnalysisContent(
     content: string,
   ): Partial<PromptRequirements> {
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (jsonMatch && jsonMatch[0].length > 2) {
-      return JSON.parse(jsonMatch[0]);
+    let jsonString: string | null = null;
+
+    const markdownMatch = content.match(/```json\\s*(\\{[\\s\\S]+?\\})\\s*```/);
+    if (markdownMatch?.[1]) {
+      jsonString = markdownMatch[1];
+    } else {
+      const firstBraceIndex = content.indexOf("{");
+      if (firstBraceIndex !== -1) {
+        let braceCount = 0;
+        let lastBraceIndex = -1;
+        for (let i = firstBraceIndex; i < content.length; i++) {
+          if (content[i] === "{") {
+            braceCount++;
+          } else if (content[i] === "}") {
+            braceCount--;
+            if (braceCount === 0) {
+              lastBraceIndex = i;
+              break;
+            }
+          }
+        }
+
+        if (lastBraceIndex !== -1) {
+          const potentialJson = content.substring(
+            firstBraceIndex,
+            lastBraceIndex + 1,
+          );
+          try {
+            JSON.parse(potentialJson);
+            jsonString = potentialJson;
+          } catch (e) {
+            console.warn(
+              "Potential JSON block failed validation:",
+              potentialJson,
+              e,
+            );
+          }
+        }
+      }
     }
+
+    if (jsonString) {
+      try {
+        return JSON.parse(jsonString);
+      } catch (error) {
+        console.error(
+          "Failed to parse extracted JSON:",
+          error,
+          "JSON String:",
+          jsonString,
+          "Original content:",
+          content,
+        );
+      }
+    }
+
+    console.warn("Falling back to markdown parsing for content:", content);
     return PromptAnalyzer.parseMarkdownResponse(content);
   }
 
@@ -196,12 +254,14 @@ export class PromptAnalyzer {
     prompt: string,
     attachments?: Attachment[],
     budget_constraint?: number,
+    user?: IUser,
   ): Promise<PromptRequirements> {
     const keywords = PromptAnalyzer.extractKeywords(prompt);
     const aiAnalysis = await PromptAnalyzer.analyzeWithAI(
       env,
       prompt,
       keywords,
+      user,
     );
 
     return {

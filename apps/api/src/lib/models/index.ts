@@ -22,6 +22,9 @@ import { perplexityModelConfig } from "./perplexity";
 import { togetherAiModelConfig } from "./together-ai";
 import { workersAiModelConfig } from "./workersai";
 
+import type { IEnv, ModelConfigItem } from "../../types";
+import { Database } from "../database";
+
 export {
   availableCapabilities,
   availableModelTypes,
@@ -145,4 +148,66 @@ export function getModelsByType(type: string) {
     },
     {} as typeof modelConfig,
   );
+}
+
+export async function filterModelsForUserAccess(
+  allModels: Record<string, ModelConfigItem>,
+  env: IEnv,
+  userId?: number,
+): Promise<Record<string, ModelConfigItem>> {
+  const freeModels = getFreeModels();
+  const freeModelIds = new Set(Object.keys(freeModels));
+  const alwaysEnabledProvidersEnvVar = env.ALWAYS_ENABLED_PROVIDERS;
+  const alwaysEnabledProviders = new Set(
+    alwaysEnabledProvidersEnvVar?.split(",") || [],
+  );
+
+  const filteredModels: Record<string, ModelConfigItem> = {};
+
+  if (!userId) {
+    for (const modelId in allModels) {
+      if (
+        freeModelIds.has(modelId) ||
+        alwaysEnabledProviders.has(allModels[modelId].provider)
+      ) {
+        filteredModels[modelId] = allModels[modelId];
+      }
+    }
+    return filteredModels;
+  }
+
+  try {
+    const database = Database.getInstance(env);
+    const userProviderSettings = await database.getUserProviderSettings(userId);
+
+    const enabledProviders = new Map(
+      userProviderSettings
+        .filter((p) => p.enabled)
+        .map((p) => [p.provider_id, true]),
+    );
+
+    for (const modelId in allModels) {
+      const model = allModels[modelId];
+      const isFree = freeModelIds.has(modelId);
+      const isEnabled =
+        alwaysEnabledProviders.has(model.provider) ||
+        enabledProviders.has(model.provider);
+
+      if (isFree || isEnabled) {
+        filteredModels[modelId] = model;
+      }
+    }
+
+    return filteredModels;
+  } catch (error) {
+    console.error(`Error during model filtering for user ${userId}: ${error}`);
+    // Fallback to free models in case of error
+    const fallbackModels: Record<string, ModelConfigItem> = {};
+    for (const modelId in allModels) {
+      if (freeModelIds.has(modelId)) {
+        fallbackModels[modelId] = allModels[modelId];
+      }
+    }
+    return fallbackModels;
+  }
 }

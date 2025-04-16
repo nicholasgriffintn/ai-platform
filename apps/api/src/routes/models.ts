@@ -3,11 +3,10 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
-import { Database } from "../lib/database";
 import {
   availableCapabilities,
   availableModelTypes,
-  getFreeModels,
+  filterModelsForUserAccess,
   getModelConfig,
   getModels,
   getModelsByCapability,
@@ -16,65 +15,6 @@ import {
 import { createRouteLogger } from "../middleware/loggerMiddleware";
 
 const app = new Hono();
-
-async function filterModelsForUser(allModels: Record<string, any>, c: Context) {
-  const user = c.get("user");
-  const freeModels = getFreeModels();
-  const freeModelIds = new Set(Object.keys(freeModels));
-  const alwaysEnabledProvidersEnvVar = c.env.ALWAYS_ENABLED_PROVIDERS;
-  const alwaysEnabledProviders = new Set(
-    alwaysEnabledProvidersEnvVar?.split(",") || [],
-  );
-
-  if (!user) {
-    routeLogger.debug("No user context found, returning only free models.");
-    const filteredModels: Record<string, any> = {};
-    for (const modelId in allModels) {
-      if (
-        freeModelIds.has(modelId) ||
-        alwaysEnabledProviders.has(allModels[modelId].provider)
-      ) {
-        filteredModels[modelId] = allModels[modelId];
-      }
-    }
-    return filteredModels;
-  }
-
-  try {
-    const database = Database.getInstance(c.env);
-
-    const userProviderSettings = await database.getUserProviderSettings(
-      user.id,
-    );
-
-    const enabledProviders = new Map(
-      userProviderSettings
-        .filter((p) => p.enabled)
-        .map((p) => [p.provider_id, true]),
-    );
-
-    const filteredModels: Record<string, any> = {};
-
-    for (const modelId in allModels) {
-      const model = allModels[modelId];
-      const isFree = freeModelIds.has(modelId);
-      const isEnabled =
-        alwaysEnabledProviders.has(model.provider) ||
-        enabledProviders.has(model.provider);
-
-      if (isFree || isEnabled) {
-        filteredModels[modelId] = model;
-      }
-    }
-
-    return filteredModels;
-  } catch (error) {
-    routeLogger.error(
-      `Error during model filtering for user ${user.id}: ${error}`,
-    );
-    return freeModels;
-  }
-}
 
 const routeLogger = createRouteLogger("MODELS");
 
@@ -155,7 +95,11 @@ app.get(
   }),
   async (context: Context) => {
     const allModels = getModels();
-    const filteredModels = await filterModelsForUser(allModels, context);
+    const filteredModels = await filterModelsForUserAccess(
+      allModels,
+      context.env,
+      context.get("user")?.id,
+    );
 
     return context.json({
       success: true,
@@ -253,9 +197,10 @@ app.get(
     };
 
     const modelsByCapability = getModelsByCapability(capability);
-    const filteredModels = await filterModelsForUser(
+    const filteredModels = await filterModelsForUserAccess(
       modelsByCapability,
-      context,
+      context.env,
+      context.get("user")?.id,
     );
 
     return context.json({
@@ -352,7 +297,11 @@ app.get(
     const { type } = context.req.valid("param" as never) as { type: string };
 
     const modelsByType = getModelsByType(type);
-    const filteredModels = await filterModelsForUser(modelsByType, context);
+    const filteredModels = await filterModelsForUserAccess(
+      modelsByType,
+      context.env,
+      context.get("user")?.id,
+    );
 
     return context.json({
       success: true,
@@ -423,6 +372,22 @@ app.get(
     const { id } = context.req.valid("param" as never) as { id: string };
 
     const model = getModelConfig(id);
+
+    const accessibleModels = await filterModelsForUserAccess(
+      { [id]: model },
+      context.env,
+      context.get("user")?.id,
+    );
+
+    if (!accessibleModels[id]) {
+      return context.json(
+        {
+          success: false,
+          message: "Model not found or user does not have access",
+        },
+        404,
+      );
+    }
 
     return context.json({
       success: true,

@@ -63,6 +63,16 @@ export const ModelSelector = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
 
+  const automaticModelOption: ModelConfigItem = {
+    id: "auto",
+    matchingModel: "auto",
+    name: "Automatic",
+    provider: "System",
+    type: [],
+    strengths: [],
+    isFree: true,
+  };
+
   const { data: apiModels = {}, isLoading: isLoadingModels } = useModels();
   const isModelLoading = useIsLoading("model-init");
   const modelLoadingProgress = useLoadingProgress("model-init");
@@ -79,7 +89,9 @@ export const ModelSelector = ({
     }
   }, [searchQuery, selectedCapability]);
 
-  const selectedModelInfo = filteredModels[model || defaultModel];
+  // Adjust to handle null (Automatic) model state
+  const selectedModelInfo =
+    model === null ? automaticModelOption : filteredModels[model];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -346,6 +358,23 @@ export const ModelSelector = ({
             aria-activedescendant={activeDescendantId || undefined}
             tabIndex={0}
           >
+            <div className="p-2 border-b border-zinc-200 dark:border-zinc-700">
+              <ModelOption
+                key={automaticModelOption.id}
+                model={automaticModelOption}
+                isSelected={model === null}
+                onClick={() => {
+                  setModel(null);
+                  setIsOpen(false);
+                }}
+                isActive={
+                  `model-${automaticModelOption.id}` === activeDescendantId
+                }
+                mono={mono}
+                disabled={chatMode === "local"}
+              />
+            </div>
+
             {Object.keys(filteredFeaturedModels).length <= 0 &&
               Object.keys(filteredOtherModels).length <= 0 && (
                 <div className="p-2 text-center text-sm text-zinc-500">
@@ -377,8 +406,8 @@ export const ModelSelector = ({
                               key={model.matchingModel}
                               model={model}
                               isSelected={
-                                model.matchingModel ===
-                                selectedModelInfo?.matchingModel
+                                model.id === selectedModelInfo?.id &&
+                                model !== null
                               }
                               onClick={() => {
                                 if (!shouldModelBeDisabled) {
@@ -442,8 +471,8 @@ export const ModelSelector = ({
                                 key={model.matchingModel}
                                 model={model}
                                 isSelected={
-                                  model.matchingModel ===
-                                  selectedModelInfo?.matchingModel
+                                  model.id === selectedModelInfo?.id &&
+                                  model !== null
                                 }
                                 onClick={() => {
                                   if (!shouldModelBeDisabled) {

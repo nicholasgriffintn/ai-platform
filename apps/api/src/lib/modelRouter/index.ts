@@ -1,11 +1,13 @@
 import type {
   Attachment,
   IEnv,
+  IUser,
   ModelConfigItem,
   PromptRequirements,
 } from "../../types";
 import {
   defaultModel,
+  filterModelsForUserAccess,
   getIncludedInRouterModels,
   getModelConfig,
 } from "../models";
@@ -136,9 +138,10 @@ export class ModelRouter {
     return score;
   }
 
-  private static rankModels(requirements: PromptRequirements): ModelScore[] {
-    const models = getIncludedInRouterModels();
-
+  private static rankModels(
+    models: Record<string, ModelConfigItem>,
+    requirements: PromptRequirements,
+  ): ModelScore[] {
     return Object.keys(models)
       .map((model) => ModelRouter.scoreModel(requirements, model))
       .sort((a, b) => b.score - a.score);
@@ -158,7 +161,7 @@ export class ModelRouter {
     prompt: string,
     attachments?: Attachment[],
     budget_constraint?: number,
-    userId?: number,
+    user?: IUser,
     completion_id?: string,
   ): Promise<string> {
     return trackModelRoutingMetrics(
@@ -168,14 +171,27 @@ export class ModelRouter {
           prompt,
           attachments,
           budget_constraint,
+          user,
         );
 
-        const modelScores = ModelRouter.rankModels(requirements);
+        const allRouterModels = getIncludedInRouterModels();
+
+        const availableModels = await filterModelsForUserAccess(
+          allRouterModels,
+          env,
+          user?.id,
+        );
+
+        const modelScores = ModelRouter.rankModels(
+          availableModels,
+          requirements,
+        );
+
         return ModelRouter.selectBestModel(modelScores);
       },
       env.ANALYTICS,
       { prompt },
-      userId,
+      user?.id,
       completion_id,
     ).catch((error) => {
       console.error("Error in model selection:", error);

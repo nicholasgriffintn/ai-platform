@@ -1,5 +1,6 @@
 "use client";
 
+import { Wand2 } from "lucide-react";
 import { Suspense, forwardRef, lazy, useMemo, useState } from "react";
 import type { ComponentProps, FC } from "react";
 
@@ -106,42 +107,52 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
         aria-label={iconLabel}
         {...rest}
       >
-        {(iconType === "fallback" || !isLoaded) && showFallback && (
-          <TextFallback
-            text={modelName}
-            provider={provider}
-            size={containerSize}
-          />
-        )}
+        {modelName === "Automatic" ? (
+          <div className="absolute inset-0 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+            <Wand2 size={containerSize * 0.8} aria-hidden="true" />
+          </div>
+        ) : (
+          <>
+            {(iconType === "fallback" || !isLoaded) && showFallback && (
+              <TextFallback
+                text={modelName}
+                provider={provider}
+                size={containerSize}
+              />
+            )}
 
-        {iconType !== "fallback" && IconComponent && (
-          <Suspense
-            fallback={
-              showFallback ? null : (
-                <TextFallback
-                  text={modelName}
-                  provider={provider}
-                  size={containerSize}
-                />
-              )
-            }
-          >
-            <div
-              className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${isLoaded ? "opacity-100" : "opacity-0"}`}
-            >
-              <div className={`${mono ? "text-black dark:text-white" : ""}`}>
-                <IconComponent
-                  size={containerSize}
-                  style={{
-                    opacity: mono ? 0.75 : 1,
-                  }}
-                  fill={mono ? "currentColor" : undefined}
-                  fillRule={mono ? "evenodd" : undefined}
-                  aria-hidden="true"
-                />
-              </div>
-            </div>
-          </Suspense>
+            {iconType !== "fallback" && IconComponent && (
+              <Suspense
+                fallback={
+                  showFallback ? null : (
+                    <TextFallback
+                      text={modelName}
+                      provider={provider}
+                      size={containerSize}
+                    />
+                  )
+                }
+              >
+                <div
+                  className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${isLoaded ? "opacity-100" : "opacity-0"}`}
+                >
+                  <div
+                    className={`${mono ? "text-black dark:text-white" : ""}`}
+                  >
+                    <IconComponent
+                      size={containerSize}
+                      style={{
+                        opacity: mono ? 0.75 : 1,
+                      }}
+                      fill={mono ? "currentColor" : undefined}
+                      fillRule={mono ? "evenodd" : undefined}
+                      aria-hidden="true"
+                    />
+                  </div>
+                </div>
+              </Suspense>
+            )}
+          </>
         )}
       </div>
     );

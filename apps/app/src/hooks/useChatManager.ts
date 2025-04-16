@@ -42,7 +42,11 @@ export function useChatManager() {
   const initializingRef = useRef<boolean>(false);
 
   const matchingModel =
-    chatMode === "local" ? webLLMModels[model] : apiModels[model];
+    model === null
+      ? undefined
+      : chatMode === "local"
+        ? webLLMModels[model]
+        : apiModels[model];
 
   useEffect(() => {
     const loadingId = "model-init";
@@ -51,7 +55,11 @@ export function useChatManager() {
     const initializeLocalModel = async () => {
       if (!mounted || initializingRef.current) return;
 
-      if (chatMode === "local" && matchingModel?.provider === "web-llm") {
+      if (
+        model &&
+        chatMode === "local" &&
+        matchingModel?.provider === "web-llm"
+      ) {
         try {
           initializingRef.current = true;
 
@@ -81,7 +89,7 @@ export function useChatManager() {
           console.error("[useChatManager] Failed to initialize WebLLM:", error);
           if (mounted) {
             addError("Failed to initialize local model. Please try again.");
-            setModel("");
+            setModel(null);
           }
         } finally {
           if (mounted) {
@@ -102,7 +110,10 @@ export function useChatManager() {
     return () => {
       mounted = false;
       clearTimeout(timer);
-      stopLoading(loadingId);
+      if (initializingRef.current) {
+        stopLoading(loadingId);
+        initializingRef.current = false;
+      }
     };
   }, [
     chatMode,
@@ -273,6 +284,7 @@ export function useChatManager() {
       await updateConversation(conversationId, (oldData) => {
         const now = Date.now();
         const nowISOString = new Date(now).toISOString();
+        const currentModel = model === null ? undefined : model;
 
         if (!oldData) {
           const assistantMessage = normalizeMessage({
@@ -281,7 +293,7 @@ export function useChatManager() {
             id: messageData?.id || crypto.randomUUID(),
             created: messageData?.created || now,
             timestamp: messageData?.timestamp || now,
-            model: messageData?.model || model,
+            model: messageData?.model || currentModel,
             reasoning: reasoning
               ? {
                   collapsed: true,
@@ -317,7 +329,7 @@ export function useChatManager() {
             id: messageData?.id || crypto.randomUUID(),
             created: messageData?.created || now,
             timestamp: messageData?.timestamp || now,
-            model: messageData?.model || model,
+            model: messageData?.model || currentModel,
             reasoning: reasoning
               ? {
                   collapsed: true,
@@ -338,6 +350,7 @@ export function useChatManager() {
             content,
             created: messageData?.created || lastMessage.created || now,
             timestamp: messageData?.timestamp || lastMessage.timestamp || now,
+            model: messageData?.model || currentModel,
             reasoning: reasoning
               ? {
                   collapsed: true,
@@ -432,6 +445,11 @@ export function useChatManager() {
 
       try {
         if (isLocal) {
+          if (!model) {
+            throw new Error(
+              "Cannot generate local response without a selected model.",
+            );
+          }
           const handleProgress = (text: string) => {
             response += text;
             assistantResponseRef.current = response;
@@ -463,10 +481,12 @@ export function useChatManager() {
 
           const normalizedMessages = messages.map(normalizeMessage);
 
+          const modelToSend = model === null ? undefined : model;
+
           const assistantMessage = await apiService.streamChatCompletions(
             conversationId,
             normalizedMessages,
-            model,
+            modelToSend,
             chatMode,
             chatSettings,
             controller.signal,
@@ -490,7 +510,7 @@ export function useChatManager() {
             {
               id: assistantMessage.id,
               created: assistantMessage.created,
-              model: assistantMessage.model,
+              model: assistantMessage.model || modelToSend,
               citations: assistantMessage.citations,
               usage: assistantMessage.usage,
               log_id: assistantMessage.log_id,
@@ -502,12 +522,12 @@ export function useChatManager() {
           );
         }
 
-        if (messages.length <= 2) {
+        if (messages.length <= 1) {
           setTimeout(() => {
             const assistantMessage = normalizeMessage({
               id: crypto.randomUUID(),
               created: Date.now(),
-              model: model,
+              model: model === null ? undefined : model,
               role: "assistant",
               content: response,
               reasoning: assistantReasoningRef.current
@@ -531,7 +551,8 @@ export function useChatManager() {
         };
       } catch (error) {
         if (controller.signal.aborted) {
-          throw new Error("Request aborted");
+          console.log("Request aborted by user.");
+          return { status: "error", response: "Request aborted" };
         }
         throw error;
       }
@@ -567,6 +588,7 @@ export function useChatManager() {
           const streamError = error as Error & {
             status?: number;
             code?: string;
+            message?: string;
           };
           console.error("Error generating response:", streamError);
 
@@ -574,13 +596,17 @@ export function useChatManager() {
             addError("Rate limit exceeded. Please try again later.");
           } else if (streamError.code === "model_not_found") {
             addError(`Model not found: ${model}`);
-            setModel("");
+            setModel(null);
           } else {
             addError(streamError.message || "Failed to generate response");
           }
 
           throw streamError;
         }
+        return {
+          status: "error",
+          response: (error as Error).message || "Failed",
+        };
       } finally {
         setStreamStarted(false);
         stopLoading("stream-response");
@@ -612,6 +638,7 @@ export function useChatManager() {
 
       const userMessageId = crypto.randomUUID();
       const currentTime = Date.now();
+      const currentModel = model === null ? undefined : model;
 
       const contentItems: any[] = [
         {
@@ -658,7 +685,7 @@ export function useChatManager() {
             content: contentItems,
             id: userMessageId,
             created: currentTime,
-            model,
+            model: currentModel,
           });
         }
 
@@ -667,7 +694,7 @@ export function useChatManager() {
           content: input.trim(),
           id: userMessageId,
           created: currentTime,
-          model,
+          model: currentModel,
         });
       };
 
@@ -710,7 +737,10 @@ export function useChatManager() {
       } catch (error) {
         console.error("Failed to send message:", error);
         addError("Failed to send message. Please try again.");
-        return null;
+        return {
+          status: "error",
+          response: (error as Error).message || "Failed",
+        };
       }
     },
     [

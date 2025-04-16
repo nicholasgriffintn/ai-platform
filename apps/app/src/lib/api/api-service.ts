@@ -192,7 +192,7 @@ class ApiService {
   async streamChatCompletions(
     completion_id: string,
     messages: Message[],
-    model: string,
+    model: string | undefined,
     mode: ChatMode,
     chatSettings: ChatSettings,
     signal: AbortSignal,
@@ -230,21 +230,26 @@ class ApiService {
       };
     });
 
+    const requestBody: Record<string, any> = {
+      completion_id,
+      mode,
+      messages: formattedMessages,
+      platform: "web",
+      response_mode: chatSettings.responseMode || "normal",
+      store,
+      stream: streamingEnabled,
+      enabled_tools: selectedTools,
+      ...chatSettings,
+    };
+
+    if (model !== undefined) {
+      requestBody.model = model;
+    }
+
     const response = await fetchApi("/chat/completions", {
       method: "POST",
       headers,
-      body: {
-        completion_id,
-        model,
-        mode,
-        messages: formattedMessages,
-        platform: "web",
-        response_mode: chatSettings.responseMode || "normal",
-        store,
-        stream: streamingEnabled,
-        enabled_tools: selectedTools,
-        ...chatSettings,
-      },
+      body: requestBody,
       signal,
     });
 

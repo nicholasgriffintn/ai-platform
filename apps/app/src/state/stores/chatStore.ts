@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { apiKeyService } from "~/lib/api/api-key";
-import { defaultModel } from "~/lib/models";
 import type { ChatMode, ChatSettings } from "~/types";
 
 const defaultSettings: ChatSettings = {
@@ -54,8 +53,8 @@ export interface ChatStore {
   setLocalOnlyMode: (localOnly: boolean) => void;
   chatMode: ChatMode;
   setChatMode: (mode: ChatMode) => void;
-  model: string;
-  setModel: (model: string) => void;
+  model: string | null;
+  setModel: (model: string | null) => void;
   chatSettings: ChatSettings;
   setChatSettings: (settings: ChatSettings) => void;
   showSearch: boolean;
@@ -110,7 +109,7 @@ export const useChatStore = create<ChatStore>()(
       setLocalOnlyMode: (localOnly) => set({ localOnlyMode: localOnly }),
       chatMode: "remote" as ChatMode,
       setChatMode: (mode) => set({ chatMode: mode }),
-      model: defaultModel,
+      model: null,
       setModel: (model) => set({ model }),
       chatSettings: defaultSettings,
       setChatSettings: (settings) => set({ chatSettings: settings }),
