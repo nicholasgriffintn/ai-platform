@@ -148,7 +148,9 @@ export async function mapParametersToProvider(
       if (
         providerName === "openai" &&
         params.model !== "o1" &&
-        params.model !== "o3-mini"
+        params.model !== "o3" &&
+        params.model !== "o3-mini" &&
+        params.model !== "o4-mini"
       ) {
         commonParams.parallel_tool_calls = false;
       }
