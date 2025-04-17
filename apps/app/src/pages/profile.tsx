@@ -1,8 +1,6 @@
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
 import { useSearchParams } from "react-router";
 
-import { LoginModal } from "~/components/LoginModal";
 import {
   ProfileSidebar,
   profileSidebarItems,
@@ -10,6 +8,7 @@ import {
 import { Button } from "~/components/ui/Button";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { SidebarLayout } from "~/layouts/SidebarLayout";
+import { useChatStore } from "~/state/stores/chatStore";
 
 export function meta() {
   return [
@@ -20,8 +19,8 @@ export function meta() {
 
 export default function ProfilePage() {
   const { isAuthenticated, isLoading } = useAuthStatus();
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const { setShowLoginModal } = useChatStore();
 
   const activeTabId = searchParams.get("tab") || profileSidebarItems[0].id;
 
@@ -58,7 +57,7 @@ export default function ProfilePage() {
             <Button
               type="button"
               variant="primary"
-              onClick={() => setIsLoginModalOpen(true)}
+              onClick={() => setShowLoginModal(true)}
               className="bg-blue-600 hover:bg-blue-700"
             >
               Login
@@ -70,11 +69,6 @@ export default function ProfilePage() {
           <div>Selected tab content not found.</div>
         )}
       </div>
-      <LoginModal
-        open={isLoginModalOpen}
-        onOpenChange={setIsLoginModalOpen}
-        onKeySubmit={() => setIsLoginModalOpen(false)}
-      />
     </SidebarLayout>
   );
 }

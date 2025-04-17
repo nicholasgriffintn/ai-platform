@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { ChatSidebar } from "~/components/ChatSidebar";
 import { ConversationThread } from "~/components/ConversationThread";
@@ -15,8 +15,6 @@ export default function Home() {
     setShowSearch,
     setChatInput,
   } = useChatStore();
-
-  const [_isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: We only want to initialize the store when the component mounts
   useEffect(() => {
@@ -47,9 +45,7 @@ export default function Home() {
     return () => window.removeEventListener("resize", checkMobile);
   }, [setSidebarVisible, setIsMobile]);
 
-  const chatSidebar = (
-    <ChatSidebar onOpenLoginModal={() => setIsLoginModalOpen(true)} />
-  );
+  const chatSidebar = <ChatSidebar />;
 
   return (
     <SidebarLayout sidebarContent={chatSidebar}>

@@ -1,15 +1,12 @@
 import { Home } from "lucide-react";
-import { useState } from "react";
 import { Link } from "react-router";
+
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
-import { LoginModal } from "./LoginModal";
 import { SidebarFooter } from "./Sidebar/SidebarFooter";
 import { SidebarHeader } from "./Sidebar/SidebarHeader";
 
 export function StandardSidebarContent() {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const handleOpenLoginModal = () => setIsLoginModalOpen(true);
   const { sidebarVisible, isMobile, setSidebarVisible } = useChatStore();
 
   return (
@@ -47,18 +44,10 @@ export function StandardSidebarContent() {
                 </li>
               </ul>
             </nav>
-            <SidebarFooter
-              onOpenLoginModal={handleOpenLoginModal}
-              enableClearAllMessages={false}
-            />
+            <SidebarFooter enableClearAllMessages={false} />
           </div>
         )}
       </div>
-      <LoginModal
-        open={isLoginModalOpen}
-        onOpenChange={setIsLoginModalOpen}
-        onKeySubmit={() => setIsLoginModalOpen(false)}
-      />
     </>
   );
 }

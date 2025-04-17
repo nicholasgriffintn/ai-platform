@@ -24,11 +24,7 @@ import { MoreOptionsDropdown } from "../Sidebar/MoreOptionsDropdown";
 import { UserMenuItem } from "../Sidebar/UserMenuItem";
 import { ChatSidebarNotifications } from "./ChatSidebarNotifications";
 
-export const ChatSidebar = ({
-  onOpenLoginModal,
-}: {
-  onOpenLoginModal: () => void;
-}) => {
+export const ChatSidebar = () => {
   const {
     sidebarVisible,
     setSidebarVisible,
@@ -340,7 +336,7 @@ export const ChatSidebar = ({
             <div className="absolute bottom-0 left-0 right-0 p-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
               <div className="flex justify-between items-center">
                 <div>
-                  <UserMenuItem onOpenLoginModal={onOpenLoginModal} />
+                  <UserMenuItem />
                 </div>
                 <div className="flex items-center gap-2">
                   <ChatThemeDropdown position="top" />

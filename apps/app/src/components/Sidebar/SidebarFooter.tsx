@@ -5,12 +5,10 @@ import { MoreOptionsDropdown } from "./MoreOptionsDropdown";
 import { UserMenuItem } from "./UserMenuItem";
 
 interface SidebarFooterProps {
-  onOpenLoginModal: () => void;
   enableClearAllMessages?: boolean;
 }
 
 export function SidebarFooter({
-  onOpenLoginModal,
   enableClearAllMessages = true,
 }: SidebarFooterProps) {
   const { setShowKeyboardShortcuts } = useChatStore();
@@ -36,7 +34,7 @@ export function SidebarFooter({
     <div className="absolute bottom-0 left-0 right-0 p-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
       <div className="flex justify-between items-center">
         <div>
-          <UserMenuItem onOpenLoginModal={onOpenLoginModal} />
+          <UserMenuItem />
         </div>
         <div className="flex items-center gap-2">
           <ChatThemeDropdown position="top" />

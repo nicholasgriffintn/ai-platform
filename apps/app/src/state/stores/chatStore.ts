@@ -33,6 +33,8 @@ export interface ChatStore {
   setIsMobile: (isMobile: boolean) => void;
   sidebarVisible: boolean;
   setSidebarVisible: (visible: boolean) => void;
+  showLoginModal: boolean;
+  setShowLoginModal: (showLoginModal: boolean) => void;
   showKeyboardShortcuts: boolean;
   setShowKeyboardShortcuts: (showKeyboardShortcuts: boolean) => void;
 
@@ -83,6 +85,8 @@ export const useChatStore = create<ChatStore>()(
       setIsMobile: (isMobile) => set({ isMobile }),
       sidebarVisible: true,
       setSidebarVisible: (visible) => set({ sidebarVisible: visible }),
+      showLoginModal: false,
+      setShowLoginModal: (showLoginModal) => set({ showLoginModal }),
       showKeyboardShortcuts: false,
       setShowKeyboardShortcuts: (showKeyboardShortcuts) =>
         set({ showKeyboardShortcuts }),

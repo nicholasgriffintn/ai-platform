@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 import { LoginModal } from "~/components/LoginModal";
 import { ChatNavbar } from "~/components/Navbar";
@@ -18,14 +18,17 @@ export function SidebarLayout({
   sidebarContent,
   showSidebarToggleInNavbar = true,
 }: SidebarLayoutProps) {
-  const { sidebarVisible, showKeyboardShortcuts, setShowKeyboardShortcuts } =
-    useChatStore();
+  const {
+    sidebarVisible,
+    showKeyboardShortcuts,
+    setShowKeyboardShortcuts,
+    showLoginModal,
+    setShowLoginModal,
+  } = useChatStore();
   useKeyboardShortcuts();
 
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-
   const handleEnterApiKey = () => {
-    setIsLoginModalOpen(true);
+    setShowLoginModal(true);
   };
 
   const enhancedSidebarContent = React.isValidElement(sidebarContent)
@@ -47,9 +50,9 @@ export function SidebarLayout({
             <div className="flex-1 overflow-auto w-full">
               {children}
               <LoginModal
-                open={isLoginModalOpen}
-                onOpenChange={setIsLoginModalOpen}
-                onKeySubmit={() => setIsLoginModalOpen(false)}
+                open={showLoginModal}
+                onOpenChange={setShowLoginModal}
+                onKeySubmit={() => setShowLoginModal(false)}
               />
             </div>
           </div>

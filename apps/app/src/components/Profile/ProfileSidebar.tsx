@@ -1,12 +1,10 @@
 import { Home, Loader2, LogOut } from "lucide-react";
-import { useState } from "react";
 import { Link } from "react-router";
 
 import { Button } from "~/components/ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
-import { LoginModal } from "../LoginModal";
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
 import { SidebarHeader } from "../Sidebar/SidebarHeader";
 import { ProfileAccountTab } from "./Tabs/ProfileAccountTab";
@@ -44,8 +42,6 @@ export function ProfileSidebar({
   activeItemId,
   onSelectItem,
 }: ProfileSidebarProps) {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const handleOpenLoginModal = () => setIsLoginModalOpen(true);
   const { sidebarVisible, isMobile, setSidebarVisible } = useChatStore();
   const { isAuthenticated, logout, isLoggingOut } = useAuthStatus();
 
@@ -120,18 +116,10 @@ export function ProfileSidebar({
                 )}
               </ul>
             </nav>
-            <SidebarFooter
-              onOpenLoginModal={handleOpenLoginModal}
-              enableClearAllMessages={false}
-            />
+            <SidebarFooter enableClearAllMessages={false} />
           </div>
         )}
       </div>
-      <LoginModal
-        open={isLoginModalOpen}
-        onOpenChange={setIsLoginModalOpen}
-        onKeySubmit={() => setIsLoginModalOpen(false)}
-      />
     </>
   );
 }
