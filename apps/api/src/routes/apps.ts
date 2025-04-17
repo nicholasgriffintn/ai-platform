@@ -62,6 +62,7 @@ import {
   type UploadRequest,
   handlePodcastUpload,
 } from "../services/apps/podcast/upload";
+import { handlePromptCoachSuggestion } from "../services/apps/prompt-coach";
 import {
   type CaptureScreenshotParams,
   captureScreenshot,
@@ -75,7 +76,7 @@ import {
   type DeepWebSearchParams,
   performDeepWebSearch,
 } from "../services/apps/web-search";
-import type { IEnv, IFunctionResponse, IWeather } from "../types";
+import type { IEnv, IUser } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
 import {
   articleAnalyzeSchema,
@@ -95,13 +96,15 @@ import {
   podcastSummarizeSchema,
   podcastTranscribeSchema,
   podcastUploadSchema,
+  promptCoachJsonSchema,
+  promptCoachResponseSchema,
   queryEmbeddingsSchema,
   speechGenerationSchema,
   tutorSchema,
   videoGenerationSchema,
   weatherQuerySchema,
 } from "./schemas/apps";
-import { apiResponseSchema } from "./schemas/shared";
+import { apiResponseSchema, errorResponseSchema } from "./schemas/shared";
 
 const app = new Hono();
 
@@ -1105,6 +1108,59 @@ app.post(
     return context.json({
       response,
     });
+  },
+);
+
+app.post(
+  "/prompt-coach",
+  describeRoute({
+    tags: ["chat"],
+    title: "Get prompt suggestion using coaching system",
+    description:
+      "Takes a user prompt, runs it through the existing coaching system prompt, and returns the suggested revised prompt.",
+    responses: {
+      200: {
+        description: "Suggested revised prompt extracted from AI response",
+        content: {
+          "application/json": {
+            schema: resolver(promptCoachResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      500: {
+        description:
+          "Internal server error during suggestion generation or extraction",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("json", promptCoachJsonSchema),
+  async (context: Context) => {
+    const { prompt: userPrompt } = context.req.valid("json" as never) as {
+      prompt: string;
+    };
+    const userContext = context.get("user") as IUser | undefined;
+    const env = context.env as IEnv;
+
+    const result = await handlePromptCoachSuggestion({
+      env,
+      user: userContext,
+      prompt: userPrompt,
+    });
+
+    return context.json(result);
   },
 );
 

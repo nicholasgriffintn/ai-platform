@@ -29,6 +29,7 @@ export const getFunctionResponseType = (name: string): ResponseDisplayType => {
   if (name.includes("video")) return ResponseDisplayType.TEMPLATE;
   if (name.includes("extract")) return ResponseDisplayType.TEXT;
   if (name.includes("speech")) return ResponseDisplayType.TEXT;
+  if (name.includes("prompt_coach")) return ResponseDisplayType.TEMPLATE;
   return ResponseDisplayType.CUSTOM;
 };
 
@@ -79,7 +80,52 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         <p>{{content}}</p>
       </div>
     `;
+  } else if (name.includes("prompt_coach")) {
+    display.template = `
+      <div class="prompt-coach-response prose dark:prose-invert">
+        <h2>Prompt Coach</h2>
+        {{#if data.analysis}}
+          <div class="analysis">
+            <h3>Analysis</h3>
+            <p>{{data.analysis}}</p>
+          </div>
+        {{/if}}
+        {{#if data.suggested_prompt}}
+          <div class="suggested-prompt">
+            <h3>Suggested Prompt</h3>
+            <p>{{data.suggested_prompt}}</p>
+          </div>
+        {{/if}}
+        {{#if data.suggestions}}
+          <div class="suggestions">
+            <h3>Suggestions</h3>
+            <ul>
+              {{#each data.suggestions}}
+                <li>{{this}}</li>
+              {{/each}}
+            </ul>
+          </div>
+        {{/if}}
+        {{#if data.format_optimization}}
+          <div class="format-optimization">
+            <h3>Format Optimization</h3>
+            <p>{{data.format_optimization}}</p>
+          </div>
+        {{/if}}
+        {{#if data.confidence_score}}
+          <div class="confidence-score">
+            <h3>Confidence Score</h3>
+            <p>{{data.confidence_score}}</p>
+          </div>
+        {{/if}}
+        {{#if data.prompt_type}}
+          <div class="prompt-type">
+            <h3>Prompt Type</h3>
+            <p>{{data.prompt_type}}</p>
+          </div>
+        {{/if}}
+      </div>
+    `;
   }
-
   return display;
 };

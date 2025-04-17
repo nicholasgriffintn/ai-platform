@@ -4,6 +4,7 @@ import { AssistantError, ErrorType } from "../../utils/errors";
 import { extract_content } from "./extract_content";
 import { create_image } from "./image";
 import { create_music } from "./music";
+import { prompt_coach } from "./prompt_coach";
 import { capture_screenshot } from "./screenshot";
 import { create_speech } from "./speech";
 import { tutor } from "./tutor";
@@ -21,6 +22,7 @@ export const availableFunctions: IFunction[] = [
   capture_screenshot,
   create_speech,
   tutor,
+  prompt_coach,
 ];
 
 export const handleFunctions = async ({

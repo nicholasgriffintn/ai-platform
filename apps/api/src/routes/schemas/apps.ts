@@ -209,3 +209,22 @@ export const tutorSchema = z.object({
     })
     .optional(),
 });
+
+export const promptCoachJsonSchema = z.object({
+  prompt: z.string().describe("The user's prompt to get suggestions for."),
+  promptType: z
+    .enum(["general", "creative", "technical", "instructional", "analytical"])
+    .optional()
+    .describe("The type of prompt to get suggestions for."),
+  recursionDepth: z
+    .number()
+    .optional()
+    .describe("The depth of the recursion for the prompt coach."),
+});
+
+export const promptCoachResponseSchema = z.object({
+  suggested_prompt: z
+    .string()
+    .nullable()
+    .describe("The suggested improvement for the user's prompt."),
+});

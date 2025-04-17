@@ -16,7 +16,7 @@ export interface PromptCoachResponse {
   prompt_type?: string;
 }
 
-type PromptType =
+export type PromptType =
   | "general"
   | "creative"
   | "technical"
