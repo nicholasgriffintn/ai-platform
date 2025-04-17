@@ -1,6 +1,30 @@
 import z from "zod";
 import "zod-openapi/extend";
 
+import { messageSchema } from "./shared";
+
+export const chatCompletionResponseSchema = z.object({
+  id: z.string(),
+  object: z.string(),
+  created: z.number(),
+  model: z.string(),
+  choices: z.array(
+    z.object({
+      index: z.number(),
+      message: messageSchema,
+      finish_reason: z.string().nullable(),
+    }),
+  ),
+  usage: z
+    .object({
+      prompt_tokens: z.number(),
+      completion_tokens: z.number(),
+      total_tokens: z.number(),
+    })
+    .optional(),
+  log_id: z.string().optional(),
+});
+
 export const createChatCompletionsJsonSchema = z.object({
   completion_id: z.string().optional().openapi({
     description:
@@ -128,12 +152,9 @@ export const createChatCompletionsJsonSchema = z.object({
     .openapi({
       description: "A list of messages comprising the conversation so far.",
     }),
-  mode: z
-    .enum(["normal", "prompt_coach", "local", "remote", "no_system"])
-    .optional()
-    .openapi({
-      description: "The mode of the chat completion.",
-    }),
+  mode: z.enum(["normal", "local", "remote", "no_system"]).optional().openapi({
+    description: "The mode of the chat completion.",
+  }),
   temperature: z.number().min(0).max(2).default(0.8).optional().openapi({
     description:
       "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.",
@@ -377,4 +398,23 @@ export const unshareConversationParamsSchema = z.object({
 
 export const getSharedConversationParamsSchema = z.object({
   share_id: z.string().min(1),
+});
+
+export const promptCoachJsonSchema = z.object({
+  prompt: z.string().describe("The user's prompt to get suggestions for."),
+  promptType: z
+    .enum(["general", "creative", "technical", "instructional", "analytical"])
+    .optional()
+    .describe("The type of prompt to get suggestions for."),
+  recursionDepth: z
+    .number()
+    .optional()
+    .describe("The depth of the recursion for the prompt coach."),
+});
+
+export const promptCoachResponseSchema = z.object({
+  suggested_prompt: z
+    .string()
+    .nullable()
+    .describe("The suggested improvement for the user's prompt."),
 });

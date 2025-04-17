@@ -1,6 +1,7 @@
 import { type Context, Hono, type Next } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { z } from "zod";
 
 import { ConversationManager } from "../lib/conversationManager";
@@ -16,6 +17,7 @@ import { handleGenerateChatCompletionTitle } from "../services/completions/gener
 import { handleGetChatCompletion } from "../services/completions/getChatCompletion";
 import { handleGetSharedConversation } from "../services/completions/getSharedConversation";
 import { handleListChatCompletions } from "../services/completions/listChatCompletions";
+import { handlePromptCoachSuggestion } from "../services/completions/promptCoachSuggestion";
 import { handleShareConversation } from "../services/completions/shareConversation";
 import { handleUnshareConversation } from "../services/completions/unshareConversation";
 import { handleUpdateChatCompletion } from "../services/completions/updateChatCompletion";
@@ -24,9 +26,12 @@ import type {
   ChatRole,
   IEnv,
   IFeedbackBody,
+  IUser,
   Message,
 } from "../types";
+import { AssistantError, ErrorType } from "../utils/errors";
 import {
+  chatCompletionResponseSchema,
   checkChatCompletionJsonSchema,
   checkChatCompletionParamsSchema,
   createChatCompletionsJsonSchema,
@@ -35,6 +40,8 @@ import {
   generateChatCompletionTitleParamsSchema,
   getChatCompletionParamsSchema,
   getSharedConversationParamsSchema,
+  promptCoachJsonSchema,
+  promptCoachResponseSchema,
   shareConversationParamsSchema,
   submitChatCompletionFeedbackJsonSchema,
   submitChatCompletionFeedbackParamsSchema,
@@ -42,6 +49,7 @@ import {
   updateChatCompletionJsonSchema,
   updateChatCompletionParamsSchema,
 } from "./schemas/chat";
+import { errorResponseSchema, messageSchema } from "./schemas/shared";
 
 const app = new Hono();
 
@@ -54,42 +62,6 @@ app.use("/*", async (context: Context, next: Next) => {
   routeLogger.info(`Processing chat route: ${context.req.path}`);
 
   await allowRestrictedPaths(context, next);
-});
-
-// Define common response schemas
-const errorResponseSchema = z.object({
-  error: z.string(),
-  type: z.string(),
-});
-
-const messageSchema = z.object({
-  id: z.string(),
-  role: z.enum(["user", "assistant", "system", "function"]),
-  content: z.union([z.string(), z.array(z.any())]),
-  name: z.string().optional(),
-  function_call: z.any().optional(),
-  timestamp: z.number().optional(),
-});
-
-const chatCompletionResponseSchema = z.object({
-  id: z.string(),
-  object: z.string(),
-  created: z.number(),
-  model: z.string(),
-  choices: z.array(
-    z.object({
-      index: z.number(),
-      message: messageSchema,
-      finish_reason: z.string().nullable(),
-    }),
-  ),
-  usage: z
-    .object({
-      prompt_tokens: z.number(),
-      completion_tokens: z.number(),
-      total_tokens: z.number(),
-    })
-    .optional(),
 });
 
 app.post(
@@ -933,6 +905,81 @@ app.get(
     );
 
     return context.json(result);
+  },
+);
+
+app.post(
+  "/prompt-coach",
+  describeRoute({
+    tags: ["chat"],
+    title: "Get prompt suggestion using coaching system",
+    description:
+      "Takes a user prompt, runs it through the existing coaching system prompt, and returns the suggested revised prompt.",
+    responses: {
+      200: {
+        description: "Suggested revised prompt extracted from AI response",
+        content: {
+          "application/json": {
+            schema: resolver(promptCoachResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      500: {
+        description:
+          "Internal server error during suggestion generation or extraction",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  requireTurnstileToken,
+  zValidator("json", promptCoachJsonSchema),
+  async (context: Context) => {
+    const { prompt: userPrompt } = context.req.valid("json" as never) as {
+      prompt: string;
+    };
+    const userContext = context.get("user") as IUser | undefined;
+    const env = context.env as IEnv;
+
+    try {
+      const result = await handlePromptCoachSuggestion({
+        env,
+        user: userContext,
+        prompt: userPrompt,
+      });
+
+      return context.json(result);
+    } catch (error) {
+      routeLogger.error(`Prompt coach route error: ${error}`);
+      if (error instanceof AssistantError) {
+        const status = error.statusCode || 500;
+        return context.json(
+          {
+            error: error.message,
+            type: error.type,
+          },
+          status as ContentfulStatusCode,
+        );
+      }
+      return context.json(
+        {
+          error: "An unexpected error occurred.",
+          type: ErrorType.INTERNAL_ERROR,
+        },
+        500 as ContentfulStatusCode,
+      );
+    }
   },
 );
 

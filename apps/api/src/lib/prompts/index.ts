@@ -12,11 +12,6 @@ export async function getSystemPrompt(
   user?: IUser,
   userSettings?: IUserSettings,
 ): Promise<string> {
-  if (request.mode === "prompt_coach") {
-    const prompt = returnCoachingPrompt();
-    return prompt;
-  }
-
   const modelConfig = getModelConfigByMatchingModel(model);
   const supportsFunctions = modelConfig?.supportsFunctions || false;
   const supportsArtifacts = modelConfig?.supportsArtifacts || false;

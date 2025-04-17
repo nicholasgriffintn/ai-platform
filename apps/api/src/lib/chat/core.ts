@@ -12,7 +12,6 @@ import { Guardrails } from "../guardrails";
 import { ModelRouter } from "../modelRouter";
 import { getModelConfig } from "../models";
 import { getSystemPrompt } from "../prompts";
-import { processPromptCoachMode } from "./prompt_coach";
 import { getAIResponse } from "./responses";
 import { createStreamWithPostProcessing } from "./streaming";
 import { handleToolCalls } from "./tools";
@@ -161,29 +160,15 @@ export async function processChatRequest(options: CoreChatOptions) {
       store,
     });
 
-    const { userMessage, currentMode, additionalMessages } =
-      await processPromptCoachMode(
-        {
-          mode,
-          userMessage: lastMessageContentText,
-          completion_id,
-        },
-        conversationManager,
-      );
-
-    const finalUserMessage =
-      typeof userMessage === "string"
-        ? userMessage
-        : currentMode === "prompt_coach"
-          ? userMessage
-          : lastMessageContentText;
+    const currentMode = mode;
+    const finalUserMessage = lastMessageContentText;
 
     const userSettings = await database.getUserSettings(user?.id);
 
     const embedding = Embedding.getInstance(env, user, userSettings);
 
     const finalMessage =
-      use_rag === true && currentMode !== "prompt_coach"
+      use_rag === true
         ? await embedding.augmentPrompt(
             finalUserMessage,
             rag_options,
@@ -244,10 +229,6 @@ export async function processChatRequest(options: CoreChatOptions) {
       messagesToStore.push(attachmentMessage);
     }
 
-    if (additionalMessages.length > 0) {
-      messagesToStore.push(...additionalMessages);
-    }
-
     await conversationManager.addBatch(completion_id, messagesToStore);
 
     let systemMessage = "";
@@ -258,12 +239,9 @@ export async function processChatRequest(options: CoreChatOptions) {
         systemMessage = system_prompt;
       } else {
         // Check for system message in chat history
-        const systemPromptFromMessages =
-          currentMode !== "prompt_coach"
-            ? messages.find(
-                (message) => message.role === ("system" as ChatRole),
-              )
-            : undefined;
+        const systemPromptFromMessages = messages.find(
+          (message) => message.role === ("system" as ChatRole),
+        );
 
         if (
           systemPromptFromMessages?.content &&
@@ -296,7 +274,7 @@ export async function processChatRequest(options: CoreChatOptions) {
         let messageText = msg.content;
 
         // Use RAG-augmented message if RAG is enabled
-        if (use_rag && currentMode !== "prompt_coach") {
+        if (use_rag) {
           messageText = finalMessage;
         }
 
@@ -313,10 +291,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       return msg;
     });
 
-    const fullChatMessages =
-      currentMode === "prompt_coach"
-        ? [...chatMessages, ...additionalMessages]
-        : chatMessages;
+    const fullChatMessages = chatMessages;
 
     const filteredChatMessages = fullChatMessages.filter(
       (msg) => msg.role !== ("system" as ChatRole),
