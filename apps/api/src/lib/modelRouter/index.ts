@@ -32,7 +32,7 @@ export class ModelRouter {
   } as const;
 
   // Minimum score difference to consider models distinct enough for comparison
-  private static readonly COMPARISON_SCORE_THRESHOLD = 0.5;
+  private static readonly COMPARISON_SCORE_THRESHOLD = 3.0;
   // Maximum number of models to compare
   private static readonly MAX_COMPARISON_MODELS = 2;
 
@@ -153,21 +153,19 @@ export class ModelRouter {
   }
 
   private static selectBestModel(modelScores: ModelScore[]): string {
-    const suitableModels = modelScores.filter((model) => model.score > 0);
-
-    if (suitableModels.length === 0) {
+    if (modelScores.length === 0) {
       console.warn("No suitable model found. Falling back to default model.");
       return defaultModel;
     }
 
-    return suitableModels[0].model;
+    return modelScores[0].model;
   }
 
   private static shouldCompareModels(
     requirements: PromptRequirements,
   ): boolean {
     return (
-      requirements.expectedComplexity > 3 &&
+      requirements.expectedComplexity >= 3 &&
       (requirements.requiredCapabilities.includes("general_knowledge") ||
         requirements.requiredCapabilities.includes("creative") ||
         requirements.requiredCapabilities.includes("reasoning"))
@@ -177,22 +175,18 @@ export class ModelRouter {
   private static selectModelsForComparison(
     modelScores: ModelScore[],
   ): string[] {
-    const suitableModels = modelScores.filter((model) => model.score > 0);
-
-    if (suitableModels.length <= 1) {
-      return suitableModels.length === 1
-        ? [suitableModels[0].model]
-        : [defaultModel];
+    if (modelScores.length <= 1) {
+      return modelScores.length === 1 ? [modelScores[0].model] : [defaultModel];
     }
 
-    const topScore = suitableModels[0].score;
-    const comparisonModels = [suitableModels[0].model];
+    const topScore = modelScores[0].score;
+    const comparisonModels = [modelScores[0].model];
 
-    // Add models that are within the score threshold and from different providers
-    for (let i = 1; i < suitableModels.length; i++) {
-      const model = suitableModels[i];
+    // First try to add models from different providers
+    for (let i = 1; i < modelScores.length; i++) {
+      const model = modelScores[i];
       const modelConfig = getModelConfig(model.model);
-      const topModelConfig = getModelConfig(suitableModels[0].model);
+      const topModelConfig = getModelConfig(modelScores[0].model);
 
       // Only add models from a different provider that are close in score
       if (
@@ -203,6 +197,8 @@ export class ModelRouter {
         comparisonModels.push(model.model);
       }
     }
+
+    console.log("comparisonModels", JSON.stringify(comparisonModels, null, 2));
 
     return comparisonModels;
   }
@@ -238,7 +234,9 @@ export class ModelRouter {
           requirements,
         );
 
-        return ModelRouter.selectBestModel(modelScores);
+        const suitableModels = modelScores.filter((model) => model.score > 0);
+
+        return ModelRouter.selectBestModel(suitableModels);
       },
       env.ANALYTICS,
       { prompt },
@@ -281,13 +279,13 @@ export class ModelRouter {
           requirements,
         );
 
-        // Check if this request would benefit from a multi-model approach
+        const suitableModels = modelScores.filter((model) => model.score > 0);
+
         if (ModelRouter.shouldCompareModels(requirements)) {
-          return ModelRouter.selectModelsForComparison(modelScores);
+          return ModelRouter.selectModelsForComparison(suitableModels);
         }
 
-        // Default to single best model
-        return [ModelRouter.selectBestModel(modelScores)];
+        return [ModelRouter.selectBestModel(suitableModels)];
       },
       env.ANALYTICS,
       { prompt },
