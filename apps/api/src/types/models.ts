@@ -42,6 +42,7 @@ export type ModelConfig = {
 export interface PromptRequirements {
   expectedComplexity: ModelRanking;
   requiredCapabilities: Array<(typeof availableCapabilities)[number]>;
+  criticalCapabilities?: Array<(typeof availableCapabilities)[number]>;
   estimatedInputTokens: number;
   estimatedOutputTokens: number;
   hasImages: boolean;

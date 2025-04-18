@@ -98,6 +98,7 @@ export class PromptAnalyzer {
 {
   "expectedComplexity": number, // 1-5 indicating task complexity
   "requiredCapabilities": string[], // array of required model capabilities
+  "criticalCapabilities": string[], // array of absolutely critical model capabilities
   "estimatedInputTokens": number, // estimated number of input tokens
   "estimatedOutputTokens": number, // estimated number of output tokens
   "needsFunctions": boolean, // true if the task requires function calling based on available tools that is not available its capabilities: ${JSON.stringify(availableFunctions)}
@@ -105,7 +106,7 @@ export class PromptAnalyzer {
   "modelComparisonReason": string // brief explanation of why multiple models would be beneficial, if applicable
 }
 
-Only choose requiredCapabilities that are available in this list: ${JSON.stringify(availableCapabilities)}.
+Only choose requiredCapabilities and criticalCapabilities that are available in this list: ${JSON.stringify(availableCapabilities)}.
 
 Base your analysis on the prompt and these categorized keywords: ${JSON.stringify(categorizedKeywords, null, 2)}. 
 

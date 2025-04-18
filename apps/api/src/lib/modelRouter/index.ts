@@ -18,6 +18,7 @@ interface ModelScore {
   model: string;
   score: number;
   reason: string;
+  normalizedScore: number;
 }
 
 // biome-ignore lint/complexity/noStaticOnlyClass: i want to use this class as a static class
@@ -60,8 +61,21 @@ export class ModelRouter {
   private static scoreModel(
     requirements: PromptRequirements,
     model: string,
-  ): ModelScore {
+  ): Omit<ModelScore, "normalizedScore"> {
+    // Ensure scoreModel returns only the raw parts
     const capabilities = getModelConfig(model);
+
+    if (
+      requirements.criticalCapabilities?.some(
+        (cap) => !capabilities.strengths?.includes(cap as any),
+      )
+    ) {
+      return {
+        model,
+        score: Number.NEGATIVE_INFINITY,
+        reason: "Missing critical capabilities",
+      };
+    }
 
     if (requirements.requiredCapabilities.length === 0) {
       return { model, score: 0, reason: "No required capabilities" };
@@ -180,9 +194,27 @@ export class ModelRouter {
     models: Record<string, ModelConfigItem>,
     requirements: PromptRequirements,
   ): ModelScore[] {
-    return Object.keys(models)
-      .map((model) => ModelRouter.scoreModel(requirements, model))
-      .sort((a, b) => b.score - a.score);
+    const modelScoresRaw = Object.keys(models).map((model) =>
+      ModelRouter.scoreModel(requirements, model),
+    );
+
+    if (modelScoresRaw.length === 0) {
+      return [];
+    }
+
+    const rawScores = modelScoresRaw.map((s) => s.score);
+    const maxScore = Math.max(...rawScores);
+    const minScore = Math.min(...rawScores);
+    const scoreRange = maxScore - minScore;
+
+    const modelScoresNormalized: ModelScore[] = modelScoresRaw.map((s) => ({
+      ...s,
+      normalizedScore: scoreRange > 0 ? (s.score - minScore) / scoreRange : 1,
+    }));
+
+    return modelScoresNormalized.sort(
+      (a, b) => b.normalizedScore - a.normalizedScore,
+    );
   }
 
   private static selectBestModel(modelScores: ModelScore[]): string {
@@ -212,7 +244,7 @@ export class ModelRouter {
       return modelScores.length === 1 ? [modelScores[0].model] : [defaultModel];
     }
 
-    const topScore = modelScores[0].score;
+    const topRawScore = modelScores[0].score;
     const comparisonModels = [modelScores[0].model];
 
     // First try to add models from different providers
@@ -221,10 +253,10 @@ export class ModelRouter {
       const modelConfig = getModelConfig(model.model);
       const topModelConfig = getModelConfig(modelScores[0].model);
 
-      // Only add models from a different provider that are close in score
+      // Only add models from a different provider that are close in raw score
       if (
         modelConfig.provider !== topModelConfig.provider &&
-        topScore - model.score <= ModelRouter.COMPARISON_SCORE_THRESHOLD &&
+        topRawScore - model.score <= ModelRouter.COMPARISON_SCORE_THRESHOLD &&
         comparisonModels.length < ModelRouter.MAX_COMPARISON_MODELS
       ) {
         comparisonModels.push(model.model);
