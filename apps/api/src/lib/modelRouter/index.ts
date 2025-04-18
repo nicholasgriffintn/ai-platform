@@ -30,6 +30,7 @@ export class ModelRouter {
     MULTIMODAL: 5,
     FUNCTIONS: 5,
     CAPABILITY_MATCH: 4,
+    COST_EFFICIENCY: 2,
   } as const;
 
   // Minimum score difference to consider models distinct enough for comparison
@@ -103,9 +104,20 @@ export class ModelRouter {
 
     if (requirements.budget_constraint) {
       const totalCost = ModelRouter.calculateTotalCost(requirements, model);
+      const budgetFactor = Math.max(
+        0,
+        1 - totalCost / requirements.budget_constraint,
+      );
+      score += budgetFactor * ModelRouter.WEIGHTS.BUDGET_EFFICIENCY;
+    }
+
+    const inputCost = model.costPer1kInputTokens ?? 0;
+    const outputCost = model.costPer1kOutputTokens ?? 0;
+    const combinedCost = inputCost + outputCost;
+
+    if (combinedCost >= 0) {
       score +=
-        (1 - totalCost / requirements.budget_constraint) *
-        ModelRouter.WEIGHTS.BUDGET_EFFICIENCY;
+        (1 / (1 + combinedCost * 10)) * ModelRouter.WEIGHTS.COST_EFFICIENCY;
     }
 
     if (model.reliability) {
@@ -120,9 +132,10 @@ export class ModelRouter {
       score += ModelRouter.WEIGHTS.MULTIMODAL;
     }
 
-    if (requirements.needsFunctions && model.supportsFunctions) {
+    // TODO: Put this back when we can work out how to not make this conflict with capabilities
+    /* if (requirements.needsFunctions && model.supportsFunctions) {
       score += ModelRouter.WEIGHTS.FUNCTIONS;
-    }
+    } */
 
     const matchedCapabilities = requirements.requiredCapabilities.filter(
       (cap) => model.strengths?.includes(cap),
