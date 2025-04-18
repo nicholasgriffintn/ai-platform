@@ -19,6 +19,9 @@ export const googleAiStudioModelConfig: ModelConfig = {
     isFeatured: true,
     isFree: true,
     includedInRouter: true,
+    contextComplexity: 5,
+    reliability: 5,
+    speed: 3,
   },
   "gemini-2.0-flash": {
     name: "Gemini 2.0 Flash",
@@ -56,5 +59,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     contextWindow: 1000000,
     supportsArtifacts: true,
     isFree: true,
+    contextComplexity: 3,
+    reliability: 3,
+    speed: 2,
   },
 };
