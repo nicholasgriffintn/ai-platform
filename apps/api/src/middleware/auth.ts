@@ -129,7 +129,6 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
     if (path === "/chat/completions" && method === "POST") {
       try {
         const body = await context.req.json();
-        const modelInfo = getModelConfigByModel(body?.model);
 
         if (body?.use_rag) {
           throw new AssistantError(
@@ -141,13 +140,6 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
         if (body?.tools?.length > 0 || body?.tool_choice) {
           throw new AssistantError(
             "Tool usage requires authentication. Please provide a valid access token.",
-            ErrorType.AUTHENTICATION_ERROR,
-          );
-        }
-
-        if (!modelInfo || !modelInfo.isFree) {
-          throw new AssistantError(
-            "In restricted mode, you must specify one of the free models (these mostly include Mistral and Workers AI provided models).",
             ErrorType.AUTHENTICATION_ERROR,
           );
         }

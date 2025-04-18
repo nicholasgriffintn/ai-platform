@@ -3,6 +3,7 @@ import {
   type availableCapabilities,
   type availableModelTypes,
   defaultModel,
+  defaultProvider,
 } from "./constants";
 
 import { anthropicModelConfig } from "./anthropic";
@@ -29,6 +30,7 @@ export {
   availableCapabilities,
   availableModelTypes,
   defaultModel,
+  defaultProvider,
 } from "./constants";
 
 const modelConfig: ModelConfig = {

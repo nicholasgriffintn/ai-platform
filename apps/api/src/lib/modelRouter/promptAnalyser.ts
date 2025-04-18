@@ -10,13 +10,10 @@ import type {
 } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
 import { KeywordFilter } from "../keywords";
-import { availableCapabilities } from "../models";
+import { availableCapabilities, getModelConfig } from "../models";
 
 // biome-ignore lint/complexity/noStaticOnlyClass: I don't care
 export class PromptAnalyzer {
-  private static readonly DEFAULT_PROVIDER = "groq";
-  private static readonly DEFAULT_MODEL = "llama-3.3-70b-versatile";
-
   private static readonly FILTERS = {
     coding: new KeywordFilter(KeywordFilter.getAllCodingKeywords()),
     math: new KeywordFilter(KeywordFilter.getAllMathKeywords()),
@@ -30,17 +27,18 @@ export class PromptAnalyzer {
     prompt: string,
     keywords: string[],
     user: IUser,
+    providerToUse: string,
+    modelToUse: string,
   ): Promise<PromptRequirements> {
     try {
-      const provider = AIProviderFactory.getProvider(
-        PromptAnalyzer.DEFAULT_PROVIDER,
-      );
+      const provider = AIProviderFactory.getProvider(providerToUse);
       const analysisResponse = await PromptAnalyzer.performAIAnalysis(
         provider,
         env,
         prompt,
         keywords,
         user,
+        modelToUse,
       );
       return PromptAnalyzer.validateAndParseAnalysis(analysisResponse);
     } catch (error) {
@@ -57,10 +55,13 @@ export class PromptAnalyzer {
     prompt: string,
     keywords: string[],
     user: IUser,
+    modelToUse: string,
   ) {
+    const modelInfo = getModelConfig(modelToUse);
+
     return provider.getResponse({
       env,
-      model: PromptAnalyzer.DEFAULT_MODEL,
+      model: modelInfo.matchingModel,
       disable_functions: true,
       messages: [
         {
@@ -253,6 +254,8 @@ Ensure the output is nothing but the JSON object itself.`;
   public static async analyzePrompt(
     env: IEnv,
     prompt: string,
+    providerToUse: string,
+    modelToUse: string,
     attachments?: Attachment[],
     budget_constraint?: number,
     user?: IUser,
@@ -263,6 +266,8 @@ Ensure the output is nothing but the JSON object itself.`;
       prompt,
       keywords,
       user,
+      providerToUse,
+      modelToUse,
     );
 
     return {

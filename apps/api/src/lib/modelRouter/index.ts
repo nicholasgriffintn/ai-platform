@@ -7,6 +7,7 @@ import type {
 } from "../../types";
 import {
   defaultModel,
+  defaultProvider,
   filterModelsForUserAccess,
   getIncludedInRouterModels,
   getModelConfig,
@@ -276,20 +277,33 @@ export class ModelRouter {
   ): Promise<string> {
     return trackModelRoutingMetrics(
       async () => {
-        const requirements = await PromptAnalyzer.analyzePrompt(
-          env,
-          prompt,
-          attachments,
-          budget_constraint,
-          user,
-        );
-
         const allRouterModels = getIncludedInRouterModels();
 
         const availableModels = await filterModelsForUserAccess(
           allRouterModels,
           env,
           user?.id,
+        );
+
+        let modelToUse = defaultModel;
+        let providerToUse = defaultProvider;
+        const hasGroqModel = Object.keys(availableModels).some(
+          (model) => availableModels[model].provider === "groq",
+        );
+
+        if (hasGroqModel) {
+          modelToUse = "llama-3.3-70b-versatile";
+          providerToUse = "groq";
+        }
+
+        const requirements = await PromptAnalyzer.analyzePrompt(
+          env,
+          prompt,
+          providerToUse,
+          modelToUse,
+          attachments,
+          budget_constraint,
+          user,
         );
 
         const modelScores = ModelRouter.rankModels(
@@ -321,20 +335,33 @@ export class ModelRouter {
   ): Promise<string[]> {
     return trackModelRoutingMetrics(
       async () => {
-        const requirements = await PromptAnalyzer.analyzePrompt(
-          env,
-          prompt,
-          attachments,
-          budget_constraint,
-          user,
-        );
-
         const allRouterModels = getIncludedInRouterModels();
 
         const availableModels = await filterModelsForUserAccess(
           allRouterModels,
           env,
           user?.id,
+        );
+
+        let modelToUse = defaultModel;
+        let providerToUse = defaultProvider;
+        const hasGroqModel = Object.keys(availableModels).some(
+          (model) => availableModels[model].provider === "groq",
+        );
+
+        if (hasGroqModel) {
+          modelToUse = "llama-3.3-70b-versatile";
+          providerToUse = "groq";
+        }
+
+        const requirements = await PromptAnalyzer.analyzePrompt(
+          env,
+          prompt,
+          providerToUse,
+          modelToUse,
+          attachments,
+          budget_constraint,
+          user,
         );
 
         const modelScores = ModelRouter.rankModels(

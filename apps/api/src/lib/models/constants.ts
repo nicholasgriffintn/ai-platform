@@ -33,3 +33,4 @@ export const availableModelTypes = [
 ] as const;
 
 export const defaultModel = "mistral-large";
+export const defaultProvider = "mistral";
