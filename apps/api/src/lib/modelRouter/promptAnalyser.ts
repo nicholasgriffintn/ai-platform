@@ -142,13 +142,15 @@ export class PromptAnalyzer {
     return `You are an AI assistant analyzing a user prompt. Respond ONLY with a valid JSON object matching the following structure:
 {
   "expectedComplexity": number, // 1-5 indicating task complexity
-  "requiredCapabilities": string[], // array of required model capabilities from ${JSON.stringify(availableCapabilities)}
+  "requiredCapabilities": string[], // array of required model capabilities
   "estimatedInputTokens": number, // estimated number of input tokens
   "estimatedOutputTokens": number, // estimated number of output tokens
   "needsFunctions": boolean, // true if the task requires function calling based on available tools: ${JSON.stringify(availableFunctions)}
   "benefitsFromMultipleModels": boolean, // true if the task would benefit from multiple AI models' perspectives
   "modelComparisonReason": string // brief explanation of why multiple models would be beneficial, if applicable
 }
+
+Only choose requiredCapabilities that are available in this list: ${JSON.stringify(availableCapabilities)}.
 
 Base your analysis on the prompt and these categorized keywords: ${JSON.stringify(categorizedKeywords, null, 2)}. 
 

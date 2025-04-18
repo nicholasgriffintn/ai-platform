@@ -29,6 +29,7 @@ export class ModelRouter {
     SPEED: 1,
     MULTIMODAL: 5,
     FUNCTIONS: 5,
+    CAPABILITY_MATCH: 4,
   } as const;
 
   // Minimum score difference to consider models distinct enough for comparison
@@ -46,10 +47,6 @@ export class ModelRouter {
       return { model, score: 0, reason: "No required capabilities" };
     }
 
-    if (!ModelRouter.hasRequiredCapabilities(requirements, capabilities)) {
-      return { model, score: 0, reason: "Missing required capabilities" };
-    }
-
     if (!ModelRouter.isWithinBudget(requirements, capabilities)) {
       return { model, score: 0, reason: "Over budget" };
     }
@@ -61,15 +58,6 @@ export class ModelRouter {
       score,
       reason: "Matched requirements",
     };
-  }
-
-  private static hasRequiredCapabilities(
-    requirements: PromptRequirements,
-    model: ModelConfigItem,
-  ): boolean {
-    return requirements.requiredCapabilities.every((cap) =>
-      model.strengths?.includes(cap),
-    );
   }
 
   private static isWithinBudget(
@@ -104,18 +92,15 @@ export class ModelRouter {
   ): number {
     let score = 0;
 
-    if (!model.contextComplexity) {
-      return score;
+    if (model.contextComplexity) {
+      score +=
+        Math.max(
+          0,
+          5 -
+            Math.abs(requirements.expectedComplexity - model.contextComplexity),
+        ) * ModelRouter.WEIGHTS.COMPLEXITY_MATCH;
     }
 
-    // Complexity match score
-    score +=
-      Math.max(
-        0,
-        5 - Math.abs(requirements.expectedComplexity - model.contextComplexity),
-      ) * ModelRouter.WEIGHTS.COMPLEXITY_MATCH;
-
-    // Budget efficiency score
     if (requirements.budget_constraint) {
       const totalCost = ModelRouter.calculateTotalCost(requirements, model);
       score +=
@@ -123,15 +108,14 @@ export class ModelRouter {
         ModelRouter.WEIGHTS.BUDGET_EFFICIENCY;
     }
 
-    if (!model.reliability || !model.speed) {
-      return score;
+    if (model.reliability) {
+      score += model.reliability * ModelRouter.WEIGHTS.RELIABILITY;
     }
 
-    // Base capability scores
-    score += model.reliability * ModelRouter.WEIGHTS.RELIABILITY;
-    score += (6 - model.speed) * ModelRouter.WEIGHTS.SPEED;
+    if (model.speed) {
+      score += (6 - model.speed) * ModelRouter.WEIGHTS.SPEED;
+    }
 
-    // Special capability scores
     if (requirements.hasImages && model.multimodal) {
       score += ModelRouter.WEIGHTS.MULTIMODAL;
     }
@@ -139,6 +123,16 @@ export class ModelRouter {
     if (requirements.needsFunctions && model.supportsFunctions) {
       score += ModelRouter.WEIGHTS.FUNCTIONS;
     }
+
+    const matchedCapabilities = requirements.requiredCapabilities.filter(
+      (cap) => model.strengths?.includes(cap),
+    );
+    const capabilityMatchPercentage =
+      requirements.requiredCapabilities.length > 0
+        ? matchedCapabilities.length / requirements.requiredCapabilities.length
+        : 1;
+
+    score += capabilityMatchPercentage * ModelRouter.WEIGHTS.CAPABILITY_MATCH;
 
     return score;
   }
