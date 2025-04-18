@@ -198,8 +198,6 @@ export class ModelRouter {
       }
     }
 
-    console.log("comparisonModels", JSON.stringify(comparisonModels, null, 2));
-
     return comparisonModels;
   }
 

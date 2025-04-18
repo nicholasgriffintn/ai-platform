@@ -626,7 +626,7 @@ export async function createMultiModelStream(
         const responseText = response.response || "";
         const modelName = model.displayName;
 
-        const modelResponse = `\n\n***\n### ${modelName} response\n\n${responseText}`;
+        const modelResponse = `${responseText}`;
 
         return new ReadableStream({
           start(controller) {
