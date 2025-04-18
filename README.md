@@ -21,6 +21,7 @@ Here are some example chats that you can try out:
 - [Combined artifact previews](https://polychat.app/s/b2137aac-bea5-4dbe-912b-e5ca107cbeca)
 - [Markdown formatting](https://polychat.app/s/0ccff6c7-7b62-4936-b18a-c05a098ef7e1)
 - [Search Grounding](https://polychat.app/s/0ecf12e1-3ed4-494c-b41d-c60a235df7de)
+- [Multi-model responses](https://polychat.app/s/3690158a-33b4-47bf-b831-97834299d71b)
 
 ## Project Structure
 
