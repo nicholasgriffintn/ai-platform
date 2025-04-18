@@ -48,4 +48,6 @@ export interface PromptRequirements {
   hasDocuments?: boolean;
   needsFunctions: boolean;
   budget_constraint?: number;
+  benefitsFromMultipleModels?: boolean;
+  modelComparisonReason?: string;
 }

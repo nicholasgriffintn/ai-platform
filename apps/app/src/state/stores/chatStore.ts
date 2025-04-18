@@ -57,6 +57,8 @@ export interface ChatStore {
   setChatMode: (mode: ChatMode) => void;
   model: string | null;
   setModel: (model: string | null) => void;
+  useMultiModel: boolean;
+  setUseMultiModel: (useMultiModel: boolean) => void;
   chatSettings: ChatSettings;
   setChatSettings: (settings: ChatSettings) => void;
   showSearch: boolean;
@@ -115,6 +117,8 @@ export const useChatStore = create<ChatStore>()(
       setChatMode: (mode) => set({ chatMode: mode }),
       model: null,
       setModel: (model) => set({ model }),
+      useMultiModel: false,
+      setUseMultiModel: (useMultiModel) => set({ useMultiModel }),
       chatSettings: defaultSettings,
       setChatSettings: (settings) => set({ chatSettings: settings }),
 
@@ -162,6 +166,7 @@ export const useChatStore = create<ChatStore>()(
         localOnlyMode: state.localOnlyMode,
         chatMode: state.chatMode,
         model: state.model,
+        useMultiModel: state.useMultiModel,
         chatSettings: state.chatSettings,
       }),
     },

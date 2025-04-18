@@ -11,6 +11,13 @@ import type { ConversationManager } from "../conversationManager";
 import { ResponseFormatter, StreamingFormatter } from "../formatter";
 import { Guardrails } from "../guardrails";
 import { getModelConfigByMatchingModel } from "../models";
+import { getAIResponse } from "./responses";
+
+interface ModelConfigInfo {
+  model: string;
+  provider: string;
+  displayName: string;
+}
 
 const logger = getLogger({ prefix: "CHAT_STREAMING" });
 
@@ -540,4 +547,312 @@ export async function createStreamWithPostProcessing(
       },
     }),
   );
+}
+
+/**
+ * Creates a multi-model stream that queries multiple models and combines their responses
+ */
+export async function createMultiModelStream(
+  parameters: any,
+  options: {
+    env: IEnv;
+    completion_id: string;
+    model: string;
+    platform?: Platform;
+    user?: IUser;
+    userSettings?: IUserSettings;
+    app_url?: string;
+    mode?: ChatMode;
+    isRestricted?: boolean;
+  },
+  conversationManager: ConversationManager,
+): Promise<ReadableStream> {
+  const { models, ...baseParams } = parameters;
+  const primaryModel = models[0];
+
+  const primaryParams = {
+    ...baseParams,
+    model: primaryModel.model,
+    stream: true,
+  };
+
+  const primaryResponse = await getAIResponse(primaryParams);
+
+  if (!(primaryResponse instanceof ReadableStream)) {
+    throw new Error("Primary model response is not a stream");
+  }
+
+  let secondaryModelResponses: ReadableStream[] = [];
+
+  if (models.length > 1) {
+    const secondaryModels = models.slice(1);
+
+    const secondaryPromises = secondaryModels.map(
+      async (modelConfig: ModelConfigInfo) => {
+        const secondaryParams = {
+          ...baseParams,
+          model: modelConfig.model,
+          stream: false,
+        };
+
+        try {
+          return {
+            model: modelConfig,
+            response: await getAIResponse(secondaryParams),
+          };
+        } catch (error) {
+          logger.error(
+            `Error getting response from secondary model ${modelConfig.model}`,
+            { error },
+          );
+          return null;
+        }
+      },
+    );
+
+    const results = await Promise.all(secondaryPromises);
+    const validResults = results.filter((result) => result !== null);
+
+    secondaryModelResponses = validResults
+      .map((result) => {
+        if (!result) return null;
+
+        const { model, response } = result;
+        if (response instanceof ReadableStream) {
+          return response;
+        }
+
+        const encoder = new TextEncoder();
+        const responseText = response.response || "";
+        const modelName = model.displayName;
+
+        // Process the response to extract unique insights
+        const processedResponse = extractAdditionalInsights(
+          responseText,
+          parameters.primaryContent || "", // We'll need to capture the primary content as it streams
+          modelName,
+        );
+
+        return new ReadableStream({
+          start(controller) {
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  type: "content_block_delta",
+                  content: processedResponse,
+                  modelName: modelName,
+                })}\n\n`,
+              ),
+            );
+            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+            controller.close();
+          },
+        });
+      })
+      .filter(Boolean) as ReadableStream[];
+  }
+
+  let primaryContent = "";
+
+  const contentCaptureStream = new TransformStream({
+    transform(chunk, controller) {
+      const text = new TextDecoder().decode(chunk);
+
+      try {
+        const matches = text.match(/data: (.*?)\n\n/g);
+        if (matches) {
+          for (const match of matches) {
+            const dataStr = match.substring(6, match.length - 2);
+            if (dataStr === "[DONE]") continue;
+
+            const data = JSON.parse(dataStr);
+            if (data.type === "content_block_delta" && data.content) {
+              primaryContent += data.content;
+            }
+          }
+        }
+      } catch (e) {
+        // Just pass through if we can't parse
+      }
+
+      controller.enqueue(chunk);
+    },
+  });
+
+  const capturedStream = primaryResponse.pipeThrough(contentCaptureStream);
+
+  const primaryTransformedStream = await createStreamWithPostProcessing(
+    capturedStream,
+    options,
+    conversationManager,
+  );
+
+  if (secondaryModelResponses.length === 0) {
+    return primaryTransformedStream;
+  }
+
+  return createCombinedStream(
+    primaryTransformedStream,
+    secondaryModelResponses,
+    primaryContent,
+  );
+}
+
+/**
+ * Processes a secondary model response to extract additional insights
+ * that aren't present in the primary response
+ */
+function extractAdditionalInsights(
+  secondaryResponse: string,
+  primaryResponse: string,
+  modelName: string,
+): string {
+  let formattedResponse = `\n\n***\n### ${modelName} additions\n\n\n\n`;
+
+  const primaryParagraphs = primaryResponse.split(/\n+/);
+  const secondaryParagraphs = secondaryResponse.split(/\n+/);
+
+  const uniqueParagraphs = secondaryParagraphs.filter((secondary) => {
+    if (secondary.length < 20) return false;
+
+    return !primaryParagraphs.some((primary) => {
+      const similarity = calculateSimpleSimilarity(primary, secondary);
+      return similarity > 0.6;
+    });
+  });
+
+  if (uniqueParagraphs.length > 0) {
+    formattedResponse += uniqueParagraphs.join("\n\n");
+  } else {
+    formattedResponse +=
+      "This model provided a similar response to the primary model.";
+  }
+
+  return formattedResponse;
+}
+
+/**
+ * Calculate a simple word-based similarity between two texts
+ * Returns a value between 0 (completely different) and 1 (identical)
+ */
+function calculateSimpleSimilarity(text1: string, text2: string): number {
+  const words1 = new Set(
+    text1
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((w) => w.length > 3),
+  );
+  const words2 = new Set(
+    text2
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((w) => w.length > 3),
+  );
+
+  let overlap = 0;
+  for (const word of words1) {
+    if (words2.has(word)) {
+      overlap++;
+    }
+  }
+
+  const union = words1.size + words2.size - overlap;
+  return union === 0 ? 0 : overlap / union;
+}
+
+/**
+ * Combines multiple streams into one, appending secondary streams after the primary
+ */
+function createCombinedStream(
+  primaryStream: ReadableStream,
+  secondaryStreams: ReadableStream[],
+  primaryContent = "",
+): ReadableStream {
+  let primaryStreamDone = false;
+  let currentSecondaryStreamIndex = 0;
+
+  return new ReadableStream({
+    async start(controller) {
+      const primaryReader = primaryStream.getReader();
+
+      try {
+        // First process the primary stream
+        while (true) {
+          const { done, value } = await primaryReader.read();
+
+          if (done) {
+            primaryStreamDone = true;
+            break;
+          }
+
+          const text = new TextDecoder().decode(value);
+          if (!text.includes("data: [DONE]")) {
+            controller.enqueue(value);
+          }
+        }
+
+        // Update the secondary streams with the final primary content
+        // This helps them make better comparisons
+        for (const secondaryStream of secondaryStreams) {
+          const secondaryReader = secondaryStream.getReader();
+
+          while (true) {
+            const { done, value } = await secondaryReader.read();
+
+            if (done) {
+              break;
+            }
+
+            // Before sending the secondary content, try to update it with
+            // the primary content, if we can parse it
+            const text = new TextDecoder().decode(value);
+            try {
+              const matches = text.match(/data: (.*?)\n\n/g);
+              if (matches) {
+                for (const match of matches) {
+                  const dataStr = match.substring(6, match.length - 2);
+                  if (dataStr === "[DONE]") continue;
+
+                  const data = JSON.parse(dataStr);
+                  if (data.type === "content_block_delta" && data.content) {
+                    if (primaryContent) {
+                      data.content = extractAdditionalInsights(
+                        data.content.replace(
+                          /\n\n\*\*\*\n### .* additions\n\n\n\n/,
+                          "",
+                        ),
+                        primaryContent,
+                        data.modelName,
+                      );
+
+                      const encoder = new TextEncoder();
+                      controller.enqueue(
+                        encoder.encode(`data: ${JSON.stringify(data)}\n\n`),
+                      );
+                    }
+                  }
+                }
+              }
+            } catch (e) {
+              // If we can't parse, just send the original
+            }
+
+            controller.enqueue(value);
+          }
+
+          currentSecondaryStreamIndex++;
+        }
+
+        // Send the final DONE message
+        const encoder = new TextEncoder();
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
+      } catch (error) {
+        logger.error("Error in combined stream", { error });
+        controller.error(error);
+      }
+    },
+
+    cancel() {},
+  });
 }

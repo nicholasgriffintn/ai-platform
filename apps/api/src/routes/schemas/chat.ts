@@ -33,6 +33,22 @@ export const createChatCompletionsJsonSchema = z.object({
   model: z.string().optional().openapi({
     description: "The model to use for the request.",
   }),
+  mode: z
+    .enum(["normal", "thinking", "no_system", "local", "remote"])
+    .optional()
+    .openapi({
+      description: "The mode of the chat completion.",
+    }),
+  should_think: z.boolean().optional().openapi({
+    description:
+      "Whether to enable thinking mode for the model. (Used for Claude Sonnet 3.7).",
+  }),
+  useMultiModel: z
+    .boolean()
+    .optional()
+    .describe(
+      "Whether to use multiple models to generate the response when appropriate",
+    ),
   messages: z
     .array(
       z.object({
@@ -152,9 +168,6 @@ export const createChatCompletionsJsonSchema = z.object({
     .openapi({
       description: "A list of messages comprising the conversation so far.",
     }),
-  mode: z.enum(["normal", "local", "remote", "no_system"]).optional().openapi({
-    description: "The mode of the chat completion.",
-  }),
   temperature: z.number().min(0).max(2).default(0.8).optional().openapi({
     description:
       "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.",
@@ -254,10 +267,6 @@ export const createChatCompletionsJsonSchema = z.object({
     }),
   store: z.boolean().default(false).openapi({
     description: "Whether to store the output of the completion.",
-  }),
-  should_think: z.boolean().default(false).optional().openapi({
-    description:
-      "Whether to enable thinking mode for the model. (Used for Claude Sonnet 3.7).",
   }),
   response_format: z
     .object({

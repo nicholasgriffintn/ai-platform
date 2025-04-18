@@ -31,6 +31,11 @@ export class ModelRouter {
     FUNCTIONS: 5,
   } as const;
 
+  // Minimum score difference to consider models distinct enough for comparison
+  private static readonly COMPARISON_SCORE_THRESHOLD = 0.5;
+  // Maximum number of models to compare
+  private static readonly MAX_COMPARISON_MODELS = 2;
+
   private static scoreModel(
     requirements: PromptRequirements,
     model: string,
@@ -158,6 +163,50 @@ export class ModelRouter {
     return suitableModels[0].model;
   }
 
+  private static shouldCompareModels(
+    requirements: PromptRequirements,
+  ): boolean {
+    return (
+      requirements.expectedComplexity > 3 &&
+      (requirements.requiredCapabilities.includes("general_knowledge") ||
+        requirements.requiredCapabilities.includes("creative") ||
+        requirements.requiredCapabilities.includes("reasoning"))
+    );
+  }
+
+  private static selectModelsForComparison(
+    modelScores: ModelScore[],
+  ): string[] {
+    const suitableModels = modelScores.filter((model) => model.score > 0);
+
+    if (suitableModels.length <= 1) {
+      return suitableModels.length === 1
+        ? [suitableModels[0].model]
+        : [defaultModel];
+    }
+
+    const topScore = suitableModels[0].score;
+    const comparisonModels = [suitableModels[0].model];
+
+    // Add models that are within the score threshold and from different providers
+    for (let i = 1; i < suitableModels.length; i++) {
+      const model = suitableModels[i];
+      const modelConfig = getModelConfig(model.model);
+      const topModelConfig = getModelConfig(suitableModels[0].model);
+
+      // Only add models from a different provider that are close in score
+      if (
+        modelConfig.provider !== topModelConfig.provider &&
+        topScore - model.score <= ModelRouter.COMPARISON_SCORE_THRESHOLD &&
+        comparisonModels.length < ModelRouter.MAX_COMPARISON_MODELS
+      ) {
+        comparisonModels.push(model.model);
+      }
+    }
+
+    return comparisonModels;
+  }
+
   public static async selectModel(
     env: IEnv,
     prompt: string,
@@ -198,6 +247,55 @@ export class ModelRouter {
     ).catch((error) => {
       console.error("Error in model selection:", error);
       return defaultModel;
+    });
+  }
+
+  public static async selectMultipleModels(
+    env: IEnv,
+    prompt: string,
+    attachments?: Attachment[],
+    budget_constraint?: number,
+    user?: IUser,
+    completion_id?: string,
+  ): Promise<string[]> {
+    return trackModelRoutingMetrics(
+      async () => {
+        const requirements = await PromptAnalyzer.analyzePrompt(
+          env,
+          prompt,
+          attachments,
+          budget_constraint,
+          user,
+        );
+
+        const allRouterModels = getIncludedInRouterModels();
+
+        const availableModels = await filterModelsForUserAccess(
+          allRouterModels,
+          env,
+          user?.id,
+        );
+
+        const modelScores = ModelRouter.rankModels(
+          availableModels,
+          requirements,
+        );
+
+        // Check if this request would benefit from a multi-model approach
+        if (ModelRouter.shouldCompareModels(requirements)) {
+          return ModelRouter.selectModelsForComparison(modelScores);
+        }
+
+        // Default to single best model
+        return [ModelRouter.selectBestModel(modelScores)];
+      },
+      env.ANALYTICS,
+      { prompt },
+      user?.id,
+      completion_id,
+    ).catch((error) => {
+      console.error("Error in multi-model selection:", error);
+      return [defaultModel];
     });
   }
 }

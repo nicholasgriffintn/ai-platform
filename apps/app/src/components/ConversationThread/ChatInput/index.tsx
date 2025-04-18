@@ -1,6 +1,7 @@
 import {
   File,
   Image,
+  Layers,
   Mic,
   Paperclip,
   Pause,
@@ -28,6 +29,35 @@ import type { ModelConfigItem } from "~/types";
 import { ChatSettings as ChatSettingsComponent } from "./ChatSettings";
 import { ToolToggles } from "./ChatSettings/ToolToggles";
 import { ModelSelector } from "./ModelSelector";
+
+const MultiModelToggle = ({ isDisabled }: { isDisabled?: boolean }) => {
+  const { model, chatMode, isPro, useMultiModel, setUseMultiModel } =
+    useChatStore();
+
+  if (!isPro || model !== null || chatMode !== "remote") {
+    return null;
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 ml-1">
+      <button
+        type="button"
+        onClick={() => setUseMultiModel(!useMultiModel)}
+        disabled={isDisabled}
+        className={`flex items-center gap-1 p-1.5 rounded text-xs ${
+          useMultiModel
+            ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-200"
+            : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+        }`}
+        title="Toggle multi-model mode"
+        aria-pressed={useMultiModel}
+      >
+        <Layers className="h-3 w-3" />
+        <span className="hidden sm:inline">Multi-model</span>
+      </button>
+    </div>
+  );
+};
 
 export interface ChatInputHandle {
   focus: () => void;
@@ -464,6 +494,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                 <div className="min-w-0 flex-shrink">
                   <ModelSelector isDisabled={isLoading} mono={true} />
                 </div>
+                <MultiModelToggle isDisabled={isLoading} />
                 <ToolToggles isDisabled={isLoading} />
               </div>
               <div className="flex-shrink-0 flex items-center gap-2">
