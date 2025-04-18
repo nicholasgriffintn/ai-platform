@@ -20,6 +20,54 @@ export class PromptAnalyzer {
   private static readonly FILTERS = {
     coding: new KeywordFilter(KeywordFilter.getAllCodingKeywords()),
     math: new KeywordFilter(KeywordFilter.getAllMathKeywords()),
+    general_knowledge: new KeywordFilter([
+      "explain",
+      "describe",
+      "who",
+      "what",
+      "where",
+      "when",
+      "why",
+      "how",
+      "history",
+      "science",
+      "literature",
+      "philosophy",
+      "opinion",
+      "perspectives",
+      "compare",
+      "contrast",
+      "different views",
+    ]),
+    creative: new KeywordFilter([
+      "create",
+      "design",
+      "write",
+      "generate",
+      "story",
+      "fiction",
+      "poem",
+      "creative",
+      "imagine",
+      "brainstorm",
+      "original",
+      "novel",
+      "innovative",
+    ]),
+    reasoning: new KeywordFilter([
+      "analyze",
+      "evaluate",
+      "critique",
+      "assess",
+      "judge",
+      "compare",
+      "debate",
+      "argue",
+      "pros",
+      "cons",
+      "advantages",
+      "disadvantages",
+    ]),
   };
 
   private static async analyzeWithAI(
@@ -97,10 +145,22 @@ export class PromptAnalyzer {
   "requiredCapabilities": string[], // array of required model capabilities from ${JSON.stringify(availableCapabilities)}
   "estimatedInputTokens": number, // estimated number of input tokens
   "estimatedOutputTokens": number, // estimated number of output tokens
-  "needsFunctions": boolean // true if the task requires function calling based on available tools: ${JSON.stringify(availableFunctions)}
+  "needsFunctions": boolean, // true if the task requires function calling based on available tools: ${JSON.stringify(availableFunctions)}
+  "benefitsFromMultipleModels": boolean, // true if the task would benefit from multiple AI models' perspectives
+  "modelComparisonReason": string // brief explanation of why multiple models would be beneficial, if applicable
 }
 
-Base your analysis on the prompt and these categorized keywords: ${JSON.stringify(categorizedKeywords, null, 2)}. Ensure the output is nothing but the JSON object itself.`;
+Base your analysis on the prompt and these categorized keywords: ${JSON.stringify(categorizedKeywords, null, 2)}. 
+
+For the "benefitsFromMultipleModels" field, consider:
+1. Does the request ask for multiple perspectives or comparative analysis?
+2. Is this a general knowledge question that might benefit from different model strengths?
+3. Would creative questions benefit from seeing different model outputs?
+4. For complex reasoning tasks, would having a second opinion be valuable?
+
+If you determine multiple models would be beneficial, provide a brief reason in "modelComparisonReason".
+
+Ensure the output is nothing but the JSON object itself.`;
   }
 
   private static validateAndParseAnalysis(analysisResponse: {
@@ -118,10 +178,17 @@ Base your analysis on the prompt and these categorized keywords: ${JSON.stringif
     }
 
     const content = analysisResponse.choices[0].message.content;
-    // Strip markdown code fences if present
-    const cleanedContent = content
-      .replace(/^```json\n?/, "")
-      .replace(/\n?```$/, "");
+
+    let cleanedContent = content.trim();
+
+    // Remove outer code block markers if present (```json ... ```)
+    cleanedContent = cleanedContent
+      .replace(/^```(?:json)?\s*\n?/i, "")
+      .replace(/\n?```$/g, "");
+
+    // Remove any remaining backticks that might be inside the content
+    cleanedContent = cleanedContent.replace(/`/g, "");
+
     let requirementsAnalysis: Partial<PromptRequirements>;
 
     try {
@@ -136,10 +203,22 @@ Base your analysis on the prompt and these categorized keywords: ${JSON.stringif
         "Cleaned Content:",
         cleanedContent,
       );
-      throw new AssistantError(
-        "Invalid JSON response from AI analysis",
-        ErrorType.PROVIDER_ERROR,
-      );
+
+      // Try to extract valid JSON using regex as a fallback
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*?\}/);
+        if (jsonMatch) {
+          requirementsAnalysis = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error("Could not extract valid JSON");
+        }
+      } catch (fallbackError) {
+        // If all attempts fail, throw the original error
+        throw new AssistantError(
+          "Invalid JSON response from AI analysis",
+          ErrorType.PROVIDER_ERROR,
+        );
+      }
     }
 
     if (
@@ -173,6 +252,8 @@ Base your analysis on the prompt and these categorized keywords: ${JSON.stringif
       needsFunctions: !!analysis.needsFunctions,
       hasImages: false,
       hasDocuments: false,
+      benefitsFromMultipleModels: !!analysis.benefitsFromMultipleModels,
+      modelComparisonReason: analysis.modelComparisonReason || "",
     };
   }
 

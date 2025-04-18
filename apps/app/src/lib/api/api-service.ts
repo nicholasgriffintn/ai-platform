@@ -203,6 +203,7 @@ class ApiService {
     ) => void,
     store = true,
     streamingEnabled = true,
+    useMultiModel = false,
   ): Promise<Message> {
     const headers = await this.getHeaders();
     const { selectedTools } = useToolsStore.getState();
@@ -239,6 +240,7 @@ class ApiService {
       store,
       stream: streamingEnabled,
       enabled_tools: selectedTools,
+      useMultiModel,
       ...chatSettings,
     };
 

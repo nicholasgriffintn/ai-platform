@@ -9,13 +9,14 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 
 export const handleCreateChatCompletions = async (req: {
   env: IEnv;
-  request: ChatCompletionParameters;
+  request: ChatCompletionParameters & { useMultiModel?: boolean };
   user?: IUser;
   app_url?: string;
   isRestricted?: boolean;
 }): Promise<CreateChatCompletionsResponse | Response> => {
   const { env, request, user, app_url, isRestricted } = req;
   const isStreaming = !!request.stream;
+  const useMultiModel = !!request.useMultiModel;
 
   if (!request.messages?.length) {
     throw new AssistantError(
@@ -63,6 +64,7 @@ export const handleCreateChatCompletions = async (req: {
     store: request.store,
     enabled_tools: request.enabled_tools,
     isRestricted,
+    useMultiModel,
   });
 
   if ("validation" in result) {
@@ -108,7 +110,9 @@ export const handleCreateChatCompletions = async (req: {
     log_id: env.AI.aiGatewayLogId,
     object: "chat.completion",
     created: Date.now(),
-    model: result.selectedModel,
+    model:
+      result.selectedModel ||
+      (result.selectedModels ? result.selectedModels.join(", ") : ""),
     choices: [
       {
         index: 0,

@@ -13,6 +13,7 @@ export const availableCapabilities = [
   "audio",
   "academic",
   "instruction",
+  "general_knowledge",
 ] as const;
 
 export const availableModelTypes = [

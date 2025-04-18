@@ -31,6 +31,7 @@ export function useChatManager() {
     isPro,
     localOnlyMode,
     setModel,
+    useMultiModel,
   } = useChatStore();
 
   const [streamStarted, setStreamStarted] = useState(false);
@@ -492,6 +493,8 @@ export function useChatManager() {
             controller.signal,
             handleMessageUpdate,
             shouldStore,
+            true,
+            useMultiModel,
           );
 
           const messageContent =
@@ -568,6 +571,7 @@ export function useChatManager() {
       controller,
       generateConversationTitle,
       addMessageToConversation,
+      useMultiModel,
     ],
   );
 
