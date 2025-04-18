@@ -40,21 +40,15 @@ const MultiModelToggle = ({ isDisabled }: { isDisabled?: boolean }) => {
 
   return (
     <div className="flex items-center gap-1.5 ml-1">
-      <button
-        type="button"
+      <Button
+        variant={useMultiModel ? "iconActive" : "icon"}
         onClick={() => setUseMultiModel(!useMultiModel)}
         disabled={isDisabled}
-        className={`flex items-center gap-1 p-1.5 rounded text-xs ${
-          useMultiModel
-            ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-200"
-            : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-        }`}
         title="Toggle multi-model mode"
         aria-pressed={useMultiModel}
-      >
-        <Layers className="h-3 w-3" />
-        <span className="hidden sm:inline">Multi-model</span>
-      </button>
+        icon={<Layers className="h-3 w-3" />}
+        aria-label="Toggle multi-model mode"
+      />
     </div>
   );
 };
