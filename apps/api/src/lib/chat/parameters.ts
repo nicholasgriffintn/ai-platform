@@ -324,6 +324,10 @@ export async function mapParametersToProvider(
       if (supportsThinking) {
         newCommonParams.reasoning_effort = params.reasoning_effort;
       }
+      if (params.model === "o1") {
+        newCommonParams.temperature = 1;
+        newCommonParams.top_p = undefined;
+      }
       return {
         ...newCommonParams,
         store: params.store,

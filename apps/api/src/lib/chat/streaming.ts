@@ -626,11 +626,7 @@ export async function createMultiModelStream(
         const responseText = response.response || "";
         const modelName = model.displayName;
 
-        const processedResponse = extractAdditionalInsights(
-          responseText,
-          parameters.primaryContent || "",
-          modelName,
-        );
+        const modelResponse = `\n\n***\n### ${modelName} response\n\n${responseText}`;
 
         return new ReadableStream({
           start(controller) {
@@ -638,7 +634,7 @@ export async function createMultiModelStream(
               encoder.encode(
                 `data: ${JSON.stringify({
                   type: "content_block_delta",
-                  content: processedResponse,
+                  content: modelResponse,
                   modelName: modelName,
                 })}\n\n`,
               ),
@@ -743,68 +739,6 @@ export async function createMultiModelStream(
       platform: options.platform,
     },
   );
-}
-
-/**
- * Processes a secondary model response to extract additional insights
- * that aren't present in the primary response
- */
-function extractAdditionalInsights(
-  secondaryResponse: string,
-  primaryResponse: string,
-  modelName: string,
-): string {
-  let formattedResponse = `\n\n***\n### ${modelName} additions\n\n\n\n`;
-
-  const primaryParagraphs = primaryResponse.split(/\n+/);
-  const secondaryParagraphs = secondaryResponse.split(/\n+/);
-
-  const uniqueParagraphs = secondaryParagraphs.filter((secondary) => {
-    if (secondary.length < 20) return false;
-
-    return !primaryParagraphs.some((primary) => {
-      const similarity = calculateSimpleSimilarity(primary, secondary);
-      return similarity > 0.6;
-    });
-  });
-
-  if (uniqueParagraphs.length > 0) {
-    formattedResponse += uniqueParagraphs.join("\n\n");
-  } else {
-    formattedResponse +=
-      "This model provided a similar response to the primary model.";
-  }
-
-  return formattedResponse;
-}
-
-/**
- * Calculate a simple word-based similarity between two texts
- * Returns a value between 0 (completely different) and 1 (identical)
- */
-function calculateSimpleSimilarity(text1: string, text2: string): number {
-  const words1 = new Set(
-    text1
-      .toLowerCase()
-      .split(/\W+/)
-      .filter((w) => w.length > 3),
-  );
-  const words2 = new Set(
-    text2
-      .toLowerCase()
-      .split(/\W+/)
-      .filter((w) => w.length > 3),
-  );
-
-  let overlap = 0;
-  for (const word of words1) {
-    if (words2.has(word)) {
-      overlap++;
-    }
-  }
-
-  const union = words1.size + words2.size - overlap;
-  return union === 0 ? 0 : overlap / union;
 }
 
 /**
