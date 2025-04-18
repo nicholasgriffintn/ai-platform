@@ -122,6 +122,63 @@ export class KeywordFilter {
     ],
   };
 
+  public static readonly GENERAL_KEYWORDS = {
+    general: [
+      "explain",
+      "describe",
+      "who",
+      "what",
+      "where",
+      "when",
+      "why",
+      "how",
+      "history",
+      "science",
+      "literature",
+      "philosophy",
+      "opinion",
+      "perspectives",
+      "compare",
+      "contrast",
+      "different views",
+    ],
+  };
+
+  public static readonly CREATIVE_KEYWORDS = {
+    creative: [
+      "create",
+      "design",
+      "write",
+      "generate",
+      "story",
+      "fiction",
+      "poem",
+      "creative",
+      "imagine",
+      "brainstorm",
+      "original",
+      "novel",
+      "innovative",
+    ],
+  };
+
+  public static readonly REASONING_KEYWORDS = {
+    reasoning: [
+      "analyze",
+      "evaluate",
+      "critique",
+      "assess",
+      "judge",
+      "compare",
+      "debate",
+      "argue",
+      "pros",
+      "cons",
+      "advantages",
+      "disadvantages",
+    ],
+  };
+
   private static flattenKeywords(
     keywordObj: Record<string, string[]>,
   ): string[] {
@@ -134,6 +191,18 @@ export class KeywordFilter {
 
   public static getAllMathKeywords(): string[] {
     return KeywordFilter.flattenKeywords(KeywordFilter.MATH_KEYWORDS);
+  }
+
+  public static getAllGeneralKeywords(): string[] {
+    return KeywordFilter.flattenKeywords(KeywordFilter.GENERAL_KEYWORDS);
+  }
+
+  public static getAllCreativeKeywords(): string[] {
+    return KeywordFilter.flattenKeywords(KeywordFilter.CREATIVE_KEYWORDS);
+  }
+
+  public static getAllReasoningKeywords(): string[] {
+    return KeywordFilter.flattenKeywords(KeywordFilter.REASONING_KEYWORDS);
   }
 
   public hasKeywords(text: string): boolean {

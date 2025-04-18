@@ -24,14 +24,33 @@ interface ModelScore {
 export class ModelRouter {
   private static readonly WEIGHTS = {
     COMPLEXITY_MATCH: 2,
-    BUDGET_EFFICIENCY: 3,
-    RELIABILITY: 1,
-    SPEED: 1,
+    BUDGET_EFFICIENCY: 4,
+    RELIABILITY: 2,
+    SPEED: 2,
     MULTIMODAL: 5,
-    FUNCTIONS: 5,
-    CAPABILITY_MATCH: 4,
-    COST_EFFICIENCY: 2,
+    FUNCTIONS: 0,
+    CAPABILITY_MATCH: 5,
+    COST_EFFICIENCY: 3,
   } as const;
+
+  private static readonly CAPABILITY_WEIGHTS: Record<string, number> = {
+    reasoning: 5,
+    math: 5,
+    coding: 4,
+    academic: 4,
+    analysis: 4,
+    creative: 3,
+    research: 3,
+    search: 3,
+    vision: 5,
+    audio: 5,
+    summarization: 2,
+    instruction: 2,
+    multilingual: 3,
+    chat: 1,
+    general_knowledge: 1,
+  };
+  private static readonly DEFAULT_CAPABILITY_WEIGHT = 1;
 
   // Minimum score difference to consider models distinct enough for comparison
   private static readonly COMPARISON_SCORE_THRESHOLD = 3.0;
@@ -46,10 +65,6 @@ export class ModelRouter {
 
     if (requirements.requiredCapabilities.length === 0) {
       return { model, score: 0, reason: "No required capabilities" };
-    }
-
-    if (!ModelRouter.isWithinBudget(requirements, capabilities)) {
-      return { model, score: 0, reason: "Over budget" };
     }
 
     const score = ModelRouter.calculateScore(requirements, capabilities);
@@ -102,19 +117,9 @@ export class ModelRouter {
         ) * ModelRouter.WEIGHTS.COMPLEXITY_MATCH;
     }
 
-    if (requirements.budget_constraint) {
-      const totalCost = ModelRouter.calculateTotalCost(requirements, model);
-      const budgetFactor = Math.max(
-        0,
-        1 - totalCost / requirements.budget_constraint,
-      );
-      score += budgetFactor * ModelRouter.WEIGHTS.BUDGET_EFFICIENCY;
-    }
-
     const inputCost = model.costPer1kInputTokens ?? 0;
     const outputCost = model.costPer1kOutputTokens ?? 0;
     const combinedCost = inputCost + outputCost;
-
     if (combinedCost >= 0) {
       score +=
         (1 / (1 + combinedCost * 10)) * ModelRouter.WEIGHTS.COST_EFFICIENCY;
@@ -132,20 +137,41 @@ export class ModelRouter {
       score += ModelRouter.WEIGHTS.MULTIMODAL;
     }
 
-    // TODO: Put this back when we can work out how to not make this conflict with capabilities
-    /* if (requirements.needsFunctions && model.supportsFunctions) {
+    if (requirements.needsFunctions && model.supportsFunctions) {
       score += ModelRouter.WEIGHTS.FUNCTIONS;
-    } */
+    }
 
-    const matchedCapabilities = requirements.requiredCapabilities.filter(
-      (cap) => model.strengths?.includes(cap),
-    );
-    const capabilityMatchPercentage =
-      requirements.requiredCapabilities.length > 0
-        ? matchedCapabilities.length / requirements.requiredCapabilities.length
-        : 1;
+    const requiredCapabilities = requirements.requiredCapabilities;
+    let totalRequiredWeight = 0;
+    let matchedWeight = 0;
 
-    score += capabilityMatchPercentage * ModelRouter.WEIGHTS.CAPABILITY_MATCH;
+    for (const cap of requiredCapabilities) {
+      const weight =
+        ModelRouter.CAPABILITY_WEIGHTS[cap] ??
+        ModelRouter.DEFAULT_CAPABILITY_WEIGHT;
+      totalRequiredWeight += weight;
+      if (model.strengths?.includes(cap as any)) {
+        matchedWeight += weight;
+      }
+    }
+
+    const capabilityMatchScore =
+      totalRequiredWeight > 0 ? matchedWeight / totalRequiredWeight : 1;
+    score += capabilityMatchScore * ModelRouter.WEIGHTS.CAPABILITY_MATCH;
+
+    if (requirements.budget_constraint && requirements.budget_constraint > 0) {
+      const totalCost = ModelRouter.calculateTotalCost(requirements, model);
+      const costRatio = totalCost / requirements.budget_constraint;
+      const budgetWeight = ModelRouter.WEIGHTS.BUDGET_EFFICIENCY;
+      let budgetAdjustment = 0;
+
+      if (costRatio <= 1) {
+        budgetAdjustment = (1 - costRatio) * budgetWeight;
+      } else {
+        budgetAdjustment = -Math.log(costRatio) * budgetWeight;
+      }
+      score += budgetAdjustment;
+    }
 
     return score;
   }

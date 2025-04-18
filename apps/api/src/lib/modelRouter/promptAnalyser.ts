@@ -20,54 +20,9 @@ export class PromptAnalyzer {
   private static readonly FILTERS = {
     coding: new KeywordFilter(KeywordFilter.getAllCodingKeywords()),
     math: new KeywordFilter(KeywordFilter.getAllMathKeywords()),
-    general_knowledge: new KeywordFilter([
-      "explain",
-      "describe",
-      "who",
-      "what",
-      "where",
-      "when",
-      "why",
-      "how",
-      "history",
-      "science",
-      "literature",
-      "philosophy",
-      "opinion",
-      "perspectives",
-      "compare",
-      "contrast",
-      "different views",
-    ]),
-    creative: new KeywordFilter([
-      "create",
-      "design",
-      "write",
-      "generate",
-      "story",
-      "fiction",
-      "poem",
-      "creative",
-      "imagine",
-      "brainstorm",
-      "original",
-      "novel",
-      "innovative",
-    ]),
-    reasoning: new KeywordFilter([
-      "analyze",
-      "evaluate",
-      "critique",
-      "assess",
-      "judge",
-      "compare",
-      "debate",
-      "argue",
-      "pros",
-      "cons",
-      "advantages",
-      "disadvantages",
-    ]),
+    general_knowledge: new KeywordFilter(KeywordFilter.getAllGeneralKeywords()),
+    creative: new KeywordFilter(KeywordFilter.getAllCreativeKeywords()),
+    reasoning: new KeywordFilter(KeywordFilter.getAllReasoningKeywords()),
   };
 
   private static async analyzeWithAI(
@@ -145,7 +100,7 @@ export class PromptAnalyzer {
   "requiredCapabilities": string[], // array of required model capabilities
   "estimatedInputTokens": number, // estimated number of input tokens
   "estimatedOutputTokens": number, // estimated number of output tokens
-  "needsFunctions": boolean, // true if the task requires function calling based on available tools: ${JSON.stringify(availableFunctions)}
+  "needsFunctions": boolean, // true if the task requires function calling based on available tools that is not available its capabilities: ${JSON.stringify(availableFunctions)}
   "benefitsFromMultipleModels": boolean, // true if the task would benefit from multiple AI models' perspectives
   "modelComparisonReason": string // brief explanation of why multiple models would be beneficial, if applicable
 }
