@@ -38,6 +38,23 @@ export async function getAIResponse({
     model,
   );
 
+  // Append <think> tag for Qwen QwQ models
+  let finalFormattedMessages = formattedMessages;
+  if (modelConfig?.matchingModel?.includes("qwq")) {
+    const lastMessageIndex = formattedMessages.length - 1;
+    if (lastMessageIndex >= 0) {
+      const lastMessage = formattedMessages[lastMessageIndex];
+      if (typeof lastMessage.content === "string") {
+        const updatedLastMessage = {
+          ...lastMessage,
+          content: `${lastMessage.content}\n<think>\n`,
+        };
+        finalFormattedMessages = [...formattedMessages];
+        finalFormattedMessages[lastMessageIndex] = updatedLastMessage;
+      }
+    }
+  }
+
   let shouldStream = false;
   const modelTypeIsText = modelConfig?.type?.includes("text");
   if (params.stream && provider.supportsStreaming && modelTypeIsText) {
@@ -47,7 +64,7 @@ export async function getAIResponse({
   const parameters = mergeParametersWithDefaults({
     ...params,
     model,
-    messages: formattedMessages,
+    messages: finalFormattedMessages,
     message,
     mode,
     app_url,

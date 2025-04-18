@@ -213,6 +213,7 @@ async function prepareRequestData(options: CoreChatOptions) {
 
   if (!inputValidation.isValid) {
     return {
+      selectedModel: primaryModel,
       validation: "input",
       error:
         inputValidation.rawResponse?.blockedResponse ||
@@ -317,6 +318,8 @@ async function prepareRequestData(options: CoreChatOptions) {
   return {
     modelConfigs,
     primaryModel,
+    selectedModel: primaryModel,
+    selectedModels,
     conversationManager,
     messages: filteredChatMessages,
     systemPrompt: finalSystemMessage,
@@ -421,6 +424,7 @@ export async function processChatRequest(options: CoreChatOptions) {
 
       return {
         stream: transformedStream,
+        selectedModel: primaryModel,
         selectedModels: modelConfigs.map((m) => m.model),
         completion_id,
       };
@@ -498,6 +502,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       );
       if (!outputValidation.isValid) {
         return {
+          selectedModel: primaryModel,
           validation: "output",
           error:
             outputValidation.rawResponse?.blockedResponse ||
