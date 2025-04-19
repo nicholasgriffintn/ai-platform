@@ -552,7 +552,7 @@ export async function createStreamWithPostProcessing(
 /**
  * Creates a multi-model stream that queries multiple models and combines their responses
  */
-export async function createMultiModelStream(
+export function createMultiModelStream(
   parameters: any,
   options: {
     env: IEnv;
@@ -566,7 +566,7 @@ export async function createMultiModelStream(
     isRestricted?: boolean;
   },
   conversationManager: ConversationManager,
-): Promise<ReadableStream> {
+): ReadableStream {
   const { models, ...baseParams } = parameters;
   const primaryModel = models[0];
 
@@ -576,202 +576,78 @@ export async function createMultiModelStream(
     stream: true,
   };
 
-  const primaryResponse = await getAIResponse(primaryParams);
+  const primaryResponsePromise = getAIResponse(primaryParams);
 
-  if (!(primaryResponse instanceof ReadableStream)) {
-    throw new Error("Primary model response is not a stream");
-  }
-
-  let secondaryModelResponses: ReadableStream[] = [];
-
-  if (models.length > 1) {
-    const secondaryModels = models.slice(1);
-
-    const secondaryPromises = secondaryModels.map(
-      async (modelConfig: ModelConfigInfo) => {
-        const secondaryParams = {
-          ...baseParams,
-          model: modelConfig.model,
-          stream: false,
-        };
-
-        try {
-          return {
-            model: modelConfig,
-            response: await getAIResponse(secondaryParams),
+  const secondaryPromises =
+    models.length > 1
+      ? models.slice(1).map(async (modelConfig: ModelConfigInfo) => {
+          const secondaryParams = {
+            ...baseParams,
+            model: modelConfig.model,
+            stream: false,
           };
-        } catch (error) {
-          logger.error(
-            `Error getting response from secondary model ${modelConfig.model}`,
-            { error },
-          );
-          return null;
-        }
-      },
-    );
-
-    const results = await Promise.all(secondaryPromises);
-    const validResults = results.filter((result) => result !== null);
-
-    secondaryModelResponses = validResults
-      .map((result) => {
-        if (!result) return null;
-
-        const { model, response } = result;
-        if (response instanceof ReadableStream) {
-          return response;
-        }
-
-        const encoder = new TextEncoder();
-        const responseText = response.response || "";
-        const modelName = model.displayName;
-
-        const modelResponse = `${responseText}`;
-
-        return new ReadableStream({
-          start(controller) {
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({
-                  type: "content_block_delta",
-                  content: modelResponse,
-                  modelName: modelName,
-                })}\n\n`,
-              ),
-            );
-            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-            controller.close();
-          },
-        });
-      })
-      .filter(Boolean) as ReadableStream[];
-  }
-
-  let primaryContent = "";
-
-  const contentCaptureStream = new TransformStream({
-    transform(chunk, controller) {
-      const text = new TextDecoder().decode(chunk);
-
-      try {
-        const matches = text.match(/data: (.*?)\n\n/g);
-        if (matches) {
-          for (const match of matches) {
-            const dataStr = match.substring(6, match.length - 2);
-            if (dataStr === "[DONE]") continue;
-
-            const data = JSON.parse(dataStr);
-            if (data.type === "content_block_delta" && data.content) {
-              primaryContent += data.content;
+          try {
+            const response = await getAIResponse(secondaryParams);
+            if (!(response instanceof ReadableStream)) {
+              const encoder = new TextEncoder();
+              const responseText = response.response || "";
+              const modelName = modelConfig.displayName;
+              const modelResponse = `${responseText}`;
+              return new ReadableStream({
+                start(controller) {
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({
+                        type: "content_block_delta",
+                        content: modelResponse,
+                        modelName: modelName,
+                      })}\n\n`,
+                    ),
+                  );
+                  controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+                  controller.close();
+                },
+              });
             }
+            return response;
+          } catch (error) {
+            logger.error(
+              `Error getting response from secondary model ${modelConfig.model}`,
+              { error },
+            );
+            return new ReadableStream({
+              start(controller) {
+                controller.close();
+              },
+            });
           }
-        }
-      } catch (e) {
-        // Just pass through if we can't parse
-      }
-
-      controller.enqueue(chunk);
-    },
-  });
-
-  const capturedStream = primaryResponse.pipeThrough(contentCaptureStream);
-
-  const primaryTransformedStream = await createStreamWithPostProcessing(
-    capturedStream,
-    options,
-    conversationManager,
-  );
-
-  if (secondaryModelResponses.length === 0) {
-    const fullContent = `Using the following models: ${models[0].displayName}\n\n${primaryContent}`;
-
-    const reader = primaryTransformedStream.getReader();
-    const encoder = new TextEncoder();
-
-    return new ReadableStream({
-      async start(controller) {
-        try {
-          controller.enqueue(
-            encoder.encode(
-              `data: ${JSON.stringify({
-                type: "content_block_delta",
-                content: `Using the following models: ${models[0].displayName}\n\n`,
-              })}\n\n`,
-            ),
-          );
-
-          // Stream all content from primary
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            controller.enqueue(value);
-          }
-
-          // After streaming is complete, store the message
-          await conversationManager.add(options.completion_id, {
-            role: "assistant",
-            content: fullContent,
-            id: Math.random().toString(36).substring(2, 7),
-            timestamp: Date.now(),
-            model: primaryModel.model,
-            platform: options.platform || "api",
-            log_id: options.env.AI?.aiGatewayLogId,
-            mode: options.mode,
-          });
-
-          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-          controller.close();
-        } catch (error) {
-          logger.error("Error in single model stream", { error });
-          controller.error(error);
-        }
-      },
-    });
-  }
-
-  return createCombinedStream(
-    primaryTransformedStream,
-    secondaryModelResponses,
-    {
-      modelConfigs: models,
-      conversationManager,
-      completion_id: options.completion_id,
-      platform: options.platform,
-    },
-  );
-}
-
-/**
- * Combines multiple streams into one, appending secondary streams after the primary
- */
-function createCombinedStream(
-  primaryStream: ReadableStream,
-  secondaryStreams: ReadableStream[],
-  options?: {
-    modelConfigs?: ModelConfigInfo[];
-    conversationManager?: ConversationManager;
-    completion_id?: string;
-    platform?: Platform;
-  },
-): ReadableStream {
-  let currentSecondaryStreamIndex = 0;
-  const encoder = new TextEncoder();
-
-  let modelHeader = "";
-  if (options?.modelConfigs?.length) {
-    const modelNames = options?.modelConfigs
-      .map((m) => m.displayName)
-      .join(", ");
-    modelHeader = `Using the following models: ${modelNames}\n\n`;
-  }
-
-  let secondaryContent = "";
+        })
+      : [];
 
   return new ReadableStream({
     async start(controller) {
-      const primaryReader = primaryStream.getReader();
+      const encoder = new TextEncoder();
+      let primaryContent = "";
+      let modelHeader = "";
 
-      if (modelHeader) {
+      try {
+        const primaryResponse = await primaryResponsePromise;
+        if (!(primaryResponse instanceof ReadableStream)) {
+          throw new Error("Primary model response is not a stream");
+        }
+
+        const primaryProcessedStream = await createStreamWithPostProcessing(
+          primaryResponse,
+          { ...options, model: primaryModel.model },
+          conversationManager,
+        );
+
+        const primaryReader = primaryProcessedStream.getReader();
+
+        const modelNames = models
+          .map((m: ModelConfigInfo) => m.displayName)
+          .join(", ");
+        modelHeader = `Using the following models: ${modelNames}\n\n`;
         controller.enqueue(
           encoder.encode(
             `data: ${JSON.stringify({
@@ -780,54 +656,62 @@ function createCombinedStream(
             })}\n\n`,
           ),
         );
-      }
 
-      try {
-        // Process primary stream
         while (true) {
           const { done, value } = await primaryReader.read();
-
-          if (done) {
-            break;
-          }
+          if (done) break;
 
           const text = new TextDecoder().decode(value);
-          if (!text.includes("data: [DONE]")) {
-            controller.enqueue(value);
+          try {
+            const matches = text.match(/data: (.*?)\n\n/g);
+            if (matches) {
+              for (const match of matches) {
+                const dataStr = match.substring(6, match.length - 2);
+                if (dataStr === "[DONE]") continue;
+                const data = JSON.parse(dataStr);
+                if (data.type === "content_block_delta" && data.content) {
+                  primaryContent += data.content;
+                } else if (data.type === "text" && data.text) {
+                  primaryContent += data.text;
+                }
+              }
+            }
+          } catch (e) {
+            /* ignore parse errors during capture */
           }
+
+          controller.enqueue(value);
         }
+      } catch (error) {
+        logger.error(
+          "Error processing primary stream in multi-model setup:",
+          error,
+        );
+        controller.error(error);
+        return;
+      }
 
-        // Process secondary streams
-        for (const secondaryStream of secondaryStreams) {
+      let secondaryContent = "";
+      try {
+        const secondaryResponses = await Promise.all(secondaryPromises);
+        let secondaryIndex = 0;
+
+        for (const secondaryStream of secondaryResponses) {
+          const modelConfig = models[secondaryIndex + 1];
+          const modelName = modelConfig?.displayName || "Secondary model";
+
+          const divider = `\n\n***\n### ${modelName} response\n\n`;
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({ type: "content_block_delta", content: divider })}\n\n`,
+            ),
+          );
+          secondaryContent += divider;
+
           const secondaryReader = secondaryStream.getReader();
-
-          // Add a divider before each secondary model response
-          if (
-            options?.modelConfigs &&
-            currentSecondaryStreamIndex < options.modelConfigs.length - 1
-          ) {
-            const modelConfig =
-              options.modelConfigs[currentSecondaryStreamIndex + 1];
-            const modelName = modelConfig?.displayName || "Secondary model";
-
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({
-                  type: "content_block_delta",
-                  content: `\n\n***\n### ${modelName} response\n\n`,
-                })}\n\n`,
-              ),
-            );
-
-            secondaryContent += `\n\n***\n### ${modelName} response\n\n`;
-          }
-
           while (true) {
             const { done, value } = await secondaryReader.read();
-
-            if (done) {
-              break;
-            }
+            if (done) break;
 
             const text = new TextDecoder().decode(value);
             try {
@@ -836,21 +720,18 @@ function createCombinedStream(
                 for (const match of matches) {
                   const dataStr = match.substring(6, match.length - 2);
                   if (dataStr === "[DONE]") continue;
-
                   const data = JSON.parse(dataStr);
                   if (data.type === "content_block_delta" && data.content) {
                     secondaryContent += data.content;
-
-                    controller.enqueue(
-                      encoder.encode(
-                        `data: ${JSON.stringify({
-                          type: "content_block_delta",
-                          content: data.content,
-                        })}\n\n`,
-                      ),
+                    const deltaEvent = encoder.encode(
+                      `data: ${JSON.stringify({
+                        type: "content_block_delta",
+                        content: data.content,
+                      })}\n\n`,
                     );
+                    controller.enqueue(deltaEvent);
                   } else {
-                    controller.enqueue(encoder.encode(`data: ${dataStr}\n\n`));
+                    controller.enqueue(value);
                   }
                 }
               } else {
@@ -860,54 +741,79 @@ function createCombinedStream(
               controller.enqueue(value);
             }
           }
-
-          currentSecondaryStreamIndex++;
+          secondaryIndex++;
         }
+      } catch (error) {
+        logger.error("Error processing secondary streams:", error);
+      }
 
-        if (options?.conversationManager && options?.completion_id) {
-          const conversation = await options.conversationManager.get(
-            options.completion_id,
+      try {
+        const conversation = await conversationManager.get(
+          options.completion_id,
+        );
+        if (conversation?.length > 0) {
+          const assistantMessages = conversation.filter(
+            (msg) => msg.role === "assistant",
           );
-          if (conversation?.length > 0) {
-            const assistantMessages = conversation.filter(
-              (msg) => msg.role === "assistant",
-            );
-            if (assistantMessages.length > 0) {
-              const lastMessage =
-                assistantMessages[assistantMessages.length - 1];
-
-              const storedPrimaryContent =
-                typeof lastMessage.content === "string"
-                  ? lastMessage.content
-                  : "";
-
-              const fullContent =
-                modelHeader + storedPrimaryContent + secondaryContent;
-
-              await options.conversationManager.update(options.completion_id, [
-                {
-                  ...lastMessage,
-                  content: fullContent,
-                  data: {
-                    ...lastMessage.data,
-                    includesSecondaryModels: true,
-                    secondaryModels:
-                      options.modelConfigs?.slice(1).map((m) => m.model) || [],
-                  },
-                },
-              ]);
+          if (assistantMessages.length > 0) {
+            const lastMessage = assistantMessages[assistantMessages.length - 1];
+            let storedPrimaryContent = "";
+            if (typeof lastMessage.content === "string") {
+              storedPrimaryContent = lastMessage.content;
+            } else if (Array.isArray(lastMessage.content)) {
+              const textBlock = lastMessage.content.find(
+                (block) => block.type === "text",
+              );
+              storedPrimaryContent = textBlock?.text || "";
             }
+
+            const finalCombinedContent =
+              modelHeader + storedPrimaryContent + secondaryContent;
+
+            await conversationManager.update(options.completion_id, [
+              {
+                ...lastMessage,
+                content: finalCombinedContent,
+                data: {
+                  ...lastMessage.data,
+                  includesSecondaryModels: true,
+                  secondaryModels:
+                    models.slice(1).map((m: ModelConfigInfo) => m.model) || [],
+                },
+              },
+            ]);
+          } else {
+            const finalCombinedContentForAdd =
+              modelHeader + primaryContent + secondaryContent;
+            await conversationManager.add(options.completion_id, {
+              role: "assistant",
+              content: finalCombinedContentForAdd,
+              citations: [],
+              log_id: null,
+              mode: options.mode,
+              id: Math.random().toString(36).substring(2, 7),
+              timestamp: Date.now(),
+              model: primaryModel.model,
+              platform: options.platform || "api",
+              usage: null,
+              data: {
+                includesSecondaryModels: true,
+                secondaryModels:
+                  models.slice(1).map((m: ModelConfigInfo) => m.model) || [],
+              },
+            });
           }
         }
 
         controller.enqueue(encoder.encode("data: [DONE]\n\n"));
         controller.close();
       } catch (error) {
-        logger.error("Error in combined stream", { error });
+        logger.error("Error during finalization/storage:", error);
         controller.error(error);
       }
     },
-
-    cancel() {},
+    cancel(reason) {
+      logger.warn("Multi-model stream cancelled:", reason);
+    },
   });
 }

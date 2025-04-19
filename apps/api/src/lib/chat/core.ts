@@ -378,7 +378,7 @@ export async function processChatRequest(options: CoreChatOptions) {
     } = preparedData;
 
     if (modelConfigs.length > 1 && stream) {
-      const transformedStream = await createMultiModelStream(
+      const transformedStream = createMultiModelStream(
         {
           app_url,
           system_prompt: systemPrompt,
@@ -423,7 +423,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       );
 
       return {
-        stream: transformedStream,
+        stream: await Promise.resolve(transformedStream),
         selectedModel: primaryModel,
         selectedModels: modelConfigs.map((m) => m.model),
         completion_id,
@@ -480,7 +480,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       );
 
       return {
-        stream: transformedStream,
+        stream: await Promise.resolve(transformedStream),
         selectedModel: primaryModel,
         completion_id,
       };
