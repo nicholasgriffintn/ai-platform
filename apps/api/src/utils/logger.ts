@@ -12,7 +12,7 @@ interface LoggerOptions {
 }
 
 class Logger {
-  private static instance: Logger;
+  private static instances: Record<string, Logger> = {};
   private static readonly defaultLevel = LogLevel.DEBUG;
   private level: LogLevel;
   private prefix: string;
@@ -23,49 +23,51 @@ class Logger {
   }
 
   public static getInstance(options?: LoggerOptions): Logger {
-    if (!Logger.instance) {
-      Logger.instance = new Logger(options || { level: Logger.defaultLevel });
-    } else if (options) {
-      if (options.level !== undefined) {
-        Logger.instance.level = options.level;
-      }
-      if (options.prefix !== undefined) {
-        Logger.instance.prefix = options.prefix;
-      }
+    const prefix = options?.prefix ?? "";
+    const level = options?.level ?? Logger.defaultLevel;
+    if (!Logger.instances[prefix]) {
+      Logger.instances[prefix] = new Logger({ prefix, level });
+    } else if (options?.level !== undefined) {
+      Logger.instances[prefix].level = options.level;
     }
 
-    return Logger.instance;
+    return Logger.instances[prefix];
   }
 
   private formatMessage(
-    level: string,
+    levelName: string,
     message: string,
     ...args: any[]
   ): string {
     const timestamp = new Date().toISOString();
-
     const logObject: Record<string, any> = {
       timestamp,
-      level,
+      level: levelName,
       prefix: this.prefix || undefined,
       message,
     };
 
-    if (args.length > 0 && typeof args[0] === "object") {
-      // Merge the first object argument with our log object
-      Object.assign(logObject, args[0]);
+    const meta: Record<string, any> = {};
+    const remainingArgs: any[] = [];
 
-      // Remove these if they were added as separate properties to avoid duplication
-      args.shift();
+    for (const arg of args) {
+      if (arg !== null && typeof arg === "object" && !Array.isArray(arg)) {
+        Object.assign(meta, arg);
+      } else {
+        remainingArgs.push(arg);
+      }
     }
 
-    // Add remaining args as an array if any exist
-    if (args.length > 0) {
-      logObject.additionalArgs = args.map((arg) => {
-        if (typeof arg === "object") {
+    if (Object.keys(meta).length > 0) {
+      logObject.meta = meta;
+    }
+
+    if (remainingArgs.length > 0) {
+      logObject.additionalArgs = remainingArgs.map((arg) => {
+        if (arg !== null && typeof arg === "object") {
           try {
             return JSON.stringify(arg);
-          } catch (e) {
+          } catch {
             return String(arg);
           }
         }
@@ -73,7 +75,16 @@ class Logger {
       });
     }
 
-    return JSON.stringify(logObject);
+    try {
+      return JSON.stringify(logObject);
+    } catch (e) {
+      return JSON.stringify({
+        timestamp,
+        level: levelName,
+        prefix: this.prefix,
+        message: `${message} [unserializable payload]`,
+      });
+    }
   }
 
   private log(
