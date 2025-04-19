@@ -58,4 +58,5 @@ export interface IEnv {
   SERPER_API_KEY?: string;
   PRIVATE_KEY?: string;
   ALWAYS_ENABLED_PROVIDERS?: string;
+  LOG_LEVEL?: string;
 }

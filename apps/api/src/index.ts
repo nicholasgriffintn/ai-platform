@@ -33,8 +33,11 @@ import tools from "./routes/tools";
 import uploads from "./routes/uploads";
 import user from "./routes/user";
 import webhooks from "./routes/webhooks";
+import type { IEnv } from "./types";
 
-const app = new Hono();
+const app = new Hono<{
+  Bindings: IEnv;
+}>();
 
 const origin = (origin, c) => {
   if (!origin) return "*";
@@ -88,14 +91,6 @@ app.use("*", authMiddleware);
 app.use("*", rateLimit);
 
 autoRegisterDynamicApps();
-
-// Initialize logger
-const logger = getLogger({
-  level: LogLevel.INFO,
-  prefix: "API",
-});
-
-logger.info("Application starting");
 
 app.get(
   "/",
@@ -215,18 +210,24 @@ app.notFound((c) => c.json({ status: "not found" }, 404));
  * Global error handler
  */
 app.onError((err, c) => {
-  logger.error("Global error handler caught an error", {
-    error: err.message,
-    stack: err.stack,
-    path: c.req.path,
-  });
-
-  if (err instanceof AssistantError) {
-    return handleAIServiceError(err);
-  }
-
   const error = AssistantError.fromError(err, ErrorType.UNKNOWN_ERROR);
   return handleAIServiceError(error);
 });
 
-export default app;
+let hasLoggedStart = false;
+
+export default {
+  async fetch(request: Request, env: IEnv, ctx: ExecutionContext) {
+    const raw = env.LOG_LEVEL?.toUpperCase() ?? "INFO";
+    const level =
+      (LogLevel[raw as keyof typeof LogLevel] as LogLevel) ?? LogLevel.INFO;
+
+    const logger = getLogger({ prefix: "API", level });
+    if (!hasLoggedStart) {
+      logger.info(`Application starting (log level=${LogLevel[level]})`);
+      hasLoggedStart = true;
+    }
+
+    return app.fetch(request, env, ctx);
+  },
+};
