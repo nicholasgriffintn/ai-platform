@@ -374,7 +374,7 @@ class ApiService {
                   });
 
                   toolResponses.push(toolResponse);
-                  onProgress("", "", toolResponses);
+                  onProgress("", "", [toolResponse]);
                 } else if (parsedData.type === "message_delta") {
                   if (parsedData.usage) {
                     usage = parsedData.usage;
