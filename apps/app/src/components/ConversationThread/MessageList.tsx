@@ -127,9 +127,7 @@ export const MessageList = ({
         <div className="relative flex-1">
           <VList
             ref={virtualRef}
-            reverse
-            className="flex-1 pt-4"
-            style={{ height: "100%", width: "100%", overflow: "auto" }}
+            className="flex-1 pt-4 pr-2 h-full overflow-auto w-full"
             onScroll={handleScroll}
           >
             {messages.map((message, index) => (
