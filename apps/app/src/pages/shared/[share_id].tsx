@@ -6,7 +6,7 @@ import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
 import { ArtifactPanel } from "~/components/ConversationThread/Artifacts/ArtifactPanel";
-import { MessageList } from "~/components/ConversationThread/MessageList";
+import { VirtualisedMessageList } from "~/components/ConversationThread/VirtualisedMessageList";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { API_BASE_URL } from "~/constants";
 import type { Message } from "~/types";
@@ -173,7 +173,7 @@ export default function SharedConversationPage() {
         >
           <div className="mx-auto flex w-full max-w-3xl grow flex-col gap-8 px-4 py-8">
             {messages.length > 0 ? (
-              <MessageList
+              <VirtualisedMessageList
                 messagesEndRef={messagesEndRef}
                 messages={messages}
                 isSharedView={true}
