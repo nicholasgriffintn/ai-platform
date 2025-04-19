@@ -141,3 +141,32 @@ export function enforceAttachmentLimits(
     );
   }
 }
+
+// Helper to parse, dedupe, and enforce limits on attachments in one step
+export function getAllAttachments(contents: unknown[]): {
+  imageAttachments: Attachment[];
+  documentAttachments: Attachment[];
+  markdownAttachments: Attachment[];
+  allAttachments: Attachment[];
+} {
+  const {
+    imageAttachments: rawImages,
+    documentAttachments: rawDocs,
+    markdownAttachments: rawMarkdown,
+  } = parseAttachments(contents);
+  const imageAttachments = dedupeAttachments(rawImages);
+  const documentAttachments = dedupeAttachments(rawDocs);
+  const markdownAttachments = dedupeAttachments(rawMarkdown);
+  const allAttachments = [
+    ...imageAttachments,
+    ...documentAttachments,
+    ...markdownAttachments,
+  ];
+  enforceAttachmentLimits(allAttachments);
+  return {
+    imageAttachments,
+    documentAttachments,
+    markdownAttachments,
+    allAttachments,
+  };
+}

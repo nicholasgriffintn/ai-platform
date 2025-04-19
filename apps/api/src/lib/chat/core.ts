@@ -5,21 +5,16 @@ import { ConversationManager } from "../conversationManager";
 import { Database } from "../database";
 import { Embedding } from "../embedding";
 import { Guardrails } from "../guardrails";
-import { ModelRouter } from "../modelRouter";
 import { getModelConfig } from "../models";
 import { getSystemPrompt } from "../prompts";
+import { selectModels } from "./modelSelection";
 import { getAIResponse } from "./responses";
 import {
   createMultiModelStream,
   createStreamWithPostProcessing,
 } from "./streaming";
 import { handleToolCalls } from "./tools";
-import {
-  checkContextWindowLimits,
-  dedupeAttachments,
-  enforceAttachmentLimits,
-  parseAttachments,
-} from "./utils";
+import { checkContextWindowLimits, getAllAttachments } from "./utils";
 
 type CoreChatOptions = ChatCompletionParameters & {
   isRestricted?: boolean;
@@ -66,49 +61,23 @@ async function prepareRequestData(options: CoreChatOptions) {
   const lastMessageContentText =
     lastMessageContent.find((c) => c.type === "text")?.text || "";
 
-  // Parse attachments, remove duplicates and enforce limits
-  const {
-    imageAttachments: rawImages,
-    documentAttachments: rawDocs,
-    markdownAttachments: rawMarkdown,
-  } = parseAttachments(lastMessageContent);
-  const imageAttachments = dedupeAttachments(rawImages);
-  const documentAttachments = dedupeAttachments(rawDocs);
-  const markdownAttachments = dedupeAttachments(rawMarkdown);
-  const allAttachments = [
-    ...imageAttachments,
-    ...documentAttachments,
-    ...markdownAttachments,
-  ];
-  enforceAttachmentLimits(allAttachments);
+  const { markdownAttachments, allAttachments } =
+    getAllAttachments(lastMessageContent);
 
   const database = Database.getInstance(env);
   const userSettings = await database.getUserSettings(user?.id);
 
-  let selectedModels: string[] = [];
-
-  if (useMultiModel && !requestedModel) {
-    selectedModels = await ModelRouter.selectMultipleModels(
-      env,
-      lastMessageContentText,
-      allAttachments,
-      budget_constraint,
-      user,
-      options.completion_id,
-    );
-  } else {
-    const selectedModel =
-      requestedModel ||
-      (await ModelRouter.selectModel(
-        env,
-        lastMessageContentText,
-        allAttachments,
-        budget_constraint,
-        user,
-        options.completion_id,
-      ));
-    selectedModels = [selectedModel];
-  }
+  // Determine which models to use (single- or multi-model)
+  const selectedModels = await selectModels(
+    env,
+    lastMessageContentText,
+    allAttachments,
+    budget_constraint,
+    user,
+    options.completion_id,
+    requestedModel,
+    useMultiModel,
+  );
 
   const primaryModelName = selectedModels[0];
   const primaryModelConfig = getModelConfig(primaryModelName);
