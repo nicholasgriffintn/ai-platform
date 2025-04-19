@@ -10,7 +10,6 @@ import {
 import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
-import { useAutoscroll } from "~/hooks/useAutoscroll";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
@@ -22,7 +21,6 @@ import { ArtifactPanel } from "./Artifacts/ArtifactPanel";
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
 import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
-import { ScrollButton } from "./ScrollButton";
 import { WelcomeScreen } from "./WelcomeScreen";
 
 export const ConversationThread = () => {
@@ -48,15 +46,6 @@ export const ConversationThread = () => {
     () => currentConversation?.messages || [],
     [currentConversation?.messages],
   );
-
-  const {
-    messagesEndRef,
-    messagesContainerRef,
-    forceScrollToBottom,
-    showScrollButton,
-  } = useAutoscroll({
-    dependency: currentConversationId,
-  });
 
   const chatInputRef = useRef<ChatInputHandle>(null);
 
@@ -207,26 +196,21 @@ export const ConversationThread = () => {
     <div
       className={`flex flex-col h-[calc(100%-3rem)] w-full ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
     >
-      <div
-        ref={messagesContainerRef}
-        className={`relative flex-1 overflow-x-hidden ${showWelcomeScreen ? "flex items-center" : "overflow-y-scroll"}`}
-      >
-        <div className="mx-auto flex w-full max-w-3xl grow flex-col gap-8 px-4 py-8">
-          {showWelcomeScreen ? (
-            <WelcomeScreen setInput={setChatInput} />
-          ) : (
+      {showWelcomeScreen ? (
+        <div className="flex-1 flex items-center justify-center">
+          <WelcomeScreen setInput={setChatInput} />
+        </div>
+      ) : (
+        <div className="flex-1">
+          <div className="mx-auto w-full max-w-3xl h-full flex flex-col gap-8 px-4 py-8">
             <MessageList
-              messagesEndRef={messagesEndRef}
+              messages={messages}
               onToolInteraction={handleToolInteraction}
               onArtifactOpen={handleArtifactOpen}
             />
-          )}
+          </div>
         </div>
-
-        {showScrollButton && currentConversationId && (
-          <ScrollButton onClick={forceScrollToBottom} />
-        )}
-      </div>
+      )}
 
       <div className="px-4">
         <div className="max-w-3xl mx-auto">
