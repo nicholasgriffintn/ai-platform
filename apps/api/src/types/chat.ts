@@ -229,4 +229,34 @@ export interface CreateChatCompletionsResponse {
     completion_tokens: number;
     total_tokens: number;
   };
+  post_processing?: {
+    guardrails?: {
+      passed: boolean;
+      error?: string;
+      violations?: any[];
+    };
+  };
+}
+
+export interface AssistantMessageData {
+  content: string;
+  thinking?: string;
+  signature?: string;
+  citations?: any[];
+  tool_calls?: any[];
+  data?: any;
+  usage?: any;
+  guardrails?: {
+    passed: boolean;
+    error?: string;
+    violations?: any[];
+  };
+  log_id?: string | null;
+  model?: string;
+  selected_models?: string[];
+  platform?: Platform;
+  timestamp?: number;
+  id?: string;
+  finish_reason?: string;
+  mode?: ChatMode;
 }

@@ -1,4 +1,5 @@
 import { processChatRequest } from "~/lib/chat/core";
+import { formatAssistantMessage } from "~/lib/chat/responses";
 import type {
   ChatCompletionParameters,
   CreateChatCompletionsResponse,
@@ -68,6 +69,17 @@ export const handleCreateChatCompletions = async (req: {
   });
 
   if ("validation" in result) {
+    const assistantMessage = formatAssistantMessage({
+      content: result.error,
+      model: result.selectedModel,
+      guardrails: {
+        passed: false,
+        error: result.error,
+      },
+      log_id: env.AI.aiGatewayLogId,
+      finish_reason: "content_filter",
+    });
+
     return {
       id: env.AI.aiGatewayLogId || completionIdWithFallback,
       log_id: env.AI.aiGatewayLogId,
@@ -79,12 +91,15 @@ export const handleCreateChatCompletions = async (req: {
           index: 0,
           message: {
             role: "assistant",
-            content: result.error,
+            content: assistantMessage.content,
           },
-          finish_reason: "content_filter",
+          finish_reason: assistantMessage.finish_reason,
         },
       ],
-      usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+      usage: assistantMessage.usage,
+      post_processing: {
+        guardrails: assistantMessage.guardrails,
+      },
     };
   }
 
@@ -113,27 +128,38 @@ export const handleCreateChatCompletions = async (req: {
     );
   }
 
+  const assistantMessage = formatAssistantMessage({
+    content: result.response.response,
+    citations: result.response.citations || [],
+    tool_calls: result.response.tool_calls || [],
+    data: result.response.data || null,
+    usage: result.response.usage || result.response.usageMetadata,
+    log_id: env.AI.aiGatewayLogId,
+    model:
+      result.selectedModel ||
+      (result.selectedModels ? result.selectedModels.join(", ") : ""),
+    selected_models: result.selectedModels,
+    finish_reason: result.response.tool_calls?.length ? "tool_calls" : "stop",
+  });
+
+  // Build the response with standardized fields that match streaming format
   return {
     id: env.AI.aiGatewayLogId || completionIdWithFallback,
     log_id: env.AI.aiGatewayLogId,
     object: "chat.completion",
     created: Date.now(),
-    model:
-      result.selectedModel ||
-      (result.selectedModels ? result.selectedModels.join(", ") : ""),
+    model: assistantMessage.model,
     choices: [
       {
         index: 0,
         message: {
           role: "assistant",
-          content: result.response.response,
-          data: result.response.data || null,
-          tool_calls: result.response.tool_calls || null,
-          citations: result.response.citations || null,
+          content: assistantMessage.content,
+          data: assistantMessage.data,
+          tool_calls: assistantMessage.tool_calls,
+          citations: assistantMessage.citations,
         },
-        finish_reason: result.response.tool_calls?.length
-          ? "tool_calls"
-          : "stop",
+        finish_reason: assistantMessage.finish_reason,
       },
       ...("toolResponses" in result && result.toolResponses
         ? result.toolResponses.map((toolResponse, index) => ({
@@ -155,11 +181,9 @@ export const handleCreateChatCompletions = async (req: {
           }))
         : []),
     ],
-    usage: result.response.usage ||
-      result.response.usageMetadata || {
-        prompt_tokens: 0,
-        completion_tokens: 0,
-        total_tokens: 0,
-      },
+    usage: assistantMessage.usage,
+    post_processing: {
+      guardrails: assistantMessage.guardrails,
+    },
   };
 };

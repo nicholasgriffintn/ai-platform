@@ -1,8 +1,10 @@
 import type {
   ChatMode,
+  ContentType,
   IEnv,
   IUser,
   IUserSettings,
+  MessageContent,
   Platform,
 } from "../../types";
 import { getLogger } from "../../utils/logger";
@@ -11,6 +13,7 @@ import type { ConversationManager } from "../conversationManager";
 import { ResponseFormatter, StreamingFormatter } from "../formatter";
 import { Guardrails } from "../guardrails";
 import { getModelConfigByMatchingModel } from "../models";
+import { formatAssistantMessage } from "./responses";
 import { getAIResponse } from "./responses";
 
 interface ModelConfigInfo {
@@ -20,6 +23,43 @@ interface ModelConfigInfo {
 }
 
 const logger = getLogger({ prefix: "CHAT_STREAMING" });
+
+/**
+ * Helper to emit a standardized SSE event to the stream controller
+ */
+function emitEvent(
+  controller: TransformStreamDefaultController,
+  type: string,
+  payload: Record<string, any>,
+) {
+  const event = new TextEncoder().encode(
+    `data: ${JSON.stringify({ type, ...payload })}\n\n`,
+  );
+  controller.enqueue(event);
+}
+
+/**
+ * Helper to emit standardized tool events
+ */
+function emitToolEvents(
+  controller: TransformStreamDefaultController,
+  toolCall: any,
+  stage: "start" | "delta" | "stop",
+  data?: any,
+) {
+  const eventType = `tool_use_${stage}`;
+  const payload: Record<string, any> = {
+    tool_id: toolCall.id,
+  };
+
+  if (stage === "start") {
+    payload.tool_name = toolCall.function?.name || "";
+  } else if (stage === "delta") {
+    payload.parameters = data || "{}";
+  }
+
+  emitEvent(controller, eventType, payload);
+}
 
 /**
  * Creates a transformed stream that handles post-processing of AI responses
@@ -389,118 +429,92 @@ export async function createStreamWithPostProcessing(
             }
 
             // Send content stop event
-            const contentStopEvent = new TextEncoder().encode(
-              `data: ${JSON.stringify({
-                type: "content_block_stop",
-              })}\n\n`,
-            );
-            controller.enqueue(contentStopEvent);
+            emitEvent(controller, "content_block_stop", {});
 
             const logId = env.AI?.aiGatewayLogId;
 
-            // Create the assistant message content with possible thinking
-            let messageContent: string | Array<any> = fullContent;
-
-            // If we have thinking or signature, use structured content
-            if (fullThinking || signature) {
-              const contentBlocks = [];
-
-              if (fullThinking) {
-                contentBlocks.push({
-                  type: "thinking",
-                  thinking: fullThinking,
-                  signature: signature || "",
-                });
-              }
-
-              if (fullContent) {
-                contentBlocks.push({
-                  type: "text",
-                  text: fullContent,
-                });
-              }
-
-              messageContent = contentBlocks;
-            }
+            const assistantMessage = formatAssistantMessage({
+              content: fullContent,
+              thinking: fullThinking,
+              signature: signature,
+              citations: citationsResponse,
+              tool_calls: toolCallsData,
+              usage: usageData,
+              guardrails: {
+                passed: !guardrailsFailed,
+                error: guardrailError,
+                violations,
+              },
+              log_id: logId,
+              model,
+              platform,
+              timestamp: Date.now(),
+              mode,
+              finish_reason: toolCallsData.length > 0 ? "tool_calls" : "stop",
+            });
 
             await conversationManager.add(completion_id, {
               role: "assistant",
-              content: messageContent,
-              citations: citationsResponse,
-              log_id: logId,
-              mode,
-              id: Math.random().toString(36).substring(2, 7),
-              timestamp: Date.now(),
-              model,
-              platform,
-              usage: usageData,
+              content:
+                assistantMessage.thinking || assistantMessage.signature
+                  ? ([
+                      assistantMessage.thinking
+                        ? {
+                            type: "thinking" as ContentType,
+                            thinking: assistantMessage.thinking,
+                            signature: assistantMessage.signature || "",
+                          }
+                        : null,
+                      {
+                        type: "text" as ContentType,
+                        text: assistantMessage.content,
+                      },
+                    ].filter(Boolean) as MessageContent[])
+                  : assistantMessage.content,
+              citations: assistantMessage.citations,
+              log_id: assistantMessage.log_id,
+              mode: assistantMessage.mode as ChatMode,
+              id: assistantMessage.id,
+              timestamp: assistantMessage.timestamp,
+              model: assistantMessage.model,
+              platform: assistantMessage.platform,
+              usage: assistantMessage.usage,
             });
 
-            // Prepare and send metadata event
-            const metadata = {
-              type: "message_delta",
+            emitEvent(controller, "message_delta", {
+              id: completion_id,
+              object: "chat.completion",
+              created: assistantMessage.timestamp,
+              model: assistantMessage.model,
               nonce: Math.random().toString(36).substring(2, 7),
               post_processing: {
-                guardrails: {
-                  passed: !guardrailsFailed,
-                  error: guardrailError,
-                  violations,
-                },
+                guardrails: assistantMessage.guardrails,
               },
-              log_id: logId,
-              usage: usageData,
-              citations: citationsResponse,
-            };
+              log_id: assistantMessage.log_id,
+              usage: assistantMessage.usage,
+              citations: assistantMessage.citations,
+              finish_reason: assistantMessage.finish_reason,
+              data: assistantMessage.data,
+            });
 
-            const metadataEvent = new TextEncoder().encode(
-              `data: ${JSON.stringify(metadata)}\n\n`,
-            );
-            controller.enqueue(metadataEvent);
-
-            const messageStopEvent = new TextEncoder().encode(
-              `data: ${JSON.stringify({
-                type: "message_stop",
-              })}\n\n`,
-            );
-            controller.enqueue(messageStopEvent);
+            emitEvent(controller, "message_stop", {});
 
             if (toolCallsData.length > 0 && !isRestricted) {
               // Emit tool use events for each tool call
               for (const toolCall of toolCallsData) {
-                const toolStartEvent = new TextEncoder().encode(
-                  `data: ${JSON.stringify({
-                    type: "tool_use_start",
-                    tool_id: toolCall.id,
-                    tool_name: toolCall.function?.name || "",
-                  })}\n\n`,
+                emitToolEvents(controller, toolCall, "start");
+                emitToolEvents(
+                  controller,
+                  toolCall,
+                  "delta",
+                  toolCall.function?.arguments || "{}",
                 );
-                controller.enqueue(toolStartEvent);
-
-                const toolDeltaEvent = new TextEncoder().encode(
-                  `data: ${JSON.stringify({
-                    type: "tool_use_delta",
-                    tool_id: toolCall.id,
-                    parameters: toolCall.function?.arguments || "{}",
-                  })}\n\n`,
-                );
-                controller.enqueue(toolDeltaEvent);
-
-                const toolStopEvent = new TextEncoder().encode(
-                  `data: ${JSON.stringify({
-                    type: "tool_use_stop",
-                    tool_id: toolCall.id,
-                  })}\n\n`,
-                );
-                controller.enqueue(toolStopEvent);
+                emitToolEvents(controller, toolCall, "stop");
               }
 
-              const toolResponseStartEvent = new TextEncoder().encode(
-                `data: ${JSON.stringify({
-                  type: "tool_response_start",
-                  tool_calls: toolCallsData,
-                })}\n\n`,
-              );
-              controller.enqueue(toolResponseStartEvent);
+              emitEvent(controller, "tool_response_start", {
+                tool_calls: toolCallsData,
+              });
 
               const toolResults = await handleToolCalls(
                 completion_id,
@@ -521,22 +535,13 @@ export async function createStreamWithPostProcessing(
               );
 
               for (const toolResult of toolResults) {
-                const toolResponseChunk = new TextEncoder().encode(
-                  `data: ${JSON.stringify({
-                    type: "tool_response",
-                    tool_id: toolResult.id,
-                    result: toolResult,
-                  })}\n\n`,
-                );
-                controller.enqueue(toolResponseChunk);
+                emitEvent(controller, "tool_response", {
+                  tool_id: toolResult.id,
+                  result: toolResult,
+                });
               }
 
-              const toolResponseEndEvent = new TextEncoder().encode(
-                `data: ${JSON.stringify({
-                  type: "tool_response_end",
-                })}\n\n`,
-              );
-              controller.enqueue(toolResponseEndEvent);
+              emitEvent(controller, "tool_response_end", {});
             }
 
             controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));

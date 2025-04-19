@@ -1,9 +1,82 @@
 import { AIProviderFactory } from "~/providers/factory";
-import type { ChatCompletionParameters, Message } from "~/types";
+import type {
+  ChatCompletionParameters,
+  ChatMode,
+  Message,
+  Platform,
+} from "~/types";
+import type { AssistantMessageData } from "~/types/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { formatMessages } from "~/utils/messages";
 import { getModelConfigByMatchingModel } from "../models";
 import { mergeParametersWithDefaults } from "./parameters";
+
+/**
+ * Formats assistant message data into a standardized structure that can be used
+ * by both streaming and non-streaming response handlers
+ */
+export function formatAssistantMessage({
+  content = "",
+  thinking = "",
+  signature = "",
+  citations = [],
+  tool_calls = [],
+  data = null,
+  usage = null,
+  guardrails = { passed: true },
+  log_id = null,
+  model = "",
+  selected_models = [],
+  platform = "api",
+  timestamp = Date.now(),
+  id = Math.random().toString(36).substring(2, 7),
+  finish_reason = tool_calls.length ? "tool_calls" : "stop",
+  mode,
+}: Partial<AssistantMessageData>): AssistantMessageData {
+  const finalUsage = usage || {
+    prompt_tokens: 0,
+    completion_tokens: 0,
+    total_tokens: 0,
+  };
+
+  let messageContent: string | Array<any> = content;
+  if (thinking || signature) {
+    const contentBlocks = [];
+    if (thinking) {
+      contentBlocks.push({
+        type: "thinking",
+        thinking,
+        signature: signature || "",
+      });
+    }
+    if (content) {
+      contentBlocks.push({
+        type: "text",
+        text: content,
+      });
+    }
+    messageContent = contentBlocks;
+  }
+
+  return {
+    content: content,
+    thinking,
+    signature,
+    citations,
+    tool_calls,
+    data,
+    usage: finalUsage,
+    guardrails,
+    log_id,
+    model,
+    selected_models,
+    platform,
+    timestamp,
+    id,
+    finish_reason,
+    mode,
+  };
+}
 
 export async function getAIResponse({
   app_url,
