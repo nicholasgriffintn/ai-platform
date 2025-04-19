@@ -32,31 +32,30 @@ export const MessageInfo = ({ message, buttonClassName }: MessageInfoProps) => {
           <div className="space-y-1">
             <p className="font-medium">Token Usage:</p>
             <ul className="list-disc pl-4 space-y-0.5">
-              {message.usage.prompt_tokens ||
-                (message.usage.promptTokenCount && (
-                  <li>
-                    Prompt:{" "}
-                    {message.usage.prompt_tokens ||
-                      message.usage.promptTokenCount}
-                  </li>
-                ))}
-              {message.usage.completion_tokens ||
-                (message.usage.candidatesTokenCount && (
-                  <li>
-                    Completion:{" "}
-                    {message.usage.completion_tokens ||
-                      message.usage.candidatesTokenCount}
-                  </li>
-                ))}
-              {message.usage.total_tokens ||
-                (message.usage.totalTokenCount && (
-                  <li>
-                    Total:{" "}
-                    {message.usage.total_tokens ||
-                      message.usage.totalTokenCount}
-                  </li>
-                ))}
-              {message.usage?.promptTokensDetails && (
+              {(message.usage.prompt_tokens ??
+                message.usage.promptTokenCount) != null && (
+                <li>
+                  Prompt:{" "}
+                  {message.usage.prompt_tokens ??
+                    message.usage.promptTokenCount}
+                </li>
+              )}
+              {(message.usage.completion_tokens ??
+                message.usage.candidatesTokenCount) != null && (
+                <li>
+                  Completion:{" "}
+                  {message.usage.completion_tokens ??
+                    message.usage.candidatesTokenCount}
+                </li>
+              )}
+              {(message.usage.total_tokens ?? message.usage.totalTokenCount) !=
+                null && (
+                <li>
+                  Total:{" "}
+                  {message.usage.total_tokens ?? message.usage.totalTokenCount}
+                </li>
+              )}
+              {message.usage?.promptTokensDetails ? (
                 <li>
                   Prompt Details: {(() => {
                     const details = message.usage.promptTokensDetails;
@@ -69,8 +68,8 @@ export const MessageInfo = ({ message, buttonClassName }: MessageInfoProps) => {
                     ));
                   })()}
                 </li>
-              )}
-              {message.usage?.candidatesTokensDetails && (
+              ) : null}
+              {message.usage?.candidatesTokensDetails ? (
                 <li>
                   Completion Details: {(() => {
                     const details = message.usage.candidatesTokensDetails;
@@ -83,7 +82,7 @@ export const MessageInfo = ({ message, buttonClassName }: MessageInfoProps) => {
                     ));
                   })()}
                 </li>
-              )}
+              ) : null}
             </ul>
           </div>
         )}

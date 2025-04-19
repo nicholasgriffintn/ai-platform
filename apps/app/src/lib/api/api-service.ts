@@ -277,6 +277,8 @@ class ApiService {
     const pendingToolCalls: Record<string, any> = {};
     const toolResponses: Message[] = [];
 
+    let responseModel = model;
+
     const isStreamingResponse = response.headers
       .get("content-type")
       ?.includes("text/event-stream");
@@ -383,6 +385,9 @@ class ApiService {
                   if (parsedData.citations) {
                     citations = parsedData.citations;
                   }
+                  if (parsedData.model) {
+                    responseModel = parsedData.model;
+                  }
                 }
               } catch (e) {
                 console.error("Error parsing SSE data:", e, data);
@@ -425,7 +430,7 @@ class ApiService {
         : undefined,
       id: id,
       created: created,
-      model: model,
+      model: responseModel,
       citations: citations || null,
       usage: usage,
       tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
