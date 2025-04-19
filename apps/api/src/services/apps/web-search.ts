@@ -1,3 +1,4 @@
+import { generateId } from "~/utils/id";
 import type { ConversationManager } from "../../lib/conversationManager";
 import {
   webSearchAnswerSystemPrompt,
@@ -98,8 +99,7 @@ export async function performDeepWebSearch(
     };
   });
 
-  const completion_id_with_fallback =
-    completion_id || Math.random().toString(36).substring(2, 7);
+  const completion_id_with_fallback = completion_id || generateId();
   const new_completion_id = `${completion_id_with_fallback}-tutor`;
 
   const answerContexts = sources

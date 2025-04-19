@@ -1,3 +1,4 @@
+import { generateId } from "~/utils/id";
 import { StorageService } from "../../lib/storage";
 import type { IRequest } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
@@ -63,7 +64,7 @@ export const captureScreenshot = async (
       );
     }
 
-    const screenshotId = Math.random().toString(36).substring(2, 15);
+    const screenshotId = generateId();
     const urlAsKey = params.url?.replace(/[^a-zA-Z0-9]/g, "_") || "unknown";
     const dateAsKey = new Date().toISOString().replace(/[-:Z]/g, "");
     const imageKey = `screenshots/${urlAsKey}/${dateAsKey}/${screenshotId}.png`;

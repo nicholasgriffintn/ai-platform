@@ -1,3 +1,4 @@
+import { generateId } from "~/utils/id";
 import type { ConversationManager } from "../../lib/conversationManager";
 import { tutorSystemPrompt } from "../../lib/prompts";
 import { AIProviderFactory } from "../../providers/factory";
@@ -73,8 +74,7 @@ export async function completeTutorRequest(
     })
     .join("\n\n");
 
-  const completion_id_with_fallback =
-    completion_id || Math.random().toString(36).substring(2, 7);
+  const completion_id_with_fallback = completion_id || generateId();
   const new_completion_id = `${completion_id_with_fallback}-tutor`;
 
   const systemPrompt = tutorSystemPrompt(parsedSources, level);

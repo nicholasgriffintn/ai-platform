@@ -1,3 +1,4 @@
+import { generateId } from "~/utils/id";
 import type { Message, MessageContent, Platform } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
 import type { Database } from "./database";
@@ -64,7 +65,7 @@ export class ConversationManager {
     if (!this.store) {
       return {
         ...message,
-        id: message.id || this.generateId(),
+        id: message.id || generateId(),
         timestamp: message.timestamp || Date.now(),
         model: message.model || this.model,
         platform: message.platform || this.platform,
@@ -95,7 +96,7 @@ export class ConversationManager {
 
     const newMessage = {
       ...message,
-      id: message.id || this.generateId(),
+      id: message.id || generateId(),
       timestamp: message.timestamp || Date.now(),
       model: message.model || this.model,
       platform: message.platform || this.platform,
@@ -136,7 +137,7 @@ export class ConversationManager {
     if (!this.store) {
       return messages.map((message) => ({
         ...message,
-        id: message.id || this.generateId(),
+        id: message.id || generateId(),
         timestamp: message.timestamp || Date.now(),
         model: message.model || this.model,
         platform: message.platform || this.platform,
@@ -167,7 +168,7 @@ export class ConversationManager {
 
     const newMessages = messages.map((message) => ({
       ...message,
-      id: message.id || this.generateId(),
+      id: message.id || generateId(),
       timestamp: message.timestamp || Date.now(),
       model: message.model || this.model,
       platform: message.platform || this.platform,
@@ -572,13 +573,6 @@ export class ConversationManager {
         : undefined,
       log_id: dbMessage.log_id as string,
     } as Message;
-  }
-
-  /**
-   * Generate a random ID for messages
-   */
-  private generateId(): string {
-    return Math.random().toString(36).substring(2, 7);
   }
 
   /**

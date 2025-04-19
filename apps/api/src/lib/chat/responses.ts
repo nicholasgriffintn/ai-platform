@@ -1,12 +1,8 @@
 import { AIProviderFactory } from "~/providers/factory";
-import type {
-  ChatCompletionParameters,
-  ChatMode,
-  Message,
-  Platform,
-} from "~/types";
+import type { ChatCompletionParameters, Message } from "~/types";
 import type { AssistantMessageData } from "~/types/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import { formatMessages } from "~/utils/messages";
 import { getModelConfigByMatchingModel } from "../models";
 import { mergeParametersWithDefaults } from "./parameters";
@@ -29,7 +25,7 @@ export function formatAssistantMessage({
   selected_models = [],
   platform = "api",
   timestamp = Date.now(),
-  id = Math.random().toString(36).substring(2, 7),
+  id = generateId(),
   finish_reason = tool_calls.length ? "tool_calls" : "stop",
   mode,
 }: Partial<AssistantMessageData>): AssistantMessageData {

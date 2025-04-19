@@ -1,3 +1,4 @@
+import { generateId } from "~/utils/id";
 import { CartesiaService } from "../../lib/audio/cartesia";
 import { ElevenLabsService } from "../../lib/audio/elevenlabs";
 import { MelottsService } from "../../lib/audio/melotts";
@@ -28,7 +29,7 @@ export const handleTextToSpeech = async (
   }
 
   const storage = new StorageService(env.ASSETS_BUCKET);
-  const slug = `tts/${encodeURIComponent(user?.email || "unknown").replace(/[^a-zA-Z0-9]/g, "-")}-${Math.random().toString(36).substring(2, 15)}`;
+  const slug = `tts/${encodeURIComponent(user?.email || "unknown").replace(/[^a-zA-Z0-9]/g, "-")}-${generateId()}`;
 
   let response: string | { response: string; url: string };
 

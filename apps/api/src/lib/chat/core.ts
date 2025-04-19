@@ -5,6 +5,7 @@ import type {
   Message,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import { ConversationManager } from "../conversationManager";
 import { Database } from "../database";
 import { Embedding } from "../embedding";
@@ -226,7 +227,7 @@ async function prepareRequestData(options: CoreChatOptions) {
   const messageToStore: Message = {
     role: lastMessage.role,
     content: finalMessage,
-    id: Math.random().toString(36).substring(2, 7),
+    id: generateId(),
     timestamp: Date.now(),
     model: primaryModel,
     platform: platform || "api",
@@ -240,7 +241,7 @@ async function prepareRequestData(options: CoreChatOptions) {
       role: lastMessage.role,
       content: "Attachments",
       data: { attachments: allAttachments },
-      id: Math.random().toString(36).substring(2, 7),
+      id: generateId(),
       timestamp: Date.now(),
       model: primaryModel,
       platform: platform || "api",
@@ -545,7 +546,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       data: response.data || null,
       log_id: env.AI.aiGatewayLogId || response.log_id,
       mode: currentMode,
-      id: Math.random().toString(36).substring(2, 7),
+      id: generateId(),
       timestamp: Date.now(),
       model: primaryModel,
       platform: platform || "api",

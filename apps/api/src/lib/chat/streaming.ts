@@ -1,3 +1,4 @@
+import { generateId } from "~/utils/id";
 import type {
   ChatMode,
   ContentType,
@@ -486,7 +487,7 @@ export async function createStreamWithPostProcessing(
               object: "chat.completion",
               created: assistantMessage.timestamp,
               model: assistantMessage.model,
-              nonce: Math.random().toString(36).substring(2, 7),
+              nonce: generateId(),
               post_processing: {
                 guardrails: assistantMessage.guardrails,
               },
@@ -796,7 +797,7 @@ export function createMultiModelStream(
               citations: [],
               log_id: null,
               mode: options.mode,
-              id: Math.random().toString(36).substring(2, 7),
+              id: generateId(),
               timestamp: Date.now(),
               model: primaryModel.model,
               platform: options.platform || "api",

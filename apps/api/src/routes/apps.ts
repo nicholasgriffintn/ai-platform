@@ -3,6 +3,7 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
+import { generateId } from "~/utils/id";
 import { requireAuth } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
 import {
@@ -405,7 +406,7 @@ app.post(
   async (context: Context) => {
     const body = context.req.valid("json" as never) as ImageGenerationParams;
 
-    const completion_id = Math.random().toString(36).substring(2, 15);
+    const completion_id = generateId();
 
     const newUrl = new URL(context.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
@@ -452,7 +453,7 @@ app.post(
   async (context: Context) => {
     const body = context.req.valid("json" as never) as VideoGenerationParams;
 
-    const completion_id = Math.random().toString(36).substring(2, 15);
+    const completion_id = generateId();
 
     const newUrl = new URL(context.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
@@ -499,7 +500,7 @@ app.post(
   async (context: Context) => {
     const body = context.req.valid("json" as never) as MusicGenerationParams;
 
-    const completion_id = Math.random().toString(36).substring(2, 15);
+    const completion_id = generateId();
 
     const newUrl = new URL(context.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
@@ -547,7 +548,7 @@ app.post(
   async (context: Context) => {
     const body = context.req.valid("json" as never) as SpeechGenerationParams;
 
-    const completion_id = Math.random().toString(36).substring(2, 15);
+    const completion_id = generateId();
 
     const newUrl = new URL(context.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
@@ -818,7 +819,7 @@ app.post(
   async (context: Context) => {
     const body = context.req.valid("json" as never) as AnalyseArticleParams;
 
-    const completion_id = Math.random().toString(36).substring(2, 15);
+    const completion_id = generateId();
 
     const newUrl = new URL(context.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
@@ -856,7 +857,7 @@ app.post(
   async (context: Context) => {
     const body = context.req.valid("json" as never) as SummariseArticleParams;
 
-    const completion_id = Math.random().toString(36).substring(2, 15);
+    const completion_id = generateId();
 
     const newUrl = new URL(context.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
@@ -896,7 +897,7 @@ app.post(
       "json" as never,
     ) as GenerateArticlesReportParams;
 
-    const completion_id = Math.random().toString(36).substring(2, 15);
+    const completion_id = generateId();
 
     const newUrl = new URL(context.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;

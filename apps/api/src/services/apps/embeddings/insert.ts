@@ -1,3 +1,4 @@
+import { generateId } from "~/utils/id";
 import { Database } from "../../../lib/database";
 import { Embedding } from "../../../lib/embedding";
 import type { IRequest, RagOptions } from "../../../types";
@@ -53,8 +54,7 @@ export const insertEmbedding = async (
 
       uniqueId = id;
     } else {
-      uniqueId =
-        id || `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+      uniqueId = id || `${Date.now()}-${generateId()}`;
 
       await database.insertEmbedding(
         uniqueId,

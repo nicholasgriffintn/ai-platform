@@ -1,6 +1,8 @@
 import { handleFunctions } from "~/services/functions";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
+import { getLogger } from "~/utils/logger";
 import {
   formatToolErrorResponse,
   formatToolResponse,
@@ -40,7 +42,7 @@ export const handleToolCalls = async (
     tool_calls: toolCalls,
     log_id: modelResponseLogId || "",
     content: "",
-    id: Math.random().toString(36).substring(2, 7),
+    id: generateId(),
     timestamp,
     model: req.request?.model,
     platform: req.request?.platform || "api",
@@ -100,7 +102,7 @@ export const handleToolCalls = async (
           status: "error",
           data: formattedError.data,
           log_id: modelResponseLogId || "",
-          id: toolCall.id || Math.random().toString(36).substring(2, 7),
+          id: toolCall.id || generateId(),
           timestamp: Date.now(),
           model: req.request?.model,
           platform: req.request?.platform || "api",
@@ -128,7 +130,7 @@ export const handleToolCalls = async (
         status: result.status,
         data: formattedResponse.data,
         log_id: modelResponseLogId || "",
-        id: toolCall.id || Math.random().toString(36).substring(2, 7),
+        id: toolCall.id || generateId(),
         timestamp: Date.now(),
         model: req.request?.model,
         platform: req.request?.platform || "api",
@@ -152,7 +154,7 @@ export const handleToolCalls = async (
         status: "error",
         data: formattedError.data,
         log_id: modelResponseLogId || "",
-        id: toolCall.id || Math.random().toString(36).substring(2, 7),
+        id: toolCall.id || generateId(),
         timestamp: Date.now(),
         model: req.request?.model,
         platform: req.request?.platform || "api",
