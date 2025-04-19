@@ -7,6 +7,9 @@ import type {
   IUser,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "CREATE_CHAT_COMPLETIONS" });
 
 export const handleCreateChatCompletions = async (req: {
   env: IEnv;
@@ -114,7 +117,7 @@ export const handleCreateChatCompletions = async (req: {
   }
 
   if (!("response" in result)) {
-    console.error("Unexpected result shape from processChatRequest:", result);
+    logger.error("Unexpected result shape from processChatRequest:", result);
     throw new AssistantError(
       "Unexpected error processing chat request: Missing response.",
       ErrorType.EXTERNAL_API_ERROR,

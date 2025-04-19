@@ -7,8 +7,11 @@ import {
   getFunctionResponseDisplay,
   getFunctionResponseType,
 } from "../../utils/functions";
+import { getLogger } from "../../utils/logger";
 import { availableFunctions } from "../functions";
 import { registerDynamicApp } from "./index";
+
+const logger = getLogger({ prefix: "AUTO_REGISTER_DYNAMIC_APPS" });
 
 export const autoRegisterDynamicApps = (): void => {
   for (const func of availableFunctions) {
@@ -44,10 +47,7 @@ const registerFunctionAsDynamicApp = (func: IFunction): void => {
   try {
     registerDynamicApp(appSchema);
   } catch (error) {
-    console.error(
-      `Failed to register dynamic app for function ${name}:`,
-      error,
-    );
+    logger.error(`Failed to register dynamic app for function ${name}:`, error);
   }
 };
 

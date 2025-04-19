@@ -1,6 +1,9 @@
 import type { AnalyticsEngineDataset } from "@cloudflare/workers-types";
 
 import { AssistantError } from "../utils/errors";
+import { getLogger } from "../utils/logger";
+
+const logger = getLogger({ prefix: "MONITORING" });
 
 export interface Metric {
   traceId: string;
@@ -36,7 +39,7 @@ export class Monitoring {
 
   public recordMetric(metric: Metric): void {
     if (!this.validateMetric(metric)) {
-      console.warn("Invalid metric structure:", metric);
+      logger.warn("Invalid metric structure:", { metric });
       return;
     }
 
@@ -54,7 +57,7 @@ export class Monitoring {
         indexes: [metric.traceId],
       });
     } else {
-      console.debug(
+      logger.debug(
         `[Metric] ${metric.type}:${metric.name}`,
         JSON.stringify(
           {

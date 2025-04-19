@@ -1,7 +1,10 @@
 import { AIProviderFactory } from "../../providers/factory";
 import type { IEnv, IUser } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
 import type { StorageService } from "../storage";
+
+const logger = getLogger({ prefix: "CARTESIA" });
 
 export class CartesiaService {
   constructor(
@@ -41,7 +44,7 @@ export class CartesiaService {
 
       return audioKey;
     } catch (error) {
-      console.error("Error generating audio with Cartesia:", error);
+      logger.error("Error generating audio with Cartesia:", { error });
       throw error;
     }
   }

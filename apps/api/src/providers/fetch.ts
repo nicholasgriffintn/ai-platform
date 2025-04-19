@@ -2,6 +2,9 @@ import { gatewayId } from "../constants/app";
 import { availableFunctions } from "../services/functions";
 import type { IEnv } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { getLogger } from "../utils/logger";
+
+const logger = getLogger({ prefix: "FETCH" });
 
 export async function fetchAIResponse(
   provider: string,
@@ -61,7 +64,7 @@ export async function fetchAIResponse(
   }
 
   if (!response.ok) {
-    console.error("Error response:", await response.text());
+    logger.error("Error response:", await response.text());
     throw new AssistantError(
       `Failed to get response for ${provider} from ${endpointOrUrl}`,
     );

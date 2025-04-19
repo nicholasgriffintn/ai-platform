@@ -12,6 +12,9 @@ import {
 } from "../services/dynamic-apps";
 import { appSchema } from "../types/app-schema";
 import type { IRequest } from "../types/chat";
+import { getLogger } from "../utils/logger";
+
+const logger = getLogger({ prefix: "DYNAMIC_APPS" });
 
 const dynamicApps = new Hono();
 
@@ -238,7 +241,7 @@ dynamicApps.post(
       const result = await executeDynamicApp(id, formData, req);
       return c.json(result);
     } catch (error) {
-      console.error(`Error executing app ${id}:`, error);
+      logger.error(`Error executing app ${id}:`, { error });
       return c.json(
         {
           error: "Failed to execute app",

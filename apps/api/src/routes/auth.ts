@@ -11,7 +11,7 @@ import { z } from "zod";
 import { Database } from "../lib/database";
 import { requireAuth } from "../middleware/auth";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
-import { generateJwtToken, getUserByJwtToken } from "../services/auth/jwt";
+import { generateJwtToken } from "../services/auth/jwt";
 import {
   generateMagicLinkToken,
   sendMagicLinkEmail,
@@ -21,7 +21,6 @@ import {
   createOrUpdateGithubUser,
   createSession,
   deleteSession,
-  getUserBySessionId,
   getUserSettings,
 } from "../services/auth/user";
 import {
@@ -34,6 +33,7 @@ import {
 } from "../services/auth/webauthn";
 import type { User } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { getLogger } from "../utils/logger";
 import {
   githubCallbackSchema,
   githubLoginSchema,
@@ -46,6 +46,8 @@ import {
   registrationOptionsSchema,
   registrationVerificationSchema,
 } from "./schemas/webAuthN";
+
+const logger = getLogger({ prefix: "AUTH_API" });
 
 const app = new Hono();
 
@@ -304,7 +306,9 @@ app.get(
       const userSettings = await getUserSettings(database, user.id);
       return c.json({ user, userSettings });
     } catch (error) {
-      console.error(`Error fetching user settings for user ${user.id}:`, error);
+      logger.error(`Error fetching user settings for user ${user.id}:`, {
+        error,
+      });
       return c.json({ user, userSettings: null });
     }
   },
@@ -860,16 +864,18 @@ app.post(
     let user = await database.getUserByEmail(email);
 
     if (!user) {
-      console.log(`No user found for ${email}, attempting to create one.`);
+      logger.info(`No user found for ${email}, attempting to create one.`);
       try {
         const newUserResult = await database.createUser({ email });
         if (!newUserResult) {
-          console.error(`Failed to create user for email: ${email}`);
+          logger.error(`Failed to create user for email: ${email}`);
           return c.json({ success: true });
         }
         user = newUserResult as unknown as User;
       } catch (creationError: any) {
-        console.error(`Error creating user for email ${email}:`, creationError);
+        logger.error(`Error creating user for email ${email}:`, {
+          creationError,
+        });
         return c.json({ success: true });
       }
     }
@@ -888,16 +894,13 @@ app.post(
       try {
         await database.createMagicLinkNonce(nonce, user.id, nonceExpiresAt);
       } catch (dbError) {
-        console.error(
-          `Failed to store magic link nonce for ${email}:`,
-          dbError,
-        );
+        logger.error(`Failed to store magic link nonce for ${email}:`, dbError);
         return c.json({ success: true });
       }
 
       const baseUrl = c.env.APP_BASE_URL;
       if (!baseUrl) {
-        console.error("APP_BASE_URL environment variable is not set.");
+        logger.error("APP_BASE_URL environment variable is not set.");
         return c.json({ success: true });
       }
       const frontendVerificationUrl = `${baseUrl}/auth/verify-magic-link?token=${token}&nonce=${nonce}`;
@@ -906,11 +909,11 @@ app.post(
         await sendMagicLinkEmail(c, email, frontendVerificationUrl);
         return c.json({ success: true });
       } catch (error: any) {
-        console.error(`Failed sending magic link to ${email}:`, error);
+        logger.error(`Failed sending magic link to ${email}:`, { error });
         return c.json({ success: true });
       }
     } else {
-      console.error(`Failed to find or create user for email: ${email}`);
+      logger.error(`Failed to find or create user for email: ${email}`);
       return c.json({ success: true });
     }
   },
@@ -978,7 +981,7 @@ app.post(
 
     const userId = Number.parseInt(userIdString, 10);
     if (Number.isNaN(userId)) {
-      console.error(`Invalid userId parsed from token: ${userIdString}`);
+      logger.error(`Invalid userId parsed from token: ${userIdString}`);
       throw new AssistantError(
         "Invalid user identifier in token",
         ErrorType.INTERNAL_ERROR,
@@ -989,9 +992,7 @@ app.post(
 
     const nonceConsumed = await database.consumeMagicLinkNonce(nonce, userId);
     if (!nonceConsumed) {
-      console.warn(
-        `Invalid or already used nonce presented for user ${userId}`,
-      );
+      logger.warn(`Invalid or already used nonce presented for user ${userId}`);
       throw new AssistantError(
         "Invalid or expired magic link.",
         ErrorType.AUTHENTICATION_ERROR,

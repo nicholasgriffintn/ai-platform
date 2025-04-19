@@ -1,5 +1,8 @@
 import { AIProviderFactory } from "../../providers/factory";
 import type { IEnv, IUser } from "../../types";
+import { getLogger } from "../../utils/logger";
+
+const logger = getLogger({ prefix: "MELOTTS" });
 
 export class MelottsService {
   private readonly provider = AIProviderFactory.getProvider("workers-ai");
@@ -33,7 +36,7 @@ export class MelottsService {
 
       return response;
     } catch (error) {
-      console.error("Error generating audio with Melotts:", error);
+      logger.error("Error generating audio with Melotts:", { error });
       throw error;
     }
   }

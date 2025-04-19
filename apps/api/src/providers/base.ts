@@ -5,7 +5,10 @@ import { trackProviderMetrics } from "../lib/monitoring";
 import { UserSettingsRepository } from "../repositories/UserSettingsRepository";
 import type { ChatCompletionParameters } from "../types/chat";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { getLogger } from "../utils/logger";
 import { fetchAIResponse } from "./fetch";
+
+const logger = getLogger({ prefix: "PROVIDERS" });
 
 export interface AIProvider {
   name: string;
@@ -40,7 +43,7 @@ export abstract class BaseProvider implements AIProvider {
           return apiKey;
         }
       } catch (error) {
-        console.warn(`Failed to get user API key for ${this.name}:`, error);
+        logger.warn(`Failed to get user API key for ${this.name}:`, { error });
       }
     }
 

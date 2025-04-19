@@ -9,8 +9,11 @@ import type {
   PromptRequirements,
 } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
 import { KeywordFilter } from "../keywords";
 import { availableCapabilities, getModelConfig } from "../models";
+
+const logger = getLogger({ prefix: "PROMPT_ANALYSER" });
 
 // biome-ignore lint/complexity/noStaticOnlyClass: I don't care
 export class PromptAnalyzer {
@@ -154,7 +157,7 @@ Ensure the output is nothing but the JSON object itself.`;
       // Parse the cleaned content
       requirementsAnalysis = JSON.parse(cleanedContent);
     } catch (error) {
-      console.error(
+      logger.error(
         "Failed to parse JSON response:",
         error,
         "Original Content:",
@@ -184,7 +187,7 @@ Ensure the output is nothing but the JSON object itself.`;
       typeof requirementsAnalysis.expectedComplexity !== "number" ||
       !Array.isArray(requirementsAnalysis.requiredCapabilities)
     ) {
-      console.error(
+      logger.error(
         "Incomplete or invalid AI analysis structure:",
         requirementsAnalysis,
       );

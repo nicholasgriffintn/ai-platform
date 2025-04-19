@@ -1,6 +1,9 @@
 import { bufferToBase64 } from "../utils/base64";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { getLogger } from "../utils/logger";
 import { BaseRepository } from "./BaseRepository";
+
+const logger = getLogger({ prefix: "API_KEY_REPOSITORY" });
 
 export interface ApiKeyMetadata {
   id: string;
@@ -34,7 +37,7 @@ export class ApiKeyRepository extends BaseRepository {
         ["encrypt"],
       );
     } catch (error) {
-      console.error("Error importing public key:", error);
+      logger.error("Error importing public key:", { error });
       throw new AssistantError(
         "Failed to import user public key",
         ErrorType.INTERNAL_ERROR,
@@ -56,7 +59,7 @@ export class ApiKeyRepository extends BaseRepository {
       );
       return bufferToBase64(new Uint8Array(encryptedData));
     } catch (error) {
-      console.error("Error encrypting API key:", error);
+      logger.error("Error encrypting API key:", { error });
       throw new AssistantError(
         "Failed to encrypt API key",
         ErrorType.INTERNAL_ERROR,
@@ -75,7 +78,7 @@ export class ApiKeyRepository extends BaseRepository {
         .join("");
       return hashHex;
     } catch (error) {
-      console.error("Error hashing API key:", error);
+      logger.error("Error hashing API key:", { error });
       throw new AssistantError(
         "Failed to hash API key",
         ErrorType.INTERNAL_ERROR,
@@ -125,13 +128,13 @@ export class ApiKeyRepository extends BaseRepository {
           "UNIQUE constraint failed: user_api_keys.hashed_key",
         )
       ) {
-        console.error("API Key hash collision (rare):", error);
+        logger.error("API Key hash collision (rare):", { error });
         throw new AssistantError(
           "Failed to create API key due to a hash collision. Please try again.",
           ErrorType.INTERNAL_ERROR,
         );
       }
-      console.error("Error inserting API key:", error);
+      logger.error("Error inserting API key:", { error });
       throw new AssistantError(
         "Failed to create API key in database",
         ErrorType.INTERNAL_ERROR,
@@ -155,7 +158,7 @@ export class ApiKeyRepository extends BaseRepository {
       );
       return results;
     } catch (error) {
-      console.error("Error retrieving API keys:", error);
+      logger.error("Error retrieving API keys:", { error });
       throw new AssistantError(
         "Failed to retrieve API keys",
         ErrorType.INTERNAL_ERROR,
@@ -181,7 +184,7 @@ export class ApiKeyRepository extends BaseRepository {
         throw new AssistantError("API key not found", ErrorType.NOT_FOUND);
       }
     } catch (error) {
-      console.error("Error deleting API key:", error);
+      logger.error("Error deleting API key:", { error });
       throw new AssistantError(
         "Failed to delete API key",
         ErrorType.INTERNAL_ERROR,
@@ -203,7 +206,7 @@ export class ApiKeyRepository extends BaseRepository {
       );
       return result?.user_id ?? null;
     } catch (error) {
-      console.error("Error finding user by API key hash:", error);
+      logger.error("Error finding user by API key hash:", { error });
       return null;
     }
   }

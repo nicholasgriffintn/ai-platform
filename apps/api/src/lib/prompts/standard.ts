@@ -1,6 +1,9 @@
 import type { IBody, IUser, IUserSettings } from "~/types";
+import { getLogger } from "../../utils/logger";
 import { PromptBuilder } from "./builder";
 import { getArtifactExample, getResponseStyle } from "./utils";
+
+const logger = getLogger({ prefix: "STANDARD_PROMPT" });
 
 export async function returnStandardPrompt(
   request: IBody,
@@ -86,7 +89,7 @@ export async function returnStandardPrompt(
 
     return builder.build();
   } catch (error) {
-    console.error(error);
+    logger.error("Error generating standard prompt", { error });
     return "";
   }
 }

@@ -3,7 +3,10 @@ import { ConversationManager } from "../../lib/conversationManager";
 import { Database } from "../../lib/database";
 import type { AppSchema } from "../../types/app-schema";
 import type { IRequest } from "../../types/chat";
+import { getLogger } from "../../utils/logger";
 import { handleFunctions } from "../functions";
+
+const logger = getLogger({ prefix: "DYNAMIC_APPS" });
 
 const dynamicApps = new Map<string, AppSchema>();
 
@@ -115,7 +118,7 @@ export const executeDynamicApp = async (
       success: false,
     };
   } catch (error) {
-    console.error(`Error executing app ${id}:`, error);
+    logger.error(`Error executing app ${id}:`, { error });
     throw error;
   }
 };

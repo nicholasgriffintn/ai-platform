@@ -1,11 +1,13 @@
 import type { Context, Next } from "hono";
 
 import { Database } from "../lib/database";
-import { getModelConfigByModel } from "../lib/models";
 import { getUserByJwtToken } from "../services/auth/jwt";
 import { getUserBySessionId } from "../services/auth/user";
 import type { User } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { getLogger } from "../utils/logger";
+
+const logger = getLogger({ prefix: "AUTH_MIDDLEWARE" });
 
 /**
  * Authentication middleware that supports session-based, token-based, and JWT auth
@@ -46,7 +48,7 @@ export async function authMiddleware(context: Context, next: Next) {
         }
       }
     } catch (error) {
-      console.error("API Key authentication check failed:", error);
+      logger.error("API Key authentication check failed:", { error });
     }
   } else if (isJwtToken && hasJwtSecret) {
     try {
@@ -62,7 +64,7 @@ export async function authMiddleware(context: Context, next: Next) {
         isRestricted = false;
       }
     } catch (error) {
-      console.error("JWT authentication failed:", error);
+      logger.error("JWT authentication failed:", { error });
     }
   }
 

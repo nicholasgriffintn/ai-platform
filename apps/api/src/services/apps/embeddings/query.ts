@@ -1,6 +1,9 @@
 import { Database } from "../../../lib/database";
 import { Embedding } from "../../../lib/embedding";
 import { AssistantError, ErrorType } from "../../../utils/errors";
+import { getLogger } from "../../../utils/logger";
+
+const logger = getLogger({ prefix: "QUERY_EMBEDDINGS" });
 
 export const queryEmbeddings = async (req: any): Promise<any> => {
   try {
@@ -28,7 +31,7 @@ export const queryEmbeddings = async (req: any): Promise<any> => {
       data: matchesWithContent,
     };
   } catch (error) {
-    console.error("Error querying embeddings", error);
+    logger.error("Error querying embeddings", { error });
     throw new AssistantError("Error querying embeddings");
   }
 };

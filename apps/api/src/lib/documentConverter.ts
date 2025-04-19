@@ -1,5 +1,8 @@
 import type { IEnv } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { getLogger } from "../utils/logger";
+
+const logger = getLogger({ prefix: "DOCUMENT_CONVERTER" });
 
 interface ToMarkdownResult {
   name: string;
@@ -65,7 +68,7 @@ export async function convertToMarkdownViaCloudflare(
       );
     }
   } catch (error) {
-    console.error("Error converting document to markdown:", error);
+    logger.error("Error converting document to markdown:", { error });
 
     return {
       error:

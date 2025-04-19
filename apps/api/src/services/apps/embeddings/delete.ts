@@ -2,6 +2,9 @@ import { Database } from "../../../lib/database";
 import { Embedding } from "../../../lib/embedding";
 import type { IRequest } from "../../../types";
 import { AssistantError, ErrorType } from "../../../utils/errors";
+import { getLogger } from "../../../utils/logger";
+
+const logger = getLogger({ prefix: "DELETE_EMBEDDING" });
 
 // @ts-ignore
 export interface IDeleteEmbeddingRequest extends IRequest {
@@ -42,7 +45,7 @@ export const deleteEmbedding = async (
       },
     };
   } catch (error) {
-    console.error("Error deleting embedding", error);
+    logger.error("Error deleting embedding", { error });
     throw new AssistantError("Error deleting embedding");
   }
 };

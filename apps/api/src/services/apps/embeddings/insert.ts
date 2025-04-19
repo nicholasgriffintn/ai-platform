@@ -3,6 +3,9 @@ import { Database } from "../../../lib/database";
 import { Embedding } from "../../../lib/embedding";
 import type { IRequest, RagOptions } from "../../../types";
 import { AssistantError, ErrorType } from "../../../utils/errors";
+import { getLogger } from "../../../utils/logger";
+
+const logger = getLogger({ prefix: "INSERT_EMBEDDING" });
 
 // @ts-ignore
 export interface IInsertEmbeddingRequest extends IRequest {
@@ -82,7 +85,7 @@ export const insertEmbedding = async (
 
     // @ts-ignore
     if (inserted.status !== "success" && !inserted.documentDetails) {
-      console.error("Embedding insertion failed", inserted);
+      logger.error("Embedding insertion failed", inserted);
       throw new AssistantError("Embedding insertion failed");
     }
 
@@ -97,7 +100,7 @@ export const insertEmbedding = async (
       },
     };
   } catch (error) {
-    console.error("Error inserting embedding", error);
+    logger.error("Error inserting embedding", { error });
     throw new AssistantError("Error inserting embedding");
   }
 };

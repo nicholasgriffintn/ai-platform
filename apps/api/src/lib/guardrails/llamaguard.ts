@@ -2,6 +2,9 @@ import type { Ai } from "@cloudflare/workers-types";
 import { gatewayId } from "../../constants/app";
 import type { GuardrailResult, GuardrailsProvider } from "../../types";
 import { AssistantError } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
+
+const logger = getLogger({ prefix: "LLAMAGUARD" });
 
 export interface LlamaGuardConfig {
   ai: Ai;
@@ -126,7 +129,7 @@ Provide your safety assessment for {role} in the above conversation:
         rawResponse: response.response,
       };
     } catch (error) {
-      console.error("LLamaGuard API error:", error);
+      logger.error("LLamaGuard API error:", { error });
       throw error;
     }
   }

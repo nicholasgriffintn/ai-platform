@@ -1,6 +1,9 @@
 import type { Database } from "../../lib/database";
 import type { IUserSettings, User } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
+
+const logger = getLogger({ prefix: "USER_SERVICE" });
 
 /**
  * Map database result to User type
@@ -39,7 +42,7 @@ export async function getUserByGithubId(
 
     return mapToUser(result);
   } catch (error) {
-    console.error("Error getting user by GitHub ID:", error);
+    logger.error("Error getting user by GitHub ID:", { error });
     throw new AssistantError(
       "Failed to retrieve user",
       ErrorType.UNKNOWN_ERROR,
@@ -61,7 +64,7 @@ export async function getUserBySessionId(
 
     return mapToUser(result);
   } catch (error) {
-    console.error("Error getting user by session ID:", error);
+    logger.error("Error getting user by session ID:", { error });
     throw new AssistantError(
       "Failed to retrieve user",
       ErrorType.UNKNOWN_ERROR,
@@ -84,7 +87,7 @@ export async function getUserSettings(
     const result = await database.getUserSettings(userId);
     return result;
   } catch (error) {
-    console.error("Error getting user settings:", error);
+    logger.error("Error getting user settings:", { error });
     throw new AssistantError(
       "Failed to retrieve user settings",
       ErrorType.UNKNOWN_ERROR,
@@ -106,7 +109,7 @@ export async function getUserById(
 
     return result;
   } catch (error) {
-    console.error("Error getting user by ID:", error);
+    logger.error("Error getting user by ID:", { error });
     throw new AssistantError(
       "Failed to retrieve user",
       ErrorType.UNKNOWN_ERROR,
@@ -218,7 +221,7 @@ export async function createOrUpdateGithubUser(
 
     return newUser;
   } catch (error) {
-    console.error("Error creating/updating user:", error);
+    logger.error("Error creating/updating user:", { error });
     throw new AssistantError(
       "Failed to create or update user",
       ErrorType.UNKNOWN_ERROR,
@@ -243,7 +246,7 @@ export async function createSession(
 
     return sessionId;
   } catch (error) {
-    console.error("Error creating session:", error);
+    logger.error("Error creating session:", { error });
     throw new AssistantError(
       "Failed to create session",
       ErrorType.UNKNOWN_ERROR,
@@ -261,7 +264,7 @@ export async function deleteSession(
   try {
     await database.deleteSession(sessionId);
   } catch (error) {
-    console.error("Error deleting session:", error);
+    logger.error("Error deleting session:", { error });
     throw new AssistantError(
       "Failed to delete session",
       ErrorType.UNKNOWN_ERROR,

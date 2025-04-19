@@ -1,8 +1,10 @@
-import { gatewayId } from "../../constants/app";
 import { AIProviderFactory } from "../../providers/factory";
 import type { IEnv, IUser } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
 import type { StorageService } from "../storage";
+
+const logger = getLogger({ prefix: "ELEVENLABS" });
 
 export class ElevenLabsService {
   constructor(
@@ -42,7 +44,7 @@ export class ElevenLabsService {
 
       return audioKey;
     } catch (error) {
-      console.error("Error generating audio with ElevenLabs:", error);
+      logger.error("Error generating audio with ElevenLabs:", { error });
       throw error;
     }
   }

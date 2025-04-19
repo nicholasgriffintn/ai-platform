@@ -10,6 +10,9 @@ import type {
   RagOptions,
 } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
+
+const logger = getLogger({ prefix: "BEDROCK" });
 
 export interface BedrockEmbeddingProviderConfig {
   knowledgeBaseId: string;
@@ -82,7 +85,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
         },
       ];
     } catch (error) {
-      console.error("Bedrock Embedding API error:", error);
+      logger.error("Bedrock Embedding API error:", { error });
       throw error;
     }
   }
@@ -106,7 +109,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
           secretAccessKey = credentials.secretKey;
         }
       } catch (error) {
-        console.warn("Failed to get user API key for bedrock:", error);
+        logger.warn("Failed to get user API key for bedrock:", { error });
       }
     }
 

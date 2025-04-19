@@ -1,6 +1,9 @@
 import { AIProviderFactory } from "../../providers/factory";
 import type { IEnv, IUser } from "../../types";
+import { getLogger } from "../../utils/logger";
 import type { StorageService } from "../storage";
+
+const logger = getLogger({ prefix: "POLLY" });
 
 export class PollyService {
   constructor(
@@ -30,7 +33,7 @@ export class PollyService {
 
       return response;
     } catch (error) {
-      console.error("Error generating audio with Polly:", error);
+      logger.error("Error generating audio with Polly:", { error });
       throw error;
     }
   }

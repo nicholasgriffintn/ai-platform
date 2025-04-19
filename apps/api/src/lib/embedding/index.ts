@@ -14,9 +14,12 @@ import type {
   RagOptions,
 } from "../../types";
 import { AssistantError } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
 import { Database } from "../database";
 import { trackRagMetrics } from "../monitoring";
 import { EmbeddingProviderFactory } from "./factory";
+
+const logger = getLogger({ prefix: "EMBEDDING" });
 
 export class Embedding {
   private static instance: Embedding;
@@ -167,7 +170,7 @@ Given the context information and not prior knowledge, answer the query: ${query
 
       return prompt;
     } catch (error) {
-      console.error(error);
+      logger.error("Error augmenting prompt", { error });
       return query;
     }
   }

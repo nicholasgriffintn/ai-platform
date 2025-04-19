@@ -1,8 +1,11 @@
 import { AIProviderFactory } from "~/providers/factory";
 import { availableFunctions } from "../../services/functions";
 import type { ChatCompletionParameters, IBody, IEnv } from "../../types";
+import { getLogger } from "../../utils/logger";
 import { getModelConfigByMatchingModel } from "../models";
 import type { StorageService } from "../storage";
+
+const logger = getLogger({ prefix: "CHAT_PARAMETERS" });
 
 /**
  * Extracts chat completion parameters from request body
@@ -207,7 +210,7 @@ export async function mapParametersToProvider(
               }
 
               if (!base64Data) {
-                console.error("No image data found");
+                logger.error("No image data found");
                 imageData = null;
               } else {
                 const binary = atob(base64Data);
@@ -217,7 +220,7 @@ export async function mapParametersToProvider(
                 }
 
                 if (array.length === 0) {
-                  console.error("No image data found");
+                  logger.error("No image data found");
                   imageData = null;
                 } else {
                   imageData = Array.from(array);
@@ -228,7 +231,7 @@ export async function mapParametersToProvider(
             }
           }
         } catch (error) {
-          console.error(error);
+          logger.error("Error getting image data", { error });
           imageData = null;
         }
 
@@ -295,7 +298,7 @@ export async function mapParametersToProvider(
         }
 
         if (!prompt) {
-          console.error("No prompt found");
+          logger.error("No prompt found");
           return {
             prompt: "",
             image: imageData,

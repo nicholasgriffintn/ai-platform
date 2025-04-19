@@ -3,6 +3,9 @@ import { AwsClient } from "aws4fetch";
 import type { Context } from "hono";
 
 import { AssistantError, ErrorType } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
+
+const logger = getLogger({ prefix: "MAGIC_LINK" });
 
 const MAGIC_LINK_EXPIRATION_MINUTES = 15;
 
@@ -123,12 +126,12 @@ async function sendMagicLinkEmail(
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error("SES error response:", errorBody);
+      logger.error("SES error response:", errorBody);
       throw new Error(`Failed to send email: ${response.statusText}`);
     }
-    console.log(`Magic link email sent to ${email}`);
+    logger.info(`Magic link email sent to ${email}`);
   } catch (error: any) {
-    console.error("Failed to send magic link email:", error);
+    logger.error("Failed to send magic link email:", { error });
     throw new AssistantError(
       `Failed to send magic link: ${error.message}`,
       ErrorType.EMAIL_SEND_FAILED,
@@ -146,7 +149,7 @@ async function verifyMagicLinkToken(
   try {
     const isValid = await jwt.verify(token, jwtSecret, { algorithm: "HS256" });
     if (!isValid) {
-      console.log("Magic link token signature invalid");
+      logger.info("Magic link token signature invalid");
       return null;
     }
 
@@ -157,7 +160,7 @@ async function verifyMagicLinkToken(
       magicLinkPayload.exp &&
       magicLinkPayload.exp < Math.floor(Date.now() / 1000)
     ) {
-      console.log("Magic link token expired");
+      logger.info("Magic link token expired");
       return null;
     }
 
@@ -165,10 +168,10 @@ async function verifyMagicLinkToken(
       return magicLinkPayload.userId;
     }
 
-    console.error("Invalid magic link token payload:", magicLinkPayload);
+    logger.error("Invalid magic link token payload:", magicLinkPayload);
     return null;
   } catch (error: any) {
-    console.error("Magic link token verification failed:", error);
+    logger.error("Magic link token verification failed:", { error });
     return null;
   }
 }

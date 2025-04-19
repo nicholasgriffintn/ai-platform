@@ -6,7 +6,10 @@ import { StorageService } from "../lib/storage";
 import { uploadAudioFromChat, uploadImageFromChat } from "../lib/upload";
 import type { ChatCompletionParameters } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { getLogger } from "../utils/logger";
 import { BaseProvider } from "./base";
+
+const logger = getLogger({ prefix: "WORKERS" });
 
 export class WorkersProvider extends BaseProvider {
   name = "workers-ai";
@@ -103,7 +106,7 @@ export class WorkersProvider extends BaseProvider {
               },
             };
           } catch (error) {
-            console.error(error);
+            logger.error("Error generating image", { error });
             return "";
           }
         } else if (
@@ -142,7 +145,7 @@ export class WorkersProvider extends BaseProvider {
               },
             };
           } catch (error) {
-            console.error(error);
+            logger.error("Error generating audio", { error });
             return "";
           }
         } else if (

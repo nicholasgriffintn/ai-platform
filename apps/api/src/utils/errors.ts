@@ -1,3 +1,7 @@
+import { getLogger } from "./logger";
+
+const logger = getLogger({ prefix: "ERRORS" });
+
 export enum ErrorType {
   CONFIGURATION_ERROR = "CONFIGURATION_ERROR",
   NETWORK_ERROR = "NETWORK_ERROR",
@@ -54,11 +58,11 @@ export class AssistantError extends Error {
 export function handleAIServiceError(error: AssistantError): Response {
   switch (error.type) {
     case ErrorType.CONFIGURATION_ERROR:
-      console.error("Configuration error:", error.message);
+      logger.error("Configuration error:", error.message);
 
       return Response.json({ error: error.message }, { status: 500 });
     case ErrorType.NETWORK_ERROR:
-      console.error("Network error:", error.message, error.context);
+      logger.error("Network error:", error.message, error.context);
 
       return Response.json({ error: error.message }, { status: 500 });
     case ErrorType.RATE_LIMIT_ERROR:
@@ -72,21 +76,21 @@ export function handleAIServiceError(error: AssistantError): Response {
     case ErrorType.NOT_FOUND:
       return Response.json({ error: error.message }, { status: 404 });
     case ErrorType.PROVIDER_ERROR:
-      console.error("Provider error:", error.message, error.context);
+      logger.error("Provider error:", error.message, error.context);
       return Response.json({ error: error.message }, { status: 500 });
     case ErrorType.EXTERNAL_API_ERROR:
-      console.error("External API error:", error.message, error.context);
+      logger.error("External API error:", error.message, error.context);
       return Response.json({ error: error.message }, { status: 500 });
     case ErrorType.CONTEXT_WINDOW_EXCEEDED:
       return Response.json({ error: error.message }, { status: 413 });
     case ErrorType.EMAIL_SEND_FAILED:
-      console.error("Email send failed:", error.message);
+      logger.error("Email send failed:", error.message);
       return Response.json({ error: error.message }, { status: 500 });
     case ErrorType.INTERNAL_ERROR:
-      console.error("Internal error:", error.message);
+      logger.error("Internal error:", error.message);
       return Response.json({ error: error.message }, { status: 500 });
     default:
-      console.error(
+      logger.error(
         `${error.type || "Unknown error"}:`,
         error.message,
         error.context,

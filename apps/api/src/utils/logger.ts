@@ -96,6 +96,12 @@ class Logger {
       case LogLevel.INFO:
         console.info(formattedMessage);
         break;
+      case LogLevel.DEBUG:
+        console.debug(formattedMessage);
+        break;
+      case LogLevel.TRACE:
+        console.trace(formattedMessage);
+        break;
       default:
         console.log(formattedMessage);
     }

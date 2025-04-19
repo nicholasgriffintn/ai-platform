@@ -3,7 +3,10 @@ import { AwsClient } from "aws4fetch";
 import { trackProviderMetrics } from "../lib/monitoring";
 import type { ChatCompletionParameters } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { getLogger } from "../utils/logger";
 import { BaseProvider } from "./base";
+
+const logger = getLogger({ prefix: "POLY" });
 
 interface PollyResponse {
   SynthesisTask: {
@@ -80,9 +83,9 @@ export class PollyProvider extends BaseProvider {
               }
             }
           } catch (error) {
-            console.warn(
+            logger.warn(
               "Failed to get user AWS credentials, using environment variables:",
-              error,
+              { error },
             );
           }
         }

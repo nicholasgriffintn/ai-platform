@@ -5,6 +5,7 @@ import type {
   ModelConfigItem,
   PromptRequirements,
 } from "../../types";
+import { getLogger } from "../../utils/logger";
 import {
   defaultModel,
   defaultProvider,
@@ -14,6 +15,8 @@ import {
 } from "../models";
 import { trackModelRoutingMetrics } from "../monitoring";
 import { PromptAnalyzer } from "./promptAnalyser";
+
+const logger = getLogger({ prefix: "MODEL_ROUTER" });
 
 interface ModelScore {
   model: string;
@@ -220,7 +223,7 @@ export class ModelRouter {
 
   private static selectBestModel(modelScores: ModelScore[]): string {
     if (modelScores.length === 0) {
-      console.warn("No suitable model found. Falling back to default model.");
+      logger.warn("No suitable model found. Falling back to default model.");
       return defaultModel;
     }
 
@@ -320,7 +323,7 @@ export class ModelRouter {
       user?.id,
       completion_id,
     ).catch((error) => {
-      console.error("Error in model selection:", error);
+      logger.error("Error in model selection:", { error });
       return defaultModel;
     });
   }
@@ -382,7 +385,7 @@ export class ModelRouter {
       user?.id,
       completion_id,
     ).catch((error) => {
-      console.error("Error in multi-model selection:", error);
+      logger.error("Error in multi-model selection:", { error });
       return [defaultModel];
     });
   }

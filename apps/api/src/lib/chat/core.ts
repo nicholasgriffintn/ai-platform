@@ -1,6 +1,7 @@
 import type { ChatCompletionParameters, ChatRole, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { getLogger } from "~/utils/logger";
 import { ConversationManager } from "../conversationManager";
 import { Database } from "../database";
 import { Embedding } from "../embedding";
@@ -15,6 +16,8 @@ import {
 } from "./streaming";
 import { handleToolCalls } from "./tools";
 import { checkContextWindowLimits, getAllAttachments } from "./utils";
+
+const logger = getLogger({ prefix: "CHAT_CORE" });
 
 type CoreChatOptions = ChatCompletionParameters & {
   isRestricted?: boolean;
@@ -497,7 +500,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       completion_id,
     };
   } catch (error) {
-    console.error("Error in processChatRequest", {
+    logger.error("Error in processChatRequest", {
       error,
       completion_id: options.completion_id,
       model: options.model,

@@ -9,6 +9,9 @@ import type {
   IUserSettings,
 } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
+
+const logger = getLogger({ prefix: "BEDROCK_GUARDRAILS" });
 
 export interface BedrockGuardrailsConfig {
   guardrailId: string;
@@ -80,7 +83,7 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
             secretAccessKey = credentials.secretKey;
           }
         } catch (error) {
-          console.warn("Failed to get user API key for bedrock:", error);
+          logger.warn("Failed to get user API key for bedrock:", { error });
         }
       }
 
@@ -121,7 +124,7 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
 
       if (!response.ok) {
         const errorBody = await response.text();
-        console.error(
+        logger.error(
           "Bedrock Guardrails API Error:",
           response.status,
           response.statusText,
@@ -183,7 +186,9 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
       if (error instanceof AssistantError) {
         throw error;
       }
-      console.error("Error validating content with Bedrock Guardrails:", error);
+      logger.error("Error validating content with Bedrock Guardrails:", {
+        error,
+      });
       throw new AssistantError(
         `Failed to validate content with Bedrock Guardrails: ${error instanceof Error ? error.message : String(error)}`,
         ErrorType.PROVIDER_ERROR,

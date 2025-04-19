@@ -3,7 +3,10 @@ import jwt from "@tsndr/cloudflare-worker-jwt";
 import { Database } from "../../lib/database";
 import type { IEnv, User } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
 import { getUserById } from "./user";
+
+const logger = getLogger({ prefix: "JWT" });
 
 type JwtData = {
   header: {
@@ -38,7 +41,7 @@ export async function generateJwtToken(
       algorithm: "HS256",
     });
   } catch (error) {
-    console.error("Error generating JWT token:", error);
+    logger.error("Error generating JWT token:", { error });
     throw new AssistantError(
       "Failed to generate authentication token",
       ErrorType.UNKNOWN_ERROR,
@@ -65,7 +68,7 @@ export async function verifyJwtToken(
     }
     return decoded as JwtData;
   } catch (error) {
-    console.error("Error verifying JWT token:", error);
+    logger.error("Error verifying JWT token:", { error });
     throw new AssistantError(
       "Invalid or expired authentication token",
       ErrorType.AUTHENTICATION_ERROR,
@@ -92,7 +95,7 @@ export async function getUserByJwtToken(
       throw error;
     }
 
-    console.error("Error getting user by JWT token:", error);
+    logger.error("Error getting user by JWT token:", { error });
     throw new AssistantError(
       "Failed to retrieve user from token",
       ErrorType.UNKNOWN_ERROR,

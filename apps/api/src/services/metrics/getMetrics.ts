@@ -1,5 +1,8 @@
 import type { IRequest } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
+
+const logger = getLogger({ prefix: "GET_METRICS" });
 
 interface MetricsQueryOptions {
   limit?: number;
@@ -76,7 +79,7 @@ export const handleGetMetrics = async (
   );
 
   if (!response.ok) {
-    console.error("Error querying Analytics Engine:", await response.text());
+    logger.error("Error querying Analytics Engine:", await response.text());
     throw new AssistantError("Failed to fetch metrics from Analytics Engine");
   }
 

@@ -1,7 +1,10 @@
 import type { AuthenticatorTransportFuture } from "@simplewebauthn/types";
 
 import { encodeBase64Url } from "~/lib/base64url";
+import { getLogger } from "../utils/logger";
 import { BaseRepository } from "./BaseRepository";
+
+const logger = getLogger({ prefix: "WEB_AUTHN_REPOSITORY" });
 
 export class WebAuthnRepository extends BaseRepository {
   public async createChallenge(
@@ -34,7 +37,7 @@ export class WebAuthnRepository extends BaseRepository {
         );
       }
     } catch (error) {
-      console.error("Error in createChallenge:", error);
+      logger.error("Error in createChallenge:", { error });
       throw new Error("Failed to create challenge");
     }
   }
@@ -116,7 +119,7 @@ export class WebAuthnRepository extends BaseRepository {
         ],
       );
     } catch (error) {
-      console.error("Error creating passkey:", error);
+      logger.error("Error creating passkey:", { error });
       throw error;
     }
   }
@@ -165,7 +168,7 @@ export class WebAuthnRepository extends BaseRepository {
 
       return result?.success && result?.meta?.changes > 0;
     } catch (error) {
-      console.error("Error deleting passkey:", error);
+      logger.error("Error deleting passkey:", { error });
       return false;
     }
   }

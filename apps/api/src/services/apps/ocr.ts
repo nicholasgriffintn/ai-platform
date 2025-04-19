@@ -2,7 +2,10 @@ import { StorageService } from "../../lib/storage";
 import { AIProviderFactory } from "../../providers/factory";
 import type { IRequest } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
 import { convertMarkdownToHtml } from "../../utils/markdown";
+
+const logger = getLogger({ prefix: "OCR" });
 
 export interface OcrParams {
   model?: string;
@@ -69,7 +72,7 @@ export const performOcr = async (
       store: false,
     });
 
-    console.debug("Received OCR response with pages:", response.pages?.length);
+    logger.debug("Received OCR response with pages:", response.pages?.length);
 
     const storageService = new StorageService(req.env.ASSETS_BUCKET);
 
@@ -190,7 +193,7 @@ ${htmlContent}
       },
     };
   } catch (error) {
-    console.error("OCR error:", error);
+    logger.error("OCR error:", { error });
 
     if (error instanceof AssistantError) {
       return {

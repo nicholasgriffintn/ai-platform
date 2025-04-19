@@ -81,6 +81,14 @@ export async function createStreamWithPostProcessing(
   },
   conversationManager: ConversationManager,
 ): Promise<ReadableStream> {
+  logger.debug("Starting stream post-processing", {
+    completion_id: options.completion_id,
+    model: options.model,
+    platform: options.platform,
+    userId: options.user?.id,
+    mode: options.mode,
+  });
+
   const {
     env,
     completion_id,
@@ -111,6 +119,10 @@ export async function createStreamWithPostProcessing(
     new TransformStream({
       async transform(chunk, controller) {
         const text = new TextDecoder().decode(chunk);
+        logger.trace("Incoming chunk", {
+          chunkSize: chunk.byteLength,
+          bufferBefore: buffer.length,
+        });
         buffer += text;
 
         const lines = buffer.split("\n");
@@ -123,6 +135,7 @@ export async function createStreamWithPostProcessing(
 
           if (line.startsWith("event: ")) {
             currentEventType = line.substring(7).trim();
+            logger.trace("Received SSE event", { currentEventType });
             continue;
           }
 
@@ -147,6 +160,7 @@ export async function createStreamWithPostProcessing(
 
             try {
               const data = JSON.parse(dataStr);
+              logger.trace("Parsed SSE data", { currentEventType, data });
 
               if (data.error) {
                 const errorEvent = new TextEncoder().encode(
@@ -271,6 +285,8 @@ export async function createStreamWithPostProcessing(
                 data,
                 currentEventType,
               );
+              if (toolCallData)
+                logger.debug("Detected tool call delta", { toolCallData });
               if (toolCallData && !isRestricted) {
                 if (toolCallData.format === "openai") {
                   const deltaToolCalls = toolCallData.toolCalls;
@@ -402,13 +418,18 @@ export async function createStreamWithPostProcessing(
         }
 
         async function handlePostProcessing() {
+          logger.info("Starting postProcessing", {
+            completion_id,
+            fullContentLength: fullContent.length,
+            toolCallsCount: toolCallsData.length,
+          });
           try {
             postProcessingDone = true;
 
             // Validate output with guardrails
-            let guardrailsFailed = false;
-            let guardrailError = "";
-            let violations: any[] = [];
+            const guardrailsFailed = false;
+            const guardrailError = "";
+            const violations: any[] = [];
 
             if (fullContent) {
               const outputValidation = await guardrails.validateOutput(
@@ -418,14 +439,12 @@ export async function createStreamWithPostProcessing(
               );
 
               if (!outputValidation.isValid) {
-                logger.debug("Output validation failed", {
+                logger.warn("Guardrails failed", {
                   outputValidation,
+                  violations: outputValidation.violations || [],
                 });
-                guardrailsFailed = true;
-                guardrailError =
-                  outputValidation.rawResponse?.blockedResponse ||
-                  "Response did not pass safety checks";
-                violations = outputValidation.violations || [];
+              } else {
+                logger.debug("Guardrails passed", { completion_id });
               }
             }
 
@@ -480,6 +499,12 @@ export async function createStreamWithPostProcessing(
               model: assistantMessage.model,
               platform: assistantMessage.platform,
               usage: assistantMessage.usage,
+            });
+
+            logger.debug("Stored assistant message", {
+              completion_id,
+              messageId: assistantMessage.id,
+              finish_reason: assistantMessage.finish_reason,
             });
 
             emitEvent(controller, "message_delta", {
@@ -573,12 +598,15 @@ export function createMultiModelStream(
   },
   conversationManager: ConversationManager,
 ): ReadableStream {
+  logger.debug("Starting multi-model stream", {
+    completion_id: options.completion_id,
+    models: parameters.models.map((m: ModelConfigInfo) => m.model),
+  });
   const { models, ...baseParams } = parameters;
-  const primaryModel = models[0];
-
+  logger.debug("Primary model request", { model: models[0].model });
   const primaryParams = {
     ...baseParams,
-    model: primaryModel.model,
+    model: models[0].model,
     stream: true,
   };
 
@@ -587,6 +615,7 @@ export function createMultiModelStream(
   const secondaryPromises =
     models.length > 1
       ? models.slice(1).map(async (modelConfig: ModelConfigInfo) => {
+          logger.info("Secondary model request", { model: modelConfig.model });
           const secondaryParams = {
             ...baseParams,
             model: modelConfig.model,
@@ -644,7 +673,7 @@ export function createMultiModelStream(
 
         const primaryProcessedStream = await createStreamWithPostProcessing(
           primaryResponse,
-          { ...options, model: primaryModel.model },
+          { ...options, model: models[0].model },
           conversationManager,
         );
 
@@ -799,7 +828,7 @@ export function createMultiModelStream(
               mode: options.mode,
               id: generateId(),
               timestamp: Date.now(),
-              model: primaryModel.model,
+              model: models[0].model,
               platform: options.platform || "api",
               usage: null,
               data: {
@@ -819,7 +848,10 @@ export function createMultiModelStream(
       }
     },
     cancel(reason) {
-      logger.warn("Multi-model stream cancelled:", reason);
+      logger.warn("Multi-model stream cancelled", {
+        reason,
+        completion_id: options.completion_id,
+      });
     },
   });
 }

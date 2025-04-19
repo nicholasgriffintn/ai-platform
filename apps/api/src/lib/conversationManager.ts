@@ -1,7 +1,10 @@
 import { generateId } from "~/utils/id";
 import type { Message, MessageContent, Platform } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { getLogger } from "../utils/logger";
 import type { Database } from "./database";
+
+const logger = getLogger({ prefix: "CONVERSATION_MANAGER" });
 
 export class ConversationManager {
   private static instance: ConversationManager;
@@ -547,7 +550,7 @@ export class ConversationManager {
         content = parsed;
       }
     } catch (e) {
-      console.error(e);
+      logger.error("Error parsing message content", { error: e });
     }
 
     return {

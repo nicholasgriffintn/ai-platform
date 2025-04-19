@@ -15,6 +15,9 @@ import { decodeBase64Url } from "~/lib/base64url";
 import type { Database } from "~/lib/database";
 import type { User } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
+
+const logger = getLogger({ prefix: "WEB_AUTHN" });
 
 export async function saveWebAuthnChallenge(
   database: Database,
@@ -24,7 +27,7 @@ export async function saveWebAuthnChallenge(
   try {
     await database.createWebAuthnChallenge(challenge, userId);
   } catch (error) {
-    console.error("Error saving WebAuthn challenge:", error);
+    logger.error("Error saving WebAuthn challenge:", { error });
     throw new AssistantError(
       `Failed to save WebAuthn challenge: ${error}`,
       ErrorType.UNKNOWN_ERROR,
@@ -60,7 +63,7 @@ export async function getWebAuthnChallenge(
     if (error instanceof AssistantError) {
       throw error;
     }
-    console.error("Error getting WebAuthn challenge:", error);
+    logger.error("Error getting WebAuthn challenge:", { error });
     throw new AssistantError(
       "Failed to retrieve WebAuthn challenge",
       ErrorType.UNKNOWN_ERROR,
@@ -76,7 +79,7 @@ export async function deleteWebAuthnChallenge(
   try {
     await database.deleteWebAuthnChallenge(challenge, userId);
   } catch (error) {
-    console.error("Error deleting WebAuthn challenge:", error);
+    logger.error("Error deleting WebAuthn challenge:", { error });
   }
 }
 
@@ -101,7 +104,7 @@ export async function registerPasskey(
       transports,
     );
   } catch (error) {
-    console.error("Error registering passkey:", error);
+    logger.error("Error registering passkey:", { error });
     throw new AssistantError(
       "Failed to register passkey",
       ErrorType.UNKNOWN_ERROR,
@@ -116,7 +119,7 @@ export async function getUserPasskeys(
   try {
     return await database.getPasskeysByUserId(userId);
   } catch (error) {
-    console.error("Error getting user passkeys:", error);
+    logger.error("Error getting user passkeys:", { error });
     return [];
   }
 }
@@ -148,7 +151,7 @@ export async function getPasskeyWithUser(
       user,
     };
   } catch (error) {
-    console.error("Error getting passkey with user:", error);
+    logger.error("Error getting passkey with user:", { error });
     return null;
   }
 }
@@ -161,7 +164,7 @@ export async function updatePasskeyCounter(
   try {
     await database.updatePasskeyCounter(credentialId, counter);
   } catch (error) {
-    console.error("Error updating passkey counter:", error);
+    logger.error("Error updating passkey counter:", { error });
   }
 }
 
@@ -174,7 +177,7 @@ export async function deletePasskey(
     const success = await database.deletePasskey(passkeyId, userId);
     return success;
   } catch (error) {
-    console.error("Error deleting passkey:", error);
+    logger.error("Error deleting passkey:", { error });
     throw new AssistantError(
       "Failed to delete passkey",
       ErrorType.UNKNOWN_ERROR,
@@ -221,7 +224,7 @@ export async function generatePasskeyRegistrationOptions(
 
     return options;
   } catch (error) {
-    console.error("Error generating passkey registration options:", error);
+    logger.error("Error generating passkey registration options:", { error });
     throw new AssistantError(
       "Failed to generate passkey registration options",
       ErrorType.UNKNOWN_ERROR,
@@ -259,7 +262,7 @@ export async function verifyAndRegisterPasskey(
       );
 
       if (duplicateCredential) {
-        console.warn(
+        logger.warn(
           `Attempt to register duplicate credential ID: ${credentialId}`,
         );
         throw new AssistantError(
@@ -279,7 +282,7 @@ export async function verifyAndRegisterPasskey(
           registrationInfo.credentialBackedUp,
         );
       } catch (err) {
-        console.error("Database error during passkey registration:", err);
+        logger.error("Database error during passkey registration:", { err });
         throw new AssistantError(
           "Failed to save passkey to database",
           ErrorType.UNKNOWN_ERROR,
@@ -291,7 +294,7 @@ export async function verifyAndRegisterPasskey(
 
     return verified;
   } catch (error: any) {
-    console.error("Error verifying passkey registration:", error);
+    logger.error("Error verifying passkey registration:", { error });
     throw new AssistantError(
       "WebAuthn verifyAndRegisterPasskey failed",
       ErrorType.AUTHENTICATION_ERROR,
@@ -313,7 +316,7 @@ export async function generatePasskeyAuthenticationOptions(
 
     return options;
   } catch (error) {
-    console.error("Error generating passkey authentication options:", error);
+    logger.error("Error generating passkey authentication options:", { error });
     if (error instanceof AssistantError) {
       throw error;
     }
@@ -386,7 +389,7 @@ export async function verifyPasskeyAuthentication(
 
     return { verified };
   } catch (error: any) {
-    console.error("Error verifying passkey authentication:", error);
+    logger.error("Error verifying passkey authentication:", { error });
     if (error instanceof AssistantError) {
       throw error;
     }

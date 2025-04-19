@@ -9,6 +9,8 @@ import {
 } from "~/utils/tool-responses";
 import type { ConversationManager } from "../conversationManager";
 
+const logger = getLogger({ prefix: "TOOLS" });
+
 interface ToolCallError extends Error {
   functionName?: string;
 }
@@ -69,7 +71,7 @@ export const handleToolCalls = async (
         functionArgs =
           typeof rawArgs === "string" ? JSON.parse(rawArgs) : rawArgs;
       } catch (parseError) {
-        console.error(
+        logger.error(
           `Failed to parse arguments for ${functionName}:`,
           parseError,
         );
@@ -86,7 +88,7 @@ export const handleToolCalls = async (
           request: req,
         });
       } catch (functionError: any) {
-        console.error(
+        logger.error(
           `Function execution error for ${functionName}:`,
           functionError,
         );
@@ -113,7 +115,7 @@ export const handleToolCalls = async (
       }
 
       if (!result) {
-        console.warn(`No result returned for tool call ${functionName}`);
+        logger.warn(`No result returned for tool call ${functionName}`);
         continue;
       }
 
@@ -140,7 +142,7 @@ export const handleToolCalls = async (
       functionResults.push(message);
     } catch (error) {
       const functionError = error as ToolCallError;
-      console.error(`Tool call error for ${functionName}:`, error);
+      logger.error(`Tool call error for ${functionName}:`, { error });
 
       const formattedError = formatToolErrorResponse(
         functionName,
@@ -170,7 +172,7 @@ export const handleToolCalls = async (
     try {
       await conversationManager.addBatch(completion_id, functionResults);
     } catch (error) {
-      console.error("Failed to store tool call results:", error);
+      logger.error("Failed to store tool call results:", { error });
     }
   }
 

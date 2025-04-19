@@ -3,6 +3,9 @@ import { RepositoryManager } from "../repositories";
 import type { ApiKeyMetadata } from "../repositories/ApiKeyRepository";
 import type { IEnv, IUserSettings, User } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { getLogger } from "../utils/logger";
+
+const logger = getLogger({ prefix: "DATABASE" });
 
 export class Database {
   private env: IEnv;
@@ -486,7 +489,7 @@ export class Database {
       await this.repositories.magicLinkNonces.deleteNonce(nonce);
       return true;
     } catch (error) {
-      console.error(`Error consuming nonce ${nonce}:`, error);
+      logger.error(`Error consuming nonce ${nonce}:`, { error });
       return false;
     }
   }

@@ -1,5 +1,8 @@
 import type { IEnv } from "../types";
 import { AssistantError, ErrorType } from "../utils/errors";
+import { getLogger } from "../utils/logger";
+
+const logger = getLogger({ prefix: "BASE_REPOSITORY" });
 
 export class BaseRepository {
   protected env: IEnv;
@@ -48,7 +51,7 @@ export class BaseRepository {
       const result = await bound.all();
       return result.results as T[];
     } catch (error: any) {
-      console.error("Database query error:", error);
+      logger.error("Database query error:", { error });
       throw new AssistantError(
         `Error executing database query: ${error.message}`,
         ErrorType.UNKNOWN_ERROR,
@@ -88,7 +91,7 @@ export class BaseRepository {
       if (error instanceof AssistantError) {
         throw error;
       }
-      console.error("Database execution error:", error);
+      logger.error("Database execution error:", { error });
       throw new AssistantError(
         `Error executing database operation: ${error.message}`,
         ErrorType.UNKNOWN_ERROR,

@@ -3,7 +3,6 @@ import {
   type availableCapabilities,
   type availableModelTypes,
   defaultModel,
-  defaultProvider,
 } from "./constants";
 
 import { anthropicModelConfig } from "./anthropic";
@@ -24,7 +23,10 @@ import { togetherAiModelConfig } from "./together-ai";
 import { workersAiModelConfig } from "./workersai";
 
 import type { IEnv, ModelConfigItem } from "../../types";
+import { getLogger } from "../../utils/logger";
 import { Database } from "../database";
+
+const logger = getLogger({ prefix: "MODELS" });
 
 export {
   availableCapabilities,
@@ -202,7 +204,7 @@ export async function filterModelsForUserAccess(
 
     return filteredModels;
   } catch (error) {
-    console.error(`Error during model filtering for user ${userId}: ${error}`);
+    logger.error(`Error during model filtering for user ${userId}`, { error });
     // Fallback to free models in case of error
     const fallbackModels: Record<string, ModelConfigItem> = {};
     for (const modelId in allModels) {

@@ -13,7 +13,10 @@ import type {
   RagOptions,
 } from "../../types";
 import { AssistantError, ErrorType } from "../../utils/errors";
+import { getLogger } from "../../utils/logger";
 import type { Database } from "../database";
+
+const logger = getLogger({ prefix: "VECTORIZE" });
 
 export interface VectorizeEmbeddingProviderConfig {
   ai: Ai;
@@ -73,7 +76,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
         metadata: mergedMetadata,
       }));
     } catch (error) {
-      console.error("Vectorize Embedding API error:", error);
+      logger.error("Vectorize Embedding API error:", { error });
       throw error;
     }
   }

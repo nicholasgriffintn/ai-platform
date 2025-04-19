@@ -6,11 +6,14 @@ import { resolver } from "hono-openapi/zod";
 import { Database } from "~/lib/database";
 import { requireAuth } from "~/middleware/auth";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import { errorResponseSchema, successResponseSchema } from "../schemas/shared";
 import {
   createApiKeySchema,
   deleteApiKeyParamsSchema,
 } from "../schemas/user/apiKeys";
+
+const logger = getLogger({ prefix: "API_KEYS" });
 
 const app = new Hono();
 
@@ -51,7 +54,7 @@ app.get(
       const keys = await database.getUserApiKeys(userId);
       return c.json(keys);
     } catch (error) {
-      console.error("Error fetching API keys:", error);
+      logger.error("Error fetching API keys:", { error });
       if (error instanceof AssistantError) {
         throw error;
       }
@@ -114,7 +117,7 @@ app.post(
 
       return c.json({ apiKey: plaintextKey, ...metadata }, 201);
     } catch (error) {
-      console.error("Error creating API key:", error);
+      logger.error("Error creating API key:", { error });
       if (error instanceof AssistantError) {
         throw error;
       }
@@ -173,7 +176,7 @@ app.delete(
       await database.deleteApiKey(userId, keyId);
       return c.json({ message: "API key deleted successfully" }, 200);
     } catch (error) {
-      console.error("Error deleting API key:", error);
+      logger.error("Error deleting API key:", { error });
       if (error instanceof AssistantError) {
         throw error;
       }
