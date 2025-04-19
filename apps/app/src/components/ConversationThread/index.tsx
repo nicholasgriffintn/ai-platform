@@ -10,10 +10,10 @@ import {
 import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
-import { useAutoscroll } from "~/hooks/useAutoscroll";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
+import { useVirtualizedScroll } from "~/hooks/useVirtualizedScroll";
 import { useError } from "~/state/contexts/ErrorContext";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -21,8 +21,8 @@ import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactPanel } from "./Artifacts/ArtifactPanel";
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
 import { FooterInfo } from "./FooterInfo";
-import { MessageList } from "./MessageList";
 import { ScrollButton } from "./ScrollButton";
+import { VirtualisedMessageList } from "./VirtualisedMessageList";
 import { WelcomeScreen } from "./WelcomeScreen";
 
 export const ConversationThread = () => {
@@ -50,14 +50,14 @@ export const ConversationThread = () => {
   );
 
   const {
-    messagesEndRef,
-    messagesContainerRef,
-    forceScrollToBottom,
+    containerRef: messagesContainerRef,
     showScrollButton,
-  } = useAutoscroll({
+    forceScrollToBottom,
+  } = useVirtualizedScroll({
     dependency: currentConversationId,
   });
 
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<ChatInputHandle>(null);
 
   const handleArtifactOpen = (
@@ -209,13 +209,13 @@ export const ConversationThread = () => {
     >
       <div
         ref={messagesContainerRef}
-        className={`relative flex-1 overflow-x-hidden ${showWelcomeScreen ? "flex items-center" : "overflow-y-scroll"}`}
+        className={`relative flex-1 ${showWelcomeScreen ? "flex items-center" : ""}`}
       >
-        <div className="mx-auto flex w-full max-w-3xl grow flex-col gap-8 px-4 py-8">
+        <div className="mx-auto flex w-full max-w-3xl grow flex-col">
           {showWelcomeScreen ? (
             <WelcomeScreen setInput={setChatInput} />
           ) : (
-            <MessageList
+            <VirtualisedMessageList
               messagesEndRef={messagesEndRef}
               onToolInteraction={handleToolInteraction}
               onArtifactOpen={handleArtifactOpen}
