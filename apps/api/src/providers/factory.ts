@@ -10,6 +10,7 @@ import { GoogleStudioProvider } from "./googlestudio";
 import { GrokProvider } from "./grok";
 import { GroqProvider } from "./groq";
 import { HuggingFaceProvider } from "./huggingface";
+import { HyperbolicProvider } from "./hyperbolic";
 import { MistralProvider } from "./mistral";
 import { OllamaProvider } from "./ollama";
 import { OpenAIProvider } from "./openai";
@@ -57,6 +58,7 @@ export class AIProviderFactory {
     { key: "elevenlabs", provider: new ElevenLabsProvider() },
     { key: "polly", provider: new PollyProvider() },
     { key: "fireworks", provider: new FireworksProvider() },
+    { key: "hyperbolic", provider: new HyperbolicProvider() },
   ];
 
   /**

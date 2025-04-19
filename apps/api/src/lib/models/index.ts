@@ -14,6 +14,7 @@ import { googleAiStudioModelConfig } from "./google-ai-studio";
 import { grokModelConfig } from "./grok";
 import { groqModelConfig } from "./groq";
 import { huggingfaceModelConfig } from "./huggingface";
+import { hyperbolicModelConfig } from "./hyperbolic";
 import { mistralModelConfig } from "./mistral";
 import { ollamaModelConfig } from "./ollama";
 import { openaiModelConfig } from "./openai";
@@ -52,6 +53,7 @@ const modelConfig: ModelConfig = {
   ...togetherAiModelConfig,
   ...googleAiStudioModelConfig,
   ...fireworksModelConfig,
+  ...hyperbolicModelConfig,
 };
 
 export function getModelConfig(model?: string) {
