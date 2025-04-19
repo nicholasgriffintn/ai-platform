@@ -19,7 +19,7 @@ import {
   createStreamWithPostProcessing,
 } from "./streaming";
 import { handleToolCalls } from "./tools";
-import { checkContextWindowLimits } from "./utils";
+import { checkContextWindowLimits, parseAttachments } from "./utils";
 
 type CoreChatOptions = ChatCompletionParameters & {
   isRestricted?: boolean;
@@ -64,53 +64,8 @@ async function prepareRequestData(options: CoreChatOptions) {
   const lastMessageContentText =
     lastMessageContent.find((c) => c.type === "text")?.text || "";
 
-  const imageAttachments: Attachment[] = lastMessageContent
-    .filter(
-      (
-        c,
-      ): c is {
-        type: "image_url";
-        image_url: { url: string; detail?: "auto" | "low" | "high" };
-      } => c.type === "image_url" && "image_url" in c && !!c.image_url,
-    )
-    .map((c) => ({
-      type: "image",
-      url: c.image_url.url,
-      detail: c.image_url.detail === "auto" ? undefined : c.image_url.detail,
-    }));
-
-  const documentAttachments: Attachment[] = lastMessageContent
-    .filter(
-      (
-        c,
-      ): c is {
-        type: "document_url";
-        document_url: { url: string; name?: string };
-      } => c.type === "document_url" && "document_url" in c && !!c.document_url,
-    )
-    .map((c) => ({
-      type: "document",
-      url: c.document_url.url,
-      name: c.document_url.name,
-    }));
-
-  const markdownAttachments: Attachment[] = lastMessageContent
-    .filter(
-      (
-        c,
-      ): c is {
-        type: "markdown_document";
-        markdown_document: { markdown: string; name?: string };
-      } =>
-        c.type === "markdown_document" &&
-        "markdown_document" in c &&
-        !!c.markdown_document,
-    )
-    .map((c) => ({
-      type: "markdown_document",
-      markdown: c.markdown_document.markdown,
-      name: c.markdown_document.name,
-    }));
+  const { imageAttachments, documentAttachments, markdownAttachments } =
+    parseAttachments(lastMessageContent);
 
   const allAttachments = [
     ...imageAttachments,
