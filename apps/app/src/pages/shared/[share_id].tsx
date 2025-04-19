@@ -1,5 +1,5 @@
 import { MessagesSquare, PlusCircle } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 
 import "~/styles/scrollbar.css";
@@ -30,8 +30,6 @@ export default function SharedConversationPage() {
   const [isPanelVisible, setIsPanelVisible] = useState(false);
   const [currentArtifacts, setCurrentArtifacts] = useState<ArtifactProps[]>([]);
   const [isCombinedPanel, setIsCombinedPanel] = useState(false);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchSharedConversation = async () => {
@@ -167,27 +165,26 @@ export default function SharedConversationPage() {
           </div>
         </header>
 
-        <div
-          ref={messagesContainerRef}
-          className="relative flex-1 overflow-x-hidden overflow-y-scroll"
-        >
-          <div className="mx-auto flex w-full max-w-3xl grow flex-col gap-8 px-4 py-8">
+        <div className="relative flex-1 overflow-x-hidden overflow-y-scroll">
+          <div className="h-full mx-auto flex w-full max-w-3xl grow flex-col gap-8 px-4 py-8">
             {messages.length > 0 ? (
-              <MessageList
-                messagesEndRef={messagesEndRef}
-                messages={messages}
-                isSharedView={true}
-                onArtifactOpen={handleArtifactOpen}
-              />
+              <div className="flex-1">
+                <div className="mx-auto w-full max-w-3xl h-full flex flex-col gap-8 px-4 py-8">
+                  <MessageList
+                    messages={messages}
+                    isSharedView={true}
+                    onArtifactOpen={handleArtifactOpen}
+                  />
+                </div>
+              </div>
             ) : (
-              <div className="flex h-64 items-center justify-center rounded-lg border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-950">
+              <div className="flex-1 flex items-center justify-center rounded-lg border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-950">
                 <p className="text-center text-zinc-600 dark:text-zinc-400">
                   This shared conversation has no messages.
                 </p>
               </div>
             )}
           </div>
-          <div ref={messagesEndRef} />
         </div>
 
         <footer className="border-t border-zinc-200 bg-off-white p-4 text-center text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
