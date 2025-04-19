@@ -32,6 +32,8 @@ interface ModelConfigInfo {
   displayName: string;
 }
 
+const SYSTEM_ROLE: ChatRole = "system" as ChatRole;
+
 async function prepareRequestData(options: CoreChatOptions) {
   const {
     platform = "api",
@@ -139,6 +141,8 @@ async function prepareRequestData(options: CoreChatOptions) {
   const currentMode = mode;
   const finalUserMessage = lastMessageContentText;
 
+  checkContextWindowLimits(messages, finalUserMessage, primaryModelConfig);
+
   const embedding = Embedding.getInstance(env, user, userSettings);
 
   const finalMessage =
@@ -215,7 +219,7 @@ async function prepareRequestData(options: CoreChatOptions) {
     } else {
       // Check for system message in chat history
       const systemPromptFromMessages = messages.find(
-        (message) => message.role === ("system" as ChatRole),
+        (message) => message.role === SYSTEM_ROLE,
       );
 
       if (
@@ -266,7 +270,7 @@ async function prepareRequestData(options: CoreChatOptions) {
   });
 
   const filteredChatMessages = chatMessages.filter(
-    (msg) => msg.role !== ("system" as ChatRole),
+    (msg) => msg.role !== SYSTEM_ROLE,
   );
 
   const finalSystemMessage = currentMode === "no_system" ? "" : systemMessage;
@@ -379,7 +383,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       );
 
       return {
-        stream: await Promise.resolve(transformedStream),
+        stream: transformedStream,
         selectedModel: primaryModel,
         selectedModels: modelConfigs.map((m) => m.model),
         completion_id,
@@ -436,7 +440,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       );
 
       return {
-        stream: await Promise.resolve(transformedStream),
+        stream: transformedStream,
         selectedModel: primaryModel,
         completion_id,
       };
@@ -517,7 +521,11 @@ export async function processChatRequest(options: CoreChatOptions) {
       completion_id,
     };
   } catch (error) {
-    console.error(error);
+    console.error("Error in processChatRequest", {
+      error,
+      completion_id: options.completion_id,
+      model: options.model,
+    });
     throw error;
   }
 }
