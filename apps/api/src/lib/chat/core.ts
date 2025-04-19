@@ -1,9 +1,4 @@
-import type {
-  Attachment,
-  ChatCompletionParameters,
-  ChatRole,
-  Message,
-} from "~/types";
+import type { ChatCompletionParameters, ChatRole, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { ConversationManager } from "../conversationManager";
@@ -19,7 +14,12 @@ import {
   createStreamWithPostProcessing,
 } from "./streaming";
 import { handleToolCalls } from "./tools";
-import { checkContextWindowLimits, parseAttachments } from "./utils";
+import {
+  checkContextWindowLimits,
+  dedupeAttachments,
+  enforceAttachmentLimits,
+  parseAttachments,
+} from "./utils";
 
 type CoreChatOptions = ChatCompletionParameters & {
   isRestricted?: boolean;
@@ -66,14 +66,21 @@ async function prepareRequestData(options: CoreChatOptions) {
   const lastMessageContentText =
     lastMessageContent.find((c) => c.type === "text")?.text || "";
 
-  const { imageAttachments, documentAttachments, markdownAttachments } =
-    parseAttachments(lastMessageContent);
-
+  // Parse attachments, remove duplicates and enforce limits
+  const {
+    imageAttachments: rawImages,
+    documentAttachments: rawDocs,
+    markdownAttachments: rawMarkdown,
+  } = parseAttachments(lastMessageContent);
+  const imageAttachments = dedupeAttachments(rawImages);
+  const documentAttachments = dedupeAttachments(rawDocs);
+  const markdownAttachments = dedupeAttachments(rawMarkdown);
   const allAttachments = [
     ...imageAttachments,
     ...documentAttachments,
     ...markdownAttachments,
   ];
+  enforceAttachmentLimits(allAttachments);
 
   const database = Database.getInstance(env);
   const userSettings = await database.getUserSettings(user?.id);

@@ -99,3 +99,45 @@ export function parseAttachments(contents: any[]): {
     markdownAttachments,
   };
 }
+
+/**
+ * Remove duplicate attachments based on URL or markdown content.
+ */
+export function dedupeAttachments(attachments: Attachment[]): Attachment[] {
+  const seen = new Set<string>();
+  return attachments.filter((att) => {
+    const key = att.url ?? att.markdown ?? "";
+    if (!key) return true;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+/**
+ * Enforce limits on the number and total size of attachments.
+ */
+export function enforceAttachmentLimits(
+  attachments: Attachment[],
+  maxCount = 10,
+  maxTotalSize = 1024 * 1024, // ~1MB total
+): void {
+  if (attachments.length > maxCount) {
+    throw new AssistantError(
+      `Too many attachments (${attachments.length}), limit is ${maxCount}`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+  let totalSize = 0;
+  for (const att of attachments) {
+    if (att.markdown) totalSize += att.markdown.length;
+    if (att.url) totalSize += att.url.length;
+    if (att.name) totalSize += att.name.length;
+  }
+  if (totalSize > maxTotalSize) {
+    throw new AssistantError(
+      `Attachments size too large (${totalSize} chars), limit is ${maxTotalSize}`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+}
