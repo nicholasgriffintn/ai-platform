@@ -26,6 +26,9 @@ export function returnCodingPrompt(
   }
 
   builder
+    .addLine(
+      "You have the ability to store long-term conversational memories when the user asks you to remember important facts or events, and will recall them when relevant.",
+    )
     .startSection("Follow these steps when responding")
     .addLine()
     .addLine("1. Carefully read and understand the coding question or request.")

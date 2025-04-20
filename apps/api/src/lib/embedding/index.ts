@@ -83,7 +83,11 @@ export class Embedding {
       return `user_kb_${this.user.id}`;
     }
     if (options?.namespace) {
-      if (options.namespace.startsWith("user_kb_")) {
+      if (
+        (options.namespace.startsWith("user_kb_") ||
+          options.namespace.startsWith("memory_user_")) &&
+        !options.namespace.endsWith(this.user?.id.toString())
+      ) {
         return "kb";
       }
       return options.namespace;

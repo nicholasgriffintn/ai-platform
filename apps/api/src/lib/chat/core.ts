@@ -6,6 +6,7 @@ import { ConversationManager } from "../conversationManager";
 import { Database } from "../database";
 import { Embedding } from "../embedding";
 import { Guardrails } from "../guardrails";
+import { MemoryManager } from "../memory";
 import { getModelConfig } from "../models";
 import { getSystemPrompt } from "../prompts";
 import { selectModels } from "./modelSelection";
@@ -47,6 +48,7 @@ async function prepareRequestData(options: CoreChatOptions) {
     budget_constraint,
     location,
     useMultiModel = false,
+    isRestricted = false,
   } = options;
 
   if (!env.DB) {
@@ -226,6 +228,24 @@ async function prepareRequestData(options: CoreChatOptions) {
     }
   }
 
+  // Inject long-term memories into the system prompt
+  if (!isRestricted) {
+    const memoryManager = MemoryManager.getInstance(env, user);
+    const recentMemories = await memoryManager.retrieveMemories(
+      lastMessageContentText,
+      { topK: 3, scoreThreshold: 0.5 },
+    );
+    if (recentMemories.length > 0) {
+      const memoryBlock = `\n\nYou have access to the following long-term memories:\n<user_memories>\n${recentMemories
+        .map((m) => `- ${m.text}`)
+        .join("\n")}\n</user_memories>`;
+
+      systemMessage = systemMessage
+        ? `${systemMessage}\n\n${memoryBlock}`
+        : memoryBlock;
+    }
+  }
+
   const chatMessages = messages.map((msg, index) => {
     if (index === messages.length - 1) {
       let messageText = msg.content;
@@ -317,6 +337,7 @@ export async function processChatRequest(options: CoreChatOptions) {
     } = preparedData;
 
     if (modelConfigs.length > 1 && stream) {
+      // create multi-model stream
       const transformedStream = createMultiModelStream(
         {
           app_url,
@@ -402,6 +423,7 @@ export async function processChatRequest(options: CoreChatOptions) {
     });
 
     if (response instanceof ReadableStream) {
+      // create single-model stream
       const transformedStream = await createStreamWithPostProcessing(
         response,
         {

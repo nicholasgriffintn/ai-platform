@@ -43,6 +43,9 @@ export async function returnStandardPrompt(
       .addLine(
         `Follow these guidelines when responding:\n${userPreferences || DEFAULT_PREFERENCES}`,
       )
+      .addLine(
+        "You have the ability to store long-term conversational memories when the user asks you to remember important facts or events, and will recall them when relevant.",
+      )
       .startSection("Context")
       .addIf(!!userNickname, `<user_nickname>${userNickname}</user_nickname>`)
       .addIf(!!userJobRole, `<user_job_role>${userJobRole}</user_job_role>`)

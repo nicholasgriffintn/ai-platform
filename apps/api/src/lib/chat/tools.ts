@@ -56,6 +56,10 @@ export const handleToolCalls = async (
   for (const toolCall of toolCalls) {
     let functionName = "unknown";
     try {
+      if (toolCall.function?.name === "memory") {
+        continue;
+      }
+
       functionName = toolCall.function?.name || toolCall.name;
       if (!functionName) {
         throw new AssistantError(
