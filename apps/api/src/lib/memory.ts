@@ -141,14 +141,24 @@ export class MemoryManager {
         let raw = classifier.response || "";
         raw = raw.trim();
         if (raw.startsWith("```")) {
-          raw = raw.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
+          raw = raw.replace(/^```(?:json)?\\s*/, "").replace(/\\s*```$/, "");
         }
+        const firstBrace = raw.indexOf("{");
+        const lastBrace = raw.lastIndexOf("}");
+        let jsonPart = "";
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          jsonPart = raw.substring(firstBrace, lastBrace + 1);
+        }
+
         let parsed: any;
         try {
-          parsed = JSON.parse(raw);
+          parsed = JSON.parse(jsonPart);
         } catch {
           parsed = null;
-          logger.debug("Failed to parse classifier JSON", { raw });
+          logger.debug("Failed to parse classifier JSON", {
+            raw: jsonPart,
+            originalRaw: raw,
+          });
         }
         if (parsed?.storeMemory) {
           const summaryText = parsed.summary || lastUser;
