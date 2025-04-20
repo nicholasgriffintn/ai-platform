@@ -10,15 +10,15 @@ const defaultSettings: ChatSettings = {
   max_tokens: 1024,
   presence_penalty: 0,
   frequency_penalty: 0,
-  useRAG: false,
-  enabledTools: [],
-  ragOptions: {
+  use_rag: false,
+  enabled_tools: [],
+  rag_options: {
     topK: 3,
     scoreThreshold: 0.5,
     includeMetadata: false,
     namespace: "",
   },
-  responseMode: "normal",
+  response_mode: "normal",
 };
 
 export interface ChatStore {

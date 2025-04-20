@@ -236,7 +236,7 @@ class ApiService {
       mode,
       messages: formattedMessages,
       platform: "web",
-      response_mode: chatSettings.responseMode || "normal",
+      response_mode: chatSettings.response_mode || "normal",
       store,
       stream: streamingEnabled,
       enabled_tools: selectedTools,

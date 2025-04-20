@@ -39,10 +39,10 @@ export const ChatSettings = ({
     value: string | boolean,
   ) => {
     if (typeof value === "string") {
-      if (key === "responseMode") {
+      if (key === "response_mode") {
         setChatSettings({
           ...chatSettings,
-          [key]: value as ChatSettingsType["responseMode"],
+          [key]: value as ChatSettingsType["response_mode"],
         });
         return;
       }
@@ -69,14 +69,14 @@ export const ChatSettings = ({
   };
 
   const handleRagOptionChange = (
-    key: keyof NonNullable<ChatSettingsType["ragOptions"]>,
+    key: keyof NonNullable<ChatSettingsType["rag_options"]>,
     value: string | boolean,
   ) => {
     if (typeof value === "boolean") {
       setChatSettings({
         ...chatSettings,
-        ragOptions: {
-          ...chatSettings.ragOptions,
+        rag_options: {
+          ...chatSettings.rag_options,
           [key]: value,
         },
       });
@@ -86,8 +86,8 @@ export const ChatSettings = ({
     const numValue = Number.parseFloat(value);
     setChatSettings({
       ...chatSettings,
-      ragOptions: {
-        ...chatSettings.ragOptions,
+      rag_options: {
+        ...chatSettings.rag_options,
         [key]: !Number.isNaN(numValue) ? numValue : value,
       },
     });
@@ -170,16 +170,16 @@ export const ChatSettings = ({
               <div className="space-y-6">
                 <Select
                   ref={responseSelectRef}
-                  id="responseMode"
+                  id="response_mode"
                   label="Response Mode"
-                  value={chatSettings.responseMode ?? "normal"}
+                  value={chatSettings.response_mode ?? "normal"}
                   onChange={(e) =>
-                    handleSettingChange("responseMode", e.target.value)
+                    handleSettingChange("response_mode", e.target.value)
                   }
                   disabled={isDisabled}
                   options={responseModeOptions}
                   description={getResponseModeDescription(
-                    chatSettings.responseMode ?? "normal",
+                    chatSettings.response_mode ?? "normal",
                   )}
                   aria-describedby="response-mode-description"
                 />
@@ -202,9 +202,9 @@ export const ChatSettings = ({
                   id="use_rag"
                   label="Enable RAG"
                   labelPosition="left"
-                  checked={chatSettings.useRAG ?? false}
+                  checked={chatSettings.use_rag ?? false}
                   onChange={(e) =>
-                    handleSettingChange("useRAG", e.target.checked)
+                    handleSettingChange("use_rag", e.target.checked)
                   }
                   aria-describedby="rag-description"
                 />
@@ -303,7 +303,7 @@ export const ChatSettings = ({
                   </div>
                 </details>
 
-                {chatSettings.useRAG && (
+                {chatSettings.use_rag && (
                   <div className="space-y-4 pt-2 border-t border-zinc-200 dark:border-zinc-700">
                     <h5 className="font-medium text-sm text-zinc-700 dark:text-zinc-300 mt-4">
                       RAG Settings
@@ -315,7 +315,7 @@ export const ChatSettings = ({
                       type="number"
                       min={1}
                       max={20}
-                      value={chatSettings.ragOptions?.topK ?? 3}
+                      value={chatSettings.rag_options?.topK ?? 3}
                       onChange={(e) =>
                         handleRagOptionChange("topK", e.target.value)
                       }
@@ -327,7 +327,7 @@ export const ChatSettings = ({
                       min={0}
                       max={1}
                       step={0.05}
-                      value={chatSettings.ragOptions?.scoreThreshold ?? 0.5}
+                      value={chatSettings.rag_options?.scoreThreshold ?? 0.5}
                       onChange={(e) =>
                         handleRagOptionChange("scoreThreshold", e.target.value)
                       }
@@ -339,7 +339,7 @@ export const ChatSettings = ({
                       label="Include Metadata"
                       labelPosition="left"
                       checked={
-                        chatSettings.ragOptions?.includeMetadata ?? false
+                        chatSettings.rag_options?.includeMetadata ?? false
                       }
                       onChange={(e) =>
                         handleRagOptionChange(
@@ -357,7 +357,7 @@ export const ChatSettings = ({
                     <TextInput
                       id="rag_namespace"
                       label="Namespace"
-                      value={chatSettings.ragOptions?.namespace ?? ""}
+                      value={chatSettings.rag_options?.namespace ?? ""}
                       onChange={(e) =>
                         handleRagOptionChange("namespace", e.target.value)
                       }

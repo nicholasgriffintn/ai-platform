@@ -10,11 +10,11 @@ export interface ChatSettings {
   max_tokens?: number;
   presence_penalty?: number;
   frequency_penalty?: number;
-  useRAG?: boolean;
-  responseMode?: ResponseMode;
+  use_rag?: boolean;
+  response_mode?: ResponseMode;
   localOnly?: boolean;
-  enabledTools?: string[];
-  ragOptions?: {
+  enabled_tools?: string[];
+  rag_options?: {
     topK?: number;
     scoreThreshold?: number;
     includeMetadata?: boolean;
