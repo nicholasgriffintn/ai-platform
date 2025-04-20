@@ -22,6 +22,8 @@ Here are some example chats that you can try out:
 - [Markdown formatting](https://polychat.app/s/0ccff6c7-7b62-4936-b18a-c05a098ef7e1)
 - [Search Grounding](https://polychat.app/s/0ecf12e1-3ed4-494c-b41d-c60a235df7de)
 - [Multi-model responses](https://polychat.app/s/3690158a-33b4-47bf-b831-97834299d71b)
+- [Saved memories (RAG)](https://polychat.app/s/1e9a8f6e-e6dc-40a7-b24f-53fb8f4c6766)
+- [Retrieved memories (RAG)](https://polychat.app/s/93552889-b3ec-445c-b72b-8d05f5b6117f)
 
 ## Project Structure
 
