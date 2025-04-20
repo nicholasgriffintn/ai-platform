@@ -17,6 +17,7 @@ import type {
 import { AssistantError } from "../../utils/errors";
 import { getLogger } from "../../utils/logger";
 import { Database } from "../database";
+import { getAuxiliaryModel } from "../models";
 import { trackRagMetrics } from "../monitoring";
 import { EmbeddingProviderFactory } from "./factory";
 
@@ -242,11 +243,13 @@ export class Embedding {
       for (const doc of selected) {
         if (doc.content.length > summaryThreshold) {
           try {
-            const summarizer = AIProviderFactory.getProvider("mistral");
+            const { model: modelToUse, provider: providerToUse } =
+              await getAuxiliaryModel(env!, this.user);
+            const summarizer = AIProviderFactory.getProvider(providerToUse);
             const sumPrompt = `Summarize the following context into a concise paragraph (no more than 100 words):\n\n${doc.content}`;
             const sumRes: any = await summarizer.getResponse({
               env: env!,
-              model: "mistral-large-latest",
+              model: modelToUse,
               messages: [{ role: "user", content: sumPrompt }],
             } as any);
             doc.content = sumRes.content || sumRes.response;

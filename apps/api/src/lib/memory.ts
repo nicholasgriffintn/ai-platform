@@ -1,3 +1,4 @@
+import { AIProviderFactory } from "../providers/factory";
 import type { IEnv, IUser } from "../types";
 import type { Message } from "../types";
 import { generateId } from "../utils/id";
@@ -6,6 +7,7 @@ import { getLogger } from "../utils/logger";
 import { getAIResponse } from "./chat/responses";
 import type { ConversationManager } from "./conversationManager";
 import { Embedding } from "./embedding";
+import { getAuxiliaryModel } from "./models";
 
 const logger = getLogger({ prefix: "MEMORY" });
 
@@ -161,15 +163,26 @@ export class MemoryManager {
     // LLM‐driven memory classification
     try {
       if (lastUser.trim()) {
-        const classifier = await getAIResponse({
-          model: "mistral-large-latest",
-          env: this.env,
-          user: this.user,
-          system_prompt:
-            "You are a memory classifier for an AI assistant. Analyze the following user message and determine if it contains information worth remembering as a long-term memory. This could include facts about the user, preferences, important events, appointments, goals, or other significant information. For memories that should be stored, provide a clear, concise summary that will be easily retrievable when the user asks related questions later. Respond with JSON: { storeMemory: boolean, category: string, summary: string }. Use specific categories when possible (e.g., 'preference', 'schedule', 'goal', 'fact', 'opinion').",
-          messages: [{ role: "user", content: lastUser }],
-          response_format: { format: "json" },
-        });
+        const { model: modelToUse, provider: providerToUse } =
+          await getAuxiliaryModel(this.env, this.user);
+        const provider = AIProviderFactory.getProvider(providerToUse);
+        const classifier = await provider.getResponse(
+          {
+            model: modelToUse,
+            env: this.env,
+            user: this.user,
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are a memory classifier for an AI assistant. Analyze the following user message and determine if it contains information worth remembering as a long-term memory. This could include facts about the user, preferences, important events, appointments, goals, or other significant information. For memories that should be stored, provide a clear, concise summary that will be easily retrievable when the user asks related questions later. Respond with JSON: { storeMemory: boolean, category: string, summary: string }. Use specific categories when possible (e.g., 'preference', 'schedule', 'goal', 'fact', 'opinion').",
+              },
+              { role: "user", content: lastUser },
+            ],
+            response_format: { format: "json" },
+          },
+          this.user?.id,
+        );
 
         // Use standardized JSON parser
         const parsed = parseAIResponseJson<{
@@ -196,15 +209,23 @@ export class MemoryManager {
           // For important facts, also store a more retrievable version
           if (["fact", "schedule", "preference"].includes(category)) {
             try {
-              const normalizer = await getAIResponse({
-                model: "mistral-large-latest",
-                env: this.env,
-                user: this.user,
-                system_prompt:
-                  "You are a memory normalizer. Transform the following user information into 2-3 concise, alternative phrasings that might match how users would later ask about this information. Each alternative should be a plain, natural language sentence without any formatting, headers, or structured data. Respond with a JSON array of strings, where each string is a complete alternative phrasing. Focus on creating variations that would help with semantic search matching.",
-                messages: [{ role: "user", content: summaryText }],
-                response_format: { format: "json" },
-              });
+              const normalizer = await provider.getResponse(
+                {
+                  model: modelToUse,
+                  env: this.env,
+                  user: this.user,
+                  messages: [
+                    {
+                      role: "system",
+                      content:
+                        "You are a memory normalizer. Transform the following user information into 2-3 concise, alternative phrasings that might match how users would later ask about this information. Each alternative should be a plain, natural language sentence without any formatting, headers, or structured data. Respond with a JSON array of strings, where each string is a complete alternative phrasing. Focus on creating variations that would help with semantic search matching.",
+                    },
+                    { role: "user", content: summaryText },
+                  ],
+                  response_format: { format: "json" },
+                },
+                this.user?.id,
+              );
 
               try {
                 let normalized: string[] = [];
@@ -287,14 +308,25 @@ export class MemoryManager {
           )
           .join("\n");
         logger.debug("Summarizing conversation", { snippet });
-        const summaryResp = await getAIResponse({
-          model: "mistral-large-latest",
-          env: this.env,
-          user: this.user,
-          system_prompt:
-            "Summarize the following conversation snippet into a single short memory capturing any important facts, preferences, goals, or events.",
-          messages: [{ role: "user", content: snippet }],
-        });
+        const { model: modelToUse, provider: providerToUse } =
+          await getAuxiliaryModel(this.env, this.user);
+        const provider = AIProviderFactory.getProvider(providerToUse);
+        const summaryResp = await provider.getResponse(
+          {
+            model: modelToUse,
+            env: this.env,
+            user: this.user,
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are a memory summarizer. Summarize the following conversation snippet into a single short memory capturing any important facts, preferences, goals, or events.",
+              },
+              { role: "user", content: snippet },
+            ],
+          },
+          this.user?.id,
+        );
         const text = summaryResp.response?.trim();
         if (text) {
           const category = "snapshot";

@@ -71,11 +71,11 @@ export const extract_content: IFunction = {
 
     const messages: Message[] = [
       {
-        role: "assistant" as ChatRole,
+        role: "assistant",
         content: extractContentsystem_prompt(),
       },
       {
-        role: "user" as ChatRole,
+        role: "user",
         content: `Please summarize the content from the following URLs:\n\nExtracted Content:\n${result.data?.extracted.results
           .map((r, i) => `[${i + 1}] URL: ${r.url}\n${r.raw_content}\n`)
           .join("\n\n")}`,

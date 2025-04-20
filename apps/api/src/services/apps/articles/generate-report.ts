@@ -44,7 +44,7 @@ export async function generateArticlesReport({
       model: "llama-3.1-sonar-large-128k-online",
       messages: [
         {
-          role: "user" as ChatRole,
+          role: "user",
           content: generateArticleReportPrompt(args.articles),
         },
       ],

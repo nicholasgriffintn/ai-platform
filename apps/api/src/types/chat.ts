@@ -10,7 +10,7 @@ export type ContentType =
   | "thinking"
   | "document_url"
   | "markdown_document";
-export type ChatRole = "user" | "assistant" | "tool" | "developer";
+export type ChatRole = "user" | "assistant" | "tool" | "developer" | "system";
 export type ChatMode = "normal" | "local" | "remote" | "no_system";
 
 export type ResponseMode = "normal" | "concise" | "explanatory" | "formal";

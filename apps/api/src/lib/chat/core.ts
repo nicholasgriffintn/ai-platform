@@ -31,8 +31,6 @@ interface ModelConfigInfo {
   displayName: string;
 }
 
-const SYSTEM_ROLE: ChatRole = "system" as ChatRole;
-
 async function prepareRequestData(options: CoreChatOptions) {
   const {
     platform = "api",
@@ -200,7 +198,7 @@ async function prepareRequestData(options: CoreChatOptions) {
     } else {
       // Check for system message in chat history
       const systemPromptFromMessages = messages.find(
-        (message) => message.role === SYSTEM_ROLE,
+        (message) => message.role === "system",
       );
 
       if (
@@ -269,7 +267,7 @@ async function prepareRequestData(options: CoreChatOptions) {
   });
 
   const filteredChatMessages = chatMessages.filter(
-    (msg) => msg.role !== SYSTEM_ROLE,
+    (msg) => msg.role !== "system",
   );
 
   const finalSystemMessage = currentMode === "no_system" ? "" : systemMessage;

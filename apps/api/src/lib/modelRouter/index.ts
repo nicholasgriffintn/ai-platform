@@ -10,6 +10,7 @@ import {
   defaultModel,
   defaultProvider,
   filterModelsForUserAccess,
+  getAuxiliaryModel,
   getIncludedInRouterModels,
   getModelConfig,
 } from "../models";
@@ -288,16 +289,8 @@ export class ModelRouter {
           user?.id,
         );
 
-        let modelToUse = defaultModel;
-        let providerToUse = defaultProvider;
-        const hasGroqModel = Object.keys(availableModels).some(
-          (model) => availableModels[model].provider === "groq",
-        );
-
-        if (hasGroqModel) {
-          modelToUse = "llama-3.3-70b-versatile";
-          providerToUse = "groq";
-        }
+        const { model: modelToUse, provider: providerToUse } =
+          await getAuxiliaryModel(env, user);
 
         const requirements = await PromptAnalyzer.analyzePrompt(
           env,
@@ -346,16 +339,8 @@ export class ModelRouter {
           user?.id,
         );
 
-        let modelToUse = defaultModel;
-        let providerToUse = defaultProvider;
-        const hasGroqModel = Object.keys(availableModels).some(
-          (model) => availableModels[model].provider === "groq",
-        );
-
-        if (hasGroqModel) {
-          modelToUse = "llama-3.3-70b-versatile";
-          providerToUse = "groq";
-        }
+        const { model: modelToUse, provider: providerToUse } =
+          await getAuxiliaryModel(env, user);
 
         const requirements = await PromptAnalyzer.analyzePrompt(
           env,

@@ -81,7 +81,7 @@ export async function completeTutorRequest(
 
   if (conversationManager) {
     await conversationManager.add(new_completion_id, {
-      role: "system" as ChatRole,
+      role: "system",
       content: systemPrompt,
       timestamp: Date.now(),
       platform: "api",
@@ -103,11 +103,11 @@ export async function completeTutorRequest(
     model: "@cf/google/gemma-3-12b-it",
     messages: [
       {
-        role: "system" as ChatRole,
+        role: "system",
         content: systemPrompt,
       },
       {
-        role: "user" as ChatRole,
+        role: "user",
         content: query,
       },
     ],
@@ -116,7 +116,7 @@ export async function completeTutorRequest(
 
   if (conversationManager) {
     await conversationManager.add(new_completion_id, {
-      role: "tool" as ChatRole,
+      role: "tool",
       content: "Tutor request completed",
       data: {
         answer: answerResponse.response,

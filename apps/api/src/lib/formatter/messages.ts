@@ -194,10 +194,7 @@ export class MessageFormatter {
       case "google-ai-studio":
         return messages;
       case "openai":
-        return [
-          { role: "developer" as ChatRole, content: system_prompt },
-          ...messages,
-        ];
+        return [{ role: "developer", content: system_prompt }, ...messages];
       case "workers-ai":
       case "groq":
       case "ollama":
@@ -212,7 +209,7 @@ export class MessageFormatter {
       default:
         return [
           {
-            role: "system" as ChatRole,
+            role: "system",
             content: [{ type: "text", text: system_prompt }],
           },
           ...messages,

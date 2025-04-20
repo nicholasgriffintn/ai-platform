@@ -68,7 +68,7 @@ export class PromptAnalyzer {
       disable_functions: true,
       messages: [
         {
-          role: "system" as ChatRole,
+          role: "system",
           content: PromptAnalyzer.constructsystem_prompt(keywords),
         },
         { role: "user", content: prompt },

@@ -1,4 +1,4 @@
-import type { ModelConfig } from "../../types";
+import type { IUser, ModelConfig } from "../../types";
 import {
   type availableCapabilities,
   type availableModelTypes,
@@ -216,4 +216,39 @@ export async function filterModelsForUserAccess(
     }
     return fallbackModels;
   }
+}
+
+/**
+ * Get the appropriate model to use for auxiliary tasks like summarization,
+ * classification, etc., based on which models are available.
+ * @param env The environment object
+ * @param user Optional user for model access check
+ * @returns Object containing model ID and provider
+ */
+export async function getAuxiliaryModel(
+  env: IEnv,
+  user?: IUser,
+): Promise<{ model: string; provider: string }> {
+  // Default to Mistral
+  let modelToUse = "mistral-large-latest";
+
+  // Check if Groq models are available and accessible to the user
+  const allRouterModels = getIncludedInRouterModels();
+  const availableModels = await filterModelsForUserAccess(
+    allRouterModels,
+    env,
+    user?.id,
+  );
+
+  const hasGroqModel = Object.keys(availableModels).some(
+    (model) => availableModels[model].provider === "groq",
+  );
+
+  if (hasGroqModel) {
+    modelToUse = "llama-3.3-70b-versatile";
+  }
+
+  const provider = getModelConfig(modelToUse).provider;
+
+  return { model: modelToUse, provider };
 }

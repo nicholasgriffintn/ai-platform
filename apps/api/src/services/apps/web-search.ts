@@ -57,11 +57,11 @@ export async function performDeepWebSearch(
         model: "@hf/nousresearch/hermes-2-pro-mistral-7b",
         messages: [
           {
-            role: "system" as ChatRole,
+            role: "system",
             content: webSearchSimilarQuestionsSystemPrompt(),
           },
           {
-            role: "user" as ChatRole,
+            role: "user",
             content: query,
           },
         ],
@@ -111,7 +111,7 @@ export async function performDeepWebSearch(
 
   if (conversationManager) {
     await conversationManager.add(new_completion_id, {
-      role: "system" as ChatRole,
+      role: "system",
       content: systemPrompt,
       timestamp: Date.now(),
       platform: "api",
@@ -133,11 +133,11 @@ export async function performDeepWebSearch(
     model: "@cf/google/gemma-3-12b-it",
     messages: [
       {
-        role: "system" as ChatRole,
+        role: "system",
         content: systemPrompt,
       },
       {
-        role: "user" as ChatRole,
+        role: "user",
         content: query,
       },
     ],
@@ -146,7 +146,7 @@ export async function performDeepWebSearch(
 
   if (conversationManager) {
     await conversationManager.add(new_completion_id, {
-      role: "tool" as ChatRole,
+      role: "tool",
       content: "Web search completed",
       data: {
         answer: answerResponse.response,
