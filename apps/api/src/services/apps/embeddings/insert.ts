@@ -2,6 +2,7 @@ import { generateId } from "~/utils/id";
 import { Database } from "../../../lib/database";
 import { Embedding } from "../../../lib/embedding";
 import type { IRequest, RagOptions } from "../../../types";
+import { chunkText } from "../../../utils/embeddings";
 import { AssistantError, ErrorType } from "../../../utils/errors";
 import { getLogger } from "../../../utils/logger";
 
@@ -75,13 +76,34 @@ export const insertEmbedding = async (
     const userSettings = await database.getUserSettings(req.user?.id);
     const embedding = Embedding.getInstance(env, req.user, userSettings);
 
-    const generated = await embedding.generate(
-      type,
-      content,
-      uniqueId,
-      newMetadata,
-    );
-    const inserted = await embedding.insert(generated, rag_options);
+    // Chunking: split document into smaller pieces if it exceeds maxChars
+    const maxChars = rag_options.chunkSize || 2000;
+    const chunks = chunkText(content, maxChars);
+    let allGenerated: any[] = [];
+    if (chunks.length > 1) {
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        const chunkId = `${id || uniqueId}-${i}`;
+        const chunkMeta = { ...metadata, title, chunkIndex: i.toString() };
+
+        await database.insertEmbedding(
+          chunkId,
+          chunkMeta,
+          `${title} (chunk ${i})`,
+          chunk,
+          type,
+        );
+
+        const vecs = await embedding.generate(type, chunk, chunkId, chunkMeta);
+        allGenerated.push(...vecs);
+      }
+    } else {
+      allGenerated = await embedding.generate(type, content, id || uniqueId, {
+        ...metadata,
+        title,
+      });
+    }
+    const inserted = await embedding.insert(allGenerated, rag_options);
 
     // @ts-ignore
     if (inserted.status !== "success" && !inserted.documentDetails) {
@@ -93,7 +115,7 @@ export const insertEmbedding = async (
       status: "success",
       data: {
         id: uniqueId,
-        metadata: newMetadata,
+        metadata: { ...metadata, title },
         title,
         content,
         type,

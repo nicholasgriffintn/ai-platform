@@ -93,6 +93,8 @@ export type RagOptions = {
   includeMetadata?: boolean;
   namespace?: string;
   type?: string;
+  chunkSize?: number;
+  summaryThreshold?: number;
 };
 
 export interface IRequest {

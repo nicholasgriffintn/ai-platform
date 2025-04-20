@@ -6,6 +6,7 @@ import type {
   VectorizeVector,
 } from "@cloudflare/workers-types";
 
+import { AIProviderFactory } from "../../providers/factory";
 import type {
   EmbeddingProvider,
   IEnv,
@@ -126,47 +127,91 @@ export class Embedding {
     userId?: number,
   ): Promise<string> {
     try {
-      const relevantDocs = await trackRagMetrics(
+      const topK = options?.topK ?? (query.length < 20 ? 1 : 3);
+      const scoreThreshold = options?.scoreThreshold ?? 0.7;
+      const candidateCount = (options as any).rerankCandidates ?? 10;
+
+      const docs = await trackRagMetrics(
         () =>
           this.searchSimilar(query, {
-            topK: options?.topK || 3,
-            scoreThreshold: options?.scoreThreshold || 0.7,
-            type: options?.type || "note",
-            namespace: options?.namespace || "assistant-embeddings",
+            topK: candidateCount,
+            scoreThreshold,
+            type: options?.type,
+            namespace: options?.namespace,
           }),
         env?.ANALYTICS,
         { query, method: "augment_prompt_search" },
         userId,
       );
 
-      if (!relevantDocs.length) {
+      if (!docs.length) {
         return query;
       }
 
-      const shouldIncludeMetadata = options?.includeMetadata ?? true;
-      const metadata = shouldIncludeMetadata
-        ? { title: true, type: true, score: true }
-        : {};
+      let ranked = docs;
+      if (docs.length > topK) {
+        try {
+          const reranker = AIProviderFactory.getProvider("workers");
+          const rerankPrompt = `Rerank the following contexts by relevance to the query "${query}". Return a JSON array of IDs in descending order of relevance.\n${JSON.stringify(
+            docs.map((d) => ({ id: d.id, content: d.content })),
+            null,
+            2,
+          )}`;
+          const rerankRes: any = await reranker.getResponse({
+            env: env!,
+            model: "bge-reranker-base",
+            messages: [{ role: "user", content: rerankPrompt }],
+          } as any);
+          const order: string[] = JSON.parse(
+            rerankRes.content || rerankRes.response,
+          );
+          ranked = order
+            .map((id) => docs.find((d) => d.id === id))
+            .filter(Boolean) as any;
+        } catch (e) {
+          logger.warn("Reranking failed, falling back to dense scores", {
+            error: e,
+          });
+        }
+      }
+
+      const selected = ranked.slice(0, topK);
+
+      const summaryThreshold = options?.summaryThreshold ?? 750;
+      for (const doc of selected) {
+        if (doc.content.length > summaryThreshold) {
+          try {
+            const summarizer = AIProviderFactory.getProvider("mistral");
+            const sumPrompt = `Summarize the following context into a concise paragraph (no more than 100 words):\n\n${doc.content}`;
+            const sumRes: any = await summarizer.getResponse({
+              env: env!,
+              model: "mistral-large-latest",
+              messages: [{ role: "user", content: sumPrompt }],
+            } as any);
+            doc.content = sumRes.content || sumRes.response;
+          } catch (e) {
+            logger.warn("Context summarization failed, using full content", {
+              error: e,
+            });
+          }
+        }
+      }
+
+      const contexts = selected.map((doc) => ({
+        id: doc.id,
+        type: doc.type,
+        title: doc.title,
+        score: doc.score,
+        content: doc.content,
+      }));
 
       const prompt = `
-Context information is below.
----------------------
-${relevantDocs
-  .map((doc: any) => {
-    const parts = [];
-    if (metadata.type && doc.type) parts.push(`[${doc.type.toUpperCase()}]`);
-    if (metadata.title && doc.title) parts.push(doc.title);
-
-    return `
-${parts.join(" ")}
-${doc.content}
-${metadata.score ? `Score: ${(doc.score * 100).toFixed(1)}%` : ""}
+Contexts (JSON array):
++---------------------
+${JSON.stringify(contexts, null, 2)}
++---------------------
+Answer the query "${query}" using *only* these contexts.
 `.trim();
-  })
-  .join("\n\n")}
----------------------
-Given the context information and not prior knowledge, answer the query: ${query}
-    `.trim();
 
       return prompt;
     } catch (error) {
