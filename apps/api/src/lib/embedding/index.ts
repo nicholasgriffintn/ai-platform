@@ -55,6 +55,10 @@ export class Embedding {
         this.env,
         this.user,
       );
+      logger.debug("Using Bedrock embedding provider", {
+        knowledgeBaseId: userSettings.bedrock_knowledge_base_id,
+        region: this.env.AWS_REGION || "us-east-1",
+      });
     } else {
       const database = Database.getInstance(this.env);
       this.provider = EmbeddingProviderFactory.getProvider(
@@ -67,6 +71,10 @@ export class Embedding {
         this.env,
         this.user,
       );
+      logger.debug("Using Vectorize embedding provider", {
+        ai: this.env.AI,
+        vectorDb: this.env.VECTOR_DB,
+      });
     }
   }
 
@@ -100,6 +108,12 @@ export class Embedding {
     id: string,
     metadata: Record<string, string>,
   ): Promise<VectorizeVector[]> {
+    logger.debug("generate called", {
+      type,
+      id,
+      contentLength: content.length,
+      metadata,
+    });
     return await this.provider.generate(type, content, id, metadata);
   }
 
@@ -107,6 +121,7 @@ export class Embedding {
     embeddings: VectorizeVector[],
     options: RagOptions = {},
   ): Promise<VectorizeAsyncMutation> {
+    logger.debug("insert called", { count: embeddings.length, options });
     const namespace = this.getNamespace(options);
     const opts = { ...options, namespace };
     // @ts-ignore
@@ -116,10 +131,12 @@ export class Embedding {
   async delete(
     ids: string[],
   ): Promise<{ status: string; error: string | null }> {
+    logger.debug("delete called", { ids });
     return await this.provider.delete(ids);
   }
 
   async getQuery(query: string): Promise<AiTextEmbeddingsOutput> {
+    logger.debug("getQuery called", { query });
     // @ts-ignore
     return await this.provider.getQuery(query);
   }
@@ -128,6 +145,7 @@ export class Embedding {
     queryVector: VectorFloatArray,
     options: RagOptions = {},
   ): Promise<VectorizeMatches> {
+    logger.debug("getMatches called", { length: queryVector.length, options });
     const namespace = this.getNamespace(options);
     return await this.provider.getMatches(queryVector, {
       ...options,
@@ -136,6 +154,7 @@ export class Embedding {
   }
 
   async searchSimilar(query: string, options?: RagOptions) {
+    logger.debug("searchSimilar called", { query, options });
     const namespace = this.getNamespace(options);
     return await this.provider.searchSimilar(query, { ...options, namespace });
   }
@@ -146,6 +165,7 @@ export class Embedding {
     env?: IEnv,
     userId?: number,
   ): Promise<string> {
+    logger.debug("augmentPrompt called", { query, options, userId });
     try {
       const topK = options?.topK ?? (query.length < 20 ? 1 : 3);
       const scoreThreshold = options?.scoreThreshold ?? 0.7;
@@ -164,6 +184,12 @@ export class Embedding {
         { query, method: "augment_prompt_search" },
         userId,
       );
+      logger.debug("augmentPrompt retrieved docs", {
+        docsCount: docs.length,
+        query,
+        options,
+        userId,
+      });
 
       if (!docs.length) {
         return query;
@@ -178,6 +204,7 @@ export class Embedding {
             null,
             2,
           )}`;
+          logger.debug("augmentPrompt reranking", { rerankPrompt });
           const rerankRes: any = await reranker.getResponse({
             env: env!,
             model: "bge-reranker-base",
@@ -189,6 +216,7 @@ export class Embedding {
           ranked = order
             .map((id) => docs.find((d) => d.id === id))
             .filter(Boolean) as any;
+          logger.debug("augmentPrompt reranked", { ranked });
         } catch (e) {
           logger.warn("Reranking failed, falling back to dense scores", {
             error: e,
@@ -197,6 +225,7 @@ export class Embedding {
       }
 
       const selected = ranked.slice(0, topK);
+      logger.debug("augmentPrompt selected", { selected });
 
       const summaryThreshold = options?.summaryThreshold ?? 750;
       for (const doc of selected) {
@@ -210,6 +239,7 @@ export class Embedding {
               messages: [{ role: "user", content: sumPrompt }],
             } as any);
             doc.content = sumRes.content || sumRes.response;
+            logger.debug("augmentPrompt summarized", { doc });
           } catch (e) {
             logger.warn("Context summarization failed, using full content", {
               error: e,
@@ -233,6 +263,7 @@ ${JSON.stringify(contexts, null, 2)}
 +---------------------
 Answer the query "${query}" using *only* these contexts.
 `.trim();
+      logger.debug("augmentPrompt prompt", { prompt });
 
       return prompt;
     } catch (error) {
