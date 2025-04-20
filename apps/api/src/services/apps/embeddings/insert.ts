@@ -26,7 +26,15 @@ export const insertEmbedding = async (
   try {
     const { request, env } = req;
 
-    const { type, content, id, metadata, title, rag_options } = request;
+    const {
+      type,
+      content,
+      id,
+      metadata,
+      title: requestTitle,
+      rag_options = {},
+    } = request;
+    const title = requestTitle || "";
 
     if (!type) {
       throw new AssistantError(
@@ -77,11 +85,11 @@ export const insertEmbedding = async (
     const embedding = Embedding.getInstance(env, req.user, userSettings);
 
     const finalNamespace = embedding.getNamespace({
-      namespace: rag_options.namespace,
+      namespace: rag_options?.namespace,
     });
 
     // Chunking: split document into smaller pieces if it exceeds maxChars
-    const maxChars = rag_options.chunkSize || 2000;
+    const maxChars = rag_options?.chunkSize || 2000;
     const chunks = chunkText(content, maxChars);
     let allGenerated: any[] = [];
     if (chunks.length > 1) {
@@ -134,7 +142,12 @@ export const insertEmbedding = async (
       },
     };
   } catch (error) {
-    logger.error("Error inserting embedding", { error });
+    logger.error("Error inserting embedding", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      errorObject: error,
+    });
+
     throw new AssistantError("Error inserting embedding");
   }
 };

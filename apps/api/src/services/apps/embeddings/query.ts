@@ -26,16 +26,36 @@ export const queryEmbeddings = async (req: any): Promise<any> => {
       namespace,
     });
 
-    const matchesWithContent = await embedding.searchSimilar(query, {
-      namespace: finalNamespace,
-    });
+    let matchesWithContent = [];
+    try {
+      matchesWithContent = await embedding.searchSimilar(query, {
+        namespace: finalNamespace,
+      });
+    } catch (searchError: unknown) {
+      if (
+        searchError instanceof AssistantError &&
+        searchError.type === ErrorType.NOT_FOUND
+      ) {
+        logger.info("No matches found for query", {
+          query,
+          namespace: finalNamespace,
+        });
+      } else {
+        throw searchError;
+      }
+    }
 
     return {
       status: "success",
       data: matchesWithContent,
     };
   } catch (error) {
-    logger.error("Error querying embeddings", { error });
+    logger.error("Error querying embeddings", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      errorObject: error,
+    });
+
     throw new AssistantError("Error querying embeddings");
   }
 };
