@@ -1,5 +1,5 @@
-import { AIProviderFactory } from "../../../providers/factory";
-import type { IEnv, IUser } from "../../../types";
+import { AIProviderFactory } from "~/providers/factory";
+import type { IEnv, IUser } from "~/types";
 
 export interface SpeechGenerationParams {
   prompt: string;

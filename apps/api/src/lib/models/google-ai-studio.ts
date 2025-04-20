@@ -1,4 +1,4 @@
-import type { ModelConfig } from "../../types";
+import type { ModelConfig } from "~/types";
 
 export const googleAiStudioModelConfig: ModelConfig = {
   "gemini-2.5-pro-exp": {

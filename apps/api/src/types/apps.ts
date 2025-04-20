@@ -1,4 +1,4 @@
-import type { ConversationManager } from "../lib/conversationManager";
+import type { ConversationManager } from "~/lib/conversationManager";
 import type { ChatMode, ChatRole, MessageContent, Platform } from "./chat";
 import type { IRequest } from "./chat";
 

@@ -1,5 +1,6 @@
 import { AwsClient } from "aws4fetch";
-import { UserSettingsRepository } from "../../repositories/UserSettingsRepository";
+
+import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
   EmbeddingMutationResult,
   EmbeddingProvider,
@@ -8,9 +9,9 @@ import type {
   IEnv,
   IUser,
   RagOptions,
-} from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
-import { getLogger } from "../../utils/logger";
+} from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "BEDROCK" });
 

@@ -1,7 +1,7 @@
+import { StorageService } from "~/lib/storage";
+import type { IRequest } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { StorageService } from "../../lib/storage";
-import type { IRequest } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
 
 export interface CaptureScreenshotParams {
   url?: string;

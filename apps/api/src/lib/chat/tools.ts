@@ -1,3 +1,4 @@
+import type { ConversationManager } from "~/lib/conversationManager";
 import { handleFunctions } from "~/services/functions";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -7,7 +8,6 @@ import {
   formatToolErrorResponse,
   formatToolResponse,
 } from "~/utils/tool-responses";
-import type { ConversationManager } from "../conversationManager";
 
 const logger = getLogger({ prefix: "TOOLS" });
 

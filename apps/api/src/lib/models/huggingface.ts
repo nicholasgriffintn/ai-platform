@@ -1,4 +1,4 @@
-import type { ModelConfig } from "../../types";
+import type { ModelConfig } from "~/types";
 
 // TODO: Huggingface models have a whole range of parameters, how do we handle this?
 export const huggingfaceModelConfig: ModelConfig = {

@@ -1,8 +1,8 @@
-import { Database } from "../../../lib/database";
-import { Embedding } from "../../../lib/embedding";
-import type { IRequest } from "../../../types";
-import { AssistantError, ErrorType } from "../../../utils/errors";
-import { getLogger } from "../../../utils/logger";
+import { Database } from "~/lib/database";
+import { Embedding } from "~/lib/embedding";
+import type { IRequest } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "DELETE_EMBEDDING" });
 

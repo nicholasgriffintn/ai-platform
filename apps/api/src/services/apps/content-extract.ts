@@ -1,6 +1,6 @@
-import { Database } from "../../lib/database";
-import { Embedding } from "../../lib/embedding";
-import type { IRequest } from "../../types";
+import { Database } from "~/lib/database";
+import { Embedding } from "~/lib/embedding";
+import type { IRequest } from "~/types";
 
 export interface ContentExtractParams {
   urls: string | string[];

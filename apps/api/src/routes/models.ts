@@ -11,8 +11,8 @@ import {
   getModels,
   getModelsByCapability,
   getModelsByType,
-} from "../lib/models";
-import { createRouteLogger } from "../middleware/loggerMiddleware";
+} from "~/lib/models";
+import { createRouteLogger } from "~/middleware/loggerMiddleware";
 
 const app = new Hono();
 

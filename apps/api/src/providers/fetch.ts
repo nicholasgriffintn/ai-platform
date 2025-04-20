@@ -1,8 +1,8 @@
-import { gatewayId } from "../constants/app";
-import { availableFunctions } from "../services/functions";
-import type { IEnv } from "../types";
-import { AssistantError, ErrorType } from "../utils/errors";
-import { getLogger } from "../utils/logger";
+import { gatewayId } from "~/constants/app";
+import { availableFunctions } from "~/services/functions";
+import type { IEnv } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "FETCH" });
 

@@ -5,9 +5,9 @@ import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { Database } from "~/lib/database";
 import { requireAuth } from "~/middleware/auth";
+import { errorResponseSchema, successResponseSchema } from "~/schemas/shared";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { errorResponseSchema, successResponseSchema } from "../schemas/shared";
 import {
   createApiKeySchema,
   deleteApiKeyParamsSchema,

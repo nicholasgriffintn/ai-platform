@@ -1,4 +1,4 @@
-import type { User } from "../types";
+import type { User } from "~/types";
 import { BaseRepository } from "./BaseRepository";
 
 export class UserRepository extends BaseRepository {

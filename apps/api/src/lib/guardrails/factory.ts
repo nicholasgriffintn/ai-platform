@@ -1,5 +1,5 @@
-import type { GuardrailsProvider, IUser } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
+import type { GuardrailsProvider, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import {
   type BedrockGuardrailsConfig,
   BedrockGuardrailsProvider,

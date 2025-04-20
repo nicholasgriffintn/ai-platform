@@ -1,6 +1,5 @@
-import type { IBody, IUser, IUserSettings } from "../../types";
-import { getModelConfigByMatchingModel } from "../models";
-import { returnCoachingPrompt } from "./coaching";
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import type { IBody, IUser, IUserSettings } from "~/types";
 import { returnCodingPrompt } from "./coding";
 import { getTextToImageSystemPrompt } from "./image";
 import { returnStandardPrompt } from "./standard";

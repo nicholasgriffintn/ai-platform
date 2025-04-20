@@ -1,6 +1,6 @@
-import { ConversationManager } from "../../lib/conversationManager";
-import { Database } from "../../lib/database";
-import type { IEnv, Message } from "../../types";
+import { ConversationManager } from "~/lib/conversationManager";
+import { Database } from "~/lib/database";
+import type { IEnv, Message } from "~/types";
 
 interface GetSharedConversationRequest {
   env: IEnv;

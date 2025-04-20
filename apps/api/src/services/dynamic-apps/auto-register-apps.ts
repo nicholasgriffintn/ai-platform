@@ -1,14 +1,14 @@
-import type { IFunction } from "../../types";
-import type { AppSchema } from "../../types/app-schema";
-import { FieldType } from "../../types/app-schema";
+import { availableFunctions } from "~/services/functions";
+import type { IFunction } from "~/types";
+import type { AppSchema } from "~/types/app-schema";
+import { FieldType } from "~/types/app-schema";
 import {
   formatFunctionName,
   getFunctionIcon,
   getFunctionResponseDisplay,
   getFunctionResponseType,
-} from "../../utils/functions";
-import { getLogger } from "../../utils/logger";
-import { availableFunctions } from "../functions";
+} from "~/utils/functions";
+import { getLogger } from "~/utils/logger";
 import { registerDynamicApp } from "./index";
 
 const logger = getLogger({ prefix: "AUTO_REGISTER_DYNAMIC_APPS" });

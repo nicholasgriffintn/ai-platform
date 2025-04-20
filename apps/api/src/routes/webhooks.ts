@@ -3,10 +3,10 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
-import { webhookAuth } from "../middleware/auth";
-import { createRouteLogger } from "../middleware/loggerMiddleware";
-import { handleReplicateWebhook } from "../services/webhooks/replicate";
-import type { IBody, IEnv } from "../types";
+import { webhookAuth } from "~/middleware/auth";
+import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { handleReplicateWebhook } from "~/services/webhooks/replicate";
+import type { IBody, IEnv } from "~/types";
 import {
   replicateWebhookJsonSchema,
   replicateWebhookQuerySchema,

@@ -1,4 +1,4 @@
-import type { ModelConfig } from "../../types";
+import type { ModelConfig } from "~/types";
 
 export const ollamaModelConfig: ModelConfig = {
   "ollama-gemma3-1b": {

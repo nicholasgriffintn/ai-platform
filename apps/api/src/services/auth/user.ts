@@ -1,7 +1,7 @@
-import type { Database } from "../../lib/database";
-import type { IUserSettings, User } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
-import { getLogger } from "../../utils/logger";
+import type { Database } from "~/lib/database";
+import type { IUserSettings, User } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "USER_SERVICE" });
 

@@ -1,5 +1,5 @@
-import type { MessageContent } from "../types/chat";
-import { type ResponseDisplay, ResponseDisplayType } from "../types/functions";
+import type { MessageContent } from "~/types/chat";
+import { type ResponseDisplay, ResponseDisplayType } from "~/types/functions";
 import {
   formatFunctionName,
   getFunctionIcon,

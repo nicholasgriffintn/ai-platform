@@ -13,9 +13,9 @@ import type {
 } from "@simplewebauthn/types";
 import { decodeBase64Url } from "~/lib/base64url";
 import type { Database } from "~/lib/database";
-import type { User } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
-import { getLogger } from "../../utils/logger";
+import type { User } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "WEB_AUTHN" });
 

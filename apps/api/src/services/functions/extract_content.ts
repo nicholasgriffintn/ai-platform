@@ -1,7 +1,7 @@
-import { getAIResponse } from "../../lib/chat";
-import { extractContentsystem_prompt } from "../../lib/prompts";
-import type { ChatRole, IFunction, IRequest, Message } from "../../types";
-import { extractContent } from "../apps/content-extract";
+import { getAIResponse } from "~/lib/chat";
+import { extractContentsystem_prompt } from "~/lib/prompts";
+import { extractContent } from "~/services/apps/content-extract";
+import type { IFunction, IRequest, Message } from "~/types";
 
 export const extract_content: IFunction = {
   name: "extract_content",

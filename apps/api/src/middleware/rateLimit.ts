@@ -1,7 +1,7 @@
 import type { Context, Next } from "hono";
 
-import { trackUsageMetric } from "../lib/monitoring";
-import { AssistantError, ErrorType } from "../utils/errors";
+import { trackUsageMetric } from "~/lib/monitoring";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export async function rateLimit(context: Context, next: Next) {
   if (!context.env.FREE_RATE_LIMITER || !context.env.PRO_RATE_LIMITER) {

@@ -3,11 +3,10 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
-import { requireAuth } from "../middleware/auth";
-import type { IEnv, SearchOptions } from "../types";
-
-import { createRouteLogger } from "../middleware/loggerMiddleware";
-import { handleWebSearch } from "../services/search/web";
+import { requireAuth } from "~/middleware/auth";
+import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { handleWebSearch } from "~/services/search/web";
+import type { IEnv, SearchOptions } from "~/types";
 import { searchWebSchema } from "./schemas/search";
 
 const app = new Hono();

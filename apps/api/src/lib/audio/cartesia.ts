@@ -1,8 +1,8 @@
-import { AIProviderFactory } from "../../providers/factory";
-import type { IEnv, IUser } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
-import { getLogger } from "../../utils/logger";
-import type { StorageService } from "../storage";
+import type { StorageService } from "~/lib/storage";
+import { AIProviderFactory } from "~/providers/factory";
+import type { IEnv, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "CARTESIA" });
 

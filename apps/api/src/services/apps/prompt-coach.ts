@@ -1,8 +1,8 @@
 import { getAIResponse } from "~/lib/chat/responses";
+import { returnCoachingPrompt } from "~/lib/prompts/coaching";
 import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { returnCoachingPrompt } from "../../lib/prompts/coaching";
 
 const logger = getLogger({ prefix: "PROMPT_COACH_SERVICE" });
 

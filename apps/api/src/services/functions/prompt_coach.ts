@@ -1,5 +1,5 @@
-import type { IFunction, IRequest } from "../../types";
-import { handlePromptCoachSuggestion } from "../apps/prompt-coach";
+import { handlePromptCoachSuggestion } from "~/services/apps/prompt-coach";
+import type { IFunction, IRequest } from "~/types";
 
 export const prompt_coach: IFunction = {
   name: "prompt_coach",

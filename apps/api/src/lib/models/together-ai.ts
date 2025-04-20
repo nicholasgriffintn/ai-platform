@@ -1,4 +1,4 @@
-import type { ModelConfig } from "../../types";
+import type { ModelConfig } from "~/types";
 
 export const togetherAiModelConfig: ModelConfig = {
   "meta-llama/Llama-3.3-70B-Instruct-Turbo": {

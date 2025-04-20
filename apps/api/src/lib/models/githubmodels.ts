@@ -1,4 +1,4 @@
-import type { ModelConfig } from "../../types";
+import type { ModelConfig } from "~/types";
 
 export const githubModelsConfig: ModelConfig = {
   "Phi-4": {

@@ -1,6 +1,6 @@
-import { gatewayId } from "../../constants/app";
-import type { IEnv, IFeedbackBody } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
+import { gatewayId } from "~/constants/app";
+import type { IEnv, IFeedbackBody } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export const handleChatCompletionFeedbackSubmission = async (req: {
   request: IFeedbackBody;

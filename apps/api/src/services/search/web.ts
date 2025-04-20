@@ -1,11 +1,6 @@
-import { Search } from "../../lib/search";
-import type {
-  IEnv,
-  IFunctionResponse,
-  IUser,
-  SearchOptions,
-} from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
+import { Search } from "~/lib/search";
+import type { IEnv, IFunctionResponse, IUser, SearchOptions } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 type WebSearchRequest = {
   env: IEnv;

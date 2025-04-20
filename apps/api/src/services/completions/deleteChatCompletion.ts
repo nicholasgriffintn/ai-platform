@@ -1,7 +1,7 @@
-import { ConversationManager } from "../../lib/conversationManager";
-import { Database } from "../../lib/database";
-import type { IRequest } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
+import { ConversationManager } from "~/lib/conversationManager";
+import { Database } from "~/lib/database";
+import type { IRequest } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface DeleteChatCompletionResult {
   success: boolean;

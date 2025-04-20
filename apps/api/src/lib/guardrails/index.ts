@@ -1,12 +1,12 @@
+import { trackGuardrailViolation } from "~/lib/monitoring";
 import type {
   GuardrailResult,
   GuardrailsProvider,
   IEnv,
   IUser,
   IUserSettings,
-} from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
-import { trackGuardrailViolation } from "../monitoring";
+} from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { GuardrailsProviderFactory } from "./factory";
 
 export class Guardrails {

@@ -1,6 +1,6 @@
-import type { ConversationManager } from "../../lib/conversationManager";
-import type { IFunction, IFunctionResponse, IRequest } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
+import type { ConversationManager } from "~/lib/conversationManager";
+import type { IFunction, IFunctionResponse, IRequest } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { extract_content } from "./extract_content";
 import { create_image } from "./image";
 import { create_music } from "./music";

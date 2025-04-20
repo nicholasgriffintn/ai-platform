@@ -1,4 +1,4 @@
-import type { IEnv } from "../types";
+import type { IEnv } from "~/types";
 import { StorageService } from "./storage";
 
 async function uploadFromChat(

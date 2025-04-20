@@ -1,9 +1,9 @@
-import type { IFunction, IRequest } from "../../types";
 import {
   type VideoGenerationParams,
   type VideoResponse,
   generateVideo,
-} from "../apps/generate/video";
+} from "~/services/apps/generate/video";
+import type { IFunction, IRequest } from "~/types";
 
 const DEFAULT_HEIGHT = 320;
 const DEFAULT_WIDTH = 576;

@@ -1,14 +1,14 @@
-import type { ChatCompletionParameters, ChatRole, Message } from "~/types";
+import { ConversationManager } from "~/lib/conversationManager";
+import { Database } from "~/lib/database";
+import { Embedding } from "~/lib/embedding";
+import { Guardrails } from "~/lib/guardrails";
+import { MemoryManager } from "~/lib/memory";
+import { getModelConfig } from "~/lib/models";
+import { getSystemPrompt } from "~/lib/prompts";
+import type { ChatCompletionParameters, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
-import { ConversationManager } from "../conversationManager";
-import { Database } from "../database";
-import { Embedding } from "../embedding";
-import { Guardrails } from "../guardrails";
-import { MemoryManager } from "../memory";
-import { getModelConfig } from "../models";
-import { getSystemPrompt } from "../prompts";
 import { selectModels } from "./modelSelection";
 import { getAIResponse } from "./responses";
 import {

@@ -1,11 +1,4 @@
-import type {
-  Attachment,
-  IEnv,
-  IUser,
-  ModelConfigItem,
-  PromptRequirements,
-} from "../../types";
-import { getLogger } from "../../utils/logger";
+import { PromptAnalyzer } from "~/lib/modelRouter/promptAnalyser";
 import {
   defaultModel,
   defaultProvider,
@@ -13,9 +6,16 @@ import {
   getAuxiliaryModel,
   getIncludedInRouterModels,
   getModelConfig,
-} from "../models";
-import { trackModelRoutingMetrics } from "../monitoring";
-import { PromptAnalyzer } from "./promptAnalyser";
+} from "~/lib/models";
+import { trackModelRoutingMetrics } from "~/lib/monitoring";
+import type {
+  Attachment,
+  IEnv,
+  IUser,
+  ModelConfigItem,
+  PromptRequirements,
+} from "~/types";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "MODEL_ROUTER" });
 

@@ -1,6 +1,6 @@
-import type { IRequest } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
-import { getLogger } from "../../utils/logger";
+import type { IRequest } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "GET_METRICS" });
 

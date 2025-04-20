@@ -1,11 +1,10 @@
+import type { ConversationManager } from "~/lib/conversationManager";
+import { tutorSystemPrompt } from "~/lib/prompts";
+import { AIProviderFactory } from "~/providers/factory";
+import { handleWebSearch } from "~/services/search/web";
+import type { IEnv, IUser, SearchOptions } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import type { ConversationManager } from "../../lib/conversationManager";
-import { tutorSystemPrompt } from "../../lib/prompts";
-import { AIProviderFactory } from "../../providers/factory";
-import type { ChatRole, IEnv, IUser, SearchOptions } from "../../types";
-import { AssistantError } from "../../utils/errors";
-import { ErrorType } from "../../utils/errors";
-import { handleWebSearch } from "../search/web";
 
 export interface TutorRequestParams {
   topic: string;

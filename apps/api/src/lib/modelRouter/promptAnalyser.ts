@@ -1,17 +1,17 @@
-import type { AIProvider } from "../../providers/base";
-import { AIProviderFactory } from "../../providers/factory";
-import { availableFunctions } from "../../services/functions";
+import { KeywordFilter } from "~/lib/keywords";
+import { availableCapabilities, getModelConfig } from "~/lib/models";
+import type { AIProvider } from "~/providers/base";
+import { AIProviderFactory } from "~/providers/factory";
+import { availableFunctions } from "~/services/functions";
 import type {
   Attachment,
   ChatRole,
   IEnv,
   IUser,
   PromptRequirements,
-} from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
-import { getLogger } from "../../utils/logger";
-import { KeywordFilter } from "../keywords";
-import { availableCapabilities, getModelConfig } from "../models";
+} from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "PROMPT_ANALYSER" });
 

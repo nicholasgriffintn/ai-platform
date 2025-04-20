@@ -1,6 +1,6 @@
-import type { ConversationManager } from "../../lib/conversationManager";
-import type { IFunction, IRequest, SearchOptions } from "../../types";
-import { performDeepWebSearch } from "../apps/web-search";
+import type { ConversationManager } from "~/lib/conversationManager";
+import { performDeepWebSearch } from "~/services/apps/web-search";
+import type { IFunction, IRequest, SearchOptions } from "~/types";
 
 export const web_search: IFunction = {
   name: "web_search",

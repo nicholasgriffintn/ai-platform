@@ -1,10 +1,10 @@
+import { ConversationManager } from "~/lib/conversationManager";
+import { Database } from "~/lib/database";
+import { handleFunctions } from "~/services/functions";
+import type { AppSchema } from "~/types/app-schema";
+import type { IRequest } from "~/types/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { ConversationManager } from "../../lib/conversationManager";
-import { Database } from "../../lib/database";
-import type { AppSchema } from "../../types/app-schema";
-import type { IRequest } from "../../types/chat";
-import { getLogger } from "../../utils/logger";
-import { handleFunctions } from "../functions";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "DYNAMIC_APPS" });
 

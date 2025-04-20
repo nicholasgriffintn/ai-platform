@@ -3,30 +3,29 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
-import { ConversationManager } from "../lib/conversationManager";
-import { Database } from "../lib/database";
-import { allowRestrictedPaths } from "../middleware/auth";
-import { createRouteLogger } from "../middleware/loggerMiddleware";
-import { requireTurnstileToken } from "../middleware/turnstile";
-import { handleChatCompletionFeedbackSubmission } from "../services/completions/chatCompletionFeedbackSubmission";
-import { handleCheckChatCompletion } from "../services/completions/checkChatCompletion";
-import { handleCreateChatCompletions } from "../services/completions/createChatCompletions";
-import { handleDeleteChatCompletion } from "../services/completions/deleteChatCompletion";
-import { handleGenerateChatCompletionTitle } from "../services/completions/generateChatCompletionTitle";
-import { handleGetChatCompletion } from "../services/completions/getChatCompletion";
-import { handleGetSharedConversation } from "../services/completions/getSharedConversation";
-import { handleListChatCompletions } from "../services/completions/listChatCompletions";
-import { handleShareConversation } from "../services/completions/shareConversation";
-import { handleUnshareConversation } from "../services/completions/unshareConversation";
-import { handleUpdateChatCompletion } from "../services/completions/updateChatCompletion";
+import { ConversationManager } from "~/lib/conversationManager";
+import { Database } from "~/lib/database";
+import { allowRestrictedPaths } from "~/middleware/auth";
+import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { requireTurnstileToken } from "~/middleware/turnstile";
+import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
+import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
+import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
+import { handleDeleteChatCompletion } from "~/services/completions/deleteChatCompletion";
+import { handleGenerateChatCompletionTitle } from "~/services/completions/generateChatCompletionTitle";
+import { handleGetChatCompletion } from "~/services/completions/getChatCompletion";
+import { handleGetSharedConversation } from "~/services/completions/getSharedConversation";
+import { handleListChatCompletions } from "~/services/completions/listChatCompletions";
+import { handleShareConversation } from "~/services/completions/shareConversation";
+import { handleUnshareConversation } from "~/services/completions/unshareConversation";
+import { handleUpdateChatCompletion } from "~/services/completions/updateChatCompletion";
 import type {
   ChatCompletionParameters,
   ChatRole,
   IEnv,
   IFeedbackBody,
-  IUser,
   Message,
-} from "../types";
+} from "~/types";
 import {
   chatCompletionResponseSchema,
   checkChatCompletionJsonSchema,

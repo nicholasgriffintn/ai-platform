@@ -1,11 +1,11 @@
 import type { Context, Next } from "hono";
 
-import { Database } from "../lib/database";
-import { getUserByJwtToken } from "../services/auth/jwt";
-import { getUserBySessionId } from "../services/auth/user";
-import type { User } from "../types";
-import { AssistantError, ErrorType } from "../utils/errors";
-import { getLogger } from "../utils/logger";
+import { Database } from "~/lib/database";
+import { getUserByJwtToken } from "~/services/auth/jwt";
+import { getUserBySessionId } from "~/services/auth/user";
+import type { User } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "AUTH_MIDDLEWARE" });
 

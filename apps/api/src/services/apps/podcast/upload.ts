@@ -1,7 +1,8 @@
 import { AwsClient } from "aws4fetch";
-import type { ConversationManager } from "../../../lib/conversationManager";
-import type { ChatRole, IEnv, IFunctionResponse, IUser } from "../../../types";
-import { AssistantError, ErrorType } from "../../../utils/errors";
+
+import type { ConversationManager } from "~/lib/conversationManager";
+import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export type UploadRequest = {
   env: IEnv;

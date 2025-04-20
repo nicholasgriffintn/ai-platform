@@ -1,8 +1,8 @@
-import { summariseArticlePrompt } from "../../../lib/prompts";
-import { AIProviderFactory } from "../../../providers/factory";
-import type { ChatRole, IEnv } from "../../../types";
-import { extractQuotes } from "../../../utils/extract";
-import { verifyQuotes } from "../../../utils/verify";
+import { summariseArticlePrompt } from "~/lib/prompts";
+import { AIProviderFactory } from "~/providers/factory";
+import type { IEnv } from "~/types";
+import { extractQuotes } from "~/utils/extract";
+import { verifyQuotes } from "~/utils/verify";
 
 export interface Params {
   article: string;

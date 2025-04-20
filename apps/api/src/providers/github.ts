@@ -1,5 +1,4 @@
-import type { ChatCompletionParameters } from "../types";
-import { AssistantError, ErrorType } from "../utils/errors";
+import type { ChatCompletionParameters } from "~/types";
 import { BaseProvider } from "./base";
 
 export class GithubModelsProvider extends BaseProvider {

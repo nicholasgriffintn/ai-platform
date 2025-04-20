@@ -1,5 +1,5 @@
-import type { ModelConfig } from "../../types";
-import { createModelConfig, createModelConfigObject } from "./utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/models/utils";
+import type { ModelConfig } from "~/types";
 
 const PROVIDER = "anthropic";
 

@@ -1,11 +1,11 @@
-import { mapParametersToProvider } from "../lib/chat/parameters";
-import { ResponseFormatter } from "../lib/formatter";
-import { getModelConfigByMatchingModel } from "../lib/models";
-import { trackProviderMetrics } from "../lib/monitoring";
-import { UserSettingsRepository } from "../repositories/UserSettingsRepository";
-import type { ChatCompletionParameters } from "../types/chat";
-import { AssistantError, ErrorType } from "../utils/errors";
-import { getLogger } from "../utils/logger";
+import { mapParametersToProvider } from "~/lib/chat/parameters";
+import { ResponseFormatter } from "~/lib/formatter";
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import { trackProviderMetrics } from "~/lib/monitoring";
+import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
+import type { ChatCompletionParameters } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import { fetchAIResponse } from "./fetch";
 
 const logger = getLogger({ prefix: "PROVIDERS" });

@@ -1,4 +1,4 @@
-import type { ModelConfig } from "../../types";
+import type { ModelConfig } from "~/types";
 
 export const groqModelConfig: ModelConfig = {
   "gemma2-9b-it": {

@@ -1,5 +1,5 @@
-import type { IFunction, IRequest } from "../../types";
-import { getWeatherForLocation } from "../apps/weather";
+import { getWeatherForLocation } from "~/services/apps/weather";
+import type { IFunction, IRequest } from "~/types";
 
 export const get_weather: IFunction = {
   name: "get_weather",

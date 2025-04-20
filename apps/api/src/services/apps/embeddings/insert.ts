@@ -1,10 +1,10 @@
+import { Database } from "~/lib/database";
+import { Embedding } from "~/lib/embedding";
+import type { IRequest, RagOptions } from "~/types";
+import { chunkText } from "~/utils/embeddings";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { Database } from "../../../lib/database";
-import { Embedding } from "../../../lib/embedding";
-import type { IRequest, RagOptions } from "../../../types";
-import { chunkText } from "../../../utils/embeddings";
-import { AssistantError, ErrorType } from "../../../utils/errors";
-import { getLogger } from "../../../utils/logger";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "INSERT_EMBEDDING" });
 

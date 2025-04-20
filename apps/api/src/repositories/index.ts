@@ -1,4 +1,4 @@
-import type { IEnv } from "../types";
+import type { IEnv } from "~/types";
 
 import { ApiKeyRepository } from "./ApiKeyRepository";
 import { BaseRepository } from "./BaseRepository";

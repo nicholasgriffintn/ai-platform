@@ -3,8 +3,8 @@ import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
 
+import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { availableFunctions } from "~/services/functions";
-import { createRouteLogger } from "../middleware/loggerMiddleware";
 
 const app = new Hono();
 

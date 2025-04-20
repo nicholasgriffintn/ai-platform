@@ -1,5 +1,5 @@
+import { ModelRouter } from "~/lib/modelRouter";
 import type { Attachment } from "~/types";
-import { ModelRouter } from "../modelRouter";
 
 /**
  * Chooses one or multiple models based on flags and user request.

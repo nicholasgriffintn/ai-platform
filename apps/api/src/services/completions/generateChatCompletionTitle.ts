@@ -1,8 +1,8 @@
-import { gatewayId } from "../../constants/app";
-import { ConversationManager } from "../../lib/conversationManager";
-import { Database } from "../../lib/database";
-import type { IRequest, Message } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
+import { gatewayId } from "~/constants/app";
+import { ConversationManager } from "~/lib/conversationManager";
+import { Database } from "~/lib/database";
+import type { IRequest, Message } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export const handleGenerateChatCompletionTitle = async (
   req: IRequest,

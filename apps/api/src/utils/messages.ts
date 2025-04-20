@@ -1,5 +1,5 @@
-import { MessageFormatter } from "../lib/formatter";
-import type { Message } from "../types";
+import { MessageFormatter } from "~/lib/formatter";
+import type { Message } from "~/types";
 
 export function formatMessages(
   provider: string,

@@ -1,10 +1,10 @@
-import { imagePrompts } from "../../lib/prompts/image";
-import type { IFunction, IRequest } from "../../types";
+import { imagePrompts } from "~/lib/prompts/image";
 import {
   type ImageGenerationParams,
   type ImageResponse,
   generateImage,
-} from "../apps/generate/image";
+} from "~/services/apps/generate/image";
+import type { IFunction, IRequest } from "~/types";
 
 export const create_image: IFunction = {
   name: "create_image",

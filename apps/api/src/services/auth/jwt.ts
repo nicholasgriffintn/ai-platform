@@ -1,9 +1,9 @@
 import jwt from "@tsndr/cloudflare-worker-jwt";
 
-import { Database } from "../../lib/database";
-import type { IEnv, User } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
-import { getLogger } from "../../utils/logger";
+import { Database } from "~/lib/database";
+import type { IEnv, User } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import { getUserById } from "./user";
 
 const logger = getLogger({ prefix: "JWT" });

@@ -2,8 +2,8 @@ import * as jwt from "@tsndr/cloudflare-worker-jwt";
 import { AwsClient } from "aws4fetch";
 import type { Context } from "hono";
 
-import { AssistantError, ErrorType } from "../../utils/errors";
-import { getLogger } from "../../utils/logger";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "MAGIC_LINK" });
 

@@ -1,8 +1,8 @@
-import { gatewayId } from "../../../constants/app";
-import type { ConversationManager } from "../../../lib/conversationManager";
-import { StorageService } from "../../../lib/storage";
-import type { ChatRole, IEnv, IFunctionResponse, IUser } from "../../../types";
-import { AssistantError, ErrorType } from "../../../utils/errors";
+import { gatewayId } from "~/constants/app";
+import type { ConversationManager } from "~/lib/conversationManager";
+import { StorageService } from "~/lib/storage";
+import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export interface IPodcastGenerateImageBody {
   podcastId: string;

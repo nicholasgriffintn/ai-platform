@@ -1,4 +1,4 @@
-import type { IUser, ModelConfig } from "../../types";
+import type { IUser, ModelConfig } from "~/types";
 import {
   type availableCapabilities,
   type availableModelTypes,
@@ -23,9 +23,9 @@ import { perplexityModelConfig } from "./perplexity";
 import { togetherAiModelConfig } from "./together-ai";
 import { workersAiModelConfig } from "./workersai";
 
-import type { IEnv, ModelConfigItem } from "../../types";
-import { getLogger } from "../../utils/logger";
-import { Database } from "../database";
+import { Database } from "~/lib/database";
+import type { IEnv, ModelConfigItem } from "~/types";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "MODELS" });
 

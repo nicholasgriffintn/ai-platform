@@ -4,7 +4,7 @@ import type {
   SearchProvider,
   SearchResult,
   TavilySearchResult,
-} from "../../types";
+} from "~/types";
 
 export class TavilyProvider implements SearchProvider {
   private apiKey;

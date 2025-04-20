@@ -4,8 +4,8 @@ import type {
   SearchProvider,
   SearchResult,
   SerperSearchResult,
-} from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
+} from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export class SerperProvider implements SearchProvider {
   private apiKey;

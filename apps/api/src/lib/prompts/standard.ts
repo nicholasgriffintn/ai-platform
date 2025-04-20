@@ -1,5 +1,5 @@
 import type { IBody, IUser, IUserSettings } from "~/types";
-import { getLogger } from "../../utils/logger";
+import { getLogger } from "~/utils/logger";
 import { PromptBuilder } from "./builder";
 import { getArtifactExample, getResponseStyle } from "./utils";
 

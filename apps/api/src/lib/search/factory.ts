@@ -1,5 +1,5 @@
-import type { IEnv, SearchProviderName } from "../../types";
-import { AssistantError } from "../../utils/errors";
+import type { IEnv, SearchProviderName } from "~/types";
+import { AssistantError } from "~/utils/errors";
 import { SerperProvider } from "./serper";
 import { TavilyProvider } from "./tavily";
 

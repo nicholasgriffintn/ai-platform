@@ -1,7 +1,7 @@
 import type { AnalyticsEngineDataset } from "@cloudflare/workers-types";
 
-import { AssistantError } from "../utils/errors";
-import { getLogger } from "../utils/logger";
+import { AssistantError } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "MONITORING" });
 

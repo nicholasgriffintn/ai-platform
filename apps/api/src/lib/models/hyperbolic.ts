@@ -1,4 +1,4 @@
-import type { ModelConfig } from "../../types";
+import type { ModelConfig } from "~/types";
 
 export const hyperbolicModelConfig: ModelConfig = {
   "Hermes-3-Llama-3.1-70B": {

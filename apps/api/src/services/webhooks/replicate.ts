@@ -1,7 +1,7 @@
-import { ConversationManager } from "../../lib/conversationManager";
-import { Database } from "../../lib/database";
-import type { IRequest, Message } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
+import { ConversationManager } from "~/lib/conversationManager";
+import { Database } from "~/lib/database";
+import type { IRequest, Message } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export const handleReplicateWebhook = async (
   req: IRequest,

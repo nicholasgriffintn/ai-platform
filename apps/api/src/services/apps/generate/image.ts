@@ -1,9 +1,9 @@
 import {
   getTextToImageSystemPrompt,
   type imagePrompts,
-} from "../../../lib/prompts/image";
-import { AIProviderFactory } from "../../../providers/factory";
-import type { IEnv, IUser } from "../../../types";
+} from "~/lib/prompts/image";
+import { AIProviderFactory } from "~/providers/factory";
+import type { IEnv, IUser } from "~/types";
 
 export interface ImageGenerationParams {
   prompt: string;

@@ -1,5 +1,5 @@
-import type { IFunctionResponse, IWeather } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
+import type { IFunctionResponse, IWeather } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export const getWeatherForLocation = async (
   env: any,

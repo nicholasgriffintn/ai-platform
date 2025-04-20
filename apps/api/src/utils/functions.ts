@@ -1,4 +1,4 @@
-import { type ResponseDisplay, ResponseDisplayType } from "../types/functions";
+import { type ResponseDisplay, ResponseDisplayType } from "~/types/functions";
 
 export const formatFunctionName = (name: string): string => {
   return name

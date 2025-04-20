@@ -3,7 +3,7 @@ import type {
   SearchOptions,
   SearchProvider,
   SearchProviderName,
-} from "../../types";
+} from "~/types";
 import { SearchProviderFactory } from "./factory";
 
 export class Search {

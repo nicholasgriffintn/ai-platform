@@ -1,13 +1,13 @@
 import { AwsClient } from "aws4fetch";
 
-import { gatewayId } from "../constants/app";
-import { mapParametersToProvider } from "../lib/chat/parameters";
-import { getModelConfigByMatchingModel } from "../lib/models";
-import { trackProviderMetrics } from "../lib/monitoring";
-import { uploadImageFromChat } from "../lib/upload";
-import type { ChatCompletionParameters } from "../types";
-import { AssistantError, ErrorType } from "../utils/errors";
-import { getLogger } from "../utils/logger";
+import { gatewayId } from "~/constants/app";
+import { mapParametersToProvider } from "~/lib/chat/parameters";
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import { trackProviderMetrics } from "~/lib/monitoring";
+import { uploadImageFromChat } from "~/lib/upload";
+import type { ChatCompletionParameters } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import { BaseProvider } from "./base";
 
 const logger = getLogger({ prefix: "BEDROCK" });

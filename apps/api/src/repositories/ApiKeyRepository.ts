@@ -1,6 +1,6 @@
-import { bufferToBase64 } from "../utils/base64";
-import { AssistantError, ErrorType } from "../utils/errors";
-import { getLogger } from "../utils/logger";
+import { bufferToBase64 } from "~/utils/base64";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import { BaseRepository } from "./BaseRepository";
 
 const logger = getLogger({ prefix: "API_KEY_REPOSITORY" });

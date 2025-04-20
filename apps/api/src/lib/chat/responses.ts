@@ -1,11 +1,11 @@
+import { mergeParametersWithDefaults } from "~/lib/chat/parameters";
+import { getModelConfigByMatchingModel } from "~/lib/models";
 import { AIProviderFactory } from "~/providers/factory";
 import type { ChatCompletionParameters, Message } from "~/types";
 import type { AssistantMessageData } from "~/types/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { formatMessages } from "~/utils/messages";
-import { getModelConfigByMatchingModel } from "../models";
-import { mergeParametersWithDefaults } from "./parameters";
 
 /**
  * Formats assistant message data into a standardized structure that can be used

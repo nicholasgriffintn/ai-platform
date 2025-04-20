@@ -1,8 +1,8 @@
-import { ConversationManager } from "../../lib/conversationManager";
-import { Database } from "../../lib/database";
-import { Guardrails } from "../../lib/guardrails";
-import type { IRequest } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
+import { ConversationManager } from "~/lib/conversationManager";
+import { Database } from "~/lib/database";
+import { Guardrails } from "~/lib/guardrails";
+import type { IRequest } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export const handleCheckChatCompletion = async (
   req: IRequest,

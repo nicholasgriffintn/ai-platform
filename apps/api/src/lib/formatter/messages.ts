@@ -1,4 +1,4 @@
-import type { ChatRole, Message, MessageContent } from "../../types";
+import type { Message, MessageContent } from "~/types";
 
 interface MessageFormatOptions {
   maxTokens?: number;

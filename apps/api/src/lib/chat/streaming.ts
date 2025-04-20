@@ -1,23 +1,22 @@
-import { generateId } from "~/utils/id";
+import { formatAssistantMessage } from "~/lib/chat/responses";
+import { getAIResponse } from "~/lib/chat/responses";
+import { handleToolCalls } from "~/lib/chat/tools";
+import type { ConversationManager } from "~/lib/conversationManager";
+import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
+import { Guardrails } from "~/lib/guardrails";
+import { MemoryManager } from "~/lib/memory";
+import { getModelConfigByMatchingModel } from "~/lib/models";
 import type {
   ChatMode,
   ContentType,
   IEnv,
   IUser,
   IUserSettings,
-  Message,
   MessageContent,
   Platform,
-} from "../../types";
-import { getLogger } from "../../utils/logger";
-import { handleToolCalls } from "../chat/tools";
-import type { ConversationManager } from "../conversationManager";
-import { ResponseFormatter, StreamingFormatter } from "../formatter";
-import { Guardrails } from "../guardrails";
-import { MemoryManager } from "../memory";
-import { getModelConfigByMatchingModel } from "../models";
-import { formatAssistantMessage } from "./responses";
-import { getAIResponse } from "./responses";
+} from "~/types";
+import { generateId } from "~/utils/id";
+import { getLogger } from "~/utils/logger";
 
 interface ModelConfigInfo {
   model: string;

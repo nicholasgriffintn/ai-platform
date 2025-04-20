@@ -1,6 +1,6 @@
-import type { ConversationManager } from "../../lib/conversationManager";
-import type { IFunction, IRequest, SearchOptions } from "../../types";
-import { completeTutorRequest } from "../apps/tutor";
+import type { ConversationManager } from "~/lib/conversationManager";
+import { completeTutorRequest } from "~/services/apps/tutor";
+import type { IFunction, IRequest, SearchOptions } from "~/types";
 
 export const tutor: IFunction = {
   name: "tutor",

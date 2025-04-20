@@ -1,7 +1,7 @@
-import { gatewayId } from "../../../constants/app";
-import { guessDrawingPrompt } from "../../../lib/prompts";
-import type { IEnv, IFunctionResponse, IUser } from "../../../types";
-import { AssistantError, ErrorType } from "../../../utils/errors";
+import { gatewayId } from "~/constants/app";
+import { guessDrawingPrompt } from "~/lib/prompts";
+import type { IEnv, IFunctionResponse, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export type ImageFromDrawingRequest = {
   env: IEnv;

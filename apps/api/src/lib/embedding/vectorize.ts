@@ -4,17 +4,17 @@ import type {
   Vectorize,
 } from "@cloudflare/workers-types";
 
-import { gatewayId } from "../../constants/app";
+import { gatewayId } from "~/constants/app";
+import type { Database } from "~/lib/database";
 import type {
   EmbeddingMutationResult,
   EmbeddingProvider,
   EmbeddingQueryResult,
   EmbeddingVector,
   RagOptions,
-} from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
-import { getLogger } from "../../utils/logger";
-import type { Database } from "../database";
+} from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "VECTORIZE" });
 

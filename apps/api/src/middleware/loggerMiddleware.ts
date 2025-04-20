@@ -1,6 +1,7 @@
 import type { Context, Next } from "hono";
-import type { IUser } from "../types";
-import { getLogger } from "../utils/logger";
+
+import type { IUser } from "~/types";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "HTTP" });
 

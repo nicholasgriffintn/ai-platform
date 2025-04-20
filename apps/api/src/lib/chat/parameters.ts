@@ -1,9 +1,9 @@
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import type { StorageService } from "~/lib/storage";
 import { AIProviderFactory } from "~/providers/factory";
-import { availableFunctions } from "../../services/functions";
-import type { ChatCompletionParameters, IBody, IEnv } from "../../types";
-import { getLogger } from "../../utils/logger";
-import { getModelConfigByMatchingModel } from "../models";
-import type { StorageService } from "../storage";
+import { availableFunctions } from "~/services/functions";
+import type { ChatCompletionParameters, IBody, IEnv } from "~/types";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "CHAT_PARAMETERS" });
 

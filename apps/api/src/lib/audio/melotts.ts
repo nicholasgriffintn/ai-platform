@@ -1,6 +1,6 @@
-import { AIProviderFactory } from "../../providers/factory";
-import type { IEnv, IUser } from "../../types";
-import { getLogger } from "../../utils/logger";
+import { AIProviderFactory } from "~/providers/factory";
+import type { IEnv, IUser } from "~/types";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "MELOTTS" });
 

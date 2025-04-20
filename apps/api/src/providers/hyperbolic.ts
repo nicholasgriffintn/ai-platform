@@ -1,4 +1,4 @@
-import type { ChatCompletionParameters } from "../types";
+import type { ChatCompletionParameters } from "~/types";
 import { BaseProvider } from "./base";
 
 export class HyperbolicProvider extends BaseProvider {

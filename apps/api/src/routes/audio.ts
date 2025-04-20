@@ -3,11 +3,11 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
-import { requireAuth } from "../middleware/auth";
-import { createRouteLogger } from "../middleware/loggerMiddleware";
-import { handleTextToSpeech } from "../services/audio/speech";
-import { handleTranscribe } from "../services/audio/transcribe";
-import type { IEnv } from "../types";
+import { requireAuth } from "~/middleware/auth";
+import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { handleTextToSpeech } from "~/services/audio/speech";
+import { handleTranscribe } from "~/services/audio/transcribe";
+import type { IEnv } from "~/types";
 import { textToSpeechSchema, transcribeFormSchema } from "./schemas/audio";
 import { apiResponseSchema } from "./schemas/shared";
 

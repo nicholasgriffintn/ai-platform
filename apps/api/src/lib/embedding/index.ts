@@ -6,19 +6,19 @@ import type {
   VectorizeVector,
 } from "@cloudflare/workers-types";
 
-import { AIProviderFactory } from "../../providers/factory";
+import { Database } from "~/lib/database";
+import { getAuxiliaryModel } from "~/lib/models";
+import { trackRagMetrics } from "~/lib/monitoring";
+import { AIProviderFactory } from "~/providers/factory";
 import type {
   EmbeddingProvider,
   IEnv,
   IUser,
   IUserSettings,
   RagOptions,
-} from "../../types";
-import { AssistantError } from "../../utils/errors";
-import { getLogger } from "../../utils/logger";
-import { Database } from "../database";
-import { getAuxiliaryModel } from "../models";
-import { trackRagMetrics } from "../monitoring";
+} from "~/types";
+import { AssistantError } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import { EmbeddingProviderFactory } from "./factory";
 
 const logger = getLogger({ prefix: "EMBEDDING" });

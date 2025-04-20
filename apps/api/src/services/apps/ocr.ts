@@ -1,9 +1,9 @@
-import { StorageService } from "../../lib/storage";
-import { AIProviderFactory } from "../../providers/factory";
-import type { IRequest } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
-import { getLogger } from "../../utils/logger";
-import { convertMarkdownToHtml } from "../../utils/markdown";
+import { StorageService } from "~/lib/storage";
+import { AIProviderFactory } from "~/providers/factory";
+import type { IRequest } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
+import { convertMarkdownToHtml } from "~/utils/markdown";
 
 const logger = getLogger({ prefix: "OCR" });
 

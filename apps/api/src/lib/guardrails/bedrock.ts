@@ -1,15 +1,9 @@
 import { AwsClient } from "aws4fetch";
 
-import { UserSettingsRepository } from "../../repositories/UserSettingsRepository";
-import type {
-  GuardrailResult,
-  GuardrailsProvider,
-  IEnv,
-  IUser,
-  IUserSettings,
-} from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
-import { getLogger } from "../../utils/logger";
+import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
+import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "BEDROCK_GUARDRAILS" });
 

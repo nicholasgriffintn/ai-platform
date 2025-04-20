@@ -1,7 +1,7 @@
 import type { AuthenticatorTransportFuture } from "@simplewebauthn/types";
 
 import { encodeBase64Url } from "~/lib/base64url";
-import { getLogger } from "../utils/logger";
+import { getLogger } from "~/utils/logger";
 import { BaseRepository } from "./BaseRepository";
 
 const logger = getLogger({ prefix: "WEB_AUTHN_REPOSITORY" });

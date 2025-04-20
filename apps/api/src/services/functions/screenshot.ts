@@ -1,5 +1,5 @@
-import type { IFunction, IRequest } from "../../types";
-import { captureScreenshot } from "../apps/screenshot";
+import { captureScreenshot } from "~/services/apps/screenshot";
+import type { IFunction, IRequest } from "~/types";
 
 const DEFAULT_VIEWPORT = {
   width: 1740,

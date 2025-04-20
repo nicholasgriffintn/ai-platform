@@ -1,8 +1,8 @@
-import type { ConversationManager } from "../../../lib/conversationManager";
-import { getModelConfigByMatchingModel } from "../../../lib/models";
-import { AIProviderFactory } from "../../../providers/factory";
-import type { ChatRole, IEnv, IFunctionResponse, IUser } from "../../../types";
-import { AssistantError, ErrorType } from "../../../utils/errors";
+import type { ConversationManager } from "~/lib/conversationManager";
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import { AIProviderFactory } from "~/providers/factory";
+import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 const REPLICATE_MODEL_VERSION =
   "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f";

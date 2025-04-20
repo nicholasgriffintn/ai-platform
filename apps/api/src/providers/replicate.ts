@@ -1,6 +1,6 @@
-import { trackProviderMetrics } from "../lib/monitoring";
-import type { ChatCompletionParameters } from "../types";
-import { AssistantError, ErrorType } from "../utils/errors";
+import { trackProviderMetrics } from "~/lib/monitoring";
+import type { ChatCompletionParameters } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseProvider } from "./base";
 import { fetchAIResponse } from "./fetch";
 

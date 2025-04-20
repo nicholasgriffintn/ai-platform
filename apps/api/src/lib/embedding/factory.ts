@@ -1,5 +1,5 @@
-import type { EmbeddingProvider, IEnv, IUser } from "../../types";
-import { AssistantError, ErrorType } from "../../utils/errors";
+import type { EmbeddingProvider, IEnv, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import {
   BedrockEmbeddingProvider,
   type BedrockEmbeddingProviderConfig,

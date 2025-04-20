@@ -8,21 +8,21 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
-import { Database } from "../lib/database";
-import { requireAuth } from "../middleware/auth";
-import { createRouteLogger } from "../middleware/loggerMiddleware";
-import { generateJwtToken } from "../services/auth/jwt";
+import { Database } from "~/lib/database";
+import { requireAuth } from "~/middleware/auth";
+import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { generateJwtToken } from "~/services/auth/jwt";
 import {
   generateMagicLinkToken,
   sendMagicLinkEmail,
   verifyMagicLinkToken,
-} from "../services/auth/magicLink";
+} from "~/services/auth/magicLink";
 import {
   createOrUpdateGithubUser,
   createSession,
   deleteSession,
   getUserSettings,
-} from "../services/auth/user";
+} from "~/services/auth/user";
 import {
   deletePasskey,
   generatePasskeyAuthenticationOptions,
@@ -30,10 +30,10 @@ import {
   getUserPasskeys,
   verifyAndRegisterPasskey,
   verifyPasskeyAuthentication,
-} from "../services/auth/webauthn";
-import type { User } from "../types";
-import { AssistantError, ErrorType } from "../utils/errors";
-import { getLogger } from "../utils/logger";
+} from "~/services/auth/webauthn";
+import type { User } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import {
   githubCallbackSchema,
   githubLoginSchema,

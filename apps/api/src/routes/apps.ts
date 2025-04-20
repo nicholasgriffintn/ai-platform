@@ -3,82 +3,82 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
-import { generateId } from "~/utils/id";
-import { requireAuth } from "../middleware/auth";
-import { createRouteLogger } from "../middleware/loggerMiddleware";
+import { requireAuth } from "~/middleware/auth";
+import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
   type Params as AnalyseArticleParams,
   analyseArticle,
-} from "../services/apps/articles/analyse";
+} from "~/services/apps/articles/analyse";
 import {
   type Params as GenerateArticlesReportParams,
   generateArticlesReport,
-} from "../services/apps/articles/generate-report";
+} from "~/services/apps/articles/generate-report";
 import {
   type Params as SummariseArticleParams,
   summariseArticle,
-} from "../services/apps/articles/summarise";
+} from "~/services/apps/articles/summarise";
 import {
   type ContentExtractParams,
   extractContent,
-} from "../services/apps/content-extract";
-import { generateImageFromDrawing } from "../services/apps/drawing/create";
-import { guessDrawingFromImage } from "../services/apps/drawing/guess";
+} from "~/services/apps/content-extract";
+import { generateImageFromDrawing } from "~/services/apps/drawing/create";
+import { guessDrawingFromImage } from "~/services/apps/drawing/guess";
 import {
   type IDeleteEmbeddingRequest,
   deleteEmbedding,
-} from "../services/apps/embeddings/delete";
+} from "~/services/apps/embeddings/delete";
 import {
   type IInsertEmbeddingRequest,
   insertEmbedding,
-} from "../services/apps/embeddings/insert";
-import { queryEmbeddings } from "../services/apps/embeddings/query";
+} from "~/services/apps/embeddings/insert";
+import { queryEmbeddings } from "~/services/apps/embeddings/query";
 import {
   type ImageGenerationParams,
   generateImage,
-} from "../services/apps/generate/image";
+} from "~/services/apps/generate/image";
 import {
   type MusicGenerationParams,
   generateMusic,
-} from "../services/apps/generate/music";
+} from "~/services/apps/generate/music";
 import {
   type SpeechGenerationParams,
   generateSpeech,
-} from "../services/apps/generate/speech";
+} from "~/services/apps/generate/speech";
 import {
   type VideoGenerationParams,
   generateVideo,
-} from "../services/apps/generate/video";
-import { type OcrParams, performOcr } from "../services/apps/ocr";
-import { handlePodcastGenerateImage } from "../services/apps/podcast/generate-image";
+} from "~/services/apps/generate/video";
+import { type OcrParams, performOcr } from "~/services/apps/ocr";
+import { handlePodcastGenerateImage } from "~/services/apps/podcast/generate-image";
 import {
   type IPodcastSummariseBody,
   handlePodcastSummarise,
-} from "../services/apps/podcast/summarise";
+} from "~/services/apps/podcast/summarise";
 import {
   type IPodcastTranscribeBody,
   handlePodcastTranscribe,
-} from "../services/apps/podcast/transcribe";
+} from "~/services/apps/podcast/transcribe";
 import {
   type UploadRequest,
   handlePodcastUpload,
-} from "../services/apps/podcast/upload";
-import { handlePromptCoachSuggestion } from "../services/apps/prompt-coach";
+} from "~/services/apps/podcast/upload";
+import { handlePromptCoachSuggestion } from "~/services/apps/prompt-coach";
 import {
   type CaptureScreenshotParams,
   captureScreenshot,
-} from "../services/apps/screenshot";
+} from "~/services/apps/screenshot";
 import {
   type TutorRequestParams,
   completeTutorRequest,
-} from "../services/apps/tutor";
-import { getWeatherForLocation } from "../services/apps/weather";
+} from "~/services/apps/tutor";
+import { getWeatherForLocation } from "~/services/apps/weather";
 import {
   type DeepWebSearchParams,
   performDeepWebSearch,
-} from "../services/apps/web-search";
-import type { IEnv, IUser } from "../types";
-import { AssistantError, ErrorType } from "../utils/errors";
+} from "~/services/apps/web-search";
+import type { IEnv, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import {
   articleAnalyzeSchema,
   articleSummariseSchema,

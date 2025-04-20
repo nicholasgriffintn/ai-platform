@@ -1,9 +1,9 @@
-import type { IFunction, IRequest } from "../../types";
 import {
   type SpeechGenerationParams,
   type SpeechResponse,
   generateSpeech,
-} from "../apps/generate/speech";
+} from "~/services/apps/generate/speech";
+import type { IFunction, IRequest } from "~/types";
 
 export const create_speech: IFunction = {
   name: "create_speech",

@@ -3,16 +3,16 @@ import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
 
-import { requireAuth } from "../middleware/auth";
-import { createRouteLogger } from "../middleware/loggerMiddleware";
+import { requireAuth } from "~/middleware/auth";
+import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
   executeDynamicApp,
   getDynamicAppById,
   getDynamicApps,
-} from "../services/dynamic-apps";
-import { appSchema } from "../types/app-schema";
-import type { IRequest } from "../types/chat";
-import { getLogger } from "../utils/logger";
+} from "~/services/dynamic-apps";
+import { appSchema } from "~/types/app-schema";
+import type { IRequest } from "~/types/chat";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "DYNAMIC_APPS" });
 

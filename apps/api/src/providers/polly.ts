@@ -1,9 +1,9 @@
 import { AwsClient } from "aws4fetch";
 
-import { trackProviderMetrics } from "../lib/monitoring";
-import type { ChatCompletionParameters } from "../types";
-import { AssistantError, ErrorType } from "../utils/errors";
-import { getLogger } from "../utils/logger";
+import { trackProviderMetrics } from "~/lib/monitoring";
+import type { ChatCompletionParameters } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import { BaseProvider } from "./base";
 
 const logger = getLogger({ prefix: "POLY" });
