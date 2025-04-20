@@ -5,6 +5,7 @@ import type {
   IEnv,
   IUser,
   IUserSettings,
+  Message,
   MessageContent,
   Platform,
 } from "../../types";
@@ -13,6 +14,7 @@ import { handleToolCalls } from "../chat/tools";
 import type { ConversationManager } from "../conversationManager";
 import { ResponseFormatter, StreamingFormatter } from "../formatter";
 import { Guardrails } from "../guardrails";
+import { MemoryManager } from "../memory";
 import { getModelConfigByMatchingModel } from "../models";
 import { formatAssistantMessage } from "./responses";
 import { getAIResponse } from "./responses";
@@ -285,8 +287,10 @@ export async function createStreamWithPostProcessing(
                 data,
                 currentEventType,
               );
-              if (toolCallData)
+              if (toolCallData) {
                 logger.debug("Detected tool call delta", { toolCallData });
+              }
+
               if (toolCallData && !isRestricted) {
                 if (toolCallData.format === "openai") {
                   const deltaToolCalls = toolCallData.toolCalls;
@@ -425,6 +429,43 @@ export async function createStreamWithPostProcessing(
           });
           try {
             postProcessingDone = true;
+
+            if (!isRestricted) {
+              try {
+                const history = await conversationManager.get(completion_id);
+                const userHistory = history.filter((m) => m.role === "user");
+                const lastUserRaw = userHistory.length
+                  ? userHistory[userHistory.length - 1].content
+                  : "";
+                const lastUserText =
+                  typeof lastUserRaw === "string"
+                    ? lastUserRaw
+                    : Array.isArray(lastUserRaw)
+                      ? (lastUserRaw.find((b: any) => b.type === "text") as any)
+                          ?.text || ""
+                      : "";
+                if (lastUserText.trim()) {
+                  const memMgr = MemoryManager.getInstance(env, user);
+                  const memEvents = await memMgr.handleMemory(
+                    lastUserText,
+                    history,
+                    conversationManager,
+                    completion_id,
+                  );
+                  for (const ev of memEvents) {
+                    toolCallsData.push({
+                      id: generateId(),
+                      function: {
+                        name: "memory",
+                        arguments: JSON.stringify(ev),
+                      },
+                    });
+                  }
+                }
+              } catch {
+                // swallow memory injection errors
+              }
+            }
 
             // Validate output with guardrails
             const guardrailsFailed = false;
