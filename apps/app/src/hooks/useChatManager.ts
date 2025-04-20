@@ -504,25 +504,7 @@ export function useChatManager() {
                   .map((item) => item.text || "")
                   .join("");
 
-          response = messageContent || "";
-
-          await updateAssistantMessage(
-            conversationId,
-            messageContent,
-            assistantMessage.reasoning?.content,
-            {
-              id: assistantMessage.id,
-              created: assistantMessage.created,
-              model: assistantMessage.model || modelToSend,
-              citations: assistantMessage.citations,
-              usage: assistantMessage.usage,
-              log_id: assistantMessage.log_id,
-              data: assistantMessage.data,
-              status: assistantMessage.status,
-              timestamp: assistantMessage.timestamp,
-              tool_calls: assistantMessage.tool_calls,
-            },
-          );
+          response = messageContent;
         }
 
         if (messages.length <= 1) {

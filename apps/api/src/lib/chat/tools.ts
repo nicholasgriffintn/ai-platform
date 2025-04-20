@@ -57,6 +57,23 @@ export const handleToolCalls = async (
     let functionName = "unknown";
     try {
       if (toolCall.function?.name === "memory") {
+        const ev = JSON.parse(toolCall.function.arguments || "{}");
+        const memMessage: Message = {
+          role: "tool",
+          name: "memory",
+          content:
+            ev.type === "store"
+              ? `📝 Stored ${ev.category} memory: ${ev.text}`
+              : "🔍 Created memory snapshot",
+          status: "success",
+          data: { type: ev.type, category: ev.category, text: ev.text },
+          log_id: modelResponseLogId || "",
+          id: toolCall.id || generateId(),
+          timestamp: Date.now(),
+          model: req.request?.model,
+          platform: req.request?.platform || "api",
+        };
+        functionResults.push(memMessage);
         continue;
       }
 
