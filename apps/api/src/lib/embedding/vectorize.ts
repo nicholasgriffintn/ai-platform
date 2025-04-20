@@ -28,9 +28,6 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
   private ai: Ai;
   private vector_db: Vectorize;
   private database: Database;
-  private topK = 15;
-  private returnValues = false;
-  private returnMetadata: "none" | "indexed" | "all" = "none";
 
   constructor(config: VectorizeEmbeddingProviderConfig) {
     this.ai = config.ai;
@@ -134,9 +131,9 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
     options: RagOptions = {},
   ): Promise<EmbeddingQueryResult> {
     const matches = await this.vector_db.query(queryVector, {
-      topK: this.topK,
-      returnValues: this.returnValues,
-      returnMetadata: this.returnMetadata,
+      topK: options.topK ?? 15,
+      returnValues: options.returnValues ?? false,
+      returnMetadata: options.returnMetadata ?? "none",
       namespace: options.namespace || "assistant-embeddings",
     });
 
@@ -159,9 +156,9 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
     }
 
     const matches = await this.vector_db.query(queryVector.data[0], {
-      topK: this.topK,
-      returnValues: this.returnValues,
-      returnMetadata: this.returnMetadata,
+      topK: options.topK ?? 15,
+      returnValues: options.returnValues ?? false,
+      returnMetadata: options.returnMetadata ?? "none",
       namespace: options.namespace || "assistant-embeddings",
     });
 

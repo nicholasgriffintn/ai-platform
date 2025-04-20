@@ -95,6 +95,8 @@ export type RagOptions = {
   type?: string;
   chunkSize?: number;
   summaryThreshold?: number;
+  returnValues?: boolean;
+  returnMetadata?: "none" | "indexed" | "all";
 };
 
 export interface IRequest {
