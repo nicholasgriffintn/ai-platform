@@ -7,9 +7,11 @@ export const insertEmbeddingSchema = z.object({
   id: z.string().optional(),
   metadata: z.record(z.any()).optional(),
   title: z.string().optional(),
-  rag_options: z.object({
-    namespace: z.string().optional(),
-  }),
+  rag_options: z
+    .object({
+      namespace: z.string().optional(),
+    })
+    .optional(),
 });
 
 export const queryEmbeddingsSchema = z.object({

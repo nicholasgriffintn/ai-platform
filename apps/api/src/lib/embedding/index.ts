@@ -70,6 +70,19 @@ export class Embedding {
     }
   }
 
+  public getNamespace(options?: RagOptions): string {
+    if (this.user?.id) {
+      return `user_kb_${this.user.id}`;
+    }
+    if (options?.namespace) {
+      if (options.namespace.startsWith("user_kb_")) {
+        return "kb";
+      }
+      return options.namespace;
+    }
+    return "kb";
+  }
+
   public static getInstance(
     env: IEnv,
     user?: IUser,
@@ -94,8 +107,10 @@ export class Embedding {
     embeddings: VectorizeVector[],
     options: RagOptions = {},
   ): Promise<VectorizeAsyncMutation> {
+    const namespace = this.getNamespace(options);
+    const opts = { ...options, namespace };
     // @ts-ignore
-    return await this.provider.insert(embeddings, options);
+    return await this.provider.insert(embeddings, opts);
   }
 
   async delete(
@@ -113,11 +128,16 @@ export class Embedding {
     queryVector: VectorFloatArray,
     options: RagOptions = {},
   ): Promise<VectorizeMatches> {
-    return await this.provider.getMatches(queryVector, options);
+    const namespace = this.getNamespace(options);
+    return await this.provider.getMatches(queryVector, {
+      ...options,
+      namespace,
+    });
   }
 
   async searchSimilar(query: string, options?: RagOptions) {
-    return await this.provider.searchSimilar(query, options);
+    const namespace = this.getNamespace(options);
+    return await this.provider.searchSimilar(query, { ...options, namespace });
   }
 
   async augmentPrompt(
@@ -131,13 +151,14 @@ export class Embedding {
       const scoreThreshold = options?.scoreThreshold ?? 0.7;
       const candidateCount = (options as any).rerankCandidates ?? 10;
 
+      const namespace = this.getNamespace(options);
       const docs = await trackRagMetrics(
         () =>
           this.searchSimilar(query, {
             topK: candidateCount,
             scoreThreshold,
             type: options?.type,
-            namespace: options?.namespace,
+            namespace,
           }),
         env?.ANALYTICS,
         { query, method: "augment_prompt_search" },

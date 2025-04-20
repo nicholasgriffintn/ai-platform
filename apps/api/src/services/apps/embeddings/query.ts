@@ -22,8 +22,12 @@ export const queryEmbeddings = async (req: any): Promise<any> => {
     const userSettings = await database.getUserSettings(req.user?.id);
     const embedding = Embedding.getInstance(env, req.user, userSettings);
 
-    const matchesWithContent = await embedding.searchSimilar(query, {
+    const finalNamespace = embedding.getNamespace({
       namespace,
+    });
+
+    const matchesWithContent = await embedding.searchSimilar(query, {
+      namespace: finalNamespace,
     });
 
     return {

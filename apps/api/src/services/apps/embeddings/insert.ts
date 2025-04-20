@@ -76,6 +76,10 @@ export const insertEmbedding = async (
     const userSettings = await database.getUserSettings(req.user?.id);
     const embedding = Embedding.getInstance(env, req.user, userSettings);
 
+    const finalNamespace = embedding.getNamespace({
+      namespace: rag_options.namespace,
+    });
+
     // Chunking: split document into smaller pieces if it exceeds maxChars
     const maxChars = rag_options.chunkSize || 2000;
     const chunks = chunkText(content, maxChars);
@@ -103,7 +107,15 @@ export const insertEmbedding = async (
         title,
       });
     }
-    const inserted = await embedding.insert(allGenerated, rag_options);
+    const generated = await embedding.generate(
+      type,
+      content,
+      uniqueId,
+      newMetadata,
+    );
+
+    const finalRagOptions = { ...rag_options, namespace: finalNamespace };
+    const inserted = await embedding.insert(generated, finalRagOptions);
 
     // @ts-ignore
     if (inserted.status !== "success" && !inserted.documentDetails) {
