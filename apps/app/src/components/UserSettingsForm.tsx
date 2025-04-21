@@ -26,6 +26,9 @@ export function UserSettingsForm({
     bedrock_knowledge_base_id: userSettings?.bedrock_knowledge_base_id || "",
     bedrock_knowledge_base_custom_data_source_id:
       userSettings?.bedrock_knowledge_base_custom_data_source_id || "",
+    memories_save_enabled: userSettings?.memories_save_enabled || false,
+    memories_chat_history_enabled:
+      userSettings?.memories_chat_history_enabled || false,
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -295,6 +298,58 @@ export function UserSettingsForm({
             </p>
           </>
         )}
+      </div>
+
+      <div>
+        <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
+          Memories
+        </h3>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label
+            htmlFor="memories_save_enabled"
+            className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+          >
+            Memories Save Enabled
+          </label>
+          <Switch
+            id="memories_save_enabled"
+            checked={formData.memories_save_enabled}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                memories_save_enabled: e.target.checked,
+              }))
+            }
+          />
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Allow Polychat to save and use memories when responding.
+          </p>
+        </div>
+
+        <div>
+          <label
+            htmlFor="memories_chat_history_enabled"
+            className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+          >
+            Memories Chat History Enabled
+          </label>
+          <Switch
+            id="memories_chat_history_enabled"
+            checked={formData.memories_chat_history_enabled}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                memories_chat_history_enabled: e.target.checked,
+              }))
+            }
+          />
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Allow Polychat to save and use your chat history when responding.
+          </p>
+        </div>
       </div>
 
       {saveSuccess && (

@@ -129,6 +129,8 @@ export class UserSettingsRepository extends BaseRepository {
          embedding_provider = ?,
          bedrock_knowledge_base_id = ?,
          bedrock_knowledge_base_custom_data_source_id = ?,
+         memories_save_enabled = ?,
+         memories_chat_history_enabled = ?,
          updated_at = datetime('now')
        WHERE user_id = ?`,
       [
@@ -152,14 +154,41 @@ export class UserSettingsRepository extends BaseRepository {
         settings.embedding_provider,
         settings.bedrock_knowledge_base_id,
         settings.bedrock_knowledge_base_custom_data_source_id,
+        settings.memories_save_enabled !== undefined
+          ? settings.memories_save_enabled
+            ? 1
+            : 0
+          : null,
+        settings.memories_chat_history_enabled !== undefined
+          ? settings.memories_chat_history_enabled
+            ? 1
+            : 0
+          : null,
         userId,
       ],
     );
   }
 
   public async getUserSettings(userId: number): Promise<IUserSettings | null> {
+    const columns = [
+      "id",
+      "nickname",
+      "job_role",
+      "traits",
+      "preferences",
+      "tracking_enabled",
+      "guardrails_enabled",
+      "guardrails_provider",
+      "bedrock_guardrail_id",
+      "bedrock_guardrail_version",
+      "embedding_provider",
+      "bedrock_knowledge_base_id",
+      "bedrock_knowledge_base_custom_data_source_id",
+      "memories_save_enabled",
+      "memories_chat_history_enabled",
+    ];
     const result = this.runQuery<IUserSettings>(
-      "SELECT id, nickname, job_role, traits, preferences, tracking_enabled, guardrails_enabled, guardrails_provider, bedrock_guardrail_id, bedrock_guardrail_version, embedding_provider, bedrock_knowledge_base_id, bedrock_knowledge_base_custom_data_source_id FROM user_settings WHERE user_id = ?",
+      `SELECT ${columns.join(", ")} FROM user_settings WHERE user_id = ?`,
       [userId],
       true,
     );

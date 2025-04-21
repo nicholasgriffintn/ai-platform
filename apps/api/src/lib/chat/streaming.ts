@@ -429,7 +429,10 @@ export async function createStreamWithPostProcessing(
           try {
             postProcessingDone = true;
 
-            if (!isRestricted) {
+            const memoriesEnabled =
+              userSettings?.memories_save_enabled ||
+              userSettings?.memories_chat_history_enabled;
+            if (!isRestricted && memoriesEnabled) {
               try {
                 const history = await conversationManager.get(completion_id);
                 const userHistory = history.filter((m) => m.role === "user");
@@ -450,6 +453,7 @@ export async function createStreamWithPostProcessing(
                     history,
                     conversationManager,
                     completion_id,
+                    userSettings,
                   );
                   for (const ev of memEvents) {
                     toolCallsData.push({

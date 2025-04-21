@@ -1,5 +1,5 @@
 import { AIProviderFactory } from "~/providers/factory";
-import type { IEnv, IUser } from "~/types";
+import type { IEnv, IUser, IUserSettings } from "~/types";
 import type { Message } from "~/types";
 import { generateId } from "~/utils/id";
 import { parseAIResponseJson } from "~/utils/json";
@@ -153,195 +153,205 @@ export class MemoryManager {
     messages: Message[],
     conversationManager: ConversationManager,
     completionId: string,
+    userSettings: IUserSettings,
   ): Promise<MemoryEvent[]> {
     const events: MemoryEvent[] = [];
-    // LLM‐driven memory classification
-    try {
-      if (lastUser.trim()) {
-        const { model: modelToUse, provider: providerToUse } =
-          await getAuxiliaryModel(this.env, this.user);
-        const provider = AIProviderFactory.getProvider(providerToUse);
-        const classifier = await provider.getResponse(
-          {
-            model: modelToUse,
-            env: this.env,
-            user: this.user,
-            messages: [
-              {
-                role: "system",
-                content:
-                  "You are a memory classifier for an AI assistant. Analyze the following user message and determine if it contains information worth remembering as a long-term memory. This could include facts about the user, preferences, important events, appointments, goals, or other significant information. For memories that should be stored, provide a clear, concise summary that will be easily retrievable when the user asks related questions later. Respond with JSON: { storeMemory: boolean, category: string, summary: string }. Use specific categories when possible (e.g., 'preference', 'schedule', 'goal', 'fact', 'opinion').",
-              },
-              { role: "user", content: lastUser },
-            ],
-            response_format: { format: "json" },
-          },
-          this.user?.id,
-        );
 
-        // Use standardized JSON parser
-        const parsed = parseAIResponseJson<{
-          storeMemory: boolean;
-          category: string;
-          summary: string;
-        }>(classifier.response);
-
-        if (parsed?.storeMemory) {
-          const summaryText = parsed.summary || lastUser;
-          const category = parsed.category || "general";
-
-          // Store both the original and a normalized version optimized for retrieval
-          logger.debug("Storing classified memory", { summaryText, category });
-
-          // First store the original summary
-          await this.storeMemory(summaryText, {
-            conversationId: completionId,
-            timestamp: Date.now().toString(),
-            category,
-            isNormalized: "false",
-          });
-
-          // For important facts, also store a more retrievable version
-          if (["fact", "schedule", "preference"].includes(category)) {
-            try {
-              const normalizer = await provider.getResponse(
+    if (!userSettings?.memories_save_enabled) {
+      // LLM‐driven memory classification
+      try {
+        if (lastUser.trim()) {
+          const { model: modelToUse, provider: providerToUse } =
+            await getAuxiliaryModel(this.env, this.user);
+          const provider = AIProviderFactory.getProvider(providerToUse);
+          const classifier = await provider.getResponse(
+            {
+              model: modelToUse,
+              env: this.env,
+              user: this.user,
+              messages: [
                 {
-                  model: modelToUse,
-                  env: this.env,
-                  user: this.user,
-                  messages: [
-                    {
-                      role: "system",
-                      content:
-                        "You are a memory normalizer. Transform the following user information into 2-3 concise, alternative phrasings that might match how users would later ask about this information. Each alternative should be a plain, natural language sentence without any formatting, headers, or structured data. Respond with a JSON array of strings, where each string is a complete alternative phrasing. Focus on creating variations that would help with semantic search matching.",
-                    },
-                    { role: "user", content: summaryText },
-                  ],
-                  response_format: { format: "json" },
+                  role: "system",
+                  content:
+                    "You are a memory classifier for an AI assistant. Analyze the following user message and determine if it contains information worth remembering as a long-term memory. This could include facts about the user, preferences, important events, appointments, goals, or other significant information. For memories that should be stored, provide a clear, concise summary that will be easily retrievable when the user asks related questions later. Respond with JSON: { storeMemory: boolean, category: string, summary: string }. Use specific categories when possible (e.g., 'preference', 'schedule', 'goal', 'fact', 'opinion').",
                 },
-                this.user?.id,
-              );
+                { role: "user", content: lastUser },
+              ],
+              response_format: { format: "json" },
+            },
+            this.user?.id,
+          );
 
-              try {
-                let normalized: string[] = [];
-                const response = normalizer.response?.trim() || "";
+          // Use standardized JSON parser
+          const parsed = parseAIResponseJson<{
+            storeMemory: boolean;
+            category: string;
+            summary: string;
+          }>(classifier.response);
 
-                // Use our standardized JSON parser
-                const parsedResponse = parseAIResponseJson<
-                  string[] | { text: string[] }
-                >(response);
+          if (parsed?.storeMemory) {
+            const summaryText = parsed.summary || lastUser;
+            const category = parsed.category || "general";
 
-                if (parsedResponse) {
-                  if (Array.isArray(parsedResponse)) {
-                    normalized = parsedResponse;
-                  } else if (
-                    parsedResponse.text &&
-                    Array.isArray(parsedResponse.text)
-                  ) {
-                    normalized = parsedResponse.text;
-                  }
-                }
+            // Store both the original and a normalized version optimized for retrieval
+            logger.debug("Storing classified memory", {
+              summaryText,
+              category,
+            });
 
-                // Filter out any empty or overly long entries
-                normalized = normalized
-                  .filter(
-                    (text) =>
-                      typeof text === "string" && text.trim().length > 0,
-                  )
-                  .map((text) => text.trim())
-                  .filter(
-                    (text) =>
-                      !text.includes("###") &&
-                      !text.includes("**") &&
-                      text.length < 200,
-                  );
-
-                // Store each normalized version as a separate memory
-                for (const altText of normalized) {
-                  await this.storeMemory(altText, {
-                    conversationId: completionId,
-                    timestamp: Date.now().toString(),
-                    category,
-                    isNormalized: "true",
-                    originalText: summaryText,
-                  });
-                  logger.debug("Stored alternative memory phrasing", {
-                    altText,
-                  });
-                }
-              } catch (e) {
-                logger.debug("Failed to process normalized memory", {
-                  error: e,
-                  response: normalizer.response,
-                });
-              }
-            } catch (e) {
-              logger.debug("Failed to normalize memory", { error: e });
-            }
-          }
-
-          events.push({ type: "store", text: summaryText, category });
-        }
-      }
-    } catch (e) {
-      logger.debug("Memory classification failed", { error: e });
-    }
-
-    // Periodic snapshot every 5 user turns
-    try {
-      const userCount = messages.filter((m) => m.role === "user").length;
-      if (userCount > 0 && userCount % 5 === 0) {
-        const recent = await conversationManager.get(
-          completionId,
-          undefined,
-          10,
-        );
-        const snippet = recent
-          .map(
-            (m) =>
-              `${m.role}: ${typeof m.content === "string" ? m.content : JSON.stringify(m.content)}`,
-          )
-          .join("\n");
-        logger.debug("Summarizing conversation", { snippet });
-        const { model: modelToUse, provider: providerToUse } =
-          await getAuxiliaryModel(this.env, this.user);
-        const provider = AIProviderFactory.getProvider(providerToUse);
-        const summaryResp = await provider.getResponse(
-          {
-            model: modelToUse,
-            env: this.env,
-            user: this.user,
-            messages: [
-              {
-                role: "system",
-                content:
-                  "You are a memory summarizer. Summarize the following conversation snippet into a single short memory capturing any important facts, preferences, goals, or events.",
-              },
-              { role: "user", content: snippet },
-            ],
-          },
-          this.user?.id,
-        );
-        const text = summaryResp.response?.trim();
-        if (text) {
-          const category = "snapshot";
-          logger.debug("Storing snapshot", { text });
-          try {
-            await this.storeMemory(text, {
+            // First store the original summary
+            await this.storeMemory(summaryText, {
               conversationId: completionId,
               timestamp: Date.now().toString(),
               category,
+              isNormalized: "false",
             });
-            events.push({ type: "snapshot", text, category });
-          } catch (e) {
-            logger.debug("Failed to store snapshot", { error: e });
+
+            // For important facts, also store a more retrievable version
+            if (["fact", "schedule", "preference"].includes(category)) {
+              try {
+                const normalizer = await provider.getResponse(
+                  {
+                    model: modelToUse,
+                    env: this.env,
+                    user: this.user,
+                    messages: [
+                      {
+                        role: "system",
+                        content:
+                          "You are a memory normalizer. Transform the following user information into 2-3 concise, alternative phrasings that might match how users would later ask about this information. Each alternative should be a plain, natural language sentence without any formatting, headers, or structured data. Respond with a JSON array of strings, where each string is a complete alternative phrasing. Focus on creating variations that would help with semantic search matching.",
+                      },
+                      { role: "user", content: summaryText },
+                    ],
+                    response_format: { format: "json" },
+                  },
+                  this.user?.id,
+                );
+
+                try {
+                  let normalized: string[] = [];
+                  const response = normalizer.response?.trim() || "";
+
+                  // Use our standardized JSON parser
+                  const parsedResponse = parseAIResponseJson<
+                    string[] | { text: string[] }
+                  >(response);
+
+                  if (parsedResponse) {
+                    if (Array.isArray(parsedResponse)) {
+                      normalized = parsedResponse;
+                    } else if (
+                      parsedResponse.text &&
+                      Array.isArray(parsedResponse.text)
+                    ) {
+                      normalized = parsedResponse.text;
+                    }
+                  }
+
+                  // Filter out any empty or overly long entries
+                  normalized = normalized
+                    .filter(
+                      (text) =>
+                        typeof text === "string" && text.trim().length > 0,
+                    )
+                    .map((text) => text.trim())
+                    .filter(
+                      (text) =>
+                        !text.includes("###") &&
+                        !text.includes("**") &&
+                        text.length < 200,
+                    );
+
+                  // Store each normalized version as a separate memory
+                  for (const altText of normalized) {
+                    await this.storeMemory(altText, {
+                      conversationId: completionId,
+                      timestamp: Date.now().toString(),
+                      category,
+                      isNormalized: "true",
+                      originalText: summaryText,
+                    });
+                    logger.debug("Stored alternative memory phrasing", {
+                      altText,
+                    });
+                  }
+                } catch (e) {
+                  logger.debug("Failed to process normalized memory", {
+                    error: e,
+                    response: normalizer.response,
+                  });
+                }
+              } catch (e) {
+                logger.debug("Failed to normalize memory", { error: e });
+              }
+            }
+
+            events.push({ type: "store", text: summaryText, category });
           }
         }
+      } catch (e) {
+        logger.debug("Memory classification failed", { error: e });
       }
-    } catch (e) {
-      logger.debug("Snapshot generation failed", { error: e });
-      // ignore snapshot failures
     }
+
+    if (userSettings?.memories_chat_history_enabled) {
+      // Periodic snapshot every 5 user turns
+      try {
+        const userCount = messages.filter((m) => m.role === "user").length;
+        if (userCount > 0 && userCount % 5 === 0) {
+          const recent = await conversationManager.get(
+            completionId,
+            undefined,
+            10,
+          );
+          const snippet = recent
+            .map(
+              (m) =>
+                `${m.role}: ${typeof m.content === "string" ? m.content : JSON.stringify(m.content)}`,
+            )
+            .join("\n");
+          logger.debug("Summarizing conversation", { snippet });
+          const { model: modelToUse, provider: providerToUse } =
+            await getAuxiliaryModel(this.env, this.user);
+          const provider = AIProviderFactory.getProvider(providerToUse);
+          const summaryResp = await provider.getResponse(
+            {
+              model: modelToUse,
+              env: this.env,
+              user: this.user,
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "You are a memory summarizer. Summarize the following conversation snippet into a single short memory capturing any important facts, preferences, goals, or events.",
+                },
+                { role: "user", content: snippet },
+              ],
+            },
+            this.user?.id,
+          );
+          const text = summaryResp.response?.trim();
+          if (text) {
+            const category = "snapshot";
+            logger.debug("Storing snapshot", { text });
+            try {
+              await this.storeMemory(text, {
+                conversationId: completionId,
+                timestamp: Date.now().toString(),
+                category,
+              });
+              events.push({ type: "snapshot", text, category });
+            } catch (e) {
+              logger.debug("Failed to store snapshot", { error: e });
+            }
+          }
+        }
+      } catch (e) {
+        logger.debug("Snapshot generation failed", { error: e });
+        // ignore snapshot failures
+      }
+    }
+
     return events;
   }
 }

@@ -227,7 +227,10 @@ async function prepareRequestData(options: CoreChatOptions) {
   }
 
   // Inject long-term memories into the system prompt
-  if (!isRestricted) {
+  const memoriesEnabled =
+    userSettings?.memories_save_enabled ||
+    userSettings?.memories_chat_history_enabled;
+  if (!isRestricted && memoriesEnabled) {
     const memoryManager = MemoryManager.getInstance(env, user);
     const recentMemories = await memoryManager.retrieveMemories(
       lastMessageContentText,

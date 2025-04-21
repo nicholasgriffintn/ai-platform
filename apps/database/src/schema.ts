@@ -186,6 +186,8 @@ export const userSettings = sqliteTable(
     }).default("vectorize"),
     bedrock_knowledge_base_id: text(),
     bedrock_knowledge_base_custom_data_source_id: text(),
+    memories_save_enabled: integer({ mode: "boolean" }).default(false),
+    memories_chat_history_enabled: integer({ mode: "boolean" }).default(false),
     tracking_enabled: integer({ mode: "boolean" }).default(true),
     public_key: text(),
     private_key: text(),

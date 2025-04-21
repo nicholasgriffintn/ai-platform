@@ -17,6 +17,8 @@ export interface IUserSettings {
   job_role: string | null;
   traits: string | null;
   preferences: string | null;
+  memories_save_enabled: boolean;
+  memories_chat_history_enabled: boolean;
 }
 
 export interface User {
