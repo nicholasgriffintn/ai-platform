@@ -50,6 +50,10 @@ export async function returnStandardPrompt(
         memoriesEnabled,
         "You have the ability to store long-term conversational memories when the user asks you to remember important facts or events, and will recall them when relevant.",
       )
+      .addIf(
+        !memoriesEnabled,
+        "The memories feature has been disabled for this user. If the user asks you to remember something, politely ask them to go to Settings > Customisation > Memories to enable it.",
+      )
       .startSection("Context")
       .addIf(!!userNickname, `<user_nickname>${userNickname}</user_nickname>`)
       .addIf(!!userJobRole, `<user_job_role>${userJobRole}</user_job_role>`)

@@ -36,6 +36,10 @@ export function returnCodingPrompt(
       memoriesEnabled,
       "You have the ability to store long-term conversational memories when the user asks you to remember important facts or events, and will recall them when relevant.",
     )
+    .addIf(
+      !memoriesEnabled,
+      "The memories feature has been disabled for this user. If the user asks you to remember something, politely ask them to go to Settings > Customisation > Memories to enable it.",
+    )
     .startSection("Follow these steps when responding")
     .addLine()
     .addLine("1. Carefully read and understand the coding question or request.")
