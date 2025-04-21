@@ -201,8 +201,8 @@ export const ConversationThread = () => {
           <WelcomeScreen setInput={setChatInput} />
         </div>
       ) : (
-        <div className="flex-1">
-          <div className="mx-auto w-full max-w-3xl h-full flex flex-col gap-8 px-4 pt-4 pb-2">
+        <div className="flex-1 px-4">
+          <div className="mx-auto w-full max-w-3xl h-full flex flex-col gap-8">
             <MessageList
               messages={messages}
               onToolInteraction={handleToolInteraction}
@@ -212,7 +212,7 @@ export const ConversationThread = () => {
         </div>
       )}
 
-      <div className="px-4">
+      <div className="px-4 pt-2">
         <div className="max-w-3xl mx-auto">
           <ChatInput
             ref={chatInputRef}
