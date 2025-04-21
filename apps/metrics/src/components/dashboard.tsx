@@ -188,12 +188,12 @@ export function MetricsDashboard({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {metrics.map((metric) => {
+                    {metrics.map((metric, idx) => {
                       const metadata = parseMetadata(metric.metadata);
                       const tokenUsage = metadata.tokenUsage || {};
                       return (
                         <TableRow
-                          key={metric.traceId}
+                          key={`${metric.traceId}-${idx}`}
                           className="cursor-pointer hover:bg-muted/50"
                           onClick={() => setSelectedMetric(metric)}
                         >
