@@ -96,7 +96,13 @@ export async function mapParametersToProvider(
   const provider = AIProviderFactory.getProvider(providerName);
 
   const modelTypeIsText = modelConfig?.type?.includes("text");
-  if (params.stream && provider.supportsStreaming && modelTypeIsText) {
+  const modelTypeIsCoding = modelConfig?.type?.includes("coding");
+  const modelTypeSupportsStreaming = modelTypeIsText || modelTypeIsCoding;
+  if (
+    params.stream &&
+    provider.supportsStreaming &&
+    modelTypeSupportsStreaming
+  ) {
     commonParams.stream = true;
   }
 

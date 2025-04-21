@@ -126,7 +126,13 @@ export async function getAIResponse({
 
   let shouldStream = false;
   const modelTypeIsText = modelConfig?.type?.includes("text");
-  if (params.stream && provider.supportsStreaming && modelTypeIsText) {
+  const modelTypeIsCoding = modelConfig?.type?.includes("coding");
+  const modelTypeSupportsStreaming = modelTypeIsText || modelTypeIsCoding;
+  if (
+    params.stream &&
+    provider.supportsStreaming &&
+    modelTypeSupportsStreaming
+  ) {
     shouldStream = true;
   }
 
