@@ -88,48 +88,48 @@ export const MessageList = ({
 
   return (
     <div
-      className="flex flex-col flex-1"
+      className="flex flex-col flex-1 relative"
       data-conversation-id={currentConversationId || undefined}
       role="log"
       aria-live="polite"
       aria-label="Conversation messages"
       aria-atomic="false"
     >
-      {!isSharedView && (
-        <div className="flex items-center mb-3">
-          <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-2 min-w-0 truncate flex-grow">
-            <MessagesSquare size={16} className="flex-shrink-0" />
-            <span className="truncate">
-              {conversation?.title || "New conversation"}
-            </span>
-          </h2>
-          {!conversation?.isLocalOnly &&
-            !isLoadingConversation &&
-            currentConversationId &&
-            isAuthenticated && (
-              <ShareButton
-                conversationId={currentConversationId}
-                isPublic={conversation?.is_public}
-                shareId={conversation?.share_id}
-                className="flex-shrink-0"
-              />
-            )}
-        </div>
-      )}
-      {!isSharedView && isLoadingConversation ? (
-        <div className="py-4 space-y-4">
-          {[...Array(3)].map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: It's a key for the skeleton
-            <MessageSkeleton key={`skeleton-item-${i}`} />
-          ))}
-        </div>
-      ) : (
-        <div className="relative flex-1">
-          <VList
-            ref={virtualRef}
-            className="flex-1 pt-4 pr-2 h-full overflow-auto w-full"
-            onScroll={handleScroll}
-          >
+      <VList
+        ref={virtualRef}
+        className="flex-1 pt-4 pr-2 h-full overflow-auto w-full"
+        onScroll={handleScroll}
+      >
+        {!isSharedView && (
+          <div className="flex items-center mb-3">
+            <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-2 min-w-0 truncate flex-grow">
+              <MessagesSquare size={16} className="flex-shrink-0" />
+              <span className="truncate">
+                {conversation?.title || "New conversation"}
+              </span>
+            </h2>
+            {!conversation?.isLocalOnly &&
+              !isLoadingConversation &&
+              currentConversationId &&
+              isAuthenticated && (
+                <ShareButton
+                  conversationId={currentConversationId}
+                  isPublic={conversation?.is_public}
+                  shareId={conversation?.share_id}
+                  className="flex-shrink-0"
+                />
+              )}
+          </div>
+        )}
+        {!isSharedView && isLoadingConversation ? (
+          <div className="py-4 space-y-4">
+            {[...Array(3)].map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: It's a key for the skeleton
+              <MessageSkeleton key={`skeleton-item-${i}`} />
+            ))}
+          </div>
+        ) : (
+          <>
             {messages.map((message, index) => (
               <div
                 key={`${message.id || index}-${index}`}
@@ -156,18 +156,18 @@ export const MessageList = ({
                 />
               </div>
             )}
-          </VList>
-          {showScroll && !isSharedView && (
-            <div className="absolute bottom-6 right-4 z-10">
-              <ScrollButton
-                onClick={() =>
-                  virtualRef.current?.scrollToIndex(messages.length - 1, {
-                    align: "end",
-                  })
-                }
-              />
-            </div>
-          )}
+          </>
+        )}
+      </VList>
+      {showScroll && !isSharedView && (
+        <div className="absolute bottom-2 right-2 z-10">
+          <ScrollButton
+            onClick={() =>
+              virtualRef.current?.scrollToIndex(messages.length - 1, {
+                align: "end",
+              })
+            }
+          />
         </div>
       )}
     </div>
