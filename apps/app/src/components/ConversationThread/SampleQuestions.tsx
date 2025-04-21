@@ -105,6 +105,21 @@ const questionPool: QuestionPool = {
       question:
         "Explain a complex scientific concept (like black holes) in simple terms.",
     },
+    {
+      text: "Debugging Challenge",
+      question:
+        "You have a function that's supposed to sort an array of numbers, but it's not working as expected. Can you help debug it?",
+    },
+    {
+      text: "Algorithm Design",
+      question:
+        "Design an efficient algorithm to find the shortest path in a weighted graph.",
+    },
+    {
+      text: "Code Optimization",
+      question:
+        "How would you optimize a function that calculates the Fibonacci sequence for large inputs?",
+    },
   ],
   practical: [
     {
@@ -132,6 +147,21 @@ const questionPool: QuestionPool = {
       question:
         "Outline a step-by-step plan for repurposing household items to create an organized workspace.",
     },
+    {
+      text: "Coding Best Practices",
+      question:
+        "What are some best practices for writing clean and maintainable code?",
+    },
+    {
+      text: "Version Control",
+      question:
+        "Explain the basic concepts of version control using Git and provide a simple example of how to use it.",
+    },
+    {
+      text: "Testing Strategies",
+      question:
+        "What are some effective strategies for testing a web application to ensure it's bug-free?",
+    },
   ],
   analytical: [
     {
@@ -148,6 +178,26 @@ const questionPool: QuestionPool = {
       text: "Automation effects",
       question:
         "Examine the possible consequences of widespread automation on global job markets.",
+    },
+    {
+      text: "Code Review",
+      question:
+        "Perform a code review on a sample piece of code and provide feedback on its structure, efficiency, and readability.",
+    },
+    {
+      text: "Performance Analysis",
+      question:
+        "Analyze the performance of a given algorithm and suggest improvements to enhance its efficiency.",
+    },
+    {
+      text: "Data Analysis",
+      question:
+        "Analyze a dataset and provide insights on its trends and patterns.",
+    },
+    {
+      text: "Algorithmic Trading",
+      question:
+        "Design an algorithmic trading strategy for a given stock and evaluate its potential success.",
     },
   ],
   ethical: [
