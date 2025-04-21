@@ -20,12 +20,10 @@ export class MemoryManager {
   private static instance: MemoryManager;
   private env: IEnv;
   private user?: IUser;
-  private cache: Map<string, Array<{ text: string; score: number }>>;
 
   private constructor(env: IEnv, user?: IUser) {
     this.env = env;
     this.user = user;
-    this.cache = new Map();
   }
 
   public static getInstance(env: IEnv, user?: IUser): MemoryManager {
@@ -144,8 +142,6 @@ export class MemoryManager {
       topScore: memories[0]?.score,
     });
 
-    // Cache this query's results (optional)
-    this.cache.set(query, memories);
     return memories;
   }
 
