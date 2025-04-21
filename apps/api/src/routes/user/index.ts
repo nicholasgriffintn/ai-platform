@@ -7,13 +7,13 @@ import { Database } from "~/lib/database";
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { errorResponseSchema, successResponseSchema } from "./schemas/shared";
+import { errorResponseSchema, successResponseSchema } from "../schemas/shared";
 import {
   storeProviderApiKeySchema,
   updateUserSettingsResponseSchema,
   updateUserSettingsSchema,
-} from "./schemas/user";
-import apiKeys from "./user/apiKeys";
+} from "../schemas/user";
+import apiKeys from "./apiKeys";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("USER");
