@@ -7,7 +7,6 @@ import {
   ComposedChart,
   Legend,
   Line,
-  ResponsiveContainer,
   XAxis,
   YAxis,
 } from "recharts";
@@ -40,16 +39,23 @@ export function CombinedMetricsChart({
     );
   }
 
-  const sanitizedData = data.map((point) => ({
-    timestamp: point.timestamp || "",
-    provider: point.provider || "unknown",
-    latency: typeof point.latency === "number" ? point.latency : 0,
-    promptTokens:
-      typeof point.promptTokens === "number" ? point.promptTokens : 0,
-    completionTokens:
-      typeof point.completionTokens === "number" ? point.completionTokens : 0,
-    totalTokens: typeof point.totalTokens === "number" ? point.totalTokens : 0,
-  }));
+  const sanitizedData = data
+    .map((point) => ({
+      timestamp: point.timestamp || "",
+      provider: point.provider || "unknown",
+      latency: typeof point.latency === "number" ? point.latency : 0,
+      promptTokens:
+        typeof point.promptTokens === "number" ? point.promptTokens : 0,
+      completionTokens:
+        typeof point.completionTokens === "number" ? point.completionTokens : 0,
+      totalTokens:
+        typeof point.totalTokens === "number" ? point.totalTokens : 0,
+    }))
+    .sort((a, b) => {
+      const dateA = new Date(a.timestamp.replace(" ", "T")).getTime();
+      const dateB = new Date(b.timestamp.replace(" ", "T")).getTime();
+      return dateA - dateB;
+    });
 
   const extendedData = [...sanitizedData];
   const lastEntry = sanitizedData[sanitizedData.length - 1];
@@ -98,20 +104,19 @@ export function CombinedMetricsChart({
   const formatLatency = (value: number) => `${value.toLocaleString()}ms`;
   const formatTokens = (value: number) => `${value.toLocaleString()}`;
   const formatTimestamp = (timestamp: string) => {
+    if (!timestamp) return "";
     try {
-      if (!timestamp) return "";
-      const [date, time] = timestamp.split(" ");
-      if (!time) return "";
-      const [hours, minutes] = time.split(":");
-
-      if (
-        (hours === "00" && minutes === "00") ||
-        timestamp === extendedData[0]?.timestamp ||
-        timestamp === extendedData[extendedData.length - 1]?.timestamp
-      ) {
-        return `${date} ${hours}:${minutes}`;
+      // support both space and ISO 'T' separators
+      const normalized = timestamp.includes("T")
+        ? timestamp
+        : timestamp.replace(" ", "T");
+      const dateObj = new Date(normalized);
+      if (Number.isNaN(dateObj.getTime())) {
+        return timestamp;
       }
-
+      const hours = dateObj.getHours().toString().padStart(2, "0");
+      const minutes = dateObj.getMinutes().toString().padStart(2, "0");
+      // show clock time only for readability
       return `${hours}:${minutes}`;
     } catch (error) {
       console.error("Error formatting timestamp:", timestamp);
@@ -166,101 +171,94 @@ export function CombinedMetricsChart({
       }}
       className="h-full w-full"
     >
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart
-          data={extendedData}
-          margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-          <XAxis
-            dataKey="timestamp"
-            angle={-45}
-            textAnchor="end"
-            height={60}
-            interval="preserveStartEnd"
-            tick={{ fontSize: 11, fill: "var(--foreground)" }}
-            tickFormatter={formatTimestamp}
-          />
-          <YAxis
-            yAxisId="left"
-            orientation="left"
-            stroke="var(--foreground)"
-            tick={{ fontSize: 11, fill: "var(--foreground)" }}
-            tickFormatter={formatLatency}
-            width={80}
-          />
-          <YAxis
+      <ComposedChart
+        data={extendedData}
+        margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+        <XAxis
+          dataKey="timestamp"
+          angle={-45}
+          textAnchor="end"
+          height={60}
+          interval="preserveStartEnd"
+          tick={{ fontSize: 11, fill: "var(--foreground)" }}
+          tickFormatter={formatTimestamp}
+        />
+        <YAxis
+          yAxisId="left"
+          orientation="left"
+          stroke="var(--foreground)"
+          tick={{ fontSize: 11, fill: "var(--foreground)" }}
+          tickFormatter={formatLatency}
+          width={80}
+        />
+        <YAxis
+          yAxisId="right"
+          orientation="right"
+          stroke="var(--foreground)"
+          tick={{ fontSize: 11, fill: "var(--foreground)" }}
+          tickFormatter={formatTokens}
+          width={80}
+        />
+        <ChartTooltip
+          content={<ChartTooltipContent />}
+          cursor={{ fill: "rgba(255, 255, 255, 0.1)" }}
+        />
+        <Legend
+          verticalAlign="top"
+          height={24}
+          iconSize={10}
+          wrapperStyle={{
+            paddingBottom: "10px",
+            fontSize: "12px",
+          }}
+        />
+        <Bar yAxisId="left" dataKey="latency" name="Latency (ms)" opacity={0.9}>
+          {extendedData.map((entry, index) => (
+            <Cell
+              key={`cell-${index}-${entry.timestamp}`}
+              fill={getProviderColor(entry.provider)}
+              style={{
+                filter: "brightness(1.1)",
+              }}
+            />
+          ))}
+        </Bar>
+        {extendedData.some((d) => d.promptTokens > 0) && (
+          <Line
             yAxisId="right"
-            orientation="right"
-            stroke="var(--foreground)"
-            tick={{ fontSize: 11, fill: "var(--foreground)" }}
-            tickFormatter={formatTokens}
-            width={80}
+            type="monotone"
+            dataKey="promptTokens"
+            stroke="#00F5D4"
+            strokeWidth={2}
+            name="Prompt Tokens"
+            dot={false}
           />
-          <ChartTooltip
-            content={<ChartTooltipContent />}
-            cursor={{ fill: "rgba(255, 255, 255, 0.1)" }}
+        )}
+        {extendedData.some((d) => d.completionTokens > 0) && (
+          <Line
+            yAxisId="right"
+            type="monotone"
+            dataKey="completionTokens"
+            stroke="#FF6B6B"
+            strokeWidth={2}
+            name="Completion Tokens"
+            dot={false}
           />
-          <Legend
-            verticalAlign="top"
-            height={24}
-            iconSize={10}
-            wrapperStyle={{
-              paddingBottom: "10px",
-              fontSize: "12px",
-            }}
+        )}
+        {extendedData.some((d) => d.totalTokens > 0) && (
+          <Line
+            yAxisId="right"
+            type="monotone"
+            dataKey="totalTokens"
+            stroke="#FEE440"
+            strokeWidth={2}
+            name="Total Tokens"
+            dot={false}
           />
-          <Bar
-            yAxisId="left"
-            dataKey="latency"
-            name="Latency (ms)"
-            opacity={0.9}
-          >
-            {extendedData.map((entry, index) => (
-              <Cell
-                key={`cell-${index}-${entry.timestamp}`}
-                fill={getProviderColor(entry.provider)}
-                style={{
-                  filter: "brightness(1.1)",
-                }}
-              />
-            ))}
-          </Bar>
-          {extendedData.some((d) => d.promptTokens > 0) && (
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="promptTokens"
-              stroke="#00F5D4"
-              strokeWidth={2}
-              name="Prompt Tokens"
-              dot={false}
-            />
-          )}
-          {extendedData.some((d) => d.completionTokens > 0) && (
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="completionTokens"
-              stroke="#FF6B6B"
-              strokeWidth={2}
-              name="Completion Tokens"
-              dot={false}
-            />
-          )}
-          {extendedData.some((d) => d.totalTokens > 0) && (
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="totalTokens"
-              stroke="#FEE440"
-              strokeWidth={2}
-              name="Total Tokens"
-              dot={false}
-            />
-          )}
-        </ComposedChart>
-      </ResponsiveContainer>
+        )}
+      </ComposedChart>
     </ChartContainer>
   );
 }

@@ -63,19 +63,24 @@ export function MetricsDashboard({
   const cachedPercentage = ((cachedRequests / totalRequests) * 100).toFixed(2);
   const errorRequests = metrics.filter((m) => m.status === "error").length;
 
-  const combinedChartData = metrics.map((metric) => {
-    const metadata = parseMetadata(metric.metadata);
-    const tokenUsage = metadata.tokenUsage || {};
-    return {
-      name: `${metadata.provider} (${metadata.model})`,
-      latency: metric.value,
-      promptTokens: tokenUsage.prompt_tokens || 0,
-      completionTokens: tokenUsage.completion_tokens || 0,
-      totalTokens: tokenUsage.total_tokens || 0,
-      timestamp: metric.timestamp,
-      provider: metadata.provider,
-    };
-  });
+  const combinedChartData = metrics
+    .map((metric) => {
+      const metadata = parseMetadata(metric.metadata);
+      const tokenUsage = metadata.tokenUsage || {};
+      return {
+        name: `${metadata.provider} (${metadata.model})`,
+        latency: metric.value,
+        promptTokens: tokenUsage.prompt_tokens || 0,
+        completionTokens: tokenUsage.completion_tokens || 0,
+        totalTokens: tokenUsage.total_tokens || 0,
+        timestamp: metric.timestamp.replace(" ", "T"),
+        provider: metadata.provider || "unknown",
+      };
+    })
+    .sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
 
   return (
     <div className="space-y-6">
