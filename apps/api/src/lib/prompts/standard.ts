@@ -18,6 +18,9 @@ export async function returnStandardPrompt(
     const userJobRole = userSettings?.job_role || null;
     const userTraits = userSettings?.traits || null;
     const userPreferences = userSettings?.preferences || null;
+    const memoriesEnabled =
+      userSettings?.memories_save_enabled ||
+      userSettings?.memories_chat_history_enabled;
 
     const latitude = request.location?.latitude || user?.latitude;
     const longitude = request.location?.longitude || user?.longitude;
@@ -43,7 +46,8 @@ export async function returnStandardPrompt(
       .addLine(
         `Follow these guidelines when responding:\n${userPreferences || DEFAULT_PREFERENCES}`,
       )
-      .addLine(
+      .addIf(
+        memoriesEnabled,
         "You have the ability to store long-term conversational memories when the user asks you to remember important facts or events, and will recall them when relevant.",
       )
       .startSection("Context")

@@ -32,7 +32,12 @@ export async function getSystemPrompt(
 
   const isCodingModel = modelConfig.type.includes("coding");
   if (isCodingModel && !isTextModel) {
-    return returnCodingPrompt(response_mode, supportsArtifacts, hasThinking);
+    return returnCodingPrompt(
+      response_mode,
+      supportsArtifacts,
+      hasThinking,
+      userSettings,
+    );
   }
 
   const isTextToImageModel = modelConfig.type.includes("text-to-image");

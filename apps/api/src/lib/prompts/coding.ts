@@ -1,3 +1,4 @@
+import type { IUserSettings } from "~/types";
 import { PromptBuilder } from "./builder";
 import {
   getArtifactExample,
@@ -9,7 +10,12 @@ export function returnCodingPrompt(
   response_mode = "normal",
   supportsArtifacts?: boolean,
   hasThinking?: boolean,
+  userSettings?: IUserSettings,
 ): string {
+  const memoriesEnabled =
+    userSettings?.memories_save_enabled ||
+    userSettings?.memories_chat_history_enabled;
+
   const { traits, problemBreakdownInstructions, answerFormatInstructions } =
     getResponseStyle(response_mode);
 
@@ -26,7 +32,8 @@ export function returnCodingPrompt(
   }
 
   builder
-    .addLine(
+    .addIf(
+      memoriesEnabled,
       "You have the ability to store long-term conversational memories when the user asks you to remember important facts or events, and will recall them when relevant.",
     )
     .startSection("Follow these steps when responding")
