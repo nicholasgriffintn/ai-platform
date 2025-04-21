@@ -128,7 +128,7 @@ export default function SharedConversationPage() {
           <p className="mb-8 text-zinc-600 dark:text-zinc-400">{error}</p>
           <Link
             to="/"
-            className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            className="inline-flex items-center rounded-md bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2"
           >
             Return Home
           </Link>
@@ -156,7 +156,7 @@ export default function SharedConversationPage() {
             <div className="flex items-center gap-2">
               <Link
                 to="/"
-                className="no-underline inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="no-underline inline-flex items-center gap-1 rounded-md bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2"
               >
                 <PlusCircle size={16} />
                 <span>New Chat</span>
@@ -166,10 +166,10 @@ export default function SharedConversationPage() {
         </header>
 
         <div className="relative flex-1 overflow-x-hidden overflow-y-scroll">
-          <div className="h-full mx-auto flex w-full max-w-3xl grow flex-col gap-8 px-4 py-8">
+          <div className="h-full mx-auto flex w-full max-w-3xl grow flex-col gap-8 px-4">
             {messages.length > 0 ? (
               <div className="flex-1">
-                <div className="mx-auto w-full max-w-3xl h-full flex flex-col gap-8 px-4 py-8">
+                <div className="mx-auto w-full max-w-3xl h-full flex flex-col gap-8 px-4">
                   <MessageList
                     messages={messages}
                     isSharedView={true}
