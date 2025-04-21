@@ -1,7 +1,7 @@
-import type { ConversationManager } from "~/lib/conversationManager";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { AIProviderFactory } from "~/providers/factory";
-import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
+import { RepositoryManager } from "~/repositories";
+import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 const REPLICATE_MODEL_VERSION =
@@ -18,13 +18,12 @@ interface TranscribeRequest {
   request: IPodcastTranscribeBody;
   user: IUser;
   app_url?: string;
-  conversationManager?: ConversationManager;
 }
 
 export const handlePodcastTranscribe = async (
   req: TranscribeRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-  const { request, env, user, app_url, conversationManager } = req;
+  const { request, env, user, app_url } = req;
 
   if (!request.podcastId || !request.prompt || !request.numberOfSpeakers) {
     throw new AssistantError(
@@ -38,33 +37,59 @@ export const handlePodcastTranscribe = async (
       throw new AssistantError("Missing database", ErrorType.PARAMS_ERROR);
     }
 
-    if (!conversationManager) {
+    if (!user?.id) {
+      throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
+    }
+
+    const repositories = RepositoryManager.getInstance(env);
+
+    const existingTranscriptions =
+      await repositories.appData.getAppDataByUserAppAndItem(
+        user.id,
+        "podcasts",
+        request.podcastId,
+        "transcribe",
+      );
+
+    if (existingTranscriptions.length > 0) {
+      const transcriptionData = JSON.parse(
+        existingTranscriptions[0].data,
+      ).transcriptionData;
+      return {
+        status: "success",
+        content: "Podcast Transcription retrieved from cache",
+        data: transcriptionData,
+      };
+    }
+
+    const uploadData = await repositories.appData.getAppDataByUserAppAndItem(
+      user.id,
+      "podcasts",
+      request.podcastId,
+      "upload",
+    );
+
+    if (uploadData.length === 0) {
       throw new AssistantError(
-        "Missing conversation manager",
+        "Podcast upload not found. Please upload audio first",
         ErrorType.PARAMS_ERROR,
       );
     }
 
-    const chat = await conversationManager.get(request.podcastId);
-
-    if (!chat?.length) {
-      throw new AssistantError("Podcast not found", ErrorType.PARAMS_ERROR);
-    }
-
-    const uploadData = chat.find(
-      (message) => message.name === "podcast_upload",
-    );
-    if (!uploadData?.data?.url) {
-      throw new AssistantError("Podcast not found", ErrorType.PARAMS_ERROR);
-    }
+    const parsedUploadData = JSON.parse(uploadData[0].data);
+    const title = parsedUploadData.title;
+    const description = parsedUploadData.description;
+    const audioUrl = parsedUploadData.audioUrl;
 
     const modelConfig = getModelConfigByMatchingModel(REPLICATE_MODEL_VERSION);
     const provider = AIProviderFactory.getProvider(
       modelConfig?.provider || "replicate",
     );
 
-    const basewebhook_url = app_url || "https://chat-api.nickgriffin.uk";
+    const basewebhook_url = app_url || "https://api.polychat.app";
     const webhook_url = `${basewebhook_url}/webhooks/replicate?completion_id=${request.podcastId}&token=${env.WEBHOOK_SECRET}`;
+
+    const prompt = `${request.prompt} <title>${title}</title> <description>${description}</description>`;
 
     const transcriptionData = await provider.getResponse({
       completion_id: request.podcastId,
@@ -74,9 +99,9 @@ export const handlePodcastTranscribe = async (
         {
           role: "user",
           content: {
-            // @ts-ignore
-            file: uploadData.data.url,
-            prompt: request.prompt,
+            // @ts-ignore - Replicate model requires this format
+            file: audioUrl,
+            prompt,
             language: "en",
             num_speakers: request.numberOfSpeakers,
             transcript_output_format: "segments_only",
@@ -92,19 +117,31 @@ export const handlePodcastTranscribe = async (
       webhook_events: ["output", "completed"],
     });
 
-    const message = {
-      role: "assistant" as ChatRole,
-      name: "podcast_transcribe",
-      content: `Podcast Transcribed: ${transcriptionData.id}`,
-      data: transcriptionData,
+    const appData = {
+      title,
+      description,
+      numberOfSpeakers: request.numberOfSpeakers,
+      prompt: request.prompt,
+      transcriptionData,
+      status: "complete",
+      createdAt: new Date().toISOString(),
     };
 
-    await conversationManager.add(request.podcastId, message);
+    await repositories.appData.createAppDataWithItem(
+      user.id,
+      "podcasts",
+      request.podcastId,
+      "transcribe",
+      appData,
+    );
+
     return {
       status: "success",
       content: `Podcast Transcribed: ${transcriptionData.id}`,
+      data: appData,
     };
   } catch (error) {
+    console.error("Failed to transcribe podcast:", error);
     throw new AssistantError("Failed to transcribe podcast");
   }
 };

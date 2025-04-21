@@ -79,6 +79,10 @@ export async function mapParametersToProvider(
     temperature: params.temperature,
   };
 
+  if (params.version) {
+    commonParams.version = params.version;
+  }
+
   if (providerName !== "anthropic") {
     commonParams.seed = params.seed;
     commonParams.repetition_penalty = params.repetition_penalty;

@@ -70,7 +70,7 @@ export class ReplicateProvider extends BaseProvider {
     const lastMessage = params.messages[params.messages.length - 1];
 
     const body = {
-      version: params.model,
+      version: params.version || params.model,
       input: lastMessage.content,
       webhook: webhook_url,
       webhook_events_filter: ["output", "completed"],
@@ -78,7 +78,7 @@ export class ReplicateProvider extends BaseProvider {
 
     return trackProviderMetrics({
       provider: this.name,
-      model: params.model as string,
+      model: params.version || (params.model as string),
       operation: async () => {
         const data = await fetchAIResponse(
           this.name,

@@ -74,10 +74,6 @@ export const guessDrawingSchema = z.object({
   drawing: z.any(),
 });
 
-export const podcastUploadSchema = z.object({
-  audioUrl: z.string().url().optional(),
-});
-
 export const podcastTranscribeSchema = z.object({
   podcastId: z.string(),
   numberOfSpeakers: z.number(),
@@ -91,6 +87,7 @@ export const podcastSummarizeSchema = z.object({
 
 export const podcastGenerateImageSchema = z.object({
   podcastId: z.string(),
+  prompt: z.string().optional(),
 });
 
 export const articleAnalyzeSchema = z.object({

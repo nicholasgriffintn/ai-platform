@@ -41,7 +41,7 @@ export async function summariseArticle({
     const data = await provider.getResponse({
       completion_id,
       app_url,
-      model: "llama-3.1-sonar-large-128k-online",
+      model: "sonar",
       messages: [
         {
           role: "user",

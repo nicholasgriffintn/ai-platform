@@ -2,8 +2,9 @@ import { gatewayId } from "~/constants/app";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { drawingDescriptionPrompt } from "~/lib/prompts";
 import { StorageService } from "~/lib/storage";
-import type { IEnv, IFunctionResponse, IUser } from "~/types";
+import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 
 export type ImageFromDrawingRequest = {
   env: IEnv;
@@ -30,7 +31,7 @@ export const generateImageFromDrawing = async (
   const arrayBuffer = await request.drawing.arrayBuffer();
   const length = arrayBuffer.byteLength;
 
-  const drawingId = Math.random().toString(36);
+  const drawingId = generateId();
   const drawingImageKey = `drawings/${drawingId}/image.png`;
 
   let drawingUrl = "";

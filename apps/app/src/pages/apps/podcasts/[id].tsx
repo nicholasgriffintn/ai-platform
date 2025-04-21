@@ -1,0 +1,252 @@
+import {
+  ArrowLeft,
+  CheckCircle,
+  Clock,
+  Download,
+  FileText,
+} from "lucide-react";
+import { type JSX, useCallback } from "react";
+import { Link, useParams } from "react-router";
+
+import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { Button } from "~/components/ui";
+import { useFetchPodcast } from "~/hooks/usePodcasts";
+import { SidebarLayout } from "~/layouts/SidebarLayout";
+import { cn } from "~/lib/utils";
+
+export function meta() {
+  return [
+    { title: "Podcast Details - Polychat" },
+    { name: "description", content: "View podcast details" },
+  ];
+}
+
+export default function PodcastDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const { data: podcast, isLoading, error } = useFetchPodcast(id || "");
+
+  const handleDownloadTranscript = useCallback(() => {
+    if (!podcast?.transcript) return;
+
+    const blob = new Blob([podcast.transcript], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${podcast.title.replace(/\s+/g, "-")}-transcript.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [podcast]);
+
+  const formatDuration = (seconds?: number) => {
+    if (!seconds) return "Unknown duration";
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
+
+  const renderStatusIndicator = (status: string) => {
+    const statusMap: Record<
+      string,
+      { icon: JSX.Element; text: string; className: string }
+    > = {
+      complete: {
+        icon: <CheckCircle size={16} />,
+        text: "Complete",
+        className:
+          "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300",
+      },
+      processing: {
+        icon: <Clock size={16} />,
+        text: "Processing",
+        className:
+          "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
+      },
+      transcribing: {
+        icon: <Clock size={16} />,
+        text: "Transcribing",
+        className:
+          "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
+      },
+      summarizing: {
+        icon: <Clock size={16} />,
+        text: "Summarizing",
+        className:
+          "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
+      },
+    };
+
+    const statusInfo = statusMap[status] || statusMap.processing;
+
+    return (
+      <div
+        className={cn(
+          "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm",
+          statusInfo.className,
+        )}
+      >
+        {statusInfo.icon}
+        <span>{statusInfo.text}</span>
+      </div>
+    );
+  };
+
+  return (
+    <SidebarLayout sidebarContent={<StandardSidebarContent />}>
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <Link
+          to="/apps/podcasts"
+          className="no-underline flex items-center text-blue-500 mb-4 no-underline"
+        >
+          <ArrowLeft size={16} className="mr-1" />
+          <span>Back to Podcasts</span>
+        </Link>
+
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 dark:border-blue-400" />
+          </div>
+        ) : error ? (
+          <div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
+            <h3 className="font-semibold mb-2">Failed to load podcast</h3>
+            <p>
+              {error instanceof Error
+                ? error.message
+                : "Unknown error occurred"}
+            </p>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => window.location.reload()}
+              className="mt-4"
+            >
+              Try Again
+            </Button>
+          </div>
+        ) : podcast ? (
+          <div className="space-y-8">
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Podcast Image */}
+              <div className="w-full lg:w-1/3">
+                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden aspect-square">
+                  {podcast.imageUrl ? (
+                    <img
+                      src={podcast.imageUrl}
+                      alt={podcast.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                      <span className="text-zinc-500 dark:text-zinc-400">
+                        No image
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Podcast Details */}
+              <div className="w-full lg:w-2/3">
+                <div className="flex flex-wrap items-center gap-3 mb-2">
+                  <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mr-auto">
+                    {podcast.title}
+                  </h1>
+                  {renderStatusIndicator(podcast.status)}
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-4">
+                  <span>
+                    {new Date(podcast.createdAt).toLocaleDateString()}
+                  </span>
+                  <span>•</span>
+                  <span>{formatDuration(podcast.duration)}</span>
+                </div>
+
+                {podcast.description && (
+                  <p className="text-zinc-700 dark:text-zinc-300 mb-6">
+                    {podcast.description}
+                  </p>
+                )}
+
+                {/* Audio Player */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-3 text-zinc-800 dark:text-zinc-200">
+                    Listen
+                  </h3>
+                  {/* biome-ignore lint/a11y/useMediaCaption: This is uploaded by the user */}
+                  <audio controls className="w-full" src={podcast.audioUrl}>
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+
+                {/* Actions */}
+                {podcast.transcript && (
+                  <Button
+                    onClick={handleDownloadTranscript}
+                    variant="secondary"
+                    className="mr-3"
+                    icon={<Download size={16} />}
+                  >
+                    Download Transcript
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Summary Section */}
+            {podcast.summary && (
+              <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6 pb-2">
+                <h2 className="text-xl font-semibold mb-4 text-zinc-800 dark:text-zinc-200">
+                  Summary
+                </h2>
+                <div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-5">
+                  <p className="text-zinc-700 dark:text-zinc-300 whitespace-pre-line">
+                    {podcast.summary}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Transcript Section */}
+            {podcast.transcript && (
+              <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-zinc-800 dark:text-zinc-200">
+                    Transcript
+                  </h2>
+                  <Button
+                    onClick={handleDownloadTranscript}
+                    variant="secondary"
+                    size="sm"
+                    className="ml-auto"
+                    icon={<FileText size={16} />}
+                  >
+                    Download
+                  </Button>
+                </div>
+                <div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-5 max-h-[500px] overflow-y-auto">
+                  <p className="text-zinc-700 dark:text-zinc-300 whitespace-pre-line">
+                    {podcast.transcript}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-8 text-center">
+            <h3 className="text-xl font-semibold mb-4 text-zinc-800 dark:text-zinc-200">
+              Podcast not found
+            </h3>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-6">
+              The podcast you're looking for doesn't exist or was removed.
+            </p>
+            <Link to="/apps/podcasts">
+              <Button variant="primary">Go to Podcasts</Button>
+            </Link>
+          </div>
+        )}
+      </div>
+    </SidebarLayout>
+  );
+}

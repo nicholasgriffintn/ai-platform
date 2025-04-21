@@ -1,5 +1,6 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Mic } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
+import { Link } from "react-router";
 
 import { Button } from "~/components/ui";
 import {
@@ -67,6 +68,40 @@ export const DynamicApps = () => {
     setSelectedAppId(null);
     setResult(null);
   }, []);
+
+  const renderFeaturedApps = useCallback(
+    () => (
+      <div className="space-y-6 mb-12">
+        <h2 className={styles.subheading}>Featured Apps</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Link
+            to="/apps/podcasts"
+            className="no-underline transform transition-transform hover:scale-[1.02] h-[200px] border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-green-50 to-white dark:from-green-900/10 dark:to-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600"
+          >
+            <div className="flex items-center mb-4">
+              <div className={styles.iconContainer}>
+                <Mic
+                  className="h-10 w-10 text-green-500 dark:text-green-400"
+                  strokeWidth={1.5}
+                />
+              </div>
+              <div className="ml-4">
+                <h3 className="font-semibold text-lg text-zinc-800 dark:text-zinc-200">
+                  Podcast Processor
+                </h3>
+                <span className={styles.badge("Media")}>Media</span>
+              </div>
+            </div>
+            <p className={styles.paragraph}>
+              Upload and process your podcast to get transcription, summary, and
+              cover image
+            </p>
+          </Link>
+        </div>
+      </div>
+    ),
+    [],
+  );
 
   const renderCategoryApps = useCallback(
     (category: string, categoryApps: any[]) => (
@@ -168,6 +203,7 @@ export const DynamicApps = () => {
           </div>
         ) : (
           <div className="space-y-12">
+            {renderFeaturedApps()}
             {groupedApps.map(([category, categoryApps]) =>
               renderCategoryApps(category, categoryApps),
             )}

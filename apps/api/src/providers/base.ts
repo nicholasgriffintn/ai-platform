@@ -63,8 +63,11 @@ export abstract class BaseProvider implements AIProvider {
    * @throws AssistantError if validation fails
    */
   protected validateParams(params: ChatCompletionParameters): void {
-    if (!params.model) {
-      throw new AssistantError("Missing model", ErrorType.PARAMS_ERROR);
+    if (!params.model && !params.version) {
+      throw new AssistantError(
+        "Missing model or version",
+        ErrorType.PARAMS_ERROR,
+      );
     }
   }
 

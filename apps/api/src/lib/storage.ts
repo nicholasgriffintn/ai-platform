@@ -1,4 +1,4 @@
-import type { R2Bucket, R2ObjectBody } from "@cloudflare/workers-types";
+import type { R2Bucket } from "@cloudflare/workers-types";
 
 export class StorageService {
   constructor(private readonly bucket: R2Bucket) {}

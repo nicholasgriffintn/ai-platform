@@ -1,6 +1,6 @@
 import { gatewayId } from "~/constants/app";
-import type { ConversationManager } from "~/lib/conversationManager";
-import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
+import { RepositoryManager } from "~/repositories";
+import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 function generateFullTranscription(
@@ -11,6 +11,10 @@ function generateFullTranscription(
     [name: string]: string;
   },
 ) {
+  if (!transcription?.segments || !speakers) {
+    return "";
+  }
+
   const fullTranscription = transcription.segments
     .map((segment: any) => {
       const speaker = speakers[segment.speaker];
@@ -31,13 +35,12 @@ type SummariseRequest = {
   request: IPodcastSummariseBody;
   user: IUser;
   app_url?: string;
-  conversationManager?: ConversationManager;
 };
 
 export const handlePodcastSummarise = async (
   req: SummariseRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-  const { request, env, user, conversationManager } = req;
+  const { request, env, user } = req;
 
   if (!request.podcastId || !request.speakers) {
     throw new AssistantError(
@@ -50,65 +53,129 @@ export const handlePodcastSummarise = async (
     throw new AssistantError("Missing database", ErrorType.PARAMS_ERROR);
   }
 
-  if (!conversationManager) {
-    throw new AssistantError(
-      "Missing conversation manager",
-      ErrorType.PARAMS_ERROR,
+  try {
+    if (!user?.id) {
+      throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
+    }
+
+    const repositories = RepositoryManager.getInstance(env);
+
+    const existingSummaries =
+      await repositories.appData.getAppDataByUserAppAndItem(
+        user.id,
+        "podcasts",
+        request.podcastId,
+        "summary",
+      );
+
+    if (existingSummaries.length > 0) {
+      const summaryData = JSON.parse(existingSummaries[0].data);
+      return {
+        status: "success",
+        content: summaryData.summary,
+        data: {
+          summary: summaryData.summary,
+          speakers: summaryData.speakers,
+        },
+      };
+    }
+
+    const transcriptionData =
+      await repositories.appData.getAppDataByUserAppAndItem(
+        user.id,
+        "podcasts",
+        request.podcastId,
+        "transcribe",
+      );
+
+    if (transcriptionData.length === 0) {
+      throw new AssistantError(
+        "Transcription not found. Please transcribe podcast first",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const parsedTranscriptionData = JSON.parse(transcriptionData[0].data);
+    const title = parsedTranscriptionData.title;
+    const description = parsedTranscriptionData.description;
+    const transcription = parsedTranscriptionData.transcriptionData.output;
+
+    const fullTranscription = generateFullTranscription(
+      transcription,
+      request.speakers,
     );
-  }
 
-  const chat = await conversationManager.get(request.podcastId);
+    if (!fullTranscription) {
+      const appData = {
+        summary: description,
+        title,
+        description,
+        speakers: request.speakers,
+        status: "complete",
+        createdAt: new Date().toISOString(),
+      };
 
-  if (!chat?.length) {
-    throw new AssistantError("Podcast not found", ErrorType.PARAMS_ERROR);
-  }
+      await repositories.appData.createAppDataWithItem(
+        user.id,
+        "podcasts",
+        request.podcastId,
+        "summary",
+        appData,
+      );
 
-  const transcriptionData = chat.find(
-    (message) => message.name === "podcast_transcribe",
-  );
+      return {
+        status: "success",
+        content: "No transcription found",
+        data: appData,
+      };
+    }
 
-  if (!transcriptionData?.data?.output) {
-    throw new AssistantError("Transcription not found", ErrorType.PARAMS_ERROR);
-  }
-
-  const transcription = transcriptionData.data.output;
-  const fullTranscription = generateFullTranscription(
-    transcription,
-    request.speakers,
-  );
-
-  const data = await env.AI.run(
-    "@cf/facebook/bart-large-cnn",
-    {
-      input_text: fullTranscription,
-      max_length: 52,
-    },
-    {
-      gateway: {
-        id: gatewayId,
-        skipCache: false,
-        cacheTtl: 3360,
-        metadata: {
-          email: user?.email,
+    const data = await env.AI.run(
+      "@cf/facebook/bart-large-cnn",
+      {
+        input_text: fullTranscription,
+        max_length: 52,
+      },
+      {
+        gateway: {
+          id: gatewayId,
+          skipCache: false,
+          cacheTtl: 3360,
+          metadata: {
+            email: user?.email,
+          },
         },
       },
-    },
-  );
+    );
 
-  if (!data.summary) {
-    throw new AssistantError("No response from the model");
-  }
+    if (!data.summary) {
+      throw new AssistantError("No response from the model");
+    }
 
-  const message = {
-    role: "assistant" as ChatRole,
-    name: "podcast_summarise",
-    content: data.summary,
-    data: {
+    const appData = {
       summary: data.summary,
+      title,
+      description,
       speakers: request.speakers,
-    },
-  };
-  const response = await conversationManager.add(request.podcastId, message);
+      status: "complete",
+      createdAt: new Date().toISOString(),
+    };
 
-  return response;
+    await repositories.appData.createAppDataWithItem(
+      user.id,
+      "podcasts",
+      request.podcastId,
+      "summary",
+      appData,
+    );
+
+    return {
+      status: "success",
+      content: data.summary,
+      data: appData,
+    };
+  } catch (error) {
+    console.error("Failed to summarize podcast:", error);
+    throw new AssistantError("Failed to summarize podcast");
+  }
 };

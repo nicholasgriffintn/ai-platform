@@ -340,3 +340,37 @@ export const magicLinkNonces = sqliteTable(
 
 export type MagicLinkNonce = typeof magicLinkNonces.$inferSelect;
 export type NewMagicLinkNonce = typeof magicLinkNonces.$inferInsert;
+
+export const appData = sqliteTable(
+  "app_data",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    app_id: text().notNull(),
+    item_id: text(),
+    item_type: text(),
+    data: text({
+      mode: "json",
+    }),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    userIdIdx: index("app_data_user_id_idx").on(table.user_id),
+    appIdIdx: index("app_data_app_id_idx").on(table.app_id),
+    itemIdIdx: index("app_data_item_id_idx").on(table.item_id),
+    itemTypeIdx: index("app_data_item_type_idx").on(table.item_type),
+    lookupIdx: index("app_data_lookup_idx").on(
+      table.user_id,
+      table.app_id,
+      table.item_id,
+      table.item_type,
+    ),
+  }),
+);
+
+export type AppData = typeof appData.$inferSelect;

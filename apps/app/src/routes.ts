@@ -2,7 +2,10 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
   index("pages/home.tsx"),
-  route("/apps", "pages/apps.tsx"),
+  route("/apps", "pages/apps/index.tsx"),
+  route("/apps/podcasts", "pages/apps/podcasts/index.tsx"),
+  route("/apps/podcasts/new", "pages/apps/podcasts/new.tsx"),
+  route("/apps/podcasts/:id", "pages/apps/podcasts/[id].tsx"),
   route("/auth/callback", "pages/auth/callback.tsx"),
   route("/profile", "pages/profile.tsx"),
   route("/terms", "pages/terms.tsx"),
