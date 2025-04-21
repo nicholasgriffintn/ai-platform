@@ -7,7 +7,7 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen = ({ setInput }: WelcomeScreenProps) => {
   return (
-    <div className="text-center w-full">
+    <div className="w-full text-center px-4 pt-4 pb-2">
       <div className="w-32 h-32 mx-auto">
         <Logo variant="default" />
       </div>

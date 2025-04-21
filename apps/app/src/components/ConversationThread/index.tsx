@@ -202,7 +202,7 @@ export const ConversationThread = () => {
         </div>
       ) : (
         <div className="flex-1">
-          <div className="mx-auto w-full max-w-3xl h-full flex flex-col gap-8 px-4 py-8">
+          <div className="mx-auto w-full max-w-3xl h-full flex flex-col gap-8 px-4 pt-4 pb-2">
             <MessageList
               messages={messages}
               onToolInteraction={handleToolInteraction}
