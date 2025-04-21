@@ -1,5 +1,9 @@
-import { InfoTooltip } from "~/components/ui/InfoTooltip";
-import { cn } from "~/lib/utils";
+import { Info } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 import type { Message } from "~/types";
 
 interface MessageInfoProps {
@@ -91,10 +95,11 @@ export const MessageInfo = ({ message, buttonClassName }: MessageInfoProps) => {
   );
 
   return (
-    <InfoTooltip
-      content={getMessageInfo()}
-      buttonClassName={cn(buttonClassName, "flex items-center")}
-      tooltipClassName="w-72 p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-zinc-900 shadow-lg"
-    />
+    <Popover>
+      <PopoverTrigger className={buttonClassName}>
+        <Info size={14} />
+      </PopoverTrigger>
+      <PopoverContent>{getMessageInfo()}</PopoverContent>
+    </Popover>
   );
 };
