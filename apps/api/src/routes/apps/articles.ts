@@ -4,19 +4,14 @@ import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import {
-  type Params as AnalyseArticleParams,
-  analyseArticle,
-} from "~/services/apps/articles/analyse";
-import {
-  type Params as GenerateArticlesReportParams,
-  generateArticlesReport,
-} from "~/services/apps/articles/generate-report";
-import {
-  type Params as SummariseArticleParams,
-  summariseArticle,
-} from "~/services/apps/articles/summarise";
-import type { IEnv } from "~/types";
+import { analyseArticle } from "~/services/apps/articles/analyse";
+import { generateArticlesReport } from "~/services/apps/articles/generate-report";
+import { getArticleDetails } from "~/services/apps/articles/get-details";
+import { getSourceArticles } from "~/services/apps/articles/get-source-articles";
+import { listArticles } from "~/services/apps/articles/list";
+import { summariseArticle } from "~/services/apps/articles/summarise";
+import type { IEnv, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import {
   articleAnalyzeSchema,
@@ -36,119 +31,365 @@ app.use("/*", (c, next) => {
   return next();
 });
 
-app.post(
-  "/articles/analyse",
+app.get(
+  "/",
   describeRoute({
     tags: ["apps", "articles"],
-    description: "Analyse an article",
+    description: "List user's article reports",
     responses: {
       200: {
-        description: "Response",
+        description: "List of reports",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(z.object({ articles: z.array(z.any()) })),
           },
         },
       },
+      401: { description: "Unauthorized" },
+    },
+  }),
+  async (context: Context) => {
+    const user = context.get("user") as IUser | undefined;
+
+    try {
+      const response = await listArticles({
+        env: context.env as IEnv,
+        userId: user?.id,
+      });
+
+      return context.json({ articles: response.sessions });
+    } catch (error) {
+      routeLogger.error("Error listing articles:", { error });
+
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+
+      throw new AssistantError(
+        "Failed to list articles",
+        ErrorType.UNKNOWN_ERROR,
+        undefined,
+        error,
+      );
+    }
+  },
+);
+
+app.get(
+  "/sources",
+  describeRoute({
+    tags: ["apps", "articles"],
+    description: "Fetch multiple source articles by their IDs",
+    parameters: [
+      {
+        name: "ids[]",
+        in: "query",
+        required: true,
+        schema: { type: "array", items: { type: "string" } },
+        description: "Array of article IDs to fetch",
+      },
+    ],
+    responses: {
+      200: {
+        description: "Source articles data",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({ status: z.string(), articles: z.array(z.any()) }),
+            ),
+          },
+        },
+      },
+      400: { description: "Bad Request - Invalid IDs" },
+      401: { description: "Unauthorized" },
+      403: { description: "Forbidden" },
+    },
+  }),
+  async (context: Context) => {
+    const user = context.get("user") as IUser | undefined;
+    const url = new URL(context.req.url);
+    const ids = url.searchParams.getAll("ids[]");
+
+    if (!ids.length) {
+      return context.json(
+        { status: "error", message: "No article IDs provided" },
+        400,
+      );
+    }
+
+    const validIds = ids.filter(
+      (id) => typeof id === "string" && id.trim().length > 0,
+    );
+
+    try {
+      const response = await getSourceArticles({
+        env: context.env as IEnv,
+        ids: validIds,
+        userId: user?.id,
+      });
+
+      return context.json({ status: "success", articles: response.articles });
+    } catch (error) {
+      routeLogger.error("Error fetching source articles:", { error, ids });
+
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+
+      throw new AssistantError(
+        "Failed to fetch source articles",
+        ErrorType.UNKNOWN_ERROR,
+        undefined,
+        error,
+      );
+    }
+  },
+);
+
+app.get(
+  "/:id",
+  describeRoute({
+    tags: ["apps", "articles"],
+    description: "Get details of a specific article report",
+    responses: {
+      200: {
+        description: "Article report details",
+        content: {
+          "application/json": {
+            schema: resolver(z.object({ article: z.any() })),
+          },
+        },
+      },
+      401: { description: "Unauthorized" },
+      403: { description: "Forbidden" },
+      404: { description: "Article data not found" },
+    },
+  }),
+  async (context: Context) => {
+    const id = context.req.param("id");
+    const user = context.get("user") as IUser | undefined;
+
+    try {
+      const response = await getArticleDetails({
+        env: context.env as IEnv,
+        id: id ?? "",
+        userId: user?.id,
+      });
+
+      return context.json({ article: response.article });
+    } catch (error) {
+      routeLogger.error("Error getting article details:", { error, id });
+
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+
+      throw new AssistantError(
+        "Failed to get article details",
+        ErrorType.UNKNOWN_ERROR,
+        undefined,
+        error,
+      );
+    }
+  },
+);
+
+app.post(
+  "/analyse",
+  describeRoute({
+    tags: ["apps", "articles"],
+    description: "Analyse an article and save it for a session",
+    responses: {
+      200: {
+        description: "Analysis saved",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                status: z.string(),
+                appDataId: z.string(),
+                itemId: z.string(),
+                analysis: z.any(),
+              }),
+            ),
+          },
+        },
+      },
+      400: { description: "Bad Request" },
+      401: { description: "Unauthorized" },
     },
   }),
   zValidator("json", articleAnalyzeSchema),
   async (context: Context) => {
-    const body = context.req.valid("json" as never) as AnalyseArticleParams;
+    const body = context.req.valid("json" as never) as z.infer<
+      typeof articleAnalyzeSchema
+    >;
+    const user = context.get("user") as IUser | undefined;
 
-    const completion_id = generateId();
+    try {
+      const completion_id = generateId();
+      const newUrl = new URL(context.req.url);
+      const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
-    const newUrl = new URL(context.req.url);
-    const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
+      const response = await analyseArticle({
+        completion_id,
+        env: context.env as IEnv,
+        args: { article: body.article, itemId: body.itemId },
+        app_url,
+        user,
+      });
 
-    const response = await analyseArticle({
-      completion_id,
-      env: context.env as IEnv,
-      args: body,
-      app_url,
-    });
+      return context.json(response);
+    } catch (error) {
+      routeLogger.error("Error analysing article:", {
+        error,
+        itemId: body.itemId,
+      });
 
-    return context.json({
-      response,
-    });
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+
+      throw new AssistantError(
+        "Failed to analyse article",
+        ErrorType.UNKNOWN_ERROR,
+        undefined,
+        error,
+      );
+    }
   },
 );
 
 app.post(
-  "/articles/summarise",
+  "/summarise",
   describeRoute({
     tags: ["apps", "articles"],
-    description: "Summarise an article",
+    description: "Summarise an article and save it for a session",
     responses: {
       200: {
-        description: "Response",
+        description: "Summary saved",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(
+              z.object({
+                status: z.string(),
+                appDataId: z.string(),
+                itemId: z.string(),
+                summary: z.any(),
+              }),
+            ),
           },
         },
       },
+      400: { description: "Bad Request" },
+      401: { description: "Unauthorized" },
     },
   }),
   zValidator("json", articleSummariseSchema),
   async (context: Context) => {
-    const body = context.req.valid("json" as never) as SummariseArticleParams;
+    const body = context.req.valid("json" as never) as z.infer<
+      typeof articleSummariseSchema
+    >;
+    const user = context.get("user") as IUser | undefined;
 
-    const completion_id = generateId();
+    try {
+      const completion_id = generateId();
+      const newUrl = new URL(context.req.url);
+      const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
-    const newUrl = new URL(context.req.url);
-    const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
+      const response = await summariseArticle({
+        completion_id,
+        env: context.env as IEnv,
+        args: { article: body.article, itemId: body.itemId },
+        app_url,
+        user,
+      });
 
-    const response = await summariseArticle({
-      completion_id,
-      env: context.env as IEnv,
-      args: body,
-      app_url,
-    });
+      return context.json(response);
+    } catch (error) {
+      routeLogger.error("Error summarising article:", {
+        error,
+        itemId: body.itemId,
+      });
 
-    return context.json({
-      response,
-    });
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+
+      throw new AssistantError(
+        "Failed to summarise article",
+        ErrorType.UNKNOWN_ERROR,
+        undefined,
+        error,
+      );
+    }
   },
 );
 
 app.post(
-  "/articles/generate-report",
+  "/generate-report",
   describeRoute({
     tags: ["apps", "articles"],
-    description: "Generate a report about a set of articles",
+    description:
+      "Generates a comparison report from saved articles for a specific session (itemId)",
     responses: {
       200: {
-        description: "Response",
+        description: "Report generated and saved",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(
+              z.object({
+                status: z.string(),
+                appDataId: z.string(),
+                itemId: z.string(),
+              }),
+            ),
           },
         },
       },
+      401: { description: "Unauthorized" },
+      404: { description: "No analysis data found to generate report" },
+      500: { description: "Failed to generate or save report" },
     },
   }),
   zValidator("json", generateArticlesReportSchema),
   async (context: Context) => {
-    const body = context.req.valid(
-      "json" as never,
-    ) as GenerateArticlesReportParams;
+    const body = context.req.valid("json" as never) as z.infer<
+      typeof generateArticlesReportSchema
+    >;
+    const user = context.get("user") as IUser | undefined;
 
-    const completion_id = generateId();
+    try {
+      const completion_id = generateId();
+      const newUrl = new URL(context.req.url);
+      const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
-    const newUrl = new URL(context.req.url);
-    const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
+      const response = await generateArticlesReport({
+        completion_id,
+        env: context.env as IEnv,
+        args: { itemId: body.itemId },
+        app_url,
+        user,
+      });
 
-    const response = await generateArticlesReport({
-      completion_id,
-      env: context.env as IEnv,
-      args: body,
-      app_url,
-    });
+      return context.json(response);
+    } catch (error) {
+      routeLogger.error("Error generating report:", {
+        error,
+        itemId: body.itemId,
+      });
 
-    return context.json({
-      response,
-    });
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+
+      throw new AssistantError(
+        "Failed to generate report",
+        ErrorType.UNKNOWN_ERROR,
+        undefined,
+        error,
+      );
+    }
   },
 );
 

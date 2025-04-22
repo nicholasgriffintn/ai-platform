@@ -1,4 +1,4 @@
-import { ArrowLeft, Mic } from "lucide-react";
+import { ArrowLeft, Book, Mic } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router";
 
@@ -95,6 +95,28 @@ export const DynamicApps = () => {
             <p className={styles.paragraph}>
               Upload and process your podcast to get transcription, summary, and
               cover image
+            </p>
+          </Link>
+          <Link
+            to="/apps/articles"
+            className="no-underline transform transition-transform hover:scale-[1.02] h-[200px] border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-green-50 to-white dark:from-green-900/10 dark:to-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600"
+          >
+            <div className="flex items-center mb-4">
+              <div className={styles.iconContainer}>
+                <Book
+                  size={24}
+                  className="text-green-500 dark:text-green-400"
+                />
+              </div>
+              <div className="ml-4">
+                <h3 className="font-semibold text-lg text-zinc-800 dark:text-zinc-200">
+                  Article Processor
+                </h3>
+                <span className={styles.badge("Text")}>Text</span>
+              </div>
+            </div>
+            <p className={styles.paragraph}>
+              Analyse and summarise articles to get insights and summaries
             </p>
           </Link>
         </div>

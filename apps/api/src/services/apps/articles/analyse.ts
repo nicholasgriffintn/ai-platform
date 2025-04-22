@@ -1,18 +1,22 @@
 import { analyseArticlePrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/providers/factory";
-import type { IEnv } from "~/types";
+import { AppDataRepository } from "~/repositories/AppDataRepository";
+import type { IEnv, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
 import { verifyQuotes } from "~/utils/verify";
 
 export interface Params {
   article: string;
+  itemId: string;
 }
 
-export interface Response {
-  status: "success" | "error";
-  name: string;
-  content: string;
-  data: any;
+export interface AnalyseSuccessResponse {
+  status: "success";
+  message?: string;
+  appDataId?: string;
+  itemId?: string;
+  analysis?: { content: string; data: any };
 }
 
 export async function analyseArticle({
@@ -20,25 +24,30 @@ export async function analyseArticle({
   app_url,
   env,
   args,
+  user,
 }: {
   completion_id: string;
   app_url: string | undefined;
   env: IEnv;
   args: Params;
-}): Promise<Response> {
+  user: IUser;
+}): Promise<AnalyseSuccessResponse> {
+  if (!user.id) {
+    throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
+  }
+  if (!args.itemId) {
+    throw new AssistantError("Item ID is required", ErrorType.PARAMS_ERROR);
+  }
   if (!args.article) {
-    return {
-      status: "error",
-      name: "analyse_article",
-      content: "Missing article",
-      data: {},
-    };
+    throw new AssistantError(
+      "Article content is required",
+      ErrorType.PARAMS_ERROR,
+    );
   }
 
   try {
     const provider = AIProviderFactory.getProvider("perplexity-ai");
-
-    const data = await provider.getResponse({
+    const analysisData = await provider.getResponse({
       completion_id,
       app_url,
       model: "sonar",
@@ -49,30 +58,55 @@ export async function analyseArticle({
         },
       ],
       env: env,
+      user,
     });
 
-    const quotes = extractQuotes(data.content);
+    const quotes = extractQuotes(analysisData.content);
     const verifiedQuotes = verifyQuotes(args.article, quotes);
+
+    const analysisResult = {
+      content: analysisData.content,
+      model: analysisData.model,
+      id: analysisData.id,
+      citations: analysisData.citations,
+      log_id: analysisData.log_id,
+      verifiedQuotes,
+    };
+
+    const appDataRepo = new AppDataRepository(env);
+    const appData = {
+      originalArticle: args.article,
+      analysis: analysisResult,
+      title: `Analysis: ${args.article.substring(0, 80)}...`,
+    };
+    const savedData = await appDataRepo.createAppDataWithItem(
+      user.id,
+      "articles",
+      args.itemId,
+      "analysis",
+      appData,
+    );
 
     return {
       status: "success",
-      name: "analyse_article",
-      content: data.content,
-      data: {
-        model: data.model,
-        id: data.id,
-        citations: data.citations,
-        log_id: data.log_id,
-        verifiedQuotes,
+      message: "Article analysed and saved.",
+      appDataId: savedData.id,
+      itemId: args.itemId,
+      analysis: {
+        content: analysisResult.content,
+        data: { ...analysisResult, verifiedQuotes },
       },
     };
   } catch (error) {
-    return {
-      status: "error",
-      name: "analyse_article",
-      content:
-        error instanceof Error ? error.message : "Failed to analyse article",
-      data: {},
-    };
+    console.error("Error during article analysis or saving:", error);
+    if (error instanceof AssistantError) {
+      throw error;
+    }
+    throw new AssistantError(
+      "Failed to analyse article",
+      ErrorType.UNKNOWN_ERROR,
+      undefined,
+      error,
+    );
   }
 }

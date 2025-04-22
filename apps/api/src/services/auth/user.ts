@@ -44,7 +44,7 @@ export async function getUserByGithubId(
   } catch (error) {
     logger.error("Error getting user by GitHub ID:", { error });
     throw new AssistantError(
-      "Failed to retrieve user",
+      "Failed to retrieve user by GitHub ID",
       ErrorType.UNKNOWN_ERROR,
     );
   }
@@ -66,7 +66,7 @@ export async function getUserBySessionId(
   } catch (error) {
     logger.error("Error getting user by session ID:", { error });
     throw new AssistantError(
-      "Failed to retrieve user",
+      "Failed to retrieve user by session ID",
       ErrorType.UNKNOWN_ERROR,
     );
   }
@@ -111,7 +111,7 @@ export async function getUserById(
   } catch (error) {
     logger.error("Error getting user by ID:", { error });
     throw new AssistantError(
-      "Failed to retrieve user",
+      "Failed to retrieve user by ID",
       ErrorType.UNKNOWN_ERROR,
     );
   }

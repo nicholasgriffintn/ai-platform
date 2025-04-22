@@ -10,3 +10,4 @@ export * from "./Select";
 export * from "./Dialog";
 export * from "./Banner";
 export * from "./Switch";
+export * from "./Card";
