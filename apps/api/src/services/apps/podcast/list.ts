@@ -25,7 +25,7 @@ interface PodcastItem {
   items?: {
     upload?: Array<{ data: Record<string, any> }>;
     transcribe?: Array<{ data: Record<string, any> }>;
-    summarise?: Array<{ data: Record<string, any> }>;
+    summary?: Array<{ data: Record<string, any> }>;
     image?: Array<{ data: Record<string, any> }>;
   };
 }
@@ -73,7 +73,7 @@ export const handlePodcastList = async (
   const podcasts = Array.from(podcastMap.values()).map((podcast) => {
     const uploads = podcast.items?.upload || [];
     const transcriptions = podcast.items?.transcribe || [];
-    const summaries = podcast.items?.summarise || [];
+    const summaries = podcast.items?.summary || [];
     const images = podcast.items?.image || [];
 
     let status = "processing" as IPodcast["status"];

@@ -162,6 +162,16 @@ export default function PodcastDetailPage() {
                   <span>{formatDuration(podcast.duration)}</span>
                 </div>
 
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-3 text-zinc-800 dark:text-zinc-200">
+                    Listen
+                  </h3>
+                  {/* biome-ignore lint/a11y/useMediaCaption: This is uploaded by the user */}
+                  <audio controls className="w-full" src={podcast.audioUrl}>
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+
                 {podcast.summary && (
                   <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6 pb-2">
                     <h2 className="text-xl font-semibold mb-4 text-zinc-800 dark:text-zinc-200">
@@ -175,21 +185,17 @@ export default function PodcastDetailPage() {
                   </div>
                 )}
 
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3 text-zinc-800 dark:text-zinc-200">
-                    Listen
-                  </h3>
-                  {/* biome-ignore lint/a11y/useMediaCaption: This is uploaded by the user */}
-                  <audio controls className="w-full" src={podcast.audioUrl}>
-                    Your browser does not support the audio element.
-                  </audio>
-                </div>
-
-                {podcast.description && (
-                  <Markdown className="text-zinc-700 dark:text-zinc-300 mb-6">
-                    {podcast.description}
-                  </Markdown>
-                )}
+                {podcast.description &&
+                  podcast.description !== podcast.summary && (
+                    <div className="pt-6 pb-2">
+                      <h2 className="text-xl font-semibold mb-4 text-zinc-800 dark:text-zinc-200">
+                        Description
+                      </h2>
+                      <Markdown className="text-zinc-700 dark:text-zinc-300 mb-6">
+                        {podcast.description}
+                      </Markdown>
+                    </div>
+                  )}
 
                 {podcast.transcript && (
                   <Button
