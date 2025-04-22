@@ -1,0 +1,30 @@
+---
+description: This is useful when making changes that might effect how secure the application is.
+globs: 
+alwaysApply: false
+---
+# Security Guidelines
+
+## General Security Principles
+- Always validate and sanitize user input
+- Implement proper authentication and authorization
+- Never expose sensitive information in client-side code
+- Follow the principle of least privilege
+
+## API Security
+- Implement proper input validation using Zod
+- Use HTTPS for all API communications
+- Implement rate limiting on sensitive endpoints
+- Log security events for audit purposes
+
+## Authentication
+- Use secure, HttpOnly cookies for session management
+- Implement proper CSRF protection
+- Use strong password hashing algorithms
+- Implement proper token validation and expiration
+
+## Data Protection
+- Never log sensitive user information
+- Encrypt sensitive data at rest and in transit
+- Follow data minimization principles
+- Implement proper error handling that doesn't leak sensitive information

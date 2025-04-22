@@ -1,0 +1,27 @@
+---
+description: This is useful to get an overall view of the project structure.
+globs: 
+alwaysApply: false
+---
+# Project Structure Guide
+
+## Monorepo Structure
+- This is a monorepo using PNPM workspaces
+- All applications are located in the `apps/` directory
+- The project follows a microservices architecture with separate frontend and backend applications
+
+## Applications
+- `apps/app`: Frontend React application
+- `apps/api`: Backend API using Hono and Cloudflare Workers
+- `apps/metrics`: Analytics and metrics application
+- `apps/database`: Database schemas and migrations managed with Drizzle, do not generate migrations manually here.
+
+## Development Workflow
+- Use `pnpm dev` to start all applications simultaneously
+- Use `pnpm dev:app`, `pnpm dev:api`, etc. to start individual applications
+- Run `pnpm lint` and `pnpm format` to maintain code quality before commits
+
+## Deployment
+- The applications are deployed to Cloudflare Workers
+- Use `pnpm deploy` to deploy all applications
+- Use `pnpm deploy:app`, `pnpm deploy:api`, etc. to deploy individual applications

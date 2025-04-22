@@ -1,0 +1,28 @@
+---
+description: Use this when generating tests.
+globs: 
+alwaysApply: false
+---
+# Testing Guidelines
+
+## General Testing Principles
+- Use Vitest for all testing
+- Aim for high test coverage, especially on critical business logic
+- Tests should be deterministic and not rely on external services
+
+## Test Organization
+- Place tests in a `__tests__` directory alongside the code being tested
+- Name test files with `.test.ts` or `.test.tsx` extension
+- Group related tests with describe blocks
+- Use descriptive test names that explain the expected behavior
+
+## Frontend Testing
+- Use React Testing Library for component testing
+- Test component behavior, not implementation details
+- Mock API calls and external dependencies
+
+## API Testing
+- Focus on testing endpoints with request/response pairs
+- Mock external services when necessary
+- Test both success and error scenarios
+
