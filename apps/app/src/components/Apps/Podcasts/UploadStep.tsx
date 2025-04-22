@@ -1,7 +1,7 @@
 import { Link as LinkIcon, Upload } from "lucide-react";
 
 import { Button, TextArea, TextInput } from "~/components/ui";
-import type { PodcastFormData } from "~/pages/apps/podcasts/new";
+import type { PodcastFormData } from "~/types/podcast";
 
 interface UploadStepProps {
   formData: PodcastFormData;

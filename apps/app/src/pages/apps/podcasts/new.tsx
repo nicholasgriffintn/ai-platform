@@ -11,27 +11,13 @@ import {
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import { useProcessPodcast, useUploadPodcast } from "~/hooks/usePodcasts";
 import { SidebarLayout } from "~/layouts/SidebarLayout";
+import type { PodcastFormData } from "~/types/podcast";
 
 export function meta() {
   return [
     { title: "Upload Podcast - Polychat" },
     { name: "description", content: "Upload and process your podcast" },
   ];
-}
-
-export interface PodcastFormData {
-  title: string;
-  description: string;
-  audioFile: File | null;
-  audioUrl: string;
-  audioSource: "file" | "url";
-  transcribe: boolean;
-  summarise: boolean;
-  generateImage: boolean;
-  imagePrompt: string;
-  transcribePrompt: string;
-  numberOfSpeakers: number;
-  speakers: Record<string, string>;
 }
 
 export enum Step {

@@ -1,7 +1,8 @@
 import { BookText, ImageIcon, Mic } from "lucide-react";
 
 import { Button } from "~/components/ui";
-import { type PodcastFormData, Step } from "~/pages/apps/podcasts/new";
+import { Step } from "~/pages/apps/podcasts/new";
+import type { PodcastFormData } from "~/types/podcast";
 
 interface ProcessingStepProps {
   formData: PodcastFormData;

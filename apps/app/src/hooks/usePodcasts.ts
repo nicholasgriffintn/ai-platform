@@ -1,18 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { fetchApi } from "~/lib/api/fetch-wrapper";
-
-interface Podcast {
-  id: string;
-  title: string;
-  description?: string;
-  createdAt: string;
-  imageUrl?: string;
-  audioUrl: string;
-  duration?: number;
-  transcript?: string;
-  summary?: string;
-  status: "processing" | "transcribing" | "summarizing" | "complete";
-}
+import type { Podcast } from "~/types/podcast";
 
 interface PodcastsResponse {
   podcasts: Podcast[];

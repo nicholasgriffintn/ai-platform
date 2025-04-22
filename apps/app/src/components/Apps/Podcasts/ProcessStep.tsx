@@ -1,5 +1,5 @@
 import { Button, Checkbox, TextArea, TextInput } from "~/components/ui";
-import type { PodcastFormData } from "~/pages/apps/podcasts/new";
+import type { PodcastFormData } from "~/types/podcast";
 
 interface ProcessStepProps {
   formData: PodcastFormData;

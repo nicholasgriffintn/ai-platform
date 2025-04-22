@@ -1,13 +1,8 @@
-import {
-  ArrowLeft,
-  CheckCircle,
-  Clock,
-  Download,
-  FileText,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle, Clock, FileText } from "lucide-react";
 import { type JSX, useCallback } from "react";
 import { Link, useParams } from "react-router";
 
+import { TranscriptViewer } from "~/components/Apps/Podcasts";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import { Button } from "~/components/ui";
 import { Markdown } from "~/components/ui/Markdown";
@@ -29,7 +24,14 @@ export default function PodcastDetailPage() {
   const handleDownloadTranscript = useCallback(() => {
     if (!podcast?.transcript) return;
 
-    const blob = new Blob([podcast.transcript], { type: "text/plain" });
+    const transcriptText =
+      typeof podcast.transcript === "string"
+        ? podcast.transcript
+        : podcast.transcript.segments
+            .map((seg) => `[${seg.speaker}] ${seg.text}`)
+            .join("\n\n");
+
+    const blob = new Blob([transcriptText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -128,7 +130,7 @@ export default function PodcastDetailPage() {
         ) : podcast ? (
           <div className="space-y-8">
             <div className="flex flex-col lg:flex-row gap-8">
-              <div className="w-full lg:w-1/3">
+              <div className="w-full lg:w-1/3 lg:sticky lg:top-4 lg:self-start lg:max-h-screen lg:overflow-y-auto">
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden aspect-square">
                   {podcast.imageUrl ? (
                     <img
@@ -143,6 +145,15 @@ export default function PodcastDetailPage() {
                       </span>
                     </div>
                   )}
+                </div>
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold mb-3 text-zinc-800 dark:text-zinc-200">
+                    Listen
+                  </h3>
+                  {/* biome-ignore lint/a11y/useMediaCaption: This is uploaded by the user */}
+                  <audio controls className="w-full" src={podcast.audioUrl}>
+                    Your browser does not support the audio element.
+                  </audio>
                 </div>
               </div>
 
@@ -160,16 +171,6 @@ export default function PodcastDetailPage() {
                   </span>
                   <span>•</span>
                   <span>{formatDuration(podcast.duration)}</span>
-                </div>
-
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3 text-zinc-800 dark:text-zinc-200">
-                    Listen
-                  </h3>
-                  {/* biome-ignore lint/a11y/useMediaCaption: This is uploaded by the user */}
-                  <audio controls className="w-full" src={podcast.audioUrl}>
-                    Your browser does not support the audio element.
-                  </audio>
                 </div>
 
                 {podcast.summary && (
@@ -198,41 +199,51 @@ export default function PodcastDetailPage() {
                   )}
 
                 {podcast.transcript && (
-                  <Button
-                    onClick={handleDownloadTranscript}
-                    variant="secondary"
-                    className="mr-3"
-                    icon={<Download size={16} />}
-                  >
-                    Download Transcript
-                  </Button>
+                  <div className="pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold text-zinc-800 dark:text-zinc-200">
+                        Transcript
+                      </h2>
+                      <Button
+                        onClick={handleDownloadTranscript}
+                        variant="secondary"
+                        size="sm"
+                        className="ml-auto"
+                        icon={<FileText size={16} />}
+                      >
+                        Download
+                      </Button>
+                    </div>
+                    <div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-5 max-h-[500px] overflow-y-auto">
+                      {typeof podcast.transcript === "string" ? (
+                        <p className="text-zinc-700 dark:text-zinc-300 whitespace-pre-line">
+                          {podcast.transcript}
+                        </p>
+                      ) : (
+                        <TranscriptViewer
+                          transcript={podcast.transcript}
+                          speakerNames={podcast.transcript.segments.reduce(
+                            (acc, segment) => {
+                              const speakerId = segment.speaker;
+                              if (!acc[speakerId]) {
+                                const speakerNum = speakerId.replace(
+                                  "SPEAKER_",
+                                  "",
+                                );
+                                acc[speakerId] =
+                                  `Speaker ${Number.parseInt(speakerNum) + 1}`;
+                              }
+                              return acc;
+                            },
+                            {} as Record<string, string>,
+                          )}
+                        />
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
-
-            {podcast.transcript && (
-              <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-zinc-800 dark:text-zinc-200">
-                    Transcript
-                  </h2>
-                  <Button
-                    onClick={handleDownloadTranscript}
-                    variant="secondary"
-                    size="sm"
-                    className="ml-auto"
-                    icon={<FileText size={16} />}
-                  >
-                    Download
-                  </Button>
-                </div>
-                <div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-5 max-h-[500px] overflow-y-auto">
-                  <p className="text-zinc-700 dark:text-zinc-300 whitespace-pre-line">
-                    {podcast.transcript}
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           <div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-8 text-center">

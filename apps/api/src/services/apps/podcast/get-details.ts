@@ -54,8 +54,6 @@ export const handlePodcastDetail = async (
     podcastData.items[itemType]!.push({ data });
   }
 
-  console.log(JSON.stringify(podcastData, null, 2));
-
   const uploads = podcastData.items?.upload || [];
   const transcriptions = podcastData.items?.transcribe || [];
   const summaries = podcastData.items?.summary || [];
@@ -81,7 +79,9 @@ export const handlePodcastDetail = async (
     audioUrl: uploadData.audioUrl,
     duration: uploadData.duration,
     transcript:
-      transcriptions.length > 0 ? transcriptions[0].data.transcript : undefined,
+      transcriptions.length > 0
+        ? transcriptions[0].data?.transcriptionData?.output
+        : undefined,
     summary: summaries.length > 0 ? summaries[0].data.summary : undefined,
     status,
   };
