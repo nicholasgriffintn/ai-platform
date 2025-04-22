@@ -10,6 +10,7 @@ import { Link, useParams } from "react-router";
 
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import { Button } from "~/components/ui";
+import { Markdown } from "~/components/ui/Markdown";
 import { useFetchPodcast } from "~/hooks/usePodcasts";
 import { SidebarLayout } from "~/layouts/SidebarLayout";
 import { cn } from "~/lib/utils";
@@ -127,7 +128,6 @@ export default function PodcastDetailPage() {
         ) : podcast ? (
           <div className="space-y-8">
             <div className="flex flex-col lg:flex-row gap-8">
-              {/* Podcast Image */}
               <div className="w-full lg:w-1/3">
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden aspect-square">
                   {podcast.imageUrl ? (
@@ -146,7 +146,6 @@ export default function PodcastDetailPage() {
                 </div>
               </div>
 
-              {/* Podcast Details */}
               <div className="w-full lg:w-2/3">
                 <div className="flex flex-wrap items-center gap-3 mb-2">
                   <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mr-auto">
@@ -163,13 +162,19 @@ export default function PodcastDetailPage() {
                   <span>{formatDuration(podcast.duration)}</span>
                 </div>
 
-                {podcast.description && (
-                  <p className="text-zinc-700 dark:text-zinc-300 mb-6">
-                    {podcast.description}
-                  </p>
+                {podcast.summary && (
+                  <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6 pb-2">
+                    <h2 className="text-xl font-semibold mb-4 text-zinc-800 dark:text-zinc-200">
+                      Summary
+                    </h2>
+                    <div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-5">
+                      <p className="text-zinc-700 dark:text-zinc-300 whitespace-pre-line">
+                        {podcast.summary}
+                      </p>
+                    </div>
+                  </div>
                 )}
 
-                {/* Audio Player */}
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold mb-3 text-zinc-800 dark:text-zinc-200">
                     Listen
@@ -180,7 +185,12 @@ export default function PodcastDetailPage() {
                   </audio>
                 </div>
 
-                {/* Actions */}
+                {podcast.description && (
+                  <Markdown className="text-zinc-700 dark:text-zinc-300 mb-6">
+                    {podcast.description}
+                  </Markdown>
+                )}
+
                 {podcast.transcript && (
                   <Button
                     onClick={handleDownloadTranscript}
@@ -194,21 +204,6 @@ export default function PodcastDetailPage() {
               </div>
             </div>
 
-            {/* Summary Section */}
-            {podcast.summary && (
-              <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6 pb-2">
-                <h2 className="text-xl font-semibold mb-4 text-zinc-800 dark:text-zinc-200">
-                  Summary
-                </h2>
-                <div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-5">
-                  <p className="text-zinc-700 dark:text-zinc-300 whitespace-pre-line">
-                    {podcast.summary}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Transcript Section */}
             {podcast.transcript && (
               <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6">
                 <div className="flex items-center justify-between mb-4">
