@@ -1,16 +1,16 @@
-export type TranscriptSegment = {
+export interface TranscriptSegment {
   start: number;
   end: number;
   text: string;
   speaker: string;
   avg_logprob: number;
-};
+}
 
-export type TranscriptData = {
+export interface TranscriptData {
   language: string;
   segments: TranscriptSegment[];
   num_speakers: number;
-};
+}
 
 export interface Podcast {
   id: string;

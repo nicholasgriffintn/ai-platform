@@ -1,6 +1,6 @@
 export type ModelRanking = 1 | 2 | 3 | 4 | 5;
 
-export type ModelConfigItem = {
+export interface ModelConfigItem {
   id: string;
   matchingModel: string;
   name?: string;
@@ -26,8 +26,8 @@ export type ModelConfigItem = {
   supportsDocuments?: boolean;
   supportsSearchGrounding?: boolean;
   supportsCodeExecution?: boolean;
-};
+}
 
-export type ModelConfig = {
+export interface ModelConfig {
   [key: string]: ModelConfigItem;
-};
+}

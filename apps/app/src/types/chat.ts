@@ -45,13 +45,13 @@ export interface MessageContent {
   signature?: string;
 }
 
-export type Attachment = {
+export interface Attachment {
   type: "image" | "document";
   url: string;
   detail?: "low" | "high";
   name?: string;
   isMarkdown?: boolean;
-};
+}
 
 export interface MessageData {
   responseType?: "table" | "json" | "text" | "template" | "custom";
