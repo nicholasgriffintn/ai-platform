@@ -2,23 +2,24 @@ import { forwardRef } from "react";
 import type { ReactNode, SelectHTMLAttributes } from "react";
 
 import { cn } from "~/lib/utils";
-import { FormLabel } from "./FormLabel";
+import { Label } from "../label";
 
-export interface SelectOption {
+export interface FormSelectOption {
   value: string;
   label: string;
 }
 
-export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+export interface FormSelectProps
+  extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   description?: string;
   className?: string;
-  options?: SelectOption[];
+  options?: FormSelectOption[];
   children?: ReactNode;
   fullWidth?: boolean;
 }
 
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(
+export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
   (
     {
       label,
@@ -34,7 +35,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ) => {
     return (
       <div className={cn("space-y-1", fullWidth && "w-full")}>
-        {label && <FormLabel htmlFor={id}>{label}</FormLabel>}
+        {label && <Label htmlFor={id}>{label}</Label>}
         <select
           ref={ref}
           id={id}
@@ -63,4 +64,4 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   },
 );
 
-Select.displayName = "Select";
+FormSelect.displayName = "FormSelect";

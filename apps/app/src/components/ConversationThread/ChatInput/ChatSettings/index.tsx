@@ -4,9 +4,9 @@ import { useRef, useState } from "react";
 import {
   Button,
   Checkbox,
+  FormInput,
+  FormSelect,
   RangeInput,
-  Select,
-  TextInput,
 } from "~/components/ui";
 import {
   Dialog,
@@ -168,7 +168,7 @@ export const ChatSettings = ({
 
             {activeTab === "basic" && (
               <div className="space-y-6">
-                <Select
+                <FormSelect
                   ref={responseSelectRef}
                   id="response_mode"
                   label="Response Mode"
@@ -243,7 +243,7 @@ export const ChatSettings = ({
                   onChange={(e) => handleSettingChange("top_p", e.target.value)}
                 />
 
-                <TextInput
+                <FormInput
                   id="max_tokens"
                   label="Max Tokens"
                   type="number"
@@ -309,7 +309,7 @@ export const ChatSettings = ({
                       RAG Settings
                     </h5>
 
-                    <TextInput
+                    <FormInput
                       id="rag_top_k"
                       label="Top K Results"
                       type="number"
@@ -354,7 +354,7 @@ export const ChatSettings = ({
                       documents.
                     </p>
 
-                    <TextInput
+                    <FormInput
                       id="rag_namespace"
                       label="Namespace"
                       value={chatSettings.rag_options?.namespace ?? ""}

@@ -1,5 +1,6 @@
 import { Copy, Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import {
   Button,
@@ -8,11 +9,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  TextInput,
+  FormInput,
 } from "~/components/ui";
 import { Card } from "~/components/ui/Card";
 import { useApiKeys } from "~/hooks/useApiKeys";
-import { useError } from "~/state/contexts/ErrorContext";
 
 function GeneratedApiKeyModal({
   isOpen,
@@ -120,7 +120,6 @@ function ConfirmDeleteModal({
 }
 
 export function ProfileApiKeysTab() {
-  const { addError } = useError();
   const {
     apiKeys,
     isLoadingApiKeys,
@@ -151,7 +150,7 @@ export function ProfileApiKeysTab() {
       console.log(`API Key "${result.name}" created successfully!`);
     } catch (error: any) {
       const message = `Failed to create API key: ${error.message || "Unknown error"}`;
-      addError(message);
+      toast.error(message);
       console.error(message, error);
     }
   };
@@ -171,7 +170,7 @@ export function ProfileApiKeysTab() {
           },
           onError: (error) => {
             const message = `Failed to delete API key: ${error.message || "Unknown error"}`;
-            addError(message);
+            toast.error(message);
             console.error(message, error);
           },
         },
@@ -205,12 +204,14 @@ export function ProfileApiKeysTab() {
           </div>
           <div className="p-6">
             <form onSubmit={handleGenerateKey} className="space-y-4">
-              <TextInput
+              <FormInput
                 id="new-api-key-name"
                 label="Key Name (Optional)"
                 placeholder="e.g., My Script Key"
                 value={newApiKeyName}
-                onChange={(e) => setNewApiKeyName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewApiKeyName(e.target.value)
+                }
                 disabled={isCreatingApiKey}
               />
               {errorCreatingApiKey && (

@@ -2,9 +2,9 @@ import { forwardRef } from "react";
 import type { InputHTMLAttributes } from "react";
 
 import { cn } from "~/lib/utils";
-import { FormLabel } from "./FormLabel";
+import { Label } from "../label";
 
-export interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   description?: string;
   className?: string;
@@ -12,7 +12,7 @@ export interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
   disabled?: boolean;
 }
 
-export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
+export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
   (
     {
       label,
@@ -27,7 +27,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   ) => {
     return (
       <div className={cn("space-y-1", fullWidth && "w-full")}>
-        {label && <FormLabel htmlFor={id}>{label}</FormLabel>}
+        {label && <Label htmlFor={id}>{label}</Label>}
         <input
           ref={ref}
           id={id}
@@ -49,4 +49,4 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   },
 );
 
-TextInput.displayName = "TextInput";
+FormInput.displayName = "FormInput";

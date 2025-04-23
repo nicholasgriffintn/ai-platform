@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
@@ -7,7 +8,6 @@ import { localChatService } from "~/lib/local/local-chat-service";
 import { normalizeMessage } from "~/lib/messages";
 import { webLLMModels } from "~/lib/models";
 import { WebLLMService } from "~/lib/web-llm";
-import { useError } from "~/state/contexts/ErrorContext";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation, Message } from "~/types";
@@ -18,7 +18,6 @@ export function useChatManager() {
   const queryClient = useQueryClient();
   const generateTitle = useGenerateTitle();
   const { data: apiModels = {} } = useModels();
-  const { addError } = useError();
   const { startLoading, updateLoading, stopLoading } = useLoadingActions();
 
   const {
@@ -89,7 +88,7 @@ export function useChatManager() {
         } catch (error) {
           console.error("[useChatManager] Failed to initialize WebLLM:", error);
           if (mounted) {
-            addError("Failed to initialize local model. Please try again.");
+            toast.error("Failed to initialize local model. Please try again.");
             setModel(null);
           }
         } finally {
@@ -123,7 +122,6 @@ export function useChatManager() {
     startLoading,
     updateLoading,
     stopLoading,
-    addError,
     setModel,
   ]);
 
@@ -560,7 +558,7 @@ export function useChatManager() {
   const streamResponse = useCallback(
     async (messages: Message[], conversationId: string) => {
       if (!messages.length) {
-        addError("No messages provided");
+        toast.error("No messages provided");
         throw new Error("No messages provided");
       }
 
@@ -569,7 +567,7 @@ export function useChatManager() {
         return response;
       } catch (error) {
         if (controller.signal.aborted) {
-          addError("Request aborted", "info");
+          toast.error("Request aborted");
         } else {
           const streamError = error as Error & {
             status?: number;
@@ -579,12 +577,12 @@ export function useChatManager() {
           console.error("Error generating response:", streamError);
 
           if (streamError.status === 429) {
-            addError("Rate limit exceeded. Please try again later.");
+            toast.error("Rate limit exceeded. Please try again later.");
           } else if (streamError.code === "model_not_found") {
-            addError(`Model not found: ${model}`);
+            toast.error(`Model not found: ${model}`);
             setModel(null);
           } else {
-            addError(streamError.message || "Failed to generate response");
+            toast.error(streamError.message || "Failed to generate response");
           }
 
           throw streamError;
@@ -599,7 +597,7 @@ export function useChatManager() {
         setController(new AbortController());
       }
     },
-    [addError, generateResponse, controller, stopLoading, model, setModel],
+    [generateResponse, controller, stopLoading, model, setModel],
   );
 
   const sendMessage = useCallback(
@@ -722,7 +720,7 @@ export function useChatManager() {
         return response;
       } catch (error) {
         console.error("Failed to send message:", error);
-        addError("Failed to send message. Please try again.");
+        toast.error("Failed to send message. Please try again.");
         return {
           status: "error",
           response: (error as Error).message || "Failed",
@@ -735,7 +733,6 @@ export function useChatManager() {
       startNewConversation,
       queryClient,
       streamResponse,
-      addError,
       startLoading,
       addMessageToConversation,
     ],

@@ -1,5 +1,6 @@
 import { Check, Copy, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/Button";
 import {
@@ -12,7 +13,6 @@ import {
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { apiService } from "~/lib/api/api-service";
 import { cn } from "~/lib/utils";
-import { useError } from "~/state/contexts/ErrorContext";
 
 interface ShareButtonProps {
   conversationId: string;
@@ -36,7 +36,6 @@ export const ShareButton = ({
   const [currentIsPublic, setCurrentIsPublic] = useState<boolean | undefined>(
     isPublic,
   );
-  const { addError } = useError();
   const { copied, copy } = useCopyToClipboard();
 
   useEffect(() => {
@@ -61,10 +60,10 @@ export const ShareButton = ({
       const result = await apiService.shareConversation(conversationId);
       setCurrentShareId(result.share_id);
       setCurrentIsPublic(true);
-      addError("Conversation shared successfully", "info");
+      toast.success("Conversation shared successfully");
     } catch (error) {
       console.error("Error sharing conversation:", error);
-      addError("Failed to share conversation", "error");
+      toast.error("Failed to share conversation");
     } finally {
       setIsSharing(false);
     }
@@ -78,10 +77,10 @@ export const ShareButton = ({
       await apiService.unshareConversation(conversationId);
       setCurrentIsPublic(false);
       setCurrentShareId(undefined);
-      addError("Conversation unshared", "info");
+      toast.success("Conversation unshared");
     } catch (error) {
       console.error("Error unsharing conversation:", error);
-      addError("Failed to unshare conversation", "error");
+      toast.error("Failed to unshare conversation");
     } finally {
       setIsUnsharing(false);
     }

@@ -1,6 +1,12 @@
 import { type FormEvent, useState } from "react";
 
-import { Button, Select, Switch, TextArea, TextInput } from "~/components/ui";
+import {
+  Button,
+  FormInput,
+  FormSelect,
+  Switch,
+  Textarea,
+} from "~/components/ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 
 interface UserSettingsFormProps {
@@ -81,7 +87,7 @@ export function UserSettingsForm({
           >
             Nickname
           </label>
-          <TextInput
+          <FormInput
             id="nickname"
             name="nickname"
             value={formData.nickname}
@@ -98,7 +104,7 @@ export function UserSettingsForm({
           >
             Job Role
           </label>
-          <TextInput
+          <FormInput
             id="job_role"
             name="job_role"
             value={formData.job_role}
@@ -115,7 +121,7 @@ export function UserSettingsForm({
           >
             Personal Traits
           </label>
-          <TextArea
+          <Textarea
             id="traits"
             name="traits"
             value={formData.traits}
@@ -132,7 +138,7 @@ export function UserSettingsForm({
           >
             Preferences
           </label>
-          <TextArea
+          <Textarea
             id="preferences"
             name="preferences"
             value={formData.preferences}
@@ -173,7 +179,7 @@ export function UserSettingsForm({
           >
             Guardrails Provider
           </label>
-          <Select
+          <FormSelect
             id="guardrails_provider"
             name="guardrails_provider"
             value={formData.guardrails_provider}
@@ -186,7 +192,7 @@ export function UserSettingsForm({
           >
             <option value="llamaguard">LlamaGuard</option>
             <option value="bedrock">Bedrock</option>
-          </Select>
+          </FormSelect>
         </div>
         {formData.guardrails_provider === "bedrock" && (
           <>
@@ -197,7 +203,7 @@ export function UserSettingsForm({
               >
                 Guardrail ID
               </label>
-              <TextInput
+              <FormInput
                 id="bedrock_guardrail_id"
                 name="bedrock_guardrail_id"
                 value={formData.bedrock_guardrail_id}
@@ -213,7 +219,7 @@ export function UserSettingsForm({
               >
                 Guardrail Version
               </label>
-              <TextInput
+              <FormInput
                 id="bedrock_guardrail_version"
                 name="bedrock_guardrail_version"
                 value={formData.bedrock_guardrail_version}
@@ -243,7 +249,7 @@ export function UserSettingsForm({
           >
             Embedding Provider
           </label>
-          <Select
+          <FormSelect
             id="embedding_provider"
             name="embedding_provider"
             value={formData.embedding_provider}
@@ -256,7 +262,7 @@ export function UserSettingsForm({
           >
             <option value="vectorize">Vectorize</option>
             <option value="bedrock">Bedrock</option>
-          </Select>
+          </FormSelect>
         </div>
         {formData.embedding_provider === "bedrock" && (
           <>
@@ -267,7 +273,7 @@ export function UserSettingsForm({
               >
                 Knowledge Base ID
               </label>
-              <TextInput
+              <FormInput
                 id="bedrock_knowledge_base_id"
                 name="bedrock_knowledge_base_id"
                 value={formData.bedrock_knowledge_base_id}
@@ -283,7 +289,7 @@ export function UserSettingsForm({
               >
                 Custom Data Source ID
               </label>
-              <TextInput
+              <FormInput
                 id="bedrock_knowledge_base_custom_data_source_id"
                 name="bedrock_knowledge_base_custom_data_source_id"
                 value={formData.bedrock_knowledge_base_custom_data_source_id}

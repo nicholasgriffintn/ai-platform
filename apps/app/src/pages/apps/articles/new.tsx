@@ -4,7 +4,7 @@ import type { ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
-import { Button, TextArea } from "~/components/ui";
+import { Button, Textarea } from "~/components/ui";
 import {
   useAnalyseArticle,
   useGenerateReport,
@@ -240,7 +240,7 @@ export default function NewArticleAnalysisPage() {
                     </Button>
                   )}
                 </div>
-                <TextArea
+                <Textarea
                   value={article.text}
                   onChange={(e) => handleTextChange(article.id, e)}
                   placeholder="Paste article content here..."

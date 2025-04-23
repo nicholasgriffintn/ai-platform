@@ -475,9 +475,9 @@ class ApiService {
     const headers = await this.getHeaders();
 
     const response = await fetchApi(
-      `/chat/completions/${completion_id}/unshare`,
+      `/chat/completions/${completion_id}/share`,
       {
-        method: "POST",
+        method: "DELETE",
         headers,
       },
     );

@@ -1,6 +1,6 @@
 import { Link as LinkIcon, Upload } from "lucide-react";
 
-import { Button, TextArea, TextInput } from "~/components/ui";
+import { Button, FormInput, Textarea } from "~/components/ui";
 import type { PodcastFormData } from "~/types/podcast";
 
 interface UploadStepProps {
@@ -29,7 +29,7 @@ export function UploadStep({
       </h2>
 
       <div className="space-y-4">
-        <TextInput
+        <FormInput
           id="title"
           name="title"
           label="Podcast Title *"
@@ -39,7 +39,7 @@ export function UploadStep({
           required
         />
 
-        <TextArea
+        <Textarea
           id="description"
           name="description"
           label="Description"
@@ -127,7 +127,7 @@ export function UploadStep({
             </>
           ) : (
             <div className="relative">
-              <TextInput
+              <FormInput
                 id="audioUrl"
                 name="audioUrl"
                 label="Audio URL * (MP3, WAV, M4A)"

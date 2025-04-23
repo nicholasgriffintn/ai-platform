@@ -1,53 +1,18 @@
-import { forwardRef } from "react";
-import type { TextareaHTMLAttributes } from "react";
+import type * as React from "react";
 
 import { cn } from "~/lib/utils";
-import { FormLabel } from "./FormLabel";
 
-export interface TextAreaProps
-  extends TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label?: string;
-  description?: string;
-  className?: string;
-  fullWidth?: boolean;
-  disabled?: boolean;
+function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
+  return (
+    <textarea
+      data-slot="textarea"
+      className={cn(
+        "border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
-export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
-  (
-    {
-      label,
-      description,
-      className,
-      fullWidth = true,
-      id,
-      disabled = false,
-      ...props
-    },
-    ref,
-  ) => {
-    return (
-      <div className={cn("space-y-1", fullWidth && "w-full")}>
-        {label && <FormLabel htmlFor={id}>{label}</FormLabel>}
-        <textarea
-          ref={ref}
-          id={id}
-          className={cn(
-            "px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100",
-            fullWidth && "w-full",
-            className,
-            disabled && "opacity-50 cursor-not-allowed",
-          )}
-          {...props}
-        />
-        {description && (
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-            {description}
-          </p>
-        )}
-      </div>
-    );
-  },
-);
-
-TextArea.displayName = "TextArea";
+export { Textarea };

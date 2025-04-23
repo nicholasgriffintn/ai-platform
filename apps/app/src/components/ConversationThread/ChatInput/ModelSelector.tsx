@@ -14,7 +14,7 @@ import {
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
-import { Select, TextInput } from "~/components/ui";
+import { FormInput, FormSelect } from "~/components/ui";
 import { useModels } from "~/hooks/useModels";
 import {
   getAvailableModels,
@@ -277,7 +277,7 @@ export const ModelSelector = ({
         disabled={isDisabled}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        aria-label="Select a model"
+        aria-label="FormSelect a model"
         className={`cursor-pointer disabled:cursor-not-allowed flex items-center gap-2 rounded-md w-full ${minimal ? "px-2 py-1" : "px-3 py-1.5"} bg-off-white-highlight dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors`}
       >
         {isModelLoading ? (
@@ -286,7 +286,7 @@ export const ModelSelector = ({
             {!minimal && (
               <span
                 className="text-sm max-w-[250px] truncate w-full"
-                title={selectedModelInfo?.name || "Select model"}
+                title={selectedModelInfo?.name || "FormSelect model"}
               >
                 {modelLoadingMessage}{" "}
                 {modelLoadingProgress !== undefined &&
@@ -305,9 +305,9 @@ export const ModelSelector = ({
             {!minimal && (
               <span
                 className="text-sm max-w-[250px] truncate w-full"
-                title={selectedModelInfo?.name || "Select model"}
+                title={selectedModelInfo?.name || "FormSelect model"}
               >
-                {selectedModelInfo?.name || "Select model"}
+                {selectedModelInfo?.name || "FormSelect model"}
               </span>
             )}
           </>
@@ -323,7 +323,7 @@ export const ModelSelector = ({
           <div className="p-2 border-b border-zinc-200 dark:border-zinc-700">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <TextInput
+                <FormInput
                   ref={searchInputRef}
                   placeholder="Search models..."
                   value={searchQuery}
@@ -338,7 +338,7 @@ export const ModelSelector = ({
                   />
                 </div>
               </div>
-              <Select
+              <FormSelect
                 value={selectedCapability || ""}
                 onChange={(e) => setSelectedCapability(e.target.value || null)}
                 options={capabilityOptions}

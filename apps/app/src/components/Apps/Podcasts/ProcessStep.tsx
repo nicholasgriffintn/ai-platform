@@ -1,4 +1,4 @@
-import { Button, Checkbox, TextArea, TextInput } from "~/components/ui";
+import { Button, Checkbox, FormInput, Textarea } from "~/components/ui";
 import type { PodcastFormData } from "~/types/podcast";
 
 interface ProcessStepProps {
@@ -46,7 +46,7 @@ export function ProcessStep({
 
             {formData.transcribe && (
               <div className="mt-2">
-                <TextInput
+                <FormInput
                   id="numberOfSpeakers"
                   name="numberOfSpeakers"
                   label="Number of Speakers"
@@ -59,7 +59,7 @@ export function ProcessStep({
                 />
 
                 <div className="mt-3">
-                  <TextInput
+                  <FormInput
                     id="transcribePrompt"
                     name="transcribePrompt"
                     label="Transcription Instructions"
@@ -109,7 +109,7 @@ export function ProcessStep({
                         >
                           Speaker {speakerId}:
                         </label>
-                        <TextInput
+                        <FormInput
                           id={`speaker_${speakerId}`}
                           name={`speaker_${speakerId}`}
                           value={
@@ -153,7 +153,7 @@ export function ProcessStep({
 
         {formData.generateImage && (
           <div className="ml-7">
-            <TextArea
+            <Textarea
               id="imagePrompt"
               name="imagePrompt"
               label="Image Generation Prompt (optional)"

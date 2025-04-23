@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { toast } from "sonner";
 
 import "~/styles/scrollbar.css";
 import "~/styles/github.css";
@@ -13,7 +14,6 @@ import "~/styles/github-dark.css";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
-import { useError } from "~/state/contexts/ErrorContext";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ArtifactProps } from "~/types/artifact";
@@ -29,7 +29,6 @@ export const ConversationThread = () => {
   const { data: currentConversation } = useChat(currentConversationId);
   const { streamStarted, controller, sendMessage, abortStream } =
     useChatManager();
-  const { addError } = useError();
   const { data: apiModels } = useModels();
 
   const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(
@@ -138,9 +137,8 @@ export const ConversationThread = () => {
     const isTextToImageModel =
       model !== null && apiModels?.[model]?.type?.includes("text-to-image");
     if (isTextToImageModel && messages.length > 0) {
-      addError(
+      toast.error(
         "Text-to-image models only support one message per conversation. Please start a new conversation.",
-        "error",
       );
       return;
     }

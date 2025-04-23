@@ -2,7 +2,7 @@ import { forwardRef } from "react";
 import type { InputHTMLAttributes } from "react";
 
 import { cn } from "~/lib/utils";
-import { FormLabel } from "./FormLabel";
+import { Label } from "../label";
 
 export interface SwitchProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "onChange"> {
@@ -44,7 +44,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
       <div className="space-y-1">
         <div className="flex items-center justify-between">
           {label && labelPosition === "left" && (
-            <FormLabel htmlFor={id}>{label}</FormLabel>
+            <Label htmlFor={id}>{label}</Label>
           )}
           <button
             type="button"
@@ -82,7 +82,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
             />
           </button>
           {label && labelPosition === "right" && (
-            <FormLabel htmlFor={id}>{label}</FormLabel>
+            <Label htmlFor={id}>{label}</Label>
           )}
         </div>
         {description && (

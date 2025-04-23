@@ -2,7 +2,7 @@ import { Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { Button, TextInput } from "~/components/ui";
+import { Button, FormInput } from "~/components/ui";
 import { Dialog, DialogContent } from "~/components/ui/Dialog";
 import { useChats } from "~/hooks/useChat";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -94,7 +94,7 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
       <DialogContent className="p-2">
         <div className="p-2" onKeyDown={handleKeyDown}>
           <div className="relative mb-4">
-            <TextInput
+            <FormInput
               id="search-input"
               ref={inputRef}
               placeholder="Search conversations..."

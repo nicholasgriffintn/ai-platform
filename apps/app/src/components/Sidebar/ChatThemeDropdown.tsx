@@ -1,7 +1,7 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import { type JSX, useEffect, useState } from "react";
 
-import { DropdownMenu, DropdownMenuItem } from "~/components/ui/DropdownMenu";
+import { DropdownMenu, DropdownMenuItem } from "~/components/ui";
 import { useTheme } from "~/hooks/useTheme";
 import type { Theme } from "~/types";
 

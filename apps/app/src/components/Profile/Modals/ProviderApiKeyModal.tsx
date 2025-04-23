@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/Dialog";
-import { TextInput } from "~/components/ui/TextInput";
+import { FormInput } from "~/components/ui/Form/Input";
 import { useUser } from "~/hooks/useUser";
 
 interface ProviderApiKeyModalProps {
@@ -64,11 +64,13 @@ export function ProviderApiKeyModal({
             This will be securely stored and used for making requests.
           </p>
 
-          <TextInput
+          <FormInput
             type="password"
             autoComplete="off"
             value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setApiKey(e.target.value)
+            }
             placeholder={
               isBedrockProvider
                 ? "Enter your AWS Access Key ID"
@@ -81,11 +83,13 @@ export function ProviderApiKeyModal({
           />
 
           {isBedrockProvider && (
-            <TextInput
+            <FormInput
               type="password"
               autoComplete="off"
               value={secretKey}
-              onChange={(e) => setSecretKey(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSecretKey(e.target.value)
+              }
               placeholder="Enter your AWS Secret Access Key"
               label="AWS Secret Access Key"
               required

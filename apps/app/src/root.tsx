@@ -12,9 +12,8 @@ import {
 import { AppInitializer } from "~/components/AppInitializer";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { ServiceWorkerRegistration } from "~/components/ServiceWorkerRegistration";
-import ErrorToast from "~/components/ui/ErrorToast";
+import { Toaster } from "~/components/ui/sonner";
 import ErrorRoute from "~/pages/error";
-import { ErrorProvider } from "~/state/contexts/ErrorContext";
 import { LoadingProvider } from "~/state/contexts/LoadingContext";
 import type { Route } from "./+types/root";
 
@@ -92,15 +91,13 @@ export function Layout({
 export default function Root() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ErrorProvider>
-        <LoadingProvider>
-          <AppInitializer>
-            <Outlet />
-            <ErrorToast />
-            <ServiceWorkerRegistration />
-          </AppInitializer>
-        </LoadingProvider>
-      </ErrorProvider>
+      <LoadingProvider>
+        <AppInitializer>
+          <Outlet />
+          <ServiceWorkerRegistration />
+          <Toaster />
+        </AppInitializer>
+      </LoadingProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

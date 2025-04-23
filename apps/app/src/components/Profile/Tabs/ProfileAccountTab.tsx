@@ -1,4 +1,4 @@
-import { Banner } from "~/components/ui/Banner";
+import { Alert } from "~/components/ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { formatDate } from "~/lib/dates";
 
@@ -150,7 +150,7 @@ export function ProfileAccountTab() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="text-zinc-500 dark:text-zinc-400">
-              <Banner>TODO: Coming soon</Banner>
+              <Alert variant="default">TODO: Coming soon</Alert>
             </div>
           </div>
         </div>

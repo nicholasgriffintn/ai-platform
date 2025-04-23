@@ -1,6 +1,6 @@
 import type { ChangeEvent } from "react";
 
-import { Checkbox, Select, TextInput } from "~/components/ui";
+import { FormCheckbox, FormInput, FormSelect, Textarea } from "~/components/ui";
 import type { AppSchema } from "~/lib/api/dynamic-apps";
 
 type FieldType = AppSchema["formSchema"]["steps"][0]["fields"][0];
@@ -56,7 +56,7 @@ export const FormField = ({
     switch (field.type) {
       case "text":
         return (
-          <TextInput
+          <FormInput
             id={field.id}
             value={value || ""}
             onChange={handleChange}
@@ -70,7 +70,7 @@ export const FormField = ({
 
       case "textarea":
         return (
-          <textarea
+          <Textarea
             id={field.id}
             value={value || ""}
             onChange={handleChange}
@@ -84,7 +84,7 @@ export const FormField = ({
 
       case "number":
         return (
-          <TextInput
+          <FormInput
             id={field.id}
             type="number"
             value={value === undefined ? "" : value}
@@ -101,7 +101,7 @@ export const FormField = ({
 
       case "select":
         return (
-          <Select
+          <FormSelect
             id={field.id}
             value={value || ""}
             onChange={handleChange}
@@ -110,7 +110,7 @@ export const FormField = ({
             aria-describedby={error ? `${field.id}-error` : undefined}
             aria-invalid={!!error}
             options={[
-              { value: "", label: "Select an option" },
+              { value: "", label: "FormSelect an option" },
               ...(field.validation?.options?.map((option) => ({
                 value: option.value,
                 label: option.label,
@@ -141,7 +141,7 @@ export const FormField = ({
 
       case "checkbox":
         return (
-          <Checkbox
+          <FormCheckbox
             id={field.id}
             checked={value || false}
             onChange={handleChange}
@@ -156,7 +156,7 @@ export const FormField = ({
 
       case "date":
         return (
-          <TextInput
+          <FormInput
             id={field.id}
             type="date"
             value={value || ""}

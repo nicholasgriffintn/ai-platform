@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 
-import { DropdownMenu, DropdownMenuItem } from "~/components/ui/DropdownMenu";
+import { DropdownMenu, DropdownMenuItem } from "~/components/ui";
 
 interface MoreOptionsDropdownProps {
   position?: "top" | "bottom";

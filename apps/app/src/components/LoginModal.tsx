@@ -1,7 +1,7 @@
 import { Github, KeySquare, Loader2, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { Button, TextInput } from "~/components/ui";
+import { Button, FormInput } from "~/components/ui";
 import { Dialog, DialogContent } from "~/components/ui/Dialog";
 import { APP_NAME } from "~/constants";
 import { useAuthStatus } from "~/hooks/useAuth";
@@ -170,7 +170,7 @@ export const LoginModal = ({
             </div>
 
             <div className="space-y-2">
-              <TextInput
+              <FormInput
                 id="email"
                 label="Email Address"
                 type="email"

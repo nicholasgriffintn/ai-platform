@@ -2,7 +2,7 @@ import { forwardRef } from "react";
 import type { InputHTMLAttributes } from "react";
 
 import { cn } from "~/lib/utils";
-import { FormLabel } from "./FormLabel";
+import { Label } from "../label";
 
 export interface RangeInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -37,7 +37,7 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
     return (
       <div className="space-y-1">
         <div className="flex justify-between items-center">
-          {label && <FormLabel htmlFor={id}>{label}</FormLabel>}
+          {label && <Label htmlFor={id}>{label}</Label>}
           {displayValue && (
             <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
               {value}

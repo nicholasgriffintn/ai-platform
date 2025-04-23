@@ -52,8 +52,8 @@ export const ToolSelector = ({
 
           <div className="space-y-4 py-4">
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Select which tools to enable for the AI. These tools will be used
-              to enhance the AI's capabilities.
+              FormSelect which tools to enable for the AI. These tools will be
+              used to enhance the AI's capabilities.
             </p>
 
             {isLoading ? (

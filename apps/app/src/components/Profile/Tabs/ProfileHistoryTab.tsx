@@ -1,4 +1,4 @@
-import { Banner } from "../../ui/Banner";
+import { Alert } from "../../ui";
 
 export function ProfileHistoryTab() {
   return (
@@ -9,7 +9,7 @@ export function ProfileHistoryTab() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="text-zinc-500 dark:text-zinc-400">
-          <Banner>TODO: Coming soon</Banner>
+          <Alert variant="default">TODO: Coming soon</Alert>
         </div>
       </div>
     </div>
