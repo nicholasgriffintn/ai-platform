@@ -125,17 +125,18 @@ export function returnCodingPrompt(
     .addLine();
 
   builder
-    .addLine("<answer>")
     .startSection("Example output structure:")
-    .addLine()
-    .addLine("[Brief introduction addressing the user's question or request]")
+    .addLine("<answer>")
+    .addLine(
+      "<introduction>Brief introduction addressing the user's question or request</introduction>",
+    )
     .addLine();
 
   if (!hasThinking) {
     builder
       .addLine("<analysis>")
       .addLine(
-        "[Your analysis of the problem, approach planning, and code analysis]",
+        "Your analysis of the problem, approach planning, and code analysis",
       )
       .addLine("</analysis>")
       .addLine();
@@ -147,17 +148,17 @@ export function returnCodingPrompt(
       .addLine(getArtifactExample(supportsArtifacts, true))
       .addLine();
   } else {
-    builder.addLine("[Explanation or code solution]");
+    builder.addLine("<solution>Explanation or code solution</solution>");
   }
 
   builder
     .addLine()
     .addLine(
-      "[Explanation of key parts of the implementation, if code was provided]",
+      "<implementation_explanation>Explanation of key parts of the implementation, if code was provided</implementation_explanation>",
     )
     .addLine()
     .addLine(
-      "[Additional considerations, best practices, or alternative approaches if relevant]",
+      "<additional_info>Additional considerations, best practices, or alternative approaches if relevant</additional_info>",
     )
     .addLine("</answer>")
     .startSection()

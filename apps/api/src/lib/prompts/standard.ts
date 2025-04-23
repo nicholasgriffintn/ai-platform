@@ -70,7 +70,7 @@ export async function returnStandardPrompt(
         .addLine("Example analysis:")
         .addLine("<analysis>")
         .addLine(
-          "[Your detailed analysis of the question, considering context and required information]",
+          "Your detailed analysis of the question, considering context and required information",
         )
         .addLine("</analysis>");
     }
@@ -88,7 +88,7 @@ export async function returnStandardPrompt(
       answerStyle = "balanced";
     }
 
-    builder.addLine(`[Your ${answerStyle} response to the user's question]`);
+    builder.addLine(`Your ${answerStyle} response to the user's question`);
 
     if (supportsArtifacts) {
       builder
