@@ -221,6 +221,7 @@ export class Embedding {
             env: env!,
             model: "bge-reranker-base",
             messages: [{ role: "user", content: rerankPrompt }],
+            user: this.user,
           } as any);
           const order: string[] = JSON.parse(
             rerankRes.content || rerankRes.response,
@@ -251,6 +252,7 @@ export class Embedding {
               env: env!,
               model: modelToUse,
               messages: [{ role: "user", content: sumPrompt }],
+              user: this.user,
             } as any);
             doc.content = sumRes.content || sumRes.response;
             logger.debug("augmentPrompt summarized", { doc });

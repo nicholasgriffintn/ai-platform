@@ -1,8 +1,10 @@
 import { gatewayId } from "~/constants/app";
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
+import { getAuxiliaryModel } from "~/lib/models";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { AIProviderFactory } from "../../providers/factory";
 
 export const handleGenerateChatCompletionTitle = async (
   req: IRequest,
@@ -80,26 +82,16 @@ export const handleGenerateChatCompletionTitle = async (
       .join("\n")}
   `;
 
-  const response = await env.AI.run(
-    "@cf/meta/llama-3-8b-instruct",
-    {
-      prompt,
-      max_tokens: 10,
-    },
-    {
-      gateway: {
-        id: gatewayId,
-        skipCache: false,
-        cacheTtl: 3360,
-        authorization: env.AI_GATEWAY_TOKEN,
-        metadata: {
-          email: user?.email || "anonymous@undefined.computer",
-        },
-      },
-    },
-  );
+  const { model: modelToUse, provider: providerToUse } =
+    await getAuxiliaryModel(env, user);
+  const provider = AIProviderFactory.getProvider(providerToUse);
+  const response: any = await provider.getResponse({
+    env: env!,
+    model: modelToUse,
+    messages: [{ role: "user", content: prompt }],
+    user: user,
+  } as any);
 
-  // @ts-expect-error
   let newTitle = response.response.trim();
 
   if (

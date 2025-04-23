@@ -70,6 +70,7 @@ export const performOcr = async (
         image_min_size: params.image_min_size,
       },
       store: false,
+      user: req.user,
     });
 
     logger.debug("Received OCR response with pages:", response.pages?.length);

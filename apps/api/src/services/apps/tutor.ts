@@ -110,6 +110,7 @@ export async function completeTutorRequest(
         content: query,
       },
     ],
+    user: user,
     store: false,
   });
 

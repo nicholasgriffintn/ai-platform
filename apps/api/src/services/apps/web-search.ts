@@ -52,6 +52,7 @@ export async function performDeepWebSearch(
     (async () => {
       return provider.getResponse({
         env: env,
+        user: user,
         completion_id,
         model: "@hf/nousresearch/hermes-2-pro-mistral-7b",
         messages: [
@@ -128,6 +129,7 @@ export async function performDeepWebSearch(
 
   const answerResponse = await provider.getResponse({
     env: env,
+    user: user,
     completion_id,
     model: "@cf/google/gemma-3-12b-it",
     messages: [
