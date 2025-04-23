@@ -277,7 +277,7 @@ export const ModelSelector = ({
         disabled={isDisabled}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        aria-label="FormSelect a model"
+        aria-label="Select a model"
         className={`cursor-pointer disabled:cursor-not-allowed flex items-center gap-2 rounded-md w-full ${minimal ? "px-2 py-1" : "px-3 py-1.5"} bg-off-white-highlight dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors`}
       >
         {isModelLoading ? (
@@ -286,7 +286,7 @@ export const ModelSelector = ({
             {!minimal && (
               <span
                 className="text-sm max-w-[250px] truncate w-full"
-                title={selectedModelInfo?.name || "FormSelect model"}
+                title={selectedModelInfo?.name || "Select model"}
               >
                 {modelLoadingMessage}{" "}
                 {modelLoadingProgress !== undefined &&
@@ -305,9 +305,9 @@ export const ModelSelector = ({
             {!minimal && (
               <span
                 className="text-sm max-w-[250px] truncate w-full"
-                title={selectedModelInfo?.name || "FormSelect model"}
+                title={selectedModelInfo?.name || "Select model"}
               >
-                {selectedModelInfo?.name || "FormSelect model"}
+                {selectedModelInfo?.name || "Select model"}
               </span>
             )}
           </>

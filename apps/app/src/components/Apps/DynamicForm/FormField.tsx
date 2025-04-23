@@ -110,7 +110,7 @@ export const FormField = ({
             aria-describedby={error ? `${field.id}-error` : undefined}
             aria-invalid={!!error}
             options={[
-              { value: "", label: "FormSelect an option" },
+              { value: "", label: "Select an option" },
               ...(field.validation?.options?.map((option) => ({
                 value: option.value,
                 label: option.label,
