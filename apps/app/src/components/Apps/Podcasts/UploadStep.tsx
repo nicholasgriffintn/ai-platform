@@ -1,6 +1,6 @@
 import { Link as LinkIcon, Upload } from "lucide-react";
 
-import { Button, FormInput, Textarea } from "~/components/ui";
+import { Button, FormInput, Label, Textarea } from "~/components/ui";
 import type { PodcastFormData } from "~/types/podcast";
 
 interface UploadStepProps {
@@ -39,10 +39,10 @@ export function UploadStep({
           required
         />
 
+        <Label htmlFor="description">Description</Label>
         <Textarea
           id="description"
           name="description"
-          label="Description"
           value={formData.description}
           onChange={handleChange}
           placeholder="What's your podcast about?"

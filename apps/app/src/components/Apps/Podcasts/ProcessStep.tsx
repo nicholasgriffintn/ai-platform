@@ -1,4 +1,5 @@
-import { Button, Checkbox, FormInput, Textarea } from "~/components/ui";
+import { Button, FormInput, Label, Textarea } from "~/components/ui";
+import { FormCheckbox } from "~/components/ui/Form/Checkbox";
 import type { PodcastFormData } from "~/types/podcast";
 
 interface ProcessStepProps {
@@ -25,7 +26,7 @@ export function ProcessStep({
       <div className="space-y-4">
         <div className="flex items-start">
           <div className="flex items-center h-5">
-            <Checkbox
+            <FormCheckbox
               id="transcribe"
               name="transcribe"
               checked={formData.transcribe}
@@ -74,7 +75,7 @@ export function ProcessStep({
 
         <div className="flex items-start">
           <div className="flex items-center h-5">
-            <Checkbox
+            <FormCheckbox
               id="summarise"
               name="summarise"
               checked={formData.summarise}
@@ -130,7 +131,7 @@ export function ProcessStep({
 
         <div className="flex items-start">
           <div className="flex items-center h-5">
-            <Checkbox
+            <FormCheckbox
               id="generateImage"
               name="generateImage"
               checked={formData.generateImage}
@@ -153,10 +154,12 @@ export function ProcessStep({
 
         {formData.generateImage && (
           <div className="ml-7">
+            <Label htmlFor="imagePrompt">
+              Image Generation Prompt (optional)
+            </Label>
             <Textarea
               id="imagePrompt"
               name="imagePrompt"
-              label="Image Generation Prompt (optional)"
               value={formData.imagePrompt}
               onChange={handleChange}
               placeholder="A podcast cover with..."

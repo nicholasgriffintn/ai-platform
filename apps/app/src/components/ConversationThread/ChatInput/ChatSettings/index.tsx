@@ -1,13 +1,7 @@
 import { Settings } from "lucide-react";
 import { useRef, useState } from "react";
 
-import {
-  Button,
-  Checkbox,
-  FormInput,
-  FormSelect,
-  RangeInput,
-} from "~/components/ui";
+import { Button, FormInput, FormSelect, RangeInput } from "~/components/ui";
 import {
   Dialog,
   DialogClose,
@@ -15,6 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/Dialog";
+import { FormCheckbox } from "~/components/ui/Form/Checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatSettings as ChatSettingsType } from "~/types";
 import { ToolSelector } from "./ToolSelector";
@@ -32,7 +28,6 @@ export const ChatSettings = ({
   const [showSettings, setShowSettings] = useState(false);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
   const responseSelectRef = useRef<HTMLSelectElement>(null);
-  const [activeTab, setActiveTab] = useState<"basic" | "advanced">("basic");
 
   const handleSettingChange = (
     key: keyof ChatSettingsType,
@@ -137,37 +132,12 @@ export const ChatSettings = ({
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="flex border-b border-zinc-200 dark:border-zinc-700 mb-4">
-              <Button
-                variant={activeTab === "basic" ? "primary" : "secondary"}
-                className={`px-4 py-2 text-sm font-medium w-1/2 text-center rounded-none ${
-                  activeTab === "basic"
-                    ? "bg-white dark:bg-zinc-800 border-b-2 border-blue-500 dark:border-blue-500"
-                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-                }`}
-                onClick={() => setActiveTab("basic")}
-                aria-selected={activeTab === "basic"}
-                role="tab"
-              >
-                Basic Settings
-              </Button>
-              <Button
-                variant={activeTab === "advanced" ? "primary" : "secondary"}
-                className={`px-4 py-2 text-sm font-medium w-1/2 text-center rounded-none ${
-                  activeTab === "advanced"
-                    ? "bg-white dark:bg-zinc-800 border-b-2 border-blue-500 dark:border-blue-500"
-                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-                }`}
-                onClick={() => setActiveTab("advanced")}
-                aria-selected={activeTab === "advanced"}
-                role="tab"
-              >
-                Advanced Settings
-              </Button>
-            </div>
-
-            {activeTab === "basic" && (
-              <div className="space-y-6">
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="basic">Basic Settings</TabsTrigger>
+                <TabsTrigger value="advanced">Advanced Settings</TabsTrigger>
+              </TabsList>
+              <TabsContent value="basic" className="space-y-6 pt-4">
                 <FormSelect
                   ref={responseSelectRef}
                   id="response_mode"
@@ -198,7 +168,7 @@ export const ChatSettings = ({
                   markers={["Precise", "Neutral", "Creative"]}
                 />
 
-                <Checkbox
+                <FormCheckbox
                   id="use_rag"
                   label="Enable RAG"
                   labelPosition="left"
@@ -228,11 +198,8 @@ export const ChatSettings = ({
                     </div>
                   </details>
                 </div>
-              </div>
-            )}
-
-            {activeTab === "advanced" && (
-              <div className="space-y-6">
+              </TabsContent>
+              <TabsContent value="advanced" className="space-y-6 pt-4">
                 <RangeInput
                   id="top_p"
                   label="Openness to Ideas (top_p)"
@@ -334,7 +301,7 @@ export const ChatSettings = ({
                       markers={["0", "0.5", "1"]}
                     />
 
-                    <Checkbox
+                    <FormCheckbox
                       id="rag_include_metadata"
                       label="Include Metadata"
                       labelPosition="left"
@@ -370,8 +337,8 @@ export const ChatSettings = ({
                     </p>
                   </div>
                 )}
-              </div>
-            )}
+              </TabsContent>
+            </Tabs>
 
             <div className="flex justify-end space-x-2 pt-4 border-t border-zinc-200 dark:border-zinc-700">
               <Button
