@@ -11,12 +11,14 @@ interface SidebarLayoutProps {
   children: React.ReactNode;
   sidebarContent: React.ReactNode;
   showSidebarToggleInNavbar?: boolean;
+  displayNavBar?: boolean;
 }
 
 export function SidebarLayout({
   children,
   sidebarContent,
   showSidebarToggleInNavbar = true,
+  displayNavBar = true,
 }: SidebarLayoutProps) {
   const {
     sidebarVisible,
@@ -48,9 +50,11 @@ export function SidebarLayout({
           )}
 
           <div className="flex flex-col min-w-0 flex-1 h-full pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pr-[env(safe-area-inset-right)]">
-            <ChatNavbar
-              showSidebarToggle={showSidebarToggleInNavbar && !sidebarVisible}
-            />
+            {displayNavBar && (
+              <ChatNavbar
+                showSidebarToggle={showSidebarToggleInNavbar && !sidebarVisible}
+              />
+            )}
             <div className="flex-1 overflow-auto w-full">
               {children}
               <LoginModal

@@ -2,6 +2,7 @@ import { Copy, Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { EmptyState } from "~/components/EmptyState";
 import {
   Button,
   Dialog,
@@ -196,7 +197,7 @@ export function ProfileApiKeysTab() {
       </PageHeader>
       <div className="space-y-8">
         <Card>
-          <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">
+          <div className="px-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
               Generate New API Key
             </h3>
@@ -204,7 +205,7 @@ export function ProfileApiKeysTab() {
               Create a new key to use with external applications or scripts.
             </p>
           </div>
-          <div className="p-6">
+          <div className="px-6">
             <form onSubmit={handleGenerateKey} className="space-y-4">
               <FormInput
                 id="new-api-key-name"
@@ -242,7 +243,7 @@ export function ProfileApiKeysTab() {
         </Card>
 
         <Card>
-          <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">
+          <div className="px-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
               Existing API Keys
             </h3>
@@ -251,7 +252,7 @@ export function ProfileApiKeysTab() {
               longer needed.
             </p>
           </div>
-          <div className="p-6">
+          <div className="px-6">
             {isLoadingApiKeys ? (
               <div className="flex items-center justify-center py-6">
                 <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
@@ -264,9 +265,10 @@ export function ProfileApiKeysTab() {
                 Error loading API keys: {errorLoadingApiKeys.message}
               </p>
             ) : apiKeys.length === 0 ? (
-              <p className="text-center text-zinc-500 dark:text-zinc-400 py-6">
-                You haven't generated any API keys yet.
-              </p>
+              <EmptyState
+                message="You haven't generated any API keys yet."
+                className="bg-transparent dark:bg-transparent py-6 px-0"
+              />
             ) : (
               <ul className="space-y-3">
                 {apiKeys.map((key) => (

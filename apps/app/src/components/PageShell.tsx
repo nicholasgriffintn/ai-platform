@@ -13,6 +13,7 @@ interface PageShellProps {
   headerContent?: ReactNode;
   fullBleed?: boolean;
   isBeta?: boolean;
+  displayNavBar?: boolean;
 }
 
 export function PageShell({
@@ -23,6 +24,7 @@ export function PageShell({
   headerContent,
   fullBleed = false,
   isBeta = false,
+  displayNavBar = true,
 }: PageShellProps) {
   const header =
     headerContent ||
@@ -32,39 +34,33 @@ export function PageShell({
       </PageHeader>
     ));
 
-  if (sidebarContent) {
-    return (
-      <SidebarLayout sidebarContent={sidebarContent}>
-        {isBeta && (
-          <NotificationBar
-            title="Beta Feature"
-            description="Dynamic Apps is currently in beta. Some features may change, not work or be unavailable."
-          />
-        )}
-        {fullBleed ? (
-          <>
-            {header}
-            {children}
-          </>
-        ) : (
-          <div
-            className={cn(
-              "container mx-auto px-4 py-8 overflow-y-auto",
-              className,
-            )}
-          >
-            {header}
-            {children}
-          </div>
-        )}
-      </SidebarLayout>
-    );
-  }
-
   return (
-    <>
-      {header}
-      {children}
-    </>
+    <SidebarLayout
+      sidebarContent={sidebarContent}
+      displayNavBar={displayNavBar}
+    >
+      {isBeta && (
+        <NotificationBar
+          title="Beta Feature"
+          description="Dynamic Apps is currently in beta. Some features may change, not work or be unavailable."
+        />
+      )}
+      {fullBleed ? (
+        <>
+          {header}
+          {children}
+        </>
+      ) : (
+        <div
+          className={cn(
+            "container mx-auto px-4 py-8 overflow-y-auto",
+            className,
+          )}
+        >
+          {header}
+          {children}
+        </div>
+      )}
+    </SidebarLayout>
   );
 }

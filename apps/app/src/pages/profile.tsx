@@ -2,6 +2,7 @@ import { Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router";
 
 import { PageShell } from "~/components/PageShell";
+import { PageStatus } from "~/components/PageStatus";
 import {
   ProfileSidebar,
   profileSidebarItems,
@@ -42,17 +43,16 @@ export default function ProfilePage() {
   return (
     <PageShell sidebarContent={sidebar} className="max-w-6xl mx-auto px-4 py-8">
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-10rem)] gap-4">
-          <Loader2 size={32} className="animate-spin text-blue-600" />
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Loading profile data...
-          </p>
-        </div>
+        <PageStatus
+          icon={<Loader2 size={32} className="animate-spin text-blue-600" />}
+          message="Loading profile data..."
+          className="h-auto min-h-[200px]"
+        />
       ) : !isAuthenticated ? (
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-10rem)] gap-4">
-          <p className="text-zinc-500 dark:text-zinc-400 mb-4">
-            You need to log in to view your profile.
-          </p>
+        <PageStatus
+          message="You need to log in to view your profile."
+          className="h-auto min-h-[200px]"
+        >
           <Button
             type="button"
             variant="primary"
@@ -61,11 +61,14 @@ export default function ProfilePage() {
           >
             Login
           </Button>
-        </div>
+        </PageStatus>
       ) : ActiveComponent ? (
         <ActiveComponent />
       ) : (
-        <div>Selected tab content not found.</div>
+        <PageStatus
+          message="Selected tab content not found."
+          className="h-auto min-h-[200px]"
+        />
       )}
     </PageShell>
   );

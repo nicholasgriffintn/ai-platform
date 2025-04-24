@@ -1,6 +1,7 @@
 import { Plus, Power, RefreshCcw } from "lucide-react";
 import { useState } from "react";
 
+import { EmptyState } from "~/components/EmptyState";
 import { PageHeader } from "~/components/PageHeader";
 import { PageTitle } from "~/components/PageTitle";
 import { Button } from "~/components/ui/Button";
@@ -77,9 +78,10 @@ export function ProfileProvidersTab() {
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent" />
           </div>
         ) : !providerSettings || Object.keys(providerSettings).length === 0 ? (
-          <div className="text-center py-10 text-zinc-500 dark:text-zinc-400">
-            No providers available
-          </div>
+          <EmptyState
+            message="No providers available"
+            className="bg-transparent dark:bg-transparent border-none py-10 px-0"
+          />
         ) : (
           <>
             {Object.entries(providerSettings).map(([providerId, provider]) => (

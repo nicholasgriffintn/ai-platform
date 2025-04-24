@@ -9,6 +9,7 @@ import { ArtifactPanel } from "~/components/ConversationThread/Artifacts/Artifac
 import { MessageList } from "~/components/ConversationThread/MessageList";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { PageShell } from "~/components/PageShell";
+import { PageStatus } from "~/components/PageStatus";
 import { API_BASE_URL } from "~/constants";
 import type { Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
@@ -138,7 +139,10 @@ export default function SharedConversationPage() {
 
   if (isLoading) {
     return (
-      <PageShell className="flex h-screen w-full items-center justify-center bg-off-white dark:bg-zinc-900">
+      <PageShell
+        className="flex h-screen w-full items-center justify-center bg-off-white dark:bg-zinc-900"
+        displayNavBar={false}
+      >
         <LoadingSpinner message="Loading shared conversation..." />
       </PageShell>
     );
@@ -148,17 +152,17 @@ export default function SharedConversationPage() {
     return (
       <PageShell
         title="Shared Conversation Not Available"
-        className="flex h-screen w-full items-center justify-center bg-off-white dark:bg-zinc-900"
+        className="bg-off-white dark:bg-zinc-900"
+        displayNavBar={false}
       >
-        <div className="mx-auto max-w-md rounded-lg border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="mb-8 text-zinc-600 dark:text-zinc-400">{error}</p>
+        <PageStatus message={error}>
           <Link
             to="/"
             className="inline-flex items-center rounded-md bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2"
           >
             Return Home
           </Link>
-        </div>
+        </PageStatus>
       </PageShell>
     );
   }
@@ -166,6 +170,7 @@ export default function SharedConversationPage() {
   return (
     <PageShell
       headerContent={<SharedHeader />}
+      displayNavBar={false}
       fullBleed={true}
       className="flex min-h-screen flex-col bg-off-white dark:bg-zinc-900"
     >
@@ -185,11 +190,10 @@ export default function SharedConversationPage() {
                 </div>
               </div>
             ) : (
-              <div className="flex-1 flex items-center justify-center rounded-lg border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-950">
-                <p className="text-center text-zinc-600 dark:text-zinc-400">
-                  This shared conversation has no messages.
-                </p>
-              </div>
+              <PageStatus
+                message="This shared conversation has no messages."
+                className="flex-1"
+              />
             )}
           </div>
         </div>

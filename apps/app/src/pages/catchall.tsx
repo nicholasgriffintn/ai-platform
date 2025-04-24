@@ -1,4 +1,5 @@
 import { PageShell } from "~/components/PageShell";
+import { PageStatus } from "~/components/PageStatus";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 
 export function meta() {
@@ -14,9 +15,10 @@ export default function CatchAllRoute() {
       title="Page Not Found"
       sidebarContent={<StandardSidebarContent />}
     >
-      <div className="flex flex-col items-center justify-center h-full gap-4">
-        <p className="text-zinc-500 dark:text-zinc-400">Page not found</p>
-      </div>
+      <PageStatus
+        message="Sorry, this page doesn't exist. Please check the URL and try again."
+        className="h-full"
+      />
     </PageShell>
   );
 }

@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
 import { PageShell } from "~/components/PageShell";
+import { PageStatus } from "~/components/PageStatus";
 import { useAuthStatus } from "~/hooks/useAuth";
 
 export function meta() {
@@ -23,11 +24,10 @@ export default function AuthCallbackRoute() {
   }, [isLoading, navigate]);
 
   return (
-    <PageShell
-      title="Completing authentication..."
-      className="flex flex-col items-center justify-center h-[calc(100vh-10rem)]"
-    >
-      <Loader2 size={32} className="animate-spin text-blue-600" />
+    <PageShell title="Completing authentication..." displayNavBar={false}>
+      <PageStatus
+        icon={<Loader2 size={32} className="animate-spin text-blue-600" />}
+      />
     </PageShell>
   );
 }

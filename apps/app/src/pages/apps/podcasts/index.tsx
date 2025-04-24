@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { BackLink } from "~/components/BackLink";
+import { EmptyState } from "~/components/EmptyState";
 import { PageHeader } from "~/components/PageHeader";
 import { PageShell } from "~/components/PageShell";
 import { PageTitle } from "~/components/PageTitle";
@@ -67,22 +68,20 @@ export default function PodcastsPage() {
           </Button>
         </div>
       ) : podcasts?.length === 0 ? (
-        <div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-8 text-center">
-          <h3 className="text-xl font-semibold mb-4 text-zinc-800 dark:text-zinc-200">
-            No podcasts yet
-          </h3>
-          <p className="text-zinc-600 dark:text-zinc-400 mb-6">
-            Upload your first podcast to get started. We'll help you transcribe,
-            summarise, and create a cover image.
-          </p>
-          <Button
-            onClick={handleNewPodcast}
-            variant="primary"
-            icon={<Plus size={16} />}
-          >
-            Upload Podcast
-          </Button>
-        </div>
+        <EmptyState
+          title="No podcasts yet"
+          message="Upload your first podcast to get started. We'll help you transcribe, summarise, and create a cover image."
+          action={
+            <Button
+              onClick={handleNewPodcast}
+              variant="primary"
+              icon={<Plus size={16} />}
+            >
+              Upload Podcast
+            </Button>
+          }
+          className="min-h-[400px]"
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {podcasts?.map((podcast) => (

@@ -1,6 +1,7 @@
 import { Fingerprint, KeyRound, Shield, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { EmptyState } from "~/components/EmptyState";
 import { Button } from "~/components/ui/Button";
 import { Card } from "~/components/ui/Card";
 import {
@@ -105,30 +106,24 @@ export function ProfilePasskeysTab() {
               ))}
             </div>
           ) : passkeys.length === 0 ? (
-            <Card className="p-6">
-              <div className="text-center py-6">
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-4">
-                  <Fingerprint className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
-                </div>
-                <h3 className="text-zinc-900 dark:text-zinc-100 font-medium">
-                  No passkeys added
-                </h3>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1 max-w-sm mx-auto">
-                  Add a passkey to sign in to your account without a password.
-                  Passkeys use biometrics or device PIN for secure
-                  authentication.
-                </p>
+            <EmptyState
+              icon={
+                <Fingerprint className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
+              }
+              title="No passkeys added"
+              message="Add a passkey to sign in to your account without a password. Passkeys use biometrics or device PIN for secure authentication."
+              action={
                 <Button
                   variant="primary"
                   onClick={handleAddPasskey}
                   disabled={isRegisteringPasskey}
-                  className="mt-4"
                   icon={<KeyRound className="h-4 w-4 mr-2" />}
                 >
                   {isRegisteringPasskey ? "Adding..." : "Add Passkey"}
                 </Button>
-              </div>
-            </Card>
+              }
+              className="bg-transparent dark:bg-transparent p-6"
+            />
           ) : (
             <>
               <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">

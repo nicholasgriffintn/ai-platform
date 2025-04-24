@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { BackLink } from "~/components/BackLink";
+import { EmptyState } from "~/components/EmptyState";
 import { PageHeader } from "~/components/PageHeader";
 import { PageShell } from "~/components/PageShell";
 import { PageTitle } from "~/components/PageTitle";
@@ -77,33 +78,26 @@ export default function ArticlesReportsListPage() {
           </Button>
         </div>
       ) : !reports ? (
-        <div className={cn("p-4 bg-gray-100 dark:bg-gray-800 rounded-md")}>
-          Data unavailable.
-        </div>
+        <EmptyState
+          title="Data unavailable"
+          message="Could not retrieve report data at this time."
+          className="min-h-[400px]"
+        />
       ) : reports.length === 0 ? (
-        <div
-          className={cn(
-            "bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-8 text-center",
-          )}
-        >
-          <h3
-            className={cn(
-              "text-xl font-semibold mb-4 text-zinc-800 dark:text-zinc-200",
-            )}
-          >
-            No reports yet
-          </h3>
-          <p className={cn("text-zinc-600 dark:text-zinc-400 mb-6")}>
-            Start a new analysis session to compare multiple articles.
-          </p>
-          <Button
-            onClick={handleNewAnalysis}
-            variant="primary"
-            icon={<Plus size={16} />}
-          >
-            Start New Analysis
-          </Button>
-        </div>
+        <EmptyState
+          title="No reports yet"
+          message="Start a new analysis session to compare multiple articles."
+          action={
+            <Button
+              onClick={handleNewAnalysis}
+              variant="primary"
+              icon={<Plus size={16} />}
+            >
+              Start New Analysis
+            </Button>
+          }
+          className="min-h-[400px]"
+        />
       ) : (
         <div
           className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6")}

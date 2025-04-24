@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { PageShell } from "~/components/PageShell";
+import { PageStatus } from "~/components/PageStatus";
 import { authService } from "~/lib/api/auth-service";
 
 export function meta() {
@@ -54,41 +55,18 @@ const VerifyMagicLink = () => {
     }
   }, []);
 
-  let content;
-  if (error) {
-    content = (
-      <>
-        <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">
-          Verification Failed
-        </h2>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 text-center px-4">
-          {error}
-        </p>
-      </>
-    );
-  } else if (isPending || !token || !nonce) {
-    content = (
-      <>
-        <Loader2 size={32} className="animate-spin text-blue-600" />
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Verifying your login link...
-        </p>
-      </>
-    );
-  } else {
-    content = (
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Verification complete. Redirecting...
-      </p>
-    );
-  }
-
   return (
-    <PageShell
-      title="Magic Link Verification"
-      className="flex flex-col items-center justify-center h-[calc(100vh-10rem)] gap-4"
-    >
-      {content}
+    <PageShell title="Magic Link Verification" displayNavBar={false}>
+      {error ? (
+        <PageStatus title="Verification Failed" message={error} />
+      ) : isPending || !token || !nonce ? (
+        <PageStatus
+          icon={<Loader2 size={32} className="animate-spin text-blue-600" />}
+          message="Verifying your login link..."
+        />
+      ) : (
+        <PageStatus message="Verification complete. Redirecting..." />
+      )}
     </PageShell>
   );
 };
