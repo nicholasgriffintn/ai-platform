@@ -43,19 +43,25 @@ export class Monitoring {
       return;
     }
 
-    if (this.analyticsEngine?.writeDataPoint) {
-      this.analyticsEngine.writeDataPoint({
-        blobs: [
-          metric.type,
-          metric.name,
-          metric.status,
-          metric.error || "None",
-          metric.traceId,
-          JSON.stringify(metric.metadata),
-        ],
-        doubles: [metric.value, metric.timestamp],
-        indexes: [metric.traceId],
-      });
+    if (this.analyticsEngine) {
+      if (typeof this.analyticsEngine.writeDataPoint === "function") {
+        this.analyticsEngine.writeDataPoint({
+          blobs: [
+            metric.type,
+            metric.name,
+            metric.status,
+            metric.error || "None",
+            metric.traceId,
+            JSON.stringify(metric.metadata),
+          ],
+          doubles: [metric.value, metric.timestamp],
+          indexes: [metric.traceId],
+        });
+      } else {
+        logger.warn("Analytics engine does not have writeDataPoint method.", {
+          engine: this.analyticsEngine,
+        });
+      }
     } else {
       logger.debug(
         `[Metric] ${metric.type}:${metric.name}`,
