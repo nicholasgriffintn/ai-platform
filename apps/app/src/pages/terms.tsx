@@ -1,5 +1,7 @@
 import { Link } from "react-router";
 
+import { PageHeader } from "~/components/PageHeader";
+import { PageTitle } from "~/components/PageTitle";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import {
   APP_NAME,
@@ -20,9 +22,9 @@ export default function Terms() {
   return (
     <SidebarLayout sidebarContent={<StandardSidebarContent />}>
       <div className="container mx-auto px-4 py-8 overflow-y-auto">
-        <h1 className="text-4xl font-bold mb-4 text-zinc-900 dark:text-white">
-          Terms of Service
-        </h1>
+        <PageHeader>
+          <PageTitle title="Terms of Service" />
+        </PageHeader>
         <div className="prose dark:prose-invert max-w-[840px]">
           <h2>1. Introduction</h2>
           <p>

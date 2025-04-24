@@ -2,7 +2,6 @@
 
 import {
   ArrowDown,
-  ArrowLeft,
   ChevronDown,
   ExternalLink,
   FileText,
@@ -10,8 +9,11 @@ import {
   Loader2,
 } from "lucide-react";
 import { useState } from "react";
-import { Link, useParams } from "react-router";
+import { useParams } from "react-router";
 
+import { BackLink } from "~/components/BackLink";
+import { PageHeader } from "~/components/PageHeader";
+import { PageTitle } from "~/components/PageTitle";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import { Markdown } from "~/components/ui/Markdown";
 import {
@@ -96,20 +98,10 @@ export default function ArticleReportDetailPage() {
     return (
       <SidebarLayout sidebarContent={<StandardSidebarContent />}>
         <div className="container mx-auto px-4 py-8 max-w-4xl">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <Link
-                to="/apps/articles"
-                className="no-underline flex items-center text-blue-500 dark:text-blue-400 mb-2 hover:underline"
-              >
-                <ArrowLeft size={16} className="mr-1" />
-                <span>Back to Reports List</span>
-              </Link>
-              <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center">
-                Article Report Details
-              </h1>
-            </div>
-          </div>
+          <PageHeader>
+            <BackLink to="/apps/articles" label="Back to Reports List" />
+            <PageTitle title="Article Report Details" />
+          </PageHeader>
 
           <div className="p-6 bg-white dark:bg-zinc-800 rounded-lg border border-red-200 dark:border-red-800 shadow-sm">
             <div className="flex items-start">
@@ -146,13 +138,7 @@ export default function ArticleReportDetailPage() {
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <Link
-                to="/apps/articles"
-                className="no-underline flex items-center text-blue-500 dark:text-blue-400 mb-2 hover:underline"
-              >
-                <ArrowLeft size={16} className="mr-1" />
-                <span>Back to Reports List</span>
-              </Link>
+              <BackLink to="/apps/articles" label="Back to Reports List" />
               <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center">
                 Article Report Details
               </h1>
@@ -174,16 +160,7 @@ export default function ArticleReportDetailPage() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <Link
-              to="/apps/articles"
-              className="no-underline flex items-center text-blue-500 dark:text-blue-400 mb-2 hover:underline group"
-            >
-              <ArrowLeft
-                size={16}
-                className="mr-1 group-hover:-translate-x-1 transition-transform"
-              />
-              <span>Back to Reports List</span>
-            </Link>
+            <BackLink to="/apps/articles" label="Back to Reports List" />
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center">
               Article Report Details
             </h1>

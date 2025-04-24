@@ -13,6 +13,8 @@ import {
 } from "~/components/ui";
 import { Card } from "~/components/ui/Card";
 import { useApiKeys } from "~/hooks/useApiKeys";
+import { PageHeader } from "../../PageHeader";
+import { PageTitle } from "../../PageTitle";
 
 function GeneratedApiKeyModal({
   isOpen,
@@ -189,9 +191,9 @@ export function ProfileApiKeysTab() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">
-        API Keys
-      </h1>
+      <PageHeader>
+        <PageTitle title="API Keys" />
+      </PageHeader>
       <div className="space-y-8">
         <Card>
           <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">

@@ -12,6 +12,8 @@ import {
 import { Skeleton } from "~/components/ui/Skeleton";
 import { usePasskeys } from "~/hooks/usePasskeys";
 import { formatRelativeTime } from "~/lib/dates";
+import { PageHeader } from "../../PageHeader";
+import { PageTitle } from "../../PageTitle";
 
 export function ProfilePasskeysTab() {
   const {
@@ -54,20 +56,22 @@ export function ProfilePasskeysTab() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
-          Passkeys
-        </h1>
-        {passkeySupported && (
-          <Button
-            onClick={handleAddPasskey}
-            disabled={isRegisteringPasskey}
-            icon={<KeyRound className="h-4 w-4 mr-2" />}
-          >
-            {isRegisteringPasskey ? "Adding..." : "Add Passkey"}
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        actions={
+          passkeySupported
+            ? [
+                {
+                  label: isRegisteringPasskey ? "Adding..." : "Add Passkey",
+                  onClick: handleAddPasskey,
+                  disabled: isRegisteringPasskey,
+                  icon: <KeyRound className="h-4 w-4 mr-2" />,
+                },
+              ]
+            : []
+        }
+      >
+        <PageTitle title="Passkeys" />
+      </PageHeader>
 
       {!passkeySupported ? (
         <Card className="p-6 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">

@@ -1,4 +1,4 @@
-import { ArrowLeft, Book, Mic } from "lucide-react";
+import { Book, Mic } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router";
 
@@ -9,6 +9,9 @@ import {
   useExecuteDynamicApp,
 } from "~/hooks/useDynamicApps";
 import { useChatStore } from "~/state/stores/chatStore";
+import { BackLink } from "../BackLink";
+import { PageHeader } from "../PageHeader";
+import { PageTitle } from "../PageTitle";
 import { AppCard } from "./AppCard";
 import { DynamicForm } from "./DynamicForm";
 import { ResponseRenderer } from "./ResponseRenderer";
@@ -217,7 +220,9 @@ export const DynamicApps = () => {
   if (!selectedAppId || !selectedApp) {
     return (
       <div className={styles.container}>
-        <h1 className={`${styles.heading} mb-10`}>Available Apps</h1>
+        <PageHeader>
+          <PageTitle title="Available Apps" />
+        </PageHeader>
 
         {apps.length === 0 ? (
           <div className="bg-amber-100 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 px-4 py-3 rounded-md">
@@ -237,15 +242,7 @@ export const DynamicApps = () => {
 
   return (
     <div className={styles.container}>
-      <Button
-        type="button"
-        variant="link"
-        className="mb-6"
-        onClick={handleBackToApps}
-        icon={<ArrowLeft size={18} />}
-      >
-        Back to Apps
-      </Button>
+      <BackLink to="/apps" label="Back to Apps" onClick={handleBackToApps} />
 
       {result ? responseContent : formContent}
     </div>

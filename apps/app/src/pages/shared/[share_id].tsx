@@ -11,6 +11,8 @@ import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { API_BASE_URL } from "~/constants";
 import type { Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
+import { PageHeader } from "../../components/PageHeader";
+import { PageTitle } from "../../components/PageTitle";
 
 export function meta() {
   return [
@@ -122,9 +124,9 @@ export default function SharedConversationPage() {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-off-white dark:bg-zinc-900">
         <div className="mx-auto max-w-md rounded-lg border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <h1 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-            Shared Conversation Not Available
-          </h1>
+          <PageHeader>
+            <PageTitle title="Shared Conversation Not Available" />
+          </PageHeader>
           <p className="mb-8 text-zinc-600 dark:text-zinc-400">{error}</p>
           <Link
             to="/"

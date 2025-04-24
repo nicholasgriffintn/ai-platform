@@ -5,6 +5,7 @@ import { ConversationThread } from "~/components/ConversationThread";
 import { SearchDialog } from "~/components/SearchDialog";
 import { SidebarLayout } from "~/layouts/SidebarLayout";
 import { useChatStore } from "~/state/stores/chatStore";
+import { PageTitle } from "../components/PageTitle";
 
 export default function Home() {
   const {
@@ -52,7 +53,7 @@ export default function Home() {
       <div className="flex flex-row flex-grow flex-1 overflow-hidden relative h-full">
         <div className="flex flex-col flex-grow h-full w-full">
           <div className="flex-1 overflow-hidden relative">
-            <h1 className="sr-only">Conversation</h1>
+            <PageTitle title="Conversation" className="sr-only" />
             <ConversationThread />
           </div>
         </div>

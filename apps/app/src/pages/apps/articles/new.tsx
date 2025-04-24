@@ -1,8 +1,11 @@
-import { ArrowLeft, Loader2, Plus, Save, Trash2 } from "lucide-react";
+import { Loader2, Plus, Save, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
+import { BackLink } from "~/components/BackLink";
+import { PageHeader } from "~/components/PageHeader";
+import { PageTitle } from "~/components/PageTitle";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import { Button, Textarea } from "~/components/ui";
 import {
@@ -153,27 +156,13 @@ export default function NewArticleAnalysisPage() {
     <SidebarLayout sidebarContent={<StandardSidebarContent />}>
       <div className={cn("container mx-auto px-4 py-8 max-w-4xl")}>
         <div className={cn("flex justify-between items-center mb-8")}>
-          <div>
-            <Link
-              to="/apps/articles"
-              className={cn(
-                "no-underline flex items-center text-blue-500 dark:text-blue-400 mb-2 hover:underline",
-              )}
-            >
-              <ArrowLeft size={16} className="mr-1" />
-              <span>Back to Reports</span>
-            </Link>
-            <h1
-              className={cn(
-                "text-2xl font-bold text-zinc-900 dark:text-zinc-50",
-              )}
-            >
-              New Article Analysis Session
-            </h1>
+          <PageHeader>
+            <BackLink to="/apps/articles" label="Back to Reports" />
+            <PageTitle title="New Article Analysis Session" />
             <p className={cn("text-sm text-zinc-500 dark:text-zinc-400 mt-1")}>
               Session ID: {itemId}
             </p>
-          </div>
+          </PageHeader>
           <Button
             onClick={handleProcessAndGenerate}
             variant="primary"

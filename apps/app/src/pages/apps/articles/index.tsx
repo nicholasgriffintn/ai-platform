@@ -1,7 +1,10 @@
-import { ArrowLeft, FileSpreadsheet, Plus } from "lucide-react";
+import { FileSpreadsheet, Plus } from "lucide-react";
 import { useCallback } from "react";
 import { Link, useNavigate } from "react-router";
 
+import { BackLink } from "~/components/BackLink";
+import { PageHeader } from "~/components/PageHeader";
+import { PageTitle } from "~/components/PageTitle";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import { Button } from "~/components/ui";
 import { useFetchArticleReports } from "~/hooks/useArticles";
@@ -29,33 +32,18 @@ export default function ArticlesReportsListPage() {
   return (
     <SidebarLayout sidebarContent={<StandardSidebarContent />}>
       <div className={cn("container mx-auto px-4 py-8 max-w-6xl")}>
-        <div className={cn("flex justify-between items-center mb-8")}>
-          <div>
-            <Link
-              to="/apps"
-              className={cn(
-                "no-underline flex items-center text-blue-500 dark:text-blue-400 mb-2 hover:underline",
-              )}
-            >
-              <ArrowLeft size={16} className="mr-1" />
-              <span>Back to Apps</span>
-            </Link>
-            <h1
-              className={cn(
-                "text-2xl font-bold text-zinc-900 dark:text-zinc-50",
-              )}
-            >
-              Article Reports
-            </h1>
-          </div>
-          <Button
-            onClick={handleNewAnalysis}
-            variant="primary"
-            icon={<Plus size={16} />}
-          >
-            New Analysis
-          </Button>
-        </div>
+        <PageHeader
+          actions={[
+            {
+              label: "New Analysis",
+              onClick: handleNewAnalysis,
+              icon: <Plus size={16} />,
+            },
+          ]}
+        >
+          <BackLink to="/apps" label="Back to Apps" />
+          <PageTitle title="Article Reports" />
+        </PageHeader>
 
         {isLoading ? (
           <div className={cn("flex justify-center items-center min-h-[400px]")}>

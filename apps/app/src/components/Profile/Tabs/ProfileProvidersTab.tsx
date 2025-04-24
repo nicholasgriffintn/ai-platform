@@ -1,6 +1,8 @@
-import { Plus, Power } from "lucide-react";
+import { Plus, Power, RefreshCcw } from "lucide-react";
 import { useState } from "react";
 
+import { PageHeader } from "~/components/PageHeader";
+import { PageTitle } from "~/components/PageTitle";
 import { Button } from "~/components/ui/Button";
 import { Card } from "~/components/ui/Card";
 import { useUser } from "~/hooks/useUser";
@@ -51,20 +53,25 @@ export function ProfileProvidersTab() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">
-        Available Providers
-      </h1>
+      <PageHeader
+        actions={
+          !isLoadingProviderSettings
+            ? [
+                {
+                  label: isSyncingProviders ? "Syncing..." : "Sync Providers",
+                  onClick: () => syncProviders(),
+                  icon: <RefreshCcw className="h-4 w-4 mr-2" />,
+                  disabled: isSyncingProviders,
+                  variant: "secondary",
+                },
+              ]
+            : []
+        }
+      >
+        <PageTitle title="Available Providers" />
+      </PageHeader>
 
       <div className="space-y-4">
-        {!isLoadingProviderSettings && (
-          <Button
-            variant="secondary"
-            onClick={() => syncProviders()}
-            disabled={isSyncingProviders}
-          >
-            {isSyncingProviders ? "Syncing..." : "Sync Providers"}
-          </Button>
-        )}
         {isLoadingProviderSettings ? (
           <div className="flex justify-center py-10">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent" />

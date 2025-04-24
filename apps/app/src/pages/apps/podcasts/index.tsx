@@ -1,7 +1,10 @@
-import { ArrowLeft, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useCallback } from "react";
 import { Link, useNavigate } from "react-router";
 
+import { BackLink } from "~/components/BackLink";
+import { PageHeader } from "~/components/PageHeader";
+import { PageTitle } from "~/components/PageTitle";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import { Button } from "~/components/ui";
 import { useFetchPodcasts } from "~/hooks/usePodcasts";
@@ -27,18 +30,10 @@ export default function PodcastsPage() {
     <SidebarLayout sidebarContent={<StandardSidebarContent />}>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <Link
-              to="/apps"
-              className="no-underline flex items-center text-blue-500 mb-2"
-            >
-              <ArrowLeft size={16} className="mr-1" />
-              <span>Back to Apps</span>
-            </Link>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-              Your Podcasts
-            </h1>
-          </div>
+          <PageHeader>
+            <BackLink to="/apps" label="Back to Apps" />
+            <PageTitle title="Your Podcasts" />
+          </PageHeader>
           <Button
             onClick={handleNewPodcast}
             variant="primary"

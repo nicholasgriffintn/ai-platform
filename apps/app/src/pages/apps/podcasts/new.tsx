@@ -1,6 +1,5 @@
-import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 import {
   ProcessStep,
@@ -8,6 +7,9 @@ import {
   ProgressStepper,
   UploadStep,
 } from "~/components/Apps/Podcasts";
+import { BackLink } from "~/components/BackLink";
+import { PageHeader } from "~/components/PageHeader";
+import { PageTitle } from "~/components/PageTitle";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import { useProcessPodcast, useUploadPodcast } from "~/hooks/usePodcasts";
 import { SidebarLayout } from "~/layouts/SidebarLayout";
@@ -327,17 +329,10 @@ export default function NewPodcastPage() {
   return (
     <SidebarLayout sidebarContent={<StandardSidebarContent />}>
       <div className="container mx-auto px-4 py-8 max-w-3xl">
-        <Link
-          to="/apps/podcasts"
-          className="no-underline flex items-center text-blue-500 mb-4"
-        >
-          <ArrowLeft size={16} className="mr-1" />
-          <span>Back to Podcasts</span>
-        </Link>
-
-        <h1 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-zinc-50">
-          Upload New Podcast
-        </h1>
+        <PageHeader>
+          <BackLink to="/apps/podcasts" label="Back to Podcasts" />
+          <PageTitle title="Upload New Podcast" />
+        </PageHeader>
 
         <ProgressStepper currentStep={currentStep} />
 

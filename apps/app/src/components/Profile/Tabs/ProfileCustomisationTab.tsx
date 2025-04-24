@@ -1,3 +1,5 @@
+import { PageHeader } from "~/components/PageHeader";
+import { PageTitle } from "~/components/PageTitle";
 import { UserSettingsForm } from "~/components/UserSettingsForm";
 import { useAuthStatus } from "~/hooks/useAuth";
 
@@ -6,9 +8,9 @@ export function ProfileCustomisationTab() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">
-        Customise Chat
-      </h1>
+      <PageHeader>
+        <PageTitle title="Customise Chat" />
+      </PageHeader>
 
       <div className="space-y-6">
         <UserSettingsForm

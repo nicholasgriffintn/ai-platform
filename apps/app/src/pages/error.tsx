@@ -1,6 +1,8 @@
 import { Link } from "react-router";
 
 import { Logo } from "~/components/Logo";
+import { PageHeader } from "~/components/PageHeader";
+import { PageTitle } from "~/components/PageTitle";
 import { APP_NAME } from "~/constants";
 
 export default function ErrorRoute({
@@ -37,9 +39,9 @@ export default function ErrorRoute({
           </div>
           <div className="flex-1 overflow-auto w-full">
             <div className="container mx-auto px-4 py-8 overflow-y-auto">
-              <h1 className="text-2xl font-bold mb-4 text-zinc-900 dark:text-white">
-                {message}
-              </h1>
+              <PageHeader>
+                <PageTitle title={message} />
+              </PageHeader>
               <div className="prose dark:prose-invert max-w-none">
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
                   {details}

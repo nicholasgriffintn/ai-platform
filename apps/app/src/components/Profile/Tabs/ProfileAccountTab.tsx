@@ -1,4 +1,7 @@
-import { Alert } from "~/components/ui";
+import { Construction } from "lucide-react";
+import { PageHeader } from "~/components/PageHeader";
+import { PageTitle } from "~/components/PageTitle";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { formatDate } from "~/lib/dates";
 
@@ -7,9 +10,9 @@ export function ProfileAccountTab() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">
-        Account
-      </h1>
+      <PageHeader>
+        <PageTitle title="Account" />
+      </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="flex flex-col items-center md:col-span-1">
@@ -148,9 +151,15 @@ export function ProfileAccountTab() {
             Usage
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
             <div className="text-zinc-500 dark:text-zinc-400">
-              <Alert variant="default">TODO: Coming soon</Alert>
+              <Alert variant="default">
+                <Construction className="h-4 w-4 mr-2" />
+                <AlertTitle>Coming soon</AlertTitle>
+                <AlertDescription>
+                  This feature is coming soon.
+                </AlertDescription>
+              </Alert>
             </div>
           </div>
         </div>

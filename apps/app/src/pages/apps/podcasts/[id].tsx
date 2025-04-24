@@ -1,8 +1,11 @@
-import { ArrowLeft, CheckCircle, Clock, FileText } from "lucide-react";
+import { CheckCircle, Clock, FileText } from "lucide-react";
 import { type JSX, useCallback } from "react";
 import { Link, useParams } from "react-router";
 
 import { TranscriptViewer } from "~/components/Apps/Podcasts";
+import { BackLink } from "~/components/BackLink";
+import { PageHeader } from "~/components/PageHeader";
+import { PageTitle } from "~/components/PageTitle";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import { Button } from "~/components/ui";
 import { Markdown } from "~/components/ui/Markdown";
@@ -98,13 +101,7 @@ export default function PodcastDetailPage() {
   return (
     <SidebarLayout sidebarContent={<StandardSidebarContent />}>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <Link
-          to="/apps/podcasts"
-          className="no-underline flex items-center text-blue-500 mb-4 no-underline"
-        >
-          <ArrowLeft size={16} className="mr-1" />
-          <span>Back to Podcasts</span>
-        </Link>
+        <BackLink to="/apps/podcasts" label="Back to Podcasts" />
 
         {isLoading ? (
           <div className="flex justify-center items-center min-h-[400px]">
@@ -158,12 +155,12 @@ export default function PodcastDetailPage() {
               </div>
 
               <div className="w-full lg:w-2/3">
-                <div className="flex flex-wrap items-center gap-3 mb-2">
-                  <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mr-auto">
-                    {podcast.title}
-                  </h1>
-                  {renderStatusIndicator(podcast.status)}
-                </div>
+                <PageHeader>
+                  <PageTitle title={podcast.title} />
+                  <div className="flex items-center gap-2 mt-2">
+                    {renderStatusIndicator(podcast.status)}
+                  </div>
+                </PageHeader>
 
                 <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-4">
                   <span>

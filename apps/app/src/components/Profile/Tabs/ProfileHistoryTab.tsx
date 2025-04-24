@@ -1,15 +1,22 @@
-import { Alert } from "../../ui";
+import { Construction } from "lucide-react";
+import { PageHeader } from "~/components/PageHeader";
+import { PageTitle } from "~/components/PageTitle";
+import { Alert, AlertDescription, AlertTitle } from "../../ui";
 
 export function ProfileHistoryTab() {
   return (
     <div>
-      <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">
-        Chat History
-      </h1>
+      <PageHeader>
+        <PageTitle title="Chat History" />
+      </PageHeader>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
         <div className="text-zinc-500 dark:text-zinc-400">
-          <Alert variant="default">TODO: Coming soon</Alert>
+          <Alert variant="default">
+            <Construction className="h-4 w-4 mr-2" />
+            <AlertTitle>Coming soon</AlertTitle>
+            <AlertDescription>This feature is coming soon.</AlertDescription>
+          </Alert>
         </div>
       </div>
     </div>

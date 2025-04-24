@@ -1,6 +1,8 @@
+import { PageHeader } from "~/components/PageHeader";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import { APP_NAME, CONTACT_LINK, PRIVACY_EFFECTIVE_DATE } from "~/constants";
 import { SidebarLayout } from "~/layouts/SidebarLayout";
+import { PageTitle } from "../components/PageTitle";
 
 export function meta() {
   return [
@@ -13,9 +15,9 @@ export default function Privacy() {
   return (
     <SidebarLayout sidebarContent={<StandardSidebarContent />}>
       <div className="container mx-auto px-4 py-8 overflow-y-auto">
-        <h1 className="text-4xl font-bold mb-4 text-zinc-900 dark:text-white">
-          Privacy Policy
-        </h1>
+        <PageHeader>
+          <PageTitle title="Privacy Policy" />
+        </PageHeader>
         <div className="prose dark:prose-invert max-w-[840px]">
           <h2>1. Introduction</h2>
           <p>
