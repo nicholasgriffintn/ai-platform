@@ -32,7 +32,7 @@ export default function ArticlesReportsListPage() {
   return (
     <PageShell
       sidebarContent={<StandardSidebarContent />}
-      className={cn("max-w-6xl")}
+      className="max-w-7xl mx-auto"
       headerContent={
         <PageHeader
           actions={[

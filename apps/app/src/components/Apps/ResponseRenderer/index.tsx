@@ -1,6 +1,7 @@
 import { Button } from "~/components/ui";
 import type { AppSchema } from "~/lib/api/dynamic-apps";
-import { getCardGradient, styles } from "../utils";
+import { cn } from "~/lib/utils";
+import { getCardGradient, getIcon } from "../utils";
 import { CustomView } from "./CustomView";
 import { JsonView } from "./JsonView";
 import { TableView } from "./TableView";
@@ -105,20 +106,40 @@ export const ResponseRenderer = ({
     return (
       <div className="max-w-3xl mx-auto">
         <div
-          className={`${styles.card} bg-gradient-to-br ${getCardGradient(app.icon)} mb-6`}
+          className={cn(
+            "border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-off-white dark:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600",
+            "bg-gradient-to-br",
+            getCardGradient(app.icon),
+            "mb-6",
+          )}
         >
           <div className="mb-6">
             <div className="flex items-center space-x-4 mb-4">
-              <div className={styles.iconContainer}>
-                {styles.getIcon(app.icon)}
+              <div
+                className={cn(
+                  "p-3 rounded-lg bg-off-white dark:bg-zinc-700 shadow-sm",
+                )}
+              >
+                {getIcon(app.icon)}
               </div>
               <div>
-                <h1 className={styles.heading}>{app.name} - Results</h1>
-                <p className={styles.paragraph}>
+                <h1
+                  className={cn(
+                    "text-2xl font-bold mb-2 text-zinc-900 dark:text-zinc-50",
+                  )}
+                >
+                  {app.name} - Results
+                </h1>
+                <p className={cn("text-zinc-600 dark:text-zinc-300")}>
                   {result.data?.message || `Results for ${app.name}`}
                 </p>
                 {result.data?.timestamp && (
-                  <p className={`${styles.smallText} mt-1`}>
+                  <p
+                    className={cn(
+                      "text-sm text-zinc-500 dark:text-zinc-400",
+                      "mt-1",
+                    )}
+                  >
                     Generated on:{" "}
                     {new Date(result.data.timestamp).toLocaleString()}
                   </p>

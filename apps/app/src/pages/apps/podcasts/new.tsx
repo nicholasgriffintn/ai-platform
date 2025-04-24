@@ -329,7 +329,7 @@ export default function NewPodcastPage() {
   return (
     <PageShell
       sidebarContent={<StandardSidebarContent />}
-      className="max-w-3xl"
+      className="max-w-7xl mx-auto"
       headerContent={
         <PageHeader>
           <BackLink to="/apps/podcasts" label="Back to podcasts" />
@@ -338,40 +338,42 @@ export default function NewPodcastPage() {
       }
       isBeta={true}
     >
-      <ProgressStepper currentStep={currentStep} />
+      <div className="max-w-3xl mx-auto">
+        <ProgressStepper currentStep={currentStep} />
 
-      {currentStep === Step.Upload && (
-        <UploadStep
-          formData={formData}
-          handleChange={handleChange}
-          handleFileChange={handleFileChange}
-          handleUpload={handleUpload}
-          isUploading={isUploading}
-          setFormData={setFormData}
-        />
-      )}
+        {currentStep === Step.Upload && (
+          <UploadStep
+            formData={formData}
+            handleChange={handleChange}
+            handleFileChange={handleFileChange}
+            handleUpload={handleUpload}
+            isUploading={isUploading}
+            setFormData={setFormData}
+          />
+        )}
 
-      {currentStep === Step.Process && (
-        <ProcessStep
-          formData={formData}
-          handleChange={handleChange}
-          handleProcess={handleProcess}
-          isProcessing={isProcessing}
-        />
-      )}
+        {currentStep === Step.Process && (
+          <ProcessStep
+            formData={formData}
+            handleChange={handleChange}
+            handleProcess={handleProcess}
+            isProcessing={isProcessing}
+          />
+        )}
 
-      {currentStep === Step.Processing && (
-        <ProcessingStep
-          formData={formData}
-          processingStatus={processingStatus}
-          processingErrors={processingErrors}
-          processingComplete={processingComplete}
-          handleRetry={handleRetry}
-          setCurrentStep={setCurrentStep}
-          uploadedPodcastId={uploadedPodcastId}
-          navigate={navigate}
-        />
-      )}
+        {currentStep === Step.Processing && (
+          <ProcessingStep
+            formData={formData}
+            processingStatus={processingStatus}
+            processingErrors={processingErrors}
+            processingComplete={processingComplete}
+            handleRetry={handleRetry}
+            setCurrentStep={setCurrentStep}
+            uploadedPodcastId={uploadedPodcastId}
+            navigate={navigate}
+          />
+        )}
+      </div>
     </PageShell>
   );
 }

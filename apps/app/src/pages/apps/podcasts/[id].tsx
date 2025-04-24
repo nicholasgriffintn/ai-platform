@@ -101,7 +101,7 @@ export default function PodcastDetailPage() {
   return (
     <PageShell
       sidebarContent={<StandardSidebarContent />}
-      className="max-w-6xl"
+      className="max-w-7xl mx-auto"
       headerContent={<BackLink to="/apps/podcasts" label="Back to Podcasts" />}
       isBeta={true}
     >

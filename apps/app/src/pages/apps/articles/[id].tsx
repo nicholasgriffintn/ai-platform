@@ -111,7 +111,7 @@ export default function ArticleReportDetailPage() {
   return (
     <PageShell
       sidebarContent={<StandardSidebarContent />}
-      className="max-w-4xl"
+      className="max-w-7xl mx-auto"
       headerContent={
         <PageHeader>
           <BackLink to="/apps/articles" label="Back to Reports List" />

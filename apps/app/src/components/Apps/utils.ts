@@ -137,24 +137,3 @@ export const groupAppsByCategory = (
     return a[0].localeCompare(b[0]);
   });
 };
-
-export const styles = {
-  container: "container mx-auto px-4 max-w-7xl",
-  card: "border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-off-white dark:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600",
-  cardWithGradient: (iconName?: string) =>
-    `border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-gradient-to-br ${getCardGradient(iconName)} hover:border-zinc-300 dark:hover:border-zinc-600`,
-  heading: "text-2xl font-bold mb-2 text-zinc-900 dark:text-zinc-50",
-  subheading:
-    "text-xl font-semibold text-zinc-800 dark:text-zinc-200 border-b border-zinc-200 dark:border-zinc-700 pb-2",
-  paragraph: "text-zinc-600 dark:text-zinc-300",
-  smallText: "text-sm text-zinc-500 dark:text-zinc-400",
-  primaryButton:
-    "px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded-md transition-colors",
-  secondaryButton:
-    "px-4 py-2 bg-off-white-highlight dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600 rounded-md transition-colors",
-  iconContainer: "p-3 rounded-lg bg-off-white dark:bg-zinc-700 shadow-sm",
-  badge: (category?: string) =>
-    `inline-block px-3 py-1 text-xs rounded-full ${getCategoryColor(category)}`,
-  getIconColor,
-  getIcon,
-};

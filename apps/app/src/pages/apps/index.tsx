@@ -13,11 +13,7 @@ export function meta() {
 
 const DynamicAppsRoute: FC = () => {
   return (
-    <PageShell
-      sidebarContent={<StandardSidebarContent />}
-      className="px-4 py-8"
-      isBeta={true}
-    >
+    <PageShell sidebarContent={<StandardSidebarContent />} isBeta={true}>
       <DynamicApps />
     </PageShell>
   );

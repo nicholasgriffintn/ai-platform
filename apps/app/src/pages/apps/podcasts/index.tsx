@@ -29,7 +29,7 @@ export default function PodcastsPage() {
   return (
     <PageShell
       sidebarContent={<StandardSidebarContent />}
-      className="max-w-6xl"
+      className="max-w-7xl mx-auto"
       headerContent={
         <div className="flex justify-between items-center">
           <PageHeader>

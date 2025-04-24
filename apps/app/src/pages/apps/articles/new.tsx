@@ -152,7 +152,7 @@ export default function NewArticleAnalysisPage() {
   return (
     <PageShell
       sidebarContent={<StandardSidebarContent />}
-      className="max-w-4xl"
+      className="max-w-7xl mx-auto"
       headerContent={
         <div className={cn("flex justify-between items-center mb-8")}>
           <PageHeader>
@@ -184,73 +184,75 @@ export default function NewArticleAnalysisPage() {
       }
       isBeta={true}
     >
-      {processingError && (
-        <div
-          className={cn(
-            "mb-6 p-4 border border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/30 rounded-md",
-          )}
-        >
-          <p className={cn("font-semibold text-red-800 dark:text-red-200")}>
-            Error
-          </p>
-          <p className={cn("text-sm text-red-700 dark:text-red-300 mt-1")}>
-            {processingError}
-          </p>
-        </div>
-      )}
+      <div className="max-w-3xl mx-auto">
+        {processingError && (
+          <div
+            className={cn(
+              "mb-6 p-4 border border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/30 rounded-md",
+            )}
+          >
+            <p className={cn("font-semibold text-red-800 dark:text-red-200")}>
+              Error
+            </p>
+            <p className={cn("text-sm text-red-700 dark:text-red-300 mt-1")}>
+              {processingError}
+            </p>
+          </div>
+        )}
 
-      <div className={cn("space-y-6")}>
-        {articles.map((article, index) => {
-          return (
-            <div
-              key={article.id}
-              className={cn(
-                "p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-off-white dark:bg-zinc-800",
-              )}
-            >
-              <div className={cn("flex justify-between items-start mb-3")}>
-                <h2
-                  className={cn(
-                    "font-semibold text-lg text-zinc-800 dark:text-zinc-200",
-                  )}
-                >
-                  Article {index + 1}
-                </h2>
-                {articles.length > 1 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveArticle(article.id)}
-                    aria-label="Remove Article"
+        <div className={cn("space-y-6")}>
+          {articles.map((article, index) => {
+            return (
+              <div
+                key={article.id}
+                className={cn(
+                  "p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-off-white dark:bg-zinc-800",
+                )}
+              >
+                <div className={cn("flex justify-between items-start mb-3")}>
+                  <h2
                     className={cn(
-                      "text-zinc-500 hover:text-red-600 dark:hover:text-red-500",
+                      "font-semibold text-lg text-zinc-800 dark:text-zinc-200",
                     )}
                   >
-                    <Trash2 size={16} />
-                  </Button>
-                )}
+                    Article {index + 1}
+                  </h2>
+                  {articles.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveArticle(article.id)}
+                      aria-label="Remove Article"
+                      className={cn(
+                        "text-zinc-500 hover:text-red-600 dark:hover:text-red-500",
+                      )}
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  )}
+                </div>
+                <Textarea
+                  value={article.text}
+                  onChange={(e) => handleTextChange(article.id, e)}
+                  placeholder="Paste article content here..."
+                  className={cn("min-h-[150px] mb-3")}
+                  disabled={processingArticles || reportGenerating}
+                />
               </div>
-              <Textarea
-                value={article.text}
-                onChange={(e) => handleTextChange(article.id, e)}
-                placeholder="Paste article content here..."
-                className={cn("min-h-[150px] mb-3")}
-                disabled={processingArticles || reportGenerating}
-              />
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
 
-      <Button
-        variant="outline"
-        onClick={handleAddArticle}
-        icon={<Plus size={16} />}
-        className={cn("mt-6")}
-        disabled={processingArticles || reportGenerating}
-      >
-        Add Another Article
-      </Button>
+        <Button
+          variant="outline"
+          onClick={handleAddArticle}
+          icon={<Plus size={16} />}
+          className={cn("mt-6")}
+          disabled={processingArticles || reportGenerating}
+        >
+          Add Another Article
+        </Button>
+      </div>
     </PageShell>
   );
 }

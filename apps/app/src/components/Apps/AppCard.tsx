@@ -1,5 +1,6 @@
 import type { AppListItem } from "~/lib/api/dynamic-apps";
-import { styles } from "./utils";
+import { cn } from "~/lib/utils";
+import { getCardGradient, getCategoryColor, getIcon } from "./utils";
 
 interface AppCardProps {
   app: AppListItem;
@@ -10,7 +11,10 @@ export const AppCard = ({ app, onSelect }: AppCardProps) => {
   return (
     <button
       type="button"
-      className={`cursor-pointer w-full h-full ${styles.cardWithGradient(app.icon)} focus:outline-none focus:ring-2 focus:ring-blue-500/40`}
+      className={cn(
+        "cursor-pointer w-full h-full border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-gradient-to-br hover:border-zinc-300 dark:hover:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40",
+        getCardGradient(app.icon),
+      )}
       onClick={onSelect}
       onKeyDown={(e) => e.key === "Enter" && onSelect()}
       tabIndex={0}
@@ -18,13 +22,26 @@ export const AppCard = ({ app, onSelect }: AppCardProps) => {
     >
       <div className="flex flex-col h-full">
         <div className="flex items-center space-x-4 mb-3">
-          <div className={styles.iconContainer}>{styles.getIcon(app.icon)}</div>
+          <div
+            className={cn(
+              "p-3 rounded-lg bg-off-white dark:bg-zinc-700 shadow-sm",
+            )}
+          >
+            {getIcon(app.icon)}
+          </div>
           <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100">
             {app.name}
           </h3>
 
           {app.category && (
-            <span className={styles.badge(app.category)}>{app.category}</span>
+            <span
+              className={cn(
+                "inline-block px-3 py-1 text-xs rounded-full",
+                getCategoryColor(app.category),
+              )}
+            >
+              {app.category}
+            </span>
           )}
         </div>
 
