@@ -153,7 +153,7 @@ export class UserRepository extends BaseRepository {
     await this.executeRun(
       `INSERT INTO oauth_account (provider_id, provider_user_id, user_id)
        VALUES ('github', ?, ?)`,
-      [providerId, providerUserId, userId],
+      [providerUserId, userId],
     );
   }
 }
