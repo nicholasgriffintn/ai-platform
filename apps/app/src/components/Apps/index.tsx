@@ -1,6 +1,4 @@
-import { Book, Mic } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { Link } from "react-router";
 
 import { Button } from "~/components/ui";
 import {
@@ -15,8 +13,9 @@ import { PageHeader } from "../PageHeader";
 import { PageTitle } from "../PageTitle";
 import { AppCard } from "./AppCard";
 import { DynamicForm } from "./DynamicForm";
+import { FeaturedApps } from "./FeaturedApps";
 import { ResponseRenderer } from "./ResponseRenderer";
-import { getCategoryColor, groupAppsByCategory } from "./utils";
+import { groupAppsByCategory } from "./utils";
 
 export const DynamicApps = () => {
   const { isPro, isAuthenticated, isAuthenticationLoading } = useChatStore();
@@ -72,90 +71,6 @@ export const DynamicApps = () => {
     setSelectedAppId(null);
     setResult(null);
   }, []);
-
-  const renderFeaturedApps = useCallback(
-    () => (
-      <div className="space-y-6 mb-12">
-        <h2
-          className={cn(
-            "text-xl font-semibold text-zinc-800 dark:text-zinc-200 border-b border-zinc-200 dark:border-zinc-700 pb-2",
-          )}
-        >
-          Featured Apps
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Link
-            to="/apps/podcasts"
-            className="no-underline transform transition-transform hover:scale-[1.02] h-[200px] border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-green-50 to-white dark:from-green-900/10 dark:to-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600"
-          >
-            <div className="flex items-center mb-4">
-              <div
-                className={cn(
-                  "p-3 rounded-lg bg-off-white dark:bg-zinc-700 shadow-sm",
-                )}
-              >
-                <Mic
-                  className="h-10 w-10 text-green-500 dark:text-green-400"
-                  strokeWidth={1.5}
-                />
-              </div>
-              <div className="ml-4">
-                <h3 className="font-semibold text-lg text-zinc-800 dark:text-zinc-200">
-                  Podcast Processor
-                </h3>
-                <span
-                  className={cn(
-                    "inline-block px-3 py-1 text-xs rounded-full",
-                    getCategoryColor("Media"),
-                  )}
-                >
-                  Media
-                </span>
-              </div>
-            </div>
-            <p className={cn("text-zinc-600 dark:text-zinc-300")}>
-              Upload and process your podcast to get transcription, summary, and
-              cover image
-            </p>
-          </Link>
-          <Link
-            to="/apps/articles"
-            className="no-underline transform transition-transform hover:scale-[1.02] h-[200px] border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-green-50 to-white dark:from-green-900/10 dark:to-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600"
-          >
-            <div className="flex items-center mb-4">
-              <div
-                className={cn(
-                  "p-3 rounded-lg bg-off-white dark:bg-zinc-700 shadow-sm",
-                )}
-              >
-                <Book
-                  size={24}
-                  className="text-green-500 dark:text-green-400"
-                />
-              </div>
-              <div className="ml-4">
-                <h3 className="font-semibold text-lg text-zinc-800 dark:text-zinc-200">
-                  Article Processor
-                </h3>
-                <span
-                  className={cn(
-                    "inline-block px-3 py-1 text-xs rounded-full",
-                    getCategoryColor("Text"),
-                  )}
-                >
-                  Text
-                </span>
-              </div>
-            </div>
-            <p className={cn("text-zinc-600 dark:text-zinc-300")}>
-              Analyse and summarise articles to get insights and summaries
-            </p>
-          </Link>
-        </div>
-      </div>
-    ),
-    [],
-  );
 
   const renderCategoryApps = useCallback(
     (category: string, categoryApps: any[]) => (
@@ -252,34 +167,41 @@ export const DynamicApps = () => {
     );
   }
 
-  if (!selectedAppId || !selectedApp) {
+  if (selectedAppId && selectedApp) {
     return (
       <div className={cn("container mx-auto px-4 max-w-7xl")}>
         <PageHeader>
-          <PageTitle title="Available Apps" />
+          <BackLink onClick={handleBackToApps} label="Back to Apps" />
+          <PageTitle title={selectedApp.name} />
         </PageHeader>
-
-        {apps.length === 0 ? (
-          <div className="bg-amber-100 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 px-4 py-3 rounded-md">
-            No apps available. Please check back later.
-          </div>
-        ) : (
-          <div className="space-y-12">
-            {renderFeaturedApps()}
-            {groupedApps.map(([category, categoryApps]) =>
-              renderCategoryApps(category, categoryApps),
-            )}
-          </div>
-        )}
+        <div className="flex-grow overflow-auto space-y-6">
+          <p className="text-zinc-600 dark:text-zinc-300">
+            {selectedApp.description}
+          </p>
+          {responseContent || formContent}
+        </div>
       </div>
     );
   }
 
   return (
     <div className={cn("container mx-auto px-4 max-w-7xl")}>
-      <BackLink to="/apps" label="Back to Apps" onClick={handleBackToApps} />
+      <FeaturedApps />
 
-      {result ? responseContent : formContent}
+      {groupedApps.map(([category, categoryApps]) =>
+        renderCategoryApps(category, categoryApps),
+      )}
+
+      {apps.length > 0 && groupedApps.length === 0 && (
+        <div className="text-center text-zinc-500 dark:text-zinc-400 py-10">
+          No apps available in your selected categories.
+        </div>
+      )}
+      {apps.length === 0 && !appsLoading && (
+        <div className="text-center text-zinc-500 dark:text-zinc-400 py-10">
+          No apps found.
+        </div>
+      )}
     </div>
   );
 };

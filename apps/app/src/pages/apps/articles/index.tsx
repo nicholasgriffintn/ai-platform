@@ -8,7 +8,7 @@ import { PageHeader } from "~/components/PageHeader";
 import { PageShell } from "~/components/PageShell";
 import { PageTitle } from "~/components/PageTitle";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
-import { Button } from "~/components/ui";
+import { Button, Card } from "~/components/ui";
 import { useFetchArticleReports } from "~/hooks/useArticles";
 import { cn } from "~/lib/utils";
 
@@ -106,40 +106,45 @@ export default function ArticlesReportsListPage() {
             <Link
               key={report.id}
               to={`/apps/articles/${report.id}`}
-              className={cn(
-                "border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-off-white dark:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600",
-              )}
+              className="block focus:outline-none focus:ring-2 focus:ring-blue-500/40 rounded-xl"
             >
-              <div
+              <Card
                 className={cn(
-                  "relative aspect-video w-full rounded-lg overflow-hidden mb-4 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center",
+                  "p-5 h-full",
+                  "hover:shadow-lg transition-all duration-200 hover:border-zinc-300 dark:hover:border-zinc-600",
                 )}
               >
-                <FileSpreadsheet
-                  size={32}
-                  className={cn("text-zinc-500 dark:text-zinc-400")}
-                />
-                {report?.source_article_count &&
-                report.source_article_count > 0 ? (
-                  <div
-                    className={cn(
-                      "absolute top-2 right-2 px-2 py-1 text-xs rounded-full bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300",
-                    )}
-                  >
-                    {report.source_article_count} Articles
-                  </div>
-                ) : null}
-              </div>
-              <h3
-                className={cn(
-                  "font-semibold text-lg mb-1 text-zinc-800 dark:text-zinc-200",
-                )}
-              >
-                {report.title || `Report (ID: ${report.id})`}
-              </h3>
-              <p className={cn("text-sm text-zinc-500 dark:text-zinc-400")}>
-                {new Date(report.created_at).toLocaleDateString()}
-              </p>
+                <div
+                  className={cn(
+                    "relative aspect-video w-full rounded-lg overflow-hidden mb-4 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center",
+                  )}
+                >
+                  <FileSpreadsheet
+                    size={32}
+                    className={cn("text-zinc-500 dark:text-zinc-400")}
+                  />
+                  {report?.source_article_count &&
+                  report.source_article_count > 0 ? (
+                    <div
+                      className={cn(
+                        "absolute top-2 right-2 px-2 py-1 text-xs rounded-full bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300",
+                      )}
+                    >
+                      {report.source_article_count} Articles
+                    </div>
+                  ) : null}
+                </div>
+                <h3
+                  className={cn(
+                    "font-semibold text-lg mb-1 text-zinc-800 dark:text-zinc-200",
+                  )}
+                >
+                  {report.title || `Report (ID: ${report.id})`}
+                </h3>
+                <p className={cn("text-sm text-zinc-500 dark:text-zinc-400")}>
+                  {new Date(report.created_at).toLocaleDateString()}
+                </p>
+              </Card>
             </Link>
           ))}
         </div>

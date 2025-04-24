@@ -7,7 +7,7 @@ export function BackLink({
   label,
   onClick,
 }: {
-  to: string;
+  to?: string;
   label: string;
   onClick?: () => void;
 }) {
@@ -15,7 +15,6 @@ export function BackLink({
     return (
       <Button
         type="button"
-        variant="link"
         onClick={onClick}
         className="no-underline flex items-center text-blue-500 dark:text-blue-400 mb-2 hover:underline group"
       >
@@ -30,7 +29,7 @@ export function BackLink({
 
   return (
     <Link
-      to={to}
+      to={to || "/"}
       className="no-underline flex items-center text-blue-500 dark:text-blue-400 mb-2 hover:underline group"
     >
       <ArrowLeft

@@ -8,7 +8,7 @@ import { PageHeader } from "~/components/PageHeader";
 import { PageShell } from "~/components/PageShell";
 import { PageTitle } from "~/components/PageTitle";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
-import { Button } from "~/components/ui";
+import { Button, Card } from "~/components/ui";
 import { useFetchPodcasts } from "~/hooks/usePodcasts";
 import { cn } from "~/lib/utils";
 
@@ -88,39 +88,46 @@ export default function PodcastsPage() {
             <Link
               key={podcast.id}
               to={`/apps/podcasts/${podcast.id}`}
-              className="border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-off-white dark:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600"
+              className="block focus:outline-none focus:ring-2 focus:ring-blue-500/40 rounded-xl"
             >
-              <div className="relative aspect-video w-full rounded-lg overflow-hidden mb-4">
-                {podcast.imageUrl ? (
-                  <img
-                    src={podcast.imageUrl}
-                    alt={podcast.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      No image
-                    </span>
-                  </div>
+              <Card
+                className={cn(
+                  "p-5 h-full",
+                  "hover:shadow-lg transition-all duration-200 hover:border-zinc-300 dark:hover:border-zinc-600",
                 )}
-                <div
-                  className={cn(
-                    "absolute top-2 right-2 px-2 py-1 text-xs rounded-full",
-                    podcast.status === "complete"
-                      ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
-                      : "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
+              >
+                <div className="relative aspect-video w-full rounded-lg overflow-hidden mb-4">
+                  {podcast.imageUrl ? (
+                    <img
+                      src={podcast.imageUrl}
+                      alt={podcast.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                      <span className="text-zinc-500 dark:text-zinc-400">
+                        No image
+                      </span>
+                    </div>
                   )}
-                >
-                  {podcast.status === "complete" ? "Complete" : "Processing"}
+                  <div
+                    className={cn(
+                      "absolute top-2 right-2 px-2 py-1 text-xs rounded-full",
+                      podcast.status === "complete"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
+                        : "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
+                    )}
+                  >
+                    {podcast.status === "complete" ? "Complete" : "Processing"}
+                  </div>
                 </div>
-              </div>
-              <h3 className="font-semibold text-lg mb-1 text-zinc-800 dark:text-zinc-200">
-                {podcast.title}
-              </h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                {new Date(podcast.createdAt).toLocaleDateString()}
-              </p>
+                <h3 className="font-semibold text-lg mb-1 text-zinc-800 dark:text-zinc-200">
+                  {podcast.title}
+                </h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  {new Date(podcast.createdAt).toLocaleDateString()}
+                </p>
+              </Card>
             </Link>
           ))}
         </div>

@@ -49,6 +49,7 @@ export interface AppListItem {
   description: string;
   icon?: string;
   category?: string;
+  href?: string;
 }
 
 export const fetchDynamicApps = async (): Promise<AppListItem[]> => {
