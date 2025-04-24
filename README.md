@@ -31,7 +31,6 @@ This project is organized as a monorepo with multiple applications:
 
 - **app** - Web and mobile frontend application built with React, TailwindCSS, and React Router
 - **api** - Backend API built with Cloudflare Workers that interfaces with AI models and manages user data
-- **database** - Shared database schema and migrations using Drizzle ORM
 - **metrics** - Analytics and monitoring application to track usage and performance
 
 ## Features

@@ -43,7 +43,7 @@ export class Monitoring {
       return;
     }
 
-    if (this.analyticsEngine) {
+    if (this.analyticsEngine?.writeDataPoint) {
       this.analyticsEngine.writeDataPoint({
         blobs: [
           metric.type,
