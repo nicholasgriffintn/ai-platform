@@ -153,7 +153,7 @@ export function ProfileAccountTab() {
 
           <div>
             <div className="text-zinc-500 dark:text-zinc-400">
-              <Alert variant="default">
+              <Alert variant="info">
                 <Construction className="h-4 w-4 mr-2" />
                 <AlertTitle>Coming soon</AlertTitle>
                 <AlertDescription>
