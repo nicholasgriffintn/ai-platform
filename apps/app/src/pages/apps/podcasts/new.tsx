@@ -9,10 +9,10 @@ import {
 } from "~/components/Apps/Podcasts";
 import { BackLink } from "~/components/BackLink";
 import { PageHeader } from "~/components/PageHeader";
+import { PageShell } from "~/components/PageShell";
 import { PageTitle } from "~/components/PageTitle";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import { useProcessPodcast, useUploadPodcast } from "~/hooks/usePodcasts";
-import { SidebarLayout } from "~/layouts/SidebarLayout";
 import type { PodcastFormData } from "~/types/podcast";
 
 export function meta() {
@@ -327,48 +327,51 @@ export default function NewPodcastPage() {
   }, [formData.numberOfSpeakers, formData.speakers]);
 
   return (
-    <SidebarLayout sidebarContent={<StandardSidebarContent />}>
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
+    <PageShell
+      sidebarContent={<StandardSidebarContent />}
+      className="max-w-3xl"
+      headerContent={
         <PageHeader>
-          <BackLink to="/apps/podcasts" label="Back to Podcasts" />
+          <BackLink to="/apps/podcasts" label="Back to podcasts" />
           <PageTitle title="Upload New Podcast" />
         </PageHeader>
+      }
+      isBeta={true}
+    >
+      <ProgressStepper currentStep={currentStep} />
 
-        <ProgressStepper currentStep={currentStep} />
+      {currentStep === Step.Upload && (
+        <UploadStep
+          formData={formData}
+          handleChange={handleChange}
+          handleFileChange={handleFileChange}
+          handleUpload={handleUpload}
+          isUploading={isUploading}
+          setFormData={setFormData}
+        />
+      )}
 
-        {currentStep === Step.Upload && (
-          <UploadStep
-            formData={formData}
-            handleChange={handleChange}
-            handleFileChange={handleFileChange}
-            handleUpload={handleUpload}
-            isUploading={isUploading}
-            setFormData={setFormData}
-          />
-        )}
+      {currentStep === Step.Process && (
+        <ProcessStep
+          formData={formData}
+          handleChange={handleChange}
+          handleProcess={handleProcess}
+          isProcessing={isProcessing}
+        />
+      )}
 
-        {currentStep === Step.Process && (
-          <ProcessStep
-            formData={formData}
-            handleChange={handleChange}
-            handleProcess={handleProcess}
-            isProcessing={isProcessing}
-          />
-        )}
-
-        {currentStep === Step.Processing && (
-          <ProcessingStep
-            formData={formData}
-            processingStatus={processingStatus}
-            processingErrors={processingErrors}
-            processingComplete={processingComplete}
-            handleRetry={handleRetry}
-            setCurrentStep={setCurrentStep}
-            uploadedPodcastId={uploadedPodcastId}
-            navigate={navigate}
-          />
-        )}
-      </div>
-    </SidebarLayout>
+      {currentStep === Step.Processing && (
+        <ProcessingStep
+          formData={formData}
+          processingStatus={processingStatus}
+          processingErrors={processingErrors}
+          processingComplete={processingComplete}
+          handleRetry={handleRetry}
+          setCurrentStep={setCurrentStep}
+          uploadedPodcastId={uploadedPodcastId}
+          navigate={navigate}
+        />
+      )}
+    </PageShell>
   );
 }

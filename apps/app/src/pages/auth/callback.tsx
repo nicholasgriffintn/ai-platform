@@ -2,9 +2,8 @@ import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
+import { PageShell } from "~/components/PageShell";
 import { useAuthStatus } from "~/hooks/useAuth";
-import { PageHeader } from "../../components/PageHeader";
-import { PageTitle } from "../../components/PageTitle";
 
 export function meta() {
   return [
@@ -13,7 +12,7 @@ export function meta() {
   ];
 }
 
-const AuthCallback = () => {
+export default function AuthCallbackRoute() {
   const navigate = useNavigate();
   const { isLoading } = useAuthStatus();
 
@@ -24,15 +23,11 @@ const AuthCallback = () => {
   }, [isLoading, navigate]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-[calc(100vh-10rem)] gap-4">
-      <PageHeader>
-        <PageTitle title="Completing authentication..." />
-        <Loader2 size={32} className="animate-spin text-blue-600" />
-      </PageHeader>
-    </div>
+    <PageShell
+      title="Completing authentication..."
+      className="flex flex-col items-center justify-center h-[calc(100vh-10rem)]"
+    >
+      <Loader2 size={32} className="animate-spin text-blue-600" />
+    </PageShell>
   );
-};
-
-export default function AuthCallbackRoute() {
-  return <AuthCallback />;
 }

@@ -3,9 +3,8 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
+import { PageShell } from "~/components/PageShell";
 import { authService } from "~/lib/api/auth-service";
-import { PageHeader } from "../../components/PageHeader";
-import { PageTitle } from "../../components/PageTitle";
 
 export function meta() {
   return [
@@ -85,12 +84,12 @@ const VerifyMagicLink = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-[calc(100vh-10rem)] gap-4">
-      <PageHeader>
-        <PageTitle title="Magic Link Verification" />
-      </PageHeader>
+    <PageShell
+      title="Magic Link Verification"
+      className="flex flex-col items-center justify-center h-[calc(100vh-10rem)] gap-4"
+    >
       {content}
-    </div>
+    </PageShell>
   );
 };
 

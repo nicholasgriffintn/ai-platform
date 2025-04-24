@@ -1,15 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import {
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-  isRouteErrorResponse,
-} from "react-router";
+import { Outlet, isRouteErrorResponse } from "react-router";
 
 import { AppInitializer } from "~/components/AppInitializer";
+import { AppShell } from "~/components/AppShell";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { ServiceWorkerRegistration } from "~/components/ServiceWorkerRegistration";
 import { Toaster } from "~/components/ui/sonner";
@@ -26,67 +20,9 @@ const queryClient = new QueryClient({
   },
 });
 
-const structuredData = {
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  name: "Polychat",
-  description: "Chat with multiple AI models from one place",
-  url: "https://polychat.app",
-  applicationCategory: "AIApplication",
+export const Layout = ({ children }: { children: React.ReactNode }) => {
+  return <AppShell>{children}</AppShell>;
 };
-
-export function Layout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en" className="dark bg-off-white dark:bg-zinc-900">
-      <head>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Polychat - AI Assistant</title>
-        <meta
-          name="description"
-          content="Chat with multiple AI models from one place"
-        />
-
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-
-        <link
-          rel="icon"
-          type="image/png"
-          href="/favicon-96x96.png"
-          sizes="96x96"
-        />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="shortcut icon" href="/favicon.ico" />
-        <link
-          rel="apple-touch-icon"
-          sizes="180x180"
-          href="/apple-touch-icon.png"
-        />
-        <link rel="manifest" href="/site.webmanifest" />
-        <meta name="theme-color" content="#000000" />
-        <link
-          rel="search"
-          type="application/opensearchdescription+xml"
-          title="Polychat"
-          href="/opensearch.xml"
-        />
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 export default function Root() {
   return (

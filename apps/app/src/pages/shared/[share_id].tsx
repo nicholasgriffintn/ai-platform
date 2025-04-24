@@ -8,18 +8,42 @@ import "~/styles/github-dark.css";
 import { ArtifactPanel } from "~/components/ConversationThread/Artifacts/ArtifactPanel";
 import { MessageList } from "~/components/ConversationThread/MessageList";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
+import { PageShell } from "~/components/PageShell";
 import { API_BASE_URL } from "~/constants";
 import type { Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
-import { PageHeader } from "../../components/PageHeader";
-import { PageTitle } from "../../components/PageTitle";
 
-export function meta() {
+export function meta({ params }: { params: { share_id: string } }) {
   return [
-    { title: "Shared Conversation - Polychat" },
+    { title: `Shared Conversation ${params.share_id} - Polychat` },
     { name: "description", content: "Shared conversation from Polychat" },
   ];
 }
+
+const SharedHeader = () => (
+  <header className="sticky top-0 z-10 border-b border-zinc-200 bg-off-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+    <div className="mx-auto flex max-w-3xl items-center justify-between">
+      <div className="flex items-center">
+        <MessagesSquare
+          size={20}
+          className="mr-2 text-zinc-600 dark:text-zinc-400"
+        />
+        <h1 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+          Shared Conversation
+        </h1>
+      </div>
+      <div className="flex items-center gap-2">
+        <Link
+          to="/"
+          className="no-underline inline-flex items-center gap-1 rounded-md bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2"
+        >
+          <PlusCircle size={16} />
+          <span>New Chat</span>
+        </Link>
+      </div>
+    </div>
+  </header>
+);
 
 export default function SharedConversationPage() {
   const { share_id } = useParams();
@@ -114,19 +138,19 @@ export default function SharedConversationPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-off-white dark:bg-zinc-900">
+      <PageShell className="flex h-screen w-full items-center justify-center bg-off-white dark:bg-zinc-900">
         <LoadingSpinner message="Loading shared conversation..." />
-      </div>
+      </PageShell>
     );
   }
 
   if (error) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-off-white dark:bg-zinc-900">
+      <PageShell
+        title="Shared Conversation Not Available"
+        className="flex h-screen w-full items-center justify-center bg-off-white dark:bg-zinc-900"
+      >
         <div className="mx-auto max-w-md rounded-lg border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <PageHeader>
-            <PageTitle title="Shared Conversation Not Available" />
-          </PageHeader>
           <p className="mb-8 text-zinc-600 dark:text-zinc-400">{error}</p>
           <Link
             to="/"
@@ -135,38 +159,19 @@ export default function SharedConversationPage() {
             Return Home
           </Link>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-off-white dark:bg-zinc-900">
+    <PageShell
+      headerContent={<SharedHeader />}
+      fullBleed={true}
+      className="flex min-h-screen flex-col bg-off-white dark:bg-zinc-900"
+    >
       <div
         className={`flex flex-col h-[calc(100vh)] w-full ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
       >
-        <header className="sticky top-0 z-10 border-b border-zinc-200 bg-off-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-          <div className="mx-auto flex max-w-3xl items-center justify-between">
-            <div className="flex items-center">
-              <MessagesSquare
-                size={20}
-                className="mr-2 text-zinc-600 dark:text-zinc-400"
-              />
-              <h1 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
-                Shared Conversation
-              </h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link
-                to="/"
-                className="no-underline inline-flex items-center gap-1 rounded-md bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2"
-              >
-                <PlusCircle size={16} />
-                <span>New Chat</span>
-              </Link>
-            </div>
-          </div>
-        </header>
-
         <div className="relative flex-1 overflow-x-hidden overflow-y-scroll">
           <div className="h-full mx-auto flex w-full max-w-3xl grow flex-col gap-8 px-4">
             {messages.length > 0 ? (
@@ -201,6 +206,6 @@ export default function SharedConversationPage() {
         isVisible={isPanelVisible}
         isCombined={isCombinedPanel}
       />
-    </div>
+    </PageShell>
   );
 }

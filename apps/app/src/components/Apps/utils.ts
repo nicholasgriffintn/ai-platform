@@ -139,7 +139,7 @@ export const groupAppsByCategory = (
 };
 
 export const styles = {
-  container: "container mx-auto px-4 py-8 max-w-7xl",
+  container: "container mx-auto px-4 max-w-7xl",
   card: "border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-off-white dark:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600",
   cardWithGradient: (iconName?: string) =>
     `border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-gradient-to-br ${getCardGradient(iconName)} hover:border-zinc-300 dark:hover:border-zinc-600`,
