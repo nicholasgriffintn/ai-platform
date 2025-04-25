@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { apiReference } from "@scalar/hono-api-reference";
+import { Scalar } from "@scalar/hono-api-reference";
 import { type Context, Hono } from "hono";
 import { openAPISpecs } from "hono-openapi";
 import { describeRoute } from "hono-openapi";
@@ -94,7 +94,7 @@ autoRegisterDynamicApps();
 
 app.get(
   "/",
-  apiReference({
+  Scalar({
     pageTitle: "Polychat API Reference",
     theme: "saturn",
     url: "/openapi",
