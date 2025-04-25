@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { authService } from "~/lib/api/auth-service";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useUsageStore } from "~/state/stores/usageStore";
 
 export const AUTH_QUERY_KEYS = {
   authStatus: ["auth", "status"],
@@ -67,6 +68,8 @@ export function useAuthStatus() {
         setIsAuthenticated(false);
         setHasApiKey(false);
         setIsAuthenticationLoading(false);
+        // Clear usage limits when user logs out
+        useUsageStore.getState().setUsageLimits(null);
         return true;
       }
       return false;

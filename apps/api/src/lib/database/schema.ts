@@ -38,6 +38,12 @@ export const user = sqliteTable("user", {
   plan_id: text()
     .references(() => plans.id)
     .default("free"),
+  message_count: integer("message_count").default(0),
+  daily_message_count: integer("daily_message_count").default(0),
+  daily_reset: text("daily_reset"),
+  daily_pro_message_count: integer("daily_pro_message_count").default(0),
+  daily_pro_reset: text("daily_pro_reset"),
+  last_active_at: text("last_active_at"),
 });
 
 export type User = typeof user.$inferSelect;

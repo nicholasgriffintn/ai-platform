@@ -3,6 +3,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import type { Database } from "./database";
+import { type UsageLimits, UsageManager } from "./usageManager";
 
 const logger = getLogger({ prefix: "CONVERSATION_MANAGER" });
 
@@ -13,6 +14,7 @@ export class ConversationManager {
   private platform?: Platform;
   private store?: boolean = true;
   private userId?: number;
+  private usageManager?: UsageManager;
 
   private constructor(
     database: Database,
@@ -26,6 +28,8 @@ export class ConversationManager {
     this.model = model;
     this.platform = platform || "api";
     this.store = store ?? true;
+
+    this.usageManager = new UsageManager(database, userId);
   }
 
   public static getInstance({
@@ -55,9 +59,59 @@ export class ConversationManager {
       ConversationManager.instance.model = model;
       ConversationManager.instance.platform = platform;
       ConversationManager.instance.store = store ?? true;
+
+      ConversationManager.instance.usageManager = new UsageManager(
+        database,
+        userId,
+      );
     }
 
     return ConversationManager.instance;
+  }
+
+  /**
+   * Get the current usage limits for the user
+   * @returns UsageLimits object or null if no user is set
+   */
+  async getUsageLimits(): Promise<UsageLimits | null> {
+    try {
+      return await this.usageManager.getUsageLimits();
+    } catch (error) {
+      logger.error("Failed to get usage limits:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Check usage limits for the current user before generating a response
+   * @param isPro Whether the user is on the pro plan
+   * @param modelId The model ID to check usage for
+   */
+  async checkUsageLimits(isPro = false, modelId?: string): Promise<void> {
+    if (this.userId && this.usageManager) {
+      const model = modelId || this.model;
+      if (model) {
+        await this.usageManager.checkUsageByModel(model, isPro);
+      }
+    }
+  }
+
+  /**
+   * Increment usage after generating a response
+   * @param isPro Whether the user is on the pro plan
+   * @param modelId The model ID to increment usage for
+   */
+  async incrementUsage(isPro = false, modelId?: string): Promise<void> {
+    if (this.userId && this.usageManager) {
+      try {
+        const model = modelId || this.model;
+        if (model) {
+          await this.usageManager.incrementUsageByModel(model, isPro);
+        }
+      } catch (error) {
+        logger.error("Failed to increment usage:", error);
+      }
+    }
   }
 
   /**
@@ -124,6 +178,23 @@ export class ConversationManager {
       conversation_id,
       newMessage.id as string,
     );
+
+    if (newMessage.role === "assistant" && this.usageManager) {
+      try {
+        const modelUsed = newMessage.model || this.model;
+        if (modelUsed) {
+          await this.usageManager.incrementUsageByModel(modelUsed, true);
+        }
+      } catch (error) {
+        logger.error("Failed to increment usage:", error);
+      }
+    }
+
+    if (newMessage.data?.includesSecondaryModels) {
+      for (const model of newMessage.data.secondaryModels) {
+        await this.usageManager.incrementUsageByModel(model, true);
+      }
+    }
 
     return newMessage;
   }
@@ -198,6 +269,21 @@ export class ConversationManager {
 
     if (newMessages.length > 0) {
       const lastMessage = newMessages[newMessages.length - 1];
+
+      for (const message of newMessages) {
+        if (message.role === "assistant" && this.usageManager) {
+          try {
+            const modelUsed = message.model || this.model;
+            if (modelUsed) {
+              await this.usageManager.incrementUsageByModel(modelUsed, true);
+              break;
+            }
+          } catch (error) {
+            logger.error("Failed to increment usage:", error);
+          }
+        }
+      }
+
       await this.database.updateConversationAfterMessage(
         conversation_id,
         lastMessage.id as string,

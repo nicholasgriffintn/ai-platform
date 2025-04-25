@@ -17,6 +17,7 @@ export enum ErrorType {
   CONTEXT_WINDOW_EXCEEDED = "CONTEXT_WINDOW_EXCEEDED",
   EMAIL_SEND_FAILED = "EMAIL_SEND_FAILED",
   INTERNAL_ERROR = "INTERNAL_ERROR",
+  USAGE_LIMIT_ERROR = "USAGE_LIMIT_ERROR",
 }
 
 export class AssistantError extends Error {
@@ -89,6 +90,8 @@ export function handleAIServiceError(error: AssistantError): Response {
     case ErrorType.INTERNAL_ERROR:
       logger.error("Internal error:", error.message);
       return Response.json({ error: error.message }, { status: 500 });
+    case ErrorType.USAGE_LIMIT_ERROR:
+      return Response.json({ error: error.message }, { status: 429 });
     default:
       logger.error(
         `${error.type || "Unknown error"}:`,

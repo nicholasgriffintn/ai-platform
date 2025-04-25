@@ -240,6 +240,16 @@ export interface CreateChatCompletionsResponse {
       violations?: any[];
     };
   };
+  usage_limits?: {
+    daily?: {
+      used: number;
+      limit: number;
+    };
+    pro?: {
+      used: number;
+      limit: number;
+    };
+  };
 }
 
 export interface AssistantMessageData {

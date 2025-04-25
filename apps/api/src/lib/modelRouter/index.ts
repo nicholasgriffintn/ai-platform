@@ -58,9 +58,7 @@ export class ModelRouter {
   };
   private static readonly DEFAULT_CAPABILITY_WEIGHT = 1;
 
-  // Minimum score difference to consider models distinct enough for comparison
   private static readonly COMPARISON_SCORE_THRESHOLD = 3.0;
-  // Maximum number of models to compare
   private static readonly MAX_COMPARISON_MODELS = 2;
 
   private static scoreModel(
@@ -93,16 +91,6 @@ export class ModelRouter {
       score,
       reason: "Matched requirements",
     };
-  }
-
-  private static isWithinBudget(
-    requirements: PromptRequirements,
-    model: ModelConfigItem,
-  ): boolean {
-    if (!requirements.budget_constraint) return true;
-
-    const totalCost = ModelRouter.calculateTotalCost(requirements, model);
-    return totalCost <= requirements.budget_constraint;
   }
 
   private static calculateTotalCost(

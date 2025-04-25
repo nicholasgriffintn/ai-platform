@@ -1,6 +1,7 @@
 import { apiKeyService } from "~/lib/api/api-key";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
+import { useUsageStore } from "~/state/stores/usageStore";
 import type {
   ChatMode,
   ChatSettings,
@@ -316,6 +317,12 @@ class ApiService {
     if (!isStreamingResponse) {
       const data = (await response.json()) as any;
 
+      if (data.error) {
+        // Reset usage limits if there's an error response
+        useUsageStore.getState().setUsageLimits(null);
+        throw new Error(data.error.message || "Unknown error");
+      }
+
       usage = data.usage || null;
       id = data.id || crypto.randomUUID();
       created = data.created || Date.now();
@@ -362,6 +369,14 @@ class ApiService {
                   onProgress(content, reasoning);
                 } else if (parsedData.type === "thinking_delta") {
                   thinking += parsedData.thinking || "";
+                } else if (
+                  parsedData.type === "usage_limits" &&
+                  parsedData.usage_limits
+                ) {
+                  // Store usage limits in the usage store
+                  useUsageStore
+                    .getState()
+                    .setUsageLimits(parsedData.usage_limits);
                 } else if (parsedData.type === "tool_use_start") {
                   pendingToolCalls[parsedData.tool_id] = {
                     id: parsedData.tool_id,
@@ -428,6 +443,8 @@ class ApiService {
       } catch (error) {
         console.error("Error reading stream:", error);
         if (error instanceof Error && error.name !== "AbortError") {
+          // Reset usage limits if there's a stream reading error
+          useUsageStore.getState().setUsageLimits(null);
           throw error;
         }
       } finally {

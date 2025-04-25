@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
+import { UsageLimitWarning } from "~/components/UsageLimitWarning";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
@@ -212,6 +213,7 @@ export const ConversationThread = () => {
 
       <div className="px-4 pt-2">
         <div className="max-w-3xl mx-auto">
+          <UsageLimitWarning />
           <ChatInput
             ref={chatInputRef}
             handleSubmit={handleSubmit}

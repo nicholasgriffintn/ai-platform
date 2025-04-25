@@ -13,6 +13,12 @@ export interface User {
   twitter_username: string;
   github_url: string;
   bio: string;
+  message_count?: number;
+  daily_message_count?: number;
+  daily_reset?: string | null;
+  daily_pro_message_count?: number;
+  daily_pro_reset?: string | null;
+  last_active_at?: string | null;
 }
 
 export interface UserSettings {

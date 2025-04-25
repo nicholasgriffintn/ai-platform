@@ -161,12 +161,20 @@ export async function filterModelsForUserAccess(
   env: IEnv,
   userId?: number,
 ): Promise<Record<string, ModelConfigItem>> {
-  const freeModels = getFreeModels();
-  const freeModelIds = new Set(Object.keys(freeModels));
+  const allFreeModels = getFreeModels();
   const alwaysEnabledProvidersEnvVar = env.ALWAYS_ENABLED_PROVIDERS;
   const alwaysEnabledProviders = new Set(
     alwaysEnabledProvidersEnvVar?.split(",") || [],
   );
+
+  const freeModels: Record<string, ModelConfigItem> = {};
+  for (const modelId in allFreeModels) {
+    const model = allFreeModels[modelId];
+    if (alwaysEnabledProviders.has(model.provider)) {
+      freeModels[modelId] = model;
+    }
+  }
+  const freeModelIds = new Set(Object.keys(freeModels));
 
   const filteredModels: Record<string, ModelConfigItem> = {};
 
@@ -208,13 +216,7 @@ export async function filterModelsForUserAccess(
   } catch (error) {
     logger.error(`Error during model filtering for user ${userId}`, { error });
     // Fallback to free models in case of error
-    const fallbackModels: Record<string, ModelConfigItem> = {};
-    for (const modelId in allModels) {
-      if (freeModelIds.has(modelId)) {
-        fallbackModels[modelId] = allModels[modelId];
-      }
-    }
-    return fallbackModels;
+    return freeModels;
   }
 }
 

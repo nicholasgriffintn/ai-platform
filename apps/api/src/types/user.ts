@@ -37,6 +37,12 @@ export interface User {
   setup_at: string | null;
   terms_accepted_at: string | null;
   plan_id: string | null;
+  message_count?: number;
+  daily_message_count?: number;
+  daily_reset?: string | null;
+  daily_pro_message_count?: number;
+  daily_pro_reset?: string | null;
+  last_active_at?: string | null;
 }
 
 export interface UserSettings {

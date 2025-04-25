@@ -337,8 +337,10 @@ export async function processChatRequest(options: CoreChatOptions) {
       currentMode,
     } = preparedData;
 
+    const isProUser = !isRestricted;
+    await conversationManager.checkUsageLimits(isProUser, primaryModel);
+
     if (modelConfigs.length > 1 && stream) {
-      // create multi-model stream
       const transformedStream = createMultiModelStream(
         {
           app_url,

@@ -25,6 +25,14 @@ function mapToUser(result: Record<string, unknown>): User {
     setup_at: result.setup_at as string | null,
     terms_accepted_at: result.terms_accepted_at as string | null,
     plan_id: result.plan_id as string | null,
+    message_count: result.message_count as number | undefined,
+    daily_message_count: result.daily_message_count as number | undefined,
+    daily_reset: result.daily_reset as string | null,
+    daily_pro_message_count: result.daily_pro_message_count as
+      | number
+      | undefined,
+    daily_pro_reset: result.daily_pro_reset as string | null,
+    last_active_at: result.last_active_at as string | null,
   };
 }
 

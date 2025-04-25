@@ -33,7 +33,7 @@ export async function authMiddleware(context: Context, next: Next) {
 
     user = await getUserBySessionId(database, sessionId);
 
-    if (user) {
+    if (user && user.plan_id === "pro") {
       isRestricted = false;
     }
   } else if (authToken?.startsWith("ak_")) {
@@ -44,7 +44,10 @@ export async function authMiddleware(context: Context, next: Next) {
         const foundUser = await database.getUserById(userId);
         if (foundUser) {
           user = foundUser;
-          isRestricted = false;
+
+          if (user && user.plan_id === "pro") {
+            isRestricted = false;
+          }
         }
       }
     } catch (error) {
@@ -58,9 +61,7 @@ export async function authMiddleware(context: Context, next: Next) {
         context.env.JWT_SECRET!,
       );
 
-      const isProPlan = user?.plan_id === "pro";
-
-      if (user && isProPlan) {
+      if (user?.plan_id === "pro") {
         isRestricted = false;
       }
     } catch (error) {

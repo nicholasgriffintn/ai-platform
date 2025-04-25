@@ -48,35 +48,23 @@ export class UserRepository extends BaseRepository {
 
   public async updateUser(
     userId: number,
-    userData: Record<string, unknown>,
+    userData: Partial<User>,
   ): Promise<void> {
-    await this.executeRun(
-      `UPDATE user 
-       SET 
-         name = ?, 
-         avatar_url = ?, 
-         email = ?, 
-         github_username = ?,
-         company = ?,
-         location = ?,
-         bio = ?,
-         twitter_username = ?,
-         site = ?,
-         updated_at = datetime('now')
-       WHERE id = ?`,
-      [
-        userData.name || null,
-        userData.avatarUrl || null,
-        userData.email,
-        userData.username,
-        userData.company || null,
-        userData.location || null,
-        userData.bio || null,
-        userData.twitterUsername || null,
-        userData.site || null,
-        userId,
-      ],
+    const fieldsToUpdate = Object.keys(userData).filter(
+      (key) => key !== "id" && userData[key as keyof User] !== undefined,
     );
+
+    if (fieldsToUpdate.length === 0) {
+      return;
+    }
+
+    const setClause = fieldsToUpdate.map((key) => `${key} = ?`).join(", ");
+    const values = fieldsToUpdate.map((key) => userData[key as keyof User]);
+
+    const query = `UPDATE user SET ${setClause}, updated_at = datetime('now') WHERE id = ?`;
+    const finalValues = [...values, userId];
+
+    await this.executeRun(query, finalValues);
   }
 
   public async createUser(

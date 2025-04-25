@@ -118,6 +118,18 @@ export async function createStreamWithPostProcessing(
 
   return providerStream.pipeThrough(
     new TransformStream({
+      async start(controller) {
+        try {
+          const usageLimits = await conversationManager.getUsageLimits();
+          if (usageLimits) {
+            emitEvent(controller, "usage_limits", {
+              usage_limits: usageLimits,
+            });
+          }
+        } catch (error) {
+          logger.error("Failed to get usage limits:", error);
+        }
+      },
       async transform(chunk, controller) {
         const text = new TextDecoder().decode(chunk);
         logger.trace("Incoming chunk", {
@@ -708,6 +720,25 @@ export function createMultiModelStream(
       const encoder = new TextEncoder();
       let primaryContent = "";
       let modelHeader = "";
+
+      try {
+        const usageLimits = await conversationManager.getUsageLimits();
+        if (usageLimits) {
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                type: "usage_limits",
+                usage_limits: usageLimits,
+              })}\n\n`,
+            ),
+          );
+        }
+      } catch (error) {
+        logger.error(
+          "Failed to get usage limits for multi-model streaming:",
+          error,
+        );
+      }
 
       try {
         const primaryResponse = await primaryResponsePromise;

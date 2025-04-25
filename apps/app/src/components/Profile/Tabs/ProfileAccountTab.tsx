@@ -1,12 +1,49 @@
-import { Construction } from "lucide-react";
 import { PageHeader } from "~/components/PageHeader";
 import { PageTitle } from "~/components/PageTitle";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { formatDate } from "~/lib/dates";
 
+const AUTH_DAILY_MESSAGE_LIMIT = 50;
+const DAILY_LIMIT_PRO_MODELS = 100;
+
 export function ProfileAccountTab() {
   const { user } = useAuthStatus();
+
+  const formatTimeAgo = (dateString: string | null | undefined) => {
+    if (!dateString) return "N/A";
+
+    try {
+      const lastResetDate = new Date(dateString);
+      const nextResetDate = new Date(lastResetDate);
+      nextResetDate.setHours(nextResetDate.getHours() + 24);
+
+      const now = new Date();
+      const diffMs = nextResetDate.getTime() - now.getTime();
+
+      if (diffMs < 0) return "any moment now";
+
+      const diffSecs = Math.floor(diffMs / 1000);
+      const diffMins = Math.floor(diffSecs / 60);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffDays > 0) {
+        return `in ${diffDays} day${diffDays > 1 ? "s" : ""}`;
+      }
+
+      if (diffHours > 0) {
+        return `in ${diffHours} hour${diffHours > 1 ? "s" : ""}`;
+      }
+
+      if (diffMins > 0) {
+        return `in ${diffMins} minute${diffMins > 1 ? "s" : ""}`;
+      }
+
+      return `in ${diffSecs} second${diffSecs !== 1 ? "s" : ""}`;
+    } catch (e) {
+      return "unknown time";
+    }
+  };
 
   return (
     <div>
@@ -151,15 +188,81 @@ export function ProfileAccountTab() {
             Usage
           </h2>
 
-          <div>
-            <div className="text-zinc-500 dark:text-zinc-400">
-              <Alert variant="info">
-                <Construction className="h-4 w-4 mr-2" />
-                <AlertTitle>Coming soon</AlertTitle>
-                <AlertDescription>
-                  This feature is coming soon.
-                </AlertDescription>
-              </Alert>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
+                Total Messages
+              </h3>
+              <div className="text-zinc-700 dark:text-zinc-300 text-lg font-medium">
+                {user?.message_count || 0}
+              </div>
+              <div className="text-zinc-500 dark:text-zinc-400 text-sm">
+                Messages sent since joining
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
+                Standard Usage
+              </h3>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-zinc-700 dark:text-zinc-300">
+                  Today's usage
+                </span>
+                <span className="text-zinc-700 dark:text-zinc-300">
+                  {user?.daily_message_count || 0} / {AUTH_DAILY_MESSAGE_LIMIT}
+                </span>
+              </div>
+              <div className="w-full bg-zinc-200 rounded-full h-2.5 dark:bg-zinc-700 mb-2">
+                <div
+                  className="bg-blue-500 h-2.5 rounded-full"
+                  style={{
+                    width: `${((user?.daily_message_count || 0) / AUTH_DAILY_MESSAGE_LIMIT) * 100}%`,
+                  }}
+                />
+              </div>
+              <div className="text-zinc-500 dark:text-zinc-400 text-sm">
+                Resets {formatTimeAgo(user?.daily_reset)}
+              </div>
+            </div>
+
+            {user?.plan_id === "pro" && (
+              <div>
+                <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
+                  Premium Usage
+                </h3>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-zinc-700 dark:text-zinc-300">
+                    Today's usage
+                  </span>
+                  <span className="text-zinc-700 dark:text-zinc-300">
+                    {user?.daily_pro_message_count || 0} /{" "}
+                    {DAILY_LIMIT_PRO_MODELS}
+                  </span>
+                </div>
+                <div className="w-full bg-zinc-200 rounded-full h-2.5 dark:bg-zinc-700 mb-2">
+                  <div
+                    className="bg-purple-500 h-2.5 rounded-full"
+                    style={{
+                      width: `${((user?.daily_pro_message_count || 0) / DAILY_LIMIT_PRO_MODELS) * 100}%`,
+                    }}
+                  />
+                </div>
+                <div className="text-zinc-500 dark:text-zinc-400 text-sm">
+                  Resets {formatTimeAgo(user?.daily_pro_reset)}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
+                Last Activity
+              </h3>
+              <div className="text-zinc-700 dark:text-zinc-300">
+                {user?.last_active_at
+                  ? formatDate(user.last_active_at)
+                  : "Never"}
+              </div>
             </div>
           </div>
         </div>
