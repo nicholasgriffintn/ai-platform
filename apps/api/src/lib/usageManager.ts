@@ -1,3 +1,4 @@
+import { USAGE_CONFIG } from "~/constants/app";
 import type { Database } from "~/lib/database";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import type { ModelConfigItem } from "~/types";
@@ -6,14 +7,6 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "USAGE_MANAGER" });
-
-// TODO: Define these limits in a central config or env vars
-const NON_AUTH_DAILY_MESSAGE_LIMIT = 10;
-const AUTH_DAILY_MESSAGE_LIMIT = 50;
-const DAILY_LIMIT_PRO_MODELS = 100;
-
-const BASELINE_INPUT_COST = 0.0025;
-const BASELINE_OUTPUT_COST = 0.01;
 
 function isProModel(modelId: string): boolean {
   const config: ModelConfigItem | undefined =
@@ -38,9 +31,9 @@ function calculateUsageMultiplier(modelId: string): number {
   }
 
   const inputMultiplier =
-    (config.costPer1kInputTokens || 0) / BASELINE_INPUT_COST;
+    (config.costPer1kInputTokens || 0) / USAGE_CONFIG.BASELINE_INPUT_COST;
   const outputMultiplier =
-    (config.costPer1kOutputTokens || 0) / BASELINE_OUTPUT_COST;
+    (config.costPer1kOutputTokens || 0) / USAGE_CONFIG.BASELINE_OUTPUT_COST;
   const avgMultiplier = (inputMultiplier + outputMultiplier) / 2;
   const finalMultiplier = Math.ceil(avgMultiplier);
 
@@ -94,7 +87,7 @@ export class UsageManager {
   async checkUsage() {
     const userData = await this.getUserData();
 
-    const dailyLimit = AUTH_DAILY_MESSAGE_LIMIT;
+    const dailyLimit = USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT;
 
     const now = new Date();
     let dailyCount = userData.daily_message_count ?? 0;
@@ -208,7 +201,7 @@ export class UsageManager {
       }
     }
 
-    if (dailyProCount >= DAILY_LIMIT_PRO_MODELS) {
+    if (dailyProCount >= USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS) {
       throw new AssistantError(
         "Daily Pro model limit reached.",
         ErrorType.USAGE_LIMIT_ERROR,
@@ -219,7 +212,7 @@ export class UsageManager {
 
     return {
       dailyProCount,
-      limit: DAILY_LIMIT_PRO_MODELS,
+      limit: USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS,
       costMultiplier: usageMultiplier,
       modelCostInfo: {
         inputCost: modelConfig?.costPer1kInputTokens || 0,
@@ -291,7 +284,10 @@ export class UsageManager {
       );
     }
 
-    return { dailyCount: 0, dailyLimit: NON_AUTH_DAILY_MESSAGE_LIMIT };
+    return {
+      dailyCount: 0,
+      dailyLimit: USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT,
+    };
   }
 
   async incrementUsageByModel(modelId: string, isPro: boolean) {
@@ -351,14 +347,14 @@ export class UsageManager {
     const usageLimits: UsageLimits = {
       daily: {
         used: regularDailyCount,
-        limit: AUTH_DAILY_MESSAGE_LIMIT,
+        limit: USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT,
       },
     };
 
     if (userData.plan_id === "pro") {
       usageLimits.pro = {
         used: proDailyCount,
-        limit: DAILY_LIMIT_PRO_MODELS,
+        limit: USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS,
       };
     }
 

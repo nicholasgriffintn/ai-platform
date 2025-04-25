@@ -4,7 +4,7 @@ import { useAuthStatus } from "~/hooks/useAuth";
 import { formatDate } from "~/lib/dates";
 
 const AUTH_DAILY_MESSAGE_LIMIT = 50;
-const DAILY_LIMIT_PRO_MODELS = 100;
+const DAILY_LIMIT_PRO_MODELS = 200;
 
 export function ProfileAccountTab() {
   const { user } = useAuthStatus();

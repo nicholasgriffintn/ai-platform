@@ -84,6 +84,24 @@ This project is organized as a monorepo with multiple applications:
   - [Web LLM](https://github.com/mlc-ai/web-llm) support for completely offline usage
 - The API is deployed as a Cloudflare Worker and the frontend is deployed with Cloudflare Assets
 
+## Usage Limits
+
+Polychat is configured with usage limits to prevent abuse. These limits are as follows:
+
+- 10 standard messages per day for unauthenticated users
+- 50 standard messages per day for authenticated users
+- 200 pro tokens per day for authenticated users
+
+Pro tokens are calculated based on a multiplier of the cost of the model. For example, if a model costs $0.01 per 1000 input tokens and $0.05 per 1000 output tokens, then the pro token limit is 200 * (0.01 + 0.05) / 2 = 6.
+
+This equates to around:
+
+- Expensive models (9x): ~22 messages
+- Mid-tier models (3x): ~66 messages
+- Cheaper models (1-2x): 100-200 messages
+
+If you are providing your own service and would like to change these limits, you can do so by changing the `USAGE_CONFIG` object in the `apps/api/src/constants/app.ts` file.
+
 ## Setup and Installation
 
 ### Getting Started
