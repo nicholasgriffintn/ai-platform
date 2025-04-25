@@ -189,79 +189,137 @@ export function ProfileAccountTab() {
           </h2>
 
           <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
-                Total Messages
-              </h3>
-              <div className="text-zinc-700 dark:text-zinc-300 text-lg font-medium">
-                {user?.message_count || 0}
-              </div>
-              <div className="text-zinc-500 dark:text-zinc-400 text-sm">
-                Messages sent since joining
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
-                Standard Usage
-              </h3>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-zinc-700 dark:text-zinc-300">
-                  Today's usage
-                </span>
-                <span className="text-zinc-700 dark:text-zinc-300">
-                  {user?.daily_message_count || 0} / {AUTH_DAILY_MESSAGE_LIMIT}
-                </span>
-              </div>
-              <div className="w-full bg-zinc-200 rounded-full h-2.5 dark:bg-zinc-700 mb-2">
-                <div
-                  className="bg-blue-500 h-2.5 rounded-full"
-                  style={{
-                    width: `${((user?.daily_message_count || 0) / AUTH_DAILY_MESSAGE_LIMIT) * 100}%`,
-                  }}
-                />
-              </div>
-              <div className="text-zinc-500 dark:text-zinc-400 text-sm">
-                Resets {formatTimeAgo(user?.daily_reset)}
-              </div>
-            </div>
-
-            {user?.plan_id === "pro" && (
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="bg-white dark:bg-zinc-700 rounded-md p-4 shadow-sm">
                 <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
-                  Premium Usage
+                  Total Messages
                 </h3>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-zinc-700 dark:text-zinc-300">
-                    Today's usage
-                  </span>
-                  <span className="text-zinc-700 dark:text-zinc-300">
-                    {user?.daily_pro_message_count || 0} /{" "}
-                    {DAILY_LIMIT_PRO_MODELS}
-                  </span>
-                </div>
-                <div className="w-full bg-zinc-200 rounded-full h-2.5 dark:bg-zinc-700 mb-2">
-                  <div
-                    className="bg-purple-500 h-2.5 rounded-full"
-                    style={{
-                      width: `${((user?.daily_pro_message_count || 0) / DAILY_LIMIT_PRO_MODELS) * 100}%`,
-                    }}
-                  />
+                <div className="text-zinc-700 dark:text-zinc-300 text-2xl font-medium">
+                  {user?.message_count || 0}
                 </div>
                 <div className="text-zinc-500 dark:text-zinc-400 text-sm">
-                  Resets {formatTimeAgo(user?.daily_pro_reset)}
+                  Messages sent since joining
                 </div>
               </div>
-            )}
+
+              <div className="bg-white dark:bg-zinc-700 rounded-md p-4 shadow-sm">
+                <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
+                  Last Activity
+                </h3>
+                <div className="text-zinc-700 dark:text-zinc-300 text-2xl font-medium">
+                  {user?.last_active_at
+                    ? formatDate(user.last_active_at)
+                    : "Never"}
+                </div>
+                <div className="text-zinc-500 dark:text-zinc-400 text-sm">
+                  Last time you used the platform
+                </div>
+              </div>
+            </div>
 
             <div>
               <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
-                Last Activity
+                Usage & Limits
               </h3>
-              <div className="text-zinc-700 dark:text-zinc-300">
-                {user?.last_active_at
-                  ? formatDate(user.last_active_at)
-                  : "Never"}
+
+              <div className="grid gap-4">
+                {/* Standard usage card */}
+                <div className="bg-white dark:bg-zinc-700 rounded-md p-4 shadow-sm">
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="font-medium text-zinc-800 dark:text-zinc-100">
+                      Standard Usage
+                    </div>
+                    <div className="text-zinc-700 dark:text-zinc-300 text-sm">
+                      {user?.daily_message_count || 0} /{" "}
+                      {AUTH_DAILY_MESSAGE_LIMIT}
+                    </div>
+                  </div>
+
+                  <div className="w-full bg-zinc-200 rounded-full h-2.5 dark:bg-zinc-800 mb-3">
+                    <div
+                      className="bg-blue-500 h-2.5 rounded-full"
+                      style={{
+                        width: `${((user?.daily_message_count || 0) / AUTH_DAILY_MESSAGE_LIMIT) * 100}%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="text-zinc-700 dark:text-zinc-300 flex items-center">
+                      <div className="h-3 w-3 bg-blue-500 rounded-full mr-2" />
+                      <span>{AUTH_DAILY_MESSAGE_LIMIT} messages per day</span>
+                    </div>
+                    <div className="text-zinc-500 dark:text-zinc-400">
+                      Resets {formatTimeAgo(user?.daily_reset)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pro usage info */}
+                {user?.plan_id === "pro" && (
+                  <div className="bg-white dark:bg-zinc-700 rounded-md p-4 shadow-sm">
+                    <div className="flex justify-between items-center mb-3">
+                      <div className="font-medium text-zinc-800 dark:text-zinc-100">
+                        Premium Usage
+                      </div>
+                      <div className="text-zinc-700 dark:text-zinc-300 text-sm">
+                        {user?.daily_pro_message_count || 0} /{" "}
+                        {DAILY_LIMIT_PRO_MODELS}
+                      </div>
+                    </div>
+
+                    <div className="w-full bg-zinc-200 rounded-full h-2.5 dark:bg-zinc-800 mb-3">
+                      <div
+                        className="bg-purple-500 h-2.5 rounded-full"
+                        style={{
+                          width: `${((user?.daily_pro_message_count || 0) / DAILY_LIMIT_PRO_MODELS) * 100}%`,
+                        }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between text-sm mb-4">
+                      <div className="text-zinc-700 dark:text-zinc-300 flex items-center">
+                        <div className="h-3 w-3 bg-purple-500 rounded-full mr-2" />
+                        <span>{DAILY_LIMIT_PRO_MODELS} pro tokens per day</span>
+                      </div>
+                      <div className="text-zinc-500 dark:text-zinc-400">
+                        Resets {formatTimeAgo(user?.daily_pro_reset)}
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-zinc-200 dark:border-zinc-600">
+                      <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                        Approximate message equivalents:
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded">
+                          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                            Expensive models
+                          </div>
+                          <div className="font-medium text-zinc-800 dark:text-zinc-100">
+                            ~22 messages
+                          </div>
+                        </div>
+                        <div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded">
+                          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                            Mid-tier models
+                          </div>
+                          <div className="font-medium text-zinc-800 dark:text-zinc-100">
+                            ~66 messages
+                          </div>
+                        </div>
+                        <div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded">
+                          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                            Cheaper models
+                          </div>
+                          <div className="font-medium text-zinc-800 dark:text-zinc-100">
+                            100-200 messages
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
