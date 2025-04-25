@@ -23,23 +23,33 @@ class ApiService {
     return ApiService.instance;
   }
 
-  public async getHeaders(): Promise<Record<string, string>> {
-    const { turnstileToken } = useChatStore.getState();
+  public getHeaders = async (): Promise<Record<string, string>> => {
+    try {
+      const { turnstileToken } = useChatStore.getState();
 
-    const headers: Record<string, string> = {
-      "X-Turnstile-Token": turnstileToken || "na",
-    };
+      const headers: Record<string, string> = {
+        "X-Turnstile-Token": turnstileToken || "na",
+      };
 
-    const apiKey = await apiKeyService.getApiKey();
-    if (apiKey) {
-      headers.Authorization = `Bearer ${apiKey}`;
+      const apiKey = await apiKeyService.getApiKey();
+      if (apiKey) {
+        headers.Authorization = `Bearer ${apiKey}`;
+      }
+
+      return headers;
+    } catch (error) {
+      console.error("Error getting headers:", error);
+      return {};
     }
+  };
 
-    return headers;
-  }
-
-  async listChats(): Promise<Conversation[]> {
-    const headers = await this.getHeaders();
+  listChats = async (): Promise<Conversation[]> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error listing chats:", error);
+    }
 
     try {
       const response = await fetchApi("/chat/completions", {
@@ -83,10 +93,15 @@ class ApiService {
       console.error("Error listing chats:", error);
       return [];
     }
-  }
+  };
 
-  async getChat(completion_id: string): Promise<Conversation> {
-    const headers = await this.getHeaders();
+  getChat = async (completion_id: string): Promise<Conversation> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting chat:", error);
+    }
 
     const response = await fetchApi(`/chat/completions/${completion_id}`, {
       method: "GET",
@@ -120,7 +135,7 @@ class ApiService {
       is_public: conversation.is_public,
       share_id: conversation.share_id,
     };
-  }
+  };
 
   private formatMessageContent(messageContent: string): {
     content: string;
@@ -129,11 +144,16 @@ class ApiService {
     return formatMessageContent(messageContent);
   }
 
-  async generateTitle(
+  generateTitle = async (
     completion_id: string,
     messages: Message[],
-  ): Promise<string> {
-    const headers = await this.getHeaders();
+  ): Promise<string> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error generating title:", error);
+    }
 
     const formattedMessages = messages.map((msg) => ({
       id: msg.id,
@@ -162,13 +182,18 @@ class ApiService {
 
     const data = (await response.json()) as any;
     return data.title;
-  }
+  };
 
-  async updateConversationTitle(
+  updateConversationTitle = async (
     completion_id: string,
     newTitle: string,
-  ): Promise<void> {
-    const headers = await this.getHeaders();
+  ): Promise<void> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error updating conversation title:", error);
+    }
 
     const updateResponse = await fetchApi(
       `/chat/completions/${completion_id}`,
@@ -187,9 +212,9 @@ class ApiService {
         `Failed to update chat title: ${updateResponse.statusText}`,
       );
     }
-  }
+  };
 
-  async streamChatCompletions(
+  streamChatCompletions = async (
     completion_id: string,
     messages: Message[],
     model: string | undefined,
@@ -204,8 +229,13 @@ class ApiService {
     store = true,
     streamingEnabled = true,
     useMultiModel = false,
-  ): Promise<Message> {
-    const headers = await this.getHeaders();
+  ): Promise<Message> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error streaming chat completions:", error);
+    }
     const { selectedTools } = useToolsStore.getState();
 
     const formattedMessages = messages.map((msg) => {
@@ -436,10 +466,15 @@ class ApiService {
       tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
       log_id: logId,
     });
-  }
+  };
 
-  async deleteConversation(completion_id: string): Promise<void> {
-    const headers = await this.getHeaders();
+  deleteConversation = async (completion_id: string): Promise<void> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+    }
 
     const response = await fetchApi(`/chat/completions/${completion_id}`, {
       method: "DELETE",
@@ -449,12 +484,17 @@ class ApiService {
     if (!response.ok) {
       throw new Error(`Failed to delete chat: ${response.statusText}`);
     }
-  }
+  };
 
-  async shareConversation(
+  shareConversation = async (
     completion_id: string,
-  ): Promise<{ share_id: string }> {
-    const headers = await this.getHeaders();
+  ): Promise<{ share_id: string }> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error sharing conversation:", error);
+    }
 
     const response = await fetchApi(
       `/chat/completions/${completion_id}/share`,
@@ -469,10 +509,15 @@ class ApiService {
     }
 
     return response.json();
-  }
+  };
 
-  async unshareConversation(completion_id: string): Promise<void> {
-    const headers = await this.getHeaders();
+  unshareConversation = async (completion_id: string): Promise<void> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error unsharing conversation:", error);
+    }
 
     const response = await fetchApi(
       `/chat/completions/${completion_id}/share`,
@@ -485,15 +530,20 @@ class ApiService {
     if (!response.ok) {
       throw new Error(`Failed to unshare conversation: ${response.statusText}`);
     }
-  }
+  };
 
-  async submitFeedback(
+  submitFeedback = async (
     completion_id: string,
     log_id: string,
     feedback: 1 | -1,
     score = 50,
-  ): Promise<void> {
-    const headers = await this.getHeaders();
+  ): Promise<void> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+    }
 
     const response = await fetchApi(
       `/chat/completions/${completion_id}/feedback`,
@@ -511,45 +561,56 @@ class ApiService {
     if (!response.ok) {
       throw new Error(`Failed to submit feedback: ${response.statusText}`);
     }
-  }
+  };
 
-  async fetchModels(): Promise<ModelConfig> {
+  fetchModels = async (): Promise<ModelConfig> => {
+    let headers = {};
     try {
-      const response = await fetchApi("/models", {
-        method: "GET",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch models: ${response.statusText}`);
-      }
-      const responseData = (await response.json()) as any;
-
-      return responseData.data;
+      headers = await this.getHeaders();
     } catch (error) {
       console.error("Error fetching models:", error);
-      return {};
     }
-  }
 
-  async fetchTools(): Promise<any> {
+    const response = await fetchApi("/models", {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch models: ${response.statusText}`);
+    }
+    const responseData = (await response.json()) as any;
+
+    return responseData.data;
+  };
+
+  fetchTools = async (): Promise<any> => {
+    let headers = {};
     try {
-      const response = await fetchApi("/tools", {
-        method: "GET",
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to fetch tools: ${response.statusText}`);
-      }
-      const responseData = (await response.json()) as any;
-
-      return responseData;
+      headers = await this.getHeaders();
     } catch (error) {
       console.error("Error fetching tools:", error);
-      return { success: false, message: "Failed to fetch tools", data: [] };
     }
-  }
 
-  async transcribeAudio(audioBlob: Blob): Promise<any> {
-    const headers = await this.getHeaders();
+    const response = await fetchApi("/tools", {
+      method: "GET",
+      headers,
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch tools: ${response.statusText}`);
+    }
+    const responseData = (await response.json()) as any;
+
+    return responseData;
+  };
+
+  transcribeAudio = async (audioBlob: Blob): Promise<any> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error transcribing audio:", error);
+    }
 
     const formData = new FormData();
     formData.append("audio", audioBlob);
@@ -565,14 +626,24 @@ class ApiService {
     }
 
     return await response.json();
-  }
+  };
 
-  async uploadFile(
+  uploadFile = async (
     file: File,
     fileType: "image" | "document",
     options?: { convertToMarkdown?: boolean },
-  ): Promise<{ url: string; type: string; name: string; markdown?: string }> {
-    const headers = await this.getHeaders();
+  ): Promise<{
+    url: string;
+    type: string;
+    name: string;
+    markdown?: string;
+  }> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
 
     const formData = new FormData();
     formData.append("file", file);
@@ -602,14 +673,19 @@ class ApiService {
     }
 
     return await response.json();
-  }
+  };
 
-  async storeProviderApiKey(
+  storeProviderApiKey = async (
     providerId: string,
     apiKey: string,
     secretKey?: string,
-  ): Promise<void> {
-    const headers = await this.getHeaders();
+  ): Promise<void> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error storing provider API key:", error);
+    }
 
     const response = await fetchApi("/user/store-provider-api-key", {
       method: "POST",
@@ -626,10 +702,17 @@ class ApiService {
         `Failed to store provider API key: ${response.statusText}`,
       );
     }
-  }
+  };
 
-  async getProviderSettings(): Promise<{ providers: Record<string, any> }> {
-    const headers = await this.getHeaders();
+  getProviderSettings = async (): Promise<{
+    providers: Record<string, any>;
+  }> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting provider settings:", error);
+    }
 
     const response = await fetchApi("/user/providers", {
       method: "GET",
@@ -643,10 +726,15 @@ class ApiService {
     }
 
     return response.json();
-  }
+  };
 
-  async syncProviders(): Promise<void> {
-    const headers = await this.getHeaders();
+  syncProviders = async (): Promise<void> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error syncing providers:", error);
+    }
 
     const response = await fetchApi("/user/sync-providers", {
       method: "POST",
@@ -656,12 +744,18 @@ class ApiService {
     if (!response.ok) {
       throw new Error(`Failed to sync providers: ${response.statusText}`);
     }
-  }
+  };
 
-  async getUserApiKeys(): Promise<
+  getUserApiKeys = async (): Promise<
     { id: string; name: string; created_at: string }[]
-  > {
-    const headers = await this.getHeaders();
+  > => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting API keys:", error);
+    }
+
     const response = await fetchApi("/user/api-keys", {
       method: "GET",
       headers,
@@ -671,12 +765,23 @@ class ApiService {
       throw new Error(`Failed to get API keys: ${response.statusText}`);
     }
     return response.json();
-  }
+  };
 
-  async createApiKey(
+  createApiKey = async (
     name?: string,
-  ): Promise<{ apiKey: string; id: string; name: string; created_at: string }> {
-    const headers = await this.getHeaders();
+  ): Promise<{
+    apiKey: string;
+    id: string;
+    name: string;
+    created_at: string;
+  }> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error creating API key:", error);
+    }
+
     const response = await fetchApi("/user/api-keys", {
       method: "POST",
       headers,
@@ -691,10 +796,16 @@ class ApiService {
       throw new Error(`Failed to create API key: ${errorMessage}`);
     }
     return response.json();
-  }
+  };
 
-  async deleteApiKey(keyId: string): Promise<void> {
-    const headers = await this.getHeaders();
+  deleteApiKey = async (keyId: string): Promise<void> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error deleting API key:", error);
+    }
+
     const response = await fetchApi(`/user/api-keys/${keyId}`, {
       method: "DELETE",
       headers,
@@ -703,7 +814,7 @@ class ApiService {
     if (!response.ok) {
       throw new Error(`Failed to delete API key: ${response.statusText}`);
     }
-  }
+  };
 }
 
 export const apiService = ApiService.getInstance();
