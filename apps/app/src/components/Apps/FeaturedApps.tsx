@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 
-import type { AppListItem } from "~/lib/api/dynamic-apps";
 import { cn } from "~/lib/utils";
+import type { AppListItem } from "~/types/apps";
 import { AppCard } from "./AppCard";
 
 const featuredAppsData: AppListItem[] = [

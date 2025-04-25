@@ -1,6 +1,6 @@
 import { Button } from "~/components/ui";
-import type { AppSchema } from "~/lib/api/dynamic-apps";
 import { cn } from "~/lib/utils";
+import type { AppSchema } from "~/types/apps";
 import { getCardGradient, getIcon } from "../utils";
 import { CustomView } from "./CustomView";
 import { JsonView } from "./JsonView";

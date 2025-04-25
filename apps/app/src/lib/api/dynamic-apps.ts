@@ -1,4 +1,5 @@
 import type { AppSchema } from "~/types/apps";
+import type { AppListItem } from "~/types/apps";
 import type {
   AnalyseArticleParams,
   AnalyseArticleResponse,
@@ -18,7 +19,6 @@ import type {
   UploadPodcastParams,
   UploadResponse,
 } from "~/types/podcast";
-import type { AppListItem } from "../../types/apps";
 import { apiService } from "./api-service";
 import { fetchApi } from "./fetch-wrapper";
 

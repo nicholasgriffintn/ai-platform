@@ -48,10 +48,11 @@ export class UserRepository extends BaseRepository {
 
   public async updateUser(
     userId: number,
-    userData: Partial<User>,
+    userData: Record<string, unknown>,
   ): Promise<void> {
     const fieldsToUpdate = Object.keys(userData).filter(
-      (key) => key !== "id" && userData[key as keyof User] !== undefined,
+      (key) =>
+        key !== "id" && userData[key as keyof typeof userData] !== undefined,
     );
 
     if (fieldsToUpdate.length === 0) {
@@ -59,7 +60,9 @@ export class UserRepository extends BaseRepository {
     }
 
     const setClause = fieldsToUpdate.map((key) => `${key} = ?`).join(", ");
-    const values = fieldsToUpdate.map((key) => userData[key as keyof User]);
+    const values = fieldsToUpdate.map(
+      (key) => userData[key as keyof typeof userData],
+    );
 
     const query = `UPDATE user SET ${setClause}, updated_at = datetime('now') WHERE id = ?`;
     const finalValues = [...values, userId];
@@ -70,6 +73,8 @@ export class UserRepository extends BaseRepository {
   public async createUser(
     userData: Record<string, unknown>,
   ): Promise<Record<string, unknown> | null> {
+    // Note: userData.username is used for github_username in the database
+    // This method expects the username field from input data and maps it to github_username in DB
     const result = this.runQuery<Record<string, unknown>>(
       `INSERT INTO user (
          name, 
@@ -88,13 +93,13 @@ export class UserRepository extends BaseRepository {
        RETURNING *`,
       [
         userData.name || null,
-        userData.avatarUrl || null,
+        userData.avatar_url || null,
         userData.email,
         userData.username || null,
         userData.company || null,
         userData.location || null,
         userData.bio || null,
-        userData.twitterUsername || null,
+        userData.twitter_username || null,
         userData.site || null,
       ],
       true,
@@ -122,11 +127,11 @@ export class UserRepository extends BaseRepository {
       [
         userData.username,
         userData.name || null,
-        userData.avatarUrl || null,
+        userData.avatar_url || null,
         userData.company || null,
         userData.location || null,
         userData.bio || null,
-        userData.twitterUsername || null,
+        userData.twitter_username || null,
         userData.site || null,
         userId,
       ],

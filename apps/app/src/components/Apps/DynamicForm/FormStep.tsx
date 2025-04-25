@@ -1,4 +1,4 @@
-import type { AppSchema } from "~/lib/api/dynamic-apps";
+import type { AppSchema } from "~/types/apps";
 import { FormField } from "./FormField";
 
 interface FormStepProps {

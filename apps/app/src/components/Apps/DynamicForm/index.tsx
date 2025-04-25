@@ -2,8 +2,8 @@ import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "~/components/ui";
-import type { AppSchema } from "~/lib/api/dynamic-apps";
 import { cn } from "~/lib/utils";
+import type { AppSchema } from "~/types/apps";
 import { getCardGradient, getIcon } from "../utils";
 import { FormStep } from "./FormStep";
 

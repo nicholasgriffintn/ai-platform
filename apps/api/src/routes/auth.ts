@@ -230,11 +230,11 @@ app.get(
         username: githubUser.login,
         email: primaryEmail,
         name: githubUser.name || undefined,
-        avatarUrl: githubUser.avatar_url,
+        avatar_url: githubUser.avatar_url,
         company: githubUser.company || undefined,
         location: githubUser.location || undefined,
         bio: githubUser.bio || undefined,
-        twitterUsername: githubUser.twitter_username || undefined,
+        twitter_username: githubUser.twitter_username || undefined,
         site: githubUser.blog || undefined,
       });
 

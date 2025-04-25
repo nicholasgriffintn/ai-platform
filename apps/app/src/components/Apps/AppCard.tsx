@@ -1,6 +1,6 @@
 import { Card } from "~/components/ui";
-import type { AppListItem } from "~/lib/api/dynamic-apps";
 import { cn } from "~/lib/utils";
+import type { AppListItem } from "~/types/apps";
 import { getCardGradient, getCategoryColor, getIcon } from "./utils";
 
 interface AppCardProps {

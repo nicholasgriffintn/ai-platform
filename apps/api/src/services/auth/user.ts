@@ -148,11 +148,11 @@ export async function createOrUpdateGithubUser(
     username: string;
     email: string;
     name?: string;
-    avatarUrl?: string;
+    avatar_url?: string;
     company?: string;
     location?: string;
     bio?: string;
-    twitterUsername?: string;
+    twitter_username?: string;
     site?: string;
   },
 ): Promise<User> {
@@ -162,27 +162,27 @@ export async function createOrUpdateGithubUser(
     if (existingUser) {
       await database.updateUser(existingUser.id, {
         name: userData.name || null,
-        avatarUrl: userData.avatarUrl || null,
+        avatar_url: userData.avatar_url || null,
         email: userData.email,
-        username: userData.username,
+        github_username: userData.username,
         company: userData.company || null,
         location: userData.location || null,
         bio: userData.bio || null,
-        twitterUsername: userData.twitterUsername || null,
+        twitter_username: userData.twitter_username || null,
         site: userData.site || null,
       });
 
       return {
         ...existingUser,
         name: userData.name || existingUser.name,
-        avatar_url: userData.avatarUrl || existingUser.avatar_url,
+        avatar_url: userData.avatar_url || existingUser.avatar_url,
         email: userData.email,
         github_username: userData.username,
         company: userData.company || existingUser.company,
         location: userData.location || existingUser.location,
         bio: userData.bio || existingUser.bio,
         twitter_username:
-          userData.twitterUsername || existingUser.twitter_username,
+          userData.twitter_username || existingUser.twitter_username,
         site: userData.site || existingUser.site,
         updated_at: new Date().toISOString(),
       };
@@ -203,12 +203,12 @@ export async function createOrUpdateGithubUser(
         ...userByEmail,
         github_username: userData.username,
         name: userData.name || userByEmail.name,
-        avatar_url: userData.avatarUrl || userByEmail.avatar_url,
+        avatar_url: userData.avatar_url || userByEmail.avatar_url,
         company: userData.company || userByEmail.company,
         location: userData.location || userByEmail.location,
         bio: userData.bio || userByEmail.bio,
         twitter_username:
-          userData.twitterUsername || userByEmail.twitter_username,
+          userData.twitter_username || userByEmail.twitter_username,
         site: userData.site || userByEmail.site,
         updated_at: new Date().toISOString(),
       };

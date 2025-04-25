@@ -11,7 +11,7 @@ import {
   Video,
 } from "lucide-react";
 import React from "react";
-import type { AppListItem } from "~/lib/api/dynamic-apps";
+import type { AppListItem } from "~/types/apps";
 
 export const getIconColor = (iconName?: string): string => {
   switch (iconName) {

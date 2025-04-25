@@ -1,7 +1,7 @@
 import type { ChangeEvent } from "react";
 
 import { FormCheckbox, FormInput, FormSelect, Textarea } from "~/components/ui";
-import type { AppSchema } from "~/lib/api/dynamic-apps";
+import type { AppSchema } from "~/types/apps";
 
 type FieldType = AppSchema["formSchema"]["steps"][0]["fields"][0];
 
