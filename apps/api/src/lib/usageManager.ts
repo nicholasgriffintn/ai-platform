@@ -1,17 +1,59 @@
 import type { Database } from "~/lib/database";
-import { getModelConfig } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/models";
 import type { ModelConfigItem } from "~/types";
 import type { User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "USAGE_MANAGER" });
 
 // TODO: Define these limits in a central config or env vars
 const NON_AUTH_DAILY_MESSAGE_LIMIT = 10;
 const AUTH_DAILY_MESSAGE_LIMIT = 50;
 const DAILY_LIMIT_PRO_MODELS = 100;
 
+const BASELINE_INPUT_COST = 0.0025;
+const BASELINE_OUTPUT_COST = 0.01;
+
 function isProModel(modelId: string): boolean {
-  const config: ModelConfigItem | undefined = getModelConfig(modelId);
-  return !!config && !config.isFree;
+  const config: ModelConfigItem | undefined =
+    getModelConfigByMatchingModel(modelId);
+  return !!config && config.isFree !== true;
+}
+
+function calculateUsageMultiplier(modelId: string): number {
+  const config = getModelConfigByMatchingModel(modelId);
+  if (!config) {
+    logger.warn(
+      `No config found for model: ${modelId}, using default multiplier: 1`,
+    );
+    return 1;
+  }
+
+  if (!config.costPer1kInputTokens && !config.costPer1kOutputTokens) {
+    logger.warn(
+      `No cost data for model: ${modelId}, using default multiplier: 1`,
+    );
+    return 1;
+  }
+
+  const inputMultiplier =
+    (config.costPer1kInputTokens || 0) / BASELINE_INPUT_COST;
+  const outputMultiplier =
+    (config.costPer1kOutputTokens || 0) / BASELINE_OUTPUT_COST;
+  const avgMultiplier = (inputMultiplier + outputMultiplier) / 2;
+  const finalMultiplier = Math.ceil(avgMultiplier);
+
+  logger.info(`Model: ${modelId} calculation:`, {
+    inputCost: config.costPer1kInputTokens,
+    outputCost: config.costPer1kOutputTokens,
+    inputMultiplier,
+    outputMultiplier,
+    avgMultiplier,
+    finalMultiplier,
+  });
+
+  return finalMultiplier;
 }
 
 export interface UsageLimits {
@@ -130,8 +172,9 @@ export class UsageManager {
     }
   }
 
-  async checkProUsage() {
+  async checkProUsage(modelId: string) {
     const userData = await this.getUserData();
+    const usageMultiplier = calculateUsageMultiplier(modelId);
 
     let dailyProCount = userData.daily_pro_message_count || 0;
     const now = new Date();
@@ -172,13 +215,25 @@ export class UsageManager {
       );
     }
 
-    return { dailyProCount, limit: DAILY_LIMIT_PRO_MODELS };
+    const modelConfig = getModelConfigByMatchingModel(modelId);
+
+    return {
+      dailyProCount,
+      limit: DAILY_LIMIT_PRO_MODELS,
+      costMultiplier: usageMultiplier,
+      modelCostInfo: {
+        inputCost: modelConfig?.costPer1kInputTokens || 0,
+        outputCost: modelConfig?.costPer1kOutputTokens || 0,
+      },
+    };
   }
 
-  async incrementProUsage() {
+  async incrementProUsage(modelId: string) {
     const userData = await this.getUserData();
+    const usageMultiplier = calculateUsageMultiplier(modelId);
 
     const count = userData.daily_pro_message_count ?? 0;
+    const messageCount = userData.message_count ?? 0;
 
     const now = new Date();
     const lastReset = userData.daily_pro_reset
@@ -191,8 +246,11 @@ export class UsageManager {
       now.getUTCFullYear() !== lastReset.getUTCFullYear();
     const currentDailyCount = isNewDay ? 0 : count;
 
+    const updatedCount = currentDailyCount + usageMultiplier;
+
     const updates = {
-      daily_pro_message_count: currentDailyCount + 1,
+      message_count: messageCount + 1,
+      daily_pro_message_count: updatedCount,
       last_active_at: new Date().toISOString(),
       ...(isNewDay && { daily_pro_reset: now.toISOString() }),
     };
@@ -208,7 +266,6 @@ export class UsageManager {
   }
 
   async checkUsageByModel(modelId: string, isPro: boolean) {
-    const userData = await this.getUserData();
     const modelIsPro = isProModel(modelId);
 
     if (modelIsPro) {
@@ -219,7 +276,7 @@ export class UsageManager {
         );
       }
 
-      return await this.checkProUsage();
+      return await this.checkProUsage(modelId);
     }
 
     if (this.userId) {
@@ -242,7 +299,12 @@ export class UsageManager {
 
     if (modelIsPro) {
       if (isPro) {
-        await this.incrementProUsage();
+        await this.incrementProUsage(modelId);
+      } else {
+        throw new AssistantError(
+          "You are not a paid user. Please upgrade to a paid plan to use this model.",
+          ErrorType.AUTHENTICATION_ERROR,
+        );
       }
     } else {
       await this.incrementUsage();
@@ -301,5 +363,29 @@ export class UsageManager {
     }
 
     return usageLimits;
+  }
+
+  /**
+   * Get the cost multiplier for a specific model
+   * @param modelId The ID of the model to check
+   * @returns The cost multiplier for the model
+   */
+  async getModelUsageMultiplier(modelId: string): Promise<{
+    multiplier: number;
+    modelCostInfo: {
+      inputCost: number;
+      outputCost: number;
+    };
+  }> {
+    const usageMultiplier = calculateUsageMultiplier(modelId);
+    const modelConfig = getModelConfigByMatchingModel(modelId);
+
+    return {
+      multiplier: usageMultiplier,
+      modelCostInfo: {
+        inputCost: modelConfig?.costPer1kInputTokens || 0,
+        outputCost: modelConfig?.costPer1kOutputTokens || 0,
+      },
+    };
   }
 }
