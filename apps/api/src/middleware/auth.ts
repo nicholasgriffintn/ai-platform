@@ -140,11 +140,15 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
   const isRestricted = context.get("isRestricted");
 
   if (isRestricted) {
+    const user = context.get("user");
     const anonymousUser = context.get("anonymousUser");
-    if (!anonymousUser) {
-      logger.warn("Missing anonymous user data for restricted path access");
+
+    if (!user && !anonymousUser) {
+      logger.warn(
+        "Missing user or anonymous user data for restricted path access",
+      );
       throw new AssistantError(
-        "Anonymous tracking required for this endpoint.",
+        "User usage tracking required for this endpoint.",
         ErrorType.AUTHENTICATION_ERROR,
       );
     }
