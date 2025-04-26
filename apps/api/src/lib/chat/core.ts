@@ -23,6 +23,7 @@ const logger = getLogger({ prefix: "CHAT_CORE" });
 type CoreChatOptions = ChatCompletionParameters & {
   isRestricted?: boolean;
   useMultiModel?: boolean;
+  anonymousUser?: any;
 };
 
 interface ModelConfigInfo {
@@ -37,6 +38,7 @@ async function prepareRequestData(options: CoreChatOptions) {
     system_prompt,
     env,
     user,
+    anonymousUser,
     messages,
     model: requestedModel,
     mode = "normal",
@@ -53,6 +55,13 @@ async function prepareRequestData(options: CoreChatOptions) {
     throw new AssistantError(
       "Missing DB binding",
       ErrorType.CONFIGURATION_ERROR,
+    );
+  }
+
+  if (!user?.id && !anonymousUser?.id) {
+    throw new AssistantError(
+      "User or anonymousUser is required",
+      ErrorType.PARAMS_ERROR,
     );
   }
 
@@ -111,7 +120,8 @@ async function prepareRequestData(options: CoreChatOptions) {
 
   const conversationManager = ConversationManager.getInstance({
     database,
-    userId: user?.id,
+    user: user ? user : undefined,
+    anonymousUser: anonymousUser,
     model: primaryModel,
     platform,
     store: options.store,

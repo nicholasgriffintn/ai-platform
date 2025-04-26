@@ -1,5 +1,6 @@
 import type { IEnv } from "~/types";
 
+import { AnonymousUserRepository } from "./AnonymousUserRepository";
 import { ApiKeyRepository } from "./ApiKeyRepository";
 import { AppDataRepository } from "./AppDataRepository";
 import { BaseRepository } from "./BaseRepository";
@@ -13,6 +14,7 @@ import { UserSettingsRepository } from "./UserSettingsRepository";
 import { WebAuthnRepository } from "./WebAuthnRepository";
 
 export {
+  AnonymousUserRepository,
   ApiKeyRepository,
   AppDataRepository,
   BaseRepository,
@@ -31,6 +33,7 @@ export class RepositoryManager {
   private static instance: RepositoryManager;
 
   private userRepo: UserRepository;
+  private anonymousUserRepo: AnonymousUserRepository;
   private sessionRepo: SessionRepository;
   private userSettingsRepo: UserSettingsRepository;
   private conversationRepo: ConversationRepository;
@@ -44,6 +47,7 @@ export class RepositoryManager {
   private constructor(env: IEnv) {
     this.env = env;
     this.userRepo = new UserRepository(env);
+    this.anonymousUserRepo = new AnonymousUserRepository(env);
     this.sessionRepo = new SessionRepository(env);
     this.userSettingsRepo = new UserSettingsRepository(env);
     this.conversationRepo = new ConversationRepository(env);
@@ -64,6 +68,10 @@ export class RepositoryManager {
 
   public get users(): UserRepository {
     return this.userRepo;
+  }
+
+  public get anonymousUsers(): AnonymousUserRepository {
+    return this.anonymousUserRepo;
   }
 
   public get sessions(): SessionRepository {

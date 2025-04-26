@@ -1,4 +1,10 @@
-import type { Message, MessageContent, Platform } from "~/types";
+import type {
+  AnonymousUser,
+  Message,
+  MessageContent,
+  Platform,
+  User,
+} from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -13,34 +19,39 @@ export class ConversationManager {
   private model?: string;
   private platform?: Platform;
   private store?: boolean = true;
-  private userId?: number;
+  private user?: User | null;
+  private anonymousUser?: AnonymousUser | null;
   private usageManager?: UsageManager;
 
   private constructor(
     database: Database,
-    userId?: number,
+    user?: User | null,
+    anonymousUser?: AnonymousUser | null,
     model?: string,
     platform?: Platform,
     store?: boolean,
   ) {
     this.database = database;
-    this.userId = userId;
+    this.user = user;
+    this.anonymousUser = anonymousUser;
     this.model = model;
     this.platform = platform || "api";
     this.store = store ?? true;
 
-    this.usageManager = new UsageManager(database, userId);
+    this.usageManager = new UsageManager(database, user, anonymousUser);
   }
 
   public static getInstance({
     database,
-    userId,
+    user,
+    anonymousUser,
     model,
     platform,
     store,
   }: {
     database: Database;
-    userId?: number;
+    user?: User | null;
+    anonymousUser?: AnonymousUser | null;
     model?: string;
     platform?: Platform;
     store?: boolean;
@@ -48,21 +59,24 @@ export class ConversationManager {
     if (!ConversationManager.instance) {
       ConversationManager.instance = new ConversationManager(
         database,
-        userId,
+        user,
+        anonymousUser,
         model,
         platform,
         store ?? true,
       );
     } else {
       ConversationManager.instance.database = database;
-      ConversationManager.instance.userId = userId;
+      ConversationManager.instance.user = user;
+      ConversationManager.instance.anonymousUser = anonymousUser;
       ConversationManager.instance.model = model;
       ConversationManager.instance.platform = platform;
       ConversationManager.instance.store = store ?? true;
 
       ConversationManager.instance.usageManager = new UsageManager(
         database,
-        userId,
+        user,
+        anonymousUser,
       );
     }
 
@@ -88,28 +102,10 @@ export class ConversationManager {
    * @param modelId The model ID to check usage for
    */
   async checkUsageLimits(isPro = false, modelId?: string): Promise<void> {
-    if (this.userId && this.usageManager) {
+    if ((this.user || this.anonymousUser) && this.usageManager) {
       const model = modelId || this.model;
       if (model) {
         await this.usageManager.checkUsageByModel(model, isPro);
-      }
-    }
-  }
-
-  /**
-   * Increment usage after generating a response
-   * @param isPro Whether the user is on the pro plan
-   * @param modelId The model ID to increment usage for
-   */
-  async incrementUsage(isPro = false, modelId?: string): Promise<void> {
-    if (this.userId && this.usageManager) {
-      try {
-        const model = modelId || this.model;
-        if (model) {
-          await this.usageManager.incrementUsageByModel(model, isPro);
-        }
-      } catch (error) {
-        logger.error("Failed to increment usage:", error);
       }
     }
   }
@@ -119,17 +115,30 @@ export class ConversationManager {
    * If the conversation doesn't exist, it will be created
    */
   async add(conversation_id: string, message: Message): Promise<Message> {
-    if (!this.store) {
-      return {
-        ...message,
-        id: message.id || generateId(),
-        timestamp: message.timestamp || Date.now(),
-        model: message.model || this.model,
-        platform: message.platform || this.platform,
-      };
+    const newMessage = {
+      ...message,
+      id: message.id || generateId(),
+      timestamp: message.timestamp || Date.now(),
+      model: message.model || this.model,
+      platform: message.platform || this.platform,
+    };
+
+    if (newMessage.role === "assistant" && this.usageManager) {
+      try {
+        const modelUsed = newMessage.model || this.model;
+        if (modelUsed) {
+          await this.usageManager.incrementUsageByModel(modelUsed, true);
+        }
+      } catch (error) {
+        logger.error("Failed to increment usage:", error);
+      }
     }
 
-    if (!this.userId) {
+    if (!this.store) {
+      return newMessage;
+    }
+
+    if (!this.user?.id) {
       throw new AssistantError(
         "User ID is required to store conversations",
         ErrorType.AUTHENTICATION_ERROR,
@@ -141,23 +150,15 @@ export class ConversationManager {
     if (!conversation) {
       conversation = await this.database.createConversation(
         conversation_id,
-        this.userId,
+        this.user?.id,
         "New Conversation",
       );
-    } else if (conversation.user_id !== this.userId) {
+    } else if (conversation.user_id !== this.user?.id) {
       throw new AssistantError(
         "You don't have permission to update this conversation",
         ErrorType.FORBIDDEN,
       );
     }
-
-    const newMessage = {
-      ...message,
-      id: message.id || generateId(),
-      timestamp: message.timestamp || Date.now(),
-      model: message.model || this.model,
-      platform: message.platform || this.platform,
-    };
 
     let content: string;
     if (typeof newMessage.content === "object") {
@@ -179,23 +180,6 @@ export class ConversationManager {
       newMessage.id as string,
     );
 
-    if (newMessage.role === "assistant" && this.usageManager) {
-      try {
-        const modelUsed = newMessage.model || this.model;
-        if (modelUsed) {
-          await this.usageManager.incrementUsageByModel(modelUsed, true);
-        }
-      } catch (error) {
-        logger.error("Failed to increment usage:", error);
-      }
-    }
-
-    if (newMessage.data?.includesSecondaryModels) {
-      for (const model of newMessage.data.secondaryModels) {
-        await this.usageManager.incrementUsageByModel(model, true);
-      }
-    }
-
     return newMessage;
   }
 
@@ -208,17 +192,33 @@ export class ConversationManager {
   ): Promise<Message[]> {
     if (!messages.length) return [];
 
-    if (!this.store) {
-      return messages.map((message) => ({
-        ...message,
-        id: message.id || generateId(),
-        timestamp: message.timestamp || Date.now(),
-        model: message.model || this.model,
-        platform: message.platform || this.platform,
-      }));
+    const newMessages = messages.map((message) => ({
+      ...message,
+      id: message.id || generateId(),
+      timestamp: message.timestamp || Date.now(),
+      model: message.model || this.model,
+      platform: message.platform || this.platform,
+    }));
+
+    for (const message of newMessages) {
+      if (message.role === "assistant" && this.usageManager) {
+        try {
+          const modelUsed = message.model || this.model;
+          if (modelUsed) {
+            await this.usageManager.incrementUsageByModel(modelUsed, true);
+            break;
+          }
+        } catch (error) {
+          logger.error("Failed to increment usage:", error);
+        }
+      }
     }
 
-    if (!this.userId) {
+    if (!this.store) {
+      return newMessages;
+    }
+
+    if (!this.user?.id) {
       throw new AssistantError(
         "User ID is required to store conversations",
         ErrorType.AUTHENTICATION_ERROR,
@@ -230,23 +230,15 @@ export class ConversationManager {
     if (!conversation) {
       conversation = await this.database.createConversation(
         conversation_id,
-        this.userId,
+        this.user?.id,
         "New Conversation",
       );
-    } else if (conversation.user_id !== this.userId) {
+    } else if (conversation.user_id !== this.user?.id) {
       throw new AssistantError(
         "You don't have permission to update this conversation",
         ErrorType.FORBIDDEN,
       );
     }
-
-    const newMessages = messages.map((message) => ({
-      ...message,
-      id: message.id || generateId(),
-      timestamp: message.timestamp || Date.now(),
-      model: message.model || this.model,
-      platform: message.platform || this.platform,
-    }));
 
     const createPromises = newMessages.map((message) => {
       let content: string;
@@ -269,21 +261,6 @@ export class ConversationManager {
 
     if (newMessages.length > 0) {
       const lastMessage = newMessages[newMessages.length - 1];
-
-      for (const message of newMessages) {
-        if (message.role === "assistant" && this.usageManager) {
-          try {
-            const modelUsed = message.model || this.model;
-            if (modelUsed) {
-              await this.usageManager.incrementUsageByModel(modelUsed, true);
-              break;
-            }
-          } catch (error) {
-            logger.error("Failed to increment usage:", error);
-          }
-        }
-      }
-
       await this.database.updateConversationAfterMessage(
         conversation_id,
         lastMessage.id as string,
@@ -301,7 +278,7 @@ export class ConversationManager {
       return;
     }
 
-    if (!this.userId) {
+    if (!this.user?.id) {
       throw new AssistantError(
         "User ID is required to update messages",
         ErrorType.AUTHENTICATION_ERROR,
@@ -313,7 +290,7 @@ export class ConversationManager {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
     }
 
-    if (conversation.user_id !== this.userId) {
+    if (conversation.user_id !== this.user?.id) {
       throw new AssistantError(
         "You don't have permission to update this conversation",
         ErrorType.FORBIDDEN,
@@ -362,7 +339,7 @@ export class ConversationManager {
       return message ? [message] : [];
     }
 
-    if (!this.userId) {
+    if (!this.user?.id) {
       throw new AssistantError(
         "User ID is required to retrieve messages",
         ErrorType.AUTHENTICATION_ERROR,
@@ -374,7 +351,7 @@ export class ConversationManager {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
     }
 
-    if (conversation.user_id !== this.userId) {
+    if (conversation.user_id !== this.user?.id) {
       throw new AssistantError(
         "You don't have permission to access this conversation",
         ErrorType.FORBIDDEN,
@@ -403,15 +380,15 @@ export class ConversationManager {
     pageNumber: number;
     pageSize: number;
   }> {
-    if (!this.userId) {
+    if (!this.user?.id) {
       throw new AssistantError(
-        "User ID is required to list conversations",
+        "Manager: User ID is required to list conversations",
         ErrorType.AUTHENTICATION_ERROR,
       );
     }
 
     const result = await this.database.getUserConversations(
-      this.userId,
+      this.user?.id,
       limit,
       page,
       includeArchived,
@@ -438,7 +415,7 @@ export class ConversationManager {
   async getConversationDetails(
     conversation_id: string,
   ): Promise<Record<string, unknown>> {
-    if (!this.userId) {
+    if (!this.user?.id) {
       throw new AssistantError(
         "User ID is required to get conversation details",
         ErrorType.AUTHENTICATION_ERROR,
@@ -450,7 +427,7 @@ export class ConversationManager {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
     }
 
-    if (conversation.user_id !== this.userId) {
+    if (conversation.user_id !== this.user?.id) {
       throw new AssistantError(
         "You don't have permission to access this conversation",
         ErrorType.FORBIDDEN,
@@ -485,7 +462,7 @@ export class ConversationManager {
       return {};
     }
 
-    if (!this.userId) {
+    if (!this.user?.id) {
       throw new AssistantError(
         "User ID is required to update a conversation",
         ErrorType.AUTHENTICATION_ERROR,
@@ -497,7 +474,7 @@ export class ConversationManager {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
     }
 
-    if (conversation.user_id !== this.userId) {
+    if (conversation.user_id !== this.user?.id) {
       throw new AssistantError(
         "You don't have permission to update this conversation",
         ErrorType.FORBIDDEN,
@@ -527,7 +504,7 @@ export class ConversationManager {
   async getMessageById(
     message_id: string,
   ): Promise<{ message: Message; conversation_id: string }> {
-    if (!this.userId) {
+    if (!this.user?.id) {
       throw new AssistantError(
         "User ID is required to retrieve a message",
         ErrorType.AUTHENTICATION_ERROR,
@@ -540,7 +517,7 @@ export class ConversationManager {
       throw new AssistantError("Message not found", ErrorType.NOT_FOUND);
     }
 
-    if (result.user_id !== this.userId) {
+    if (result.user_id !== this.user?.id) {
       throw new AssistantError(
         "You don't have permission to access this message",
         ErrorType.FORBIDDEN,
@@ -677,7 +654,7 @@ export class ConversationManager {
   async shareConversation(
     conversation_id: string,
   ): Promise<{ share_id: string }> {
-    if (!this.userId) {
+    if (!this.user?.id) {
       throw new AssistantError(
         "User ID is required to share conversations",
         ErrorType.AUTHENTICATION_ERROR,
@@ -690,7 +667,7 @@ export class ConversationManager {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
     }
 
-    if (conversation.user_id !== this.userId) {
+    if (conversation.user_id !== this.user?.id) {
       throw new AssistantError(
         "You don't have permission to share this conversation",
         ErrorType.FORBIDDEN,
@@ -722,7 +699,7 @@ export class ConversationManager {
    * Make a conversation private by setting is_public to false
    */
   async unshareConversation(conversation_id: string): Promise<void> {
-    if (!this.userId) {
+    if (!this.user?.id) {
       throw new AssistantError(
         "User ID is required to unshare conversations",
         ErrorType.AUTHENTICATION_ERROR,
@@ -735,7 +712,7 @@ export class ConversationManager {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
     }
 
-    if (conversation.user_id !== this.userId) {
+    if (conversation.user_id !== this.user?.id) {
       throw new AssistantError(
         "You don't have permission to unshare this conversation",
         ErrorType.FORBIDDEN,

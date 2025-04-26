@@ -101,20 +101,21 @@ app.post(
     const body = context.req.valid("json" as never) as ChatCompletionParameters;
 
     const userContext = context.get("user");
+    const anonymousUserContext = context.get("anonymousUser");
 
     const user = {
       // @ts-ignore
       longitude: context.req.cf?.longitude,
       // @ts-ignore
       latitude: context.req.cf?.latitude,
-      email: userContext?.email,
-      id: userContext?.id,
+      ...userContext,
     };
 
     const response = await handleCreateChatCompletions({
       env: context.env as IEnv,
       request: body,
       user,
+      anonymousUser: anonymousUserContext,
       isRestricted: context.get("isRestricted"),
     });
 
@@ -240,10 +241,12 @@ app.get(
     const after = context.req.query("after");
 
     const database = Database.getInstance(context.env);
+    const anonymousUser = context.get("anonymousUser");
 
     const conversationManager = ConversationManager.getInstance({
       database,
-      userId: userContext.id,
+      user: userContext,
+      anonymousUser,
     });
 
     const messages = await conversationManager.get(
@@ -305,13 +308,15 @@ app.get(
   }),
   async (context: Context) => {
     const { message_id } = context.req.param();
-    const userContext = context.get("user");
+    const user = context.get("user");
+    const anonymousUser = context.get("anonymousUser");
 
     const database = Database.getInstance(context.env);
 
     const conversationManager = ConversationManager.getInstance({
       database,
-      userId: userContext.id,
+      user,
+      anonymousUser,
     });
 
     const { message, conversation_id } =

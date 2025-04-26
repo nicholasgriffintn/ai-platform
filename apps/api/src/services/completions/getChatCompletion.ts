@@ -27,7 +27,7 @@ export const handleGetChatCompletion = async (
 
   const conversationManager = ConversationManager.getInstance({
     database,
-    userId: user.id,
+    user,
   });
 
   const conversation =

@@ -2,7 +2,7 @@ import type { D1Result } from "@cloudflare/workers-types";
 
 import { RepositoryManager } from "~/repositories";
 import type { ApiKeyMetadata } from "~/repositories/ApiKeyRepository";
-import type { IEnv, IUserSettings, User } from "~/types";
+import type { AnonymousUser, IEnv, IUserSettings, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
@@ -525,5 +525,54 @@ export class Database {
 
   public async findUserIdByApiKey(apiKey: string): Promise<number | null> {
     return this.repositories.apiKeys.findUserIdByApiKey(apiKey);
+  }
+
+  public async getAnonymousUserById(id: string): Promise<AnonymousUser | null> {
+    return this.repositories.anonymousUsers.getAnonymousUserById(id);
+  }
+
+  public async getAnonymousUserByIp(
+    ipAddress: string,
+  ): Promise<AnonymousUser | null> {
+    return this.repositories.anonymousUsers.getAnonymousUserByIp(ipAddress);
+  }
+
+  public async createAnonymousUser(
+    ipAddress: string,
+    userAgent?: string,
+    id?: string,
+  ): Promise<AnonymousUser | null> {
+    return this.repositories.anonymousUsers.createAnonymousUser(
+      ipAddress,
+      userAgent,
+      id,
+    );
+  }
+
+  public async updateAnonymousUser(
+    id: string,
+    userData: Partial<AnonymousUser>,
+  ): Promise<void> {
+    return this.repositories.anonymousUsers.updateAnonymousUser(id, userData);
+  }
+
+  public async getOrCreateAnonymousUser(
+    ipAddress: string,
+    userAgent?: string,
+  ): Promise<AnonymousUser | null> {
+    return this.repositories.anonymousUsers.getOrCreateAnonymousUser(
+      ipAddress,
+      userAgent,
+    );
+  }
+
+  public async checkAndResetAnonymousUserDailyLimit(
+    id: string,
+  ): Promise<{ count: number; isNewDay: boolean }> {
+    return this.repositories.anonymousUsers.checkAndResetDailyLimit(id);
+  }
+
+  public async incrementAnonymousUserDailyCount(id: string): Promise<void> {
+    return this.repositories.anonymousUsers.incrementDailyCount(id);
   }
 }

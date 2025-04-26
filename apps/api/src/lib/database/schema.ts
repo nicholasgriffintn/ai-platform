@@ -18,6 +18,19 @@ export const plans = sqliteTable("plans", {
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
 
+export const anonymousUser = sqliteTable("anonymous_user", {
+  id: text().primaryKey(),
+  ip_address: text().notNull(),
+  user_agent: text(),
+  daily_message_count: integer("daily_message_count").default(0),
+  daily_reset: text("daily_reset"),
+  created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+  updated_at: text()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  last_active_at: text("last_active_at"),
+});
+
 export const user = sqliteTable("user", {
   id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
   name: text(),

@@ -32,7 +32,7 @@ export const handleDeleteChatCompletion = async (
 
   const conversationManager = ConversationManager.getInstance({
     database,
-    userId: user.id,
+    user,
   });
 
   await conversationManager.updateConversation(completion_id, {

@@ -86,7 +86,7 @@ export const executeDynamicApp = async (
 
   const conversationManager = ConversationManager.getInstance({
     database,
-    userId: user?.id,
+    user,
     store: !!user?.id,
     platform: "dynamic-apps",
   });

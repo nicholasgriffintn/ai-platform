@@ -31,7 +31,7 @@ import {
   verifyAndRegisterPasskey,
   verifyPasskeyAuthentication,
 } from "~/services/auth/webauthn";
-import type { User } from "~/types";
+import type { AnonymousUser, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import {
@@ -298,6 +298,10 @@ app.get(
     const user = c.get("user") as User | undefined;
 
     if (!user) {
+      const anonymousUser = c.get("anonymousUser") as AnonymousUser | undefined;
+      if (anonymousUser) {
+        return c.json({ user: null, userSettings: null, anon: anonymousUser });
+      }
       return c.json({ user: null, userSettings: null });
     }
 

@@ -626,6 +626,18 @@ export async function createStreamWithPostProcessing(
               emitEvent(controller, "tool_response_end", {});
             }
 
+            try {
+              const updatedUsageLimits =
+                await conversationManager.getUsageLimits();
+              if (updatedUsageLimits) {
+                emitEvent(controller, "usage_limits", {
+                  usage_limits: updatedUsageLimits,
+                });
+              }
+            } catch (error) {
+              logger.error("Failed to get updated usage limits:", error);
+            }
+
             controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
           } catch (error) {
             logger.error("Error in stream post-processing:", error);
@@ -913,6 +925,26 @@ export function createMultiModelStream(
               },
             });
           }
+        }
+
+        try {
+          // Get updated usage limits at the end of multi-model processing
+          const updatedUsageLimits = await conversationManager.getUsageLimits();
+          if (updatedUsageLimits) {
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  type: "usage_limits",
+                  usage_limits: updatedUsageLimits,
+                })}\n\n`,
+              ),
+            );
+          }
+        } catch (error) {
+          logger.error(
+            "Failed to get updated usage limits for multi-model streaming:",
+            error,
+          );
         }
 
         controller.enqueue(encoder.encode("data: [DONE]\n\n"));

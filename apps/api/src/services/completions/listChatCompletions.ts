@@ -39,7 +39,7 @@ export const handleListChatCompletions = async (
 
   const conversationManager = ConversationManager.getInstance({
     database,
-    userId: user.id,
+    user,
   });
 
   return await conversationManager.list(limit, page, includeArchived);

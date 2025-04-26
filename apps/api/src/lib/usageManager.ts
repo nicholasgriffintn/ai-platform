@@ -1,8 +1,7 @@
 import { USAGE_CONFIG } from "~/constants/app";
 import type { Database } from "~/lib/database";
 import { getModelConfigByMatchingModel } from "~/lib/models";
-import type { ModelConfigItem } from "~/types";
-import type { User } from "~/types";
+import type { AnonymousUser, ModelConfigItem, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
@@ -62,37 +61,33 @@ export interface UsageLimits {
 
 export class UsageManager {
   private database: Database;
-  private userId: User["id"];
+  private user: User | null;
+  private anonymousUser: AnonymousUser | null;
 
-  constructor(database: Database, userId: User["id"]) {
+  constructor(
+    database: Database,
+    user: User | null,
+    anonymousUser: AnonymousUser | null,
+  ) {
     this.database = database;
-    this.userId = userId;
-  }
-
-  private async getUserData(): Promise<User> {
-    if (!this.userId) {
-      return null;
-    }
-
-    const user = await this.database.getUserById(this.userId);
-    if (!user) {
-      throw new AssistantError(
-        `User record not found for id: ${this.userId}`,
-        ErrorType.NOT_FOUND,
-      );
-    }
-    return user;
+    this.user = user;
+    this.anonymousUser = anonymousUser;
   }
 
   async checkUsage() {
-    const userData = await this.getUserData();
+    if (!this.user?.id) {
+      throw new AssistantError(
+        "User required to check authenticated usage",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
 
     const dailyLimit = USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT;
 
     const now = new Date();
-    let dailyCount = userData.daily_message_count ?? 0;
-    const lastReset = userData.daily_reset
-      ? new Date(userData.daily_reset)
+    let dailyCount = this.user.daily_message_count ?? 0;
+    const lastReset = this.user.daily_reset
+      ? new Date(this.user.daily_reset)
       : null;
     let needsUpdate = false;
     const updates: Partial<User> & Record<string, any> = {};
@@ -112,8 +107,9 @@ export class UsageManager {
 
     if (needsUpdate) {
       try {
-        await this.database.updateUser(this.userId, updates);
+        await this.database.updateUser(this.user.id, updates);
       } catch (resetError) {
+        logger.error("Failed to reset daily count", { error: resetError });
         throw new AssistantError(
           "Failed to reset daily count",
           ErrorType.INTERNAL_ERROR,
@@ -132,14 +128,19 @@ export class UsageManager {
   }
 
   async incrementUsage() {
-    const userData = await this.getUserData();
+    if (!this.user?.id) {
+      throw new AssistantError(
+        "User required to increment authenticated usage",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
 
-    const messageCount = userData.message_count ?? 0;
-    const dailyCount = userData.daily_message_count ?? 0;
+    const messageCount = this.user.message_count ?? 0;
+    const dailyCount = this.user.daily_message_count ?? 0;
 
     const now = new Date();
-    const lastReset = userData.daily_reset
-      ? new Date(userData.daily_reset)
+    const lastReset = this.user.daily_reset
+      ? new Date(this.user.daily_reset)
       : null;
     const isNewDay =
       !lastReset ||
@@ -156,8 +157,9 @@ export class UsageManager {
     };
 
     try {
-      await this.database.updateUser(this.userId, updates);
+      await this.database.updateUser(this.user.id, updates);
     } catch (updateError) {
+      logger.error("Failed to update usage data", { error: updateError });
       throw new AssistantError(
         "Failed to update usage data",
         ErrorType.INTERNAL_ERROR,
@@ -165,14 +167,55 @@ export class UsageManager {
     }
   }
 
+  async checkAnonymousUsage() {
+    if (!this.anonymousUser?.id) {
+      throw new AssistantError(
+        "Anonymous user required to check anonymous usage",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const dailyLimit = USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT;
+    const { count: dailyCount } =
+      await this.database.checkAndResetAnonymousUserDailyLimit(
+        this.anonymousUser.id,
+      );
+
+    if (dailyCount >= dailyLimit) {
+      throw new AssistantError(
+        "Daily message limit for anonymous users reached. Please log in for higher limits.",
+        ErrorType.USAGE_LIMIT_ERROR,
+      );
+    }
+
+    return { dailyCount, dailyLimit };
+  }
+
+  async incrementAnonymousUsage() {
+    if (!this.anonymousUser?.id) {
+      throw new AssistantError(
+        "Anonymous user required to increment anonymous usage",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    await this.database.incrementAnonymousUserDailyCount(this.anonymousUser.id);
+  }
+
   async checkProUsage(modelId: string) {
-    const userData = await this.getUserData();
+    if (!this.user?.id) {
+      throw new AssistantError(
+        "User required to check pro usage",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
     const usageMultiplier = calculateUsageMultiplier(modelId);
 
-    let dailyProCount = userData.daily_pro_message_count || 0;
+    let dailyProCount = this.user.daily_pro_message_count || 0;
     const now = new Date();
-    const lastReset = userData.daily_pro_reset
-      ? new Date(userData.daily_pro_reset)
+    const lastReset = this.user.daily_pro_reset
+      ? new Date(this.user.daily_pro_reset)
       : null;
     let needsUpdate = false;
     const updates: Partial<User> & Record<string, any> = {};
@@ -192,8 +235,9 @@ export class UsageManager {
 
     if (needsUpdate) {
       try {
-        await this.database.updateUser(this.userId, updates);
+        await this.database.updateUser(this.user.id, updates);
       } catch (resetError) {
+        logger.error("Failed to reset pro usage", { error: resetError });
         throw new AssistantError(
           "Failed to reset pro usage",
           ErrorType.INTERNAL_ERROR,
@@ -222,15 +266,21 @@ export class UsageManager {
   }
 
   async incrementProUsage(modelId: string) {
-    const userData = await this.getUserData();
+    if (!this.user?.id) {
+      throw new AssistantError(
+        "User required to increment pro usage",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
     const usageMultiplier = calculateUsageMultiplier(modelId);
 
-    const count = userData.daily_pro_message_count ?? 0;
-    const messageCount = userData.message_count ?? 0;
+    const count = this.user.daily_pro_message_count ?? 0;
+    const messageCount = this.user.message_count ?? 0;
 
     const now = new Date();
-    const lastReset = userData.daily_pro_reset
-      ? new Date(userData.daily_pro_reset)
+    const lastReset = this.user.daily_pro_reset
+      ? new Date(this.user.daily_pro_reset)
       : null;
     const isNewDay =
       !lastReset ||
@@ -249,8 +299,9 @@ export class UsageManager {
     };
 
     try {
-      await this.database.updateUser(this.userId, updates);
+      await this.database.updateUser(this.user.id, updates);
     } catch (updateError) {
+      logger.error("Failed to increment pro usage", { error: updateError });
       throw new AssistantError(
         "Failed to increment pro usage",
         ErrorType.INTERNAL_ERROR,
@@ -272,25 +323,22 @@ export class UsageManager {
       return await this.checkProUsage(modelId);
     }
 
-    if (this.userId) {
+    if (this.user?.id) {
       return await this.checkUsage();
     }
 
-    const ANONYMOUS_LIMIT_HIT = false;
-    if (ANONYMOUS_LIMIT_HIT) {
-      throw new AssistantError(
-        "Daily message limit for anonymous users reached. Please log in for higher limits.",
-        ErrorType.USAGE_LIMIT_ERROR,
-      );
+    if (this.anonymousUser?.id) {
+      return await this.checkAnonymousUsage();
     }
 
-    return {
-      dailyCount: 0,
-      dailyLimit: USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT,
-    };
+    throw new AssistantError(
+      "Either authenticated or anonymous user required for usage tracking",
+      ErrorType.PARAMS_ERROR,
+    );
   }
 
   async incrementUsageByModel(modelId: string, isPro: boolean) {
+    console.log("incrementing usage by model", modelId, isPro);
     const modelIsPro = isProModel(modelId);
 
     if (modelIsPro) {
@@ -302,8 +350,16 @@ export class UsageManager {
           ErrorType.AUTHENTICATION_ERROR,
         );
       }
-    } else {
+    } else if (this.user?.id) {
       await this.incrementUsage();
+    } else if (this.anonymousUser?.id) {
+      console.log("incrementing anonymous usage");
+      await this.incrementAnonymousUsage();
+    } else {
+      throw new AssistantError(
+        "Either authenticated or anonymous user required for usage tracking",
+        ErrorType.PARAMS_ERROR,
+      );
     }
   }
 
@@ -312,14 +368,33 @@ export class UsageManager {
    * @returns UsageLimits object with information about regular and pro limits
    */
   async getUsageLimits(): Promise<UsageLimits> {
-    const userData = await this.getUserData();
+    if (!this.user?.id) {
+      if (this.anonymousUser?.id) {
+        const { count: dailyCount } =
+          await this.database.checkAndResetAnonymousUserDailyLimit(
+            this.anonymousUser.id,
+          );
+
+        return {
+          daily: {
+            used: dailyCount,
+            limit: USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT,
+          },
+        };
+      }
+
+      throw new AssistantError(
+        "User required to get usage limits",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
 
     const now = new Date();
-    let regularDailyCount = userData.daily_message_count ?? 0;
-    let proDailyCount = userData.daily_pro_message_count ?? 0;
+    let regularDailyCount = this.user.daily_message_count ?? 0;
+    let proDailyCount = this.user.daily_pro_message_count ?? 0;
 
-    const lastReset = userData.daily_reset
-      ? new Date(userData.daily_reset)
+    const lastReset = this.user.daily_reset
+      ? new Date(this.user.daily_reset)
       : null;
     const isNewRegularDay =
       !lastReset ||
@@ -331,8 +406,8 @@ export class UsageManager {
       regularDailyCount = 0;
     }
 
-    const lastProReset = userData.daily_pro_reset
-      ? new Date(userData.daily_pro_reset)
+    const lastProReset = this.user.daily_pro_reset
+      ? new Date(this.user.daily_pro_reset)
       : null;
     const isNewProDay =
       !lastProReset ||
@@ -351,7 +426,7 @@ export class UsageManager {
       },
     };
 
-    if (userData.plan_id === "pro") {
+    if (this.user.plan_id === "pro") {
       usageLimits.pro = {
         used: proDailyCount,
         limit: USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS,

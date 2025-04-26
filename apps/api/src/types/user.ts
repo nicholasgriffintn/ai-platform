@@ -1,26 +1,3 @@
-export interface IUser {
-  longitude?: number;
-  latitude?: number;
-  email: string;
-  id: number;
-}
-
-export interface IUserSettings {
-  guardrails_enabled: boolean;
-  guardrails_provider: string;
-  bedrock_guardrail_id: string | null;
-  bedrock_guardrail_version: string | null;
-  embedding_provider: string;
-  bedrock_knowledge_base_id: string | null;
-  bedrock_knowledge_base_custom_data_source_id: string | null;
-  nickname: string | null;
-  job_role: string | null;
-  traits: string | null;
-  preferences: string | null;
-  memories_save_enabled: boolean;
-  memories_chat_history_enabled: boolean;
-}
-
 export interface User {
   id: number;
   name: string | null;
@@ -43,6 +20,27 @@ export interface User {
   daily_pro_message_count?: number;
   daily_pro_reset?: string | null;
   last_active_at?: string | null;
+}
+
+export interface IUser extends User {
+  longitude?: number;
+  latitude?: number;
+}
+
+export interface IUserSettings {
+  guardrails_enabled: boolean;
+  guardrails_provider: string;
+  bedrock_guardrail_id: string | null;
+  bedrock_guardrail_version: string | null;
+  embedding_provider: string;
+  bedrock_knowledge_base_id: string | null;
+  bedrock_knowledge_base_custom_data_source_id: string | null;
+  nickname: string | null;
+  job_role: string | null;
+  traits: string | null;
+  preferences: string | null;
+  memories_save_enabled: boolean;
+  memories_chat_history_enabled: boolean;
 }
 
 export interface UserSettings {

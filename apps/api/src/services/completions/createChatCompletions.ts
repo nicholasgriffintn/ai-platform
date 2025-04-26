@@ -1,6 +1,7 @@
 import { processChatRequest } from "~/lib/chat/core";
 import { formatAssistantMessage } from "~/lib/chat/responses";
 import type {
+  AnonymousUser,
   ChatCompletionParameters,
   CreateChatCompletionsResponse,
   IEnv,
@@ -15,10 +16,11 @@ export const handleCreateChatCompletions = async (req: {
   env: IEnv;
   request: ChatCompletionParameters & { useMultiModel?: boolean };
   user?: IUser;
+  anonymousUser?: AnonymousUser;
   app_url?: string;
   isRestricted?: boolean;
 }): Promise<CreateChatCompletionsResponse | Response> => {
-  const { env, request, user, app_url, isRestricted } = req;
+  const { env, request, user, anonymousUser, app_url, isRestricted } = req;
   const isStreaming = !!request.stream;
   const useMultiModel = !!request.useMultiModel;
 
@@ -38,6 +40,7 @@ export const handleCreateChatCompletions = async (req: {
     system_prompt: request.system_prompt,
     env,
     user,
+    anonymousUser,
     disable_functions: request.disable_functions,
     completion_id: completionIdWithFallback,
     messages: request.messages,

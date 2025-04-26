@@ -23,7 +23,7 @@ export async function handleUnshareConversation(
 
   const conversationManager = ConversationManager.getInstance({
     database,
-    userId: user.id,
+    user,
   });
 
   await conversationManager.unshareConversation(completion_id);

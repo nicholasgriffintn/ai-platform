@@ -39,7 +39,7 @@ export const handleCheckChatCompletion = async (
 
   const conversationManager = ConversationManager.getInstance({
     database,
-    userId: user.id,
+    user,
   });
 
   let messages;
