@@ -60,6 +60,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       markdown?: string;
     } | null>(null);
     const [isMultimodalModel, setIsMultimodalModel] = useState(false);
+    const [isImageModel, setIsImageModel] = useState(false);
+    const [isTextToImageOnlyModel, setIsTextToImageOnlyModel] = useState(false);
     const [supportsDocuments, setSupportsDocuments] = useState(false);
     const [supportsFunctions, setSupportsFunctions] = useState(false);
     const { data: apiModels } = useModels();
@@ -85,6 +87,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     useEffect(() => {
       if (!apiModels || !model) {
         setIsMultimodalModel(false);
+        setIsImageModel(false);
+        setIsTextToImageOnlyModel(false);
         setSupportsDocuments(false);
         setSupportsFunctions(false);
         return;
@@ -92,10 +96,20 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
       const modelData = apiModels[model] as ModelConfigItem | undefined;
 
-      const isMultimodal =
-        modelData?.multimodal || modelData?.type?.includes("image-to-text");
-      setIsMultimodalModel(!!isMultimodal);
-      setSupportsDocuments(!!modelData?.supportsDocuments);
+      const types = modelData?.type || [];
+      const hasTextToImage = types.includes("text-to-image");
+      const hasImageToImage = types.includes("image-to-image");
+      const hasImageToText = types.includes("image-to-text");
+      const multimodal = !!modelData?.multimodal || hasImageToText;
+      setIsMultimodalModel(multimodal);
+      const textOnlyToImage =
+        hasTextToImage && !hasImageToImage && !hasImageToText;
+      setIsTextToImageOnlyModel(textOnlyToImage);
+      const imageOnly = hasImageToImage || hasImageToText;
+      setIsImageModel(imageOnly);
+      setSupportsDocuments(
+        !!modelData?.supportsDocuments && !imageOnly && !textOnlyToImage,
+      );
       setSupportsFunctions(!!modelData?.supportsFunctions);
     }, [model, apiModels]);
 
@@ -136,13 +150,20 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      if (isTextToImageOnlyModel) {
+        alert("This model does not support file uploads");
+        return;
+      }
+      if (isImageModel && !file.type.startsWith("image/")) {
+        alert("This model only supports image uploads");
+        return;
+      }
 
       try {
         setIsUploading(true);
 
-        // Handle image uploads
         if (file.type.startsWith("image/")) {
-          if (!isMultimodalModel) {
+          if (!isMultimodalModel && !isImageModel) {
             alert("This model does not support image uploads");
             setIsUploading(false);
             return;
@@ -153,14 +174,13 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           setSelectedAttachment({
             type: "image",
             data: url,
+            name: file.name,
           });
           setIsUploading(false);
           return;
         }
 
-        // Handle PDF documents
         if (file.type === "application/pdf") {
-          // If model supports documents natively, upload as document
           if (supportsDocuments) {
             const { url, name } = await apiService.uploadFile(file, "document");
             setSelectedAttachment({
@@ -168,9 +188,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
               data: url,
               name: name || file.name,
             });
-          }
-          // Otherwise convert PDF to markdown
-          else {
+          } else {
             const { url, name, markdown, type } = await apiService.uploadFile(
               file,
               "document",
@@ -194,7 +212,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           return;
         }
 
-        // Handle all other document types - always convert to markdown
         const { url, name, markdown, type } = await apiService.uploadFile(
           file,
           "document",
@@ -234,6 +251,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     };
 
     const getFileTypeAccept = () => {
+      if (isImageModel) {
+        return "image/*";
+      }
       let fileTypes =
         "text/html,application/xml,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroenabled.12,application/vnd.ms-excel.sheet.binary.macroenabled.12,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet,text/csv,application/vnd.apple.numbers,application/pdf";
 
@@ -245,6 +265,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     };
 
     const getUploadButtonIcon = () => {
+      if (isImageModel) {
+        return <Image className="h-4 w-4" />;
+      }
       if (isMultimodalModel) {
         return (
           <span className="flex space-x-1">
@@ -257,7 +280,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           </span>
         );
       }
-
       if (supportsDocuments) {
         return <File className="h-4 w-4" />;
       }
@@ -295,7 +317,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       return { preview: null, label: "" };
     };
 
-    const canUploadFiles = true;
+    // Disable upload UI for pure text-to-image only models
+    const canUploadFiles = !isTextToImageOnlyModel;
 
     const { preview, label } = selectedAttachment
       ? getAttachmentIconAndLabel()

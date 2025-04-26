@@ -30,7 +30,6 @@ export async function convertToMarkdownViaCloudflare(
   }
 
   try {
-    // First, download the file from the URL
     const fileResponse = await fetch(documentUrl);
 
     if (!fileResponse.ok) {

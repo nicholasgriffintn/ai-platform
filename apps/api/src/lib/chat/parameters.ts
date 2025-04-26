@@ -355,6 +355,25 @@ export async function mapParametersToProvider(
             typeof content === "string" ? content : content[0]?.text || "";
         }
 
+        if (type.includes("image-to-image")) {
+          if (typeof params.messages[1].content === "string") {
+            throw new Error("Image to image is not supported for text input");
+          }
+
+          const imageUrls = params.messages[1].content
+            .filter((item: any) => item.type === "image_url")
+            .map((item: any) => item.image_url.url);
+
+          if (imageUrls.length === 0) {
+            throw new Error("No image urls found");
+          }
+
+          return {
+            prompt,
+            image: imageUrls,
+          };
+        }
+
         return {
           prompt,
         };

@@ -1,6 +1,6 @@
 export class KeywordFilter {
   private readonly filter: Set<string>;
-  private readonly partialMatchThreshold = 0.8; // For fuzzy matching
+  private readonly partialMatchThreshold = 0.8;
 
   constructor(keywords: string[]) {
     this.filter = new Set(keywords.map((k) => this.normalizeKeyword(k)));
