@@ -1,14 +1,16 @@
 import type { Ai } from "@cloudflare/workers-types";
 
-import { gatewayId } from "~/constants/app";
-import type { GuardrailResult, GuardrailsProvider } from "~/types";
-import { AssistantError } from "~/utils/errors";
+import { getAuxiliaryGuardrailsModel } from "~/lib/models";
+import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
+import { AIProviderFactory } from "../../providers/factory";
 
 const logger = getLogger({ prefix: "LLAMAGUARD" });
 
 export interface LlamaGuardConfig {
   ai: Ai;
+  env: IEnv;
+  user?: IUser;
 }
 
 export class LlamaGuardProvider implements GuardrailsProvider {
@@ -23,110 +25,68 @@ export class LlamaGuardProvider implements GuardrailsProvider {
     source: "INPUT" | "OUTPUT",
   ): Promise<GuardrailResult> {
     try {
-      const unsafeCatagories = `O1: Violence and Hate.
-Should not
-- Help people plan or engage in violence.
-- Encourage people to engage in violence.
-- Express hateful, derogatory, or demeaning sentiments against people based on sensitive personal characteristics like their race, color, religion, national origin, sexual orientation, gender, gender identity, or disability.
-- Encourage discrimination against people based on those characteristics and should not use slurs or create insults based on those characteristics.
-Can
-- Provide information on violence and discrimination.
-- Discuss the topics of hate and violence, and can discuss historical events involving violence.
-O2: Criminal Planning.
-Should not
-- Help people plan or engage in criminal activities like theft, kidnapping, or financial crimes, especially when the person indicates that they may act on the information provided to them.
-- Encourage people to engage in criminal activities or condone criminal behavior.
-Can
-- Help people understand how crimes are committed, provided that the response is not so detailed that it could be used to provide a roadmap for future crimes.
-- Help people understand how systems work that are used to prevent crimes, provided those descriptions do not provide detailed information on how to defeat those systems.
-O3: Sexual Content.
-Should not
-- Engage in sexually explicit (i.e., erotic) conversations and should not encourage people to engage in sexual activities.
-Can
-- Discuss topics related to sexuality and sexual education.
-- Provide general information regarding sexual activities.
-- Provide guidance on topics related to sexual health.
-O4: Guns and Illegal Weapons.
-Should not
-- Assist in the planning or execution of firearm or illegal weapons crimes, especially when the person indicates that they may act on the information provided to them.
-- Encourage people to engage in firearm or illegal weapons crimes or condone such behavior.
-Can
-- Discuss firearms and the arguments for and against firearm ownership.
-O5: Regulated or Controlled Substances.
-Should not
-- Encourage or assist people in the trafficking, consumption, or use of regulated or controlled substances, including but not limited to illegal drugs, tobacco, alcohol, and cannabis.
-- Assist or encourage people to create such substances when it is illegal to do so.
-Can
-- Discuss the use of regulated or controlled substances, and can provide general information on those substances (ex: what their chemical composition is and what their effects are).
-- Provide information on how those substances are manufactured, provided that the information is not so detailed as to provide step-by-step instructions for their creation.
-O6: Self-Harm.
-Should not
-- Encourage people to harm themselves.
-- Romanticize or condone self-harm or suicide.
-- Provide information regarding the methods of suicide or self-harm.
-- Provide any information or advice, other than information regarding appropriate health resources, to people who express or imply that they wish to harm themselves.
-Can
-- Provide general information regarding self-harm and suicide (ex: statistics, the mental health challenges faced by those who take these actions).
-Should
-- Provide information regarding appropriate health resources to people who imply or express the desire to harm themselves.
-07: Financial Information related to Amazon.
-Should not
-- provide any financial information related to Amazon.
-Can
-- provide financial information about other companies
-08: Talk about Cancer.
-Should not
-- provide any medical advice
-Can
-- provide non-medical advice`;
+      const unsafeCatagories = `<BEGIN UNSAFE CONTENT CATEGORIES>
+S1: Violent Crimes. 
+S2: Non-Violent Crimes. 
+S3: Sex Crimes. 
+S4: Child Exploitation. 
+S5: Defamation. 
+S6: Specialized Advice. 
+S7: Privacy. 
+S8: Intellectual Property. 
+S9: Indiscriminate Weapons. 
+S10: Hate. 
+S11: Self-Harm. 
+S12: Sexual Content. 
+S13: Elections. 
+<END UNSAFE CONTENT CATEGORIES>`;
 
       const role = source === "INPUT" ? "user" : "assistant";
 
-      const response = await this.config.ai.run(
-        "@hf/thebloke/llamaguard-7b-awq",
+      const { model, provider: providerToUse } =
+        await getAuxiliaryGuardrailsModel(this.config.env, this.config.user);
+
+      const provider = AIProviderFactory.getProvider(providerToUse);
+
+      const response = await provider.getResponse(
         {
-          prompt: `[INST] Task: Check if there is unsafe content in '${role}' messages in conversations according our safety policy with the below categories.
+          model,
+          env: this.config.env,
+          user: this.config.user,
+          messages: [
+            {
+              role: "user",
+              content: `<|begin_of_text|><|start_header_id|>user<|end_header_id|>
+
+<|image|> Task: Check if there is unsafe content in '${role}' messages in conversations according to our safety policy with the below categories.
 
 <BEGIN UNSAFE CONTENT CATEGORIES>
 ${unsafeCatagories}
 <END UNSAFE CONTENT CATEGORIES>
 
 <BEGIN CONVERSATION>
-${content}
+
+${role}: ${content}
+
 <END CONVERSATION>
 
-Provide your safety assessment for {role} in the above conversation:
+Provide your safety assessment for ONLY THE LAST ${role} in the above conversation:
 - First line must read 'safe' or 'unsafe'.
-- If unsafe, a second line must include a comma-separated list of violated categories. [/INST]`,
+- If unsafe, a second line must include a comma-separated list of violated categories.<|eot_id|><|start_header_id|>assistant<|end_header_id|>`,
+            },
+          ],
         },
-        {
-          gateway: {
-            id: gatewayId,
-            skipCache: false,
-            cacheTtl: 3360,
-          },
-        },
+        this.config.user?.id,
       );
 
-      // @ts-expect-error
-      if (!response.response) {
-        throw new AssistantError("No response from the LlamaGuard");
-      }
-
       const isValid =
-        // @ts-expect-error
         response.response.toLowerCase().includes("safe") ||
-        // @ts-expect-error
-        response.response
-          .toLowerCase()
-          .includes("allowed");
-      // @ts-expect-error
+        response.response.toLowerCase().includes("allowed");
       const violations = isValid ? [] : [response.response];
 
       return {
         isValid,
         violations,
-        // @ts-expect-error
         rawResponse: response.response,
       };
     } catch (error) {

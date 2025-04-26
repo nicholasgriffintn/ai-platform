@@ -44,6 +44,8 @@ export class Guardrails {
     } else {
       this.provider = GuardrailsProviderFactory.getProvider("llamaguard", {
         ai: env.AI,
+        env,
+        user,
       });
     }
   }

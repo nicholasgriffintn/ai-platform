@@ -251,3 +251,26 @@ export async function getAuxiliaryModel(
 
   return { model: modelToUse, provider };
 }
+
+export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
+  let modelToUse = "@hf/thebloke/llamaguard-7b-awq";
+
+  const allRouterModels = getIncludedInRouterModels();
+  const availableModels = await filterModelsForUserAccess(
+    allRouterModels,
+    env,
+    user?.id,
+  );
+
+  const hasGroqModel = Object.keys(availableModels).some(
+    (model) => availableModels[model].provider === "groq",
+  );
+
+  if (hasGroqModel) {
+    modelToUse = "llama-guard-3-8b";
+  }
+
+  const provider = getModelConfig(modelToUse).provider;
+
+  return { model: modelToUse, provider };
+};
