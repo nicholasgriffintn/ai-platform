@@ -37,6 +37,39 @@ const canCombineArtifacts = (artifacts: ArtifactProps[]): boolean => {
   return hasJsx && hasCss;
 };
 
+const processCustomXmlTags = (text: string): string => {
+  const codeFenceRegex = /```[\s\S]*?```/g;
+  const fences: string[] = [];
+  const placeholderPrefix = "<<CODE_BLOCK_";
+  let idx = 0;
+  const textNoFences = text.replace(codeFenceRegex, (match) => {
+    const placeholder = `${placeholderPrefix}${idx}>>`;
+    fences[idx++] = match;
+    return placeholder;
+  });
+
+  const xmlTagRegex = /<([A-Za-z][\w-]*)\b[^>]*>([\s\S]*?)<\/\1>/g;
+  const processed = textNoFences.replace(
+    xmlTagRegex,
+    (_match, tagName, inner) => {
+      const title = tagName
+        .split(/[_-]/)
+        .map(
+          (w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(),
+        )
+        .join(" ");
+      return `**${title}**\n\n${inner}\n\n`;
+    },
+  );
+
+  let result = processed;
+  fences.forEach((fence, i) => {
+    const placeholder = `${placeholderPrefix}${i}>>`;
+    result = result.replace(placeholder, fence);
+  });
+  return result;
+};
+
 const renderTextContent = (
   textContent: string,
   messageReasoning: Message["reasoning"] | undefined,
@@ -49,8 +82,8 @@ const renderTextContent = (
   ) => void,
   key?: string,
 ): ReactNode => {
-  const { content, reasoning, artifacts } =
-    formattedMessageContent(textContent);
+  let { content, reasoning, artifacts } = formattedMessageContent(textContent);
+  content = processCustomXmlTags(content);
 
   const hasOpenReasoning = reasoning.some((item) => item.isOpen);
 
