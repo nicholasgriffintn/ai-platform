@@ -341,6 +341,25 @@ export async function mapParametersToProvider(
         newCommonParams.temperature = 1;
         newCommonParams.top_p = undefined;
       }
+
+      const type = modelConfig?.type || ["text"];
+      if (type.includes("image-to-image") || type.includes("text-to-image")) {
+        let prompt = "";
+        if (params.messages.length > 1) {
+          const content = params.messages[1].content;
+          prompt =
+            typeof content === "string" ? content : content[0]?.text || "";
+        } else {
+          const content = params.messages[0].content;
+          prompt =
+            typeof content === "string" ? content : content[0]?.text || "";
+        }
+
+        return {
+          prompt,
+        };
+      }
+
       return {
         ...newCommonParams,
         store: params.store,

@@ -247,4 +247,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     isFeatured: false,
     includedInRouter: true,
   }),
+  createModelConfig("gpt-image-1", PROVIDER, {
+    name: "GPT Image Generation",
+    matchingModel: "gpt-image-1",
+    description:
+      "OpenAI's latest and most advanced model for image generation is gpt-image-1, a natively multimodal language model.",
+    type: ["text-to-image", "image-to-image"],
+    strengths: ["image_generation"],
+    costPer1kInputTokens: 0.01,
+    costPer1kOutputTokens: 0.04,
+    isFeatured: true,
+  }),
 ]);

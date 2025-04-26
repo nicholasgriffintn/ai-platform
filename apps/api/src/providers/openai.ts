@@ -21,7 +21,19 @@ export class OpenAIProvider extends BaseProvider {
     }
   }
 
-  protected getEndpoint(): string {
+  private isImageGeneration(params: ChatCompletionParameters): boolean {
+    return params.model === "gpt-image-1";
+  }
+
+  protected getEndpoint(params: ChatCompletionParameters): string {
+    if (this.isImageGeneration(params)) {
+      const hasAttachments = params.messages.some(
+        (message) =>
+          Array.isArray(message.content) &&
+          message.content.some((c) => c.type === "image_url"),
+      );
+      return hasAttachments ? "images/edits" : "images/generations";
+    }
     return "chat/completions";
   }
 

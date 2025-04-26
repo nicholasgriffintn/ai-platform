@@ -126,6 +126,22 @@ export class ResponseFormatter {
   }
 
   private static formatOpenAIResponse(data: any): any {
+    if (Array.isArray(data.data)) {
+      const imageUrls = data.data
+        .filter((item) => item.url)
+        .map((item) => item.url);
+
+      let imagesContent = [];
+      if (imageUrls.length > 0) {
+        imagesContent = imageUrls.map((url) => ({
+          type: "image_url",
+          image_url: { url },
+        }));
+      }
+
+      return { ...data, response: imagesContent };
+    }
+
     const message = data.choices?.[0]?.message;
     return { ...data, response: message?.content || "", ...message };
   }

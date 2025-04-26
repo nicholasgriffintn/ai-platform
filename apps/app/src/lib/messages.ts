@@ -52,6 +52,14 @@ export function formatMessageContent(messageContent: string): {
   reasoning: string;
 } {
   let reasoning = "";
+  const messageContentIsArray = Array.isArray(messageContent);
+  if (messageContentIsArray) {
+    return {
+      content: messageContent,
+      reasoning: "",
+    };
+  }
+
   const analysisMatch = messageContent.match(/<analysis>(.*?)<\/analysis>/s);
   const thinkMatch = messageContent.match(/<think>(.*?)<\/think>/s);
 
