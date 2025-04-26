@@ -36,7 +36,7 @@ export function ProfileBillingTab() {
   const actions: PageAction[] = [];
 
   if (!isSubLoading && !subError) {
-    if (sub?.status === "active") {
+    if (sub?.status === "active" || sub?.status === "trialing") {
       if (sub.cancel_at_period_end) {
         actions.push({
           label: "Cancellation Pending",
