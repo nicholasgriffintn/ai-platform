@@ -1,4 +1,6 @@
+import { Download } from "lucide-react";
 import { useState } from "react";
+
 import { cn } from "~/lib/utils";
 import { Dialog, DialogClose, DialogContent } from "./Dialog";
 
@@ -23,26 +25,31 @@ export function ImageModal({
 
   return (
     <>
-      <button
-        type="button"
-        className={cn("cursor-pointer", thumbnailClassName)}
-        onClick={() => setOpen(true)}
-        aria-label="View larger image"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setOpen(true);
-          }
-        }}
-      >
-        <img
-          src={src}
-          alt={alt}
-          className={cn("max-h-48 w-auto object-contain", imageClassName)}
-          crossOrigin="anonymous"
-        />
-      </button>
+      <div className={cn("relative inline-block", thumbnailClassName)}>
+        <button
+          type="button"
+          className="cursor-pointer"
+          onClick={() => setOpen(true)}
+          aria-label="View larger image"
+        >
+          <img
+            src={src}
+            alt={alt}
+            className={cn("max-w-full h-auto object-contain", imageClassName)}
+            crossOrigin="anonymous"
+          />
+        </button>
+        <a
+          href={src}
+          download={alt || src.split("/").pop() || "image"}
+          target="_blank"
+          rel="noreferrer"
+          title="Download image"
+          className="absolute top-2 right-2 z-10 p-2 bg-white/75 rounded-full hover:bg-white dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-colors"
+        >
+          <Download className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
+        </a>
+      </div>
 
       <Dialog open={open} onOpenChange={setOpen} width="auto">
         <DialogContent className={cn("p-0 bg-transparent border-0", className)}>
@@ -51,8 +58,8 @@ export function ImageModal({
               src={src}
               alt={alt}
               className={cn(
-                "max-w-full object-contain rounded-lg",
-                "max-h-[85vh]",
+                "w-auto h-auto max-w-full object-contain rounded-lg",
+                imageClassName,
               )}
               style={{ maxHeight }}
               crossOrigin="anonymous"
