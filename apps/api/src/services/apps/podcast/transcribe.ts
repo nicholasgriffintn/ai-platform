@@ -1,3 +1,4 @@
+import { API_PROD_HOST } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { AIProviderFactory } from "~/providers/factory";
 import { RepositoryManager } from "~/repositories";
@@ -86,7 +87,7 @@ export const handlePodcastTranscribe = async (
       modelConfig?.provider || "replicate",
     );
 
-    const basewebhook_url = app_url || "https://api.polychat.app";
+    const basewebhook_url = app_url || `https://${API_PROD_HOST}`;
     const webhook_url = `${basewebhook_url}/webhooks/replicate?completion_id=${request.podcastId}&token=${env.WEBHOOK_SECRET}`;
 
     const prompt = `${request.prompt} <title>${title}</title> <description>${description}</description>`;

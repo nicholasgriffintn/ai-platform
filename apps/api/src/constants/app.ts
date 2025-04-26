@@ -1,3 +1,11 @@
+export const APP_NAME = "Polychat";
+
+export const LOCAL_HOST = "localhost:5173";
+export const PROD_HOST = "polychat.app";
+
+export const API_LOCAL_HOST = "localhost:8787";
+export const API_PROD_HOST = "api.polychat.app";
+
 export const gatewayId = "llm-assistant";
 
 export const ROUTES = {

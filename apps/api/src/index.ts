@@ -7,12 +7,18 @@ import { resolver } from "hono-openapi/zod";
 import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
 
+import {
+  API_LOCAL_HOST,
+  API_PROD_HOST,
+  LOCAL_HOST,
+  PROD_HOST,
+} from "./constants/app";
 import { authMiddleware } from "./middleware/auth";
 import { loggerMiddleware } from "./middleware/loggerMiddleware";
 import { rateLimit } from "./middleware/rateLimit";
-import auth from "./routes/auth";
-import { metricsParamsSchema, statusResponseSchema } from "./routes/schemas";
+import { autoRegisterDynamicApps } from "./services/dynamic-apps/auto-register-apps";
 import { handleGetMetrics } from "./services/metrics/getMetrics";
+import type { IEnv } from "./types";
 import {
   AssistantError,
   ErrorType,
@@ -20,22 +26,21 @@ import {
 } from "./utils/errors";
 import { LogLevel, getLogger } from "./utils/logger";
 
-import { autoRegisterDynamicApps } from "./services/dynamic-apps/auto-register-apps";
-
 import { ROUTES } from "./constants/app";
 import apps from "./routes/apps";
 import audio from "./routes/audio";
+import auth from "./routes/auth";
 import chat from "./routes/chat";
 import dynamicApps from "./routes/dynamic-apps";
 import models from "./routes/models";
 import plans from "./routes/plans";
+import { metricsParamsSchema, statusResponseSchema } from "./routes/schemas";
 import search from "./routes/search";
 import stripe from "./routes/stripe";
 import tools from "./routes/tools";
 import uploads from "./routes/uploads";
 import user from "./routes/user";
 import webhooks from "./routes/webhooks";
-import type { IEnv } from "./types";
 
 const app = new Hono<{
   Bindings: IEnv;
@@ -43,8 +48,8 @@ const app = new Hono<{
 
 const origin = (origin, c) => {
   if (!origin) return "*";
-  if (origin.includes("polychat.app")) return origin;
-  if (origin.includes("localhost")) return origin;
+  if (origin.includes(PROD_HOST)) return origin;
+  if (origin.includes(LOCAL_HOST)) return origin;
   return "*";
 };
 
@@ -113,11 +118,11 @@ app.get(
       ],
       servers: [
         {
-          url: "https://api.polychat.app",
+          url: `https://${API_PROD_HOST}`,
           description: "production",
         },
         {
-          url: "http://localhost:8787",
+          url: `http://${API_LOCAL_HOST}`,
           description: "development",
         },
       ],
