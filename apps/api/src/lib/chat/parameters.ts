@@ -355,7 +355,13 @@ export async function mapParametersToProvider(
             typeof content === "string" ? content : content[0]?.text || "";
         }
 
-        if (type.includes("image-to-image")) {
+        const hasImages = params.messages.some(
+          (message) =>
+            typeof message.content !== "string" &&
+            message.content.some((item: any) => item.type === "image_url"),
+        );
+
+        if (type.includes("image-to-image") && hasImages) {
           if (typeof params.messages[1].content === "string") {
             throw new Error("Image to image is not supported for text input");
           }
