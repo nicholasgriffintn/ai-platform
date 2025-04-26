@@ -299,7 +299,12 @@ export class ResponseFormatter {
         const baseAssetsUrl = options.env.PUBLIC_ASSETS_URL || "";
         return {
           ...data,
-          response: `Image Generated: [${imageId}](${baseAssetsUrl}/${imageKey})`,
+          response: [
+            {
+              type: "image_url",
+              image_url: { url: `${baseAssetsUrl}/${imageKey}` },
+            },
+          ],
           data: { url: `${baseAssetsUrl}/${imageKey}`, key: imageKey },
         };
       }
@@ -315,7 +320,12 @@ export class ResponseFormatter {
         const baseAssetsUrl = options.env.PUBLIC_ASSETS_URL || "";
         return {
           ...data,
-          response: `Audio Generated: [${audioId}](${baseAssetsUrl}/${audioKey})`,
+          response: [
+            {
+              type: "audio_url",
+              audio_url: { url: `${baseAssetsUrl}/${audioKey}` },
+            },
+          ],
           data: { url: `${baseAssetsUrl}/${audioKey}`, key: audioKey },
         };
       }
@@ -358,7 +368,12 @@ export class ResponseFormatter {
 
         return {
           ...data,
-          response: `Image Generated: [${imageId}](${baseAssetsUrl}/${imageKey})`,
+          response: [
+            {
+              type: "image_url",
+              image_url: { url: `${baseAssetsUrl}/${imageKey}` },
+            },
+          ],
           data: {
             url: `${baseAssetsUrl}/${imageKey}`,
             key: imageKey,
