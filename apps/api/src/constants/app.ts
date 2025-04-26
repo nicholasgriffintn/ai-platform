@@ -32,3 +32,5 @@ export const USAGE_CONFIG = {
 };
 
 export const FREE_TRIAL_DAYS = 90;
+
+export const MAGIC_LINK_EXPIRATION_MINUTES = 15;
