@@ -117,12 +117,13 @@ export async function authMiddleware(context: Context, next: Next) {
 }
 
 /**
- * Middleware that requires full authentication (no restricted access)
+ * Middleware that requires authentication
  */
 export async function requireAuth(context: Context, next: Next) {
-  const isRestricted = context.get("isRestricted");
+  const user = context.get("user");
+  const anonymousUser = context.get("anonymousUser");
 
-  if (isRestricted) {
+  if (!user?.id && !anonymousUser?.id) {
     throw new AssistantError(
       "This endpoint requires authentication. Please provide a valid access token.",
       ErrorType.AUTHENTICATION_ERROR,
