@@ -24,6 +24,7 @@ Here are some example chats that you can try out:
 - [Multi-model responses](https://polychat.app/s/3690158a-33b4-47bf-b831-97834299d71b)
 - [Saved memories (RAG)](https://polychat.app/s/1e9a8f6e-e6dc-40a7-b24f-53fb8f4c6766)
 - [Retrieved memories (RAG)](https://polychat.app/s/93552889-b3ec-445c-b72b-8d05f5b6117f)
+- [Image generation](https://polychat.app/s/fa89a9da-12e0-4308-8ce8-093c4c309de2)
 
 ## Project Structure
 
