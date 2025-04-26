@@ -88,7 +88,6 @@ export const insertEmbedding = async (
       namespace: rag_options?.namespace,
     });
 
-    // Chunking: split document into smaller pieces if it exceeds maxChars
     const maxChars = rag_options?.chunkSize || 2000;
     const chunks = chunkText(content, maxChars);
     let allGenerated: any[] = [];

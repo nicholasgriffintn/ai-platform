@@ -11,6 +11,9 @@ interface MessageFormatOptions {
 /**
  * Formats messages for any provider
  * Handles specific message formats for each provider
+ * @param messages - The messages to format
+ * @param options - The options for formatting
+ * @returns The formatted messages
  */
 // biome-ignore lint/complexity/noStaticOnlyClass: Static utility class
 export class MessageFormatter {

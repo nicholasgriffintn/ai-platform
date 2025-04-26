@@ -15,6 +15,9 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 /**
  * Authentication middleware that supports session-based, token-based, and JWT auth
  * Also handles anonymous user tracking for unauthenticated requests
+ * @param context - The context of the request
+ * @param next - The next middleware function
+ * @returns The next middleware function
  */
 export async function authMiddleware(context: Context, next: Next) {
   const hasJwtSecret = !!context.env.JWT_SECRET;
@@ -118,6 +121,9 @@ export async function authMiddleware(context: Context, next: Next) {
 
 /**
  * Middleware that requires authentication
+ * @param context - The context of the request
+ * @param next - The next middleware function
+ * @returns The next middleware function
  */
 export async function requireAuth(context: Context, next: Next) {
   const user = context.get("user");
@@ -135,6 +141,9 @@ export async function requireAuth(context: Context, next: Next) {
 
 /**
  * Middleware that allows restricted access to certain paths with model validation
+ * @param context - The context of the request
+ * @param next - The next middleware function
+ * @returns The next middleware function
  */
 export async function allowRestrictedPaths(context: Context, next: Next) {
   const isRestricted = context.get("isRestricted");
@@ -219,6 +228,9 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
 
 /**
  * Webhook authentication middleware
+ * @param context - The context of the request
+ * @param next - The next middleware function
+ * @returns The next middleware function
  */
 export async function webhookAuth(context: Context, next: Next) {
   if (!context.env.WEBHOOK_SECRET) {

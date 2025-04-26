@@ -13,58 +13,22 @@ import {
   getModelsByType,
 } from "~/lib/models";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-
+import {
+  capabilitiesResponseSchema,
+  capabilityParamsSchema,
+  modelParamsSchema,
+  modelResponseSchema,
+  modelsResponseSchema,
+  typeParamsSchema,
+} from "./schemas/models";
+import { errorResponseSchema } from "./schemas/shared";
 const app = new Hono();
 
 const routeLogger = createRouteLogger("MODELS");
 
-/**
- * Global middleware to add route-specific logging
- */
 app.use("/*", (c: Context, next) => {
   routeLogger.info(`Processing models route: ${c.req.path}`);
   return next();
-});
-
-// Common response schemas
-const errorResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-  error: z.string().optional(),
-});
-
-const modelSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  provider: z.string(),
-  description: z.string().optional(),
-  capabilities: z.array(z.string()).optional(),
-  context_length: z.number().optional(),
-  pricing: z
-    .object({
-      prompt: z.number().optional(),
-      completion: z.number().optional(),
-    })
-    .optional(),
-  type: z.string().optional(),
-});
-
-const modelsResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-  data: z.record(z.string(), modelSchema),
-});
-
-const modelResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-  data: modelSchema,
-});
-
-const capabilitiesResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-  data: z.array(z.string()),
 });
 
 app.get(
@@ -185,12 +149,7 @@ app.get(
       },
     },
   }),
-  zValidator(
-    "param",
-    z.object({
-      capability: z.string(),
-    }),
-  ),
+  zValidator("param", capabilityParamsSchema),
   async (context: Context) => {
     const { capability } = context.req.valid("param" as never) as {
       capability: string;
@@ -287,12 +246,7 @@ app.get(
       },
     },
   }),
-  zValidator(
-    "param",
-    z.object({
-      type: z.string(),
-    }),
-  ),
+  zValidator("param", typeParamsSchema),
   async (context: Context) => {
     const { type } = context.req.valid("param" as never) as { type: string };
 
@@ -362,12 +316,7 @@ app.get(
       },
     },
   }),
-  zValidator(
-    "param",
-    z.object({
-      id: z.string(),
-    }),
-  ),
+  zValidator("param", modelParamsSchema),
   async (context: Context) => {
     const { id } = context.req.valid("param" as never) as { id: string };
 

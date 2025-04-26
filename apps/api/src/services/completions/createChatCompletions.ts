@@ -148,7 +148,6 @@ export const handleCreateChatCompletions = async (req: {
     finish_reason: result.response.tool_calls?.length ? "tool_calls" : "stop",
   });
 
-  // Build the response with standardized fields that match streaming format
   return {
     id: env.AI.aiGatewayLogId || completionIdWithFallback,
     log_id: env.AI.aiGatewayLogId,

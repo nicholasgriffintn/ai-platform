@@ -39,6 +39,7 @@ import {
   promptCoachResponseSchema,
   tutorSchema,
   weatherQuerySchema,
+  weatherResponseSchema,
 } from "../schemas/apps";
 import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
 import articles from "./articles";
@@ -50,17 +51,11 @@ const app = new Hono();
 
 const routeLogger = createRouteLogger("APPS");
 
-/**
- * Global middleware to add route-specific logging
- */
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing apps route: ${c.req.path}`);
   return next();
 });
 
-/**
- * Global middleware to check authentication
- */
 app.use("/*", requireAuth);
 
 app.route("/embeddings", embeddings);
@@ -75,45 +70,7 @@ app.get(
         description: "Weather information for the specified location",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                response: z.object({
-                  status: z.enum(["success", "error"]),
-                  name: z.string(),
-                  content: z.string(),
-                  data: z
-                    .object({
-                      cod: z.number(),
-                      main: z.object({
-                        temp: z.number(),
-                        feels_like: z.number(),
-                        temp_min: z.number(),
-                        temp_max: z.number(),
-                        pressure: z.number(),
-                        humidity: z.number(),
-                      }),
-                      weather: z.array(
-                        z.object({
-                          main: z.string(),
-                          description: z.string(),
-                        }),
-                      ),
-                      wind: z.object({
-                        speed: z.number(),
-                        deg: z.number(),
-                      }),
-                      clouds: z.object({
-                        all: z.number(),
-                      }),
-                      sys: z.object({
-                        country: z.string(),
-                      }),
-                      name: z.string(),
-                    })
-                    .optional(),
-                }),
-              }),
-            ),
+            schema: resolver(weatherResponseSchema),
           },
         },
       },
@@ -121,12 +78,7 @@ app.get(
         description: "Bad request or invalid coordinates",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -169,7 +121,7 @@ app.post(
         description: "Response",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(apiResponseSchema),
           },
         },
       },
@@ -209,7 +161,7 @@ app.post(
         description: "Response",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(apiResponseSchema),
           },
         },
       },
@@ -323,12 +275,7 @@ app.post(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -366,12 +313,7 @@ app.post(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -412,12 +354,7 @@ app.post(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: resolver(errorResponseSchema),
           },
         },
       },

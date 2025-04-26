@@ -20,6 +20,10 @@ const DEFAULT_EXPIRATION = 60 * 60 * 24 * 7; // 7 days in seconds
 
 /**
  * Generate a JWT token for a user
+ * @param user - The user to generate the token for
+ * @param secret - The secret key to use for the token
+ * @param expiresIn - The expiration time in seconds
+ * @returns The generated JWT token
  */
 export async function generateJwtToken(
   user: User,
@@ -51,6 +55,9 @@ export async function generateJwtToken(
 
 /**
  * Verify a JWT token and return the decoded payload
+ * @param token - The JWT token to verify
+ * @param secret - The secret key to use for the token
+ * @returns The decoded JWT payload
  */
 export async function verifyJwtToken(
   token: string,
@@ -78,6 +85,10 @@ export async function verifyJwtToken(
 
 /**
  * Get a user by their JWT token
+ * @param env - The environment variables
+ * @param token - The JWT token to get the user from
+ * @param secret - The secret key to use for the token
+ * @returns The user or null if the token is invalid or expired
  */
 export async function getUserByJwtToken(
   env: IEnv,

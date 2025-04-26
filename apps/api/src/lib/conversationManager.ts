@@ -113,6 +113,9 @@ export class ConversationManager {
   /**
    * Add a message to a conversation
    * If the conversation doesn't exist, it will be created
+   * @param conversation_id - The ID of the conversation to add the message to
+   * @param message - The message to add to the conversation
+   * @returns The message that was added to the conversation
    */
   async add(conversation_id: string, message: Message): Promise<Message> {
     const newMessage = {
@@ -185,6 +188,9 @@ export class ConversationManager {
 
   /**
    * Add multiple messages to a conversation in batch
+   * @param conversation_id - The ID of the conversation to add the messages to
+   * @param messages - The messages to add to the conversation
+   * @returns The messages that were added to the conversation
    */
   async addBatch(
     conversation_id: string,
@@ -272,6 +278,8 @@ export class ConversationManager {
 
   /**
    * Update existing messages in a conversation
+   * @param conversation_id - The ID of the conversation to update the messages in
+   * @param messages - The messages to update in the conversation
    */
   async update(conversation_id: string, messages: Message[]): Promise<void> {
     if (!this.store) {
@@ -328,6 +336,11 @@ export class ConversationManager {
 
   /**
    * Get all messages in a conversation
+   * @param conversation_id - The ID of the conversation to get the messages from
+   * @param message - The message to get from the conversation
+   * @param limit - The number of messages to get
+   * @param after - The message ID to get messages after
+   * @returns The messages that were retrieved from the conversation
    */
   async get(
     conversation_id: string,
@@ -369,6 +382,10 @@ export class ConversationManager {
 
   /**
    * Get a list of conversation IDs
+   * @param limit - The number of conversations to get
+   * @param page - The page number to get
+   * @param includeArchived - Whether to include archived conversations
+   * @returns The conversations that were retrieved from the database
    */
   async list(
     limit = 25,
@@ -411,6 +428,8 @@ export class ConversationManager {
 
   /**
    * Get conversation details
+   * @param conversation_id - The ID of the conversation to get the details from
+   * @returns The details of the conversation
    */
   async getConversationDetails(
     conversation_id: string,
@@ -450,6 +469,9 @@ export class ConversationManager {
 
   /**
    * Update conversation properties
+   * @param conversation_id - The ID of the conversation to update
+   * @param updates - The updates to apply to the conversation
+   * @returns The updated conversation
    */
   async updateConversation(
     conversation_id: string,
@@ -500,6 +522,8 @@ export class ConversationManager {
 
   /**
    * Get a message by its ID
+   * @param message_id - The ID of the message to get
+   * @returns The message that was retrieved from the database
    */
   async getMessageById(
     message_id: string,
@@ -535,6 +559,8 @@ export class ConversationManager {
   /**
    * Get messages for a webhook (no user authentication required)
    * This method is specifically for external service callbacks
+   * @param conversation_id - The ID of the conversation to get the messages from
+   * @returns The messages that were retrieved from the conversation
    */
   async getFromWebhook(conversation_id: string): Promise<Message[]> {
     if (!this.store) {
@@ -555,6 +581,8 @@ export class ConversationManager {
   /**
    * Update messages for a webhook (no user authentication required)
    * This method is specifically for external service callbacks
+   * @param conversation_id - The ID of the conversation to update the messages in
+   * @param messages - The messages to update in the conversation
    */
   async updateFromWebhook(
     conversation_id: string,
@@ -600,6 +628,8 @@ export class ConversationManager {
 
   /**
    * Format a database message record into a Message object
+   * @param dbMessage - The database message record to format
+   * @returns The formatted Message object
    */
   private formatMessage(dbMessage: Record<string, unknown>): Message {
     let content: string | MessageContent[] = dbMessage.content as string;
@@ -643,6 +673,7 @@ export class ConversationManager {
 
   /**
    * Generate a unique ID for sharing a conversation
+   * @returns The unique ID for sharing a conversation
    */
   generateShareId(): string {
     return crypto.randomUUID();
@@ -650,6 +681,8 @@ export class ConversationManager {
 
   /**
    * Make a conversation public by setting is_public to true and generating a share_id
+   * @param conversation_id - The ID of the conversation to share
+   * @returns The share_id for the conversation
    */
   async shareConversation(
     conversation_id: string,
@@ -697,6 +730,7 @@ export class ConversationManager {
 
   /**
    * Make a conversation private by setting is_public to false
+   * @param conversation_id - The ID of the conversation to unshare
    */
   async unshareConversation(conversation_id: string): Promise<void> {
     if (!this.user?.id) {
@@ -736,6 +770,10 @@ export class ConversationManager {
 
   /**
    * Get a publicly shared conversation by its share_id without requiring authentication
+   * @param share_id - The share_id of the conversation to get
+   * @param limit - The number of messages to get
+   * @param after - The message ID to get messages after
+   * @returns The messages that were retrieved from the conversation
    */
   async getPublicConversation(
     share_id: string,

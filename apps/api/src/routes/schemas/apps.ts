@@ -229,3 +229,92 @@ export const promptCoachResponseSchema = z.object({
     .nullable()
     .describe("The suggested improvement for the user's prompt."),
 });
+
+export const appInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  icon: z.string().optional(),
+  category: z.string().optional(),
+});
+
+export const appInfoArraySchema = z.array(appInfoSchema);
+
+export const dynamicAppIdParamSchema = z.object({ id: z.string() });
+
+export const dynamicAppExecuteRequestSchema = z.record(z.any());
+
+export const weatherResponseSchema = z.object({
+  response: z.object({
+    status: z.enum(["success", "error"]),
+    name: z.string(),
+    content: z.string(),
+    data: z
+      .object({
+        cod: z.number(),
+        main: z.object({
+          temp: z.number(),
+          feels_like: z.number(),
+          temp_min: z.number(),
+          temp_max: z.number(),
+          pressure: z.number(),
+          humidity: z.number(),
+        }),
+        weather: z.array(
+          z.object({
+            main: z.string(),
+            description: z.string(),
+          }),
+        ),
+        wind: z.object({
+          speed: z.number(),
+          deg: z.number(),
+        }),
+        clouds: z.object({ all: z.number() }),
+        sys: z.object({ country: z.string() }),
+        name: z.string(),
+      })
+      .optional(),
+  }),
+});
+
+export const listArticlesResponseSchema = z.object({
+  articles: z.array(z.any()),
+});
+
+export const sourceArticlesResponseSchema = z.object({
+  status: z.string(),
+  articles: z.array(z.any()),
+});
+
+export const articleDetailResponseSchema = z.object({
+  article: z.any(),
+});
+
+export const listPodcastsResponseSchema = z.object({
+  podcasts: z.array(
+    z.object({
+      id: z.string(),
+      title: z.string(),
+      createdAt: z.string(),
+      imageUrl: z.string().optional(),
+      duration: z.number().optional(),
+      status: z.enum(["processing", "transcribing", "summarizing", "complete"]),
+    }),
+  ),
+});
+
+export const podcastDetailResponseSchema = z.object({
+  podcast: z.object({
+    id: z.string(),
+    title: z.string(),
+    description: z.string().optional(),
+    createdAt: z.string(),
+    imageUrl: z.string().optional(),
+    audioUrl: z.string(),
+    duration: z.number().optional(),
+    transcript: z.string().optional(),
+    summary: z.string().optional(),
+    status: z.enum(["processing", "transcribing", "summarizing", "complete"]),
+  }),
+});

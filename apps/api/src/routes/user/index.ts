@@ -18,18 +18,13 @@ import apiKeys from "./apiKeys";
 const app = new Hono();
 const routeLogger = createRouteLogger("USER");
 
-// Require authentication for all routes
 app.use("/*", requireAuth);
 
-/**
- * Global middleware to add route-specific logging
- */
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing user route: ${c.req.path}`);
   return next();
 });
 
-// Common response schemas
 const modelsResponseSchema = z.object({
   success: z.boolean(),
   models: z.array(z.string()),

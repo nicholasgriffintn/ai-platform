@@ -215,7 +215,6 @@ export async function filterModelsForUserAccess(
     return filteredModels;
   } catch (error) {
     logger.error(`Error during model filtering for user ${userId}`, { error });
-    // Fallback to free models in case of error
     return freeModels;
   }
 }
@@ -231,10 +230,8 @@ export async function getAuxiliaryModel(
   env: IEnv,
   user?: IUser,
 ): Promise<{ model: string; provider: string }> {
-  // Default to Mistral
   let modelToUse = "mistral-large-latest";
 
-  // Check if Groq models are available and accessible to the user
   const allRouterModels = getIncludedInRouterModels();
   const availableModels = await filterModelsForUserAccess(
     allRouterModels,

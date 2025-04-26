@@ -18,6 +18,10 @@ interface MagicLinkPayload {
 
 /**
  * Generates a short-lived magic link token.
+ * @param userId - The user ID
+ * @param email - The user's email
+ * @param jwtSecret - The JWT secret
+ * @returns The generated token and nonce
  */
 async function generateMagicLinkToken(
   userId: string,
@@ -43,6 +47,9 @@ async function generateMagicLinkToken(
 
 /**
  * Sends a magic link email using AWS SES.
+ * @param context - The context of the request
+ * @param email - The user's email
+ * @param magicLink - The magic link to send
  */
 async function sendMagicLinkEmail(
   context: Context,
@@ -67,7 +74,6 @@ async function sendMagicLinkEmail(
 
   const subject = "Login to Polychat";
   const bodyText = `Click this link to log in: ${magicLink}`;
-  // Simple HTML body
   const bodyHtml = `
     <html>
       <head></head>
@@ -141,6 +147,9 @@ async function sendMagicLinkEmail(
 
 /**
  * Verifies a magic link token and returns the user ID.
+ * @param token - The magic link token
+ * @param jwtSecret - The JWT secret
+ * @returns The user ID or null if the token is invalid or expired
  */
 async function verifyMagicLinkToken(
   token: string,

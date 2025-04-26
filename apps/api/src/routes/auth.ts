@@ -40,6 +40,7 @@ import {
   jwtTokenResponseSchema,
   userSchema,
 } from "./schemas/auth";
+import { errorResponseSchema } from "./schemas/shared";
 import {
   authenticationOptionsSchema,
   authenticationVerificationSchema,
@@ -53,9 +54,6 @@ const app = new Hono();
 
 const routeLogger = createRouteLogger("AUTH");
 
-/**
- * Global middleware to add route-specific logging
- */
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing auth route: ${c.req.path}`);
   return next();
@@ -80,12 +78,7 @@ app.get(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -93,12 +86,7 @@ app.get(
         description: "Server error, such as missing configuration",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -137,12 +125,7 @@ app.get(
         description: "Bad request or invalid code",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -150,12 +133,7 @@ app.get(
         description: "Authentication error",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -283,12 +261,7 @@ app.get(
         description: "Invalid or expired session",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -340,12 +313,7 @@ app.post(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -391,12 +359,7 @@ app.get(
         description: "Authentication required",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -404,12 +367,7 @@ app.get(
         description: "JWT secret not configured",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -476,12 +434,7 @@ app.post(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -534,12 +487,7 @@ app.post(
         description: "Invalid verification response",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -592,12 +540,7 @@ app.post(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -639,12 +582,7 @@ app.post(
         description: "Invalid verification response",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -704,12 +642,7 @@ app.get(
         description: "Authentication required",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -763,12 +696,7 @@ app.delete(
         description: "Authentication required",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: errorResponseSchema,
           },
         },
       },
@@ -849,8 +777,22 @@ app.post(
           },
         },
       },
-      400: { description: "Invalid email or user not found" },
-      500: { description: "Server error (e.g., email sending failed)" },
+      400: {
+        description: "Invalid email or user not found",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
+      500: {
+        description: "Server error (e.g., email sending failed)",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
     },
   }),
   zValidator("json", magicLinkRequestSchema),
@@ -953,8 +895,22 @@ app.post(
           },
         },
       },
-      400: { description: "Missing or invalid token/nonce in body" },
-      401: { description: "Invalid or expired token/nonce" },
+      400: {
+        description: "Missing or invalid token/nonce in body",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: "Invalid or expired token/nonce",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
     },
   }),
   zValidator("json", magicLinkVerifySchema),

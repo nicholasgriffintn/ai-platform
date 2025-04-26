@@ -44,3 +44,8 @@ export const replicateWebhookJsonSchema = z.object({
     version: z.string().optional().nullable(),
   }),
 });
+
+export const webhookResponseSchema = z.object({
+  status: z.enum(["success", "error"]),
+  message: z.string(),
+});

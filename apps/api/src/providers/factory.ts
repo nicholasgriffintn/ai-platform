@@ -82,6 +82,7 @@ export class AIProviderFactory {
 
   /**
    * Get all available provider keys
+   * @returns The available provider keys
    */
   static getProviders(): string[] {
     return Object.keys(AIProviderFactory.providers);
@@ -105,15 +106,10 @@ export class AIProviderFactory {
   }
 
   /**
-   * Get the default providers
-   */
-  static getDefaultProviders(): string[] {
-    return ["mistral", "workersai"];
-  }
-
-  /**
    * Get a provider by name
    * Falls back to workers provider if not found
+   * @param providerName - The name of the provider
+   * @returns The provider
    */
   static getProvider(providerName: string): AIProvider {
     return (

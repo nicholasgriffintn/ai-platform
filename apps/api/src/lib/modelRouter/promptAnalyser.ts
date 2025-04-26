@@ -154,7 +154,6 @@ Ensure the output is nothing but the JSON object itself.`;
     let requirementsAnalysis: Partial<PromptRequirements>;
 
     try {
-      // Parse the cleaned content
       requirementsAnalysis = JSON.parse(cleanedContent);
     } catch (error) {
       logger.error(
@@ -166,7 +165,6 @@ Ensure the output is nothing but the JSON object itself.`;
         cleanedContent,
       );
 
-      // Try to extract valid JSON using regex as a fallback
       try {
         const jsonMatch = content.match(/\{[\s\S]*?\}/);
         if (jsonMatch) {
@@ -175,7 +173,6 @@ Ensure the output is nothing but the JSON object itself.`;
           throw new Error("Could not extract valid JSON");
         }
       } catch (fallbackError) {
-        // If all attempts fail, throw the original error
         throw new AssistantError(
           "Invalid JSON response from AI analysis",
           ErrorType.PROVIDER_ERROR,

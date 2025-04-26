@@ -5,36 +5,16 @@ import { z } from "zod";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { availableFunctions } from "~/services/functions";
+import { errorResponseSchema } from "./schemas/shared";
+import { toolsResponseSchema } from "./schemas/tools";
 
 const app = new Hono();
 
 const routeLogger = createRouteLogger("TOOLS");
 
-/**
- * Global middleware to add route-specific logging
- */
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing tools route: ${c.req.path}`);
   return next();
-});
-
-// Define common response schemas
-const toolSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string(),
-});
-
-const toolsResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-  data: z.array(toolSchema),
-});
-
-const errorResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-  error: z.string().optional(),
 });
 
 app.get(
@@ -55,9 +35,7 @@ app.get(
       500: {
         description: "Server error",
         content: {
-          "application/json": {
-            schema: resolver(errorResponseSchema),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
     },

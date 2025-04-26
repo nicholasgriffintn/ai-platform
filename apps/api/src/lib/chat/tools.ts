@@ -52,7 +52,6 @@ export const handleToolCalls = async (
 
   functionResults.push(toolMessage);
 
-  // Process tool calls individually
   for (const toolCall of toolCalls) {
     let functionName = "unknown";
     try {
@@ -159,7 +158,6 @@ export const handleToolCalls = async (
         platform: req.request?.platform || "api",
       };
 
-      // Add to batch and results
       functionResults.push(message);
     } catch (error) {
       const functionError = error as ToolCallError;
@@ -183,12 +181,10 @@ export const handleToolCalls = async (
         platform: req.request?.platform || "api",
       };
 
-      // Add to batch and results
       functionResults.push(errorMessage);
     }
   }
 
-  // Store all messages at once using addBatch
   if (functionResults.length > 0) {
     try {
       await conversationManager.addBatch(completion_id, functionResults);

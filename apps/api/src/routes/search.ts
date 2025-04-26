@@ -7,45 +7,23 @@ import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleWebSearch } from "~/services/search/web";
 import type { IEnv, SearchOptions } from "~/types";
-import { searchWebSchema } from "./schemas/search";
+import {
+  searchResultSchema,
+  searchWebSchema,
+  webSearchResponseSchema,
+} from "./schemas/search";
+import { errorResponseSchema } from "./schemas/shared";
 
 const app = new Hono();
 
 const routeLogger = createRouteLogger("SEARCH");
 
-/**
- * Global middleware to add route-specific logging
- */
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing search route: ${c.req.path}`);
   return next();
 });
 
-/**
- * Global middleware to check authentication
- */
 app.use("/*", requireAuth);
-
-// Define common response schemas
-const errorResponseSchema = z.object({
-  error: z.string(),
-  type: z.string(),
-});
-
-const searchResultSchema = z.object({
-  title: z.string(),
-  url: z.string(),
-  snippet: z.string(),
-  position: z.number().optional(),
-});
-
-const webSearchResponseSchema = z.object({
-  success: z.boolean(),
-  data: z.object({
-    results: z.array(searchResultSchema),
-    query: z.string(),
-  }),
-});
 
 app.post(
   "/web",

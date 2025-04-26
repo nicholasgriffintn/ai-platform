@@ -80,7 +80,6 @@ export class Embedding {
   }
 
   public getNamespace(options?: RagOptions): string {
-    // If a specific namespace is provided, prefer it unless it clearly belongs to a different user
     if (options?.namespace) {
       if (
         this.user?.id &&
@@ -88,18 +87,15 @@ export class Embedding {
           options.namespace.startsWith("memory_user_")) &&
         !options.namespace.endsWith(this.user.id.toString())
       ) {
-        // Reject potentially unsafe cross‑user namespaces
         return "kb";
       }
       return options.namespace;
     }
 
-    // Fall back to the current user's knowledge base if available
     if (this.user?.id) {
       return `user_kb_${this.user.id}`;
     }
 
-    // Default global namespace
     return "kb";
   }
 

@@ -46,7 +46,6 @@ export class MemoryManager {
 
     logger.debug("Storing memory", { text, metadata, id });
 
-    // Generate embeddings for the memory text
     const vectors = await embedding.generate("memory", text, id, {
       ...metadata,
       text,
@@ -55,8 +54,6 @@ export class MemoryManager {
 
     const namespace = `memory_user_${this.user?.id ?? "global"}`;
 
-    // Novelty filter: avoid storing semantically similar content
-    // take the first vector as representative
     const rawVec = vectors[0].values as number[];
     const candidateVector = new Float64Array(rawVec);
     const existing = await embedding.getMatches(candidateVector, {
@@ -66,7 +63,6 @@ export class MemoryManager {
       returnMetadata: "all",
     });
 
-    // Check for semantic duplicates
     const similarMemories = (existing.matches || [])
       .filter((m) => m.score >= 0.85 && m.metadata?.text)
       .map((m) => ({
@@ -75,7 +71,6 @@ export class MemoryManager {
         id: m.id,
       }));
 
-    // If we found semantically similar content, update instead of creating new
     if (similarMemories.length > 0) {
       logger.debug("Found similar memories, skipping insertion", {
         similarMemories,
@@ -94,6 +89,9 @@ export class MemoryManager {
 
   /**
    * Retrieve top‐k memories most relevant to a text query
+   * @param query - The text query to retrieve memories for
+   * @param opts - Optional parameters for the retrieval
+   * @returns An array of memories with their scores
    */
   public async retrieveMemories(
     query: string,
@@ -106,7 +104,6 @@ export class MemoryManager {
 
     logger.debug("Memory query", { query });
 
-    // Embed the text query into a Float64Array vector
     const queryEmb = await embedding.getQuery(query);
     const rawNumbers = queryEmb.data[0] as number[];
     const vector = new Float64Array(rawNumbers);
@@ -128,7 +125,6 @@ export class MemoryManager {
       return [];
     }
 
-    // Apply post-filtering with the requested threshold
     const memories = (result.matches || [])
       .filter(
         (m) =>
@@ -147,6 +143,12 @@ export class MemoryManager {
 
   /**
    * Process a user turn: classify the last user message, store key memories, and take periodic snapshots.
+   * @param lastUser - The last user message
+   * @param messages - The messages in the conversation
+   * @param conversationManager - The conversation manager
+   * @param completionId - The ID of the completion
+   * @param userSettings - The user settings
+   * @returns An array of memory events
    */
   public async handleMemory(
     lastUser: string,
@@ -158,7 +160,6 @@ export class MemoryManager {
     const events: MemoryEvent[] = [];
 
     if (!userSettings?.memories_save_enabled) {
-      // LLM‐driven memory classification
       try {
         if (lastUser.trim()) {
           const { model: modelToUse, provider: providerToUse } =
@@ -182,7 +183,6 @@ export class MemoryManager {
             this.user?.id,
           );
 
-          // Use standardized JSON parser
           const parsed = parseAIResponseJson<{
             storeMemory: boolean;
             category: string;
@@ -193,13 +193,11 @@ export class MemoryManager {
             const summaryText = parsed.summary || lastUser;
             const category = parsed.category || "general";
 
-            // Store both the original and a normalized version optimized for retrieval
             logger.debug("Storing classified memory", {
               summaryText,
               category,
             });
 
-            // First store the original summary
             await this.storeMemory(summaryText, {
               conversationId: completionId,
               timestamp: Date.now().toString(),
@@ -207,7 +205,6 @@ export class MemoryManager {
               isNormalized: "false",
             });
 
-            // For important facts, also store a more retrievable version
             if (["fact", "schedule", "preference"].includes(category)) {
               try {
                 const normalizer = await provider.getResponse(
@@ -232,7 +229,6 @@ export class MemoryManager {
                   let normalized: string[] = [];
                   const response = normalizer.response?.trim() || "";
 
-                  // Use our standardized JSON parser
                   const parsedResponse = parseAIResponseJson<
                     string[] | { text: string[] }
                   >(response);
@@ -248,7 +244,6 @@ export class MemoryManager {
                     }
                   }
 
-                  // Filter out any empty or overly long entries
                   normalized = normalized
                     .filter(
                       (text) =>
@@ -262,7 +257,6 @@ export class MemoryManager {
                         text.length < 200,
                     );
 
-                  // Store each normalized version as a separate memory
                   for (const altText of normalized) {
                     await this.storeMemory(altText, {
                       conversationId: completionId,
@@ -295,7 +289,6 @@ export class MemoryManager {
     }
 
     if (userSettings?.memories_chat_history_enabled) {
-      // Periodic snapshot every 5 user turns
       try {
         const userCount = messages.filter((m) => m.role === "user").length;
         if (userCount > 0 && userCount % 5 === 0) {
@@ -348,7 +341,6 @@ export class MemoryManager {
         }
       } catch (e) {
         logger.debug("Snapshot generation failed", { error: e });
-        // ignore snapshot failures
       }
     }
 

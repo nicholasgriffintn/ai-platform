@@ -23,22 +23,21 @@ import {
   podcastSummarizeSchema,
   podcastTranscribeSchema,
 } from "../schemas/apps";
+import {
+  listPodcastsResponseSchema,
+  podcastDetailResponseSchema,
+} from "../schemas/apps";
+import { apiResponseSchema } from "../schemas/shared";
 
 const app = new Hono();
 
 const routeLogger = createRouteLogger("APPS_PODCASTS");
 
-/**
- * Global middleware to add route-specific logging
- */
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing apps route: ${c.req.path}`);
   return next();
 });
 
-/**
- * List podcasts endpoint
- */
 app.get(
   "/",
   describeRoute({
@@ -49,25 +48,7 @@ app.get(
         description: "List of user's podcasts",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                podcasts: z.array(
-                  z.object({
-                    id: z.string(),
-                    title: z.string(),
-                    createdAt: z.string(),
-                    imageUrl: z.string().optional(),
-                    duration: z.number().optional(),
-                    status: z.enum([
-                      "processing",
-                      "transcribing",
-                      "summarizing",
-                      "complete",
-                    ]),
-                  }),
-                ),
-              }),
-            ),
+            schema: resolver(listPodcastsResponseSchema),
           },
         },
       },
@@ -99,9 +80,6 @@ app.get(
   },
 );
 
-/**
- * Get a specific podcast
- */
 app.get(
   "/:id",
   describeRoute({
@@ -112,27 +90,7 @@ app.get(
         description: "Podcast details",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                podcast: z.object({
-                  id: z.string(),
-                  title: z.string(),
-                  description: z.string().optional(),
-                  createdAt: z.string(),
-                  imageUrl: z.string().optional(),
-                  audioUrl: z.string(),
-                  duration: z.number().optional(),
-                  transcript: z.string().optional(),
-                  summary: z.string().optional(),
-                  status: z.enum([
-                    "processing",
-                    "transcribing",
-                    "summarizing",
-                    "complete",
-                  ]),
-                }),
-              }),
-            ),
+            schema: resolver(podcastDetailResponseSchema),
           },
         },
       },
@@ -176,7 +134,7 @@ app.post(
         description: "Response",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(apiResponseSchema),
           },
         },
       },
@@ -243,7 +201,7 @@ app.post(
         description: "Response",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(apiResponseSchema),
           },
         },
       },
@@ -280,7 +238,7 @@ app.post(
         description: "Response",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(apiResponseSchema),
           },
         },
       },
@@ -313,7 +271,7 @@ app.post(
         description: "Response",
         content: {
           "application/json": {
-            schema: resolver(z.object({})),
+            schema: resolver(apiResponseSchema),
           },
         },
       },

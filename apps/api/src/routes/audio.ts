@@ -9,20 +9,14 @@ import { handleTextToSpeech } from "~/services/audio/speech";
 import { handleTranscribe } from "~/services/audio/transcribe";
 import type { IEnv } from "~/types";
 import { textToSpeechSchema, transcribeFormSchema } from "./schemas/audio";
-import { apiResponseSchema } from "./schemas/shared";
+import { apiResponseSchema, errorResponseSchema } from "./schemas/shared";
 
 const app = new Hono();
 
 const routeLogger = createRouteLogger("AUDIO");
 
-/**
- * Global middleware to check authentication
- */
 app.use("/*", requireAuth);
 
-/**
- * Global middleware to add route-specific logging
- */
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing audio route: ${c.req.path}`);
   return next();
@@ -47,14 +41,7 @@ app.post(
       400: {
         description: "Bad request or validation error",
         content: {
-          "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
     },
@@ -97,14 +84,7 @@ app.post(
       400: {
         description: "Bad request or validation error",
         content: {
-          "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
     },

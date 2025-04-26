@@ -7,6 +7,8 @@ const logger = getLogger({ prefix: "USER_SERVICE" });
 
 /**
  * Map database result to User type
+ * @param result - The database result
+ * @returns The User object
  */
 function mapToUser(result: Record<string, unknown>): User {
   return {
@@ -40,6 +42,9 @@ function mapToUser(result: Record<string, unknown>): User {
 
 /**
  * Get a user by their GitHub user ID
+ * @param database - The database instance
+ * @param githubId - The GitHub user ID
+ * @returns The User object or null if the user is not found
  */
 export async function getUserByGithubId(
   database: Database,
@@ -62,6 +67,9 @@ export async function getUserByGithubId(
 
 /**
  * Get a user by their session ID
+ * @param database - The database instance
+ * @param sessionId - The session ID
+ * @returns The User object or null if the user is not found
  */
 export async function getUserBySessionId(
   database: Database,
@@ -84,6 +92,9 @@ export async function getUserBySessionId(
 
 /**
  * Get a user's settings
+ * @param database - The database instance
+ * @param userId - The user ID
+ * @returns The user settings or null if the user is not found
  */
 export async function getUserSettings(
   database: Database,
@@ -107,6 +118,9 @@ export async function getUserSettings(
 
 /**
  * Get a user by their ID
+ * @param database - The database instance
+ * @param userId - The user ID
+ * @returns The User object or null if the user is not found
  */
 export async function getUserById(
   database: Database,
@@ -142,6 +156,9 @@ export async function createUserProviderSettings(
 
 /**
  * Create or update a user from GitHub data
+ * @param database - The database instance
+ * @param userData - The user data
+ * @returns The User object
  */
 export async function createOrUpdateGithubUser(
   database: Database,
@@ -241,6 +258,10 @@ export async function createOrUpdateGithubUser(
 
 /**
  * Create a new session for a user
+ * @param database - The database instance
+ * @param userId - The user ID
+ * @param expiresInDays - The number of days the session will expire
+ * @returns The session ID
  */
 export async function createSession(
   database: Database,
@@ -266,6 +287,8 @@ export async function createSession(
 
 /**
  * Delete a session
+ * @param database - The database instance
+ * @param sessionId - The session ID
  */
 export async function deleteSession(
   database: Database,

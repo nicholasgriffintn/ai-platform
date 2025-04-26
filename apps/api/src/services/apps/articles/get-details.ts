@@ -12,6 +12,10 @@ export interface GetDetailsSuccessResponse {
 
 /**
  * Gets the details of a specific article app data entry by its primary ID.
+ * @param env - The environment variables
+ * @param id - The ID of the article
+ * @param userId - The ID of the user
+ * @returns The article details
  */
 export async function getArticleDetails({
   env,

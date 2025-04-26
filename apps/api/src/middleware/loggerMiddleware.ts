@@ -8,6 +8,9 @@ const logger = getLogger({ prefix: "HTTP" });
 /**
  * Middleware that logs request and response details
  * Includes timing information and customizable log level
+ * @param c - The context of the request
+ * @param next - The next middleware function
+ * @returns The next middleware function
  */
 export const loggerMiddleware = async (c: Context, next: Next) => {
   const method = c.req.method;

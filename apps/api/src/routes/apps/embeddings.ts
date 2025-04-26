@@ -20,15 +20,12 @@ import {
   insertEmbeddingSchema,
   queryEmbeddingsSchema,
 } from "../schemas/apps";
-import { apiResponseSchema } from "../schemas/shared";
+import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
 
 const app = new Hono();
 
 const routeLogger = createRouteLogger("APPS_EMBEDDINGS");
 
-/**
- * Global middleware to add route-specific logging
- */
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing apps route: ${c.req.path}`);
   return next();
@@ -52,12 +49,7 @@ app.post(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -105,12 +97,7 @@ app.get(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -156,12 +143,7 @@ app.post(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                error: z.string(),
-                type: z.string(),
-              }),
-            ),
+            schema: resolver(errorResponseSchema),
           },
         },
       },

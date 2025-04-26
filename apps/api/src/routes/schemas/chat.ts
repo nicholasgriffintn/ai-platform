@@ -408,3 +408,30 @@ export const unshareConversationParamsSchema = z.object({
 export const getSharedConversationParamsSchema = z.object({
   share_id: z.string().min(1),
 });
+
+export const getChatCompletionResponseSchema = z.object({
+  id: z.string(),
+  title: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  model: z.string(),
+  is_archived: z.boolean(),
+  user_id: z.string().nullable(),
+  share_id: z.string().nullable(),
+  settings: z.record(z.any()).optional(),
+});
+
+export const getChatCompletionMessagesResponseSchema = z.object({
+  messages: z.array(messageSchema),
+  conversation_id: z.string(),
+});
+
+export const getMessageResponseSchema = z.object({
+  id: z.string(),
+  role: z.enum(["user", "assistant", "system", "function"]),
+  content: z.union([z.string(), z.array(z.any())]),
+  name: z.string().optional(),
+  function_call: z.any().optional(),
+  timestamp: z.number().optional(),
+  conversation_id: z.string(),
+});

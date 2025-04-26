@@ -79,7 +79,6 @@ async function prepareRequestData(options: CoreChatOptions) {
   const database = Database.getInstance(env);
   const userSettings = await database.getUserSettings(user?.id);
 
-  // Determine which models to use (single- or multi-model)
   const selectedModels = await selectModels(
     env,
     lastMessageContentText,
@@ -203,10 +202,8 @@ async function prepareRequestData(options: CoreChatOptions) {
   let systemMessage = "";
   if (currentMode !== "no_system") {
     if (system_prompt) {
-      // Use the provided system prompt if available
       systemMessage = system_prompt;
     } else {
-      // Check for system message in chat history
       const systemPromptFromMessages = messages.find(
         (message) => message.role === "system",
       );
@@ -217,7 +214,6 @@ async function prepareRequestData(options: CoreChatOptions) {
       ) {
         systemMessage = systemPromptFromMessages.content;
       } else {
-        // Generate a default system prompt if none provided
         systemMessage = await getSystemPrompt(
           {
             completion_id: options.completion_id,
@@ -236,7 +232,6 @@ async function prepareRequestData(options: CoreChatOptions) {
     }
   }
 
-  // Inject long-term memories into the system prompt
   const memoriesEnabled =
     userSettings?.memories_save_enabled ||
     userSettings?.memories_chat_history_enabled;
@@ -261,12 +256,10 @@ async function prepareRequestData(options: CoreChatOptions) {
     if (index === messages.length - 1) {
       let messageText = msg.content;
 
-      // Use RAG-augmented message if RAG is enabled
       if (use_rag) {
         messageText = finalMessage;
       }
 
-      // Use message with markdown context if markdown attachments exist
       if (markdownAttachments.length > 0) {
         messageText = messageWithContext;
       }
@@ -436,7 +429,6 @@ export async function processChatRequest(options: CoreChatOptions) {
     });
 
     if (response instanceof ReadableStream) {
-      // create single-model stream
       const transformedStream = await createStreamWithPostProcessing(
         response,
         {

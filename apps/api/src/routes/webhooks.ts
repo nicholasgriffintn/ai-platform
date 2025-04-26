@@ -7,37 +7,23 @@ import { webhookAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleReplicateWebhook } from "~/services/webhooks/replicate";
 import type { IBody, IEnv } from "~/types";
+import { errorResponseSchema } from "./schemas/shared";
 import {
   replicateWebhookJsonSchema,
   replicateWebhookQuerySchema,
+  webhookResponseSchema,
 } from "./schemas/webhooks";
 
 const app = new Hono();
 
 const routeLogger = createRouteLogger("WEBHOOKS");
 
-/**
- * Global middleware to add route-specific logging
- */
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing webhooks route: ${c.req.path}`);
   return next();
 });
 
-/**
- * Global middleware to check the WEBHOOK_SECRET
- */
 app.use("/*", webhookAuth);
-
-const webhookResponseSchema = z.object({
-  status: z.enum(["success", "error"]),
-  message: z.string(),
-});
-
-const errorResponseSchema = z.object({
-  error: z.string(),
-  type: z.string(),
-});
 
 app.post(
   "/replicate",
@@ -76,33 +62,25 @@ app.post(
       400: {
         description: "Bad request or validation error",
         content: {
-          "application/json": {
-            schema: resolver(errorResponseSchema),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
       401: {
         description: "Unauthorized - invalid webhook secret",
         content: {
-          "application/json": {
-            schema: resolver(errorResponseSchema),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
       404: {
         description: "Completion not found",
         content: {
-          "application/json": {
-            schema: resolver(errorResponseSchema),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
       500: {
         description: "Server error",
         content: {
-          "application/json": {
-            schema: resolver(errorResponseSchema),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
     },

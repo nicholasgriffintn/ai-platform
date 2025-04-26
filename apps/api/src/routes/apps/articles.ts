@@ -18,14 +18,17 @@ import {
   articleSummariseSchema,
   generateArticlesReportSchema,
 } from "../schemas/apps";
+import {
+  articleDetailResponseSchema,
+  listArticlesResponseSchema,
+  sourceArticlesResponseSchema,
+} from "../schemas/apps";
+import { errorResponseSchema } from "../schemas/shared";
 
 const app = new Hono();
 
 const routeLogger = createRouteLogger("APPS_ARTICLES");
 
-/**
- * Global middleware to add route-specific logging
- */
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing apps route: ${c.req.path}`);
   return next();
@@ -41,11 +44,18 @@ app.get(
         description: "List of reports",
         content: {
           "application/json": {
-            schema: resolver(z.object({ articles: z.array(z.any()) })),
+            schema: resolver(listArticlesResponseSchema),
           },
         },
       },
-      401: { description: "Unauthorized" },
+      401: {
+        description: "Unauthorized",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
     },
   }),
   async (context: Context) => {
@@ -94,15 +104,34 @@ app.get(
         description: "Source articles data",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({ status: z.string(), articles: z.array(z.any()) }),
-            ),
+            schema: resolver(sourceArticlesResponseSchema),
           },
         },
       },
-      400: { description: "Bad Request - Invalid IDs" },
-      401: { description: "Unauthorized" },
-      403: { description: "Forbidden" },
+      400: {
+        description: "Bad Request - Invalid IDs",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: "Unauthorized",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: "Forbidden",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
     },
   }),
   async (context: Context) => {
@@ -156,13 +185,34 @@ app.get(
         description: "Article report details",
         content: {
           "application/json": {
-            schema: resolver(z.object({ article: z.any() })),
+            schema: resolver(articleDetailResponseSchema),
           },
         },
       },
-      401: { description: "Unauthorized" },
-      403: { description: "Forbidden" },
-      404: { description: "Article data not found" },
+      401: {
+        description: "Unauthorized",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: "Forbidden",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: "Article data not found",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
     },
   }),
   async (context: Context) => {
@@ -215,8 +265,22 @@ app.post(
           },
         },
       },
-      400: { description: "Bad Request" },
-      401: { description: "Unauthorized" },
+      400: {
+        description: "Bad Request",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: "Unauthorized",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
     },
   }),
   zValidator("json", articleAnalyzeSchema),
@@ -281,8 +345,22 @@ app.post(
           },
         },
       },
-      400: { description: "Bad Request" },
-      401: { description: "Unauthorized" },
+      400: {
+        description: "Bad Request",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: "Unauthorized",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
     },
   }),
   zValidator("json", articleSummariseSchema),
@@ -347,9 +425,30 @@ app.post(
           },
         },
       },
-      401: { description: "Unauthorized" },
-      404: { description: "No analysis data found to generate report" },
-      500: { description: "Failed to generate or save report" },
+      401: {
+        description: "Unauthorized",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: "No analysis data found to generate report",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
+      500: {
+        description: "Failed to generate or save report",
+        content: {
+          "application/json": {
+            schema: errorResponseSchema,
+          },
+        },
+      },
     },
   }),
   zValidator("json", generateArticlesReportSchema),

@@ -9,6 +9,9 @@ const logger = getLogger({ prefix: "CHAT_PARAMETERS" });
 
 /**
  * Extracts chat completion parameters from request body
+ * @param request - The request body
+ * @param env - The environment variables
+ * @returns The chat completion parameters
  */
 export function extractChatParameters(
   request: IBody,
@@ -49,6 +52,9 @@ export function extractChatParameters(
 
 /**
  * Merges default parameters with user-provided parameters
+ * @param params - The user-provided parameters
+ * @param defaults - The default parameters
+ * @returns The merged parameters
  */
 export function mergeParametersWithDefaults(
   params: Partial<ChatCompletionParameters>,
@@ -66,6 +72,11 @@ export function mergeParametersWithDefaults(
 
 /**
  * Provider-specific parameter transformations
+ * @param params - The chat completion parameters
+ * @param providerName - The name of the provider
+ * @param storageService - The storage service
+ * @param assetsUrl - The assets URL
+ * @returns The provider-specific parameters
  */
 export async function mapParametersToProvider(
   params: ChatCompletionParameters,
@@ -247,7 +258,6 @@ export async function mapParametersToProvider(
 
         let prompt = null;
 
-        // Check if the first message is a system message
         if (
           params.messages.length >= 2 &&
           params.messages[0].role === ("system" as any)
@@ -286,10 +296,8 @@ export async function mapParametersToProvider(
             userContent = params.messages[1].content?.text || "";
           }
 
-          // Combine system and user messages
           prompt = `${systemContent}\n\n${userContent}`;
         } else {
-          // Handle regular case (no system message)
           if (Array.isArray(params.messages[0].content)) {
             const contentItem = params.messages[0].content[0];
             if (contentItem && typeof contentItem === "object") {
@@ -560,6 +568,8 @@ export async function mapParametersToProvider(
 
 /**
  * Helper function to calculate reasoning budget based on reasoning_effort
+ * @param params - The chat completion parameters
+ * @returns The reasoning budget
  */
 function calculateReasoningBudget(params: ChatCompletionParameters): number {
   if (!params.max_tokens) return 1024;
@@ -578,6 +588,8 @@ function calculateReasoningBudget(params: ChatCompletionParameters): number {
 
 /**
  * Format messages for DeepSeek models
+ * @param params - The chat completion parameters
+ * @returns The formatted messages
  */
 function formatDeepSeekMessages(params: ChatCompletionParameters): any[] {
   return params.messages.map((message) => ({
@@ -588,6 +600,8 @@ function formatDeepSeekMessages(params: ChatCompletionParameters): any[] {
 
 /**
  * Format messages for Google Studio models
+ * @param params - The chat completion parameters
+ * @returns The formatted messages
  */
 function formatGoogleStudioContents(params: ChatCompletionParameters): any[] {
   const contents = [];
@@ -605,6 +619,8 @@ function formatGoogleStudioContents(params: ChatCompletionParameters): any[] {
 
 /**
  * Format messages for Bedrock models
+ * @param params - The chat completion parameters
+ * @returns The formatted messages
  */
 function formatBedrockMessages(params: ChatCompletionParameters): any[] {
   return params.messages.map((message) => ({

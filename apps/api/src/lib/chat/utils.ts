@@ -7,15 +7,12 @@ export function checkContextWindowLimits(
   newContent: string,
   modelConfig: any,
 ): void {
-  // Default max context if not specified in model config (conservative estimate)
   const MAX_CONTEXT_LENGTH = modelConfig?.contextWindow || 8000;
 
-  // Estimate token count based on characters (rough approximation)
   const estimateTokens = (text: string): number => {
     return Math.ceil(text.length / 4);
   };
 
-  // Calculate existing conversation token count
   let existingTokenCount = 0;
   for (const msg of messages) {
     const content =
@@ -24,17 +21,13 @@ export function checkContextWindowLimits(
         : JSON.stringify(msg.content);
     existingTokenCount += estimateTokens(content);
 
-    // Add extra tokens for role prefixes and message separators
     existingTokenCount += 4;
   }
 
-  // Calculate new content token count
   const newContentTokens = estimateTokens(newContent);
 
-  // Total tokens
   const totalTokens = existingTokenCount + newContentTokens;
 
-  // Check if we exceed limits
   if (totalTokens > MAX_CONTEXT_LENGTH) {
     throw new AssistantError(
       `Content exceeds model context window (estimated ${totalTokens} tokens, limit ${MAX_CONTEXT_LENGTH})`,
@@ -102,6 +95,8 @@ export function parseAttachments(contents: any[]): {
 
 /**
  * Remove duplicate attachments based on URL or markdown content.
+ * @param attachments - The attachments to dedupe
+ * @returns The deduplicated attachments
  */
 export function dedupeAttachments(attachments: Attachment[]): Attachment[] {
   const seen = new Set<string>();
@@ -116,6 +111,9 @@ export function dedupeAttachments(attachments: Attachment[]): Attachment[] {
 
 /**
  * Enforce limits on the number and total size of attachments.
+ * @param attachments - The attachments to enforce limits on
+ * @param maxCount - The maximum number of attachments
+ * @param maxTotalSize - The maximum total size of attachments
  */
 export function enforceAttachmentLimits(
   attachments: Attachment[],
@@ -142,7 +140,6 @@ export function enforceAttachmentLimits(
   }
 }
 
-// Helper to parse, dedupe, and enforce limits on attachments in one step
 export function getAllAttachments(contents: unknown[]): {
   imageAttachments: Attachment[];
   documentAttachments: Attachment[];

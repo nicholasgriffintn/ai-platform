@@ -34,7 +34,10 @@ import {
   deleteChatCompletionParamsSchema,
   generateChatCompletionTitleJsonSchema,
   generateChatCompletionTitleParamsSchema,
+  getChatCompletionMessagesResponseSchema,
   getChatCompletionParamsSchema,
+  getChatCompletionResponseSchema,
+  getMessageResponseSchema,
   getSharedConversationParamsSchema,
   shareConversationParamsSchema,
   submitChatCompletionFeedbackJsonSchema,
@@ -49,9 +52,6 @@ const app = new Hono();
 
 const routeLogger = createRouteLogger("CHAT");
 
-/**
- * Global middleware
- */
 app.use("/*", async (context: Context, next: Next) => {
   routeLogger.info(`Processing chat route: ${context.req.path}`);
 
@@ -139,19 +139,7 @@ app.get(
         description: "Chat completion details",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                id: z.string(),
-                title: z.string().nullable(),
-                created_at: z.string(),
-                updated_at: z.string(),
-                model: z.string(),
-                is_archived: z.boolean(),
-                user_id: z.string().nullable(),
-                share_id: z.string().nullable(),
-                settings: z.record(z.any()).optional(),
-              }),
-            ),
+            schema: resolver(getChatCompletionResponseSchema),
           },
         },
       },
@@ -204,12 +192,7 @@ app.get(
         description: "Messages for the specified chat completion",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                messages: z.array(messageSchema),
-                conversation_id: z.string(),
-              }),
-            ),
+            schema: resolver(getChatCompletionMessagesResponseSchema),
           },
         },
       },
@@ -274,17 +257,7 @@ app.get(
         description: "Message details with conversation ID",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                id: z.string(),
-                role: z.enum(["user", "assistant", "system", "function"]),
-                content: z.union([z.string(), z.array(z.any())]),
-                name: z.string().optional(),
-                function_call: z.any().optional(),
-                timestamp: z.number().optional(),
-                conversation_id: z.string(),
-              }),
-            ),
+            schema: resolver(getMessageResponseSchema),
           },
         },
       },

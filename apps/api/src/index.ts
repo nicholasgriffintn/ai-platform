@@ -48,9 +48,6 @@ const origin = (origin, c) => {
   return "*";
 };
 
-/**
- * Global middleware to enable CORS
- */
 app.use(
   "*",
   cors({
@@ -67,29 +64,16 @@ app.use(
   }),
 );
 
-/**
- * Global middleware for logging
- */
 app.use("*", loggerMiddleware);
 
-/**
- * Global middleware to apply CSRF protection
- */
 app.use(
   csrf({
     origin,
   }),
 );
 
-/**
- * Global middleware to check if the user is authenticated
- * and if they are, set the user in the context
- */
 app.use("*", authMiddleware);
 
-/**
- * Global middleware to rate limit requests
- */
 app.use("*", rateLimit);
 
 autoRegisterDynamicApps();
@@ -188,9 +172,6 @@ app.get(
   },
 );
 
-/**
- * Routes
- */
 app.route(ROUTES.AUTH, auth);
 app.route(ROUTES.CHAT, chat);
 app.route(ROUTES.WEBHOOKS, webhooks);
@@ -205,14 +186,8 @@ app.route(ROUTES.USER, user);
 app.route(ROUTES.PLANS, plans);
 app.route(ROUTES.STRIPE, stripe);
 
-/**
- * Global 404 handler
- */
 app.notFound((c) => c.json({ status: "not found" }, 404));
 
-/**
- * Global error handler
- */
 app.onError((err, c) => {
   const error = AssistantError.fromError(err, ErrorType.UNKNOWN_ERROR);
   return handleAIServiceError(error);

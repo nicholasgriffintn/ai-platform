@@ -19,3 +19,18 @@ export const searchWebSchema = z.object({
     })
     .optional(),
 });
+
+export const searchResultSchema = z.object({
+  title: z.string(),
+  url: z.string(),
+  snippet: z.string(),
+  position: z.number().optional(),
+});
+
+export const webSearchResponseSchema = z.object({
+  success: z.boolean(),
+  data: z.object({
+    results: z.array(searchResultSchema),
+    query: z.string(),
+  }),
+});

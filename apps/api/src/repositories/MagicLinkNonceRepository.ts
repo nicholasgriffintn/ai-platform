@@ -9,6 +9,9 @@ export interface MagicLinkNonce {
 export class MagicLinkNonceRepository extends BaseRepository {
   /**
    * Creates a new magic link nonce in the database.
+   * @param nonce - The nonce value
+   * @param userId - The user ID
+   * @param expiresAt - The expiration date
    */
   public async createNonce(
     nonce: string,
@@ -24,6 +27,9 @@ export class MagicLinkNonceRepository extends BaseRepository {
 
   /**
    * Finds a nonce by its value, ensuring it belongs to the correct user and hasn't expired.
+   * @param nonce - The nonce value
+   * @param userId - The user ID
+   * @returns The magic link nonce or null if it doesn't exist or has expired
    */
   public async findNonce(
     nonce: string,
@@ -41,6 +47,7 @@ export class MagicLinkNonceRepository extends BaseRepository {
   /**
    * Deletes a nonce from the database by its value.
    * This is used to "consume" the nonce after successful verification.
+   * @param nonce - The nonce value
    */
   public async deleteNonce(nonce: string): Promise<void> {
     await this.executeRun("DELETE FROM magic_link_nonce WHERE nonce = ?", [
@@ -50,6 +57,7 @@ export class MagicLinkNonceRepository extends BaseRepository {
 
   /**
    * Deletes expired nonces (optional cleanup task).
+   * @returns The number of nonces deleted
    */
   public async deleteExpiredNonces(): Promise<void> {
     const nowTimestamp = Math.floor(Date.now() / 1000);

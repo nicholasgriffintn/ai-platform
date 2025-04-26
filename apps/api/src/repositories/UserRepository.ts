@@ -73,8 +73,6 @@ export class UserRepository extends BaseRepository {
   public async createUser(
     userData: Record<string, unknown>,
   ): Promise<Record<string, unknown> | null> {
-    // Note: userData.username is used for github_username in the database
-    // This method expects the username field from input data and maps it to github_username in DB
     const result = this.runQuery<Record<string, unknown>>(
       `INSERT INTO user (
          name, 

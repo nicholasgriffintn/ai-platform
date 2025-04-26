@@ -2,7 +2,7 @@ import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import Stripe from "stripe";
-import { z } from "zod";
+import type { z } from "zod";
 import { FREE_TRIAL_DAYS } from "~/constants/app";
 import { Database } from "~/lib/database";
 import { requireAuth } from "~/middleware/auth";
@@ -15,16 +15,12 @@ import {
 } from "~/services/subscription/emails";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { errorResponseSchema } from "./schemas/shared";
+import { checkoutSchema } from "./schemas/stripe";
 
 const logger = getLogger({ prefix: "STRIPE_ROUTES" });
 
 const app = new Hono();
-
-const checkoutSchema = z.object({
-  plan_id: z.string(),
-  success_url: z.string().url(),
-  cancel_url: z.string().url(),
-});
 
 function getStripeClient(ctx: Context): Stripe {
   const secret = ctx.env.STRIPE_SECRET_KEY;
@@ -56,9 +52,12 @@ app.post(
       },
       400: {
         description: "Invalid request data",
-        content: { "application/json": {} },
+        content: { "application/json": { schema: errorResponseSchema } },
       },
-      500: { description: "Server error", content: { "application/json": {} } },
+      500: {
+        description: "Server error",
+        content: { "application/json": { schema: errorResponseSchema } },
+      },
     },
   }),
   zValidator("json", checkoutSchema),
@@ -153,9 +152,12 @@ app.get(
       },
       404: {
         description: "No subscription found",
-        content: { "application/json": {} },
+        content: { "application/json": { schema: errorResponseSchema } },
       },
-      500: { description: "Server error", content: { "application/json": {} } },
+      500: {
+        description: "Server error",
+        content: { "application/json": { schema: errorResponseSchema } },
+      },
     },
   }),
   requireAuth,
@@ -216,13 +218,16 @@ app.post(
     responses: {
       200: {
         description: "Subscription canceled",
-        content: { "application/json": {} },
+        content: { "application/json": { schema: errorResponseSchema } },
       },
       404: {
         description: "No subscription found",
-        content: { "application/json": {} },
+        content: { "application/json": { schema: errorResponseSchema } },
       },
-      500: { description: "Server error", content: { "application/json": {} } },
+      500: {
+        description: "Server error",
+        content: { "application/json": { schema: errorResponseSchema } },
+      },
     },
   }),
   requireAuth,
@@ -296,13 +301,16 @@ app.post(
     responses: {
       200: {
         description: "Subscription reactivated",
-        content: { "application/json": {} },
+        content: { "application/json": { schema: errorResponseSchema } },
       },
       404: {
         description: "No subscription found",
-        content: { "application/json": {} },
+        content: { "application/json": { schema: errorResponseSchema } },
       },
-      500: { description: "Server error", content: { "application/json": {} } },
+      500: {
+        description: "Server error",
+        content: { "application/json": { schema: errorResponseSchema } },
+      },
     },
   }),
   requireAuth,

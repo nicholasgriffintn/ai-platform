@@ -26,6 +26,9 @@ interface SessionItemGroup {
 
 /**
  * Lists summaries of all article analysis sessions for a user.
+ * @param env - The environment variables
+ * @param userId - The ID of the user
+ * @returns The list of article session summaries
  */
 export async function listArticles({
   env,

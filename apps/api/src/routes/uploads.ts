@@ -10,24 +10,16 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { errorResponseSchema } from "./schemas/shared";
+import { uploadRequestSchema, uploadResponseSchema } from "./schemas/uploads";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("UPLOADS");
 
-// Require authentication for all routes
 app.use("/*", requireAuth);
 
-// Add route-specific logging
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing uploads route: ${c.req.path}`);
   return next();
-});
-
-const uploadResponseSchema = z.object({
-  url: z.string(),
-  type: z.enum(["image", "document", "markdown_document"]),
-  name: z.string().optional(),
-  markdown: z.string().optional(),
 });
 
 app.post(
@@ -41,12 +33,7 @@ app.post(
       required: true,
       content: {
         "multipart/form-data": {
-          schema: z.object({
-            file: z.any().refine((file) => file && file instanceof File, {
-              message: "File is required",
-            }),
-            file_type: z.enum(["image", "document"]),
-          }),
+          schema: resolver(uploadRequestSchema),
         },
       },
     },
@@ -158,7 +145,6 @@ app.post(
         ],
       };
 
-      // Check if the file type is allowed
       if (!allowedMimeTypes[fileType].includes(file.type)) {
         throw new AssistantError(
           `Invalid file type. Allowed types for ${fileType}: ${allowedMimeTypes[fileType].join(", ")}`,
@@ -167,24 +153,19 @@ app.post(
         );
       }
 
-      // Convert to markdown if needed - only for non-PDF documents
       let shouldConvertToMarkdown = false;
       let markdownContent = "";
 
-      // For documents other than PDFs, or if the model doesn't support native documents
       const fileTypeParam = formData.get("convert_to_markdown") as
         | string
         | null;
       const convertToMarkdown = fileTypeParam === "true";
       const isPdf = file.type === "application/pdf";
 
-      // Always convert non-PDF documents to markdown
-      // Only convert PDFs if explicitly requested
       if (fileType === "document" && (!isPdf || convertToMarkdown)) {
         shouldConvertToMarkdown = true;
       }
 
-      // Continue with normal upload for all files
       const fileExtension = file.type.split("/")[1];
       const userId = user?.id || "anonymous";
       const userIdSanitized =

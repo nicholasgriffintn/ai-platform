@@ -15,6 +15,10 @@ export interface AppData {
 export class AppDataRepository extends BaseRepository {
   /**
    * Creates a new app data entry
+   * @param userId - The user ID
+   * @param appId - The app ID
+   * @param data - The data to create
+   * @returns The created app data
    */
   public async createAppData(
     userId: number,
@@ -40,6 +44,12 @@ export class AppDataRepository extends BaseRepository {
 
   /**
    * Creates a new app data entry with item_id and item_type
+   * @param userId - The user ID
+   * @param appId - The app ID
+   * @param itemId - The item ID
+   * @param itemType - The item type
+   * @param data - The data to create
+   * @returns The created app data
    */
   public async createAppDataWithItem(
     userId: number,
@@ -69,6 +79,8 @@ export class AppDataRepository extends BaseRepository {
 
   /**
    * Gets app data by id
+   * @param id - The ID of the app data
+   * @returns The app data
    */
   public async getAppDataById(id: string): Promise<AppData | null> {
     return this.runQuery<AppData>(
@@ -80,6 +92,9 @@ export class AppDataRepository extends BaseRepository {
 
   /**
    * Gets all app data for a user and specific app
+   * @param userId - The user ID
+   * @param appId - The app ID
+   * @returns The app data
    */
   public async getAppDataByUserAndApp(
     userId: number,
@@ -93,6 +108,11 @@ export class AppDataRepository extends BaseRepository {
 
   /**
    * Gets all app data for a user, app, item_id and optionally item_type
+   * @param userId - The user ID
+   * @param appId - The app ID
+   * @param itemId - The item ID
+   * @param itemType - The item type
+   * @returns The app data
    */
   public async getAppDataByUserAppAndItem(
     userId: number,
@@ -115,6 +135,8 @@ export class AppDataRepository extends BaseRepository {
 
   /**
    * Gets all app data for a user
+   * @param userId - The user ID
+   * @returns The app data
    */
   public async getAppDataByUser(userId: number): Promise<AppData[]> {
     return this.runQuery<AppData>(
@@ -125,6 +147,8 @@ export class AppDataRepository extends BaseRepository {
 
   /**
    * Updates app data
+   * @param id - The ID of the app data
+   * @param data - The data to update
    */
   public async updateAppData(
     id: string,
@@ -138,6 +162,7 @@ export class AppDataRepository extends BaseRepository {
 
   /**
    * Deletes app data
+   * @param id - The ID of the app data
    */
   public async deleteAppData(id: string): Promise<void> {
     await this.executeRun("DELETE FROM app_data WHERE id = ?", [id]);
@@ -145,6 +170,8 @@ export class AppDataRepository extends BaseRepository {
 
   /**
    * Deletes all app data for a user and specific app
+   * @param userId - The user ID
+   * @param appId - The app ID
    */
   public async deleteAppDataByUserAndApp(
     userId: number,
@@ -158,6 +185,11 @@ export class AppDataRepository extends BaseRepository {
 
   /**
    * Deletes all app data for a user, app, and item
+   * @param userId - The user ID
+   * @param appId - The app ID
+   * @param itemId - The item ID
+   * @param itemType - The item type
+   * @returns The deleted app data
    */
   public async deleteAppDataByUserAppAndItem(
     userId: number,

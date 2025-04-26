@@ -13,6 +13,8 @@ import {
 import { appSchema } from "~/types/app-schema";
 import type { IRequest } from "~/types/chat";
 import { getLogger } from "~/utils/logger";
+import { appInfoSchema } from "./schemas/apps";
+import { errorResponseSchema } from "./schemas/shared";
 
 const logger = getLogger({ prefix: "DYNAMIC_APPS" });
 
@@ -22,27 +24,9 @@ const routeLogger = createRouteLogger("DYNAMIC_APPS");
 
 dynamicApps.use("*", requireAuth);
 
-/**
- * Global middleware to add route-specific logging
- */
 dynamicApps.use("*", (c, next) => {
   routeLogger.info(`Processing dynamic-apps route: ${c.req.path}`);
   return next();
-});
-
-// Common error response schema
-const errorResponseSchema = z.object({
-  error: z.string(),
-  message: z.string().optional(),
-});
-
-// Basic app info schema
-const appInfoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string(),
-  icon: z.string().optional(),
-  category: z.string().optional(),
 });
 
 dynamicApps.get(
@@ -64,9 +48,7 @@ dynamicApps.get(
       401: {
         description: "Authentication required",
         content: {
-          "application/json": {
-            schema: resolver(errorResponseSchema),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
     },
@@ -103,25 +85,19 @@ dynamicApps.get(
       400: {
         description: "Bad request",
         content: {
-          "application/json": {
-            schema: resolver(errorResponseSchema),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
       401: {
         description: "Authentication required",
         content: {
-          "application/json": {
-            schema: resolver(errorResponseSchema),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
       404: {
         description: "App not found",
         content: {
-          "application/json": {
-            schema: resolver(errorResponseSchema),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
     },
@@ -176,33 +152,25 @@ dynamicApps.post(
       400: {
         description: "Invalid form data",
         content: {
-          "application/json": {
-            schema: resolver(errorResponseSchema),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
       401: {
         description: "Authentication required",
         content: {
-          "application/json": {
-            schema: resolver(errorResponseSchema),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
       404: {
         description: "App not found",
         content: {
-          "application/json": {
-            schema: resolver(errorResponseSchema),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
       500: {
-        description: "Execution error",
+        description: "Server error",
         content: {
-          "application/json": {
-            schema: resolver(errorResponseSchema),
-          },
+          "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
     },

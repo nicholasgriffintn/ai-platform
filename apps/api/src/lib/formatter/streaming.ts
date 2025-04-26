@@ -6,6 +6,9 @@
 export class StreamingFormatter {
   /**
    * Extract text content from a streaming chunk of data
+   * @param data - The data to extract content from
+   * @param currentEventType - The current event type
+   * @returns The extracted content
    */
   static extractContentFromChunk(data: any, currentEventType = "") {
     // First check if the data was already formatted
@@ -65,9 +68,11 @@ export class StreamingFormatter {
 
   /**
    * Extract thinking content from a streaming chunk of data
+   * @param data - The data to extract thinking from
+   * @param currentEventType - The current event type
+   * @returns The extracted thinking
    */
   static extractThinkingFromChunk(data: any, currentEventType = "") {
-    // Check for Anthropic thinking_delta format
     if (
       currentEventType === "content_block_delta" &&
       data.delta?.type === "thinking_delta" &&
@@ -76,7 +81,6 @@ export class StreamingFormatter {
       return data.delta.thinking || "";
     }
 
-    // Check for Anthropic signature_delta format
     if (
       currentEventType === "content_block_delta" &&
       data.delta?.type === "signature_delta" &&
@@ -93,6 +97,9 @@ export class StreamingFormatter {
 
   /**
    * Detect if a chunk contains a tool call initialization or update
+   * @param data - The data to extract tool call from
+   * @param currentEventType - The current event type
+   * @returns The extracted tool call
    */
   static extractToolCall(data: any, currentEventType = "") {
     // OpenAI-like tool calls
@@ -142,6 +149,8 @@ export class StreamingFormatter {
 
   /**
    * Checks if a streaming chunk indicates completion
+   * @param data - The data to check for completion
+   * @returns Whether the chunk indicates completion
    */
   static isCompletionIndicated(data: any): boolean {
     const finishReason =
@@ -157,6 +166,8 @@ export class StreamingFormatter {
 
   /**
    * Extract usage information from a response
+   * @param data - The data to extract usage from
+   * @returns The extracted usage
    */
   static extractUsageData(data: any): any {
     if (data.usage) {
@@ -172,6 +183,8 @@ export class StreamingFormatter {
 
   /**
    * Extract citations from a response
+   * @param data - The data to extract citations from
+   * @returns The extracted citations
    */
   static extractCitations(data: any): any[] {
     if (Array.isArray(data.citations)) {

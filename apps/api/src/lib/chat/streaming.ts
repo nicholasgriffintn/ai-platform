@@ -28,6 +28,10 @@ const logger = getLogger({ prefix: "CHAT_STREAMING" });
 
 /**
  * Helper to emit a standardized SSE event to the stream controller
+ * @param controller - The stream controller
+ * @param type - The type of event
+ * @param payload - The payload of the event
+ * @returns The event
  */
 function emitEvent(
   controller: TransformStreamDefaultController,
@@ -42,6 +46,10 @@ function emitEvent(
 
 /**
  * Helper to emit standardized tool events
+ * @param controller - The stream controller
+ * @param toolCall - The tool call
+ * @param stage - The stage of the tool call
+ * @param data - The data of the tool call
  */
 function emitToolEvents(
   controller: TransformStreamDefaultController,
@@ -66,6 +74,10 @@ function emitToolEvents(
 /**
  * Creates a transformed stream that handles post-processing of AI responses
  * With support for tool calls and guardrails
+ * @param providerStream - The provider stream
+ * @param options - The options
+ * @param conversationManager - The conversation manager
+ * @returns The transformed stream
  */
 export async function createStreamWithPostProcessing(
   providerStream: ReadableStream,
@@ -157,7 +169,6 @@ export async function createStreamWithPostProcessing(
 
             if (dataStr === "[DONE]") {
               if (!postProcessingDone) {
-                // Check if we have accumulated tool calls that haven't been processed yet
                 if (
                   Object.keys(currentToolCalls).length > 0 &&
                   toolCallsData.length === 0
@@ -650,6 +661,10 @@ export async function createStreamWithPostProcessing(
 
 /**
  * Creates a multi-model stream that queries multiple models and combines their responses
+ * @param parameters - The parameters
+ * @param options - The options
+ * @param conversationManager - The conversation manager
+ * @returns The multi-model stream
  */
 export function createMultiModelStream(
   parameters: any,

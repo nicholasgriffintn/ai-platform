@@ -95,7 +95,6 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
     let accessKeyId = this.defaultAccessKeyId;
     let secretAccessKey = this.defaultSecretAccessKey;
 
-    // Try to get user credentials if available
     if (this.user?.id && this.env.DB) {
       try {
         const userSettingsRepo = new UserSettingsRepository(this.env);

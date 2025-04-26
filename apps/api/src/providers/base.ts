@@ -27,6 +27,9 @@ export abstract class BaseProvider implements AIProvider {
 
   /**
    * Gets the API key for the provider, checking user settings first
+   * @param params - The parameters of the request
+   * @param userId - The user ID
+   * @returns The API key
    */
   protected async getApiKey(
     params: ChatCompletionParameters,
@@ -60,6 +63,7 @@ export abstract class BaseProvider implements AIProvider {
 
   /**
    * Validates common parameters and provider-specific requirements
+   * @param params - The parameters of the request
    * @throws AssistantError if validation fails
    */
   protected validateParams(params: ChatCompletionParameters): void {
@@ -73,11 +77,15 @@ export abstract class BaseProvider implements AIProvider {
 
   /**
    * Gets the endpoint for the API call
+   * @param params - The parameters of the request
+   * @returns The endpoint
    */
   protected abstract getEndpoint(params: ChatCompletionParameters): string;
 
   /**
    * Gets the headers for the API call
+   * @param params - The parameters of the request
+   * @returns The headers
    */
   protected abstract getHeaders(
     params: ChatCompletionParameters,
@@ -85,6 +93,9 @@ export abstract class BaseProvider implements AIProvider {
 
   /**
    * Formats the response from the API call
+   * @param data - The data to format
+   * @param params - The parameters of the request
+   * @returns The formatted data
    */
   protected async formatResponse(
     data: any,
@@ -102,6 +113,9 @@ export abstract class BaseProvider implements AIProvider {
   /**
    * Main method to get response from the provider
    * Implements the template method pattern
+   * @param params - The parameters of the request
+   * @param userId - The user ID
+   * @returns The response
    */
   async getResponse(
     params: ChatCompletionParameters,

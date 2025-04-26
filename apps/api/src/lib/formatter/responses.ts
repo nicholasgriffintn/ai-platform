@@ -9,14 +9,15 @@ interface ResponseFormatOptions {
   completion_id?: string;
 }
 
-/**
- * Formats responses from any provider
- * Handles specific response formats for each provider
- */
 // biome-ignore lint/complexity/noStaticOnlyClass: CBA
 export class ResponseFormatter {
   /**
-   * Format a response from any provider
+   * Formats responses from any provider
+   * Handles specific response formats for each provider
+   * @param data - The data to format
+   * @param provider - The provider of the data
+   * @param options - The options for formatting
+   * @returns The formatted data
    */
   static async formatResponse(
     data: any,
@@ -29,6 +30,8 @@ export class ResponseFormatter {
 
   /**
    * Get the appropriate formatter function for a provider
+   * @param provider - The provider of the data
+   * @returns The formatter function
    */
   private static getFormatter(
     provider: string,
@@ -89,9 +92,10 @@ export class ResponseFormatter {
   /**
    * Format generic/unknown provider responses
    * Attempts to extract content from common response formats
+   * @param data - The data to format
+   * @returns The formatted data
    */
   private static formatGenericResponse(data: any): any {
-    // Handle the most common response shapes
     if (data.response !== undefined) {
       return data;
     }

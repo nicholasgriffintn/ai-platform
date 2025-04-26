@@ -6,6 +6,12 @@ import { z } from "zod";
 import { Database } from "~/lib/database";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import {
+  planParamsSchema,
+  planResponseSchema,
+  plansResponseSchema,
+} from "./schemas/plans";
+import { errorResponseSchema } from "./schemas/shared";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("PLANS");
@@ -13,27 +19,6 @@ const routeLogger = createRouteLogger("PLANS");
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing plans route: ${c.req.path}`);
   return next();
-});
-
-const planSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string().nullable(),
-  price: z.number(),
-  stripe_price_id: z.string(),
-});
-
-const plansResponseSchema = z.object({
-  success: z.boolean(),
-  data: z.array(planSchema),
-});
-const planResponseSchema = z.object({
-  success: z.boolean(),
-  data: planSchema,
-});
-const errorResponseSchema = z.object({
-  error: z.string(),
-  type: z.string(),
 });
 
 app.get(
@@ -86,7 +71,7 @@ app.get(
       },
     },
   }),
-  zValidator("param", z.object({ id: z.string() })),
+  zValidator("param", planParamsSchema),
   async (c: Context) => {
     const { id } = c.req.valid("param" as never) as { id: string };
     const db = Database.getInstance(c.env);

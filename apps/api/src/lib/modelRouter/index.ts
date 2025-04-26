@@ -65,7 +65,6 @@ export class ModelRouter {
     requirements: PromptRequirements,
     model: string,
   ): Omit<ModelScore, "normalizedScore"> {
-    // Ensure scoreModel returns only the raw parts
     const capabilities = getModelConfig(model);
 
     if (
@@ -240,13 +239,11 @@ export class ModelRouter {
     const topRawScore = modelScores[0].score;
     const comparisonModels = [modelScores[0].model];
 
-    // First try to add models from different providers
     for (let i = 1; i < modelScores.length; i++) {
       const model = modelScores[i];
       const modelConfig = getModelConfig(model.model);
       const topModelConfig = getModelConfig(modelScores[0].model);
 
-      // Only add models from a different provider that are close in raw score
       if (
         modelConfig.provider !== topModelConfig.provider &&
         topRawScore - model.score <= ModelRouter.COMPARISON_SCORE_THRESHOLD &&

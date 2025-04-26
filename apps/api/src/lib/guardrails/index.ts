@@ -42,7 +42,6 @@ export class Guardrails {
         user,
       );
     } else {
-      // Default to LlamaGuard if no specific provider is set
       this.provider = GuardrailsProviderFactory.getProvider("llamaguard", {
         ai: env.AI,
       });

@@ -12,6 +12,10 @@ export interface GetSourceArticlesSuccessResponse {
 
 /**
  * Gets multiple source articles by their IDs.
+ * @param env - The environment variables
+ * @param ids - The IDs of the articles
+ * @param userId - The ID of the user
+ * @returns The source articles
  */
 export async function getSourceArticles({
   env,

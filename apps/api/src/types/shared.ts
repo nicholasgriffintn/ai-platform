@@ -61,4 +61,5 @@ export interface IEnv {
   LOG_LEVEL?: string;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
+  DEFAULT_PROVIDERS?: string;
 }
