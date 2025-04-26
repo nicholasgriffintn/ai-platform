@@ -5,7 +5,15 @@ import { z } from "zod";
 import { FREE_TRIAL_DAYS } from "~/constants/app";
 import { Database } from "~/lib/database";
 import { requireAuth } from "~/middleware/auth";
+import {
+  sendSubscriptionCancellationNoticeEmail,
+  sendSubscriptionEmail,
+  sendUnsubscriptionEmail,
+} from "~/services/subscription/emails";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "STRIPE_ROUTES" });
 
 const app = new Hono();
 
@@ -289,6 +297,17 @@ app.post(
         ErrorType.INTERNAL_ERROR,
       );
     }
+
+    if (user.email) {
+      try {
+        await sendSubscriptionCancellationNoticeEmail(c, user.email);
+      } catch (error: any) {
+        logger.error(
+          `Failed to send cancellation notification: ${error.message}`,
+        );
+      }
+    }
+
     return c.json(data);
   },
 );
@@ -342,6 +361,14 @@ app.post("/webhook", async (c: Context) => {
         stripe_subscription_id: subscription,
         plan_id: "pro",
       });
+
+      try {
+        if (user.email) {
+          await sendSubscriptionEmail(c, user.email, "Pro");
+        }
+      } catch (error: any) {
+        logger.error(`Failed to send subscription email: ${error.message}`);
+      }
     }
   }
 
@@ -358,6 +385,14 @@ app.post("/webhook", async (c: Context) => {
           stripe_subscription_id: null,
           plan_id: "free",
         });
+
+        try {
+          if (user.email) {
+            await sendUnsubscriptionEmail(c, user.email);
+          }
+        } catch (error: any) {
+          logger.error(`Failed to send cancellation email: ${error.message}`);
+        }
       } else {
         await db.updateUser(user.id, {
           stripe_subscription_id: subscriptionId,
