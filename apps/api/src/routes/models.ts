@@ -3,16 +3,16 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
-import {
-  availableCapabilities,
-  availableModelTypes,
-  filterModelsForUserAccess,
-  getModelConfig,
-  getModels,
-  getModelsByCapability,
-  getModelsByType,
-} from "~/lib/models";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import {
+  getModelDetails,
+  listCapabilities,
+  listModelTypes,
+  listModels,
+  listModelsByCapability,
+  listModelsByType,
+} from "~/services/models";
+import type { IEnv } from "~/types";
 import {
   capabilitiesResponseSchema,
   capabilityParamsSchema,
@@ -22,6 +22,7 @@ import {
   typeParamsSchema,
 } from "./schemas/models";
 import { errorResponseSchema } from "./schemas/shared";
+
 const app = new Hono();
 
 const routeLogger = createRouteLogger("MODELS");
@@ -58,17 +59,12 @@ app.get(
     },
   }),
   async (context: Context) => {
-    const allModels = getModels();
-    const filteredModels = await filterModelsForUserAccess(
-      allModels,
-      context.env,
-      context.get("user")?.id,
-    );
-
+    const userId = context.get("user")?.id;
+    const models = await listModels(context.env as IEnv, userId);
     return context.json({
       success: true,
       message: "Models fetched successfully",
-      data: filteredModels,
+      data: models,
     });
   },
 );
@@ -99,10 +95,11 @@ app.get(
     },
   }),
   async (context: Context) => {
+    const caps = listCapabilities();
     return context.json({
       success: true,
       message: "Capabilities fetched successfully",
-      data: availableCapabilities,
+      data: caps,
     });
   },
 );
@@ -154,18 +151,16 @@ app.get(
     const { capability } = context.req.valid("param" as never) as {
       capability: string;
     };
-
-    const modelsByCapability = getModelsByCapability(capability);
-    const filteredModels = await filterModelsForUserAccess(
-      modelsByCapability,
-      context.env,
-      context.get("user")?.id,
+    const userId = context.get("user")?.id;
+    const models = await listModelsByCapability(
+      context.env as IEnv,
+      capability,
+      userId,
     );
-
     return context.json({
       success: true,
       message: "Models fetched successfully",
-      data: filteredModels,
+      data: models,
     });
   },
 );
@@ -196,10 +191,11 @@ app.get(
     },
   }),
   async (context: Context) => {
+    const types = listModelTypes();
     return context.json({
       success: true,
       message: "Model types fetched successfully",
-      data: availableModelTypes,
+      data: types,
     });
   },
 );
@@ -249,18 +245,12 @@ app.get(
   zValidator("param", typeParamsSchema),
   async (context: Context) => {
     const { type } = context.req.valid("param" as never) as { type: string };
-
-    const modelsByType = getModelsByType(type);
-    const filteredModels = await filterModelsForUserAccess(
-      modelsByType,
-      context.env,
-      context.get("user")?.id,
-    );
-
+    const userId = context.get("user")?.id;
+    const models = await listModelsByType(context.env as IEnv, type, userId);
     return context.json({
       success: true,
       message: "Models fetched successfully",
-      data: filteredModels,
+      data: models,
     });
   },
 );
@@ -319,16 +309,15 @@ app.get(
   zValidator("param", modelParamsSchema),
   async (context: Context) => {
     const { id } = context.req.valid("param" as never) as { id: string };
-
-    const model = getModelConfig(id);
-
-    const accessibleModels = await filterModelsForUserAccess(
-      { [id]: model },
-      context.env,
-      context.get("user")?.id,
-    );
-
-    if (!accessibleModels[id]) {
+    const userId = context.get("user")?.id;
+    try {
+      const model = await getModelDetails(context.env as IEnv, id, userId);
+      return context.json({
+        success: true,
+        message: "Model fetched successfully",
+        data: model,
+      });
+    } catch (error) {
       return context.json(
         {
           success: false,
@@ -337,12 +326,6 @@ app.get(
         404,
       );
     }
-
-    return context.json({
-      success: true,
-      message: "Model fetched successfully",
-      data: model,
-    });
   },
 );
 

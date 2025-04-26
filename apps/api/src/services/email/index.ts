@@ -3,18 +3,19 @@ import type { Context } from "hono";
 
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import type { IEnv } from "../../types";
 
 const logger = getLogger({ prefix: "EMAIL_SERVICE" });
 
 export async function sendEmail(
-  context: Context,
+  env: IEnv,
   email: string,
   subject: string,
   bodyText: string,
   bodyHtml: string,
 ): Promise<void> {
   const { AWS_SES_ACCESS_KEY_ID, AWS_SES_SECRET_ACCESS_KEY, SES_EMAIL_FROM } =
-    context.env;
+    env;
 
   if (!AWS_SES_ACCESS_KEY_ID || !AWS_SES_SECRET_ACCESS_KEY || !SES_EMAIL_FROM) {
     throw new AssistantError(

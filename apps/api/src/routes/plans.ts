@@ -3,9 +3,9 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
-import { Database } from "~/lib/database";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { getPlanDetails, listPlans } from "~/services/plans";
+import type { IEnv } from "~/types";
 import {
   planParamsSchema,
   planResponseSchema,
@@ -36,8 +36,7 @@ app.get(
     },
   }),
   async (c: Context) => {
-    const db = Database.getInstance(c.env);
-    const plans = await db.getAllPlans();
+    const plans = await listPlans(c.env as IEnv);
     return c.json({ success: true, data: plans });
   },
 );
@@ -74,11 +73,7 @@ app.get(
   zValidator("param", planParamsSchema),
   async (c: Context) => {
     const { id } = c.req.valid("param" as never) as { id: string };
-    const db = Database.getInstance(c.env);
-    const plan = await db.getPlanById(id);
-    if (!plan) {
-      throw new AssistantError("Plan not found", ErrorType.NOT_FOUND);
-    }
+    const plan = await getPlanDetails(c.env as IEnv, id);
     return c.json({ success: true, data: plan });
   },
 );

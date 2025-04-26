@@ -1,12 +1,11 @@
-import type { Context } from "hono";
-
 import { sendEmail } from "~/services/email";
 import { getLogger } from "~/utils/logger";
+import type { IEnv } from "../../types";
 
 const logger = getLogger({ prefix: "SUBSCRIPTION_EMAILS" });
 
 export async function sendSubscriptionEmail(
-  context: Context,
+  env: IEnv,
   email: string,
   planName: string,
 ): Promise<void> {
@@ -26,7 +25,7 @@ export async function sendSubscriptionEmail(
   `;
 
   try {
-    await sendEmail(context, email, subject, bodyText, bodyHtml);
+    await sendEmail(env, email, subject, bodyText, bodyHtml);
     logger.info(`Subscription confirmation email sent to ${email}`);
   } catch (error) {
     logger.error(
@@ -38,7 +37,7 @@ export async function sendSubscriptionEmail(
 }
 
 export async function sendUnsubscriptionEmail(
-  context: Context,
+  env: IEnv,
   email: string,
 ): Promise<void> {
   const subject = "Subscription Cancelled";
@@ -57,7 +56,7 @@ export async function sendUnsubscriptionEmail(
   `;
 
   try {
-    await sendEmail(context, email, subject, bodyText, bodyHtml);
+    await sendEmail(env, email, subject, bodyText, bodyHtml);
     logger.info(`Subscription cancellation email sent to ${email}`);
   } catch (error) {
     logger.error(
@@ -69,7 +68,7 @@ export async function sendUnsubscriptionEmail(
 }
 
 export async function sendSubscriptionCancellationNoticeEmail(
-  context: Context,
+  env: IEnv,
   email: string,
 ): Promise<void> {
   const subject = "Your Subscription Will End Soon";
@@ -89,7 +88,7 @@ export async function sendSubscriptionCancellationNoticeEmail(
   `;
 
   try {
-    await sendEmail(context, email, subject, bodyText, bodyHtml);
+    await sendEmail(env, email, subject, bodyText, bodyHtml);
     logger.info(`Subscription cancellation notice email sent to ${email}`);
   } catch (error) {
     logger.error(
@@ -101,7 +100,7 @@ export async function sendSubscriptionCancellationNoticeEmail(
 }
 
 export async function sendPaymentFailedEmail(
-  context: Context,
+  env: IEnv,
   email: string,
 ): Promise<void> {
   const subject = "Payment Failed";
@@ -119,7 +118,7 @@ export async function sendPaymentFailedEmail(
   `;
 
   try {
-    await sendEmail(context, email, subject, bodyText, bodyHtml);
+    await sendEmail(env, email, subject, bodyText, bodyHtml);
     logger.info(`Payment failed email sent to ${email}`);
   } catch (error) {
     logger.error(`Failed to send payment failed email: ${error}`);
@@ -128,7 +127,7 @@ export async function sendPaymentFailedEmail(
 }
 
 export async function sendTrialEndingEmail(
-  context: Context,
+  env: IEnv,
   email: string,
 ): Promise<void> {
   const subject = "Your Trial is Ending Soon";
@@ -148,7 +147,7 @@ export async function sendTrialEndingEmail(
   `;
 
   try {
-    await sendEmail(context, email, subject, bodyText, bodyHtml);
+    await sendEmail(env, email, subject, bodyText, bodyHtml);
     logger.info(`Trial ending notification email sent to ${email}`);
   } catch (error) {
     logger.error(`Failed to send trial ending notification email: ${error}`);
