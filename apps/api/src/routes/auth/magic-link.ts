@@ -4,11 +4,11 @@ import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
 import { Database } from "~/lib/database";
-import { sendMagicLinkEmail } from "~/services/auth/magicLink";
 import {
   requestMagicLink,
+  sendMagicLinkEmail,
   verifyMagicLink,
-} from "~/services/auth/magicLinkService";
+} from "~/services/auth/magicLink";
 import { createSession } from "~/services/auth/user";
 import {
   magicLinkRequestSchema,
