@@ -85,14 +85,17 @@ export abstract class BaseProvider implements AIProvider {
 
   /**
    * Formats the response from the API call
-   * Default implementation uses the ResponseFormatter utility
    */
-  protected formatResponse(data: any, params: ChatCompletionParameters): any {
+  protected async formatResponse(
+    data: any,
+    params: ChatCompletionParameters,
+  ): Promise<any> {
     const modelConfig = getModelConfigByMatchingModel(params.model || "");
 
-    return ResponseFormatter.formatResponse(data, this.name, {
+    return await ResponseFormatter.formatResponse(data, this.name, {
       model: params.model,
       type: modelConfig?.type,
+      env: params.env,
     });
   }
 
@@ -127,7 +130,7 @@ export abstract class BaseProvider implements AIProvider {
           return data;
         }
 
-        return this.formatResponse(data, params);
+        return await this.formatResponse(data, params);
       },
       analyticsEngine: params.env?.ANALYTICS,
       settings: {

@@ -80,7 +80,7 @@ export class CertesiaProvider extends BaseProvider {
           params.env,
         );
 
-        return this.formatResponse(data, params);
+        return await this.formatResponse(data, params);
       },
       analyticsEngine: params.env?.ANALYTICS,
       settings: {

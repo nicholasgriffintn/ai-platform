@@ -190,13 +190,13 @@ export async function createStreamWithPostProcessing(
                 return;
               }
 
-              // Use ResponseFormatter to standardize the response format
-              const formattedData = ResponseFormatter.formatResponse(
+              const formattedData = await ResponseFormatter.formatResponse(
                 data,
                 platform,
                 {
                   model,
                   type: modelConfig?.type,
+                  env,
                 },
               );
 

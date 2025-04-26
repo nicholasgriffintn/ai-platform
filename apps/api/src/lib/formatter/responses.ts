@@ -1,6 +1,11 @@
+import type { IEnv } from "~/types";
+import { StorageService } from "../storage";
+
 interface ResponseFormatOptions {
   model?: string;
   type?: string[];
+  env?: IEnv;
+  completion_id?: string;
 }
 
 /**
@@ -12,13 +17,13 @@ export class ResponseFormatter {
   /**
    * Format a response from any provider
    */
-  static formatResponse(
+  static async formatResponse(
     data: any,
     provider: string,
     options: ResponseFormatOptions = {},
-  ): any {
+  ): Promise<any> {
     const formatter = ResponseFormatter.getFormatter(provider);
-    return formatter(data, options);
+    return await formatter(data, options);
   }
 
   /**
@@ -48,6 +53,35 @@ export class ResponseFormatter {
     };
 
     return formatters[provider] || ResponseFormatter.formatGenericResponse;
+  }
+
+  private static async uploadImages(
+    imageUrls: string[],
+    options: ResponseFormatOptions,
+  ): Promise<any> {
+    const env = options.env;
+
+    if (!env?.ASSETS_BUCKET) {
+      throw new Error("ASSETS_BUCKET is not set");
+    }
+
+    const storageService = new StorageService(env.ASSETS_BUCKET);
+
+    const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+
+    const uploadedImageUrls = await Promise.all(
+      imageUrls.map(async (url) => {
+        const imageKey = `generations/${options.completion_id || "completion"}/${options.model || "model"}/${Date.now()}.png`;
+        const imageBuffer = await fetch(url).then((res) => res.arrayBuffer());
+        await storageService.uploadObject(imageKey, imageBuffer, {
+          contentType: "image/png",
+          contentLength: imageBuffer.byteLength,
+        });
+        return `${baseAssetsUrl}/${imageKey}`;
+      }),
+    );
+
+    return uploadedImageUrls;
   }
 
   /**
@@ -121,15 +155,30 @@ export class ResponseFormatter {
       }
     }
 
-    // Last resort fallback
     return { ...data, response: "" };
   }
 
-  private static formatOpenAIResponse(data: any): any {
-    if (Array.isArray(data.data)) {
-      const imageUrls = data.data
+  private static async formatOpenAIResponse(
+    data: any,
+    options: ResponseFormatOptions,
+  ): Promise<any> {
+    const isImageType =
+      options.type?.includes("image-to-image") ||
+      options.type?.includes("text-to-image");
+    if (isImageType && Array.isArray(data.data)) {
+      const dataImageUrls = data.data
         .filter((item) => item.url)
         .map((item) => item.url);
+
+      let imageUrls: string[];
+      if (options.env) {
+        imageUrls = await ResponseFormatter.uploadImages(
+          dataImageUrls,
+          options,
+        );
+      } else {
+        imageUrls = dataImageUrls;
+      }
 
       let imagesContent = [];
       if (imageUrls.length > 0) {
