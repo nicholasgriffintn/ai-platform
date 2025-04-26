@@ -1,13 +1,16 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
+import Stripe from "stripe";
 import { z } from "zod";
 import { FREE_TRIAL_DAYS } from "~/constants/app";
 import { Database } from "~/lib/database";
 import { requireAuth } from "~/middleware/auth";
 import {
+  sendPaymentFailedEmail,
   sendSubscriptionCancellationNoticeEmail,
   sendSubscriptionEmail,
+  sendTrialEndingEmail,
   sendUnsubscriptionEmail,
 } from "~/services/subscription/emails";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -23,49 +26,15 @@ const checkoutSchema = z.object({
   cancel_url: z.string().url(),
 });
 
-async function verifyStripeSignature(
-  payload: string,
-  header: string,
-  secret: string,
-): Promise<boolean> {
-  const parts = header.split(",").map((p) => p.trim());
-  const timestampPart = parts.find((p) => p.startsWith("t="));
-  const signaturePart = parts.find((p) => p.startsWith("v1="));
-
-  if (!timestampPart || !signaturePart) {
-    return false;
+function getStripeClient(ctx: Context): Stripe {
+  const secret = ctx.env.STRIPE_SECRET_KEY;
+  if (!secret) {
+    throw new AssistantError(
+      "Stripe secret key not configured",
+      ErrorType.CONFIGURATION_ERROR,
+    );
   }
-
-  const timestamp = timestampPart.split("=")[1];
-  const expectedSig = signaturePart.split("=")[1];
-  const signedPayload = `${timestamp}.${payload}`;
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    encoder.encode(signedPayload),
-  );
-  const signatureHex = Array.from(new Uint8Array(signature))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-
-  if (signatureHex.length !== expectedSig.length) {
-    return false;
-  }
-
-  let result = 0;
-  for (let i = 0; i < signatureHex.length; i++) {
-    result |= signatureHex.charCodeAt(i) ^ expectedSig.charCodeAt(i);
-  }
-
-  return result === 0;
+  return new Stripe(secret, { apiVersion: "2025-03-31.basil" });
 }
 
 app.post(
@@ -108,6 +77,21 @@ app.post(
     }
 
     const db = Database.getInstance(c.env);
+
+    if (user.stripe_subscription_id) {
+      const stripe = getStripeClient(c);
+      const subscription = await stripe.subscriptions.retrieve(
+        user.stripe_subscription_id,
+      );
+
+      if (["active", "trialing"].includes(subscription.status)) {
+        throw new AssistantError(
+          "User already has an active subscription",
+          ErrorType.CONFLICT_ERROR,
+        );
+      }
+    }
+
     const plan = await db.getPlanById(plan_id);
 
     if (!plan) {
@@ -115,77 +99,45 @@ app.post(
     }
 
     const priceId = (plan as any).stripe_price_id as string;
-
-    const secret = c.env.STRIPE_SECRET_KEY;
-    if (!secret) {
-      throw new AssistantError(
-        "Stripe secret key not configured",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
-
-    const params = new URLSearchParams();
-    params.append("mode", "subscription");
-    params.append(
-      "subscription_data[trial_period_days]",
-      FREE_TRIAL_DAYS.toString(),
-    );
-    params.append("payment_method_types[]", "card");
-    params.append("line_items[0][price]", priceId);
-    params.append("line_items[0][quantity]", "1");
-    params.append("success_url", success_url);
-    params.append("cancel_url", cancel_url);
+    const stripe = getStripeClient(c);
 
     let customerId = user.stripe_customer_id;
 
     if (!customerId) {
-      const custParams = new URLSearchParams();
-      custParams.append("email", (user as any).email);
-      custParams.append("metadata[user_id]", user.id.toString());
-
-      const custRes = await fetch("https://api.stripe.com/v1/customers", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${secret}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: custParams,
+      const customer = await stripe.customers.create({
+        email: (user as any).email,
+        metadata: { user_id: user.id.toString() },
       });
 
-      const custData = (await custRes.json()) as any;
-
-      if (!custRes.ok) {
-        throw new AssistantError(
-          custData.error?.message || "Failed to create Stripe customer",
-          ErrorType.INTERNAL_ERROR,
-        );
-      }
-
-      customerId = custData.id;
+      customerId = customer.id;
 
       await db.updateUser(user.id, { stripe_customer_id: customerId });
     }
 
-    params.append("customer", customerId);
-
-    const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${secret}`,
-        "Content-Type": "application/x-www-form-urlencoded",
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      customer: customerId,
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      success_url,
+      cancel_url,
+      subscription_data: {
+        trial_period_days: FREE_TRIAL_DAYS,
       },
-      body: params,
+      metadata: {
+        user_id: user.id.toString(),
+      },
     });
 
-    const data = (await res.json()) as any;
-    if (!res.ok) {
-      throw new AssistantError(
-        data.error?.message || "Stripe API error",
-        ErrorType.INTERNAL_ERROR,
-      );
-    }
-
-    return c.json(data);
+    return c.json({
+      session_id: session.id,
+      url: session.url,
+    });
   },
 );
 
@@ -214,28 +166,45 @@ app.get(
     if (!subscriptionId) {
       return c.json({
         status: "inactive",
-        plan: null,
+        current_period_end: null,
+        cancel_at_period_end: false,
+        trial_end: null,
       });
     }
-    const secret = c.env.STRIPE_SECRET_KEY;
-    if (!secret) {
+
+    const stripe = getStripeClient(c);
+
+    try {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+      return c.json({
+        status: subscription.status,
+        days_until_due: subscription.days_until_due,
+        cancel_at_period_end: subscription.cancel_at_period_end,
+        cancel_at: subscription.cancel_at,
+        trial_end: subscription.trial_end,
+        currency: subscription.currency,
+        items: subscription.items,
+      });
+    } catch (error: any) {
+      if (error.code === "resource_missing") {
+        await Database.getInstance(c.env).updateUser(user.id, {
+          stripe_subscription_id: null,
+          plan_id: "free",
+        });
+
+        return c.json({
+          status: "inactive",
+          current_period_end: null,
+          cancel_at_period_end: false,
+          trial_end: null,
+        });
+      }
       throw new AssistantError(
-        "Stripe secret key not configured",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
-    const res = await fetch(
-      `https://api.stripe.com/v1/subscriptions/${subscriptionId}`,
-      { headers: { Authorization: `Bearer ${secret}` } },
-    );
-    const data = (await res.json()) as any;
-    if (!res.ok) {
-      throw new AssistantError(
-        data.error?.message || "Stripe API error",
+        `Stripe API error: ${error.message}`,
         ErrorType.INTERNAL_ERROR,
       );
     }
-    return c.json(data);
   },
 );
 
@@ -265,50 +234,124 @@ app.post(
       throw new AssistantError("No active subscription", ErrorType.NOT_FOUND);
     }
 
-    const secret = c.env.STRIPE_SECRET_KEY;
+    const stripe = getStripeClient(c);
 
-    if (!secret) {
-      throw new AssistantError(
-        "Stripe secret key not configured",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
+    try {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
-    const params = new URLSearchParams();
-    params.append("cancel_at_period_end", "true");
+      if (subscription.cancel_at_period_end) {
+        return c.json({
+          status: subscription.status,
+          cancel_at_period_end: true,
+          days_until_due: subscription.days_until_due,
+        });
+      }
 
-    const res = await fetch(
-      `https://api.stripe.com/v1/subscriptions/${subscriptionId}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${secret}`,
-          "Content-Type": "application/x-www-form-urlencoded",
+      const updatedSubscription = await stripe.subscriptions.update(
+        subscriptionId,
+        {
+          cancel_at_period_end: true,
         },
-        body: params,
-      },
-    );
+      );
 
-    const data = (await res.json()) as any;
+      if (user.email) {
+        try {
+          await sendSubscriptionCancellationNoticeEmail(c, user.email);
+        } catch (error: any) {
+          logger.error(
+            `Failed to send cancellation notification: ${error.message}`,
+          );
+          // TODO: Queue this to retry later
+        }
+      }
 
-    if (!res.ok) {
+      return c.json({
+        status: updatedSubscription.status,
+        cancel_at_period_end: updatedSubscription.cancel_at_period_end,
+        days_until_due: updatedSubscription.days_until_due,
+      });
+    } catch (error: any) {
+      if (error.code === "resource_missing") {
+        await Database.getInstance(c.env).updateUser(user.id, {
+          stripe_subscription_id: null,
+          plan_id: "free",
+        });
+
+        throw new AssistantError("Subscription not found", ErrorType.NOT_FOUND);
+      }
+      // TODO: Queue this to retry later
       throw new AssistantError(
-        data.error?.message || "Stripe API error",
+        `Stripe API error: ${error.message}`,
         ErrorType.INTERNAL_ERROR,
       );
     }
+  },
+);
 
-    if (user.email) {
-      try {
-        await sendSubscriptionCancellationNoticeEmail(c, user.email);
-      } catch (error: any) {
-        logger.error(
-          `Failed to send cancellation notification: ${error.message}`,
-        );
-      }
+app.post(
+  "/subscription/reactivate",
+  describeRoute({
+    tags: ["stripe"],
+    summary: "Reactivate a subscription that was scheduled for cancellation",
+    responses: {
+      200: {
+        description: "Subscription reactivated",
+        content: { "application/json": {} },
+      },
+      404: {
+        description: "No subscription found",
+        content: { "application/json": {} },
+      },
+      500: { description: "Server error", content: { "application/json": {} } },
+    },
+  }),
+  requireAuth,
+  async (c: Context) => {
+    const user = c.get("user");
+    const subscriptionId = (user as any)?.stripe_subscription_id;
+
+    if (!subscriptionId) {
+      throw new AssistantError("No active subscription", ErrorType.NOT_FOUND);
     }
 
-    return c.json(data);
+    const stripe = getStripeClient(c);
+
+    try {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+      if (!subscription.cancel_at_period_end) {
+        return c.json({
+          status: subscription.status,
+          cancel_at_period_end: false,
+        });
+      }
+
+      const updatedSubscription = await stripe.subscriptions.update(
+        subscriptionId,
+        {
+          cancel_at_period_end: false,
+        },
+      );
+
+      return c.json({
+        status: updatedSubscription.status,
+        cancel_at_period_end: false,
+      });
+    } catch (error: any) {
+      if (error.code === "resource_missing") {
+        await Database.getInstance(c.env).updateUser(user.id, {
+          stripe_subscription_id: null,
+          plan_id: "free",
+        });
+
+        throw new AssistantError("Subscription not found", ErrorType.NOT_FOUND);
+      }
+      // TODO: Queue this to retry later
+      throw new AssistantError(
+        `Stripe API error: ${error.message}`,
+        ErrorType.INTERNAL_ERROR,
+      );
+    }
   },
 );
 
@@ -332,73 +375,138 @@ app.post("/webhook", async (c: Context) => {
   }
 
   const payload = await c.req.text();
+  const stripe = getStripeClient(c);
 
-  if (!(await verifyStripeSignature(payload, sig, webhookSecret))) {
+  let event: Stripe.Event;
+
+  try {
+    event = await stripe.webhooks.constructEventAsync(
+      payload,
+      sig,
+      webhookSecret,
+    );
+  } catch (err: any) {
+    logger.error(`Webhook signature verification failed: ${err.message}`);
     throw new AssistantError(
       "Invalid webhook signature",
       ErrorType.AUTHENTICATION_ERROR,
     );
   }
 
-  let event;
-  try {
-    event = JSON.parse(payload);
-  } catch {
-    throw new AssistantError("Invalid webhook payload", ErrorType.PARAMS_ERROR);
-  }
-
   const db = Database.getInstance(c.env);
-  const { type, data } = event;
-  const obj = data.object;
 
-  if (type === "checkout.session.completed") {
-    const customer = obj.customer as string;
-    const subscription = obj.subscription as string;
-    const user = await db.getUserByStripeCustomerId(customer);
-    if (user?.id) {
-      await db.updateUser(user.id, {
-        stripe_customer_id: customer,
-        stripe_subscription_id: subscription,
-        plan_id: "pro",
-      });
+  try {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const customerId = session.customer as string;
+        const subscriptionId = session.subscription as string;
 
-      try {
-        if (user.email) {
-          await sendSubscriptionEmail(c, user.email, "Pro");
-        }
-      } catch (error: any) {
-        logger.error(`Failed to send subscription email: ${error.message}`);
-      }
-    }
-  }
+        if (customerId && subscriptionId) {
+          const user = await db.getUserByStripeCustomerId(customerId);
 
-  if (
-    type === "customer.subscription.updated" ||
-    type === "customer.subscription.deleted"
-  ) {
-    const customer = obj.customer as string;
-    const subscriptionId = obj.id as string;
-    const user = await db.getUserByStripeCustomerId(customer);
-    if (user?.id) {
-      if (type === "customer.subscription.deleted") {
-        await db.updateUser(user.id, {
-          stripe_subscription_id: null,
-          plan_id: "free",
-        });
+          if (user?.id) {
+            await db.updateUser(user.id, {
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscriptionId,
+              plan_id: "pro",
+            });
 
-        try {
-          if (user.email) {
-            await sendUnsubscriptionEmail(c, user.email);
+            try {
+              if (user.email) {
+                await sendSubscriptionEmail(c, user.email, "Pro");
+              }
+            } catch (error: any) {
+              logger.error(
+                `Failed to send subscription email: ${error.message}`,
+              );
+            }
           }
-        } catch (error: any) {
-          logger.error(`Failed to send cancellation email: ${error.message}`);
         }
-      } else {
-        await db.updateUser(user.id, {
-          stripe_subscription_id: subscriptionId,
-        });
+        break;
+      }
+
+      case "customer.subscription.updated": {
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer as string;
+
+        const user = await db.getUserByStripeCustomerId(customerId);
+
+        if (user?.id) {
+          await db.updateUser(user.id, {
+            stripe_subscription_id: subscription.id,
+          });
+        }
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer as string;
+
+        const user = await db.getUserByStripeCustomerId(customerId);
+
+        if (user?.id) {
+          await db.updateUser(user.id, {
+            stripe_subscription_id: null,
+            plan_id: "free",
+          });
+
+          try {
+            if (user.email) {
+              await sendUnsubscriptionEmail(c, user.email);
+            }
+          } catch (error: any) {
+            logger.error(`Failed to send cancellation email: ${error.message}`);
+          }
+        }
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+
+        const user = await db.getUserByStripeCustomerId(customerId);
+
+        if (user?.id && user.email) {
+          try {
+            await sendPaymentFailedEmail(c, user.email);
+          } catch (error: any) {
+            logger.error(
+              `Failed to send payment failed email: ${error.message}`,
+            );
+          }
+        }
+        break;
+      }
+
+      case "customer.subscription.trial_will_end": {
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer as string;
+
+        const user = await db.getUserByStripeCustomerId(customerId);
+
+        if (user?.id && user.email) {
+          try {
+            await sendTrialEndingEmail(c, user.email);
+            logger.info(
+              `Trial ending notification sent for user ${user.id} with subscription ${subscription.id}`,
+            );
+          } catch (error: any) {
+            logger.error(
+              `Failed to send trial ending notification: ${error.message}`,
+            );
+          }
+        }
+        break;
       }
     }
+  } catch (error: any) {
+    logger.error(`Error processing webhook ${event.type}: ${error.message}`);
+
+    // TODO: Queue this to retry later and then don't throw an error
+    throw error;
   }
 
   return c.json({ received: true });

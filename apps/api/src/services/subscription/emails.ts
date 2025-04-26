@@ -99,3 +99,59 @@ export async function sendSubscriptionCancellationNoticeEmail(
     throw error;
   }
 }
+
+export async function sendPaymentFailedEmail(
+  context: Context,
+  email: string,
+): Promise<void> {
+  const subject = "Payment Failed";
+  const bodyText =
+    "Your payment has failed. Please update your payment method to continue using Polychat.";
+
+  const bodyHtml = `
+    <html>
+      <head></head>
+      <body>
+        <h1>Payment Failed</h1>
+        <p>Your payment has failed. Please update your payment method to continue using Polychat.</p>
+      </body>
+    </html>
+  `;
+
+  try {
+    await sendEmail(context, email, subject, bodyText, bodyHtml);
+    logger.info(`Payment failed email sent to ${email}`);
+  } catch (error) {
+    logger.error(`Failed to send payment failed email: ${error}`);
+    throw error;
+  }
+}
+
+export async function sendTrialEndingEmail(
+  context: Context,
+  email: string,
+): Promise<void> {
+  const subject = "Your Trial is Ending Soon";
+  const bodyText =
+    "Your free trial period is ending soon. To continue using premium features, please update your payment method.";
+
+  const bodyHtml = `
+    <html>
+      <head></head>
+      <body>
+        <h1>Your Trial is Ending Soon</h1>
+        <p>Your free trial period is ending soon.</p>
+        <p>To continue enjoying premium features without interruption, please make sure your payment method is up to date.</p>
+        <p>If you do not update your payment method, your account will be downgraded to the free plan when your trial expires.</p>
+      </body>
+    </html>
+  `;
+
+  try {
+    await sendEmail(context, email, subject, bodyText, bodyHtml);
+    logger.info(`Trial ending notification email sent to ${email}`);
+  } catch (error) {
+    logger.error(`Failed to send trial ending notification email: ${error}`);
+    throw error;
+  }
+}

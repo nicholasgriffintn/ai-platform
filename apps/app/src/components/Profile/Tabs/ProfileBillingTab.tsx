@@ -1,4 +1,12 @@
-import { Loader2, Plus, Rocket, Sparkles, Trash2, Zap } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  RefreshCw,
+  Rocket,
+  Sparkles,
+  Trash2,
+  Zap,
+} from "lucide-react";
 import type { ReactNode } from "react";
 
 import { EmptyState } from "~/components/EmptyState";
@@ -9,6 +17,7 @@ import { Card } from "~/components/ui/Card";
 import {
   useCancelSubscription,
   useCreateCheckoutSession,
+  useReactivateSubscription,
   useSubscription,
 } from "~/hooks/useBilling";
 import { formatDate } from "~/lib/dates";
@@ -33,11 +42,29 @@ export function ProfileBillingTab() {
 
   const { mutate: cancelSub, status: cancelStatus } = useCancelSubscription();
 
+  const { mutate: reactivateSub, status: reactivateStatus } =
+    useReactivateSubscription();
+
   const actions: PageAction[] = [];
 
   if (!isSubLoading && !subError) {
     if (sub?.status === "active" || sub?.status === "trialing") {
       if (sub.cancel_at_period_end) {
+        actions.push({
+          label:
+            reactivateStatus === "pending"
+              ? "Reactivating..."
+              : "Reactivate Subscription",
+          onClick: () => reactivateSub(),
+          icon:
+            reactivateStatus === "pending" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            ),
+          disabled: reactivateStatus === "pending",
+          variant: "primary",
+        });
         actions.push({
           label: "Cancellation Pending",
           onClick: () => {},
@@ -186,6 +213,7 @@ export function ProfileBillingTab() {
                 </div>
 
                 <Button
+                  disabled={checkoutStatus === "pending"}
                   onClick={() =>
                     checkout({
                       planId: "pro",
@@ -199,7 +227,11 @@ export function ProfileBillingTab() {
                   <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-700" />
                   <span className="relative flex items-center justify-center">
                     <Zap className="mr-2 h-4 w-4 animate-pulse text-yellow-100" />
-                    <span className="relative">Upgrade to Pro</span>
+                    <span className="relative">
+                      {checkoutStatus === "pending"
+                        ? "Redirecting..."
+                        : "Upgrade to Pro"}
+                    </span>
                   </span>
                 </Button>
               </div>

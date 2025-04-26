@@ -18,6 +18,8 @@ export enum ErrorType {
   EMAIL_SEND_FAILED = "EMAIL_SEND_FAILED",
   INTERNAL_ERROR = "INTERNAL_ERROR",
   USAGE_LIMIT_ERROR = "USAGE_LIMIT_ERROR",
+  USER_NOT_FOUND = "USER_NOT_FOUND",
+  CONFLICT_ERROR = "CONFLICT_ERROR",
 }
 
 export class AssistantError extends Error {
@@ -75,6 +77,7 @@ export function handleAIServiceError(error: AssistantError): Response {
     case ErrorType.PARAMS_ERROR:
       return Response.json({ error: error.message }, { status: 400 });
     case ErrorType.NOT_FOUND:
+    case ErrorType.USER_NOT_FOUND:
       return Response.json({ error: error.message }, { status: 404 });
     case ErrorType.PROVIDER_ERROR:
       logger.error("Provider error:", error.message, error.context);
@@ -92,6 +95,8 @@ export function handleAIServiceError(error: AssistantError): Response {
       return Response.json({ error: error.message }, { status: 500 });
     case ErrorType.USAGE_LIMIT_ERROR:
       return Response.json({ error: error.message }, { status: 429 });
+    case ErrorType.CONFLICT_ERROR:
+      return Response.json({ error: error.message }, { status: 409 });
     default:
       logger.error(
         `${error.type || "Unknown error"}:`,

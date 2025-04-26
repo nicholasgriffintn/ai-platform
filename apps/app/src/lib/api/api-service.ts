@@ -869,6 +869,22 @@ class ApiService {
     }
     return data;
   }
+
+  async reactivateSubscription(): Promise<any> {
+    const response = await fetchApi("/stripe/subscription/reactivate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const error = (await response.json()) as { message?: string };
+      throw new Error(error.message || "Failed to reactivate subscription");
+    }
+
+    return response.json();
+  }
 }
 
 export const apiService = ApiService.getInstance();

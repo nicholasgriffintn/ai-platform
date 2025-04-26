@@ -44,6 +44,9 @@ importers:
       hono-openapi:
         specifier: 0.4.6
         version: 0.4.6(@hono/zod-validator@0.4.3(hono@4.7.7)(zod@3.24.3))(hono@4.7.7)(zod-openapi@4.2.4(zod@3.24.3))(zod@3.24.3)
+      stripe:
+        specifier: ^18.0.0
+        version: 18.0.0
       zod:
         specifier: 3.24.3
         version: 3.24.3
@@ -4273,6 +4276,10 @@ packages:
   strip-json-comments@2.0.1:
     resolution: {integrity: sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ==}
     engines: {node: '>=0.10.0'}
+
+  stripe@18.0.0:
+    resolution: {integrity: sha512-3Fs33IzKUby//9kCkCa1uRpinAoTvj6rJgQ2jrBEysoxEvfsclvXdna1amyEYbA2EKkjynuB4+L/kleCCaWTpA==}
+    engines: {node: '>=12.*'}
 
   style-to-js@1.1.16:
     resolution: {integrity: sha512-/Q6ld50hKYPH3d/r6nr117TZkHR0w0kGGIVfpG9N6D8NymRPM9RqCUv4pRpJ62E5DqOYx2AFpbZMyCPnjQCnOw==}
@@ -8824,6 +8831,11 @@ snapshots:
       min-indent: 1.0.1
 
   strip-json-comments@2.0.1: {}
+
+  stripe@18.0.0:
+    dependencies:
+      '@types/node': 22.14.1
+      qs: 6.13.0
 
   style-to-js@1.1.16:
     dependencies:
