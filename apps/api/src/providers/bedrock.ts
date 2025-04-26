@@ -2,9 +2,7 @@ import { AwsClient } from "aws4fetch";
 
 import { gatewayId } from "~/constants/app";
 import { mapParametersToProvider } from "~/lib/chat/parameters";
-import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
-import { uploadImageFromChat } from "~/lib/upload";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -132,48 +130,7 @@ export class BedrockProvider extends BaseProvider {
 
         const data = (await response.json()) as any;
 
-        const modelConfig = getModelConfigByMatchingModel(params.model || "");
-        const type = modelConfig?.type || ["text"];
-        const isImageType =
-          type.includes("text-to-image") || type.includes("image-to-image");
-        const isVideoType =
-          type.includes("text-to-video") || type.includes("image-to-video");
-
-        if (isVideoType) {
-          return {
-            response: data,
-          };
-        }
-
-        if (isImageType) {
-          const images = data.images;
-
-          if (!images) {
-            throw new AssistantError("No images returned from Bedrock");
-          }
-
-          const imageId = Math.random().toString(36);
-          const imageKey = `${params.model}/${imageId}.png`;
-
-          await uploadImageFromChat(images[0], params.env, imageKey);
-
-          const baseAssetsUrl = params.env.PUBLIC_ASSETS_URL || "";
-          return {
-            response: `Image Generated: [${imageId}](${baseAssetsUrl}/${imageKey})`,
-            data: {
-              url: `${baseAssetsUrl}/${imageKey}`,
-              key: imageKey,
-            },
-          };
-        }
-
-        if (!data.output?.message?.content?.[0]?.text) {
-          throw new AssistantError("No content returned from Bedrock");
-        }
-
-        return {
-          response: data.output.message.content[0].text,
-        };
+        return await this.formatResponse(data, params);
       },
       analyticsEngine: params.env?.ANALYTICS,
       settings: {

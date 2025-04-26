@@ -1,5 +1,6 @@
 import type { IEnv } from "~/types";
 import { StorageService } from "../storage";
+import { uploadAudioFromChat, uploadImageFromChat } from "../upload";
 
 interface ResponseFormatOptions {
   model?: string;
@@ -42,6 +43,7 @@ export class ResponseFormatter {
       ollama: ResponseFormatter.formatOllamaResponse,
       bedrock: ResponseFormatter.formatBedrockResponse,
       workers: ResponseFormatter.formatWorkersResponse,
+      "workers-ai": ResponseFormatter.formatWorkersResponse,
       openrouter: ResponseFormatter.formatOpenRouterResponse,
       groq: ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
       mistral: ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
@@ -91,7 +93,7 @@ export class ResponseFormatter {
   private static formatGenericResponse(data: any): any {
     // Handle the most common response shapes
     if (data.response !== undefined) {
-      return data; // Already has response field
+      return data;
     }
 
     if (data.choices?.[0]) {
@@ -210,18 +212,15 @@ export class ResponseFormatter {
       return { ...data, response: "" };
     }
 
-    // Extract text content from all text blocks
     const textContent = data.content
       .filter((content: any) => content.type === "text" && content.text)
       .map((content: any) => content.text)
       .join(" ");
 
-    // Check for thinking content
     const thinkingContent = data.content.find(
       (content: any) => content.type === "thinking" && content.thinking,
     );
 
-    // Return formatted response
     return {
       ...data,
       response: textContent,
@@ -281,7 +280,48 @@ export class ResponseFormatter {
     return { ...data, response: data.message?.content || "" };
   }
 
-  private static formatWorkersResponse(data: any): any {
+  private static async formatWorkersResponse(
+    data: any,
+    options: ResponseFormatOptions = {},
+  ): Promise<any> {
+    const type = options.type || ["text"];
+    const isImageType =
+      type.includes("text-to-image") || type.includes("image-to-image");
+    const isAudioType =
+      type.includes("text-to-speech") || type.includes("audio-to-text");
+
+    if (isImageType && ((data as any).image || typeof data === "string")) {
+      const imageContent = (data as any).image || (data as any);
+      if (options.env) {
+        const imageId = Math.random().toString(36).substring(2);
+        const imageKey = `generations/${options.completion_id || "completion"}/${options.model || "model"}/${imageId}.png`;
+        await uploadImageFromChat(imageContent, options.env, imageKey);
+        const baseAssetsUrl = options.env.PUBLIC_ASSETS_URL || "";
+        return {
+          ...data,
+          response: `Image Generated: [${imageId}](${baseAssetsUrl}/${imageKey})`,
+          data: { url: `${baseAssetsUrl}/${imageKey}`, key: imageKey },
+        };
+      }
+      return { ...data, response: imageContent };
+    }
+
+    if (isAudioType && ((data as any).audio || typeof data === "string")) {
+      const audioContent = (data as any).audio || (data as any);
+      if (options.env) {
+        const audioId = Math.random().toString(36).substring(2);
+        const audioKey = `generations/${options.completion_id || "completion"}/${options.model || "model"}/${audioId}.mp3`;
+        await uploadAudioFromChat(audioContent, options.env, audioKey);
+        const baseAssetsUrl = options.env.PUBLIC_ASSETS_URL || "";
+        return {
+          ...data,
+          response: `Audio Generated: [${audioId}](${baseAssetsUrl}/${audioKey})`,
+          data: { url: `${baseAssetsUrl}/${audioKey}`, key: audioKey },
+        };
+      }
+      return { ...data, response: audioContent };
+    }
+
     if (data.response) {
       return data;
     }
@@ -289,10 +329,10 @@ export class ResponseFormatter {
     return { ...data, response: data.result || "" };
   }
 
-  private static formatBedrockResponse(
+  private static async formatBedrockResponse(
     data: any,
     options: ResponseFormatOptions = {},
-  ): any {
+  ): Promise<any> {
     const type = options.type || ["text"];
     const isImageType =
       type.includes("text-to-image") || type.includes("image-to-image");
@@ -303,11 +343,29 @@ export class ResponseFormatter {
       return { ...data, response: data };
     }
 
-    if (isImageType && data.images) {
-      return {
-        ...data,
-        response: `Image Generated: [${Math.random().toString(36)}]`,
-      };
+    if (isImageType) {
+      const images = (data as any).images;
+      if (!images || !Array.isArray(images) || images.length === 0) {
+        throw new Error("No images returned from Bedrock");
+      }
+
+      const image = images[0];
+      if (options.env) {
+        const imageId = Math.random().toString(36).substring(2);
+        const imageKey = `generations/${options.completion_id || "completion"}/${options.model || "model"}/${imageId}.png`;
+        await uploadImageFromChat(image, options.env, imageKey);
+        const baseAssetsUrl = options.env.PUBLIC_ASSETS_URL || "";
+
+        return {
+          ...data,
+          response: `Image Generated: [${imageId}](${baseAssetsUrl}/${imageKey})`,
+          data: {
+            url: `${baseAssetsUrl}/${imageKey}`,
+            key: imageKey,
+          },
+        };
+      }
+      return { ...data, response: image };
     }
 
     if (data.output?.message?.content?.[0]?.text) {
