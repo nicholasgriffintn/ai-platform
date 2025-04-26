@@ -4,7 +4,6 @@ import { Logo } from "~/components/Logo";
 import { PageHeader } from "~/components/PageHeader";
 import { PageShell } from "~/components/PageShell";
 import { PageTitle } from "~/components/PageTitle";
-import { Prose } from "~/components/Prose";
 import { APP_NAME } from "~/constants";
 
 export function meta() {
@@ -58,18 +57,13 @@ export default function ErrorRoute({
       className="flex h-dvh w-full max-w-full overflow-hidden bg-off-white dark:bg-zinc-900"
     >
       <div className="flex-1 overflow-auto w-full">
-        <div className="container mx-auto px-4 py-8 overflow-y-auto">
-          <Prose>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              {details}
-            </p>
-            {stack && (
-              <pre className="w-full p-4 overflow-x-auto text-zinc-600 dark:text-zinc-400">
-                <code>{stack}</code>
-              </pre>
-            )}
-          </Prose>
+        <div className="text-base font-semibold text-zinc-600 dark:text-zinc-200 ml-2 truncate">
+          {message}
         </div>
+        <div className="text-sm text-zinc-500 dark:text-zinc-400">
+          {details}
+        </div>
+        <div className="text-sm text-zinc-500 dark:text-zinc-400">{stack}</div>
       </div>
     </PageShell>
   );

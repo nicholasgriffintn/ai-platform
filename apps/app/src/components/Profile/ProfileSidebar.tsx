@@ -9,6 +9,7 @@ import { SidebarFooter } from "../Sidebar/SidebarFooter";
 import { SidebarHeader } from "../Sidebar/SidebarHeader";
 import { ProfileAccountTab } from "./Tabs/ProfileAccountTab";
 import { ProfileApiKeysTab } from "./Tabs/ProfileApiKeysTab";
+import { ProfileBillingTab } from "./Tabs/ProfileBillingTab";
 import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab";
 import { ProfileHistoryTab } from "./Tabs/ProfileHistoryTab";
 import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab";
@@ -30,6 +31,7 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
   },
   { id: "history", label: "Chat History", component: ProfileHistoryTab },
   { id: "providers", label: "Providers", component: ProfileProvidersTab },
+  { id: "billing", label: "Billing", component: ProfileBillingTab },
   { id: "api-keys", label: "API Keys", component: ProfileApiKeysTab },
 ];
 

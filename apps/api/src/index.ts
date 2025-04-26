@@ -28,7 +28,9 @@ import audio from "./routes/audio";
 import chat from "./routes/chat";
 import dynamicApps from "./routes/dynamic-apps";
 import models from "./routes/models";
+import plans from "./routes/plans";
 import search from "./routes/search";
+import stripe from "./routes/stripe";
 import tools from "./routes/tools";
 import uploads from "./routes/uploads";
 import user from "./routes/user";
@@ -200,6 +202,8 @@ app.route(ROUTES.DYNAMIC_APPS, dynamicApps);
 app.route(ROUTES.SEARCH, search);
 app.route(ROUTES.UPLOADS, uploads);
 app.route(ROUTES.USER, user);
+app.route(ROUTES.PLANS, plans);
+app.route(ROUTES.STRIPE, stripe);
 
 /**
  * Global 404 handler

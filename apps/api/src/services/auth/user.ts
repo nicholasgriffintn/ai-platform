@@ -33,6 +33,8 @@ function mapToUser(result: Record<string, unknown>): User {
       | undefined,
     daily_pro_reset: result.daily_pro_reset as string | null,
     last_active_at: result.last_active_at as string | null,
+    stripe_customer_id: result.stripe_customer_id as string | null,
+    stripe_subscription_id: result.stripe_subscription_id as string | null,
   };
 }
 

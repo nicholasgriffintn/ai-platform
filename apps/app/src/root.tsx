@@ -21,12 +21,16 @@ const queryClient = new QueryClient({
 });
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
-  return <AppShell>{children}</AppShell>;
+  return (
+    <AppShell>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </AppShell>
+  );
 };
 
 export default function Root() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <LoadingProvider>
         <AppInitializer>
           <Outlet />
@@ -35,7 +39,7 @@ export default function Root() {
         </AppInitializer>
       </LoadingProvider>
       <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    </>
   );
 }
 

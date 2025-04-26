@@ -12,6 +12,8 @@ export const ROUTES = {
   TOOLS: "/tools",
   UPLOADS: "/uploads",
   USER: "/user",
+  PLANS: "/plans",
+  STRIPE: "/stripe",
 } as const;
 
 const NON_AUTH_DAILY_MESSAGE_LIMIT = 10;
@@ -28,3 +30,5 @@ export const USAGE_CONFIG = {
   BASELINE_INPUT_COST,
   BASELINE_OUTPUT_COST,
 };
+
+export const FREE_TRIAL_DAYS = 90;

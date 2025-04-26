@@ -149,4 +149,15 @@ export class UserRepository extends BaseRepository {
       [providerUserId, userId],
     );
   }
+
+  public async getUserByStripeCustomerId(
+    customerId: string,
+  ): Promise<User | null> {
+    const result = this.runQuery<User>(
+      "SELECT * FROM user WHERE stripe_customer_id = ?",
+      [customerId],
+      true,
+    );
+    return result;
+  }
 }

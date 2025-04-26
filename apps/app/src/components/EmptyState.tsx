@@ -4,7 +4,7 @@ import { cn } from "~/lib/utils";
 
 interface EmptyStateProps {
   icon?: ReactNode;
-  title?: string;
+  title?: ReactNode;
   message?: string;
   action?: ReactNode;
   className?: string;

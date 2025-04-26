@@ -8,6 +8,7 @@ import { ConversationRepository } from "./ConversationRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
 import { MagicLinkNonceRepository } from "./MagicLinkNonceRepository";
 import { MessageRepository } from "./MessageRepository";
+import { PlanRepository } from "./PlanRepository";
 import { SessionRepository } from "./SessionRepository";
 import { UserRepository } from "./UserRepository";
 import { UserSettingsRepository } from "./UserSettingsRepository";
@@ -26,12 +27,14 @@ export {
   UserRepository,
   UserSettingsRepository,
   WebAuthnRepository,
+  PlanRepository,
 };
 
 export class RepositoryManager {
   private env: IEnv;
   private static instance: RepositoryManager;
 
+  private planRepo: PlanRepository;
   private userRepo: UserRepository;
   private anonymousUserRepo: AnonymousUserRepository;
   private sessionRepo: SessionRepository;
@@ -46,6 +49,7 @@ export class RepositoryManager {
 
   private constructor(env: IEnv) {
     this.env = env;
+    this.planRepo = new PlanRepository(env);
     this.userRepo = new UserRepository(env);
     this.anonymousUserRepo = new AnonymousUserRepository(env);
     this.sessionRepo = new SessionRepository(env);
@@ -64,6 +68,10 @@ export class RepositoryManager {
       RepositoryManager.instance = new RepositoryManager(env);
     }
     return RepositoryManager.instance;
+  }
+
+  public get plans(): PlanRepository {
+    return this.planRepo;
   }
 
   public get users(): UserRepository {

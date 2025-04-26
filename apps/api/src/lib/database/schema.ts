@@ -12,6 +12,7 @@ export const plans = sqliteTable("plans", {
   name: text(),
   description: text(),
   price: integer(),
+  stripe_price_id: text(),
   created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
   updated_at: text()
     .default(sql`(CURRENT_TIMESTAMP)`)
@@ -57,6 +58,8 @@ export const user = sqliteTable("user", {
   daily_pro_message_count: integer("daily_pro_message_count").default(0),
   daily_pro_reset: text("daily_pro_reset"),
   last_active_at: text("last_active_at"),
+  stripe_customer_id: text(),
+  stripe_subscription_id: text(),
 });
 
 export type User = typeof user.$inferSelect;

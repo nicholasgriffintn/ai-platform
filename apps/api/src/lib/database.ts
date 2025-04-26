@@ -80,6 +80,14 @@ export class Database {
     return this.repositories.users.updateUserWithGithubData(userId, userData);
   }
 
+  public async getUserByStripeCustomerId(
+    customerId: string,
+  ): Promise<User | null> {
+    const result =
+      await this.repositories.users.getUserByStripeCustomerId(customerId);
+    return result as unknown as User | null;
+  }
+
   public async createUser(
     userData: Record<string, unknown>,
   ): Promise<Record<string, unknown> | null> {
@@ -371,6 +379,7 @@ export class Database {
   }
 
   // WebAuthn methods
+
   public async createWebAuthnChallenge(
     challenge: string,
     userId?: number,
@@ -454,9 +463,6 @@ export class Database {
 
   // MagicLinkNonce methods
 
-  /**
-   * Creates a new magic link nonce.
-   */
   public async createMagicLinkNonce(
     nonce: string,
     userId: number,
@@ -469,10 +475,6 @@ export class Database {
     );
   }
 
-  /**
-   * Attempts to find and consume (delete) a magic link nonce.
-   * Returns true if the nonce was valid and consumed, false otherwise.
-   */
   public async consumeMagicLinkNonce(
     nonce: string,
     userId: number,
@@ -496,6 +498,7 @@ export class Database {
   }
 
   // API key methods
+
   public async getUserApiKeys(userId: number): Promise<ApiKeyMetadata[]> {
     if (!userId) {
       throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
@@ -526,6 +529,8 @@ export class Database {
   public async findUserIdByApiKey(apiKey: string): Promise<number | null> {
     return this.repositories.apiKeys.findUserIdByApiKey(apiKey);
   }
+
+  // Anonymous user methods
 
   public async getAnonymousUserById(id: string): Promise<AnonymousUser | null> {
     return this.repositories.anonymousUsers.getAnonymousUserById(id);
@@ -574,5 +579,17 @@ export class Database {
 
   public async incrementAnonymousUserDailyCount(id: string): Promise<void> {
     return this.repositories.anonymousUsers.incrementDailyCount(id);
+  }
+
+  // Plan methods
+
+  public async getAllPlans(): Promise<Record<string, unknown>[]> {
+    return this.repositories.plans.getAllPlans();
+  }
+
+  public async getPlanById(
+    planId: string,
+  ): Promise<Record<string, unknown> | null> {
+    return this.repositories.plans.getPlanById(planId);
   }
 }

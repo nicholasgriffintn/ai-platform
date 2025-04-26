@@ -20,6 +20,8 @@ export interface User {
   daily_pro_message_count?: number;
   daily_pro_reset?: string | null;
   last_active_at?: string | null;
+  stripe_customer_id?: string | null;
+  stripe_subscription_id?: string | null;
 }
 
 export interface IUser extends User {

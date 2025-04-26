@@ -127,6 +127,13 @@
       "when": 1745622616053,
       "tag": "0017_sour_red_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1745632227951,
+      "tag": "0018_black_scream",
+      "breakpoints": true
     }
   ]
 }

@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUsageStore } from "~/state/stores/usageStore";
 
@@ -42,7 +44,8 @@ export const UsageLimitWarning = () => {
   if (dailyPercentRemaining <= WARNING_THRESHOLD && dailyRemaining > 0) {
     return (
       <div className="rounded-md bg-amber-100 border border-amber-300 text-amber-800 p-3 mb-4 text-center dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-200">
-        You only have {dailyRemaining} messages left.
+        You only have {dailyRemaining} messages left. Go to the{" "}
+        <Link to="/profile/billing">Billing</Link> page to upgrade.
       </div>
     );
   }
