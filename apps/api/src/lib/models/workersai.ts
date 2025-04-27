@@ -343,4 +343,11 @@ export const workersAiModelConfig: ModelConfig = {
     type: ["guardrails"],
     isFree: true,
   },
+  "@cf/meta/llama-guard-3-8b": {
+    name: "LlamaGuard 3 8B",
+    matchingModel: "@cf/meta/llama-guard-3-8b",
+    provider: "workers-ai",
+    type: ["guardrails"],
+    isFree: true,
+  },
 };

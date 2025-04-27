@@ -253,7 +253,7 @@ export async function getAuxiliaryModel(
 }
 
 export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
-  let modelToUse = "@hf/thebloke/llamaguard-7b-awq";
+  let modelToUse = "@cf/meta/llama-guard-3-8b";
 
   const allRouterModels = getIncludedInRouterModels();
   const availableModels = await filterModelsForUserAccess(
