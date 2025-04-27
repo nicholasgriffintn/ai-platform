@@ -18,8 +18,8 @@ importers:
   apps/api:
     dependencies:
       '@hono/zod-validator':
-        specifier: 0.4.3
-        version: 0.4.3(hono@4.7.7)(zod@3.24.3)
+        specifier: 0.5.0
+        version: 0.5.0(hono@4.7.7)(zod@3.24.3)
       '@octokit/rest':
         specifier: 21.1.1
         version: 21.1.1
@@ -43,7 +43,7 @@ importers:
         version: 4.7.7
       hono-openapi:
         specifier: 0.4.6
-        version: 0.4.6(@hono/zod-validator@0.4.3(hono@4.7.7)(zod@3.24.3))(hono@4.7.7)(zod-openapi@4.2.4(zod@3.24.3))(zod@3.24.3)
+        version: 0.4.6(@hono/zod-validator@0.5.0(hono@4.7.7)(zod@3.24.3))(hono@4.7.7)(zod-openapi@4.2.4(zod@3.24.3))(zod@3.24.3)
       stripe:
         specifier: ^18.0.0
         version: 18.0.0
@@ -1154,8 +1154,8 @@ packages:
   '@hexagon/base64@1.1.28':
     resolution: {integrity: sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw==}
 
-  '@hono/zod-validator@0.4.3':
-    resolution: {integrity: sha512-xIgMYXDyJ4Hj6ekm9T9Y27s080Nl9NXHcJkOvkXPhubOLj8hZkOL8pDnnXfvCf5xEE8Q4oMFenQUZZREUY2gqQ==}
+  '@hono/zod-validator@0.5.0':
+    resolution: {integrity: sha512-ds5bW6DCgAnNHP33E3ieSbaZFd5dkV52ZjyaXtGoR06APFrCtzAsKZxTHwOrJNBdXsi0e5wNwo5L4nVEVnJUdg==}
     peerDependencies:
       hono: '>=3.9.0'
       zod: ^3.19.1
@@ -5449,7 +5449,7 @@ snapshots:
 
   '@hexagon/base64@1.1.28': {}
 
-  '@hono/zod-validator@0.4.3(hono@4.7.7)(zod@3.24.3)':
+  '@hono/zod-validator@0.5.0(hono@4.7.7)(zod@3.24.3)':
     dependencies:
       hono: 4.7.7
       zod: 3.24.3
@@ -7469,11 +7469,11 @@ snapshots:
 
   highlight.js@11.11.1: {}
 
-  hono-openapi@0.4.6(@hono/zod-validator@0.4.3(hono@4.7.7)(zod@3.24.3))(hono@4.7.7)(zod-openapi@4.2.4(zod@3.24.3))(zod@3.24.3):
+  hono-openapi@0.4.6(@hono/zod-validator@0.5.0(hono@4.7.7)(zod@3.24.3))(hono@4.7.7)(zod-openapi@4.2.4(zod@3.24.3))(zod@3.24.3):
     dependencies:
       json-schema-walker: 2.0.0
     optionalDependencies:
-      '@hono/zod-validator': 0.4.3(hono@4.7.7)(zod@3.24.3)
+      '@hono/zod-validator': 0.5.0(hono@4.7.7)(zod@3.24.3)
       hono: 4.7.7
       zod: 3.24.3
       zod-openapi: 4.2.4(zod@3.24.3)
