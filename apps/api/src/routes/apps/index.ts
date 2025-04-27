@@ -45,6 +45,7 @@ import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
 import articles from "./articles";
 import embeddings from "./embeddings";
 import generate from "./generate";
+import notes from "./notes";
 import podcasts from "./podcasts";
 
 const app = new Hono();
@@ -194,6 +195,8 @@ app.post(
 app.route("/podcasts", podcasts);
 
 app.route("/articles", articles);
+
+app.route("/notes", notes);
 
 app.post(
   "/content-extract",

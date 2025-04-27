@@ -1,5 +1,6 @@
 import {
   Cloud,
+  File,
   FileText,
   Image,
   Mail,
@@ -33,6 +34,8 @@ export const getIconColor = (iconName?: string): string => {
       return "text-cyan-500 dark:text-cyan-400";
     case "cloud":
       return "text-sky-500 dark:text-sky-400";
+    case "note":
+      return "text-zinc-600 dark:text-zinc-300";
     default:
       return "text-zinc-600 dark:text-zinc-300";
   }
@@ -63,6 +66,8 @@ export const getIcon = (iconName?: string): React.ReactNode => {
       return React.createElement(Search, iconProps);
     case "cloud":
       return React.createElement(Cloud, iconProps);
+    case "note":
+      return React.createElement(File, iconProps);
     default:
       return React.createElement(Settings, iconProps);
   }
@@ -97,6 +102,8 @@ export const getCardGradient = (iconName?: string): string => {
       return "from-cyan-50 to-white dark:from-cyan-900/10 dark:to-zinc-800";
     case "cloud":
       return "from-sky-50 to-white dark:from-sky-900/10 dark:to-zinc-800";
+    case "note":
+      return "from-zinc-50 to-white dark:from-zinc-700/20 dark:to-zinc-800";
     default:
       return "from-zinc-50 to-white dark:from-zinc-700/20 dark:to-zinc-800";
   }

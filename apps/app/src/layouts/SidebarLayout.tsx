@@ -1,4 +1,5 @@
 import React from "react";
+import { cn } from "~/lib/utils";
 
 import { LoginModal } from "~/components/LoginModal";
 import { ChatNavbar } from "~/components/Navbar";
@@ -12,6 +13,7 @@ interface SidebarLayoutProps {
   sidebarContent: React.ReactNode;
   showSidebarToggleInNavbar?: boolean;
   displayNavBar?: boolean;
+  bgClassName?: string;
 }
 
 export function SidebarLayout({
@@ -19,6 +21,7 @@ export function SidebarLayout({
   sidebarContent,
   showSidebarToggleInNavbar = true,
   displayNavBar = true,
+  bgClassName,
 }: SidebarLayoutProps) {
   const {
     sidebarVisible,
@@ -41,7 +44,12 @@ export function SidebarLayout({
 
   return (
     <>
-      <div className="flex h-dvh w-full max-w-full overflow-hidden bg-off-white dark:bg-zinc-900">
+      <div
+        className={cn(
+          "flex h-dvh w-full max-w-full overflow-hidden",
+          bgClassName ?? "bg-off-white dark:bg-zinc-900",
+        )}
+      >
         <div className="flex flex-row w-full overflow-hidden relative">
           {sidebarContent && (
             <div className="pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]">

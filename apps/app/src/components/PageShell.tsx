@@ -14,6 +14,7 @@ interface PageShellProps {
   fullBleed?: boolean;
   isBeta?: boolean;
   displayNavBar?: boolean;
+  bgClassName?: string;
 }
 
 export function PageShell({
@@ -25,6 +26,7 @@ export function PageShell({
   fullBleed = false,
   isBeta = false,
   displayNavBar = true,
+  bgClassName,
 }: PageShellProps) {
   const header =
     headerContent ||
@@ -38,6 +40,7 @@ export function PageShell({
     <SidebarLayout
       sidebarContent={sidebarContent}
       displayNavBar={displayNavBar}
+      bgClassName={bgClassName}
     >
       {isBeta && (
         <NotificationBar

@@ -22,6 +22,14 @@ const featuredAppsData: AppListItem[] = [
     category: "Text",
     href: "/apps/articles",
   },
+  {
+    id: "featured-note-taker",
+    name: "Note Taker",
+    description: "Take notes and save them for later",
+    icon: "note",
+    category: "Productivity",
+    href: "/apps/notes",
+  },
 ];
 
 export const FeaturedApps = () => {

@@ -5,4 +5,5 @@ export * from "./chat";
 export * from "./icons";
 export * from "./models";
 export * from "./podcast";
+export * from "./note";
 export * from "./user";

@@ -318,3 +318,27 @@ export const podcastDetailResponseSchema = z.object({
     status: z.enum(["processing", "transcribing", "summarizing", "complete"]),
   }),
 });
+
+export const noteSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  content: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const noteCreateSchema = z.object({
+  title: z.string(),
+  content: z.string(),
+  metadata: z.record(z.any()).optional(),
+});
+
+export const noteUpdateSchema = noteCreateSchema;
+
+export const listNotesResponseSchema = z.object({
+  notes: z.array(noteSchema),
+});
+
+export const noteDetailResponseSchema = z.object({
+  note: noteSchema,
+});

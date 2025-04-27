@@ -11,6 +11,7 @@ import type {
   SummariseArticleParams,
   SummariseArticleResponse,
 } from "~/types/article";
+import type { Note } from "~/types/note";
 import type {
   Podcast,
   PodcastResponse,
@@ -373,4 +374,131 @@ export const fetchSourceArticlesByIds = async (
     );
   }
   return response.json() as Promise<FetchMultipleArticlesResponse>;
+};
+
+export const fetchNotes = async (): Promise<Note[]> => {
+  let headers = {};
+  try {
+    headers = await apiService.getHeaders();
+  } catch (e) {
+    console.error("Error fetching notes:", e);
+  }
+
+  const response = await fetchApi("/apps/notes", {
+    method: "GET",
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch notes: ${response.statusText}`);
+  }
+
+  const data = (await response.json()) as { notes: Note[] };
+  return data.notes;
+};
+
+export const fetchNote = async (id: string): Promise<Note> => {
+  let headers = {};
+  try {
+    headers = await apiService.getHeaders();
+  } catch (e) {
+    console.error("Error fetching note:", e);
+  }
+
+  const response = await fetchApi(`/apps/notes/${id}`, {
+    method: "GET",
+    headers,
+  });
+
+  if (!response.ok) {
+    const errData = (await response.json().catch(() => ({}))) as any;
+    throw new Error(
+      errData?.message || `Failed to fetch note: ${response.statusText}`,
+    );
+  }
+
+  const data = (await response.json()) as { note: Note };
+  return data.note;
+};
+
+export const createNote = async (params: {
+  title: string;
+  content: string;
+  metadata?: any;
+}): Promise<Note> => {
+  let headers = {};
+  try {
+    headers = await apiService.getHeaders();
+  } catch (e) {
+    console.error("Error creating note:", e);
+  }
+
+  const response = await fetchApi("/apps/notes", {
+    method: "POST",
+    headers,
+    body: params,
+  });
+
+  if (!response.ok) {
+    const errData = (await response.json().catch(() => ({}))) as any;
+    throw new Error(
+      errData?.message || `Failed to create note: ${response.statusText}`,
+    );
+  }
+
+  const data = (await response.json()) as { note: Note };
+  return data.note;
+};
+
+export const updateNote = async (params: {
+  id: string;
+  title: string;
+  content: string;
+  metadata?: any;
+}): Promise<Note> => {
+  let headers = {};
+  try {
+    headers = await apiService.getHeaders();
+  } catch (e) {
+    console.error("Error updating note:", e);
+  }
+
+  const { id, ...body } = params;
+
+  const response = await fetchApi(`/apps/notes/${id}`, {
+    method: "PUT",
+    headers,
+    body,
+  });
+
+  if (!response.ok) {
+    const errData = (await response.json().catch(() => ({}))) as any;
+    throw new Error(
+      errData?.message || `Failed to update note: ${response.statusText}`,
+    );
+  }
+
+  const data = (await response.json()) as { note: Note };
+  return data.note;
+};
+
+export const deleteNote = async (id: string): Promise<void> => {
+  let headers = {};
+  try {
+    headers = await apiService.getHeaders();
+  } catch (e) {
+    console.error("Error deleting note:", e);
+  }
+
+  const response = await fetchApi(`/apps/notes/${id}`, {
+    method: "DELETE",
+    headers,
+  });
+
+  if (!response.ok) {
+    const errData = (await response.json().catch(() => ({}))) as any;
+    throw new Error(
+      errData?.message || `Failed to delete note: ${response.statusText}`,
+    );
+  }
 };
