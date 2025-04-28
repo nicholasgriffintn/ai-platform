@@ -502,3 +502,31 @@ export const deleteNote = async (id: string): Promise<void> => {
     );
   }
 };
+
+export const formatNoteAPI = async (
+  id: string,
+  prompt?: string,
+): Promise<string> => {
+  let headers = {};
+  try {
+    headers = await apiService.getHeaders();
+  } catch (e) {
+    console.error("Error getting headers for note formatting:", e);
+  }
+
+  const response = await fetchApi(`/apps/notes/${id}/format`, {
+    method: "POST",
+    headers,
+    body: { prompt },
+  });
+
+  if (!response.ok) {
+    const errData = (await response.json().catch(() => ({}))) as any;
+    throw new Error(
+      errData?.message || `Failed to format note: ${response.statusText}`,
+    );
+  }
+
+  const data = (await response.json().catch(() => ({}))) as { content: string };
+  return data.content;
+};

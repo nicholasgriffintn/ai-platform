@@ -6,6 +6,7 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
   createNote,
   deleteNote,
+  formatNote,
   getNote,
   listNotes,
   updateNote,
@@ -16,6 +17,8 @@ import {
   listNotesResponseSchema,
   noteCreateSchema,
   noteDetailResponseSchema,
+  noteFormatResponseSchema,
+  noteFormatSchema,
   noteUpdateSchema,
 } from "../schemas/apps";
 import { errorResponseSchema, successResponseSchema } from "../schemas/shared";
@@ -227,6 +230,62 @@ app.delete(
       routeLogger.error("Error deleting note:", error);
       throw new AssistantError(
         "Failed to delete note",
+        ErrorType.UNKNOWN_ERROR,
+      );
+    }
+  },
+);
+
+app.post(
+  "/:id/format",
+  describeRoute({
+    tags: ["apps", "notes"],
+    description: "Format an existing note via AI",
+    parameters: [
+      { name: "id", in: "path", required: true, schema: { type: "string" } },
+    ],
+    requestBody: {
+      content: {
+        "application/json": { schema: resolver(noteFormatSchema) },
+      },
+    },
+    responses: {
+      200: {
+        description: "Formatted note content",
+        content: {
+          "application/json": { schema: resolver(noteFormatResponseSchema) },
+        },
+      },
+      400: {
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
+      },
+      404: {
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
+      },
+    },
+  }),
+  zValidator("json", noteFormatSchema),
+  async (c: Context) => {
+    const id = c.req.param("id");
+    const { prompt } = c.req.valid("json" as never) as { prompt?: string };
+    const user = c.get("user") as IUser;
+    try {
+      const result = await formatNote({
+        env: c.env as IEnv,
+        user,
+        noteId: id,
+        prompt,
+      });
+      return c.json(result);
+    } catch (error) {
+      if (error instanceof AssistantError) throw error;
+      routeLogger.error("Error formatting note:", error);
+      throw new AssistantError(
+        "Failed to format note",
         ErrorType.UNKNOWN_ERROR,
       );
     }

@@ -5,6 +5,7 @@ import {
   deleteNote,
   fetchNote,
   fetchNotes,
+  formatNoteAPI,
   updateNote,
 } from "~/lib/api/dynamic-apps";
 import type { Note } from "~/types/note";
@@ -53,6 +54,17 @@ export const useDeleteNote = () => {
     mutationFn: (id: string) => deleteNote(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
+    },
+  });
+};
+
+export const useFormatNote = (id: string) => {
+  return useMutation<string, Error, string | undefined>({
+    mutationFn: (prompt?: string) => {
+      if (!id) {
+        throw new Error("Note ID is required");
+      }
+      return formatNoteAPI(id, prompt);
     },
   });
 };

@@ -58,6 +58,7 @@ export default function NewNotePage() {
       isBeta={true}
     >
       <NoteEditor
+        noteId={noteId}
         initialText=""
         onSave={handleSave}
         isFullBleed={isFullBleed}

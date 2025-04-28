@@ -85,6 +85,7 @@ export default function NoteDetailPage() {
       isBeta={true}
     >
       <NoteEditor
+        noteId={id!}
         initialText={initialText}
         onSave={handleSave}
         onDelete={handleDelete}

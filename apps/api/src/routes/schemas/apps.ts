@@ -342,3 +342,16 @@ export const listNotesResponseSchema = z.object({
 export const noteDetailResponseSchema = z.object({
   note: noteSchema,
 });
+
+export const noteFormatSchema = z.object({
+  prompt: z.string().optional().openapi({
+    description:
+      "Optional additional instructions to refine the note formatting",
+  }),
+});
+
+export const noteFormatResponseSchema = z.object({
+  content: z.string().openapi({
+    description: "The reformatted note contents",
+  }),
+});

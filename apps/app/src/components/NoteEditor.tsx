@@ -1,10 +1,30 @@
-import { Copy, Download, Maximize2, Minimize2, Trash2 } from "lucide-react";
+import {
+  Copy,
+  Download,
+  Loader2,
+  Maximize2,
+  Minimize2,
+  Trash2,
+  Zap,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Textarea as UITextarea,
+} from "~/components/ui";
+import { useFormatNote } from "~/hooks/useNotes";
 
 import { cn } from "~/lib/utils";
 
 interface NoteEditorProps {
+  noteId?: string;
   initialText?: string;
   onSave: (title: string, content: string) => Promise<string>;
   onDelete?: () => Promise<void>;
@@ -19,6 +39,7 @@ interface NoteEditorProps {
 }
 
 export function NoteEditor({
+  noteId,
   initialText = "",
   onSave,
   onDelete,
@@ -37,8 +58,22 @@ export function NoteEditor({
   const [fontSize, setFontSize] = useState<number>(initialFontSize);
   const [lastSavedText, setLastSavedText] = useState<string>(initialText);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [aiPrompt, setAIPrompt] = useState<string>("");
+  const [aiResult, setAIResult] = useState<string>("");
+  const formatNoteMutation = useFormatNote(noteId ?? "");
 
-  // Refs to hold latest values for keyboard shortcuts
+  const runFormat = async () => {
+    formatNoteMutation.reset();
+    setAIResult("");
+    try {
+      const content = await formatNoteMutation.mutateAsync(aiPrompt);
+      setAIResult(content);
+    } catch {
+      toast.error("Failed to format note");
+    }
+  };
+
   const textRef = useRef(text);
   const lastSavedRef = useRef(lastSavedText);
   useEffect(() => {
@@ -200,6 +235,25 @@ export function NoteEditor({
         <div className="flex flex-wrap items-center gap-2 sm:gap-4">
           <button
             type="button"
+            disabled={!noteId}
+            onClick={() => {
+              if (!noteId) return;
+              formatNoteMutation.reset();
+              setAIResult("");
+              setAIPrompt("");
+              setIsAIModalOpen(true);
+            }}
+            aria-disabled={!noteId}
+            className={cn(
+              "p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+              !noteId && "opacity-50 cursor-not-allowed",
+            )}
+            aria-label="AI Assist"
+          >
+            <Zap size={16} />
+          </button>
+          <button
+            type="button"
             onClick={() => {
               navigator.clipboard
                 .writeText(text)
@@ -251,10 +305,6 @@ export function NoteEditor({
                 ? "hover:bg-red-200 dark:hover:bg-red-800 hover:text-red-900 dark:hover:text-red-100"
                 : "hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100",
             )}
-            focus:outline-none
-            focus-visible:ring
-            focus-visible:ring-blue-500
-            focus-visible:ring-offset-2
             aria-label={onDelete ? "Delete note" : "Clear note"}
           >
             <Trash2 size={16} />
@@ -273,6 +323,90 @@ export function NoteEditor({
           </span>
         </div>
       </div>
+      <Dialog
+        open={isAIModalOpen}
+        onOpenChange={setIsAIModalOpen}
+        width="600px"
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>AI Formatting</DialogTitle>
+            <DialogDescription>
+              Review and re-prompt AI suggestions
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-2 space-y-4">
+            {formatNoteMutation.status === "idle" ? (
+              <>
+                <p className="text-sm">
+                  This feature restructures and refines your note for clarity
+                  and organization.
+                </p>
+                <p className="text-sm">
+                  Add additional instructions below, then click Run to format.
+                </p>
+              </>
+            ) : (
+              <div className="mb-4 h-48 border rounded">
+                {formatNoteMutation.status === "pending" ? (
+                  <div className="flex items-center justify-center h-full">
+                    <Loader2 className="animate-spin text-gray-500" />
+                  </div>
+                ) : formatNoteMutation.status === "error" ? (
+                  <p className="text-red-500 p-4">
+                    Formatting failed. Try again.
+                  </p>
+                ) : (
+                  <>
+                    <label htmlFor="ai-result" className="sr-only">
+                      AI Result
+                    </label>
+                    <UITextarea
+                      id="ai-result"
+                      value={aiResult}
+                      readOnly
+                      className="h-full"
+                    />
+                  </>
+                )}
+              </div>
+            )}
+            <label htmlFor="ai-prompt" className="sr-only">
+              Additional instructions
+            </label>
+            <UITextarea
+              id="ai-prompt"
+              value={aiPrompt}
+              onChange={(e) => setAIPrompt(e.target.value)}
+              placeholder="Add more instructions..."
+              className="mb-4 h-24"
+            />
+            <DialogFooter>
+              <Button
+                variant="secondary"
+                onClick={runFormat}
+                isLoading={formatNoteMutation.status === "pending"}
+                disabled={!noteId || formatNoteMutation.status === "pending"}
+                className="mr-2"
+              >
+                {formatNoteMutation.status === "pending"
+                  ? "Running..."
+                  : "Run Formatting"}
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setText(aiResult);
+                  setIsAIModalOpen(false);
+                }}
+                disabled={formatNoteMutation.status !== "success"}
+              >
+                Accept
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
