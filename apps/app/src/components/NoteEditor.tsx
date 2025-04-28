@@ -3,8 +3,11 @@ import {
   Download,
   Loader2,
   Maximize2,
+  Mic,
   Minimize2,
   Trash2,
+  Volume2,
+  VolumeX,
   Zap,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -19,8 +22,14 @@ import {
   DialogTitle,
   Textarea as UITextarea,
 } from "~/components/ui";
-import { useFormatNote } from "~/hooks/useNotes";
-
+import { useNoteFormatter } from "~/hooks/useNoteFormatter";
+import { useTranscription } from "~/hooks/useTranscription";
+import {
+  formatTextWithSpacing,
+  getCharCount,
+  getWordCount,
+  splitTitleAndContent,
+} from "~/lib/text-utils";
 import { cn } from "~/lib/utils";
 
 interface NoteEditorProps {
@@ -58,33 +67,57 @@ export function NoteEditor({
   const [fontSize, setFontSize] = useState<number>(initialFontSize);
   const [lastSavedText, setLastSavedText] = useState<string>(initialText);
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  const [aiPrompt, setAIPrompt] = useState<string>("");
-  const [aiResult, setAIResult] = useState<string>("");
-  const formatNoteMutation = useFormatNote(noteId ?? "");
+  const [partialTranscript, setPartialTranscript] = useState<string>("");
+  const [isSpeechDetected, setIsSpeechDetected] = useState<boolean>(false);
+  const [lastSilenceTime, setLastSilenceTime] = useState<number>(0);
 
-  const runFormat = async () => {
-    formatNoteMutation.reset();
-    setAIResult("");
-    try {
-      const content = await formatNoteMutation.mutateAsync(aiPrompt);
-      setAIResult(content);
-    } catch {
-      toast.error("Failed to format note");
-    }
-  };
+  const {
+    isAIModalOpen,
+    setIsAIModalOpen,
+    aiPrompt,
+    setAIPrompt,
+    aiResult,
+    formatNoteMutation,
+    runFormat,
+    openFormatModal,
+  } = useNoteFormatter(noteId ?? "");
+
+  const {
+    isTranscribing,
+    status: transcriptionStatus,
+    startTranscription,
+    stopTranscription,
+  } = useTranscription({
+    onTranscriptionReceived: (newText, isPartial) => {
+      if (isPartial) {
+        setPartialTranscript((prev) => formatTextWithSpacing(prev, newText));
+      } else {
+        setPartialTranscript("");
+        setText((prev) => formatTextWithSpacing(prev, newText));
+      }
+    },
+    onSpeechDetected: (isActive) => {
+      console.log("Speech detection update:", isActive);
+      setIsSpeechDetected(isActive);
+      if (!isActive) {
+        setLastSilenceTime(Date.now());
+      }
+    },
+  });
 
   const textRef = useRef(text);
   const lastSavedRef = useRef(lastSavedText);
+
   useEffect(() => {
     textRef.current = text;
   }, [text]);
+
   useEffect(() => {
     lastSavedRef.current = lastSavedText;
   }, [lastSavedText]);
 
-  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const charCount = text.length;
+  const wordCount = getWordCount(text);
+  const charCount = getCharCount(text);
 
   useEffect(() => {
     setText(initialText);
@@ -101,8 +134,8 @@ export function NoteEditor({
       (async () => {
         setIsSaving(true);
         try {
-          const [firstLine, ...rest] = text.split("\n");
-          await onSave(firstLine, rest.join("\n"));
+          const [title, content] = splitTitleAndContent(text);
+          await onSave(title, content);
           setLastSavedText(text);
         } catch {
           toast.error("Failed to save note");
@@ -130,8 +163,8 @@ export function NoteEditor({
           setIsSaving(true);
           (async () => {
             try {
-              const [firstLine, ...rest] = textRef.current.split("\n");
-              await onSave(firstLine, rest.join("\n"));
+              const [title, content] = splitTitleAndContent(textRef.current);
+              await onSave(title, content);
               setLastSavedText(textRef.current);
             } catch {
               toast.error("Failed to save note");
@@ -175,6 +208,59 @@ export function NoteEditor({
         )}
         style={{ fontSize: `${fontSize}px` }}
       />
+      {isTranscribing && (
+        <div
+          className="absolute bottom-16 left-4 right-4 p-3 bg-gray-100 dark:bg-gray-800 rounded shadow-md border border-gray-200 dark:border-gray-700 max-h-32 overflow-y-auto"
+          aria-live="polite"
+        >
+          <div className="flex items-center mb-1 text-xs text-gray-500 dark:text-gray-400">
+            <span className="font-medium mr-2">Status:</span>
+            <span
+              className={cn(
+                "px-2 py-0.5 rounded text-xs",
+                transcriptionStatus === "active"
+                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                  : transcriptionStatus === "connecting"
+                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                    : transcriptionStatus === "reconnecting"
+                      ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100"
+                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
+              )}
+            >
+              {transcriptionStatus === "active"
+                ? "Active"
+                : transcriptionStatus === "connecting"
+                  ? "Connecting..."
+                  : transcriptionStatus === "reconnecting"
+                    ? "Reconnecting..."
+                    : "Error"}
+            </span>
+            <div className="ml-auto flex items-center">
+              {isSpeechDetected ? (
+                <span className="flex items-center text-green-600 dark:text-green-400">
+                  <Volume2 size={14} className="mr-1 animate-pulse" />
+                  Speech detected
+                </span>
+              ) : (
+                <span className="flex items-center text-gray-500 dark:text-gray-400">
+                  <VolumeX size={14} className="mr-1" />
+                  Silence{" "}
+                  {lastSilenceTime
+                    ? `(${Math.floor((Date.now() - lastSilenceTime) / 1000)}s)`
+                    : ""}
+                </span>
+              )}
+            </div>
+          </div>
+          {partialTranscript ? (
+            <p className="text-sm opacity-70 italic">{partialTranscript}</p>
+          ) : (
+            <p className="text-sm opacity-50 text-gray-500 dark:text-gray-400 animate-pulse">
+              {isSpeechDetected ? "Listening..." : "Waiting for speech..."}
+            </p>
+          )}
+        </div>
+      )}
       <div
         role="toolbar"
         aria-label="Note editor toolbar"
@@ -236,13 +322,7 @@ export function NoteEditor({
           <button
             type="button"
             disabled={!noteId}
-            onClick={() => {
-              if (!noteId) return;
-              formatNoteMutation.reset();
-              setAIResult("");
-              setAIPrompt("");
-              setIsAIModalOpen(true);
-            }}
+            onClick={openFormatModal}
             aria-disabled={!noteId}
             className={cn(
               "p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-offset-2",
@@ -251,6 +331,58 @@ export function NoteEditor({
             aria-label="AI Assist"
           >
             <Zap size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (isTranscribing) {
+                stopTranscription(true);
+                setPartialTranscript("");
+                setIsSpeechDetected(false);
+                setLastSilenceTime(0);
+              } else {
+                startTranscription();
+              }
+            }}
+            aria-pressed={isTranscribing}
+            className={cn(
+              "p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+              isTranscribing &&
+                (isSpeechDetected
+                  ? "text-green-600 dark:text-green-400"
+                  : transcriptionStatus === "active"
+                    ? "text-blue-600 dark:text-blue-400"
+                    : transcriptionStatus === "connecting"
+                      ? "text-yellow-600 dark:text-yellow-400 animate-pulse"
+                      : transcriptionStatus === "reconnecting"
+                        ? "text-orange-600 dark:text-orange-400 animate-pulse"
+                        : transcriptionStatus === "error"
+                          ? "text-red-600 dark:text-red-400"
+                          : ""),
+            )}
+            aria-label={
+              isTranscribing ? "Stop transcription" : "Start transcription"
+            }
+            title={
+              isTranscribing
+                ? isSpeechDetected
+                  ? "Speech detected - click to stop"
+                  : transcriptionStatus === "active"
+                    ? "Listening - click to stop"
+                    : transcriptionStatus === "connecting"
+                      ? "Connecting..."
+                      : transcriptionStatus === "reconnecting"
+                        ? "Reconnecting..."
+                        : transcriptionStatus === "error"
+                          ? "Connection error - click to retry"
+                          : "Stop transcription"
+                : "Start transcription"
+            }
+          >
+            <Mic
+              size={16}
+              className={isSpeechDetected ? "animate-pulse" : ""}
+            />
           </button>
           <button
             type="button"

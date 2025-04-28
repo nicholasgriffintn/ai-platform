@@ -3,7 +3,7 @@ import { ResponseFormatter } from "~/lib/formatter";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
-import type { ChatCompletionParameters } from "~/types";
+import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { fetchAIResponse } from "./fetch";
@@ -14,6 +14,12 @@ export interface AIProvider {
   name: string;
   supportsStreaming: boolean;
   getResponse(params: ChatCompletionParameters, userId?: number): Promise<any>;
+  createRealtimeSession(
+    env: IEnv,
+    user: IUser,
+    type: string,
+    body: Record<string, any>,
+  ): Promise<any>;
 }
 
 export abstract class BaseProvider implements AIProvider {
@@ -159,5 +165,20 @@ export abstract class BaseProvider implements AIProvider {
       userId,
       completion_id: params.completion_id,
     });
+  }
+
+  /**
+   * Creates a realtime session
+   * @param env - The environment variables
+   * @param user - The user
+   * @returns The realtime session
+   */
+  async createRealtimeSession(
+    env: IEnv,
+    user: IUser,
+    type: string,
+    body: Record<string, any>,
+  ): Promise<any> {
+    return null;
   }
 }

@@ -34,6 +34,7 @@ import chat from "./routes/chat";
 import dynamicApps from "./routes/dynamic-apps";
 import models from "./routes/models";
 import plans from "./routes/plans";
+import realtime from "./routes/realtime";
 import { metricsParamsSchema, statusResponseSchema } from "./routes/schemas";
 import search from "./routes/search";
 import stripe from "./routes/stripe";
@@ -190,6 +191,7 @@ app.route(ROUTES.UPLOADS, uploads);
 app.route(ROUTES.USER, user);
 app.route(ROUTES.PLANS, plans);
 app.route(ROUTES.STRIPE, stripe);
+app.route(ROUTES.REALTIME, realtime);
 
 app.notFound((c) => c.json({ status: "not found" }, 404));
 

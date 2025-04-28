@@ -1,4 +1,4 @@
-import type { ChatCompletionParameters } from "~/types";
+import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseProvider } from "./base";
 
@@ -50,5 +50,39 @@ export class OpenAIProvider extends BaseProvider {
         email: params.user?.email || "anonymous@undefined.computer",
       }),
     };
+  }
+
+  async createRealtimeSession(
+    env: IEnv,
+    user: IUser,
+    type: string,
+    body: Record<string, any>,
+  ): Promise<any> {
+    const model = body.model || "gpt-4o-realtime-preview";
+
+    const endpoint =
+      type === "transcription"
+        ? "realtime/transcription_sessions"
+        : "realtime/sessions";
+
+    const response = await fetch(`https://api.openai.com/v1/${endpoint}`, {
+      method: "POST",
+      headers: await this.getHeaders({
+        env,
+        user,
+        model,
+        message: "",
+      }),
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new AssistantError(
+        "Failed to create realtime session",
+        ErrorType.EXTERNAL_API_ERROR,
+      );
+    }
+
+    return response.json();
   }
 }

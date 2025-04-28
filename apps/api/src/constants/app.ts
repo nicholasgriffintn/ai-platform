@@ -22,6 +22,7 @@ export const ROUTES = {
   USER: "/user",
   PLANS: "/plans",
   STRIPE: "/stripe",
+  REALTIME: "/realtime",
 } as const;
 
 const NON_AUTH_DAILY_MESSAGE_LIMIT = 10;
