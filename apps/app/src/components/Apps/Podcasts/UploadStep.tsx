@@ -1,5 +1,6 @@
-import { Link as LinkIcon, Upload } from "lucide-react";
+import { Link as LinkIcon } from "lucide-react";
 
+import { SingleFileUploader } from "~/components/SingleFileUploader";
 import { Button, FormInput, Label, Textarea } from "~/components/ui";
 import type { PodcastFormData } from "~/types/podcast";
 
@@ -8,7 +9,7 @@ interface UploadStepProps {
   handleChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
-  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleFileChange: (file: File) => void;
   handleUpload: () => void;
   isUploading: boolean;
   setFormData: React.Dispatch<React.SetStateAction<PodcastFormData>>;
@@ -91,39 +92,15 @@ export function UploadStep({
               >
                 Audio File * (MP3, WAV, M4A)
               </label>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-zinc-300 dark:border-zinc-600 border-dashed rounded-md">
-                <div className="space-y-1 text-center">
-                  <Upload
-                    className="mx-auto h-12 w-12 text-zinc-400 dark:text-zinc-500"
-                    strokeWidth={1}
-                  />
-                  <div className="flex text-sm text-zinc-600 dark:text-zinc-400">
-                    <label
-                      htmlFor="audioFile"
-                      className="relative cursor-pointer bg-white dark:bg-zinc-800 rounded-md font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 focus-within:outline-none"
-                    >
-                      <span>Upload a file</span>
-                      <input
-                        id="audioFile"
-                        name="audioFile"
-                        type="file"
-                        className="sr-only"
-                        accept=".mp3,.wav,.m4a"
-                        onChange={handleFileChange}
-                        required
-                      />
-                    </label>
-                  </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    MP3, WAV, or M4A up to 200MB
-                  </p>
-                  {formData.audioFile && (
-                    <p className="text-sm text-green-600 dark:text-green-400">
-                      {formData.audioFile.name}
-                    </p>
-                  )}
-                </div>
-              </div>
+              <SingleFileUploader
+                id="audioFile"
+                maxSize={10 * 1024 * 1024}
+                onFilesAdded={(files) => {
+                  if (files[0].file instanceof File) {
+                    handleFileChange(files[0].file);
+                  }
+                }}
+              />
             </>
           ) : (
             <div className="relative">

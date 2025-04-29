@@ -12,6 +12,7 @@ import { PageHeader } from "~/components/PageHeader";
 import { PageShell } from "~/components/PageShell";
 import { PageTitle } from "~/components/PageTitle";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import type { FileMetadata } from "~/hooks/use-file-upload";
 import { useProcessPodcast, useUploadPodcast } from "~/hooks/usePodcasts";
 import type { PodcastFormData } from "~/types/podcast";
 
@@ -100,13 +101,9 @@ export default function NewPodcastPage() {
     [],
   );
 
-  const handleFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0] || null;
-      setFormData((prev) => ({ ...prev, audioFile: file }));
-    },
-    [],
-  );
+  const handleFileChange = useCallback((file: File) => {
+    setFormData((prev) => ({ ...prev, audioFile: file }));
+  }, []);
 
   const handleUpload = useCallback(async () => {
     if (!formData.title) return;
