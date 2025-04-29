@@ -57,6 +57,7 @@ export async function generateMusic({
       ],
       env: env,
       user: user,
+      should_poll: true,
     });
 
     return {
