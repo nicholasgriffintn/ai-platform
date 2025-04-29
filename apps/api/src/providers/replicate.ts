@@ -112,12 +112,15 @@ export class ReplicateProvider extends BaseProvider {
 
     const lastMessage = params.messages[params.messages.length - 1];
 
-    const body = {
+    const body: Record<string, any> = {
       version: params.version || params.model,
       input: lastMessage.content,
-      webhook: webhook_url,
-      webhook_events_filter: ["output", "completed"],
     };
+
+    if (!params.should_poll) {
+      body.webhook = webhook_url;
+      body.webhook_events_filter = ["output", "completed"];
+    }
 
     return trackProviderMetrics({
       provider: this.name,
