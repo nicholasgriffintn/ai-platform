@@ -198,6 +198,8 @@ interface AIResponseParamsBase extends AIControlParams {
   options?: Record<string, any>;
   // The body of the request.
   body?: Record<string, any>;
+  // Whether to poll for the response, this is used with Replicate.
+  should_poll?: boolean;
 }
 
 export type ChatCompletionParametersWithModel = RequireAtLeastOne<

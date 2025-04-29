@@ -116,6 +116,7 @@ export const handlePodcastTranscribe = async (
       user,
       webhook_url,
       webhook_events: ["output", "completed"],
+      should_poll: true,
     });
 
     const appData = {

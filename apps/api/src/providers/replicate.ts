@@ -1,3 +1,4 @@
+import { API_PROD_HOST } from "~/constants/app";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -48,10 +49,53 @@ export class ReplicateProvider extends BaseProvider {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
       Authorization: `Token ${apiKey}`,
       "Content-Type": "application/json",
+      Prefer: "wait=30",
       "cf-aig-metadata": JSON.stringify({
         email: params.user?.email || "anonymous@undefined.computer",
       }),
     };
+  }
+
+  private async pollForCompletion(
+    predictionId: string,
+    headers: Record<string, string>,
+    maxAttempts = 10,
+    delayMs = 20000,
+  ): Promise<any> {
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      const response = await fetch(
+        `https://api.replicate.com/v1/predictions/${predictionId}`,
+        {
+          headers,
+        },
+      );
+
+      const data = (await response.json()) as {
+        status: string;
+        error?: string;
+      };
+
+      if (data.status === "succeeded") {
+        return data;
+      }
+
+      if (data.status === "failed" || data.error) {
+        throw new AssistantError(
+          `Prediction failed: ${data.error || "Unknown error"}`,
+          ErrorType.PROVIDER_ERROR,
+        );
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      attempts++;
+    }
+
+    throw new AssistantError(
+      "Polling timeout exceeded",
+      ErrorType.PROVIDER_ERROR,
+    );
   }
 
   async getResponse(
@@ -63,8 +107,7 @@ export class ReplicateProvider extends BaseProvider {
     const endpoint = this.getEndpoint();
     const headers = await this.getHeaders(params);
 
-    const base_webhook_url =
-      params.app_url || "https://chat-api.nickgriffin.uk";
+    const base_webhook_url = params.app_url || `https://${API_PROD_HOST}`;
     const webhook_url = `${base_webhook_url}/webhooks/replicate?completion_id=${params.completion_id}&token=${params.env.WEBHOOK_SECRET || ""}`;
 
     const lastMessage = params.messages[params.messages.length - 1];
@@ -80,7 +123,7 @@ export class ReplicateProvider extends BaseProvider {
       provider: this.name,
       model: params.version || (params.model as string),
       operation: async () => {
-        const data = await fetchAIResponse(
+        const initialResponse = await fetchAIResponse(
           this.name,
           endpoint,
           headers,
@@ -88,7 +131,11 @@ export class ReplicateProvider extends BaseProvider {
           params.env,
         );
 
-        return await this.formatResponse(data, params);
+        if (params.should_poll && initialResponse.status !== "succeeded") {
+          return await this.pollForCompletion(initialResponse.id, headers);
+        }
+
+        return await this.formatResponse(initialResponse, params);
       },
       analyticsEngine: params.env?.ANALYTICS,
       settings: {

@@ -6,7 +6,14 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "FETCH" });
 
-export async function fetchAIResponse(
+export async function fetchAIResponse<
+  T = {
+    [key: string]: any;
+    eventId?: string;
+    log_id?: string;
+    cacheStatus?: string;
+  },
+>(
   provider: string,
   endpointOrUrl: string,
   headers: Record<string, string>,
@@ -23,9 +30,9 @@ export async function fetchAIResponse(
     maxAttempts: 2,
     backoff: "exponential",
   },
-) {
+): Promise<T> {
   const isUrl = endpointOrUrl.startsWith("http");
-  const isStreaming = body.stream === true;
+  const isStreaming = body?.stream === true;
 
   const tools = provider === "tool-use" ? availableFunctions : undefined;
   const bodyWithTools = tools ? { ...body, tools } : body;
@@ -71,7 +78,7 @@ export async function fetchAIResponse(
   }
 
   if (isStreaming) {
-    return response.body;
+    return response.body as unknown as T;
   }
 
   const data = (await response.json()) as Record<string, any>;
@@ -80,5 +87,5 @@ export async function fetchAIResponse(
   const log_id = response.headers.get("cf-aig-log-id");
   const cacheStatus = response.headers.get("cf-aig-cache-status");
 
-  return { ...data, eventId, log_id, cacheStatus };
+  return { ...data, eventId, log_id, cacheStatus } as T;
 }
