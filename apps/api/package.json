@@ -32,7 +32,7 @@
     "aws4fetch": "1.0.20",
     "drizzle-orm": "0.43.1",
     "hono": "4.7.8",
-    "hono-openapi": "0.4.6",
+    "hono-openapi": "0.4.7",
     "stripe": "^18.0.0",
     "zod": "3.24.3",
     "zod-openapi": "4.2.4"
