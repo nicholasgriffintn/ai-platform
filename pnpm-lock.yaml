@@ -42,8 +42,8 @@ importers:
         specifier: 4.7.8
         version: 4.7.8
       hono-openapi:
-        specifier: 0.4.7
-        version: 0.4.7(@hono/zod-validator@0.5.0(hono@4.7.8)(zod@3.24.3))(hono@4.7.8)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.24.3))(zod@3.24.3)
+        specifier: 0.4.8
+        version: 0.4.8(@hono/zod-validator@0.5.0(hono@4.7.8)(zod@3.24.3))(hono@4.7.8)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.24.3))(zod@3.24.3)
       stripe:
         specifier: ^18.0.0
         version: 18.1.0(@types/node@22.15.3)
@@ -3139,8 +3139,8 @@ packages:
     resolution: {integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==}
     engines: {node: '>=12.0.0'}
 
-  hono-openapi@0.4.7:
-    resolution: {integrity: sha512-ooBNhDEsFdB9cqxZVHljonW1uiTTioZR8OyPHh9OzWOyh4vsrmSHEnSmEoFJaERfEvel0jEEh1FtV7csOMOkLQ==}
+  hono-openapi@0.4.8:
+    resolution: {integrity: sha512-LYr5xdtD49M7hEAduV1PftOMzuT8ZNvkyWfh1DThkLsIr4RkvDb12UxgIiFbwrJB6FLtFXLoOZL9x4IeDk2+VA==}
     peerDependencies:
       '@hono/arktype-validator': ^2.0.0
       '@hono/effect-validator': ^1.2.0
@@ -7497,7 +7497,7 @@ snapshots:
 
   highlight.js@11.11.1: {}
 
-  hono-openapi@0.4.7(@hono/zod-validator@0.5.0(hono@4.7.8)(zod@3.24.3))(hono@4.7.8)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.24.3))(zod@3.24.3):
+  hono-openapi@0.4.8(@hono/zod-validator@0.5.0(hono@4.7.8)(zod@3.24.3))(hono@4.7.8)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.24.3))(zod@3.24.3):
     dependencies:
       json-schema-walker: 2.0.0
       openapi-types: 12.1.3
