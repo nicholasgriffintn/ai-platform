@@ -34,7 +34,7 @@ export const createChatCompletionsJsonSchema = z.object({
     description: "The model to use for the request.",
   }),
   mode: z
-    .enum(["normal", "thinking", "no_system", "local", "remote"])
+    .enum(["normal", "thinking", "no_system", "local", "remote", "agent"])
     .optional()
     .openapi({
       description: "The mode of the chat completion.",

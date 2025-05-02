@@ -230,6 +230,7 @@ class ApiService {
     store = true,
     streamingEnabled = true,
     useMultiModel = false,
+    endpoint = "/chat/completions",
   ): Promise<Message> => {
     let headers = {};
     try {
@@ -279,7 +280,7 @@ class ApiService {
       requestBody.model = model;
     }
 
-    const response = await fetchApi("/chat/completions", {
+    const response = await fetchApi(endpoint, {
       method: "POST",
       headers,
       body: requestBody,
@@ -458,7 +459,7 @@ class ApiService {
       content = formattedContent;
       reasoning = extractedReasoning;
 
-      onProgress(content);
+      onProgress(content, reasoning);
     }
 
     if (thinking) {
@@ -885,6 +886,107 @@ class ApiService {
 
     return response.json();
   }
+
+  public listAgents = async (): Promise<any[]> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for listAgents:", error);
+    }
+
+    const response = await fetchApi("/agents", { method: "GET", headers });
+
+    if (!response.ok) {
+      throw new Error(`Failed to list agents: ${response.statusText}`);
+    }
+
+    const responseData = (await response.json()) as { data: any[] };
+
+    return responseData.data || [];
+  };
+
+  public createAgent = async (
+    name: string,
+    servers: any[],
+    description?: string | null,
+    avatarUrl?: string | null,
+  ): Promise<any> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for createAgent:", error);
+    }
+
+    const response = await fetchApi("/agents", {
+      method: "POST",
+      headers,
+      body: { name, description, avatar_url: avatarUrl, servers },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create agent: ${response.statusText}`);
+    }
+
+    const responseData = (await response.json()) as { data: any };
+    return responseData.data;
+  };
+
+  public updateAgent = async (
+    agentId: string,
+    data: Partial<{
+      name: string;
+      description: string;
+      avatar_url: string;
+      servers: any[];
+    }>,
+  ): Promise<void> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for updateAgent:", error);
+    }
+
+    const response = await fetchApi(`/agents/${agentId}`, {
+      method: "PUT",
+      headers,
+      body: data,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update agent: ${response.statusText}`);
+    }
+
+    const responseData = (await response.json()) as { data: any };
+    return responseData.data;
+  };
+
+  public deleteAgent = async (agentId: string): Promise<void> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for deleteAgent:", error);
+    }
+
+    const response = await fetchApi(`/agents/${agentId}`, {
+      method: "DELETE",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete agent: ${response.statusText}`);
+    }
+
+    const responseData = (await response.json()) as { data: any };
+    return responseData.data;
+  };
 }
 
 export const apiService = ApiService.getInstance();

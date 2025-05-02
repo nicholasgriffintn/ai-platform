@@ -69,6 +69,7 @@ export const handleCreateChatCompletions = async (req: {
     metadata: request.metadata,
     reasoning_effort: request.reasoning_effort,
     store: request.store,
+    tools: request.tools,
     enabled_tools: request.enabled_tools,
     isRestricted,
     useMultiModel,

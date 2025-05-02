@@ -396,3 +396,26 @@ export const appData = sqliteTable(
 );
 
 export type AppData = typeof appData.$inferSelect;
+
+export const agents = sqliteTable(
+  "agents",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    name: text().notNull(),
+    description: text().default("").notNull(),
+    avatar_url: text(),
+    servers: text({ mode: "json" }).notNull(),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    userIdIdx: index("agents_user_id_idx").on(table.user_id),
+  }),
+);
+
+export type Agent = typeof agents.$inferSelect;

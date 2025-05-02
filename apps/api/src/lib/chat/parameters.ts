@@ -147,6 +147,13 @@ export async function mapParametersToProvider(
     const supportsFunctions = modelConfig?.supportsFunctions || false;
 
     if (supportsFunctions) {
+      if (params.tools) {
+        return {
+          ...commonParams,
+          tools: params.tools,
+        };
+      }
+
       const enabledTools = params.enabled_tools || [];
       const filteredFunctions = availableFunctions.filter((func) =>
         enabledTools.includes(func.name),

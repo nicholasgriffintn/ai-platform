@@ -27,6 +27,7 @@ import {
 import { LogLevel, getLogger } from "./utils/logger";
 
 import { ROUTES } from "./constants/app";
+import agents from "./routes/agents";
 import apps from "./routes/apps";
 import audio from "./routes/audio";
 import auth from "./routes/auth";
@@ -192,6 +193,7 @@ app.route(ROUTES.USER, user);
 app.route(ROUTES.PLANS, plans);
 app.route(ROUTES.STRIPE, stripe);
 app.route(ROUTES.REALTIME, realtime);
+app.route(ROUTES.AGENTS, agents);
 
 app.notFound((c) => c.json({ status: "not found" }, 404));
 

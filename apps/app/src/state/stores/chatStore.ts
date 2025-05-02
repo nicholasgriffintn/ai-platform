@@ -59,6 +59,8 @@ export interface ChatStore {
   setModel: (model: string | null) => void;
   useMultiModel: boolean;
   setUseMultiModel: (useMultiModel: boolean) => void;
+  selectedAgentId: string | null;
+  setSelectedAgentId: (agentId: string | null) => void;
   chatSettings: ChatSettings;
   setChatSettings: (settings: ChatSettings) => void;
   showSearch: boolean;
@@ -119,6 +121,8 @@ export const useChatStore = create<ChatStore>()(
       setModel: (model) => set({ model }),
       useMultiModel: false,
       setUseMultiModel: (useMultiModel) => set({ useMultiModel }),
+      selectedAgentId: null,
+      setSelectedAgentId: (agentId) => set({ selectedAgentId: agentId }),
       chatSettings: defaultSettings,
       setChatSettings: (settings) => set({ chatSettings: settings }),
 
@@ -168,6 +172,7 @@ export const useChatStore = create<ChatStore>()(
         model: state.model,
         useMultiModel: state.useMultiModel,
         chatSettings: state.chatSettings,
+        selectedAgentId: state.selectedAgentId,
       }),
     },
   ),

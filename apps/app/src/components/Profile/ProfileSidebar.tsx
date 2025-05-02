@@ -8,6 +8,7 @@ import { useChatStore } from "~/state/stores/chatStore";
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
 import { SidebarHeader } from "../Sidebar/SidebarHeader";
 import { ProfileAccountTab } from "./Tabs/ProfileAccountTab";
+import { ProfileAgentsTab } from "./Tabs/ProfileAgentsTab";
 import { ProfileApiKeysTab } from "./Tabs/ProfileApiKeysTab";
 import { ProfileBillingTab } from "./Tabs/ProfileBillingTab";
 import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab";
@@ -31,6 +32,7 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
   },
   { id: "history", label: "Chat History", component: ProfileHistoryTab },
   { id: "providers", label: "Providers", component: ProfileProvidersTab },
+  { id: "agents", label: "Agents", component: ProfileAgentsTab },
   { id: "billing", label: "Billing", component: ProfileBillingTab },
   { id: "api-keys", label: "API Keys", component: ProfileApiKeysTab },
 ];
