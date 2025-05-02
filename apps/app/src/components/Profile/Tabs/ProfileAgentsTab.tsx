@@ -225,7 +225,6 @@ export function ProfileAgentsTab() {
         </Card>
       </div>
 
-      {/* Create Agent Modal */}
       <Dialog
         open={modalOpen}
         onOpenChange={(open) => {
@@ -345,7 +344,6 @@ export function ProfileAgentsTab() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Modal */}
       {agentToDelete && (
         <ConfirmDeleteModal
           isOpen={!!agentToDelete}

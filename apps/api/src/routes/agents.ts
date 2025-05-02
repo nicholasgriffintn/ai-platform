@@ -8,6 +8,7 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requireTurnstileToken } from "~/middleware/turnstile";
 import { AgentRepository } from "~/repositories/AgentRepository";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
+import { registerMCPClient } from "~/services/functions/mcp";
 import type { IEnv } from "~/types";
 import type { ChatCompletionParameters } from "~/types";
 import { createAgentSchema, updateAgentSchema } from "./schemas/agents";
@@ -97,12 +98,12 @@ app.delete("/:agentId", async (ctx: Context) => {
   });
 });
 
-// Chat with an agent via MCP-backed tools and standard chat service
 app.post(
   "/:agentId/completions",
   requireTurnstileToken,
   zValidator("json", createChatCompletionsJsonSchema),
   async (ctx: Context) => {
+    // TODO: Agents should be continuous until the request has been resolved, currently, it just ends after the first response
     const { agentId } = ctx.req.param();
     const user = ctx.get("user");
     const anonymousUser = ctx.get("anonymousUser");
@@ -146,16 +147,19 @@ app.post(
       const serverConfigs = JSON.parse(serversJson) as Array<{ url: string }>;
       mcp = new MCPClientManager(agent.id, "1.0.0");
 
+      registerMCPClient(agent.id, mcp);
+
       for (const cfg of serverConfigs) {
         try {
           const { id } = await mcp.connect(cfg.url);
           if (mcp.mcpConnections[id]?.connectionState === "ready") {
             const rawTools = (await mcp.unstable_getAITools()) as any;
 
-            const defs = Object.values(rawTools) as any[];
+            const defs = Object.entries(rawTools) as [string, any][];
 
-            for (const def of defs) {
-              const toolName = `mcp_${agent.id}_${id}_${def.name || `tool_${mcpFunctions.length + 1}`}`;
+            for (const [name, def] of defs) {
+              const shortAgentId = agent.id.substring(0, 8);
+              const toolName = `mcp_${shortAgentId}_${name}`;
 
               mcpFunctions.push({
                 name: toolName,

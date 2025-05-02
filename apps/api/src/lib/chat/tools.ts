@@ -53,7 +53,7 @@ export const handleToolCalls = async (
   functionResults.push(toolMessage);
 
   for (const toolCall of toolCalls) {
-    let functionName = "unknown";
+    const functionName = toolCall.function?.name || toolCall.name || "unknown";
     try {
       if (toolCall.function?.name === "memory") {
         const ev = JSON.parse(toolCall.function.arguments || "{}");
@@ -74,23 +74,6 @@ export const handleToolCalls = async (
         };
         functionResults.push(memMessage);
         continue;
-      }
-
-      if (toolCall.function?.name.startsWith("mcp_")) {
-        const splitId = toolCall.function.name.split("_");
-        const serverId = splitId[3];
-
-        // TODO: Figure out how to handle MCP tools for now ignore them
-
-        continue;
-      }
-
-      functionName = toolCall.function?.name || toolCall.name;
-      if (!functionName) {
-        throw new AssistantError(
-          "Invalid tool call: missing function name",
-          ErrorType.PARAMS_ERROR,
-        );
       }
 
       const rawArgs = toolCall.function?.arguments || toolCall.arguments;

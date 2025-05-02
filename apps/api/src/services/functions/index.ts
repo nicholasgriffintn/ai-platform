@@ -1,8 +1,10 @@
 import type { ConversationManager } from "~/lib/conversationManager";
 import type { IFunction, IFunctionResponse, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import { extract_content } from "./extract_content";
 import { create_image } from "./image";
+import { handleMCPTool } from "./mcp";
 import { create_music } from "./music";
 import { prompt_coach } from "./prompt_coach";
 import { capture_screenshot } from "./screenshot";
@@ -11,6 +13,8 @@ import { tutor } from "./tutor";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
+
+const logger = getLogger({ prefix: "FUNCTIONS" });
 
 export const availableFunctions: IFunction[] = [
   get_weather,
@@ -40,6 +44,21 @@ export const handleFunctions = async ({
   request: IRequest;
   conversationManager?: ConversationManager;
 }): Promise<IFunctionResponse> => {
+  if (functionName.startsWith("mcp_")) {
+    request.request = {
+      ...request.request,
+      functionName,
+    };
+
+    return handleMCPTool(
+      completion_id,
+      args,
+      request,
+      app_url,
+      conversationManager,
+    );
+  }
+
   const foundFunction = availableFunctions.find(
     (func) => func.name === functionName,
   );
