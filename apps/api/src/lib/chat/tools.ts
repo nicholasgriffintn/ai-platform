@@ -76,6 +76,15 @@ export const handleToolCalls = async (
         continue;
       }
 
+      if (toolCall.function?.name.startsWith("mcp_")) {
+        const splitId = toolCall.function.name.split("_");
+        const serverId = splitId[3];
+
+        // TODO: Figure out how to handle MCP tools for now ignore them
+
+        continue;
+      }
+
       functionName = toolCall.function?.name || toolCall.name;
       if (!functionName) {
         throw new AssistantError(

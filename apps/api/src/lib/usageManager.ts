@@ -338,7 +338,6 @@ export class UsageManager {
   }
 
   async incrementUsageByModel(modelId: string, isPro: boolean) {
-    console.log("incrementing usage by model", modelId, isPro);
     const modelIsPro = isProModel(modelId);
 
     if (modelIsPro) {
@@ -353,7 +352,6 @@ export class UsageManager {
     } else if (this.user?.id) {
       await this.incrementUsage();
     } else if (this.anonymousUser?.id) {
-      console.log("incrementing anonymous usage");
       await this.incrementAnonymousUsage();
     } else {
       throw new AssistantError(

@@ -137,11 +137,14 @@ app.post(
       description?: string;
       parameters: Record<string, any>;
     }> = [];
+
+    let mcp: MCPClientManager | null = null;
+
     try {
       const serversJson = agent.servers as string;
 
       const serverConfigs = JSON.parse(serversJson) as Array<{ url: string }>;
-      const mcp = new MCPClientManager(agent.id, "1.0.0");
+      mcp = new MCPClientManager(agent.id, "1.0.0");
 
       for (const cfg of serverConfigs) {
         try {
@@ -152,8 +155,7 @@ app.post(
             const defs = Object.values(rawTools) as any[];
 
             for (const def of defs) {
-              const toolName =
-                def.name || `mcp_tool_${mcpFunctions.length + 1}`;
+              const toolName = `mcp_${agent.id}_${id}_${def.name || `tool_${mcpFunctions.length + 1}`}`;
 
               mcpFunctions.push({
                 name: toolName,
