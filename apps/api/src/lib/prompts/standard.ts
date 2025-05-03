@@ -108,37 +108,6 @@ export async function returnStandardPrompt(
     }
 
     if (isAgent) {
-      builder.startSection("⚠️ CRITICAL WORKFLOW REQUIREMENT ⚠️");
-      builder.addLine("YOU MUST FOLLOW THIS EXACT WORKFLOW WITHOUT EXCEPTION:");
-      builder.addLine(
-        "1. For EVERY tool call you make, you MUST IMMEDIATELY call add_reasoning_step afterward",
-      );
-      builder.addLine(
-        '2. Your FINAL action before responding to the user MUST ALWAYS be add_reasoning_step with nextStep="finalAnswer"',
-      );
-      builder.addLine(
-        '3. NEVER respond to the user without first using add_reasoning_step with nextStep="finalAnswer"',
-      );
-      builder.addLine(
-        "FAILING TO FOLLOW THESE STEPS WILL RESULT IN INCORRECT BEHAVIOR.",
-      );
-
-      builder.startSection("Correct Pattern Example");
-      builder.addLine("```");
-      builder.addLine("1. Call tool X to get information");
-      builder.addLine(
-        '2. Call add_reasoning_step to document reasoning (nextStep="continue")',
-      );
-      builder.addLine("3. Call tool Y for additional information");
-      builder.addLine(
-        '4. Call add_reasoning_step to document reasoning (nextStep="continue")',
-      );
-      builder.addLine(
-        '5. Call add_reasoning_step with final conclusions (nextStep="finalAnswer")',
-      );
-      builder.addLine("6. Respond to user");
-      builder.addLine("```");
-
       builder.startSection("Tool Usage Guidelines");
       builder.addLine("When working with tools, follow these principles:");
       builder.addLine(
@@ -154,13 +123,12 @@ export async function returnStandardPrompt(
         "4. **Handle Results Thoughtfully**: Process tool outputs to create coherent, useful responses",
       );
       builder.addLine(
-        "5. **Iterate If Needed**: If initial results are incomplete, use additional tool calls to refine",
+        "5. **Multi-Step Reasoning**: After you use a tool, use the `add_reasoning_step` tool to expand on the response and provide a more detailed answer.",
       );
 
       builder.startSection("Multi-Step Reasoning");
-      builder.addLine("For complex tasks requiring multiple tools or steps:");
       builder.addLine(
-        "1. **⚠️ MANDATORY: ALWAYS use the `add_reasoning_step` tool immediately after each tool call without exception ⚠️**",
+        "1. **ALWAYS use the `add_reasoning_step` tool immediately after each tool call without exception**",
       );
       builder.addLine("2. In the reasoning step:");
       builder.addLine("   - Document your interpretation of tool results");
@@ -172,34 +140,10 @@ export async function returnStandardPrompt(
         '   - Set `nextStep` to "finalAnswer" when you have all needed information',
       );
       builder.addLine(
-        '3. **⚠️ MANDATORY: Your final interaction must ALWAYS be a reasoning step with `nextStep="finalAnswer"` ⚠️**',
+        '3. **Your final interaction must ALWAYS be a reasoning step with `nextStep="finalAnswer"`**',
       );
       builder.addLine(
         '4. Only after the reasoning step with `nextStep="finalAnswer"` should you provide your comprehensive final answer',
-      );
-
-      builder.startSection("VERIFICATION CHECKLIST");
-      builder.addLine("Check before EVERY response:");
-      builder.addLine(
-        "[ ] Did I call add_reasoning_step after EACH tool call?",
-      );
-      builder.addLine(
-        '[ ] Is my final tool call add_reasoning_step with nextStep="finalAnswer"?',
-      );
-      builder.addLine("[ ] Have I documented my reasoning for each step?");
-
-      builder.startSection("Decision Framework");
-      builder.addLine(
-        "- Use tools whenever they would provide more accurate, current, or detailed information than your knowledge alone",
-      );
-      builder.addLine(
-        "- When a request requires specific data retrieval, computation, or external actions, prioritize relevant tools",
-      );
-      builder.addLine(
-        "- For creative or reasoning tasks, leverage your own capabilities first, then enhance with tools as needed",
-      );
-      builder.addLine(
-        "- If tools return unexpected or incomplete results, adapt your approach or transparently explain limitations",
       );
 
       builder.startSection("Tool Availability");
@@ -211,18 +155,6 @@ export async function returnStandardPrompt(
       );
       builder.addLine(
         "- You'll work with whatever tools are currently available to provide the best possible assistance",
-      );
-
-      builder.startSection("Response Format");
-      builder.addLine("- Use clear markdown formatting for readability");
-      builder.addLine(
-        "- For complex tool operations, briefly explain your reasoning or approach",
-      );
-      builder.addLine(
-        "- After using tools, always provide a natural language summary or response",
-      );
-      builder.addLine(
-        "- Balance technical detail with accessibility based on the user's expertise level",
       );
     }
 
