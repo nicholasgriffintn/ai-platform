@@ -26,6 +26,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     hasThinking: true,
     supportsResponseFormat: true,
     supportsArtifacts: true,
+    timeout: 1000000,
   }),
 
   createModelConfig("o3", PROVIDER, {
@@ -49,6 +50,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     hasThinking: true,
     supportsResponseFormat: true,
     supportsArtifacts: true,
+    timeout: 1000000,
   }),
 
   createModelConfig("o4-mini", PROVIDER, {
@@ -182,6 +184,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     includedInRouter: true,
     supportsResponseFormat: true,
     supportsArtifacts: true,
+    timeout: 1000000,
   }),
 
   createModelConfig("gpt-4.1", PROVIDER, {
@@ -204,6 +207,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     supportsArtifacts: true,
     isFeatured: true,
     includedInRouter: true,
+    timeout: 1000000,
   }),
   createModelConfig("gpt-4.1-mini", PROVIDER, {
     name: "OpenAI GPT-4.1 Mini",
@@ -257,5 +261,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.01,
     costPer1kOutputTokens: 0.04,
     isFeatured: true,
+    timeout: 1000000,
   }),
 ]);

@@ -106,18 +106,15 @@ export async function mapParametersToProvider(
 
     if (supportsFunctions) {
       if (params.tools) {
-        return {
-          ...commonParams,
-          tools: params.tools,
-        };
+        commonParams.tools = params.tools;
+      } else {
+        const enabledTools = params.enabled_tools || [];
+        const filteredFunctions = availableFunctions.filter((func) =>
+          enabledTools.includes(func.name),
+        );
+
+        commonParams.tools = formatToolCalls(providerName, filteredFunctions);
       }
-
-      const enabledTools = params.enabled_tools || [];
-      const filteredFunctions = availableFunctions.filter((func) =>
-        enabledTools.includes(func.name),
-      );
-
-      commonParams.tools = formatToolCalls(providerName, filteredFunctions);
     }
   }
 
