@@ -190,8 +190,8 @@ importers:
         specifier: ^1.2.7
         version: 1.2.9
       virtua:
-        specifier: ^0.40.3
-        version: 0.40.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^0.41.0
+        version: 0.41.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       zustand:
         specifier: 5.0.4
         version: 5.0.4(@types/react@19.1.2)(react@19.1.0)
@@ -4543,8 +4543,8 @@ packages:
   victory-vendor@36.9.2:
     resolution: {integrity: sha512-PnpQQMuxlwYdocC8fIJqVXvkeViHYzotI+NJrCuav0ZYFoq912ZHBk3mCeuj+5/VpodOjPe1z0Fk2ihgzlXqjQ==}
 
-  virtua@0.40.4:
-    resolution: {integrity: sha512-eV55eOm2b5Lzc9upivqIcAFPgfBrfcVrppW9T4vhTH+QAbaxfw5ypq25apkG83T5FuiFEoQYnefix1fQyx/GXQ==}
+  virtua@0.41.0:
+    resolution: {integrity: sha512-P8XJhPAz3mNrxAjPc+NRvD8a8+JtInKgHXuvtucThXW93U1ztUKJ2TDCAMaCPRY0CQCR465mYcOf26yQkCHWEw==}
     peerDependencies:
       react: '>=16.14.0'
       react-dom: '>=16.14.0'
@@ -9107,7 +9107,7 @@ snapshots:
       d3-time: 3.1.0
       d3-timer: 3.0.1
 
-  virtua@0.40.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  virtua@0.41.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     optionalDependencies:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
