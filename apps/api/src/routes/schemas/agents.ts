@@ -33,9 +33,9 @@ export const createAgentSchema = z.object({
   avatar_url: z
     .string()
     .url()
+    .nullable()
     .optional()
-    .openapi({ description: "Optional avatar image URL" })
-    .optional(),
+    .openapi({ description: "Optional avatar image URL" }),
   servers: z
     .array(mcpServerSchema)
     .min(1, "At least one server is required")

@@ -11,6 +11,8 @@ import { handleCreateChatCompletions } from "~/services/completions/createChatCo
 import { registerMCPClient } from "~/services/functions/mcp";
 import type { IEnv } from "~/types";
 import type { ChatCompletionParameters } from "~/types";
+import { formatToolCalls } from "../lib/chat/tools";
+import { getModelConfigByMatchingModel } from "../lib/models";
 import { createAgentSchema, updateAgentSchema } from "./schemas/agents";
 import { createChatCompletionsJsonSchema } from "./schemas/chat";
 
@@ -24,8 +26,10 @@ app.use("/*", async (ctx, next) => {
 
 app.get("/", async (ctx: Context) => {
   const user = ctx.get("user");
+
   const repo = new AgentRepository(ctx.env);
   const agents = await repo.getAgentsByUser(user.id);
+
   return ctx.json({
     status: "success",
     data: agents,
@@ -37,6 +41,7 @@ app.post("/", zValidator("json", createAgentSchema), async (ctx: Context) => {
     typeof createAgentSchema
   >;
   const user = ctx.get("user");
+
   const repo = new AgentRepository(ctx.env);
   const agent = await repo.createAgent(
     user.id,
@@ -45,6 +50,7 @@ app.post("/", zValidator("json", createAgentSchema), async (ctx: Context) => {
     body.avatar_url ?? null,
     body.servers,
   );
+
   return ctx.json({
     status: "success",
     data: agent,
@@ -54,13 +60,76 @@ app.post("/", zValidator("json", createAgentSchema), async (ctx: Context) => {
 app.get("/:agentId", async (ctx: Context) => {
   const { agentId } = ctx.req.param();
   const user = ctx.get("user");
+
   const repo = new AgentRepository(ctx.env);
   const agent = await repo.getAgentById(agentId);
-  if (!agent) return ctx.json({ error: "Agent not found" }, 404);
-  if (agent.user_id !== user.id) return ctx.json({ error: "Forbidden" }, 403);
+
+  if (!agent) {
+    return ctx.json({ error: "Agent not found" }, 404);
+  }
+
+  if (agent.user_id !== user.id) {
+    return ctx.json({ error: "Forbidden" }, 403);
+  }
+
   return ctx.json({
     status: "success",
     data: agent,
+  });
+});
+
+app.get("/:agentId/servers", async (ctx: Context) => {
+  const { agentId } = ctx.req.param();
+  const user = ctx.get("user");
+
+  const repo = new AgentRepository(ctx.env);
+  const agent = await repo.getAgentById(agentId);
+
+  if (!agent) {
+    return ctx.json({ error: "Agent not found" }, 404);
+  }
+
+  if (agent.user_id !== user.id) {
+    return ctx.json({ error: "Forbidden" }, 403);
+  }
+
+  let servers = [];
+
+  try {
+    servers = JSON.parse(agent.servers as string);
+  } catch (error) {
+    return ctx.json({ error: "Invalid servers" }, 400);
+  }
+
+  const mcp = new MCPClientManager(agent.id, "1.0.0");
+
+  const serverDetails = await Promise.all(
+    servers.map(
+      async (server: {
+        url: string;
+        type: "sse";
+      }) => {
+        console.log("Connecting to server", server);
+        const { id } = await mcp.connect(server.url);
+
+        const tools = await mcp.listTools();
+        const prompts = await mcp.listPrompts();
+        const resources = await mcp.listResources();
+
+        return {
+          id,
+          connectionState: mcp.mcpConnections[id]?.connectionState,
+          tools,
+          prompts,
+          resources,
+        };
+      },
+    ),
+  );
+
+  return ctx.json({
+    status: "success",
+    data: serverDetails,
   });
 });
 
@@ -73,11 +142,20 @@ app.put(
       typeof updateAgentSchema
     >;
     const user = ctx.get("user");
+
     const repo = new AgentRepository(ctx.env);
     const agent = await repo.getAgentById(agentId);
-    if (!agent) return ctx.json({ error: "Agent not found" }, 404);
-    if (agent.user_id !== user.id) return ctx.json({ error: "Forbidden" }, 403);
+
+    if (!agent) {
+      return ctx.json({ error: "Agent not found" }, 404);
+    }
+
+    if (agent.user_id !== user.id) {
+      return ctx.json({ error: "Forbidden" }, 403);
+    }
+
     await repo.updateAgent(agentId, body);
+
     return ctx.json({
       status: "success",
       data: agent,
@@ -88,10 +166,18 @@ app.put(
 app.delete("/:agentId", async (ctx: Context) => {
   const { agentId } = ctx.req.param();
   const user = ctx.get("user");
+
   const repo = new AgentRepository(ctx.env);
   const agent = await repo.getAgentById(agentId);
-  if (!agent) return ctx.json({ error: "Agent not found" }, 404);
-  if (agent.user_id !== user.id) return ctx.json({ error: "Forbidden" }, 403);
+
+  if (!agent) {
+    return ctx.json({ error: "Agent not found" }, 404);
+  }
+
+  if (agent.user_id !== user.id) {
+    return ctx.json({ error: "Forbidden" }, 403);
+  }
+
   await repo.deleteAgent(agentId);
   return ctx.json({
     status: "success",
@@ -103,7 +189,6 @@ app.post(
   requireTurnstileToken,
   zValidator("json", createChatCompletionsJsonSchema),
   async (ctx: Context) => {
-    // TODO: Agents should be continuous until the request has been resolved, currently, it just ends after the first response
     const { agentId } = ctx.req.param();
     const user = ctx.get("user");
     const anonymousUser = ctx.get("anonymousUser");
@@ -177,52 +262,55 @@ app.post(
     }
 
     const reasoningStepTool = {
-      type: "function" as const,
-      function: {
-        name: "add_reasoning_step",
-        description:
-          "⚠️ MANDATORY TOOL ⚠️ You MUST use this tool immediately after EVERY other tool call without exception, and as your FINAL action before responding to the user. This documents your thought process and determines next steps. NEVER skip this step.",
-        parameters: {
-          type: "object",
-          properties: {
-            title: {
-              type: "string",
-              description: "The title of the reasoning step",
-            },
-            content: {
-              type: "string",
-              description:
-                "Your reasoning about what you've learned from previous tool calls and what you plan to do next.",
-            },
-            nextStep: {
-              type: "string",
-              enum: ["continue", "finalAnswer"],
-              description:
-                'Your final tool call MUST set this to "finalAnswer". Use "continue" only if you need additional tool calls.',
-            },
+      name: "add_reasoning_step",
+      description:
+        "This tool is to be used for reasoning about the user's request and how to respond to it based on the output of the other tools.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: {
+            type: "string",
+            description: "The title of the reasoning step",
           },
-          required: ["title", "content", "nextStep"],
+          content: {
+            type: "string",
+            description:
+              "Your reasoning about what you've learned from previous tool calls and what you plan to do next.",
+          },
+          nextStep: {
+            type: "string",
+            enum: ["continue", "finalAnswer"],
+            description:
+              'Your final tool call MUST set this to "finalAnswer". Use "continue" only if you need additional tool calls.',
+          },
         },
+        required: ["title", "content", "nextStep"],
       },
     };
 
     const functionSchemas = [
       reasoningStepTool,
       ...mcpFunctions.map((fn) => ({
-        type: "function" as const,
-        function: {
-          name: fn.name,
-          description: fn.description,
-          parameters: fn.parameters,
-        },
+        name: fn.name,
+        description: fn.description,
+        parameters: fn.parameters,
       })),
     ];
 
+    console.log("functionSchemas", JSON.stringify(functionSchemas, null, 2));
+
+    const modelDetails = getModelConfigByMatchingModel(body.model);
+    const formattedTools = formatToolCalls(
+      modelDetails.provider,
+      functionSchemas,
+    );
+
     const requestParams: any = {
       ...body,
-      tools: functionSchemas,
+      tools: formattedTools,
       stream: true,
       mode: "agent",
+      tool_choice: "required",
     };
 
     const response = await handleCreateChatCompletions({

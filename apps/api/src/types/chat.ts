@@ -196,6 +196,12 @@ interface AIResponseParamsBase extends AIControlParams {
   tools?: Record<string, any>[];
   // The tools that should be enabled for the response.
   enabled_tools?: string[];
+  // The tool choice to use for the response.
+  tool_choice?:
+    | "required"
+    | "auto"
+    | "none"
+    | { type: "function"; name: string };
   // Additional options for the response.
   options?: Record<string, any>;
   // The body of the request.
