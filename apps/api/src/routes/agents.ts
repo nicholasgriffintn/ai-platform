@@ -4,16 +4,17 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import type z from "zod";
 
+import { formatToolCalls } from "~/lib/chat/tools";
+import { getModelConfig } from "~/lib/models";
 import { allowRestrictedPaths } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requireTurnstileToken } from "~/middleware/turnstile";
 import { AgentRepository } from "~/repositories/AgentRepository";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { registerMCPClient } from "~/services/functions/mcp";
+import { add_reasoning_step } from "~/services/functions/reasoning";
 import type { IEnv } from "~/types";
 import type { ChatCompletionParameters } from "~/types";
-import { formatToolCalls } from "../lib/chat/tools";
-import { getModelConfig } from "../lib/models";
 import { createAgentSchema, updateAgentSchema } from "./schemas/agents";
 import { createChatCompletionsJsonSchema } from "./schemas/chat";
 import { apiResponseSchema } from "./schemas/shared";
@@ -384,35 +385,12 @@ app.post(
       console.error("Error getting MCP functions", e);
     }
 
-    const reasoningStepTool = {
-      name: "add_reasoning_step",
-      description:
-        "This tool is to be used for reasoning about the user's request and how to respond to it based on the output of the other tools.",
-      parameters: {
-        type: "object",
-        properties: {
-          title: {
-            type: "string",
-            description: "The title of the reasoning step",
-          },
-          content: {
-            type: "string",
-            description:
-              "Your reasoning about what you've learned from previous tool calls and what you plan to do next.",
-          },
-          nextStep: {
-            type: "string",
-            enum: ["continue", "finalAnswer"],
-            description:
-              'Your final tool call MUST set this to "finalAnswer". Use "continue" only if you need additional tool calls.',
-          },
-        },
-        required: ["title", "content", "nextStep"],
-      },
-    };
-
     const functionSchemas = [
-      reasoningStepTool,
+      {
+        name: add_reasoning_step.name,
+        description: add_reasoning_step.description,
+        parameters: add_reasoning_step.parameters,
+      },
       ...mcpFunctions.map((fn) => ({
         name: fn.name,
         description: fn.description,
