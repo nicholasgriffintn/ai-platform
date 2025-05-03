@@ -52,7 +52,7 @@ app.get(
         description: "Unauthorized",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -112,7 +112,7 @@ app.get(
         description: "Bad Request - Invalid IDs",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -120,7 +120,7 @@ app.get(
         description: "Unauthorized",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -128,7 +128,7 @@ app.get(
         description: "Forbidden",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -193,7 +193,7 @@ app.get(
         description: "Unauthorized",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -201,7 +201,7 @@ app.get(
         description: "Forbidden",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -209,7 +209,7 @@ app.get(
         description: "Article data not found",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -269,7 +269,7 @@ app.post(
         description: "Bad Request",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -277,7 +277,7 @@ app.post(
         description: "Unauthorized",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -349,7 +349,7 @@ app.post(
         description: "Bad Request",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -357,7 +357,7 @@ app.post(
         description: "Unauthorized",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -429,7 +429,7 @@ app.post(
         description: "Unauthorized",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -437,7 +437,7 @@ app.post(
         description: "No analysis data found to generate report",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -445,7 +445,7 @@ app.post(
         description: "Failed to generate or save report",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },

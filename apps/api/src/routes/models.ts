@@ -36,7 +36,7 @@ app.get(
   "/",
   describeRoute({
     tags: ["models"],
-    title: "List models",
+    summary: "List models",
     description:
       "Lists the currently available models, and provides basic information about each one such as the capabilities and pricing.",
     responses: {
@@ -73,7 +73,7 @@ app.get(
   "/capabilities",
   describeRoute({
     tags: ["models"],
-    title: "Get all capabilities",
+    summary: "Get all capabilities",
     description: "Returns a list of all available model capabilities",
     responses: {
       200: {
@@ -108,14 +108,14 @@ app.get(
   "/capabilities/:capability",
   describeRoute({
     tags: ["models"],
-    title: "Get models by capability",
+    summary: "Get models by capability",
     description: "Returns all models that support a specific capability",
     parameters: [
       {
         name: "capability",
         in: "path",
         required: true,
-        schema: z.string(),
+        schema: { type: "string" },
         description: "Capability to filter models by",
       },
     ],
@@ -169,7 +169,7 @@ app.get(
   "/types",
   describeRoute({
     tags: ["models"],
-    title: "Get all model types",
+    summary: "Get all model types",
     description: "Returns a list of all available model types",
     responses: {
       200: {
@@ -204,14 +204,14 @@ app.get(
   "/types/:type",
   describeRoute({
     tags: ["models"],
-    title: "Get models by type",
+    summary: "Get models by type",
     description: "Returns all models of a specific type",
     parameters: [
       {
         name: "type",
         in: "path",
         required: true,
-        schema: z.string(),
+        schema: { type: "string" },
         description: "Model type to filter by",
       },
     ],
@@ -259,7 +259,7 @@ app.get(
   "/:id",
   describeRoute({
     tags: ["models"],
-    title: "Retrieve model",
+    summary: "Retrieve model",
     description:
       "Retrieves a model instance, providing basic information about the model.",
     parameters: [
@@ -267,7 +267,7 @@ app.get(
         name: "id",
         in: "path",
         required: true,
-        schema: z.string(),
+        schema: { type: "string" },
         description: "Model ID to retrieve",
       },
     ],

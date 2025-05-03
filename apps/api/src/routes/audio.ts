@@ -27,7 +27,7 @@ app.post(
   "/transcribe",
   describeRoute({
     tags: ["audio"],
-    title: "Create transcription",
+    summary: "Create transcription",
     description: "Transcribes audio into the input language.",
     responses: {
       200: {
@@ -70,7 +70,7 @@ app.post(
   "/speech",
   describeRoute({
     tags: ["audio"],
-    title: "Create speech",
+    summary: "Create speech",
     description: "Generates audio from the input text.",
     responses: {
       200: {

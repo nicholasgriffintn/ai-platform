@@ -1,4 +1,3 @@
-import type { Context } from "hono";
 import Stripe from "stripe";
 import { FREE_TRIAL_DAYS } from "~/constants/app";
 import { Database } from "~/lib/database";
@@ -23,7 +22,7 @@ function getStripeClient(env: IEnv): Stripe {
       ErrorType.CONFIGURATION_ERROR,
     );
   }
-  return new Stripe(secret, { apiVersion: "2025-03-31.basil" });
+  return new Stripe(secret, { apiVersion: "2025-04-30.basil" });
 }
 
 export async function createCheckoutSession(

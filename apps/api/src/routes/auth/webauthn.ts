@@ -63,7 +63,7 @@ app.post(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -116,7 +116,7 @@ app.post(
         description: "Invalid verification response",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -169,7 +169,7 @@ app.post(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -211,7 +211,7 @@ app.post(
         description: "Invalid verification response",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -271,7 +271,7 @@ app.get(
         description: "Authentication required",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -325,7 +325,7 @@ app.delete(
         description: "Authentication required",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },

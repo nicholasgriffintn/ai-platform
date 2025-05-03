@@ -384,7 +384,7 @@ app.post(
   "/prompt-coach",
   describeRoute({
     tags: ["chat"],
-    title: "Get prompt suggestion using coaching system",
+    summary: "Get prompt suggestion using coaching system",
     description:
       "Takes a user prompt, runs it through the existing coaching system prompt, and returns the suggested revised prompt.",
     responses: {

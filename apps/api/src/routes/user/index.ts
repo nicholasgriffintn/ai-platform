@@ -54,7 +54,19 @@ app.put(
       required: true,
       content: {
         "application/json": {
-          schema: resolver(updateUserSettingsSchema),
+          schema: {
+            type: "object",
+            properties: {
+              default_model: { type: "string" },
+              default_mode: {
+                type: "string",
+                enum: ["normal", "local", "remote"],
+              },
+              appearance: { type: "string", enum: ["system", "light", "dark"] },
+              enabled_models: { type: "array", items: { type: "string" } },
+              enabled_tools: { type: "array", items: { type: "string" } },
+            },
+          },
         },
       },
     },
@@ -166,7 +178,15 @@ app.post(
       required: true,
       content: {
         "application/json": {
-          schema: resolver(storeProviderApiKeySchema),
+          schema: {
+            type: "object",
+            properties: {
+              providerId: { type: "string" },
+              apiKey: { type: "string" },
+              secretKey: { type: "string" },
+            },
+            required: ["providerId", "apiKey"],
+          },
         },
       },
     },

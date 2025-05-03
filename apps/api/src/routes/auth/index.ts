@@ -57,7 +57,7 @@ app.get(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -65,7 +65,7 @@ app.get(
         description: "Server error, such as missing configuration",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -104,7 +104,7 @@ app.get(
         description: "Bad request or invalid code",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -112,7 +112,7 @@ app.get(
         description: "Authentication error",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -240,7 +240,7 @@ app.get(
         description: "Invalid or expired session",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -292,7 +292,7 @@ app.post(
         description: "Bad request or validation error",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -338,7 +338,7 @@ app.get(
         description: "Authentication required",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -346,7 +346,7 @@ app.get(
         description: "JWT secret not configured",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
