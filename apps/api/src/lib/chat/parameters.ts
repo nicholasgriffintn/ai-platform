@@ -115,6 +115,16 @@ export async function mapParametersToProvider(
 
         commonParams.tools = formatToolCalls(providerName, filteredFunctions);
       }
+
+      if (
+        params.model !== "o1" &&
+        params.model !== "o3" &&
+        params.model !== "o3-mini" &&
+        params.model !== "o4-mini"
+      ) {
+        commonParams.parallel_tool_calls = params.parallel_tool_calls;
+      }
+      commonParams.tool_choice = params.tool_choice;
     }
   }
 

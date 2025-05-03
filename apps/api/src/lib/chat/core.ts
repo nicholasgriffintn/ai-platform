@@ -320,6 +320,8 @@ export async function processChatRequest(options: CoreChatOptions) {
       reasoning_effort,
       store = true,
       tools,
+      parallel_tool_calls,
+      tool_choice,
       enabled_tools = [],
       isRestricted,
     } = options;
@@ -375,6 +377,8 @@ export async function processChatRequest(options: CoreChatOptions) {
           store,
           enabled_tools,
           tools,
+          parallel_tool_calls,
+          tool_choice,
         },
         {
           env,
@@ -429,6 +433,8 @@ export async function processChatRequest(options: CoreChatOptions) {
       store,
       enabled_tools,
       tools,
+      parallel_tool_calls,
+      tool_choice,
     });
 
     if (response instanceof ReadableStream) {

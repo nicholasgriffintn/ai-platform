@@ -202,6 +202,8 @@ interface AIResponseParamsBase extends AIControlParams {
     | "auto"
     | "none"
     | { type: "function"; name: string };
+  // Whether to enable parallel tool calls for the response.
+  parallel_tool_calls?: boolean;
   // Additional options for the response.
   options?: Record<string, any>;
   // The body of the request.

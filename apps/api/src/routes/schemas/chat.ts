@@ -257,6 +257,9 @@ export const createChatCompletionsJsonSchema = z.object({
       description:
         "Controls which (if any) tool is called by the model. none means the model will not call any tool and instead generates a message. auto means the model can pick between generating a message or calling one or more tools. required means the model must call one or more tools. ",
     }),
+  parallel_tool_calls: z.boolean().optional().openapi({
+    description: "Whether to enable parallel tool calls for the response.",
+  }),
   reasoning_effort: z
     .enum(["low", "medium", "high"])
     .default("medium")

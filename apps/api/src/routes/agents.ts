@@ -13,7 +13,7 @@ import { registerMCPClient } from "~/services/functions/mcp";
 import type { IEnv } from "~/types";
 import type { ChatCompletionParameters } from "~/types";
 import { formatToolCalls } from "../lib/chat/tools";
-import { getModelConfigByMatchingModel } from "../lib/models";
+import { getModelConfig } from "../lib/models";
 import { createAgentSchema, updateAgentSchema } from "./schemas/agents";
 import { createChatCompletionsJsonSchema } from "./schemas/chat";
 import { apiResponseSchema } from "./schemas/shared";
@@ -420,18 +420,28 @@ app.post(
       })),
     ];
 
-    const modelDetails = getModelConfigByMatchingModel(body.model);
+    const modelDetails = getModelConfig(body.model);
+    if (!modelDetails) {
+      return ctx.json(
+        {
+          status: "error",
+          error: "Invalid model",
+        },
+        400,
+      );
+    }
     const formattedTools = formatToolCalls(
       modelDetails.provider,
       functionSchemas,
     );
 
-    const requestParams: any = {
+    const requestParams: ChatCompletionParameters = {
       ...body,
       tools: formattedTools,
       stream: true,
       mode: "agent",
       tool_choice: "required",
+      parallel_tool_calls: true,
     };
 
     const response = await handleCreateChatCompletions({
