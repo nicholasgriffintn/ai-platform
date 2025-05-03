@@ -29,7 +29,7 @@ app.post(
   "/web",
   describeRoute({
     tags: ["search"],
-    title: "Web search",
+    summary: "Web search",
     description: "Searches the web for the input query.",
     responses: {
       200: {

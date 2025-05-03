@@ -51,7 +51,7 @@ app.get(
         name: "id",
         in: "path",
         required: true,
-        schema: z.string(),
+        schema: { type: "string" },
         description: "Plan ID",
       },
     ],

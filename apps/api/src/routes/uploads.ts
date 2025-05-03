@@ -24,14 +24,23 @@ app.post(
   "/",
   describeRoute({
     tags: ["uploads"],
-    title: "Upload file",
+    summary: "Upload file",
     description: "Upload an image or document to the server",
     requestBody: {
       description: "Multipart form data containing file",
       required: true,
       content: {
         "multipart/form-data": {
-          schema: resolver(uploadRequestSchema),
+          schema: {
+            type: "object",
+            properties: {
+              file: {
+                type: "string",
+                format: "binary",
+              },
+            },
+            required: ["file"],
+          },
         },
       },
     },

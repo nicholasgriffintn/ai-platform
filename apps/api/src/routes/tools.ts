@@ -21,7 +21,7 @@ app.get(
   "/",
   describeRoute({
     tags: ["tools"],
-    title: "List Tools",
+    summary: "List Tools",
     description: "Lists the currently available tools.",
     responses: {
       200: {

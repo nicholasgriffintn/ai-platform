@@ -23,11 +23,15 @@ app.post(
   describeRoute({
     tags: ["auth"],
     summary: "Request a magic login link",
-    request: {
-      body: {
-        content: {
-          "application/json": {
-            schema: magicLinkRequestSchema,
+    requestBody: {
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              email: { type: "string", format: "email" },
+            },
+            required: ["email"],
           },
         },
       },
@@ -45,7 +49,7 @@ app.post(
         description: "Invalid email or user not found",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -53,7 +57,7 @@ app.post(
         description: "Server error (e.g., email sending failed)",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -79,11 +83,16 @@ app.post(
   describeRoute({
     tags: ["auth"],
     summary: "Verify magic link token and nonce, logs user in",
-    request: {
-      body: {
-        content: {
-          "application/json": {
-            schema: magicLinkVerifySchema,
+    requestBody: {
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              token: { type: "string" },
+              nonce: { type: "string" },
+            },
+            required: ["token", "nonce"],
           },
         },
       },
@@ -101,7 +110,7 @@ app.post(
         description: "Missing or invalid token/nonce in body",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },
@@ -109,7 +118,7 @@ app.post(
         description: "Invalid or expired token/nonce",
         content: {
           "application/json": {
-            schema: errorResponseSchema,
+            schema: resolver(errorResponseSchema),
           },
         },
       },

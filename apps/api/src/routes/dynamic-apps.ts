@@ -70,7 +70,7 @@ dynamicApps.get(
         name: "id",
         in: "path",
         required: true,
-        schema: z.string(),
+        schema: { type: "string" },
       },
     ],
     responses: {
@@ -129,14 +129,18 @@ dynamicApps.post(
         name: "id",
         in: "path",
         required: true,
-        schema: z.string(),
+        schema: { type: "string" },
       },
     ],
     requestBody: {
       description: "Form data for the app",
       content: {
         "application/json": {
-          schema: resolver(z.record(z.any())),
+          schema: {
+            type: "object",
+            properties: {},
+            required: [],
+          },
         },
       },
     },

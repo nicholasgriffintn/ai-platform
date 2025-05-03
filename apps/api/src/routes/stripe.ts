@@ -33,7 +33,17 @@ app.post(
       description: "Plan selection and redirect URLs",
       required: true,
       content: {
-        "application/json": { schema: resolver(checkoutSchema) },
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              plan_id: { type: "string" },
+              success_url: { type: "string", format: "uri" },
+              cancel_url: { type: "string", format: "uri" },
+            },
+            required: ["plan_id", "success_url", "cancel_url"],
+          },
+        },
       },
     },
     responses: {
@@ -43,11 +53,15 @@ app.post(
       },
       400: {
         description: "Invalid request data",
-        content: { "application/json": { schema: errorResponseSchema } },
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
       },
       500: {
         description: "Server error",
-        content: { "application/json": { schema: errorResponseSchema } },
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
       },
     },
   }),
@@ -91,11 +105,15 @@ app.get(
       },
       404: {
         description: "No subscription found",
-        content: { "application/json": { schema: errorResponseSchema } },
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
       },
       500: {
         description: "Server error",
-        content: { "application/json": { schema: errorResponseSchema } },
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
       },
     },
   }),
@@ -122,15 +140,21 @@ app.post(
     responses: {
       200: {
         description: "Subscription canceled",
-        content: { "application/json": { schema: errorResponseSchema } },
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
       },
       404: {
         description: "No subscription found",
-        content: { "application/json": { schema: errorResponseSchema } },
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
       },
       500: {
         description: "Server error",
-        content: { "application/json": { schema: errorResponseSchema } },
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
       },
     },
   }),
@@ -157,15 +181,21 @@ app.post(
     responses: {
       200: {
         description: "Subscription reactivated",
-        content: { "application/json": { schema: errorResponseSchema } },
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
       },
       404: {
         description: "No subscription found",
-        content: { "application/json": { schema: errorResponseSchema } },
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
       },
       500: {
         description: "Server error",
-        content: { "application/json": { schema: errorResponseSchema } },
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
       },
     },
   }),

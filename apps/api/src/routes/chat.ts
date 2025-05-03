@@ -62,7 +62,7 @@ app.post(
   "/completions",
   describeRoute({
     tags: ["chat"],
-    title: "Create chat completion",
+    summary: "Create chat completion",
     description:
       "Creates a model response for the given chat conversation. Please note that parameter support can differ depending on the model used to generate the response.",
     responses: {
@@ -131,7 +131,7 @@ app.get(
   "/completions/:completion_id",
   describeRoute({
     tags: ["chat"],
-    title: "Get chat completion",
+    summary: "Get chat completion",
     description:
       "Get a stored chat completion. Only chat completions that have been created with the store parameter set to true will be returned.",
     responses: {
@@ -184,7 +184,7 @@ app.get(
   "/completions/:completion_id/messages",
   describeRoute({
     tags: ["chat"],
-    title: "Get chat messages",
+    summary: "Get chat messages",
     description:
       "Get the messages in a stored chat completion. Only chat completions that have been created with the store parameter set to true will be returned.",
     responses: {
@@ -250,7 +250,7 @@ app.get(
   "/completions/messages/:message_id",
   describeRoute({
     tags: ["chat"],
-    title: "Get message",
+    summary: "Get message",
     description: "Get a single message by ID",
     responses: {
       200: {
@@ -306,7 +306,7 @@ app.get(
   "/completions",
   describeRoute({
     tags: ["chat"],
-    title: "List chat completions",
+    summary: "List chat completions",
     description:
       "List stored chat completions. Only chat completions that have been stored with the store parameter set to true will be returned.",
     responses: {
@@ -374,7 +374,7 @@ app.post(
   "/completions/:completion_id/generate-title",
   describeRoute({
     tags: ["chat"],
-    title: "Generate a title for a chat",
+    summary: "Generate a title for a chat",
     description:
       "Generate a title for a chat completion and then update the metadata with the title.",
     responses: {
@@ -441,7 +441,7 @@ app.put(
   "/completions/:completion_id",
   describeRoute({
     tags: ["chat"],
-    title: "Update a chat completion",
+    summary: "Update a chat completion",
     description:
       "Modify a stored chat completion. Only chat completions that have been created with the store parameter set to true can be modified.",
     responses: {
@@ -513,7 +513,7 @@ app.delete(
   "/completions/:completion_id",
   describeRoute({
     tags: ["chat"],
-    title: "Delete chat completion",
+    summary: "Delete chat completion",
     description:
       "Delete a stored chat completion. Only chat completions that have been created with the store parameter set to true can be deleted.",
     responses: {
@@ -641,7 +641,7 @@ app.post(
   "/completions/:completion_id/feedback",
   describeRoute({
     tags: ["chat"],
-    title: "Submit feedback about a chat completion",
+    summary: "Submit feedback about a chat completion",
     responses: {
       200: {
         description: "Feedback submission status",
@@ -704,7 +704,7 @@ app.post(
   "/completions/:completion_id/share",
   describeRoute({
     tags: ["chat"],
-    title: "Share a conversation publicly",
+    summary: "Share a conversation publicly",
     description:
       "Make a conversation publicly accessible via a unique share link",
     responses: {
@@ -761,7 +761,7 @@ app.delete(
   "/completions/:completion_id/share",
   describeRoute({
     tags: ["chat"],
-    title: "Unshare a conversation",
+    summary: "Unshare a conversation",
     description: "Make a previously shared conversation private",
     responses: {
       200: {
@@ -817,7 +817,7 @@ app.get(
   "/shared/:share_id",
   describeRoute({
     tags: ["chat"],
-    title: "Access a shared conversation",
+    summary: "Access a shared conversation",
     description:
       "Get messages from a publicly shared conversation using its share ID",
     responses: {

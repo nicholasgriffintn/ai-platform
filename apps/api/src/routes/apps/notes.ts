@@ -38,6 +38,7 @@ app.get(
     description: "List user's notes",
     responses: {
       200: {
+        description: "List of user's notes",
         content: {
           "application/json": { schema: resolver(listNotesResponseSchema) },
         },
@@ -66,11 +67,13 @@ app.get(
     description: "Get note details",
     responses: {
       200: {
+        description: "Note details",
         content: {
           "application/json": { schema: resolver(noteDetailResponseSchema) },
         },
       },
       404: {
+        description: "Note not found",
         content: {
           "application/json": { schema: resolver(errorResponseSchema) },
         },
@@ -103,15 +106,28 @@ app.post(
     tags: ["apps", "notes"],
     description: "Create a new note",
     requestBody: {
-      content: { "application/json": { schema: resolver(noteCreateSchema) } },
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              content: { type: "string" },
+            },
+            required: ["title", "content"],
+          },
+        },
+      },
     },
     responses: {
       200: {
+        description: "Newly created note",
         content: {
           "application/json": { schema: resolver(noteDetailResponseSchema) },
         },
       },
       400: {
+        description: "Bad request or validation error",
         content: {
           "application/json": { schema: resolver(errorResponseSchema) },
         },
@@ -150,20 +166,34 @@ app.put(
       { name: "id", in: "path", required: true, schema: { type: "string" } },
     ],
     requestBody: {
-      content: { "application/json": { schema: resolver(noteUpdateSchema) } },
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              content: { type: "string" },
+            },
+            required: ["title", "content"],
+          },
+        },
+      },
     },
     responses: {
       200: {
+        description: "Updated note",
         content: {
           "application/json": { schema: resolver(noteDetailResponseSchema) },
         },
       },
       400: {
+        description: "Bad request or validation error",
         content: {
           "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
       404: {
+        description: "Note not found",
         content: {
           "application/json": { schema: resolver(errorResponseSchema) },
         },
@@ -206,11 +236,13 @@ app.delete(
     description: "Delete a note",
     responses: {
       200: {
+        description: "Note deleted",
         content: {
           "application/json": { schema: resolver(successResponseSchema) },
         },
       },
       404: {
+        description: "Note not found",
         content: {
           "application/json": { schema: resolver(errorResponseSchema) },
         },
@@ -246,7 +278,14 @@ app.post(
     ],
     requestBody: {
       content: {
-        "application/json": { schema: resolver(noteFormatSchema) },
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              prompt: { type: "string" },
+            },
+          },
+        },
       },
     },
     responses: {
@@ -257,11 +296,13 @@ app.post(
         },
       },
       400: {
+        description: "Bad request or validation error",
         content: {
           "application/json": { schema: resolver(errorResponseSchema) },
         },
       },
       404: {
+        description: "Note not found",
         content: {
           "application/json": { schema: resolver(errorResponseSchema) },
         },

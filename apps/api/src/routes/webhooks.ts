@@ -1,7 +1,6 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
-import { z } from "zod";
 
 import { webhookAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -37,7 +36,7 @@ app.post(
         name: "completion_id",
         in: "query",
         required: true,
-        schema: z.string(),
+        schema: { type: "string" },
         description: "The ID of the completion to update",
       },
     ],
@@ -46,7 +45,22 @@ app.post(
       required: true,
       content: {
         "application/json": {
-          schema: resolver(replicateWebhookJsonSchema),
+          schema: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              status: { type: "string" },
+              output: { type: "object", additionalProperties: true },
+              error: { type: "string", nullable: true },
+              logs: { type: "string", nullable: true },
+              metrics: {
+                type: "object",
+                additionalProperties: true,
+                nullable: true,
+              },
+            },
+            required: ["id", "status"],
+          },
         },
       },
     },
