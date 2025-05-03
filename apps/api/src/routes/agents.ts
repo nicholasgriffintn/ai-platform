@@ -1,6 +1,7 @@
 import { MCPClientManager } from "agents/mcp/client";
 import { type Context, Hono } from "hono";
-import { validator as zValidator } from "hono-openapi/zod";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator as zValidator } from "hono-openapi/zod";
 import type z from "zod";
 
 import { allowRestrictedPaths } from "~/middleware/auth";
@@ -15,6 +16,7 @@ import { formatToolCalls } from "../lib/chat/tools";
 import { getModelConfigByMatchingModel } from "../lib/models";
 import { createAgentSchema, updateAgentSchema } from "./schemas/agents";
 import { createChatCompletionsJsonSchema } from "./schemas/chat";
+import { apiResponseSchema } from "./schemas/shared";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("AGENTS");
@@ -24,117 +26,205 @@ app.use("/*", async (ctx, next) => {
   await allowRestrictedPaths(ctx, next);
 });
 
-app.get("/", async (ctx: Context) => {
-  const user = ctx.get("user");
-
-  const repo = new AgentRepository(ctx.env);
-  const agents = await repo.getAgentsByUser(user.id);
-
-  return ctx.json({
-    status: "success",
-    data: agents,
-  });
-});
-
-app.post("/", zValidator("json", createAgentSchema), async (ctx: Context) => {
-  const body = ctx.req.valid("json" as never) as z.infer<
-    typeof createAgentSchema
-  >;
-  const user = ctx.get("user");
-
-  const repo = new AgentRepository(ctx.env);
-  const agent = await repo.createAgent(
-    user.id,
-    body.name,
-    body.description ?? "",
-    body.avatar_url ?? null,
-    body.servers,
-  );
-
-  return ctx.json({
-    status: "success",
-    data: agent,
-  });
-});
-
-app.get("/:agentId", async (ctx: Context) => {
-  const { agentId } = ctx.req.param();
-  const user = ctx.get("user");
-
-  const repo = new AgentRepository(ctx.env);
-  const agent = await repo.getAgentById(agentId);
-
-  if (!agent) {
-    return ctx.json({ error: "Agent not found" }, 404);
-  }
-
-  if (agent.user_id !== user.id) {
-    return ctx.json({ error: "Forbidden" }, 403);
-  }
-
-  return ctx.json({
-    status: "success",
-    data: agent,
-  });
-});
-
-app.get("/:agentId/servers", async (ctx: Context) => {
-  const { agentId } = ctx.req.param();
-  const user = ctx.get("user");
-
-  const repo = new AgentRepository(ctx.env);
-  const agent = await repo.getAgentById(agentId);
-
-  if (!agent) {
-    return ctx.json({ error: "Agent not found" }, 404);
-  }
-
-  if (agent.user_id !== user.id) {
-    return ctx.json({ error: "Forbidden" }, 403);
-  }
-
-  let servers = [];
-
-  try {
-    servers = JSON.parse(agent.servers as string);
-  } catch (error) {
-    return ctx.json({ error: "Invalid servers" }, 400);
-  }
-
-  const mcp = new MCPClientManager(agent.id, "1.0.0");
-
-  const serverDetails = await Promise.all(
-    servers.map(
-      async (server: {
-        url: string;
-        type: "sse";
-      }) => {
-        console.log("Connecting to server", server);
-        const { id } = await mcp.connect(server.url);
-
-        const tools = await mcp.listTools();
-        const prompts = await mcp.listPrompts();
-        const resources = await mcp.listResources();
-
-        return {
-          id,
-          connectionState: mcp.mcpConnections[id]?.connectionState,
-          tools,
-          prompts,
-          resources,
-        };
+app.get(
+  "/",
+  describeRoute({
+    tags: ["agents"],
+    summary: "Get all agents",
+    description: "Get all agents for the current user",
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
       },
-    ),
-  );
+    },
+  }),
+  async (ctx: Context) => {
+    const user = ctx.get("user");
 
-  return ctx.json({
-    status: "success",
-    data: serverDetails,
-  });
-});
+    const repo = new AgentRepository(ctx.env);
+    const agents = await repo.getAgentsByUser(user.id);
+
+    return ctx.json({
+      status: "success",
+      data: agents,
+    });
+  },
+);
+
+app.post(
+  "/",
+  describeRoute({
+    tags: ["agents"],
+    summary: "Create an agent",
+    description: "Create an agent for the current user",
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("json", createAgentSchema),
+  async (ctx: Context) => {
+    const body = ctx.req.valid("json" as never) as z.infer<
+      typeof createAgentSchema
+    >;
+    const user = ctx.get("user");
+
+    const repo = new AgentRepository(ctx.env);
+    const agent = await repo.createAgent(
+      user.id,
+      body.name,
+      body.description ?? "",
+      body.avatar_url ?? null,
+      body.servers,
+    );
+
+    return ctx.json({
+      status: "success",
+      data: agent,
+    });
+  },
+);
+
+app.get(
+  "/:agentId",
+  describeRoute({
+    tags: ["agents"],
+    summary: "Get an agent by ID",
+    description: "Get an agent by ID",
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  async (ctx: Context) => {
+    const { agentId } = ctx.req.param();
+    const user = ctx.get("user");
+
+    const repo = new AgentRepository(ctx.env);
+    const agent = await repo.getAgentById(agentId);
+
+    if (!agent) {
+      return ctx.json({ error: "Agent not found" }, 404);
+    }
+
+    if (agent.user_id !== user.id) {
+      return ctx.json({ error: "Forbidden" }, 403);
+    }
+
+    return ctx.json({
+      status: "success",
+      data: agent,
+    });
+  },
+);
+
+app.get(
+  "/:agentId/servers",
+  describeRoute({
+    tags: ["agents"],
+    summary: "Get servers for an agent",
+    description: "Get servers for an agent",
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  async (ctx: Context) => {
+    const { agentId } = ctx.req.param();
+    const user = ctx.get("user");
+
+    const repo = new AgentRepository(ctx.env);
+    const agent = await repo.getAgentById(agentId);
+
+    if (!agent) {
+      return ctx.json({ error: "Agent not found" }, 404);
+    }
+
+    if (agent.user_id !== user.id) {
+      return ctx.json({ error: "Forbidden" }, 403);
+    }
+
+    let servers = [];
+
+    try {
+      servers = JSON.parse(agent.servers as string);
+    } catch (error) {
+      return ctx.json({ error: "Invalid servers" }, 400);
+    }
+
+    const mcp = new MCPClientManager(agent.id, "1.0.0");
+
+    const serverDetails = await Promise.all(
+      servers.map(
+        async (server: {
+          url: string;
+          type: "sse";
+        }) => {
+          console.log("Connecting to server", server);
+          const { id } = await mcp.connect(server.url);
+
+          const tools = await mcp.listTools();
+          const prompts = await mcp.listPrompts();
+          const resources = await mcp.listResources();
+
+          return {
+            id,
+            connectionState: mcp.mcpConnections[id]?.connectionState,
+            tools,
+            prompts,
+            resources,
+          };
+        },
+      ),
+    );
+
+    return ctx.json({
+      status: "success",
+      data: serverDetails,
+    });
+  },
+);
 
 app.put(
   "/:agentId",
+  describeRoute({
+    tags: ["agents"],
+    summary: "Update an agent",
+    description: "Update an agent",
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+    },
+  }),
   zValidator("json", updateAgentSchema),
   async (ctx: Context) => {
     const { agentId } = ctx.req.param();
@@ -163,29 +253,62 @@ app.put(
   },
 );
 
-app.delete("/:agentId", async (ctx: Context) => {
-  const { agentId } = ctx.req.param();
-  const user = ctx.get("user");
+app.delete(
+  "/:agentId",
+  describeRoute({
+    tags: ["agents"],
+    summary: "Delete an agent",
+    description: "Delete an agent",
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  async (ctx: Context) => {
+    const { agentId } = ctx.req.param();
+    const user = ctx.get("user");
 
-  const repo = new AgentRepository(ctx.env);
-  const agent = await repo.getAgentById(agentId);
+    const repo = new AgentRepository(ctx.env);
+    const agent = await repo.getAgentById(agentId);
 
-  if (!agent) {
-    return ctx.json({ error: "Agent not found" }, 404);
-  }
+    if (!agent) {
+      return ctx.json({ error: "Agent not found" }, 404);
+    }
 
-  if (agent.user_id !== user.id) {
-    return ctx.json({ error: "Forbidden" }, 403);
-  }
+    if (agent.user_id !== user.id) {
+      return ctx.json({ error: "Forbidden" }, 403);
+    }
 
-  await repo.deleteAgent(agentId);
-  return ctx.json({
-    status: "success",
-  });
-});
+    await repo.deleteAgent(agentId);
+    return ctx.json({
+      status: "success",
+    });
+  },
+);
 
 app.post(
   "/:agentId/completions",
+  describeRoute({
+    tags: ["agents"],
+    summary: "Create a completion for an agent",
+    description: "Create a completion for an agent",
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+    },
+  }),
   requireTurnstileToken,
   zValidator("json", createChatCompletionsJsonSchema),
   async (ctx: Context) => {
@@ -296,8 +419,6 @@ app.post(
         parameters: fn.parameters,
       })),
     ];
-
-    console.log("functionSchemas", JSON.stringify(functionSchemas, null, 2));
 
     const modelDetails = getModelConfigByMatchingModel(body.model);
     const formattedTools = formatToolCalls(
