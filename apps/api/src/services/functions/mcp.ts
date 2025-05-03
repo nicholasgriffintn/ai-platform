@@ -75,8 +75,6 @@ export const handleMCPTool = async (
       );
     }
 
-    const toolDefinition = toolsResponse[toolName];
-
     const availableConnections = Object.keys(client.mcpConnections);
     const connectionId = availableConnections.find((id) =>
       toolName.startsWith(id),
@@ -107,10 +105,7 @@ export const handleMCPTool = async (
     );
 
     return {
-      content:
-        typeof fallbackResult.content === "string"
-          ? fallbackResult.content
-          : JSON.stringify(fallbackResult.content),
+      content: "",
       data: fallbackResult.content,
       status: "success",
     };

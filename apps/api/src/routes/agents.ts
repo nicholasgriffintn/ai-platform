@@ -176,19 +176,53 @@ app.post(
       console.error("Error getting MCP functions", e);
     }
 
-    const functionSchemas = mcpFunctions.map((fn) => ({
+    const reasoningStepTool = {
       type: "function" as const,
       function: {
-        name: fn.name,
-        description: fn.description,
-        parameters: fn.parameters,
+        name: "add_reasoning_step",
+        description:
+          "⚠️ MANDATORY TOOL ⚠️ You MUST use this tool immediately after EVERY other tool call without exception, and as your FINAL action before responding to the user. This documents your thought process and determines next steps. NEVER skip this step.",
+        parameters: {
+          type: "object",
+          properties: {
+            title: {
+              type: "string",
+              description: "The title of the reasoning step",
+            },
+            content: {
+              type: "string",
+              description:
+                "Your reasoning about what you've learned from previous tool calls and what you plan to do next.",
+            },
+            nextStep: {
+              type: "string",
+              enum: ["continue", "finalAnswer"],
+              description:
+                'Your final tool call MUST set this to "finalAnswer". Use "continue" only if you need additional tool calls.',
+            },
+          },
+          required: ["title", "content", "nextStep"],
+        },
       },
-    }));
+    };
+
+    const functionSchemas = [
+      reasoningStepTool,
+      ...mcpFunctions.map((fn) => ({
+        type: "function" as const,
+        function: {
+          name: fn.name,
+          description: fn.description,
+          parameters: fn.parameters,
+        },
+      })),
+    ];
 
     const requestParams: any = {
       ...body,
       tools: functionSchemas,
       stream: true,
+      mode: "agent",
     };
 
     const response = await handleCreateChatCompletions({

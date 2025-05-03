@@ -11,7 +11,7 @@ export type ContentType =
   | "document_url"
   | "markdown_document";
 export type ChatRole = "user" | "assistant" | "tool" | "developer" | "system";
-export type ChatMode = "normal" | "local" | "remote" | "no_system";
+export type ChatMode = "normal" | "local" | "remote" | "no_system" | "agent";
 
 export type ResponseMode = "normal" | "concise" | "explanatory" | "formal";
 

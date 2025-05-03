@@ -18,6 +18,7 @@ export const getFunctionIcon = (name: string): string => {
   if (name.includes("extract") || name.includes("content")) return "file-text";
   if (name.includes("create")) return "plus-circle";
   if (name.includes("get")) return "folder-open";
+  if (name.startsWith("mcp_")) return "file-text";
   return "app";
 };
 
@@ -30,6 +31,7 @@ export const getFunctionResponseType = (name: string): ResponseDisplayType => {
   if (name.includes("extract")) return ResponseDisplayType.TEXT;
   if (name.includes("speech")) return ResponseDisplayType.TEXT;
   if (name.includes("prompt_coach")) return ResponseDisplayType.TEMPLATE;
+  if (name.startsWith("mcp_")) return ResponseDisplayType.JSON;
   return ResponseDisplayType.CUSTOM;
 };
 
