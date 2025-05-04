@@ -29,7 +29,7 @@ export class MessageFormatter {
       system_prompt,
     } = options;
 
-    let formattedMessages = messages.filter((msg) => msg.content);
+    let formattedMessages = messages;
 
     if (
       maxTokens > 0 &&
@@ -77,7 +77,8 @@ export class MessageFormatter {
         }
 
         return {
-          role: "assistant",
+          role: "tool",
+          tool_call_id: message.tool_call_id,
           content: `[Tool Response: ${message.name || "unknown"}] ${typeof content === "string" ? content : JSON.stringify(content)} ${stringifiedData ? `\n\nData: ${stringifiedData}` : ""}`,
         };
       }
@@ -88,6 +89,7 @@ export class MessageFormatter {
             role: message.role,
             parts: Array.isArray(content) ? content : [{ text: content }],
             content: "",
+            tool_calls: message.tool_calls,
           };
         default:
           if (
@@ -98,12 +100,14 @@ export class MessageFormatter {
             return {
               role: message.role,
               content: content[0],
+              tool_calls: message.tool_calls,
             };
           }
 
           return {
             role: message.role,
             content,
+            tool_calls: message.tool_calls,
           };
       }
     });

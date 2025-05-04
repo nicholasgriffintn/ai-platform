@@ -11,7 +11,7 @@ export type ContentType =
   | "document_url"
   | "markdown_document";
 export type ChatRole = "user" | "assistant" | "tool" | "developer" | "system";
-export type ChatMode = "normal" | "local" | "remote" | "no_system";
+export type ChatMode = "normal" | "local" | "remote" | "no_system" | "agent";
 
 export type ResponseMode = "normal" | "concise" | "explanatory" | "formal";
 
@@ -57,6 +57,7 @@ export interface Message {
   app?: string;
   mode?: ChatMode;
   id?: string;
+  tool_call_id?: string;
   timestamp?: number;
   platform?: Platform;
   usage?: Record<string, any>;
@@ -142,6 +143,12 @@ interface AIControlParams {
   reasoning_effort?: "low" | "medium" | "high";
   // Whether to store the response.
   store?: boolean;
+  // The current step to use for the response.
+  current_step?: number;
+  // The maximum number of steps to use for the response.
+  max_steps?: number;
+  // Whether to use multi-model for the response.
+  use_multi_model?: boolean;
 }
 
 interface AIResponseParamsBase extends AIControlParams {
@@ -192,8 +199,18 @@ interface AIResponseParamsBase extends AIControlParams {
   };
   // The language to use for the response.
   lang?: string;
+  // The tools that can be used for the response.
+  tools?: Record<string, any>[];
   // The tools that should be enabled for the response.
   enabled_tools?: string[];
+  // The tool choice to use for the response.
+  tool_choice?:
+    | "required"
+    | "auto"
+    | "none"
+    | { type: "function"; name: string };
+  // Whether to enable parallel tool calls for the response.
+  parallel_tool_calls?: boolean;
   // Additional options for the response.
   options?: Record<string, any>;
   // The body of the request.

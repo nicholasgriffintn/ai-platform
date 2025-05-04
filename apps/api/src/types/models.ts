@@ -33,6 +33,7 @@ export type ModelConfigItem = {
   beta?: boolean;
   supportsSearchGrounding?: boolean;
   supportsCodeExecution?: boolean;
+  timeout?: number;
 };
 
 export type ModelConfig = {

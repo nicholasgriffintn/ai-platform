@@ -132,18 +132,24 @@ export abstract class BaseProvider implements AIProvider {
     const endpoint = this.getEndpoint(params);
     const headers = await this.getHeaders(params);
 
+    const modelConfig = getModelConfigByMatchingModel(params.model || "");
+
+    const timeout = modelConfig.timeout || 100000;
+
     return trackProviderMetrics({
       provider: this.name,
       model: params.model as string,
       operation: async () => {
-        const body =
-          params.body || (await mapParametersToProvider(params, this.name));
+        const body = await mapParametersToProvider(params, this.name);
         const data = await fetchAIResponse(
           this.name,
           endpoint,
           headers,
           body,
           params.env,
+          {
+            requestTimeout: timeout,
+          },
         );
 
         if (body.stream) {

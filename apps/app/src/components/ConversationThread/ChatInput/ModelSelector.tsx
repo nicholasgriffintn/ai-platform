@@ -1,4 +1,5 @@
 import {
+  Bot,
   BrainCircuit,
   ChevronDown,
   ChevronUp,
@@ -15,6 +16,7 @@ import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
 import { FormInput, FormSelect } from "~/components/ui";
+import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import {
   getAvailableModels,
@@ -28,7 +30,7 @@ import {
   useLoadingProgress,
 } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { ModelConfigItem } from "~/types";
+import type { ChatMode, ModelConfigItem } from "~/types";
 
 interface ModelSelectorProps {
   isDisabled?: boolean;
@@ -49,7 +51,10 @@ export const ModelSelector = ({
     setChatMode,
     chatSettings,
     setChatSettings,
+    selectedAgentId,
+    setSelectedAgentId,
   } = useChatStore();
+  const { agents, isLoadingAgents } = useAgents();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllModels, setShowAllModels] = useState(false);
@@ -79,9 +84,21 @@ export const ModelSelector = ({
   const modelLoadingMessage = useLoadingMessage("model-init");
 
   const availableModels = getAvailableModels(apiModels);
+  const functionModels: Record<string, ModelConfigItem> = Object.entries(
+    availableModels,
+  ).reduce(
+    (acc, [key, m]) => {
+      if (m.supportsFunctions) acc[key] = { ...m, id: key };
+      return acc;
+    },
+    {} as Record<string, ModelConfigItem>,
+  );
   const featuredModelIds = getFeaturedModelIds(availableModels);
 
-  const filteredModels = getModelsByMode(availableModels, chatMode);
+  const filteredModels =
+    chatMode === "agent"
+      ? functionModels
+      : getModelsByMode(availableModels, chatMode);
 
   useEffect(() => {
     if (searchQuery || selectedCapability) {
@@ -89,7 +106,6 @@ export const ModelSelector = ({
     }
   }, [searchQuery, selectedCapability]);
 
-  // Adjust to handle null (Automatic) model state
   const selectedModelInfo =
     model === null ? automaticModelOption : filteredModels[model];
 
@@ -113,24 +129,25 @@ export const ModelSelector = ({
     }
   }, [isOpen]);
 
-  const handleToggleModelSource = () => {
-    const newChatMode = chatMode === "local" ? "remote" : "local";
+  const handleToggleModelSource = (newChatMode: ChatMode) => {
     setChatMode(newChatMode);
 
     if (newChatMode === "local") {
-      // When switching to local, set localOnly to true and clear model
       setChatSettings({
         ...chatSettings,
         localOnly: true,
       });
       setModel("");
     } else {
-      // When switching to remote, set localOnly to false and set default model
       setChatSettings({
         ...chatSettings,
         localOnly: false,
       });
       setModel(defaultModel);
+    }
+
+    if (newChatMode !== "agent") {
+      setSelectedAgentId(null);
     }
   };
 
@@ -382,6 +399,46 @@ export const ModelSelector = ({
                 </div>
               )}
 
+            {chatMode === "agent" && (
+              <div className="p-2 border-b border-zinc-200 dark:border-zinc-700">
+                <h3
+                  id="agents-heading"
+                  className="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2"
+                >
+                  Agents
+                </h3>
+                <fieldset aria-labelledby="agents-heading">
+                  {isLoadingAgents ? (
+                    <div className="flex justify-center py-2">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {agents.map((agent) => (
+                        <ModelOption
+                          key={agent.id}
+                          model={{
+                            id: agent.id,
+                            matchingModel: agent.id,
+                            name: agent.name,
+                            provider: "agent",
+                            type: [],
+                            strengths: [],
+                            isFree: true,
+                          }}
+                          isSelected={selectedAgentId === agent.id}
+                          isActive={false}
+                          onClick={() => setSelectedAgentId(agent.id)}
+                          disabled={isDisabled}
+                          mono={mono}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </fieldset>
+              </div>
+            )}
+
             {Object.keys(filteredFeaturedModels).length > 0 && (
               <div className="p-2 border-b border-zinc-200 dark:border-zinc-700">
                 <h3
@@ -505,13 +562,13 @@ export const ModelSelector = ({
               <div className="flex items-center">
                 <button
                   type="button"
-                  className={`flex items-center justify-center gap-1 py-1 px-2 rounded text-xs ${
+                  className={`cursor-pointer flex items-center justify-center gap-1 py-1 px-2 rounded text-xs ${
                     chatMode === "remote"
                       ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-200"
                       : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
                   }`}
                   onClick={() =>
-                    chatMode !== "remote" && handleToggleModelSource()
+                    chatMode !== "remote" && handleToggleModelSource("remote")
                   }
                   aria-pressed={chatMode === "remote"}
                 >
@@ -521,18 +578,34 @@ export const ModelSelector = ({
                 <span className="mx-1 text-zinc-400">|</span>
                 <button
                   type="button"
-                  className={`flex items-center justify-center gap-1 py-1 px-2 rounded text-xs ${
+                  className={`cursor-pointer flex items-center justify-center gap-1 py-1 px-2 rounded text-xs ${
                     chatMode === "local"
                       ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-200"
                       : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
                   }`}
                   onClick={() =>
-                    chatMode !== "local" && handleToggleModelSource()
+                    chatMode !== "local" && handleToggleModelSource("local")
                   }
                   aria-pressed={chatMode === "local"}
                 >
                   <Computer className="h-3 w-3" />
                   Local
+                </button>
+                <span className="mx-1 text-zinc-400">|</span>
+                <button
+                  type="button"
+                  className={`cursor-pointer flex items-center justify-center gap-1 py-1 px-2 rounded text-xs ${
+                    chatMode === "agent"
+                      ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-200"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+                  }`}
+                  onClick={() =>
+                    chatMode !== "agent" && handleToggleModelSource("agent")
+                  }
+                  aria-pressed={chatMode === "agent"}
+                >
+                  <Bot className="h-3 w-3" />
+                  Agent
                 </button>
               </div>
             </div>

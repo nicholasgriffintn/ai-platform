@@ -2,53 +2,11 @@ import { getModelConfigByMatchingModel } from "~/lib/models";
 import type { StorageService } from "~/lib/storage";
 import { AIProviderFactory } from "~/providers/factory";
 import { availableFunctions } from "~/services/functions";
-import type { ChatCompletionParameters, IBody, IEnv } from "~/types";
+import type { ChatCompletionParameters } from "~/types";
 import { getLogger } from "~/utils/logger";
+import { formatToolCalls } from "./tools";
 
 const logger = getLogger({ prefix: "CHAT_PARAMETERS" });
-
-/**
- * Extracts chat completion parameters from request body
- * @param request - The request body
- * @param env - The environment variables
- * @returns The chat completion parameters
- */
-export function extractChatParameters(
-  request: IBody,
-  env: IEnv,
-): ChatCompletionParameters {
-  return {
-    model: request.model,
-    version: request.version,
-    messages: request.messages || [],
-    temperature: request.temperature,
-    top_p: request.top_p,
-    n: request.n,
-    stream: request.stream,
-    stop: request.stop,
-    max_tokens: request.max_tokens,
-    presence_penalty: request.presence_penalty,
-    frequency_penalty: request.frequency_penalty,
-    repetition_penalty: request.repetition_penalty,
-    logit_bias: request.logit_bias,
-    metadata: request.metadata,
-    completion_id: request.completion_id,
-    reasoning_effort: request.reasoning_effort,
-    should_think: request.should_think,
-    response_format: request.response_format,
-    store: request.store,
-    use_rag: request.use_rag,
-    rag_options: {
-      topK: request.rag_options?.topK,
-      scoreThreshold: request.rag_options?.scoreThreshold,
-      type: request.rag_options?.type,
-      namespace: request.rag_options?.namespace,
-      includeMetadata: request.rag_options?.includeMetadata,
-    },
-    enabled_tools: request.enabled_tools,
-    env: env,
-  };
-}
 
 /**
  * Merges default parameters with user-provided parameters
@@ -147,37 +105,26 @@ export async function mapParametersToProvider(
     const supportsFunctions = modelConfig?.supportsFunctions || false;
 
     if (supportsFunctions) {
-      const enabledTools = params.enabled_tools || [];
-      const filteredFunctions = availableFunctions.filter((func) =>
-        enabledTools.includes(func.name),
-      );
-
-      if (providerName === "anthropic") {
-        commonParams.tools = filteredFunctions.map((func) => ({
-          name: func.name,
-          description: func.description,
-          input_schema: func.parameters,
-        }));
+      if (params.tools) {
+        commonParams.tools = params.tools;
       } else {
-        commonParams.tools = filteredFunctions.map((func) => ({
-          type: "function",
-          function: {
-            name: func.name,
-            description: func.description,
-            parameters: func.parameters,
-          },
-        }));
+        const enabledTools = params.enabled_tools || [];
+        const filteredFunctions = availableFunctions.filter((func) =>
+          enabledTools.includes(func.name),
+        );
+
+        commonParams.tools = formatToolCalls(providerName, filteredFunctions);
       }
 
       if (
-        providerName === "openai" &&
         params.model !== "o1" &&
         params.model !== "o3" &&
         params.model !== "o3-mini" &&
         params.model !== "o4-mini"
       ) {
-        commonParams.parallel_tool_calls = false;
+        commonParams.parallel_tool_calls = params.parallel_tool_calls;
       }
+      commonParams.tool_choice = params.tool_choice;
     }
   }
 
@@ -200,8 +147,7 @@ export async function mapParametersToProvider(
       ) {
         if (
           params.messages.length > 2 ||
-          (params.messages.length === 2 &&
-            params.messages[0].role !== ("system" as any))
+          (params.messages.length === 2 && params.messages[0].role !== "system")
         ) {
           return null;
         }
@@ -260,7 +206,7 @@ export async function mapParametersToProvider(
 
         if (
           params.messages.length >= 2 &&
-          params.messages[0].role === ("system" as any)
+          params.messages[0].role === "system"
         ) {
           let systemContent = "";
           if (Array.isArray(params.messages[0].content)) {
@@ -345,7 +291,7 @@ export async function mapParametersToProvider(
       if (supportsThinking) {
         newCommonParams.reasoning_effort = params.reasoning_effort;
       }
-      if (params.model === "o1") {
+      if (params.model === "o1" || params.model === "o4-mini") {
         newCommonParams.temperature = 1;
         newCommonParams.top_p = undefined;
       }

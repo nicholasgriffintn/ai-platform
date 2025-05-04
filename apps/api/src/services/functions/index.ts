@@ -3,8 +3,10 @@ import type { IFunction, IFunctionResponse, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { extract_content } from "./extract_content";
 import { create_image } from "./image";
+import { handleMCPTool } from "./mcp";
 import { create_music } from "./music";
 import { prompt_coach } from "./prompt_coach";
+import { add_reasoning_step } from "./reasoning";
 import { capture_screenshot } from "./screenshot";
 import { create_speech } from "./speech";
 import { tutor } from "./tutor";
@@ -23,6 +25,7 @@ export const availableFunctions: IFunction[] = [
   create_speech,
   tutor,
   prompt_coach,
+  add_reasoning_step,
 ];
 
 export const handleFunctions = async ({
@@ -40,6 +43,21 @@ export const handleFunctions = async ({
   request: IRequest;
   conversationManager?: ConversationManager;
 }): Promise<IFunctionResponse> => {
+  if (functionName.startsWith("mcp_")) {
+    request.request = {
+      ...request.request,
+      functionName,
+    };
+
+    return handleMCPTool(
+      completion_id,
+      args,
+      request,
+      app_url,
+      conversationManager,
+    );
+  }
+
   const foundFunction = availableFunctions.find(
     (func) => func.name === functionName,
   );

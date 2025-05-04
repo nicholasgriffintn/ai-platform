@@ -38,22 +38,8 @@ export const handleToolCalls = async (
     return [];
   }
 
-  const toolMessage: Message = {
-    role: "assistant",
-    name: "External Functions",
-    tool_calls: toolCalls,
-    log_id: modelResponseLogId || "",
-    content: "",
-    id: generateId(),
-    timestamp,
-    model: req.request?.model,
-    platform: req.request?.platform || "api",
-  };
-
-  functionResults.push(toolMessage);
-
   for (const toolCall of toolCalls) {
-    let functionName = "unknown";
+    const functionName = toolCall.function?.name || toolCall.name || "unknown";
     try {
       if (toolCall.function?.name === "memory") {
         const ev = JSON.parse(toolCall.function.arguments || "{}");
@@ -68,20 +54,13 @@ export const handleToolCalls = async (
           data: { type: ev.type, category: ev.category, text: ev.text },
           log_id: modelResponseLogId || "",
           id: toolCall.id || generateId(),
-          timestamp: Date.now(),
+          tool_call_id: toolCall.id || "",
+          timestamp,
           model: req.request?.model,
           platform: req.request?.platform || "api",
         };
         functionResults.push(memMessage);
         continue;
-      }
-
-      functionName = toolCall.function?.name || toolCall.name;
-      if (!functionName) {
-        throw new AssistantError(
-          "Invalid tool call: missing function name",
-          ErrorType.PARAMS_ERROR,
-        );
       }
 
       const rawArgs = toolCall.function?.arguments || toolCall.arguments;
@@ -125,7 +104,8 @@ export const handleToolCalls = async (
           data: formattedError.data,
           log_id: modelResponseLogId || "",
           id: toolCall.id || generateId(),
-          timestamp: Date.now(),
+          tool_call_id: toolCall.id || "",
+          timestamp,
           model: req.request?.model,
           platform: req.request?.platform || "api",
         };
@@ -153,7 +133,8 @@ export const handleToolCalls = async (
         data: formattedResponse.data,
         log_id: modelResponseLogId || "",
         id: toolCall.id || generateId(),
-        timestamp: Date.now(),
+        tool_call_id: toolCall.id || "",
+        timestamp,
         model: req.request?.model,
         platform: req.request?.platform || "api",
       };
@@ -176,7 +157,8 @@ export const handleToolCalls = async (
         data: formattedError.data,
         log_id: modelResponseLogId || "",
         id: toolCall.id || generateId(),
-        timestamp: Date.now(),
+        tool_call_id: toolCall.id || "",
+        timestamp,
         model: req.request?.model,
         platform: req.request?.platform || "api",
       };
@@ -195,3 +177,26 @@ export const handleToolCalls = async (
 
   return functionResults;
 };
+
+export function formatToolCalls(provider: string, functions: any[]) {
+  if (provider === "anthropic") {
+    return functions.map((func) => ({
+      name: func.name,
+      description: func.description,
+      input_schema: func.parameters,
+    }));
+  }
+
+  return functions.map((func) => {
+    const parameters = func.parameters?.jsonSchema || func.parameters;
+
+    return {
+      type: "function",
+      function: {
+        name: func.name,
+        description: func.description,
+        parameters,
+      },
+    };
+  });
+}

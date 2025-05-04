@@ -3,12 +3,20 @@ export function getResponseStyle(
   hasThinking = false,
   supportsFunctions = false,
   supportsArtifacts = false,
+  isAgent = false,
 ): {
   traits: string;
   preferences: string;
   problemBreakdownInstructions?: string;
   answerFormatInstructions?: string;
 } {
+  if (isAgent) {
+    return {
+      traits: "resourceful, systematic, thorough, helpful",
+      preferences: `Your responses should be resourceful (making effective use of tools), systematic (approaching problems methodically), thorough (completing all necessary steps), and helpful (focused on addressing the user's needs).`,
+    };
+  }
+
   let instructions = `1. Read and understand questions carefully.
   2. If unclear, ask for clarification.`;
 

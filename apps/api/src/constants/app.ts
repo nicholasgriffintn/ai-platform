@@ -23,6 +23,7 @@ export const ROUTES = {
   PLANS: "/plans",
   STRIPE: "/stripe",
   REALTIME: "/realtime",
+  AGENTS: "/agents",
 } as const;
 
 const NON_AUTH_DAILY_MESSAGE_LIMIT = 10;

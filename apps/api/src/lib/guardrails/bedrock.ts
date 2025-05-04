@@ -182,10 +182,6 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
       logger.error("Error validating content with Bedrock Guardrails:", {
         error,
       });
-      throw new AssistantError(
-        `Failed to validate content with Bedrock Guardrails: ${error instanceof Error ? error.message : String(error)}`,
-        ErrorType.PROVIDER_ERROR,
-      );
     }
   }
 }

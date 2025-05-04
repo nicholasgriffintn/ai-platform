@@ -38,10 +38,13 @@ export class MessageRepository extends BaseRepository {
          log_id,
          data,
          usage,
+         tool_call_id,
+         app,
+         parts,
          created_at, 
          updated_at
        )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
        RETURNING *`,
       [
         messageId,
@@ -60,6 +63,9 @@ export class MessageRepository extends BaseRepository {
         messageData.log_id || null,
         data,
         usage,
+        messageData.tool_call_id || null,
+        messageData.app || null,
+        messageData.parts || null,
       ],
       true,
     );
@@ -127,6 +133,15 @@ export class MessageRepository extends BaseRepository {
       "log_id",
       "data",
       "parent_message_id",
+      "tool_call_id",
+      "app",
+      "mode",
+      "platform",
+      "model",
+      "name",
+      "timestamp",
+      "usage",
+      "parts",
     ];
 
     const setClause = allowedFields

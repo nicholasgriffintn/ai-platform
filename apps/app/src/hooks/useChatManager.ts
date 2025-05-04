@@ -31,6 +31,7 @@ export function useChatManager() {
     localOnlyMode,
     setModel,
     useMultiModel,
+    selectedAgentId,
   } = useChatStore();
 
   const [streamStarted, setStreamStarted] = useState(false);
@@ -493,6 +494,9 @@ export function useChatManager() {
             shouldStore,
             true,
             useMultiModel,
+            chatMode === "agent"
+              ? `/agents/${selectedAgentId}/completions`
+              : undefined,
           );
 
           const messageContent =
@@ -552,6 +556,7 @@ export function useChatManager() {
       generateConversationTitle,
       addMessageToConversation,
       useMultiModel,
+      selectedAgentId,
     ],
   );
 
