@@ -57,6 +57,7 @@ export interface Message {
   app?: string;
   mode?: ChatMode;
   id?: string;
+  tool_call_id?: string;
   timestamp?: number;
   platform?: Platform;
   usage?: Record<string, any>;
@@ -142,6 +143,12 @@ interface AIControlParams {
   reasoning_effort?: "low" | "medium" | "high";
   // Whether to store the response.
   store?: boolean;
+  // The current step to use for the response.
+  current_step?: number;
+  // The maximum number of steps to use for the response.
+  max_steps?: number;
+  // Whether to use multi-model for the response.
+  use_multi_model?: boolean;
 }
 
 interface AIResponseParamsBase extends AIControlParams {

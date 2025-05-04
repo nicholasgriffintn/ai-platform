@@ -91,6 +91,8 @@ export async function createStreamWithPostProcessing(
     app_url?: string;
     mode?: ChatMode;
     isRestricted?: boolean;
+    max_steps?: number;
+    current_step?: number;
   },
   conversationManager: ConversationManager,
 ): Promise<ReadableStream> {
@@ -112,6 +114,8 @@ export async function createStreamWithPostProcessing(
     app_url,
     mode,
     isRestricted,
+    max_steps = 1,
+    current_step = 1,
   } = options;
 
   let fullContent = "";
@@ -211,12 +215,10 @@ export async function createStreamWithPostProcessing(
                 },
               );
 
-              // Check if this chunk indicates completion
               if (
                 StreamingFormatter.isCompletionIndicated(data) &&
                 !postProcessingDone
               ) {
-                // Extract content if present
                 const contentDelta = StreamingFormatter.extractContentFromChunk(
                   data,
                   currentEventType,
@@ -233,14 +235,12 @@ export async function createStreamWithPostProcessing(
                   controller.enqueue(contentDeltaEvent);
                 }
 
-                // Extract usage data
                 const extractedUsage =
                   StreamingFormatter.extractUsageData(data);
                 if (extractedUsage) {
                   usageData = extractedUsage;
                 }
 
-                // Extract citations
                 const extractedCitations =
                   StreamingFormatter.extractCitations(data);
                 if (extractedCitations.length > 0) {
@@ -253,7 +253,6 @@ export async function createStreamWithPostProcessing(
 
               let contentDelta = "";
 
-              // For Perplexity and OpenAI-like streaming, use the delta directly
               if (data.choices?.[0]?.delta?.content !== undefined) {
                 contentDelta = data.choices[0].delta.content;
               } else {
@@ -304,7 +303,6 @@ export async function createStreamWithPostProcessing(
                 }
               }
 
-              // Process tool calls
               const toolCallData = StreamingFormatter.extractToolCall(
                 data,
                 currentEventType,
@@ -317,11 +315,9 @@ export async function createStreamWithPostProcessing(
                 if (toolCallData.format === "openai") {
                   const deltaToolCalls = toolCallData.toolCalls;
 
-                  // Accumulate tool calls from this delta
                   for (const toolCall of deltaToolCalls) {
                     const index = toolCall.index;
 
-                    // Initialize tool call if it's new
                     if (!currentToolCalls[index]) {
                       currentToolCalls[index] = {
                         id: toolCall.id,
@@ -332,7 +328,6 @@ export async function createStreamWithPostProcessing(
                       };
                     }
 
-                    // Accumulate arguments
                     if (toolCall.function) {
                       if (toolCall.function.name) {
                         currentToolCalls[index].function.name =
@@ -364,7 +359,6 @@ export async function createStreamWithPostProcessing(
                 }
               }
 
-              // Handle Anthropic-specific event types
               if (
                 [
                   "message_start",
@@ -374,7 +368,6 @@ export async function createStreamWithPostProcessing(
                   "content_block_stop",
                 ].includes(currentEventType)
               ) {
-                // Forward the event
                 const forwardEvent = new TextEncoder().encode(
                   `data: ${JSON.stringify({
                     type: currentEventType,
@@ -383,7 +376,6 @@ export async function createStreamWithPostProcessing(
                 );
                 controller.enqueue(forwardEvent);
 
-                // Handle content block stop for tool calls
                 if (
                   currentEventType === "content_block_stop" &&
                   data.index !== undefined &&
@@ -414,7 +406,6 @@ export async function createStreamWithPostProcessing(
                   toolCallsData.push(toolCall);
                 }
 
-                // Handle message stop event
                 if (
                   currentEventType === "message_stop" &&
                   !postProcessingDone
@@ -423,7 +414,6 @@ export async function createStreamWithPostProcessing(
                 }
               }
 
-              // Extract citations and usage data
               const extractedCitations =
                 StreamingFormatter.extractCitations(data);
               if (extractedCitations.length > 0) {
@@ -488,12 +478,9 @@ export async function createStreamWithPostProcessing(
                     });
                   }
                 }
-              } catch {
-                // swallow memory injection errors
-              }
+              } catch {}
             }
 
-            // Validate output with guardrails
             const guardrailsFailed = false;
             const guardrailError = "";
             const violations: any[] = [];
@@ -515,7 +502,6 @@ export async function createStreamWithPostProcessing(
               }
             }
 
-            // Send content stop event
             emitEvent(controller, "content_block_stop", {});
 
             const logId = env.AI?.aiGatewayLogId;
@@ -566,6 +552,7 @@ export async function createStreamWithPostProcessing(
               model: assistantMessage.model,
               platform: assistantMessage.platform,
               usage: assistantMessage.usage,
+              tool_calls: assistantMessage.tool_calls,
             });
 
             logger.debug("Stored assistant message", {
@@ -593,7 +580,6 @@ export async function createStreamWithPostProcessing(
             emitEvent(controller, "message_stop", {});
 
             if (toolCallsData.length > 0 && !isRestricted) {
-              // Emit tool use events for each tool call
               for (const toolCall of toolCallsData) {
                 emitToolEvents(controller, toolCall, "start");
                 emitToolEvents(
@@ -635,6 +621,33 @@ export async function createStreamWithPostProcessing(
               }
 
               emitEvent(controller, "tool_response_end", {});
+
+              if (
+                !isRestricted &&
+                toolCallsData.length > 0 &&
+                max_steps &&
+                current_step < max_steps
+              ) {
+                const history = await conversationManager.get(completion_id);
+
+                const nextStream = await getAIResponse({
+                  ...options,
+                  messages: history,
+                });
+                const nextTransformed = await createStreamWithPostProcessing(
+                  nextStream,
+                  { ...options, current_step: current_step + 1 },
+                  conversationManager,
+                );
+
+                const reader = nextTransformed.getReader();
+                while (true) {
+                  const { done, value } = await reader.read();
+                  if (done) break;
+                  controller.enqueue(value);
+                }
+                return;
+              }
             }
 
             try {
@@ -938,12 +951,12 @@ export function createMultiModelStream(
                 secondaryModels:
                   models.slice(1).map((m: ModelConfigInfo) => m.model) || [],
               },
+              tool_calls: null,
             });
           }
         }
 
         try {
-          // Get updated usage limits at the end of multi-model processing
           const updatedUsageLimits = await conversationManager.getUsageLimits();
           if (updatedUsageLimits) {
             controller.enqueue(

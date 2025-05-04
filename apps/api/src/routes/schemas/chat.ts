@@ -43,7 +43,7 @@ export const createChatCompletionsJsonSchema = z.object({
     description:
       "Whether to enable thinking mode for the model. (Used for Claude Sonnet 3.7).",
   }),
-  useMultiModel: z
+  use_multi_model: z
     .boolean()
     .optional()
     .describe(
@@ -330,6 +330,10 @@ export const createChatCompletionsJsonSchema = z.object({
     .openapi({
       description: "The options for RAG.",
     }),
+  max_steps: z.number().int().min(1).optional().openapi({
+    description:
+      "Maximum number of sequential LLM calls (steps), e.g. when you use tool calls.",
+  }),
 });
 
 export const getChatCompletionParamsSchema = z.object({

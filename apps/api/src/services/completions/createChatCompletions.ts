@@ -14,7 +14,7 @@ const logger = getLogger({ prefix: "CREATE_CHAT_COMPLETIONS" });
 
 export const handleCreateChatCompletions = async (req: {
   env: IEnv;
-  request: ChatCompletionParameters & { useMultiModel?: boolean };
+  request: ChatCompletionParameters;
   user?: IUser;
   anonymousUser?: AnonymousUser;
   app_url?: string;
@@ -22,7 +22,6 @@ export const handleCreateChatCompletions = async (req: {
 }): Promise<CreateChatCompletionsResponse | Response> => {
   const { env, request, user, anonymousUser, app_url, isRestricted } = req;
   const isStreaming = !!request.stream;
-  const useMultiModel = !!request.useMultiModel;
 
   if (!request.messages?.length) {
     throw new AssistantError(
@@ -74,7 +73,9 @@ export const handleCreateChatCompletions = async (req: {
     parallel_tool_calls: request.parallel_tool_calls,
     tool_choice: request.tool_choice,
     isRestricted,
-    useMultiModel,
+    use_multi_model: request.use_multi_model,
+    current_step: request.current_step,
+    max_steps: request.max_steps,
   });
 
   if ("validation" in result) {

@@ -419,6 +419,7 @@ app.post(
       stream: true,
       mode: "agent",
       tool_choice: "required",
+      max_steps: 20,
     };
 
     const response = await handleCreateChatCompletions({

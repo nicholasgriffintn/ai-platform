@@ -22,8 +22,10 @@ const logger = getLogger({ prefix: "CHAT_CORE" });
 
 type CoreChatOptions = ChatCompletionParameters & {
   isRestricted?: boolean;
-  useMultiModel?: boolean;
+  use_multi_model?: boolean;
   anonymousUser?: any;
+  current_step?: number;
+  max_steps?: number;
 };
 
 interface ModelConfigInfo {
@@ -47,7 +49,7 @@ async function prepareRequestData(options: CoreChatOptions) {
     response_mode,
     budget_constraint,
     location,
-    useMultiModel = false,
+    use_multi_model = false,
     isRestricted = false,
   } = options;
 
@@ -87,7 +89,7 @@ async function prepareRequestData(options: CoreChatOptions) {
     user,
     options.completion_id,
     requestedModel,
-    useMultiModel,
+    use_multi_model,
   );
 
   const primaryModelName = selectedModels[0];
@@ -324,6 +326,8 @@ export async function processChatRequest(options: CoreChatOptions) {
       tool_choice,
       enabled_tools = [],
       isRestricted,
+      current_step,
+      max_steps,
     } = options;
 
     const preparedData = await prepareRequestData(options);
@@ -379,6 +383,8 @@ export async function processChatRequest(options: CoreChatOptions) {
           tools,
           parallel_tool_calls,
           tool_choice,
+          current_step,
+          max_steps,
         },
         {
           env,
@@ -402,7 +408,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       };
     }
 
-    const response = await getAIResponse({
+    const params = {
       app_url,
       system_prompt: systemPrompt,
       env,
@@ -435,22 +441,16 @@ export async function processChatRequest(options: CoreChatOptions) {
       tools,
       parallel_tool_calls,
       tool_choice,
-    });
+      current_step,
+      max_steps,
+    };
+
+    const response = await getAIResponse(params);
 
     if (response instanceof ReadableStream) {
       const transformedStream = await createStreamWithPostProcessing(
         response,
-        {
-          env,
-          completion_id,
-          model: primaryModel,
-          platform: platform || "api",
-          user,
-          userSettings,
-          app_url,
-          mode: currentMode,
-          isRestricted,
-        },
+        params,
         conversationManager,
       );
 
@@ -525,6 +525,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       model: primaryModel,
       platform: platform || "api",
       usage: response.usage || response.usageMetadata,
+      tool_calls: response.tool_calls || null,
     });
 
     return {

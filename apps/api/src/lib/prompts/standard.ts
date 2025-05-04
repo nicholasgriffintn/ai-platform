@@ -123,12 +123,12 @@ export async function returnStandardPrompt(
         "4. **Handle Results Thoughtfully**: Process tool outputs to create coherent, useful responses",
       );
       builder.addLine(
-        "5. **Multi-Step Reasoning**: After you use a tool, use the `add_reasoning_step` tool to expand on the response and provide a more detailed answer.",
+        "5. **Multi-Step Reasoning**: After you use a tool that is not the reasoning tool, use the `add_reasoning_step` tool to expand on the response and provide a more detailed answer.",
       );
 
       builder.startSection("Multi-Step Reasoning");
       builder.addLine(
-        "1. **ALWAYS use the `add_reasoning_step` tool immediately after each tool call without exception**",
+        "1. **Use the `add_reasoning_step` tool immediately after each non-reasoning tool call**",
       );
       builder.addLine("2. In the reasoning step:");
       builder.addLine("   - Document your interpretation of tool results");
@@ -137,13 +137,17 @@ export async function returnStandardPrompt(
         '   - Set `nextStep` to "continue" if more tool calls are needed',
       );
       builder.addLine(
-        '   - Set `nextStep` to "finalAnswer" when you have all needed information',
+        '   - Set `nextStep` to "finalAnswer" when you have all the information needed to respond directly to the user',
+      );
+      builder.addLine('3. When a reasoning step has `nextStep="finalAnswer"`:');
+      builder.addLine(
+        "   - This reasoning step itself IS your final tool interaction",
       );
       builder.addLine(
-        '3. **Your final interaction must ALWAYS be a reasoning step with `nextStep="finalAnswer"`**',
+        "   - Immediately follow it with your comprehensive response directly to the user",
       );
       builder.addLine(
-        '4. Only after the reasoning step with `nextStep="finalAnswer"` should you provide your comprehensive final answer',
+        "   - **Do not use any more tools, including the reasoning tool, after this point**",
       );
 
       builder.startSection("Tool Availability");

@@ -145,6 +145,9 @@ export const message = sqliteTable(
       enum: ["user", "assistant", "system", "tool", "developer"],
     }).notNull(),
     content: text().notNull(),
+    parts: text({
+      mode: "json",
+    }),
     name: text(),
     tool_calls: text({
       mode: "json",
@@ -168,6 +171,8 @@ export const message = sqliteTable(
     usage: text({
       mode: "json",
     }),
+    tool_call_id: text(),
+    app: text(),
     created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
     updated_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
