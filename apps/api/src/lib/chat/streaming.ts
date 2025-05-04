@@ -321,6 +321,7 @@ export async function createStreamWithPostProcessing(
                     if (!currentToolCalls[index]) {
                       currentToolCalls[index] = {
                         id: toolCall.id,
+                        type: toolCall.type || "function",
                         function: {
                           name: toolCall.function?.name || "",
                           arguments: "",
@@ -397,6 +398,7 @@ export async function createStreamWithPostProcessing(
 
                   const toolCall = {
                     id: toolState.id,
+                    type: toolState.type || "function",
                     function: {
                       name: toolState.name,
                       arguments: JSON.stringify(parsedInput),
@@ -471,6 +473,7 @@ export async function createStreamWithPostProcessing(
                   for (const ev of memEvents) {
                     toolCallsData.push({
                       id: generateId(),
+                      type: "function",
                       function: {
                         name: "memory",
                         arguments: JSON.stringify(ev),
