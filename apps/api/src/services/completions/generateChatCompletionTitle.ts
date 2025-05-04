@@ -64,8 +64,8 @@ export const handleGenerateChatCompletionTitle = async (
     }
 
     messagesToUse = conversationMessages.map((msg) => ({
-      role: msg.role as any,
-      content: msg.content as string,
+      role: msg.role,
+      content: msg.content,
     }));
   }
 

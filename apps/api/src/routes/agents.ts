@@ -419,7 +419,6 @@ app.post(
       stream: true,
       mode: "agent",
       tool_choice: "required",
-      parallel_tool_calls: true,
     };
 
     const response = await handleCreateChatCompletions({

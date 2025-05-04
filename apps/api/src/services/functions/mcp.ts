@@ -104,10 +104,33 @@ export const handleMCPTool = async (
       { signal: new AbortController().signal },
     );
 
+    if (conversationManager) {
+      await conversationManager.add(completion_id, {
+        role: "tool",
+        content: "Request completed",
+        name: toolName,
+        status: "success",
+        data: {
+          answer: fallbackResult.content,
+          name: toolName,
+          formattedName: "MCP",
+          responseType: "custom",
+        },
+        timestamp: Date.now(),
+        platform: "api",
+      });
+    }
+
     return {
-      content: "",
-      data: fallbackResult.content,
       status: "success",
+      name: toolName,
+      content: "Request completed",
+      data: {
+        answer: fallbackResult.content,
+        name: toolName,
+        formattedName: "MCP",
+        responseType: "custom",
+      },
     };
   } catch (error) {
     logger.error("Error in MCP tool execution:", error);

@@ -147,8 +147,7 @@ export async function mapParametersToProvider(
       ) {
         if (
           params.messages.length > 2 ||
-          (params.messages.length === 2 &&
-            params.messages[0].role !== ("system" as any))
+          (params.messages.length === 2 && params.messages[0].role !== "system")
         ) {
           return null;
         }
@@ -207,7 +206,7 @@ export async function mapParametersToProvider(
 
         if (
           params.messages.length >= 2 &&
-          params.messages[0].role === ("system" as any)
+          params.messages[0].role === "system"
         ) {
           let systemContent = "";
           if (Array.isArray(params.messages[0].content)) {
@@ -292,7 +291,7 @@ export async function mapParametersToProvider(
       if (supportsThinking) {
         newCommonParams.reasoning_effort = params.reasoning_effort;
       }
-      if (params.model === "o1") {
+      if (params.model === "o1" || params.model === "o4-mini") {
         newCommonParams.temperature = 1;
         newCommonParams.top_p = undefined;
       }
