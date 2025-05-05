@@ -401,7 +401,7 @@ export class UserSettingsRepository extends BaseRepository {
 
   public async createUserProviderSettings(userId: number): Promise<void> {
     const providers = AIProviderFactory.getConfigurableProviders();
-    const defaultProviders = this.env.DEFAULT_PROVIDERS.split(",");
+    const defaultProviders = this.env.DEFAULT_PROVIDERS?.split(",") || [];
 
     await Promise.all(
       providers.map(async (provider) => {
