@@ -76,10 +76,25 @@ export class MessageFormatter {
           }
         }
 
+        const toolResultContent = `[Tool Response: ${message.name || "unknown"}] ${typeof content === "string" ? content : JSON.stringify(content)} ${stringifiedData ? `\n\nData: ${stringifiedData}` : ""}`;
+
+        if (provider === "anthropic") {
+          return {
+            role: "user",
+            content: [
+              {
+                type: "tool_result",
+                tool_use_id: message.tool_call_id,
+                content: toolResultContent,
+              },
+            ],
+          };
+        }
+
         return {
           role: "tool",
           tool_call_id: message.tool_call_id,
-          content: `[Tool Response: ${message.name || "unknown"}] ${typeof content === "string" ? content : JSON.stringify(content)} ${stringifiedData ? `\n\nData: ${stringifiedData}` : ""}`,
+          content: toolResultContent,
         };
       }
 
@@ -90,6 +105,22 @@ export class MessageFormatter {
             parts: Array.isArray(content) ? content : [{ text: content }],
             content: "",
             tool_calls: message.tool_calls,
+          };
+        case "anthropic":
+          if (
+            Array.isArray(content) &&
+            content.length === 1 &&
+            typeof content[0] === "string"
+          ) {
+            return {
+              role: message.role,
+              content: content[0],
+            };
+          }
+
+          return {
+            role: message.role,
+            content: content,
           };
         default:
           if (
@@ -127,9 +158,9 @@ export class MessageFormatter {
           MessageFormatter.formatGoogleAIContent(item),
         );
       case "anthropic":
-        return content.map((item) =>
-          MessageFormatter.formatAnthropicContent(item),
-        );
+        return content
+          .map((item) => MessageFormatter.formatAnthropicContent(item))
+          .filter((item) => item !== null);
       case "bedrock":
         return content.map((item) =>
           MessageFormatter.formatBedrockContent(item),
@@ -272,6 +303,9 @@ export class MessageFormatter {
 
   private static formatAnthropicContent(item: MessageContent): any {
     if (item.type === "text") {
+      if (!item.text) {
+        return null;
+      }
       return { type: "text", text: item.text };
     }
     if (item.type === "image_url" && item.image_url?.url) {

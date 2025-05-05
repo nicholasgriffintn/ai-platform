@@ -9,7 +9,8 @@ export type ContentType =
   | "audio_url"
   | "thinking"
   | "document_url"
-  | "markdown_document";
+  | "markdown_document"
+  | "tool_result";
 export type ChatRole = "user" | "assistant" | "tool" | "developer" | "system";
 export type ChatMode = "normal" | "local" | "remote" | "no_system" | "agent";
 
@@ -31,6 +32,7 @@ export type MessageContent = {
   thinking?: string;
   signature?: string;
   image?: number[] | string;
+  tool_use_id?: string;
 };
 
 export type Attachment = {
