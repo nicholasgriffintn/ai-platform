@@ -517,6 +517,27 @@ export class Database {
     }
   }
 
+  public async deleteAllChatCompletions(userId: number): Promise<void> {
+    try {
+      const allConversations = await this.getUserConversations(userId, 1000);
+      if (allConversations.conversations.length === 0) {
+        return;
+      }
+      for (const conversation of allConversations.conversations) {
+        if (!conversation.id || typeof conversation.id !== "string") {
+          continue;
+        }
+        console.log(`Deleting conversation ${conversation.id}`);
+        await this.repositories.messages.deleteAllMessages(conversation.id);
+        await this.deleteConversation(conversation.id);
+      }
+
+      return;
+    } catch (error) {
+      logger.error(`Error deleting all chat completions: ${error}`);
+    }
+  }
+
   public async getChildMessages(
     parentMessageId: string,
     limit = 50,

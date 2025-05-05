@@ -119,7 +119,7 @@ export function useDeleteChat() {
   });
 }
 
-export function useDeleteAllChats() {
+export function useDeleteAllLocalChats() {
   const queryClient = useQueryClient();
   const { setCurrentConversationId } = useChatStore();
 
@@ -129,6 +129,19 @@ export function useDeleteAllChats() {
     },
     onSuccess: () => {
       setCurrentConversationId(undefined);
+      invalidateAllChatQueries(queryClient);
+    },
+  });
+}
+
+export function useDeleteAllRemoteChats() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      await apiService.deleteAllConversations();
+    },
+    onSuccess: () => {
       invalidateAllChatQueries(queryClient);
     },
   });

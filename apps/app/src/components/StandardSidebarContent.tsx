@@ -44,7 +44,7 @@ export function StandardSidebarContent() {
                 </li>
               </ul>
             </nav>
-            <SidebarFooter enableClearAllMessages={false} />
+            <SidebarFooter />
           </div>
         )}
       </div>

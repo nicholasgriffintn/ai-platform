@@ -803,4 +803,15 @@ export class ConversationManager {
     );
     return messages.map((message) => this.formatMessage(message));
   }
+
+  async deleteAllChatCompletions(user_id: number): Promise<void> {
+    if (!user_id) {
+      throw new AssistantError(
+        "User ID is required to delete all chat completions",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    await this.database.deleteAllChatCompletions(user_id);
+  }
 }

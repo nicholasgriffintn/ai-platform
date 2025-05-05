@@ -509,6 +509,26 @@ class ApiService {
     }
   };
 
+  deleteAllConversations = async (): Promise<void> => {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error deleting all conversations:", error);
+    }
+
+    const response = await fetchApi("/chat/completions", {
+      method: "DELETE",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to delete all conversations: ${response.statusText}`,
+      );
+    }
+  };
+
   shareConversation = async (
     completion_id: string,
   ): Promise<{ share_id: string }> => {

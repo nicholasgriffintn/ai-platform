@@ -10,12 +10,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "~/components/ui";
-import {
-  useChats,
-  useDeleteAllChats,
-  useDeleteChat,
-  useUpdateChatTitle,
-} from "~/hooks/useChat";
+import { useChats, useDeleteChat, useUpdateChatTitle } from "~/hooks/useChat";
 import { categorizeChatsByDate } from "~/lib/sidebar";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation } from "~/types/chat";
@@ -42,7 +37,6 @@ export const ChatSidebar = () => {
 
   const { data: conversations = [], isLoading } = useChats();
   const deleteChat = useDeleteChat();
-  const deleteAllChats = useDeleteAllChats();
   const updateTitle = useUpdateChatTitle();
 
   const categorizedChats = categorizeChatsByDate(conversations);
@@ -97,23 +91,6 @@ export const ChatSidebar = () => {
       }
     } catch (error) {
       console.error("Failed to delete chat:", error);
-    }
-  };
-
-  const handleDeleteAllChats = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete all conversations? This cannot be undone.",
-      )
-    ) {
-      return;
-    }
-
-    try {
-      await deleteAllChats.mutateAsync();
-    } catch (error) {
-      console.error("Failed to delete all chats:", error);
-      alert("Failed to delete all conversations. Please try again.");
     }
   };
 
@@ -345,7 +322,6 @@ export const ChatSidebar = () => {
                     onShowKeyboardShortcuts={() =>
                       setShowKeyboardShortcuts(true)
                     }
-                    onClearAllMessages={handleDeleteAllChats}
                   />
                 </div>
               </div>

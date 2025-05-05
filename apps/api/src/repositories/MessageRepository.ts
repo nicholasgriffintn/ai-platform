@@ -182,6 +182,12 @@ export class MessageRepository extends BaseRepository {
     await this.executeRun("DELETE FROM message WHERE id = ?", [messageId]);
   }
 
+  public async deleteAllMessages(conversationId: string): Promise<void> {
+    await this.executeRun("DELETE FROM message WHERE conversation_id = ?", [
+      conversationId,
+    ]);
+  }
+
   public async getChildMessages(
     parentMessageId: string,
     limit = 50,

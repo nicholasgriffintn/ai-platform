@@ -4,7 +4,6 @@ import {
   Github,
   Keyboard,
   MoreVertical,
-  Trash,
 } from "lucide-react";
 import { Link } from "react-router";
 
@@ -13,15 +12,11 @@ import { DropdownMenu, DropdownMenuItem } from "~/components/ui";
 interface MoreOptionsDropdownProps {
   position?: "top" | "bottom";
   onShowKeyboardShortcuts: () => void;
-  onClearAllMessages: () => void;
-  disableClearAllMessages?: boolean;
 }
 
 export const MoreOptionsDropdown = ({
   position = "bottom",
   onShowKeyboardShortcuts,
-  onClearAllMessages,
-  disableClearAllMessages = false,
 }: MoreOptionsDropdownProps) => {
   return (
     <DropdownMenu
@@ -65,14 +60,6 @@ export const MoreOptionsDropdown = ({
       >
         Keyboard Shortcuts
       </DropdownMenuItem>
-      {!disableClearAllMessages && (
-        <DropdownMenuItem
-          icon={<Trash size={16} />}
-          onClick={onClearAllMessages}
-        >
-          Clear All Messages
-        </DropdownMenuItem>
-      )}
     </DropdownMenu>
   );
 };

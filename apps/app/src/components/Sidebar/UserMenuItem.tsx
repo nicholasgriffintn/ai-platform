@@ -44,7 +44,7 @@ export function UserMenuItem() {
       ) : user ? (
         <Link
           to="/profile"
-          className="cursor-pointer flex items-center justify-center p-2 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md"
+          className="no-underline cursor-pointer flex items-center justify-center p-2 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md"
           aria-disabled={isLoggingOut}
         >
           {user.avatar_url ? (

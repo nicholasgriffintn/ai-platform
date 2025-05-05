@@ -120,7 +120,7 @@ export function ProfileSidebar({
                 )}
               </ul>
             </nav>
-            <SidebarFooter enableClearAllMessages={false} />
+            <SidebarFooter />
           </div>
         )}
       </div>

@@ -11,6 +11,7 @@ import { requireTurnstileToken } from "~/middleware/turnstile";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
+import { handleDeleteAllChatCompletions } from "~/services/completions/deleteAllChatCompletions";
 import { handleDeleteChatCompletion } from "~/services/completions/deleteChatCompletion";
 import { handleGenerateChatCompletionTitle } from "~/services/completions/generateChatCompletionTitle";
 import { handleGetChatCompletion } from "~/services/completions/getChatCompletion";
@@ -122,6 +123,30 @@ app.post(
     if (response instanceof Response) {
       return response;
     }
+
+    return context.json(response);
+  },
+);
+
+app.delete(
+  "/completions",
+  describeRoute({
+    tags: ["chat"],
+    summary: "Delete all chat completions",
+    description: "Delete all chat completions for the current user",
+    responses: {
+      200: {
+        description: "Deletion status",
+      },
+    },
+  }),
+  async (context: Context) => {
+    const userContext = context.get("user");
+
+    const response = await handleDeleteAllChatCompletions({
+      env: context.env as IEnv,
+      user: userContext,
+    });
 
     return context.json(response);
   },
