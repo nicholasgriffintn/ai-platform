@@ -23,7 +23,8 @@ export const ToolMessage = ({
       <div className="text-xs font-medium text-blue-700 dark:text-blue-300 pt-1">
         <div className="flex items-start gap-2">
           <ToolIcon />
-          {message.name} {message.status && `(${message.status})`}
+          {message.data?.formattedName || message.name}{" "}
+          {message.status && `(${message.status})`}
         </div>
       </div>
       <div>
