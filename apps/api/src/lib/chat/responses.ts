@@ -5,7 +5,11 @@ import type { ChatCompletionParameters, Message } from "~/types";
 import type { AssistantMessageData } from "~/types/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { getLogger } from "~/utils/logger";
 import { formatMessages } from "~/utils/messages";
+import { withRetry } from "~/utils/retries";
+
+const responseLogger = getLogger({ prefix: "CHAT_RESPONSE" });
 
 /**
  * Formats assistant message data into a standardized structure that can be used
@@ -152,7 +156,31 @@ export async function getAIResponse({
     tools,
   });
 
-  const response = await provider.getResponse(parameters, user?.id);
+  const startTime = Date.now();
+  let response;
+  try {
+    response = await withRetry(() =>
+      provider.getResponse(parameters, user?.id),
+    );
+  } catch (err) {
+    responseLogger.error("Model invocation failed", {
+      model,
+      provider: provider.name,
+      error: err,
+    });
+    throw err;
+  }
+  const durationMs = Date.now() - startTime;
+  const usageTokens =
+    typeof response === "object" && response && "usage" in response
+      ? (response as any).usage.total_tokens
+      : null;
+  responseLogger.debug("Model invocation metrics", {
+    model,
+    provider: provider.name,
+    durationMs,
+    usageTokens,
+  });
 
   return response;
 }
