@@ -25,6 +25,7 @@ Here are some example chats that you can try out:
 - [Saved memories (RAG)](https://polychat.app/s/1e9a8f6e-e6dc-40a7-b24f-53fb8f4c6766)
 - [Retrieved memories (RAG)](https://polychat.app/s/93552889-b3ec-445c-b72b-8d05f5b6117f)
 - [Image generation](https://polychat.app/s/fa89a9da-12e0-4308-8ce8-093c4c309de2)
+- [Multi Step Tool Calls](https://polychat.app/s/88fc7ba0-11d7-4ee9-bab2-d94f7bc83db1)
 
 ## Project Structure
 
