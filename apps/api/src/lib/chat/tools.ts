@@ -181,16 +181,14 @@ export const handleToolCalls = async (
 export function formatToolCalls(provider: string, functions: any[]) {
   if (provider === "anthropic") {
     return functions.map((func) => {
-      const parameters = func.parameters?.jsonSchema || func.parameters;
-
-      if (!parameters) {
+      if (!func.parameters) {
         return null;
       }
 
       return {
         name: func.name,
         description: func.description,
-        input_schema: parameters,
+        input_schema: func.parameters,
       };
     });
   }
