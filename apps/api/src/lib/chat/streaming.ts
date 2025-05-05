@@ -136,6 +136,7 @@ export async function createStreamWithPostProcessing(
     new TransformStream({
       async start(controller) {
         try {
+          emitEvent(controller, "state", { state: "init" });
           const usageLimits = await conversationManager.getUsageLimits();
           if (usageLimits) {
             emitEvent(controller, "usage_limits", {
@@ -143,10 +144,11 @@ export async function createStreamWithPostProcessing(
             });
           }
         } catch (error) {
-          logger.error("Failed to get usage limits:", error);
+          logger.error("Failed in stream start:", error);
         }
       },
       async transform(chunk, controller) {
+        emitEvent(controller, "state", { state: "thinking" });
         const text = new TextDecoder().decode(chunk);
         logger.trace("Incoming chunk", {
           chunkSize: chunk.byteLength,
@@ -436,12 +438,8 @@ export async function createStreamWithPostProcessing(
         }
 
         async function handlePostProcessing() {
-          logger.info("Starting postProcessing", {
-            completion_id,
-            fullContentLength: fullContent.length,
-            toolCallsCount: toolCallsData.length,
-          });
           try {
+            emitEvent(controller, "state", { state: "post_processing" });
             postProcessingDone = true;
 
             const memoriesEnabled =
@@ -664,6 +662,8 @@ export async function createStreamWithPostProcessing(
             } catch (error) {
               logger.error("Failed to get updated usage limits:", error);
             }
+
+            emitEvent(controller, "state", { state: "done" });
 
             controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
           } catch (error) {

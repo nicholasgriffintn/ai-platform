@@ -483,6 +483,29 @@ export function useChatManager() {
 
           const modelToSend = model === null ? undefined : model;
 
+          const handleStateChange = (state: string, data?: any) => {
+            let msg: string | undefined;
+            switch (state) {
+              case "init":
+                msg = "Calling provider...";
+                break;
+              case "thinking":
+                msg = "Thinking about response...";
+                break;
+              case "post_processing":
+                msg = "Finalizing response...";
+                break;
+              case "tool_use_start":
+                msg = `Running tool ${data?.tool_name || ""}...`;
+                break;
+              case "tool_use_stop":
+                msg = "Tool execution completed.";
+                break;
+              default:
+                return;
+            }
+            updateLoading("stream-response", undefined, msg);
+          };
           const assistantMessage = await apiService.streamChatCompletions(
             conversationId,
             normalizedMessages,
@@ -491,6 +514,7 @@ export function useChatManager() {
             chatSettings,
             controller.signal,
             handleMessageUpdate,
+            handleStateChange,
             shouldStore,
             true,
             useMultiModel,
@@ -557,6 +581,7 @@ export function useChatManager() {
       addMessageToConversation,
       useMultiModel,
       selectedAgentId,
+      updateLoading,
     ],
   );
 
@@ -623,7 +648,7 @@ export function useChatManager() {
       }
 
       setStreamStarted(true);
-      startLoading("stream-response", "Generating response...");
+      startLoading("stream-response", "Sending request...");
 
       const userMessageId = crypto.randomUUID();
       const currentTime = Date.now();

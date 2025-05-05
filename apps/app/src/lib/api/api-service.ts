@@ -227,6 +227,7 @@ class ApiService {
       reasoning?: string,
       toolResponses?: Message[],
     ) => void,
+    onStateChange: (state: string, data?: any) => void,
     store = true,
     streamingEnabled = true,
     useMultiModel = false,
@@ -368,6 +369,8 @@ class ApiService {
                 if (parsedData.type === "content_block_delta") {
                   content += parsedData.content;
                   onProgress(content, reasoning);
+                } else if (parsedData.type === "state") {
+                  onStateChange(parsedData.state, parsedData);
                 } else if (parsedData.type === "thinking_delta") {
                   thinking += parsedData.thinking || "";
                 } else if (
@@ -384,6 +387,7 @@ class ApiService {
                     name: parsedData.tool_name,
                     parameters: {},
                   };
+                  onStateChange("tool_use_start", parsedData);
                 } else if (parsedData.type === "tool_use_delta") {
                   if (pendingToolCalls[parsedData.tool_id]) {
                     pendingToolCalls[parsedData.tool_id].parameters = {
@@ -396,6 +400,7 @@ class ApiService {
                     toolCalls.push(pendingToolCalls[parsedData.tool_id]);
                     delete pendingToolCalls[parsedData.tool_id];
                   }
+                  onStateChange("tool_use_stop", parsedData);
                 } else if (parsedData.type === "tool_response") {
                   if (toolResponses.find((tool) => tool.id === parsedData.id)) {
                     continue;

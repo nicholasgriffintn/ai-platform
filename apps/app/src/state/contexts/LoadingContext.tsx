@@ -18,7 +18,7 @@ interface LoadingStateContextType {
 
 interface LoadingActionsContextType {
   startLoading: (id: string, message?: string) => void;
-  updateLoading: (id: string, progress: number, message?: string) => void;
+  updateLoading: (id: string, progress?: number, message?: string) => void;
   stopLoading: (id: string) => void;
 }
 
@@ -44,12 +44,12 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
       });
     };
 
-    const updateLoading = (id: string, progress: number, message?: string) => {
+    const updateLoading = (id: string, progress?: number, message?: string) => {
       setLoadingStates((prev) => {
         const existingState = prev.find((state) => state.id === id);
         if (
           existingState?.progress === progress &&
-          (message === undefined || existingState.message === message)
+          (message === undefined || existingState?.message === message)
         ) {
           return prev;
         }

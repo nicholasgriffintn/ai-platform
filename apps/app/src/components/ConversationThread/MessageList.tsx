@@ -1,8 +1,7 @@
-import { MessagesSquare } from "lucide-react";
+import { Loader2, MessagesSquare } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { VList, type VListHandle } from "virtua";
 
-import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import {
@@ -53,7 +52,7 @@ export const MessageList = ({
   const isModelInitializing = useIsLoading("model-init");
 
   const streamLoadingMessage =
-    useLoadingMessage("stream-response") || "Generating response...";
+    useLoadingMessage("stream-response") || "Sending request...";
   const modelInitMessage =
     useLoadingMessage("model-init") || "Initializing model...";
   const modelInitProgress = useLoadingProgress("model-init") || 0;
@@ -144,16 +143,20 @@ export const MessageList = ({
               </div>
             ))}
             {!isSharedView && (isStreamLoading || streamStarted) && (
-              <div className="flex justify-center py-4">
-                <LoadingSpinner message={streamLoadingMessage} />
+              <div className="flex items-center gap-2 py-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
+                <Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
+                <span>{streamLoadingMessage}</span>
               </div>
             )}
             {!isSharedView && isModelInitializing && (
-              <div className="flex justify-center py-4">
-                <LoadingSpinner
-                  message={modelInitMessage}
-                  progress={modelInitProgress}
-                />
+              <div className="flex items-center gap-2 py-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
+                <Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
+                <span>
+                  {modelInitMessage}
+                  {modelInitProgress !== undefined
+                    ? ` ${Math.round(modelInitProgress)}%`
+                    : null}
+                </span>
               </div>
             )}
           </>
