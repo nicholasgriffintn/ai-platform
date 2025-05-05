@@ -61,7 +61,6 @@ export interface IEnv {
   LOG_LEVEL?: string;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
-  DEFAULT_PROVIDERS?: string;
   AWS_SES_ACCESS_KEY_ID?: string;
   AWS_SES_SECRET_ACCESS_KEY?: string;
   SES_EMAIL_FROM?: string;
