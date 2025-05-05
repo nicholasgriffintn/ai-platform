@@ -448,6 +448,10 @@ app.post(
             const shortAgentId = agent.id.substring(0, 8);
             const toolName = `mcp_${shortAgentId}_${name}`;
 
+            if (!def.parameters) {
+              continue;
+            }
+
             mcpFunctions.push({
               name: toolName,
               description: def.description as string,
