@@ -119,17 +119,18 @@ export const ChatMessage = ({
               </div>
             )}
             <div className="flex-1 overflow-x-auto">
-              {isToolResponse && (
+              {isToolResponse ? (
                 <ToolMessage
                   message={message}
                   onToolInteraction={onToolInteraction}
                 />
-              )}
-              {(!isExternalFunctionCall || message.content) && (
-                <MessageContent
-                  message={message}
-                  onArtifactOpen={onArtifactOpen}
-                />
+              ) : (
+                (!isExternalFunctionCall || message?.content) && (
+                  <MessageContent
+                    message={message}
+                    onArtifactOpen={onArtifactOpen}
+                  />
+                )
               )}
             </div>
           </div>

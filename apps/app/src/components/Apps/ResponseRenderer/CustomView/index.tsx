@@ -1,12 +1,16 @@
+import { MemoizedMarkdown } from "~/components/ui/Markdown";
 import { JsonView } from "../JsonView";
+import { AddReasoningStepView } from "./Views/AddReasoningStepView";
 import { TutorView } from "./Views/TutorView";
 import { WebSearchView } from "./Views/WebSearchView";
 
 export function CustomView({
+  messageContent,
   data,
   embedded,
   onToolInteraction,
 }: {
+  messageContent: string;
   data: any;
   embedded: boolean;
   onToolInteraction?: (
@@ -31,9 +35,22 @@ export function CustomView({
     return <TutorView data={customData} embedded={embedded} />;
   }
 
+  if (data.name === "add_reasoning_step") {
+    return <AddReasoningStepView data={customData} embedded={embedded} />;
+  }
+
   console.info(
     "ResponseRenderer custom response -> it's on you now!",
     customData,
   );
-  return <JsonView data={customData} />;
+  return (
+    <>
+      <JsonView data={customData} />
+      {typeof messageContent === "string" && (
+        <div className="mt-6">
+          <MemoizedMarkdown>{messageContent}</MemoizedMarkdown>
+        </div>
+      )}
+    </>
+  );
 }

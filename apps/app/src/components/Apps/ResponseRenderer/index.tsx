@@ -59,6 +59,7 @@ export const ResponseRenderer = ({
     if (!type) {
       return (
         <CustomView
+          messageContent={result.content}
           data={responseData}
           embedded={embedded}
           onToolInteraction={onToolInteraction}
@@ -94,6 +95,7 @@ export const ResponseRenderer = ({
       default:
         return (
           <CustomView
+            messageContent={result.content}
             data={responseData}
             embedded={embedded}
             onToolInteraction={onToolInteraction}
