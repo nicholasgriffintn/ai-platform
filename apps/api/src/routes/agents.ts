@@ -6,7 +6,7 @@ import type z from "zod";
 
 import { formatToolCalls } from "~/lib/chat/tools";
 import { getModelConfig } from "~/lib/models";
-import { allowRestrictedPaths } from "~/middleware/auth";
+import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requireTurnstileToken } from "~/middleware/turnstile";
 import { AgentRepository } from "~/repositories/AgentRepository";
@@ -24,7 +24,7 @@ const logger = createRouteLogger("AGENTS");
 
 app.use("/*", async (ctx, next) => {
   logger.info(`Processing agents route: ${ctx.req.method} ${ctx.req.path}`);
-  await allowRestrictedPaths(ctx, next);
+  return next();
 });
 
 app.get(
@@ -47,6 +47,13 @@ app.get(
   async (ctx: Context) => {
     const user = ctx.get("user");
 
+    if (!user?.id) {
+      return ctx.json({
+        status: "success",
+        data: [],
+      });
+    }
+
     const repo = new AgentRepository(ctx.env);
     const agents = await repo.getAgentsByUser(user.id);
 
@@ -59,6 +66,7 @@ app.get(
 
 app.post(
   "/",
+  requireAuth,
   describeRoute({
     tags: ["agents"],
     summary: "Create an agent",
@@ -81,6 +89,16 @@ app.post(
     >;
     const user = ctx.get("user");
 
+    if (!user?.id) {
+      return ctx.json(
+        {
+          status: "error",
+          error: "Unauthorized",
+        },
+        401,
+      );
+    }
+
     const repo = new AgentRepository(ctx.env);
     const agent = await repo.createAgent(
       user.id,
@@ -99,6 +117,7 @@ app.post(
 
 app.get(
   "/:agentId",
+  requireAuth,
   describeRoute({
     tags: ["agents"],
     summary: "Get an agent by ID",
@@ -117,6 +136,16 @@ app.get(
   async (ctx: Context) => {
     const { agentId } = ctx.req.param();
     const user = ctx.get("user");
+
+    if (!user?.id) {
+      return ctx.json(
+        {
+          status: "error",
+          error: "Unauthorized",
+        },
+        401,
+      );
+    }
 
     const repo = new AgentRepository(ctx.env);
     const agent = await repo.getAgentById(agentId);
@@ -138,6 +167,7 @@ app.get(
 
 app.get(
   "/:agentId/servers",
+  requireAuth,
   describeRoute({
     tags: ["agents"],
     summary: "Get servers for an agent",
@@ -156,6 +186,16 @@ app.get(
   async (ctx: Context) => {
     const { agentId } = ctx.req.param();
     const user = ctx.get("user");
+
+    if (!user?.id) {
+      return ctx.json(
+        {
+          status: "error",
+          error: "Unauthorized",
+        },
+        401,
+      );
+    }
 
     const repo = new AgentRepository(ctx.env);
     const agent = await repo.getAgentById(agentId);
@@ -214,6 +254,7 @@ app.get(
 
 app.put(
   "/:agentId",
+  requireAuth,
   describeRoute({
     tags: ["agents"],
     summary: "Update an agent",
@@ -237,6 +278,16 @@ app.put(
     >;
     const user = ctx.get("user");
 
+    if (!user?.id) {
+      return ctx.json(
+        {
+          status: "error",
+          error: "Unauthorized",
+        },
+        401,
+      );
+    }
+
     const repo = new AgentRepository(ctx.env);
     const agent = await repo.getAgentById(agentId);
 
@@ -259,6 +310,7 @@ app.put(
 
 app.delete(
   "/:agentId",
+  requireAuth,
   describeRoute({
     tags: ["agents"],
     summary: "Delete an agent",
@@ -277,6 +329,16 @@ app.delete(
   async (ctx: Context) => {
     const { agentId } = ctx.req.param();
     const user = ctx.get("user");
+
+    if (!user?.id) {
+      return ctx.json(
+        {
+          status: "error",
+          error: "Unauthorized",
+        },
+        401,
+      );
+    }
 
     const repo = new AgentRepository(ctx.env);
     const agent = await repo.getAgentById(agentId);
@@ -319,6 +381,16 @@ app.post(
     const { agentId } = ctx.req.param();
     const user = ctx.get("user");
     const anonymousUser = ctx.get("anonymousUser");
+
+    if (!user && !anonymousUser) {
+      return ctx.json(
+        {
+          status: "error",
+          error: "Unauthorized",
+        },
+        401,
+      );
+    }
 
     const repo = new AgentRepository(ctx.env);
     const agent = await repo.getAgentById(agentId);

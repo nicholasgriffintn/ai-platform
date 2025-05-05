@@ -180,3 +180,5 @@ apps/app/stats.html
 apps/app/build
 
 .react-router
+
+test-results
