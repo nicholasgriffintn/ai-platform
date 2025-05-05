@@ -106,7 +106,16 @@ export async function mapParametersToProvider(
 
     if (supportsFunctions) {
       if (params.tools) {
-        commonParams.tools = params.tools;
+        const providedTools = params.tools;
+        const enabledTools = params.enabled_tools || [];
+        const filteredFunctions = availableFunctions.filter((func) =>
+          enabledTools.includes(func.name),
+        );
+        const availableToolDeclarations = formatToolCalls(
+          providerName,
+          filteredFunctions,
+        );
+        commonParams.tools = [...availableToolDeclarations, ...providedTools];
       } else {
         const enabledTools = params.enabled_tools || [];
         const filteredFunctions = availableFunctions.filter((func) =>
@@ -396,11 +405,27 @@ export async function mapParametersToProvider(
           google_search: {},
         });
       }
-      /* if (modelConfig?.supportsFunctions) {
+      const hasEnabledExclusiveTools =
+        enabledTools.includes("code_execution") ||
+        enabledTools.includes("search_grounding");
+      if (
+        modelConfig?.supportsFunctions &&
+        !hasEnabledExclusiveTools &&
+        commonParams.tools.length > 0
+      ) {
+        const formattedTools = commonParams.tools.map((tool) => ({
+          name: tool.function.name,
+          description: tool.function.description,
+          parameters: {
+            type: tool.function.parameters.type,
+            properties: tool.function.parameters.properties,
+          },
+          required: tool.function.required,
+        }));
         tools.push({
-          function_declarations: commonParams.tools,
+          functionDeclarations: formattedTools,
         });
-      } */
+      }
 
       return {
         model: params.model,

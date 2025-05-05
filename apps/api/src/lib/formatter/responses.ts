@@ -235,16 +235,20 @@ export class ResponseFormatter {
 
   private static formatGoogleStudioResponse(data: any): any {
     if (!data.candidates || !data.candidates[0]?.content?.parts) {
-      return { ...data, response: "" };
+      return { ...data, response: "", tool_calls: [] };
     }
 
     const parts = data.candidates[0].content.parts;
+    const toolCalls: Record<string, any>[] = [];
 
     let textResponse = "";
 
     parts.forEach((part: any, index: number) => {
       if (part.text) {
         textResponse += (textResponse ? "\n" : "") + part.text;
+      } else if (part.functionCall) {
+        const fc = part.functionCall;
+        toolCalls.push({ name: fc.name, arguments: fc.args });
       } else if (part.executableCode) {
         const code = part.executableCode;
         const language = code.language?.toLowerCase() || "code";
@@ -277,7 +281,12 @@ export class ResponseFormatter {
       newData.searchGrounding = cleanedSearchGrounding;
     }
 
-    return { ...data, response: textResponse, data: newData };
+    return {
+      ...data,
+      response: textResponse,
+      data: newData,
+      tool_calls: toolCalls,
+    };
   }
 
   private static formatOllamaResponse(data: any): any {

@@ -184,16 +184,19 @@ app.get(
           url: string;
           type: "sse";
         }) => {
-          console.log("Connecting to server", server);
           const { id } = await mcp.connect(server.url);
 
-          const tools = await mcp.listTools();
-          const prompts = await mcp.listPrompts();
-          const resources = await mcp.listResources();
+          const connection = mcp.mcpConnections[id];
+          while (connection.connectionState !== "ready") {
+            await new Promise((resolve) => setTimeout(resolve, 50));
+          }
+          const tools = connection.tools;
+          const prompts = connection.prompts;
+          const resources = connection.resources;
 
           return {
             id,
-            connectionState: mcp.mcpConnections[id]?.connectionState,
+            connectionState: connection.connectionState,
             tools,
             prompts,
             resources,
@@ -361,21 +364,23 @@ app.post(
       for (const cfg of serverConfigs) {
         try {
           const { id } = await mcp.connect(cfg.url);
-          if (mcp.mcpConnections[id]?.connectionState === "ready") {
-            const rawTools = (await mcp.unstable_getAITools()) as any;
+          const connection = mcp.mcpConnections[id];
+          while (connection.connectionState !== "ready") {
+            await new Promise((resolve) => setTimeout(resolve, 50));
+          }
+          const rawTools = (await mcp.unstable_getAITools()) as any;
 
-            const defs = Object.entries(rawTools) as [string, any][];
+          const defs = Object.entries(rawTools) as [string, any][];
 
-            for (const [name, def] of defs) {
-              const shortAgentId = agent.id.substring(0, 8);
-              const toolName = `mcp_${shortAgentId}_${name}`;
+          for (const [name, def] of defs) {
+            const shortAgentId = agent.id.substring(0, 8);
+            const toolName = `mcp_${shortAgentId}_${name}`;
 
-              mcpFunctions.push({
-                name: toolName,
-                description: def.description as string,
-                parameters: def.parameters as Record<string, any>,
-              });
-            }
+            mcpFunctions.push({
+              name: toolName,
+              description: def.description as string,
+              parameters: def.parameters as Record<string, any>,
+            });
           }
         } catch (e) {
           console.error("Error connecting to MCP", e);
