@@ -52,7 +52,17 @@ export abstract class BaseProvider implements AIProvider {
           return apiKey;
         }
       } catch (error) {
-        logger.warn(`Failed to get user API key for ${this.name}:`, { error });
+        if (
+          !(
+            error instanceof AssistantError &&
+            (error.type === ErrorType.NOT_FOUND ||
+              error.type === ErrorType.PARAMS_ERROR)
+          )
+        ) {
+          logger.error(`Failed to get user API key for ${this.name}:`, {
+            error,
+          });
+        }
       }
     }
 
