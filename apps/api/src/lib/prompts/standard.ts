@@ -126,28 +126,34 @@ export async function returnStandardPrompt(
         "5. **Multi-Step Reasoning**: After you use a tool that is not the reasoning tool, use the `add_reasoning_step` tool to expand on the response and provide a more detailed answer.",
       );
 
-      builder.startSection("Multi-Step Reasoning");
+      builder.startSection("Multi-Step Reasoning Workflow");
+      builder.addLine("Follow this precise workflow when using tools:");
       builder.addLine(
-        "1. **Use the `add_reasoning_step` tool immediately after each non-reasoning tool call**",
-      );
-      builder.addLine("2. In the reasoning step:");
-      builder.addLine("   - Document your interpretation of tool results");
-      builder.addLine("   - Explain your reasoning about next steps");
-      builder.addLine(
-        '   - Set `nextStep` to "continue" if more tool calls are needed',
+        "1. Use appropriate tools to gather information needed for the user's request",
       );
       builder.addLine(
-        '   - Set `nextStep` to "finalAnswer" when you have all the information needed to respond directly to the user',
+        "2. After EACH non-reasoning tool call, use the `add_reasoning_step` tool to:",
       );
-      builder.addLine('3. When a reasoning step has `nextStep="finalAnswer"`:');
+      builder.addLine("   - Analyze the tool's output");
+      builder.addLine("   - Determine your next step");
       builder.addLine(
-        "   - This reasoning step itself IS your final tool interaction",
-      );
-      builder.addLine(
-        "   - Immediately follow it with your comprehensive response directly to the user",
+        '   - If you need more information: set `nextStep` to "continue" and use another tool',
       );
       builder.addLine(
-        "   - **Do not use any more tools, including the reasoning tool, after this point**",
+        '   - If you have all needed information: set `nextStep` to "finalAnswer"',
+      );
+      builder.addLine("3. **IMPORTANT - Final Answer Process:**");
+      builder.addLine(
+        '   - When a reasoning step contains `nextStep="finalAnswer"`, you must STOP using ALL tools',
+      );
+      builder.addLine(
+        "   - Your NEXT MESSAGE after this final reasoning step must be your complete answer to the user",
+      );
+      builder.addLine(
+        "   - This final message to the user is NOT a tool call - it's a direct response",
+      );
+      builder.addLine(
+        "   - DO NOT use `add_reasoning_step` or any other tool in your final answer message",
       );
 
       builder.startSection("Tool Availability");
