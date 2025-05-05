@@ -77,6 +77,7 @@ Respond with:
         stream: false,
         store: false,
         env: req.env,
+        user: req.user,
       });
 
       if (!aiResponse.response) {
