@@ -159,8 +159,10 @@ export async function getAIResponse({
   const startTime = Date.now();
   let response;
   try {
-    response = await withRetry(() =>
-      provider.getResponse(parameters, user?.id),
+    response = await withRetry(
+      () => provider.getResponse(parameters, user?.id),
+      0,
+      1000,
     );
   } catch (err) {
     responseLogger.error("Model invocation failed", {

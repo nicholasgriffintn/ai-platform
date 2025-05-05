@@ -265,6 +265,7 @@ class ApiService {
     });
 
     const requestBody: Record<string, any> = {
+      ...chatSettings,
       completion_id,
       mode,
       messages: formattedMessages,
@@ -274,7 +275,6 @@ class ApiService {
       stream: streamingEnabled,
       enabled_tools: selectedTools,
       useMultiModel,
-      ...chatSettings,
     };
 
     if (model !== undefined) {
