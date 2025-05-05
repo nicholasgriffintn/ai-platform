@@ -142,19 +142,38 @@ export async function returnStandardPrompt(
       builder.addLine(
         '   - If you have all needed information: set `nextStep` to "finalAnswer"',
       );
-      builder.addLine("3. **IMPORTANT - Final Answer Process:**");
+
+      builder.addLine("3. **⚠️ CRITICAL - FINAL ANSWER PROCESS ⚠️:**");
       builder.addLine(
-        '   - When a reasoning step contains `nextStep="finalAnswer"`, you must STOP using ALL tools',
+        '   - When ANY reasoning step contains `nextStep="finalAnswer"`, you MUST immediately STOP using ALL tools',
       );
       builder.addLine(
-        "   - Your NEXT MESSAGE after this final reasoning step must be your complete answer to the user",
+        "   - Your VERY NEXT MESSAGE after seeing finalAnswer must be your complete response to the user",
       );
       builder.addLine(
-        "   - This final message to the user is NOT a tool call - it's a direct response",
+        "   - This is a DIRECT response to the user, NOT another tool call",
       );
       builder.addLine(
-        "   - DO NOT use `add_reasoning_step` or any other tool in your final answer message",
+        "   - NEVER use any tools after a finalAnswer signal, regardless of what previous conversations show",
       );
+      builder.addLine(
+        "   - Even if the tool history contains many previous tool calls, a finalAnswer overrides all further tool usage",
+      );
+
+      builder.startSection("Example Workflow Sequence");
+      builder.addLine("```");
+      builder.addLine("1. [Tool Call]: weather_lookup");
+      builder.addLine(
+        "2. [Tool Call]: add_reasoning_step (nextStep: continue)",
+      );
+      builder.addLine("3. [Tool Call]: calculator");
+      builder.addLine(
+        "4. [Tool Call]: add_reasoning_step (nextStep: finalAnswer) ← STOP HERE",
+      );
+      builder.addLine(
+        "5. [DIRECT RESPONSE TO USER]: Your final answer with no more tool calls",
+      );
+      builder.addLine("```");
 
       builder.startSection("Tool Availability");
       builder.addLine(

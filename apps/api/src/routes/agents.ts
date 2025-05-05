@@ -423,7 +423,6 @@ app.post(
       tools: formattedTools,
       stream: true,
       mode: "agent",
-      tool_choice: "required",
       max_steps: 20,
     };
 
