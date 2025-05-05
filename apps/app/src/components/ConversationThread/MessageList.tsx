@@ -52,7 +52,7 @@ export const MessageList = ({
   const isModelInitializing = useIsLoading("model-init");
 
   const streamLoadingMessage =
-    useLoadingMessage("stream-response") || "Sending request...";
+    useLoadingMessage("stream-response") || "Generating response...";
   const modelInitMessage =
     useLoadingMessage("model-init") || "Initializing model...";
   const modelInitProgress = useLoadingProgress("model-init") || 0;

@@ -648,7 +648,7 @@ export function useChatManager() {
       }
 
       setStreamStarted(true);
-      startLoading("stream-response", "Sending request...");
+      startLoading("stream-response", "Generating response...");
 
       const userMessageId = crypto.randomUUID();
       const currentTime = Date.now();
