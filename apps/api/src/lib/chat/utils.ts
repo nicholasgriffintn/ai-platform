@@ -167,3 +167,38 @@ export function getAllAttachments(contents: unknown[]): {
     allAttachments,
   };
 }
+
+export function pruneMessagesToFitContext(
+  messages: Message[],
+  newContent: string,
+  modelConfig: any,
+): Message[] {
+  const MAX_CONTEXT_LENGTH = modelConfig?.contextWindow || 8000;
+
+  const estimateTokens = (text: string): number => Math.ceil(text.length / 4);
+
+  const pruned = [...messages];
+
+  let existingTokens = pruned.reduce((sum, msg) => {
+    const content =
+      typeof msg.content === "string"
+        ? msg.content
+        : JSON.stringify(msg.content);
+    return sum + estimateTokens(content) + 4;
+  }, 0);
+
+  const newTokens = estimateTokens(newContent);
+  let totalTokens = existingTokens + newTokens;
+
+  while (totalTokens > MAX_CONTEXT_LENGTH && pruned.length > 0) {
+    const removed = pruned.shift()!;
+    const content =
+      typeof removed.content === "string"
+        ? removed.content
+        : JSON.stringify(removed.content);
+    existingTokens -= estimateTokens(content) + 4;
+    totalTokens = existingTokens + newTokens;
+  }
+
+  return pruned;
+}

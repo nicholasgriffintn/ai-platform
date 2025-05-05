@@ -16,7 +16,11 @@ import {
   createStreamWithPostProcessing,
 } from "./streaming";
 import { handleToolCalls } from "./tools";
-import { checkContextWindowLimits, getAllAttachments } from "./utils";
+import {
+  checkContextWindowLimits,
+  getAllAttachments,
+  pruneMessagesToFitContext,
+} from "./utils";
 
 const logger = getLogger({ prefix: "CHAT_CORE" });
 
@@ -131,8 +135,6 @@ async function prepareRequestData(options: CoreChatOptions) {
   const currentMode = mode;
   const finalUserMessage = lastMessageContentText;
 
-  checkContextWindowLimits(messages, finalUserMessage, primaryModelConfig);
-
   const embedding = Embedding.getInstance(env, user, userSettings);
 
   const finalMessage =
@@ -152,7 +154,16 @@ async function prepareRequestData(options: CoreChatOptions) {
           .join("\n\n")}`
       : finalMessage;
 
-  checkContextWindowLimits(messages, messageWithContext, primaryModelConfig);
+  const prunedWithAttachments = pruneMessagesToFitContext(
+    messages,
+    messageWithContext,
+    primaryModelConfig,
+  );
+  checkContextWindowLimits(
+    prunedWithAttachments,
+    messageWithContext,
+    primaryModelConfig,
+  );
 
   const guardrails = Guardrails.getInstance(env, user, userSettings);
   const inputValidation = await guardrails.validateInput(
@@ -254,8 +265,8 @@ async function prepareRequestData(options: CoreChatOptions) {
     }
   }
 
-  const chatMessages = messages.map((msg, index) => {
-    if (index === messages.length - 1) {
+  const chatMessages = prunedWithAttachments.map((msg, index) => {
+    if (index === prunedWithAttachments.length - 1) {
       let messageText = msg.content;
 
       if (use_rag) {
