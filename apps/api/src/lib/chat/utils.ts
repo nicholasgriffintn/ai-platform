@@ -202,3 +202,58 @@ export function pruneMessagesToFitContext(
 
   return pruned;
 }
+
+export function sanitiseInput(input: string): string {
+  const codeBlocks: string[] = [];
+  let codeBlockCount = 0;
+
+  const withoutCodeBlocks = input.replace(/```[\s\S]*?```/g, (match) => {
+    const placeholder = `__CODE_BLOCK_${codeBlockCount}__`;
+    codeBlocks.push(match);
+    codeBlockCount++;
+    return placeholder;
+  });
+
+  const sanitized = withoutCodeBlocks
+    // Remove instruction formats
+    .replace(/<\/?(?:INST|system|assistant|human|user|ai)[^>]*>/gi, "")
+    .replace(/\[\/?(?:INST|system|assistant|human|user|ai)\]/gi, "")
+    // Remove sentinel tokens
+    .replace(/<\/?s>/gi, "")
+    // Escape template syntax
+    .replace(/{{/g, "{ {")
+    .replace(/}}/g, "} }")
+    // Handle angle brackets that might be part of XML-style instructions
+    .replace(
+      /<([a-zA-Z][a-zA-Z0-9]*(\s+[a-zA-Z][a-zA-Z0-9]*=("[^"]*"|'[^']*'|[^>\s]+))*)\s*\/?>/g,
+      "`&lt;$1&gt;`",
+    )
+    // Normalize whitespace (but preserve newlines)
+    .replace(/[ \t]+/g, " ");
+
+  // Reinsert code blocks
+  const result = sanitized.replace(/__CODE_BLOCK_(\d+)__/g, (_, index) => {
+    return codeBlocks[Number.parseInt(index)];
+  });
+
+  return result.trim();
+}
+
+export function sanitiseMessages(messages: Message[]): Message[] {
+  return messages.map((msg) => {
+    if (msg.role === "user" || msg.role === "developer") {
+      if (typeof msg.content === "string") {
+        return { ...msg, content: sanitiseInput(msg.content) };
+      }
+      if (Array.isArray(msg.content)) {
+        const sanitisedContent = msg.content.map((part) =>
+          part.type === "text" && part.text
+            ? { ...part, text: sanitiseInput(part.text) }
+            : part,
+        );
+        return { ...msg, content: sanitisedContent };
+      }
+    }
+    return msg;
+  });
+}

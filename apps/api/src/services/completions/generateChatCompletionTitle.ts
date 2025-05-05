@@ -1,10 +1,10 @@
-import { gatewayId } from "~/constants/app";
+import { sanitiseMessages } from "~/lib/chat/utils";
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
 import { getAuxiliaryModel } from "~/lib/models";
+import { AIProviderFactory } from "~/providers/factory";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { AIProviderFactory } from "../../providers/factory";
 
 export const handleGenerateChatCompletionTitle = async (
   req: IRequest,
@@ -54,8 +54,11 @@ export const handleGenerateChatCompletionTitle = async (
 
   let messagesToUse: Message[] = [];
 
-  if (messages && messages.length > 0) {
-    messagesToUse = messages.slice(0, Math.min(3, messages.length));
+  const rawMessages = messages;
+
+  if (rawMessages && rawMessages.length > 0) {
+    const sanitisedMessages = sanitiseMessages(rawMessages);
+    messagesToUse = sanitisedMessages.slice(0, Math.min(3, rawMessages.length));
   } else {
     const conversationMessages = await conversationManager.get(completion_id);
 

@@ -1,3 +1,4 @@
+import { sanitiseInput } from "~/lib/chat/utils";
 import type { ConversationManager } from "~/lib/conversationManager";
 import {
   webSearchAnswerSystemPrompt,
@@ -23,7 +24,9 @@ export async function performDeepWebSearch(
   body?: DeepWebSearchParams,
   conversationManager?: ConversationManager,
 ) {
-  const { query, options, completion_id } = body || {};
+  const { query: rawQuery, options, completion_id } = body || {};
+
+  const query = sanitiseInput(rawQuery);
 
   if (!query || !options) {
     throw new AssistantError(

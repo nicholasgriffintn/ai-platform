@@ -1,3 +1,4 @@
+import { sanitiseInput } from "~/lib/chat/utils";
 import { AIProviderFactory } from "~/providers/factory";
 import type { IEnv, IUser } from "~/types";
 
@@ -43,6 +44,8 @@ export async function generateVideo({
       };
     }
 
+    const sanitisedPrompt = sanitiseInput(args.prompt);
+
     const provider = AIProviderFactory.getProvider("replicate");
 
     const videoData = await provider.getResponse({
@@ -55,6 +58,8 @@ export async function generateVideo({
           // @ts-ignore
           content: {
             ...args,
+            // @ts-ignore
+            prompt: sanitisedPrompt,
           },
         },
       ],

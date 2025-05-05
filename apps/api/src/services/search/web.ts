@@ -1,3 +1,4 @@
+import { sanitiseInput } from "~/lib/chat/utils";
 import { Search } from "~/lib/search";
 import type { IEnv, IFunctionResponse, IUser, SearchOptions } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -13,7 +14,9 @@ type WebSearchRequest = {
 export const handleWebSearch = async (
   req: WebSearchRequest,
 ): Promise<IFunctionResponse> => {
-  const { query, env, provider = "tavily", options } = req;
+  const { query: rawQuery, env, provider = "tavily", options } = req;
+
+  const query = sanitiseInput(rawQuery);
 
   if (!query) {
     throw new AssistantError("Missing query", ErrorType.PARAMS_ERROR);

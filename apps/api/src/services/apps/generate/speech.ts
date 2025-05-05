@@ -1,3 +1,4 @@
+import { sanitiseInput } from "~/lib/chat/utils";
 import { AIProviderFactory } from "~/providers/factory";
 import type { IEnv, IUser } from "~/types";
 
@@ -38,6 +39,8 @@ export async function generateSpeech({
   try {
     const provider = AIProviderFactory.getProvider("workers-ai");
 
+    const sanitisedPrompt = sanitiseInput(args.prompt);
+
     const speechData = await provider.getResponse({
       completion_id,
       model: "@cf/myshell-ai/melotts",
@@ -49,7 +52,7 @@ export async function generateSpeech({
           content: [
             {
               type: "text",
-              text: args.prompt,
+              text: sanitisedPrompt,
             },
           ],
         },

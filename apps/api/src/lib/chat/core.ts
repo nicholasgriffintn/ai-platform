@@ -20,6 +20,8 @@ import {
   checkContextWindowLimits,
   getAllAttachments,
   pruneMessagesToFitContext,
+  sanitiseInput,
+  sanitiseMessages,
 } from "./utils";
 
 const logger = getLogger({ prefix: "CHAT_CORE" });
@@ -45,7 +47,7 @@ async function prepareRequestData(options: CoreChatOptions) {
     env,
     user,
     anonymousUser,
-    messages,
+    messages: rawMessages,
     model: requestedModel,
     mode = "normal",
     use_rag,
@@ -56,6 +58,8 @@ async function prepareRequestData(options: CoreChatOptions) {
     use_multi_model = false,
     isRestricted = false,
   } = options;
+
+  const sanitisedMessages = sanitiseMessages(rawMessages);
 
   if (!env.DB) {
     throw new AssistantError(
@@ -71,7 +75,7 @@ async function prepareRequestData(options: CoreChatOptions) {
     );
   }
 
-  const lastMessage = messages[messages.length - 1];
+  const lastMessage = sanitisedMessages[sanitisedMessages.length - 1];
   const lastMessageContent = Array.isArray(lastMessage.content)
     ? lastMessage.content
     : [{ type: "text" as const, text: lastMessage.content as string }];
@@ -133,7 +137,7 @@ async function prepareRequestData(options: CoreChatOptions) {
   });
 
   const currentMode = mode;
-  const finalUserMessage = lastMessageContentText;
+  const finalUserMessage = sanitiseInput(lastMessageContentText);
 
   const embedding = Embedding.getInstance(env, user, userSettings);
 
@@ -155,7 +159,7 @@ async function prepareRequestData(options: CoreChatOptions) {
       : finalMessage;
 
   const prunedWithAttachments = pruneMessagesToFitContext(
-    messages,
+    sanitisedMessages,
     messageWithContext,
     primaryModelConfig,
   );
@@ -217,7 +221,7 @@ async function prepareRequestData(options: CoreChatOptions) {
     if (system_prompt) {
       systemMessage = system_prompt;
     } else {
-      const systemPromptFromMessages = messages.find(
+      const systemPromptFromMessages = sanitisedMessages.find(
         (message) => message.role === "system",
       );
 
@@ -251,7 +255,7 @@ async function prepareRequestData(options: CoreChatOptions) {
   if (!isRestricted && memoriesEnabled) {
     const memoryManager = MemoryManager.getInstance(env, user);
     const recentMemories = await memoryManager.retrieveMemories(
-      lastMessageContentText,
+      finalUserMessage,
       { topK: 3, scoreThreshold: 0.5 },
     );
     if (recentMemories.length > 0) {
@@ -267,19 +271,9 @@ async function prepareRequestData(options: CoreChatOptions) {
 
   const chatMessages = prunedWithAttachments.map((msg, index) => {
     if (index === prunedWithAttachments.length - 1) {
-      let messageText = msg.content;
-
-      if (use_rag) {
-        messageText = finalMessage;
-      }
-
-      if (markdownAttachments.length > 0) {
-        messageText = messageWithContext;
-      }
-
       return {
         ...msg,
-        content: messageText,
+        content: messageWithContext,
       };
     }
     return msg;

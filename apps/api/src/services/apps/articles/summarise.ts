@@ -1,3 +1,4 @@
+import { sanitiseInput } from "~/lib/chat/utils";
 import { summariseArticlePrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/providers/factory";
 import { AppDataRepository } from "~/repositories/AppDataRepository";
@@ -44,6 +45,8 @@ export async function summariseArticle({
       ErrorType.PARAMS_ERROR,
     );
   }
+
+  const sanitisedArticle = sanitiseInput(args.article);
 
   try {
     const provider = AIProviderFactory.getProvider("perplexity-ai");

@@ -1,7 +1,8 @@
+import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/models";
+import { AIProviderFactory } from "~/providers/factory";
 import type { IFunction, IRequest } from "~/types";
 import { getLogger } from "~/utils/logger";
-import { AIProviderFactory } from "../../providers/factory";
 
 const logger = getLogger({ prefix: "REASONING_FUNCTION" });
 
@@ -40,12 +41,15 @@ export const add_reasoning_step: IFunction = {
     req: IRequest,
   ) => {
     try {
+      const sanitisedTitle = sanitiseInput(args.title);
+      const sanitisedContent = sanitiseInput(args.content);
+
       const reasoningPrompt = `
 You are evaluating a reasoning step in a multi-step task. Review the information and decide if the proposed next action is appropriate.
 
 # Current reasoning step
-Title: ${args.title}
-Content: ${args.content}
+Title: ${sanitisedTitle}
+Content: ${sanitisedContent}
 Proposed next action: ${args.nextStep === "finalAnswer" ? "Provide final answer to user" : "Continue with additional tool calls"}
 
 # Task

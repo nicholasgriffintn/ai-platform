@@ -1,5 +1,4 @@
-import { AwsClient } from "aws4fetch";
-
+import { sanitiseInput } from "~/lib/chat/utils";
 import { StorageService } from "~/lib/storage";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
@@ -34,6 +33,9 @@ export const handlePodcastUpload = async (
   const repositories = RepositoryManager.getInstance(env);
   const storageService = new StorageService(env.ASSETS_BUCKET);
 
+  const sanitisedTitle = sanitiseInput(request.title);
+  const sanitisedDescription = sanitiseInput(request.description);
+
   if (!request.audioUrl) {
     const podcastAudioKey = `podcasts/${podcastId}/recording.mp3`;
 
@@ -60,8 +62,8 @@ export const handlePodcastUpload = async (
     }
 
     const appData = {
-      title: request.title || "Untitled Podcast",
-      description: request.description,
+      title: sanitisedTitle || "Untitled Podcast",
+      description: sanitisedDescription,
       audioUrl,
       audioKey: podcastAudioKey,
       status: "ready",
@@ -85,8 +87,8 @@ export const handlePodcastUpload = async (
   }
 
   const appData = {
-    title: request.title || "Untitled Podcast",
-    description: request.description,
+    title: sanitisedTitle || "Untitled Podcast",
+    description: sanitisedDescription,
     audioUrl: request.audioUrl,
     status: "ready",
     createdAt: new Date().toISOString(),

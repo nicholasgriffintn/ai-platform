@@ -1,3 +1,4 @@
+import { sanitiseInput } from "~/lib/chat/utils";
 import {
   getTextToImageSystemPrompt,
   type imagePrompts,
@@ -43,6 +44,8 @@ export async function generateImage({
   try {
     const provider = AIProviderFactory.getProvider("workers-ai");
 
+    const sanitisedPrompt = sanitiseInput(args.prompt);
+
     const systemPrompt = getTextToImageSystemPrompt(args.image_style);
     const diffusionSteps = args.steps || 4;
 
@@ -66,7 +69,7 @@ export async function generateImage({
           content: [
             {
               type: "text",
-              text: `${systemPrompt}\n\n${args.prompt}`,
+              text: `${systemPrompt}\n\n${sanitisedPrompt}`,
             },
           ],
         },

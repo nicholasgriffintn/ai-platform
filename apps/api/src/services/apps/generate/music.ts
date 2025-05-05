@@ -1,3 +1,4 @@
+import { sanitiseInput } from "~/lib/chat/utils";
 import { AIProviderFactory } from "~/providers/factory";
 import type { IEnv, IUser } from "~/types";
 
@@ -40,6 +41,8 @@ export async function generateMusic({
       };
     }
 
+    const sanitisedPrompt = sanitiseInput(args.prompt);
+
     const provider = AIProviderFactory.getProvider("replicate");
 
     const musicData = await provider.getResponse({
@@ -52,6 +55,8 @@ export async function generateMusic({
           // @ts-ignore
           content: {
             ...args,
+            // @ts-ignore
+            prompt: sanitisedPrompt,
           },
         },
       ],

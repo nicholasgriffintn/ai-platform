@@ -1,3 +1,4 @@
+import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/models";
 import { AIProviderFactory } from "~/providers/factory";
 import { RepositoryManager } from "~/repositories";
@@ -83,12 +84,22 @@ export async function createNote({
   }
   const repo = RepositoryManager.getInstance(env).appData;
   const noteId = generateId();
+
+  const sanitisedTitle = sanitiseInput(data.title);
+  const sanitisedContent = sanitiseInput(data.content);
+
+  const appData = {
+    title: sanitisedTitle,
+    content: sanitisedContent,
+    metadata: data.metadata,
+  };
+
   const entry = await repo.createAppDataWithItem(
     user.id,
     "notes",
     noteId,
     "note",
-    data,
+    appData,
   );
 
   const full = await repo.getAppDataById(entry.id);
@@ -231,9 +242,10 @@ ${note.content}`;
     ];
 
     if (prompt) {
+      const sanitisedPrompt = sanitiseInput(prompt);
       messages.push({
         role: "user" as ChatRole,
-        content: prompt,
+        content: sanitisedPrompt,
       });
     }
 

@@ -1,3 +1,4 @@
+import { sanitiseInput } from "~/lib/chat/utils";
 import { Database } from "~/lib/database";
 import { Embedding } from "~/lib/embedding";
 import type { IRequest, RagOptions } from "~/types";
@@ -28,13 +29,15 @@ export const insertEmbedding = async (
 
     const {
       type,
-      content,
+      content: requestContent,
       id,
       metadata,
       title: requestTitle,
       rag_options = {},
     } = request;
-    const title = requestTitle || "";
+
+    const content = sanitiseInput(requestContent);
+    const title = requestTitle ? sanitiseInput(requestTitle) : "";
 
     if (!type) {
       throw new AssistantError(

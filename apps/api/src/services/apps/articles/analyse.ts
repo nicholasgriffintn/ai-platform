@@ -1,3 +1,4 @@
+import { sanitiseInput } from "~/lib/chat/utils";
 import { analyseArticlePrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/providers/factory";
 import { AppDataRepository } from "~/repositories/AppDataRepository";
@@ -46,6 +47,8 @@ export async function analyseArticle({
   }
 
   try {
+    const sanitisedArticle = sanitiseInput(args.article);
+
     const provider = AIProviderFactory.getProvider("perplexity-ai");
     const analysisData = await provider.getResponse({
       completion_id,
@@ -54,7 +57,7 @@ export async function analyseArticle({
       messages: [
         {
           role: "user",
-          content: analyseArticlePrompt(args.article),
+          content: analyseArticlePrompt(sanitisedArticle),
         },
       ],
       env: env,
@@ -62,7 +65,7 @@ export async function analyseArticle({
     });
 
     const quotes = extractQuotes(analysisData.content);
-    const verifiedQuotes = verifyQuotes(args.article, quotes);
+    const verifiedQuotes = verifyQuotes(sanitisedArticle, quotes);
 
     const analysisResult = {
       content: analysisData.content,

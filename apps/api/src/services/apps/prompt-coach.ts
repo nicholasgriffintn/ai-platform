@@ -1,4 +1,5 @@
 import { getAIResponse } from "~/lib/chat/responses";
+import { sanitiseInput } from "~/lib/chat/utils";
 import { returnCoachingPrompt } from "~/lib/prompts/coaching";
 import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -39,8 +40,10 @@ export const handlePromptCoachSuggestion = async (req: {
   } = req;
 
   try {
+    const sanitisedPrompt = sanitiseInput(userPrompt);
+
     const coachingSystemPrompt = returnCoachingPrompt({
-      prompt: userPrompt,
+      prompt: sanitisedPrompt,
       promptType,
     });
 

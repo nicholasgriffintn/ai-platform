@@ -1,3 +1,4 @@
+import { sanitiseInput } from "~/lib/chat/utils";
 import { insertEmbedding } from "~/services/apps/embeddings/insert";
 import type { IFunction, IRequest } from "~/types";
 
@@ -30,7 +31,10 @@ export const create_note: IFunction = {
     req: IRequest,
     app_url?: string,
   ) => {
-    if (!args.title || !args.content) {
+    const sanitisedTitle = sanitiseInput(args.title);
+    const sanitisedContent = sanitiseInput(args.content);
+
+    if (!sanitisedTitle || !sanitisedContent) {
       return {
         status: "error",
         name: "create_note",

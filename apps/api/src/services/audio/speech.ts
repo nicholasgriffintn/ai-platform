@@ -6,6 +6,7 @@ import { StorageService } from "~/lib/storage";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { sanitiseInput } from "../../lib/chat/utils";
 
 type TextToSpeechRequest = {
   env: IEnv;
@@ -18,7 +19,9 @@ type TextToSpeechRequest = {
 export const handleTextToSpeech = async (
   req: TextToSpeechRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-  const { input, env, user, provider = "polly", lang = "en" } = req;
+  const { input: rawInput, env, user, provider = "polly", lang = "en" } = req;
+
+  const input = sanitiseInput(rawInput);
 
   if (!input) {
     throw new AssistantError("Missing input", ErrorType.PARAMS_ERROR);

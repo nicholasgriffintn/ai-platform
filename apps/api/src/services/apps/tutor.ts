@@ -1,3 +1,4 @@
+import { sanitiseInput } from "~/lib/chat/utils";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { tutorSystemPrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/providers/factory";
@@ -23,12 +24,13 @@ export async function completeTutorRequest(
   conversationManager?: ConversationManager,
 ) {
   const {
-    topic,
+    topic: rawTopic,
     level = "advanced",
     options,
     completion_id,
-    store = false,
   } = body || {};
+
+  const topic = sanitiseInput(rawTopic);
 
   if (!topic || !options) {
     throw new AssistantError(
