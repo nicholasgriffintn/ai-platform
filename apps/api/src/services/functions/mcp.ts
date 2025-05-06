@@ -69,31 +69,83 @@ export const handleMCPTool = async (
     const toolName = parts.slice(2).join("_");
 
     if (!toolsResponse[toolName]) {
+      const matchingTools = Object.keys(toolsResponse).filter(
+        (t) => toolName.includes(t) || t.includes(toolName),
+      );
+
+      if (matchingTools.length === 1) {
+        const actualToolName = matchingTools[0];
+        return await executeTool(
+          client,
+          actualToolName,
+          args,
+          toolName,
+          completion_id,
+          conversationManager,
+        );
+      }
+
       throw new AssistantError(
         `Tool "${toolName}" not found. Available tools: ${Object.keys(toolsResponse).join(", ")}`,
         ErrorType.PARAMS_ERROR,
       );
     }
 
-    const availableConnections = Object.keys(client.mcpConnections);
-    const connectionId = availableConnections.find((id) =>
-      toolName.startsWith(id),
+    return await executeTool(
+      client,
+      toolName,
+      args,
+      toolName,
+      completion_id,
+      conversationManager,
     );
+  } catch (error) {
+    logger.error("Error in MCP tool execution:", error);
+    throw new AssistantError(
+      `MCP tool execution failed: ${(error as Error).message}`,
+      ErrorType.EXTERNAL_API_ERROR,
+    );
+  }
+};
 
-    if (!connectionId) {
-      throw new AssistantError(
-        `Could not determine connection ID from tool name: ${toolName}`,
-        ErrorType.PARAMS_ERROR,
-      );
-    }
+async function executeTool(
+  client: MCPClientManager,
+  toolName: string,
+  args: unknown,
+  originalToolName: string,
+  completion_id: string,
+  conversationManager?: ConversationManager,
+): Promise<IFunctionResponse> {
+  const availableConnections = Object.keys(client.mcpConnections);
 
-    const argsObj =
-      typeof args === "object" && args !== null
-        ? (args as Record<string, unknown>)
-        : {};
+  let connectionId: string | undefined;
 
-    const baseFunctionName = toolName.substring(toolName.indexOf("_") + 1);
+  connectionId = availableConnections.find((id) => toolName.startsWith(id));
 
+  if (!connectionId && availableConnections.length > 0) {
+    connectionId = availableConnections[0];
+    logger.info(
+      `No direct connection match found, using first available connection: ${connectionId}`,
+    );
+  }
+
+  if (!connectionId) {
+    throw new AssistantError(
+      `Could not determine connection ID for tool: ${toolName}`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+
+  const argsObj =
+    typeof args === "object" && args !== null
+      ? (args as Record<string, unknown>)
+      : {};
+
+  const baseFunctionName = toolName.includes("_")
+    ? toolName.substring(toolName.indexOf("_") + 1)
+    : toolName;
+
+  try {
     const fallbackResult = await client.callTool(
       {
         name: baseFunctionName,
@@ -108,11 +160,11 @@ export const handleMCPTool = async (
       await conversationManager.add(completion_id, {
         role: "tool",
         content: "Request completed",
-        name: toolName,
+        name: originalToolName,
         status: "success",
         data: {
           answer: fallbackResult.content,
-          name: toolName,
+          name: originalToolName,
           formattedName: "MCP",
           responseType: "custom",
         },
@@ -123,20 +175,17 @@ export const handleMCPTool = async (
 
     return {
       status: "success",
-      name: toolName,
+      name: originalToolName,
       content: "Request completed",
       data: {
         answer: fallbackResult.content,
-        name: toolName,
+        name: originalToolName,
         formattedName: "MCP",
         responseType: "custom",
       },
     };
   } catch (error) {
-    logger.error("Error in MCP tool execution:", error);
-    throw new AssistantError(
-      `MCP tool execution failed: ${(error as Error).message}`,
-      ErrorType.EXTERNAL_API_ERROR,
-    );
+    logger.error(`Error calling tool ${baseFunctionName}:`, error);
+    throw error;
   }
-};
+}
