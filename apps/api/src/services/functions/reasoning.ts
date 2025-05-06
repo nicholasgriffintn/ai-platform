@@ -122,8 +122,9 @@ ${evaluation ? `**Evaluation**: ${evaluation}\n\n` : ""}**Next action**: ${
         name: "add_reasoning_step",
         content: formattedContent,
         data: {
-          title: args.title,
-          content: enhancedContent,
+          title: sanitisedTitle,
+          content: sanitisedContent,
+          enhancedContent: enhancedContent,
           nextStep: validatedNextStep,
           evaluation,
           confidence,

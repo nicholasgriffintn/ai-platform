@@ -6,6 +6,7 @@ export const AddReasoningStepView = ({
 }: {
   data: {
     title: string;
+    enhancedContent: string;
     content: string;
     nextStep: "continue" | "finalAnswer";
     reasoning_enhanced: boolean;
@@ -14,13 +15,18 @@ export const AddReasoningStepView = ({
   };
   embedded: boolean;
 }) => {
+  console.log("data", data);
   const combinedContent = `## ${data.title}${data.reasoning_enhanced ? " ✓" : ""}
 
 **Confidence**: ${data.confidence || "unknown"}
 
-${data.evaluation ? `*${data.evaluation}*` : ""}
-
 ${data.content}
+
+${data.enhancedContent ? `**Enhanced Content:** ${data.enhancedContent}` : ""}
+
+${data.evaluation ? `**Evaluation:** ${data.evaluation}` : ""}
+
+${data.nextStep ? `**Next Step:** ${data.nextStep}` : ""}
 `;
   return (
     <div className="max-w-full overflow-x-hidden">
