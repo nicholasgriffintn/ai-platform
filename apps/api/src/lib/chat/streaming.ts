@@ -154,6 +154,15 @@ export async function createStreamWithPostProcessing(
           chunkSize: chunk.byteLength,
           bufferBefore: buffer.length,
         });
+
+        if (buffer.length > 100000) {
+          logger.warn("Buffer size exceeded limit, truncating", {
+            completion_id,
+            bufferSize: buffer.length,
+          });
+          buffer = buffer.substring(buffer.length - 50000);
+        }
+
         buffer += text;
 
         const lines = buffer.split("\n");
@@ -382,6 +391,10 @@ export async function createStreamWithPostProcessing(
                 if (
                   currentEventType === "content_block_stop" &&
                   data.index !== undefined &&
+                  Object.prototype.hasOwnProperty.call(
+                    currentToolCalls,
+                    data.index,
+                  ) &&
                   currentToolCalls[data.index] &&
                   !currentToolCalls[data.index].isComplete &&
                   !isRestricted
@@ -393,9 +406,29 @@ export async function createStreamWithPostProcessing(
                   try {
                     if (toolState.accumulatedInput) {
                       parsedInput = JSON.parse(toolState.accumulatedInput);
+
+                      if (
+                        parsedInput === null ||
+                        typeof parsedInput !== "object" ||
+                        Array.isArray(parsedInput)
+                      ) {
+                        logger.warn("Tool input parsed to non-object value", {
+                          toolId: toolState.id,
+                          toolName: toolState.name,
+                          parsed: typeof parsedInput,
+                        });
+                        parsedInput = {};
+                      }
                     }
                   } catch (e) {
-                    logger.error("Failed to parse tool input:", e);
+                    logger.error("Failed to parse tool input:", {
+                      error: e,
+                      toolId: toolState.id,
+                      toolName: toolState.name,
+                      input:
+                        toolState.accumulatedInput?.substring(0, 100) +
+                        (toolState.accumulatedInput?.length > 100 ? "..." : ""),
+                    });
                   }
 
                   const toolCall = {
@@ -439,6 +472,13 @@ export async function createStreamWithPostProcessing(
 
         async function handlePostProcessing() {
           try {
+            if (postProcessingDone) {
+              logger.debug("Post-processing already done, skipping", {
+                completion_id,
+              });
+              return;
+            }
+
             emitEvent(controller, "state", { state: "post_processing" });
             postProcessingDone = true;
 
@@ -480,7 +520,12 @@ export async function createStreamWithPostProcessing(
                     });
                   }
                 }
-              } catch {}
+              } catch (error) {
+                logger.error("Failed to process memory for chat:", {
+                  error,
+                  completion_id,
+                });
+              }
             }
 
             const guardrailsFailed = false;
