@@ -1,5 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import type { ConversationManager } from "~/lib/conversationManager";
+import { getAuxiliaryModel } from "~/lib/models";
 import {
   webSearchAnswerSystemPrompt,
   webSearchSimilarQuestionsSystemPrompt,
@@ -35,7 +36,9 @@ export async function performDeepWebSearch(
     );
   }
 
-  const provider = AIProviderFactory.getProvider("workers-ai");
+  const { model: modelToUse, provider: providerToUse } =
+    await getAuxiliaryModel(env, user);
+  const provider = AIProviderFactory.getProvider(providerToUse);
 
   const [webSearchResults, similarQuestionsResponse] = await Promise.all([
     // TODO: Maybe we need to scrape to get the full content or force include raw content?
@@ -57,7 +60,7 @@ export async function performDeepWebSearch(
         env: env,
         user: user,
         completion_id,
-        model: "@hf/nousresearch/hermes-2-pro-mistral-7b",
+        model: modelToUse,
         messages: [
           {
             role: "system",
@@ -118,7 +121,7 @@ export async function performDeepWebSearch(
       content: systemPrompt,
       timestamp: Date.now(),
       platform: "api",
-      model: "@cf/google/gemma-3-12b-it",
+      model: modelToUse,
     });
 
     await conversationManager.add(new_completion_id, {
@@ -126,7 +129,7 @@ export async function performDeepWebSearch(
       content: query,
       timestamp: Date.now(),
       platform: "api",
-      model: "@cf/google/gemma-3-12b-it",
+      model: modelToUse,
     });
   }
 
@@ -134,7 +137,7 @@ export async function performDeepWebSearch(
     env: env,
     user: user,
     completion_id,
-    model: "@cf/google/gemma-3-12b-it",
+    model: modelToUse,
     messages: [
       {
         role: "system",
@@ -162,7 +165,7 @@ export async function performDeepWebSearch(
       name: "web_search",
       timestamp: Date.now(),
       platform: "api",
-      model: "@cf/google/gemma-3-12b-it",
+      model: modelToUse,
     });
 
     await conversationManager.updateConversation(new_completion_id, {
