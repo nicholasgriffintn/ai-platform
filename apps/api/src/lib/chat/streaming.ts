@@ -528,9 +528,9 @@ export async function createStreamWithPostProcessing(
               }
             }
 
-            const guardrailsFailed = false;
-            const guardrailError = "";
-            const violations: any[] = [];
+            let guardrailsFailed = false;
+            let guardrailError = "";
+            let guardrailViolations: any[] = [];
 
             if (fullContent) {
               const outputValidation = await guardrails.validateOutput(
@@ -540,9 +540,15 @@ export async function createStreamWithPostProcessing(
               );
 
               if (!outputValidation.isValid) {
+                guardrailsFailed = true;
+                guardrailError =
+                  outputValidation.rawResponse ||
+                  "Content failed validation checks";
+                guardrailViolations = outputValidation.violations || [];
+
                 logger.warn("Guardrails failed", {
                   outputValidation,
-                  violations: outputValidation.violations || [],
+                  violations: guardrailViolations,
                 });
               } else {
                 logger.debug("Guardrails passed", { completion_id });
@@ -563,7 +569,7 @@ export async function createStreamWithPostProcessing(
               guardrails: {
                 passed: !guardrailsFailed,
                 error: guardrailError,
-                violations,
+                violations: guardrailViolations,
               },
               log_id: logId,
               model,
@@ -947,6 +953,21 @@ export function createMultiModelStream(
         }
       } catch (error) {
         logger.error("Error processing secondary streams:", error);
+
+        const errorMessage =
+          "\n\n***\n### Error processing additional model responses\n\nThere was an error processing responses from secondary models. Only the primary model response is available.\n\n";
+
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({
+              type: "content_block_delta",
+              content: errorMessage,
+              isError: true,
+            })}\n\n`,
+          ),
+        );
+
+        secondaryContent += errorMessage;
       }
 
       try {
