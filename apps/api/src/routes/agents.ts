@@ -448,7 +448,11 @@ app.post(
             const shortAgentId = agent.id.substring(0, 8);
             const toolName = `mcp_${shortAgentId}_${name}`;
 
-            if (!def.parameters || !def.parameters.properties) {
+            if (
+              !def.parameters ||
+              (!def.parameters.properties &&
+                !def.parameters.jsonSchema.properties)
+            ) {
               continue;
             }
 
