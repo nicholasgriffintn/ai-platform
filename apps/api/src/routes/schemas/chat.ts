@@ -140,6 +140,9 @@ export const createChatCompletionsJsonSchema = z.object({
         tool_call_id: z.string().optional().openapi({
           description: "Tool call that this message is responding to.",
         }),
+        tool_call_arguments: z.any().optional().openapi({
+          description: "The arguments for the tool call.",
+        }),
         tool_calls: z
           .array(
             z.object({

@@ -33,6 +33,10 @@ export type MessageContent = {
   signature?: string;
   image?: number[] | string;
   tool_use_id?: string;
+  id?: string;
+  name?: string;
+  content?: string;
+  input?: string | Record<string, string | number | boolean>;
 };
 
 export type Attachment = {
@@ -60,6 +64,7 @@ export interface Message {
   mode?: ChatMode;
   id?: string;
   tool_call_id?: string;
+  tool_call_arguments?: string | Record<string, any>;
   timestamp?: number;
   platform?: Platform;
   usage?: Record<string, any>;

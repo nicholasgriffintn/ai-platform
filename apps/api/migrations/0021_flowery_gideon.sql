@@ -1,0 +1,1 @@
+ALTER TABLE `message` ADD `tool_call_arguments` text;

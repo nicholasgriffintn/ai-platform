@@ -39,12 +39,13 @@ export class MessageRepository extends BaseRepository {
          data,
          usage,
          tool_call_id,
+         tool_call_arguments,
          app,
          parts,
          created_at, 
          updated_at
        )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
        RETURNING *`,
       [
         messageId,
@@ -64,6 +65,7 @@ export class MessageRepository extends BaseRepository {
         data,
         usage,
         messageData.tool_call_id || null,
+        messageData.tool_call_arguments || null,
         messageData.app || null,
         messageData.parts || null,
       ],
@@ -134,6 +136,7 @@ export class MessageRepository extends BaseRepository {
       "data",
       "parent_message_id",
       "tool_call_id",
+      "tool_call_arguments",
       "app",
       "mode",
       "platform",

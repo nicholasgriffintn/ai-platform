@@ -172,6 +172,9 @@ export const message = sqliteTable(
       mode: "json",
     }),
     tool_call_id: text(),
+    tool_call_arguments: text({
+      mode: "json",
+    }),
     app: text(),
     created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
     updated_at: text()

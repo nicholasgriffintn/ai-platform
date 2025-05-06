@@ -1,4 +1,4 @@
-import type { Message, MessageContent } from "~/types";
+import type { ContentType, Message, MessageContent } from "~/types";
 
 interface MessageFormatOptions {
   maxTokens?: number;
@@ -63,85 +63,111 @@ export class MessageFormatter {
     messages: Message[],
     provider: string,
   ): Message[] {
-    return messages.map((message) => {
+    const formattedMessages: Message[] = [];
+    for (const message of messages) {
       const content = MessageFormatter.formatContent(message.content, provider);
 
       if (message.role === "tool") {
-        let stringifiedData;
+        let stringifiedData = "";
         if (message.data) {
           try {
             stringifiedData = JSON.stringify(message.data);
-          } catch (error) {
-            stringifiedData = "";
-          }
+          } catch {}
         }
-
-        const toolResultContent = `[Tool Response: ${message.name || "unknown"}] ${typeof content === "string" ? content : JSON.stringify(content)} ${stringifiedData ? `\n\nData: ${stringifiedData}` : ""}`;
+        const toolResultContent = `[Tool Response: ${
+          message.name || "unknown"
+        }] ${typeof content === "string" ? content : JSON.stringify(content)} ${
+          stringifiedData ? `\n\nData: ${stringifiedData}` : ""
+        }`;
 
         if (provider === "anthropic") {
-          return {
+          let toolCallArguments = message.tool_call_arguments;
+          if (typeof toolCallArguments === "string") {
+            try {
+              toolCallArguments = JSON.parse(toolCallArguments);
+            } catch {}
+          }
+
+          formattedMessages.push({
+            role: "assistant",
+            content: [
+              {
+                type: "tool_use" as ContentType,
+                id: message.tool_call_id,
+                name: message.name || "",
+                input: toolCallArguments,
+              },
+            ],
+          });
+
+          formattedMessages.push({
             role: "user",
             content: [
               {
-                type: "tool_result",
+                type: "tool_result" as ContentType,
                 tool_use_id: message.tool_call_id,
                 content: toolResultContent,
               },
             ],
-          };
+          });
+          continue;
         }
 
-        return {
+        formattedMessages.push({
           role: "tool",
           tool_call_id: message.tool_call_id,
           content: toolResultContent,
-        };
+        });
+        continue;
       }
 
       switch (provider) {
         case "google-ai-studio":
-          return {
+          formattedMessages.push({
             role: message.role,
             parts: Array.isArray(content) ? content : [{ text: content }],
             content: "",
             tool_calls: message.tool_calls,
-          };
+          } as Message);
+          break;
         case "anthropic":
           if (
             Array.isArray(content) &&
             content.length === 1 &&
             typeof content[0] === "string"
           ) {
-            return {
+            formattedMessages.push({
               role: message.role,
               content: content[0],
-            };
+            } as Message);
+          } else {
+            formattedMessages.push({
+              role: message.role,
+              content: content,
+            } as Message);
           }
-
-          return {
-            role: message.role,
-            content: content,
-          };
+          break;
         default:
           if (
             Array.isArray(content) &&
             content.length === 1 &&
             typeof content[0] === "string"
           ) {
-            return {
+            formattedMessages.push({
               role: message.role,
               content: content[0],
               tool_calls: message.tool_calls,
-            };
+            } as Message);
+          } else {
+            formattedMessages.push({
+              role: message.role,
+              content,
+              tool_calls: message.tool_calls,
+            } as Message);
           }
-
-          return {
-            role: message.role,
-            content,
-            tool_calls: message.tool_calls,
-          };
       }
-    });
+    }
+    return formattedMessages;
   }
 
   private static formatContent(
