@@ -118,7 +118,8 @@ export class ConversationManager {
    * @returns The message that was added to the conversation
    */
   async add(conversation_id: string, message: Message): Promise<Message> {
-    return this.addBatch(conversation_id, [message])[0];
+    const messages = await this.addBatch(conversation_id, [message]);
+    return messages[0];
   }
 
   /**
