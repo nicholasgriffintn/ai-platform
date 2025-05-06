@@ -695,26 +695,43 @@ export async function createStreamWithPostProcessing(
               current_step < max_steps
             ) {
               const history = await conversationManager.get(completion_id);
+              const lastToolResponses = history
+                .filter((msg) => msg.role === "tool")
+                .slice(-toolCallsData.length);
 
-              try {
-                const nextStream = await getAIResponse({
-                  ...options,
-                  messages: history,
-                });
-                const nextTransformed = await createStreamWithPostProcessing(
-                  nextStream,
-                  { ...options, current_step: current_step + 1 },
-                  conversationManager,
-                );
+              const hasToolErrors = lastToolResponses.some(
+                (message) => message.status === "error",
+              );
 
-                const reader = nextTransformed.getReader();
-                while (true) {
-                  const { done, value } = await reader.read();
-                  if (done) break;
-                  controller.enqueue(value);
+              if (!hasToolErrors) {
+                try {
+                  const nextStream = await getAIResponse({
+                    ...options,
+                    messages: history,
+                  });
+                  const nextTransformed = await createStreamWithPostProcessing(
+                    nextStream,
+                    { ...options, current_step: current_step + 1 },
+                    conversationManager,
+                  );
+
+                  const reader = nextTransformed.getReader();
+                  while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    controller.enqueue(value);
+                  }
+                } catch (error) {
+                  logger.error("Error in next stream:", error);
                 }
-              } catch (error) {
-                logger.error("Error in next stream:", error);
+              } else {
+                logger.info(
+                  "Tool errors detected, stopping multi-step execution",
+                  {
+                    completion_id,
+                    current_step,
+                  },
+                );
               }
             }
 
@@ -770,18 +787,22 @@ export function createMultiModelStream(
     models.length > 1
       ? models.slice(1).map(async (modelConfig: ModelConfigInfo) => {
           logger.info("Secondary model request", { model: modelConfig.model });
+
           const secondaryParams = {
             ...baseParams,
             model: modelConfig.model,
             stream: false,
           };
+
           try {
             const response = await getAIResponse(secondaryParams);
+
             if (!(response instanceof ReadableStream)) {
               const encoder = new TextEncoder();
               const responseText = response.response || "";
               const modelName = modelConfig.displayName;
               const modelResponse = `${responseText}`;
+
               return new ReadableStream({
                 start(controller) {
                   controller.enqueue(
@@ -798,12 +819,14 @@ export function createMultiModelStream(
                 },
               });
             }
+
             return response;
           } catch (error) {
             logger.error(
               `Error getting response from secondary model ${modelConfig.model}`,
               { error },
             );
+
             return new ReadableStream({
               start(controller) {
                 controller.close();
