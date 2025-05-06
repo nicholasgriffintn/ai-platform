@@ -189,9 +189,9 @@ export class MemoryManager {
             summary: string;
           }>(classifier.response);
 
-          if (parsed?.storeMemory) {
-            const summaryText = parsed.summary || lastUser;
-            const category = parsed.category || "general";
+          if (parsed.data?.storeMemory) {
+            const summaryText = parsed.data.summary || lastUser;
+            const category = parsed.data.category || "general";
 
             logger.debug("Storing classified memory", {
               summaryText,
@@ -234,13 +234,13 @@ export class MemoryManager {
                   >(response);
 
                   if (parsedResponse) {
-                    if (Array.isArray(parsedResponse)) {
-                      normalized = parsedResponse;
+                    if (Array.isArray(parsedResponse.data)) {
+                      normalized = parsedResponse.data;
                     } else if (
-                      parsedResponse.text &&
-                      Array.isArray(parsedResponse.text)
+                      parsedResponse.data?.text &&
+                      Array.isArray(parsedResponse.data.text)
                     ) {
-                      normalized = parsedResponse.text;
+                      normalized = parsedResponse.data.text;
                     }
                   }
 

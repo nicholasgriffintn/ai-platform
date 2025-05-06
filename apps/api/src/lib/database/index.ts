@@ -4,6 +4,7 @@ import type { D1Result } from "@cloudflare/workers-types";
 import { RepositoryManager } from "~/repositories";
 import type { ApiKeyMetadata } from "~/repositories/ApiKeyRepository";
 import type { AnonymousUser, IEnv, IUserSettings, User } from "~/types";
+import { logError } from "~/utils/errorLogger";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
@@ -66,8 +67,17 @@ export class Database {
       const result = await this.repositories.users.getUserById(userId);
       return result as unknown as User | null;
     } catch (error) {
-      logger.error(`Error getting user by ID: ${error}`);
-      return null;
+      logError("Failed to get user by ID", error, {
+        userId,
+        operation: "getUserById",
+      });
+
+      throw new AssistantError(
+        "Unable to retrieve user data",
+        ErrorType.INTERNAL_ERROR,
+        500,
+        { userId },
+      );
     }
   }
 
@@ -76,8 +86,17 @@ export class Database {
       const result = await this.repositories.users.getUserByEmail(email);
       return result as unknown as User | null;
     } catch (error) {
-      logger.error(`Error getting user by email: ${error}`);
-      return null;
+      logError("Failed to get user by email", error, {
+        email,
+        operation: "getUserByEmail",
+      });
+
+      throw new AssistantError(
+        "Unable to retrieve user data",
+        ErrorType.INTERNAL_ERROR,
+        500,
+        { email },
+      );
     }
   }
 
@@ -139,19 +158,47 @@ export class Database {
       const user = await this.repositories.users.createUser(userData);
 
       if (user && "id" in user) {
-        await this.repositories.userSettings.createUserSettings(
-          user.id as number,
-        );
+        try {
+          await this.repositories.userSettings.createUserSettings(
+            user.id as number,
+          );
+        } catch (settingsError) {
+          logError(
+            "Failed to create user settings during user creation",
+            settingsError,
+            {
+              operation: "createUserSettings",
+            },
+          );
+        }
 
-        await this.repositories.userSettings.createUserProviderSettings(
-          user.id as number,
-        );
+        try {
+          await this.repositories.userSettings.createUserProviderSettings(
+            user.id as number,
+          );
+        } catch (providerSettingsError) {
+          logError(
+            "Failed to create user provider settings during user creation",
+            providerSettingsError,
+            {
+              operation: "createUserProviderSettings",
+            },
+          );
+        }
       }
 
       return user;
     } catch (error) {
-      logger.error(`Error creating user: ${error}`);
-      return null;
+      logError("Failed to create user", error, {
+        operation: "createUser",
+        userData: { ...userData, password: "REDACTED" },
+      });
+
+      throw new AssistantError(
+        "Unable to create user account",
+        ErrorType.INTERNAL_ERROR,
+        500,
+      );
     }
   }
 
@@ -168,7 +215,18 @@ export class Database {
         expiresAt,
       );
     } catch (error) {
-      logger.error(`Error creating session: ${error}`);
+      logError("Failed to create session", error, {
+        userId,
+        sessionId,
+        operation: "createSession",
+      });
+
+      throw new AssistantError(
+        "Unable to create user session",
+        ErrorType.INTERNAL_ERROR,
+        500,
+        { userId },
+      );
     }
   }
 
@@ -219,7 +277,10 @@ export class Database {
 
       return this.repositories.userSettings.getUserSettings(userId);
     } catch (error) {
-      logger.error(`Error getting user settings: ${error}`);
+      logError("Failed to get user settings", error, {
+        operation: "getUserSettings",
+      });
+
       return null;
     }
   }

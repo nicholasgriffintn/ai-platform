@@ -249,8 +249,10 @@ export async function getAIResponse({
   try {
     response = await withRetry(
       () => provider.getResponse(parameters, user?.id),
-      3,
-      1000,
+      {
+        retryCount: 3,
+        baseDelayMs: 1000,
+      },
     );
   } catch (err: any) {
     let errorType = ErrorType.PROVIDER_ERROR;

@@ -1,3 +1,9 @@
+export interface ParseResult<T> {
+  data: T | null;
+  error: string | null;
+  partialData?: Record<string, unknown> | null;
+}
+
 /**
  * Safely parses JSON from AI/LLM responses, handling edge cases like markdown formatting
  * @param response Raw response text from an AI/LLM model
@@ -5,8 +11,10 @@
  */
 export function parseAIResponseJson<T = any>(
   response: string | null | undefined,
-): T | null {
-  if (!response) return null;
+): ParseResult<T> {
+  if (!response) {
+    return { data: null, error: "Empty response" };
+  }
 
   let cleanedResponse = response.trim();
 
@@ -43,8 +51,30 @@ export function parseAIResponseJson<T = any>(
   }
 
   try {
-    return JSON.parse(cleanedResponse) as T;
+    return {
+      data: JSON.parse(cleanedResponse) as T,
+      error: null,
+    };
   } catch (e) {
-    return null;
+    let partialData = null;
+    try {
+      const fixedJson = cleanedResponse
+        .replace(/,\s*}/g, "}") // Remove trailing commas
+        .replace(/,\s*\]/g, "]") // Remove trailing commas in arrays
+        .replace(/'/g, '"'); // Replace single quotes with double quotes
+
+      partialData = JSON.parse(fixedJson);
+    } catch {
+      partialData = {
+        preview: cleanedResponse.substring(0, 100),
+        length: cleanedResponse.length,
+      };
+    }
+
+    return {
+      data: null,
+      error: e instanceof Error ? e.message : String(e),
+      partialData,
+    };
   }
 }
