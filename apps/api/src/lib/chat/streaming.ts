@@ -143,12 +143,12 @@ export async function createStreamWithPostProcessing(
               usage_limits: usageLimits,
             });
           }
+          emitEvent(controller, "state", { state: "thinking" });
         } catch (error) {
           logger.error("Failed in stream start:", error);
         }
       },
       async transform(chunk, controller) {
-        emitEvent(controller, "state", { state: "thinking" });
         const text = new TextDecoder().decode(chunk);
         logger.trace("Incoming chunk", {
           chunkSize: chunk.byteLength,
@@ -459,6 +459,7 @@ export async function createStreamWithPostProcessing(
                       ? (lastUserRaw.find((b: any) => b.type === "text") as any)
                           ?.text || ""
                       : "";
+
                 if (lastUserText.trim()) {
                   const memMgr = MemoryManager.getInstance(env, user);
                   const memEvents = await memMgr.handleMemory(
@@ -622,15 +623,29 @@ export async function createStreamWithPostProcessing(
               }
 
               emitEvent(controller, "tool_response_end", {});
+            }
 
-              if (
-                !isRestricted &&
-                toolCallsData.length > 0 &&
-                max_steps &&
-                current_step < max_steps
-              ) {
-                const history = await conversationManager.get(completion_id);
+            try {
+              const updatedUsageLimits =
+                await conversationManager.getUsageLimits();
+              if (updatedUsageLimits) {
+                emitEvent(controller, "usage_limits", {
+                  usage_limits: updatedUsageLimits,
+                });
+              }
+            } catch (error) {
+              logger.error("Failed to get updated usage limits:", error);
+            }
 
+            if (
+              !isRestricted &&
+              toolCallsData.length > 0 &&
+              max_steps &&
+              current_step < max_steps
+            ) {
+              const history = await conversationManager.get(completion_id);
+
+              try {
                 const nextStream = await getAIResponse({
                   ...options,
                   messages: history,
@@ -647,20 +662,9 @@ export async function createStreamWithPostProcessing(
                   if (done) break;
                   controller.enqueue(value);
                 }
-                return;
+              } catch (error) {
+                logger.error("Error in next stream:", error);
               }
-            }
-
-            try {
-              const updatedUsageLimits =
-                await conversationManager.getUsageLimits();
-              if (updatedUsageLimits) {
-                emitEvent(controller, "usage_limits", {
-                  usage_limits: updatedUsageLimits,
-                });
-              }
-            } catch (error) {
-              logger.error("Failed to get updated usage limits:", error);
             }
 
             emitEvent(controller, "state", { state: "done" });
