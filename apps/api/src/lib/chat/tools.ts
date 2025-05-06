@@ -40,6 +40,8 @@ export const handleToolCalls = async (
 
   for (const toolCall of toolCalls) {
     const functionName = toolCall.function?.name || toolCall.name || "unknown";
+    logger.info(`Tool call: ${functionName}`);
+
     try {
       if (toolCall.function?.name === "memory") {
         const ev = JSON.parse(toolCall.function.arguments || "{}");

@@ -364,11 +364,15 @@ export async function mapParametersToProvider(
       };
       const supportsThinking = modelConfig?.hasThinking || false;
       if (supportsThinking) {
+        if (newCommonParams.max_tokens <= 1024) {
+          newCommonParams.max_tokens = 1025;
+        }
         newCommonParams.thinking = {
           type: "enabled",
           budget_tokens: calculateReasoningBudget(params),
         };
         newCommonParams.top_p = undefined;
+        newCommonParams.temperature = 1;
       }
       return {
         ...newCommonParams,
@@ -547,13 +551,13 @@ function calculateReasoningBudget(params: ChatCompletionParameters): number {
 
   switch (params.reasoning_effort) {
     case "low":
-      return Math.floor(params.max_tokens * 0.5);
+      return Math.max(Math.floor(params.max_tokens * 0.5), 1024);
     case "medium":
-      return Math.floor(params.max_tokens * 0.75);
+      return Math.max(Math.floor(params.max_tokens * 0.75), 1024);
     case "high":
-      return Math.floor(params.max_tokens * 0.9);
+      return Math.max(Math.floor(params.max_tokens * 0.9), 1024);
     default:
-      return Math.floor(params.max_tokens * 0.75);
+      return Math.max(Math.floor(params.max_tokens * 0.75), 1024);
   }
 }
 

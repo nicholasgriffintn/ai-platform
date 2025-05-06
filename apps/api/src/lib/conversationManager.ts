@@ -118,72 +118,7 @@ export class ConversationManager {
    * @returns The message that was added to the conversation
    */
   async add(conversation_id: string, message: Message): Promise<Message> {
-    const newMessage = {
-      ...message,
-      id: message.id || generateId(),
-      timestamp: message.timestamp || Date.now(),
-      model: message.model || this.model,
-      platform: message.platform || this.platform,
-    };
-
-    if (newMessage.role === "assistant" && this.usageManager) {
-      try {
-        const modelUsed = newMessage.model || this.model;
-        if (modelUsed) {
-          await this.usageManager.incrementUsageByModel(modelUsed, true);
-        }
-      } catch (error) {
-        logger.error("Failed to increment usage:", error);
-      }
-    }
-
-    if (!this.store) {
-      return newMessage;
-    }
-
-    if (!this.user?.id) {
-      throw new AssistantError(
-        "User ID is required to store conversations",
-        ErrorType.AUTHENTICATION_ERROR,
-      );
-    }
-
-    let conversation = await this.database.getConversation(conversation_id);
-
-    if (!conversation) {
-      conversation = await this.database.createConversation(
-        conversation_id,
-        this.user?.id,
-        "New Conversation",
-      );
-    } else if (conversation.user_id !== this.user?.id) {
-      throw new AssistantError(
-        "You don't have permission to update this conversation",
-        ErrorType.FORBIDDEN,
-      );
-    }
-
-    let content: string;
-    if (typeof newMessage.content === "object") {
-      content = JSON.stringify(newMessage.content);
-    } else {
-      content = newMessage.content || "";
-    }
-
-    await this.database.createMessage(
-      newMessage.id as string,
-      conversation_id,
-      newMessage.role,
-      content,
-      newMessage,
-    );
-
-    await this.database.updateConversationAfterMessage(
-      conversation_id,
-      newMessage.id as string,
-    );
-
-    return newMessage;
+    return this.addBatch(conversation_id, [message])[0];
   }
 
   /**
@@ -221,6 +156,7 @@ export class ConversationManager {
     }
 
     if (!this.store) {
+      logger.debug("No store found, returning new messages");
       return newMessages;
     }
 
@@ -234,6 +170,7 @@ export class ConversationManager {
     let conversation = await this.database.getConversation(conversation_id);
 
     if (!conversation) {
+      logger.debug("No conversation found, creating new conversation");
       conversation = await this.database.createConversation(
         conversation_id,
         this.user?.id,
