@@ -13,6 +13,8 @@ const logger = getLogger({ prefix: "TOOLS" });
 
 interface ToolCallError extends Error {
   functionName?: string;
+  type?: string;
+  status?: number;
 }
 
 export const handleToolCalls = async (
@@ -43,24 +45,45 @@ export const handleToolCalls = async (
     logger.info(`Tool call: ${functionName}`);
 
     try {
-      if (toolCall.function?.name === "memory") {
-        const ev = JSON.parse(toolCall.function.arguments || "{}");
+      if (!toolCall.id) {
+        throw new Error("Missing tool call ID");
+      }
+
+      if (functionName === "memory") {
+        const rawArgs =
+          toolCall.function?.arguments || toolCall.arguments || "{}";
+        let memoryArgs;
+
+        try {
+          memoryArgs =
+            typeof rawArgs === "string" ? JSON.parse(rawArgs) : rawArgs;
+        } catch (parseError: any) {
+          logger.error(`Failed to parse memory arguments: ${parseError}`);
+          throw new Error(
+            `Invalid memory tool arguments: ${parseError.message}`,
+          );
+        }
+
         const memMessage: Message = {
           role: "tool",
           name: "memory",
           content:
-            ev.type === "store"
-              ? `📝 Stored ${ev.category} memory: ${ev.text}`
+            memoryArgs.type === "store"
+              ? `📝 Stored ${memoryArgs.category} memory: ${memoryArgs.text}`
               : "🔍 Created memory snapshot",
           status: "success",
-          data: { type: ev.type, category: ev.category, text: ev.text },
+          data: {
+            type: memoryArgs.type,
+            category: memoryArgs.category,
+            text: memoryArgs.text,
+          },
           log_id: modelResponseLogId || "",
           id: generateId(),
-          tool_call_id: toolCall.id || "",
+          tool_call_id: toolCall.id,
           tool_call_arguments:
             toolCall.arguments || toolCall.function?.arguments,
           timestamp,
-          model: req.request?.model,
+          model: req.request?.model || "unknown",
           platform: req.request?.platform || "api",
         };
         functionResults.push(memMessage);
@@ -73,12 +96,20 @@ export const handleToolCalls = async (
       try {
         functionArgs =
           typeof rawArgs === "string" ? JSON.parse(rawArgs) : rawArgs;
-      } catch (parseError) {
+      } catch (parseError: any) {
         logger.error(
           `Failed to parse arguments for ${functionName}:`,
           parseError,
         );
-        functionArgs = rawArgs || {};
+        throw new Error(
+          `Invalid arguments for ${functionName}: ${parseError.message}`,
+        );
+      }
+
+      if (!functionArgs || typeof functionArgs !== "object") {
+        throw new Error(
+          `Invalid arguments format for ${functionName}: expected object`,
+        );
       }
 
       let result: any;
@@ -95,9 +126,11 @@ export const handleToolCalls = async (
           `Function execution error for ${functionName}:`,
           functionError,
         );
+        const errorType = functionError.type || "FUNCTION_EXECUTION_ERROR";
         const formattedError = formatToolErrorResponse(
           functionName,
           functionError.message || "Function execution failed",
+          errorType,
         );
 
         const errorMessage: Message = {
@@ -108,11 +141,11 @@ export const handleToolCalls = async (
           data: formattedError.data,
           log_id: modelResponseLogId || "",
           id: generateId(),
-          tool_call_id: toolCall.id || "",
+          tool_call_id: toolCall.id,
           tool_call_arguments:
             toolCall.arguments || toolCall.function?.arguments,
           timestamp,
-          model: req.request?.model,
+          model: req.request?.model || "unknown",
           platform: req.request?.platform || "api",
         };
 
@@ -122,6 +155,27 @@ export const handleToolCalls = async (
 
       if (!result) {
         logger.warn(`No result returned for tool call ${functionName}`);
+        const nullResultError = formatToolErrorResponse(
+          functionName,
+          "Tool returned no result",
+          "EMPTY_RESULT",
+        );
+
+        functionResults.push({
+          role: "tool",
+          name: functionName,
+          content: nullResultError.content,
+          status: "error",
+          data: nullResultError.data,
+          log_id: modelResponseLogId || "",
+          id: generateId(),
+          tool_call_id: toolCall.id,
+          tool_call_arguments:
+            toolCall.arguments || toolCall.function?.arguments,
+          timestamp,
+          model: req.request?.model || "unknown",
+          platform: req.request?.platform || "api",
+        });
         continue;
       }
 
@@ -135,25 +189,32 @@ export const handleToolCalls = async (
         role: "tool",
         name: functionName,
         content: formattedResponse.content,
-        status: result.status,
+        status: result.status || "success",
         data: formattedResponse.data,
         log_id: modelResponseLogId || "",
         id: generateId(),
-        tool_call_id: toolCall.id || "",
+        tool_call_id: toolCall.id,
         tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
         timestamp,
-        model: req.request?.model,
+        model: req.request?.model || "unknown",
         platform: req.request?.platform || "api",
       };
 
       functionResults.push(message);
     } catch (error) {
       const functionError = error as ToolCallError;
-      logger.error(`Tool call error for ${functionName}:`, { error });
+      const errorType = functionError.type || "TOOL_CALL_ERROR";
+
+      logger.error(`Tool call error for ${functionName}:`, {
+        error,
+        type: errorType,
+        status: functionError.status,
+      });
 
       const formattedError = formatToolErrorResponse(
         functionName,
         functionError.message || "Unknown error occurred",
+        errorType,
       );
 
       const errorMessage: Message = {
@@ -164,10 +225,10 @@ export const handleToolCalls = async (
         data: formattedError.data,
         log_id: modelResponseLogId || "",
         id: generateId(),
-        tool_call_id: toolCall.id || "",
+        tool_call_id: toolCall.id,
         tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
         timestamp,
-        model: req.request?.model,
+        model: req.request?.model || "unknown",
         platform: req.request?.platform || "api",
       };
 
@@ -179,7 +240,10 @@ export const handleToolCalls = async (
     try {
       await conversationManager.addBatch(completion_id, functionResults);
     } catch (error) {
-      logger.error("Failed to store tool call results:", { error });
+      logger.error("Failed to store tool call results:", {
+        error,
+        completion_id,
+      });
     }
   }
 
@@ -187,34 +251,45 @@ export const handleToolCalls = async (
 };
 
 export function formatToolCalls(provider: string, functions: any[]) {
+  if (!functions || !Array.isArray(functions)) {
+    logger.warn("Invalid functions provided to formatToolCalls");
+    return [];
+  }
+
   if (provider === "anthropic") {
-    return functions.map((func) => {
-      if (!func.parameters) {
+    return functions
+      .map((func) => {
+        if (!func.parameters) {
+          logger.warn(`Missing parameters for function ${func.name}`);
+          return null;
+        }
+
+        return {
+          name: func.name,
+          description: func.description,
+          input_schema: func.parameters,
+        };
+      })
+      .filter(Boolean);
+  }
+
+  return functions
+    .map((func) => {
+      const parameters = func.parameters?.jsonSchema || func.parameters;
+
+      if (!parameters) {
+        logger.warn(`Missing parameters for function ${func.name}`);
         return null;
       }
 
       return {
-        name: func.name,
-        description: func.description,
-        input_schema: func.parameters,
+        type: "function",
+        function: {
+          name: func.name,
+          description: func.description,
+          parameters,
+        },
       };
-    });
-  }
-
-  return functions.map((func) => {
-    const parameters = func.parameters?.jsonSchema || func.parameters;
-
-    if (!parameters) {
-      return null;
-    }
-
-    return {
-      type: "function",
-      function: {
-        name: func.name,
-        description: func.description,
-        parameters,
-      },
-    };
-  });
+    })
+    .filter(Boolean);
 }

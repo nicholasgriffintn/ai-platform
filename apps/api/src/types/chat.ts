@@ -247,7 +247,7 @@ export interface CreateChatCompletionsResponse {
     index: number;
     message: {
       role: ChatRole;
-      content: string;
+      content: string | MessageContent[];
       data?: Record<string, any>;
       tool_calls?: Record<string, any>[];
       citations?: string[] | null;
@@ -279,7 +279,7 @@ export interface CreateChatCompletionsResponse {
 }
 
 export interface AssistantMessageData {
-  content: string;
+  content: string | MessageContent[];
   thinking?: string;
   signature?: string;
   citations?: any[];

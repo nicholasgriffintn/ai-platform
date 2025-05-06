@@ -42,6 +42,14 @@ export async function mapParametersToProvider(
   storageService?: StorageService,
   assetsUrl?: string,
 ): Promise<Record<string, any>> {
+  if (!params) {
+    throw new Error("Parameters object is required");
+  }
+
+  if (!providerName) {
+    throw new Error("Provider name is required");
+  }
+
   const commonParams: Record<string, any> = {
     model: params.model,
     messages: params.messages,
@@ -63,7 +71,14 @@ export async function mapParametersToProvider(
   let modelConfig = null;
 
   if (params.model) {
-    modelConfig = getModelConfigByMatchingModel(params.model);
+    try {
+      modelConfig = getModelConfigByMatchingModel(params.model);
+      if (!modelConfig) {
+        throw new Error(`Model configuration not found for ${params.model}`);
+      }
+    } catch (error: any) {
+      throw new Error(`Failed to get model configuration: ${error.message}`);
+    }
   }
 
   const provider = AIProviderFactory.getProvider(providerName);
@@ -105,24 +120,28 @@ export async function mapParametersToProvider(
     const supportsFunctions = modelConfig?.supportsFunctions || false;
 
     if (supportsFunctions) {
-      if (params.tools) {
-        const providedTools = params.tools;
-        const enabledTools = params.enabled_tools || [];
-        const filteredFunctions = availableFunctions.filter((func) =>
-          enabledTools.includes(func.name),
-        );
-        const availableToolDeclarations = formatToolCalls(
-          providerName,
-          filteredFunctions,
-        );
-        commonParams.tools = [...availableToolDeclarations, ...providedTools];
-      } else {
-        const enabledTools = params.enabled_tools || [];
-        const filteredFunctions = availableFunctions.filter((func) =>
-          enabledTools.includes(func.name),
-        );
+      try {
+        if (params.tools) {
+          const providedTools = params.tools;
+          const enabledTools = params.enabled_tools || [];
+          const filteredFunctions = availableFunctions.filter((func) =>
+            enabledTools.includes(func.name),
+          );
+          const availableToolDeclarations = formatToolCalls(
+            providerName,
+            filteredFunctions,
+          );
+          commonParams.tools = [...availableToolDeclarations, ...providedTools];
+        } else {
+          const enabledTools = params.enabled_tools || [];
+          const filteredFunctions = availableFunctions.filter((func) =>
+            enabledTools.includes(func.name),
+          );
 
-        commonParams.tools = formatToolCalls(providerName, filteredFunctions);
+          commonParams.tools = formatToolCalls(providerName, filteredFunctions);
+        }
+      } catch (error: any) {
+        throw new Error(`Failed to format tool calls: ${error.message}`);
       }
 
       if (
@@ -142,402 +161,433 @@ export async function mapParametersToProvider(
     commonParams.top_p = params.top_p;
   }
 
-  switch (providerName) {
-    case "workers-ai": {
-      const type = modelConfig?.type || ["text"];
+  try {
+    switch (providerName) {
+      case "workers-ai": {
+        const type = modelConfig?.type || ["text"];
 
-      let imageData;
-      if (
-        type.includes("image-to-text") ||
-        type.includes("image-to-image") ||
-        type.includes("image-to-text") ||
-        type.includes("text-to-image") ||
-        type.includes("text-to-speech")
-      ) {
+        let imageData;
         if (
-          params.messages.length > 2 ||
-          (params.messages.length === 2 && params.messages[0].role !== "system")
+          type.includes("image-to-text") ||
+          type.includes("image-to-image") ||
+          type.includes("image-to-text") ||
+          type.includes("text-to-image") ||
+          type.includes("text-to-speech")
         ) {
-          return null;
-        }
+          if (
+            params.messages.length > 2 ||
+            (params.messages.length === 2 &&
+              params.messages[0].role !== "system")
+          ) {
+            return null;
+          }
 
-        try {
-          const imageContent =
-            Array.isArray(params.messages[0].content) &&
-            params.messages[0].content[1] &&
-            "image_url" in params.messages[0].content[1]
-              ? // @ts-ignore - types of wrong
-                params.messages[0].content[1].image_url.url
-              : // @ts-ignore - types of wrong
-                params.messages[0].content?.image;
+          try {
+            const imageContent =
+              Array.isArray(params.messages[0].content) &&
+              params.messages[0].content[1] &&
+              "image_url" in params.messages[0].content[1]
+                ? // @ts-ignore - types of wrong
+                  params.messages[0].content[1].image_url.url
+                : // @ts-ignore - types of wrong
+                  params.messages[0].content?.image;
 
-          if (imageContent) {
-            const isUrl = imageContent.startsWith("http");
+            if (imageContent) {
+              const isUrl = imageContent.startsWith("http");
 
-            if (type.includes("image-to-text")) {
-              let base64Data = null;
-              if (isUrl) {
-                const imageKeyFromUrl = imageContent.replace(assetsUrl, "");
-                const imageData =
-                  await storageService?.getObject(imageKeyFromUrl);
-                base64Data = imageData;
-              } else {
-                base64Data = imageContent;
-              }
+              if (type.includes("image-to-text")) {
+                let base64Data = null;
+                if (isUrl) {
+                  if (!storageService) {
+                    throw new Error(
+                      "Storage service is required for image URL processing",
+                    );
+                  }
 
-              if (!base64Data) {
-                logger.error("No image data found");
-                imageData = null;
-              } else {
-                const binary = atob(base64Data);
-                const array = new Uint8Array(binary.length);
-                for (let i = 0; i < binary.length; i++) {
-                  array[i] = binary.charCodeAt(i);
+                  if (!assetsUrl) {
+                    throw new Error(
+                      "Assets URL is required for image URL processing",
+                    );
+                  }
+
+                  const imageKeyFromUrl = imageContent.replace(assetsUrl, "");
+                  const imageData =
+                    await storageService?.getObject(imageKeyFromUrl);
+                  base64Data = imageData;
+                } else {
+                  base64Data = imageContent;
                 }
 
-                if (array.length === 0) {
-                  logger.error("No image data found");
-                  imageData = null;
-                } else {
+                if (!base64Data) {
+                  throw new Error("No image data found");
+                }
+
+                try {
+                  const binary = atob(base64Data);
+                  const array = new Uint8Array(binary.length);
+                  for (let i = 0; i < binary.length; i++) {
+                    array[i] = binary.charCodeAt(i);
+                  }
+
+                  if (array.length === 0) {
+                    throw new Error("No image data found after processing");
+                  }
                   imageData = Array.from(array);
+                } catch (binaryError: any) {
+                  throw new Error(
+                    `Failed to process image data: ${binaryError.message}`,
+                  );
                 }
               }
             } else {
               imageData = imageContent;
             }
+          } catch (error: any) {
+            throw new Error(`Error processing image data: ${error.message}`);
           }
-        } catch (error) {
-          logger.error("Error getting image data", { error });
-          imageData = null;
-        }
 
-        let prompt = null;
+          let prompt = null;
 
-        if (
-          params.messages.length >= 2 &&
-          params.messages[0].role === "system"
-        ) {
-          let systemContent = "";
-          if (Array.isArray(params.messages[0].content)) {
-            const contentItem = params.messages[0].content[0];
-            if (contentItem && typeof contentItem === "object") {
-              if (contentItem.type === "text" && contentItem.text) {
-                systemContent = contentItem.text;
-              } else if ("text" in contentItem) {
-                systemContent = contentItem.text;
+          if (
+            params.messages.length >= 2 &&
+            params.messages[0].role === "system"
+          ) {
+            let systemContent = "";
+            if (Array.isArray(params.messages[0].content)) {
+              const contentItem = params.messages[0].content[0];
+
+              if (contentItem && typeof contentItem === "object") {
+                if (contentItem.type === "text" && contentItem.text) {
+                  systemContent = contentItem.text;
+                } else if ("text" in contentItem) {
+                  systemContent = contentItem.text;
+                }
               }
+            } else if (typeof params.messages[0].content === "string") {
+              systemContent = params.messages[0].content;
+            } else {
+              // @ts-ignore - types might be wrong
+              systemContent = params.messages[0].content?.text || "";
             }
-          } else if (typeof params.messages[0].content === "string") {
-            systemContent = params.messages[0].content;
-          } else {
-            // @ts-ignore - types might be wrong
-            systemContent = params.messages[0].content?.text || "";
-          }
 
-          let userContent = "";
-          if (Array.isArray(params.messages[1].content)) {
-            const contentItem = params.messages[1].content[0];
-            if (contentItem && typeof contentItem === "object") {
-              if (contentItem.type === "text" && contentItem.text) {
-                userContent = contentItem.text;
-              } else if ("text" in contentItem) {
-                userContent = contentItem.text;
+            let userContent = "";
+            if (Array.isArray(params.messages[1].content)) {
+              const contentItem = params.messages[1].content[0];
+              if (contentItem && typeof contentItem === "object") {
+                if (contentItem.type === "text" && contentItem.text) {
+                  userContent = contentItem.text;
+                } else if ("text" in contentItem) {
+                  userContent = contentItem.text;
+                }
               }
+            } else if (typeof params.messages[1].content === "string") {
+              userContent = params.messages[1].content;
+            } else {
+              // @ts-ignore - types might be wrong
+              userContent = params.messages[1].content?.text || "";
             }
-          } else if (typeof params.messages[1].content === "string") {
-            userContent = params.messages[1].content;
-          } else {
-            // @ts-ignore - types might be wrong
-            userContent = params.messages[1].content?.text || "";
-          }
 
-          prompt = `${systemContent}\n\n${userContent}`;
-        } else {
-          if (Array.isArray(params.messages[0].content)) {
-            const contentItem = params.messages[0].content[0];
-            if (contentItem && typeof contentItem === "object") {
-              if (contentItem.type === "text" && contentItem.text) {
-                prompt = contentItem.text;
-              } else if ("text" in contentItem) {
-                prompt = contentItem.text;
+            prompt = `${systemContent}\n\n${userContent}`;
+          } else {
+            if (Array.isArray(params.messages[0].content)) {
+              const contentItem = params.messages[0].content[0];
+              if (contentItem && typeof contentItem === "object") {
+                if (contentItem.type === "text" && contentItem.text) {
+                  prompt = contentItem.text;
+                } else if ("text" in contentItem) {
+                  prompt = contentItem.text;
+                }
               }
+            } else if (typeof params.messages[0].content === "string") {
+              prompt = params.messages[0].content;
+            } else {
+              // @ts-ignore - types might be wrong
+              prompt = params.messages[0].content?.text;
             }
-          } else if (typeof params.messages[0].content === "string") {
-            prompt = params.messages[0].content;
-          } else {
-            // @ts-ignore - types might be wrong
-            prompt = params.messages[0].content?.text;
           }
-        }
 
-        if (!prompt) {
-          logger.error("No prompt found");
+          if (!prompt) {
+            return {
+              prompt: "",
+              image: imageData,
+            };
+          }
+
           return {
-            prompt: "",
+            prompt,
             image: imageData,
           };
         }
 
         return {
-          prompt,
-          image: imageData,
+          ...commonParams,
+          stop: params.stop,
+          n: params.n,
+          random_seed: params.seed,
+          messages: params.messages,
         };
       }
-
-      return {
-        ...commonParams,
-        stop: params.stop,
-        n: params.n,
-        random_seed: params.seed,
-        messages: params.messages,
-      };
-    }
-    case "openai": {
-      const newCommonParams = {
-        ...commonParams,
-      };
-      const supportsThinking = modelConfig?.hasThinking || false;
-      if (supportsThinking) {
-        newCommonParams.reasoning_effort = params.reasoning_effort;
-      }
-      if (params.model === "o1" || params.model === "o4-mini") {
-        newCommonParams.temperature = 1;
-        newCommonParams.top_p = undefined;
-      }
-
-      const type = modelConfig?.type || ["text"];
-      if (type.includes("image-to-image") || type.includes("text-to-image")) {
-        let prompt = "";
-        if (params.messages.length > 1) {
-          const content = params.messages[1].content;
-          prompt =
-            typeof content === "string" ? content : content[0]?.text || "";
-        } else {
-          const content = params.messages[0].content;
-          prompt =
-            typeof content === "string" ? content : content[0]?.text || "";
+      case "openai": {
+        const newCommonParams = {
+          ...commonParams,
+        };
+        const supportsThinking = modelConfig?.hasThinking || false;
+        if (supportsThinking) {
+          newCommonParams.reasoning_effort = params.reasoning_effort;
+        }
+        if (params.model === "o1" || params.model === "o4-mini") {
+          newCommonParams.temperature = 1;
+          newCommonParams.top_p = undefined;
         }
 
-        const hasImages = params.messages.some(
-          (message) =>
-            typeof message.content !== "string" &&
-            message.content.some((item: any) => item.type === "image_url"),
-        );
-
-        if (type.includes("image-to-image") && hasImages) {
-          if (typeof params.messages[1].content === "string") {
-            throw new Error("Image to image is not supported for text input");
+        const type = modelConfig?.type || ["text"];
+        if (type.includes("image-to-image") || type.includes("text-to-image")) {
+          let prompt = "";
+          if (params.messages.length > 1) {
+            const content = params.messages[1].content;
+            prompt =
+              typeof content === "string" ? content : content[0]?.text || "";
+          } else {
+            const content = params.messages[0].content;
+            prompt =
+              typeof content === "string" ? content : content[0]?.text || "";
           }
 
-          const imageUrls = params.messages[1].content
-            .filter((item: any) => item.type === "image_url")
-            .map((item: any) => item.image_url.url);
+          const hasImages = params.messages.some(
+            (message) =>
+              typeof message.content !== "string" &&
+              message.content.some((item: any) => item.type === "image_url"),
+          );
 
-          if (imageUrls.length === 0) {
-            throw new Error("No image urls found");
+          if (type.includes("image-to-image") && hasImages) {
+            if (typeof params.messages[1].content === "string") {
+              throw new Error("Image to image is not supported for text input");
+            }
+
+            const imageUrls = params.messages[1].content
+              .filter((item: any) => item.type === "image_url")
+              .map((item: any) => item.image_url.url);
+
+            if (imageUrls.length === 0) {
+              throw new Error("No image urls found");
+            }
+
+            return {
+              prompt,
+              image: imageUrls,
+            };
           }
 
           return {
             prompt,
-            image: imageUrls,
           };
         }
 
         return {
-          prompt,
+          ...newCommonParams,
+          store: params.store,
+          logit_bias: params.logit_bias,
+          n: params.n,
+          stop: params.stop,
+          user:
+            typeof params.user === "string" ? params.user : params.user?.email,
         };
       }
-
-      return {
-        ...newCommonParams,
-        store: params.store,
-        logit_bias: params.logit_bias,
-        n: params.n,
-        stop: params.stop,
-        user:
-          typeof params.user === "string" ? params.user : params.user?.email,
-      };
-    }
-    case "anthropic": {
-      const newCommonParams = {
-        ...commonParams,
-      };
-      const supportsThinking = modelConfig?.hasThinking || false;
-      if (supportsThinking) {
-        if (newCommonParams.max_tokens <= 1024) {
-          newCommonParams.max_tokens = 1025;
+      case "anthropic": {
+        const newCommonParams = {
+          ...commonParams,
+        };
+        const supportsThinking = modelConfig?.hasThinking || false;
+        if (supportsThinking) {
+          if (newCommonParams.max_tokens <= 1024) {
+            newCommonParams.max_tokens = 1025;
+          }
+          newCommonParams.thinking = {
+            type: "enabled",
+            budget_tokens: calculateReasoningBudget(params),
+          };
+          newCommonParams.top_p = undefined;
+          newCommonParams.temperature = 1;
         }
-        newCommonParams.thinking = {
-          type: "enabled",
-          budget_tokens: calculateReasoningBudget(params),
+        return {
+          ...newCommonParams,
+          system: params.system_prompt,
+          stop_sequences: params.stop,
         };
-        newCommonParams.top_p = undefined;
-        newCommonParams.temperature = 1;
       }
-      return {
-        ...newCommonParams,
-        system: params.system_prompt,
-        stop_sequences: params.stop,
-      };
-    }
-    case "deepseek": {
-      return {
-        ...commonParams,
-        messages: formatDeepSeekMessages(params),
-      };
-    }
-    case "google-ai-studio":
-    case "googlestudio": {
-      const enabledTools = (params.enabled_tools || []).filter(
-        (tool) =>
-          !(tool === "web_search" && modelConfig?.supportsSearchGrounding),
-      );
-      const tools = [];
+      case "deepseek": {
+        return {
+          ...commonParams,
+          messages: formatDeepSeekMessages(params),
+        };
+      }
+      case "google-ai-studio":
+      case "googlestudio": {
+        const enabledTools = (params.enabled_tools || []).filter(
+          (tool) =>
+            !(tool === "web_search" && modelConfig?.supportsSearchGrounding),
+        );
+        const tools = [];
 
-      if (
-        modelConfig?.supportsCodeExecution &&
-        enabledTools.includes("code_execution")
-      ) {
-        tools.push({
-          code_execution: {},
-        });
-      } else if (
-        modelConfig?.supportsSearchGrounding &&
-        enabledTools.includes("search_grounding")
-      ) {
-        tools.push({
-          google_search: {},
-        });
-      }
-      const hasEnabledExclusiveTools =
-        enabledTools.includes("code_execution") ||
-        enabledTools.includes("search_grounding");
-      if (
-        modelConfig?.supportsFunctions &&
-        !hasEnabledExclusiveTools &&
-        commonParams.tools.length > 0
-      ) {
-        const formattedTools = commonParams.tools.map((tool) => ({
-          name: tool.function.name,
-          description: tool.function.description,
-          parameters: {
-            type: tool.function.parameters.type,
-            properties: tool.function.parameters.properties,
+        if (
+          modelConfig?.supportsCodeExecution &&
+          enabledTools.includes("code_execution")
+        ) {
+          tools.push({
+            code_execution: {},
+          });
+        } else if (
+          modelConfig?.supportsSearchGrounding &&
+          enabledTools.includes("search_grounding")
+        ) {
+          tools.push({
+            google_search: {},
+          });
+        }
+        const hasEnabledExclusiveTools =
+          enabledTools.includes("code_execution") ||
+          enabledTools.includes("search_grounding");
+        if (
+          modelConfig?.supportsFunctions &&
+          !hasEnabledExclusiveTools &&
+          commonParams.tools?.length > 0
+        ) {
+          const formattedTools = commonParams.tools.map((tool) => ({
+            name: tool.function.name,
+            description: tool.function.description,
+            parameters: {
+              type: tool.function.parameters.type,
+              properties: tool.function.parameters.properties,
+            },
+            required: tool.function.required,
+          }));
+          tools.push({
+            functionDeclarations: formattedTools,
+          });
+        }
+
+        return {
+          model: params.model,
+          contents: formatGoogleStudioContents(params),
+          tools: modelConfig?.supportsFunctions ? tools : undefined,
+          systemInstruction: {
+            role: "system",
+            parts: [
+              {
+                text: params.system_prompt,
+              },
+            ],
           },
-          required: tool.function.required,
-        }));
-        tools.push({
-          functionDeclarations: formattedTools,
-        });
-      }
-
-      return {
-        model: params.model,
-        contents: formatGoogleStudioContents(params),
-        tools: modelConfig?.supportsFunctions ? tools : undefined,
-        systemInstruction: {
-          role: "system",
-          parts: [
+          safetySettings: [
             {
-              text: params.system_prompt,
+              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+              threshold: "BLOCK_NONE",
+            },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+            {
+              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+              threshold: "BLOCK_NONE",
             },
           ],
-        },
-        safetySettings: [
-          {
-            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-            threshold: "BLOCK_NONE",
+          generationConfig: {
+            temperature: params.temperature,
+            maxOutputTokens: params.max_tokens,
+            topP: params.top_p,
+            topK: params.top_k,
+            seed: params.seed,
+            repetitionPenalty: params.repetition_penalty,
+            frequencyPenalty: params.frequency_penalty,
+            presencePenalty: params.presence_penalty,
+            stopSequences: params.stop,
           },
-          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-          {
-            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            threshold: "BLOCK_NONE",
-          },
-        ],
-        generationConfig: {
-          temperature: params.temperature,
-          maxOutputTokens: params.max_tokens,
-          topP: params.top_p,
-          topK: params.top_k,
-          seed: params.seed,
-          repetitionPenalty: params.repetition_penalty,
-          frequencyPenalty: params.frequency_penalty,
-          presencePenalty: params.presence_penalty,
-          stopSequences: params.stop,
-        },
-      };
-    }
-    case "bedrock": {
-      const type = modelConfig?.type || ["text"];
-      const isImageType =
-        type.includes("text-to-image") || type.includes("image-to-image");
-      const isVideoType =
-        type.includes("text-to-video") || type.includes("image-to-video");
+        };
+      }
+      case "bedrock": {
+        const type = modelConfig?.type || ["text"];
+        const isImageType =
+          type.includes("text-to-image") || type.includes("image-to-image");
+        const isVideoType =
+          type.includes("text-to-video") || type.includes("image-to-video");
 
-      if (isVideoType) {
+        if (isVideoType) {
+          return {
+            messages: formatBedrockMessages(params),
+            taskType: "TEXT_VIDEO",
+            textToVideoParams: {
+              text:
+                typeof params.messages[params.messages.length - 1].content ===
+                "string"
+                  ? params.messages[params.messages.length - 1].content
+                  : Array.isArray(
+                        params.messages[params.messages.length - 1].content,
+                      )
+                    ? (
+                        params.messages[params.messages.length - 1]
+                          .content[0] as any
+                      )?.text || ""
+                    : "",
+            },
+            videoGenerationConfig: {
+              durationSeconds: 6,
+              fps: 24,
+              dimension: "1280x720",
+            },
+          };
+        }
+
+        if (isImageType) {
+          return {
+            textToImageParams: {
+              text:
+                typeof params.messages[params.messages.length - 1].content ===
+                "string"
+                  ? params.messages[params.messages.length - 1].content
+                  : Array.isArray(
+                        params.messages[params.messages.length - 1].content,
+                      )
+                    ? (
+                        params.messages[params.messages.length - 1]
+                          .content[0] as any
+                      )?.text || ""
+                    : "",
+            },
+            taskType: "TEXT_IMAGE",
+            imageGenerationConfig: {
+              quality: "standard",
+              width: 1280,
+              height: 1280,
+              numberOfImages: 1,
+            },
+          };
+        }
+
+        const supportsFunctions = modelConfig?.supportsFunctions || false;
+
         return {
+          ...(commonParams.system_prompt && {
+            system: [{ text: commonParams.system_prompt }],
+          }),
           messages: formatBedrockMessages(params),
-          taskType: "TEXT_VIDEO",
-          textToVideoParams: {
-            text:
-              typeof params.messages[params.messages.length - 1].content ===
-              "string"
-                ? params.messages[params.messages.length - 1].content
-                : // @ts-ignore
-                  params.messages[params.messages.length - 1].content[0].text ||
-                  "",
+          inferenceConfig: {
+            temperature: commonParams.temperature,
+            maxTokens: commonParams.max_tokens,
+            topP: commonParams.top_p,
           },
-          videoGenerationConfig: {
-            durationSeconds: 6,
-            fps: 24,
-            dimension: "1280x720",
-          },
+          ...(supportsFunctions && {
+            toolConfig: {
+              tools: commonParams.tools,
+            },
+          }),
         };
       }
-
-      if (isImageType) {
-        return {
-          textToImageParams: {
-            text:
-              typeof params.messages[params.messages.length - 1].content ===
-              "string"
-                ? params.messages[params.messages.length - 1].content
-                : // @ts-ignore
-                  params.messages[params.messages.length - 1].content[0].text ||
-                  "",
-          },
-          taskType: "TEXT_IMAGE",
-          imageGenerationConfig: {
-            quality: "standard",
-            width: 1280,
-            height: 1280,
-            numberOfImages: 1,
-          },
-        };
-      }
-
-      const supportsFunctions = modelConfig?.supportsFunctions || false;
-
-      return {
-        ...(commonParams.system_prompt && {
-          system: [{ text: commonParams.system_prompt }],
-        }),
-        messages: formatBedrockMessages(params),
-        inferenceConfig: {
-          temperature: commonParams.temperature,
-          maxTokens: commonParams.max_tokens,
-          topP: commonParams.top_p,
-        },
-        ...(supportsFunctions && {
-          toolConfig: {
-            tools: commonParams.tools,
-          },
-        }),
-      };
+      default:
+        return commonParams;
     }
-    default:
-      return commonParams;
+  } catch (error: any) {
+    throw new Error(
+      `Error mapping parameters for provider ${providerName}: ${error.message}`,
+    );
   }
 }
 

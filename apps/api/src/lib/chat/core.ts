@@ -541,12 +541,53 @@ export async function processChatRequest(options: CoreChatOptions) {
         modelConfigs.length > 1 ? modelConfigs.map((m) => m.model) : undefined,
       completion_id,
     };
-  } catch (error) {
+  } catch (error: any) {
     logger.error("Error in processChatRequest", {
       error,
       completion_id: options.completion_id,
       model: options.model,
     });
-    throw error;
+
+    let errorType = ErrorType.UNKNOWN_ERROR;
+    let errorMessage = "An unexpected error occurred";
+
+    if (error instanceof AssistantError) {
+      throw error;
+    }
+
+    if (
+      error.name === "TimeoutError" ||
+      error.message?.includes("timeout") ||
+      error.message?.includes("network") ||
+      error.code === "ECONNRESET" ||
+      error.code === "ECONNABORTED"
+    ) {
+      errorType = ErrorType.NETWORK_ERROR;
+      errorMessage =
+        "Connection error or timeout while communicating with AI provider";
+    } else if (
+      error.status === 429 ||
+      error.message?.includes("rate limit") ||
+      error.message?.includes("too many requests")
+    ) {
+      errorType = ErrorType.RATE_LIMIT_ERROR;
+      errorMessage = "Rate limit exceeded. Please try again later.";
+    } else if (error.status === 401 || error.status === 403) {
+      errorType = ErrorType.AUTHENTICATION_ERROR;
+      errorMessage = "Authentication error with AI provider";
+    } else if (
+      error.message?.includes("model") ||
+      error.message?.includes("parameter") ||
+      error.message?.includes("token limit")
+    ) {
+      errorType = ErrorType.PROVIDER_ERROR;
+      errorMessage =
+        error.message || "Error with model parameters or token limits";
+    } else if (error.status >= 500) {
+      errorType = ErrorType.PROVIDER_ERROR;
+      errorMessage = "AI provider server error. Please try again later.";
+    }
+
+    throw new AssistantError(errorMessage, errorType, error);
   }
 }

@@ -49,6 +49,7 @@ export const formatToolResponse = (
 export const formatToolErrorResponse = (
   toolName: string,
   errorMessage: string,
+  errorType: string,
 ): {
   content: string;
   data: Record<string, any>;
@@ -61,14 +62,14 @@ export const formatToolErrorResponse = (
     ],
     template: `
       <div class="error-response">
-        <h2>Error: ${formatFunctionName(toolName)}</h2>
+        <h2>${errorType}: ${formatFunctionName(toolName)}</h2>
         <p>{{content}}</p>
       </div>
     `,
   };
 
   return {
-    content: `Error: ${errorMessage}`,
+    content: errorMessage,
     data: {
       responseType,
       responseDisplay,

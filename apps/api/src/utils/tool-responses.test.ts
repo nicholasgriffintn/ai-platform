@@ -62,7 +62,7 @@ describe("Tool Response Utilities", () => {
       const toolName = "get_weather";
       const errorMessage = "API key is invalid";
 
-      const result = formatToolErrorResponse(toolName, errorMessage);
+      const result = formatToolErrorResponse(toolName, errorMessage, "error");
 
       expect(result.content).toBe("Error: API key is invalid");
       expect(result.data.responseType).toBe(ResponseDisplayType.TEXT);
