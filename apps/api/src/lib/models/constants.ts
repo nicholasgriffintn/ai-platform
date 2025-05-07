@@ -33,5 +33,5 @@ export const availableModelTypes = [
   "guardrails",
 ] as const;
 
-export const defaultModel = "mistral-large";
+export const defaultModel = "mistral-medium";
 export const defaultProvider = "mistral";

@@ -230,7 +230,7 @@ export async function getAuxiliaryModel(
   env: IEnv,
   user?: IUser,
 ): Promise<{ model: string; provider: string }> {
-  let modelToUse = "mistral-large-latest";
+  let modelToUse = "mistral-medium-latest";
 
   const allRouterModels = getIncludedInRouterModels();
   const availableModels = await filterModelsForUserAccess(
