@@ -110,6 +110,26 @@ export class ConversationManager {
     }
   }
 
+  async incrementFunctionUsage(
+    functionType: "premium" | "normal",
+    isPro: boolean,
+    costPerCall: number,
+  ): Promise<void> {
+    if ((this.user || this.anonymousUser) && this.usageManager) {
+      await this.usageManager.incrementFunctionUsage(
+        functionType,
+        isPro,
+        costPerCall,
+      );
+      return;
+    }
+
+    throw new AssistantError(
+      "User required to increment function usage",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+
   /**
    * Add a message to a conversation
    * If the conversation doesn't exist, it will be created

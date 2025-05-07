@@ -1,5 +1,6 @@
 import { PageHeader } from "~/components/PageHeader";
 import { PageTitle } from "~/components/PageTitle";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { formatDate } from "~/lib/dates";
 
@@ -320,6 +321,17 @@ export function ProfileAccountTab() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              <div className="mt-4">
+                <Alert variant="info">
+                  <AlertTitle>Function Call Usage</AlertTitle>
+                  <AlertDescription>
+                    Please note that when messages trigger a function call they
+                    are counted as additional usage against your normal or
+                    premium limits, depending on the function that was called.
+                  </AlertDescription>
+                </Alert>
               </div>
             </div>
           </div>

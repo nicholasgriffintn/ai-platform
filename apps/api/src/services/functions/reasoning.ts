@@ -31,6 +31,8 @@ export const add_reasoning_step: IFunction = {
     },
     required: ["title", "content", "nextStep"],
   },
+  type: "normal",
+  costPerCall: 0,
   function: async (
     completion_id: string,
     args: {

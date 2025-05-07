@@ -1,6 +1,7 @@
 import type { ConversationManager } from "~/lib/conversationManager";
 import type { IFunction, IFunctionResponse, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import { extract_content } from "./extract_content";
 import { create_image } from "./image";
 import { handleMCPTool } from "./mcp";
@@ -13,6 +14,8 @@ import { tutor } from "./tutor";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
+
+const logger = getLogger({ prefix: "FUNCTIONS" });
 
 export const availableFunctions: IFunction[] = [
   get_weather,
@@ -69,11 +72,48 @@ export const handleFunctions = async ({
     );
   }
 
-  return foundFunction.function(
+  const isProUser = request.user?.plan_id === "pro";
+
+  if (foundFunction.type === "premium" && !isProUser) {
+    throw new AssistantError(
+      "This function requires a premium subscription",
+      ErrorType.AUTHENTICATION_ERROR,
+    );
+  }
+
+  if (conversationManager) {
+    try {
+      await conversationManager.checkUsageLimits(
+        isProUser,
+        foundFunction.type === "premium" ? "premium" : "normal",
+      );
+    } catch (error) {
+      logger.error("Failed to check usage limits:", error);
+      throw error;
+    }
+  }
+
+  const response = await foundFunction.function(
     completion_id,
     args,
     request,
     app_url,
     conversationManager,
   );
+
+  if (conversationManager) {
+    try {
+      await conversationManager.incrementFunctionUsage(
+        foundFunction.type === "premium" ? "premium" : "normal",
+        isProUser,
+        foundFunction.costPerCall,
+      );
+    } catch (error) {
+      logger.error("Failed to track function usage:", error);
+    }
+  } else {
+    logger.info("No conversation manager provided, skipping usage tracking");
+  }
+
+  return response;
 };

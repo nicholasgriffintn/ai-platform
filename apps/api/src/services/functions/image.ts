@@ -31,6 +31,8 @@ export const create_image: IFunction = {
     },
     required: ["prompt"],
   },
+  type: "premium",
+  costPerCall: 1,
   function: async (
     completion_id: string,
     args: ImageGenerationParams,

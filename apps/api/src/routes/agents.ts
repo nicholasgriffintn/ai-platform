@@ -519,11 +519,6 @@ app.post(
           agent.few_shot_examples as string,
         );
 
-        console.log(
-          "rawFewShotExamples",
-          JSON.stringify(rawFewShotExamples, null, 2),
-        );
-
         fewShotExamples = `
           Examples:
           ${rawFewShotExamples
@@ -563,7 +558,6 @@ app.post(
       request: requestParams,
       user,
       anonymousUser,
-      isRestricted: ctx.get("isRestricted"),
     });
 
     return response instanceof Response ? response : ctx.json(response);

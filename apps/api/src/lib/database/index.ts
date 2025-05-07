@@ -588,7 +588,6 @@ export class Database {
         if (!conversation.id || typeof conversation.id !== "string") {
           continue;
         }
-        console.log(`Deleting conversation ${conversation.id}`);
         await this.repositories.messages.deleteAllMessages(conversation.id);
         await this.deleteConversation(conversation.id);
       }

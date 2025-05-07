@@ -90,7 +90,6 @@ export async function createStreamWithPostProcessing(
     userSettings?: IUserSettings;
     app_url?: string;
     mode?: ChatMode;
-    isRestricted?: boolean;
     max_steps?: number;
     current_step?: number;
   },
@@ -113,7 +112,6 @@ export async function createStreamWithPostProcessing(
     userSettings,
     app_url,
     mode,
-    isRestricted,
     max_steps = 1,
     current_step = 1,
   } = options;
@@ -322,7 +320,7 @@ export async function createStreamWithPostProcessing(
                 logger.debug("Detected tool call delta", { toolCallData });
               }
 
-              if (toolCallData && !isRestricted) {
+              if (toolCallData) {
                 if (toolCallData.format === "openai") {
                   const deltaToolCalls = toolCallData.toolCalls;
 
@@ -396,8 +394,7 @@ export async function createStreamWithPostProcessing(
                     data.index,
                   ) &&
                   currentToolCalls[data.index] &&
-                  !currentToolCalls[data.index].isComplete &&
-                  !isRestricted
+                  !currentToolCalls[data.index].isComplete
                 ) {
                   currentToolCalls[data.index].isComplete = true;
 
@@ -482,10 +479,12 @@ export async function createStreamWithPostProcessing(
             emitEvent(controller, "state", { state: "post_processing" });
             postProcessingDone = true;
 
+            const isProUser = user?.plan_id === "pro";
+
             const memoriesEnabled =
               userSettings?.memories_save_enabled ||
               userSettings?.memories_chat_history_enabled;
-            if (!isRestricted && memoriesEnabled) {
+            if (isProUser && memoriesEnabled) {
               try {
                 const history = await conversationManager.get(completion_id);
                 const userHistory = history.filter((m) => m.role === "user");
@@ -632,7 +631,7 @@ export async function createStreamWithPostProcessing(
 
             emitEvent(controller, "message_stop", {});
 
-            if (toolCallsData.length > 0 && !isRestricted) {
+            if (toolCallsData.length > 0) {
               for (const toolCall of toolCallsData) {
                 emitToolEvents(controller, toolCall, "start");
                 emitToolEvents(
@@ -663,7 +662,6 @@ export async function createStreamWithPostProcessing(
                   app_url,
                   user: user?.id ? user : undefined,
                 },
-                isRestricted ?? false,
               );
 
               for (const toolResult of toolResults) {
@@ -689,7 +687,6 @@ export async function createStreamWithPostProcessing(
             }
 
             if (
-              !isRestricted &&
               toolCallsData.length > 0 &&
               max_steps &&
               current_step < max_steps
@@ -765,7 +762,6 @@ export function createMultiModelStream(
     userSettings?: IUserSettings;
     app_url?: string;
     mode?: ChatMode;
-    isRestricted?: boolean;
   },
   conversationManager: ConversationManager,
 ): ReadableStream {

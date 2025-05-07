@@ -457,4 +457,50 @@ export class UsageManager {
       },
     };
   }
+
+  async incrementFunctionUsage(
+    functionType: "premium" | "normal",
+    isPro: boolean,
+    costPerCall = 1,
+  ) {
+    if (!costPerCall) {
+      return;
+    }
+
+    if (!this.user?.id) {
+      throw new AssistantError(
+        "User required to increment function usage",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const dailyCount = this.user.daily_message_count ?? 0;
+    const dailyProCount = this.user.daily_pro_message_count ?? 0;
+
+    const updates: Partial<User> & Record<string, any> = {
+      daily_message_count: dailyCount + 1,
+    };
+
+    if (functionType === "premium") {
+      if (!isPro) {
+        throw new AssistantError(
+          "You are not a paid user. Please upgrade to a paid plan to use premium functions.",
+          ErrorType.AUTHENTICATION_ERROR,
+        );
+      }
+      updates.daily_pro_message_count = dailyProCount + costPerCall;
+    }
+
+    try {
+      await this.database.updateUser(this.user.id, updates);
+    } catch (updateError) {
+      logger.error("Failed to update function usage data", {
+        error: updateError,
+      });
+      throw new AssistantError(
+        "Failed to update function usage data",
+        ErrorType.INTERNAL_ERROR,
+      );
+    }
+  }
 }

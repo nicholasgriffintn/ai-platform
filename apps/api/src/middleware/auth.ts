@@ -22,7 +22,6 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 export async function authMiddleware(context: Context, next: Next) {
   const hasJwtSecret = !!context.env.JWT_SECRET;
 
-  let isRestricted = true;
   let user: User | null = null;
   let anonymousUser: AnonymousUser | null = null;
 
@@ -39,10 +38,6 @@ export async function authMiddleware(context: Context, next: Next) {
 
   if (sessionId) {
     user = await getUserBySessionId(database, sessionId);
-
-    if (user && user.plan_id === "pro") {
-      isRestricted = false;
-    }
   } else if (authToken?.startsWith("ak_")) {
     try {
       const userId = await database.findUserIdByApiKey(authToken);
@@ -50,10 +45,6 @@ export async function authMiddleware(context: Context, next: Next) {
         const foundUser = await database.getUserById(userId);
         if (foundUser) {
           user = foundUser;
-
-          if (user && user.plan_id === "pro") {
-            isRestricted = false;
-          }
         }
       }
     } catch (error) {
@@ -66,10 +57,6 @@ export async function authMiddleware(context: Context, next: Next) {
         authToken!,
         context.env.JWT_SECRET!,
       );
-
-      if (user?.plan_id === "pro") {
-        isRestricted = false;
-      }
     } catch (error) {
       logger.error("JWT authentication failed:", { error });
     }
@@ -114,7 +101,6 @@ export async function authMiddleware(context: Context, next: Next) {
 
   context.set("user", user);
   context.set("anonymousUser", anonymousUser);
-  context.set("isRestricted", isRestricted);
 
   return next();
 }
@@ -146,10 +132,10 @@ export async function requireAuth(context: Context, next: Next) {
  * @returns The next middleware function
  */
 export async function allowRestrictedPaths(context: Context, next: Next) {
-  const isRestricted = context.get("isRestricted");
+  const user = context.get("user");
+  const isProUser = user?.plan_id === "pro";
 
-  if (isRestricted) {
-    const user = context.get("user");
+  if (!isProUser) {
     const anonymousUser = context.get("anonymousUser");
 
     if (!user && !anonymousUser) {

@@ -22,15 +22,7 @@ export const handleToolCalls = async (
   modelResponse: any,
   conversationManager: ConversationManager,
   req: IRequest,
-  isRestricted: boolean,
 ): Promise<Message[]> => {
-  if (isRestricted) {
-    throw new AssistantError(
-      "Tool usage requires authentication. Please provide a valid access token.",
-      ErrorType.AUTHENTICATION_ERROR,
-    );
-  }
-
   const functionResults: Message[] = [];
   const modelResponseLogId = req.env.AI.aiGatewayLogId;
   const timestamp = Date.now();
@@ -120,6 +112,7 @@ export const handleToolCalls = async (
           functionName,
           args: functionArgs,
           request: req,
+          conversationManager,
         });
       } catch (functionError: any) {
         logger.error(

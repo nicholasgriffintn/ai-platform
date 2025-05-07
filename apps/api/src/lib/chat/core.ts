@@ -27,7 +27,6 @@ import {
 const logger = getLogger({ prefix: "CHAT_CORE" });
 
 type CoreChatOptions = ChatCompletionParameters & {
-  isRestricted?: boolean;
   use_multi_model?: boolean;
   anonymousUser?: any;
   current_step?: number;
@@ -56,8 +55,8 @@ async function prepareRequestData(options: CoreChatOptions) {
     budget_constraint,
     location,
     use_multi_model = false,
-    isRestricted = false,
   } = options;
+  const isProUser = user?.plan_id === "pro";
 
   const sanitisedMessages = sanitiseMessages(rawMessages);
 
@@ -252,7 +251,7 @@ async function prepareRequestData(options: CoreChatOptions) {
   const memoriesEnabled =
     userSettings?.memories_save_enabled ||
     userSettings?.memories_chat_history_enabled;
-  if (!isRestricted && memoriesEnabled) {
+  if (isProUser && memoriesEnabled) {
     const memoryManager = MemoryManager.getInstance(env, user);
     const recentMemories = await memoryManager.retrieveMemories(
       finalUserMessage,
@@ -330,10 +329,10 @@ export async function processChatRequest(options: CoreChatOptions) {
       parallel_tool_calls,
       tool_choice,
       enabled_tools = [],
-      isRestricted,
       current_step,
       max_steps,
     } = options;
+    const isProUser = user?.plan_id === "pro";
 
     const preparedData = await prepareRequestData(options);
 
@@ -352,7 +351,6 @@ export async function processChatRequest(options: CoreChatOptions) {
       currentMode,
     } = preparedData;
 
-    const isProUser = !isRestricted;
     await conversationManager.checkUsageLimits(isProUser, primaryModel);
 
     if (modelConfigs.length > 1 && stream) {
@@ -400,7 +398,6 @@ export async function processChatRequest(options: CoreChatOptions) {
           userSettings,
           app_url,
           mode: currentMode,
-          isRestricted,
         },
         conversationManager,
       );
@@ -494,7 +491,7 @@ export async function processChatRequest(options: CoreChatOptions) {
     }
 
     const toolResponses: Message[] = [];
-    if (response.tool_calls?.length > 0 && !isRestricted) {
+    if (response.tool_calls?.length > 0) {
       const toolResults = await handleToolCalls(
         completion_id,
         response,
@@ -510,7 +507,6 @@ export async function processChatRequest(options: CoreChatOptions) {
           app_url,
           user: user?.id ? user : undefined,
         },
-        isRestricted,
       );
 
       for (const result of toolResults) {

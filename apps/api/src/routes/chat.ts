@@ -117,7 +117,6 @@ app.post(
       request: body,
       user,
       anonymousUser: anonymousUserContext,
-      isRestricted: context.get("isRestricted"),
     });
 
     if (response instanceof Response) {

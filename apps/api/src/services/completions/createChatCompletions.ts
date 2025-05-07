@@ -18,9 +18,8 @@ export const handleCreateChatCompletions = async (req: {
   user?: IUser;
   anonymousUser?: AnonymousUser;
   app_url?: string;
-  isRestricted?: boolean;
 }): Promise<CreateChatCompletionsResponse | Response> => {
-  const { env, request, user, anonymousUser, app_url, isRestricted } = req;
+  const { env, request, user, anonymousUser, app_url } = req;
   const isStreaming = !!request.stream;
 
   if (!request.messages?.length) {
@@ -72,7 +71,6 @@ export const handleCreateChatCompletions = async (req: {
     enabled_tools: request.enabled_tools,
     parallel_tool_calls: request.parallel_tool_calls,
     tool_choice: request.tool_choice,
-    isRestricted,
     use_multi_model: request.use_multi_model,
     current_step: request.current_step,
     max_steps: request.max_steps,

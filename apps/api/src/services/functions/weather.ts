@@ -19,6 +19,8 @@ export const get_weather: IFunction = {
     },
     required: ["longitude", "latitude"],
   },
+  type: "normal",
+  costPerCall: 0,
   function: async (
     completion_id: string,
     args: any,

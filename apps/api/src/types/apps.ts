@@ -22,6 +22,8 @@ export interface IFunction {
   app_url?: string;
   description: string;
   strict?: boolean;
+  type: "normal" | "premium";
+  costPerCall: number;
   parameters: {
     type: "object";
     properties: {

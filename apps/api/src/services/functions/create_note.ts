@@ -1,6 +1,8 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { insertEmbedding } from "~/services/apps/embeddings/insert";
 import type { IFunction, IRequest } from "~/types";
+import { AssistantError } from "../../utils/errors";
+import { ErrorType } from "../../utils/errors";
 
 export const create_note: IFunction = {
   name: "create_note",
@@ -25,12 +27,22 @@ export const create_note: IFunction = {
     },
     required: ["title", "content"],
   },
+  type: "normal",
+  costPerCall: 1,
   function: async (
     completion_id: string,
     args: any,
     req: IRequest,
     app_url?: string,
   ) => {
+    // TODO: Remove this once we have a proper way to handle this
+    if (req.user?.github_username !== "nicholasgriffintn") {
+      throw new AssistantError(
+        "This function is not designed for general use yet.",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
     const sanitisedTitle = sanitiseInput(args.title);
     const sanitisedContent = sanitiseInput(args.content);
 

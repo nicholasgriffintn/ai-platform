@@ -23,6 +23,8 @@ export const prompt_coach: IFunction = {
     },
     required: ["prompt"],
   },
+  type: "normal",
+  costPerCall: 0,
   function: async (
     completion_id: string,
     args: any,
