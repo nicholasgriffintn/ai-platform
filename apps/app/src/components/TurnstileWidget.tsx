@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { TURNSTILE_SITE_KEY } from "~/constants";
 import { useChatStore } from "~/state/stores/chatStore";
 
@@ -10,10 +10,17 @@ declare global {
 
 export function TurnstileWidget() {
   const { setTurnstileToken } = useChatStore();
+  const widgetRef = useRef<HTMLDivElement>(null);
+  const scriptLoadedRef = useRef(false);
 
   useEffect(() => {
+    if (scriptLoadedRef.current || !TURNSTILE_SITE_KEY) {
+      return;
+    }
+
     const loadTurnstileScript = () => {
       if (document.querySelector('script[src*="turnstile/v0/api.js"]')) {
+        scriptLoadedRef.current = true;
         return;
       }
 
@@ -22,6 +29,7 @@ export function TurnstileWidget() {
       script.async = true;
       script.defer = true;
       document.head.appendChild(script);
+      scriptLoadedRef.current = true;
     };
 
     if (TURNSTILE_SITE_KEY) {
@@ -38,13 +46,6 @@ export function TurnstileWidget() {
           // Empty function to avoid errors when component unmounts
         };
       }
-
-      const script = document.querySelector(
-        'script[src*="turnstile/v0/api.js"]',
-      );
-      if (script) {
-        document.head.removeChild(script);
-      }
     };
   }, [setTurnstileToken]);
 
@@ -54,6 +55,7 @@ export function TurnstileWidget() {
 
   return (
     <div
+      ref={widgetRef}
       className="cf-turnstile"
       data-sitekey={TURNSTILE_SITE_KEY}
       data-callback="turnstileCallback"

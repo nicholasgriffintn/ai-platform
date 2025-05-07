@@ -73,7 +73,9 @@ export function SidebarLayout({
             </div>
           </div>
         </div>
-        <TurnstileWidget />
+        <div className="fixed bottom-0 right-0 z-10">
+          <TurnstileWidget />
+        </div>
       </div>
 
       <KeyboardShortcutsHelp
