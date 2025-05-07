@@ -934,9 +934,14 @@ class ApiService {
 
   public createAgent = async (
     name: string,
-    servers: any[],
+    servers?: any[],
     description?: string | null,
     avatarUrl?: string | null,
+    model?: string | null,
+    temperature?: number | null,
+    maxSteps?: number | null,
+    systemPrompt?: string | null,
+    fewShotExamples?: any[] | null,
   ): Promise<any> => {
     let headers: Record<string, string> = {};
 
@@ -949,7 +954,17 @@ class ApiService {
     const response = await fetchApi("/agents", {
       method: "POST",
       headers,
-      body: { name, description, avatar_url: avatarUrl, servers },
+      body: {
+        name,
+        description,
+        avatar_url: avatarUrl,
+        servers,
+        model,
+        temperature,
+        max_steps: maxSteps,
+        system_prompt: systemPrompt,
+        few_shot_examples: fewShotExamples,
+      },
     });
 
     if (!response.ok) {
@@ -967,6 +982,11 @@ class ApiService {
       description: string;
       avatar_url: string;
       servers: any[];
+      model: string;
+      temperature: number;
+      max_steps: number;
+      system_prompt: string;
+      few_shot_examples: Array<{ input: string; output: string }>;
     }>,
   ): Promise<void> => {
     let headers: Record<string, string> = {};

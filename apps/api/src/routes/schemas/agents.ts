@@ -24,6 +24,11 @@ export const mcpServerSchema = z.object({
     .openapi({ description: "HTTP headers for SSE transports" }),
 });
 
+export const fewShotExampleSchema = z.object({
+  input: z.string().openapi({ description: "Example input" }),
+  output: z.string().openapi({ description: "Example output" }),
+});
+
 export const createAgentSchema = z.object({
   name: z.string().openapi({ description: "Name of the agent" }),
   description: z
@@ -38,8 +43,32 @@ export const createAgentSchema = z.object({
     .openapi({ description: "Optional avatar image URL" }),
   servers: z
     .array(mcpServerSchema)
-    .min(1, "At least one server is required")
+    .optional()
     .openapi({ description: "List of MCP server configurations" }),
+  model: z
+    .string()
+    .optional()
+    .openapi({ description: "Model ID to use with this agent" }),
+  temperature: z
+    .number()
+    .min(0)
+    .max(1)
+    .optional()
+    .openapi({ description: "Temperature setting for the model" }),
+  max_steps: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .openapi({ description: "Maximum number of steps for the agent" }),
+  system_prompt: z
+    .string()
+    .optional()
+    .openapi({ description: "System prompt for the agent" }),
+  few_shot_examples: z
+    .array(fewShotExampleSchema)
+    .optional()
+    .openapi({ description: "Few-shot examples for the agent" }),
 });
 
 export const updateAgentSchema = z
@@ -57,9 +86,32 @@ export const updateAgentSchema = z
       .optional(),
     servers: z
       .array(mcpServerSchema)
-      .min(1, "At least one server is required")
       .optional()
       .openapi({ description: "Updated MCP servers list" }),
+    model: z
+      .string()
+      .optional()
+      .openapi({ description: "Model ID to use with this agent" }),
+    temperature: z
+      .number()
+      .min(0)
+      .max(1)
+      .optional()
+      .openapi({ description: "Temperature setting for the model" }),
+    max_steps: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .openapi({ description: "Maximum number of steps for the agent" }),
+    system_prompt: z
+      .string()
+      .optional()
+      .openapi({ description: "System prompt for the agent" }),
+    few_shot_examples: z
+      .array(fewShotExampleSchema)
+      .optional()
+      .openapi({ description: "Few-shot examples for the agent" }),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided",

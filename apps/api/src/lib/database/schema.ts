@@ -416,6 +416,11 @@ export const agents = sqliteTable(
     description: text().default("").notNull(),
     avatar_url: text(),
     servers: text({ mode: "json" }).notNull(),
+    model: text(),
+    temperature: text(),
+    max_steps: integer(),
+    system_prompt: text(),
+    few_shot_examples: text({ mode: "json" }),
     created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
     updated_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)

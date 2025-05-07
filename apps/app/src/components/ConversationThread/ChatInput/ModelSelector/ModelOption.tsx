@@ -65,6 +65,7 @@ export const ModelOption = ({
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-1.5">
           <ModelIcon
+            url={model.avatarUrl}
             mono={mono}
             modelName={model.name || model.matchingModel}
             provider={model.provider}

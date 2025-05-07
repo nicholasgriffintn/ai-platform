@@ -251,6 +251,18 @@ export const ModelSelector = ({
   const filteredFeaturedModels = filterModels(groupedFeaturedModels);
   const filteredOtherModels = filterModels(groupedOtherModels);
 
+  const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
+  const isModelLockedByAgent = selectedAgent?.model;
+
+  useEffect(() => {
+    if (selectedAgentId) {
+      const agent = agents.find((a) => a.id === selectedAgentId);
+      if (agent?.model) {
+        setModel(agent.model);
+      }
+    }
+  }, [selectedAgentId, agents, setModel]);
+
   if (isLoadingModels) {
     return (
       <div className="flex items-center gap-2 text-sm text-zinc-500">
@@ -308,9 +320,14 @@ export const ModelSelector = ({
             {!minimal && (
               <span
                 className="text-sm max-w-[250px] truncate w-full"
-                title={selectedModelInfo?.name || "Select model"}
+                title={
+                  isModelLockedByAgent
+                    ? `${selectedModelInfo?.name || "Model"} (set by agent)`
+                    : selectedModelInfo?.name || "Select model"
+                }
               >
                 {selectedModelInfo?.name || "Select model"}
+                {isModelLockedByAgent && " (set by agent)"}
               </span>
             )}
           </>
@@ -440,13 +457,19 @@ export const ModelSelector = ({
                               provider: "agent",
                               type: [],
                               strengths: [],
-                              isFree: true,
+                              isFree: false,
+                              description: agent.description,
+                              avatarUrl: agent.avatar_url,
                             }}
                             isSelected={selectedAgentId === agent.id}
                             isActive={false}
                             onClick={() => {
                               setSelectedAgentId(agent.id);
                               setChatMode("agent");
+                              if (agent.model) {
+                                setModel(agent.model);
+                                setIsOpen(false);
+                              }
                             }}
                             disabled={isDisabled}
                             mono={mono}
@@ -464,6 +487,7 @@ export const ModelSelector = ({
                     Models
                   </h3>
                   <ModelsList
+                    disabled={isModelLockedByAgent}
                     featured={filteredFeaturedModels}
                     other={filteredOtherModels}
                     showAll={showAllModels}

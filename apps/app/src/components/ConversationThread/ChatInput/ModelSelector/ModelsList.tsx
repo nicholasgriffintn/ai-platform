@@ -14,6 +14,7 @@ interface ModelsListProps {
   selectedId?: string | null;
   onSelect: (id: string) => void;
   mono?: boolean;
+  disabled?: boolean;
 }
 
 export function ModelsList({
@@ -27,6 +28,7 @@ export function ModelsList({
   selectedId,
   onSelect,
   mono,
+  disabled,
 }: ModelsListProps) {
   return (
     <>
@@ -48,7 +50,7 @@ export function ModelsList({
                         model={m}
                         isSelected={m.id === selectedId}
                         onClick={() => onSelect(m.id)}
-                        disabled={disabledOption}
+                        disabled={disabledOption || disabled}
                         isActive={false}
                         mono={mono}
                       />

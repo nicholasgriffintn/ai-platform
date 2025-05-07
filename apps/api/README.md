@@ -16,6 +16,8 @@ The backend API for the Personal Assistant project, built with Cloudflare Worker
 - RAG capabilities with Cloudflare Vectorize
 - Automated model routing
 - Media uploads to Cloudflare R2
+- Multi-step conversations
+- Agents with setting configuration and configurable MCP servers
 
 ## Setup
 

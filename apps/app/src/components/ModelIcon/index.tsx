@@ -14,6 +14,7 @@ interface ModelIconProps extends ComponentProps<"div"> {
   size?: string | number;
   fallbackSize?: number;
   showFallback?: boolean;
+  url?: string;
 }
 
 const TextFallback: FC<{ text: string; provider?: string; size?: number }> = ({
@@ -45,10 +46,21 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
       size = 20,
       fallbackSize = 20,
       showFallback = true,
+      url,
       ...rest
     },
     ref,
   ) => {
+    if (url) {
+      return (
+        <img
+          src={url}
+          alt={modelName}
+          className="w-6 h-6 rounded-full object-cover"
+        />
+      );
+    }
+
     const { iconName, iconType } = useMemo(() => {
       const normalizedModelName = modelName.toLowerCase();
 

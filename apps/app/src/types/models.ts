@@ -5,6 +5,7 @@ export interface ModelConfigItem {
   matchingModel: string;
   name?: string;
   description?: string;
+  avatarUrl?: string;
   provider: string;
   type: string[];
   isBeta?: boolean;

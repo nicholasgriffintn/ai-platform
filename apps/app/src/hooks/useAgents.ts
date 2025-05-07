@@ -5,6 +5,18 @@ export const AGENTS_QUERY_KEYS = {
   all: ["agents"],
 } as const;
 
+export type AgentData = {
+  name: string;
+  description?: string;
+  avatar_url?: string;
+  servers?: any[];
+  model?: string;
+  temperature?: number;
+  max_steps?: number;
+  system_prompt?: string;
+  few_shot_examples?: Array<{ input: string; output: string }>;
+};
+
 export function useAgents() {
   const queryClient = useQueryClient();
 
@@ -18,18 +30,40 @@ export function useAgents() {
     staleTime: 1000 * 60,
   });
 
-  const createMutation = useMutation<
+  const createMutation = useMutation<any, Error, AgentData>({
+    mutationFn: ({
+      name,
+      description,
+      avatar_url,
+      servers,
+      model,
+      temperature,
+      max_steps,
+      system_prompt,
+      few_shot_examples,
+    }) =>
+      apiService.createAgent(
+        name,
+        servers,
+        description,
+        avatar_url,
+        model,
+        temperature,
+        max_steps,
+        system_prompt,
+        few_shot_examples,
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEYS.all });
+    },
+  });
+
+  const updateMutation = useMutation<
     any,
     Error,
-    {
-      name: string;
-      description?: string;
-      avatar_url: string | null;
-      servers: any[];
-    }
+    { id: string; data: Partial<AgentData> }
   >({
-    mutationFn: ({ name, description, avatar_url, servers }) =>
-      apiService.createAgent(name, servers, description, avatar_url),
+    mutationFn: ({ id, data }) => apiService.updateAgent(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEYS.all });
     },
@@ -48,6 +82,8 @@ export function useAgents() {
     errorAgents,
     createAgent: createMutation.mutateAsync,
     isCreatingAgent: createMutation.isPending,
+    updateAgent: updateMutation.mutateAsync,
+    isUpdatingAgent: updateMutation.isPending,
     deleteAgent: deleteMutation.mutate,
     isDeletingAgent: deleteMutation.isPending,
   };

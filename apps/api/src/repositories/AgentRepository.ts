@@ -8,13 +8,34 @@ export class AgentRepository extends BaseRepository {
     name: string,
     description: string,
     avatarUrl: string | null,
-    servers: any[],
+    servers?: any[],
+    model?: string,
+    temperature?: number,
+    maxSteps?: number,
+    systemPrompt?: string,
+    fewShotExamples?: any[],
   ): Promise<Agent> {
     const id = generateId();
-    const serversJson = JSON.stringify(servers);
+    const serversJson = servers ? JSON.stringify(servers) : null;
+    const fewShotExamplesJson = fewShotExamples
+      ? JSON.stringify(fewShotExamples)
+      : null;
+
     await this.executeRun(
-      "INSERT INTO agents (id, user_id, name, description, avatar_url, servers) VALUES (?, ?, ?, ?, ?, ?)",
-      [id, userId, name, description, avatarUrl, serversJson],
+      "INSERT INTO agents (id, user_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [
+        id,
+        userId,
+        name,
+        description,
+        avatarUrl,
+        serversJson,
+        model,
+        temperature?.toString(),
+        maxSteps,
+        systemPrompt,
+        fewShotExamplesJson,
+      ],
     );
     const now = new Date().toISOString();
     return {
@@ -24,6 +45,11 @@ export class AgentRepository extends BaseRepository {
       description,
       avatar_url: avatarUrl,
       servers: serversJson,
+      model,
+      temperature: temperature?.toString(),
+      max_steps: maxSteps,
+      system_prompt: systemPrompt,
+      few_shot_examples: fewShotExamplesJson,
       created_at: now,
       updated_at: now,
     };
@@ -51,6 +77,11 @@ export class AgentRepository extends BaseRepository {
       description: string;
       avatar_url: string;
       servers: any[];
+      model: string;
+      temperature: number;
+      max_steps: number;
+      system_prompt: string;
+      few_shot_examples: any[];
     }>,
   ): Promise<void> {
     const sets: string[] = [];
@@ -71,6 +102,26 @@ export class AgentRepository extends BaseRepository {
     if (data.servers !== undefined) {
       sets.push("servers = ?");
       params.push(JSON.stringify(data.servers));
+    }
+    if (data.model !== undefined) {
+      sets.push("model = ?");
+      params.push(data.model);
+    }
+    if (data.temperature !== undefined) {
+      sets.push("temperature = ?");
+      params.push(data.temperature.toString());
+    }
+    if (data.max_steps !== undefined) {
+      sets.push("max_steps = ?");
+      params.push(data.max_steps);
+    }
+    if (data.system_prompt !== undefined) {
+      sets.push("system_prompt = ?");
+      params.push(data.system_prompt);
+    }
+    if (data.few_shot_examples !== undefined) {
+      sets.push("few_shot_examples = ?");
+      params.push(JSON.stringify(data.few_shot_examples));
     }
 
     if (sets.length === 0) return;
