@@ -1,10 +1,15 @@
 import { gatewayId } from "~/constants/app";
 import { mapParametersToProvider } from "~/lib/chat/parameters";
+import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { StorageService } from "~/lib/storage";
+import { uploadAudioFromChat, uploadImageFromChat } from "~/lib/upload";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import { BaseProvider } from "./base";
+
+const logger = getLogger({ prefix: "WORKERS" });
 
 export class WorkersProvider extends BaseProvider {
   name = "workers-ai";
@@ -61,7 +66,100 @@ export class WorkersProvider extends BaseProvider {
           },
         });
 
-        return await this.formatResponse(modelResponse, params);
+        const modelConfig = getModelConfigByMatchingModel(model);
+        const type = modelConfig?.type || ["text"];
+
+        if (
+          // @ts-ignore
+          modelResponse?.image ||
+          (modelResponse && type.includes("text-to-image")) ||
+          type.includes("image-to-image")
+        ) {
+          try {
+            const imageKey = `generations/${params.completion_id}/${model}/${Date.now()}.png`;
+            const upload = await uploadImageFromChat(
+              // @ts-ignore
+              modelResponse.image || modelResponse,
+              env,
+              imageKey,
+            );
+
+            if (!upload) {
+              throw new AssistantError(
+                "Failed to upload image",
+                ErrorType.PROVIDER_ERROR,
+              );
+            }
+
+            const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+
+            return {
+              response: "Image Generated.",
+              data: {
+                attachments: [
+                  {
+                    type: "image",
+                    url: `${baseAssetsUrl}/${imageKey}`,
+                    key: upload,
+                  },
+                ],
+              },
+            };
+          } catch (error) {
+            logger.error("Error generating image", { error });
+            return "";
+          }
+        } else if (
+          // @ts-ignore
+          modelResponse?.audio ||
+          (modelResponse && type.includes("text-to-speech"))
+        ) {
+          try {
+            const audioKey = `generations/${params.completion_id}/${model}/${Date.now()}.mp3`;
+            const upload = await uploadAudioFromChat(
+              // @ts-ignore
+              modelResponse.audio || modelResponse,
+              env,
+              audioKey,
+            );
+
+            if (!upload) {
+              throw new AssistantError(
+                "Failed to upload audio",
+                ErrorType.PROVIDER_ERROR,
+              );
+            }
+
+            const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+
+            return {
+              response: "Audio Generated.",
+              data: {
+                attachments: [
+                  {
+                    type: "audio",
+                    url: `${baseAssetsUrl}/${audioKey}`,
+                    key: upload,
+                  },
+                ],
+              },
+            };
+          } catch (error) {
+            logger.error("Error generating audio", { error });
+            return "";
+          }
+        } else if (
+          // @ts-ignore
+          modelResponse?.description
+        ) {
+          return {
+            // @ts-ignore - types of wrong
+            response: modelResponse.description,
+            data: modelResponse,
+          };
+        }
+
+        return modelResponse;
       },
       analyticsEngine: env.ANALYTICS,
       settings: {
