@@ -96,7 +96,10 @@ export function formatMessageContent(messageContent: string): {
   };
 }
 
-export const formattedMessageContent = (originalContent: string) => {
+export const formattedMessageContent = (
+  role: Message["role"],
+  originalContent: string,
+) => {
   let content = originalContent;
   const reasoning = [];
   const artifacts = [];
@@ -128,48 +131,52 @@ export const formattedMessageContent = (originalContent: string) => {
     content = content.replace(analysisMatch[0], "");
   }
 
-  const artifactRegex = /<artifact\s+([^>]*)>([\s\S]*?)(<\/artifact>|$)/g;
-  let artifactMatch = null;
-  const tempContent = content;
+  if (role === "assistant") {
+    const artifactRegex = /<artifact\s+([^>]*)>([\s\S]*?)(<\/artifact>|$)/g;
+    let artifactMatch = null;
+    const tempContent = content;
 
-  artifactRegex.lastIndex = 0;
+    artifactRegex.lastIndex = 0;
 
-  artifactMatch = artifactRegex.exec(tempContent);
-  while (artifactMatch !== null) {
-    const attributesStr = artifactMatch[1];
-    const artifactContent = artifactMatch[2].trim();
-    const isOpen = !artifactMatch[0].includes("</artifact>");
+    while (true) {
+      artifactMatch = artifactRegex.exec(tempContent);
+      if (artifactMatch === null) {
+        break;
+      }
 
-    const identifier = attributesStr.match(/identifier="([^"]*)"/)?.[1] || "";
-    if (!identifier) {
-      console.warn(
-        "Artifact missing identifier:",
-        artifactMatch[0].substring(0, 50),
-      );
-      continue;
+      const attributesStr = artifactMatch[1];
+      const artifactContent = artifactMatch[2].trim();
+      const isOpen = !artifactMatch[0].includes("</artifact>");
+
+      const identifier = attributesStr.match(/identifier="([^"]*)"/)?.[1] || "";
+      if (!identifier) {
+        console.warn(
+          "Artifact missing identifier:",
+          artifactMatch[0].substring(0, 50),
+        );
+        continue;
+      }
+
+      const getAttributeValue = (attr: string) => {
+        const regex = new RegExp(`${attr}="([^"]*)"`, "i");
+        const match = attributesStr.match(regex);
+        return match ? match[1] : null;
+      };
+
+      const type = getAttributeValue("type") || "";
+      const language = getAttributeValue("language") || type || "text";
+      const title = getAttributeValue("title") || undefined;
+
+      artifacts.push({
+        identifier,
+        type,
+        language,
+        title,
+        content: artifactContent,
+        placeholder: `[[ARTIFACT:${identifier}]]`,
+        isOpen: isOpen,
+      });
     }
-
-    const getAttributeValue = (attr: string) => {
-      const regex = new RegExp(`${attr}="([^"]*)"`, "i");
-      const match = attributesStr.match(regex);
-      return match ? match[1] : null;
-    };
-
-    const type = getAttributeValue("type") || "";
-    const language = getAttributeValue("language") || type || "text";
-    const title = getAttributeValue("title") || undefined;
-
-    artifacts.push({
-      identifier,
-      type,
-      language,
-      title,
-      content: artifactContent,
-      placeholder: `[[ARTIFACT:${identifier}]]`,
-      isOpen: isOpen,
-    });
-
-    artifactMatch = artifactRegex.exec(tempContent);
   }
 
   for (const artifact of artifacts) {

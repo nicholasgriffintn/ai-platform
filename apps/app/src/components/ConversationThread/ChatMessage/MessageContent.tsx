@@ -71,6 +71,7 @@ const processCustomXmlTags = (text: string): string => {
 };
 
 const renderTextContent = (
+  role: Message["role"],
   textContent: string,
   messageReasoning: Message["reasoning"] | undefined,
   messageCitations: Message["citations"] | undefined,
@@ -82,7 +83,10 @@ const renderTextContent = (
   ) => void,
   key?: string,
 ): ReactNode => {
-  let { content, reasoning, artifacts } = formattedMessageContent(textContent);
+  let { content, reasoning, artifacts } = formattedMessageContent(
+    role,
+    textContent,
+  );
   content = processCustomXmlTags(content);
 
   const hasOpenReasoning = reasoning.some((item) => item.isOpen);
@@ -297,6 +301,7 @@ export const MessageContent = memo(
         <>
           {typeof message.content === "string" ? (
             renderTextContent(
+              message.role,
               message.content,
               message.reasoning || {
                 content: thinkingContent,
@@ -311,6 +316,7 @@ export const MessageContent = memo(
               {message.content.map((item: MessageContentType, i: number) => {
                 if (item.type === "text" && item.text) {
                   return renderTextContent(
+                    message.role,
                     item.text,
                     message.reasoning || {
                       content: thinkingContent,
@@ -392,6 +398,7 @@ export const MessageContent = memo(
         </>
       );
     }, [
+      message.role,
       message.content,
       message.reasoning,
       message.data,
