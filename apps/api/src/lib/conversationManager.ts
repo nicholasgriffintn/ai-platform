@@ -101,11 +101,14 @@ export class ConversationManager {
    * @param isPro Whether the user is on the pro plan
    * @param modelId The model ID to check usage for
    */
-  async checkUsageLimits(isPro = false, modelId?: string): Promise<void> {
+  async checkUsageLimits(modelId?: string): Promise<void> {
     if ((this.user || this.anonymousUser) && this.usageManager) {
       const model = modelId || this.model;
       if (model) {
-        await this.usageManager.checkUsageByModel(model, isPro);
+        await this.usageManager.checkUsageByModel(
+          model,
+          this.user?.plan_id === "pro",
+        );
       }
     }
   }

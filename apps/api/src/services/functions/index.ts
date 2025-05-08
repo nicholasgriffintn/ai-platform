@@ -83,10 +83,7 @@ export const handleFunctions = async ({
 
   if (conversationManager) {
     try {
-      await conversationManager.checkUsageLimits(
-        isProUser,
-        foundFunction.type === "premium" ? "premium" : "normal",
-      );
+      await conversationManager.checkUsageLimits(foundFunction.type);
     } catch (error) {
       logger.error("Failed to check usage limits:", error);
       throw error;

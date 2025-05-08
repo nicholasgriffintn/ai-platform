@@ -58,7 +58,15 @@ async function prepareRequestData(options: CoreChatOptions) {
   } = options;
   const isProUser = user?.plan_id === "pro";
 
-  const sanitisedMessages = sanitiseMessages(rawMessages);
+  const sanitisedMessages = Array.isArray(rawMessages)
+    ? sanitiseMessages(rawMessages)
+    : [];
+  if (sanitisedMessages.length === 0) {
+    throw new AssistantError(
+      "Messages array is empty or invalid",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
 
   if (!env.DB) {
     throw new AssistantError(
@@ -74,7 +82,13 @@ async function prepareRequestData(options: CoreChatOptions) {
     );
   }
 
-  const lastMessage = sanitisedMessages[sanitisedMessages.length - 1];
+  const lastMessage = sanitisedMessages[sanitisedMessages.length - 1] || null;
+  if (!lastMessage) {
+    throw new AssistantError(
+      "No valid last message found",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
   const lastMessageContent = Array.isArray(lastMessage.content)
     ? lastMessage.content
     : [{ type: "text" as const, text: lastMessage.content as string }];
@@ -111,20 +125,24 @@ async function prepareRequestData(options: CoreChatOptions) {
 
   const primaryModel = primaryModelConfig.matchingModel;
 
-  const modelConfigs: ModelConfigInfo[] = selectedModels.map((model) => {
-    const config = getModelConfig(model);
-    if (!config) {
-      throw new AssistantError(
-        "Invalid model configuration",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-    return {
-      model: config.matchingModel,
-      provider: config.provider,
-      displayName: config.name || config.matchingModel,
-    };
-  });
+  const modelConfigs: ModelConfigInfo[] = selectedModels.reduce(
+    (configs, model) => {
+      const config = getModelConfig(model);
+      if (!config) {
+        throw new AssistantError(
+          "Invalid model configuration",
+          ErrorType.PARAMS_ERROR,
+        );
+      }
+      configs.push({
+        model: config.matchingModel,
+        provider: config.provider,
+        displayName: config.name || config.matchingModel,
+      });
+      return configs;
+    },
+    [] as ModelConfigInfo[],
+  );
 
   const conversationManager = ConversationManager.getInstance({
     database,
@@ -157,11 +175,14 @@ async function prepareRequestData(options: CoreChatOptions) {
           .join("\n\n")}`
       : finalMessage;
 
-  const prunedWithAttachments = pruneMessagesToFitContext(
-    sanitisedMessages,
-    messageWithContext,
-    primaryModelConfig,
-  );
+  const prunedWithAttachments =
+    sanitisedMessages.length > 0
+      ? pruneMessagesToFitContext(
+          sanitisedMessages,
+          messageWithContext,
+          primaryModelConfig,
+        )
+      : [];
   checkContextWindowLimits(
     prunedWithAttachments,
     messageWithContext,
@@ -253,10 +274,12 @@ async function prepareRequestData(options: CoreChatOptions) {
     userSettings?.memories_chat_history_enabled;
   if (isProUser && memoriesEnabled) {
     const memoryManager = MemoryManager.getInstance(env, user);
-    const recentMemories = await memoryManager.retrieveMemories(
-      finalUserMessage,
-      { topK: 3, scoreThreshold: 0.5 },
-    );
+    const recentMemories = finalUserMessage
+      ? await memoryManager.retrieveMemories(finalUserMessage, {
+          topK: 3,
+          scoreThreshold: 0.5,
+        })
+      : [];
     if (recentMemories.length > 0) {
       const memoryBlock = `\n\nYou have access to the following long-term memories:\n<user_memories>\n${recentMemories
         .map((m) => `- ${m.text}`)
@@ -268,15 +291,13 @@ async function prepareRequestData(options: CoreChatOptions) {
     }
   }
 
-  const chatMessages = prunedWithAttachments.map((msg, index) => {
-    if (index === prunedWithAttachments.length - 1) {
-      return {
-        ...msg,
-        content: messageWithContext,
-      };
-    }
-    return msg;
-  });
+  const chatMessages = prunedWithAttachments.map((msg, index) => ({
+    ...msg,
+    content:
+      index === prunedWithAttachments.length - 1
+        ? messageWithContext
+        : msg.content,
+  }));
 
   const filteredChatMessages = chatMessages.filter(
     (msg) => msg.role !== "system",
@@ -351,7 +372,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       currentMode,
     } = preparedData;
 
-    await conversationManager.checkUsageLimits(isProUser, primaryModel);
+    await conversationManager.checkUsageLimits(primaryModel);
 
     if (modelConfigs.length > 1 && stream) {
       const transformedStream = createMultiModelStream(
