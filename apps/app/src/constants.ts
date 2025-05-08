@@ -13,3 +13,4 @@ export const CHATS_QUERY_KEY = "chats";
 export const TURNSTILE_SITE_KEY = IS_PRODUCTION
   ? "0x4AAAAAABB3--lj9wHKjSld"
   : undefined;
+export const TRIAL_DURATION = 90;

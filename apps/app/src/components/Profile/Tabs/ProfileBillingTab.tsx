@@ -14,6 +14,7 @@ import { PageHeader } from "~/components/PageHeader";
 import { PageTitle } from "~/components/PageTitle";
 import { Button } from "~/components/ui/Button";
 import { Card } from "~/components/ui/Card";
+import { TRIAL_DURATION } from "~/constants";
 import {
   useCancelSubscription,
   useCreateCheckoutSession,
@@ -209,7 +210,7 @@ export function ProfileBillingTab() {
                 </div>
                 <div className="bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full text-sm font-medium text-green-800 dark:text-green-200 mb-6">
                   <Sparkles className="inline-block mr-1 h-4 w-4" />
-                  90-Day Free Trial
+                  {TRIAL_DURATION}-Day Free Trial
                 </div>
 
                 <Button
@@ -222,9 +223,9 @@ export function ProfileBillingTab() {
                     })
                   }
                   variant="primary"
-                  className="w-full px-8 py-2 relative overflow-hidden transition-all duration-300 shadow-lg hover:shadow-xl group"
+                  className="w-full px-10 py-3 text-lg relative overflow-hidden transition-all duration-300 shadow-lg hover:shadow-xl hover:bg-blue-700"
                 >
-                  <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-700" />
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-gleam" />
                   <span className="relative flex items-center justify-center">
                     <Zap className="mr-2 h-4 w-4 animate-pulse text-yellow-100" />
                     <span className="relative">
@@ -234,6 +235,15 @@ export function ProfileBillingTab() {
                     </span>
                   </span>
                 </Button>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-3 text-center">
+                  Your trial will end on{" "}
+                  {formatDate(
+                    new Date(
+                      Date.now() + TRIAL_DURATION * 24 * 60 * 60 * 1000,
+                    ).toISOString(),
+                  )}
+                  . You can always cancel before then.
+                </p>
               </div>
 
               <div className="grid gap-6 pt-6 md:pt-0">
