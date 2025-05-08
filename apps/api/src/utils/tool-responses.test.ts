@@ -60,7 +60,7 @@ describe("Tool Response Utilities", () => {
   describe("formatToolErrorResponse", () => {
     it("should format an error response correctly", () => {
       const toolName = "get_weather";
-      const errorMessage = "API key is invalid";
+      const errorMessage = "Error: API key is invalid";
 
       const result = formatToolErrorResponse(toolName, errorMessage, "error");
 
