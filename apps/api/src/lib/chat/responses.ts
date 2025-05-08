@@ -247,10 +247,11 @@ export async function getAIResponse({
   const startTime = Date.now();
   let response;
   try {
+    // TODO: Make this smarter so we don't retry if the error is not retryable
     response = await withRetry(
       () => provider.getResponse(parameters, user?.id),
       {
-        retryCount: 3,
+        retryCount: 0,
         baseDelayMs: 1000,
       },
     );
