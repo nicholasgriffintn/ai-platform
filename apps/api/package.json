@@ -35,7 +35,7 @@
     "hono": "4.7.9",
     "hono-openapi": "0.4.8",
     "stripe": "^18.0.0",
-    "zod": "3.24.3",
+    "zod": "3.24.4",
     "zod-openapi": "4.2.4"
   },
   "devDependencies": {
