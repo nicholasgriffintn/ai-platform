@@ -33,7 +33,7 @@ export function Analytics() {
     if (
       window._beaconInitialized ||
       document.querySelector(
-        'script[src="https://beacon.polychat.app/beacon.js"]',
+        'script[src="https://beacon.polychat.app/beacon.min.js"]',
       )
     ) {
       return;
@@ -42,7 +42,7 @@ export function Analytics() {
     window._beaconInitialized = true;
 
     const script = document.createElement("script");
-    script.src = "https://beacon.polychat.app/beacon.js";
+    script.src = "https://beacon.polychat.app/beacon.min.js";
     script.async = true;
 
     script.onload = () => {
