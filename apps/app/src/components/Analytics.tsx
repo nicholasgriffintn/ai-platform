@@ -109,14 +109,19 @@ export function Analytics({
       return;
     }
 
-    if (window._expBeaconInitialized) {
+    if (
+      window._expBeaconInitialized ||
+      document.querySelector(
+        'script[src="https://beacon.polychat.app/exp-beacon.min.js"]',
+      )
+    ) {
       return;
     }
 
     window._expBeaconInitialized = true;
 
     const script = document.createElement("script");
-    script.src = "https://beacon.polychat.app/exp-beacon.js";
+    script.src = "https://beacon.polychat.app/exp-beacon.min.js";
     script.async = true;
 
     script.onload = () => {
