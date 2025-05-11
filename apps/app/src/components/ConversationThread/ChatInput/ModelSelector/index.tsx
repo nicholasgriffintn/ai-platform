@@ -12,6 +12,7 @@ import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { ModelIcon } from "~/components/ModelIcon";
 import { FormInput, FormSelect } from "~/components/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { useTrackEvent } from "~/hooks/use-track-event";
 import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import {
@@ -41,6 +42,8 @@ export const ModelSelector = ({
   minimal = false,
   mono = false,
 }: ModelSelectorProps) => {
+  const trackEvent = useTrackEvent();
+
   const {
     isPro,
     model,
@@ -177,6 +180,13 @@ export const ModelSelector = ({
     if (newChatMode !== "agent") {
       setSelectedAgentId(null);
     }
+
+    trackEvent({
+      name: "set_model_source",
+      category: "conversation",
+      label: "model_source",
+      value: newChatMode,
+    });
   };
 
   const featuredModels = Object.values(filteredModels).filter(
@@ -271,6 +281,17 @@ export const ModelSelector = ({
       </div>
     );
   }
+
+  const handleModelChange = (newModel: string) => {
+    setModel(newModel);
+
+    trackEvent({
+      name: "set_model",
+      category: "conversation",
+      label: "select_model",
+      value: newModel,
+    });
+  };
 
   return (
     <div className="relative">
@@ -467,7 +488,7 @@ export const ModelSelector = ({
                               setSelectedAgentId(agent.id);
                               setChatMode("agent");
                               if (agent.model) {
-                                setModel(agent.model);
+                                handleModelChange(agent.model);
                                 setIsOpen(false);
                               }
                             }}
@@ -497,7 +518,7 @@ export const ModelSelector = ({
                     isPro={isPro}
                     selectedId={selectedModelInfo?.id}
                     onSelect={(id) => {
-                      setModel(id);
+                      handleModelChange(id);
                       setIsOpen(false);
                     }}
                     mono={mono}
@@ -558,7 +579,7 @@ export const ModelSelector = ({
                   isPro={isPro}
                   selectedId={selectedModelInfo?.id}
                   onSelect={(id) => {
-                    setModel(id);
+                    handleModelChange(id);
                     setIsOpen(false);
                   }}
                   mono={mono}

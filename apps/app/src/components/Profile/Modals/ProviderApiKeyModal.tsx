@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "~/components/ui/Dialog";
 import { FormInput } from "~/components/ui/Form/Input";
+import { useTrackEvent } from "~/hooks/use-track-event";
 import { useUser } from "~/hooks/useUser";
 
 interface ProviderApiKeyModalProps {
@@ -24,6 +25,7 @@ export function ProviderApiKeyModal({
   providerId,
   providerName,
 }: ProviderApiKeyModalProps) {
+  const trackEvent = useTrackEvent();
   const [apiKey, setApiKey] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const { storeProviderApiKey, isStoringProviderApiKey } = useUser();
@@ -35,6 +37,12 @@ export function ProviderApiKeyModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      trackEvent({
+        name: "store_provider_api_key",
+        category: "profile",
+        label: "enable_provider",
+        value: providerId,
+      });
       await storeProviderApiKey({
         providerId,
         apiKey,

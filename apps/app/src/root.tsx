@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Outlet, isRouteErrorResponse } from "react-router";
 
+import { Analytics } from "~/components/Analytics";
 import { AppInitializer } from "~/components/AppInitializer";
 import { AppShell } from "~/components/AppShell";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
@@ -10,6 +11,11 @@ import { Toaster } from "~/components/ui/sonner";
 import ErrorRoute from "~/pages/error";
 import { LoadingProvider } from "~/state/contexts/LoadingContext";
 import type { Route } from "./+types/root";
+
+const ENABLE_BEACON = import.meta.env.VITE_ENABLE_BEACON === "true";
+const BEACON_ENDPOINT = import.meta.env.VITE_BEACON_ENDPOINT;
+const BEACON_SITE_ID = import.meta.env.VITE_BEACON_SITE_ID;
+const BEACON_DEBUG = import.meta.env.VITE_BEACON_DEBUG === "true";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,6 +39,12 @@ export default function Root() {
     <>
       <LoadingProvider>
         <AppInitializer>
+          <Analytics
+            isEnabled={ENABLE_BEACON}
+            beaconEndpoint={BEACON_ENDPOINT}
+            beaconSiteId={BEACON_SITE_ID}
+            beaconDebug={BEACON_DEBUG}
+          />
           <Outlet />
           <ServiceWorkerRegistration />
           <Toaster />

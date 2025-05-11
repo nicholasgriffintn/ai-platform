@@ -12,6 +12,7 @@ import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
 import { UsageLimitWarning } from "~/components/UsageLimitWarning";
+import { useTrackEvent } from "~/hooks/use-track-event";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
@@ -25,6 +26,8 @@ import { MessageList } from "./MessageList";
 import { WelcomeScreen } from "./WelcomeScreen";
 
 export const ConversationThread = () => {
+  const trackEvent = useTrackEvent();
+
   const { currentConversationId, model, chatInput, setChatInput } =
     useChatStore();
   const { data: currentConversation } = useChat(currentConversationId);
@@ -147,6 +150,13 @@ export const ConversationThread = () => {
     try {
       const originalInput = chatInput;
       setChatInput("");
+
+      trackEvent({
+        name: "send_message",
+        category: "conversation",
+        label: "conversation_thread",
+        value: 1,
+      });
 
       const result = await sendMessage(chatInput, attachmentData);
       if (result?.status === "error") {

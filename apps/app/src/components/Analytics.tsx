@@ -28,8 +28,23 @@ declare global {
   }
 }
 
-export function Analytics() {
+export function Analytics({
+  isEnabled = true,
+  beaconEndpoint = "https://beacon.polychat.app",
+  beaconSiteId = "test-beacon",
+  beaconDebug = false,
+}: {
+  isEnabled?: boolean;
+  beaconEndpoint?: string;
+  beaconSiteId?: string;
+  beaconDebug?: boolean;
+}) {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
   useEffect(() => {
+    if (!isEnabled) {
+      return;
+    }
+
     if (
       window._beaconInitialized ||
       document.querySelector(
@@ -48,9 +63,9 @@ export function Analytics() {
     script.onload = () => {
       if (window.Beacon) {
         window.Beacon.init({
-          endpoint: "https://beacon.polychat.app",
-          siteId: "polychat-metrics",
-          debug: true,
+          endpoint: beaconEndpoint,
+          siteId: beaconSiteId,
+          debug: beaconDebug,
           trackClicks: true,
           trackUserTimings: true,
         });
@@ -60,7 +75,7 @@ export function Analytics() {
     document.head.appendChild(script);
 
     return () => {};
-  }, []);
+  }, [isEnabled]);
 
   return null;
 }

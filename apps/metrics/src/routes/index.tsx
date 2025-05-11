@@ -45,14 +45,16 @@ export function MetricsHome() {
   });
 
   const trackEvent = useCallback(
-    (
-      category: string,
-      action: string,
-      label?: string,
-      value?: string | number,
-    ) => {
+    (event: {
+      name: string;
+      category: string;
+      label?: string;
+      value?: number | string;
+      nonInteraction?: boolean;
+      properties?: Record<string, string>;
+    }) => {
       if (window.Beacon) {
-        window.Beacon.trackEvent(category, action, label, value);
+        window.Beacon.trackEvent(event);
       }
     },
     [],
@@ -68,12 +70,12 @@ export function MetricsHome() {
   });
 
   const handleFilterChange = (newFilters: MetricsParams) => {
-    trackEvent(
-      "metrics",
-      "filter_change",
-      "metrics_dashboard",
-      `${newFilters.status}|${newFilters.limit}|${newFilters.interval}|${newFilters.timeframe}`,
-    );
+    trackEvent({
+      name: "filter_change",
+      category: "metrics",
+      label: "metrics_dashboard",
+      value: `${newFilters.status}|${newFilters.limit}|${newFilters.interval}|${newFilters.timeframe}`,
+    });
 
     setFilters(newFilters);
   };

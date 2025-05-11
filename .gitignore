@@ -172,6 +172,7 @@ dist
 .wrangler/
 wrangler.toml
 wrangler.jsonc
+!apps/app/wrangler.jsonc
 
 purge-keys.json
 

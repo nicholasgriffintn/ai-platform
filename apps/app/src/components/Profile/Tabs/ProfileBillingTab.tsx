@@ -15,6 +15,7 @@ import { PageTitle } from "~/components/PageTitle";
 import { Button } from "~/components/ui/Button";
 import { Card } from "~/components/ui/Card";
 import { TRIAL_DURATION } from "~/constants";
+import { useTrackEvent } from "~/hooks/use-track-event";
 import {
   useCancelSubscription,
   useCreateCheckoutSession,
@@ -32,6 +33,8 @@ type PageAction = {
 };
 
 export function ProfileBillingTab() {
+  const trackEvent = useTrackEvent();
+
   const {
     data: sub,
     isLoading: isSubLoading,
@@ -92,12 +95,19 @@ export function ProfileBillingTab() {
       actions.push({
         label:
           checkoutStatus === "pending" ? "Redirecting..." : "Upgrade to Pro",
-        onClick: () =>
+        onClick: () => {
+          trackEvent({
+            name: "upgrade_to_pro",
+            category: "billing",
+            label: "upgrade_to_pro",
+            value: 1,
+          });
           checkout({
             planId: "pro",
             successUrl: window.location.href,
             cancelUrl: window.location.href,
-          }),
+          });
+        },
         icon:
           checkoutStatus === "pending" ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -215,13 +225,20 @@ export function ProfileBillingTab() {
 
                 <Button
                   disabled={checkoutStatus === "pending"}
-                  onClick={() =>
+                  onClick={() => {
+                    trackEvent({
+                      name: "upgrade_to_pro",
+                      category: "billing",
+                      label: "upgrade_to_pro",
+                      value: 1,
+                    });
+
                     checkout({
                       planId: "pro",
                       successUrl: window.location.href,
                       cancelUrl: window.location.href,
-                    })
-                  }
+                    });
+                  }}
                   variant="primary"
                   className="w-full px-10 py-3 text-lg relative overflow-hidden transition-all duration-300 shadow-lg hover:shadow-xl hover:bg-blue-700"
                 >

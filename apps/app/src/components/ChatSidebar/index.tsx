@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "~/components/ui";
+import { useTrackEvent } from "~/hooks/use-track-event";
 import { useChats, useDeleteChat, useUpdateChatTitle } from "~/hooks/useChat";
 import { categorizeChatsByDate } from "~/lib/sidebar";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -20,6 +21,7 @@ import { UserMenuItem } from "../Sidebar/UserMenuItem";
 import { ChatSidebarNotifications } from "./ChatSidebarNotifications";
 
 export const ChatSidebar = () => {
+  const trackEvent = useTrackEvent();
   const {
     sidebarVisible,
     setSidebarVisible,
@@ -44,6 +46,13 @@ export const ChatSidebar = () => {
   const handleNewChatClick = () => {
     clearCurrentConversation();
 
+    trackEvent({
+      name: "new_chat",
+      category: "sidebar",
+      label: "new_chat",
+      value: 1,
+    });
+
     if (isMobile) {
       setSidebarVisible(false);
     }
@@ -51,6 +60,13 @@ export const ChatSidebar = () => {
 
   const handleConversationClick = (id: string | undefined) => {
     setCurrentConversationId(id);
+
+    trackEvent({
+      name: "conversation_click",
+      category: "sidebar",
+      label: "conversation_click",
+      value: 1,
+    });
 
     if (isMobile) {
       setSidebarVisible(false);
@@ -64,6 +80,13 @@ export const ChatSidebar = () => {
     const newTitle = prompt("Enter new title:", currentTitle);
     if (newTitle && newTitle !== currentTitle) {
       try {
+        trackEvent({
+          name: "edit_title",
+          category: "sidebar",
+          label: "edit_title",
+          value: 1,
+        });
+
         await updateTitle.mutateAsync({ completion_id, title: newTitle });
       } catch (error) {
         console.error("Failed to update title:", error);
@@ -82,6 +105,13 @@ export const ChatSidebar = () => {
     }
 
     try {
+      trackEvent({
+        name: "delete_chat",
+        category: "sidebar",
+        label: "delete_chat",
+        value: 1,
+      });
+
       await deleteChat.mutateAsync(completion_id);
       if (currentConversationId === completion_id) {
         const firstConversation = conversations.find(
@@ -100,6 +130,13 @@ export const ChatSidebar = () => {
     if (window.localStorage) {
       window.localStorage.setItem("localOnlyMode", String(newMode));
     }
+
+    trackEvent({
+      name: "toggle_local_only_mode",
+      category: "sidebar",
+      label: "toggle_local_only_mode",
+      value: newMode ? "local-only" : "cloud",
+    });
   };
 
   const renderConversationGroup = (

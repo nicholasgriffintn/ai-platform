@@ -11,12 +11,15 @@ import {
   DialogTitle,
 } from "~/components/ui/Dialog";
 import { Skeleton } from "~/components/ui/Skeleton";
+import { useTrackEvent } from "~/hooks/use-track-event";
 import { usePasskeys } from "~/hooks/usePasskeys";
 import { formatRelativeTime } from "~/lib/dates";
 import { PageHeader } from "../../PageHeader";
 import { PageTitle } from "../../PageTitle";
 
 export function ProfilePasskeysTab() {
+  const trackEvent = useTrackEvent();
+
   const {
     passkeys,
     fetchPasskeys,
@@ -40,6 +43,12 @@ export function ProfilePasskeysTab() {
   }, [fetchPasskeys]);
 
   const handleAddPasskey = () => {
+    trackEvent({
+      name: "add_passkey",
+      category: "profile",
+      label: "add_passkey",
+      value: 1,
+    });
     registerPasskey();
   };
 

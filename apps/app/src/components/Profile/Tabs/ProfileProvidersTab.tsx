@@ -6,6 +6,7 @@ import { PageHeader } from "~/components/PageHeader";
 import { PageTitle } from "~/components/PageTitle";
 import { Button } from "~/components/ui/Button";
 import { Card } from "~/components/ui/Card";
+import { useTrackEvent } from "~/hooks/use-track-event";
 import { useUser } from "~/hooks/useUser";
 import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal";
 
@@ -24,6 +25,8 @@ interface ProviderModalState {
 }
 
 export function ProfileProvidersTab() {
+  const trackEvent = useTrackEvent();
+
   const {
     providerSettings,
     isLoadingProviderSettings,
@@ -37,6 +40,12 @@ export function ProfileProvidersTab() {
   });
 
   const handleEnableProvider = (providerId: string, providerName: string) => {
+    trackEvent({
+      name: "open_enable_provider_modal",
+      category: "profile",
+      label: "enable_provider",
+      value: providerId,
+    });
     setModalState({
       open: true,
       providerId,
@@ -45,6 +54,12 @@ export function ProfileProvidersTab() {
   };
 
   const handleCloseModal = (open: boolean) => {
+    trackEvent({
+      name: "close_enable_provider_modal",
+      category: "profile",
+      label: "enable_provider",
+      value: "",
+    });
     setModalState({
       open,
       providerId: "",

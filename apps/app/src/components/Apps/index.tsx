@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 
 import { Button } from "~/components/ui";
+import { useTrackEvent } from "~/hooks/use-track-event";
 import {
   useDynamicApp,
   useDynamicApps,
@@ -19,6 +20,7 @@ import { groupAppsByCategory } from "./utils";
 
 export const DynamicApps = () => {
   const { isPro, isAuthenticated, isAuthenticationLoading } = useChatStore();
+  const trackEvent = useTrackEvent();
 
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
   const [result, setResult] = useState<Record<string, any> | null>(null);
@@ -42,16 +44,33 @@ export const DynamicApps = () => {
     return groupAppsByCategory(apps);
   }, [apps]);
 
-  const handleAppSelect = useCallback((appId: string) => {
-    setSelectedAppId(appId);
-    setResult(null);
-  }, []);
+  const handleAppSelect = useCallback(
+    (appId: string) => {
+      setSelectedAppId(appId);
+      setResult(null);
+
+      trackEvent({
+        name: "app_select",
+        category: "apps",
+        label: "app_select",
+        value: appId,
+      });
+    },
+    [trackEvent],
+  );
 
   const handleFormSubmit = useCallback(
     async (formData: Record<string, any>) => {
       if (!selectedAppId) return {};
 
       try {
+        trackEvent({
+          name: "app_submit",
+          category: "apps",
+          label: "app_submit",
+          value: selectedAppId,
+        });
+
         const result = await executeApp({ id: selectedAppId, formData });
         setResult(result);
         return result;
@@ -60,17 +79,29 @@ export const DynamicApps = () => {
         throw error;
       }
     },
-    [selectedAppId, executeApp],
+    [selectedAppId, executeApp, trackEvent],
   );
 
   const handleReset = useCallback(() => {
+    trackEvent({
+      name: "app_reset",
+      category: "apps",
+      label: "app_reset",
+      value: selectedAppId || "null",
+    });
     setResult(null);
-  }, []);
+  }, [selectedAppId, trackEvent]);
 
   const handleBackToApps = useCallback(() => {
+    trackEvent({
+      name: "back_to_apps",
+      category: "apps",
+      label: "back_to_apps",
+      value: 1,
+    });
     setSelectedAppId(null);
     setResult(null);
-  }, []);
+  }, [trackEvent]);
 
   const renderCategoryApps = useCallback(
     (category: string, categoryApps: any[]) => (

@@ -1,6 +1,8 @@
 import { Construction } from "lucide-react";
+
 import { PageHeader } from "~/components/PageHeader";
 import { PageTitle } from "~/components/PageTitle";
+import { useTrackEvent } from "~/hooks/use-track-event";
 import {
   useDeleteAllLocalChats,
   useDeleteAllRemoteChats,
@@ -8,6 +10,8 @@ import {
 import { Alert, AlertDescription, AlertTitle, Button } from "../../ui";
 
 export function ProfileHistoryTab() {
+  const trackEvent = useTrackEvent();
+
   const deleteAllChats = useDeleteAllLocalChats();
   const deleteAllRemoteChats = useDeleteAllRemoteChats();
 
@@ -21,6 +25,12 @@ export function ProfileHistoryTab() {
     }
 
     try {
+      trackEvent({
+        name: "delete_all_local_chats",
+        category: "profile",
+        label: "delete_all_local_chats",
+        value: 1,
+      });
       await deleteAllChats.mutateAsync();
     } catch (error) {
       console.error("Failed to delete all chats:", error);
@@ -38,6 +48,12 @@ export function ProfileHistoryTab() {
     }
 
     try {
+      trackEvent({
+        name: "delete_all_remote_chats",
+        category: "profile",
+        label: "delete_all_remote_chats",
+        value: 1,
+      });
       await deleteAllRemoteChats.mutateAsync();
     } catch (error) {
       console.error("Failed to delete all remote chats:", error);
