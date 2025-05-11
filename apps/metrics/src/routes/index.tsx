@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+
 import { MetricsControls } from "../components/controls";
 import { MetricsDashboard } from "../components/dashboard";
 import { Layout } from "../components/layout";
@@ -43,14 +44,44 @@ export function MetricsHome() {
     timeframe: 24,
   });
 
+  const trackEvent = useCallback(
+    (
+      category: string,
+      action: string,
+      label?: string,
+      value?: string | number,
+    ) => {
+      if (window.Beacon) {
+        window.Beacon.trackEvent(category, action, label, value);
+      }
+    },
+    [],
+  );
+
   const {
-    data = {},
+    data = { metrics: [] },
     isLoading,
     error,
   } = useQuery({
     queryKey: ["metrics", filters],
     queryFn: () => fetchMetrics(filters),
   });
+
+  const handleFilterChange = (newFilters: MetricsParams) => {
+    trackEvent(
+      "metrics",
+      "filter_change",
+      "metrics_dashboard",
+      JSON.stringify({
+        status: newFilters.status,
+        limit: newFilters.limit,
+        interval: newFilters.interval,
+        timeframe: newFilters.timeframe,
+      }),
+    );
+
+    setFilters(newFilters);
+  };
 
   return (
     <Layout>
@@ -62,7 +93,7 @@ export function MetricsHome() {
           <div className="w-full">
             <MetricsControls
               initialValues={filters}
-              onSubmit={(newFilters) => setFilters(newFilters)}
+              onSubmit={handleFilterChange}
             />
           </div>
         </div>
@@ -70,7 +101,7 @@ export function MetricsHome() {
           <div className="text-center text-muted-foreground">Loading...</div>
         ) : error ? (
           <div className="text-center text-red-500">Error loading metrics</div>
-        ) : data.metrics.length > 0 ? (
+        ) : data.metrics?.length > 0 ? (
           <MetricsDashboard
             metrics={data.metrics}
             interval={filters.interval}
