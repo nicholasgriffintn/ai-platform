@@ -72,12 +72,7 @@ export function MetricsHome() {
       "metrics",
       "filter_change",
       "metrics_dashboard",
-      JSON.stringify({
-        status: newFilters.status,
-        limit: newFilters.limit,
-        interval: newFilters.interval,
-        timeframe: newFilters.timeframe,
-      }),
+      `${newFilters.status}|${newFilters.limit}|${newFilters.interval}|${newFilters.timeframe}`,
     );
 
     setFilters(newFilters);
