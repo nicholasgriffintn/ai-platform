@@ -36,8 +36,8 @@ importers:
         specifier: 3.1.5
         version: 3.1.5
       agents:
-        specifier: ^0.0.84
-        version: 0.0.84(@cloudflare/workers-types@4.20250514.0)(react@19.1.0)
+        specifier: ^0.0.87
+        version: 0.0.87(@cloudflare/workers-types@4.20250514.0)(react@19.1.0)
       aws4fetch:
         specifier: 1.0.20
         version: 1.0.20
@@ -2231,8 +2231,8 @@ packages:
     resolution: {integrity: sha512-jRR5wdylq8CkOe6hei19GGZnxM6rBGwFl3Bg0YItGDimvjGtAvdZk4Pu6Cl4u4Igsws4a1fd1Vq3ezrhn4KmFw==}
     engines: {node: '>= 14'}
 
-  agents@0.0.84:
-    resolution: {integrity: sha512-hzhyEKygo6I5rnjXPl7h6CNdsLaEYDbEYSypTo9OGj1KJyu74XlfGO6wI6CO60t1K3Bbl4u5p7z4p+Ieo1j3oA==}
+  agents@0.0.87:
+    resolution: {integrity: sha512-nanFC1FoByZqAIeCXta7rBR21GmUd3fulkiMLpg0jnDOzs3i0KfH7Rlr41DQ2nP4i7cTYv2VZhjWti0RQdpIPg==}
     peerDependencies:
       react: '*'
 
@@ -6717,7 +6717,7 @@ snapshots:
 
   agent-base@7.1.3: {}
 
-  agents@0.0.84(@cloudflare/workers-types@4.20250514.0)(react@19.1.0):
+  agents@0.0.87(@cloudflare/workers-types@4.20250514.0)(react@19.1.0):
     dependencies:
       '@modelcontextprotocol/sdk': 1.11.2
       ai: 4.3.15(react@19.1.0)(zod@3.24.4)
