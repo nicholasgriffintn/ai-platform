@@ -147,6 +147,9 @@ export const ArtifactPanel = ({
           "text/javascript",
           "text/html",
           "image/svg+xml",
+          "application/vnd.code",
+          "application/vnd.react",
+          "application/vnd.mermaid",
         ];
 
         return (
@@ -188,6 +191,9 @@ export const ArtifactPanel = ({
       "text/javascript",
       "text/html",
       "image/svg+xml",
+      "application/vnd.code",
+      "application/vnd.react",
+      "application/vnd.mermaid",
     ];
 
     return (

@@ -61,29 +61,20 @@ export async function returnStandardPrompt(
         !memoriesEnabled,
         "The memories feature has been disabled for this user. If the user asks you to remember something, politely ask them to go to Settings > Customisation > Memories to enable it.",
       )
-      .startSection("Context")
+      .addLine()
+      .addLine("<user_context>")
       .addIf(!!userNickname, `<user_nickname>${userNickname}</user_nickname>`)
       .addIf(!!userJobRole, `<user_job_role>${userJobRole}</user_job_role>`)
       .addIf(!!date, `<current_date>${date}</current_date>`)
       .addIf(
         !!latitude && !!longitude,
         `<user_location><latitude>${latitude}</latitude><longitude>${longitude}</longitude></user_location>`,
-      );
+      )
+      .addLine("</user_context>");
 
     if (!isAgent) {
-      builder.startSection("Example output");
-
-      if (!hasThinking) {
-        builder
-          .addLine("Example analysis:")
-          .addLine("<analysis>")
-          .addLine(
-            "Your detailed analysis of the question, considering context and required information",
-          )
-          .addLine("</analysis>");
-      }
-
-      builder.addLine("<answer>");
+      builder.addLine("Here is an example of the output you should provide:");
+      builder.addLine("<example_output>");
 
       let answerStyle = "";
       if (response_mode === "concise") {
@@ -96,19 +87,31 @@ export async function returnStandardPrompt(
         answerStyle = "balanced";
       }
 
-      builder.addLine(`Your ${answerStyle} response to the user's question`);
+      if (!hasThinking) {
+        builder
+          .addLine("<analysis>")
+          .addLine(
+            `Your ${answerStyle} analysis of the question, considering context and required information`,
+          )
+          .addLine("</analysis>");
+      }
+
+      builder.addLine("<answer>");
+
+      builder.addLine(
+        `Your ${answerStyle} response to the user's question should be provided here.`,
+      );
 
       if (supportsArtifacts) {
-        builder
-          .addLine("When appropriate for substantial content:")
-          .addLine(getArtifactExample(supportsArtifacts, false));
+        builder.addLine(getArtifactExample(supportsArtifacts, false));
       }
 
       builder.addLine("</answer>");
+      builder.addLine("</example_output>");
     }
 
     if (isAgent) {
-      builder.startSection("Tool Usage Guidelines");
+      builder.addLine("<tool_usage_guidelines>");
       builder.addLine("When working with tools, follow these principles:");
       builder.addLine(
         "1. **Analyze First**: Understand what information or actions are needed to address the user's request",
@@ -126,7 +129,7 @@ export async function returnStandardPrompt(
         "5. **Multi-Step Reasoning**: After you use a tool that is not the reasoning tool, use the `add_reasoning_step` tool to expand on the response and provide a more detailed answer.",
       );
 
-      builder.startSection("Multi-Step Reasoning Workflow");
+      builder.addLine("<multi_step_reasoning_workflow>");
       builder.addLine("Follow this precise workflow when using tools:");
       builder.addLine(
         "1. Use appropriate tools to gather information needed for the user's request",
@@ -160,7 +163,7 @@ export async function returnStandardPrompt(
         "   - Even if the tool history contains many previous tool calls, a finalAnswer overrides all further tool usage",
       );
 
-      builder.startSection("Example Workflow Sequence");
+      builder.addLine("<example_workflow_sequence>");
       builder.addLine("```");
       builder.addLine("1. [Tool Call]: weather_lookup");
       builder.addLine(
@@ -175,7 +178,7 @@ export async function returnStandardPrompt(
       );
       builder.addLine("```");
 
-      builder.startSection("Tool Availability");
+      builder.addLine("<tool_availability>");
       builder.addLine(
         "If a user requests functionality requiring tools that aren't currently available, politely inform them that:",
       );
@@ -185,6 +188,7 @@ export async function returnStandardPrompt(
       builder.addLine(
         "- You'll work with whatever tools are currently available to provide the best possible assistance",
       );
+      builder.addLine("</tool_usage_guidelines>");
     }
 
     return builder.build();

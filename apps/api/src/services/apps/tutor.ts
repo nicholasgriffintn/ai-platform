@@ -1,5 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import type { ConversationManager } from "~/lib/conversationManager";
+import { getAuxiliaryModel } from "~/lib/models";
 import { tutorSystemPrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/providers/factory";
 import { handleWebSearch } from "~/services/search/web";
@@ -38,8 +39,6 @@ export async function completeTutorRequest(
       ErrorType.PARAMS_ERROR,
     );
   }
-
-  const provider = AIProviderFactory.getProvider("workers-ai");
 
   const query = `I want to learn about ${topic}`;
 
@@ -80,13 +79,17 @@ export async function completeTutorRequest(
 
   const systemPrompt = tutorSystemPrompt(parsedSources, level);
 
+  const { model: modelToUse, provider: providerToUse } =
+    await getAuxiliaryModel(env, user);
+  const provider = AIProviderFactory.getProvider(providerToUse);
+
   if (conversationManager) {
     await conversationManager.add(new_completion_id, {
       role: "system",
       content: systemPrompt,
       timestamp: Date.now(),
       platform: "api",
-      model: "@cf/google/gemma-3-12b-it",
+      model: modelToUse,
     });
 
     await conversationManager.add(new_completion_id, {
@@ -94,14 +97,14 @@ export async function completeTutorRequest(
       content: query,
       timestamp: Date.now(),
       platform: "api",
-      model: "@cf/google/gemma-3-12b-it",
+      model: modelToUse,
     });
   }
 
   const answerResponse = await provider.getResponse({
     env: env,
     completion_id: new_completion_id,
-    model: "@cf/google/gemma-3-12b-it",
+    model: modelToUse,
     messages: [
       {
         role: "system",
@@ -131,7 +134,7 @@ export async function completeTutorRequest(
       status: "success",
       timestamp: Date.now(),
       platform: "api",
-      model: "@cf/google/gemma-3-12b-it",
+      model: modelToUse,
     });
 
     await conversationManager.updateConversation(new_completion_id, {

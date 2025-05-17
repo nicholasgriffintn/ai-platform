@@ -29,6 +29,7 @@ export function ArtifactSandbox({
     case "jsx":
     case "react":
     case "text/jsx":
+    case "application/vnd.react":
       return (
         <ReactSandbox
           code={code}
@@ -40,6 +41,7 @@ export function ArtifactSandbox({
 
     case "html":
     case "text/html":
+    case "application/vnd.html":
       return (
         <HtmlSandbox
           code={code}
@@ -51,6 +53,7 @@ export function ArtifactSandbox({
 
     case "svg":
     case "image/svg+xml":
+    case "application/vnd.svg":
       return (
         <SvgSandbox
           code={code}

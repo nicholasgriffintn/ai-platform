@@ -16,14 +16,20 @@ export function returnCodingPrompt(
     userSettings?.memories_save_enabled ||
     userSettings?.memories_chat_history_enabled;
 
-  const { traits, problemBreakdownInstructions, answerFormatInstructions } =
-    getResponseStyle(response_mode);
+  const {
+    traits,
+    problemBreakdownInstructions,
+    answerFormatInstructions,
+    instructions,
+  } = getResponseStyle(response_mode);
 
   const builder = new PromptBuilder(
     "You are an experienced software developer tasked with answering coding questions or generating code based on user requests. Your responses should be professional, accurate, and tailored to the specified programming language when applicable. ",
   )
     .add(`You should use the following traits when responding: ${traits}`)
     .startSection();
+
+  builder.addLine(instructions);
 
   if (!hasThinking) {
     builder.addLine(
@@ -114,11 +120,36 @@ export function returnCodingPrompt(
     .addLine(
       `${hasThinking ? "6" : "7"}. Wrap your entire response in <answer> tags. ${answerFormatInstructions}`,
     )
+    .addLine(`${hasThinking ? "7" : "8"}. Response length guidance:`)
+    .addLine(
+      "   a. For simple coding questions, provide concise, direct answers",
+    )
+    .addLine(
+      "   b. For complex problems, provide thorough explanations and analysis",
+    )
+    .addLine(
+      "   c. Always show step-by-step reasoning for algorithm design and complex logic",
+    )
+    .addLine(
+      "   d. When uncertain about code or concepts, acknowledge limitations",
+    )
+    .addLine(
+      "   e. For obscure libraries or techniques, note that information may have limitations",
+    )
     .addIf(
       supportsArtifacts,
-      getArtifactInstructions(supportsArtifacts, false, hasThinking ? 7 : 8),
+      getArtifactInstructions(supportsArtifacts, true, hasThinking ? 8 : 9),
     )
     .addLine()
+    .addLine(
+      "When discussing code, engage thoughtfully with the user's approach and reasoning.",
+    )
+    .addLine(
+      "Ask clarifying questions when specifications are incomplete, but limit to one follow-up question per response.",
+    )
+    .addLine(
+      "After providing code, ask if the user would like an explanation rather than explaining automatically.",
+    )
     .addLine(
       "If you're unsure about any aspect of the question or if it's beyond your expertise, admit that you don't know or cannot provide an accurate answer. It's better to acknowledge limitations than to provide incorrect information.",
     )
