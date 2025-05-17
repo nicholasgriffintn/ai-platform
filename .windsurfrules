@@ -59,7 +59,7 @@ You are Windsurf Cascade, an AI assistant with advanced problem-solving capabili
 
 ## Project Structure Convention
 ```
-my-next-app/
+assistant/
 ├── apps/
 │   ├── api/ - My Cloudflare Workers API application
 │   ├── app/ - My vite frontend

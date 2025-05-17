@@ -12,6 +12,15 @@ export function normalizeMessage(message: Message): Message {
     if (formatted.reasoning && !reasoning) {
       newReasoning = formatted.reasoning;
     }
+  } else if (Array.isArray(content)) {
+    if (!reasoning || (typeof reasoning === "object" && !reasoning.content)) {
+      const thinkingPart = content.find(
+        (item: any) => item.type === "thinking" && item.thinking,
+      );
+      if (thinkingPart) {
+        newReasoning = thinkingPart.thinking;
+      }
+    }
   } else if (
     content &&
     !Array.isArray(content) &&

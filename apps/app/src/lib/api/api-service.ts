@@ -377,6 +377,7 @@ class ApiService {
                   onStateChange(parsedData.state, parsedData);
                 } else if (parsedData.type === "thinking_delta") {
                   thinking += parsedData.thinking || "";
+                  onProgress(content, thinking, undefined, false);
                 } else if (
                   parsedData.type === "usage_limits" &&
                   parsedData.usage_limits
