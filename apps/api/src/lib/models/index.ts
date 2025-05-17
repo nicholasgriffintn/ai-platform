@@ -230,7 +230,7 @@ export async function getAuxiliaryModel(
   env: IEnv,
   user?: IUser,
 ): Promise<{ model: string; provider: string }> {
-  let modelToUse = "mistral-medium-latest";
+  let modelToUse = "@cf/google/gemma-3-12b-it";
 
   const allRouterModels = getIncludedInRouterModels();
   const availableModels = await filterModelsForUserAccess(
