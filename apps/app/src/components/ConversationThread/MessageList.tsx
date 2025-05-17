@@ -60,8 +60,12 @@ export const MessageList = ({
   const virtualRef = useRef<VListHandle>(null);
   const prevCount = useRef(0);
 
-  // scroll-to-bottom on mount and when new messages arrive
+  // scroll-to-bottom on mount and when new messages arrive, except in shared view
   useEffect(() => {
+    if (isSharedView) {
+      prevCount.current = messages.length;
+      return;
+    }
     const lastIndex = messages.length - 1;
     if (
       virtualRef.current &&
@@ -70,7 +74,7 @@ export const MessageList = ({
       virtualRef.current.scrollToIndex(lastIndex, { align: "end" });
     }
     prevCount.current = messages.length;
-  }, [messages.length]);
+  }, [messages.length, isSharedView]);
 
   // show/hide the "scroll to bottom" button when user scrolls up
   const [showScroll, setShowScroll] = useState(false);
