@@ -226,6 +226,7 @@ class ApiService {
       text: string,
       reasoning?: string,
       toolResponses?: Message[],
+      done?: boolean,
     ) => void,
     onStateChange: (state: string, data?: any) => void,
     store = true,
@@ -360,6 +361,7 @@ class ApiService {
               const data = line.substring(6);
 
               if (data === "[DONE]") {
+                onProgress(content, reasoning, undefined, true);
                 continue;
               }
 
@@ -368,7 +370,9 @@ class ApiService {
 
                 if (parsedData.type === "content_block_delta") {
                   content += parsedData.content;
-                  onProgress(content, reasoning);
+                  onProgress(content, reasoning, undefined, false);
+                } else if (parsedData.type === "message_stop") {
+                  onProgress(content, reasoning, undefined, true);
                 } else if (parsedData.type === "state") {
                   onStateChange(parsedData.state, parsedData);
                 } else if (parsedData.type === "thinking_delta") {

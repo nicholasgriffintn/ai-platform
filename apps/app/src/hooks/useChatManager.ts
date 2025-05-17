@@ -429,7 +429,14 @@ export function useChatManager() {
         content: string,
         reasoning?: string,
         toolResponses?: Message[],
+        done?: boolean,
       ) => {
+        if (done) {
+          updateAssistantMessage(conversationId, content, reasoning);
+          response = "";
+          return;
+        }
+
         response = content;
 
         if (toolResponses && toolResponses.length > 0) {
