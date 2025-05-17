@@ -607,6 +607,24 @@ export class ConversationManager {
       logger.error("Error parsing message content", { error: e });
     }
 
+    let toolCalls = dbMessage.tool_calls;
+    if (dbMessage.tool_calls) {
+      try {
+        toolCalls = JSON.parse(dbMessage.tool_calls as string);
+      } catch (e) {
+        logger.error("Error parsing tool calls", { error: e });
+      }
+    }
+
+    let citations = dbMessage.citations;
+    if (dbMessage.citations) {
+      try {
+        citations = JSON.parse(dbMessage.citations as string);
+      } catch (e) {
+        logger.error("Error parsing citations", { error: e });
+      }
+    }
+
     return {
       ...dbMessage,
       id: dbMessage.id,
@@ -614,12 +632,8 @@ export class ConversationManager {
       content,
       model: dbMessage.model as string,
       name: dbMessage.name as string,
-      tool_calls: dbMessage.tool_calls
-        ? JSON.parse(dbMessage.tool_calls as string)
-        : undefined,
-      citations: dbMessage.citations
-        ? JSON.parse(dbMessage.citations as string)
-        : undefined,
+      tool_calls: toolCalls,
+      citations,
       status: dbMessage.status as string,
       timestamp: dbMessage.timestamp as number,
       platform: dbMessage.platform as string,
