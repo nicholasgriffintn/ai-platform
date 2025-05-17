@@ -230,7 +230,7 @@ export async function getAuxiliaryModel(
   env: IEnv,
   user?: IUser,
 ): Promise<{ model: string; provider: string }> {
-  let modelToUse = "@cf/google/gemma-3-12b-it";
+  let modelToUse = "gemma-3-12b-it";
 
   const allRouterModels = getIncludedInRouterModels();
   const availableModels = await filterModelsForUserAccess(
@@ -247,9 +247,9 @@ export async function getAuxiliaryModel(
     modelToUse = "llama-3.3-70b-versatile";
   }
 
-  const provider = getModelConfig(modelToUse).provider;
+  const modelConfig = getModelConfig(modelToUse);
 
-  return { model: modelToUse, provider };
+  return { model: modelConfig.matchingModel, provider: modelConfig.provider };
 }
 
 export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
