@@ -21,6 +21,10 @@ const components = {
   ),
 };
 
+function downgradeH1Headings(markdown: string): string {
+  return markdown.replace(/^# (.*)$/gm, "## $1");
+}
+
 export function Markdown({
   children,
   className,
@@ -37,7 +41,7 @@ export function Markdown({
       rehypePlugins={rehypePlugins}
       remarkPlugins={remarkPlugins}
     >
-      {children}
+      {downgradeH1Headings(children)}
     </ReactMarkdown>
   );
 }

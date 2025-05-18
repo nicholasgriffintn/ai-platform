@@ -15,7 +15,6 @@ export async function getSystemPrompt(
   const supportsFunctions = modelConfig?.supportsFunctions || false;
   const supportsArtifacts = modelConfig?.supportsArtifacts || false;
   const hasThinking = modelConfig?.hasThinking || false;
-  const response_mode = request.response_mode || "normal";
 
   if (!modelConfig) {
     return await returnStandardPrompt(
@@ -28,15 +27,18 @@ export async function getSystemPrompt(
     );
   }
 
+  console.log("TYPE", modelConfig.type);
+
   const isTextModel = modelConfig.type.includes("text");
 
   const isCodingModel = modelConfig.type.includes("coding");
   if (isCodingModel && !isTextModel) {
     return returnCodingPrompt(
-      response_mode,
+      request,
+      userSettings,
+      supportsFunctions,
       supportsArtifacts,
       hasThinking,
-      userSettings,
     );
   }
 

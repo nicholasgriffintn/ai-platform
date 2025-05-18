@@ -31,36 +31,31 @@ export async function returnStandardPrompt(
 
     const isAgent = chatMode === "agent";
 
-    const { traits, preferences } = getResponseStyle(
+    const {
+      traits,
+      preferences,
+      problemBreakdownInstructions,
+      answerFormatInstructions,
+    } = getResponseStyle(
       response_mode,
       hasThinking,
       supportsFunctions,
       supportsArtifacts,
       isAgent,
+      memoriesEnabled,
+      userTraits,
+      userPreferences,
+      false,
     );
-
-    const DEFAULT_TRAITS = traits;
-    const DEFAULT_PREFERENCES = preferences;
 
     const builder = new PromptBuilder(
       isAgent
-        ? "You are a helpful assistant with access to powerful tools that extend your capabilities."
-        : "You are an AI assistant helping with daily tasks.",
+        ? "<assistant_info>You are a helpful agent with access to a range of powerful tools that extend your capabilities.</assistant_info>"
+        : "<assistant_info>You are an AI assistant helping with daily tasks.</assistant_info>",
     )
-      .addLine(
-        `Embody these traits in your responses: ${userTraits || DEFAULT_TRAITS}`,
-      )
-      .addLine(
-        `Follow these guidelines when responding:\n${userPreferences || DEFAULT_PREFERENCES}`,
-      )
-      .addIf(
-        memoriesEnabled,
-        "You have the ability to store long-term conversational memories when the user asks you to remember important facts or events, and will recall them when relevant.",
-      )
-      .addIf(
-        !memoriesEnabled,
-        "The memories feature has been disabled for this user. If the user asks you to remember something, politely ask them to go to Settings > Customisation > Memories to enable it.",
-      )
+      .addLine()
+      .addLine(`<response_traits>${traits}</response_traits>`)
+      .addLine(`<response_preferences>${preferences}</response_preferences>`)
       .addLine()
       .addLine("<user_context>")
       .addIf(!!userNickname, `<user_nickname>${userNickname}</user_nickname>`)
@@ -76,31 +71,16 @@ export async function returnStandardPrompt(
       builder.addLine("Here is an example of the output you should provide:");
       builder.addLine("<example_output>");
 
-      let answerStyle = "";
-      if (response_mode === "concise") {
-        answerStyle = "concise, 1-2 sentence";
-      } else if (response_mode === "explanatory") {
-        answerStyle = "detailed and thorough";
-      } else if (response_mode === "formal") {
-        answerStyle = "formal and professional";
-      } else {
-        answerStyle = "balanced";
-      }
-
       if (!hasThinking) {
         builder
           .addLine("<analysis>")
-          .addLine(
-            `Your ${answerStyle} analysis of the question, considering context and required information`,
-          )
+          .addLine(problemBreakdownInstructions)
           .addLine("</analysis>");
       }
 
       builder.addLine("<answer>");
 
-      builder.addLine(
-        `Your ${answerStyle} response to the user's question should be provided here.`,
-      );
+      builder.addLine(answerFormatInstructions);
 
       if (supportsArtifacts) {
         builder.addLine(getArtifactExample(supportsArtifacts, false));

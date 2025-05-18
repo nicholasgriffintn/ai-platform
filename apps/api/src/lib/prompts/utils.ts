@@ -1,112 +1,198 @@
-const DEFAULT_TRAITS =
-  "direct, intellectually curious, balanced in verbosity (concise for simple questions, thorough for complex ones), systematic in reasoning for complex problems";
-
-const DEFAULT_PREFERENCES = `
-- Answer directly without unnecessary affirmations or filler phrases
-- Use step-by-step reasoning when solving math, logic, or complex problems
-- Match response length to question complexity - concise for simple questions, thorough for complex ones
-- Offer to elaborate rather than providing exhaustive detail upfront
-- For obscure topics, acknowledge potential hallucination risk
-- When citing specific sources, note that citations should be verified
-- Ask at most one thoughtful follow-up question when appropriate
-`;
-
 export function getResponseStyle(
   response_mode = "normal",
   hasThinking = false,
   supportsFunctions = false,
   supportsArtifacts = false,
   isAgent = false,
+  memoriesEnabled = false,
+  userTraits?: string,
+  userPreferences?: string,
+  isCoding = false,
 ): {
   traits: string;
   preferences: string;
-  instructions: string;
-  problemBreakdownInstructions?: string;
-  answerFormatInstructions?: string;
+  problemBreakdownInstructions: string;
+  answerFormatInstructions: string;
 } {
+  const DEFAULT_TRAITS =
+    userTraits ||
+    "direct, intellectually curious, balanced in verbosity (concise for simple questions, thorough for complex ones), systematic in reasoning for complex problems";
+
+  const DEFAULT_PREFERENCES =
+    userPreferences ||
+    `
+  - Answer directly without unnecessary affirmations or filler phrases
+  - Use step-by-step reasoning when solving math, logic, or complex problems
+  - Match response length to question complexity - concise for simple questions, thorough for complex ones
+  - Offer to elaborate rather than providing exhaustive detail upfront
+  - For obscure topics, acknowledge potential hallucination risk
+  - When citing specific sources, note that citations should be verified
+  - Ask at most one thoughtful follow-up question when appropriate
+  - When returning markdown, do not use H1 headings (no lines starting with '# '). Use H2 or lower instead.`;
+
   if (isAgent) {
     return {
       traits: DEFAULT_TRAITS,
       preferences: DEFAULT_PREFERENCES,
-      instructions: "",
+      problemBreakdownInstructions:
+        "Provide a balanced problem breakdown that covers the important aspects without being overly verbose.",
+      answerFormatInstructions: `Balance ${isCoding ? "code" : "answer"} with explanation, providing enough context to understand the solution without overwhelming detail.`,
     };
   }
 
-  let instructions = `1. Read and understand questions carefully.
-  2. If unclear, ask for clarification.`;
+  let PREFERENCES_WITH_INSTRUCTIONS = `${DEFAULT_PREFERENCES}
+  - Please also follow these instructions:\n`;
 
-  if (hasThinking) {
-    instructions += `3. Analyze the question and context thoroughly before answering.
-    4.1. Identify key information from the user's question.`;
+  let step = 1;
+  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Read and understand questions carefully.\n`;
+  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If the question is unclear or lacks necessary information, ask for clarification.\n`;
+
+  if (!hasThinking) {
+    PREFERENCES_WITH_INSTRUCTIONS += `${step}. Analyze the question and context thoroughly before answering and identify key information from the user's question, wrap this analysis in \`<analysis>\` tags within your output.\n`;
+    if (isCoding) {
+      for (let sub = 1; sub <= 6; sub++) {
+        switch (sub) {
+          case 1: {
+            PREFERENCES_WITH_INSTRUCTIONS += `${step}.1: Break down the problem into smaller components.\n`;
+            break;
+          }
+          case 2: {
+            PREFERENCES_WITH_INSTRUCTIONS += `${step}.2: List any assumptions you're making about the problem.\n`;
+            break;
+          }
+          case 3: {
+            PREFERENCES_WITH_INSTRUCTIONS += `${step}.3: Plan your approach to solving the problem or generating the code.\n`;
+            break;
+          }
+          case 4: {
+            PREFERENCES_WITH_INSTRUCTIONS += `${step}.4: Write pseudocode for your solution.\n`;
+            break;
+          }
+          case 5: {
+            PREFERENCES_WITH_INSTRUCTIONS += `${step}.5: Consider potential edge cases or limitations of your solution.\n`;
+            break;
+          }
+          case 6: {
+            PREFERENCES_WITH_INSTRUCTIONS += `${step}.6: If generating code, write it out and then analyze it for correctness, efficiency, and adherence to best practices.\n`;
+            break;
+          }
+        }
+      }
+    }
 
     if (supportsFunctions) {
-      instructions += `4.2. Determine whether the query can be resolved directly or if a tool is required. Use the description of the tool to help you decide.
-      4.3. If a tool is required, use it to answer the question.
-      4.4. If the task can be effectively answered without a tool, prioritize a manual response.`;
+      const subBase = isCoding ? `${step}.7` : `${step}.1`;
+      PREFERENCES_WITH_INSTRUCTIONS += `${subBase} Determine whether the query can be resolved directly or if a tool is required. Use the description of the tool to help you decide.\n`;
+      PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.1 If a tool is required, use it to answer the question.\n`;
+      PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.2 If the task can be effectively answered without a tool, prioritize a manual response.\n`;
     }
 
     if (supportsArtifacts) {
-      instructions +=
-        "4.5. Determine if the response would benefit from using an artifact based on the included criteria.";
+      let artifactSub;
+      if (isCoding && supportsFunctions) {
+        artifactSub = `${step}.8`;
+      } else if (isCoding) {
+        artifactSub = `${step}.7`;
+      } else {
+        artifactSub = `${step}.2`;
+      }
+      PREFERENCES_WITH_INSTRUCTIONS += `${artifactSub} Determine if the response would benefit from using an artifact based on the included criteria.\n`;
     }
 
-    instructions += "4.6. It's OK for this section to be quite long.";
+    let finalSub;
+    if (isCoding && supportsFunctions && supportsArtifacts) {
+      finalSub = `${step}.9`;
+    } else if (isCoding && (supportsFunctions || supportsArtifacts)) {
+      finalSub = `${step}.${supportsFunctions && supportsArtifacts ? 9 : 8}`;
+    } else if (isCoding) {
+      finalSub = `${step}.7`;
+    } else {
+      finalSub = `${step}.${supportsFunctions && supportsArtifacts ? 3 : supportsFunctions || supportsArtifacts ? 2 : 1}`;
+    }
+    PREFERENCES_WITH_INSTRUCTIONS += `${finalSub} It's OK for this section to be quite long.\n`;
+    step++;
   }
 
-  instructions +=
-    "5. If you're unsure or don't have the information to answer, say \"I don't know\" or offer to find more information.";
-  instructions += "6. Always respond in plain text, not computer code.";
+  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If you're unsure or don't have the information to answer, say "I don't know" or offer to find more information.\n`;
+
+  if (isCoding) {
+    PREFERENCES_WITH_INSTRUCTIONS += `${step}. When coding, always use markdown to format your code.\n`;
+    for (let sub = 1; sub <= 5; sub++) {
+      switch (sub) {
+        case 1:
+          PREFERENCES_WITH_INSTRUCTIONS += `${step}.1. Ensure the code adheres to best practices and conventions for the specified programming language.\n`;
+          break;
+        case 2:
+          PREFERENCES_WITH_INSTRUCTIONS += `${step}.2. Write clean, efficient, and well-documented code.\n`;
+          break;
+        case 3:
+          PREFERENCES_WITH_INSTRUCTIONS += `${step}.3. Include comments to explain complex logic or non-obvious implementations.\n`;
+          break;
+        case 4:
+          PREFERENCES_WITH_INSTRUCTIONS += `${step}.4. If the task requires multiple functions or classes, structure the code logically and use appropriate naming conventions.\n`;
+          break;
+        case 5:
+          PREFERENCES_WITH_INSTRUCTIONS += `${step}.5. For substantial code solutions, consider using an artifact tag instead.\n`;
+          break;
+      }
+    }
+    step++;
+  } else {
+    PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Always respond in plain text, not computer code.\n`;
+  }
 
   if (supportsArtifacts) {
-    instructions += getArtifactInstructions(supportsArtifacts, false, 6);
+    PREFERENCES_WITH_INSTRUCTIONS += getArtifactInstructions(
+      supportsArtifacts,
+      false,
+      step,
+    );
+    step += 1;
   }
 
-  instructions +=
-    "7. For complex questions requiring systematic thinking, show your reasoning step by step before providing your final answer.\n" +
-    "8. For simple questions, provide direct and concise answers without unnecessary explanation.\n" +
-    "9. When discussing obscure topics or citing specific sources, acknowledge limitations in knowledge when appropriate.\n" +
-    "10. Engage thoughtfully with user's ideas and show intellectual curiosity in the discussion.";
+  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. For complex questions requiring systematic thinking, show your reasoning step by step before providing your final answer.\n`;
+  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. For simple questions, provide direct and concise answers without unnecessary explanation.\n`;
+  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. When discussing obscure topics or citing specific sources, acknowledge limitations in knowledge when appropriate.\n`;
+  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Engage thoughtfully with user's ideas and show intellectual curiosity in the discussion.`;
+
+  if (memoriesEnabled) {
+    PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. You have the ability to store long-term conversational memories when the user asks you to remember important facts or events, and will recall them when relevant.`;
+  } else {
+    PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. The memories feature has been disabled for this user. If the user asks you to remember something, politely ask them to go to Settings > Customisation > Memories to enable it.`;
+  }
 
   switch (response_mode) {
     case "concise":
       return {
         traits: DEFAULT_TRAITS,
-        preferences: DEFAULT_PREFERENCES,
-        instructions,
+        preferences: PREFERENCES_WITH_INSTRUCTIONS,
         problemBreakdownInstructions:
           "Keep your problem breakdown brief, focusing only on the most critical aspects of the problem.",
-        answerFormatInstructions:
-          "Provide a concise solution with minimal explanation, focusing on the code itself.",
+        answerFormatInstructions: `Provide your ${isCoding ? "code" : "answer"} with minimal explanation, focusing on the answer itself.`,
       };
     case "explanatory":
       return {
         traits: DEFAULT_TRAITS,
-        preferences: DEFAULT_PREFERENCES,
-        instructions,
+        preferences: PREFERENCES_WITH_INSTRUCTIONS,
         problemBreakdownInstructions:
           "Provide a thorough problem breakdown with detailed explanations of your thought process and approach.",
-        answerFormatInstructions:
-          "Explain your code in detail, including the reasoning behind your implementation choices and how each part works.",
+        answerFormatInstructions: `Explain your ${isCoding ? "code" : "answer"} in detail, including the reasoning behind your implementation choices and how each part works.`,
       };
     case "formal":
       return {
         traits: DEFAULT_TRAITS,
-        preferences: DEFAULT_PREFERENCES,
-        instructions,
+        preferences: PREFERENCES_WITH_INSTRUCTIONS,
         problemBreakdownInstructions:
           "Structure your problem breakdown formally, using proper technical terminology and a methodical approach.",
-        answerFormatInstructions:
-          "Present your solution in a formal, structured manner with appropriate technical terminology and documentation.",
+        answerFormatInstructions: `Present your ${isCoding ? "code" : "answer"} in a formal, structured manner with appropriate technical terminology and documentation.`,
       };
     default:
       return {
         traits: DEFAULT_TRAITS,
-        preferences: DEFAULT_PREFERENCES,
-        instructions,
+        preferences: PREFERENCES_WITH_INSTRUCTIONS,
         problemBreakdownInstructions:
           "Provide a balanced problem breakdown that covers the important aspects without being overly verbose.",
-        answerFormatInstructions:
-          "Balance code with explanation, providing enough context to understand the solution without overwhelming detail.",
+        answerFormatInstructions: `Balance your ${isCoding ? "code" : "answer"} with explanation, providing enough context to understand the solution without overwhelming detail.`,
       };
   }
 }
