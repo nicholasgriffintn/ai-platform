@@ -20,15 +20,13 @@ export function getResponseStyle(
 
   const DEFAULT_PREFERENCES =
     userPreferences ||
-    `
-  - Answer directly without unnecessary affirmations or filler phrases
+    `- Answer directly without unnecessary affirmations or filler phrases
   - Use step-by-step reasoning when solving math, logic, or complex problems
   - Match response length to question complexity - concise for simple questions, thorough for complex ones
   - Offer to elaborate rather than providing exhaustive detail upfront
   - For obscure topics, acknowledge potential hallucination risk
   - When citing specific sources, note that citations should be verified
-  - Ask at most one thoughtful follow-up question when appropriate
-  - When returning markdown, do not use H1 headings (no lines starting with '# '). Use H2 or lower instead.`;
+  - Ask at most one thoughtful follow-up question when appropriate`;
 
   if (isAgent) {
     return {
