@@ -57,6 +57,30 @@ app.get(
   async (context: Context) => {
     const user = context.get("user");
 
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     try {
       const podcasts = await handlePodcastList({
         env: context.env as IEnv,
@@ -99,6 +123,30 @@ app.get(
   async (context: Context) => {
     const id = context.req.param("id");
     const user = context.get("user");
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
 
     try {
       const podcast = await handlePodcastDetail({
@@ -157,6 +205,30 @@ app.post(
 
       const user = context.get("user");
 
+      if (!user?.id) {
+        return context.json(
+          {
+            response: {
+              status: "error",
+              message: "User not authenticated",
+            },
+          },
+          401,
+        );
+      }
+
+      if (user.plan_id !== "pro") {
+        return context.json(
+          {
+            response: {
+              status: "error",
+              message: "User is not on pro plan",
+            },
+          },
+          401,
+        );
+      }
+
       const response = await handlePodcastUpload({
         env: context.env as IEnv,
         request: {
@@ -212,6 +284,30 @@ app.post(
     const body = context.req.valid("json" as never) as IPodcastTranscribeBody;
     const user = context.get("user");
 
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     const newUrl = new URL(context.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
@@ -249,6 +345,30 @@ app.post(
     const body = context.req.valid("json" as never) as IPodcastSummariseBody;
     const user = context.get("user");
 
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     const response = await handlePodcastSummarise({
       env: context.env as IEnv,
       request: body,
@@ -284,6 +404,30 @@ app.post(
       prompt?: string;
     };
     const user = context.get("user");
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
 
     const response = await handlePodcastGenerateImage({
       env: context.env as IEnv,

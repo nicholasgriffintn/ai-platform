@@ -74,6 +74,30 @@ app.post(
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
     const user = context.get("user");
 
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     const response = await generateImage({
       completion_id,
       env: context.env as IEnv,
@@ -120,6 +144,30 @@ app.post(
     const newUrl = new URL(context.req.url);
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
     const user = context.get("user");
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
 
     const response = await generateVideo({
       completion_id,
@@ -169,6 +217,30 @@ app.post(
 
     const user = context.get("user");
 
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     const response = await generateMusic({
       completion_id,
       env: context.env as IEnv,
@@ -216,6 +288,30 @@ app.post(
     const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
     const user = context.get("user");
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
 
     const response = await generateSpeech({
       completion_id,

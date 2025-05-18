@@ -13,6 +13,7 @@ import {
 import { appSchema } from "~/types/app-schema";
 import type { IRequest } from "~/types/chat";
 import { getLogger } from "~/utils/logger";
+import type { IUser } from "../types";
 import { appInfoSchema } from "./schemas/apps";
 import { errorResponseSchema } from "./schemas/shared";
 
@@ -103,6 +104,8 @@ dynamicApps.get(
     },
   }),
   async (c: Context) => {
+    const user = c.get("user") as IUser | undefined;
+
     const id = c.req.param("id");
     if (!id) {
       return c.json({ error: "App ID is required" }, 400);
@@ -186,6 +189,30 @@ dynamicApps.post(
     }
 
     const user = c.get("user");
+
+    if (!user?.id) {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
 
     const formData = await c.req.json();
 

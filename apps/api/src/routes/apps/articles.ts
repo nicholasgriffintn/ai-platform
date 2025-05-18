@@ -61,6 +61,30 @@ app.get(
   async (context: Context) => {
     const user = context.get("user") as IUser | undefined;
 
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     try {
       const response = await listArticles({
         env: context.env as IEnv,
@@ -136,6 +160,31 @@ app.get(
   }),
   async (context: Context) => {
     const user = context.get("user") as IUser | undefined;
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     const url = new URL(context.req.url);
     const ids = url.searchParams.getAll("ids[]");
 
@@ -219,6 +268,30 @@ app.get(
     const id = context.req.param("id");
     const user = context.get("user") as IUser | undefined;
 
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     try {
       const response = await getArticleDetails({
         env: context.env as IEnv,
@@ -289,6 +362,30 @@ app.post(
       typeof articleAnalyzeSchema
     >;
     const user = context.get("user") as IUser | undefined;
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
 
     try {
       const completion_id = generateId();
@@ -369,6 +466,30 @@ app.post(
       typeof articleSummariseSchema
     >;
     const user = context.get("user") as IUser | undefined;
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
 
     try {
       const completion_id = generateId();
@@ -457,6 +578,30 @@ app.post(
       typeof generateArticlesReportSchema
     >;
     const user = context.get("user") as IUser | undefined;
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
 
     try {
       const completion_id = generateId();

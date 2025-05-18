@@ -60,6 +60,31 @@ app.post(
     const body = context.req.valid(
       "json" as never,
     ) as IInsertEmbeddingRequest["request"];
+    const user = context.get("user");
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
 
     const response = await insertEmbedding({
       request: body,
@@ -106,6 +131,31 @@ app.get(
   zValidator("query", queryEmbeddingsSchema),
   async (context: Context) => {
     const query = context.req.valid("query" as never);
+    const user = context.get("user");
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
 
     const response = await queryEmbeddings({
       env: context.env as IEnv,
@@ -154,6 +204,31 @@ app.post(
     const body = context.req.valid(
       "json" as never,
     ) as IDeleteEmbeddingRequest["request"];
+    const user = context.get("user");
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
 
     const response = await deleteEmbedding({
       env: context.env as IEnv,

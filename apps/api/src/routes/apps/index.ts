@@ -133,6 +133,30 @@ app.post(
     const body = context.req.valid("form" as never);
     const user = context.get("user");
 
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     const response = await generateImageFromDrawing({
       env: context.env as IEnv,
       request: body,
@@ -173,6 +197,30 @@ app.post(
     const body = context.req.valid("form" as never);
     const user = context.get("user");
 
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     const response = await guessDrawingFromImage({
       env: context.env as IEnv,
       request: body,
@@ -209,6 +257,30 @@ app.post(
     const body = context.req.valid("json" as never) as ContentExtractParams;
     const user = context.get("user");
 
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     const response = await extractContent(body, {
       env: context.env as IEnv,
       user,
@@ -228,6 +300,32 @@ app.post(
   }),
   zValidator("json", captureScreenshotSchema),
   async (context: Context) => {
+    const user = context.get("user");
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     const body = context.req.valid("json" as never) as CaptureScreenshotParams;
 
     const response = await captureScreenshot(body, {
@@ -289,6 +387,30 @@ app.post(
     const body = context.req.valid("json" as never) as OcrParams;
     const user = context.get("user");
 
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     const result = await performOcr(body, {
       env: context.env as IEnv,
       user,
@@ -326,6 +448,30 @@ app.post(
   async (context: Context) => {
     const body = context.req.valid("json" as never) as DeepWebSearchParams;
     const user = context.get("user");
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
 
     const response = await performDeepWebSearch(
       context.env as IEnv,
@@ -367,6 +513,30 @@ app.post(
   async (context: Context) => {
     const body = context.req.valid("json" as never) as TutorRequestParams;
     const user = context.get("user");
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
 
     const response = await completeTutorRequest(
       context.env as IEnv,

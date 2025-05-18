@@ -19,7 +19,7 @@ import { ResponseRenderer } from "./ResponseRenderer";
 import { groupAppsByCategory } from "./utils";
 
 export const DynamicApps = () => {
-  const { isPro, isAuthenticated, isAuthenticationLoading } = useChatStore();
+  const { isAuthenticationLoading } = useChatStore();
   const trackEvent = useTrackEvent();
 
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
@@ -159,22 +159,6 @@ export const DynamicApps = () => {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 dark:border-blue-400" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="text-center text-zinc-500 dark:text-zinc-400">
-        Please login to use apps
-      </div>
-    );
-  }
-
-  if (!isPro) {
-    return (
-      <div className="text-center text-zinc-500 dark:text-zinc-400">
-        Please upgrade to a pro plan to use apps
       </div>
     );
   }

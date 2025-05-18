@@ -47,6 +47,31 @@ app.get(
   }),
   async (c: Context) => {
     const user = c.get("user") as IUser;
+
+    if (!user?.id) {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     try {
       const notes = await listNotes({ env: c.env as IEnv, userId: user.id });
       return c.json({ notes });
@@ -83,6 +108,31 @@ app.get(
   async (c: Context) => {
     const id = c.req.param("id");
     const user = c.get("user") as IUser;
+
+    if (!user?.id) {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     try {
       const note = await getNote({
         env: c.env as IEnv,
@@ -137,6 +187,31 @@ app.post(
   zValidator("json", noteCreateSchema),
   async (c: Context) => {
     const user = c.get("user") as IUser;
+
+    if (!user?.id) {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     const body = c.req.valid("json" as never) as {
       title: string;
       content: string;
@@ -208,6 +283,31 @@ app.put(
       content: string;
     };
     const user = c.get("user") as IUser;
+
+    if (!user?.id) {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     try {
       const note = await updateNote({
         env: c.env as IEnv,
@@ -252,6 +352,31 @@ app.delete(
   async (c: Context) => {
     const id = c.req.param("id");
     const user = c.get("user") as IUser;
+
+    if (!user?.id) {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     try {
       await deleteNote({ env: c.env as IEnv, userId: user.id, noteId: id });
       return c.json({ success: true, message: "Note deleted" });
@@ -314,6 +439,31 @@ app.post(
     const id = c.req.param("id");
     const { prompt } = c.req.valid("json" as never) as { prompt?: string };
     const user = c.get("user") as IUser;
+
+    if (!user?.id) {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
     try {
       const result = await formatNote({
         env: c.env as IEnv,
