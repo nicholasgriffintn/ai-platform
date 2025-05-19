@@ -61,7 +61,7 @@ export class WorkersProvider extends BaseProvider {
             cacheTtl: 3360,
             authorization: env.AI_GATEWAY_TOKEN,
             metadata: {
-              email: user?.email || "anonymous@undefined.computer",
+              email: user?.email,
             },
           },
         });

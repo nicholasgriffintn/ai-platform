@@ -1,4 +1,5 @@
 import type { Context, Next } from "hono";
+import { isbot } from "isbot";
 
 import { Database } from "~/lib/database";
 import { getUserByJwtToken } from "~/services/auth/jwt";
@@ -20,6 +21,27 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
  * @returns The next middleware function
  */
 export async function authMiddleware(context: Context, next: Next) {
+  const ipAddress =
+    context.req.header("CF-Connecting-IP") ||
+    context.req.header("X-Forwarded-For") ||
+    context.req.header("X-Real-IP") ||
+    "unknown";
+
+  const userAgent = context.req.header("user-agent") || "unknown";
+
+  let isBotUser = false;
+
+  if (userAgent === "unknown") {
+    isBotUser = true;
+  } else {
+    try {
+      isBotUser = isbot(userAgent);
+    } catch (error) {
+      console.error(error);
+      logger.error("Failed to check if user is a bot:", { error });
+    }
+  }
+
   const hasJwtSecret = !!context.env.JWT_SECRET;
 
   let user: User | null = null;
@@ -64,18 +86,14 @@ export async function authMiddleware(context: Context, next: Next) {
 
   if (!user) {
     try {
+      if (isBotUser) {
+        return next();
+      }
+
       const anonymousIdMatch = cookies.match(
         new RegExp(`${ANONYMOUS_ID_COOKIE}=([^;]+)`),
       );
       const anonymousId = anonymousIdMatch ? anonymousIdMatch[1] : null;
-
-      const ipAddress =
-        context.req.header("CF-Connecting-IP") ||
-        context.req.header("X-Forwarded-For") ||
-        context.req.header("X-Real-IP") ||
-        "unknown";
-
-      const userAgent = context.req.header("user-agent") || "unknown";
 
       if (anonymousId) {
         anonymousUser = await database.getAnonymousUserById(anonymousId);
@@ -95,6 +113,7 @@ export async function authMiddleware(context: Context, next: Next) {
         }
       }
     } catch (error) {
+      console.error(error);
       logger.error("Anonymous user tracking failed:", { error });
     }
   }

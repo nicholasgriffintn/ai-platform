@@ -44,7 +44,7 @@ export class HuggingFaceProvider extends BaseProvider {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify({
-        email: params.user?.email || "anonymous@undefined.computer",
+        email: params.user?.email,
       }),
     };
   }

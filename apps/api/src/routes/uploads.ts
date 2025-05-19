@@ -94,7 +94,7 @@ app.post(
     }
 
     const user = context.get("user");
-    const userId = user?.id || "anonymous";
+    const userId = user?.id;
 
     const response = await handleFileUpload(env, userId, formData);
     return context.json(response);

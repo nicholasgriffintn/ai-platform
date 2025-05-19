@@ -15,11 +15,11 @@ export async function rateLimit(context: Context, next: Next) {
   const pathname = new URL(url).pathname;
 
   const user = context.get("user");
-  const userEmail: string = user?.email || "anonymous@undefined.computer";
+  const userId: string = user?.id;
 
   const key = user?.id
-    ? `authenticated-${userEmail}-${pathname}`
-    : `unauthenticated-${userEmail}-${pathname}`;
+    ? `authenticated-${userId}-${pathname}`
+    : `unauthenticated-${userId}-${pathname}`;
 
   const rateLimiter = user?.id
     ? context.env.PRO_RATE_LIMITER
@@ -40,7 +40,7 @@ export async function rateLimit(context: Context, next: Next) {
 
   const name = pathname.split("/").pop();
 
-  trackUsageMetric(user?.id || "anonymous", name, context.env.ANALYTICS);
+  trackUsageMetric(userId, name, context.env.ANALYTICS);
 
   return next();
 }

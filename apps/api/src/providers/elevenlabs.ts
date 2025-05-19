@@ -38,7 +38,7 @@ export class ElevenLabsProvider extends BaseProvider {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify({
-        email: params.user?.email || "anonymous@undefined.computer",
+        email: params.user?.email,
       }),
     };
   }

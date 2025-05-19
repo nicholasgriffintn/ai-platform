@@ -36,7 +36,7 @@ export class AnthropicProvider extends BaseProvider {
       "anthropic-version": "2023-06-01",
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify({
-        email: params.user?.email || "anonymous@undefined.computer",
+        email: params.user?.email,
       }),
     };
   }

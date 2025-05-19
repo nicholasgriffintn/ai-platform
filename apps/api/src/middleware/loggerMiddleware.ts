@@ -18,7 +18,7 @@ export const loggerMiddleware = async (c: Context, next: Next) => {
   const userAgent = c.req.header("user-agent") || "unknown";
 
   const user = c.get("user") as IUser | undefined;
-  const userId = user?.id || "anonymous";
+  const userId = user?.id;
 
   const startTime = Date.now();
   logger.info(`Request started: ${method} ${url}`, {

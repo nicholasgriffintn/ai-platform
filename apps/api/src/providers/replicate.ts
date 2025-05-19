@@ -51,7 +51,7 @@ export class ReplicateProvider extends BaseProvider {
       "Content-Type": "application/json",
       Prefer: "wait=30",
       "cf-aig-metadata": JSON.stringify({
-        email: params.user?.email || "anonymous@undefined.computer",
+        email: params.user?.email,
       }),
     };
   }

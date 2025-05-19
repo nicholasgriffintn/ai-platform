@@ -91,12 +91,12 @@ export class Monitoring {
 }
 
 export function trackUsageMetric(
-  userId: number,
+  userId: number | string,
   name?: string,
   analyticsEngine?: AnalyticsEngineDataset,
 ): void {
   const monitor = Monitoring.getInstance(analyticsEngine);
-  const traceId = userId.toString();
+  const traceId = userId?.toString();
 
   monitor.recordMetric({
     traceId,
@@ -148,7 +148,7 @@ export function trackProviderMetrics<T>({
   return operation()
     .then((result: any) => {
       const metrics = {
-        userId: userId?.toString() || "anonymous",
+        userId: userId?.toString(),
         provider,
         model,
         latency: performance.now() - startTime,
