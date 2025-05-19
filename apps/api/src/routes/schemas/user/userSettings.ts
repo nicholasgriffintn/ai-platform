@@ -21,9 +21,3 @@ export const updateUserSettingsSchema = z.object({
   memories_save_enabled: z.boolean().optional(),
   memories_chat_history_enabled: z.boolean().optional(),
 });
-
-export const storeProviderApiKeySchema = z.object({
-  providerId: z.string(),
-  apiKey: z.string(),
-  secretKey: z.string().nullable().optional(),
-});

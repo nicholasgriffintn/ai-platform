@@ -17,7 +17,7 @@ export default async function handleRequest(
 
   responseHeaders.set(
     "Content-Security-Policy",
-    `default-src 'self'; frame-src challenges.cloudflare.com; script-src beacon.polychat.app challenges.cloudflare.com https://unpkg.com/react@18/umd/react.development.js https://unpkg.com/react-dom@18/umd/react-dom.development.js 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src assistant-assets.nickgriffin.uk icons.duckduckgo.com avatars.githubusercontent.com/u/ 'self' data:; connect-src 'self' ${isLocalhost ? "localhost:8787" : "api.polychat.app"} ${isLocalhost ? "ws://localhost:8787" : "wss://api.polychat.app"} beacon.polychat.app api.openai.com/v1/realtime https://huggingface.co https://raw.githubusercontent.com https://cdn-lfs-us-1.hf.co; media-src 'self' data: https://assistant-assets.nickgriffin.uk`,
+    `default-src 'self'; frame-src challenges.cloudflare.com; script-src beacon.polychat.app challenges.cloudflare.com https://unpkg.com/react@18/umd/react.development.js https://unpkg.com/react-dom@18/umd/react-dom.development.js 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src assistant-assets.nickgriffin.uk icons.duckduckgo.com avatars.githubusercontent.com/u/ 'self' data:; connect-src 'self' ${isLocalhost ? "localhost:8787" : "api.polychat.app"} ${isLocalhost ? "ws://localhost:8787" : "wss://api.polychat.app"} beacon.polychat.app api.openai.com/v1/realtime https://huggingface.co https://raw.githubusercontent.com https://cdn-lfs-us-1.hf.co https://assistant-assets.nickgriffin.uk; media-src 'self' data: https://assistant-assets.nickgriffin.uk`,
   );
 
   const body = await renderToReadableStream(

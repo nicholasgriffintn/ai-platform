@@ -11,7 +11,6 @@ export function ServiceWorkerRegistration() {
         .then((registration) => {
           console.log("SW registered: ", registration);
 
-          // Check for updates
           registration.addEventListener("updatefound", () => {
             const newWorker = registration.installing;
             if (newWorker) {
@@ -20,7 +19,6 @@ export function ServiceWorkerRegistration() {
                   newWorker.state === "installed" &&
                   navigator.serviceWorker.controller
                 ) {
-                  // New service worker available
                   console.log("New service worker available");
                 }
               });

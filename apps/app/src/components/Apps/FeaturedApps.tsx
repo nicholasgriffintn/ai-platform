@@ -6,6 +6,15 @@ import { AppCard } from "./AppCard";
 
 const featuredAppsData: AppListItem[] = [
   {
+    id: "featured-drawing",
+    name: "Drawing",
+    description:
+      "Create drawings and get AI to enhance them or guess what they are",
+    icon: "pencil",
+    category: "Media",
+    href: "/apps/drawing",
+  },
+  {
     id: "featured-podcast-processor",
     name: "Podcast Processor",
     description:

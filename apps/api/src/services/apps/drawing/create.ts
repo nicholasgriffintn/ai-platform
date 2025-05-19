@@ -2,28 +2,31 @@ import { gatewayId } from "~/constants/app";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { drawingDescriptionPrompt } from "~/lib/prompts";
 import { StorageService } from "~/lib/storage";
+import { RepositoryManager } from "~/repositories";
 import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-
-export type ImageFromDrawingRequest = {
-  env: IEnv;
-  request: {
-    drawing?: Blob;
-  };
-  user: IUser;
-  conversationManager?: ConversationManager;
-};
 
 interface ImageFromDrawingResponse extends IFunctionResponse {
   completion_id?: string;
 }
 
-export const generateImageFromDrawing = async (
-  req: ImageFromDrawingRequest,
-): Promise<ImageFromDrawingResponse> => {
-  const { env, request, user, conversationManager } = req;
-
+export async function generateImageFromDrawing({
+  env,
+  request,
+  user,
+  conversationManager,
+  existingDrawingId,
+}: {
+  env: IEnv;
+  request: {
+    drawing?: Blob;
+    drawingId?: string;
+  };
+  user: IUser;
+  conversationManager?: ConversationManager;
+  existingDrawingId?: string;
+}): Promise<ImageFromDrawingResponse> {
   if (!request.drawing) {
     throw new AssistantError("Missing drawing", ErrorType.PARAMS_ERROR);
   }
@@ -31,7 +34,7 @@ export const generateImageFromDrawing = async (
   const arrayBuffer = await request.drawing.arrayBuffer();
   const length = arrayBuffer.byteLength;
 
-  const drawingId = generateId();
+  const drawingId = request.drawingId || existingDrawingId || generateId();
   const drawingImageKey = `drawings/${drawingId}/image.png`;
 
   let drawingUrl = "";
@@ -95,20 +98,18 @@ export const generateImageFromDrawing = async (
   const paintingLength = paintingArrayBuffer.byteLength;
 
   const paintingImageKey = `drawings/${drawingId}/painting.png`;
-  let paintingUrl = "";
   try {
     const storageService = new StorageService(env.ASSETS_BUCKET);
-    paintingUrl = await storageService.uploadObject(
-      paintingImageKey,
-      paintingArrayBuffer,
-      {
-        contentType: "image/png",
-        contentLength: paintingLength,
-      },
-    );
+    await storageService.uploadObject(paintingImageKey, paintingArrayBuffer, {
+      contentType: "image/png",
+      contentLength: paintingLength,
+    });
   } catch (error) {
     throw new AssistantError("Error uploading painting");
   }
+
+  let conversationResponse: any = { status: "success" };
+  const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
 
   if (conversationManager) {
     await conversationManager.add(drawingId, {
@@ -116,24 +117,50 @@ export const generateImageFromDrawing = async (
       content: `Generate a drawing with this prompt: ${descriptionRequest?.description}`,
       app: "drawings",
     });
+
+    const message = {
+      role: "assistant" as ChatRole,
+      name: "drawing_generate",
+      content: descriptionRequest?.description,
+      data: {
+        drawingUrl: `${baseAssetsUrl}/${drawingImageKey}`,
+        drawingKey: drawingImageKey,
+        paintingUrl: `${baseAssetsUrl}/${paintingImageKey}`,
+        paintingKey: paintingImageKey,
+      },
+    };
+    conversationResponse = await conversationManager.add(drawingId, message);
   }
 
-  const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
-  const message = {
-    role: "assistant" as ChatRole,
-    name: "drawing_generate",
-    content: descriptionRequest?.description,
+  const repo = RepositoryManager.getInstance(env).appData;
+
+  const appDataResponse = await repo.createAppDataWithItem(
+    user.id,
+    "drawings",
+    drawingId,
+    "drawing",
+    {
+      description: descriptionRequest?.description || "Untitled drawing",
+      drawingUrl: `${baseAssetsUrl}/${drawingImageKey}`,
+      paintingUrl: `${baseAssetsUrl}/${paintingImageKey}`,
+      drawingKey: drawingImageKey,
+      paintingKey: paintingImageKey,
+    },
+  );
+
+  const appDataId = appDataResponse.id;
+
+  return {
+    ...conversationResponse,
+    app_data_id: appDataId,
+    completion_id: drawingId,
+    status: "success",
     data: {
       drawingUrl: `${baseAssetsUrl}/${drawingImageKey}`,
       drawingKey: drawingImageKey,
       paintingUrl: `${baseAssetsUrl}/${paintingImageKey}`,
       paintingKey: paintingImageKey,
+      description: descriptionRequest?.description || "Untitled drawing",
     },
   };
-  const response = await conversationManager.add(drawingId, message);
-
-  return {
-    ...response,
-    completion_id: drawingId,
-  };
-};
+}

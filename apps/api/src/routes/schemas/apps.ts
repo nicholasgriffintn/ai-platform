@@ -68,6 +68,7 @@ export const musicGenerationSchema = z.object({
 
 export const drawingSchema = z.object({
   drawing: z.any(),
+  drawingId: z.string().optional(),
 });
 
 export const guessDrawingSchema = z.object({

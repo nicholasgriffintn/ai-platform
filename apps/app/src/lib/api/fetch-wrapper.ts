@@ -64,7 +64,6 @@ export async function fetchApi(
     body: undefined,
   };
 
-  // Assign or stringify the body
   if (options.body !== null && options.body !== undefined) {
     if (
       typeof options.body === "string" ||

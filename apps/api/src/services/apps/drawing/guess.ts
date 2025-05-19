@@ -1,15 +1,9 @@
 import { gatewayId } from "~/constants/app";
 import { guessDrawingPrompt } from "~/lib/prompts";
+import { RepositoryManager } from "~/repositories";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-
-export type ImageFromDrawingRequest = {
-  env: IEnv;
-  request: {
-    drawing?: Blob;
-  };
-  user: IUser;
-};
+import { generateId } from "~/utils/id";
 
 interface ImageFromDrawingResponse extends IFunctionResponse {
   completion_id?: string;
@@ -17,11 +11,17 @@ interface ImageFromDrawingResponse extends IFunctionResponse {
 
 const usedGuesses = new Set<string>();
 
-export const guessDrawingFromImage = async (
-  req: ImageFromDrawingRequest,
-): Promise<ImageFromDrawingResponse> => {
-  const { env, request, user } = req;
-
+export async function guessDrawingFromImage({
+  env,
+  request,
+  user,
+}: {
+  env: IEnv;
+  request: {
+    drawing?: Blob;
+  };
+  user: IUser;
+}): Promise<ImageFromDrawingResponse> {
   if (!request.drawing) {
     throw new AssistantError("Missing drawing", ErrorType.PARAMS_ERROR);
   }
@@ -50,9 +50,20 @@ export const guessDrawingFromImage = async (
     throw new AssistantError("Failed to generate description");
   }
 
-  usedGuesses.add(guessRequest.description.trim().toLowerCase());
+  const guess = guessRequest.description.trim();
+  usedGuesses.add(guess.toLowerCase());
+
+  const guessId = generateId();
+
+  const repo = RepositoryManager.getInstance(env).appData;
+  await repo.createAppDataWithItem(user.id, "drawings", guessId, "guess", {
+    guess,
+    timestamp: new Date().toISOString(),
+  });
 
   return {
-    content: guessRequest.description,
+    status: "success",
+    content: guess,
+    completion_id: guessId,
   };
-};
+}

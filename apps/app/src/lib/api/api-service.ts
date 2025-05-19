@@ -321,7 +321,6 @@ class ApiService {
       const data = (await response.json()) as any;
 
       if (data.error) {
-        // Reset usage limits if there's an error response
         useUsageStore.getState().setUsageLimits(null);
         throw new Error(data.error.message || "Unknown error");
       }
@@ -382,7 +381,6 @@ class ApiService {
                   parsedData.type === "usage_limits" &&
                   parsedData.usage_limits
                 ) {
-                  // Store usage limits in the usage store
                   useUsageStore
                     .getState()
                     .setUsageLimits(parsedData.usage_limits);
@@ -454,7 +452,6 @@ class ApiService {
       } catch (error) {
         console.error("Error reading stream:", error);
         if (error instanceof Error && error.name !== "AbortError") {
-          // Reset usage limits if there's a stream reading error
           useUsageStore.getState().setUsageLimits(null);
           throw error;
         }

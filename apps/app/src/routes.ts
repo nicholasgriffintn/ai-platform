@@ -2,6 +2,12 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
   index("pages/home.tsx"),
+  route("/terms", "pages/terms.tsx"),
+  route("/privacy", "pages/privacy.tsx"),
+  route("/auth/callback", "pages/auth/callback.tsx"),
+  route("/auth/verify-magic-link", "pages/auth/verify-magic-link.tsx"),
+  route("/profile", "pages/profile.tsx"),
+  route("/s/:share_id", "pages/shared/[share_id].tsx"),
   route("/apps", "pages/apps/index.tsx"),
   route("/apps/podcasts", "pages/apps/podcasts/index.tsx"),
   route("/apps/podcasts/new", "pages/apps/podcasts/new.tsx"),
@@ -12,11 +18,8 @@ export default [
   route("/apps/notes", "pages/apps/notes/index.tsx"),
   route("/apps/notes/new", "pages/apps/notes/new.tsx"),
   route("/apps/notes/:id", "pages/apps/notes/[id].tsx"),
-  route("/auth/callback", "pages/auth/callback.tsx"),
-  route("/profile", "pages/profile.tsx"),
-  route("/terms", "pages/terms.tsx"),
-  route("/privacy", "pages/privacy.tsx"),
-  route("/s/:share_id", "pages/shared/[share_id].tsx"),
-  route("/auth/verify-magic-link", "pages/auth/verify-magic-link.tsx"),
+  route("/apps/drawing", "pages/apps/drawing/index.tsx"),
+  route("/apps/drawing/new", "pages/apps/drawing/new.tsx"),
+  route("/apps/drawing/:id", "pages/apps/drawing/[id].tsx"),
   route("*?", "pages/catchall.tsx"),
 ] satisfies RouteConfig;

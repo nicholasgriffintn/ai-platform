@@ -7,3 +7,9 @@ export const createApiKeySchema = z.object({
 export const deleteApiKeyParamsSchema = z.object({
   keyId: z.string().uuid("Invalid API Key ID format"),
 });
+
+export const storeProviderApiKeySchema = z.object({
+  providerId: z.string(),
+  apiKey: z.string(),
+  secretKey: z.string().nullable().optional(),
+});

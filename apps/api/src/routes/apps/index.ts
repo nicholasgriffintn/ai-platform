@@ -9,8 +9,6 @@ import {
   type ContentExtractParams,
   extractContent,
 } from "~/services/apps/content-extract";
-import { generateImageFromDrawing } from "~/services/apps/drawing/create";
-import { guessDrawingFromImage } from "~/services/apps/drawing/guess";
 import { type OcrParams, performOcr } from "~/services/apps/ocr";
 import { handlePromptCoachSuggestion } from "~/services/apps/prompt-coach";
 import {
@@ -32,8 +30,6 @@ import {
   captureScreenshotSchema,
   contentExtractSchema,
   deepWebSearchSchema,
-  drawingSchema,
-  guessDrawingSchema,
   ocrSchema,
   promptCoachJsonSchema,
   promptCoachResponseSchema,
@@ -43,6 +39,7 @@ import {
 } from "../schemas/apps";
 import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
 import articles from "./articles";
+import drawing from "./drawing";
 import embeddings from "./embeddings";
 import generate from "./generate";
 import notes from "./notes";
@@ -112,133 +109,7 @@ app.get(
 
 app.route("/generate", generate);
 
-app.post(
-  "/drawing",
-  describeRoute({
-    tags: ["apps"],
-    description: "Generate an image from a drawing",
-    responses: {
-      200: {
-        description: "Response",
-        content: {
-          "application/json": {
-            schema: resolver(apiResponseSchema),
-          },
-        },
-      },
-    },
-  }),
-  zValidator("form", drawingSchema),
-  async (context: Context) => {
-    const body = context.req.valid("form" as never);
-    const user = context.get("user");
-
-    if (!user?.id) {
-      return context.json(
-        {
-          response: {
-            status: "error",
-            message: "User not authenticated",
-          },
-        },
-        401,
-      );
-    }
-
-    if (user.plan_id !== "pro") {
-      return context.json(
-        {
-          response: {
-            status: "error",
-            message: "User is not on pro plan",
-          },
-        },
-        401,
-      );
-    }
-
-    const response = await generateImageFromDrawing({
-      env: context.env as IEnv,
-      request: body,
-      user,
-    });
-
-    if (response.status === "error") {
-      throw new AssistantError(
-        "Something went wrong, we are working on it",
-        ErrorType.UNKNOWN_ERROR,
-      );
-    }
-
-    return context.json({
-      response,
-    });
-  },
-);
-
-app.post(
-  "/guess-drawing",
-  describeRoute({
-    tags: ["apps"],
-    description: "Guess a drawing from an image",
-    responses: {
-      200: {
-        description: "Response",
-        content: {
-          "application/json": {
-            schema: resolver(apiResponseSchema),
-          },
-        },
-      },
-    },
-  }),
-  zValidator("form", guessDrawingSchema),
-  async (context: Context) => {
-    const body = context.req.valid("form" as never);
-    const user = context.get("user");
-
-    if (!user?.id) {
-      return context.json(
-        {
-          response: {
-            status: "error",
-            message: "User not authenticated",
-          },
-        },
-        401,
-      );
-    }
-
-    if (user.plan_id !== "pro") {
-      return context.json(
-        {
-          response: {
-            status: "error",
-            message: "User is not on pro plan",
-          },
-        },
-        401,
-      );
-    }
-
-    const response = await guessDrawingFromImage({
-      env: context.env as IEnv,
-      request: body,
-      user,
-    });
-
-    if (response.status === "error") {
-      throw new AssistantError(
-        "Something went wrong, we are working on it",
-        ErrorType.UNKNOWN_ERROR,
-      );
-    }
-
-    return context.json({
-      response,
-    });
-  },
-);
+app.route("/drawing", drawing);
 
 app.route("/podcasts", podcasts);
 
