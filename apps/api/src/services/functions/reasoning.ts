@@ -1,6 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/models";
-import { AIProviderFactory } from "~/providers/factory";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IFunction, IRequest } from "~/types";
 import { getLogger } from "~/utils/logger";
 

@@ -1,4 +1,4 @@
-import { AIProviderFactory } from "~/providers/factory";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 

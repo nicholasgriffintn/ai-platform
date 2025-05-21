@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import type { IEnv } from "~/types";
-import { AIProviderFactory } from "../providers/factory";
+import { AIProviderFactory } from "../lib/providers/factory";
 import { errorResponseSchema } from "./schemas/shared";
 
 const realtimeSessionResponseSchema = z.object({

@@ -1,6 +1,6 @@
 import { getAuxiliaryModelForRetrieval } from "~/lib/models";
 import { generateArticleReportPrompt } from "~/lib/prompts";
-import { AIProviderFactory } from "~/providers/factory";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import { AppDataRepository } from "~/repositories/AppDataRepository";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

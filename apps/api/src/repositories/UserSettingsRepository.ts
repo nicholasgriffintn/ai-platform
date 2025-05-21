@@ -1,7 +1,7 @@
 import { decodeBase64 } from "hono/utils/encode";
 
 import { getModels } from "~/lib/models";
-import { AIProviderFactory } from "~/providers/factory";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IUserSettings } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";

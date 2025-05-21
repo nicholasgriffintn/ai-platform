@@ -9,7 +9,7 @@ import type {
 import { Database } from "~/lib/database";
 import { getAuxiliaryModel } from "~/lib/models";
 import { trackRagMetrics } from "~/lib/monitoring";
-import { AIProviderFactory } from "~/providers/factory";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import type {
   EmbeddingProvider,
   IEnv,

@@ -1,5 +1,5 @@
+import { AIProviderFactory } from "~/lib/providers/factory";
 import type { StorageService } from "~/lib/storage";
-import { AIProviderFactory } from "~/providers/factory";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";

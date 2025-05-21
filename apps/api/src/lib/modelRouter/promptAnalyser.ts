@@ -1,7 +1,7 @@
 import { KeywordFilter } from "~/lib/keywords";
 import { availableCapabilities, getModelConfig } from "~/lib/models";
-import type { AIProvider } from "~/providers/base";
-import { AIProviderFactory } from "~/providers/factory";
+import type { AIProvider } from "~/lib/providers/base";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import { availableFunctions } from "~/services/functions";
 import type {
   Attachment,

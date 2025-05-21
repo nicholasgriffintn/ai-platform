@@ -1,6 +1,6 @@
 import { getModelConfigByMatchingModel } from "~/lib/models";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import type { StorageService } from "~/lib/storage";
-import { AIProviderFactory } from "~/providers/factory";
 import { availableFunctions } from "~/services/functions";
 import type { ChatCompletionParameters } from "~/types";
 import { getLogger } from "~/utils/logger";

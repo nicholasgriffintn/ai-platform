@@ -1,5 +1,5 @@
 import { getAuxiliaryModelForRetrieval } from "~/lib/models";
-import { AIProviderFactory } from "~/providers/factory";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 

@@ -1,5 +1,5 @@
 import { sanitiseInput } from "~/lib/chat/utils";
-import { AIProviderFactory } from "~/providers/factory";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IEnv, IUser } from "~/types";
 
 export interface SpeechGenerationParams {

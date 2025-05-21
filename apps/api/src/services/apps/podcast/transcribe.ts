@@ -1,6 +1,6 @@
 import { API_PROD_HOST } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
-import { AIProviderFactory } from "~/providers/factory";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

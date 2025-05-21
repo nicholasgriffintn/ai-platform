@@ -1,5 +1,5 @@
+import { AIProviderFactory } from "~/lib/providers/factory";
 import { StorageService } from "~/lib/storage";
-import { AIProviderFactory } from "~/providers/factory";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";

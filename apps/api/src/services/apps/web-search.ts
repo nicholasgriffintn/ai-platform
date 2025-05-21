@@ -5,7 +5,7 @@ import {
   webSearchAnswerSystemPrompt,
   webSearchSimilarQuestionsSystemPrompt,
 } from "~/lib/prompts";
-import { AIProviderFactory } from "~/providers/factory";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import { handleWebSearch } from "~/services/search/web";
 import type { IEnv, IUser, SearchOptions } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

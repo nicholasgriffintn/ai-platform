@@ -3,7 +3,7 @@ import {
   getTextToImageSystemPrompt,
   type imagePrompts,
 } from "~/lib/prompts/image";
-import { AIProviderFactory } from "~/providers/factory";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IEnv, IUser } from "~/types";
 
 export interface ImageGenerationParams {

@@ -2,7 +2,7 @@ import { sanitiseMessages } from "~/lib/chat/utils";
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
 import { getAuxiliaryModel } from "~/lib/models";
-import { AIProviderFactory } from "~/providers/factory";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 

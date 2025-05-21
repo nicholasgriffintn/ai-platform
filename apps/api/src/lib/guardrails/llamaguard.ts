@@ -3,8 +3,8 @@ import type { Ai } from "@cloudflare/workers-types";
 import { getAuxiliaryGuardrailsModel } from "~/lib/models";
 import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
-import { AIProviderFactory } from "../../providers/factory";
 import { AssistantError } from "../../utils/errors";
+import { AIProviderFactory } from "../providers/factory";
 
 const logger = getLogger({ prefix: "LLAMAGUARD" });
 
