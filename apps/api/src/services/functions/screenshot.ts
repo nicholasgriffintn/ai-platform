@@ -1,4 +1,4 @@
-import { captureScreenshot } from "~/services/apps/screenshot";
+import { captureScreenshot } from "~/services/apps/retrieval/screenshot";
 import type { IFunction, IRequest } from "~/types";
 
 const DEFAULT_VIEWPORT = {

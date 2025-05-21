@@ -5,25 +5,25 @@ import { z } from "zod";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { handlePromptCoachSuggestion } from "~/services/apps/prompt-coach";
 import {
   type ContentExtractParams,
   extractContent,
-} from "~/services/apps/content-extract";
-import { type OcrParams, performOcr } from "~/services/apps/ocr";
-import { handlePromptCoachSuggestion } from "~/services/apps/prompt-coach";
+} from "~/services/apps/retrieval/content-extract";
+import { type OcrParams, performOcr } from "~/services/apps/retrieval/ocr";
 import {
   type CaptureScreenshotParams,
   captureScreenshot,
-} from "~/services/apps/screenshot";
+} from "~/services/apps/retrieval/screenshot";
+import { getWeatherForLocation } from "~/services/apps/retrieval/weather";
+import {
+  type DeepWebSearchParams,
+  performDeepWebSearch,
+} from "~/services/apps/retrieval/web-search";
 import {
   type TutorRequestParams,
   completeTutorRequest,
 } from "~/services/apps/tutor";
-import { getWeatherForLocation } from "~/services/apps/weather";
-import {
-  type DeepWebSearchParams,
-  performDeepWebSearch,
-} from "~/services/apps/web-search";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import {

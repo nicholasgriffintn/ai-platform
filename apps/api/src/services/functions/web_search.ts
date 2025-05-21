@@ -1,5 +1,5 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import { performDeepWebSearch } from "~/services/apps/web-search";
+import { performDeepWebSearch } from "~/services/apps/retrieval/web-search";
 import type { IFunction, IRequest, SearchOptions } from "~/types";
 
 export const web_search: IFunction = {

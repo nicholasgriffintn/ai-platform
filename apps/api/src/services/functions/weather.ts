@@ -1,4 +1,4 @@
-import { getWeatherForLocation } from "~/services/apps/weather";
+import { getWeatherForLocation } from "~/services/apps/retrieval/weather";
 import type { IFunction, IRequest } from "~/types";
 
 export const get_weather: IFunction = {
