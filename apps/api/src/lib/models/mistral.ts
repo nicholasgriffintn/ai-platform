@@ -76,6 +76,27 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     supportsArtifacts: true,
   }),
 
+  createModelConfig("devstral-small", PROVIDER, {
+    name: "Devstral Small",
+    matchingModel: "devstral-small-latest",
+    description:
+      "Devstral Small is an agentic LLM for software engineering tasks.",
+    type: ["coding"],
+    supportsFunctions: true,
+    isFree: true,
+    contextWindow: 128000,
+    maxTokens: 128000,
+    costPer1kInputTokens: 0.002,
+    costPer1kOutputTokens: 0.006,
+    strengths: ["coding", "agents"],
+    contextComplexity: 3,
+    reliability: 3,
+    speed: 4,
+    isFeatured: true,
+    includedInRouter: true,
+    supportsArtifacts: true,
+  }),
+
   createModelConfig("mistral-nemo", PROVIDER, {
     name: "Mistral Nemo",
     matchingModel: "open-mistral-nemo",

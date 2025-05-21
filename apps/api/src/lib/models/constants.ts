@@ -15,6 +15,7 @@ export const availableCapabilities = [
   "instruction",
   "general_knowledge",
   "image_generation",
+  "agents",
 ] as const;
 
 export const availableModelTypes = [
