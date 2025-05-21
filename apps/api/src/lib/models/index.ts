@@ -252,6 +252,32 @@ export async function getAuxiliaryModel(
   return { model: modelConfig.matchingModel, provider: modelConfig.provider };
 }
 
+export const getAuxiliaryModelForRetrieval = async (
+  env: IEnv,
+  user?: IUser,
+) => {
+  let modelToUse = "gemma-3-12b-it";
+
+  const allRouterModels = getIncludedInRouterModels();
+  const availableModels = await filterModelsForUserAccess(
+    allRouterModels,
+    env,
+    user?.id,
+  );
+
+  const hasPerplexityModel = Object.keys(availableModels).some(
+    (model) => availableModels[model].provider === "perplexity-ai",
+  );
+
+  if (hasPerplexityModel) {
+    modelToUse = "sonar";
+  }
+
+  const modelConfig = getModelConfig(modelToUse);
+
+  return { model: modelConfig.matchingModel, provider: modelConfig.provider };
+};
+
 export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
   let modelToUse = "@cf/meta/llama-guard-3-8b";
 

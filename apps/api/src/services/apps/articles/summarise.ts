@@ -1,4 +1,5 @@
 import { sanitiseInput } from "~/lib/chat/utils";
+import { getAuxiliaryModelForRetrieval } from "~/lib/models";
 import { summariseArticlePrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/providers/factory";
 import { AppDataRepository } from "~/repositories/AppDataRepository";
@@ -49,16 +50,18 @@ export async function summariseArticle({
   const sanitisedArticle = sanitiseInput(args.article);
 
   try {
-    const provider = AIProviderFactory.getProvider("perplexity-ai");
+    const { model: modelToUse, provider: providerToUse } =
+      await getAuxiliaryModelForRetrieval(env, user);
+    const provider = AIProviderFactory.getProvider(providerToUse);
 
     const summaryGenData = await provider.getResponse({
       completion_id,
       app_url,
-      model: "sonar",
+      model: modelToUse,
       messages: [
         {
           role: "user",
-          content: summariseArticlePrompt(args.article),
+          content: summariseArticlePrompt(sanitisedArticle),
         },
       ],
       env: env,

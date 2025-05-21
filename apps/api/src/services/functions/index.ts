@@ -2,6 +2,7 @@ import type { ConversationManager } from "~/lib/conversationManager";
 import type { IFunction, IFunctionResponse, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { analyse_hacker_news } from "./analyse_hacker_news";
 import { extract_content } from "./extract_content";
 import { create_image } from "./image";
 import { handleMCPTool } from "./mcp";
@@ -29,6 +30,7 @@ export const availableFunctions: IFunction[] = [
   tutor,
   prompt_coach,
   add_reasoning_step,
+  analyse_hacker_news,
 ];
 
 export const handleFunctions = async ({

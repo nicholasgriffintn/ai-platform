@@ -44,6 +44,7 @@ import embeddings from "./embeddings";
 import generate from "./generate";
 import notes from "./notes";
 import podcasts from "./podcasts";
+import retrieval from "./retrieval";
 
 const app = new Hono();
 
@@ -116,6 +117,8 @@ app.route("/podcasts", podcasts);
 app.route("/articles", articles);
 
 app.route("/notes", notes);
+
+app.route("/retrieval", retrieval);
 
 app.post(
   "/content-extract",

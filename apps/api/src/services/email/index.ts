@@ -1,5 +1,4 @@
 import { AwsClient } from "aws4fetch";
-import type { Context } from "hono";
 
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";

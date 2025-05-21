@@ -1,4 +1,5 @@
 import { sanitiseInput } from "~/lib/chat/utils";
+import { getAuxiliaryModelForRetrieval } from "~/lib/models";
 import { analyseArticlePrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/providers/factory";
 import { AppDataRepository } from "~/repositories/AppDataRepository";
@@ -49,11 +50,13 @@ export async function analyseArticle({
   try {
     const sanitisedArticle = sanitiseInput(args.article);
 
-    const provider = AIProviderFactory.getProvider("perplexity-ai");
+    const { model: modelToUse, provider: providerToUse } =
+      await getAuxiliaryModelForRetrieval(env, user);
+    const provider = AIProviderFactory.getProvider(providerToUse);
     const analysisData = await provider.getResponse({
       completion_id,
       app_url,
-      model: "sonar",
+      model: modelToUse,
       messages: [
         {
           role: "user",

@@ -1,3 +1,4 @@
+import { getAuxiliaryModelForRetrieval } from "~/lib/models";
 import { generateArticleReportPrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/providers/factory";
 import { AppDataRepository } from "~/repositories/AppDataRepository";
@@ -69,12 +70,14 @@ export async function generateArticlesReport({
       );
     }
 
-    const provider = AIProviderFactory.getProvider("perplexity-ai");
+    const { model: modelToUse, provider: providerToUse } =
+      await getAuxiliaryModelForRetrieval(env, user);
+    const provider = AIProviderFactory.getProvider(providerToUse);
 
     const reportGenData = await provider.getResponse({
       completion_id,
       app_url,
-      model: "sonar",
+      model: modelToUse,
       messages: [
         {
           role: "user",
