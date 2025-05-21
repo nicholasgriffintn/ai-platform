@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef } from "react";
 import { memo } from "react";
 
+import { markdownToHtml } from "~/lib/markdown";
+
 interface TemplateViewProps {
   template?: string;
   data: Record<string, any>;
@@ -20,6 +22,7 @@ const ifRegex =
 const eachRegex = /\{\{#each\s+([^}]+)\}\}([\s\S]*?)\{\{\/each\}\}/g;
 const thisPropertyRegex = /\{\{this\.([^}]+)\}\}/g;
 const thisValueRegex = /\{\{this\}\}/g;
+const markdownRegex = /\{\{md\s+([^}]+)\}\}/g;
 
 const processVariable = (data: Record<string, any>, key: string): string => {
   const trimmedKey = key.trim();
@@ -89,6 +92,17 @@ const renderTemplate = (
       return value ? ifContent : elseContent;
     },
   );
+
+  rendered = rendered.replace(markdownRegex, (_match, key) => {
+    const trimmedKey = key.trim();
+    const value = getNestedValue(data, trimmedKey);
+
+    if (value === undefined || value === null) {
+      return "";
+    }
+
+    return markdownToHtml(String(value));
+  });
 
   rendered = rendered.replace(variableRegex, (_match, key) => {
     return processVariable(data, key);

@@ -19,6 +19,7 @@ export const getFunctionIcon = (name: string): string => {
   if (name.includes("create")) return "plus-circle";
   if (name.includes("get")) return "folder-open";
   if (name.startsWith("mcp_")) return "file-text";
+  if (name.startsWith("analyse_")) return "file-text";
   return "app";
 };
 
@@ -32,6 +33,7 @@ export const getFunctionResponseType = (name: string): ResponseDisplayType => {
   if (name.includes("speech")) return ResponseDisplayType.TEXT;
   if (name.includes("prompt_coach")) return ResponseDisplayType.TEMPLATE;
   if (name.startsWith("mcp_")) return ResponseDisplayType.JSON;
+  if (name.startsWith("analyse_")) return ResponseDisplayType.TEMPLATE;
   return ResponseDisplayType.CUSTOM;
 };
 
@@ -43,7 +45,35 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
     ],
   };
 
-  if (name.includes("weather")) {
+  if (name.startsWith("analyse_")) {
+    display.template = `
+      <div class="analysis-container prose dark:prose-invert">
+        <h2>Analysis</h2>
+        <div class="analysis-content">
+          {{md data.analysis.content}}
+        </div>
+        
+        {{#if data.stories}}
+        <div class="stories-container">
+          <h3>Top Stories</h3>
+          <ul class="stories-list">
+            {{#each data.stories}}
+              <li class="story-item">
+                <a href="{{this.link}}" target="_blank" rel="noopener noreferrer">{{this.title}}</a>
+              </li>
+            {{/each}}
+          </ul>
+        </div>
+        {{/if}}
+        
+        {{#if data.analysis.usage}}
+        <div class="usage-info">
+          <p><small>Tokens used: {{data.analysis.usage.total_tokens}} ({{data.analysis.usage.prompt_tokens}} prompt, {{data.analysis.usage.completion_tokens}} completion)</small></p>
+        </div>
+        {{/if}}
+      </div>
+    `;
+  } else if (name.includes("weather")) {
     display.template = `
       <div class="weather-response">
         <h2>Weather Information</h2>
