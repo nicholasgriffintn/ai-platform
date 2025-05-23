@@ -11,7 +11,6 @@ import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { BackLink } from "../BackLink";
 import { PageHeader } from "../PageHeader";
-import { PageTitle } from "../PageTitle";
 import { AppCard } from "./AppCard";
 import { DynamicForm } from "./DynamicForm";
 import { FeaturedApps } from "./FeaturedApps";
@@ -187,12 +186,8 @@ export const DynamicApps = () => {
       <div className={cn("container mx-auto px-4 max-w-7xl")}>
         <PageHeader>
           <BackLink onClick={handleBackToApps} label="Back to Apps" />
-          <PageTitle title={selectedApp.name} />
         </PageHeader>
         <div className="flex-grow overflow-auto space-y-6">
-          <p className="text-zinc-600 dark:text-zinc-300">
-            {selectedApp.description}
-          </p>
           {responseContent || formContent}
         </div>
       </div>
