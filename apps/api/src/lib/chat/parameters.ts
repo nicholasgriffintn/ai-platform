@@ -398,6 +398,9 @@ export async function mapParametersToProvider(
           ...commonParams,
         };
         const supportsThinking = modelConfig?.hasThinking || false;
+        console.log("supportsThinking", supportsThinking);
+        console.log("newCommonParams", JSON.stringify(newCommonParams));
+
         if (supportsThinking) {
           if (newCommonParams.max_tokens <= 1024) {
             newCommonParams.max_tokens = 1025;

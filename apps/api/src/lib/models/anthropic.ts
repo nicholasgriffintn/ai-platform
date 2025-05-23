@@ -4,35 +4,15 @@ import type { ModelConfig } from "~/types";
 const PROVIDER = "anthropic";
 
 export const anthropicModelConfig: ModelConfig = createModelConfigObject([
-  createModelConfig("claude-3.5-sonnet", PROVIDER, {
-    name: "Claude 3.5 Sonnet",
-    matchingModel: "claude-3-5-sonnet-latest",
-    type: ["text"],
-    card: "https://www.prompthub.us/models/claude-3-5-sonnet",
-    contextWindow: 200000,
-    maxTokens: 8192,
-    costPer1kInputTokens: 0.003,
-    costPer1kOutputTokens: 0.015,
-    strengths: ["chat", "general_knowledge", "analysis", "coding", "creative"],
-    contextComplexity: 4,
-    reliability: 5,
-    speed: 4,
-    multimodal: true,
-    supportsArtifacts: true,
-    supportsFunctions: true,
-    supportsDocuments: true,
-    includedInRouter: true,
-  }),
-
-  createModelConfig("claude-3.7-sonnet", PROVIDER, {
-    name: "Claude 3.7 Sonnet",
-    matchingModel: "claude-3-7-sonnet-latest",
+  createModelConfig("claude-4-sonnet", PROVIDER, {
+    name: "Claude 4 Sonnet",
+    matchingModel: "claude-sonnet-4-0",
     description:
       "Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
     type: ["text"],
     card: "https://www.prompthub.us/models/claude-3-7-sonnet",
     contextWindow: 200000,
-    maxTokens: 8192,
+    maxTokens: 64000,
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     strengths: [
@@ -55,15 +35,15 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     supportsDocuments: true,
   }),
 
-  createModelConfig("claude-3.7-sonnet-thinking", PROVIDER, {
-    name: "Claude 3.7 Sonnet Thinking",
-    matchingModel: "claude-3-7-sonnet-20250219",
+  createModelConfig("claude-4-sonnet-thinking", PROVIDER, {
+    name: "Claude 4 Sonnet Thinking",
+    matchingModel: "claude-sonnet-4-20250514",
     description:
       "Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
     type: ["text"],
     card: "https://www.prompthub.us/models/claude-3-7-sonnet",
     contextWindow: 200000,
-    maxTokens: 8192,
+    maxTokens: 64000,
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     strengths: [
@@ -114,15 +94,15 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     includedInRouter: true,
   }),
 
-  createModelConfig("claude-3-opus", PROVIDER, {
-    name: "Claude 3 Opus",
-    matchingModel: "claude-3-opus-latest",
+  createModelConfig("claude-4-opus", PROVIDER, {
+    name: "Claude 4 Opus",
+    matchingModel: "claude-opus-4-20250514",
     description:
-      "The Claude 3.5 Opus is an advanced AI model by Anthropic designed for enterprise-level applications. It offers unmatched performance in handling complex tasks, making it an ideal solution for businesses requiring high-level data processing and analysis.",
+      "The Claude 4 Opus is an advanced AI model by Anthropic designed for enterprise-level applications. It offers unmatched performance in handling complex tasks, making it an ideal solution for businesses requiring high-level data processing and analysis.",
     type: ["text"],
-    card: "https://www.prompthub.us/models/claude-3-opus",
+    card: "https://www.prompthub.us/models/claude-4-opus",
     contextWindow: 200000,
-    maxTokens: 4096,
+    maxTokens: 32000,
     costPer1kInputTokens: 0.015,
     costPer1kOutputTokens: 0.075,
     strengths: [
