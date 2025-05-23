@@ -21,6 +21,7 @@ import { openaiModelConfig } from "./openai";
 import { openrouterModelConfig } from "./openrouter";
 import { perplexityModelConfig } from "./perplexity";
 import { togetherAiModelConfig } from "./together-ai";
+import { v0ModelConfig } from "./v0";
 import { workersAiModelConfig } from "./workersai";
 
 import { Database } from "~/lib/database";
@@ -54,6 +55,7 @@ const modelConfig: ModelConfig = {
   ...googleAiStudioModelConfig,
   ...fireworksModelConfig,
   ...hyperbolicModelConfig,
+  ...v0ModelConfig,
 };
 
 export function getModelConfig(model?: string) {

@@ -19,6 +19,7 @@ import { PerplexityProvider } from "./perplexity";
 import { PollyProvider } from "./polly";
 import { ReplicateProvider } from "./replicate";
 import { TogetherAiProvider } from "./together-ai";
+import { V0Provider } from "./v0";
 import { WorkersProvider } from "./workers";
 
 export interface ProviderConfig {
@@ -59,6 +60,7 @@ export class AIProviderFactory {
     { key: "polly", provider: new PollyProvider() },
     { key: "fireworks", provider: new FireworksProvider() },
     { key: "hyperbolic", provider: new HyperbolicProvider() },
+    { key: "v0", provider: new V0Provider() },
   ];
 
   /**

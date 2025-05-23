@@ -60,6 +60,7 @@ This project is organized as a monorepo with multiple applications:
   - Certesia
   - ElevenLabs
   - Hyperbolic
+  - V0
 - [An AI assisted podcasting app](https://nicholasgriffin.dev/blog/launching-an-automated-podcasting-app)
 - [Drawing to painting and guessing the drawing app](https://nicholasgriffin.dev/blog/anyone-can-draw)
 - Llamaguard Guardrails Support
