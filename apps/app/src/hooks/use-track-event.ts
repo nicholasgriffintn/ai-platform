@@ -10,6 +10,10 @@ export function useTrackEvent() {
       nonInteraction?: boolean;
       properties?: Record<string, string>;
     }) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       if (window.Beacon) {
         window.Beacon.trackEvent(event);
       }
