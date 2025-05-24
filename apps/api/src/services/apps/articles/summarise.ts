@@ -68,12 +68,22 @@ export async function summariseArticle({
       user,
     });
 
-    const quotes = extractQuotes(summaryGenData.content);
+    const summaryGenDataContent =
+      summaryGenData.content || summaryGenData.response;
+
+    if (!summaryGenDataContent) {
+      throw new AssistantError(
+        "Summary content was empty",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const quotes = extractQuotes(summaryGenDataContent);
     const verifiedQuotes = verifyQuotes(args.article, quotes);
 
     const summaryResult = {
-      content: summaryGenData.content,
-      model: summaryGenData.model,
+      content: summaryGenDataContent,
+      model: modelToUse,
       id: summaryGenData.id,
       citations: summaryGenData.citations,
       log_id: summaryGenData.log_id,

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   analyseArticle,
+  extractArticleContent,
   fetchArticle,
   fetchArticles,
   fetchSourceArticlesByIds,
@@ -51,4 +52,8 @@ export const useFetchSourceArticlesByIds = (ids: string[] | undefined) => {
     enabled: !!ids && ids.length > 0,
     select: (data) => data.articles || [],
   });
+};
+
+export const useExtractArticleContent = () => {
+  return useMutation({ mutationFn: extractArticleContent });
 };

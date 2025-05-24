@@ -88,12 +88,22 @@ export async function generateArticlesReport({
       user,
     });
 
-    const quotes = extractQuotes(reportGenData.content);
+    const reportGenDataContent =
+      reportGenData.content || reportGenData.response;
+
+    if (!reportGenDataContent) {
+      throw new AssistantError(
+        "Report content was empty",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const quotes = extractQuotes(reportGenDataContent);
     const verifiedQuotes = verifyQuotes(combinedArticles, quotes);
 
     const reportResult = {
-      content: reportGenData.content,
-      model: reportGenData.model,
+      content: reportGenDataContent,
+      model: modelToUse,
       id: reportGenData.id,
       citations: reportGenData.citations,
       log_id: reportGenData.log_id,

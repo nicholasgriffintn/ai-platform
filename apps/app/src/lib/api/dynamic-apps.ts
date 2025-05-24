@@ -5,6 +5,8 @@ import type {
   AnalyseArticleResponse,
   ArticleResponse,
   ArticlesResponse,
+  ExtractArticleContentParams,
+  ExtractArticleContentResponse,
   FetchMultipleArticlesResponse,
   GenerateReportParams,
   GenerateReportResponse,
@@ -529,4 +531,38 @@ export const formatNoteAPI = async (
 
   const data = (await response.json().catch(() => ({}))) as { content: string };
   return data.content;
+};
+
+export const extractArticleContent = async (
+  params: ExtractArticleContentParams,
+): Promise<ExtractArticleContentResponse> => {
+  let headers = {};
+  try {
+    headers = await apiService.getHeaders();
+  } catch (e) {
+    console.error("Error extracting article content:", e);
+  }
+
+  const response = await fetchApi("/apps/articles/extract-content", {
+    method: "POST",
+    headers: {
+      ...headers,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      urls: params.urls,
+      extract_depth: params.extractDepth || "basic",
+      include_images: params.includeImages || false,
+    }),
+  });
+
+  if (!response.ok) {
+    const errData = (await response.json().catch(() => ({}))) as any;
+    throw new Error(
+      errData?.message ||
+        `Failed to extract article content: ${response.statusText}`,
+    );
+  }
+
+  return response.json() as Promise<ExtractArticleContentResponse>;
 };

@@ -92,3 +92,21 @@ export interface ArticleResponse {
   message?: string;
   article?: ArticleReportItem;
 }
+
+export interface ExtractArticleContentParams {
+  urls: string[];
+  extractDepth?: "basic" | "advanced";
+  includeImages?: boolean;
+}
+
+export interface ExtractArticleContentResponse {
+  status: "success" | "error";
+  message?: string;
+  data?: {
+    content: string[];
+    failedUrls: {
+      url: string;
+      error: string;
+    }[];
+  };
+}

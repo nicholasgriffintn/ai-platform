@@ -67,12 +67,21 @@ export async function analyseArticle({
       user,
     });
 
-    const quotes = extractQuotes(analysisData.content);
+    const analysisDataContent = analysisData.content || analysisData.response;
+
+    if (!analysisDataContent) {
+      throw new AssistantError(
+        "Analysis content was empty",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const quotes = extractQuotes(analysisDataContent);
     const verifiedQuotes = verifyQuotes(sanitisedArticle, quotes);
 
     const analysisResult = {
-      content: analysisData.content,
-      model: analysisData.model,
+      content: analysisDataContent,
+      model: modelToUse,
       id: analysisData.id,
       citations: analysisData.citations,
       log_id: analysisData.log_id,

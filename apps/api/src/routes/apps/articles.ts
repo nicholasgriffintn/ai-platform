@@ -10,12 +10,14 @@ import { getArticleDetails } from "~/services/apps/articles/get-details";
 import { getSourceArticles } from "~/services/apps/articles/get-source-articles";
 import { listArticles } from "~/services/apps/articles/list";
 import { summariseArticle } from "~/services/apps/articles/summarise";
+import { extractContent } from "~/services/apps/retrieval/content-extract";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import {
   articleAnalyzeSchema,
   articleSummariseSchema,
+  contentExtractSchema,
   generateArticlesReportSchema,
 } from "../schemas/apps";
 import {
@@ -629,6 +631,139 @@ app.post(
 
       throw new AssistantError(
         "Failed to generate report",
+        ErrorType.UNKNOWN_ERROR,
+        undefined,
+        error,
+      );
+    }
+  },
+);
+
+app.post(
+  "/extract-content",
+  describeRoute({
+    tags: ["apps", "articles"],
+    description: "Extract content from URLs for article analysis",
+    responses: {
+      200: {
+        description: "Content successfully extracted",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                status: z.string(),
+                data: z.object({
+                  content: z.array(z.string()),
+                  failedUrls: z.array(
+                    z.object({
+                      url: z.string(),
+                      error: z.string(),
+                    }),
+                  ),
+                }),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad Request",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      401: {
+        description: "Unauthorized",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("json", contentExtractSchema),
+  async (context: Context) => {
+    const body = context.req.valid("json" as never) as z.infer<
+      typeof contentExtractSchema
+    >;
+    const user = context.get("user") as IUser | undefined;
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
+    try {
+      const extractResult = await extractContent(
+        {
+          urls: body.urls,
+          extract_depth: body.extract_depth || "basic",
+          include_images: body.include_images || false,
+        },
+        {
+          env: context.env as IEnv,
+          user,
+        },
+      );
+
+      if (extractResult.status === "error") {
+        return context.json(
+          {
+            status: "error",
+            message: extractResult.error || "Failed to extract content",
+          },
+          400,
+        );
+      }
+
+      const content =
+        extractResult.data?.extracted.results.map(
+          (result) => result.raw_content,
+        ) || [];
+
+      const failedUrls = extractResult.data?.extracted.failed_results || [];
+
+      return context.json({
+        status: "success",
+        data: {
+          content,
+          failedUrls,
+        },
+      });
+    } catch (error) {
+      routeLogger.error("Error extracting content from URL:", {
+        error,
+        urls: body.urls,
+      });
+
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+
+      throw new AssistantError(
+        "Failed to extract content from URL",
         ErrorType.UNKNOWN_ERROR,
         undefined,
         error,

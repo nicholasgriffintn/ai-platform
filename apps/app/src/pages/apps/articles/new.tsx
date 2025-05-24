@@ -1,6 +1,6 @@
-import { Loader2, Plus, Save, Trash2 } from "lucide-react";
+import { Link2, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router";
 
 import { BackLink } from "~/components/BackLink";
@@ -8,9 +8,10 @@ import { PageHeader } from "~/components/PageHeader";
 import { PageShell } from "~/components/PageShell";
 import { PageTitle } from "~/components/PageTitle";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
-import { Button, Textarea } from "~/components/ui";
+import { Button, Input, Textarea } from "~/components/ui";
 import {
   useAnalyseArticle,
+  useExtractArticleContent,
   useGenerateReport,
   useSummariseArticle,
 } from "~/hooks/useArticles";
@@ -36,6 +37,12 @@ export default function NewArticleAnalysisPage() {
   const [processingArticles, setProcessingArticles] = useState(false);
   const [reportGenerating, setReportGenerating] = useState(false);
   const [processingError, setProcessingError] = useState<string | null>(null);
+  const [urlInputs, setUrlInputs] = useState<{ [articleId: string]: string }>(
+    {},
+  );
+  const [extractingContent, setExtractingContent] = useState<{
+    [articleId: string]: boolean;
+  }>({});
 
   useEffect(() => {
     setItemId(crypto.randomUUID());
@@ -44,6 +51,7 @@ export default function NewArticleAnalysisPage() {
   const analyseMutation = useAnalyseArticle();
   const summariseMutation = useSummariseArticle();
   const generateReportMutation = useGenerateReport();
+  const extractContentMutation = useExtractArticleContent();
 
   const handleAddArticle = useCallback(() => {
     setArticles((prevArticles) => [
@@ -68,6 +76,60 @@ export default function NewArticleAnalysisPage() {
       );
     },
     [],
+  );
+
+  const handleUrlChange = useCallback(
+    (id: string, e: ChangeEvent<HTMLInputElement>) => {
+      const newUrl = e.target.value;
+      setUrlInputs((prev) => ({
+        ...prev,
+        [id]: newUrl,
+      }));
+    },
+    [],
+  );
+
+  const handleExtractContent = useCallback(
+    async (id: string, url: string, e?: FormEvent) => {
+      e?.preventDefault();
+      if (!url.trim()) return;
+
+      try {
+        setExtractingContent((prev) => ({
+          ...prev,
+          [id]: true,
+        }));
+        setProcessingError(null);
+
+        const result = await extractContentMutation.mutateAsync({
+          urls: [url.trim()],
+          extractDepth: "basic",
+        });
+
+        if (result.status === "success" && result.data?.content.length) {
+          setArticles((prevArticles) =>
+            prevArticles.map((article) =>
+              article.id === id
+                ? { ...article, text: result.data?.content?.[0] || "" }
+                : article,
+            ),
+          );
+        } else if (result.data?.failedUrls.length) {
+          const error = result.data.failedUrls[0].error;
+          setProcessingError(`Failed to extract content: ${error}`);
+        }
+      } catch (error: any) {
+        setProcessingError(
+          `Error extracting content: ${error.message || "Unknown error"}`,
+        );
+      } finally {
+        setExtractingContent((prev) => ({
+          ...prev,
+          [id]: false,
+        }));
+      }
+    },
+    [extractContentMutation],
   );
 
   const handleProcessAndGenerate = useCallback(async () => {
@@ -231,12 +293,68 @@ export default function NewArticleAnalysisPage() {
                     </Button>
                   )}
                 </div>
+
+                <div className={cn("mb-3")}>
+                  <form
+                    className={cn("flex space-x-2 mb-2")}
+                    onSubmit={(e) =>
+                      handleExtractContent(
+                        article.id,
+                        urlInputs[article.id] || "",
+                        e,
+                      )
+                    }
+                  >
+                    <Input
+                      type="url"
+                      placeholder="Enter article URL..."
+                      value={urlInputs[article.id] || ""}
+                      onChange={(e) => handleUrlChange(article.id, e)}
+                      className={cn("flex-1")}
+                      disabled={
+                        processingArticles ||
+                        reportGenerating ||
+                        extractingContent[article.id]
+                      }
+                    />
+                    <Button
+                      type="submit"
+                      variant="secondary"
+                      disabled={
+                        !urlInputs[article.id] ||
+                        processingArticles ||
+                        reportGenerating ||
+                        extractingContent[article.id]
+                      }
+                    >
+                      {extractingContent[article.id] ? (
+                        <Loader2 size={16} className="animate-spin mr-1" />
+                      ) : (
+                        <Link2 size={16} className="mr-1" />
+                      )}
+                      {extractingContent[article.id]
+                        ? "Fetching..."
+                        : "Fetch Content"}
+                    </Button>
+                  </form>
+                  <div
+                    className={cn("text-xs text-zinc-500 dark:text-zinc-400")}
+                  >
+                    Enter a URL to automatically extract article content or
+                    paste it manually below
+                  </div>
+                </div>
+
                 <Textarea
                   value={article.text}
                   onChange={(e) => handleTextChange(article.id, e)}
                   placeholder="Paste article content here..."
                   className={cn("min-h-[150px] mb-3")}
-                  disabled={processingArticles || reportGenerating}
+                  disabled={
+                    processingArticles ||
+                    reportGenerating ||
+                    extractingContent[article.id]
+                  }
                 />
               </div>
             );
