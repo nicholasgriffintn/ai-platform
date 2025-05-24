@@ -4,6 +4,7 @@ import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { AppDataRepository } from "~/repositories";
 import { analyseArticle } from "~/services/apps/articles/analyse";
 import { generateArticlesReport } from "~/services/apps/articles/generate-report";
 import { getArticleDetails } from "~/services/apps/articles/get-details";
@@ -631,6 +632,130 @@ app.post(
 
       throw new AssistantError(
         "Failed to generate report",
+        ErrorType.UNKNOWN_ERROR,
+        undefined,
+        error,
+      );
+    }
+  },
+);
+
+app.post(
+  "/prepare-rerun/:itemId",
+  describeRoute({
+    tags: ["apps", "articles"],
+    description:
+      "Prepare a session for rerun by cleaning up existing analyses and summaries",
+    parameters: [
+      {
+        name: "itemId",
+        in: "path",
+        required: true,
+        schema: { type: "string" },
+        description: "The session ID to prepare for rerun",
+      },
+    ],
+    responses: {
+      200: {
+        description: "Session prepared for rerun",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                status: z.string(),
+                message: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+      400: {
+        description: "Bad Request",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      401: {
+        description: "Unauthorized",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  async (context: Context) => {
+    const itemId = context.req.param("itemId");
+    const user = context.get("user") as IUser | undefined;
+
+    if (!user?.id) {
+      return context.json(
+        {
+          status: "error",
+          message: "User not authenticated",
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return context.json(
+        {
+          status: "error",
+          message: "User is not on pro plan",
+        },
+        401,
+      );
+    }
+
+    if (!itemId) {
+      return context.json(
+        {
+          status: "error",
+          message: "Item ID is required",
+        },
+        400,
+      );
+    }
+
+    try {
+      // Delete existing analyses and summaries for this session
+      const appDataRepo = new AppDataRepository(context.env as IEnv);
+
+      // Clean up existing analyses and summaries
+      await appDataRepo.deleteAppDataByUserAppAndItem(
+        user.id,
+        "articles",
+        itemId,
+        "analysis",
+      );
+
+      await appDataRepo.deleteAppDataByUserAppAndItem(
+        user.id,
+        "articles",
+        itemId,
+        "summary",
+      );
+
+      return context.json({
+        status: "success",
+        message: "Session prepared for rerun",
+      });
+    } catch (error) {
+      routeLogger.error("Error preparing session for rerun:", {
+        error,
+        itemId,
+      });
+
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+
+      throw new AssistantError(
+        "Failed to prepare session for rerun",
         ErrorType.UNKNOWN_ERROR,
         undefined,
         error,

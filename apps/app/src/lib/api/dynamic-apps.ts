@@ -566,3 +566,28 @@ export const extractArticleContent = async (
 
   return response.json() as Promise<ExtractArticleContentResponse>;
 };
+
+export const prepareSessionForRerun = async (itemId: string): Promise<void> => {
+  let headers = {};
+  try {
+    headers = await apiService.getHeaders();
+  } catch (e) {
+    console.error("Error preparing session for rerun:", e);
+  }
+
+  const response = await fetchApi(`/apps/articles/prepare-rerun/${itemId}`, {
+    method: "POST",
+    headers: {
+      ...headers,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errData = (await response.json().catch(() => ({}))) as any;
+    throw new Error(
+      errData?.message ||
+        `Failed to prepare session for rerun: ${response.statusText}`,
+    );
+  }
+};

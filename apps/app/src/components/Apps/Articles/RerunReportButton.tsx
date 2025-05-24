@@ -7,6 +7,7 @@ import {
   useAnalyseArticle,
   useFetchSourceArticlesByIds,
   useGenerateReport,
+  usePrepareSessionForRerun,
   useSummariseArticle,
 } from "~/hooks/useArticles";
 import { cn } from "~/lib/utils";
@@ -42,6 +43,7 @@ export function RerunReportButton({
   const analyseMutation = useAnalyseArticle();
   const summariseMutation = useSummariseArticle();
   const generateReportMutation = useGenerateReport();
+  const prepareSessionMutation = usePrepareSessionForRerun();
 
   const { data: sourceArticles, isLoading: isLoadingSourceArticles } =
     useFetchSourceArticlesByIds(sourceIds);
@@ -65,6 +67,8 @@ export function RerunReportButton({
     try {
       setIsRerunning(true);
       setError(null);
+
+      await prepareSessionMutation.mutateAsync(itemId);
 
       const articlesWithContent = sourceArticles
         // @ts-ignore

@@ -7,6 +7,7 @@ import {
   fetchArticles,
   fetchSourceArticlesByIds,
   generateReport,
+  prepareSessionForRerun,
   summariseArticle,
 } from "~/lib/api/dynamic-apps";
 
@@ -56,4 +57,10 @@ export const useFetchSourceArticlesByIds = (ids: string[] | undefined) => {
 
 export const useExtractArticleContent = () => {
   return useMutation({ mutationFn: extractArticleContent });
+};
+
+export const usePrepareSessionForRerun = () => {
+  return useMutation({
+    mutationFn: prepareSessionForRerun,
+  });
 };
