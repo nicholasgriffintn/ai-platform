@@ -92,6 +92,19 @@ export class AppDataRepository extends BaseRepository {
   }
 
   /**
+   * Gets app data by item id
+   * @param id - The ID of the item
+   * @returns The app data
+   */
+  public async getAppDataByItemId(id: string): Promise<AppData | null> {
+    return this.runQuery<AppData>(
+      "SELECT * FROM app_data WHERE item_id = ?",
+      [id],
+      true,
+    );
+  }
+
+  /**
    * Gets all app data for a user and specific app
    * @param userId - The user ID
    * @param appId - The app ID

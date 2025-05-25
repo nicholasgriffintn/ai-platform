@@ -37,7 +37,7 @@ export async function shareItem(
 
   const appDataRepo = new AppDataRepository(env);
 
-  const appData = await appDataRepo.getAppDataById(id);
+  const appData = await appDataRepo.getAppDataByItemId(id);
 
   if (!appData || appData.user_id !== userId) {
     throw new AssistantError(
