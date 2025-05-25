@@ -112,17 +112,51 @@ export class AnonymousUserRepository extends BaseRepository {
     userAgent?: string,
   ): Promise<AnonymousUser | null> {
     try {
-      let existingUser = null;
+      const hashedIp = await this.hashIpAddress(ipAddress);
 
-      if (!existingUser) {
-        existingUser = await this.getAnonymousUserByIp(ipAddress);
+      const deterministicId = hashedIp.substring(0, 36);
+      const now = new Date().toISOString();
+
+      try {
+        await this.executeRun(
+          `INSERT INTO anonymous_user (
+            id,
+            ip_address,
+            user_agent,
+            daily_message_count,
+            daily_reset,
+            created_at,
+            updated_at,
+            last_active_at
+          ) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          [deterministicId, hashedIp, userAgent || null, 0, now, now, now, now],
+        );
+
+        return this.getAnonymousUserById(deterministicId);
+      } catch (insertError) {
+        const existingUser = await this.getAnonymousUserById(deterministicId);
+
+        if (existingUser) {
+          await this.updateAnonymousUser(existingUser.id, {
+            last_active_at: now,
+            user_agent: userAgent || existingUser.user_agent,
+          });
+          return existingUser;
+        }
+
+        const ipUser = await this.getAnonymousUserByIp(ipAddress);
+        if (ipUser) {
+          return ipUser;
+        }
+
+        console.error(
+          "Unexpected error in anonymous user creation:",
+          insertError,
+        );
+        return null;
       }
-
-      if (existingUser) {
-        return existingUser;
-      }
-
-      return this.createOrUpdateAnonymousUser(ipAddress, userAgent);
     } catch (error) {
       console.error("Error in getOrCreateAnonymousUser:", error);
       throw error;
