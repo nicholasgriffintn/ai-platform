@@ -281,7 +281,7 @@ export async function getAIResponse({
   const durationMs = Date.now() - startTime;
   const usageTokens =
     typeof response === "object" && response && "usage" in response
-      ? (response as any).usage.total_tokens
+      ? response.usage.total_tokens
       : null;
   responseLogger.debug("Model invocation metrics", {
     model,
