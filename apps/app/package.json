@@ -78,7 +78,7 @@
     "babel-plugin-react-compiler": "19.0.0-beta-ebf51a3-20250411",
     "globals": "16.1.0",
     "jsdom": "26.1.0",
-    "rollup-plugin-visualizer": "5.14.0",
+    "rollup-plugin-visualizer": "6.0.0",
     "terser": "5.39.2",
     "typescript": "~5.8.2",
     "vite": "6.3.5",
