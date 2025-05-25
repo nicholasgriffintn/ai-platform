@@ -12,6 +12,7 @@ import { add_reasoning_step } from "./reasoning";
 import { capture_screenshot } from "./screenshot";
 import { create_speech } from "./speech";
 import { tutor } from "./tutor";
+import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
@@ -31,6 +32,7 @@ export const availableFunctions: IFunction[] = [
   prompt_coach,
   add_reasoning_step,
   analyse_hacker_news,
+  v0_code_generation,
 ];
 
 export const handleFunctions = async ({

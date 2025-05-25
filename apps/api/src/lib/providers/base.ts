@@ -144,6 +144,13 @@ export abstract class BaseProvider implements AIProvider {
 
     const modelConfig = getModelConfigByMatchingModel(params.model || "");
 
+    if (!modelConfig) {
+      throw new AssistantError(
+        `Model ${params.model} not found`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
     const timeout = modelConfig.timeout || 100000;
 
     return trackProviderMetrics({
