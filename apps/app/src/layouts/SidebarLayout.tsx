@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { cn } from "~/lib/utils";
 
 import { LoginModal } from "~/components/LoginModal";
 import { ChatNavbar } from "~/components/Navbar";
 import { TurnstileWidget } from "~/components/TurnstileWidget";
+import { useExperiments } from "~/hooks/use-experiments";
 import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
 import { useChatStore } from "~/state/stores/chatStore";
 import { KeyboardShortcutsHelp } from "../components/KeyboardShortcutsHelp";
@@ -23,6 +24,7 @@ export function SidebarLayout({
   displayNavBar = true,
   bgClassName,
 }: SidebarLayoutProps) {
+  const { defineExperiments } = useExperiments();
   const {
     sidebarVisible,
     showKeyboardShortcuts,
@@ -41,6 +43,46 @@ export function SidebarLayout({
         onEnterApiKey: handleEnterApiKey,
       })
     : sidebarContent;
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once
+  useEffect(() => {
+    defineExperiments([
+      {
+        id: "logo",
+        name: "Polychat Logo",
+        description: "The logo of the app",
+        active: true,
+        autoActivate: true,
+        targeting: () => true,
+        variants: [
+          {
+            id: "control",
+            name: "Default",
+            weight: 1,
+            activate: () => {},
+          },
+          {
+            id: "minimalist",
+            name: "Minimalist",
+            weight: 1,
+            activate: () => {},
+          },
+          {
+            id: "tropical",
+            name: "Tropical",
+            weight: 1,
+            activate: () => {},
+          },
+          {
+            id: "abstract",
+            name: "Abstract",
+            weight: 1,
+            activate: () => {},
+          },
+        ],
+      },
+    ]);
+  }, []);
 
   return (
     <>
