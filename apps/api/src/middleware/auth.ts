@@ -105,10 +105,10 @@ export async function authMiddleware(context: Context, next: Next) {
           userAgent,
         );
 
-        if (anonymousUser && !anonymousId) {
+        if (anonymousUser) {
           context.header(
             "Set-Cookie",
-            `${ANONYMOUS_ID_COOKIE}=${anonymousUser.id}; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax`,
+            `${ANONYMOUS_ID_COOKIE}=${anonymousUser.id}; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax; HttpOnly`,
           );
         }
       }

@@ -902,13 +902,13 @@ export class Database {
     }
   }
 
-  public async createAnonymousUser(
+  public async createOrUpdateAnonymousUser(
     ipAddress: string,
     userAgent?: string,
     id?: string,
   ): Promise<AnonymousUser | null> {
     try {
-      return this.repositories.anonymousUsers.createAnonymousUser(
+      return this.repositories.anonymousUsers.createOrUpdateAnonymousUser(
         ipAddress,
         userAgent,
         id,
@@ -922,11 +922,12 @@ export class Database {
   public async updateAnonymousUser(
     id: string,
     userData: Partial<AnonymousUser>,
-  ): Promise<void> {
+  ): Promise<AnonymousUser | null> {
     try {
       return this.repositories.anonymousUsers.updateAnonymousUser(id, userData);
     } catch (error) {
       logger.error(`Error updating anonymous user: ${error}`);
+      return null;
     }
   }
 

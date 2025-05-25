@@ -2,6 +2,21 @@ import type { AnonymousUser } from "~/types";
 import { BaseRepository } from "./BaseRepository";
 
 export class AnonymousUserRepository extends BaseRepository {
+  /**
+   * Hashes an IP address using SHA-256 for privacy using Web Crypto API
+   * @param ipAddress The IP address to hash
+   * @returns Hashed IP address as a hex string
+   */
+  private async hashIpAddress(ipAddress: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(ipAddress);
+
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+
   public async getAnonymousUserById(id: string): Promise<AnonymousUser | null> {
     return this.runQuery<AnonymousUser>(
       "SELECT * FROM anonymous_user WHERE id = ?",
@@ -13,20 +28,31 @@ export class AnonymousUserRepository extends BaseRepository {
   public async getAnonymousUserByIp(
     ipAddress: string,
   ): Promise<AnonymousUser | null> {
+    const hashedIp = await this.hashIpAddress(ipAddress);
     return this.runQuery<AnonymousUser>(
       "SELECT * FROM anonymous_user WHERE ip_address = ?",
-      [ipAddress],
+      [hashedIp],
       true,
     );
   }
 
-  public async createAnonymousUser(
+  public async createOrUpdateAnonymousUser(
     ipAddress: string,
     userAgent?: string,
     id?: string,
   ): Promise<AnonymousUser | null> {
     const userId = id || crypto.randomUUID();
     const now = new Date().toISOString();
+    const hashedIp = await this.hashIpAddress(ipAddress);
+
+    const existingUser = await this.getAnonymousUserById(userId);
+    if (existingUser) {
+      return this.updateAnonymousUser(userId, {
+        ip_address: hashedIp,
+        user_agent: userAgent,
+        last_active_at: now,
+      });
+    }
 
     return this.runQuery<AnonymousUser>(
       `INSERT INTO anonymous_user (
@@ -41,7 +67,7 @@ export class AnonymousUserRepository extends BaseRepository {
       ) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       RETURNING *`,
-      [userId, ipAddress, userAgent || null, 0, now, now, now, now],
+      [userId, hashedIp, userAgent || null, 0, now, now, now, now],
       true,
     );
   }
@@ -49,9 +75,9 @@ export class AnonymousUserRepository extends BaseRepository {
   public async updateAnonymousUser(
     id: string,
     userData: Partial<AnonymousUser>,
-  ): Promise<void> {
+  ): Promise<AnonymousUser | null> {
     if (!id) {
-      return;
+      return null;
     }
 
     const filteredUserData = Object.fromEntries(
@@ -65,7 +91,7 @@ export class AnonymousUserRepository extends BaseRepository {
     );
 
     if (fieldsToUpdate.length === 0) {
-      return;
+      return null;
     }
 
     const setClause = fieldsToUpdate.map((key) => `${key} = ?`).join(", ");
@@ -77,19 +103,30 @@ export class AnonymousUserRepository extends BaseRepository {
     const finalValues = [...values, id];
 
     await this.executeRun(query, finalValues);
+
+    return this.getAnonymousUserById(id);
   }
 
   public async getOrCreateAnonymousUser(
     ipAddress: string,
     userAgent?: string,
   ): Promise<AnonymousUser | null> {
-    const existingUser = await this.getAnonymousUserByIp(ipAddress);
+    try {
+      let existingUser = null;
 
-    if (existingUser) {
-      return existingUser;
+      if (!existingUser) {
+        existingUser = await this.getAnonymousUserByIp(ipAddress);
+      }
+
+      if (existingUser) {
+        return existingUser;
+      }
+
+      return this.createOrUpdateAnonymousUser(ipAddress, userAgent);
+    } catch (error) {
+      console.error("Error in getOrCreateAnonymousUser:", error);
+      throw error;
     }
-
-    return this.createAnonymousUser(ipAddress, userAgent);
   }
 
   public async checkAndResetDailyLimit(
