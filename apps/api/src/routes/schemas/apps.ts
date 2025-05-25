@@ -356,3 +356,35 @@ export const noteFormatResponseSchema = z.object({
     description: "The reformatted note contents",
   }),
 });
+
+export const shareItemSchema = z
+  .object({
+    app_id: z.string().openapi({
+      description: "The ID of the app",
+    }),
+  })
+  .openapi({
+    description: "Schema for sharing an app item",
+  });
+
+export const sharedItemResponseSchema = z
+  .object({
+    status: z.enum(["success", "error"]),
+    share_id: z.string().optional(),
+    message: z.string().optional(),
+    item: z
+      .object({
+        id: z.string(),
+        app_id: z.string(),
+        item_id: z.string().optional(),
+        item_type: z.string().optional(),
+        data: z.any(),
+        share_id: z.string().optional(),
+        created_at: z.string(),
+        updated_at: z.string(),
+      })
+      .optional(),
+  })
+  .openapi({
+    description: "Response for shared item operations",
+  });

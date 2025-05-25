@@ -45,6 +45,7 @@ import generate from "./generate";
 import notes from "./notes";
 import podcasts from "./podcasts";
 import retrieval from "./retrieval";
+import shared from "./shared";
 
 const app = new Hono();
 
@@ -476,5 +477,7 @@ app.post(
     return context.json(result);
   },
 );
+
+app.route("/shared", shared);
 
 export default app;

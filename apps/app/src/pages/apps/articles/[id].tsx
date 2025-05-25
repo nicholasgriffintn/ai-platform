@@ -3,14 +3,12 @@
 import { Info, Loader2 } from "lucide-react";
 import { useParams } from "react-router";
 
-import { ArticleReportContent } from "~/components/Apps/Articles/ArticleReportContent";
-import { ArticleReportHeader } from "~/components/Apps/Articles/ArticleReportHeader";
-import { ArticleReportMetadata } from "~/components/Apps/Articles/ArticleReportMetadata";
-import { ArticleSourceArticles } from "~/components/Apps/Articles/ArticleSourceArticles";
+import { ArticleView } from "~/components/Apps/Articles/View";
 import { BackLink } from "~/components/BackLink";
 import { PageHeader } from "~/components/PageHeader";
 import { PageShell } from "~/components/PageShell";
 import { PageTitle } from "~/components/PageTitle";
+import { ShareButton } from "~/components/ShareButton";
 import { StandardSidebarContent } from "~/components/StandardSidebarContent";
 import { useFetchArticleReport } from "~/hooks/useArticles";
 
@@ -113,19 +111,17 @@ export default function ArticleReportDetailPage() {
       sidebarContent={<StandardSidebarContent />}
       className="max-w-7xl mx-auto"
       headerContent={
-        <PageHeader>
-          <BackLink to="/apps/articles" label="Back to Reports List" />
-          <PageTitle title="Article Report Details" />
-        </PageHeader>
+        <div className="flex justify-between items-center">
+          <PageHeader>
+            <BackLink to="/apps/articles" label="Back to Reports List" />
+            <PageTitle title="Article Report Details" />
+          </PageHeader>
+          {id && <ShareButton appId={id} />}
+        </div>
       }
       isBeta={true}
     >
-      <div className="space-y-6">
-        <ArticleReportHeader report={report} />
-        <ArticleReportContent report={report} />
-        <ArticleSourceArticles sourceIds={sourceIds} />
-        <ArticleReportMetadata report={report} />
-      </div>
+      <ArticleView report={report} sourceIds={sourceIds} />
     </PageShell>
   );
 }

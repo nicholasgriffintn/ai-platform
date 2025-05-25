@@ -27,8 +27,6 @@ export async function getSystemPrompt(
     );
   }
 
-  console.log("TYPE", modelConfig.type);
-
   const isTextModel = modelConfig.type.includes("text");
 
   const isCodingModel = modelConfig.type.includes("coding");

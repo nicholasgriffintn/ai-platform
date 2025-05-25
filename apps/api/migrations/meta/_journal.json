@@ -162,6 +162,13 @@
       "when": 1746576306557,
       "tag": "0022_perpetual_alice",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "6",
+      "when": 1748128799240,
+      "tag": "0023_plain_vindicator",
+      "breakpoints": true
     }
   ]
 }

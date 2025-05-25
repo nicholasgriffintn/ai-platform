@@ -384,6 +384,7 @@ export const appData = sqliteTable(
     data: text({
       mode: "json",
     }),
+    share_id: text().unique(),
     created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
     updated_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
@@ -394,6 +395,7 @@ export const appData = sqliteTable(
     appIdIdx: index("app_data_app_id_idx").on(table.app_id),
     itemIdIdx: index("app_data_item_id_idx").on(table.item_id),
     itemTypeIdx: index("app_data_item_type_idx").on(table.item_type),
+    shareIdIdx: index("app_data_share_id_idx").on(table.share_id),
     lookupIdx: index("app_data_lookup_idx").on(
       table.user_id,
       table.app_id,

@@ -1,9 +1,7 @@
 export interface ArticleReportItem {
   id: string;
-  userId: number;
-  appId: string;
   item_id?: string;
-  item_type: "report";
+  item_type: string;
   created_at: string;
   updated_at: string;
   title?: string;

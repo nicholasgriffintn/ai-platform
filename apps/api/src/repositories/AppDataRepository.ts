@@ -8,6 +8,7 @@ export interface AppData {
   item_id?: string;
   item_type?: string;
   data: string;
+  share_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -208,6 +209,34 @@ export class AppDataRepository extends BaseRepository {
     await this.executeRun(
       "DELETE FROM app_data WHERE user_id = ? AND app_id = ? AND item_id = ?",
       [userId, appId, itemId],
+    );
+  }
+
+  /**
+   * Updates app data with a share ID
+   * @param id - The ID of the app data
+   * @param shareId - The share ID to set
+   */
+  public async updateAppDataWithShareId(
+    id: string,
+    shareId: string,
+  ): Promise<void> {
+    await this.executeRun(
+      "UPDATE app_data SET share_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [shareId, id],
+    );
+  }
+
+  /**
+   * Gets app data by share ID
+   * @param shareId - The share ID
+   * @returns The app data
+   */
+  public async getAppDataByShareId(shareId: string): Promise<AppData | null> {
+    return this.runQuery<AppData>(
+      "SELECT * FROM app_data WHERE share_id = ?",
+      [shareId],
+      true,
     );
   }
 }
