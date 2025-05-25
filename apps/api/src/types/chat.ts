@@ -224,6 +224,11 @@ interface AIResponseParamsBase extends AIControlParams {
   body?: Record<string, any>;
   // Whether to poll for the response, this is used with Replicate.
   should_poll?: boolean;
+  // Whether to enable thinking for the response.
+  thinking?: {
+    type: "enabled" | "disabled";
+    budget_tokens?: number;
+  };
 }
 
 export type ChatCompletionParametersWithModel = RequireAtLeastOne<

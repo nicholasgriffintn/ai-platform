@@ -32,6 +32,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     includedInRouter: true,
     supportsArtifacts: true,
     supportsFunctions: true,
+    supportsSearchGrounding: true,
+    supportsCodeExecution: true,
     supportsDocuments: true,
   }),
 
@@ -63,6 +65,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     includedInRouter: true,
     supportsArtifacts: true,
     supportsFunctions: true,
+    supportsSearchGrounding: true,
+    supportsCodeExecution: true,
     supportsDocuments: true,
   }),
 
@@ -91,6 +95,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     multimodal: true,
     supportsArtifacts: true,
     supportsFunctions: true,
+    supportsSearchGrounding: true,
+    supportsCodeExecution: true,
     includedInRouter: true,
   }),
 
@@ -118,6 +124,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     multimodal: true,
     isFeatured: false,
     supportsFunctions: true,
+    supportsSearchGrounding: true,
+    supportsCodeExecution: true,
     supportsDocuments: true,
   }),
 ]);

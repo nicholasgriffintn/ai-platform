@@ -121,19 +121,22 @@ export async function mapParametersToProvider(
 
     if (supportsFunctions) {
       try {
+        const enabledTools = params.enabled_tools || [];
         if (params.tools) {
           const providedTools = params.tools;
-          const enabledTools = params.enabled_tools || [];
-          const filteredFunctions = availableFunctions.filter((func) =>
-            enabledTools.includes(func.name),
-          );
+          const filteredFunctions = availableFunctions
+            .filter((func) => enabledTools.includes(func.name))
+            .filter(
+              (func) =>
+                modelConfig?.supportsSearchGrounding &&
+                func.name === "web_search",
+            );
           const availableToolDeclarations = formatToolCalls(
             providerName,
             filteredFunctions,
           );
           commonParams.tools = [...availableToolDeclarations, ...providedTools];
         } else {
-          const enabledTools = params.enabled_tools || [];
           const filteredFunctions = availableFunctions.filter((func) =>
             enabledTools.includes(func.name),
           );
@@ -328,15 +331,34 @@ export async function mapParametersToProvider(
         };
       }
       case "openai": {
-        const newCommonParams = {
+        const tools = [];
+        if (modelConfig?.supportsFunctions) {
+          if (
+            modelConfig?.supportsSearchGrounding &&
+            params.enabled_tools.includes("search_grounding")
+          ) {
+            tools.push({ type: "web_search_preview" });
+          }
+        }
+        const allTools = [...tools, ...(commonParams.tools || [])];
+        const newCommonParams: Partial<ChatCompletionParameters> = {
           ...commonParams,
         };
+        if (modelConfig?.supportsFunctions && tools.length > 0) {
+          newCommonParams.tools = allTools;
+        }
         const supportsThinking = modelConfig?.hasThinking || false;
         if (supportsThinking) {
           newCommonParams.reasoning_effort = params.reasoning_effort;
         }
         if (params.model === "o1" || params.model === "o4-mini") {
           newCommonParams.temperature = 1;
+          newCommonParams.top_p = undefined;
+        }
+        if (params.model.includes("-search-preview")) {
+          newCommonParams.frequency_penalty = undefined;
+          newCommonParams.presence_penalty = undefined;
+          newCommonParams.temperature = undefined;
           newCommonParams.top_p = undefined;
         }
 
@@ -394,9 +416,35 @@ export async function mapParametersToProvider(
         };
       }
       case "anthropic": {
-        const newCommonParams = {
+        const tools = [];
+        if (modelConfig?.supportsFunctions) {
+          if (
+            modelConfig?.supportsSearchGrounding &&
+            params.enabled_tools.includes("search_grounding")
+          ) {
+            tools.push({
+              type: "web_search_20250305",
+              name: "web_search",
+              max_uses: 3,
+            });
+          }
+          if (
+            modelConfig?.supportsCodeExecution &&
+            params.enabled_tools.includes("code_execution")
+          ) {
+            tools.push({
+              type: "code_execution_20250522",
+              name: "code_execution",
+            });
+          }
+        }
+        const allTools = [...tools, ...(commonParams.tools || [])];
+        const newCommonParams: Partial<ChatCompletionParameters> = {
           ...commonParams,
         };
+        if (modelConfig?.supportsFunctions && tools.length > 0) {
+          newCommonParams.tools = allTools;
+        }
         const supportsThinking = modelConfig?.hasThinking || false;
 
         if (supportsThinking) {
