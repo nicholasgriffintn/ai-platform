@@ -1,34 +1,20 @@
 import type { ModelConfig } from "~/types";
 
 export const grokModelConfig: ModelConfig = {
-  "grok-beta": {
-    name: "Grok Beta",
-    matchingModel: "grok-beta-latest",
-    description: "Grok's upcoming model.",
+  "grok-3": {
+    name: "Grok 3",
+    matchingModel: "grok-3-latest",
+    description:
+      "Excels at enterprise use cases like data extraction, coding, and text summarization. Possesses deep domain knowledge in finance, healthcare, law, and science.",
     provider: "grok",
     type: ["text"],
   },
-  "grok-vision-beta": {
-    name: "Grok Vision Beta",
-    matchingModel: "grok-vision-beta-latest",
-    description: "Grok's upcoming model.",
-    provider: "grok",
-    type: ["image-to-text"],
-  },
-  "grok-2": {
-    name: "Grok 2",
-    matchingModel: "grok-2-latest",
+  "grok-3-mini": {
+    name: "Grok 3 Mini",
+    matchingModel: "grok-3-mini-latest",
     description:
-      "Grok's flagship LLM that delivers unfiltered insights and raw intelligence.",
+      "A lightweight model that thinks before responding. Fast, smart, and great for logic-based tasks that do not require deep domain knowledge. The raw thinking traces are accessible.",
     provider: "grok",
     type: ["text"],
-  },
-  "grok-2-vision": {
-    name: "Grok 2 Vision",
-    matchingModel: "grok-2-vision-latest",
-    description:
-      "Grok's image-understanding LLM that excels at processing diverse visual inputs like documents and photos.",
-    provider: "grok",
-    type: ["image-to-text"],
   },
 };
