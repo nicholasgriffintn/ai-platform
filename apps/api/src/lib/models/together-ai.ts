@@ -156,4 +156,28 @@ export const togetherAiModelConfig: ModelConfig = {
     includedInRouter: true,
     multimodal: true,
   },
+  "Refuel-Llm-V2": {
+    name: "Refuel LLM V2",
+    matchingModel: "togethercomputer/Refuel-Llm-V2",
+    description:
+      "47B model optimized for data tasks such as classification, structured data extraction, and more.",
+    contextWindow: 16000,
+    type: ["text"],
+    provider: "together-ai",
+    contextComplexity: 4,
+    reliability: 4,
+    speed: 4,
+  },
+  "Refuel-Llm-V2-Small": {
+    name: "Refuel LLM V2 Small",
+    matchingModel: "togethercomputer/Refuel-Llm-V2-Small",
+    description:
+      "8B model optimized for data tasks such as classification, structured data extraction, and more.",
+    contextWindow: 8000,
+    type: ["text"],
+    provider: "together-ai",
+    contextComplexity: 3,
+    reliability: 3,
+    speed: 4,
+  },
 };
