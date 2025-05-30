@@ -36,7 +36,7 @@
     "hono-openapi": "0.4.8",
     "isbot": "5.1.28",
     "stripe": "^18.0.0",
-    "zod": "3.25.39",
+    "zod": "3.25.42",
     "zod-openapi": "4.2.4"
   },
   "devDependencies": {
