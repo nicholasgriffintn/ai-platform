@@ -4,6 +4,7 @@ import { BaseProvider } from "./base";
 export class GithubModelsProvider extends BaseProvider {
   name = "github-models";
   supportsStreaming = true;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "GITHUB_MODELS_API_TOKEN";

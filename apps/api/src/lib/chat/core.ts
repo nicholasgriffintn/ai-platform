@@ -124,6 +124,7 @@ async function prepareRequestData(options: CoreChatOptions) {
   }
 
   const primaryModel = primaryModelConfig.matchingModel;
+  const primaryProvider = primaryModelConfig?.provider;
 
   const modelConfigs: ModelConfigInfo[] = selectedModels.reduce(
     (configs, model) => {
@@ -308,6 +309,7 @@ async function prepareRequestData(options: CoreChatOptions) {
   return {
     modelConfigs,
     primaryModel,
+    primaryProvider,
     selectedModel: primaryModel,
     selectedModels,
     conversationManager,
@@ -353,7 +355,6 @@ export async function processChatRequest(options: CoreChatOptions) {
       current_step,
       max_steps,
     } = options;
-    const isProUser = user?.plan_id === "pro";
 
     const preparedData = await prepareRequestData(options);
 
@@ -370,6 +371,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       messageWithContext,
       userSettings,
       currentMode,
+      primaryProvider,
     } = preparedData;
 
     await conversationManager.checkUsageLimits(primaryModel);
@@ -414,6 +416,7 @@ export async function processChatRequest(options: CoreChatOptions) {
           env,
           completion_id,
           model: primaryModel,
+          provider: primaryProvider,
           platform: platform || "api",
           user,
           userSettings,
@@ -466,6 +469,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       tool_choice,
       current_step,
       max_steps,
+      provider: primaryProvider,
     };
 
     const response = await getAIResponse(params);

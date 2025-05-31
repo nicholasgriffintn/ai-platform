@@ -4,6 +4,7 @@ import { BaseProvider } from "./base";
 export class HyperbolicProvider extends BaseProvider {
   name = "hyperbolic";
   supportsStreaming = true;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "HYPERBOLIC_API_KEY";

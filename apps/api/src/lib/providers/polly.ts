@@ -20,6 +20,7 @@ interface PollyResponse {
 export class PollyProvider extends BaseProvider {
   name = "polly";
   supportsStreaming = false;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "polly";

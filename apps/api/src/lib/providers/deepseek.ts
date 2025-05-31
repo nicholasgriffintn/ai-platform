@@ -5,6 +5,7 @@ import { BaseProvider } from "./base";
 export class DeepSeekProvider extends BaseProvider {
   name = "deepseek";
   supportsStreaming = true;
+  isOpenAiCompatible = true;
 
   protected getProviderKeyName(): string {
     return "DEEPSEEK_API_KEY";

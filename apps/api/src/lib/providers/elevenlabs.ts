@@ -8,6 +8,7 @@ export class ElevenLabsProvider extends BaseProvider {
   name = "elevenlabs";
   supportsStreaming = false;
   private readonly voiceId = "JBFqnCBsd6RMkjVDRZzb";
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "ELEVENLABS_API_KEY";
@@ -63,6 +64,7 @@ export class ElevenLabsProvider extends BaseProvider {
       model: params.model as string,
       operation: async () => {
         const data = await fetchAIResponse(
+          this.isOpenAiCompatible,
           this.name,
           endpoint,
           headers,

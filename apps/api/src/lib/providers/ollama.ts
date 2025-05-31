@@ -5,6 +5,7 @@ import { BaseProvider } from "./base";
 export class OllamaProvider extends BaseProvider {
   name = "ollama";
   supportsStreaming = false;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "OLLAMA_API_KEY";

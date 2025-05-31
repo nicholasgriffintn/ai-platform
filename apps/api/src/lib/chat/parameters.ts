@@ -3,10 +3,7 @@ import { AIProviderFactory } from "~/lib/providers/factory";
 import type { StorageService } from "~/lib/storage";
 import { availableFunctions } from "~/services/functions";
 import type { ChatCompletionParameters } from "~/types";
-import { getLogger } from "~/utils/logger";
 import { formatToolCalls } from "./tools";
-
-const logger = getLogger({ prefix: "CHAT_PARAMETERS" });
 
 /**
  * Merges default parameters with user-provided parameters
@@ -37,6 +34,7 @@ export function mergeParametersWithDefaults(
  * @returns The provider-specific parameters
  */
 export async function mapParametersToProvider(
+  isOpenAiCompatible: boolean,
   params: ChatCompletionParameters,
   providerName: string,
   storageService?: StorageService,
@@ -46,12 +44,18 @@ export async function mapParametersToProvider(
     throw new Error("Parameters object is required");
   }
 
-  if (!providerName) {
+  const finalProviderName = isOpenAiCompatible ? "compat" : providerName;
+
+  if (!finalProviderName) {
     throw new Error("Provider name is required");
   }
 
+  const modelName = isOpenAiCompatible
+    ? `${providerName}/${params.model}`
+    : params.model;
+
   const commonParams: Record<string, any> = {
-    model: params.model,
+    model: modelName,
     messages: params.messages,
     temperature: params.temperature,
   };
@@ -60,7 +64,7 @@ export async function mapParametersToProvider(
     commonParams.version = params.version;
   }
 
-  if (providerName !== "anthropic") {
+  if (finalProviderName !== "anthropic") {
     commonParams.seed = params.seed;
     commonParams.repetition_penalty = params.repetition_penalty;
     commonParams.frequency_penalty = params.frequency_penalty;
@@ -81,7 +85,7 @@ export async function mapParametersToProvider(
     }
   }
 
-  const provider = AIProviderFactory.getProvider(providerName);
+  const provider = AIProviderFactory.getProvider(finalProviderName);
 
   const modelTypeIsText = modelConfig?.type?.includes("text");
   const modelTypeIsCoding = modelConfig?.type?.includes("coding");
@@ -94,7 +98,7 @@ export async function mapParametersToProvider(
     commonParams.stream = true;
   }
 
-  if (providerName === "openai") {
+  if (finalProviderName === "openai") {
     commonParams.max_completion_tokens = params.max_tokens || 4096;
   } else {
     const modelMaxTokens = modelConfig?.maxTokens || 4096;
@@ -132,7 +136,7 @@ export async function mapParametersToProvider(
                 func.name === "web_search",
             );
           const availableToolDeclarations = formatToolCalls(
-            providerName,
+            finalProviderName,
             filteredFunctions,
           );
           commonParams.tools = [...availableToolDeclarations, ...providedTools];
@@ -141,7 +145,10 @@ export async function mapParametersToProvider(
             enabledTools.includes(func.name),
           );
 
-          commonParams.tools = formatToolCalls(providerName, filteredFunctions);
+          commonParams.tools = formatToolCalls(
+            finalProviderName,
+            filteredFunctions,
+          );
         }
       } catch (error: any) {
         throw new Error(`Failed to format tool calls: ${error.message}`);
@@ -165,7 +172,7 @@ export async function mapParametersToProvider(
   }
 
   try {
-    switch (providerName) {
+    switch (finalProviderName) {
       case "workers-ai": {
         const type = modelConfig?.type || ["text"];
 
@@ -330,7 +337,8 @@ export async function mapParametersToProvider(
           messages: params.messages,
         };
       }
-      case "openai": {
+      case "openai":
+      case "compat": {
         const tools = [];
         if (modelConfig?.supportsFunctions) {
           if (
@@ -516,7 +524,7 @@ export async function mapParametersToProvider(
         }
 
         return {
-          model: params.model,
+          model: modelName,
           contents: formatGoogleStudioContents(params),
           tools: modelConfig?.supportsFunctions ? tools : undefined,
           systemInstruction: {
@@ -635,7 +643,7 @@ export async function mapParametersToProvider(
     }
   } catch (error: any) {
     throw new Error(
-      `Error mapping parameters for provider ${providerName}: ${error.message}`,
+      `Error mapping parameters for provider ${finalProviderName}: ${error.message}`,
     );
   }
 }

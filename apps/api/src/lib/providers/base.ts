@@ -25,6 +25,7 @@ export interface AIProvider {
 export abstract class BaseProvider implements AIProvider {
   abstract name: string;
   abstract supportsStreaming: boolean;
+  abstract isOpenAiCompatible?: boolean;
 
   /**
    * Gets the environment variable name for the provider's API key
@@ -119,7 +120,9 @@ export abstract class BaseProvider implements AIProvider {
   ): Promise<any> {
     const modelConfig = getModelConfigByMatchingModel(params.model || "");
 
-    return await ResponseFormatter.formatResponse(data, this.name, {
+    const providerName = this.isOpenAiCompatible ? "compat" : this.name;
+
+    return await ResponseFormatter.formatResponse(data, providerName, {
       model: params.model,
       type: modelConfig?.type,
       env: params.env,
@@ -139,7 +142,11 @@ export abstract class BaseProvider implements AIProvider {
   ): Promise<any> {
     this.validateParams(params);
 
-    const endpoint = this.getEndpoint(params);
+    const isOpenAiCompatible = this.isOpenAiCompatible;
+
+    const endpoint = isOpenAiCompatible
+      ? "chat/completions"
+      : this.getEndpoint(params);
     const headers = await this.getHeaders(params);
 
     const modelConfig = getModelConfigByMatchingModel(params.model || "");
@@ -157,8 +164,13 @@ export abstract class BaseProvider implements AIProvider {
       provider: this.name,
       model: params.model as string,
       operation: async () => {
-        const body = await mapParametersToProvider(params, this.name);
+        const body = await mapParametersToProvider(
+          isOpenAiCompatible,
+          params,
+          this.name,
+        );
         const data = await fetchAIResponse(
+          isOpenAiCompatible,
           this.name,
           endpoint,
           headers,

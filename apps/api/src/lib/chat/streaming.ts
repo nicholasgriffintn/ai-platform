@@ -85,6 +85,7 @@ export async function createStreamWithPostProcessing(
     env: IEnv;
     completion_id: string;
     model: string;
+    provider: string;
     platform?: Platform;
     user?: IUser;
     userSettings?: IUserSettings;
@@ -216,7 +217,7 @@ export async function createStreamWithPostProcessing(
 
               const formattedData = await ResponseFormatter.formatResponse(
                 data,
-                platform,
+                options.provider,
                 {
                   model,
                   type: modelConfig?.type,
@@ -757,6 +758,7 @@ export function createMultiModelStream(
     env: IEnv;
     completion_id: string;
     model: string;
+    provider: string;
     platform?: Platform;
     user?: IUser;
     userSettings?: IUserSettings;

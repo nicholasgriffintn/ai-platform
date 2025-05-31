@@ -14,6 +14,7 @@ export async function fetchAIResponse<
     cacheStatus?: string;
   },
 >(
+  isOpenAiCompatible: boolean,
   provider: string,
   endpointOrUrl: string,
   headers: Record<string, string>,
@@ -48,9 +49,11 @@ export async function fetchAIResponse<
 
     const gateway = env.AI.gateway(gatewayId);
 
+    const providerName = isOpenAiCompatible ? "compat" : provider;
+
     // @ts-expect-error - types seem to be wrong
     response = await gateway.run({
-      provider,
+      provider: providerName,
       endpoint: endpointOrUrl,
       headers,
       query: bodyWithTools,

@@ -5,6 +5,7 @@ import { BaseProvider } from "./base";
 export class AnthropicProvider extends BaseProvider {
   name = "anthropic";
   supportsStreaming = true;
+  isOpenAiCompatible = true;
 
   protected getProviderKeyName(): string {
     return "ANTHROPIC_API_KEY";

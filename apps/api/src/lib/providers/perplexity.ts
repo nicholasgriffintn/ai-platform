@@ -5,6 +5,7 @@ import { BaseProvider } from "./base";
 export class PerplexityProvider extends BaseProvider {
   name = "perplexity-ai";
   supportsStreaming = true;
+  isOpenAiCompatible = true;
 
   protected getProviderKeyName(): string {
     return "PERPLEXITY_API_KEY";
