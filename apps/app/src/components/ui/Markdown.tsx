@@ -26,29 +26,35 @@ const components = {
 export interface MarkdownProps {
   children: string;
   className?: string;
+  isStreaming?: boolean;
 }
 
-export function Markdown({ children, className }: MarkdownProps) {
+export function Markdown({ children, className, isStreaming }: MarkdownProps) {
   const markdownClassName = useMemo(
     () => `markdown prose dark:prose-invert prose-zinc ${className || ""}`,
     [className],
   );
 
   const processedMarkdown = useMemo(() => {
-    const content = fixMarkdown(children);
+    const content = fixMarkdown(children, isStreaming);
 
     return content;
-  }, [children]);
+  }, [children, isStreaming]);
 
   return (
-    <ReactMarkdown
-      components={components}
-      className={markdownClassName}
-      rehypePlugins={rehypePlugins}
-      remarkPlugins={remarkPlugins}
-    >
-      {processedMarkdown}
-    </ReactMarkdown>
+    <div className="relative">
+      <ReactMarkdown
+        components={components}
+        className={markdownClassName}
+        rehypePlugins={rehypePlugins}
+        remarkPlugins={remarkPlugins}
+      >
+        {processedMarkdown}
+      </ReactMarkdown>
+      {isStreaming && (
+        <span className="inline-block w-2 h-4 bg-blue-500 animate-pulse ml-1" />
+      )}
+    </div>
   );
 }
 
