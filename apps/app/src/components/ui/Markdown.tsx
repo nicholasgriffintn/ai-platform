@@ -4,9 +4,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 
-import { useChatManager } from "~/hooks/useChatManager";
-import { cleanIncompleteMarkdown } from "~/lib/markdown-utils";
-import { useChatStore } from "~/state/stores/chatStore";
+import { fixMarkdown } from "~/lib/markdown-utils";
 
 const rehypePlugins = [() => rehypeHighlight({ detect: true })];
 const remarkPlugins = [remarkGfm];
@@ -25,33 +23,22 @@ const components = {
   ),
 };
 
-function downgradeH1Headings(markdown: string): string {
-  return markdown.replace(/^# (.*)$/gm, "## $1");
-}
-
 export interface MarkdownProps {
   children: string;
   className?: string;
 }
 
 export function Markdown({ children, className }: MarkdownProps) {
-  const { streamStarted } = useChatManager();
-  const { currentConversationId } = useChatStore();
-
   const markdownClassName = useMemo(
     () => `markdown prose dark:prose-invert prose-zinc ${className || ""}`,
     [className],
   );
 
   const processedMarkdown = useMemo(() => {
-    let content = downgradeH1Headings(children);
-
-    if (streamStarted && currentConversationId) {
-      content = cleanIncompleteMarkdown(content);
-    }
+    const content = fixMarkdown(children);
 
     return content;
-  }, [children, streamStarted, currentConversationId]);
+  }, [children]);
 
   return (
     <ReactMarkdown

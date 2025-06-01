@@ -8,7 +8,7 @@ import {
   canCombineArtifacts,
   processCustomXmlTags,
   splitContentByArtifacts,
-} from "~/lib/markdown-utils";
+} from "~/lib/message-utils";
 import { formattedMessageContent } from "~/lib/messages";
 import type { Message, MessageContent as MessageContentType } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
