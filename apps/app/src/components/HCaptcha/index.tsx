@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
-import { useChatStore } from "~/state/stores/chatStore";
 
 interface HCaptchaProps {
   siteKey: string;
@@ -16,121 +15,141 @@ declare global {
       reset: (widgetId?: number) => void;
       remove: (widgetId?: number) => void;
     };
+    hcaptchaOnLoad?: () => void;
   }
 }
 
 export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
   const [widgetId, setWidgetId] = useState<number | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const { isAuthenticated } = useChatStore();
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const captchaInitialized = useRef(false);
 
   const { trackEvent, trackAuth, trackError } = useTrackEvent();
 
+  const initializeCaptcha = useCallback(() => {
+    if (
+      !window.hcaptcha ||
+      !containerRef.current ||
+      captchaInitialized.current ||
+      isVerified
+    ) {
+      return;
+    }
+
+    captchaInitialized.current = true;
+    const id = window.hcaptcha.render(containerRef.current, {
+      sitekey: siteKey,
+      size: "invisible",
+      callback: (token: string) => {
+        onVerify(token);
+        setIsVerified(true);
+        trackAuth("captcha_verified", {
+          verification_method: "hcaptcha",
+          site_key: siteKey,
+        });
+      },
+      "error-callback": () => {
+        console.error("HCaptcha verification failed");
+        trackError(
+          "captcha_verification_failed",
+          new Error("HCaptcha verification failed"),
+          {
+            verification_method: "hcaptcha",
+            site_key: siteKey,
+          },
+        );
+      },
+      "expired-callback": () => {
+        setIsVerified(false);
+        if (window.hcaptcha && widgetId !== null) {
+          window.hcaptcha.execute(widgetId);
+        }
+        trackEvent({
+          name: "captcha_expired",
+          category: EventCategory.AUTH,
+          nonInteraction: true,
+          properties: {
+            verification_method: "hcaptcha",
+            site_key: siteKey,
+          },
+        });
+      },
+    });
+
+    setWidgetId(id);
+
+    if (window.hcaptcha && id !== null) {
+      window.hcaptcha.execute(id);
+    }
+  }, [
+    isVerified,
+    onVerify,
+    siteKey,
+    trackAuth,
+    trackError,
+    trackEvent,
+    widgetId,
+  ]);
+
   useEffect(() => {
-    if (isAuthenticated && !isVerified) {
-      trackAuth("captcha_bypassed", {
-        reason: "authenticated_user",
-        site_key: siteKey,
-      });
-      onVerify("authenticated-user");
-      setIsVerified(true);
-      return;
-    }
-
-    if (isAuthenticated) {
-      return;
-    }
-
     if (typeof window === "undefined") {
       return;
     }
 
-    if (!isLoaded) {
-      const existingScript = document.querySelector(
-        'script[src*="hcaptcha.com/1/api.js"]',
-      );
-      if (existingScript) {
-        setIsLoaded(true);
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.src = "https://js.hcaptcha.com/1/api.js";
-      script.async = true;
-      script.defer = true;
-
-      script.onload = () => {
-        setIsLoaded(true);
+    if (!window.hcaptchaOnLoad) {
+      window.hcaptchaOnLoad = () => {
+        setIsScriptLoaded(true);
       };
+    }
 
-      document.head.appendChild(script);
+    const existingScript = document.querySelector(
+      'script[src*="hcaptcha.com/1/api.js"]',
+    );
+
+    if (existingScript) {
+      setIsScriptLoaded(true);
       return;
     }
 
-    if (isLoaded && !isVerified && window.hcaptcha) {
-      const id = window.hcaptcha.render("hcaptcha-container", {
-        sitekey: siteKey,
-        size: "invisible",
-        callback: (token: string) => {
-          onVerify(token);
-          setIsVerified(true);
-          trackAuth("captcha_verified", {
-            verification_method: "hcaptcha",
-            site_key: siteKey,
-          });
-        },
-        "error-callback": () => {
-          console.error("HCaptcha verification failed");
-          trackError(
-            "captcha_verification_failed",
-            new Error("HCaptcha verification failed"),
-            {
-              verification_method: "hcaptcha",
-              site_key: siteKey,
-            },
-          );
-        },
-        "expired-callback": () => {
-          setIsVerified(false);
-          if (window.hcaptcha && widgetId !== null) {
-            window.hcaptcha.execute(widgetId);
-          }
-          trackEvent({
-            name: "captcha_expired",
-            category: EventCategory.AUTH,
-            nonInteraction: true,
-            properties: {
-              verification_method: "hcaptcha",
-              site_key: siteKey,
-            },
-          });
-        },
-      });
+    const script = document.createElement("script");
+    script.src =
+      "https://js.hcaptcha.com/1/api.js?render=explicit&onload=hcaptchaOnLoad";
+    script.async = true;
+    script.defer = true;
 
-      setWidgetId(id);
+    document.head.appendChild(script);
 
-      if (window.hcaptcha && id !== null) {
-        window.hcaptcha.execute(id);
-      }
+    return () => {};
+  }, []);
+
+  useEffect(() => {
+    if (
+      isScriptLoaded &&
+      !isVerified &&
+      window.hcaptcha &&
+      containerRef.current &&
+      !captchaInitialized.current
+    ) {
+      const timer = setTimeout(() => {
+        initializeCaptcha();
+      }, 100);
+
+      return () => clearTimeout(timer);
     }
+  }, [initializeCaptcha, isScriptLoaded, isVerified]);
 
+  useEffect(() => {
     return () => {
       if (widgetId !== null && window.hcaptcha) {
         window.hcaptcha.remove(widgetId);
       }
     };
-  }, [
-    isAuthenticated,
-    isLoaded,
-    isVerified,
-    onVerify,
-    siteKey,
-    trackEvent,
-    widgetId,
-    trackAuth,
-    trackError,
-  ]);
+  }, [widgetId]);
 
-  return <div id="hcaptcha-container" style={{ display: "none" }} />;
+  return (
+    <div ref={containerRef} data-hcaptcha={true} style={{ display: "none" }} />
+  );
 };
