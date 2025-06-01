@@ -22,13 +22,13 @@ importers:
     dependencies:
       '@hono/zod-validator':
         specifier: 0.7.0
-        version: 0.7.0(hono@4.7.10)(zod@3.25.42)
+        version: 0.7.0(hono@4.7.11)(zod@3.25.42)
       '@octokit/rest':
         specifier: 22.0.0
         version: 22.0.0
       '@scalar/hono-api-reference':
         specifier: ^0.9.0
-        version: 0.9.1(hono@4.7.10)
+        version: 0.9.1(hono@4.7.11)
       '@simplewebauthn/server':
         specifier: ^13.1.1
         version: 13.1.1
@@ -45,11 +45,11 @@ importers:
         specifier: 0.44.1
         version: 0.44.1(@cloudflare/workers-types@4.20250531.0)(@opentelemetry/api@1.9.0)(better-sqlite3@11.10.0)
       hono:
-        specifier: 4.7.10
-        version: 4.7.10
+        specifier: 4.7.11
+        version: 4.7.11
       hono-openapi:
         specifier: 0.4.8
-        version: 0.4.8(@hono/zod-validator@0.7.0(hono@4.7.10)(zod@3.25.42))(hono@4.7.10)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.25.42))(zod@3.25.42)
+        version: 0.4.8(@hono/zod-validator@0.7.0(hono@4.7.11)(zod@3.25.42))(hono@4.7.11)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.25.42))(zod@3.25.42)
       isbot:
         specifier: 5.1.28
         version: 5.1.28
@@ -3158,8 +3158,8 @@ packages:
       zod-openapi:
         optional: true
 
-  hono@4.7.10:
-    resolution: {integrity: sha512-QkACju9MiN59CKSY5JsGZCYmPZkA6sIW6OFCUp7qDjZu6S6KHtJHhAc9Uy9mV9F8PJ1/HQ3ybZF2yjCa/73fvQ==}
+  hono@4.7.11:
+    resolution: {integrity: sha512-rv0JMwC0KALbbmwJDEnxvQCeJh+xbS3KEWW5PC9cMJ08Ur9xgatI0HmtgYZfOdOSOeYsp5LO2cOhdI8cLEbDEQ==}
     engines: {node: '>=16.9.0'}
 
   hosted-git-info@6.1.3:
@@ -5454,9 +5454,9 @@ snapshots:
 
   '@hexagon/base64@1.1.28': {}
 
-  '@hono/zod-validator@0.7.0(hono@4.7.10)(zod@3.25.42)':
+  '@hono/zod-validator@0.7.0(hono@4.7.11)(zod@3.25.42)':
     dependencies:
-      hono: 4.7.10
+      hono: 4.7.11
       zod: 3.25.42
 
   '@img/sharp-darwin-arm64@0.33.5':
@@ -6407,10 +6407,10 @@ snapshots:
     dependencies:
       '@scalar/types': 0.2.1
 
-  '@scalar/hono-api-reference@0.9.1(hono@4.7.10)':
+  '@scalar/hono-api-reference@0.9.1(hono@4.7.11)':
     dependencies:
       '@scalar/core': 0.3.1
-      hono: 4.7.10
+      hono: 4.7.11
 
   '@scalar/openapi-types@0.3.1':
     dependencies:
@@ -7600,17 +7600,17 @@ snapshots:
 
   highlight.js@11.11.1: {}
 
-  hono-openapi@0.4.8(@hono/zod-validator@0.7.0(hono@4.7.10)(zod@3.25.42))(hono@4.7.10)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.25.42))(zod@3.25.42):
+  hono-openapi@0.4.8(@hono/zod-validator@0.7.0(hono@4.7.11)(zod@3.25.42))(hono@4.7.11)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.25.42))(zod@3.25.42):
     dependencies:
       json-schema-walker: 2.0.0
       openapi-types: 12.1.3
     optionalDependencies:
-      '@hono/zod-validator': 0.7.0(hono@4.7.10)(zod@3.25.42)
-      hono: 4.7.10
+      '@hono/zod-validator': 0.7.0(hono@4.7.11)(zod@3.25.42)
+      hono: 4.7.11
       zod: 3.25.42
       zod-openapi: 4.2.4(zod@3.25.42)
 
-  hono@4.7.10: {}
+  hono@4.7.11: {}
 
   hosted-git-info@6.1.3:
     dependencies:
