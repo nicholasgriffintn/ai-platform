@@ -25,7 +25,7 @@ export function ProviderApiKeyModal({
   providerId,
   providerName,
 }: ProviderApiKeyModalProps) {
-  const trackEvent = useTrackEvent();
+  const { trackEvent } = useTrackEvent();
   const [apiKey, setApiKey] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const { storeProviderApiKey, isStoringProviderApiKey } = useUser();

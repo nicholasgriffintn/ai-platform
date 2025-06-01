@@ -318,45 +318,59 @@ interface SampleQuestionsProps {
 }
 
 export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
-  const trackEvent = useTrackEvent();
+  const { trackEvent } = useTrackEvent();
 
   const { isMobile } = useChatStore();
   const [questions, setQuestions] = useState<Question[]>([]);
 
-  const refreshQuestions = useCallback(() => {
-    const shuffledCategories = [...categories].sort(() => Math.random() - 0.5);
-    const numQuestions = isMobile ? 1 : 4;
-    const selectedCategories = shuffledCategories.slice(0, numQuestions);
+  const refreshQuestions = useCallback(
+    (force = false) => {
+      const shuffledCategories = [...categories].sort(
+        () => Math.random() - 0.5,
+      );
+      const numQuestions = isMobile ? 1 : 4;
+      const selectedCategories = shuffledCategories.slice(0, numQuestions);
 
-    const selected = selectedCategories.map((category) => {
-      const categoryQuestions = questionPool[category];
-      const randomIndex = Math.floor(Math.random() * categoryQuestions.length);
-      return {
-        ...categoryQuestions[randomIndex],
-        category,
-      };
-    });
+      const selected = selectedCategories.map((category) => {
+        const categoryQuestions = questionPool[category];
+        const randomIndex = Math.floor(
+          Math.random() * categoryQuestions.length,
+        );
+        return {
+          ...categoryQuestions[randomIndex],
+          category,
+        };
+      });
 
-    trackEvent({
-      name: "refresh_questions",
-      category: "conversation",
-      label: "sample_questions",
-      value: 1,
-    });
+      if (force) {
+        trackEvent({
+          name: "refresh_questions",
+          category: "conversation",
+          properties: {
+            action: "refresh",
+            count: String(selectedCategories.length),
+          },
+        });
+      }
+      setQuestions(selected);
+    },
+    [isMobile, trackEvent],
+  );
 
-    setQuestions(selected);
-  }, [isMobile, trackEvent]);
-
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
   useEffect(() => {
-    refreshQuestions();
-  }, [refreshQuestions]);
+    refreshQuestions(false);
+  }, []);
 
   const handleClick = (question: Question) => {
     trackEvent({
       name: "click_question",
       category: "conversation",
-      label: "sample_question",
-      value: question.id,
+      properties: {
+        question_id: question.id,
+        question_category: question.category,
+        question_text: question.text,
+      },
     });
     setInput(question.question);
   };
@@ -369,7 +383,7 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
         </h3>
         <Button
           type="button"
-          onClick={refreshQuestions}
+          onClick={() => refreshQuestions(true)}
           variant="ghost"
           className="cursor-pointer flex items-center text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
         >

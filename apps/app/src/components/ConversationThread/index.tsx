@@ -26,7 +26,8 @@ import { MessageList } from "./MessageList";
 import { WelcomeScreen } from "./WelcomeScreen";
 
 export const ConversationThread = () => {
-  const trackEvent = useTrackEvent();
+  const { trackEvent, trackFeatureUsage, trackError, EventCategory } =
+    useTrackEvent();
 
   const { currentConversationId, model, chatInput, setChatInput } =
     useChatStore();
@@ -60,6 +61,12 @@ export const ConversationThread = () => {
     setCurrentArtifact(artifact);
     setIsPanelVisible(true);
 
+    trackFeatureUsage("view_artifact", {
+      artifact_type: artifact.type,
+      conversation_id: currentConversationId || "none",
+      combined_view: Boolean(combine && artifacts && artifacts.length > 1),
+    });
+
     if (combine && artifacts && artifacts.length > 1) {
       setCurrentArtifacts(artifacts);
       setIsCombinedPanel(true);
@@ -68,6 +75,13 @@ export const ConversationThread = () => {
   };
 
   const handlePanelClose = useCallback(() => {
+    if (currentArtifact) {
+      trackFeatureUsage("close_artifact", {
+        artifact_type: currentArtifact.type,
+        conversation_id: currentConversationId || "none",
+      });
+    }
+
     setIsPanelVisible(false);
     setIsCombinedPanel(false);
 
@@ -75,7 +89,7 @@ export const ConversationThread = () => {
       setCurrentArtifact(null);
       setCurrentArtifacts([]);
     }, 300);
-  }, []);
+  }, [currentArtifact, currentConversationId, trackFeatureUsage]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: This is intentional
   useEffect(() => {
@@ -153,9 +167,15 @@ export const ConversationThread = () => {
 
       trackEvent({
         name: "send_message",
-        category: "conversation",
-        label: "conversation_thread",
-        value: 1,
+        category: EventCategory.CONVERSATION,
+        properties: {
+          conversation_id: currentConversationId || "new",
+          model_id: model || "unknown",
+          message_length: chatInput.length,
+          has_attachment: Boolean(attachmentData),
+          attachment_type: attachmentData ? attachmentData.type : undefined,
+          is_first_message: messages.length === 0,
+        },
       });
 
       const result = await sendMessage(chatInput, attachmentData);
@@ -168,6 +188,10 @@ export const ConversationThread = () => {
       }
     } catch (error) {
       console.error("Failed to send message:", error);
+      trackError("message_send_error", error, {
+        conversation_id: currentConversationId || "new",
+        model_id: model || "unknown",
+      });
     }
   };
 
@@ -177,6 +201,10 @@ export const ConversationThread = () => {
     };
   }) => {
     setChatInput(data.response.content);
+    trackFeatureUsage("transcription_used", {
+      conversation_id: currentConversationId || "new",
+      content_length: data.response.content.length,
+    });
   };
 
   const handleToolInteraction = (
@@ -184,6 +212,13 @@ export const ConversationThread = () => {
     action: "useAsPrompt",
     data: Record<string, any>,
   ) => {
+    // Track tool interaction
+    trackFeatureUsage("tool_interaction", {
+      tool_name: toolName,
+      action: action,
+      conversation_id: currentConversationId || "new",
+    });
+
     switch (toolName) {
       case "web_search":
         if (action === "useAsPrompt") {

@@ -21,7 +21,7 @@ import { UserMenuItem } from "../Sidebar/UserMenuItem";
 import { ChatSidebarNotifications } from "./ChatSidebarNotifications";
 
 export const ChatSidebar = () => {
-  const trackEvent = useTrackEvent();
+  const { trackEvent } = useTrackEvent();
   const {
     sidebarVisible,
     setSidebarVisible,

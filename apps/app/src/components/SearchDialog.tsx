@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 
 import { Button, FormInput } from "~/components/ui";
 import { Dialog, DialogContent } from "~/components/ui/Dialog";
+import { useTrackEvent } from "~/hooks/use-track-event";
 import { useChats } from "~/hooks/useChat";
 import { useChatStore } from "~/state/stores/chatStore";
 
@@ -19,6 +20,13 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
   const { data: chats } = useChats();
   const { setCurrentConversationId } = useChatStore();
   const navigate = useNavigate();
+  const { trackFeatureUsage } = useTrackEvent();
+
+  useEffect(() => {
+    if (isOpen) {
+      trackFeatureUsage("search_dialog_opened", {});
+    }
+  }, [isOpen, trackFeatureUsage]);
 
   useEffect(() => {
     if (isOpen) {
@@ -45,6 +53,17 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
     : filteredChats.length;
 
   const handleSelectChat = (chatId: string) => {
+    const selectedChat = filteredChats.find((chat) => chat.id === chatId);
+    trackFeatureUsage("search_result_selected", {
+      query_length: searchQuery.length,
+      had_query: searchQuery.length > 0,
+      result_position:
+        filteredChats.findIndex((chat) => chat.id === chatId) + 1,
+      total_results: filteredChats.length,
+      selection_method: "click",
+      chat_title: selectedChat?.title || "Untitled chat",
+    });
+
     setCurrentConversationId(chatId);
     navigate("/");
     onClose();
@@ -78,6 +97,14 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
         if (focusedIndex >= 0) {
           const chatIndex = searchQuery ? focusedIndex - 1 : focusedIndex;
           if (filteredChats[chatIndex]) {
+            trackFeatureUsage("search_result_selected", {
+              query_length: searchQuery.length,
+              had_query: searchQuery.length > 0,
+              result_position: chatIndex + 1,
+              total_results: filteredChats.length,
+              selection_method: "keyboard",
+              chat_title: filteredChats[chatIndex].title || "Untitled chat",
+            });
             handleSelectChat(filteredChats[chatIndex].id || "");
           }
         }
@@ -99,7 +126,17 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
               ref={inputRef}
               placeholder="Search conversations..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                const newQuery = e.target.value;
+                setSearchQuery(newQuery);
+
+                if (Math.abs(newQuery.length - searchQuery.length) > 2) {
+                  trackFeatureUsage("search_query_changed", {
+                    query_length: newQuery.length,
+                    results_count: newQuery ? filteredChats.length : 0,
+                  });
+                }
+              }}
               className="pl-10 pr-10"
               fullWidth
               autoFocus

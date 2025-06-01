@@ -42,7 +42,7 @@ export const ModelSelector = ({
   minimal = false,
   mono = false,
 }: ModelSelectorProps) => {
-  const trackEvent = useTrackEvent();
+  const { trackEvent } = useTrackEvent();
 
   const {
     isPro,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { useTrackEvent } from "~/hooks/use-track-event";
+import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useChatStore } from "~/state/stores/chatStore";
 
 interface HCaptchaProps {
@@ -25,10 +25,14 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
   const [isVerified, setIsVerified] = useState(false);
   const { isAuthenticated } = useChatStore();
 
-  const trackEvent = useTrackEvent();
+  const { trackEvent, trackAuth, trackError } = useTrackEvent();
 
   useEffect(() => {
     if (isAuthenticated && !isVerified) {
+      trackAuth("captcha_bypassed", {
+        reason: "authenticated_user",
+        site_key: siteKey,
+      });
       onVerify("authenticated-user");
       setIsVerified(true);
       return;
@@ -71,19 +75,21 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
         callback: (token: string) => {
           onVerify(token);
           setIsVerified(true);
-          trackEvent({
-            name: "captcha_verified",
-            category: "hcaptcha",
-            nonInteraction: true,
+          trackAuth("captcha_verified", {
+            verification_method: "hcaptcha",
+            site_key: siteKey,
           });
         },
         "error-callback": () => {
           console.error("HCaptcha verification failed");
-          trackEvent({
-            name: "captcha_verification_failed",
-            category: "hcaptcha",
-            nonInteraction: true,
-          });
+          trackError(
+            "captcha_verification_failed",
+            new Error("HCaptcha verification failed"),
+            {
+              verification_method: "hcaptcha",
+              site_key: siteKey,
+            },
+          );
         },
         "expired-callback": () => {
           setIsVerified(false);
@@ -92,8 +98,12 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
           }
           trackEvent({
             name: "captcha_expired",
-            category: "hcaptcha",
+            category: EventCategory.AUTH,
             nonInteraction: true,
+            properties: {
+              verification_method: "hcaptcha",
+              site_key: siteKey,
+            },
           });
         },
       });
@@ -118,6 +128,8 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
     siteKey,
     trackEvent,
     widgetId,
+    trackAuth,
+    trackError,
   ]);
 
   return <div id="hcaptcha-container" style={{ display: "none" }} />;

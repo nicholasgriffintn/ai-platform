@@ -7,6 +7,7 @@ import {
   Switch,
   Textarea,
 } from "~/components/ui";
+import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";
 
 interface UserSettingsFormProps {
@@ -19,6 +20,7 @@ export function UserSettingsForm({
   isAuthenticated,
 }: UserSettingsFormProps) {
   const { updateUserSettings, isUpdatingUserSettings } = useAuthStatus();
+  const { trackEvent, trackError } = useTrackEvent();
   const [formData, setFormData] = useState({
     nickname: userSettings?.nickname || "",
     job_role: userSettings?.job_role || "",
@@ -47,6 +49,15 @@ export function UserSettingsForm({
       ...prev,
       [name]: value,
     }));
+
+    trackEvent({
+      name: "setting_field_edited",
+      category: EventCategory.UI_INTERACTION,
+      properties: {
+        setting_name: name,
+        has_value: value.trim().length > 0 ? "true" : "false",
+      },
+    });
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -54,13 +65,36 @@ export function UserSettingsForm({
     setSaveSuccess(false);
     setSaveError("");
 
+    trackEvent({
+      name: "settings_save_attempt",
+      category: EventCategory.USER_JOURNEY,
+      properties: {
+        setting_names: Object.keys(formData).join(","),
+        guardrails_enabled: String(formData.guardrails_enabled),
+        memories_enabled: String(formData.memories_save_enabled),
+      },
+    });
+
     try {
       await updateUserSettings(formData);
-
       setSaveSuccess(true);
+
+      trackEvent({
+        name: "settings_saved",
+        category: EventCategory.USER_JOURNEY,
+        properties: {
+          setting_names: Object.keys(formData).join(","),
+          guardrails_enabled: String(formData.guardrails_enabled),
+          memories_enabled: String(formData.memories_save_enabled),
+        },
+      });
     } catch (error) {
       console.error("Error saving settings:", error);
       setSaveError("Failed to save settings. Please try again.");
+
+      trackError("settings_save_failed", error as Error, {
+        setting_names: Object.keys(formData).join(","),
+      });
     }
   };
 

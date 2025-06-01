@@ -19,7 +19,7 @@ import { groupAppsByCategory } from "./utils";
 
 export const DynamicApps = () => {
   const { isAuthenticationLoading } = useChatStore();
-  const trackEvent = useTrackEvent();
+  const { trackEvent } = useTrackEvent();
 
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
   const [result, setResult] = useState<Record<string, any> | null>(null);

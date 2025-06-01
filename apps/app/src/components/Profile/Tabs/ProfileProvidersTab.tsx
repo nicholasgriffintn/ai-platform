@@ -25,7 +25,7 @@ interface ProviderModalState {
 }
 
 export function ProfileProvidersTab() {
-  const trackEvent = useTrackEvent();
+  const { trackEvent } = useTrackEvent();
 
   const {
     providerSettings,

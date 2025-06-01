@@ -33,7 +33,7 @@ type PageAction = {
 };
 
 export function ProfileBillingTab() {
-  const trackEvent = useTrackEvent();
+  const { trackEvent } = useTrackEvent();
 
   const {
     data: sub,
