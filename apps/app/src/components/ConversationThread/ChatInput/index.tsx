@@ -464,9 +464,11 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                       type="submit"
                       onClick={handleFormSubmit}
                       disabled={
-                        (!chatInput?.trim() && !selectedAttachment) ||
-                        isLoading ||
-                        isUploading
+                        !!(
+                          (!chatInput?.trim() && !selectedAttachment) ||
+                          isLoading ||
+                          isUploading
+                        )
                       }
                       className="cursor-pointer p-2.5 bg-black hover:bg-zinc-800 dark:bg-off-white dark:hover:bg-zinc-200 rounded-md text-white dark:text-black shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       title="Send message"
