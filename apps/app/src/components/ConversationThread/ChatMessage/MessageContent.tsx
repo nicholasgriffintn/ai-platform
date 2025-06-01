@@ -4,6 +4,11 @@ import type { ReactNode } from "react";
 
 import { ImageModal } from "~/components/ui/ImageModal";
 import { MemoizedMarkdown } from "~/components/ui/Markdown";
+import {
+  canCombineArtifacts,
+  processCustomXmlTags,
+  splitContentByArtifacts,
+} from "~/lib/markdown-utils";
 import { formattedMessageContent } from "~/lib/messages";
 import type { Message, MessageContent as MessageContentType } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
@@ -20,55 +25,6 @@ interface MessageContentProps {
     artifacts?: ArtifactProps[],
   ) => void;
 }
-
-const canCombineArtifacts = (artifacts: ArtifactProps[]): boolean => {
-  if (artifacts.length < 2) return false;
-
-  const hasJsx = artifacts.some(
-    (a) =>
-      a.language?.toLowerCase().includes("jsx") ||
-      a.language?.toLowerCase().includes("javascript"),
-  );
-
-  const hasCss = artifacts.some((a) =>
-    a.language?.toLowerCase().includes("css"),
-  );
-
-  return hasJsx && hasCss;
-};
-
-const processCustomXmlTags = (text: string): string => {
-  const codeFenceRegex = /```[\s\S]*?```/g;
-  const fences: string[] = [];
-  const placeholderPrefix = "<<CODE_BLOCK_";
-  let idx = 0;
-  const textNoFences = text.replace(codeFenceRegex, (match) => {
-    const placeholder = `${placeholderPrefix}${idx}>>`;
-    fences[idx++] = match;
-    return placeholder;
-  });
-
-  const xmlTagRegex = /<([A-Za-z][\w-]*)\b[^>]*>([\s\S]*?)<\/\1>/g;
-  const processed = textNoFences.replace(
-    xmlTagRegex,
-    (_match, tagName, inner) => {
-      const title = tagName
-        .split(/[_-]/)
-        .map(
-          (w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(),
-        )
-        .join(" ");
-      return `**${title}**\n\n${inner}\n\n`;
-    },
-  );
-
-  let result = processed;
-  fences.forEach((fence, i) => {
-    const placeholder = `${placeholderPrefix}${i}>>`;
-    result = result.replace(placeholder, fence);
-  });
-  return result;
-};
 
 const renderTextContent = (
   role: Message["role"],
@@ -102,21 +58,21 @@ const renderTextContent = (
       artifactMap.set(artifact.identifier, artifact);
     }
 
-    const parts = content.split(/\[\[ARTIFACT:([^\]]+)\]\]/);
+    const { textParts, identifiers } = splitContentByArtifacts(content);
     const renderedParts: ReactNode[] = [];
     const isArtifactCombinable = canCombineArtifacts(artifacts);
 
-    for (let i = 0; i < parts.length; i++) {
-      if (i % 2 === 0) {
-        if (parts[i]) {
-          renderedParts.push(
-            <MemoizedMarkdown key={`content-${i}`}>
-              {parts[i]}
-            </MemoizedMarkdown>,
-          );
-        }
-      } else {
-        const identifier = parts[i];
+    for (let i = 0; i < textParts.length; i++) {
+      if (textParts[i]) {
+        renderedParts.push(
+          <MemoizedMarkdown key={`content-${i}`}>
+            {textParts[i]}
+          </MemoizedMarkdown>,
+        );
+      }
+
+      if (i < identifiers.length) {
+        const identifier = identifiers[i];
         const artifact = artifactMap.get(identifier);
 
         if (artifact) {

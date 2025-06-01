@@ -4,6 +4,10 @@ import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 
+import { useChatManager } from "~/hooks/useChatManager";
+import { cleanIncompleteMarkdown } from "~/lib/markdown-utils";
+import { useChatStore } from "~/state/stores/chatStore";
+
 const rehypePlugins = [() => rehypeHighlight({ detect: true })];
 const remarkPlugins = [remarkGfm];
 
@@ -25,14 +29,29 @@ function downgradeH1Headings(markdown: string): string {
   return markdown.replace(/^# (.*)$/gm, "## $1");
 }
 
-export function Markdown({
-  children,
-  className,
-}: { children: string; className?: string }) {
+export interface MarkdownProps {
+  children: string;
+  className?: string;
+}
+
+export function Markdown({ children, className }: MarkdownProps) {
+  const { streamStarted } = useChatManager();
+  const { currentConversationId } = useChatStore();
+
   const markdownClassName = useMemo(
     () => `markdown prose dark:prose-invert prose-zinc ${className || ""}`,
     [className],
   );
+
+  const processedMarkdown = useMemo(() => {
+    let content = downgradeH1Headings(children);
+
+    if (streamStarted && currentConversationId) {
+      content = cleanIncompleteMarkdown(content);
+    }
+
+    return content;
+  }, [children, streamStarted, currentConversationId]);
 
   return (
     <ReactMarkdown
@@ -41,7 +60,7 @@ export function Markdown({
       rehypePlugins={rehypePlugins}
       remarkPlugins={remarkPlugins}
     >
-      {downgradeH1Headings(children)}
+      {processedMarkdown}
     </ReactMarkdown>
   );
 }
