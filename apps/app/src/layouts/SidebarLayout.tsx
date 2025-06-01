@@ -3,7 +3,6 @@ import { cn } from "~/lib/utils";
 
 import { LoginModal } from "~/components/LoginModal";
 import { ChatNavbar } from "~/components/Navbar";
-import { TurnstileWidget } from "~/components/TurnstileWidget";
 import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
 import { useChatStore } from "~/state/stores/chatStore";
 import { KeyboardShortcutsHelp } from "../components/KeyboardShortcutsHelp";
@@ -72,9 +71,6 @@ export function SidebarLayout({
               />
             </div>
           </div>
-        </div>
-        <div className="fixed bottom-0 right-0 z-10">
-          <TurnstileWidget />
         </div>
       </div>
 

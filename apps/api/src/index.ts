@@ -64,7 +64,7 @@ app.use(
       "Content-Type",
       "Authorization",
       "X-CSRF-Token",
-      "x-turnstile-token",
+      "x-captcha-token",
     ],
     credentials: true,
     maxAge: 86400,

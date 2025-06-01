@@ -7,8 +7,8 @@ import type z from "zod";
 import { formatToolCalls } from "~/lib/chat/tools";
 import { getModelConfig } from "~/lib/models";
 import { requireAuth } from "~/middleware/auth";
+import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { requireTurnstileToken } from "~/middleware/turnstile";
 import { AgentRepository } from "~/repositories/AgentRepository";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { registerMCPClient } from "~/services/functions/mcp";
@@ -365,6 +365,7 @@ app.delete(
 
 app.post(
   "/:agentId/completions",
+  validateCaptcha,
   describeRoute({
     tags: ["agents"],
     summary: "Create a completion for an agent",
@@ -380,7 +381,6 @@ app.post(
       },
     },
   }),
-  requireTurnstileToken,
   zValidator("json", createChatCompletionsJsonSchema),
   async (ctx: Context) => {
     const { agentId } = ctx.req.param();
