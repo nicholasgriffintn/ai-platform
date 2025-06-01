@@ -50,5 +50,14 @@ export const UsageLimitWarning = () => {
     );
   }
 
+  if (dailyRemaining <= 0) {
+    return (
+      <div className="rounded-md bg-red-100 border border-red-300 text-red-800 p-3 mb-4 text-center dark:bg-red-900/30 dark:border-red-800 dark:text-red-200">
+        You have no messages left. Go to the{" "}
+        <Link to="/profile/billing">Billing</Link> page to upgrade.
+      </div>
+    );
+  }
+
   return null;
 };
