@@ -6,8 +6,8 @@ import { z } from "zod";
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
 import { allowRestrictedPaths } from "~/middleware/auth";
+import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { requireTurnstileToken } from "~/middleware/turnstile";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
@@ -61,6 +61,7 @@ app.use("/*", async (context: Context, next: Next) => {
 
 app.post(
   "/completions",
+  validateCaptcha,
   describeRoute({
     tags: ["chat"],
     summary: "Create chat completion",
@@ -96,7 +97,6 @@ app.post(
       },
     },
   }),
-  requireTurnstileToken,
   zValidator("json", createChatCompletionsJsonSchema),
   async (context: Context) => {
     const body = context.req.valid("json" as never) as ChatCompletionParameters;
@@ -328,6 +328,7 @@ app.get(
 
 app.get(
   "/completions",
+  validateCaptcha,
   describeRoute({
     tags: ["chat"],
     summary: "List chat completions",
@@ -396,6 +397,7 @@ app.get(
 
 app.post(
   "/completions/:completion_id/generate-title",
+  validateCaptcha,
   describeRoute({
     tags: ["chat"],
     summary: "Generate a title for a chat",
@@ -663,6 +665,7 @@ app.post(
 
 app.post(
   "/completions/:completion_id/feedback",
+  validateCaptcha,
   describeRoute({
     tags: ["chat"],
     summary: "Submit feedback about a chat completion",
@@ -726,6 +729,7 @@ app.post(
 
 app.post(
   "/completions/:completion_id/share",
+  validateCaptcha,
   describeRoute({
     tags: ["chat"],
     summary: "Share a conversation publicly",

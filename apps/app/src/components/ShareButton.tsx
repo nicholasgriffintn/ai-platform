@@ -2,6 +2,7 @@ import { Check, Copy, ExternalLink, Share2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { useTrackEvent } from "~/hooks/use-track-event";
 import { useShareItem } from "~/hooks/useAppsSharing";
 import { Button } from "./ui";
 import {
@@ -28,8 +29,14 @@ export function ShareButton({
   const [isOpen, setIsOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState<string>("");
   const { mutate: shareItem, isPending } = useShareItem();
+  const { trackFeatureUsage, trackError } = useTrackEvent();
 
   const handleShare = () => {
+    trackFeatureUsage("share_initiated", {
+      content_type: "app",
+      content_id: appId,
+    });
+
     shareItem(
       { app_id: appId },
       {
@@ -37,11 +44,22 @@ export function ShareButton({
           if (data.share_id) {
             const url = `${window.location.origin}/s/apps/${data.share_id}`;
             setShareUrl(url);
+
+            trackFeatureUsage("share_link_created", {
+              content_type: "app",
+              content_id: appId,
+              share_id: data.share_id,
+            });
           }
         },
         onError: (error) => {
           toast.error("Failed to share item", {
             description: error.message,
+          });
+
+          trackError("share_failed", error, {
+            content_type: "app",
+            content_id: appId,
           });
         },
       },
@@ -51,10 +69,22 @@ export function ShareButton({
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);
     toast.success("Link copied to clipboard");
+
+    trackFeatureUsage("share_link_copied", {
+      content_type: "app",
+      content_id: appId,
+      share_method: "clipboard",
+    });
   };
 
   const handleOpenInNewTab = () => {
     window.open(shareUrl, "_blank");
+
+    trackFeatureUsage("share_link_opened", {
+      content_type: "app",
+      content_id: appId,
+      share_method: "new_tab",
+    });
   };
 
   return (

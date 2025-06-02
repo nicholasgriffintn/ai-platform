@@ -30,6 +30,7 @@ export const anonymousUser = sqliteTable("anonymous_user", {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   last_active_at: text("last_active_at"),
+  captcha_verified: integer({ mode: "boolean" }).default(false),
 });
 
 export const user = sqliteTable("user", {

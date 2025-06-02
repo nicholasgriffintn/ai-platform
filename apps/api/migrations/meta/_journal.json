@@ -169,6 +169,13 @@
       "when": 1748128799240,
       "tag": "0023_plain_vindicator",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1748737490115,
+      "tag": "0024_last_killmonger",
+      "breakpoints": true
     }
   ]
 }

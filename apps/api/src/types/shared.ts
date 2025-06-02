@@ -64,4 +64,6 @@ export interface IEnv {
   AWS_SES_ACCESS_KEY_ID?: string;
   AWS_SES_SECRET_ACCESS_KEY?: string;
   SES_EMAIL_FROM?: string;
+  HCAPTCHA_SECRET_KEY?: string;
+  HCAPTCHA_SITE_KEY?: string;
 }

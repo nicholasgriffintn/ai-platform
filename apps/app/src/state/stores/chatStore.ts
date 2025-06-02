@@ -47,8 +47,6 @@ export interface ChatStore {
   setIsAuthenticationLoading: (isAuthenticationLoading: boolean) => void;
   isPro: boolean;
   setIsPro: (isPro: boolean) => void;
-  turnstileToken: string | null;
-  setTurnstileToken: (token: string | null) => void;
 
   // Chat mode and settings
   localOnlyMode: boolean;
@@ -109,8 +107,6 @@ export const useChatStore = create<ChatStore>()(
         set({ isAuthenticationLoading }),
       isPro: false,
       setIsPro: (isPro) => set({ isPro }),
-      turnstileToken: null,
-      setTurnstileToken: (token) => set({ turnstileToken: token }),
 
       // Chat mode and settings
       localOnlyMode: false,

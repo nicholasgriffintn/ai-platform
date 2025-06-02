@@ -4,6 +4,8 @@ import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 
+import { fixMarkdown } from "~/lib/markdown-utils";
+
 const rehypePlugins = [() => rehypeHighlight({ detect: true })];
 const remarkPlugins = [remarkGfm];
 
@@ -21,28 +23,38 @@ const components = {
   ),
 };
 
-function downgradeH1Headings(markdown: string): string {
-  return markdown.replace(/^# (.*)$/gm, "## $1");
+export interface MarkdownProps {
+  children: string;
+  className?: string;
+  isStreaming?: boolean;
 }
 
-export function Markdown({
-  children,
-  className,
-}: { children: string; className?: string }) {
+export function Markdown({ children, className, isStreaming }: MarkdownProps) {
   const markdownClassName = useMemo(
     () => `markdown prose dark:prose-invert prose-zinc ${className || ""}`,
     [className],
   );
 
+  const processedMarkdown = useMemo(() => {
+    const content = fixMarkdown(children, isStreaming);
+
+    return content;
+  }, [children, isStreaming]);
+
   return (
-    <ReactMarkdown
-      components={components}
-      className={markdownClassName}
-      rehypePlugins={rehypePlugins}
-      remarkPlugins={remarkPlugins}
-    >
-      {downgradeH1Headings(children)}
-    </ReactMarkdown>
+    <div className="relative">
+      <ReactMarkdown
+        components={components}
+        className={markdownClassName}
+        rehypePlugins={rehypePlugins}
+        remarkPlugins={remarkPlugins}
+      >
+        {processedMarkdown}
+      </ReactMarkdown>
+      {isStreaming && (
+        <span className="inline-block w-2 h-4 bg-blue-500 animate-pulse ml-1" />
+      )}
+    </div>
   );
 }
 

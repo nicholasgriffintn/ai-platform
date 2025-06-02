@@ -18,7 +18,7 @@ import { PageHeader } from "../../PageHeader";
 import { PageTitle } from "../../PageTitle";
 
 export function ProfilePasskeysTab() {
-  const trackEvent = useTrackEvent();
+  const { trackEvent } = useTrackEvent();
 
   const {
     passkeys,

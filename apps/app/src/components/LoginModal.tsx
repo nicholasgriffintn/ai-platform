@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button, FormInput } from "~/components/ui";
 import { Dialog, DialogContent } from "~/components/ui/Dialog";
 import { APP_NAME } from "~/constants";
+import { useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { usePasskeys } from "~/hooks/usePasskeys";
 import { authService } from "~/lib/api/auth-service";
@@ -27,6 +28,7 @@ export const LoginModal = ({
   const { isAuthenticated, isLoading, loginWithGithub } = useAuthStatus();
   const { authenticateWithPasskey, isAuthenticatingWithPasskey } =
     usePasskeys();
+  const { trackAuth, trackError } = useTrackEvent();
   const [passkeysSupported, setPasskeysSupported] = useState(false);
 
   useEffect(() => {
@@ -38,9 +40,10 @@ export const LoginModal = ({
 
   useEffect(() => {
     if (isAuthenticated && open) {
+      trackAuth("auth_success", { method: "auto" });
       onKeySubmit();
     }
-  }, [isAuthenticated, open, onKeySubmit]);
+  }, [isAuthenticated, open, onKeySubmit, trackAuth]);
 
   const handleMagicLinkRequest = async () => {
     setError("");
@@ -48,21 +51,32 @@ export const LoginModal = ({
 
     if (!email || !email.includes("@")) {
       setError("Please enter a valid email address");
+      trackAuth("auth_validation_error", {
+        method: "email",
+        reason: "invalid_email",
+      });
       return;
     }
 
     setIsRequestingLink(true);
+    trackAuth("auth_attempt", { method: "email" });
+
     try {
       const result = await authService.requestMagicLink(email);
       if (result.success) {
         setEmailSubmitted(true);
+        trackAuth("magic_link_sent", { email_domain: email.split("@")[1] });
       } else {
         setError(
           result.error || "Failed to send magic link. Please try again.",
         );
+        trackError("magic_link_error", result.error || "Unknown error", {
+          method: "email",
+        });
       }
     } catch (err: any) {
       setError("An unexpected error occurred. Please try again.");
+      trackError("magic_link_error", err, { method: "email" });
       console.error("Magic link request error:", err);
     } finally {
       setIsRequestingLink(false);
@@ -71,20 +85,33 @@ export const LoginModal = ({
 
   const handleGithubLogin = async () => {
     setAwaitingGithubLogin(true);
-    await loginWithGithub();
-    setAwaitingGithubLogin(false);
+    trackAuth("auth_attempt", { method: "github" });
+    try {
+      await loginWithGithub();
+    } catch (err) {
+      trackError("auth_error", err, { method: "github" });
+    } finally {
+      setAwaitingGithubLogin(false);
+    }
   };
 
   const handlePasskeyLogin = async () => {
+    trackAuth("auth_attempt", { method: "passkey" });
     try {
       const result = await authenticateWithPasskey();
       if (result?.verified) {
+        trackAuth("auth_success", { method: "passkey" });
         onKeySubmit();
       } else {
         setError("Passkey authentication failed");
+        trackAuth("auth_failure", {
+          method: "passkey",
+          reason: "verification_failed",
+        });
       }
     } catch (error) {
       setError("Passkey authentication failed. Please try another method.");
+      trackError("auth_error", error, { method: "passkey" });
       console.error("Passkey authentication error:", error);
     }
   };

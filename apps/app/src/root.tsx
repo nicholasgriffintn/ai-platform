@@ -5,6 +5,7 @@ import { Outlet, isRouteErrorResponse } from "react-router";
 import { Analytics } from "~/components/Analytics";
 import { AppInitializer } from "~/components/AppInitializer";
 import { AppShell } from "~/components/AppShell";
+import { CaptchaProvider } from "~/components/HCaptcha/CaptchaProvider";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { ServiceWorkerRegistration } from "~/components/ServiceWorkerRegistration";
 import { Toaster } from "~/components/ui/sonner";
@@ -39,15 +40,17 @@ export default function Root() {
     <>
       <LoadingProvider>
         <AppInitializer>
-          <Analytics
-            isEnabled={ENABLE_BEACON}
-            beaconEndpoint={BEACON_ENDPOINT}
-            beaconSiteId={BEACON_SITE_ID}
-            beaconDebug={BEACON_DEBUG}
-          />
-          <Outlet />
-          <ServiceWorkerRegistration />
-          <Toaster />
+          <CaptchaProvider>
+            <Analytics
+              isEnabled={ENABLE_BEACON}
+              beaconEndpoint={BEACON_ENDPOINT}
+              beaconSiteId={BEACON_SITE_ID}
+              beaconDebug={BEACON_DEBUG}
+            />
+            <Outlet />
+            <ServiceWorkerRegistration />
+            <Toaster />
+          </CaptchaProvider>
         </AppInitializer>
       </LoadingProvider>
       <ReactQueryDevtools initialIsOpen={false} />

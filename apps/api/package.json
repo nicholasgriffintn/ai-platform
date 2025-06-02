@@ -24,30 +24,30 @@
     "db:studio:prod": "drizzle-kit studio"
   },
   "dependencies": {
-    "@hono/zod-validator": "0.5.0",
-    "@octokit/rest": "21.1.1",
+    "@hono/zod-validator": "0.7.0",
+    "@octokit/rest": "22.0.0",
     "@scalar/hono-api-reference": "^0.9.0",
     "@simplewebauthn/server": "^13.1.1",
-    "@tsndr/cloudflare-worker-jwt": "3.1.7",
-    "agents": "^0.0.93",
+    "@tsndr/cloudflare-worker-jwt": "3.2.0",
+    "agents": "^0.0.94",
     "aws4fetch": "1.0.20",
-    "drizzle-orm": "0.43.1",
-    "hono": "4.7.10",
+    "drizzle-orm": "0.44.1",
+    "hono": "4.7.11",
     "hono-openapi": "0.4.8",
     "isbot": "5.1.28",
     "stripe": "^18.0.0",
-    "zod": "3.25.28",
+    "zod": "3.25.42",
     "zod-openapi": "4.2.4"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@cloudflare/workers-types": "4.20250525.0",
+    "@cloudflare/workers-types": "4.20250531.0",
     "@simplewebauthn/types": "^12.0.0",
-    "@types/node": "22.15.21",
+    "@types/node": "22.15.29",
     "better-sqlite3": "^11.9.0",
     "drizzle-kit": "^0.31.0",
     "typescript": "5.8.3",
     "vitest": "3.1.4",
-    "wrangler": "4.16.1"
+    "wrangler": "4.18.0"
   }
 }

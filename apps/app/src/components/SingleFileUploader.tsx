@@ -13,6 +13,7 @@ import {
   formatBytes,
   useFileUpload,
 } from "~/hooks/use-file-upload";
+import { useTrackEvent } from "~/hooks/use-track-event";
 
 interface SingleFileUploaderProps {
   id: string;
@@ -35,6 +36,7 @@ export function SingleFileUploader({
   onFilesAdded,
   onFilesChange,
 }: SingleFileUploaderProps) {
+  const { trackFeatureUsage } = useTrackEvent();
   const [
     { files, isDragging, errors },
     {
@@ -50,11 +52,54 @@ export function SingleFileUploader({
     maxFiles: 1,
     maxSize,
     initialFiles,
-    onFilesAdded,
-    onFilesChange,
+    onFilesAdded: (addedFiles) => {
+      trackFeatureUsage("file_added", {
+        uploader_id: id,
+        file_count: addedFiles.length,
+        file_type: addedFiles[0]?.file.type || "unknown",
+        file_size: addedFiles[0]?.file.size || 0,
+        upload_method: "dialog",
+      });
+      onFilesAdded?.(addedFiles);
+    },
+    onFilesChange: (changedFiles) => {
+      if (changedFiles.length > 0) {
+        trackFeatureUsage("file_upload_active", {
+          uploader_id: id,
+          file_count: changedFiles.length,
+          file_type: changedFiles[0]?.file.type || "unknown",
+          file_size: changedFiles[0]?.file.size || 0,
+        });
+      }
+      onFilesChange?.(changedFiles);
+    },
   });
 
   const file = files[0];
+
+  const trackEnhancedDrop = (e: React.DragEvent<HTMLButtonElement>) => {
+    handleDrop(e);
+    if (e.dataTransfer.files.length > 0) {
+      trackFeatureUsage("file_added", {
+        uploader_id: id,
+        file_count: e.dataTransfer.files.length,
+        file_type: e.dataTransfer.files[0]?.type || "unknown",
+        file_size: e.dataTransfer.files[0]?.size || 0,
+        upload_method: "drag_and_drop",
+      });
+    }
+  };
+
+  const handleRemoveFile = (fileId: string) => {
+    if (files.length > 0) {
+      trackFeatureUsage("file_removed", {
+        uploader_id: id,
+        file_type: files[0]?.file.type || "unknown",
+        file_size: files[0]?.file.size || 0,
+      });
+    }
+    removeFile(fileId);
+  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -70,7 +115,7 @@ export function SingleFileUploader({
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
-        onDrop={handleDrop}
+        onDrop={trackEnhancedDrop}
         data-dragging={isDragging || undefined}
         className="border-input hover:bg-accent/50 data-[dragging=true]:bg-accent/50 has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 flex min-h-40 flex-col items-center justify-center rounded-xl border border-dashed p-4 transition-colors has-disabled:pointer-events-none has-disabled:opacity-50 has-[input:focus]:ring-[3px]"
       >
@@ -128,7 +173,7 @@ export function SingleFileUploader({
               size="icon"
               variant="ghost"
               className="text-muted-foreground/80 hover:text-foreground -me-2 size-8 hover:bg-transparent"
-              onClick={() => removeFile(files[0]?.id)}
+              onClick={() => handleRemoveFile(files[0]?.id)}
               aria-label="Remove file"
             >
               <XIcon className="size-4" aria-hidden="true" />

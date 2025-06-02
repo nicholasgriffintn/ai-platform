@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 
+import { useTrackEvent } from "~/hooks/use-track-event";
 import type { ModelConfigItem } from "~/types";
 import { ModelOption } from "./ModelOption";
 
@@ -30,6 +31,19 @@ export function ModelsList({
   mono,
   disabled,
 }: ModelsListProps) {
+  const { trackFeatureUsage } = useTrackEvent();
+
+  const handleModelSelect = (modelId: string, modelInfo: ModelConfigItem) => {
+    trackFeatureUsage("model_selected", {
+      model_id: modelId,
+      previous_model_id: selectedId || "none",
+      model_provider: modelInfo.provider,
+      is_free_model: String(modelInfo.isFree),
+    });
+
+    onSelect(modelId);
+  };
+
   return (
     <>
       {Object.keys(featured).length > 0 && (
@@ -49,7 +63,7 @@ export function ModelsList({
                         key={m.matchingModel}
                         model={m}
                         isSelected={m.id === selectedId}
-                        onClick={() => onSelect(m.id)}
+                        onClick={() => handleModelSelect(m.id, m)}
                         disabled={disabledOption || disabled}
                         isActive={false}
                         mono={mono}
@@ -99,7 +113,7 @@ export function ModelsList({
                           key={m.matchingModel}
                           model={m}
                           isSelected={m.id === selectedId}
-                          onClick={() => onSelect(m.id)}
+                          onClick={() => handleModelSelect(m.id, m)}
                           disabled={disabledOption}
                           isActive={false}
                           mono={mono}

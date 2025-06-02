@@ -10,7 +10,7 @@ import {
 import { Alert, AlertDescription, AlertTitle, Button } from "../../ui";
 
 export function ProfileHistoryTab() {
-  const trackEvent = useTrackEvent();
+  const { trackEvent } = useTrackEvent();
 
   const deleteAllChats = useDeleteAllLocalChats();
   const deleteAllRemoteChats = useDeleteAllRemoteChats();
