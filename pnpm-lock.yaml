@@ -55,7 +55,7 @@ importers:
         version: 5.1.28
       stripe:
         specifier: ^18.0.0
-        version: 18.2.0(@types/node@22.15.29)
+        version: 18.2.1(@types/node@22.15.29)
       zod:
         specifier: 3.25.42
         version: 3.25.42
@@ -188,7 +188,7 @@ importers:
         version: 4.0.1
       sonner:
         specifier: ^2.0.3
-        version: 2.0.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 2.0.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       tailwind-merge:
         specifier: 3.3.0
         version: 3.3.0
@@ -197,7 +197,7 @@ importers:
         version: 4.1.8
       tw-animate-css:
         specifier: ^1.2.7
-        version: 1.3.2
+        version: 1.3.3
       virtua:
         specifier: ^0.41.0
         version: 0.41.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -4256,8 +4256,8 @@ packages:
     resolution: {integrity: sha512-qMCMfhY040cVHT43K9BFygqYbUPFZKHOg7K73mtTWJRb8pyP3fzf4Ixd5SzdEJQ6MRUg/WBnOLxghZtKKurENQ==}
     engines: {node: '>=10'}
 
-  sonner@2.0.4:
-    resolution: {integrity: sha512-fUOGFwhM9/t05VqjKeDv0+t6QZPByMkbFFs6IFsgRQKCBh/1d3HUAC5sYy80Q05+vDKdwSOG/zUPBc8PPpbDjw==}
+  sonner@2.0.5:
+    resolution: {integrity: sha512-YwbHQO6cSso3HBXlbCkgrgzDNIhws14r4MO87Ofy+cV2X7ES4pOoAK3+veSmVTvqNx1BWUxlhPmZzP00Crk2aQ==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
       react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
@@ -4346,8 +4346,8 @@ packages:
     resolution: {integrity: sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ==}
     engines: {node: '>=0.10.0'}
 
-  stripe@18.2.0:
-    resolution: {integrity: sha512-RpOaGh5CLs3SYeVXw1CIQZNwPVADBJtgNyUgu+ZkIvu3u4pkZvNrlKr+WaLoNjSPQWef0dikxDS2AKHBl/l3bg==}
+  stripe@18.2.1:
+    resolution: {integrity: sha512-GwB1B7WSwEBzW4dilgyJruUYhbGMscrwuyHsPUmSRKrGHZ5poSh2oU9XKdii5BFVJzXHn35geRvGJ6R8bYcp8w==}
     engines: {node: '>=12.*'}
     peerDependencies:
       '@types/node': '>=12.x.x'
@@ -4480,8 +4480,8 @@ packages:
   tunnel-agent@0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
 
-  tw-animate-css@1.3.2:
-    resolution: {integrity: sha512-khGYcg4sHWFWcjpiWvy0KN0Bd6yVy6Ecc4r9ZP2u7FV+n4/Fp8MQscCWJkM0KMIRvrpGyKpIQnIbEd1hrewdeg==}
+  tw-animate-css@1.3.3:
+    resolution: {integrity: sha512-tXE2TRWrskc4TU3RDd7T8n8Np/wCfoeH9gz22c7PzYqNPQ9FBGFbWWzwL0JyHcFp+jHozmF76tbHfPAx22ua2Q==}
 
   type-is@1.6.18:
     resolution: {integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==}
@@ -8972,7 +8972,7 @@ snapshots:
       astral-regex: 2.0.0
       is-fullwidth-code-point: 3.0.0
 
-  sonner@2.0.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  sonner@2.0.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
@@ -9056,7 +9056,7 @@ snapshots:
 
   strip-json-comments@2.0.1: {}
 
-  stripe@18.2.0(@types/node@22.15.29):
+  stripe@18.2.1(@types/node@22.15.29):
     dependencies:
       qs: 6.14.0
     optionalDependencies:
@@ -9183,7 +9183,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  tw-animate-css@1.3.2: {}
+  tw-animate-css@1.3.3: {}
 
   type-is@1.6.18:
     dependencies:
