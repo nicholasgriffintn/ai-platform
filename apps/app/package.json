@@ -73,7 +73,7 @@
     "@types/babel__standalone": "^7.1.7",
     "@types/node": "22.15.29",
     "@types/react": "19.1.6",
-    "@types/react-dom": "19.1.5",
+    "@types/react-dom": "19.1.6",
     "@vitejs/plugin-react": "4.5.1",
     "babel-plugin-react-compiler": "19.0.0-beta-ebf51a3-20250411",
     "globals": "16.2.0",
