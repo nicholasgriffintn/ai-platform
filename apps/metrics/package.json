@@ -43,7 +43,7 @@
 		"@vitejs/plugin-react": "4.5.1",
 		"globals": "16.2.0",
 		"jsdom": "26.1.0",
-		"rollup-plugin-visualizer": "6.0.1",
+		"rollup-plugin-visualizer": "6.0.3",
 		"terser": "5.40.0",
 		"typescript": "~5.8.2",
 		"vite": "6.3.5",
