@@ -74,7 +74,7 @@
     "@types/node": "22.15.31",
     "@types/react": "19.1.7",
     "@types/react-dom": "19.1.6",
-    "@vitejs/plugin-react": "4.5.1",
+    "@vitejs/plugin-react": "4.5.2",
     "babel-plugin-react-compiler": "19.0.0-beta-ebf51a3-20250411",
     "globals": "16.2.0",
     "jsdom": "26.1.0",
