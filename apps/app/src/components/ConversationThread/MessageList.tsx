@@ -139,6 +139,7 @@ export const MessageList = ({
                 className={index > 0 ? "mt-4" : ""}
               >
                 <ChatMessage
+                  conversationId={currentConversationId}
                   message={message}
                   onToolInteraction={onToolInteraction}
                   onArtifactOpen={onArtifactOpen}
