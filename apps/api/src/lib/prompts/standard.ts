@@ -12,6 +12,7 @@ export async function returnStandardPrompt(
   supportsFunctions?: boolean,
   supportsArtifacts?: boolean,
   hasThinking?: boolean,
+  requiresThinkingPrompt?: boolean,
 ): Promise<string> {
   try {
     const chatMode = request.mode || "standard";
@@ -39,6 +40,7 @@ export async function returnStandardPrompt(
     } = getResponseStyle(
       response_mode,
       hasThinking,
+      requiresThinkingPrompt,
       supportsFunctions,
       supportsArtifacts,
       isAgent,

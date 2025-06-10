@@ -15,6 +15,7 @@ export async function getSystemPrompt(
   const supportsFunctions = modelConfig?.supportsFunctions || false;
   const supportsArtifacts = modelConfig?.supportsArtifacts || false;
   const hasThinking = modelConfig?.hasThinking || false;
+  const requiresThinkingPrompt = modelConfig?.requiresThinkingPrompt || false;
 
   if (!modelConfig) {
     return await returnStandardPrompt(
@@ -24,6 +25,7 @@ export async function getSystemPrompt(
       supportsFunctions,
       supportsArtifacts,
       hasThinking,
+      requiresThinkingPrompt,
     );
   }
 
@@ -37,6 +39,7 @@ export async function getSystemPrompt(
       supportsFunctions,
       supportsArtifacts,
       hasThinking,
+      requiresThinkingPrompt,
     );
   }
 
@@ -56,6 +59,7 @@ export async function getSystemPrompt(
     supportsFunctions,
     supportsArtifacts,
     hasThinking,
+    requiresThinkingPrompt,
   );
 }
 

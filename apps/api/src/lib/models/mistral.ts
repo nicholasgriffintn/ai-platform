@@ -102,7 +102,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     matchingModel: "magistral-small-latest",
     description:
       "The first reasoning model by Mistral AI — excelling in domain-specific, transparent, and multilingual reasoning.",
-    type: ["coding"],
+    type: ["text"],
     supportsFunctions: true,
     isFree: true,
     contextWindow: 128000,
@@ -118,6 +118,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
       "reasoning",
     ],
     hasThinking: true,
+    requiresThinkingPrompt: true,
     contextComplexity: 3,
     reliability: 3,
     speed: 3,
@@ -131,7 +132,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     matchingModel: "magistral-medium-latest",
     description:
       "The first reasoning model by Mistral AI — excelling in domain-specific, transparent, and multilingual reasoning.",
-    type: ["coding"],
+    type: ["text"],
     supportsFunctions: true,
     isFree: true,
     contextWindow: 128000,
@@ -147,6 +148,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
       "reasoning",
     ],
     hasThinking: true,
+    requiresThinkingPrompt: true,
     contextComplexity: 3,
     reliability: 3,
     speed: 3,

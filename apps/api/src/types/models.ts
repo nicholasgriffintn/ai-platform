@@ -24,6 +24,7 @@ export type ModelConfigItem = {
   speed?: ModelRanking;
   multimodal?: boolean;
   hasThinking?: boolean;
+  requiresThinkingPrompt?: boolean;
   includedInRouter?: boolean;
   isFeatured?: boolean;
   supportsResponseFormat?: boolean;
