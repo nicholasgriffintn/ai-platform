@@ -1,5 +1,6 @@
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
+import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
 import { handleFunctions } from "~/services/functions";
 import type { AppSchema } from "~/types/app-schema";
 import type { IRequest } from "~/types/chat";
@@ -103,8 +104,19 @@ export const executeDynamicApp = async (
         conversationManager,
       });
 
+      let response_id: string | undefined;
+      if (user?.id) {
+        const responseRepo = new DynamicAppResponseRepository(env);
+        const saved = await responseRepo.createResponse(user.id, id, {
+          formData,
+          result: functionResult,
+        });
+        response_id = saved.id;
+      }
+
       return {
         success: true,
+        response_id,
         data: {
           message: `Successfully executed ${app.name}`,
           timestamp: new Date().toISOString(),

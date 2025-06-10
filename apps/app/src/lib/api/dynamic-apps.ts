@@ -1,3 +1,4 @@
+import type { AppDataItem } from "~/components/Apps/ContentRenderers";
 import type { AppSchema } from "~/types/apps";
 import type { AppListItem } from "~/types/apps";
 import type {
@@ -71,6 +72,69 @@ export const fetchDynamicAppById = async (id: string): Promise<AppSchema> => {
     return await response.json();
   } catch (error) {
     console.error(`Error fetching dynamic app ${id}:`, error);
+    throw error;
+  }
+};
+
+export const fetchDynamicAppResponseById = async (
+  responseId: string,
+): Promise<AppDataItem> => {
+  try {
+    let headers: Record<string, string> = {};
+    try {
+      headers = await apiService.getHeaders();
+    } catch (error) {
+      console.error("Error fetching dynamic app response:", error);
+    }
+
+    const response = await fetchApi(`/dynamic-apps/responses/${responseId}`, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch dynamic app response: ${response.statusText}`,
+      );
+    }
+
+    const data = (await response.json()) as { response: AppDataItem };
+    return data.response;
+  } catch (error) {
+    console.error(`Error fetching dynamic app response ${responseId}:`, error);
+    throw error;
+  }
+};
+
+export const fetchDynamicAppResponses = async (
+  appId?: string,
+): Promise<AppDataItem[]> => {
+  try {
+    let headers: Record<string, string> = {};
+    try {
+      headers = await apiService.getHeaders();
+    } catch (error) {
+      console.error("Error fetching dynamic app responses:", error);
+    }
+
+    const url = appId
+      ? `/dynamic-apps/responses?appId=${encodeURIComponent(appId)}`
+      : "/dynamic-apps/responses";
+
+    const response = await fetchApi(url, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch dynamic app responses: ${response.statusText}`,
+      );
+    }
+
+    return (await response.json()) as AppDataItem[];
+  } catch (error) {
+    console.error("Error fetching dynamic app responses:", error);
     throw error;
   }
 };

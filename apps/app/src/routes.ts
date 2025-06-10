@@ -10,6 +10,8 @@ export default [
   route("/s/:share_id", "pages/shared/[share_id].tsx"),
   route("/s/apps/:share_id", "pages/shared/apps/[share_id].tsx"),
   route("/apps", "pages/apps/index.tsx"),
+  route("/apps/responses", "pages/apps/responses/index.tsx"),
+  route("/apps/responses/:responseId", "pages/apps/responses/[responseId].tsx"),
   route("/apps/podcasts", "pages/apps/podcasts/index.tsx"),
   route("/apps/podcasts/new", "pages/apps/podcasts/new.tsx"),
   route("/apps/podcasts/:id", "pages/apps/podcasts/[id].tsx"),
