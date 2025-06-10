@@ -49,7 +49,7 @@ export function getResponseStyle(
   PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If the question is unclear or lacks necessary information, ask for clarification.\n`;
 
   if (!hasThinking || requiresThinkingPrompt) {
-    PREFERENCES_WITH_INSTRUCTIONS += `${step}. Analyze the question and context thoroughly before answering and identify key information from the user's question, then you should provide a self-contained summary of your thoughts using the following template:
+    PREFERENCES_WITH_INSTRUCTIONS += `${step}. Analyze the question and context thoroughly before answering and identify key information from the user's question, return this analysis using the following template:
     <analysis>
       Your thoughts or/and draft, like working through an exercise on scratch paper.
     </analysis>\n`;
