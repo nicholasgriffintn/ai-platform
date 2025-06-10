@@ -38,7 +38,7 @@
 		"@tailwindcss/vite": "4.1.8",
 		"@testing-library/jest-dom": "6.6.3",
 		"@testing-library/react": "16.3.0",
-		"@types/react": "19.1.6",
+		"@types/react": "19.1.7",
 		"@types/react-dom": "19.1.6",
 		"@vitejs/plugin-react": "4.5.1",
 		"globals": "16.2.0",
