@@ -9,17 +9,15 @@ export function normalizeMessage(message: Message): Message {
     const formatted = formatMessageContent(content);
     content = formatted.content;
 
-    if (formatted.reasoning && !reasoning) {
+    if (formatted.reasoning) {
       newReasoning = formatted.reasoning;
     }
   } else if (Array.isArray(content)) {
-    if (!reasoning || (typeof reasoning === "object" && !reasoning.content)) {
-      const thinkingPart = content.find(
-        (item: any) => item.type === "thinking" && item.thinking,
-      );
-      if (thinkingPart) {
-        newReasoning = thinkingPart.thinking;
-      }
+    const thinkingPart = content.find(
+      (item: any) => item.type === "thinking" && item.thinking,
+    );
+    if (thinkingPart) {
+      newReasoning = thinkingPart.thinking;
     }
   } else if (
     content &&
@@ -69,8 +67,10 @@ export function formatMessageContent(messageContent: string): {
     };
   }
 
-  const analysisMatch = messageContent.match(/<analysis>(.*?)<\/analysis>/s);
-  const thinkMatch = messageContent.match(/<think>(.*?)<\/think>/s);
+  const analysisMatch = messageContent.match(
+    /<analysis>([\s\S]*?)(?:<\/analysis>|$)/s,
+  );
+  const thinkMatch = messageContent.match(/<think>([\s\S]*?)(?:<\/think>|$)/s);
 
   if (analysisMatch) {
     reasoning = analysisMatch[1].trim();
@@ -82,8 +82,11 @@ export function formatMessageContent(messageContent: string): {
 
   let cleanedContent = messageContent;
 
-  cleanedContent = cleanedContent.replace(/<analysis>.*?<\/analysis>/gs, "");
-  cleanedContent = cleanedContent.replace(/<think>.*?<\/think>/gs, "");
+  cleanedContent = cleanedContent.replace(
+    /<analysis>.*?(?:<\/analysis>|$)/gs,
+    "",
+  );
+  cleanedContent = cleanedContent.replace(/<think>.*?(?:<\/think>|$)/gs, "");
 
   const answerRegex = /<answer>([\s\S]*?)(<\/answer>|$)/g;
   let match = answerRegex.exec(cleanedContent);
