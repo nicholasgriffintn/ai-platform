@@ -41,7 +41,6 @@ async function isBotCached(userAgent: string, kv: any): Promise<boolean> {
     isBotUser = true;
   }
 
-  // Cache the result asynchronously (fire and forget)
   cache.set(cacheKey, isBotUser).catch(error => {
     logger.error("Failed to cache bot detection result", { error, userAgent });
   });
@@ -79,12 +78,10 @@ export async function authMiddleware(context: Context, next: Next) {
 
   const userAgent = context.req.header("user-agent") || "unknown";
 
-  // Early return for unknown user agents (likely bots)
   if (userAgent === "unknown") {
     return next();
   }
 
-  // Check if it's a bot with caching
   const isBotUser = await isBotCached(userAgent, context.env.CACHE);
   if (isBotUser) {
     return next();
@@ -106,7 +103,6 @@ export async function authMiddleware(context: Context, next: Next) {
   const isJwtToken = authToken?.split(".").length === 3;
   const database = Database.getInstance(context.env);
 
-  // Parallelize authentication checks for better performance
   const authPromises: Promise<User | null>[] = [];
 
   if (sessionId) {
@@ -148,7 +144,6 @@ export async function authMiddleware(context: Context, next: Next) {
     );
   }
 
-  // Wait for all authentication methods to complete
   if (authPromises.length > 0) {
     const authResults = await Promise.allSettled(authPromises);
     const fulfilledResult = authResults.find(result => 
