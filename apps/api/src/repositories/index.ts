@@ -33,6 +33,7 @@ export {
 export class RepositoryManager {
   private env: IEnv;
   private static instance: RepositoryManager;
+  private static currentEnvHash: string;
 
   private planRepo: PlanRepository;
   private userRepo: UserRepository;
@@ -63,9 +64,20 @@ export class RepositoryManager {
     this.appDataRepo = new AppDataRepository(env);
   }
 
+  private static getEnvHash(env: IEnv): string {
+    // Create a simple hash of env properties to detect changes
+    return JSON.stringify({
+      dbName: env.DB?.constructor?.name,
+      // Add other relevant env properties that would require a new instance
+    });
+  }
+
   public static getInstance(env: IEnv): RepositoryManager {
-    if (!RepositoryManager.instance) {
+    const envHash = RepositoryManager.getEnvHash(env);
+    
+    if (!RepositoryManager.instance || RepositoryManager.currentEnvHash !== envHash) {
       RepositoryManager.instance = new RepositoryManager(env);
+      RepositoryManager.currentEnvHash = envHash;
     }
     return RepositoryManager.instance;
   }

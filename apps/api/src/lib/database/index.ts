@@ -19,6 +19,7 @@ const logger = getLogger({ prefix: "DATABASE" });
 export class Database {
   private env: IEnv;
   private static instance: Database;
+  private static currentEnvHash: string;
   private repositories: RepositoryManager;
 
   private constructor(env: IEnv) {
@@ -32,9 +33,20 @@ export class Database {
     this.repositories = RepositoryManager.getInstance(env);
   }
 
+  private static getEnvHash(env: IEnv): string {
+    // Create a simple hash of env properties to detect changes
+    return JSON.stringify({
+      dbName: env.DB?.constructor?.name,
+      // Add other relevant env properties that would require a new instance
+    });
+  }
+
   public static getInstance(env: IEnv): Database {
-    if (!Database.instance) {
+    const envHash = Database.getEnvHash(env);
+    
+    if (!Database.instance || Database.currentEnvHash !== envHash) {
       Database.instance = new Database(env);
+      Database.currentEnvHash = envHash;
     }
     return Database.instance;
   }

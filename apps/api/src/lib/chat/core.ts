@@ -100,18 +100,21 @@ async function prepareRequestData(options: CoreChatOptions) {
     getAllAttachments(lastMessageContent);
 
   const database = Database.getInstance(env);
-  const userSettings = await database.getUserSettings(user?.id);
 
-  const selectedModels = await selectModels(
-    env,
-    lastMessageContentText,
-    allAttachments,
-    budget_constraint,
-    user,
-    options.completion_id,
-    requestedModel,
-    use_multi_model,
-  );
+  // Parallelize independent operations for better performance
+  const [userSettings, selectedModels] = await Promise.all([
+    database.getUserSettings(user?.id),
+    selectModels(
+      env,
+      lastMessageContentText,
+      allAttachments,
+      budget_constraint,
+      user,
+      options.completion_id,
+      requestedModel,
+      use_multi_model,
+    ),
+  ]);
 
   const primaryModelName = selectedModels[0];
   const primaryModelConfig = getModelConfig(primaryModelName);
@@ -157,17 +160,26 @@ async function prepareRequestData(options: CoreChatOptions) {
   const currentMode = mode;
   const finalUserMessage = sanitiseInput(lastMessageContentText);
 
+  // Initialize embedding and guardrails in parallel if needed
+  const initPromises: Promise<any>[] = [];
+  
   const embedding = Embedding.getInstance(env, user, userSettings);
+  
+  let finalMessagePromise: Promise<string>;
+  if (use_rag === true) {
+    finalMessagePromise = embedding.augmentPrompt(
+      finalUserMessage,
+      rag_options,
+      env,
+      user?.id,
+    );
+  } else {
+    finalMessagePromise = Promise.resolve(finalUserMessage);
+  }
 
-  const finalMessage =
-    use_rag === true
-      ? await embedding.augmentPrompt(
-          finalUserMessage,
-          rag_options,
-          env,
-          user?.id,
-        )
-      : finalUserMessage;
+  const guardrails = Guardrails.getInstance(env, user, userSettings);
+
+  const [finalMessage] = await Promise.all([finalMessagePromise]);
 
   const messageWithContext =
     markdownAttachments.length > 0
@@ -190,7 +202,6 @@ async function prepareRequestData(options: CoreChatOptions) {
     primaryModelConfig,
   );
 
-  const guardrails = Guardrails.getInstance(env, user, userSettings);
   const inputValidation = await guardrails.validateInput(
     messageWithContext,
     user?.id,

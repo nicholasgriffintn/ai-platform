@@ -22,6 +22,7 @@ export class ConversationManager {
   private user?: User | null;
   private anonymousUser?: AnonymousUser | null;
   private usageManager?: UsageManager;
+  private static usageManagerCache = new Map<string, UsageManager>();
 
   private constructor(
     database: Database,
@@ -38,7 +39,22 @@ export class ConversationManager {
     this.platform = platform || "api";
     this.store = store ?? true;
 
-    this.usageManager = new UsageManager(database, user, anonymousUser);
+    this.usageManager = this.getOrCreateUsageManager(database, user, anonymousUser);
+  }
+
+  private getOrCreateUsageManager(
+    database: Database,
+    user?: User | null,
+    anonymousUser?: AnonymousUser | null,
+  ): UsageManager {
+    const cacheKey = `${user?.id || 'null'}-${anonymousUser?.id || 'null'}`;
+    
+    if (!ConversationManager.usageManagerCache.has(cacheKey)) {
+      const usageManager = new UsageManager(database, user, anonymousUser);
+      ConversationManager.usageManagerCache.set(cacheKey, usageManager);
+    }
+    
+    return ConversationManager.usageManagerCache.get(cacheKey)!;
   }
 
   public static getInstance({
@@ -73,7 +89,7 @@ export class ConversationManager {
       ConversationManager.instance.platform = platform;
       ConversationManager.instance.store = store ?? true;
 
-      ConversationManager.instance.usageManager = new UsageManager(
+      ConversationManager.instance.usageManager = ConversationManager.instance.getOrCreateUsageManager(
         database,
         user,
         anonymousUser,

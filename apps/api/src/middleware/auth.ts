@@ -13,6 +13,54 @@ const logger = getLogger({ prefix: "AUTH_MIDDLEWARE" });
 const ANONYMOUS_ID_COOKIE = "anon_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
+// Simple in-memory cache for bot detection results
+const botCache = new Map<string, boolean>();
+const BOT_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const botCacheTimestamps = new Map<string, number>();
+
+function isBotCached(userAgent: string): boolean {
+  const now = Date.now();
+  const timestamp = botCacheTimestamps.get(userAgent);
+  
+  if (timestamp && (now - timestamp) < BOT_CACHE_TTL) {
+    return botCache.get(userAgent) || false;
+  }
+
+  // Clean cache entry if expired
+  if (timestamp) {
+    botCache.delete(userAgent);
+    botCacheTimestamps.delete(userAgent);
+  }
+
+  let isBotUser: boolean;
+  try {
+    isBotUser = isbot(userAgent);
+  } catch (error) {
+    logger.error("Failed to check if user is a bot:", { error });
+    isBotUser = true; // Default to bot if detection fails
+  }
+
+  // Cache the result
+  botCache.set(userAgent, isBotUser);
+  botCacheTimestamps.set(userAgent, now);
+  
+  return isBotUser;
+}
+
+function parseCookies(cookieHeader: string): Record<string, string> {
+  const cookies: Record<string, string> = {};
+  if (!cookieHeader) return cookies;
+
+  for (const cookie of cookieHeader.split(';')) {
+    const [name, ...rest] = cookie.trim().split('=');
+    if (name && rest.length > 0) {
+      cookies[name] = rest.join('=');
+    }
+  }
+
+  return cookies;
+}
+
 /**
  * Authentication middleware that supports session-based, token-based, and JWT auth
  * Also handles anonymous user tracking for unauthenticated requests
@@ -29,17 +77,15 @@ export async function authMiddleware(context: Context, next: Next) {
 
   const userAgent = context.req.header("user-agent") || "unknown";
 
-  let isBotUser = false;
-
+  // Early return for unknown user agents (likely bots)
   if (userAgent === "unknown") {
-    isBotUser = true;
-  } else {
-    try {
-      isBotUser = isbot(userAgent);
-    } catch (error) {
-      console.error(error);
-      logger.error("Failed to check if user is a bot:", { error });
-    }
+    return next();
+  }
+
+  // Check if it's a bot with caching
+  const isBotUser = isBotCached(userAgent);
+  if (isBotUser) {
+    return next();
   }
 
   const hasJwtSecret = !!context.env.JWT_SECRET;
@@ -51,50 +97,67 @@ export async function authMiddleware(context: Context, next: Next) {
   const authFromHeaders = context.req.header("Authorization");
   const authToken = authFromQuery || authFromHeaders?.split("Bearer ")[1];
 
-  const cookies = context.req.header("Cookie") || "";
-  const sessionMatch = cookies.match(/session=([^;]+)/);
-  const sessionId = sessionMatch ? sessionMatch[1] : null;
+  const cookies = parseCookies(context.req.header("Cookie") || "");
+  const sessionId = cookies.session;
+  const anonymousId = cookies[ANONYMOUS_ID_COOKIE];
 
   const isJwtToken = authToken?.split(".").length === 3;
   const database = Database.getInstance(context.env);
 
+  // Parallelize authentication checks for better performance
+  const authPromises: Promise<User | null>[] = [];
+
   if (sessionId) {
-    user = await getUserBySessionId(database, sessionId);
-  } else if (authToken?.startsWith("ak_")) {
-    try {
-      const userId = await database.findUserIdByApiKey(authToken);
-      if (userId) {
-        const foundUser = await database.getUserById(userId);
-        if (foundUser) {
-          user = foundUser;
-        }
-      }
-    } catch (error) {
-      logger.error("API Key authentication check failed:", { error });
-    }
-  } else if (isJwtToken && hasJwtSecret) {
-    try {
-      user = await getUserByJwtToken(
-        context.env,
-        authToken!,
-        context.env.JWT_SECRET!,
-      );
-    } catch (error) {
-      logger.error("JWT authentication failed:", { error });
-    }
+    authPromises.push(getUserBySessionId(database, sessionId));
   }
 
+  if (authToken?.startsWith("ak_")) {
+    authPromises.push(
+      (async () => {
+        try {
+          const userId = await database.findUserIdByApiKey(authToken);
+          if (userId) {
+            const foundUser = await database.getUserById(userId);
+            return foundUser || null;
+          }
+          return null;
+        } catch (error) {
+          logger.error("API Key authentication check failed:", { error });
+          return null;
+        }
+      })()
+    );
+  }
+
+  if (isJwtToken && hasJwtSecret) {
+    authPromises.push(
+      (async () => {
+        try {
+          return await getUserByJwtToken(
+            context.env,
+            authToken!,
+            context.env.JWT_SECRET!,
+          );
+        } catch (error) {
+          logger.error("JWT authentication failed:", { error });
+          return null;
+        }
+      })()
+    );
+  }
+
+  // Wait for all authentication methods to complete
+  if (authPromises.length > 0) {
+    const authResults = await Promise.allSettled(authPromises);
+    const fulfilledResult = authResults.find(result => 
+      result.status === 'fulfilled' && result.value !== null
+    );
+    user = fulfilledResult?.status === 'fulfilled' ? fulfilledResult.value : null;
+  }
+
+  // Handle anonymous user tracking only if no authenticated user found
   if (!user) {
     try {
-      if (isBotUser) {
-        return next();
-      }
-
-      const anonymousIdMatch = cookies.match(
-        new RegExp(`${ANONYMOUS_ID_COOKIE}=([^;]+)`),
-      );
-      const anonymousId = anonymousIdMatch ? anonymousIdMatch[1] : null;
-
       if (anonymousId) {
         anonymousUser = await database.getAnonymousUserById(anonymousId);
       }

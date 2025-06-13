@@ -58,32 +58,93 @@ const modelConfig: ModelConfig = {
   ...v0ModelConfig,
 };
 
+// Cache for frequently accessed model configurations
+const modelConfigCache = new Map<string, any>();
+const userModelCache = new Map<string, Record<string, ModelConfigItem>>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const cacheTimestamps = new Map<string, number>();
+
+function isCacheValid(key: string): boolean {
+  const timestamp = cacheTimestamps.get(key);
+  return timestamp ? (Date.now() - timestamp) < CACHE_TTL : false;
+}
+
+function setCacheEntry(key: string, value: any): void {
+  modelConfigCache.set(key, value);
+  cacheTimestamps.set(key, Date.now());
+}
+
 export function getModelConfig(model?: string) {
-  return (model && modelConfig[model]) || modelConfig[defaultModel];
+  const key = model || defaultModel;
+  
+  if (modelConfigCache.has(key) && isCacheValid(key)) {
+    return modelConfigCache.get(key);
+  }
+  
+  const config = (model && modelConfig[model]) || modelConfig[defaultModel];
+  setCacheEntry(key, config);
+  
+  return config;
 }
 
 export function getModelConfigByModel(model: string) {
-  return model && modelConfig[model as keyof typeof modelConfig];
+  const cacheKey = `by-model-${model}`;
+  
+  if (modelConfigCache.has(cacheKey) && isCacheValid(cacheKey)) {
+    return modelConfigCache.get(cacheKey);
+  }
+  
+  const config = model && modelConfig[model as keyof typeof modelConfig];
+  setCacheEntry(cacheKey, config);
+  
+  return config;
 }
 
 export function getMatchingModel(model: string = defaultModel) {
-  return model && getModelConfig(model).matchingModel;
+  const cacheKey = `matching-${model}`;
+  
+  if (modelConfigCache.has(cacheKey) && isCacheValid(cacheKey)) {
+    return modelConfigCache.get(cacheKey);
+  }
+  
+  const matchingModel = model && getModelConfig(model).matchingModel;
+  setCacheEntry(cacheKey, matchingModel);
+  
+  return matchingModel;
 }
 
 export function getModelConfigByMatchingModel(matchingModel: string) {
+  const cacheKey = `by-matching-${matchingModel}`;
+  
+  if (modelConfigCache.has(cacheKey) && isCacheValid(cacheKey)) {
+    return modelConfigCache.get(cacheKey);
+  }
+  
+  let result = null;
   for (const model in modelConfig) {
     if (
       modelConfig[model as keyof typeof modelConfig].matchingModel ===
       matchingModel
     ) {
-      return modelConfig[model as keyof typeof modelConfig];
+      result = modelConfig[model as keyof typeof modelConfig];
+      break;
     }
   }
-  return null;
+  
+  setCacheEntry(cacheKey, result);
+  return result;
 }
 
+// Cache frequently accessed model lists
+let cachedModels: typeof modelConfig | null = null;
+let cachedFreeModels: typeof modelConfig | null = null;
+let cachedFeaturedModels: typeof modelConfig | null = null;
+let cachedRouterModels: typeof modelConfig | null = null;
+
 export function getModels() {
-  return Object.entries(modelConfig).reduce(
+  if (cachedModels) return cachedModels;
+  
+  cachedModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
       if (!model.beta) {
         acc[key] = model;
@@ -92,10 +153,14 @@ export function getModels() {
     },
     {} as typeof modelConfig,
   );
+  
+  return cachedModels;
 }
 
 export function getFreeModels() {
-  return Object.entries(modelConfig).reduce(
+  if (cachedFreeModels) return cachedFreeModels;
+  
+  cachedFreeModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
       if (model.isFree) {
         acc[key] = model;
@@ -104,10 +169,14 @@ export function getFreeModels() {
     },
     {} as typeof modelConfig,
   );
+  
+  return cachedFreeModels;
 }
 
 export function getFeaturedModels() {
-  return Object.entries(modelConfig).reduce(
+  if (cachedFeaturedModels) return cachedFeaturedModels;
+  
+  cachedFeaturedModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
       if (model.isFeatured) {
         acc[key] = model;
@@ -116,10 +185,14 @@ export function getFeaturedModels() {
     },
     {} as typeof modelConfig,
   );
+  
+  return cachedFeaturedModels;
 }
 
 export function getIncludedInRouterModels() {
-  return Object.entries(modelConfig).reduce(
+  if (cachedRouterModels) return cachedRouterModels;
+  
+  cachedRouterModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
       if (model.includedInRouter) {
         acc[key] = model;
@@ -128,6 +201,8 @@ export function getIncludedInRouterModels() {
     },
     {} as typeof modelConfig,
   );
+  
+  return cachedRouterModels;
 }
 
 export function getModelsByCapability(capability: string) {
@@ -163,6 +238,13 @@ export async function filterModelsForUserAccess(
   env: IEnv,
   userId?: number,
 ): Promise<Record<string, ModelConfigItem>> {
+  // Use caching for user-specific model access
+  const cacheKey = `user-models-${userId || 'anonymous'}`;
+  
+  if (userModelCache.has(cacheKey) && isCacheValid(cacheKey)) {
+    return userModelCache.get(cacheKey)!;
+  }
+
   const allFreeModels = getFreeModels();
   const alwaysEnabledProvidersEnvVar = env.ALWAYS_ENABLED_PROVIDERS;
   const alwaysEnabledProviders = new Set(
@@ -189,6 +271,10 @@ export async function filterModelsForUserAccess(
         filteredModels[modelId] = allModels[modelId];
       }
     }
+    
+    userModelCache.set(cacheKey, filteredModels);
+    cacheTimestamps.set(cacheKey, Date.now());
+    
     return filteredModels;
   }
 
@@ -213,6 +299,9 @@ export async function filterModelsForUserAccess(
         filteredModels[modelId] = model;
       }
     }
+
+    userModelCache.set(cacheKey, filteredModels);
+    cacheTimestamps.set(cacheKey, Date.now());
 
     return filteredModels;
   } catch (error) {

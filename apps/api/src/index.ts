@@ -71,18 +71,23 @@ app.use(
   }),
 );
 
-app.use("*", loggerMiddleware);
-
+// Move CSRF before other middleware to validate early
 app.use(
   csrf({
     origin,
   }),
 );
 
+// Logger middleware for request tracking
+app.use("*", loggerMiddleware);
+
+// Authentication middleware - must come before rate limiting to identify users
 app.use("*", authMiddleware);
 
+// Rate limiting middleware - moved after auth to identify user types
 app.use("*", rateLimit);
 
+// Auto-register dynamic apps once during startup
 autoRegisterDynamicApps();
 
 app.get(
