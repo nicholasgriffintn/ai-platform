@@ -27,10 +27,12 @@
 - **5-minute TTL** for all model-related cache entries
 - **Fire-and-forget** cache operations to prevent blocking
 - **Automatic fallback** to in-memory static configs when KV unavailable
+- **Automatic cache invalidation** when users change provider settings
 
 **Benefits**:
 - **60-80% improvement** in model configuration lookups
 - **Persistent user model access caching** across sessions
+- **Immediate updates** when user settings change
 - **Reduced compute overhead** for model list generation
 - **Serverless-compatible** caching strategy
 
@@ -53,6 +55,16 @@
 - **Graceful degradation**: Application works normally if KV is unavailable
 - **Async operations**: Cache writes don't block request processing
 - **Structured keys**: Prefixed cache keys for easy management (`bot:`, `model-config:`, `user-models:`)
+- **Smart invalidation**: User-specific caches cleared when settings change
+
+### Cache Invalidation Strategy
+- **Automatic clearing**: User model cache invalidated when provider settings change
+- **Non-blocking**: Cache invalidation happens asynchronously
+- **Comprehensive logging**: All invalidation operations logged for monitoring
+- **Endpoints that trigger invalidation**:
+  - `PUT /user/settings` - Updates user preferences and enabled models
+  - `POST /user/store-provider-api-key` - Adds/updates provider API keys
+  - `POST /user/sync-providers` - Syncs provider settings
 
 ### KV Namespace Configuration
 ```json
