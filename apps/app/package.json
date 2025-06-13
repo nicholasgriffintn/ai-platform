@@ -63,7 +63,7 @@
     "@capacitor/cli": "7.3.0",
     "@capacitor/core": "7.3.0",
     "@capacitor/ios": "7.3.0",
-    "@cloudflare/workers-types": "4.20250610.0",
+    "@cloudflare/workers-types": "4.20250612.0",
     "@react-router/dev": "7.6.2",
     "@simplewebauthn/types": "^12.0.0",
     "@tailwindcss/typography": "0.5.16",
