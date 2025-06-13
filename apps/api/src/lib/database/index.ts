@@ -36,7 +36,6 @@ export class Database {
     if (!Database.instance) {
       Database.instance = new Database(env);
     } else {
-      // Update env reference for current request
       Database.instance.env = env;
       Database.instance.repositories = RepositoryManager.getInstance(env);
     }

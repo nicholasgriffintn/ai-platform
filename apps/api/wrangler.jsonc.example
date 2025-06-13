@@ -63,6 +63,13 @@
 			"preview_database_id": "<PREVIEW_DATABASE_ID>"
 		}
 	],
+	"kv_namespaces": [
+		{
+			"binding": "CACHE",
+			"id": "<CACHE_ID>",
+			"preview_id": "<PREVIEW_CACHE_ID>"
+		}
+	],
   "unsafe": {
     "bindings": [
       {

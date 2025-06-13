@@ -116,7 +116,7 @@ async function prepareRequestData(options: CoreChatOptions) {
   ]);
 
   const primaryModelName = selectedModels[0];
-  const primaryModelConfig = getModelConfig(primaryModelName);
+  const primaryModelConfig = getModelConfig(primaryModelName, env);
 
   if (!primaryModelConfig) {
     throw new AssistantError(
@@ -130,7 +130,7 @@ async function prepareRequestData(options: CoreChatOptions) {
 
   const modelConfigs: ModelConfigInfo[] = selectedModels.reduce(
     (configs, model) => {
-      const config = getModelConfig(model);
+      const config = getModelConfig(model, env);
       if (!config) {
         throw new AssistantError(
           "Invalid model configuration",

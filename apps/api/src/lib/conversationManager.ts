@@ -13,8 +13,6 @@ import { type UsageLimits, UsageManager } from "./usageManager";
 
 const logger = getLogger({ prefix: "CONVERSATION_MANAGER" });
 
-const MAX_USAGE_MANAGER_CACHE_SIZE = 100;
-
 export class ConversationManager {
   private static instance: ConversationManager;
   private database: Database;
@@ -24,7 +22,6 @@ export class ConversationManager {
   private user?: User | null;
   private anonymousUser?: AnonymousUser | null;
   private usageManager?: UsageManager;
-  private static usageManagerCache = new Map<string, UsageManager>();
 
   private constructor(
     database: Database,
@@ -41,28 +38,7 @@ export class ConversationManager {
     this.platform = platform || "api";
     this.store = store ?? true;
 
-    this.usageManager = this.getOrCreateUsageManager(database, user, anonymousUser);
-  }
-
-  private getOrCreateUsageManager(
-    database: Database,
-    user?: User | null,
-    anonymousUser?: AnonymousUser | null,
-  ): UsageManager {
-    const cacheKey = `${user?.id || 'null'}-${anonymousUser?.id || 'null'}`;
-    
-    if (!ConversationManager.usageManagerCache.has(cacheKey)) {
-      // Simple cache size management
-      if (ConversationManager.usageManagerCache.size >= MAX_USAGE_MANAGER_CACHE_SIZE) {
-        const firstKey = ConversationManager.usageManagerCache.keys().next().value;
-        ConversationManager.usageManagerCache.delete(firstKey);
-      }
-      
-      const usageManager = new UsageManager(database, user, anonymousUser);
-      ConversationManager.usageManagerCache.set(cacheKey, usageManager);
-    }
-    
-    return ConversationManager.usageManagerCache.get(cacheKey)!;
+    this.usageManager = new UsageManager(database, user, anonymousUser);
   }
 
   public static getInstance({
@@ -97,7 +73,7 @@ export class ConversationManager {
       ConversationManager.instance.platform = platform;
       ConversationManager.instance.store = store ?? true;
 
-      ConversationManager.instance.usageManager = ConversationManager.instance.getOrCreateUsageManager(
+      ConversationManager.instance.usageManager = new UsageManager(
         database,
         user,
         anonymousUser,

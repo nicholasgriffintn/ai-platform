@@ -2,6 +2,7 @@ import type { Context, Next } from "hono";
 import { isbot } from "isbot";
 
 import { Database } from "~/lib/database";
+import { KVCache } from "~/lib/cache";
 import { getUserByJwtToken } from "~/services/auth/jwt";
 import { getUserBySessionId } from "~/services/auth/user";
 import type { AnonymousUser, User } from "~/types";
@@ -12,23 +13,24 @@ const logger = getLogger({ prefix: "AUTH_MIDDLEWARE" });
 
 const ANONYMOUS_ID_COOKIE = "anon_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
-const BOT_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-const MAX_BOT_CACHE_SIZE = 1000;
+const BOT_CACHE_TTL = 300; // 5 minutes
 
-const botCache = new Map<string, boolean>();
-const botCacheTimestamps = new Map<string, number>();
+let botCache: KVCache | null = null;
 
-function isBotCached(userAgent: string): boolean {
-  const now = Date.now();
-  const timestamp = botCacheTimestamps.get(userAgent);
-  
-  if (timestamp && (now - timestamp) < BOT_CACHE_TTL) {
-    return botCache.get(userAgent) || false;
+function getBotCache(kv: any): KVCache {
+  if (!botCache) {
+    botCache = new KVCache(kv, BOT_CACHE_TTL);
   }
+  return botCache;
+}
 
-  if (timestamp) {
-    botCache.delete(userAgent);
-    botCacheTimestamps.delete(userAgent);
+async function isBotCached(userAgent: string, kv: any): Promise<boolean> {
+  const cache = getBotCache(kv);
+  const cacheKey = KVCache.createKey("bot", userAgent);
+  
+  const cached = await cache.get<boolean>(cacheKey);
+  if (cached !== null) {
+    return cached;
   }
 
   let isBotUser: boolean;
@@ -39,15 +41,10 @@ function isBotCached(userAgent: string): boolean {
     isBotUser = true;
   }
 
-  // Prevent cache from growing too large
-  if (botCache.size >= MAX_BOT_CACHE_SIZE) {
-    const oldestKey = botCacheTimestamps.keys().next().value;
-    botCache.delete(oldestKey);
-    botCacheTimestamps.delete(oldestKey);
-  }
-
-  botCache.set(userAgent, isBotUser);
-  botCacheTimestamps.set(userAgent, now);
+  // Cache the result asynchronously (fire and forget)
+  cache.set(cacheKey, isBotUser).catch(error => {
+    logger.error("Failed to cache bot detection result", { error, userAgent });
+  });
   
   return isBotUser;
 }
@@ -88,7 +85,7 @@ export async function authMiddleware(context: Context, next: Next) {
   }
 
   // Check if it's a bot with caching
-  const isBotUser = isBotCached(userAgent);
+  const isBotUser = await isBotCached(userAgent, context.env.CACHE);
   if (isBotUser) {
     return next();
   }

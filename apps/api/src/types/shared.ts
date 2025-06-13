@@ -2,6 +2,7 @@ import type {
   Ai,
   AnalyticsEngineDataset,
   D1Database,
+  KVNamespace,
   Vectorize,
 } from "@cloudflare/workers-types";
 
@@ -18,6 +19,7 @@ export interface IEnv {
   AI: Ai;
   VECTOR_DB: Vectorize;
   DB: D1Database;
+  CACHE: KVNamespace;
   ASSETS_BUCKET: any;
   ACCOUNT_ID: string;
   ANTHROPIC_API_KEY?: string;

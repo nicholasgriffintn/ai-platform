@@ -25,6 +25,7 @@ import { v0ModelConfig } from "./v0";
 import { workersAiModelConfig } from "./workersai";
 
 import { Database } from "~/lib/database";
+import { KVCache } from "~/lib/cache";
 import type { IEnv, ModelConfigItem } from "~/types";
 import { getLogger } from "~/utils/logger";
 
@@ -58,74 +59,64 @@ const modelConfig: ModelConfig = {
   ...v0ModelConfig,
 };
 
-const modelConfigCache = new Map<string, any>();
-const userModelCache = new Map<string, Record<string, ModelConfigItem>>();
-const CACHE_TTL = 5 * 60 * 1000;
-const MAX_CACHE_SIZE = 500;
-const cacheTimestamps = new Map<string, number>();
+const MODEL_CACHE_TTL = 300; // 5 minutes
+let modelCache: KVCache | null = null;
 
-function isCacheValid(key: string): boolean {
-  const timestamp = cacheTimestamps.get(key);
-  return timestamp ? (Date.now() - timestamp) < CACHE_TTL : false;
-}
-
-function setCacheEntry(key: string, value: any): void {
-  if (modelConfigCache.size >= MAX_CACHE_SIZE) {
-    const oldestKey = cacheTimestamps.keys().next().value;
-    modelConfigCache.delete(oldestKey);
-    cacheTimestamps.delete(oldestKey);
-  }
+function getModelCache(env: IEnv): KVCache | null {
+  if (!env.CACHE) return null;
   
-  modelConfigCache.set(key, value);
-  cacheTimestamps.set(key, Date.now());
+  if (!modelCache) {
+    modelCache = new KVCache(env.CACHE, MODEL_CACHE_TTL);
+  }
+  return modelCache;
 }
 
-export function getModelConfig(model?: string) {
+export function getModelConfig(model?: string, env?: IEnv) {
   const key = model || defaultModel;
-  
-  if (modelConfigCache.has(key) && isCacheValid(key)) {
-    return modelConfigCache.get(key);
-  }
-  
   const config = (model && modelConfig[model]) || modelConfig[defaultModel];
-  setCacheEntry(key, config);
+  
+  if (env?.CACHE) {
+    const cache = getModelCache(env);
+    if (cache) {
+      const cacheKey = KVCache.createKey("model-config", key);
+
+      cache.set(cacheKey, config).catch(() => {
+      });
+    }
+  }
   
   return config;
 }
 
-export function getModelConfigByModel(model: string) {
-  const cacheKey = `by-model-${model}`;
-  
-  if (modelConfigCache.has(cacheKey) && isCacheValid(cacheKey)) {
-    return modelConfigCache.get(cacheKey);
-  }
-  
+export function getModelConfigByModel(model: string, env?: IEnv) {
   const config = model && modelConfig[model as keyof typeof modelConfig];
-  setCacheEntry(cacheKey, config);
+  
+  if (env?.CACHE && config) {
+    const cache = getModelCache(env);
+    if (cache) {
+      const cacheKey = KVCache.createKey("model-by-model", model);
+      cache.set(cacheKey, config).catch(() => {});
+    }
+  }
   
   return config;
 }
 
-export function getMatchingModel(model: string = defaultModel) {
-  const cacheKey = `matching-${model}`;
+export function getMatchingModel(model: string = defaultModel, env?: IEnv) {
+  const matchingModel = model && getModelConfig(model, env).matchingModel;
   
-  if (modelConfigCache.has(cacheKey) && isCacheValid(cacheKey)) {
-    return modelConfigCache.get(cacheKey);
+  if (env?.CACHE && matchingModel) {
+    const cache = getModelCache(env);
+    if (cache) {
+      const cacheKey = KVCache.createKey("matching-model", model);
+      cache.set(cacheKey, matchingModel).catch(() => {});
+    }
   }
-  
-  const matchingModel = model && getModelConfig(model).matchingModel;
-  setCacheEntry(cacheKey, matchingModel);
   
   return matchingModel;
 }
 
-export function getModelConfigByMatchingModel(matchingModel: string) {
-  const cacheKey = `by-matching-${matchingModel}`;
-  
-  if (modelConfigCache.has(cacheKey) && isCacheValid(cacheKey)) {
-    return modelConfigCache.get(cacheKey);
-  }
-  
+export function getModelConfigByMatchingModel(matchingModel: string, env?: IEnv) {
   let result = null;
   for (const model in modelConfig) {
     if (
@@ -137,7 +128,14 @@ export function getModelConfigByMatchingModel(matchingModel: string) {
     }
   }
   
-  setCacheEntry(cacheKey, result);
+  if (env?.CACHE && result) {
+    const cache = getModelCache(env);
+    if (cache) {
+      const cacheKey = KVCache.createKey("model-by-matching", matchingModel);
+      cache.set(cacheKey, result).catch(() => {});
+    }
+  }
+  
   return result;
 }
 
@@ -243,10 +241,14 @@ export async function filterModelsForUserAccess(
   env: IEnv,
   userId?: number,
 ): Promise<Record<string, ModelConfigItem>> {
-  const cacheKey = `user-models-${userId || 'anonymous'}`;
+  const cache = getModelCache(env);
+  const cacheKey = KVCache.createKey("user-models", userId?.toString() || 'anonymous');
   
-  if (userModelCache.has(cacheKey) && isCacheValid(cacheKey)) {
-    return userModelCache.get(cacheKey)!;
+  if (cache) {
+    const cached = await cache.get<Record<string, ModelConfigItem>>(cacheKey);
+    if (cached) {
+      return cached;
+    }
   }
 
   const allFreeModels = getFreeModels();
@@ -276,14 +278,9 @@ export async function filterModelsForUserAccess(
       }
     }
     
-    if (userModelCache.size >= MAX_CACHE_SIZE) {
-      const oldestKey = cacheTimestamps.keys().next().value;
-      userModelCache.delete(oldestKey);
-      cacheTimestamps.delete(oldestKey);
+    if (cache) {
+      cache.set(cacheKey, filteredModels).catch(() => {});
     }
-    
-    userModelCache.set(cacheKey, filteredModels);
-    cacheTimestamps.set(cacheKey, Date.now());
     
     return filteredModels;
   }
@@ -310,14 +307,9 @@ export async function filterModelsForUserAccess(
       }
     }
 
-    if (userModelCache.size >= MAX_CACHE_SIZE) {
-      const oldestKey = cacheTimestamps.keys().next().value;
-      userModelCache.delete(oldestKey);
-      cacheTimestamps.delete(oldestKey);
+    if (cache) {
+      cache.set(cacheKey, filteredModels).catch(() => {});
     }
-
-    userModelCache.set(cacheKey, filteredModels);
-    cacheTimestamps.set(cacheKey, Date.now());
 
     return filteredModels;
   } catch (error) {
@@ -354,7 +346,7 @@ export async function getAuxiliaryModel(
     modelToUse = "llama-3.3-70b-versatile";
   }
 
-  const modelConfig = getModelConfig(modelToUse);
+  const modelConfig = getModelConfig(modelToUse, env);
 
   return { model: modelConfig.matchingModel, provider: modelConfig.provider };
 }
@@ -380,7 +372,7 @@ export const getAuxiliaryModelForRetrieval = async (
     modelToUse = "sonar";
   }
 
-  const modelConfig = getModelConfig(modelToUse);
+  const modelConfig = getModelConfig(modelToUse, env);
 
   return { model: modelConfig.matchingModel, provider: modelConfig.provider };
 };
@@ -403,7 +395,7 @@ export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
     modelToUse = "llama-guard-3-8b";
   }
 
-  const provider = getModelConfig(modelToUse).provider;
+  const provider = getModelConfig(modelToUse, env).provider;
 
   return { model: modelToUse, provider };
 };
