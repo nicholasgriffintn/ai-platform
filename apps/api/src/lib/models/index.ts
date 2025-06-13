@@ -59,7 +59,8 @@ const modelConfig: ModelConfig = {
   ...v0ModelConfig,
 };
 
-const MODEL_CACHE_TTL = 300; // 5 minutes
+const MODEL_CACHE_TTL = 14400; // 4 hours - model configs are mostly static
+const USER_MODEL_CACHE_TTL = 3600; // 1 hour - user access, but invalidated when settings change
 let modelCache: KVCache | null = null;
 
 function getModelCache(env: IEnv): KVCache | null {
@@ -69,6 +70,12 @@ function getModelCache(env: IEnv): KVCache | null {
     modelCache = new KVCache(env.CACHE, MODEL_CACHE_TTL);
   }
   return modelCache;
+}
+
+function getUserModelCache(env: IEnv): KVCache | null {
+  if (!env.CACHE) return null;
+  
+  return new KVCache(env.CACHE, USER_MODEL_CACHE_TTL);
 }
 
 export function getModelConfig(model?: string, env?: IEnv) {
@@ -241,7 +248,7 @@ export async function filterModelsForUserAccess(
   env: IEnv,
   userId?: number,
 ): Promise<Record<string, ModelConfigItem>> {
-  const cache = getModelCache(env);
+  const cache = getUserModelCache(env);
   const cacheKey = KVCache.createKey("user-models", userId?.toString() || 'anonymous');
   
   if (cache) {

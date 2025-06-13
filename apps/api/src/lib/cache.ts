@@ -10,7 +10,7 @@ export interface CacheOptions {
 
 export class KVCache {
   private kv: KVNamespace;
-  private defaultTTL = 300; // 5 minutes default
+  private defaultTTL = 7200; // 2 hours default
 
   constructor(kv: KVNamespace, defaultTTL?: number) {
     this.kv = kv;
