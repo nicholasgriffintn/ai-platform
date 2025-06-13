@@ -31,6 +31,8 @@ export interface ChatStore {
   // UI state
   isMobile: boolean;
   setIsMobile: (isMobile: boolean) => void;
+  isMobileLoading: boolean;
+  setIsMobileLoading: (isMobileLoading: boolean) => void;
   sidebarVisible: boolean;
   setSidebarVisible: (visible: boolean) => void;
   showLoginModal: boolean;
@@ -83,6 +85,8 @@ export const useChatStore = create<ChatStore>()(
       clearCurrentConversation: () => set({ currentConversationId: undefined }),
 
       // UI state
+      isMobileLoading: true,
+      setIsMobileLoading: (isMobileLoading) => set({ isMobileLoading }),
       isMobile: false,
       setIsMobile: (isMobile) => set({ isMobile }),
       sidebarVisible: true,

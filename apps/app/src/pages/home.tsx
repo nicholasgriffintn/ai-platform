@@ -18,14 +18,8 @@ export function meta() {
 }
 
 export default function Home() {
-  const {
-    initializeStore,
-    setSidebarVisible,
-    setIsMobile,
-    showSearch,
-    setShowSearch,
-    setChatInput,
-  } = useChatStore();
+  const { initializeStore, showSearch, setShowSearch, setChatInput } =
+    useChatStore();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: We only want to initialize the store when the component mounts
   useEffect(() => {
@@ -43,18 +37,6 @@ export default function Home() {
 
     init();
   }, []);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      const isMobile = window.matchMedia("(max-width: 768px)").matches;
-      setIsMobile(isMobile);
-      setSidebarVisible(!isMobile);
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, [setSidebarVisible, setIsMobile]);
 
   const chatSidebar = <ChatSidebar />;
 

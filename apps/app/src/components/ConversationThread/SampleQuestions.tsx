@@ -350,7 +350,7 @@ interface SampleQuestionsProps {
 export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
   const { trackEvent } = useTrackEvent();
 
-  const { isMobile } = useChatStore();
+  const { isMobile, isMobileLoading } = useChatStore();
   const [questions, setQuestions] = useState<Question[]>([]);
 
   const refreshQuestions = useCallback(
@@ -358,7 +358,7 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
       const shuffledCategories = [...categories].sort(
         () => Math.random() - 0.5,
       );
-      const numQuestions = isMobile ? 1 : 4;
+      const numQuestions = 4;
       const selectedCategories = shuffledCategories.slice(0, numQuestions);
 
       const selected = selectedCategories.map((category) => {
@@ -384,7 +384,7 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
       }
       setQuestions(selected);
     },
-    [isMobile, trackEvent],
+    [trackEvent],
   );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
@@ -405,6 +405,10 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
     setInput(question.question);
   };
 
+  if (isMobileLoading) {
+    return null;
+  }
+
   return (
     <div className="mt-8 max-w-xl mx-auto">
       <div className="flex justify-between items-center mb-3">
@@ -422,13 +426,21 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
         </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {questions.map((q) => (
+        {isMobile ? (
           <QuestionOption
-            key={q.id}
-            questionData={q}
-            onClick={() => handleClick(q)}
+            key={questions[0].id}
+            questionData={questions[0]}
+            onClick={() => handleClick(questions[0])}
           />
-        ))}
+        ) : (
+          questions.map((q) => (
+            <QuestionOption
+              key={q.id}
+              questionData={q}
+              onClick={() => handleClick(q)}
+            />
+          ))
+        )}
       </div>
     </div>
   );
