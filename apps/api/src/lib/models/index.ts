@@ -24,8 +24,8 @@ import { togetherAiModelConfig } from "./together-ai";
 import { v0ModelConfig } from "./v0";
 import { workersAiModelConfig } from "./workersai";
 
-import { Database } from "~/lib/database";
 import { KVCache } from "~/lib/cache";
+import { Database } from "~/lib/database";
 import type { IEnv, ModelConfigItem } from "~/types";
 import { getLogger } from "~/utils/logger";
 
@@ -65,7 +65,7 @@ let modelCache: KVCache | null = null;
 
 function getModelCache(env: IEnv): KVCache | null {
   if (!env.CACHE) return null;
-  
+
   if (!modelCache) {
     modelCache = new KVCache(env.CACHE, MODEL_CACHE_TTL);
   }
@@ -74,30 +74,29 @@ function getModelCache(env: IEnv): KVCache | null {
 
 function getUserModelCache(env: IEnv): KVCache | null {
   if (!env.CACHE) return null;
-  
+
   return new KVCache(env.CACHE, USER_MODEL_CACHE_TTL);
 }
 
 export function getModelConfig(model?: string, env?: IEnv) {
   const key = model || defaultModel;
   const config = (model && modelConfig[model]) || modelConfig[defaultModel];
-  
+
   if (env?.CACHE) {
     const cache = getModelCache(env);
     if (cache) {
       const cacheKey = KVCache.createKey("model-config", key);
 
-      cache.set(cacheKey, config).catch(() => {
-      });
+      cache.set(cacheKey, config).catch(() => {});
     }
   }
-  
+
   return config;
 }
 
 export function getModelConfigByModel(model: string, env?: IEnv) {
   const config = model && modelConfig[model as keyof typeof modelConfig];
-  
+
   if (env?.CACHE && config) {
     const cache = getModelCache(env);
     if (cache) {
@@ -105,13 +104,13 @@ export function getModelConfigByModel(model: string, env?: IEnv) {
       cache.set(cacheKey, config).catch(() => {});
     }
   }
-  
+
   return config;
 }
 
 export function getMatchingModel(model: string = defaultModel, env?: IEnv) {
   const matchingModel = model && getModelConfig(model, env).matchingModel;
-  
+
   if (env?.CACHE && matchingModel) {
     const cache = getModelCache(env);
     if (cache) {
@@ -119,11 +118,14 @@ export function getMatchingModel(model: string = defaultModel, env?: IEnv) {
       cache.set(cacheKey, matchingModel).catch(() => {});
     }
   }
-  
+
   return matchingModel;
 }
 
-export function getModelConfigByMatchingModel(matchingModel: string, env?: IEnv) {
+export function getModelConfigByMatchingModel(
+  matchingModel: string,
+  env?: IEnv,
+) {
   let result = null;
   for (const model in modelConfig) {
     if (
@@ -134,7 +136,7 @@ export function getModelConfigByMatchingModel(matchingModel: string, env?: IEnv)
       break;
     }
   }
-  
+
   if (env?.CACHE && result) {
     const cache = getModelCache(env);
     if (cache) {
@@ -142,7 +144,7 @@ export function getModelConfigByMatchingModel(matchingModel: string, env?: IEnv)
       cache.set(cacheKey, result).catch(() => {});
     }
   }
-  
+
   return result;
 }
 
@@ -153,7 +155,7 @@ let cachedRouterModels: typeof modelConfig | null = null;
 
 export function getModels() {
   if (cachedModels) return cachedModels;
-  
+
   cachedModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
       if (!model.beta) {
@@ -163,13 +165,13 @@ export function getModels() {
     },
     {} as typeof modelConfig,
   );
-  
+
   return cachedModels;
 }
 
 export function getFreeModels() {
   if (cachedFreeModels) return cachedFreeModels;
-  
+
   cachedFreeModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
       if (model.isFree) {
@@ -179,13 +181,13 @@ export function getFreeModels() {
     },
     {} as typeof modelConfig,
   );
-  
+
   return cachedFreeModels;
 }
 
 export function getFeaturedModels() {
   if (cachedFeaturedModels) return cachedFeaturedModels;
-  
+
   cachedFeaturedModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
       if (model.isFeatured) {
@@ -195,13 +197,13 @@ export function getFeaturedModels() {
     },
     {} as typeof modelConfig,
   );
-  
+
   return cachedFeaturedModels;
 }
 
 export function getIncludedInRouterModels() {
   if (cachedRouterModels) return cachedRouterModels;
-  
+
   cachedRouterModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
       if (model.includedInRouter) {
@@ -211,7 +213,7 @@ export function getIncludedInRouterModels() {
     },
     {} as typeof modelConfig,
   );
-  
+
   return cachedRouterModels;
 }
 
@@ -249,8 +251,11 @@ export async function filterModelsForUserAccess(
   userId?: number,
 ): Promise<Record<string, ModelConfigItem>> {
   const cache = getUserModelCache(env);
-  const cacheKey = KVCache.createKey("user-models", userId?.toString() || 'anonymous');
-  
+  const cacheKey = KVCache.createKey(
+    "user-models",
+    userId?.toString() || "anonymous",
+  );
+
   if (cache) {
     const cached = await cache.get<Record<string, ModelConfigItem>>(cacheKey);
     if (cached) {
@@ -284,11 +289,11 @@ export async function filterModelsForUserAccess(
         filteredModels[modelId] = allModels[modelId];
       }
     }
-    
+
     if (cache) {
       cache.set(cacheKey, filteredModels).catch(() => {});
     }
-    
+
     return filteredModels;
   }
 

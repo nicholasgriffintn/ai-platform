@@ -3,8 +3,8 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
-import { Database } from "~/lib/database";
 import { KVCache } from "~/lib/cache";
+import { Database } from "~/lib/database";
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -30,7 +30,7 @@ let userCache: KVCache | null = null;
 
 function getUserCache(env: any): KVCache | null {
   if (!env.CACHE) return null;
-  
+
   if (!userCache) {
     userCache = new KVCache(env.CACHE);
   }
@@ -129,10 +129,13 @@ app.put(
     const cache = getUserCache(c.env);
     if (cache) {
       cache.clearUserModelCache(user.id.toString()).catch((error) => {
-        routeLogger.error("Failed to clear user model cache after settings update", { 
-          userId: user.id, 
-          error 
-        });
+        routeLogger.error(
+          "Failed to clear user model cache after settings update",
+          {
+            userId: user.id,
+            error,
+          },
+        );
       });
     }
 
@@ -259,11 +262,14 @@ app.post(
     const cache = getUserCache(c.env);
     if (cache) {
       cache.clearUserModelCache(user.id.toString()).catch((error) => {
-        routeLogger.error("Failed to clear user model cache after provider API key update", { 
-          userId: user.id, 
-          providerId,
-          error 
-        });
+        routeLogger.error(
+          "Failed to clear user model cache after provider API key update",
+          {
+            userId: user.id,
+            providerId,
+            error,
+          },
+        );
       });
     }
 
@@ -362,10 +368,13 @@ app.post(
     const cache = getUserCache(c.env);
     if (cache) {
       cache.clearUserModelCache(user.id.toString()).catch((error) => {
-        routeLogger.error("Failed to clear user model cache after provider sync", { 
-          userId: user.id, 
-          error 
-        });
+        routeLogger.error(
+          "Failed to clear user model cache after provider sync",
+          {
+            userId: user.id,
+            error,
+          },
+        );
       });
     }
 

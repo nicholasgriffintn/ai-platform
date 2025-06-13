@@ -160,7 +160,7 @@ async function prepareRequestData(options: CoreChatOptions) {
   const finalUserMessage = sanitiseInput(lastMessageContentText);
 
   const embedding = Embedding.getInstance(env, user, userSettings);
-  
+
   let finalMessagePromise: Promise<string>;
   if (use_rag === true) {
     finalMessagePromise = embedding.augmentPrompt(

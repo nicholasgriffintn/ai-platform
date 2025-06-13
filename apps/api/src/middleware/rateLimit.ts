@@ -36,7 +36,7 @@ export async function rateLimit(context: Context, next: Next) {
     const errorMessage = user?.id
       ? "Rate limit exceeded: 100 requests per minute"
       : "Rate limit exceeded: 10 requests per minute. Please authenticate for higher limits.";
-    
+
     logger.warn("Rate limit exceeded", {
       userId,
       pathname,
@@ -44,10 +44,7 @@ export async function rateLimit(context: Context, next: Next) {
       isAuthenticated: !!user?.id,
     });
 
-    throw new AssistantError(
-      errorMessage,
-      ErrorType.RATE_LIMIT_ERROR,
-    );
+    throw new AssistantError(errorMessage, ErrorType.RATE_LIMIT_ERROR);
   }
 
   const name = pathname.split("/").pop();
