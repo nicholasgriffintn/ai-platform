@@ -17,7 +17,10 @@ const BOT_CACHE_TTL = 86400; // 24 hours - bot detection is very stable
 
 let botCache: KVCache | null = null;
 
-function getBotCache(kv: any): KVCache {
+function getBotCache(kv: any): KVCache | null {
+  if (!kv) {
+    return null;
+  }
   if (!botCache) {
     botCache = new KVCache(kv, BOT_CACHE_TTL);
   }
@@ -26,6 +29,15 @@ function getBotCache(kv: any): KVCache {
 
 async function isBotCached(userAgent: string, kv: any): Promise<boolean> {
   const cache = getBotCache(kv);
+  if (!cache) {
+    try {
+      return isbot(userAgent);
+    } catch (error) {
+      logger.error("Failed to check if user is a bot:", { error });
+      return true;
+    }
+  }
+
   const cacheKey = KVCache.createKey("bot", userAgent);
 
   const cached = await cache.get<boolean>(cacheKey);
@@ -78,17 +90,13 @@ export async function authMiddleware(context: Context, next: Next) {
 
   const userAgent = context.req.header("user-agent") || "unknown";
 
-  if (userAgent === "unknown") {
-    return next();
-  }
+  const isBot = await isBotCached(userAgent, context.env.CACHE);
 
-  const isBotUser = await isBotCached(userAgent, context.env.CACHE);
-  if (isBotUser) {
+  if (userAgent === "unknown" || isBot) {
     return next();
   }
 
   const hasJwtSecret = !!context.env.JWT_SECRET;
-
   let user: User | null = null;
   let anonymousUser: AnonymousUser | null = null;
 
