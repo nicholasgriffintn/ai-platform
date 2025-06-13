@@ -76,7 +76,7 @@ export async function mapParametersToProvider(
 
   if (params.model) {
     try {
-      modelConfig = getModelConfigByMatchingModel(params.model);
+      modelConfig = await getModelConfigByMatchingModel(params.model);
       if (!modelConfig) {
         throw new Error(`Model configuration not found for ${params.model}`);
       }

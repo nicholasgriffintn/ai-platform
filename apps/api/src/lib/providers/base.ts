@@ -118,7 +118,7 @@ export abstract class BaseProvider implements AIProvider {
     data: any,
     params: ChatCompletionParameters,
   ): Promise<any> {
-    const modelConfig = getModelConfigByMatchingModel(params.model || "");
+    const modelConfig = await getModelConfigByMatchingModel(params.model || "");
 
     const providerName = this.isOpenAiCompatible ? "compat" : this.name;
 
@@ -149,7 +149,7 @@ export abstract class BaseProvider implements AIProvider {
       : this.getEndpoint(params);
     const headers = await this.getHeaders(params);
 
-    const modelConfig = getModelConfigByMatchingModel(params.model || "");
+    const modelConfig = await getModelConfigByMatchingModel(params.model || "");
 
     if (!modelConfig) {
       throw new AssistantError(

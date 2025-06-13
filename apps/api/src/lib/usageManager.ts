@@ -7,14 +7,14 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "USAGE_MANAGER" });
 
-function isProModel(modelId: string): boolean {
+async function isProModel(modelId: string): Promise<boolean> {
   const config: ModelConfigItem | undefined =
-    getModelConfigByMatchingModel(modelId);
+    await getModelConfigByMatchingModel(modelId);
   return !!config && config.isFree !== true;
 }
 
-function calculateUsageMultiplier(modelId: string): number {
-  const config = getModelConfigByMatchingModel(modelId);
+async function calculateUsageMultiplier(modelId: string): Promise<number> {
+  const config = await getModelConfigByMatchingModel(modelId);
   if (!config) {
     logger.warn(
       `No config found for model: ${modelId}, using default multiplier: 1`,
@@ -210,7 +210,7 @@ export class UsageManager {
       );
     }
 
-    const usageMultiplier = calculateUsageMultiplier(modelId);
+    const usageMultiplier = await calculateUsageMultiplier(modelId);
 
     let dailyProCount = this.user.daily_pro_message_count || 0;
     const now = new Date();
@@ -252,7 +252,7 @@ export class UsageManager {
       );
     }
 
-    const modelConfig = getModelConfigByMatchingModel(modelId);
+    const modelConfig = await getModelConfigByMatchingModel(modelId);
 
     return {
       dailyProCount,
@@ -273,7 +273,7 @@ export class UsageManager {
       );
     }
 
-    const usageMultiplier = calculateUsageMultiplier(modelId);
+    const usageMultiplier = await calculateUsageMultiplier(modelId);
 
     const count = this.user.daily_pro_message_count ?? 0;
     const messageCount = this.user.message_count ?? 0;
@@ -310,7 +310,7 @@ export class UsageManager {
   }
 
   async checkUsageByModel(modelId: string, isPro: boolean) {
-    const modelIsPro = isProModel(modelId);
+    const modelIsPro = await isProModel(modelId);
 
     if (modelIsPro) {
       if (!isPro) {
@@ -338,7 +338,7 @@ export class UsageManager {
   }
 
   async incrementUsageByModel(modelId: string, isPro: boolean) {
-    const modelIsPro = isProModel(modelId);
+    const modelIsPro = await isProModel(modelId);
 
     if (modelIsPro) {
       if (isPro) {
@@ -446,8 +446,8 @@ export class UsageManager {
       outputCost: number;
     };
   }> {
-    const usageMultiplier = calculateUsageMultiplier(modelId);
-    const modelConfig = getModelConfigByMatchingModel(modelId);
+    const usageMultiplier = await calculateUsageMultiplier(modelId);
+    const modelConfig = await getModelConfigByMatchingModel(modelId);
 
     return {
       multiplier: usageMultiplier,

@@ -59,8 +59,8 @@ const modelConfig: ModelConfig = {
   ...v0ModelConfig,
 };
 
-const MODEL_CACHE_TTL = 14400; // 4 hours - model configs are mostly static
-const USER_MODEL_CACHE_TTL = 3600; // 1 hour - user access, but invalidated when settings change
+const MODEL_CACHE_TTL = 14400;
+const USER_MODEL_CACHE_TTL = 3600;
 let modelCache: KVCache | null = null;
 
 function getModelCache(env: IEnv): KVCache | null {
@@ -78,74 +78,85 @@ function getUserModelCache(env: IEnv): KVCache | null {
   return new KVCache(env.CACHE, USER_MODEL_CACHE_TTL);
 }
 
-export function getModelConfig(model?: string, env?: IEnv) {
-  const key = model || defaultModel;
-  const config = (model && modelConfig[model]) || modelConfig[defaultModel];
-
-  if (env?.CACHE) {
-    const cache = getModelCache(env);
-    if (cache) {
-      const cacheKey = KVCache.createKey("model-config", key);
-
-      cache.set(cacheKey, config).catch(() => {});
-    }
+/**
+ * Generic caching helper that handles cache read/write operations
+ */
+async function withCache<T>(
+  env: IEnv | undefined,
+  cacheKeyPrefix: string,
+  cacheKeyParts: string[],
+  computeFn: () => T | Promise<T>,
+): Promise<T> {
+  if (!env?.CACHE) {
+    return computeFn();
   }
 
-  return config;
-}
-
-export function getModelConfigByModel(model: string, env?: IEnv) {
-  const config = model && modelConfig[model as keyof typeof modelConfig];
-
-  if (env?.CACHE && config) {
-    const cache = getModelCache(env);
-    if (cache) {
-      const cacheKey = KVCache.createKey("model-by-model", model);
-      cache.set(cacheKey, config).catch(() => {});
-    }
+  const cache = getModelCache(env);
+  if (!cache) {
+    return computeFn();
   }
 
-  return config;
-}
+  const cacheKey = KVCache.createKey(cacheKeyPrefix, ...cacheKeyParts);
 
-export function getMatchingModel(model: string = defaultModel, env?: IEnv) {
-  const matchingModel = model && getModelConfig(model, env).matchingModel;
-
-  if (env?.CACHE && matchingModel) {
-    const cache = getModelCache(env);
-    if (cache) {
-      const cacheKey = KVCache.createKey("matching-model", model);
-      cache.set(cacheKey, matchingModel).catch(() => {});
-    }
+  const cached = await cache.get<T>(cacheKey);
+  if (cached !== null) {
+    return cached;
   }
 
-  return matchingModel;
-}
+  const result = await computeFn();
 
-export function getModelConfigByMatchingModel(
-  matchingModel: string,
-  env?: IEnv,
-) {
-  let result = null;
-  for (const model in modelConfig) {
-    if (
-      modelConfig[model as keyof typeof modelConfig].matchingModel ===
-      matchingModel
-    ) {
-      result = modelConfig[model as keyof typeof modelConfig];
-      break;
-    }
-  }
-
-  if (env?.CACHE && result) {
-    const cache = getModelCache(env);
-    if (cache) {
-      const cacheKey = KVCache.createKey("model-by-matching", matchingModel);
-      cache.set(cacheKey, result).catch(() => {});
-    }
+  if (result !== null && result !== undefined) {
+    cache.set(cacheKey, result).catch(() => {});
   }
 
   return result;
+}
+
+export async function getModelConfig(model?: string, env?: IEnv) {
+  const key = model || defaultModel;
+
+  return withCache(
+    env,
+    "model-config",
+    [key],
+    () => (model && modelConfig[model]) || modelConfig[defaultModel],
+  );
+}
+
+export async function getModelConfigByModel(model: string, env?: IEnv) {
+  return withCache(
+    env,
+    "model-by-model",
+    [model],
+    () => model && modelConfig[model as keyof typeof modelConfig],
+  );
+}
+
+export async function getMatchingModel(
+  model: string = defaultModel,
+  env?: IEnv,
+) {
+  return withCache(env, "matching-model", [model], async () => {
+    const config = await getModelConfig(model, env);
+    return config?.matchingModel;
+  });
+}
+
+export async function getModelConfigByMatchingModel(
+  matchingModel: string,
+  env?: IEnv,
+) {
+  return withCache(env, "model-by-matching", [matchingModel], () => {
+    for (const model in modelConfig) {
+      if (
+        modelConfig[model as keyof typeof modelConfig].matchingModel ===
+        matchingModel
+      ) {
+        return modelConfig[model as keyof typeof modelConfig];
+      }
+    }
+    return null;
+  });
 }
 
 let cachedModels: typeof modelConfig | null = null;
@@ -358,7 +369,7 @@ export async function getAuxiliaryModel(
     modelToUse = "llama-3.3-70b-versatile";
   }
 
-  const modelConfig = getModelConfig(modelToUse, env);
+  const modelConfig = await getModelConfig(modelToUse, env);
 
   return { model: modelConfig.matchingModel, provider: modelConfig.provider };
 }
@@ -384,7 +395,7 @@ export const getAuxiliaryModelForRetrieval = async (
     modelToUse = "sonar";
   }
 
-  const modelConfig = getModelConfig(modelToUse, env);
+  const modelConfig = await getModelConfig(modelToUse, env);
 
   return { model: modelConfig.matchingModel, provider: modelConfig.provider };
 };
@@ -407,7 +418,8 @@ export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
     modelToUse = "llama-guard-3-8b";
   }
 
-  const provider = getModelConfig(modelToUse, env).provider;
+  const modelConfig = await getModelConfig(modelToUse, env);
+  const provider = modelConfig.provider;
 
   return { model: modelToUse, provider };
 };

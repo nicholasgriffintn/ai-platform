@@ -116,7 +116,7 @@ async function prepareRequestData(options: CoreChatOptions) {
   ]);
 
   const primaryModelName = selectedModels[0];
-  const primaryModelConfig = getModelConfig(primaryModelName, env);
+  const primaryModelConfig = await getModelConfig(primaryModelName, env);
 
   if (!primaryModelConfig) {
     throw new AssistantError(
@@ -128,24 +128,21 @@ async function prepareRequestData(options: CoreChatOptions) {
   const primaryModel = primaryModelConfig.matchingModel;
   const primaryProvider = primaryModelConfig?.provider;
 
-  const modelConfigs: ModelConfigInfo[] = selectedModels.reduce(
-    (configs, model) => {
-      const config = getModelConfig(model, env);
-      if (!config) {
-        throw new AssistantError(
-          "Invalid model configuration",
-          ErrorType.PARAMS_ERROR,
-        );
-      }
-      configs.push({
-        model: config.matchingModel,
-        provider: config.provider,
-        displayName: config.name || config.matchingModel,
-      });
-      return configs;
-    },
-    [] as ModelConfigInfo[],
-  );
+  const modelConfigs: ModelConfigInfo[] = [];
+  for (const model of selectedModels) {
+    const config = await getModelConfig(model, env);
+    if (!config) {
+      throw new AssistantError(
+        "Invalid model configuration",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+    modelConfigs.push({
+      model: config.matchingModel,
+      provider: config.provider,
+      displayName: config.name || config.matchingModel,
+    });
+  }
 
   const conversationManager = ConversationManager.getInstance({
     database,
@@ -570,6 +567,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       completion_id,
     };
   } catch (error: any) {
+    console.error(error);
     logger.error("Error in processChatRequest", {
       error,
       completion_id: options.completion_id,
