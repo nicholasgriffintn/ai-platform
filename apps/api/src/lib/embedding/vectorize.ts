@@ -57,7 +57,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
           gateway: {
             id: gatewayId,
             skipCache: false,
-            cacheTtl: 172800,
+            cacheTtl: 259200, // 3 days
           },
         },
       );
@@ -118,7 +118,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
         gateway: {
           id: gatewayId,
           skipCache: false,
-          cacheTtl: 172800,
+          cacheTtl: 259200, // 3 days
         },
       },
     );

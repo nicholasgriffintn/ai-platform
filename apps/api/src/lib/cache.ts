@@ -72,10 +72,48 @@ export class KVCache {
     return `${prefix}:${parts.join(":")}`;
   }
 
+  /**
+   * Cache wrapper for database queries with automatic serialization
+   */
+  async cacheQuery<T>(
+    cacheKey: string,
+    queryFn: () => Promise<T>,
+    options?: CacheOptions & { skipIfNull?: boolean },
+  ): Promise<T> {
+    try {
+      const cached = await this.get<T>(cacheKey);
+      if (cached !== null) {
+        return cached;
+      }
+
+      const result = await queryFn();
+
+      if (result !== null && result !== undefined) {
+        await this.set(cacheKey, result, options);
+      } else if (!options?.skipIfNull) {
+        await this.set(cacheKey, result, {
+          ttl: options?.ttl ? Math.min(options.ttl, 300) : 300,
+        });
+      }
+
+      return result;
+    } catch (error) {
+      logger.error("Failed to cache query", { cacheKey, error });
+      return queryFn();
+    }
+  }
+
   async clearUserModelCache(userId: string): Promise<boolean> {
     try {
       const userModelKey = KVCache.createKey("user-models", userId);
-      await this.kv.delete(userModelKey);
+      const providerSettingsKey = KVCache.createKey(
+        "user-provider-settings",
+        userId,
+      );
+      await Promise.all([
+        this.kv.delete(userModelKey),
+        this.kv.delete(providerSettingsKey),
+      ]);
       logger.info("Cleared user model cache", { userId, key: userModelKey });
       return true;
     } catch (error) {

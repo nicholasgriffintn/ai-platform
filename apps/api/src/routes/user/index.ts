@@ -263,7 +263,7 @@ app.post(
     if (cache) {
       cache.clearUserModelCache(user.id.toString()).catch((error) => {
         routeLogger.error(
-          "Failed to clear user model cache after provider API key update",
+          "Failed to clear user caches after provider API key update",
           {
             userId: user.id,
             providerId,
@@ -368,13 +368,10 @@ app.post(
     const cache = getUserCache(c.env);
     if (cache) {
       cache.clearUserModelCache(user.id.toString()).catch((error) => {
-        routeLogger.error(
-          "Failed to clear user model cache after provider sync",
-          {
-            userId: user.id,
-            error,
-          },
-        );
+        routeLogger.error("Failed to clear user caches after provider sync", {
+          userId: user.id,
+          error,
+        });
       });
     }
 

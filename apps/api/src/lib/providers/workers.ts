@@ -60,7 +60,7 @@ export class WorkersProvider extends BaseProvider {
           gateway: {
             id: gatewayId,
             skipCache: false,
-            cacheTtl: 3360,
+            cacheTtl: 7200,
             authorization: env.AI_GATEWAY_TOKEN,
             metadata: {
               email: user?.email,

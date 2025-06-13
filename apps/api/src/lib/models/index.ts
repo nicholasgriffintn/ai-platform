@@ -310,7 +310,13 @@ export async function filterModelsForUserAccess(
 
   try {
     const database = Database.getInstance(env);
-    const userProviderSettings = await database.getUserProviderSettings(userId);
+
+    const userProviderSettings = await withCache(
+      env,
+      "user-provider-settings",
+      [userId.toString()],
+      () => database.getUserProviderSettings(userId),
+    );
 
     const enabledProviders = new Map(
       userProviderSettings

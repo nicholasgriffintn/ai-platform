@@ -1,3 +1,5 @@
+import { KVCache } from "~/lib/cache";
+import type { IEnv } from "~/types";
 import { generateId } from "~/utils/id";
 import { BaseRepository } from "./BaseRepository";
 
@@ -13,7 +15,18 @@ export interface AppData {
   updated_at: string;
 }
 
+const APP_DATA_CACHE_TTL = 1800; // 30 minutes
+
 export class AppDataRepository extends BaseRepository {
+  private cache: KVCache | null = null;
+
+  constructor(env: IEnv) {
+    super(env);
+    if (env.CACHE) {
+      this.cache = new KVCache(env.CACHE, APP_DATA_CACHE_TTL);
+    }
+  }
+
   /**
    * Creates a new app data entry
    * @param userId - The user ID
@@ -32,6 +45,8 @@ export class AppDataRepository extends BaseRepository {
       "INSERT INTO app_data (id, user_id, app_id, data) VALUES (?, ?, ?, ?)",
       [id, userId, appId, JSON.stringify(data)],
     );
+
+    await this.invalidateUserAppCache(userId, appId);
 
     return {
       id,
@@ -79,11 +94,26 @@ export class AppDataRepository extends BaseRepository {
   }
 
   /**
-   * Gets app data by id
-   * @param id - The ID of the app data
-   * @returns The app data
+   * Gets app data by ID with caching
+   * @param id - The app data ID
+   * @returns The app data or null if not found
    */
   public async getAppDataById(id: string): Promise<AppData | null> {
+    const cacheKey = KVCache.createKey("app-data", id);
+
+    if (this.cache) {
+      return this.cache.cacheQuery(
+        cacheKey,
+        () =>
+          this.runQuery<AppData>(
+            "SELECT * FROM app_data WHERE id = ?",
+            [id],
+            true,
+          ),
+        { ttl: APP_DATA_CACHE_TTL },
+      );
+    }
+
     return this.runQuery<AppData>(
       "SELECT * FROM app_data WHERE id = ?",
       [id],
@@ -105,7 +135,7 @@ export class AppDataRepository extends BaseRepository {
   }
 
   /**
-   * Gets all app data for a user and specific app
+   * Gets all app data for a user and specific app with caching
    * @param userId - The user ID
    * @param appId - The app ID
    * @returns The app data
@@ -114,6 +144,24 @@ export class AppDataRepository extends BaseRepository {
     userId: number,
     appId: string,
   ): Promise<AppData[]> {
+    const cacheKey = KVCache.createKey(
+      "app-data-user-app",
+      userId.toString(),
+      appId,
+    );
+
+    if (this.cache) {
+      return this.cache.cacheQuery(
+        cacheKey,
+        () =>
+          this.runQuery<AppData>(
+            "SELECT * FROM app_data WHERE user_id = ? AND app_id = ? ORDER BY created_at DESC",
+            [userId, appId],
+          ),
+        { ttl: Math.min(APP_DATA_CACHE_TTL, 900) },
+      );
+    }
+
     return this.runQuery<AppData>(
       "SELECT * FROM app_data WHERE user_id = ? AND app_id = ? ORDER BY created_at DESC",
       [userId, appId],
@@ -168,10 +216,24 @@ export class AppDataRepository extends BaseRepository {
     id: string,
     data: Record<string, any>,
   ): Promise<void> {
+    const currentData = await this.getAppDataById(id);
+
     await this.executeRun(
       "UPDATE app_data SET data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
       [JSON.stringify(data), id],
     );
+
+    if (this.cache) {
+      const itemCacheKey = KVCache.createKey("app-data", id);
+      await this.cache.delete(itemCacheKey);
+
+      if (currentData) {
+        await this.invalidateUserAppCache(
+          currentData.user_id,
+          currentData.app_id,
+        );
+      }
+    }
   }
 
   /**
@@ -251,5 +313,22 @@ export class AppDataRepository extends BaseRepository {
       [shareId],
       true,
     );
+  }
+
+  /**
+   * Cache invalidation helper
+   */
+  private async invalidateUserAppCache(
+    userId: number,
+    appId: string,
+  ): Promise<void> {
+    if (!this.cache) return;
+
+    const userAppKey = KVCache.createKey(
+      "app-data-user-app",
+      userId.toString(),
+      appId,
+    );
+    await this.cache.delete(userAppKey);
   }
 }
