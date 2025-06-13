@@ -5,6 +5,8 @@ import { BaseProvider } from "./base";
 export class AnthropicProvider extends BaseProvider {
   name = "anthropic";
   supportsStreaming = true;
+  // TODO: Work out if we should use OpenAI compatible mode - it might take away some of the Anthropic-specific features
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "ANTHROPIC_API_KEY";

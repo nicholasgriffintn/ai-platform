@@ -5,6 +5,7 @@ import { BaseProvider } from "./base";
 export class MistralProvider extends BaseProvider {
   name = "mistral";
   supportsStreaming = true;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "MISTRAL_API_KEY";

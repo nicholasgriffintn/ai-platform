@@ -8,6 +8,7 @@ export class CertesiaProvider extends BaseProvider {
   name = "certesia";
   supportsStreaming = false;
   voice_id = "87748186-23bb-4158-a1eb-332911b0b708"; // Wizardman
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "CERTESIA_API_TOKEN";
@@ -73,6 +74,7 @@ export class CertesiaProvider extends BaseProvider {
       model: params.model as string,
       operation: async () => {
         const data = await fetchAIResponse(
+          this.isOpenAiCompatible,
           this.name,
           endpoint,
           headers,

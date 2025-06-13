@@ -8,6 +8,7 @@ import { fetchAIResponse } from "./fetch";
 export class ReplicateProvider extends BaseProvider {
   name = "replicate";
   supportsStreaming = false;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "REPLICATE_API_TOKEN";
@@ -127,6 +128,7 @@ export class ReplicateProvider extends BaseProvider {
       model: params.version || (params.model as string),
       operation: async () => {
         const initialResponse = await fetchAIResponse(
+          this.isOpenAiCompatible,
           this.name,
           endpoint,
           headers,

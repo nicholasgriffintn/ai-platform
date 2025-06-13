@@ -13,6 +13,7 @@ const logger = getLogger({ prefix: "BEDROCK" });
 export class BedrockProvider extends BaseProvider {
   name = "bedrock";
   supportsStreaming = false;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "bedrock";
@@ -62,7 +63,11 @@ export class BedrockProvider extends BaseProvider {
     this.validateParams(params);
 
     const bedrockUrl = this.getEndpoint(params);
-    const body = await mapParametersToProvider(params, "bedrock");
+    const body = await mapParametersToProvider(
+      this.isOpenAiCompatible,
+      params,
+      "bedrock",
+    );
 
     return trackProviderMetrics({
       provider: this.name,

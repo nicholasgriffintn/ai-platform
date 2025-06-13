@@ -4,6 +4,7 @@ import { BaseProvider } from "./base";
 export class FireworksProvider extends BaseProvider {
   name = "fireworks";
   supportsStreaming = true;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "FIREWORKS_API_KEY";

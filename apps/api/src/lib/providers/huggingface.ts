@@ -5,6 +5,7 @@ import { BaseProvider } from "./base";
 export class HuggingFaceProvider extends BaseProvider {
   name = "huggingface";
   supportsStreaming = true;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "HUGGINGFACE_TOKEN";

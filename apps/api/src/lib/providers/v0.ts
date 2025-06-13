@@ -5,6 +5,7 @@ import { BaseProvider } from "./base";
 export class V0Provider extends BaseProvider {
   name = "v0";
   supportsStreaming = true;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "V0_API_KEY";

@@ -4,6 +4,7 @@ import { BaseProvider } from "./base";
 export class TogetherAiProvider extends BaseProvider {
   name = "together-ai";
   supportsStreaming = true;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "TOGETHER_AI_API_KEY";

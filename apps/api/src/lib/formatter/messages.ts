@@ -277,6 +277,7 @@ export class MessageFormatter {
       case "google-ai-studio":
         return messages;
       case "openai":
+      case "compat":
         return [{ role: "developer", content: system_prompt }, ...messages];
       case "workers-ai":
       case "groq":

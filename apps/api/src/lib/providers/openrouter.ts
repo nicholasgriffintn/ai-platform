@@ -5,6 +5,7 @@ import { BaseProvider } from "./base";
 export class OpenRouterProvider extends BaseProvider {
   name = "openrouter";
   supportsStreaming = true;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "OPENROUTER_API_KEY";

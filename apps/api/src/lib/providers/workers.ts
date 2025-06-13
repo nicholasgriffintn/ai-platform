@@ -14,6 +14,7 @@ const logger = getLogger({ prefix: "WORKERS" });
 export class WorkersProvider extends BaseProvider {
   name = "workers-ai";
   supportsStreaming = true;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return null;
@@ -43,6 +44,7 @@ export class WorkersProvider extends BaseProvider {
 
     const storageService = new StorageService(env.ASSETS_BUCKET);
     const body = await mapParametersToProvider(
+      this.isOpenAiCompatible,
       params,
       "workers-ai",
       storageService,

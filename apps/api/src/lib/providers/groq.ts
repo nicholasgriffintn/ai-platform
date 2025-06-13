@@ -5,6 +5,7 @@ import { BaseProvider } from "./base";
 export class GroqProvider extends BaseProvider {
   name = "groq";
   supportsStreaming = true;
+  isOpenAiCompatible = true;
 
   protected getProviderKeyName(): string {
     return "GROQ_API_KEY";

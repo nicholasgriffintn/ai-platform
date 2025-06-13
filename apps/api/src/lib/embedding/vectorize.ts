@@ -6,6 +6,7 @@ import type {
 
 import { gatewayId } from "~/constants/app";
 import type { Database } from "~/lib/database";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import type {
   EmbeddingMutationResult,
   EmbeddingProvider,
@@ -61,12 +62,14 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
         },
       );
 
+      // @ts-ignore
       if (!response.data) {
         throw new AssistantError("No data returned from Vectorize API");
       }
 
       const mergedMetadata = { ...metadata, type };
 
+      // @ts-ignore
       return response.data.map((vector: number[]) => ({
         id,
         values: vector,
@@ -121,6 +124,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
     );
 
     return {
+      // @ts-ignore
       data: response.data,
       status: { success: true },
     };
