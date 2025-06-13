@@ -413,6 +413,10 @@ export async function mapParametersToProvider(
           };
         }
 
+        if (finalProviderName === "compat") {
+          return newCommonParams;
+        }
+
         return {
           ...newCommonParams,
           store: params.store,
@@ -470,12 +474,6 @@ export async function mapParametersToProvider(
           ...newCommonParams,
           system: params.system_prompt,
           stop_sequences: params.stop,
-        };
-      }
-      case "deepseek": {
-        return {
-          ...commonParams,
-          messages: formatDeepSeekMessages(params),
         };
       }
       case "google-ai-studio":
@@ -666,18 +664,6 @@ function calculateReasoningBudget(params: ChatCompletionParameters): number {
     default:
       return Math.max(Math.floor(params.max_tokens * 0.75), 1024);
   }
-}
-
-/**
- * Format messages for DeepSeek models
- * @param params - The chat completion parameters
- * @returns The formatted messages
- */
-function formatDeepSeekMessages(params: ChatCompletionParameters): any[] {
-  return params.messages.map((message) => ({
-    role: message.role,
-    content: message.content,
-  }));
 }
 
 /**

@@ -5,7 +5,7 @@ import { BaseProvider } from "./base";
 export class OpenAIProvider extends BaseProvider {
   name = "openai";
   supportsStreaming = true;
-  isOpenAiCompatible = true;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "OPENAI_API_KEY";

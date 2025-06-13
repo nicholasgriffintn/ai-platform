@@ -14,7 +14,7 @@ const logger = getLogger({ prefix: "WORKERS" });
 export class WorkersProvider extends BaseProvider {
   name = "workers-ai";
   supportsStreaming = true;
-  isOpenAiCompatible = true;
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return null;

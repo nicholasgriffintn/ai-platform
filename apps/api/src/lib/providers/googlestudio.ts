@@ -5,7 +5,8 @@ import { BaseProvider } from "./base";
 export class GoogleStudioProvider extends BaseProvider {
   name = "google-ai-studio";
   supportsStreaming = false;
-  isOpenAiCompatible = true;
+  // TODO: Work out if we should use OpenAI compatible mode - it might take away some of the Google-specific features
+  isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
     return "GOOGLE_STUDIO_API_KEY";
