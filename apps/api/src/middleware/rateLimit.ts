@@ -2,6 +2,9 @@ import type { Context, Next } from "hono";
 
 import { trackUsageMetric } from "~/lib/monitoring";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "RATE_LIMIT" });
 
 export async function rateLimit(context: Context, next: Next) {
   if (!context.env.FREE_RATE_LIMITER || !context.env.PRO_RATE_LIMITER) {
@@ -30,17 +33,28 @@ export async function rateLimit(context: Context, next: Next) {
   });
 
   if (!result.success) {
-    throw new AssistantError(
-      user?.id
-        ? "Rate limit exceeded: 100 requests per minute"
-        : "Rate limit exceeded: 10 requests per minute. Please authenticate for higher limits.",
-      ErrorType.RATE_LIMIT_ERROR,
-    );
+    const errorMessage = user?.id
+      ? "Rate limit exceeded: 100 requests per minute"
+      : "Rate limit exceeded: 10 requests per minute. Please authenticate for higher limits.";
+
+    logger.warn("Rate limit exceeded", {
+      userId,
+      pathname,
+      key,
+      isAuthenticated: !!user?.id,
+    });
+
+    throw new AssistantError(errorMessage, ErrorType.RATE_LIMIT_ERROR);
   }
 
   const name = pathname.split("/").pop();
-
-  trackUsageMetric(userId, name, context.env.ANALYTICS);
+  Promise.resolve().then(async () => {
+    try {
+      await trackUsageMetric(userId, name, context.env.ANALYTICS);
+    } catch (error) {
+      logger.error("Failed to track usage metric", { error, userId, name });
+    }
+  });
 
   return next();
 }

@@ -68,7 +68,7 @@ export class WorkersProvider extends BaseProvider {
           },
         });
 
-        const modelConfig = getModelConfigByMatchingModel(model);
+        const modelConfig = await getModelConfigByMatchingModel(model);
         const type = modelConfig?.type || ["text"];
 
         if (

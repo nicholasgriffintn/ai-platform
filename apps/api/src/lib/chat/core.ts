@@ -100,21 +100,23 @@ async function prepareRequestData(options: CoreChatOptions) {
     getAllAttachments(lastMessageContent);
 
   const database = Database.getInstance(env);
-  const userSettings = await database.getUserSettings(user?.id);
 
-  const selectedModels = await selectModels(
-    env,
-    lastMessageContentText,
-    allAttachments,
-    budget_constraint,
-    user,
-    options.completion_id,
-    requestedModel,
-    use_multi_model,
-  );
+  const [userSettings, selectedModels] = await Promise.all([
+    database.getUserSettings(user?.id),
+    selectModels(
+      env,
+      lastMessageContentText,
+      allAttachments,
+      budget_constraint,
+      user,
+      options.completion_id,
+      requestedModel,
+      use_multi_model,
+    ),
+  ]);
 
   const primaryModelName = selectedModels[0];
-  const primaryModelConfig = getModelConfig(primaryModelName);
+  const primaryModelConfig = await getModelConfig(primaryModelName, env);
 
   if (!primaryModelConfig) {
     throw new AssistantError(
@@ -126,24 +128,21 @@ async function prepareRequestData(options: CoreChatOptions) {
   const primaryModel = primaryModelConfig.matchingModel;
   const primaryProvider = primaryModelConfig?.provider;
 
-  const modelConfigs: ModelConfigInfo[] = selectedModels.reduce(
-    (configs, model) => {
-      const config = getModelConfig(model);
-      if (!config) {
-        throw new AssistantError(
-          "Invalid model configuration",
-          ErrorType.PARAMS_ERROR,
-        );
-      }
-      configs.push({
-        model: config.matchingModel,
-        provider: config.provider,
-        displayName: config.name || config.matchingModel,
-      });
-      return configs;
-    },
-    [] as ModelConfigInfo[],
-  );
+  const modelConfigs: ModelConfigInfo[] = [];
+  for (const model of selectedModels) {
+    const config = await getModelConfig(model, env);
+    if (!config) {
+      throw new AssistantError(
+        "Invalid model configuration",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+    modelConfigs.push({
+      model: config.matchingModel,
+      provider: config.provider,
+      displayName: config.name || config.matchingModel,
+    });
+  }
 
   const conversationManager = ConversationManager.getInstance({
     database,
@@ -159,15 +158,21 @@ async function prepareRequestData(options: CoreChatOptions) {
 
   const embedding = Embedding.getInstance(env, user, userSettings);
 
-  const finalMessage =
-    use_rag === true
-      ? await embedding.augmentPrompt(
-          finalUserMessage,
-          rag_options,
-          env,
-          user?.id,
-        )
-      : finalUserMessage;
+  let finalMessagePromise: Promise<string>;
+  if (use_rag === true) {
+    finalMessagePromise = embedding.augmentPrompt(
+      finalUserMessage,
+      rag_options,
+      env,
+      user?.id,
+    );
+  } else {
+    finalMessagePromise = Promise.resolve(finalUserMessage);
+  }
+
+  const guardrails = Guardrails.getInstance(env, user, userSettings);
+
+  const [finalMessage] = await Promise.all([finalMessagePromise]);
 
   const messageWithContext =
     markdownAttachments.length > 0
@@ -190,7 +195,6 @@ async function prepareRequestData(options: CoreChatOptions) {
     primaryModelConfig,
   );
 
-  const guardrails = Guardrails.getInstance(env, user, userSettings);
   const inputValidation = await guardrails.validateInput(
     messageWithContext,
     user?.id,
@@ -563,6 +567,7 @@ export async function processChatRequest(options: CoreChatOptions) {
       completion_id,
     };
   } catch (error: any) {
+    console.error(error);
     logger.error("Error in processChatRequest", {
       error,
       completion_id: options.completion_id,

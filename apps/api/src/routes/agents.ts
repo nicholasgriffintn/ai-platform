@@ -497,7 +497,7 @@ app.post(
     ];
 
     const modelToUse = agent.model || body.model;
-    const modelDetails = getModelConfig(modelToUse);
+    const modelDetails = await getModelConfig(modelToUse);
     if (!modelDetails) {
       return ctx.json(
         {

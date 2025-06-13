@@ -59,7 +59,7 @@ export async function listModelsByType(
  * Get model details by ID if user has access.
  */
 export async function getModelDetails(env: IEnv, id: string, userId?: number) {
-  const model = getModelConfig(id);
+  const model = await getModelConfig(id);
   const accessibleModels = await filterModelsForUserAccess(
     { [id]: model },
     env,

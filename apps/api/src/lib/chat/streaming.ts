@@ -129,7 +129,7 @@ export async function createStreamWithPostProcessing(
   const currentToolCalls: Record<string, any> = {};
 
   const guardrails = Guardrails.getInstance(env, user, userSettings);
-  const modelConfig = getModelConfigByMatchingModel(model);
+  const modelConfig = await getModelConfigByMatchingModel(model);
 
   return providerStream.pipeThrough(
     new TransformStream({

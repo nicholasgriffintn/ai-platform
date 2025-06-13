@@ -18,7 +18,7 @@ const logger = getLogger({ prefix: "DATABASE" });
 
 export class Database {
   private env: IEnv;
-  private static instance: Database;
+  private static instance: Database | null = null;
   private repositories: RepositoryManager;
 
   private constructor(env: IEnv) {

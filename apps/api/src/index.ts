@@ -71,13 +71,13 @@ app.use(
   }),
 );
 
-app.use("*", loggerMiddleware);
-
 app.use(
   csrf({
     origin,
   }),
 );
+
+app.use("*", loggerMiddleware);
 
 app.use("*", authMiddleware);
 

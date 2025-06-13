@@ -82,7 +82,9 @@ export const handlePodcastTranscribe = async (
     const description = parsedUploadData.description;
     const audioUrl = parsedUploadData.audioUrl;
 
-    const modelConfig = getModelConfigByMatchingModel(REPLICATE_MODEL_VERSION);
+    const modelConfig = await getModelConfigByMatchingModel(
+      REPLICATE_MODEL_VERSION,
+    );
     const provider = AIProviderFactory.getProvider(
       modelConfig?.provider || "replicate",
     );

@@ -52,7 +52,7 @@ export class PromptAnalyzer {
     }
   }
 
-  private static performAIAnalysis(
+  private static async performAIAnalysis(
     provider: AIProvider,
     env: IEnv,
     prompt: string,
@@ -60,7 +60,7 @@ export class PromptAnalyzer {
     user: IUser,
     modelToUse: string,
   ) {
-    const modelInfo = getModelConfig(modelToUse);
+    const modelInfo = await getModelConfig(modelToUse);
 
     return provider.getResponse({
       env,

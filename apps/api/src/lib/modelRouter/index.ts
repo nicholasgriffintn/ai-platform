@@ -61,11 +61,11 @@ export class ModelRouter {
   private static readonly COMPARISON_SCORE_THRESHOLD = 3.0;
   private static readonly MAX_COMPARISON_MODELS = 2;
 
-  private static scoreModel(
+  private static async scoreModel(
     requirements: PromptRequirements,
     model: string,
-  ): Omit<ModelScore, "normalizedScore"> {
-    const capabilities = getModelConfig(model);
+  ): Promise<Omit<ModelScore, "normalizedScore">> {
+    const capabilities = await getModelConfig(model);
 
     if (
       requirements.criticalCapabilities?.some(
@@ -182,12 +182,14 @@ export class ModelRouter {
     return score;
   }
 
-  private static rankModels(
+  private static async rankModels(
     models: Record<string, ModelConfigItem>,
     requirements: PromptRequirements,
-  ): ModelScore[] {
-    const modelScoresRaw = Object.keys(models).map((model) =>
-      ModelRouter.scoreModel(requirements, model),
+  ): Promise<ModelScore[]> {
+    const modelScoresRaw = await Promise.all(
+      Object.keys(models).map((model) =>
+        ModelRouter.scoreModel(requirements, model),
+      ),
     );
 
     if (modelScoresRaw.length === 0) {
@@ -229,9 +231,9 @@ export class ModelRouter {
     );
   }
 
-  private static selectModelsForComparison(
+  private static async selectModelsForComparison(
     modelScores: ModelScore[],
-  ): string[] {
+  ): Promise<string[]> {
     if (modelScores.length <= 1) {
       return modelScores.length === 1 ? [modelScores[0].model] : [defaultModel];
     }
@@ -241,8 +243,8 @@ export class ModelRouter {
 
     for (let i = 1; i < modelScores.length; i++) {
       const model = modelScores[i];
-      const modelConfig = getModelConfig(model.model);
-      const topModelConfig = getModelConfig(modelScores[0].model);
+      const modelConfig = await getModelConfig(model.model);
+      const topModelConfig = await getModelConfig(modelScores[0].model);
 
       if (
         modelConfig.provider !== topModelConfig.provider &&
@@ -287,7 +289,7 @@ export class ModelRouter {
           user,
         );
 
-        const modelScores = ModelRouter.rankModels(
+        const modelScores = await ModelRouter.rankModels(
           availableModels,
           requirements,
         );
@@ -337,7 +339,7 @@ export class ModelRouter {
           user,
         );
 
-        const modelScores = ModelRouter.rankModels(
+        const modelScores = await ModelRouter.rankModels(
           availableModels,
           requirements,
         );
@@ -345,7 +347,7 @@ export class ModelRouter {
         const suitableModels = modelScores.filter((model) => model.score > 0);
 
         if (ModelRouter.shouldCompareModels(requirements)) {
-          return ModelRouter.selectModelsForComparison(suitableModels);
+          return await ModelRouter.selectModelsForComparison(suitableModels);
         }
 
         return [ModelRouter.selectBestModel(suitableModels)];

@@ -12,7 +12,7 @@ export async function getSystemPrompt(
   user?: IUser,
   userSettings?: IUserSettings,
 ): Promise<string> {
-  const modelConfig = getModelConfigByMatchingModel(model);
+  const modelConfig = await getModelConfigByMatchingModel(model);
   const supportsFunctions = modelConfig?.supportsFunctions || false;
   const supportsArtifacts = modelConfig?.supportsArtifacts || false;
   const hasThinking = modelConfig?.hasThinking || false;

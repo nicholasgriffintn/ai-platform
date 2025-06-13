@@ -1,6 +1,7 @@
 import type { Context, Next } from "hono";
 import { isbot } from "isbot";
 
+import { KVCache } from "~/lib/cache";
 import { Database } from "~/lib/database";
 import { getUserByJwtToken } from "~/services/auth/jwt";
 import { getUserBySessionId } from "~/services/auth/user";
@@ -12,6 +13,66 @@ const logger = getLogger({ prefix: "AUTH_MIDDLEWARE" });
 
 const ANONYMOUS_ID_COOKIE = "anon_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+const BOT_CACHE_TTL = 86400; // 24 hours - bot detection is very stable
+
+let botCache: KVCache | null = null;
+
+function getBotCache(kv: any): KVCache | null {
+  if (!kv) {
+    return null;
+  }
+  if (!botCache) {
+    botCache = new KVCache(kv, BOT_CACHE_TTL);
+  }
+  return botCache;
+}
+
+async function isBotCached(userAgent: string, kv: any): Promise<boolean> {
+  const cache = getBotCache(kv);
+  if (!cache) {
+    try {
+      return isbot(userAgent);
+    } catch (error) {
+      logger.error("Failed to check if user is a bot:", { error });
+      return true;
+    }
+  }
+
+  const cacheKey = KVCache.createKey("bot", userAgent);
+
+  const cached = await cache.get<boolean>(cacheKey);
+  if (cached !== null) {
+    return cached;
+  }
+
+  let isBotUser: boolean;
+  try {
+    isBotUser = isbot(userAgent);
+  } catch (error) {
+    logger.error("Failed to check if user is a bot:", { error });
+    isBotUser = true;
+  }
+
+  cache.set(cacheKey, isBotUser).catch((error) => {
+    logger.error("Failed to cache bot detection result", { error, userAgent });
+  });
+
+  return isBotUser;
+}
+
+function parseCookies(cookieHeader: string): Record<string, string> {
+  const cookies: Record<string, string> = {};
+  if (!cookieHeader) return cookies;
+
+  for (const cookie of cookieHeader.split(";")) {
+    const [name, ...rest] = cookie.trim().split("=");
+    if (name && rest.length > 0) {
+      cookies[name] = rest.join("=");
+    }
+  }
+
+  return cookies;
+}
 
 /**
  * Authentication middleware that supports session-based, token-based, and JWT auth
@@ -29,21 +90,13 @@ export async function authMiddleware(context: Context, next: Next) {
 
   const userAgent = context.req.header("user-agent") || "unknown";
 
-  let isBotUser = false;
+  const isBot = await isBotCached(userAgent, context.env.CACHE);
 
-  if (userAgent === "unknown") {
-    isBotUser = true;
-  } else {
-    try {
-      isBotUser = isbot(userAgent);
-    } catch (error) {
-      console.error(error);
-      logger.error("Failed to check if user is a bot:", { error });
-    }
+  if (userAgent === "unknown" || isBot) {
+    return next();
   }
 
   const hasJwtSecret = !!context.env.JWT_SECRET;
-
   let user: User | null = null;
   let anonymousUser: AnonymousUser | null = null;
 
@@ -51,50 +104,65 @@ export async function authMiddleware(context: Context, next: Next) {
   const authFromHeaders = context.req.header("Authorization");
   const authToken = authFromQuery || authFromHeaders?.split("Bearer ")[1];
 
-  const cookies = context.req.header("Cookie") || "";
-  const sessionMatch = cookies.match(/session=([^;]+)/);
-  const sessionId = sessionMatch ? sessionMatch[1] : null;
+  const cookies = parseCookies(context.req.header("Cookie") || "");
+  const sessionId = cookies.session;
+  const anonymousId = cookies[ANONYMOUS_ID_COOKIE];
 
   const isJwtToken = authToken?.split(".").length === 3;
   const database = Database.getInstance(context.env);
 
+  const authPromises: Promise<User | null>[] = [];
+
   if (sessionId) {
-    user = await getUserBySessionId(database, sessionId);
-  } else if (authToken?.startsWith("ak_")) {
-    try {
-      const userId = await database.findUserIdByApiKey(authToken);
-      if (userId) {
-        const foundUser = await database.getUserById(userId);
-        if (foundUser) {
-          user = foundUser;
+    authPromises.push(getUserBySessionId(database, sessionId));
+  }
+
+  if (authToken?.startsWith("ak_")) {
+    authPromises.push(
+      (async () => {
+        try {
+          const userId = await database.findUserIdByApiKey(authToken);
+          if (userId) {
+            const foundUser = await database.getUserById(userId);
+            return foundUser || null;
+          }
+          return null;
+        } catch (error) {
+          logger.error("API Key authentication check failed:", { error });
+          return null;
         }
-      }
-    } catch (error) {
-      logger.error("API Key authentication check failed:", { error });
-    }
-  } else if (isJwtToken && hasJwtSecret) {
-    try {
-      user = await getUserByJwtToken(
-        context.env,
-        authToken!,
-        context.env.JWT_SECRET!,
-      );
-    } catch (error) {
-      logger.error("JWT authentication failed:", { error });
-    }
+      })(),
+    );
+  }
+
+  if (isJwtToken && hasJwtSecret) {
+    authPromises.push(
+      (async () => {
+        try {
+          return await getUserByJwtToken(
+            context.env,
+            authToken!,
+            context.env.JWT_SECRET!,
+          );
+        } catch (error) {
+          logger.error("JWT authentication failed:", { error });
+          return null;
+        }
+      })(),
+    );
+  }
+
+  if (authPromises.length > 0) {
+    const authResults = await Promise.allSettled(authPromises);
+    const fulfilledResult = authResults.find(
+      (result) => result.status === "fulfilled" && result.value !== null,
+    );
+    user =
+      fulfilledResult?.status === "fulfilled" ? fulfilledResult.value : null;
   }
 
   if (!user) {
     try {
-      if (isBotUser) {
-        return next();
-      }
-
-      const anonymousIdMatch = cookies.match(
-        new RegExp(`${ANONYMOUS_ID_COOKIE}=([^;]+)`),
-      );
-      const anonymousId = anonymousIdMatch ? anonymousIdMatch[1] : null;
-
       if (anonymousId) {
         anonymousUser = await database.getAnonymousUserById(anonymousId);
       }
@@ -113,7 +181,6 @@ export async function authMiddleware(context: Context, next: Next) {
         }
       }
     } catch (error) {
-      console.error(error);
       logger.error("Anonymous user tracking failed:", { error });
     }
   }
