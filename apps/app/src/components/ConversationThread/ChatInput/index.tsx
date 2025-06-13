@@ -24,6 +24,7 @@ import { useModels } from "~/hooks/useModels";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
 import { apiService } from "~/lib/api/api-service";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 import type { ModelConfigItem } from "~/types";
 import { ChatSettings as ChatSettingsComponent } from "./ChatSettings";
 import { ToolToggles } from "./ChatSettings/ToolToggles";
@@ -49,7 +50,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     { handleSubmit, isLoading, streamStarted, controller, onTranscribe },
     ref,
   ) => {
-    const { model, chatInput, setChatInput, isMobile } = useChatStore();
+    const { isMobile } = useUIStore();
+    const { model, chatInput, setChatInput } = useChatStore();
     const { isPro, currentConversationId } = useChatStore();
     const { isRecording, isTranscribing, startRecording, stopRecording } =
       useVoiceRecorder({ onTranscribe });

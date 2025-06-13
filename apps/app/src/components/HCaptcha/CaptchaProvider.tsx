@@ -1,7 +1,13 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
+
 import { CAPTCHA_SITE_KEY } from "~/constants";
 import { useCaptchaStore } from "~/state/stores/captchaStore";
-import { HCaptchaVerifier } from ".";
+
+const HCaptchaVerifierLazy = lazy(() =>
+  import("./HCaptchaVerifier").then((d) => ({
+    default: d.HCaptchaVerifier,
+  })),
+);
 
 export const CaptchaProvider = ({
   children,
@@ -26,7 +32,14 @@ export const CaptchaProvider = ({
   return (
     <>
       {children}
-      <HCaptchaVerifier siteKey={CAPTCHA_SITE_KEY} onVerify={handleVerify} />
+      {!import.meta.env.DEV && (
+        <Suspense fallback={null}>
+          <HCaptchaVerifierLazy
+            siteKey={CAPTCHA_SITE_KEY}
+            onVerify={handleVerify}
+          />
+        </Suspense>
+      )}
     </>
   );
 };

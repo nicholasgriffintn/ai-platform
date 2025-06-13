@@ -5,9 +5,11 @@ import { Link } from "react-router";
 import { Button } from "~/components/ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 
 export function UserMenuItem() {
-  const { isAuthenticated, setShowLoginModal } = useChatStore();
+  const { setShowLoginModal } = useUIStore();
+  const { isAuthenticated } = useChatStore();
   const { user, isLoggingOut, isLoading } = useAuthStatus();
   const [isMounted, setIsMounted] = useState(false);
 

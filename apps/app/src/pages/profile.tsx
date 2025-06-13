@@ -9,7 +9,7 @@ import {
 } from "~/components/Profile/ProfileSidebar";
 import { Button } from "~/components/ui/Button";
 import { useAuthStatus } from "~/hooks/useAuth";
-import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 
 export function meta() {
   return [
@@ -21,7 +21,7 @@ export function meta() {
 export default function ProfilePage() {
   const { isAuthenticated, isLoading } = useAuthStatus();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { setShowLoginModal } = useChatStore();
+  const { setShowLoginModal } = useUIStore();
 
   const activeTabId = searchParams.get("tab") || profileSidebarItems[0].id;
 

@@ -11,14 +11,14 @@ import { Link } from "react-router";
 
 import { Button } from "~/components/ui";
 import { APP_NAME } from "~/constants";
-import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 
 interface ChatNavbarProps {
   showSidebarToggle?: boolean;
 }
 
 export const ChatNavbar = ({ showSidebarToggle = true }: ChatNavbarProps) => {
-  const { isMobile, sidebarVisible, setSidebarVisible } = useChatStore();
+  const { isMobile, sidebarVisible, setSidebarVisible } = useUIStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);

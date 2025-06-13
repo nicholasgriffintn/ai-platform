@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Suspense, lazy } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
 
-import { Analytics } from "~/components/Analytics";
 import { AppInitializer } from "~/components/AppInitializer";
 import { AppShell } from "~/components/AppShell";
 import { CaptchaProvider } from "~/components/HCaptcha/CaptchaProvider";
@@ -12,6 +12,12 @@ import { Toaster } from "~/components/ui/sonner";
 import ErrorRoute from "~/pages/error";
 import { LoadingProvider } from "~/state/contexts/LoadingContext";
 import type { Route } from "./+types/root";
+
+const AnalyticsLazy = lazy(() =>
+  import("~/components/Analytics").then((d) => ({
+    default: d.Analytics,
+  })),
+);
 
 const ENABLE_BEACON = import.meta.env.VITE_ENABLE_BEACON === "true";
 const BEACON_ENDPOINT = import.meta.env.VITE_BEACON_ENDPOINT;
@@ -41,19 +47,23 @@ export default function Root() {
       <LoadingProvider>
         <AppInitializer>
           <CaptchaProvider>
-            <Analytics
-              isEnabled={ENABLE_BEACON}
-              beaconEndpoint={BEACON_ENDPOINT}
-              beaconSiteId={BEACON_SITE_ID}
-              beaconDebug={BEACON_DEBUG}
-            />
+            {ENABLE_BEACON && (
+              <Suspense fallback={null}>
+                <AnalyticsLazy
+                  isEnabled={ENABLE_BEACON}
+                  beaconEndpoint={BEACON_ENDPOINT}
+                  beaconSiteId={BEACON_SITE_ID}
+                  beaconDebug={BEACON_DEBUG}
+                />
+              </Suspense>
+            )}
             <Outlet />
             <ServiceWorkerRegistration />
             <Toaster />
           </CaptchaProvider>
         </AppInitializer>
       </LoadingProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </>
   );
 }

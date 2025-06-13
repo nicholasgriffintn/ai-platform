@@ -4,7 +4,7 @@ import { Link } from "react-router";
 import { Button } from "~/components/ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { cn } from "~/lib/utils";
-import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
 import { SidebarHeader } from "../Sidebar/SidebarHeader";
 import { ProfileAccountTab } from "./Tabs/ProfileAccountTab";
@@ -46,7 +46,7 @@ export function ProfileSidebar({
   activeItemId,
   onSelectItem,
 }: ProfileSidebarProps) {
-  const { sidebarVisible, isMobile, setSidebarVisible } = useChatStore();
+  const { sidebarVisible, isMobile, setSidebarVisible } = useUIStore();
   const { isAuthenticated, logout, isLoggingOut } = useAuthStatus();
 
   return (

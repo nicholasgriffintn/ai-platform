@@ -3,14 +3,16 @@ import { Link } from "react-router";
 
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 
 interface FooterInfoProps {
   isPanelVisible: boolean;
 }
 
 export const FooterInfo = ({ isPanelVisible }: FooterInfoProps) => {
-  const { currentConversationId, isMobile } = useChatStore();
+  const { currentConversationId } = useChatStore();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuthStatus();
+  const { isMobile } = useUIStore();
 
   return (
     <div

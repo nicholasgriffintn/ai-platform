@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 import type { ReactNode } from "react";
 import { NotificationBar } from "~/components/NotificationBar";
@@ -6,7 +6,7 @@ import { PageHeader } from "~/components/PageHeader";
 import { PageTitle } from "~/components/PageTitle";
 import { SidebarLayout } from "~/layouts/SidebarLayout";
 import { cn } from "~/lib/utils";
-import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 
 interface PageShellProps {
   title?: string;
@@ -31,20 +31,20 @@ export function PageShell({
   displayNavBar = true,
   bgClassName,
 }: PageShellProps) {
-  const { setSidebarVisible, setIsMobile, setIsMobileLoading } = useChatStore();
+  const { setSidebarVisible, setIsMobile, setIsMobileLoading } = useUIStore();
+
+  const checkMobile = useCallback(() => {
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    setIsMobile(isMobile);
+    setSidebarVisible(!isMobile);
+    setIsMobileLoading(false);
+  }, [setSidebarVisible, setIsMobile, setIsMobileLoading]);
 
   useEffect(() => {
-    const checkMobile = () => {
-      const isMobile = window.matchMedia("(max-width: 768px)").matches;
-      setIsMobile(isMobile);
-      setSidebarVisible(!isMobile);
-      setIsMobileLoading(false);
-    };
-
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
-  }, [setSidebarVisible, setIsMobile, setIsMobileLoading]);
+  }, [checkMobile]);
 
   const header =
     headerContent ||

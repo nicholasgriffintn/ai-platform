@@ -12,7 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "~/components/ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
-import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 
 interface Question {
   id: string;
@@ -350,7 +350,7 @@ interface SampleQuestionsProps {
 export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
   const { trackEvent } = useTrackEvent();
 
-  const { isMobile, isMobileLoading } = useChatStore();
+  const { isMobile, isMobileLoading } = useUIStore();
   const [questions, setQuestions] = useState<Question[]>([]);
 
   const refreshQuestions = useCallback(

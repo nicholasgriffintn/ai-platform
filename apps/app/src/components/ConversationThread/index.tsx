@@ -12,7 +12,7 @@ import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
 import { UsageLimitWarning } from "~/components/UsageLimitWarning";
-import { useTrackEvent } from "~/hooks/use-track-event";
+import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
@@ -26,8 +26,7 @@ import { MessageList } from "./MessageList";
 import { WelcomeScreen } from "./WelcomeScreen";
 
 export const ConversationThread = () => {
-  const { trackEvent, trackFeatureUsage, trackError, EventCategory } =
-    useTrackEvent();
+  const { trackEvent, trackFeatureUsage, trackError } = useTrackEvent();
 
   const { currentConversationId, model, chatInput, setChatInput } =
     useChatStore();
@@ -53,26 +52,29 @@ export const ConversationThread = () => {
 
   const chatInputRef = useRef<ChatInputHandle>(null);
 
-  const handleArtifactOpen = (
-    artifact: ArtifactProps,
-    combine?: boolean,
-    artifacts?: ArtifactProps[],
-  ) => {
-    setCurrentArtifact(artifact);
-    setIsPanelVisible(true);
+  const handleArtifactOpen = useCallback(
+    (
+      artifact: ArtifactProps,
+      combine?: boolean,
+      artifacts?: ArtifactProps[],
+    ) => {
+      setCurrentArtifact(artifact);
+      setIsPanelVisible(true);
 
-    trackFeatureUsage("view_artifact", {
-      artifact_type: artifact.type,
-      conversation_id: currentConversationId || "none",
-      combined_view: Boolean(combine && artifacts && artifacts.length > 1),
-    });
+      trackFeatureUsage("view_artifact", {
+        artifact_type: artifact.type,
+        conversation_id: currentConversationId || "none",
+        combined_view: Boolean(combine && artifacts && artifacts.length > 1),
+      });
 
-    if (combine && artifacts && artifacts.length > 1) {
-      setCurrentArtifacts(artifacts);
-      setIsCombinedPanel(true);
-      return;
-    }
-  };
+      if (combine && artifacts && artifacts.length > 1) {
+        setCurrentArtifacts(artifacts);
+        setIsCombinedPanel(true);
+        return;
+      }
+    },
+    [currentConversationId, trackFeatureUsage],
+  );
 
   const handlePanelClose = useCallback(() => {
     if (currentArtifact) {
@@ -142,93 +144,108 @@ export const ConversationThread = () => {
     };
   }, [handleKeyPress]);
 
-  const handleSubmit = async (
-    e: FormEvent,
-    attachmentData?: { type: string; data: string; name?: string },
-  ) => {
-    e.preventDefault();
-    if (!chatInput.trim() && !attachmentData) {
-      return;
-    }
+  const handleSubmit = useCallback(
+    async (
+      e: FormEvent,
+      attachmentData?: { type: string; data: string; name?: string },
+    ) => {
+      e.preventDefault();
+      if (!chatInput.trim() && !attachmentData) {
+        return;
+      }
 
-    // For text-to-image models, only allow the first message
-    const isTextToImageModel =
-      model !== null && apiModels?.[model]?.type?.includes("text-to-image");
-    if (isTextToImageModel && messages.length > 0) {
-      toast.error(
-        "Text-to-image models only support one message per conversation. Please start a new conversation.",
-      );
-      return;
-    }
+      // For text-to-image models, only allow the first message
+      const isTextToImageModel =
+        model !== null && apiModels?.[model]?.type?.includes("text-to-image");
+      if (isTextToImageModel && messages.length > 0) {
+        toast.error(
+          "Text-to-image models only support one message per conversation. Please start a new conversation.",
+        );
+        return;
+      }
 
-    try {
-      const originalInput = chatInput;
-      setChatInput("");
+      try {
+        const originalInput = chatInput;
+        setChatInput("");
 
-      trackEvent({
-        name: "send_message",
-        category: EventCategory.CONVERSATION,
-        properties: {
+        trackEvent({
+          name: "send_message",
+          category: EventCategory.CONVERSATION,
+          properties: {
+            conversation_id: currentConversationId || "new",
+            model_id: model || "unknown",
+            message_length: chatInput.length,
+            has_attachment: Boolean(attachmentData),
+            attachment_type: attachmentData ? attachmentData.type : undefined,
+            is_first_message: messages.length === 0,
+          },
+        });
+
+        const result = await sendMessage(chatInput, attachmentData);
+        if (result?.status === "error") {
+          setChatInput(originalInput);
+        } else {
+          setTimeout(() => {
+            chatInputRef.current?.focus();
+          }, 0);
+        }
+      } catch (error) {
+        console.error("Failed to send message:", error);
+        trackError("message_send_error", error, {
           conversation_id: currentConversationId || "new",
           model_id: model || "unknown",
-          message_length: chatInput.length,
-          has_attachment: Boolean(attachmentData),
-          attachment_type: attachmentData ? attachmentData.type : undefined,
-          is_first_message: messages.length === 0,
-        },
-      });
-
-      const result = await sendMessage(chatInput, attachmentData);
-      if (result?.status === "error") {
-        setChatInput(originalInput);
-      } else {
-        setTimeout(() => {
-          chatInputRef.current?.focus();
-        }, 0);
+        });
       }
-    } catch (error) {
-      console.error("Failed to send message:", error);
-      trackError("message_send_error", error, {
+    },
+    [
+      chatInput,
+      model,
+      apiModels,
+      messages,
+      sendMessage,
+      trackEvent,
+      trackError,
+      currentConversationId,
+      setChatInput,
+    ],
+  );
+
+  const handleTranscribe = useCallback(
+    async (data: {
+      response: {
+        content: string;
+      };
+    }) => {
+      setChatInput(data.response.content);
+      trackFeatureUsage("transcription_used", {
         conversation_id: currentConversationId || "new",
-        model_id: model || "unknown",
+        content_length: data.response.content.length,
       });
-    }
-  };
+    },
+    [currentConversationId, trackFeatureUsage, setChatInput],
+  );
 
-  const handleTranscribe = async (data: {
-    response: {
-      content: string;
-    };
-  }) => {
-    setChatInput(data.response.content);
-    trackFeatureUsage("transcription_used", {
-      conversation_id: currentConversationId || "new",
-      content_length: data.response.content.length,
-    });
-  };
+  const handleToolInteraction = useCallback(
+    (toolName: string, action: "useAsPrompt", data: Record<string, any>) => {
+      // Track tool interaction
+      trackFeatureUsage("tool_interaction", {
+        tool_name: toolName,
+        action: action,
+        conversation_id: currentConversationId || "new",
+      });
 
-  const handleToolInteraction = (
-    toolName: string,
-    action: "useAsPrompt",
-    data: Record<string, any>,
-  ) => {
-    // Track tool interaction
-    trackFeatureUsage("tool_interaction", {
-      tool_name: toolName,
-      action: action,
-      conversation_id: currentConversationId || "new",
-    });
-
-    switch (toolName) {
-      case "web_search":
-        if (action === "useAsPrompt") {
-          setChatInput(data.question);
-        }
-        break;
-      default:
-        break;
-    }
-  };
+      switch (toolName) {
+        case "web_search":
+          if (action === "useAsPrompt") {
+            setChatInput(data.question);
+          }
+          break;
+        default:
+          break;
+      }
+    },
+    [currentConversationId, trackFeatureUsage, setChatInput],
+  );
 
   const showWelcomeScreen =
     messages.length === 0 &&

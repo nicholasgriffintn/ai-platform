@@ -27,6 +27,7 @@ import {
   useLoadingProgress,
 } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 import type { ChatMode, ModelConfigItem } from "~/types";
 import { ModelOption } from "./ModelOption";
 import { ModelsList } from "./ModelsList";
@@ -43,7 +44,7 @@ export const ModelSelector = ({
   mono = false,
 }: ModelSelectorProps) => {
   const { trackEvent } = useTrackEvent();
-
+  const { isMobile } = useUIStore();
   const {
     isPro,
     model,
@@ -54,7 +55,6 @@ export const ModelSelector = ({
     setChatSettings,
     selectedAgentId,
     setSelectedAgentId,
-    isMobile,
   } = useChatStore();
   const { agents, isLoadingAgents } = useAgents();
   const [isOpen, setIsOpen] = useState(false);

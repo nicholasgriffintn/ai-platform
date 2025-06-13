@@ -1,16 +1,19 @@
 import { useEffect } from "react";
 
 import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 
 type ShortcutHandler = (e: KeyboardEvent) => void;
 
 export function useKeyboardShortcuts() {
   const {
-    clearCurrentConversation,
     setSidebarVisible,
     sidebarVisible,
     showKeyboardShortcuts,
     setShowKeyboardShortcuts,
+  } = useUIStore();
+  const {
+    clearCurrentConversation,
     setShowSearch,
     localOnlyMode,
     setLocalOnlyMode,

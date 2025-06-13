@@ -94,7 +94,7 @@ export const KeyboardShortcutsHelp = ({
           <div className="space-y-6">
             {shortcuts.slice(0, 4).map((shortcut) => (
               <div
-                key={shortcut.description}
+                key={shortcut.id}
                 className="flex items-center justify-between py-2"
               >
                 <span className="text-zinc-700 dark:text-zinc-300">
@@ -102,7 +102,10 @@ export const KeyboardShortcutsHelp = ({
                 </span>
                 <div className="flex gap-1">
                   {shortcut.keys.map((keyValue) => (
-                    <KeyComponent key={shortcut.id} keyValue={keyValue} />
+                    <KeyComponent
+                      key={`${shortcut.id}-${keyValue}`}
+                      keyValue={keyValue}
+                    />
                   ))}
                 </div>
               </div>
@@ -111,7 +114,7 @@ export const KeyboardShortcutsHelp = ({
           <div className="space-y-6">
             {shortcuts.slice(4).map((shortcut) => (
               <div
-                key={shortcut.description}
+                key={shortcut.id}
                 className="flex items-center justify-between py-2"
               >
                 <span className="text-zinc-700 dark:text-zinc-300">
@@ -119,7 +122,10 @@ export const KeyboardShortcutsHelp = ({
                 </span>
                 <div className="flex gap-1">
                   {shortcut.keys.map((keyValue) => (
-                    <KeyComponent key={shortcut.id} keyValue={keyValue} />
+                    <KeyComponent
+                      key={`${shortcut.id}-${keyValue}`}
+                      keyValue={keyValue}
+                    />
                   ))}
                 </div>
               </div>

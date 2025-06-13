@@ -2,12 +2,12 @@ import { Home } from "lucide-react";
 import { Link } from "react-router";
 
 import { cn } from "~/lib/utils";
-import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 import { SidebarFooter } from "./Sidebar/SidebarFooter";
 import { SidebarHeader } from "./Sidebar/SidebarHeader";
 
 export function StandardSidebarContent() {
-  const { sidebarVisible, isMobile, setSidebarVisible } = useChatStore();
+  const { sidebarVisible, isMobile, setSidebarVisible } = useUIStore();
 
   return (
     <>

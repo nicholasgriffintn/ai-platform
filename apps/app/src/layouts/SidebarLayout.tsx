@@ -4,7 +4,7 @@ import { cn } from "~/lib/utils";
 import { LoginModal } from "~/components/LoginModal";
 import { ChatNavbar } from "~/components/Navbar";
 import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
-import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 import { KeyboardShortcutsHelp } from "../components/KeyboardShortcutsHelp";
 
 interface SidebarLayoutProps {
@@ -28,7 +28,7 @@ export function SidebarLayout({
     setShowKeyboardShortcuts,
     showLoginModal,
     setShowLoginModal,
-  } = useChatStore();
+  } = useUIStore();
   useKeyboardShortcuts();
 
   const handleEnterApiKey = () => {

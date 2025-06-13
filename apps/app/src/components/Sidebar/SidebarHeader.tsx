@@ -1,6 +1,7 @@
 import { Cloud, CloudOff, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Button } from "~/components/ui";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 
 interface SidebarHeaderProps {
   showCloudButton?: boolean;
@@ -12,9 +13,8 @@ export function SidebarHeader({
   showCloudButton = true,
   onToggleLocalOnlyMode,
 }: SidebarHeaderProps) {
+  const { sidebarVisible, setSidebarVisible } = useUIStore();
   const {
-    sidebarVisible,
-    setSidebarVisible,
     isAuthenticated,
     localOnlyMode,
     setLocalOnlyMode, // Needed for fallback toggle

@@ -14,6 +14,7 @@ import { useTrackEvent } from "~/hooks/use-track-event";
 import { useChats, useDeleteChat, useUpdateChatTitle } from "~/hooks/useChat";
 import { categorizeChatsByDate } from "~/lib/sidebar";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 import type { Conversation } from "~/types/chat";
 import { ChatThemeDropdown } from "../Sidebar/ChatThemeDropdown";
 import { MoreOptionsDropdown } from "../Sidebar/MoreOptionsDropdown";
@@ -25,6 +26,10 @@ export const ChatSidebar = () => {
   const {
     sidebarVisible,
     setSidebarVisible,
+    isMobile,
+    setShowKeyboardShortcuts,
+  } = useUIStore();
+  const {
     currentConversationId,
     setCurrentConversationId,
     clearCurrentConversation,
@@ -33,8 +38,6 @@ export const ChatSidebar = () => {
     isPro,
     localOnlyMode,
     setLocalOnlyMode,
-    isMobile,
-    setShowKeyboardShortcuts,
   } = useChatStore();
 
   const { data: conversations = [], isLoading } = useChats();

@@ -28,18 +28,6 @@ export interface ChatStore {
   startNewConversation: (id?: string) => void;
   clearCurrentConversation: () => void;
 
-  // UI state
-  isMobile: boolean;
-  setIsMobile: (isMobile: boolean) => void;
-  isMobileLoading: boolean;
-  setIsMobileLoading: (isMobileLoading: boolean) => void;
-  sidebarVisible: boolean;
-  setSidebarVisible: (visible: boolean) => void;
-  showLoginModal: boolean;
-  setShowLoginModal: (showLoginModal: boolean) => void;
-  showKeyboardShortcuts: boolean;
-  setShowKeyboardShortcuts: (showKeyboardShortcuts: boolean) => void;
-
   // Authentication state
   hasApiKey: boolean;
   setHasApiKey: (hasApiKey: boolean) => void;
@@ -84,23 +72,6 @@ export const useChatStore = create<ChatStore>()(
       },
       clearCurrentConversation: () => set({ currentConversationId: undefined }),
 
-      // UI state
-      isMobileLoading: true,
-      setIsMobileLoading: (isMobileLoading) => set({ isMobileLoading }),
-      isMobile: false,
-      setIsMobile: (isMobile) => set({ isMobile }),
-      sidebarVisible: true,
-      setSidebarVisible: (visible) => set({ sidebarVisible: visible }),
-      showLoginModal: false,
-      setShowLoginModal: (showLoginModal) => set({ showLoginModal }),
-      showKeyboardShortcuts: false,
-      setShowKeyboardShortcuts: (showKeyboardShortcuts) =>
-        set({ showKeyboardShortcuts }),
-      showSearch: false,
-      setShowSearch: (showSearch) => set({ showSearch }),
-      chatInput: "",
-      setChatInput: (query) => set({ chatInput: query }),
-
       // Authentication state
       hasApiKey: false,
       setHasApiKey: (hasApiKey) => set({ hasApiKey }),
@@ -125,6 +96,10 @@ export const useChatStore = create<ChatStore>()(
       setSelectedAgentId: (agentId) => set({ selectedAgentId: agentId }),
       chatSettings: defaultSettings,
       setChatSettings: (settings) => set({ chatSettings: settings }),
+      chatInput: "",
+      setChatInput: (query) => set({ chatInput: query }),
+      showSearch: false,
+      setShowSearch: (showSearch) => set({ showSearch }),
 
       // Initialization
       initializeStore: async (completionId?: string) => {

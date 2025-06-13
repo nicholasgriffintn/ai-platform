@@ -1,10 +1,10 @@
-import { useChatStore } from "~/state/stores/chatStore";
+import { useUIStore } from "~/state/stores/uiStore";
 import { ChatThemeDropdown } from "./ChatThemeDropdown";
 import { MoreOptionsDropdown } from "./MoreOptionsDropdown";
 import { UserMenuItem } from "./UserMenuItem";
 
 export function SidebarFooter() {
-  const { setShowKeyboardShortcuts } = useChatStore();
+  const { setShowKeyboardShortcuts } = useUIStore();
 
   return (
     <div className="absolute bottom-0 left-0 right-0 p-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">

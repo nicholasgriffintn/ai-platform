@@ -10,7 +10,7 @@ export const EventCategory = {
   USER_JOURNEY: "user_journey",
   NAVIGATION: "navigation",
   SESSION: "session",
-} as const;
+};
 
 export type TrackEventProps = {
   name: string;
