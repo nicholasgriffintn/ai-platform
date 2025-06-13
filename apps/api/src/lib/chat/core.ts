@@ -101,7 +101,6 @@ async function prepareRequestData(options: CoreChatOptions) {
 
   const database = Database.getInstance(env);
 
-  // Parallelize independent operations for better performance
   const [userSettings, selectedModels] = await Promise.all([
     database.getUserSettings(user?.id),
     selectModels(
@@ -160,9 +159,6 @@ async function prepareRequestData(options: CoreChatOptions) {
   const currentMode = mode;
   const finalUserMessage = sanitiseInput(lastMessageContentText);
 
-  // Initialize embedding and guardrails in parallel if needed
-  const initPromises: Promise<any>[] = [];
-  
   const embedding = Embedding.getInstance(env, user, userSettings);
   
   let finalMessagePromise: Promise<string>;

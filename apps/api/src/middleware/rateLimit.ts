@@ -50,9 +50,7 @@ export async function rateLimit(context: Context, next: Next) {
     );
   }
 
-  // Track usage metrics asynchronously to avoid blocking the request
   const name = pathname.split("/").pop();
-  // Fire and forget - don't await to avoid blocking the request
   Promise.resolve().then(async () => {
     try {
       await trackUsageMetric(userId, name, context.env.ANALYTICS);

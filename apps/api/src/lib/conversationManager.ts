@@ -13,6 +13,8 @@ import { type UsageLimits, UsageManager } from "./usageManager";
 
 const logger = getLogger({ prefix: "CONVERSATION_MANAGER" });
 
+const MAX_USAGE_MANAGER_CACHE_SIZE = 100;
+
 export class ConversationManager {
   private static instance: ConversationManager;
   private database: Database;
@@ -50,6 +52,12 @@ export class ConversationManager {
     const cacheKey = `${user?.id || 'null'}-${anonymousUser?.id || 'null'}`;
     
     if (!ConversationManager.usageManagerCache.has(cacheKey)) {
+      // Simple cache size management
+      if (ConversationManager.usageManagerCache.size >= MAX_USAGE_MANAGER_CACHE_SIZE) {
+        const firstKey = ConversationManager.usageManagerCache.keys().next().value;
+        ConversationManager.usageManagerCache.delete(firstKey);
+      }
+      
       const usageManager = new UsageManager(database, user, anonymousUser);
       ConversationManager.usageManagerCache.set(cacheKey, usageManager);
     }

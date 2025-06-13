@@ -58,10 +58,10 @@ const modelConfig: ModelConfig = {
   ...v0ModelConfig,
 };
 
-// Cache for frequently accessed model configurations
 const modelConfigCache = new Map<string, any>();
 const userModelCache = new Map<string, Record<string, ModelConfigItem>>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 5 * 60 * 1000;
+const MAX_CACHE_SIZE = 500;
 const cacheTimestamps = new Map<string, number>();
 
 function isCacheValid(key: string): boolean {
@@ -70,6 +70,12 @@ function isCacheValid(key: string): boolean {
 }
 
 function setCacheEntry(key: string, value: any): void {
+  if (modelConfigCache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = cacheTimestamps.keys().next().value;
+    modelConfigCache.delete(oldestKey);
+    cacheTimestamps.delete(oldestKey);
+  }
+  
   modelConfigCache.set(key, value);
   cacheTimestamps.set(key, Date.now());
 }
@@ -135,7 +141,6 @@ export function getModelConfigByMatchingModel(matchingModel: string) {
   return result;
 }
 
-// Cache frequently accessed model lists
 let cachedModels: typeof modelConfig | null = null;
 let cachedFreeModels: typeof modelConfig | null = null;
 let cachedFeaturedModels: typeof modelConfig | null = null;
@@ -238,7 +243,6 @@ export async function filterModelsForUserAccess(
   env: IEnv,
   userId?: number,
 ): Promise<Record<string, ModelConfigItem>> {
-  // Use caching for user-specific model access
   const cacheKey = `user-models-${userId || 'anonymous'}`;
   
   if (userModelCache.has(cacheKey) && isCacheValid(cacheKey)) {
@@ -272,6 +276,12 @@ export async function filterModelsForUserAccess(
       }
     }
     
+    if (userModelCache.size >= MAX_CACHE_SIZE) {
+      const oldestKey = cacheTimestamps.keys().next().value;
+      userModelCache.delete(oldestKey);
+      cacheTimestamps.delete(oldestKey);
+    }
+    
     userModelCache.set(cacheKey, filteredModels);
     cacheTimestamps.set(cacheKey, Date.now());
     
@@ -298,6 +308,12 @@ export async function filterModelsForUserAccess(
       if (isFree || isEnabled) {
         filteredModels[modelId] = model;
       }
+    }
+
+    if (userModelCache.size >= MAX_CACHE_SIZE) {
+      const oldestKey = cacheTimestamps.keys().next().value;
+      userModelCache.delete(oldestKey);
+      cacheTimestamps.delete(oldestKey);
     }
 
     userModelCache.set(cacheKey, filteredModels);

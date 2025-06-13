@@ -12,10 +12,10 @@ const logger = getLogger({ prefix: "AUTH_MIDDLEWARE" });
 
 const ANONYMOUS_ID_COOKIE = "anon_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
-
-// Simple in-memory cache for bot detection results
-const botCache = new Map<string, boolean>();
 const BOT_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const MAX_BOT_CACHE_SIZE = 1000;
+
+const botCache = new Map<string, boolean>();
 const botCacheTimestamps = new Map<string, number>();
 
 function isBotCached(userAgent: string): boolean {
@@ -26,7 +26,6 @@ function isBotCached(userAgent: string): boolean {
     return botCache.get(userAgent) || false;
   }
 
-  // Clean cache entry if expired
   if (timestamp) {
     botCache.delete(userAgent);
     botCacheTimestamps.delete(userAgent);
@@ -37,10 +36,16 @@ function isBotCached(userAgent: string): boolean {
     isBotUser = isbot(userAgent);
   } catch (error) {
     logger.error("Failed to check if user is a bot:", { error });
-    isBotUser = true; // Default to bot if detection fails
+    isBotUser = true;
   }
 
-  // Cache the result
+  // Prevent cache from growing too large
+  if (botCache.size >= MAX_BOT_CACHE_SIZE) {
+    const oldestKey = botCacheTimestamps.keys().next().value;
+    botCache.delete(oldestKey);
+    botCacheTimestamps.delete(oldestKey);
+  }
+
   botCache.set(userAgent, isBotUser);
   botCacheTimestamps.set(userAgent, now);
   
@@ -176,7 +181,6 @@ export async function authMiddleware(context: Context, next: Next) {
         }
       }
     } catch (error) {
-      console.error(error);
       logger.error("Anonymous user tracking failed:", { error });
     }
   }
