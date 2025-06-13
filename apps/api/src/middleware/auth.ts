@@ -1,8 +1,8 @@
 import type { Context, Next } from "hono";
 import { isbot } from "isbot";
 
-import { Database } from "~/lib/database";
 import { KVCache } from "~/lib/cache";
+import { Database } from "~/lib/database";
 import { getUserByJwtToken } from "~/services/auth/jwt";
 import { getUserBySessionId } from "~/services/auth/user";
 import type { AnonymousUser, User } from "~/types";
@@ -27,7 +27,7 @@ function getBotCache(kv: any): KVCache {
 async function isBotCached(userAgent: string, kv: any): Promise<boolean> {
   const cache = getBotCache(kv);
   const cacheKey = KVCache.createKey("bot", userAgent);
-  
+
   const cached = await cache.get<boolean>(cacheKey);
   if (cached !== null) {
     return cached;
@@ -41,10 +41,10 @@ async function isBotCached(userAgent: string, kv: any): Promise<boolean> {
     isBotUser = true;
   }
 
-  cache.set(cacheKey, isBotUser).catch(error => {
+  cache.set(cacheKey, isBotUser).catch((error) => {
     logger.error("Failed to cache bot detection result", { error, userAgent });
   });
-  
+
   return isBotUser;
 }
 
@@ -52,10 +52,10 @@ function parseCookies(cookieHeader: string): Record<string, string> {
   const cookies: Record<string, string> = {};
   if (!cookieHeader) return cookies;
 
-  for (const cookie of cookieHeader.split(';')) {
-    const [name, ...rest] = cookie.trim().split('=');
+  for (const cookie of cookieHeader.split(";")) {
+    const [name, ...rest] = cookie.trim().split("=");
     if (name && rest.length > 0) {
-      cookies[name] = rest.join('=');
+      cookies[name] = rest.join("=");
     }
   }
 
@@ -123,7 +123,7 @@ export async function authMiddleware(context: Context, next: Next) {
           logger.error("API Key authentication check failed:", { error });
           return null;
         }
-      })()
+      })(),
     );
   }
 
@@ -140,19 +140,19 @@ export async function authMiddleware(context: Context, next: Next) {
           logger.error("JWT authentication failed:", { error });
           return null;
         }
-      })()
+      })(),
     );
   }
 
   if (authPromises.length > 0) {
     const authResults = await Promise.allSettled(authPromises);
-    const fulfilledResult = authResults.find(result => 
-      result.status === 'fulfilled' && result.value !== null
+    const fulfilledResult = authResults.find(
+      (result) => result.status === "fulfilled" && result.value !== null,
     );
-    user = fulfilledResult?.status === 'fulfilled' ? fulfilledResult.value : null;
+    user =
+      fulfilledResult?.status === "fulfilled" ? fulfilledResult.value : null;
   }
 
-  // Handle anonymous user tracking only if no authenticated user found
   if (!user) {
     try {
       if (anonymousId) {

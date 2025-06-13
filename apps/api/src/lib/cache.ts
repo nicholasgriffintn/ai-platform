@@ -4,8 +4,7 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "CACHE" });
 
 export interface CacheOptions {
-  ttl?: number; // TTL in seconds
-  expirationTtl?: number; // Alternative TTL name for clarity
+  ttl?: number;
 }
 
 export class KVCache {
@@ -32,9 +31,13 @@ export class KVCache {
     }
   }
 
-  async set<T>(key: string, value: T, options?: CacheOptions): Promise<boolean> {
+  async set<T>(
+    key: string,
+    value: T,
+    options?: CacheOptions,
+  ): Promise<boolean> {
     try {
-      const ttl = options?.ttl || options?.expirationTtl || this.defaultTTL;
+      const ttl = options?.ttl || this.defaultTTL;
       await this.kv.put(key, JSON.stringify(value), {
         expirationTtl: ttl,
       });
@@ -65,12 +68,10 @@ export class KVCache {
     }
   }
 
-  // Utility method to create a cache key with prefix
   static createKey(prefix: string, ...parts: string[]): string {
     return `${prefix}:${parts.join(":")}`;
   }
 
-  // Clear user-specific model cache when settings change
   async clearUserModelCache(userId: string): Promise<boolean> {
     try {
       const userModelKey = KVCache.createKey("user-models", userId);
