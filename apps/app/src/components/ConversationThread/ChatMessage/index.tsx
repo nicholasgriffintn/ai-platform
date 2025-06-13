@@ -10,11 +10,13 @@ import { MessageContent } from "./MessageContent";
 import { ToolMessage } from "./ToolMessage";
 
 export const ChatMessage = ({
+  conversationId,
   message,
   onToolInteraction,
   onArtifactOpen,
   isSharedView = false,
 }: {
+  conversationId?: string;
   message: Message;
   onToolInteraction?: (
     toolName: string,
@@ -66,15 +68,16 @@ export const ChatMessage = ({
   };
 
   const submitFeedback = async (value: 1 | -1) => {
-    if (!message.log_id || isSubmittingFeedback || isSharedView) return;
+    if (!message.log_id || isSubmittingFeedback || isSharedView) {
+      return;
+    }
 
     setIsSubmittingFeedback(true);
     try {
-      await apiService.submitFeedback(
-        message.completion_id || "",
-        message.log_id,
-        value,
-      );
+      if (!conversationId) {
+        return;
+      }
+      await apiService.submitFeedback(conversationId, message.log_id, value);
       setFeedbackState(value === 1 ? "liked" : "disliked");
     } catch (error) {
       console.error("Failed to submit feedback:", error);
@@ -135,7 +138,8 @@ export const ChatMessage = ({
             </div>
           </div>
 
-          {message.content &&
+          {conversationId &&
+            message.content &&
             ((message.role !== "user" && message.log_id) ||
               (message.role !== "user" && message.created)) && (
               <MessageActions

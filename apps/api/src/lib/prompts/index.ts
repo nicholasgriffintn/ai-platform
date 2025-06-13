@@ -1,5 +1,6 @@
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import type { IBody, IUser, IUserSettings } from "~/types";
+import { trimTemplateWhitespace } from "~/utils/strings";
 import { returnCodingPrompt } from "./coding";
 import { getTextToImageSystemPrompt } from "./image";
 import { returnStandardPrompt } from "./standard";
@@ -15,48 +16,54 @@ export async function getSystemPrompt(
   const supportsFunctions = modelConfig?.supportsFunctions || false;
   const supportsArtifacts = modelConfig?.supportsArtifacts || false;
   const hasThinking = modelConfig?.hasThinking || false;
+  const requiresThinkingPrompt = modelConfig?.requiresThinkingPrompt || false;
+
+  let prompt: string;
 
   if (!modelConfig) {
-    return await returnStandardPrompt(
+    prompt = await returnStandardPrompt(
       request,
       user,
       userSettings,
       supportsFunctions,
       supportsArtifacts,
       hasThinking,
+      requiresThinkingPrompt,
     );
+  } else {
+    const isTextModel = modelConfig.type.includes("text");
+
+    const isCodingModel = modelConfig.type.includes("coding");
+    if (isCodingModel && !isTextModel) {
+      prompt = returnCodingPrompt(
+        request,
+        userSettings,
+        supportsFunctions,
+        supportsArtifacts,
+        hasThinking,
+        requiresThinkingPrompt,
+      );
+    } else {
+      const isTextToImageModel = modelConfig.type.includes("text-to-image");
+      if (isTextToImageModel) {
+        prompt = getTextToImageSystemPrompt(request.image_style);
+      } else if (!isTextModel) {
+        prompt = emptyPrompt();
+      } else {
+        prompt = await returnStandardPrompt(
+          request,
+          user,
+          userSettings,
+          supportsFunctions,
+          supportsArtifacts,
+          hasThinking,
+          requiresThinkingPrompt,
+        );
+      }
+    }
   }
 
-  const isTextModel = modelConfig.type.includes("text");
-
-  const isCodingModel = modelConfig.type.includes("coding");
-  if (isCodingModel && !isTextModel) {
-    return returnCodingPrompt(
-      request,
-      userSettings,
-      supportsFunctions,
-      supportsArtifacts,
-      hasThinking,
-    );
-  }
-
-  const isTextToImageModel = modelConfig.type.includes("text-to-image");
-  if (isTextToImageModel) {
-    return getTextToImageSystemPrompt(request.image_style);
-  }
-
-  if (!isTextModel) {
-    return emptyPrompt();
-  }
-
-  return returnStandardPrompt(
-    request,
-    user,
-    userSettings,
-    supportsFunctions,
-    supportsArtifacts,
-    hasThinking,
-  );
+  return trimTemplateWhitespace(prompt);
 }
 
 export function analyseArticlePrompt(article: string): string {

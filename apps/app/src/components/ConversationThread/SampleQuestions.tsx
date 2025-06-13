@@ -235,6 +235,36 @@ const questionPool: QuestionPool = {
       question:
         "Design an algorithmic trading strategy for a given stock and evaluate its potential success.",
     },
+    {
+      id: "analytical-logical-deduction",
+      text: "Logical deduction",
+      question:
+        "Create a logical deduction exercise involving three people where each has a different favorite color.",
+    },
+    {
+      id: "analytical-lateral-thinking",
+      text: "Lateral thinking",
+      question:
+        "Formulate a brain teaser that requires lateral thinking to solve.",
+    },
+    {
+      id: "analytical-deductive-scenario",
+      text: "Deductive scenario",
+      question:
+        "Show me a scenario where I must use deductive reasoning to conclude an outcome.",
+    },
+    {
+      id: "analytical-series-statements",
+      text: "Series of statements",
+      question:
+        "Give me a series of statements and let me determine which conclusion logically follows.",
+    },
+    {
+      id: "analytical-abstract-patterns",
+      text: "Abstract patterns",
+      question:
+        "Provide an abstract reasoning question that asks me to identify patterns among shapes.",
+    },
   ],
   ethical: [
     {

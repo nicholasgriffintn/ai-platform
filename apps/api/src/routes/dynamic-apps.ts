@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
 import {
   executeDynamicApp,
   getDynamicAppById,
@@ -14,6 +15,7 @@ import { appSchema } from "~/types/app-schema";
 import type { IRequest } from "~/types/chat";
 import { getLogger } from "~/utils/logger";
 import type { IUser } from "../types";
+import { appDataSchema } from "./schemas/app-data";
 import { appInfoSchema } from "./schemas/apps";
 import { errorResponseSchema } from "./schemas/shared";
 
@@ -57,6 +59,46 @@ dynamicApps.get(
   async (c) => {
     const apps = await getDynamicApps();
     return c.json(apps);
+  },
+);
+
+dynamicApps.get(
+  "/responses",
+  describeRoute({
+    summary: "List stored dynamic-app responses for user",
+    tags: ["Dynamic Apps"],
+    parameters: [
+      {
+        name: "appId",
+        in: "query",
+        required: false,
+        schema: { type: "string" },
+      },
+    ],
+    responses: {
+      200: {
+        description: "Array of responses",
+        content: {
+          "application/json": {
+            schema: resolver(z.array(appDataSchema)),
+          },
+        },
+      },
+      401: {
+        description: "Authentication required",
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
+      },
+    },
+  }),
+  async (c: Context) => {
+    const user = c.get("user") as IUser;
+    const appId = c.req.query("appId");
+
+    const repo = new DynamicAppResponseRepository(c.env);
+    const list = await repo.listResponsesForUser(user.id, appId);
+    return c.json(list);
   },
 );
 
@@ -249,6 +291,64 @@ dynamicApps.post(
         500,
       );
     }
+  },
+);
+
+dynamicApps.get(
+  "/responses/:responseId",
+  describeRoute({
+    summary: "Get stored dynamic-app response",
+    description:
+      "Retrieve a stored dynamic-app response by its `id` (response_id)",
+    tags: ["Dynamic Apps"],
+    parameters: [
+      {
+        name: "responseId",
+        in: "path",
+        required: true,
+        schema: { type: "string" },
+      },
+    ],
+    responses: {
+      200: {
+        description: "Stored dynamic-app response",
+        content: {
+          "application/json": {
+            schema: resolver(z.object({ response: z.any() })),
+          },
+        },
+      },
+      400: {
+        description: "Bad request",
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
+      },
+      401: {
+        description: "Authentication required",
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
+      },
+      404: {
+        description: "Response not found",
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
+      },
+    },
+  }),
+  async (c: Context) => {
+    const responseId = c.req.param("responseId");
+    if (!responseId) {
+      return c.json({ error: "responseId is required" }, 400);
+    }
+    const repo = new DynamicAppResponseRepository(c.env);
+    const data = await repo.getResponseById(responseId);
+    if (!data) {
+      return c.json({ error: "Response not found" }, 404);
+    }
+    return c.json({ response: data });
   },
 );
 

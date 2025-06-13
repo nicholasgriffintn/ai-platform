@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 
 import { Button } from "~/components/ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
@@ -20,6 +21,7 @@ import { groupAppsByCategory } from "./utils";
 export const DynamicApps = () => {
   const { isAuthenticationLoading } = useChatStore();
   const { trackEvent } = useTrackEvent();
+  const navigate = useNavigate();
 
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
   const [result, setResult] = useState<Record<string, any> | null>(null);
@@ -71,14 +73,18 @@ export const DynamicApps = () => {
         });
 
         const result = await executeApp({ id: selectedAppId, formData });
-        setResult(result);
+        if (result?.response_id) {
+          navigate(`/apps/responses/${result.response_id}`);
+        } else {
+          setResult(result);
+        }
         return result;
       } catch (error) {
         console.error(`Error executing app ${selectedAppId}:`, error);
         throw error;
       }
     },
-    [selectedAppId, executeApp, trackEvent],
+    [selectedAppId, executeApp, trackEvent, navigate],
   );
 
   const handleReset = useCallback(() => {

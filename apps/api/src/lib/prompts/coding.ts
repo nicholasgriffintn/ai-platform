@@ -8,6 +8,7 @@ export function returnCodingPrompt(
   supportsFunctions?: boolean,
   supportsArtifacts?: boolean,
   hasThinking?: boolean,
+  requiresThinkingPrompt?: boolean,
 ): string {
   const chatMode = request.mode || "standard";
 
@@ -31,6 +32,7 @@ export function returnCodingPrompt(
   } = getResponseStyle(
     response_mode,
     hasThinking,
+    requiresThinkingPrompt,
     supportsFunctions,
     supportsArtifacts,
     isAgent,

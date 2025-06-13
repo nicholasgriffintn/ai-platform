@@ -537,6 +537,13 @@ export function useChatManager() {
                   .map((item) => item.text || "")
                   .join("");
 
+          await updateAssistantMessage(
+            conversationId,
+            messageContent,
+            assistantMessage.reasoning?.content,
+            assistantMessage,
+          );
+
           response = messageContent;
         }
 

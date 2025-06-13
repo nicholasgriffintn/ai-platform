@@ -98,6 +98,10 @@ class ApiService {
   };
 
   getChat = async (completion_id: string): Promise<Conversation> => {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
     let headers = {};
     try {
       headers = await this.getHeaders();
@@ -150,6 +154,10 @@ class ApiService {
     completion_id: string,
     messages: Message[],
   ): Promise<string> => {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
     let headers = {};
     try {
       headers = await this.getHeaders();
@@ -190,6 +198,10 @@ class ApiService {
     completion_id: string,
     newTitle: string,
   ): Promise<void> => {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
     let headers = {};
     try {
       headers = await this.getHeaders();
@@ -495,6 +507,10 @@ class ApiService {
   };
 
   deleteConversation = async (completion_id: string): Promise<void> => {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
     let headers = {};
     try {
       headers = await this.getHeaders();
@@ -535,6 +551,10 @@ class ApiService {
   shareConversation = async (
     completion_id: string,
   ): Promise<{ share_id: string }> => {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
     let headers = {};
     try {
       headers = await this.getHeaders();
@@ -558,6 +578,10 @@ class ApiService {
   };
 
   unshareConversation = async (completion_id: string): Promise<void> => {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
     let headers = {};
     try {
       headers = await this.getHeaders();
@@ -584,6 +608,10 @@ class ApiService {
     feedback: 1 | -1,
     score = 50,
   ): Promise<void> => {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
     let headers = {};
     try {
       headers = await this.getHeaders();
