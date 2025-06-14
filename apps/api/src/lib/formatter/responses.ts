@@ -400,6 +400,10 @@ export class ResponseFormatter {
       return { ...data, response: data.output.message.content[0].text };
     }
 
-    return { ...data, response: "No content returned" };
+    if (data.delta?.text) {
+      return { ...data, response: data.delta.text };
+    }
+
+    return { ...data, response: "" };
   }
 }

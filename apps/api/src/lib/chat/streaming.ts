@@ -148,7 +148,13 @@ export async function createStreamWithPostProcessing(
         }
       },
       async transform(chunk, controller) {
-        const text = new TextDecoder().decode(chunk);
+        let text;
+        try {
+          text = new TextDecoder().decode(chunk);
+        } catch (error) {
+          return;
+        }
+
         logger.trace("Incoming chunk", {
           chunkSize: chunk.byteLength,
           bufferBefore: buffer.length,

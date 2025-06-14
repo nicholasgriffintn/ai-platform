@@ -4,6 +4,7 @@ import { gatewayId } from "~/constants/app";
 import { mapParametersToProvider } from "~/lib/chat/parameters";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { ChatCompletionParameters } from "~/types";
+import { createEventStreamParser } from "~/utils/awsEventStream";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { BaseProvider } from "./base";
@@ -12,7 +13,7 @@ const logger = getLogger({ prefix: "BEDROCK" });
 
 export class BedrockProvider extends BaseProvider {
   name = "bedrock";
-  supportsStreaming = false;
+  supportsStreaming = true;
   isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
@@ -144,7 +145,8 @@ export class BedrockProvider extends BaseProvider {
         const isStreaming = params.stream;
 
         if (isStreaming) {
-          return response.body as unknown as any;
+          const eventStreamParser = createEventStreamParser();
+          return response.body.pipeThrough(eventStreamParser);
         }
 
         let data: Record<string, any>;
