@@ -49,6 +49,9 @@ export class BedrockProvider extends BaseProvider {
 
   protected getEndpoint(params: ChatCompletionParameters): string {
     const region = "us-east-1";
+    if (params.stream) {
+      return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/converse-stream`;
+    }
     return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/converse`;
   }
 
@@ -121,7 +124,12 @@ export class BedrockProvider extends BaseProvider {
 
         const signedUrl = new URL(presignedRequest.url);
         signedUrl.host = "gateway.ai.cloudflare.com";
-        signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/converse`;
+
+        if (params.stream) {
+          signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/converse-stream`;
+        } else {
+          signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/converse`;
+        }
 
         const response = await fetch(signedUrl, {
           method: "POST",
@@ -133,9 +141,35 @@ export class BedrockProvider extends BaseProvider {
           throw new AssistantError("Failed to get response from Bedrock");
         }
 
-        const data = (await response.json()) as any;
+        const isStreaming = params.stream;
 
-        return await this.formatResponse(data, params);
+        if (isStreaming) {
+          return response.body as unknown as any;
+        }
+
+        let data: Record<string, any>;
+        try {
+          data = (await response.json()) as Record<string, any>;
+        } catch (jsonError) {
+          const responseText = await response.text();
+          logger.error(`Failed to parse JSON response from ${this.name}`, {
+            error: jsonError,
+            responseText: responseText.substring(0, 200),
+          });
+          throw new AssistantError(
+            `${this.name} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
+            ErrorType.PROVIDER_ERROR,
+          );
+        }
+
+        const eventId = response.headers.get("cf-aig-event-id");
+        const log_id = response.headers.get("cf-aig-log-id");
+        const cacheStatus = response.headers.get("cf-aig-cache-status");
+
+        return this.formatResponse(
+          { ...data, eventId, log_id, cacheStatus },
+          params,
+        );
       },
       analyticsEngine: params.env?.ANALYTICS,
       settings: {
