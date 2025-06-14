@@ -19,10 +19,9 @@ const AnalyticsLazy = lazy(() =>
   })),
 );
 
-const ENABLE_BEACON = import.meta.env.VITE_ENABLE_BEACON === "true";
-const BEACON_ENDPOINT = import.meta.env.VITE_BEACON_ENDPOINT;
-const BEACON_SITE_ID = import.meta.env.VITE_BEACON_SITE_ID;
-const BEACON_DEBUG = import.meta.env.VITE_BEACON_DEBUG === "true";
+import { getBeaconConfig, shouldShowDevTools } from "~/constants";
+
+const beaconConfig = getBeaconConfig();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,13 +46,13 @@ export default function Root() {
       <LoadingProvider>
         <AppInitializer>
           <CaptchaProvider>
-            {ENABLE_BEACON && (
+            {beaconConfig.enabled && (
               <Suspense fallback={null}>
                 <AnalyticsLazy
-                  isEnabled={ENABLE_BEACON}
-                  beaconEndpoint={BEACON_ENDPOINT}
-                  beaconSiteId={BEACON_SITE_ID}
-                  beaconDebug={BEACON_DEBUG}
+                  isEnabled={beaconConfig.enabled}
+                  beaconEndpoint={beaconConfig.endpoint}
+                  beaconSiteId={beaconConfig.siteId}
+                  beaconDebug={beaconConfig.debug}
                 />
               </Suspense>
             )}
@@ -63,7 +62,7 @@ export default function Root() {
           </CaptchaProvider>
         </AppInitializer>
       </LoadingProvider>
-      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+      {shouldShowDevTools() && <ReactQueryDevtools initialIsOpen={false} />}
     </>
   );
 }
@@ -87,7 +86,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       error.status === 404
         ? "The requested page could not be found."
         : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
+  } else if (shouldShowDevTools() && error && error instanceof Error) {
     details = error.message;
     stack = error.stack;
   }

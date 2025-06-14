@@ -1,4 +1,6 @@
 export const IS_PRODUCTION = import.meta.env.PROD;
+export const IS_DEVELOPMENT = import.meta.env.DEV;
+export const BUILD_MODE = import.meta.env.MODE;
 
 export const APP_NAME = "Polychat";
 export const APP_TAGLINE = "AI Assistant";
@@ -6,20 +8,46 @@ export const CONTACT_LINK = "https://nicholasgriffin.dev/contact";
 export const JURISDICTION = "United Kingdom";
 export const TERMS_EFFECTIVE_DATE = "March 30, 2025";
 export const PRIVACY_EFFECTIVE_DATE = "March 30, 2025";
+
+// API Configuration
 export const API_BASE_URL = IS_PRODUCTION
   ? "https://api.polychat.app"
   : "http://localhost:8787";
 export const WS_API_URL = IS_PRODUCTION
   ? "wss://api.polychat.app"
   : "ws://localhost:8787";
+
+// Analytics Configuration
+export const POSTHOG_CONFIG = {
+  apiKey: import.meta.env.VITE_PUBLIC_POSTHOG_KEY || "disabled",
+  apiHost: import.meta.env.VITE_PUBLIC_POSTHOG_HOST || "eu.i.posthog.com",
+  debug: BUILD_MODE === "development",
+  disabled: !import.meta.env.VITE_PUBLIC_POSTHOG_KEY,
+};
+
+// Beacon Analytics Configuration
+export const BEACON_CONFIG = {
+  enabled: import.meta.env.VITE_ENABLE_BEACON === "true" || false,
+  endpoint: import.meta.env.VITE_BEACON_ENDPOINT || "",
+  siteId: import.meta.env.VITE_BEACON_SITE_ID || "",
+  debug: import.meta.env.VITE_BEACON_DEBUG === "true" || false,
+};
+
+// Feature Configuration
 export const CHATS_QUERY_KEY = "chats";
 export const CAPTCHA_SITE_KEY = "e17a69e0-b022-4d1c-b568-0ac0f3909f0c";
 export const TRIAL_DURATION = 90;
+
+// Development Features
+export const SHOW_DEV_TOOLS = IS_DEVELOPMENT;
+export const ENABLE_CAPTCHA_IN_DEV = false; // Set to true if you want captcha in development
 
 export const CSP = {
   defaultSrc: ["'self'"],
   frameSrc: ["https://hcaptcha.com", "https://*.hcaptcha.com"],
   scriptSrc: [
+    "eu.i.posthog.com",
+    "eu-assets.i.posthog.com",
     "beacon.polychat.app",
     "https://unpkg.com/react@18/umd/react.development.js",
     "https://unpkg.com/react-dom@18/umd/react-dom.development.js",
@@ -46,6 +74,8 @@ export const CSP = {
     "'self'",
     API_BASE_URL,
     WS_API_URL,
+    "eu.i.posthog.com",
+    "eu-assets.i.posthog.com",
     "beacon.polychat.app",
     "https://hcaptcha.com",
     "https://*.hcaptcha.com",
@@ -69,3 +99,9 @@ export function generateCSP(): string {
     })
     .join("; ");
 }
+
+// Helper functions for environment-based configuration
+export const getAnalyticsConfig = () => POSTHOG_CONFIG;
+export const getBeaconConfig = () => BEACON_CONFIG;
+export const shouldShowDevTools = () => SHOW_DEV_TOOLS;
+export const shouldEnableCaptcha = () => IS_PRODUCTION || ENABLE_CAPTCHA_IN_DEV;

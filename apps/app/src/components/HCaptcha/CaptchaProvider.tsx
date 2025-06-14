@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect } from "react";
 
-import { CAPTCHA_SITE_KEY } from "~/constants";
+import { CAPTCHA_SITE_KEY, shouldEnableCaptcha } from "~/constants";
 import { useCaptchaStore } from "~/state/stores/captchaStore";
 
 const HCaptchaVerifierLazy = lazy(() =>
@@ -32,7 +32,7 @@ export const CaptchaProvider = ({
   return (
     <>
       {children}
-      {!import.meta.env.DEV && (
+      {shouldEnableCaptcha() && (
         <Suspense fallback={null}>
           <HCaptchaVerifierLazy
             siteKey={CAPTCHA_SITE_KEY}

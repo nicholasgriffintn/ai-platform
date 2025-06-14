@@ -1,3 +1,4 @@
+import { usePostHog } from "posthog-js/react";
 import { useCallback } from "react";
 import { useAuthStatus } from "~/hooks/useAuth";
 
@@ -23,32 +24,50 @@ export type TrackEventProps = {
 
 export function useTrackEvent() {
   const { isAuthenticated, user } = useAuthStatus();
+  const posthog = usePostHog();
 
   const trackEvent = useCallback(
     (event: TrackEventProps) => {
-      if (window.Beacon) {
-        const enhancedProperties: Record<string, string> = {};
+      const enhancedProperties: Record<string, string> = {};
 
-        if (event.properties) {
-          for (const [key, value] of Object.entries(event.properties)) {
-            if (value !== null && value !== undefined) {
-              enhancedProperties[key] = String(value);
-            }
+      if (event.properties) {
+        for (const [key, value] of Object.entries(event.properties)) {
+          if (value !== null && value !== undefined) {
+            enhancedProperties[key] = String(value);
           }
         }
+      }
 
-        enhancedProperties.authenticated = String(isAuthenticated);
-        if (isAuthenticated && user && user.id) {
-          enhancedProperties.user_id = String(user.id);
-        }
+      enhancedProperties.authenticated = String(isAuthenticated);
+      if (isAuthenticated && user && user.id) {
+        enhancedProperties.user_id = String(user.id);
+      }
 
+      if (window.Beacon) {
         window.Beacon.trackEvent({
           ...event,
           properties: enhancedProperties,
         });
       }
+
+      if (posthog) {
+        const posthogProps: Record<string, any> = {
+          category: event.category,
+          ...enhancedProperties,
+        };
+        if (event.label !== undefined) {
+          posthogProps.label = event.label;
+        }
+        if (event.value !== undefined) {
+          posthogProps.value = event.value;
+        }
+        if (event.nonInteraction !== undefined) {
+          posthogProps.nonInteraction = event.nonInteraction;
+        }
+        posthog.capture(event.name, posthogProps);
+      }
     },
-    [isAuthenticated, user],
+    [isAuthenticated, user, posthog],
   );
 
   const trackAuth = useCallback(

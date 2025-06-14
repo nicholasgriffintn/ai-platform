@@ -1,6 +1,6 @@
 import { useEffect } from "react";
+import { IS_PRODUCTION } from "~/constants";
 
-const IS_PRODUCTION = import.meta.env.PROD;
 const BEACON_ENDPOINT = IS_PRODUCTION
   ? "https://beacon.polychat.app"
   : "http://localhost:5173";
