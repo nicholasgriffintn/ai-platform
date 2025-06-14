@@ -55,7 +55,16 @@ export class UserSettingsRepository extends BaseRepository {
   private async decryptWithServerKey(encryptedData: string): Promise<string> {
     try {
       const key = await this.getServerEncryptionKey();
-      const { iv, data } = JSON.parse(encryptedData);
+      let parsedEncryptedData;
+      try {
+        parsedEncryptedData = JSON.parse(encryptedData);
+      } catch (e) {
+        throw new AssistantError(
+          "Failed to parse encrypted data",
+          ErrorType.INTERNAL_ERROR,
+        );
+      }
+      const { iv, data } = parsedEncryptedData;
 
       const decryptedData = await crypto.subtle.decrypt(
         { name: "AES-GCM", iv: decodeBase64(iv) },
@@ -277,7 +286,15 @@ export class UserSettingsRepository extends BaseRepository {
         );
       }
 
-      const publicKeyJwk = JSON.parse(result.public_key);
+      let publicKeyJwk;
+      try {
+        publicKeyJwk = JSON.parse(result.public_key);
+      } catch (e) {
+        throw new AssistantError(
+          "Failed to parse public key",
+          ErrorType.INTERNAL_ERROR,
+        );
+      }
 
       const publicKey = await crypto.subtle.importKey(
         "jwk",
@@ -355,7 +372,15 @@ export class UserSettingsRepository extends BaseRepository {
       const decryptedPrivateKeyString = await this.decryptWithServerKey(
         userSettings.private_key,
       );
-      const privateKeyJwk = JSON.parse(decryptedPrivateKeyString);
+      let privateKeyJwk;
+      try {
+        privateKeyJwk = JSON.parse(decryptedPrivateKeyString);
+      } catch (e) {
+        throw new AssistantError(
+          "Failed to parse private key",
+          ErrorType.INTERNAL_ERROR,
+        );
+      }
 
       const privateKey = await crypto.subtle.importKey(
         "jwk",

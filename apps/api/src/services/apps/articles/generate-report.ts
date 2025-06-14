@@ -5,7 +5,10 @@ import { AppDataRepository } from "~/repositories/AppDataRepository";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
+import { getLogger } from "~/utils/logger";
 import { verifyQuotes } from "~/utils/verify";
+
+const logger = getLogger();
 
 export interface Params {
   itemId: string;
@@ -59,7 +62,16 @@ export async function generateArticlesReport({
     }
 
     const combinedArticles = analysisItems
-      .map((item) => JSON.parse(item.data || "{}").originalArticle)
+      .map((item) => {
+        let parsed;
+        try {
+          parsed = JSON.parse(item.data || "{}");
+        } catch (e) {
+          logger.error("Failed to parse article data", { error: e });
+          parsed = {};
+        }
+        return parsed.originalArticle;
+      })
       .filter((content): content is string => !!content)
       .join("\n\n---\n\n");
 

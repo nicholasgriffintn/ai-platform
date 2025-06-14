@@ -4,6 +4,9 @@ import { RepositoryManager } from "~/repositories";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger();
 
 export interface IPodcastGenerateImageBody {
   podcastId: string;
@@ -41,7 +44,13 @@ export const handlePodcastGenerateImage = async (
       );
 
     if (existingImages.length > 0) {
-      const imageData = JSON.parse(existingImages[0].data);
+      let imageData;
+      try {
+        imageData = JSON.parse(existingImages[0].data);
+      } catch (e) {
+        logger.error("Failed to parse image data", { error: e });
+        imageData = {};
+      }
       return {
         status: "success",
         content: `Podcast Featured Image: [${imageData.imageId}](${imageData.imageUrl})`,
@@ -65,7 +74,14 @@ export const handlePodcastGenerateImage = async (
       );
     }
 
-    const parsedSummaryData = JSON.parse(summaryData[0].data);
+    let parsedSummaryData;
+    try {
+      parsedSummaryData = JSON.parse(summaryData[0].data);
+    } catch (e) {
+      logger.error("Failed to parse summary data", { error: e });
+      parsedSummaryData = {};
+    }
+
     const summaryContent =
       parsedSummaryData.summary || parsedSummaryData.description;
     const summary = `I need a featured image for my latest podcast episode, this is the summary: ${summaryContent}`;

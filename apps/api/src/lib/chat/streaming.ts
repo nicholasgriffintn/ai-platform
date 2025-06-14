@@ -197,7 +197,12 @@ export async function createStreamWithPostProcessing(
             }
 
             try {
-              const data = JSON.parse(dataStr);
+              let data;
+              try {
+                data = JSON.parse(dataStr);
+              } catch (e) {
+                throw new Error("Failed to parse data");
+              }
               logger.trace("Parsed SSE data", { currentEventType, data });
 
               if (data.error) {
@@ -403,7 +408,14 @@ export async function createStreamWithPostProcessing(
                   let parsedInput = {};
                   try {
                     if (toolState.accumulatedInput) {
-                      parsedInput = JSON.parse(toolState.accumulatedInput);
+                      parsedInput;
+                      try {
+                        parsedInput = JSON.parse(toolState.accumulatedInpu);
+                      } catch (e) {
+                        logger.error("Failed to parse tool input:", {
+                          error: e,
+                        });
+                      }
 
                       if (
                         parsedInput === null ||
@@ -897,7 +909,12 @@ export function createMultiModelStream(
               for (const match of matches) {
                 const dataStr = match.substring(6, match.length - 2);
                 if (dataStr === "[DONE]") continue;
-                const data = JSON.parse(dataStr);
+                let data;
+                try {
+                  data = JSON.parse(dataStr);
+                } catch (e) {
+                  throw new Error("Failed to parse data");
+                }
                 if (data.type === "content_block_delta" && data.content) {
                   primaryContent += data.content;
                 } else if (data.type === "text" && data.text) {
@@ -949,7 +966,12 @@ export function createMultiModelStream(
                 for (const match of matches) {
                   const dataStr = match.substring(6, match.length - 2);
                   if (dataStr === "[DONE]") continue;
-                  const data = JSON.parse(dataStr);
+                  let data;
+                  try {
+                    data = JSON.parse(dataStr);
+                  } catch (e) {
+                    throw new Error("Failed to parse data");
+                  }
                   if (data.type === "content_block_delta" && data.content) {
                     secondaryContent += data.content;
                     const deltaEvent = encoder.encode(

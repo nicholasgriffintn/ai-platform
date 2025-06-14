@@ -1,7 +1,10 @@
 import { RepositoryManager } from "~/repositories";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import type { IPodcast } from "./list";
+
+const logger = getLogger();
 
 export interface IPodcastDetailRequest {
   env: IEnv;
@@ -46,7 +49,13 @@ export const handlePodcastDetail = async (
     if (!appData.item_type) continue;
 
     const itemType = appData.item_type;
-    const data = JSON.parse(appData.data);
+    let data;
+    try {
+      data = JSON.parse(appData.data);
+    } catch (e) {
+      logger.error("Failed to parse podcast data", { error: e });
+      data = {};
+    }
 
     if (!podcastData.items) podcastData.items = {};
     if (!podcastData.items[itemType]) podcastData.items[itemType] = [];

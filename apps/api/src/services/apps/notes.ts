@@ -5,6 +5,9 @@ import { RepositoryManager } from "~/repositories";
 import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger();
 
 export interface Note {
   id: string;
@@ -27,7 +30,13 @@ export async function listNotes({
   const list = await repo.getAppDataByUserAndApp(userId, "notes");
 
   return list.map((entry) => {
-    const data = JSON.parse(entry.data);
+    let data;
+    try {
+      data = JSON.parse(entry.data);
+    } catch (e) {
+      logger.error("Failed to parse note data", { error: e });
+      data = {};
+    }
     return {
       id: entry.id,
       title: data.title,
@@ -58,7 +67,13 @@ export async function getNote({
     throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
   }
 
-  const data = JSON.parse(entry.data);
+  let data;
+  try {
+    data = JSON.parse(entry.data);
+  } catch (e) {
+    logger.error("Failed to parse note data", { error: e });
+    data = {};
+  }
 
   return {
     id: entry.id,
@@ -103,7 +118,13 @@ export async function createNote({
   );
 
   const full = await repo.getAppDataById(entry.id);
-  const parsed = JSON.parse(full!.data);
+  let parsed;
+  try {
+    parsed = JSON.parse(full!.data);
+  } catch (e) {
+    logger.error("Failed to parse note data", { error: e });
+    parsed = {};
+  }
 
   return {
     id: full!.id,
@@ -142,15 +163,21 @@ export async function updateNote({
 
   await repo.updateAppData(noteId, data);
   const updated = await repo.getAppDataById(noteId);
-  const parsed = JSON.parse(updated!.data);
+  let parsedData;
+  try {
+    parsedData = JSON.parse(updated!.data);
+  } catch (e) {
+    logger.error("Failed to parse note data", { error: e });
+    parsedData = {};
+  }
 
   return {
     id: updated!.id,
-    title: parsed.title,
-    content: parsed.content,
+    title: parsedData.title,
+    content: parsedData.content,
     createdAt: updated!.created_at,
     updatedAt: updated!.updated_at,
-    metadata: parsed.metadata,
+    metadata: parsedData.metadata,
   };
 }
 

@@ -207,13 +207,20 @@ export async function generatePasskeyRegistrationOptions(
       userID: new TextEncoder().encode(user.id.toString()),
       userName: user.github_username || user.email,
       attestationType: "none",
-      excludeCredentials: existingCredentials.map((cred) => ({
-        id: cred.credential_id as string,
-        type: "public-key",
-        transports: cred.transports
-          ? JSON.parse(cred.transports as string)
-          : undefined,
-      })),
+      excludeCredentials: existingCredentials.map((cred) => {
+        let parsedTransports;
+        try {
+          parsedTransports = JSON.parse(cred.transports as string);
+        } catch (e) {
+          logger.error("Failed to parse transports", { error: e });
+          parsedTransports = undefined;
+        }
+        return {
+          id: cred.credential_id as string,
+          type: "public-key",
+          transports: parsedTransports,
+        };
+      }),
       authenticatorSelection: {
         residentKey: "preferred",
         userVerification: "preferred",
@@ -349,7 +356,16 @@ export async function verifyPasskeyAuthentication(
 
     const clientDataBytes = decodeBase64Url(response.response.clientDataJSON);
     const clientDataText = new TextDecoder().decode(clientDataBytes);
-    const clientData = JSON.parse(clientDataText);
+    let clientData;
+    try {
+      clientData = JSON.parse(clientDataText);
+    } catch (e) {
+      logger.error("Failed to parse client data", { error: e });
+      throw new AssistantError(
+        "Failed to parse client data",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
     const challengeFromClient = clientData.challenge;
 
     const expectedChallenge = await getWebAuthnChallenge(

@@ -625,6 +625,15 @@ export class ConversationManager {
       }
     }
 
+    let parsedData = dbMessage.data;
+    if (dbMessage.data) {
+      try {
+        parsedData = JSON.parse(dbMessage.data as string);
+      } catch (e) {
+        logger.error("Error parsing data", { error: e });
+      }
+    }
+
     return {
       ...dbMessage,
       id: dbMessage.id,
@@ -638,7 +647,7 @@ export class ConversationManager {
       timestamp: dbMessage.timestamp as number,
       platform: dbMessage.platform as string,
       mode: dbMessage.mode as string,
-      data: dbMessage.data ? JSON.parse(dbMessage.data as string) : undefined,
+      data: parsedData,
       usage: dbMessage.usage
         ? JSON.parse(dbMessage.usage as string)
         : undefined,

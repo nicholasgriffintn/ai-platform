@@ -4,6 +4,9 @@ import {
 } from "~/repositories/AppDataRepository";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger();
 
 export interface GetSourceArticlesSuccessResponse {
   status: "success";
@@ -48,9 +51,16 @@ export async function getSourceArticles({
         const article = await appDataRepo.getAppDataById(id);
 
         if (article && article.user_id === userId) {
+          let parsedArticleData;
+          try {
+            parsedArticleData = JSON.parse(article.data || "{}");
+          } catch (e) {
+            logger.error("Failed to parse article data", { error: e });
+            parsedArticleData = {};
+          }
           return {
             ...article,
-            data: JSON.parse(article.data || "{}"),
+            data: parsedArticleData,
           };
         }
         return null;

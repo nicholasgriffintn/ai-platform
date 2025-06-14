@@ -4,6 +4,9 @@ import { AIProviderFactory } from "~/lib/providers/factory";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger();
 
 const REPLICATE_MODEL_VERSION =
   "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f";
@@ -53,9 +56,15 @@ export const handlePodcastTranscribe = async (
       );
 
     if (existingTranscriptions.length > 0) {
-      const transcriptionData = JSON.parse(
-        existingTranscriptions[0].data,
-      ).transcriptionData;
+      let transcriptionData;
+      try {
+        transcriptionData = JSON.parse(
+          existingTranscriptions[0].data,
+        ).transcriptionData;
+      } catch (e) {
+        logger.error("Failed to parse transcription data", { error: e });
+        transcriptionData = {};
+      }
       return {
         status: "success",
         content: "Podcast Transcription retrieved from cache",
@@ -77,7 +86,13 @@ export const handlePodcastTranscribe = async (
       );
     }
 
-    const parsedUploadData = JSON.parse(uploadData[0].data);
+    let parsedUploadData: Record<string, any>;
+    try {
+      parsedUploadData = JSON.parse(uploadData[0].data);
+    } catch (e) {
+      logger.error("Failed to parse upload data", { error: e });
+      parsedUploadData = {};
+    }
     const title = parsedUploadData.title;
     const description = parsedUploadData.description;
     const audioUrl = parsedUploadData.audioUrl;

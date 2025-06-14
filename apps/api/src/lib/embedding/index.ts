@@ -219,9 +219,13 @@ export class Embedding {
             messages: [{ role: "user", content: rerankPrompt }],
             user: this.user,
           } as any);
-          const order: string[] = JSON.parse(
-            rerankRes.content || rerankRes.response,
-          );
+          let order: string[];
+          try {
+            order = JSON.parse(rerankRes.content || rerankRes.response);
+          } catch (e) {
+            logger.error("Failed to parse rerank response", { error: e });
+            order = [];
+          }
           ranked = order
             .map((id) => docs.find((d) => d.id === id))
             .filter(Boolean) as any;

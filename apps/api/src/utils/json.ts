@@ -1,3 +1,7 @@
+import { getLogger } from "./logger";
+
+const logger = getLogger();
+
 export interface ParseResult<T> {
   data: T | null;
   error: string | null;
@@ -51,8 +55,15 @@ export function parseAIResponseJson<T = any>(
   }
 
   try {
+    let parsedData;
+    try {
+      parsedData = JSON.parse(cleanedResponse) as T;
+    } catch (e) {
+      logger.error("Failed to parse JSON", { error: e });
+      parsedData = null;
+    }
     return {
-      data: JSON.parse(cleanedResponse) as T,
+      data: parsedData,
       error: null,
     };
   } catch (e) {
@@ -63,7 +74,14 @@ export function parseAIResponseJson<T = any>(
         .replace(/,\s*\]/g, "]") // Remove trailing commas in arrays
         .replace(/'/g, '"'); // Replace single quotes with double quotes
 
-      partialData = JSON.parse(fixedJson);
+      let parsedData;
+      try {
+        parsedData = JSON.parse(fixedJson);
+      } catch (e) {
+        logger.error("Failed to parse JSON", { error: e });
+        parsedData = null;
+      }
+      partialData = parsedData;
     } catch {
       partialData = {
         preview: cleanedResponse.substring(0, 100),

@@ -85,7 +85,16 @@ export async function listArticles({
 
       if (reportItem?.data) {
         try {
-          const reportData = JSON.parse(reportItem.data);
+          let reportData;
+          try {
+            reportData = JSON.parse(reportItem.data);
+          } catch (e) {
+            console.error(
+              `Failed to parse report data for itemId ${group.itemId}`,
+              e,
+            );
+            reportData = {};
+          }
           title = reportData.title || title;
           sourceArticleCount = reportData.sourceItemIds?.length || 0;
           reportId = reportItem.id;

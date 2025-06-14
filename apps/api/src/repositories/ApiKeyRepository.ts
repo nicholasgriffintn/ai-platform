@@ -23,7 +23,16 @@ export class ApiKeyRepository extends BaseRepository {
       throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
     }
 
-    const publicKeyJwk = JSON.parse(result.public_key);
+    let publicKeyJwk;
+    try {
+      publicKeyJwk = JSON.parse(result.public_key);
+    } catch (e) {
+      logger.error("Failed to parse public key", { error: e });
+      throw new AssistantError(
+        "Failed to parse public key",
+        ErrorType.INTERNAL_ERROR,
+      );
+    }
 
     try {
       return await crypto.subtle.importKey(

@@ -2,6 +2,9 @@ import { gatewayId } from "~/constants/app";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger();
 
 function generateFullTranscription(
   transcription: {
@@ -69,7 +72,13 @@ export const handlePodcastSummarise = async (
       );
 
     if (existingSummaries.length > 0) {
-      const summaryData = JSON.parse(existingSummaries[0].data);
+      let summaryData;
+      try {
+        summaryData = JSON.parse(existingSummaries[0].data);
+      } catch (e) {
+        logger.error("Failed to parse summary data", { error: e });
+        summaryData = {};
+      }
       return {
         status: "success",
         content: summaryData.summary,
@@ -95,7 +104,13 @@ export const handlePodcastSummarise = async (
       );
     }
 
-    const parsedTranscriptionData = JSON.parse(transcriptionData[0].data);
+    let parsedTranscriptionData;
+    try {
+      parsedTranscriptionData = JSON.parse(transcriptionData[0].data);
+    } catch (e) {
+      logger.error("Failed to parse transcription data", { error: e });
+      parsedTranscriptionData = {};
+    }
     const title = parsedTranscriptionData.title;
     const description = parsedTranscriptionData.description;
     const transcription = parsedTranscriptionData.transcriptionData.output;

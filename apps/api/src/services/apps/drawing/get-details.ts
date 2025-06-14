@@ -1,7 +1,10 @@
 import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import type { Drawing } from "./list";
+
+const logger = getLogger();
 
 export async function getDrawingDetails({
   env,
@@ -26,7 +29,13 @@ export async function getDrawingDetails({
     throw new AssistantError("Drawing not found", ErrorType.NOT_FOUND);
   }
 
-  const data = JSON.parse(entry.data);
+  let data;
+  try {
+    data = JSON.parse(entry.data);
+  } catch (e) {
+    logger.error("Failed to parse drawing data", { error: e });
+    data = {};
+  }
 
   return {
     id: entry.id,
