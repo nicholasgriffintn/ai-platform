@@ -3,6 +3,7 @@ import { availableFunctions } from "~/services/functions";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { detectStreaming } from "~/utils/streaming";
 
 const logger = getLogger({ prefix: "FETCH" });
 
@@ -33,7 +34,8 @@ export async function fetchAIResponse<
   },
 ): Promise<T> {
   const isUrl = endpointOrUrl.startsWith("http");
-  const isStreaming = body?.stream === true;
+
+  const isStreaming = detectStreaming(body, endpointOrUrl);
 
   const tools = provider === "tool-use" ? availableFunctions : undefined;
   const bodyWithTools = tools ? { ...body, tools } : body;
@@ -74,13 +76,31 @@ export async function fetchAIResponse<
   }
 
   if (!response.ok) {
-    const responseJson = await response.json();
+    let responseJson;
+    try {
+      responseJson = await response.json();
+    } catch (jsonError) {
+      const responseText = await response.text();
+      logger.error(
+        `Failed to get response for ${provider} from ${endpointOrUrl}. Response not valid JSON:`,
+        {
+          responseText,
+          status: response.status,
+          statusText: response.statusText,
+        },
+      );
+      throw new AssistantError(
+        `Failed to get response for ${provider} from ${endpointOrUrl}: ${response.statusText}`,
+        ErrorType.PROVIDER_ERROR,
+      );
+    }
     logger.error(
       `Failed to get response for ${provider} from ${endpointOrUrl}`,
       responseJson,
     );
     throw new AssistantError(
       `Failed to get response for ${provider} from ${endpointOrUrl}`,
+      ErrorType.PROVIDER_ERROR,
     );
   }
 
@@ -88,7 +108,20 @@ export async function fetchAIResponse<
     return response.body as unknown as T;
   }
 
-  const data = (await response.json()) as Record<string, any>;
+  let data: Record<string, any>;
+  try {
+    data = (await response.json()) as Record<string, any>;
+  } catch (jsonError) {
+    const responseText = await response.text();
+    logger.error(`Failed to parse JSON response from ${provider}`, {
+      error: jsonError,
+      responseText: responseText.substring(0, 200),
+    });
+    throw new AssistantError(
+      `${provider} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
+      ErrorType.PROVIDER_ERROR,
+    );
+  }
 
   const eventId = response.headers.get("cf-aig-event-id");
   const log_id = response.headers.get("cf-aig-log-id");

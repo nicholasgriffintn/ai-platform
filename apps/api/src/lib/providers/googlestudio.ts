@@ -4,7 +4,7 @@ import { BaseProvider } from "./base";
 
 export class GoogleStudioProvider extends BaseProvider {
   name = "google-ai-studio";
-  supportsStreaming = false;
+  supportsStreaming = true;
   // TODO: Work out if we should use OpenAI compatible mode - it might take away some of the Google-specific features
   isOpenAiCompatible = false;
 
@@ -24,6 +24,9 @@ export class GoogleStudioProvider extends BaseProvider {
   }
 
   protected getEndpoint(params: ChatCompletionParameters): string {
+    if (params.stream) {
+      return `v1beta/models/${params.model}:streamGenerateContent?alt=sse`;
+    }
     return `v1beta/models/${params.model}:generateContent`;
   }
 

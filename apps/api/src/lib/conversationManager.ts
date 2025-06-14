@@ -600,7 +600,12 @@ export class ConversationManager {
         typeof content === "string" &&
         (content.startsWith("[") || content.startsWith("{"))
       ) {
-        const parsed = JSON.parse(content);
+        let parsed;
+        try {
+          parsed = JSON.parse(content);
+        } catch (e) {
+          logger.error("Error parsing message content", { error: e });
+        }
         content = parsed;
       }
     } catch (e) {

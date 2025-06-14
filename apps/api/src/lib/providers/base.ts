@@ -6,6 +6,7 @@ import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { detectStreaming } from "~/utils/streaming";
 import { fetchAIResponse } from "./fetch";
 
 const logger = getLogger({ prefix: "PROVIDERS" });
@@ -181,7 +182,8 @@ export abstract class BaseProvider implements AIProvider {
           },
         );
 
-        if (body.stream) {
+        const isStreaming = detectStreaming(body, endpoint);
+        if (isStreaming) {
           return data;
         }
 
