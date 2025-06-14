@@ -9,6 +9,7 @@ import { CaptchaProvider } from "~/components/HCaptcha/CaptchaProvider";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { ServiceWorkerRegistration } from "~/components/ServiceWorkerRegistration";
 import { Toaster } from "~/components/ui/sonner";
+import { useTrackEvent } from "~/hooks/use-track-event";
 import ErrorRoute from "~/pages/error";
 import { LoadingProvider } from "~/state/contexts/LoadingContext";
 import type { Route } from "./+types/root";
@@ -76,9 +77,24 @@ export function HydrateFallback() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
+  let message = "Oops! Something went wrong.";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
+
+  const { trackException } = useTrackEvent();
+  if (error && error instanceof Error) {
+    trackException(error, {
+      message: "Error",
+      details: error.message,
+      stack: error.stack,
+    });
+  } else {
+    trackException(new Error(details), {
+      message: "Error",
+      details: details,
+      stack: stack,
+    });
+  }
 
   if (isRouteErrorResponse(error)) {
     message = error.status === 404 ? "404" : "Error";

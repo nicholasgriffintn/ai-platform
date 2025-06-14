@@ -43,7 +43,7 @@ export function useTrackEvent() {
         enhancedProperties.user_id = String(user.id);
       }
 
-      if (window.Beacon) {
+      if (typeof window !== "undefined" && window.Beacon) {
         window.Beacon.trackEvent({
           ...event,
           properties: enhancedProperties,
@@ -68,6 +68,31 @@ export function useTrackEvent() {
       }
     },
     [isAuthenticated, user, posthog],
+  );
+
+  const trackException = useCallback(
+    (error: Error | string, properties?: Record<string, any>) => {
+      if (posthog) {
+        const enhancedProperties = {
+          authenticated: String(isAuthenticated),
+          ...(isAuthenticated && user?.id && { user_id: String(user.id) }),
+          ...properties,
+        };
+
+        posthog.captureException(error, enhancedProperties);
+      }
+
+      trackEvent({
+        name: "exception",
+        category: EventCategory.ERROR,
+        properties: {
+          error_message: error instanceof Error ? error.message : String(error),
+          error_stack: error instanceof Error ? error.stack : undefined,
+          ...properties,
+        },
+      });
+    },
+    [posthog, isAuthenticated, user, trackEvent],
   );
 
   const trackAuth = useCallback(
@@ -135,6 +160,7 @@ export function useTrackEvent() {
 
   return {
     trackEvent,
+    trackException,
     trackAuth,
     trackError,
     trackFeatureUsage,
