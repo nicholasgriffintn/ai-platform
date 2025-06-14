@@ -409,6 +409,10 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
     return null;
   }
 
+  if (questions.length === 0) {
+    return null;
+  }
+
   return (
     <div className="mt-8 max-w-xl mx-auto">
       <div className="flex justify-between items-center mb-3">
