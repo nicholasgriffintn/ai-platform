@@ -8,6 +8,11 @@ export const CONTACT_LINK = "https://nicholasgriffin.dev/contact";
 export const JURISDICTION = "United Kingdom";
 export const TERMS_EFFECTIVE_DATE = "March 30, 2025";
 export const PRIVACY_EFFECTIVE_DATE = "March 30, 2025";
+export const TRIAL_DURATION = 90;
+export const CHATS_QUERY_KEY = "chats";
+
+// Development Features
+export const SHOW_DEV_TOOLS = IS_DEVELOPMENT;
 
 // API Configuration
 export const API_BASE_URL = IS_PRODUCTION
@@ -33,14 +38,9 @@ export const BEACON_CONFIG = {
   debug: import.meta.env.VITE_BEACON_DEBUG === "true" || false,
 };
 
-// Feature Configuration
-export const CHATS_QUERY_KEY = "chats";
-export const CAPTCHA_SITE_KEY = "e17a69e0-b022-4d1c-b568-0ac0f3909f0c";
-export const TRIAL_DURATION = 90;
-
-// Development Features
-export const SHOW_DEV_TOOLS = IS_DEVELOPMENT;
-export const ENABLE_CAPTCHA_IN_DEV = false; // Set to true if you want captcha in development
+// Captcha Configuration
+export const CAPTCHA_SITE_KEY = import.meta.env.VITE_CAPTCHA_SITE_KEY || "";
+export const ENABLE_CAPTCHA_IN_DEV = false;
 
 export const CSP = {
   defaultSrc: ["'self'"],
@@ -104,4 +104,5 @@ export function generateCSP(): string {
 export const getAnalyticsConfig = () => POSTHOG_CONFIG;
 export const getBeaconConfig = () => BEACON_CONFIG;
 export const shouldShowDevTools = () => SHOW_DEV_TOOLS;
-export const shouldEnableCaptcha = () => IS_PRODUCTION || ENABLE_CAPTCHA_IN_DEV;
+export const shouldEnableCaptcha = () =>
+  CAPTCHA_SITE_KEY && (IS_PRODUCTION || ENABLE_CAPTCHA_IN_DEV);
