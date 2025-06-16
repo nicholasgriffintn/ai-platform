@@ -1,17 +1,14 @@
+import type { CoreChatOptions } from "~/lib/chat/core";
+import { RequestPreparer } from "~/lib/chat/preparation/RequestPreparer";
+import { getAIResponse } from "~/lib/chat/responses";
+import { StreamProcessor, createMultiModelStream } from "~/lib/chat/streaming";
+import { handleToolCalls } from "~/lib/chat/tools";
+import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { Guardrails } from "~/lib/guardrails";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
-import type { CoreChatOptions } from "../core";
-import { RequestPreparer } from "../preparation/RequestPreparer";
-import { getAIResponse } from "../responses";
-import {
-  createMultiModelStream,
-  createStreamWithPostProcessing,
-} from "../streaming";
-import { handleToolCalls } from "../tools";
-import { ValidationPipeline } from "../validation/ValidationPipeline";
 
 const logger = getLogger({ prefix: "CHAT_ORCHESTRATOR" });
 
@@ -224,9 +221,19 @@ export class ChatOrchestrator {
     const response = await getAIResponse(params);
 
     if (response instanceof ReadableStream) {
-      const transformedStream = await createStreamWithPostProcessing(
+      const transformedStream = await StreamProcessor.create(
         response,
-        params,
+        {
+          env: options.env,
+          completion_id: options.completion_id!,
+          model: primaryModel,
+          provider: primaryProvider,
+          platform: platform || "api",
+          user: options.user,
+          userSettings,
+          app_url: options.app_url,
+          mode: currentMode,
+        },
         conversationManager,
       );
 
