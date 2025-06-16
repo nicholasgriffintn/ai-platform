@@ -136,10 +136,6 @@ export class ResponseFormatter implements StreamTransformer {
     } else if (data.type === "citations") {
       this.citationsResponse = data.citations || [];
     }
-
-    controller.enqueue(
-      new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`),
-    );
   }
 
   private handleStreamEnd(controller: TransformStreamDefaultController): void {

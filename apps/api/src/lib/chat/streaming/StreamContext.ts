@@ -8,6 +8,7 @@ export class StreamContext {
   private signature = "";
   private citations: any[] = [];
   private usage: any = null;
+  private toolCalls: any[] = [];
 
   private customData: Record<string, any> = {};
 
@@ -49,6 +50,14 @@ export class StreamContext {
 
   getUsage(): any {
     return this.usage;
+  }
+
+  setToolCalls(toolCalls: any[]): void {
+    this.toolCalls = toolCalls;
+  }
+
+  getToolCalls(): any[] {
+    return this.toolCalls;
   }
 
   setCustom(key: string, value: any): void {

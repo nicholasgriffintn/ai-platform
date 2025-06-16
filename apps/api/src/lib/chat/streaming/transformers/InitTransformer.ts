@@ -1,10 +1,7 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import { getLogger } from "~/utils/logger";
 import type { StreamContext } from "../StreamContext";
 import type { StreamTransformer } from "../StreamPipeline";
 import type { StreamProcessorOptions } from "../StreamProcessor";
-
-const logger = getLogger({ prefix: "INIT_TRANSFORMER" });
 
 export class InitTransformer implements StreamTransformer {
   constructor(
@@ -20,7 +17,6 @@ export class InitTransformer implements StreamTransformer {
     stream: ReadableStream,
     context: StreamContext,
   ): Promise<ReadableStream> {
-    const options = this.options;
     const conversationManager = this.conversationManager;
 
     return stream.pipeThrough(

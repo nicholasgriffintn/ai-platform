@@ -23,12 +23,6 @@ export class ChatOrchestrator {
 
   async process(options: CoreChatOptions) {
     try {
-      logger.debug("Starting chat orchestration", {
-        completion_id: options.completion_id,
-        model: options.model,
-        mode: options.mode,
-      });
-
       const validationResult = await this.validator.validate(options);
 
       if (!validationResult.validation.isValid) {
@@ -52,12 +46,6 @@ export class ChatOrchestrator {
         options,
         validationResult.context,
       );
-
-      logger.debug("Request prepared successfully", {
-        completion_id: options.completion_id,
-        primaryModel: prepared.primaryModel,
-        messageCount: prepared.messages.length,
-      });
 
       return this.executeRequest(options, prepared);
     } catch (error: any) {

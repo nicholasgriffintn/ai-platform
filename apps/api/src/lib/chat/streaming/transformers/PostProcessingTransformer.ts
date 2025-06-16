@@ -131,7 +131,10 @@ export class PostProcessingTransformer implements StreamTransformer {
       this.emitEvent(controller, "state", { state: "post_processing" });
       this.postProcessingDone = true;
 
-      if (
+      const contextToolCalls = this.context?.getToolCalls() || [];
+      if (contextToolCalls.length > 0) {
+        this.toolCallsData = contextToolCalls;
+      } else if (
         Object.keys(this.currentToolCalls).length > 0 &&
         this.toolCallsData.length === 0
       ) {

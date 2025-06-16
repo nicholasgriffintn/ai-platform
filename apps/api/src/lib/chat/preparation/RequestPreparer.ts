@@ -44,11 +44,6 @@ export class RequestPreparer {
     options: CoreChatOptions,
     validationContext: ValidationContext,
   ): Promise<PreparedRequest> {
-    logger.debug("Starting request preparation", {
-      completion_id: options.completion_id,
-      mode: options.mode,
-    });
-
     const {
       sanitizedMessages,
       lastMessage,
@@ -112,12 +107,6 @@ export class RequestPreparer {
       messageWithContext,
       primaryModelConfig,
     );
-
-    logger.debug("Request preparation complete", {
-      completion_id: options.completion_id,
-      primaryModel,
-      messageCount: messages.length,
-    });
 
     return {
       modelConfigs,

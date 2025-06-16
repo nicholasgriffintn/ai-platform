@@ -49,12 +49,6 @@ export class StreamProcessor {
   }
 
   async processStream(providerStream: ReadableStream): Promise<ReadableStream> {
-    logger.debug("Starting stream processing", {
-      completion_id: this.options.completion_id,
-      model: this.options.model,
-      provider: this.options.provider,
-    });
-
     try {
       return await this.pipeline.process(providerStream);
     } catch (error) {
