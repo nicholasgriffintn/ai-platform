@@ -26,7 +26,7 @@ import {
 
 const logger = getLogger({ prefix: "CHAT_CORE" });
 
-type CoreChatOptions = ChatCompletionParameters & {
+export type CoreChatOptions = ChatCompletionParameters & {
   use_multi_model?: boolean;
   anonymousUser?: any;
   current_step?: number;
