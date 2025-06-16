@@ -376,11 +376,11 @@ export class ToolCallTransformer implements StreamTransformer {
       for (const toolResult of toolResults) {
         this.emitEvent(controller, "tool_response", {
           tool_id: toolResult.id,
-          content: toolResult.content,
+          result: toolResult,
         });
       }
 
-      this.emitEvent(controller, "tool_response_stop", {});
+      this.emitEvent(controller, "tool_response_end", {});
     } catch (error) {
       logger.error("Tool call processing failed", {
         error,
