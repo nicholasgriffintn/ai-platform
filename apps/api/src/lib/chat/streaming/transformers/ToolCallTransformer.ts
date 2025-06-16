@@ -34,11 +34,7 @@ export class ToolCallTransformer implements StreamTransformer {
     this.context = context;
     return stream.pipeThrough(
       new TransformStream({
-        start: (controller) => {
-          logger.debug("Tool call transformer initialized", {
-            completion_id: this.options.completion_id,
-          });
-        },
+        start: (controller) => {},
 
         transform: (chunk, controller) => {
           try {
@@ -142,9 +138,10 @@ export class ToolCallTransformer implements StreamTransformer {
         this.toolCallsData = Object.values(this.currentToolCalls);
       }
 
-      await this.processMemories(controller);
-
-      const guardrailsResult = await this.processGuardrails();
+      const [guardrailsResult] = await Promise.all([
+        this.processGuardrails(),
+        this.processMemories(controller),
+      ]);
 
       await this.storeAssistantMessage(guardrailsResult);
 
@@ -153,6 +150,8 @@ export class ToolCallTransformer implements StreamTransformer {
       if (this.toolCallsData.length > 0) {
         await this.processToolCalls(controller);
       }
+
+      this.cleanup();
     } catch (error) {
       logger.error("Post-processing failed", {
         error,
@@ -163,7 +162,18 @@ export class ToolCallTransformer implements StreamTransformer {
         error: "Post-processing failed",
         details: error instanceof Error ? error.message : String(error),
       });
+
+      this.cleanup();
     }
+  }
+
+  /**
+   * Clean up instance variables to prevent memory leaks
+   */
+  private cleanup(): void {
+    this.toolCallsData = [];
+    this.currentToolCalls = {};
+    this.context = undefined;
   }
 
   private async processMemories(

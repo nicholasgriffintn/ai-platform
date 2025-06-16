@@ -17,14 +17,11 @@ export class ErrorTransformer implements StreamTransformer {
     context: StreamContext,
   ): Promise<ReadableStream> {
     const options = this.options;
+    const self = this;
 
     return stream.pipeThrough(
       new TransformStream({
-        start(controller) {
-          logger.debug("Error transformer initialized", {
-            completion_id: options.completion_id,
-          });
-        },
+        start(controller) {},
 
         transform(chunk, controller) {
           try {
@@ -52,12 +49,15 @@ export class ErrorTransformer implements StreamTransformer {
           }
         },
 
-        flush(controller) {
-          logger.debug("Error transformer flushed", {
-            completion_id: options.completion_id,
-          });
+        flush() {
+          self.cleanup();
         },
       }),
     );
   }
+
+  /**
+   * Clean up instance variables to prevent memory leaks
+   */
+  private cleanup(): void {}
 }

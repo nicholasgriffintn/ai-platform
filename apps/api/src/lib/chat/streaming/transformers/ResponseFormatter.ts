@@ -12,7 +12,8 @@ export class ResponseFormatter implements StreamTransformer {
   private signature = "";
   private citationsResponse: any[] = [];
   private usageData: any = null;
-  private buffer = "";
+  private bufferChunks: string[] = [];
+  private bufferSize = 0;
   private currentEventType = "";
 
   constructor(private options: StreamProcessorOptions) {}
@@ -27,11 +28,7 @@ export class ResponseFormatter implements StreamTransformer {
   ): Promise<ReadableStream> {
     return stream.pipeThrough(
       new TransformStream({
-        start: () => {
-          logger.debug("Response formatter initialized", {
-            completion_id: this.options.completion_id,
-          });
-        },
+        start: () => {},
 
         transform: (chunk, controller) => {
           try {
@@ -53,10 +50,8 @@ export class ResponseFormatter implements StreamTransformer {
           context.setUsage(this.usageData);
 
           this.emitEvent(controller, "content_block_stop", {});
-          logger.debug("Response formatter flushed", {
-            completion_id: this.options.completion_id,
-            contentLength: this.fullContent.length,
-          });
+
+          this.cleanup();
         },
       }),
     );
@@ -66,17 +61,27 @@ export class ResponseFormatter implements StreamTransformer {
     text: string,
     controller: TransformStreamDefaultController,
   ): void {
-    if (this.buffer.length > 100000) {
+    this.bufferChunks.push(text);
+    this.bufferSize += text.length;
+
+    if (this.bufferSize > 100000) {
       logger.warn("Buffer size exceeded limit, truncating", {
         completion_id: this.options.completion_id,
-        bufferSize: this.buffer.length,
+        bufferSize: this.bufferSize,
       });
-      this.buffer = this.buffer.substring(this.buffer.length - 50000);
+
+      const combined = this.bufferChunks.join("");
+      const truncated = combined.substring(combined.length - 50000);
+      this.bufferChunks = [truncated];
+      this.bufferSize = truncated.length;
     }
 
-    this.buffer += text;
-    const lines = this.buffer.split("\n");
-    this.buffer = lines.pop() || "";
+    const combined = this.bufferChunks.join("");
+    const lines = combined.split("\n");
+
+    const incompleteLine = lines.pop() || "";
+    this.bufferChunks = incompleteLine ? [incompleteLine] : [];
+    this.bufferSize = incompleteLine.length;
 
     for (const line of lines) {
       if (!line.trim()) continue;
@@ -94,11 +99,18 @@ export class ResponseFormatter implements StreamTransformer {
           return;
         }
 
-        try {
-          const data = JSON.parse(dataStr);
-          this.processDataEvent(data, controller);
-        } catch (error) {
-          logger.trace("Non-JSON data received", { dataStr });
+        if (
+          dataStr.length > 0 &&
+          (dataStr.startsWith("{") || dataStr.startsWith("["))
+        ) {
+          try {
+            const data = JSON.parse(dataStr);
+            this.processDataEvent(data, controller);
+          } catch (error) {
+            logger.trace("Non-JSON data received", {
+              dataStr: dataStr.substring(0, 100),
+            });
+          }
         }
       }
     }
@@ -171,5 +183,19 @@ export class ResponseFormatter implements StreamTransformer {
 
   getUsage(): any {
     return this.usageData;
+  }
+
+  /**
+   * Clean up instance variables to prevent memory leaks
+   */
+  private cleanup(): void {
+    this.fullContent = "";
+    this.fullThinking = "";
+    this.signature = "";
+    this.citationsResponse = [];
+    this.usageData = null;
+    this.bufferChunks = [];
+    this.bufferSize = 0;
+    this.currentEventType = "";
   }
 }

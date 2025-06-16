@@ -56,18 +56,17 @@ export class InitTransformer implements StreamTransformer {
               })}\n\n`,
             ),
           );
-
-          logger.debug("Init transformer initialized", {
-            completion_id: options.completion_id,
-          });
         },
 
         flush: () => {
-          logger.debug("Init transformer flushed", {
-            completion_id: options.completion_id,
-          });
+          this.cleanup();
         },
       }),
     );
   }
+
+  /**
+   * Clean up instance variables to prevent memory leaks
+   */
+  private cleanup(): void {}
 }

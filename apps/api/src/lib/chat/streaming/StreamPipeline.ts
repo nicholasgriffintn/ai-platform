@@ -16,10 +16,6 @@ export class StreamPipeline {
 
   addTransformer(transformer: StreamTransformer): StreamPipeline {
     this.transformers.push(transformer);
-    logger.debug("Added transformer to pipeline", {
-      transformer: transformer.getName(),
-      totalTransformers: this.transformers.length,
-    });
     return this;
   }
 
@@ -47,7 +43,6 @@ export class StreamPipeline {
       }
     }
 
-    logger.debug("Stream pipeline processing complete");
     return currentStream;
   }
 
