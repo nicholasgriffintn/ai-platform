@@ -50,7 +50,8 @@ export class StreamProcessor {
     });
 
     try {
-      return await this.pipeline.process(providerStream);
+      const streamWithUsageLimits = this.addUsageLimitsEvent(providerStream);
+      return await this.pipeline.process(streamWithUsageLimits);
     } catch (error) {
       logger.error("Stream processing failed", {
         error,
@@ -58,6 +59,39 @@ export class StreamProcessor {
       });
       throw error;
     }
+  }
+
+  private addUsageLimitsEvent(stream: ReadableStream): ReadableStream {
+    const options = this.options;
+    const conversationManager = this.conversationManager;
+
+    return stream.pipeThrough(
+      new TransformStream({
+        async start(controller) {
+          try {
+            const usageLimits = await conversationManager.getUsageLimits();
+            if (usageLimits) {
+              const usageEvent = new TextEncoder().encode(
+                `data: ${JSON.stringify({
+                  type: "usage_limits",
+                  usage_limits: usageLimits,
+                })}\n\n`,
+              );
+              controller.enqueue(usageEvent);
+            }
+          } catch (error) {
+            logger.error("Failed to get usage limits", {
+              error,
+              completion_id: options.completion_id,
+            });
+          }
+        },
+
+        transform(chunk, controller) {
+          controller.enqueue(chunk);
+        },
+      }),
+    );
   }
 
   static async create(
