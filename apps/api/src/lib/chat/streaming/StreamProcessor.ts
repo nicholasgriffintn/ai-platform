@@ -2,7 +2,9 @@ import type { ConversationManager } from "~/lib/conversationManager";
 import type { ChatMode, IEnv, IUser, IUserSettings, Platform } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { StreamPipeline } from "./StreamPipeline";
+import { ClosingTransformer } from "./transformers/ClosingTransformer";
 import { ErrorTransformer } from "./transformers/ErrorTransformer";
+import { InitTransformer } from "./transformers/InitTransformer";
 import { ResponseFormatter } from "./transformers/ResponseFormatter";
 import { ToolCallTransformer } from "./transformers/ToolCallTransformer";
 
@@ -35,11 +37,15 @@ export class StreamProcessor {
 
   private setupPipeline(): void {
     this.pipeline
+      .addTransformer(
+        new InitTransformer(this.options, this.conversationManager),
+      )
       .addTransformer(new ErrorTransformer(this.options))
       .addTransformer(new ResponseFormatter(this.options))
       .addTransformer(
         new ToolCallTransformer(this.options, this.conversationManager),
-      );
+      )
+      .addTransformer(new ClosingTransformer(this.options));
   }
 
   async processStream(providerStream: ReadableStream): Promise<ReadableStream> {
@@ -50,8 +56,7 @@ export class StreamProcessor {
     });
 
     try {
-      const streamWithUsageLimits = this.addUsageLimitsEvent(providerStream);
-      return await this.pipeline.process(streamWithUsageLimits);
+      return await this.pipeline.process(providerStream);
     } catch (error) {
       logger.error("Stream processing failed", {
         error,
@@ -59,39 +64,6 @@ export class StreamProcessor {
       });
       throw error;
     }
-  }
-
-  private addUsageLimitsEvent(stream: ReadableStream): ReadableStream {
-    const options = this.options;
-    const conversationManager = this.conversationManager;
-
-    return stream.pipeThrough(
-      new TransformStream({
-        async start(controller) {
-          try {
-            const usageLimits = await conversationManager.getUsageLimits();
-            if (usageLimits) {
-              const usageEvent = new TextEncoder().encode(
-                `data: ${JSON.stringify({
-                  type: "usage_limits",
-                  usage_limits: usageLimits,
-                })}\n\n`,
-              );
-              controller.enqueue(usageEvent);
-            }
-          } catch (error) {
-            logger.error("Failed to get usage limits", {
-              error,
-              completion_id: options.completion_id,
-            });
-          }
-        },
-
-        transform(chunk, controller) {
-          controller.enqueue(chunk);
-        },
-      }),
-    );
   }
 
   static async create(

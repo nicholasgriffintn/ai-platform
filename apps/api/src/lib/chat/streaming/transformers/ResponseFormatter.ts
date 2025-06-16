@@ -27,9 +27,7 @@ export class ResponseFormatter implements StreamTransformer {
   ): Promise<ReadableStream> {
     return stream.pipeThrough(
       new TransformStream({
-        start: (controller) => {
-          this.emitEvent(controller, "state", { state: "init" });
-          this.emitEvent(controller, "state", { state: "thinking" });
+        start: () => {
           logger.debug("Response formatter initialized", {
             completion_id: this.options.completion_id,
           });
