@@ -5,8 +5,8 @@ import { StreamPipeline } from "./StreamPipeline";
 import { ClosingTransformer } from "./transformers/ClosingTransformer";
 import { ErrorTransformer } from "./transformers/ErrorTransformer";
 import { InitTransformer } from "./transformers/InitTransformer";
+import { PostProcessingTransformer } from "./transformers/PostProcessingTransformer";
 import { ResponseFormatter } from "./transformers/ResponseFormatter";
-import { ToolCallTransformer } from "./transformers/ToolCallTransformer";
 
 const logger = getLogger({ prefix: "STREAM_PROCESSOR" });
 
@@ -43,7 +43,7 @@ export class StreamProcessor {
       .addTransformer(new ErrorTransformer(this.options))
       .addTransformer(new ResponseFormatter(this.options))
       .addTransformer(
-        new ToolCallTransformer(this.options, this.conversationManager),
+        new PostProcessingTransformer(this.options, this.conversationManager),
       )
       .addTransformer(new ClosingTransformer(this.options));
   }

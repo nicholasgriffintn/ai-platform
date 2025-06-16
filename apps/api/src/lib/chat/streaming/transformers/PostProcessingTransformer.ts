@@ -10,9 +10,9 @@ import type { StreamContext } from "../StreamContext";
 import type { StreamTransformer } from "../StreamPipeline";
 import type { StreamProcessorOptions } from "../StreamProcessor";
 
-const logger = getLogger({ prefix: "TOOL_CALL_TRANSFORMER" });
+const logger = getLogger({ prefix: "POST_PROCESSING_TRANSFORMER" });
 
-export class ToolCallTransformer implements StreamTransformer {
+export class PostProcessingTransformer implements StreamTransformer {
   private toolCallsData: any[] = [];
   private currentToolCalls: Record<string, any> = {};
   private postProcessingDone = false;
@@ -24,7 +24,7 @@ export class ToolCallTransformer implements StreamTransformer {
   ) {}
 
   getName(): string {
-    return "ToolCallTransformer";
+    return "PostProcessingTransformer";
   }
 
   async transform(
