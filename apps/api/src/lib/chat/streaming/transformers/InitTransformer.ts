@@ -64,5 +64,7 @@ export class InitTransformer implements StreamTransformer {
   /**
    * Clean up instance variables to prevent memory leaks
    */
-  private cleanup(): void {}
+  private cleanup(): void {
+    this.conversationManager = null;
+  }
 }

@@ -99,6 +99,7 @@ export class ChatOrchestrator {
     const {
       modelConfigs,
       primaryModel,
+      primaryModelConfig,
       primaryProvider,
       conversationManager,
       messages,
@@ -215,6 +216,7 @@ export class ChatOrchestrator {
           env: options.env,
           completion_id: options.completion_id!,
           model: primaryModel,
+          modelConfig: primaryModelConfig,
           provider: primaryProvider,
           platform: platform || "api",
           user: options.user,

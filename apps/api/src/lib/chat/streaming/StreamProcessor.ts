@@ -8,12 +8,20 @@ import { InitTransformer } from "./transformers/InitTransformer";
 import { PostProcessingTransformer } from "./transformers/PostProcessingTransformer";
 import { ResponseFormatter } from "./transformers/ResponseFormatter";
 
+interface ModelConfigInfo {
+  model: string;
+  provider: string;
+  displayName: string;
+  type: string[];
+}
+
 const logger = getLogger({ prefix: "STREAM_PROCESSOR" });
 
 export interface StreamProcessorOptions {
   env: IEnv;
   completion_id: string;
   model: string;
+  modelConfig: ModelConfigInfo;
   provider: string;
   platform?: Platform;
   user?: IUser;

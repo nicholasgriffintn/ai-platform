@@ -5,6 +5,13 @@ import { getLogger } from "~/utils/logger";
 import { getAIResponse } from "../responses";
 import { StreamProcessor } from "./StreamProcessor";
 
+interface ModelConfigInfo {
+  model: string;
+  provider: string;
+  displayName: string;
+  type: string[];
+}
+
 const logger = getLogger({ prefix: "MULTI_MODEL_STREAM" });
 
 export async function createStreamWithPostProcessing(
@@ -13,6 +20,7 @@ export async function createStreamWithPostProcessing(
     env: IEnv;
     completion_id: string;
     model: string;
+    modelConfig: ModelConfigInfo;
     provider: string;
     platform?: Platform;
     user?: IUser;
@@ -25,12 +33,6 @@ export async function createStreamWithPostProcessing(
   conversationManager: ConversationManager,
 ): Promise<ReadableStream> {
   return StreamProcessor.create(providerStream, options, conversationManager);
-}
-
-interface ModelConfigInfo {
-  model: string;
-  provider: string;
-  displayName: string;
 }
 
 /**
@@ -155,9 +157,15 @@ export function createMultiModelStream(
           throw new Error("Primary model response is not a stream");
         }
 
+        const primaryModelConfig = models[0];
+
         const primaryProcessedStream = await createStreamWithPostProcessing(
           primaryResponse,
-          { ...options, model: models[0].model },
+          {
+            ...options,
+            model: primaryModelConfig.model,
+            modelConfig: primaryModelConfig,
+          },
           conversationManager,
         );
 

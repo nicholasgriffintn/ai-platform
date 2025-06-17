@@ -24,7 +24,26 @@ export class ClosingTransformer implements StreamTransformer {
         start() {},
 
         transform(chunk, controller) {
-          controller.enqueue(chunk);
+          try {
+            controller.enqueue(chunk);
+          } catch (error) {
+            logger.error("Failed in stream transform:", error);
+
+            const errorEvent = new TextEncoder().encode(
+              `data: ${JSON.stringify({
+                type: "error",
+                error: {
+                  message: "Stream processing error",
+                  code: "STREAM_ERROR",
+                  details:
+                    error instanceof Error ? error.message : String(error),
+                },
+                completion_id: options.completion_id,
+              })}\n\n`,
+            );
+
+            controller.enqueue(errorEvent);
+          }
         },
 
         flush(controller) {

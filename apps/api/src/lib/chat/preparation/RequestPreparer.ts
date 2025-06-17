@@ -17,6 +17,7 @@ const logger = getLogger({ prefix: "CHAT_REQUEST_PREPARER" });
 export interface PreparedRequest {
   modelConfigs: ModelConfigInfo[];
   primaryModel: string;
+  primaryModelConfig: ModelConfigInfo;
   primaryProvider: string;
   conversationManager: ConversationManager;
   messages: Message[];
@@ -111,6 +112,7 @@ export class RequestPreparer {
     return {
       modelConfigs,
       primaryModel,
+      primaryModelConfig,
       primaryProvider,
       conversationManager,
       messages,

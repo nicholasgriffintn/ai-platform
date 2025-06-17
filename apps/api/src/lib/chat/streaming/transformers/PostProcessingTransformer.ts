@@ -146,7 +146,7 @@ export class PostProcessingTransformer implements StreamTransformer {
         this.processMemories(controller),
       ]);
 
-      await this.storeAssistantMessage(guardrailsResult);
+      await this.storeAssistantMessage(controller, guardrailsResult);
 
       this.emitFinalEvents(controller, guardrailsResult);
 
@@ -266,7 +266,10 @@ export class PostProcessingTransformer implements StreamTransformer {
     }
   }
 
-  private async storeAssistantMessage(guardrailsResult: any): Promise<void> {
+  private async storeAssistantMessage(
+    controller: TransformStreamDefaultController,
+    guardrailsResult: any,
+  ): Promise<void> {
     const { completion_id, model, platform = "api", mode, env } = this.options;
 
     const fullContent = this.context?.getContent() || "";
@@ -274,6 +277,8 @@ export class PostProcessingTransformer implements StreamTransformer {
     const signature = this.context?.getSignature() || "";
     const citationsResponse = this.context?.getCitations() || [];
     const usageData = this.context?.getUsage();
+
+    this.emitEvent(controller, "content_block_stop", {});
 
     const assistantMessage = formatAssistantMessage({
       content: fullContent,
