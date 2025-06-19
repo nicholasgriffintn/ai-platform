@@ -44,7 +44,7 @@
 		"globals": "16.2.0",
 		"jsdom": "26.1.0",
 		"rollup-plugin-visualizer": "6.0.3",
-		"terser": "5.43.0",
+		"terser": "5.43.1",
 		"typescript": "~5.8.2",
 		"vite": "6.3.5",
 		"vitest": "3.2.4",
