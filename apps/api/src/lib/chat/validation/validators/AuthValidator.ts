@@ -1,9 +1,9 @@
-import type { CoreChatOptions } from "../../core";
 import type {
   ValidationContext,
   Validator,
   ValidatorResult,
-} from "../ValidationPipeline";
+} from "~/lib/chat/validation/ValidationPipeline";
+import type { CoreChatOptions } from "~/types";
 
 export class AuthValidator implements Validator {
   async validate(

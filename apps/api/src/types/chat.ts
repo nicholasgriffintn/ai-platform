@@ -305,3 +305,10 @@ export interface AssistantMessageData {
   finish_reason?: string;
   mode?: ChatMode;
 }
+
+export type CoreChatOptions = ChatCompletionParameters & {
+  use_multi_model?: boolean;
+  anonymousUser?: any;
+  current_step?: number;
+  max_steps?: number;
+};

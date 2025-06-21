@@ -1,4 +1,3 @@
-import type { CoreChatOptions } from "~/lib/chat/core";
 import { RequestPreparer } from "~/lib/chat/preparation/RequestPreparer";
 import { getAIResponse } from "~/lib/chat/responses";
 import {
@@ -8,6 +7,7 @@ import {
 import { handleToolCalls } from "~/lib/chat/tools";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { Guardrails } from "~/lib/guardrails";
+import type { CoreChatOptions } from "~/types";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -318,36 +318,49 @@ export class ChatOrchestrator {
   private determineErrorType(error: any): ErrorType {
     if (
       error.name === "TimeoutError" ||
-      error.message?.includes("timeout") ||
-      error.message?.includes("network") ||
+      error.name === "AbortError" ||
       error.code === "ECONNRESET" ||
-      error.code === "ECONNABORTED"
+      error.code === "ECONNABORTED" ||
+      error.code === "ETIMEDOUT" ||
+      error.code === "ENOTFOUND" ||
+      error.code === "ECONNREFUSED" ||
+      error.code === "ENETUNREACH"
     ) {
       return ErrorType.NETWORK_ERROR;
     }
 
     if (
       error.status === 429 ||
-      error.message?.includes("rate limit") ||
-      error.message?.includes("too many requests")
+      error.code === "RATE_LIMIT_EXCEEDED" ||
+      error.name === "RateLimitError"
     ) {
       return ErrorType.RATE_LIMIT_ERROR;
     }
 
-    if (error.status === 401 || error.status === 403) {
+    if (
+      error.status === 401 ||
+      error.status === 403 ||
+      error.code === "UNAUTHORIZED" ||
+      error.code === "FORBIDDEN" ||
+      error.name === "AuthenticationError"
+    ) {
       return ErrorType.AUTHENTICATION_ERROR;
     }
 
     if (
-      error.message?.includes("model") ||
-      error.message?.includes("parameter") ||
-      error.message?.includes("token limit")
+      error.status >= 500 ||
+      error.code === "MODEL_ERROR" ||
+      error.code === "INVALID_PARAMETER" ||
+      error.code === "TOKEN_LIMIT_EXCEEDED" ||
+      error.code === "CONTEXT_LENGTH_EXCEEDED" ||
+      error.name === "ModelError" ||
+      error.name === "ProviderError"
     ) {
       return ErrorType.PROVIDER_ERROR;
     }
 
-    if (error.status >= 500) {
-      return ErrorType.PROVIDER_ERROR;
+    if (error.status >= 400 && error.status < 500) {
+      return ErrorType.PARAMS_ERROR;
     }
 
     return ErrorType.UNKNOWN_ERROR;

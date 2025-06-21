@@ -1,11 +1,11 @@
-import { Database } from "~/lib/database";
-import { Guardrails } from "~/lib/guardrails";
-import type { CoreChatOptions } from "../../core";
 import type {
   ValidationContext,
   Validator,
   ValidatorResult,
-} from "../ValidationPipeline";
+} from "~/lib/chat/validation/ValidationPipeline";
+import { Database } from "~/lib/database";
+import { Guardrails } from "~/lib/guardrails";
+import type { CoreChatOptions } from "~/types";
 
 export class GuardrailsValidator implements Validator {
   async validate(

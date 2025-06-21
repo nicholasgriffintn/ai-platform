@@ -1,15 +1,15 @@
-import type { CoreChatOptions } from "../../core";
 import {
   checkContextWindowLimits,
   getAllAttachments,
   pruneMessagesToFitContext,
   sanitiseInput,
-} from "../../utils";
+} from "~/lib/chat/utils";
 import type {
   ValidationContext,
   Validator,
   ValidatorResult,
-} from "../ValidationPipeline";
+} from "~/lib/chat/validation/ValidationPipeline";
+import type { CoreChatOptions } from "~/types";
 
 export class ContextLimitValidator implements Validator {
   async validate(

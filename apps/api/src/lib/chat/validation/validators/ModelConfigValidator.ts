@@ -1,12 +1,12 @@
-import { getModelConfig } from "~/lib/models";
-import type { CoreChatOptions } from "../../core";
-import { selectModels } from "../../modelSelection";
-import { getAllAttachments } from "../../utils";
+import { selectModels } from "~/lib/chat/modelSelection";
+import { getAllAttachments } from "~/lib/chat/utils";
 import type {
   ValidationContext,
   Validator,
   ValidatorResult,
-} from "../ValidationPipeline";
+} from "~/lib/chat/validation/ValidationPipeline";
+import { getModelConfig } from "~/lib/models";
+import type { CoreChatOptions } from "~/types";
 
 export class ModelConfigValidator implements Validator {
   async validate(

@@ -1,4 +1,4 @@
-import type { CoreChatOptions } from "../core";
+import type { CoreChatOptions } from "~/types";
 import { AuthValidator } from "./validators/AuthValidator";
 import { BasicInputValidator } from "./validators/BasicInputValidator";
 import { ContextLimitValidator } from "./validators/ContextLimitValidator";

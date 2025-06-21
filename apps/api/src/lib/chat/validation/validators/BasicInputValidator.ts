@@ -1,10 +1,10 @@
-import type { CoreChatOptions } from "../../core";
-import { sanitiseMessages } from "../../utils";
+import { sanitiseMessages } from "~/lib/chat/utils";
 import type {
   ValidationContext,
   Validator,
   ValidatorResult,
-} from "../ValidationPipeline";
+} from "~/lib/chat/validation/ValidationPipeline";
+import type { CoreChatOptions } from "~/types";
 
 export class BasicInputValidator implements Validator {
   async validate(
