@@ -383,6 +383,9 @@ class ApiService {
                 if (parsedData.type === "content_block_delta") {
                   content += parsedData.content;
                   onProgress(content, reasoning, undefined, false);
+                } else if (parsedData.choices?.[0]?.delta?.content) {
+                  content += parsedData.choices[0].delta.content;
+                  onProgress(content, reasoning, undefined, false);
                 } else if (parsedData.type === "message_stop") {
                   onProgress(content, reasoning, undefined, true);
                 } else if (parsedData.type === "state") {
