@@ -1,7 +1,10 @@
 import type { CoreChatOptions } from "~/lib/chat/core";
 import { RequestPreparer } from "~/lib/chat/preparation/RequestPreparer";
 import { getAIResponse } from "~/lib/chat/responses";
-import { StreamProcessor, createMultiModelStream } from "~/lib/chat/streaming";
+import {
+  createMultiModelStream,
+  createStreamWithPostProcessing,
+} from "~/lib/chat/streaming";
 import { handleToolCalls } from "~/lib/chat/tools";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { Guardrails } from "~/lib/guardrails";
@@ -210,13 +213,12 @@ export class ChatOrchestrator {
     const response = await getAIResponse(params);
 
     if (response instanceof ReadableStream) {
-      const transformedStream = await StreamProcessor.create(
+      const transformedStream = await createStreamWithPostProcessing(
         response,
         {
           env: options.env,
           completion_id: options.completion_id!,
           model: primaryModel,
-          modelConfig: primaryModelConfig,
           provider: primaryProvider,
           platform: platform || "api",
           user: options.user,
