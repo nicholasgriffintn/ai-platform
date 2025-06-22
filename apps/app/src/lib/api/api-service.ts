@@ -244,7 +244,7 @@ class ApiService {
     onStateChange: (state: string, data?: any) => void,
     store = true,
     streamingEnabled = true,
-    useMultiModel = false,
+    use_multi_model = false,
     endpoint = "/chat/completions",
   ): Promise<Message> => {
     let headers = {};
@@ -288,7 +288,7 @@ class ApiService {
       store,
       stream: streamingEnabled,
       enabled_tools: selectedTools,
-      useMultiModel,
+      use_multi_model,
     };
 
     if (model !== undefined) {

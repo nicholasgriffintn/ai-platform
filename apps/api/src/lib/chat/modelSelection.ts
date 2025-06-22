@@ -10,7 +10,7 @@ import type { Attachment } from "~/types";
  * @param user - The user
  * @param completionId - The completion ID
  * @param requestedModel - The requested model
- * @param useMultiModel - Whether to use multiple models
+ * @param use_multi_model - Whether to use multiple models
  * @returns The selected models
  */
 export async function selectModels(
@@ -21,9 +21,9 @@ export async function selectModels(
   user: any,
   completionId: string,
   requestedModel?: string,
-  useMultiModel?: boolean,
+  use_multi_model?: boolean,
 ): Promise<string[]> {
-  if (useMultiModel && !requestedModel) {
+  if (use_multi_model && !requestedModel) {
     return ModelRouter.selectMultipleModels(
       env,
       lastMessageText,

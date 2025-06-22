@@ -7,6 +7,9 @@ import type {
 } from "~/lib/chat/validation/ValidationPipeline";
 import { getModelConfig } from "~/lib/models";
 import type { CoreChatOptions } from "~/types";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "CHAT_VALIDATOR_CONFIG" });
 
 export class ModelConfigValidator implements Validator {
   async validate(
@@ -58,6 +61,8 @@ export class ModelConfigValidator implements Validator {
         requestedModel,
         use_multi_model,
       );
+
+      logger.info("Selected models", { selectedModels });
 
       const primaryModelName = selectedModels[0];
       const primaryModelConfig = await getModelConfig(primaryModelName, env);

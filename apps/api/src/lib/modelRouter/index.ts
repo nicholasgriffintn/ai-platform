@@ -1,9 +1,7 @@
 import { PromptAnalyzer } from "~/lib/modelRouter/promptAnalyser";
 import {
   defaultModel,
-  defaultProvider,
   filterModelsForUserAccess,
-  getAuxiliaryModel,
   getIncludedInRouterModels,
   getModelConfig,
 } from "~/lib/models";

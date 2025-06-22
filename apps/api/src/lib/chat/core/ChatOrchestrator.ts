@@ -102,7 +102,6 @@ export class ChatOrchestrator {
     const {
       modelConfigs,
       primaryModel,
-      primaryModelConfig,
       primaryProvider,
       conversationManager,
       messages,
