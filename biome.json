@@ -29,7 +29,8 @@
       },
       "style": {
         "noNonNullAssertion": "off",
-        "useTemplate": "off"
+        "useTemplate": "off",
+        "noUnusedTemplateLiteral": "off"
       },
       "complexity": {
         "noForEach": "off"
