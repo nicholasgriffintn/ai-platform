@@ -11,11 +11,6 @@ export class StreamingFormatter {
    * @returns The extracted content
    */
   static extractContentFromChunk(data: any, currentEventType = "") {
-    // First check if the data was already formatted
-    if (data.response !== undefined) {
-      return data.response;
-    }
-
     // OpenAI-like streaming streaming format
     if (data.choices?.[0]?.delta?.content !== undefined) {
       return data.choices[0].delta.content || "";
@@ -39,17 +34,20 @@ export class StreamingFormatter {
       return data.delta.text || "";
     }
 
-    // Direct content provided
-    if (typeof data.content === "string") {
-      return data.content;
-    }
-
     // Array of content blocks Anthropic-like streaming
     if (Array.isArray(data.message?.content)) {
       return data.message.content
         .filter((block: any) => block.type === "text" && block.text)
         .map((block: any) => block.text)
         .join("");
+    }
+
+    // Direct content provided
+    if (typeof data.content === "string") {
+      return data.content;
+    }
+    if (data.response !== undefined) {
+      return data.response;
     }
 
     // Ollama-like format
