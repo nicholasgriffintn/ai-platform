@@ -13,16 +13,11 @@ import type {
   IUser,
   IUserSettings,
   MessageContent,
+  ModelConfigInfo,
   Platform,
 } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
-
-interface ModelConfigInfo {
-  model: string;
-  provider: string;
-  displayName: string;
-}
 
 const logger = getLogger({ prefix: "CHAT_STREAMING" });
 

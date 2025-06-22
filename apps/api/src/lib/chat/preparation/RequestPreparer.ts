@@ -4,11 +4,10 @@ import { Embedding } from "~/lib/embedding";
 import { MemoryManager } from "~/lib/memory";
 import { getModelConfig } from "~/lib/models";
 import { getSystemPrompt } from "~/lib/prompts";
-import type { ChatMode, Message, Platform } from "~/types";
+import type { ChatMode, Message, ModelConfigInfo, Platform } from "~/types";
 import type { CoreChatOptions } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
-
 import { getAllAttachments, sanitiseInput } from "../utils";
 import type { ValidationContext } from "../validation/ValidationPipeline";
 
@@ -26,12 +25,6 @@ export interface PreparedRequest {
   userSettings: any;
   currentMode: string;
   isProUser: boolean;
-}
-
-interface ModelConfigInfo {
-  model: string;
-  provider: string;
-  displayName: string;
 }
 
 export class RequestPreparer {

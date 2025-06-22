@@ -2,6 +2,12 @@ import type { availableCapabilities, availableModelTypes } from "~/lib/models";
 
 export type ModelRanking = 1 | 2 | 3 | 4 | 5;
 
+export interface ModelConfigInfo {
+  model: string;
+  provider: string;
+  displayName: string;
+}
+
 export type ModelConfigItem = {
   matchingModel: string;
   name?: string;
