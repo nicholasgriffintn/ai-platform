@@ -209,7 +209,7 @@ The application uses a Cloudflare D1 database with Drizzle ORM for schema manage
 ### Running Migrations
 
 ```bash
-cd apps/database
+cd apps/api
 # Migrate to the local database
 pnpm run db:migrate:local
 
