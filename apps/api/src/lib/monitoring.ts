@@ -83,7 +83,7 @@ export class Monitoring {
     return (
       typeof metric.traceId === "string" &&
       typeof metric.timestamp === "number" &&
-      ["performance", "error", "usage"].includes(metric.type) &&
+      ["performance", "error", "usage", "guardrail"].includes(metric.type) &&
       typeof metric.name === "string" &&
       typeof metric.value === "number"
     );

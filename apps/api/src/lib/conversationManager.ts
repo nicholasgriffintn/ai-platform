@@ -88,6 +88,10 @@ export class ConversationManager {
    * @returns UsageLimits object or null if no user is set
    */
   async getUsageLimits(): Promise<UsageLimits | null> {
+    if (!this.usageManager) {
+      return null;
+    }
+
     try {
       return await this.usageManager.getUsageLimits();
     } catch (error) {

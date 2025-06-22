@@ -29,6 +29,7 @@ export class KeywordFilter {
     concepts: [
       "code",
       "program",
+      "programming",
       "function",
       "debug",
       "algorithm",

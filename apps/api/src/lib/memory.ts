@@ -159,7 +159,7 @@ export class MemoryManager {
   ): Promise<MemoryEvent[]> {
     const events: MemoryEvent[] = [];
 
-    if (!userSettings?.memories_save_enabled) {
+    if (userSettings?.memories_save_enabled) {
       try {
         if (lastUser.trim()) {
           const { model: modelToUse, provider: providerToUse } =

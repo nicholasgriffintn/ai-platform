@@ -22,7 +22,7 @@ async function uploadFromChat(
       if (value) {
         chunks.push(value);
       }
-      uploadDone = true;
+      uploadDone = done;
     }
     arrayBuffer = new Uint8Array(
       chunks.reduce((acc, chunk) => acc.concat(Array.from(chunk)), []),
