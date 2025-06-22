@@ -66,9 +66,9 @@ export function returnCodingPrompt(
 
   if (!hasThinking) {
     builder
-      .addLine("<analysis>")
+      .addLine("<think>")
       .addLine(problemBreakdownInstructions)
-      .addLine("</analysis>")
+      .addLine("</think>")
       .addLine();
   }
 

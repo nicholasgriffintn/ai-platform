@@ -75,9 +75,9 @@ export async function returnStandardPrompt(
 
       if (!hasThinking) {
         builder
-          .addLine("<analysis>")
+          .addLine("<think>")
           .addLine(problemBreakdownInstructions)
-          .addLine("</analysis>");
+          .addLine("</think>");
       }
 
       builder.addLine("<answer>");
