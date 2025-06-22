@@ -1,12 +1,17 @@
 import { AwsClient } from "aws4fetch";
 
 import { gatewayId } from "~/constants/app";
-import { mapParametersToProvider } from "~/lib/chat/parameters";
+import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
+import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { createEventStreamParser } from "~/utils/awsEventStream";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import {
+  createCommonParameters,
+  getToolsForProvider,
+} from "~/utils/parameters";
 import { BaseProvider } from "./base";
 
 const logger = getLogger({ prefix: "BEDROCK" });
@@ -60,6 +65,119 @@ export class BedrockProvider extends BaseProvider {
     return {};
   }
 
+  async mapParameters(
+    params: ChatCompletionParameters,
+    _storageService?: StorageService,
+    _assetsUrl?: string,
+  ): Promise<Record<string, any>> {
+    const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+    if (!modelConfig) {
+      throw new Error(`Model configuration not found for ${params.model}`);
+    }
+
+    const type = modelConfig?.type || ["text"];
+    const isImageType =
+      type.includes("text-to-image") || type.includes("image-to-image");
+    const isVideoType =
+      type.includes("text-to-video") || type.includes("image-to-video");
+
+    if (isVideoType) {
+      return {
+        messages: this.formatBedrockMessages(params),
+        taskType: "TEXT_VIDEO",
+        textToVideoParams: {
+          text:
+            typeof params.messages[params.messages.length - 1].content ===
+            "string"
+              ? params.messages[params.messages.length - 1].content
+              : Array.isArray(
+                    params.messages[params.messages.length - 1].content,
+                  )
+                ? (
+                    params.messages[params.messages.length - 1]
+                      .content[0] as any
+                  )?.text || ""
+                : "",
+        },
+        videoGenerationConfig: {
+          durationSeconds: 6,
+          fps: 24,
+          dimension: "1280x720",
+        },
+      };
+    }
+
+    if (isImageType) {
+      return {
+        textToImageParams: {
+          text:
+            typeof params.messages[params.messages.length - 1].content ===
+            "string"
+              ? params.messages[params.messages.length - 1].content
+              : Array.isArray(
+                    params.messages[params.messages.length - 1].content,
+                  )
+                ? (
+                    params.messages[params.messages.length - 1]
+                      .content[0] as any
+                  )?.text || ""
+                : "",
+        },
+        taskType: "TEXT_IMAGE",
+        imageGenerationConfig: {
+          quality: "standard",
+          width: 1280,
+          height: 1280,
+          numberOfImages: 1,
+        },
+      };
+    }
+
+    const commonParams = createCommonParameters(
+      params,
+      modelConfig,
+      this.name,
+      this.isOpenAiCompatible,
+    );
+
+    const toolsParams = getToolsForProvider(params, modelConfig, this.name);
+    const supportsFunctions = modelConfig?.supportsFunctions || false;
+
+    const toolConfig = supportsFunctions
+      ? { toolConfig: { tools: toolsParams.tools } }
+      : {};
+
+    return {
+      ...(params.system_prompt && {
+        system: [{ text: params.system_prompt }],
+      }),
+      messages: this.formatBedrockMessages(params),
+      inferenceConfig: {
+        temperature: commonParams.temperature,
+        maxTokens: commonParams.max_tokens,
+        topP: commonParams.top_p,
+      },
+      ...toolConfig,
+    };
+  }
+
+  /**
+   * Format messages for Bedrock models
+   * @param params - The chat completion parameters
+   * @returns The formatted messages
+   */
+  private formatBedrockMessages(params: ChatCompletionParameters): any[] {
+    return params.messages.map((message) => ({
+      role: message.role,
+      content: [
+        {
+          type: "text",
+          text: message.content,
+        },
+      ],
+    }));
+  }
+
   async getResponse(
     params: ChatCompletionParameters,
     userId?: number,
@@ -67,11 +185,7 @@ export class BedrockProvider extends BaseProvider {
     this.validateParams(params);
 
     const bedrockUrl = this.getEndpoint(params);
-    const body = await mapParametersToProvider(
-      this.isOpenAiCompatible,
-      params,
-      "bedrock",
-    );
+    const body = await this.mapParameters(params);
 
     return trackProviderMetrics({
       provider: this.name,
@@ -182,6 +296,7 @@ export class BedrockProvider extends BaseProvider {
         seed: params.seed,
         repetition_penalty: params.repetition_penalty,
         frequency_penalty: params.frequency_penalty,
+        presence_penalty: params.presence_penalty,
       },
       userId,
       completion_id: params.completion_id,

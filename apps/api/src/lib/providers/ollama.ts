@@ -1,5 +1,12 @@
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import {
+  createCommonParameters,
+  getToolsForProvider,
+  shouldEnableStreaming,
+} from "~/utils/parameters";
 import { BaseProvider } from "./base";
 
 export class OllamaProvider extends BaseProvider {
@@ -30,6 +37,40 @@ export class OllamaProvider extends BaseProvider {
   protected getHeaders(): Record<string, string> {
     return {
       "Content-Type": "application/json",
+    };
+  }
+
+  async mapParameters(
+    params: ChatCompletionParameters,
+    _storageService?: StorageService,
+    _assetsUrl?: string,
+  ): Promise<Record<string, any>> {
+    const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+    if (!modelConfig) {
+      throw new Error(`Model configuration not found for ${params.model}`);
+    }
+
+    const commonParams = createCommonParameters(
+      params,
+      modelConfig,
+      this.name,
+      this.isOpenAiCompatible,
+    );
+
+    const streamingParams = shouldEnableStreaming(
+      modelConfig,
+      this.supportsStreaming,
+      params.stream,
+    )
+      ? { stream: true }
+      : {};
+
+    const toolsParams = getToolsForProvider(params, modelConfig, this.name);
+
+    return {
+      ...commonParams,
+      ...streamingParams,
+      ...toolsParams,
     };
   }
 }

@@ -1,5 +1,12 @@
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import {
+  createCommonParameters,
+  getToolsForProvider,
+  shouldEnableStreaming,
+} from "~/utils/parameters";
 import { BaseProvider } from "./base";
 
 export class OpenAIProvider extends BaseProvider {
@@ -85,5 +92,128 @@ export class OpenAIProvider extends BaseProvider {
     }
 
     return response.json();
+  }
+
+  async mapParameters(
+    params: ChatCompletionParameters,
+    _storageService?: StorageService,
+    _assetsUrl?: string,
+  ): Promise<Record<string, any>> {
+    const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+    if (!modelConfig) {
+      throw new Error(`Model configuration not found for ${params.model}`);
+    }
+
+    const commonParams = createCommonParameters(
+      params,
+      modelConfig,
+      this.name,
+      this.isOpenAiCompatible,
+    );
+
+    const streamingParams = shouldEnableStreaming(
+      modelConfig,
+      this.supportsStreaming,
+      params.stream,
+    )
+      ? { stream: true }
+      : {};
+
+    const toolsParams = getToolsForProvider(params, modelConfig, this.name);
+
+    const tools = [];
+    if (modelConfig?.supportsFunctions) {
+      if (
+        modelConfig?.supportsSearchGrounding &&
+        params.enabled_tools.includes("search_grounding")
+      ) {
+        tools.push({ type: "web_search_preview" });
+      }
+    }
+    const allTools = [...tools, ...(toolsParams.tools || [])];
+
+    const openaiSpecificTools =
+      modelConfig?.supportsFunctions && tools.length > 0
+        ? { tools: allTools }
+        : {};
+
+    const thinkingParams = modelConfig?.hasThinking
+      ? { reasoning_effort: params.reasoning_effort }
+      : {};
+
+    let modelSpecificParams = {};
+    if (params.model === "o1" || params.model === "o4-mini") {
+      modelSpecificParams = {
+        temperature: 1,
+        top_p: undefined,
+      };
+    }
+
+    if (params.model.includes("-search-preview")) {
+      modelSpecificParams = {
+        ...modelSpecificParams,
+        frequency_penalty: undefined,
+        presence_penalty: undefined,
+        temperature: undefined,
+        top_p: undefined,
+      };
+    }
+
+    const type = modelConfig?.type || ["text"];
+
+    // Handle image generation
+    if (type.includes("image-to-image") || type.includes("text-to-image")) {
+      let prompt = "";
+      if (params.messages.length > 1) {
+        const content = params.messages[1].content;
+        prompt = typeof content === "string" ? content : content[0]?.text || "";
+      } else {
+        const content = params.messages[0].content;
+        prompt = typeof content === "string" ? content : content[0]?.text || "";
+      }
+
+      const hasImages = params.messages.some(
+        (message) =>
+          typeof message.content !== "string" &&
+          message.content.some((item: any) => item.type === "image_url"),
+      );
+
+      if (type.includes("image-to-image") && hasImages) {
+        if (typeof params.messages[1].content === "string") {
+          throw new Error("Image to image is not supported for text input");
+        }
+
+        const imageUrls = params.messages[1].content
+          .filter((item: any) => item.type === "image_url")
+          .map((item: any) => item.image_url.url);
+
+        if (imageUrls.length === 0) {
+          throw new Error("No image urls found");
+        }
+
+        return {
+          prompt,
+          image: imageUrls,
+        };
+      }
+
+      return {
+        prompt,
+      };
+    }
+
+    return {
+      ...commonParams,
+      ...streamingParams,
+      ...toolsParams,
+      ...openaiSpecificTools,
+      ...thinkingParams,
+      ...modelSpecificParams,
+      store: params.store,
+      logit_bias: params.logit_bias,
+      n: params.n,
+      stop: params.stop,
+      user: typeof params.user === "string" ? params.user : params.user?.email,
+    };
   }
 }

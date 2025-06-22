@@ -1,4 +1,3 @@
-import { mergeParametersWithDefaults } from "~/lib/chat/parameters";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import type { ChatCompletionParameters, Message } from "~/types";
@@ -7,6 +6,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { formatMessages } from "~/utils/messages";
+import { mergeParametersWithDefaults } from "~/utils/parameters";
 import { withRetry } from "~/utils/retries";
 
 const responseLogger = getLogger({ prefix: "CHAT_RESPONSE" });

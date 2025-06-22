@@ -1,11 +1,16 @@
-import { mapParametersToProvider } from "~/lib/chat/parameters";
 import { ResponseFormatter } from "~/lib/formatter";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
+import type { StorageService } from "~/lib/storage";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import {
+  createCommonParameters,
+  getToolsForProvider,
+  shouldEnableStreaming,
+} from "~/utils/parameters";
 import { detectStreaming } from "~/utils/streaming";
 import { fetchAIResponse } from "./fetch";
 
@@ -32,6 +37,56 @@ export abstract class BaseProvider implements AIProvider {
    * Gets the environment variable name for the provider's API key
    */
   protected abstract getProviderKeyName(): string;
+
+  /**
+   * Default parameter mapping implementation for providers that don't need custom logic
+   */
+  async defaultMapParameters(
+    params: ChatCompletionParameters,
+    _storageService?: StorageService,
+    _assetsUrl?: string,
+  ): Promise<Record<string, any>> {
+    const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+    if (!modelConfig) {
+      throw new Error(`Model configuration not found for ${params.model}`);
+    }
+
+    const commonParams = createCommonParameters(
+      params,
+      modelConfig,
+      this.name,
+      this.isOpenAiCompatible,
+    );
+
+    const streamingParams = shouldEnableStreaming(
+      modelConfig,
+      this.supportsStreaming,
+      params.stream,
+    )
+      ? { stream: true }
+      : {};
+
+    const toolsParams = getToolsForProvider(params, modelConfig, this.name);
+
+    return {
+      ...commonParams,
+      ...streamingParams,
+      ...toolsParams,
+    };
+  }
+
+  /**
+   * Maps parameters to provider-specific format
+   * @param params - The chat completion parameters
+   * @param storageService - Optional storage service for handling files
+   * @param assetsUrl - Optional assets URL for file processing
+   * @returns The provider-specific parameters
+   */
+  mapParameters?(
+    params: ChatCompletionParameters,
+    storageService?: StorageService,
+    assetsUrl?: string,
+  ): Promise<Record<string, any>>;
 
   /**
    * Gets the API key for the provider, checking user settings first
@@ -131,6 +186,26 @@ export abstract class BaseProvider implements AIProvider {
   }
 
   /**
+   * Maps parameters using the appropriate provider strategy
+   * For OpenAI-compatible providers, uses the compat provider's mapping
+   */
+  private async getParameterMapping(
+    params: ChatCompletionParameters,
+    storageService?: StorageService,
+    assetsUrl?: string,
+  ): Promise<Record<string, any>> {
+    if (this.isOpenAiCompatible) {
+      return await this.defaultMapParameters(params, storageService, assetsUrl);
+    }
+
+    if (this.mapParameters) {
+      return await this.mapParameters(params, storageService, assetsUrl);
+    }
+
+    return await this.defaultMapParameters(params, storageService, assetsUrl);
+  }
+
+  /**
    * Main method to get response from the provider
    * Implements the template method pattern
    * @param params - The parameters of the request
@@ -165,11 +240,7 @@ export abstract class BaseProvider implements AIProvider {
       provider: this.name,
       model: params.model as string,
       operation: async () => {
-        const body = await mapParametersToProvider(
-          isOpenAiCompatible,
-          params,
-          this.name,
-        );
+        const body = await this.getParameterMapping(params);
         const data = await fetchAIResponse(
           isOpenAiCompatible,
           this.name,
@@ -198,6 +269,7 @@ export abstract class BaseProvider implements AIProvider {
         seed: params.seed,
         repetition_penalty: params.repetition_penalty,
         frequency_penalty: params.frequency_penalty,
+        presence_penalty: params.presence_penalty,
       },
       userId,
       completion_id: params.completion_id,

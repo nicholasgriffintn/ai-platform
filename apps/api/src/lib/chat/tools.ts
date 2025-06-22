@@ -1,7 +1,6 @@
 import type { ConversationManager } from "~/lib/conversationManager";
 import { handleFunctions } from "~/services/functions";
 import type { IRequest, Message } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import {

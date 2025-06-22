@@ -1,7 +1,14 @@
 import { API_PROD_HOST } from "~/constants/app";
+import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
+import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import {
+  createCommonParameters,
+  getToolsForProvider,
+  shouldEnableStreaming,
+} from "~/utils/parameters";
 import { BaseProvider } from "./base";
 import { fetchAIResponse } from "./fetch";
 
@@ -97,6 +104,40 @@ export class ReplicateProvider extends BaseProvider {
       "Polling timeout exceeded",
       ErrorType.PROVIDER_ERROR,
     );
+  }
+
+  async mapParameters(
+    params: ChatCompletionParameters,
+    _storageService?: StorageService,
+    _assetsUrl?: string,
+  ): Promise<Record<string, any>> {
+    const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+    if (!modelConfig) {
+      throw new Error(`Model configuration not found for ${params.model}`);
+    }
+
+    const commonParams = createCommonParameters(
+      params,
+      modelConfig,
+      this.name,
+      this.isOpenAiCompatible,
+    );
+
+    const streamingParams = shouldEnableStreaming(
+      modelConfig,
+      this.supportsStreaming,
+      params.stream,
+    )
+      ? { stream: true }
+      : {};
+
+    const toolsParams = getToolsForProvider(params, modelConfig, this.name);
+
+    return {
+      ...commonParams,
+      ...streamingParams,
+      ...toolsParams,
+    };
   }
 
   async getResponse(
