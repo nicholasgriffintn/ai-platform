@@ -1,15 +1,13 @@
 import { KeywordFilter } from "~/lib/keywords";
-import { availableCapabilities, getModelConfig } from "~/lib/models";
+import {
+  availableCapabilities,
+  getAuxiliaryModel,
+  getModelConfig,
+} from "~/lib/models";
 import type { AIProvider } from "~/lib/providers/base";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import { availableFunctions } from "~/services/functions";
-import type {
-  Attachment,
-  ChatRole,
-  IEnv,
-  IUser,
-  PromptRequirements,
-} from "~/types";
+import type { Attachment, IEnv, IUser, PromptRequirements } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
@@ -30,18 +28,13 @@ export class PromptAnalyzer {
     prompt: string,
     keywords: string[],
     user: IUser,
-    providerToUse: string,
-    modelToUse: string,
   ): Promise<PromptRequirements> {
     try {
-      const provider = AIProviderFactory.getProvider(providerToUse);
       const analysisResponse = await PromptAnalyzer.performAIAnalysis(
-        provider,
         env,
         prompt,
         keywords,
         user,
-        modelToUse,
       );
       return PromptAnalyzer.validateAndParseAnalysis(analysisResponse);
     } catch (error) {
@@ -53,18 +46,19 @@ export class PromptAnalyzer {
   }
 
   private static async performAIAnalysis(
-    provider: AIProvider,
     env: IEnv,
     prompt: string,
     keywords: string[],
     user: IUser,
-    modelToUse: string,
   ) {
-    const modelInfo = await getModelConfig(modelToUse);
+    const { model: modelToUse, provider: providerToUse } =
+      await getAuxiliaryModel(env, user);
+
+    const provider = AIProviderFactory.getProvider(providerToUse);
 
     return provider.getResponse({
       env,
-      model: modelInfo.matchingModel,
+      model: modelToUse,
       disable_functions: true,
       messages: [
         {
@@ -126,22 +120,26 @@ Ensure the output is nothing but the JSON object itself.`;
   }
 
   private static validateAndParseAnalysis(analysisResponse: {
-    choices: {
+    choices?: {
       message: {
         content: string;
       };
     }[];
+    response?: string;
   }): PromptRequirements {
-    if (!analysisResponse?.choices?.length) {
+    const openAiResponse = analysisResponse?.choices?.[0]?.message?.content;
+    const workersAiResponse = analysisResponse?.response;
+
+    const aiResponse = openAiResponse || workersAiResponse;
+
+    if (!aiResponse) {
       throw new AssistantError(
         "No valid AI response received",
         ErrorType.PROVIDER_ERROR,
       );
     }
 
-    const content = analysisResponse.choices[0].message.content;
-
-    let cleanedContent = content.trim();
+    let cleanedContent = aiResponse.trim();
 
     // Remove outer code block markers if present (```json ... ```)
     cleanedContent = cleanedContent
@@ -160,13 +158,13 @@ Ensure the output is nothing but the JSON object itself.`;
         "Failed to parse JSON response:",
         error,
         "Original Content:",
-        content,
+        aiResponse,
         "Cleaned Content:",
         cleanedContent,
       );
 
       try {
-        const jsonMatch = content.match(/\{[\s\S]*?\}/);
+        const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
         if (jsonMatch) {
           requirementsAnalysis = JSON.parse(jsonMatch[0]);
         } else {
@@ -254,8 +252,6 @@ Ensure the output is nothing but the JSON object itself.`;
   public static async analyzePrompt(
     env: IEnv,
     prompt: string,
-    providerToUse: string,
-    modelToUse: string,
     attachments?: Attachment[],
     budget_constraint?: number,
     user?: IUser,
@@ -266,8 +262,6 @@ Ensure the output is nothing but the JSON object itself.`;
       prompt,
       keywords,
       user,
-      providerToUse,
-      modelToUse,
     );
 
     return {

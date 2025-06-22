@@ -276,14 +276,9 @@ export class ModelRouter {
           user?.id,
         );
 
-        const { model: modelToUse, provider: providerToUse } =
-          await getAuxiliaryModel(env, user);
-
         const requirements = await PromptAnalyzer.analyzePrompt(
           env,
           prompt,
-          providerToUse,
-          modelToUse,
           attachments,
           budget_constraint,
           user,
@@ -326,14 +321,9 @@ export class ModelRouter {
           user?.id,
         );
 
-        const { model: modelToUse, provider: providerToUse } =
-          await getAuxiliaryModel(env, user);
-
         const requirements = await PromptAnalyzer.analyzePrompt(
           env,
           prompt,
-          providerToUse,
-          modelToUse,
           attachments,
           budget_constraint,
           user,
@@ -346,7 +336,10 @@ export class ModelRouter {
 
         const suitableModels = modelScores.filter((model) => model.score > 0);
 
-        if (ModelRouter.shouldCompareModels(requirements)) {
+        const doesComplexityRequireComparison =
+          ModelRouter.shouldCompareModels(requirements);
+
+        if (doesComplexityRequireComparison) {
           return await ModelRouter.selectModelsForComparison(suitableModels);
         }
 
