@@ -1,10 +1,5 @@
 import { KeywordFilter } from "~/lib/keywords";
-import {
-  availableCapabilities,
-  getAuxiliaryModel,
-  getModelConfig,
-} from "~/lib/models";
-import type { AIProvider } from "~/lib/providers/base";
+import { availableCapabilities, getAuxiliaryModel } from "~/lib/models";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import { availableFunctions } from "~/services/functions";
 import type { Attachment, IEnv, IUser, PromptRequirements } from "~/types";
