@@ -123,6 +123,7 @@ export async function createStreamWithPostProcessing(
   let citationsResponse = [];
   let toolCallsData: any[] = [];
   let usageData: any = null;
+  let structuredData: any = null;
   let postProcessingDone = false;
   let buffer = "";
   let currentEventType = "";
@@ -267,6 +268,12 @@ export async function createStreamWithPostProcessing(
                   StreamingFormatter.extractCitations(data);
                 if (extractedCitations.length > 0) {
                   citationsResponse = extractedCitations;
+                }
+
+                const extractedStructuredData =
+                  StreamingFormatter.extractStructuredData(data);
+                if (extractedStructuredData) {
+                  structuredData = extractedStructuredData;
                 }
 
                 await handlePostProcessing();
@@ -478,6 +485,12 @@ export async function createStreamWithPostProcessing(
               if (extractedUsage) {
                 usageData = extractedUsage;
               }
+
+              const extractedStructuredData =
+                StreamingFormatter.extractStructuredData(data);
+              if (extractedStructuredData) {
+                structuredData = extractedStructuredData;
+              }
             } catch (parseError) {
               logger.error("Parse error on data", {
                 error: parseError,
@@ -585,6 +598,7 @@ export async function createStreamWithPostProcessing(
               citations: citationsResponse,
               tool_calls: toolCallsData,
               usage: usageData,
+              data: structuredData,
               guardrails: {
                 passed: !guardrailsFailed,
                 error: guardrailError,

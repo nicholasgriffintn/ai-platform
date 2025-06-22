@@ -1,3 +1,5 @@
+import { generateId } from "~/utils/id";
+
 /**
  * Formats streaming responses
  * Handles specific streaming event types and partial content
@@ -19,6 +21,29 @@ export class StreamingFormatter {
     // Regular OpenAI-like message format
     if (data.choices?.[0]?.message?.content) {
       return data.choices[0].message.content;
+    }
+
+    // Google-style content format
+    if (data.candidates?.[0]?.content?.parts) {
+      const parts = data.candidates[0].content.parts;
+      let textResponse = "";
+
+      parts.forEach((part: any, index: number) => {
+        if (part.text) {
+          textResponse += (textResponse ? "\n" : "") + part.text;
+        } else if (part.executableCode) {
+          const code = part.executableCode;
+          const language = code.language?.toLowerCase() || "code";
+          textResponse += `\n\n<artifact identifier="executable-code-${index}" type="application/code" language="${language}" title="Executable ${language} Code">${code.code}</artifact>`;
+        } else if (part.codeExecutionResult) {
+          const result = part.codeExecutionResult;
+          if (result.output) {
+            textResponse += `\n\n${result.output}\n\n`;
+          }
+        }
+      });
+
+      return textResponse;
     }
 
     // Anthropic like text_delta format
@@ -108,6 +133,28 @@ export class StreamingFormatter {
       };
     }
 
+    // Google-style functionCall format
+    if (data.candidates?.[0]?.content?.parts) {
+      const parts = data.candidates[0].content.parts;
+      const toolCalls = parts
+        .filter((part: any) => part.functionCall)
+        .map((part: any) => ({
+          id: `call_${generateId()}`,
+          type: "function",
+          function: {
+            name: part.functionCall.name,
+            arguments: JSON.stringify(part.functionCall.args || {}),
+          },
+        }));
+
+      if (toolCalls.length > 0) {
+        return {
+          format: "direct",
+          toolCalls: toolCalls,
+        };
+      }
+    }
+
     // Anthropic-like tool_use blocks
     if (
       currentEventType === "content_block_start" &&
@@ -151,11 +198,19 @@ export class StreamingFormatter {
    * @returns Whether the chunk indicates completion
    */
   static isCompletionIndicated(data: any): boolean {
-    const finishReason =
+    // OpenAI format
+    const openaiFinishReason =
       data.choices?.[0]?.finish_reason?.toLowerCase() ||
       data.choices?.[0]?.finishReason?.toLowerCase();
 
-    if (finishReason === "stop" || finishReason === "length") {
+    if (openaiFinishReason === "stop" || openaiFinishReason === "length") {
+      return true;
+    }
+
+    // Google format
+    const googleFinishReason =
+      data.candidates?.[0]?.finishReason?.toLowerCase();
+    if (googleFinishReason === "stop" || googleFinishReason === "length") {
       return true;
     }
 
@@ -189,6 +244,47 @@ export class StreamingFormatter {
       return data.citations;
     }
 
+    // Google's search grounding format
+    if (data.candidates?.[0]?.groundingMetadata) {
+      const searchGrounding = data.candidates[0].groundingMetadata;
+      return [
+        {
+          searchGrounding: {
+            ...searchGrounding,
+            searchEntryPoint: {
+              ...searchGrounding.searchEntryPoint,
+              renderedContent: undefined,
+            },
+            groundingSupports: {},
+          },
+        },
+      ];
+    }
+
     return [];
+  }
+
+  /**
+   * Extract structured data from a response (for Google search grounding, etc.)
+   * @param data - The data to extract structured data from
+   * @returns The extracted data
+   */
+  static extractStructuredData(data: any): any {
+    // Google's search grounding format
+    if (data.candidates?.[0]?.groundingMetadata) {
+      const searchGrounding = data.candidates[0].groundingMetadata;
+      return {
+        searchGrounding: {
+          ...searchGrounding,
+          searchEntryPoint: {
+            ...searchGrounding.searchEntryPoint,
+            renderedContent: undefined,
+          },
+          groundingSupports: {},
+        },
+      };
+    }
+
+    return null;
   }
 }
