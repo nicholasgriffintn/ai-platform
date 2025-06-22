@@ -8,6 +8,7 @@
     "check": "pnpm -r check",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest",
+    "coverage": "vitest run --coverage",
     "dev:api": "pnpm --filter @assistant/api dev",
     "dev:app": "pnpm --filter @assistant/app dev",
     "dev:metrics": "pnpm --filter @assistant/metrics dev",
