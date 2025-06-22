@@ -238,48 +238,6 @@ export async function createStreamWithPostProcessing(
                 },
               );
 
-              if (
-                StreamingFormatter.isCompletionIndicated(data) &&
-                !postProcessingDone
-              ) {
-                const contentDelta = StreamingFormatter.extractContentFromChunk(
-                  data,
-                  currentEventType,
-                );
-                if (contentDelta) {
-                  fullContent += contentDelta;
-
-                  const contentDeltaEvent = new TextEncoder().encode(
-                    `data: ${JSON.stringify({
-                      type: "content_block_delta",
-                      content: contentDelta,
-                    })}\n\n`,
-                  );
-                  controller.enqueue(contentDeltaEvent);
-                }
-
-                const extractedUsage =
-                  StreamingFormatter.extractUsageData(data);
-                if (extractedUsage) {
-                  usageData = extractedUsage;
-                }
-
-                const extractedCitations =
-                  StreamingFormatter.extractCitations(data);
-                if (extractedCitations.length > 0) {
-                  citationsResponse = extractedCitations;
-                }
-
-                const extractedStructuredData =
-                  StreamingFormatter.extractStructuredData(data);
-                if (extractedStructuredData) {
-                  structuredData = extractedStructuredData;
-                }
-
-                await handlePostProcessing();
-                continue;
-              }
-
               let contentDelta = "";
 
               if (data.choices?.[0]?.delta?.content !== undefined) {
@@ -490,6 +448,13 @@ export async function createStreamWithPostProcessing(
                 StreamingFormatter.extractStructuredData(data);
               if (extractedStructuredData) {
                 structuredData = extractedStructuredData;
+              }
+
+              if (
+                StreamingFormatter.isCompletionIndicated(data) &&
+                !postProcessingDone
+              ) {
+                await handlePostProcessing();
               }
             } catch (parseError) {
               logger.error("Parse error on data", {
