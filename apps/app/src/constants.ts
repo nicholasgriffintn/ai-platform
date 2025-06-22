@@ -64,6 +64,7 @@ export const CSP = {
     "'unsafe-inline'",
   ],
   imgSrc: [
+    "openweathermap.org",
     "assistant-assets.nickgriffin.uk",
     "icons.duckduckgo.com",
     "avatars.githubusercontent.com/u/",
