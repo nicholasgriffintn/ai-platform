@@ -46,7 +46,7 @@ export class SerperProvider implements SearchProvider {
         location: options?.location,
         hl: options?.language || "en",
         tbs: options?.timePeriod,
-        autocorrect: options?.autocorrect || true,
+        autocorrect: options?.autocorrect ?? true,
         num: options?.num || 10,
         page: options?.page || 1,
       }),
