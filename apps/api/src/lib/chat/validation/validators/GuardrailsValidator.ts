@@ -37,7 +37,7 @@ export class GuardrailsValidator implements Validator {
         completion_id,
       );
 
-      if (!inputValidation.isValid) {
+      if (!inputValidation?.isValid) {
         return {
           validation: {
             isValid: false,

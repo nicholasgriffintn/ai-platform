@@ -571,7 +571,7 @@ export async function createStreamWithPostProcessing(
                 completion_id,
               );
 
-              if (!outputValidation.isValid) {
+              if (!outputValidation?.isValid) {
                 guardrailsFailed = true;
                 guardrailError =
                   outputValidation.rawResponse ||

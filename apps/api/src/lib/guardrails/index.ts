@@ -70,7 +70,7 @@ export class Guardrails {
       return { isValid: true, violations: [] };
     }
     const result = await this.provider.validateContent(message, "INPUT");
-    if (!result.isValid && result.violations.length > 0) {
+    if (!result?.isValid && result?.violations?.length > 0) {
       trackGuardrailViolation(
         "input_violation",
         {
@@ -94,7 +94,7 @@ export class Guardrails {
       return { isValid: true, violations: [] };
     }
     const result = await this.provider.validateContent(response, "OUTPUT");
-    if (!result.isValid && result.violations.length > 0) {
+    if (!result?.isValid && result?.violations?.length > 0) {
       trackGuardrailViolation(
         "output_violation",
         {

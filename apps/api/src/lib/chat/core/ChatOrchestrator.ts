@@ -28,7 +28,7 @@ export class ChatOrchestrator {
     try {
       const validationResult = await this.validator.validate(options);
 
-      if (!validationResult.validation.isValid) {
+      if (!validationResult?.validation?.isValid) {
         logger.warn("Validation failed", {
           error: validationResult.validation.error,
           type: validationResult.validation.validationType,
@@ -255,7 +255,7 @@ export class ChatOrchestrator {
         options.completion_id,
       );
 
-      if (!outputValidation.isValid) {
+      if (!outputValidation?.isValid) {
         return {
           selectedModel: primaryModel,
           validation: "output",
