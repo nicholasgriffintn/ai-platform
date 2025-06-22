@@ -80,9 +80,9 @@ Provide your safety assessment for ONLY THE LAST ${role} in the above conversati
         this.config.user?.id,
       );
 
+      const responseText = response.response.toLowerCase().trim();
       const isValid =
-        response.response.toLowerCase().includes("safe") ||
-        response.response.toLowerCase().includes("allowed");
+        responseText.startsWith("safe") || responseText.includes("allowed");
       const violations = isValid ? [] : [response.response];
 
       return {
