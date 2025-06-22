@@ -11,9 +11,10 @@ import type {
   PublicKeyCredentialRequestOptionsJSON,
   RegistrationResponseJSON,
 } from "@simplewebauthn/types";
-import { decodeBase64Url } from "~/lib/base64url";
+
 import type { Database } from "~/lib/database";
 import type { User } from "~/types";
+import { decodeBase64Url } from "~/utils/base64url";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 

@@ -1,6 +1,6 @@
 import type { AuthenticatorTransportFuture } from "@simplewebauthn/types";
 
-import { encodeBase64Url } from "~/lib/base64url";
+import { encodeBase64Url } from "~/utils/base64url";
 import { getLogger } from "~/utils/logger";
 import { BaseRepository } from "./BaseRepository";
 
