@@ -36,8 +36,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0
       agents:
-        specifier: ^0.0.95
-        version: 0.0.95(@cloudflare/workers-types@4.20250620.0)(react@19.1.0)
+        specifier: ^0.0.96
+        version: 0.0.96(@cloudflare/workers-types@4.20250620.0)(react@19.1.0)
       aws4fetch:
         specifier: 1.0.20
         version: 1.0.20
@@ -1237,8 +1237,8 @@ packages:
   '@mlc-ai/web-llm@0.2.79':
     resolution: {integrity: sha512-Hy1ZHQ0o2bZGZoVnGK48+fts/ZSKwLe96xjvqL/6C59Mem9HoHTcFE07NC2E23mRmhd01tL655N6CPeYmwWgwQ==}
 
-  '@modelcontextprotocol/sdk@1.12.3':
-    resolution: {integrity: sha512-DyVYSOafBvk3/j1Oka4z5BWT8o4AFmoNyZY9pALOm7Lh3GZglR71Co4r4dEUoqDWdDazIZQHBe7J2Nwkg6gHgQ==}
+  '@modelcontextprotocol/sdk@1.13.0':
+    resolution: {integrity: sha512-P5FZsXU0kY881F6Hbk9GhsYx02/KgWK1DYf7/tyE/1lcFKhDYPQR9iYjhQXJn+Sg6hQleMo3DB7h7+p4wgp2Lw==}
     engines: {node: '>=18'}
 
   '@npmcli/git@4.1.0':
@@ -2248,8 +2248,8 @@ packages:
     resolution: {integrity: sha512-jRR5wdylq8CkOe6hei19GGZnxM6rBGwFl3Bg0YItGDimvjGtAvdZk4Pu6Cl4u4Igsws4a1fd1Vq3ezrhn4KmFw==}
     engines: {node: '>= 14'}
 
-  agents@0.0.95:
-    resolution: {integrity: sha512-qj0GVnoyjhj9gGgulShlMYvF6xDI2PpmeE7rpFCWkLxbeJPecUwmDU9Vm7F8ub9Yt58zieA3F0zASx/Z50aYhA==}
+  agents@0.0.96:
+    resolution: {integrity: sha512-NDO3571SKJe4oXzk34e5DWh209VIH3cKvmiLljyRlZYw3dTjhUDVQx37IYKilUAFu1G/IjrxCersHEaRBJx1gQ==}
     peerDependencies:
       react: '*'
 
@@ -3849,8 +3849,8 @@ packages:
     resolution: {integrity: sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ==}
     engines: {node: '>= 0.8'}
 
-  partyserver@0.0.71:
-    resolution: {integrity: sha512-PJZoX08tyNcNJVXqWJedZ6Jzj8EOFGBA/PJ37KhAnWmTkq6A8SqA4u2ol+zq8zwSfRy9FPvVgABCY0yLpe62Dg==}
+  partyserver@0.0.72:
+    resolution: {integrity: sha512-mYkCQ6Q4KBIy4lFFuA6upmvNeD/FC+CQVTd4V3DYU6nsitKVI3NXxBrNNvmIxJLSwk3JQzYcEOPBkebB7ITVpQ==}
     peerDependencies:
       '@cloudflare/workers-types': ^4.20240729.0
 
@@ -5714,7 +5714,7 @@ snapshots:
     dependencies:
       loglevel: 1.9.2
 
-  '@modelcontextprotocol/sdk@1.12.3':
+  '@modelcontextprotocol/sdk@1.13.0':
     dependencies:
       ajv: 6.12.6
       content-type: 1.0.5
@@ -6801,13 +6801,13 @@ snapshots:
 
   agent-base@7.1.3: {}
 
-  agents@0.0.95(@cloudflare/workers-types@4.20250620.0)(react@19.1.0):
+  agents@0.0.96(@cloudflare/workers-types@4.20250620.0)(react@19.1.0):
     dependencies:
-      '@modelcontextprotocol/sdk': 1.12.3
+      '@modelcontextprotocol/sdk': 1.13.0
       ai: 4.3.16(react@19.1.0)(zod@3.25.67)
       cron-schedule: 5.0.4
       nanoid: 5.1.5
-      partyserver: 0.0.71(@cloudflare/workers-types@4.20250620.0)
+      partyserver: 0.0.72(@cloudflare/workers-types@4.20250620.0)
       partysocket: 1.1.4
       react: 19.1.0
       zod: 3.25.67
@@ -8499,7 +8499,7 @@ snapshots:
 
   parseurl@1.3.3: {}
 
-  partyserver@0.0.71(@cloudflare/workers-types@4.20250620.0):
+  partyserver@0.0.72(@cloudflare/workers-types@4.20250620.0):
     dependencies:
       '@cloudflare/workers-types': 4.20250620.0
       nanoid: 5.1.5
