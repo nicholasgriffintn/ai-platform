@@ -152,6 +152,7 @@ export async function createStreamWithPostProcessing(
         try {
           text = new TextDecoder().decode(chunk);
         } catch (error) {
+          logger.error("Failed to decode chunk:", error);
           return;
         }
 
@@ -416,7 +417,7 @@ export async function createStreamWithPostProcessing(
                     if (toolState.accumulatedInput) {
                       parsedInput;
                       try {
-                        parsedInput = JSON.parse(toolState.accumulatedInpu);
+                        parsedInput = JSON.parse(toolState.accumulatedInput);
                       } catch (e) {
                         logger.error("Failed to parse tool input:", {
                           error: e,
