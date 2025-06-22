@@ -1,13 +1,14 @@
 import type { ModelConfig } from "~/types";
 
 export const googleAiStudioModelConfig: ModelConfig = {
-  "gemini-2.5-pro-exp": {
-    name: "Gemini 2.5 Pro Experimental",
-    matchingModel: "gemini-2.5-pro-exp-03-25",
+  "gemini-2.5-pro": {
+    name: "Gemini 2.5 Pro",
+    matchingModel: "gemini-2.5-pro",
     description:
-      "Gemini 2.5 Pro Experimental is our state-of-the-art thinking model, capable of reasoning over complex problems in code, math, and STEM, as well as analyzing large datasets, codebases, and documents using long context.",
+      "Gemini 2.5 Pro is our state-of-the-art thinking model, capable of reasoning over complex problems in code, math, and STEM, as well as analyzing large datasets, codebases, and documents using long context.",
     provider: "google-ai-studio",
     type: ["text"],
+    card: "https://www.prompthub.us/models/gemini-2-5-pro",
     strengths: ["coding", "analysis", "math", "multilingual"],
     multimodal: false,
     supportsFunctions: true,
@@ -15,6 +16,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
     supportsCodeExecution: true,
     hasThinking: true,
     contextWindow: 1000000,
+    maxTokens: 65000,
     supportsArtifacts: true,
     isFeatured: true,
     isFree: true,
@@ -23,18 +25,16 @@ export const googleAiStudioModelConfig: ModelConfig = {
     reliability: 5,
     speed: 3,
   },
-  "gemini-2.0-flash": {
-    name: "Gemini 2.0 Flash",
-    matchingModel: "gemini-2.0-flash",
+  "gemini-2.5-flash": {
+    name: "Gemini 2.5 Flash",
+    matchingModel: "gemini-2.5-flash",
     description:
-      "Gemini 2.0 Flash delivers next-gen features and improved capabilities, including superior speed, native tool use, multimodal generation, and a 1M token context window.",
+      "Gemini 2.5 Flash delivers next-gen features and improved capabilities, including superior speed, native tool use, multimodal generation, and a 1M token context window.",
     provider: "google-ai-studio",
     type: ["text"],
-    card: "https://www.prompthub.us/models/gemini-2-0-flash",
+    card: "https://www.prompthub.us/models/gemini-2-5-flash",
     contextWindow: 1048576,
-    maxTokens: 8192,
-    costPer1kInputTokens: 0,
-    costPer1kOutputTokens: 0,
+    maxTokens: 63536,
     strengths: ["coding", "analysis", "math", "multilingual"],
     contextComplexity: 4,
     reliability: 4,
@@ -48,15 +48,18 @@ export const googleAiStudioModelConfig: ModelConfig = {
     supportsSearchGrounding: true,
     isFree: true,
   },
-  "gemini-2.0-flash-lite": {
-    name: "Gemini 2.0 Flash Lite",
-    matchingModel: "gemini-2.0-flash-lite",
+  "gemini-2.5-flash-lite": {
+    name: "Gemini 2.5 Flash Lite",
+    matchingModel: "gemini-2.5-flash-lite",
     description:
-      "A Gemini 2.0 Flash model optimized for cost efficiency and low latency.",
+      "A Gemini 2.5 Flash model optimized for cost efficiency and low latency.",
     provider: "google-ai-studio",
     type: ["text"],
+    card: "https://www.prompthub.us/models/gemini-2-5-flash-lite",
     strengths: ["coding", "analysis", "math", "multilingual"],
     contextWindow: 1000000,
+    maxTokens: 6400,
+    supportsFunctions: true,
     supportsArtifacts: true,
     isFree: true,
     contextComplexity: 3,
