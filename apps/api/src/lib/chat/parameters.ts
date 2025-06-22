@@ -6,6 +6,22 @@ import type { ChatCompletionParameters } from "~/types";
 import { formatToolCalls } from "./tools";
 
 /**
+ * Restricts max_tokens to the model's configured maximum
+ * @param requestedMaxTokens - The user-requested max tokens
+ * @param modelMaxTokens - The model's configured maximum tokens
+ * @returns The effective max tokens (never exceeds model limit)
+ */
+function getEffectiveMaxTokens(
+  requestedMaxTokens: number | undefined,
+  modelMaxTokens: number | undefined,
+): number {
+  const defaultMaxTokens = 4096;
+  const modelLimit = modelMaxTokens || defaultMaxTokens;
+  const requested = requestedMaxTokens || modelLimit;
+  return Math.min(requested, modelLimit);
+}
+
+/**
  * Merges default parameters with user-provided parameters
  * @param params - The user-provided parameters
  * @param defaults - The default parameters
@@ -98,15 +114,15 @@ export async function mapParametersToProvider(
     commonParams.stream = true;
   }
 
+  const effectiveMaxTokens = getEffectiveMaxTokens(
+    params.max_tokens,
+    modelConfig?.maxTokens,
+  );
+
   if (finalProviderName === "openai") {
-    commonParams.max_completion_tokens = params.max_tokens || 4096;
+    commonParams.max_completion_tokens = effectiveMaxTokens;
   } else {
-    const modelMaxTokens = modelConfig?.maxTokens || 4096;
-    if (modelMaxTokens < params.max_tokens) {
-      commonParams.max_tokens = modelMaxTokens;
-    } else {
-      commonParams.max_tokens = params.max_tokens || modelMaxTokens;
-    }
+    commonParams.max_tokens = effectiveMaxTokens;
   }
 
   if (params.model && params.response_format) {
@@ -465,7 +481,7 @@ export async function mapParametersToProvider(
           }
           newCommonParams.thinking = {
             type: "enabled",
-            budget_tokens: calculateReasoningBudget(params),
+            budget_tokens: calculateReasoningBudget(params, modelConfig),
           };
           newCommonParams.top_p = undefined;
           newCommonParams.temperature = 1;
@@ -547,7 +563,10 @@ export async function mapParametersToProvider(
           ],
           generationConfig: {
             temperature: params.temperature,
-            maxOutputTokens: params.max_tokens,
+            maxOutputTokens: getEffectiveMaxTokens(
+              params.max_tokens,
+              modelConfig?.maxTokens,
+            ),
             topP: params.top_p,
             topK: params.top_k,
             seed: params.seed,
@@ -649,20 +668,31 @@ export async function mapParametersToProvider(
 /**
  * Helper function to calculate reasoning budget based on reasoning_effort
  * @param params - The chat completion parameters
+ * @param modelConfig - The model configuration (optional, for max token limits)
  * @returns The reasoning budget
  */
-function calculateReasoningBudget(params: ChatCompletionParameters): number {
-  if (!params.max_tokens) return 1024;
+function calculateReasoningBudget(
+  params: ChatCompletionParameters,
+  modelConfig?: any,
+): number {
+  const effectiveMaxTokens = getEffectiveMaxTokens(
+    params.max_tokens,
+    modelConfig?.maxTokens,
+  );
+
+  if (!effectiveMaxTokens) {
+    return 1024;
+  }
 
   switch (params.reasoning_effort) {
     case "low":
-      return Math.max(Math.floor(params.max_tokens * 0.5), 1024);
+      return Math.max(Math.floor(effectiveMaxTokens * 0.5), 1024);
     case "medium":
-      return Math.max(Math.floor(params.max_tokens * 0.75), 1024);
+      return Math.max(Math.floor(effectiveMaxTokens * 0.75), 1024);
     case "high":
-      return Math.max(Math.floor(params.max_tokens * 0.9), 1024);
+      return Math.max(Math.floor(effectiveMaxTokens * 0.9), 1024);
     default:
-      return Math.max(Math.floor(params.max_tokens * 0.75), 1024);
+      return Math.max(Math.floor(effectiveMaxTokens * 0.75), 1024);
   }
 }
 

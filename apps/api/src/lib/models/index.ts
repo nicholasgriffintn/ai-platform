@@ -421,7 +421,7 @@ export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
   );
 
   if (hasGroqModel) {
-    modelToUse = "llama-guard-3-8b";
+    modelToUse = "meta-llama/llama-guard-4-12b";
   }
 
   const modelConfig = await getModelConfig(modelToUse, env);
