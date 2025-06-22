@@ -1,10 +1,10 @@
 {
 	"name": "assistant",
 	"main": "src/index.ts",
-	"compatibility_date": "2022-11-22",
+	"compatibility_date": "2025-05-05",
   "compatibility_flags": [
-    "transformstream_enable_standard_constructor",
-		"streams_enable_constructors"
+    "nodejs_compat",
+		"nodejs_compat_populate_process_env"
   ],
 	"workers_dev": false,
 	"dev": {
