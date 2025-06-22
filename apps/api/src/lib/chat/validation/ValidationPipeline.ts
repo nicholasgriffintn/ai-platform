@@ -19,6 +19,7 @@ export interface ValidationContext {
   messageWithContext?: string;
   modelConfig?: any;
   guardrails?: any;
+  selectedModels?: string[];
 }
 
 export interface ValidatorResult {

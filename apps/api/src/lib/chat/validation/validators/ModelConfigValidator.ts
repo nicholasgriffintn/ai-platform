@@ -77,6 +77,7 @@ export class ModelConfigValidator implements Validator {
         validation: { isValid: true },
         context: {
           modelConfig: primaryModelConfig,
+          selectedModels: selectedModels,
         },
       };
     } catch (error: any) {

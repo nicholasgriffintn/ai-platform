@@ -8,7 +8,7 @@ import type { ChatMode, Message, Platform } from "~/types";
 import type { CoreChatOptions } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
-import { selectModels } from "../modelSelection";
+
 import { getAllAttachments, sanitiseInput } from "../utils";
 import type { ValidationContext } from "../validation/ValidationPipeline";
 
@@ -128,35 +128,13 @@ export class RequestPreparer {
     options: CoreChatOptions,
     validationContext: ValidationContext,
   ): Promise<ModelConfigInfo[]> {
-    const { lastMessage } = validationContext;
-    const {
-      env,
-      user,
-      model: requestedModel,
-      completion_id,
-      use_multi_model = false,
-      budget_constraint,
-    } = options;
+    const { env } = options;
 
-    const lastMessageContent = Array.isArray(lastMessage!.content)
-      ? lastMessage!.content
-      : [{ type: "text" as const, text: lastMessage!.content as string }];
+    const selectedModels = validationContext.selectedModels;
 
-    const lastMessageContentText =
-      lastMessageContent.find((c) => c.type === "text")?.text || "";
-
-    const { allAttachments } = getAllAttachments(lastMessageContent);
-
-    const selectedModels = await selectModels(
-      env,
-      lastMessageContentText,
-      allAttachments,
-      budget_constraint,
-      user,
-      completion_id,
-      requestedModel,
-      use_multi_model,
-    );
+    if (!selectedModels || selectedModels.length === 0) {
+      throw new Error("No selected models available from validation context");
+    }
 
     const modelConfigs: ModelConfigInfo[] = [];
     for (const model of selectedModels) {
