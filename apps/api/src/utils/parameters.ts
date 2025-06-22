@@ -213,8 +213,8 @@ export function shouldEnableStreaming(
   supportsStreaming: boolean,
   stream: boolean,
 ): boolean {
-  const modelTypeIsText = modelConfig?.type?.includes("text");
-  const modelTypeIsCoding = modelConfig?.type?.includes("coding");
+  const modelTypeIsText = modelConfig?.type?.includes("text") || false;
+  const modelTypeIsCoding = modelConfig?.type?.includes("coding") || false;
   const modelTypeSupportsStreaming = modelTypeIsText || modelTypeIsCoding;
 
   return stream && supportsStreaming && modelTypeSupportsStreaming;

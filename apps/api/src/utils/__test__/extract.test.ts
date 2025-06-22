@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { extractQuotes } from "./extract";
+
+import { extractQuotes } from "../extract";
 
 describe("extractQuotes", () => {
   it("should extract quotes from text", () => {

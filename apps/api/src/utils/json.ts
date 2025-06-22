@@ -55,44 +55,35 @@ export function parseAIResponseJson<T = any>(
   }
 
   try {
-    let parsedData;
-    try {
-      parsedData = JSON.parse(cleanedResponse) as T;
-    } catch (e) {
-      logger.error("Failed to parse JSON", { error: e });
-      parsedData = null;
-    }
+    const parsedData = JSON.parse(cleanedResponse) as T;
     return {
       data: parsedData,
       error: null,
     };
   } catch (e) {
-    let partialData = null;
     try {
       const fixedJson = cleanedResponse
         .replace(/,\s*}/g, "}") // Remove trailing commas
         .replace(/,\s*\]/g, "]") // Remove trailing commas in arrays
         .replace(/'/g, '"'); // Replace single quotes with double quotes
 
-      let parsedData;
-      try {
-        parsedData = JSON.parse(fixedJson);
-      } catch (e) {
-        logger.error("Failed to parse JSON", { error: e });
-        parsedData = null;
-      }
-      partialData = parsedData;
+      const fixedData = JSON.parse(fixedJson);
+      return {
+        data: fixedData as T,
+        error: null,
+      };
     } catch {
-      partialData = {
+      // If fixing failed, return error with partial data
+      const partialData = {
         preview: cleanedResponse.substring(0, 100),
         length: cleanedResponse.length,
       };
-    }
 
-    return {
-      data: null,
-      error: e instanceof Error ? e.message : String(e),
-      partialData,
-    };
+      return {
+        data: null,
+        error: e instanceof Error ? e.message : String(e),
+        partialData,
+      };
+    }
   }
 }

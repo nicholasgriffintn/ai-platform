@@ -20,12 +20,19 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "performance": {
+        "noDelete": "off"
+      },
       "suspicious": {
         "noExplicitAny": "off",
         "noImplicitAnyLet": "off"
       },
       "style": {
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "off",
+        "useTemplate": "off"
+      },
+      "complexity": {
+        "noForEach": "off"
       }
     }
   },
