@@ -81,7 +81,7 @@ export function formatAssistantMessage({
   }
 
   return {
-    content: content,
+    content: messageContent,
     thinking,
     signature,
     citations,
@@ -186,28 +186,6 @@ export async function getAIResponse({
     );
   }
 
-  // Append <think> tag for Qwen QwQ models
-  let finalFormattedMessages = formattedMessages;
-  if (modelConfig?.matchingModel?.includes("qwq")) {
-    try {
-      const lastMessageIndex = formattedMessages.length - 1;
-      if (lastMessageIndex >= 0) {
-        const lastMessage = formattedMessages[lastMessageIndex];
-        if (typeof lastMessage.content === "string") {
-          const updatedLastMessage = {
-            ...lastMessage,
-            content: `${lastMessage.content}\n<think>\n`,
-          };
-          finalFormattedMessages = [...formattedMessages];
-          finalFormattedMessages[lastMessageIndex] = updatedLastMessage;
-        }
-      }
-    } catch (error: any) {
-      responseLogger.warn("Failed to append <think> tag", { error });
-      finalFormattedMessages = formattedMessages;
-    }
-  }
-
   let shouldStream = false;
   const modelTypeIsText = modelConfig?.type?.includes("text");
   const modelTypeIsCoding = modelConfig?.type?.includes("coding");
@@ -225,7 +203,7 @@ export async function getAIResponse({
     parameters = mergeParametersWithDefaults({
       ...params,
       model,
-      messages: finalFormattedMessages,
+      messages: formattedMessages,
       message,
       mode,
       app_url,
