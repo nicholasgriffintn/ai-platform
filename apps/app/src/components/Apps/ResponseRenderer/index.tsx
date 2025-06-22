@@ -89,7 +89,10 @@ export const ResponseRenderer = ({
 
       case "template":
         return (
-          <TemplateView template={display?.template} data={responseData} />
+          <TemplateView
+            template={display?.template}
+            data={{ data: responseData }}
+          />
         );
 
       default:
