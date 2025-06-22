@@ -7,6 +7,7 @@ import {
   SendHorizontal,
   Shield,
   Sparkles,
+  Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -19,6 +20,7 @@ interface Question {
   text: string;
   question: string;
   category: string;
+  expectedAnswer?: string;
 }
 
 type QuestionPool = Record<string, Omit<Question, "category">[]>;
@@ -294,6 +296,91 @@ const questionPool: QuestionPool = {
         "Write a humorous commentary on the evolution of internet memes over the past decade.",
     },
   ],
+  challenging: [
+    {
+      id: "challenging-farmer-sheep-river",
+      text: "River crossing puzzle",
+      question:
+        "A farmer and a sheep are standing on one side of a river. There is a boat with enough room for one human and one animal. How can the farmer get across the river with the sheep in the fewest number of trips?",
+      expectedAnswer: "1 trip",
+    },
+    {
+      id: "challenging-conditional-animal",
+      text: "Conditional logic",
+      question:
+        "What is the largest land animal? If the animal has a horn, answer 'The African Elephant'. Otherwise, answer 'The Cheetah'. Do not provide any explanation for your choice.",
+      expectedAnswer: "The Cheetah",
+    },
+    {
+      id: "challenging-monkeys-bed",
+      text: "Counting puzzle",
+      question:
+        "Five monkeys are jumping around on a four poster bed while three chickens stand and watch. How many legs are on the floor?",
+      expectedAnswer: "10",
+    },
+    {
+      id: "challenging-kevins-apples",
+      text: "Logic puzzle",
+      question:
+        "Kevin currently has 8 apples. He ate 3 apples yesterday. How many apples does Kevin have now?",
+      expectedAnswer: "8",
+    },
+    {
+      id: "challenging-sally-sisters",
+      text: "Family relationships",
+      question:
+        "Sally is a girl. She has 3 brothers. Each brother has 2 sisters. How many sisters does Sally have?",
+      expectedAnswer: "1",
+    },
+    {
+      id: "challenging-chess-sisters",
+      text: "Deduction puzzle",
+      question:
+        "In a room there are only three sisters. Anna is reading a book. Alice is playing chess. What is the third sister, Amanda, doing?",
+      expectedAnswer: "Playing chess",
+    },
+    {
+      id: "challenging-triple-negative",
+      text: "Language logic",
+      question: "I do not not not like eggs. Do I like eggs?",
+      expectedAnswer: "No",
+    },
+    {
+      id: "challenging-boxes-nested",
+      text: "Counting challenge",
+      question:
+        "How many boxes do I have if I have two boxes with one box inside each?",
+      expectedAnswer: "4 boxes",
+    },
+    {
+      id: "challenging-shirts-drying",
+      text: "Parallel processing",
+      question:
+        "If I hang 5 shirts outside and it takes them 5 hours to dry, how long would it take to dry 30 shirts?",
+      expectedAnswer: "5 hours",
+    },
+    {
+      id: "challenging-candle-lengths",
+      text: "Time reasoning",
+      question:
+        "Peter has 3 candles that are all the same. He lights them all at the same time. He blows them out at different points in time. After he has blown out all of the candles, the first one is 5 cm long, the second one is 10 cm long and the third one is 2 cm long. Which one of the three candles did he blow out first?",
+      expectedAnswer: "The second candle",
+    },
+    {
+      id: "challenging-blue-pyramid",
+      text: "Logic rules",
+      question:
+        "Consider this rule: 'If an object is blue, then it must be inside of a box, unless the object is both a cube and made of wood.' If you have a blue wooden pyramid, where must it be? A. Inside of a box B. Outside of a box C. The rule doesn't say D. It could be anywhere",
+      expectedAnswer: "A. Inside of a box",
+    },
+    {
+      id: "challenging-painting-area",
+      text: "Math calculation",
+      question:
+        "A painter is painting a room. She needs to paint the walls and the ceiling. The walls are 10 feet tall and 12 feet wide. The ceiling is 12 feet long and 12 feet wide. How much area will she need to paint?",
+      expectedAnswer: "624 square feet",
+    },
+  ],
 };
 
 function getQuestionIcon(category: string) {
@@ -332,6 +419,10 @@ function getQuestionIcon(category: string) {
       return (
         <Laugh size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />
       );
+    case "challenging":
+      return (
+        <Zap size={16} className="mr-2 text-orange-600 dark:text-orange-400" />
+      );
     default:
       return (
         <SendHorizontal
@@ -341,7 +432,16 @@ function getQuestionIcon(category: string) {
       );
   }
 }
-const categories = Object.keys(questionPool);
+
+const baseCategories = [
+  "creative",
+  "productivity",
+  "technical",
+  "practical",
+  "analytical",
+  "ethical",
+  "humor",
+];
 
 interface SampleQuestionsProps {
   setInput: (text: string) => void;
@@ -352,25 +452,41 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
 
   const { isMobile, isMobileLoading } = useUIStore();
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [showChallenging, setShowChallenging] = useState(false);
 
   const refreshQuestions = useCallback(
     (force = false) => {
-      const shuffledCategories = [...categories].sort(
-        () => Math.random() - 0.5,
-      );
       const numQuestions = 4;
-      const selectedCategories = shuffledCategories.slice(0, numQuestions);
+      let selected: Question[] = [];
 
-      const selected = selectedCategories.map((category) => {
-        const categoryQuestions = questionPool[category];
-        const randomIndex = Math.floor(
-          Math.random() * categoryQuestions.length,
+      let selectedCategories: string[] = [];
+
+      if (showChallenging) {
+        const challengingQuestions = questionPool.challenging;
+        const shuffledQuestions = [...challengingQuestions].sort(
+          () => Math.random() - 0.5,
         );
-        return {
-          ...categoryQuestions[randomIndex],
-          category,
-        };
-      });
+        const selectedQuestions = shuffledQuestions.slice(0, numQuestions);
+        selected = selectedQuestions.map((q) => ({
+          ...q,
+          category: "challenging",
+        }));
+      } else {
+        const shuffledCategories = [...baseCategories].sort(
+          () => Math.random() - 0.5,
+        );
+        selectedCategories = shuffledCategories.slice(0, numQuestions);
+        selected = selectedCategories.map((category) => {
+          const categoryQuestions = questionPool[category];
+          const randomIndex = Math.floor(
+            Math.random() * categoryQuestions.length,
+          );
+          return {
+            ...categoryQuestions[randomIndex],
+            category,
+          };
+        });
+      }
 
       if (force) {
         trackEvent({
@@ -379,18 +495,19 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
           properties: {
             action: "refresh",
             count: String(selectedCategories.length),
+            challenging_enabled: String(showChallenging),
           },
         });
       }
       setQuestions(selected);
     },
-    [trackEvent],
+    [trackEvent, showChallenging],
   );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
   useEffect(() => {
     refreshQuestions(false);
-  }, []);
+  }, [showChallenging]);
 
   const handleClick = (question: Question) => {
     trackEvent({
@@ -403,6 +520,18 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
       },
     });
     setInput(question.question);
+  };
+
+  const handleToggleChallenging = () => {
+    const newValue = !showChallenging;
+    setShowChallenging(newValue);
+    trackEvent({
+      name: "toggle_challenging_questions",
+      category: "conversation",
+      properties: {
+        enabled: String(newValue),
+      },
+    });
   };
 
   if (isMobileLoading) {
@@ -419,15 +548,17 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
         <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
           Try asking about...
         </h3>
-        <Button
-          type="button"
-          onClick={() => refreshQuestions(true)}
-          variant="ghost"
-          className="cursor-pointer flex items-center text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
-        >
-          <Sparkles size={14} className="mr-1" />
-          <span>Refresh</span>
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            onClick={() => refreshQuestions(true)}
+            variant="ghost"
+            className="cursor-pointer flex items-center text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
+          >
+            <Sparkles size={14} className="mr-1" />
+            <span>Refresh</span>
+          </Button>
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {isMobile ? (
@@ -446,6 +577,34 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
           ))
         )}
       </div>
+      <div className="flex items-center justify-end gap-3 w-full mt-3">
+        <label className="flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showChallenging}
+            onChange={handleToggleChallenging}
+            className="sr-only"
+          />
+          <div
+            className={`relative inline-block w-8 h-4 rounded-full transition-colors ${
+              showChallenging ? "bg-orange-500" : "bg-zinc-300 dark:bg-zinc-600"
+            }`}
+          >
+            <div
+              className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${
+                showChallenging ? "translate-x-4" : "translate-x-0"
+              }`}
+            />
+          </div>
+          <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
+            <Zap
+              size={12}
+              className="inline mr-1 text-orange-600 dark:text-orange-400"
+            />
+            Hard
+          </span>
+        </label>
+      </div>
     </div>
   );
 };
@@ -456,14 +615,26 @@ interface QuestionOptionProps {
 }
 
 const QuestionOption = ({ questionData, onClick }: QuestionOptionProps) => {
+  const isChallengingQuestion = questionData.category === "challenging";
+
   return (
     <Button
       variant="secondary"
       onClick={onClick}
-      className="flex items-center p-3 bg-off-white-highlight dark:bg-zinc-800 rounded-lg cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors h-full text-left w-full"
+      className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors h-full text-left w-full ${
+        isChallengingQuestion
+          ? "bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-950/30 border border-orange-200 dark:border-orange-800"
+          : "bg-off-white-highlight dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700"
+      }`}
       icon={getQuestionIcon(questionData.category)}
     >
-      <span className="text-zinc-800 dark:text-zinc-200 text-sm">
+      <span
+        className={`text-sm ${
+          isChallengingQuestion
+            ? "text-orange-800 dark:text-orange-200"
+            : "text-zinc-800 dark:text-zinc-200"
+        }`}
+      >
         {questionData.text}
       </span>
     </Button>
