@@ -36,3 +36,31 @@ jobs:
         run: pnpm check
       - name: Run test
         run: pnpm test
+      - name: Run coverage
+        run: pnpm coverage
+      - name: Coverage comment
+        if: github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-path: ./coverage/coverage-summary.json
+          json-final-path: ./coverage/coverage-final.json
+      - name: Coverage summary
+        if: always()
+        run: |
+          echo "## 📊 Coverage Report" >> $GITHUB_STEP_SUMMARY
+          if [ -f "./coverage/coverage-summary.json" ]; then
+            echo "### Overall Coverage" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat ./coverage/coverage-summary.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "### Workspace Coverage" >> $GITHUB_STEP_SUMMARY
+          for app in apps/*/; do
+            if [ -f "${app}coverage/coverage-summary.json" ]; then
+              echo "#### $(basename $app)" >> $GITHUB_STEP_SUMMARY
+              echo '```json' >> $GITHUB_STEP_SUMMARY
+              cat "${app}coverage/coverage-summary.json" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+            fi
+          done

@@ -9,6 +9,7 @@
     "dev": "wrangler dev src/index.ts --experimental-vectorize-bind-to-prod",
     "start": "wrangler dev src/index.ts",
     "test": "vitest",
+    "coverage": "vitest run --coverage",
     "cf-typegen": "wrangler types",
     "format": "pnpm biome format --write ./src",
     "lint": "pnpm biome lint ./src",

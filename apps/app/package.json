@@ -17,7 +17,8 @@
     "deploy": "pnpm run build && wrangler deploy --minify",
     "sync": "npx cap sync",
     "dev:ios": "npx cap run ios",
-    "test": "vitest run"
+    "test": "vitest run",
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@babel/standalone": "^7.26.10",
