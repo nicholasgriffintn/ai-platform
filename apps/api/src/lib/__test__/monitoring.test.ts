@@ -124,6 +124,32 @@ describe("Monitoring", () => {
 
       expect(() => monitoring.recordMetric(metric)).not.toThrow();
     });
+
+    it("should generate traceId when not provided", () => {
+      const metricWithoutTraceId = {
+        timestamp: Date.now(),
+        type: "usage" as const,
+        name: "test-metric",
+        value: 1,
+        metadata: { userId: 123 },
+        status: "success" as const,
+      } as any;
+
+      monitoring.recordMetric(metricWithoutTraceId);
+
+      expect(mockAnalyticsEngine.writeDataPoint).toHaveBeenCalledWith({
+        blobs: [
+          "usage",
+          "test-metric",
+          "success",
+          "None",
+          expect.any(String),
+          JSON.stringify({ userId: 123 }),
+        ],
+        doubles: [1, metricWithoutTraceId.timestamp],
+        indexes: [expect.any(String)],
+      });
+    });
   });
 });
 
@@ -157,6 +183,27 @@ describe("trackUsageMetric", () => {
         blobs: expect.arrayContaining(["user_usage"]),
       }),
     );
+  });
+
+  it("should generate traceId when userId is undefined", () => {
+    trackUsageMetric(
+      undefined as any,
+      "test-usage",
+      mockAnalyticsEngine as any,
+    );
+
+    expect(mockAnalyticsEngine.writeDataPoint).toHaveBeenCalledWith({
+      blobs: [
+        "usage",
+        "test-usage",
+        "success",
+        "None",
+        expect.any(String),
+        JSON.stringify({ userId: undefined }),
+      ],
+      doubles: [1, expect.any(Number)],
+      indexes: [expect.any(String)],
+    });
   });
 });
 

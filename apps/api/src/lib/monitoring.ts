@@ -1,6 +1,7 @@
 import type { AnalyticsEngineDataset } from "@cloudflare/workers-types";
 
 import { AssistantError } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "MONITORING" });
@@ -38,8 +39,13 @@ export class Monitoring {
   }
 
   public recordMetric(metric: Metric): void {
-    if (!this.validateMetric(metric)) {
-      logger.warn("Invalid metric structure:", { metric });
+    const metricWithTraceId = {
+      ...metric,
+      traceId: metric.traceId || generateId(),
+    };
+
+    if (!this.validateMetric(metricWithTraceId)) {
+      logger.warn("Invalid metric structure:", { metric: metricWithTraceId });
       return;
     }
 
@@ -47,15 +53,15 @@ export class Monitoring {
       if (typeof this.analyticsEngine.writeDataPoint === "function") {
         this.analyticsEngine.writeDataPoint({
           blobs: [
-            metric.type,
-            metric.name,
-            metric.status,
-            metric.error || "None",
-            metric.traceId,
-            JSON.stringify(metric.metadata),
+            metricWithTraceId.type,
+            metricWithTraceId.name,
+            metricWithTraceId.status,
+            metricWithTraceId.error || "None",
+            metricWithTraceId.traceId,
+            JSON.stringify(metricWithTraceId.metadata),
           ],
-          doubles: [metric.value, metric.timestamp],
-          indexes: [metric.traceId],
+          doubles: [metricWithTraceId.value, metricWithTraceId.timestamp],
+          indexes: [metricWithTraceId.traceId],
         });
       } else {
         logger.warn("Analytics engine does not have writeDataPoint method.", {
@@ -64,13 +70,13 @@ export class Monitoring {
       }
     } else {
       logger.debug(
-        `[Metric] ${metric.type}:${metric.name}`,
+        `[Metric] ${metricWithTraceId.type}:${metricWithTraceId.name}`,
         JSON.stringify(
           {
-            value: metric.value,
-            status: metric.status,
-            metadata: metric.metadata,
-            error: metric.error || "",
+            value: metricWithTraceId.value,
+            status: metricWithTraceId.status,
+            metadata: metricWithTraceId.metadata,
+            error: metricWithTraceId.error || "",
           },
           null,
           2,
@@ -96,7 +102,7 @@ export function trackUsageMetric(
   analyticsEngine?: AnalyticsEngineDataset,
 ): void {
   const monitor = Monitoring.getInstance(analyticsEngine);
-  const traceId = userId?.toString();
+  const traceId = userId?.toString() || generateId();
 
   monitor.recordMetric({
     traceId,
@@ -143,7 +149,7 @@ export function trackProviderMetrics<T>({
 }): Promise<T> {
   const startTime = performance.now();
   const monitor = Monitoring.getInstance(analyticsEngine);
-  const traceId = completion_id || crypto.randomUUID();
+  const traceId = completion_id || generateId();
 
   return operation()
     .then((result: any) => {
@@ -207,7 +213,7 @@ export function trackGuardrailViolation(
   completion_id?: string,
 ): void {
   const monitor = Monitoring.getInstance(analyticsEngine);
-  const traceId = completion_id || crypto.randomUUID();
+  const traceId = completion_id || generateId();
 
   monitor.recordMetric({
     traceId,
@@ -229,7 +235,7 @@ export function trackRagMetrics(
 ): Promise<any> {
   const startTime = performance.now();
   const monitor = Monitoring.getInstance(analyticsEngine);
-  const traceId = completion_id || crypto.randomUUID();
+  const traceId = completion_id || generateId();
 
   return operation()
     .then((result) => {
@@ -272,7 +278,7 @@ export function trackModelRoutingMetrics<T>(
 ): Promise<T> {
   const startTime = performance.now();
   const monitor = Monitoring.getInstance(analyticsEngine);
-  const traceId = completion_id || crypto.randomUUID();
+  const traceId = completion_id || generateId();
 
   return operation()
     .then((result) => {
