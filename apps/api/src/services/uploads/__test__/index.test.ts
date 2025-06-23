@@ -1,0 +1,347 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { IEnv } from "~/types";
+import { handleFileUpload } from "../index";
+
+const mockStorageService = {
+  uploadObject: vi.fn(),
+};
+
+vi.mock("~/lib/storage", () => ({
+  StorageService: vi.fn().mockImplementation(() => mockStorageService),
+}));
+
+vi.mock("~/lib/documentConverter", () => ({
+  convertToMarkdownViaCloudflare: vi.fn(),
+}));
+
+const mockUUID = "test-uuid-123";
+vi.stubGlobal("crypto", { randomUUID: vi.fn().mockReturnValue(mockUUID) });
+
+const mockEnv: IEnv = {
+  ASSETS_BUCKET: "test-bucket",
+  PUBLIC_ASSETS_URL: "https://assets.example.com",
+} as IEnv;
+
+describe("handleFileUpload", () => {
+  let mockConvertToMarkdownViaCloudflare: any;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    const converterModule = await import("~/lib/documentConverter");
+    mockConvertToMarkdownViaCloudflare = vi.mocked(
+      converterModule.convertToMarkdownViaCloudflare,
+    );
+  });
+
+  describe("parameter validation", () => {
+    it("should throw error if no file provided", async () => {
+      const formData = new FormData();
+      formData.append("file_type", "image");
+
+      await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+        "No file uploaded",
+      );
+    });
+
+    it("should throw error if no file_type provided", async () => {
+      const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
+      const formData = new FormData();
+      formData.append("file", file);
+
+      await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+        "Invalid file type. Must be 'image' or 'document'",
+      );
+    });
+
+    it("should throw error for invalid file_type", async () => {
+      const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "invalid");
+
+      await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+        "Invalid file type. Must be 'image' or 'document'",
+      );
+    });
+  });
+
+  describe("file type validation", () => {
+    it("should accept valid image types", async () => {
+      const validImageTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
+
+      for (const mimeType of validImageTypes) {
+        const file = new File(["test"], "test.jpg", { type: mimeType });
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("file_type", "image");
+
+        mockStorageService.uploadObject.mockResolvedValue(undefined);
+
+        const result = await handleFileUpload(mockEnv, 1, formData);
+
+        expect(result.type).toBe("image");
+        vi.clearAllMocks();
+      }
+    });
+
+    it("should accept valid document types", async () => {
+      const validDocTypes = [
+        "application/pdf",
+        "text/html",
+        "application/xml",
+        "text/csv",
+      ];
+
+      for (const mimeType of validDocTypes) {
+        const file = new File(["test"], "test.pdf", { type: mimeType });
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("file_type", "document");
+
+        mockStorageService.uploadObject.mockResolvedValue(undefined);
+
+        const result = await handleFileUpload(mockEnv, 1, formData);
+
+        expect(result.type).toBe("document");
+        vi.clearAllMocks();
+      }
+    });
+
+    it("should reject invalid image types", async () => {
+      const file = new File(["test"], "test.txt", { type: "text/plain" });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "image");
+
+      await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+        "Invalid file type. Allowed types for image:",
+      );
+    });
+
+    it("should reject invalid document types", async () => {
+      const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "document");
+
+      await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+        "Invalid file type. Allowed types for document:",
+      );
+    });
+  });
+
+  describe("file processing", () => {
+    it("should upload image file successfully", async () => {
+      const file = new File(["test content"], "test.jpg", {
+        type: "image/jpeg",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "image");
+
+      mockStorageService.uploadObject.mockResolvedValue(undefined);
+
+      const result = await handleFileUpload(mockEnv, 1, formData);
+
+      expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
+        `uploads/1/images/${mockUUID}.jpeg`,
+        expect.any(ArrayBuffer),
+        { contentType: "image/jpeg" },
+      );
+
+      expect(result).toEqual({
+        url: `https://assets.example.com/uploads/1/images/${mockUUID}.jpeg`,
+        type: "image",
+        name: "test.jpg",
+      });
+    });
+
+    it("should upload document without markdown conversion", async () => {
+      const file = new File(["test content"], "test.pdf", {
+        type: "application/pdf",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "document");
+
+      mockStorageService.uploadObject.mockResolvedValue(undefined);
+
+      const result = await handleFileUpload(mockEnv, 1, formData);
+
+      expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
+        `uploads/1/documents/${mockUUID}.pdf`,
+        expect.any(ArrayBuffer),
+        { contentType: "application/pdf" },
+      );
+
+      expect(result).toEqual({
+        url: `https://assets.example.com/uploads/1/documents/${mockUUID}.pdf`,
+        type: "document",
+        name: "test.pdf",
+      });
+
+      expect(mockConvertToMarkdownViaCloudflare).not.toHaveBeenCalled();
+    });
+
+    it("should convert non-PDF documents to markdown", async () => {
+      const file = new File(["test content"], "test.html", {
+        type: "text/html",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "document");
+
+      mockStorageService.uploadObject.mockResolvedValue(undefined);
+      mockConvertToMarkdownViaCloudflare.mockResolvedValue({
+        result: "# Converted Markdown",
+        error: null,
+      });
+
+      const result = await handleFileUpload(mockEnv, 1, formData);
+
+      expect(mockConvertToMarkdownViaCloudflare).toHaveBeenCalledWith(
+        mockEnv,
+        `https://assets.example.com/uploads/1/documents/${mockUUID}.html`,
+        "test.html",
+      );
+
+      expect(result).toEqual({
+        url: `https://assets.example.com/uploads/1/documents/${mockUUID}.html`,
+        type: "markdown_document",
+        name: "test.html",
+        markdown: "# Converted Markdown",
+      });
+    });
+
+    it("should convert PDF to markdown when explicitly requested", async () => {
+      const file = new File(["test content"], "test.pdf", {
+        type: "application/pdf",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "document");
+      formData.append("convert_to_markdown", "true");
+
+      mockStorageService.uploadObject.mockResolvedValue(undefined);
+      mockConvertToMarkdownViaCloudflare.mockResolvedValue({
+        result: "# PDF Converted",
+        error: null,
+      });
+
+      const result = await handleFileUpload(mockEnv, 1, formData);
+
+      expect(mockConvertToMarkdownViaCloudflare).toHaveBeenCalled();
+      expect(result.type).toBe("markdown_document");
+      expect(result.markdown).toBe("# PDF Converted");
+    });
+  });
+
+  describe("error handling", () => {
+    it("should handle file buffer conversion errors", async () => {
+      const mockFile = vi.fn().mockImplementation(() => ({
+        type: "image/jpeg",
+        name: "test.jpg",
+        arrayBuffer: vi.fn().mockRejectedValue(new Error("Buffer error")),
+      }));
+
+      const formData = new FormData();
+      formData.set = vi.fn();
+      formData.get = vi.fn().mockImplementation((key) => {
+        if (key === "file") return new mockFile();
+        if (key === "file_type") return "image";
+        return null;
+      });
+
+      await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+        "Failed to process file data",
+      );
+    });
+
+    it("should handle storage upload errors", async () => {
+      const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "image");
+
+      mockStorageService.uploadObject.mockRejectedValue(
+        new Error("Storage error"),
+      );
+
+      await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+        "Failed to store file",
+      );
+    });
+
+    it("should handle markdown conversion errors gracefully", async () => {
+      const file = new File(["test"], "test.html", { type: "text/html" });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "document");
+
+      mockStorageService.uploadObject.mockResolvedValue(undefined);
+      mockConvertToMarkdownViaCloudflare.mockRejectedValue(
+        new Error("Conversion error"),
+      );
+
+      const result = await handleFileUpload(mockEnv, 1, formData);
+
+      expect(result.type).toBe("document");
+      expect(result.markdown).toBeUndefined();
+    });
+
+    it("should handle markdown conversion with error response", async () => {
+      const file = new File(["test"], "test.html", { type: "text/html" });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "document");
+
+      mockStorageService.uploadObject.mockResolvedValue(undefined);
+      mockConvertToMarkdownViaCloudflare.mockResolvedValue({
+        result: null,
+        error: "Conversion failed",
+      });
+
+      const result = await handleFileUpload(mockEnv, 1, formData);
+
+      expect(result.type).toBe("document");
+      expect(result.markdown).toBeUndefined();
+    });
+  });
+
+  describe("URL generation", () => {
+    it("should use PUBLIC_ASSETS_URL for file URLs", async () => {
+      const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "image");
+
+      mockStorageService.uploadObject.mockResolvedValue(undefined);
+
+      const result = await handleFileUpload(mockEnv, 1, formData);
+
+      expect(result.url).toContain(
+        "https://assets.example.com/uploads/1/images/",
+      );
+    });
+
+    it("should handle missing PUBLIC_ASSETS_URL", async () => {
+      const envWithoutUrl = { ...mockEnv, PUBLIC_ASSETS_URL: undefined };
+      const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "image");
+
+      mockStorageService.uploadObject.mockResolvedValue(undefined);
+
+      const result = await handleFileUpload(envWithoutUrl, 1, formData);
+
+      expect(result.url).toMatch(/^\/uploads\/1\/images\//);
+    });
+  });
+});

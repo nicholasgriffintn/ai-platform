@@ -227,7 +227,6 @@ describe("json", () => {
     it("should handle circular reference error gracefully", () => {
       const response = '{"valid": "json"}';
 
-      // Mock JSON.parse to throw a circular reference error
       const originalParse = JSON.parse;
       JSON.parse = vi.fn().mockImplementation(() => {
         const obj: any = {};
