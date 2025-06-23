@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { getAuxiliaryModel } from "~/lib/models";
+import { AIProviderFactory } from "~/lib/providers/factory";
+import { handleWebSearch } from "~/services/search/web";
+import { performDeepWebSearch } from "../web-search";
+
 vi.mock("~/lib/chat/utils", () => ({
   sanitiseInput: vi.fn((input) => input),
 }));
@@ -61,11 +66,6 @@ vi.mock("~/utils/errors", () => ({
     PARAMS_ERROR: "PARAMS_ERROR",
   },
 }));
-
-import { getAuxiliaryModel } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
-import { handleWebSearch } from "~/services/search/web";
-import { performDeepWebSearch } from "../web-search";
 
 describe("performDeepWebSearch", () => {
   const mockUser = {

@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import type { IRequest } from "~/types";
+import { extractContent } from "../content-extract";
 
 const mockDatabase = {
   getUserSettings: vi.fn(() => Promise.resolve({})),
@@ -29,10 +31,6 @@ vi.stubGlobal("crypto", {
     digest: vi.fn(),
   },
 });
-
-import { Database } from "~/lib/database";
-import { Embedding } from "~/lib/embedding";
-import { extractContent } from "../content-extract";
 
 describe("extractContent", () => {
   const mockUser = {

@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { getWeatherForLocation } from "../weather";
+
 vi.mock("~/utils/errors", () => ({
   AssistantError: class extends Error {
     type: string;
@@ -14,8 +16,6 @@ vi.mock("~/utils/errors", () => ({
 }));
 
 global.fetch = vi.fn();
-
-import { getWeatherForLocation } from "../weather";
 
 describe("getWeatherForLocation", () => {
   const mockEnv = {

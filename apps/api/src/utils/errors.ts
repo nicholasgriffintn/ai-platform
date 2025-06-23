@@ -20,6 +20,7 @@ export enum ErrorType {
   USAGE_LIMIT_ERROR = "USAGE_LIMIT_ERROR",
   USER_NOT_FOUND = "USER_NOT_FOUND",
   CONFLICT_ERROR = "CONFLICT_ERROR",
+  STORAGE_ERROR = "STORAGE_ERROR",
 }
 
 export class AssistantError extends Error {

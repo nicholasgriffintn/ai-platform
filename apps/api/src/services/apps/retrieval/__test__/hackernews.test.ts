@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { getAuxiliaryModelForRetrieval } from "~/lib/models";
+import { AIProviderFactory } from "~/lib/providers/factory";
+import {
+  analyseHackerNewsStories,
+  retrieveHackerNewsTopStories,
+} from "../hackernews";
+
 vi.mock("~/lib/models", () => ({
   getAuxiliaryModelForRetrieval: vi.fn(() =>
     Promise.resolve({ model: "gpt-4o-mini", provider: "openai" }),
@@ -33,13 +40,6 @@ vi.mock("~/utils/errors", () => ({
 }));
 
 global.fetch = vi.fn();
-
-import { getAuxiliaryModelForRetrieval } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
-import {
-  analyseHackerNewsStories,
-  retrieveHackerNewsTopStories,
-} from "../hackernews";
 
 describe("HackerNews Services", () => {
   const mockUser = {
