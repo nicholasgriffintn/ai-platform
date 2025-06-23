@@ -1,9 +1,7 @@
+import { createMultiModelStream } from "~/lib/chat/multiModalStreaming";
 import { RequestPreparer } from "~/lib/chat/preparation/RequestPreparer";
 import { getAIResponse } from "~/lib/chat/responses";
-import {
-  createMultiModelStream,
-  createStreamWithPostProcessing,
-} from "~/lib/chat/streaming";
+import { createStreamWithPostProcessing } from "~/lib/chat/streaming";
 import { handleToolCalls } from "~/lib/chat/tools";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { Guardrails } from "~/lib/guardrails";

@@ -45,8 +45,11 @@ vi.mock("~/lib/chat/responses", () => ({
 }));
 
 vi.mock("~/lib/chat/streaming", () => ({
-  createMultiModelStream: mockCreateMultiModelStream,
   createStreamWithPostProcessing: mockCreateStreamWithPostProcessing,
+}));
+
+vi.mock("~/lib/chat/multiModalStreaming", () => ({
+  createMultiModelStream: mockCreateMultiModelStream,
 }));
 
 vi.mock("~/lib/chat/tools", () => ({
