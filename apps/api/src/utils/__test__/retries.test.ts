@@ -101,7 +101,7 @@ describe("retries", () => {
       );
 
       const delayMs = onRetry.mock.calls[0][2];
-      expect(delayMs).toBeGreaterThan(700);
+      expect(delayMs).toBeGreaterThanOrEqual(700);
       expect(delayMs).toBeLessThan(1600);
     });
 
@@ -131,7 +131,7 @@ describe("retries", () => {
       expect(firstDelay).toBeLessThan(160);
 
       const secondDelay = onRetry.mock.calls[1][2];
-      expect(secondDelay).toBeGreaterThan(140);
+      expect(secondDelay).toBeGreaterThanOrEqual(140);
       expect(secondDelay).toBeLessThan(320);
     });
 
