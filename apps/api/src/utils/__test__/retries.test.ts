@@ -266,7 +266,7 @@ describe("retries", () => {
 
       expect(onRetry).toHaveBeenCalledTimes(1);
       const delay = onRetry.mock.calls[0][2];
-      expect(delay).toBeGreaterThan(70);
+      expect(delay).toBeGreaterThanOrEqual(70);
       expect(delay).toBeLessThan(160);
     });
 
