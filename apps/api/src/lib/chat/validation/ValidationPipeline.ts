@@ -54,7 +54,11 @@ export class ValidationPipeline {
 
       if (!result?.validation?.isValid) {
         return {
-          validation: result.validation,
+          validation: result?.validation || {
+            isValid: false,
+            error: "Validator returned invalid result",
+            validationType: "input",
+          },
           context: currentContext,
         };
       }

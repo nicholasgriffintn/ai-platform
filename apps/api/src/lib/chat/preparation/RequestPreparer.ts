@@ -9,6 +9,7 @@ import type { CoreChatOptions } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { getAllAttachments, sanitiseInput } from "../utils";
+import { pruneMessagesToFitContext } from "../utils";
 import type { ValidationContext } from "../validation/ValidationPipeline";
 
 const logger = getLogger({ prefix: "CHAT_REQUEST_PREPARER" });
@@ -333,8 +334,6 @@ export class RequestPreparer {
     messageWithContext: string,
     modelConfig: any,
   ): Message[] {
-    const { pruneMessagesToFitContext } = require("../utils");
-
     const prunedWithAttachments =
       sanitizedMessages.length > 0
         ? pruneMessagesToFitContext(

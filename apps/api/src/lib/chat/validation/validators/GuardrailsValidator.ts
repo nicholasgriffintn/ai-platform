@@ -42,10 +42,10 @@ export class GuardrailsValidator implements Validator {
           validation: {
             isValid: false,
             error:
-              inputValidation.rawResponse?.blockedResponse ||
+              inputValidation?.rawResponse?.blockedResponse ||
               "Input did not pass safety checks",
-            violations: inputValidation.violations,
-            rawViolations: inputValidation.rawResponse,
+            violations: inputValidation?.violations,
+            rawViolations: inputValidation?.rawResponse,
             validationType: "input",
           },
           context: {},

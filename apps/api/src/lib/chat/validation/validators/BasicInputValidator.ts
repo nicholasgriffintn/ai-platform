@@ -17,7 +17,7 @@ export class BasicInputValidator implements Validator {
       ? sanitiseMessages(rawMessages)
       : [];
 
-    if (sanitizedMessages.length === 0) {
+    if (!sanitizedMessages || sanitizedMessages.length === 0) {
       return {
         validation: {
           isValid: false,

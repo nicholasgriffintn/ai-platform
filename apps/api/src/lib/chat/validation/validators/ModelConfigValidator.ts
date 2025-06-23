@@ -64,6 +64,17 @@ export class ModelConfigValidator implements Validator {
 
       logger.info("Selected models", { selectedModels });
 
+      if (!selectedModels || selectedModels.length === 0) {
+        return {
+          validation: {
+            isValid: false,
+            error: "No models selected",
+            validationType: "model",
+          },
+          context: {},
+        };
+      }
+
       const primaryModelName = selectedModels[0];
       const primaryModelConfig = await getModelConfig(primaryModelName, env);
 
