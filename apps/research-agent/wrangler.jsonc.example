@@ -11,6 +11,10 @@
   "placement": {
     "mode": "smart"
   },
+	"assets": {
+		"binding": "ASSETS",
+		"directory": "public"
+	},
   "containers": [
     {
       "name": "nlp-agent",

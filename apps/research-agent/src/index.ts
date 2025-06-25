@@ -113,6 +113,10 @@ function initializeOrchestrator(
 }
 
 app.get("/", (c) => {
+  return c.env.ASSETS.fetch(c.req);
+});
+
+app.get("/docs", (c) => {
   return c.json({
     name: "Advanced Research Agent",
     version: "2.0.0",

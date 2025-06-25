@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Assistant Test Interface</title>
+    <style>
+        :root {
+            --background: #f8f9fa;
+            --container-bg: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --accent: #000000;
+            --border-color: #e9ecef;
+            --border-color-light: #f1f3f5;
+            --success: #198754;
+            --success-bg: #d1e7dd;
+            --danger: #dc3545;
+            --danger-bg: #f8d7da;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+            background-color: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--container-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .header {
+            background: var(--container-bg);
+            color: var(--text-primary);
+            padding: 48px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 24px;
+        }
+
+        .nav-tab {
+            padding: 16px 0;
+            margin-right: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-tab.active {
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+            font-weight: 600;
+        }
+
+        .nav-tab:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 32px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .info-card {
+            background: var(--container-bg);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .info-card h4 {
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-healthy { background: #28a745; }
+        .status-degraded { background: #ffc107; }
+        .status-unhealthy { background: #dc3545; }
+        .status-offline { background: #6c757d; }
+
+        .metric-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .plugin-item {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .plugin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .plugin-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .plugin-version {
+            background: #e9ecef;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .capability-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
+        }
+        
+        .capability-tag {
+            background: #f1f3f5;
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .form-section {
+            margin-bottom: 32px;
+        }
+
+        .form-section h3 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            background-color: var(--container-bg);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .template-buttons {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .template-btn {
+            padding: 12px 24px;
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .template-btn:hover {
+            background: #f8f9fa;
+            border-color: #ced4da;
+        }
+        
+        .submit-btn {
+            background: var(--accent);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background-color: #343a40;
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            background-color: #6c757d;
+        }
+
+        .results-section {
+            margin-top: 40px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color-light);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-card {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .result-card h4 {
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .error {
+            background: var(--danger-bg);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .success {
+            background: var(--success-bg);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .json-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            border: 1px solid #333;
+        }
+
+        .refresh-btn {
+            background: var(--container-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            transition: all 0.2s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #f8f9fa;
+            border-color: #ced4da;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+            .container {
+                border-radius: 0;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .template-buttons {
+                flex-direction: column;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-tabs {
+                flex-direction: column;
+                padding: 0;
+            }
+            .nav-tab {
+                margin-right: 0;
+                padding: 16px 24px;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .nav-tab.active {
+                border-bottom: 1px solid var(--border-color);
+            }
+            .header {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Research Assistant</h1>
+            <p>Advanced AI-powered research with plugin-based architecture</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="nav-tab" onclick="switchTab('research')">🔍 Research</button>
+            <button class="nav-tab" onclick="switchTab('plugins')">🔌 Plugins</button>
+            <button class="nav-tab" onclick="switchTab('templates')">📋 Templates</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <button class="refresh-btn" onclick="refreshDashboard()">🔄 Refresh Data</button>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>🏥 System Health</h4>
+                    <div id="healthStatus">
+                        <div class="loading">Loading health status...</div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h4>📈 Performance Metrics</h4>
+                    <div id="performanceMetrics">
+                        <div class="loading">Loading metrics...</div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h4>⚡ System Info</h4>
+                    <div id="systemInfo">
+                        <div class="loading">Loading system info...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h4>🔧 Component Status</h4>
+                <div id="componentStatus">
+                    <div class="loading">Loading component status...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Research Tab -->
+        <div id="research" class="tab-content">
+            <div class="template-buttons">
+                <button class="template-btn" onclick="loadTemplate('quick')">
+                    ⚡ Quick Research
+                </button>
+                <button class="template-btn" onclick="loadTemplate('comprehensive')">
+                    🔍 Comprehensive Analysis
+                </button>
+                <button class="template-btn" onclick="loadTemplate('custom')">
+                    ⚙️ Custom Configuration
+                </button>
+            </div>
+
+            <form id="researchForm">
+                <div class="form-section">
+                    <h3>Research Query</h3>
+                    <div class="form-group">
+                        <label for="query">Query *</label>
+                        <textarea id="query" name="query" placeholder="Enter your research question or topic..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="context">Context (Optional)</label>
+                        <textarea id="context" name="context" placeholder="Provide additional context for your research..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Research Parameters</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="depth">Research Depth</label>
+                            <select id="depth" name="depth">
+                                <option value="shallow">Shallow - Quick overview</option>
+                                <option value="medium" selected>Medium - Balanced analysis</option>
+                                <option value="deep">Deep - Comprehensive research</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="maxSources">Max Sources</label>
+                            <input type="number" id="maxSources" name="maxSources" min="1" max="50" value="10">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Source Types</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sourceWeb" name="sourceTypes" value="web" checked>
+                            <label for="sourceWeb">Web</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sourceNews" name="sourceTypes" value="news">
+                            <label for="sourceNews">News</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sourceAcademic" name="sourceTypes" value="academic">
+                            <label for="sourceAcademic">Academic</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sourceSocial" name="sourceTypes" value="social">
+                            <label for="sourceSocial">Social</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sourcePatent" name="sourceTypes" value="patent">
+                            <label for="sourcePatent">Patent</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sourceLegal" name="sourceTypes" value="legal">
+                            <label for="sourceLegal">Legal</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Analysis Options</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enableSentiment" name="enableSentiment">
+                            <label for="enableSentiment">Sentiment Analysis</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enableEntities" name="enableEntities">
+                            <label for="enableEntities">Entity Extraction</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enableSummarization" name="enableSummarization" checked>
+                            <label for="enableSummarization">Summarization</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enableFactChecking" name="enableFactChecking">
+                            <label for="enableFactChecking">Fact Checking</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enableTrends" name="enableTrends">
+                            <label for="enableTrends">Trend Analysis</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Output Configuration</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="format">Output Format</label>
+                            <select id="format" name="format">
+                                <option value="structured">Structured Data</option>
+                                <option value="narrative">Narrative Report</option>
+                                <option value="hybrid" selected>Hybrid Format</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="confidenceThreshold">Confidence Threshold</label>
+                            <input type="range" id="confidenceThreshold" name="confidenceThreshold" min="0" max="1" step="0.1" value="0.7">
+                            <span id="confidenceValue">0.7</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="includeSourceMaterial" name="includeSourceMaterial">
+                            <label for="includeSourceMaterial">Include Source Material</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Request Settings</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="priority">Priority</label>
+                            <select id="priority" name="priority">
+                                <option value="low">Low</option>
+                                <option value="normal" selected>Normal</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="timeout">Timeout (seconds)</label>
+                            <input type="number" id="timeout" name="timeout" min="30" max="1800" value="300">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    🚀 Start Research
+                </button>
+            </form>
+
+            <div id="results" class="results-section" style="display: none;">
+                <h3>Research Results</h3>
+                <div id="resultsContent"></div>
+            </div>
+        </div>
+
+        <!-- Plugins Tab -->
+        <div id="plugins" class="tab-content">
+            <button class="refresh-btn" onclick="loadPlugins()">🔄 Refresh Plugins</button>
+            <div id="pluginsList">
+                <div class="loading">Loading plugins...</div>
+            </div>
+        </div>
+
+        <!-- Templates Tab -->
+        <div id="templates" class="tab-content">
+            <button class="refresh-btn" onclick="loadTemplates()">🔄 Refresh Templates</button>
+            <div id="templatesList">
+                <div class="loading">Loading templates...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'dashboard';
+
+        function switchTab(tabName) {
+            // Update nav buttons
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+
+            currentTab = tabName;
+
+            // Load data for the active tab
+            if (tabName === 'dashboard') {
+                loadDashboardData();
+            } else if (tabName === 'plugins') {
+                loadPlugins();
+            } else if (tabName === 'templates') {
+                loadTemplates();
+            }
+        }
+
+        async function loadDashboardData() {
+            await Promise.all([
+                loadHealthStatus(),
+                loadMetrics(),
+                loadSystemInfo()
+            ]);
+        }
+
+        async function loadHealthStatus() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                const statusClass = `status-${data.status.replace('_', '-')}`;
+                
+                document.getElementById('healthStatus').innerHTML = `
+                    <p style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                        <span class="status-indicator ${statusClass}"></span>
+                        Status: <strong>${data.status.toUpperCase()}</strong>
+                    </p>
+                    <p><strong>Version:</strong> ${data.version || 'N/A'}</p>
+                    <p><strong>Uptime:</strong> ${formatUptime(data.uptime || 0)}</p>
+                    <p><strong>Last Check:</strong> ${new Date(data.timestamp).toLocaleString()}</p>
+                `;
+
+                // Load component status
+                if (data.components && data.components.length > 0) {
+                    const componentHtml = data.components.map(component => `
+                        <div class="plugin-item">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <span class="plugin-name">${component.name}</span>
+                                    <span style="margin-left: 10px;">
+                                        <span class="status-indicator status-${component.status}"></span>
+                                        ${component.status.toUpperCase()}
+                                    </span>
+                                </div>
+                                <div style="text-align: right; font-size: 0.9rem; color: #666;">
+                                    ${component.responseTime ? `${component.responseTime}ms` : ''}
+                                    <br>
+                                    ${new Date(component.lastCheck).toLocaleString()}
+                                </div>
+                            </div>
+                            ${component.error ? `<div style="color: #dc3545; margin-top: 5px; font-size: 0.9rem;">${component.error}</div>` : ''}
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('componentStatus').innerHTML = componentHtml;
+                } else {
+                    document.getElementById('componentStatus').innerHTML = '<p>No component status available</p>';
+                }
+            } catch (error) {
+                document.getElementById('healthStatus').innerHTML = `
+                    <div class="error">Failed to load health status: ${error.message}</div>
+                `;
+                document.getElementById('componentStatus').innerHTML = `
+                    <div class="error">Failed to load component status</div>
+                `;
+            }
+        }
+
+        async function loadMetrics() {
+            try {
+                const response = await fetch('/metrics');
+                const data = await response.json();
+                
+                document.getElementById('performanceMetrics').innerHTML = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <div class="metric-value">${data.activeExecutions || 0}</div>
+                            <div class="metric-label">Active Executions</div>
+                        </div>
+                        <div>
+                            <div class="metric-value">${formatUptime(data.uptime || 0)}</div>
+                            <div class="metric-label">Uptime</div>
+                        </div>
+                    </div>
+                    ${data.performance ? `
+                        <div style="margin-top: 15px; font-size: 0.9rem; color: #666;">
+                            <div>Active Queries: ${data.performance.activeQueries || 0}</div>
+                            <div>Completed Queries: ${data.performance.completedQueries || 0}</div>
+                            <div>Avg Processing Time: ${data.performance.averageProcessingTime || 0}ms</div>
+                            <div>Error Rate: ${((data.performance.errorRate || 0) * 100).toFixed(2)}%</div>
+                        </div>
+                    ` : ''}
+                `;
+            } catch (error) {
+                document.getElementById('performanceMetrics').innerHTML = `
+                    <div class="error">Failed to load metrics: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function loadSystemInfo() {
+            try {
+                const response = await fetch('/docs');
+                const data = await response.json();
+                
+                document.getElementById('systemInfo').innerHTML = `
+                    <div><strong>Name:</strong> ${data.name}</div>
+                    <div><strong>Version:</strong> ${data.version}</div>
+                    <div><strong>Architecture:</strong> ${data.architecture?.core || 'N/A'}</div>
+                    <div style="margin-top: 10px;"><strong>Features:</strong></div>
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        ${(data.architecture?.features || []).map(feature => `<li>${feature}</li>`).join('')}
+                    </ul>
+                `;
+            } catch (error) {
+                document.getElementById('systemInfo').innerHTML = `
+                    <div class="error">Failed to load system info: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function loadPlugins() {
+            try {
+                const response = await fetch('/plugins');
+                const data = await response.json();
+                
+                if (data.plugins && data.plugins.length > 0) {
+                    const pluginsHtml = data.plugins.map(plugin => `
+                        <div class="plugin-item">
+                            <div class="plugin-header">
+                                <div>
+                                    <span class="plugin-name">${plugin.name}</span>
+                                    <span class="plugin-version">v${plugin.version}</span>
+                                </div>
+                                <div style="font-size: 0.9rem; color: #666;">
+                                    ${plugin.type} • ${plugin.author}
+                                </div>
+                            </div>
+                            <div style="color: #666; margin-bottom: 10px;">${plugin.description}</div>
+                            <div class="capability-tags">
+                                ${plugin.capabilities.map(cap => `<span class="capability-tag">${cap}</span>`).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('pluginsList').innerHTML = `
+                        <div style="margin-bottom: 20px;">
+                            <strong>Total Plugins:</strong> ${data.totalPlugins}
+                        </div>
+                        ${pluginsHtml}
+                    `;
+                } else {
+                    document.getElementById('pluginsList').innerHTML = '<p>No plugins available</p>';
+                }
+            } catch (error) {
+                document.getElementById('pluginsList').innerHTML = `
+                    <div class="error">Failed to load plugins: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function loadTemplates() {
+            try {
+                const response = await fetch('/templates');
+                const data = await response.json();
+                
+                if (data.templates && data.templates.length > 0) {
+                    const templatesHtml = data.templates.map(template => `
+                        <div class="plugin-item">
+                            <div class="plugin-header">
+                                <span class="plugin-name">${template.name}</span>
+                                <button class="template-btn" onclick="applyTemplate('${template.name.toLowerCase().replace(' ', '_')}')">
+                                    Apply Template
+                                </button>
+                            </div>
+                            <div style="color: #666; margin-bottom: 15px;">${template.description}</div>
+                            <div class="json-output" style="font-size: 12px;">
+                                ${JSON.stringify(template.parameters, null, 2)}
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('templatesList').innerHTML = templatesHtml;
+                } else {
+                    document.getElementById('templatesList').innerHTML = '<p>No templates available</p>';
+                }
+            } catch (error) {
+                document.getElementById('templatesList').innerHTML = `
+                    <div class="error">Failed to load templates: ${error.message}</div>
+                `;
+            }
+        }
+
+        function refreshDashboard() {
+            loadDashboardData();
+        }
+
+        function formatUptime(uptime) {
+            if (!uptime) return '0s';
+            
+            const seconds = Math.floor(uptime / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            
+            if (days > 0) return `${days}d ${hours % 24}h`;
+            if (hours > 0) return `${hours}h ${minutes % 60}m`;
+            if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+            return `${seconds}s`;
+        }
+
+        function applyTemplate(templateName) {
+            switchTab('research');
+            
+            if (templateName === 'quick_research') {
+                loadTemplate('quick');
+            } else if (templateName === 'comprehensive_analysis') {
+                loadTemplate('comprehensive');
+            }
+        }
+
+        // Research form functionality
+        const form = document.getElementById('researchForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const results = document.getElementById('results');
+        const resultsContent = document.getElementById('resultsContent');
+        const confidenceSlider = document.getElementById('confidenceThreshold');
+        const confidenceValue = document.getElementById('confidenceValue');
+
+        confidenceSlider.addEventListener('input', function() {
+            confidenceValue.textContent = this.value;
+        });
+
+        function loadTemplate(templateType) {
+            const templates = {
+                quick: {
+                    depth: 'shallow',
+                    maxSources: 5,
+                    sourceTypes: ['web'],
+                    enableSentiment: false,
+                    enableEntities: false,
+                    enableSummarization: true,
+                    enableFactChecking: false,
+                    enableTrends: false,
+                    format: 'structured',
+                    includeSourceMaterial: false,
+                    confidenceThreshold: 0.6,
+                    priority: 'normal',
+                    timeout: 120
+                },
+                comprehensive: {
+                    depth: 'deep',
+                    maxSources: 20,
+                    sourceTypes: ['web', 'news', 'academic'],
+                    enableSentiment: true,
+                    enableEntities: true,
+                    enableSummarization: true,
+                    enableFactChecking: true,
+                    enableTrends: true,
+                    format: 'hybrid',
+                    includeSourceMaterial: true,
+                    confidenceThreshold: 0.7,
+                    priority: 'normal',
+                    timeout: 600
+                },
+                custom: {
+                    depth: 'medium',
+                    maxSources: 10,
+                    sourceTypes: ['web'],
+                    enableSentiment: false,
+                    enableEntities: false,
+                    enableSummarization: true,
+                    enableFactChecking: false,
+                    enableTrends: false,
+                    format: 'hybrid',
+                    includeSourceMaterial: false,
+                    confidenceThreshold: 0.7,
+                    priority: 'normal',
+                    timeout: 300
+                }
+            };
+
+            const template = templates[templateType];
+            if (!template) return;
+
+            document.getElementById('depth').value = template.depth;
+            document.getElementById('maxSources').value = template.maxSources;
+            document.getElementById('format').value = template.format;
+            document.getElementById('confidenceThreshold').value = template.confidenceThreshold;
+            document.getElementById('confidenceValue').textContent = template.confidenceThreshold;
+            document.getElementById('priority').value = template.priority;
+            document.getElementById('timeout').value = template.timeout;
+            document.getElementById('includeSourceMaterial').checked = template.includeSourceMaterial;
+
+            document.querySelectorAll('input[name="sourceTypes"]').forEach(cb => cb.checked = false);
+            template.sourceTypes.forEach(type => {
+                const checkbox = document.querySelector(`input[name="sourceTypes"][value="${type}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+
+            document.getElementById('enableSentiment').checked = template.enableSentiment;
+            document.getElementById('enableEntities').checked = template.enableEntities;
+            document.getElementById('enableSummarization').checked = template.enableSummarization;
+            document.getElementById('enableFactChecking').checked = template.enableFactChecking;
+            document.getElementById('enableTrends').checked = template.enableTrends;
+        }
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const sourceTypes = Array.from(document.querySelectorAll('input[name="sourceTypes"]:checked')).map(cb => cb.value);
+            
+            if (sourceTypes.length === 0) {
+                alert('Please select at least one source type.');
+                return;
+            }
+
+            const requestData = {
+                query: formData.get('query'),
+                context: formData.get('context') || undefined,
+                parameters: {
+                    depth: formData.get('depth'),
+                    sources: {
+                        maxSources: parseInt(formData.get('maxSources')),
+                        sourceTypes: sourceTypes
+                    },
+                    analysis: {
+                        enableSentiment: document.getElementById('enableSentiment').checked,
+                        enableEntities: document.getElementById('enableEntities').checked,
+                        enableSummarization: document.getElementById('enableSummarization').checked,
+                        enableFactChecking: document.getElementById('enableFactChecking').checked,
+                        enableTrends: document.getElementById('enableTrends').checked
+                    },
+                    output: {
+                        format: formData.get('format'),
+                        includeSourceMaterial: document.getElementById('includeSourceMaterial').checked,
+                        confidenceThreshold: parseFloat(formData.get('confidenceThreshold'))
+                    }
+                },
+                metadata: {
+                    priority: formData.get('priority'),
+                    timeout: parseInt(formData.get('timeout')) * 1000
+                }
+            };
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '🔄 Processing...';
+            results.style.display = 'block';
+            resultsContent.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Conducting research... This may take a few minutes.</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/research', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayResults(result);
+                } else {
+                    displayError(result);
+                }
+            } catch (error) {
+                displayError({ error: { message: error.message, code: 'NETWORK_ERROR' } });
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Start Research';
+            }
+        });
+
+        function displayResults(result) {
+            resultsContent.innerHTML = `
+                <div class="success">
+                    ✅ Research completed successfully! Processing time: ${result.processingTime}ms
+                </div>
+                <div class="result-card">
+                    <h4>📊 Research Report</h4>
+                    <div class="json-output">${JSON.stringify(result.report, null, 2)}</div>
+                </div>
+                <div class="result-card">
+                    <h4>🔧 Raw Response</h4>
+                    <div class="json-output">${JSON.stringify(result, null, 2)}</div>
+                </div>
+            `;
+        }
+
+        function displayError(result) {
+            resultsContent.innerHTML = `
+                <div class="error">
+                    ❌ Research failed: ${result.error?.message || 'Unknown error'}
+                    ${result.error?.code ? `<br><strong>Error Code:</strong> ${result.error.code}` : ''}
+                    ${result.error?.retryable ? '<br><em>This request can be retried.</em>' : ''}
+                </div>
+                <div class="result-card">
+                    <h4>🔧 Error Details</h4>
+                    <div class="json-output">${JSON.stringify(result, null, 2)}</div>
+                </div>
+            `;
+        }
+
+        // Initialize the dashboard on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTemplate('quick');
+            loadDashboardData();
+        });
+    </script>
+</body>
+</html>
