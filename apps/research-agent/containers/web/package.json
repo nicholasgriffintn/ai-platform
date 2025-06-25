@@ -1,0 +1,21 @@
+{
+  "name": "ai-platform-research-agent-web",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A web agent for use with the AI Platform Research Agent",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "1.14.4",
+    "hono": "4.8.3",
+    "puppeteer": "24.10.2",
+    "cheerio": "1.1.0",
+    "node-fetch": "3.3.2",
+    "url-parse": "1.5.10",
+    "readability": "0.1.0",
+    "turndown": "7.2.0"
+  }
+}
