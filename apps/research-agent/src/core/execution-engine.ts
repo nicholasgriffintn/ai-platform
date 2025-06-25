@@ -25,6 +25,10 @@ export class ExecutionEngine {
     this.plugins.set(manifest.name, plugin);
   }
 
+  clearPlugins(): void {
+    this.plugins.clear();
+  }
+
   async executePlan(plan: ExecutionPlan): Promise<ExecutionResult> {
     const executionId = plan.id;
     const startTime = performance.now();

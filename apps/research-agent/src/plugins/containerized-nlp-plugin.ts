@@ -259,6 +259,9 @@ export class ContainerizedNLPPlugin extends AnalyzerPlugin {
         textLength: task.text.length,
       });
 
+      // Wait for container to be ready with retries
+      await this.waitForContainerReady();
+
       // Call the containerized NLP service
       const response = await this.nlpContainer.fetch(
         "http://localhost:8080/process",
@@ -303,6 +306,38 @@ export class ContainerizedNLPPlugin extends AnalyzerPlugin {
 
       throw error;
     }
+  }
+
+  private async waitForContainerReady(): Promise<void> {
+    const maxRetries = 10;
+    const retryDelay = 1000; // 1 second
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const isHealthy = await this.checkContainerHealth();
+        if (isHealthy) {
+          this.log("debug", "NLP container is ready", { attempt });
+          return;
+        }
+      } catch (error) {
+        this.log("debug", "NLP container health check failed", {
+          attempt,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+
+      if (attempt < maxRetries) {
+        this.log("debug", "Waiting for NLP container to be ready", {
+          attempt,
+          nextRetryIn: retryDelay,
+        });
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      }
+    }
+
+    throw new Error(
+      `NLP container failed to become ready after ${maxRetries} attempts`,
+    );
   }
 
   private processSentimentResults(

@@ -91,6 +91,12 @@ export class ResearchOrchestrator {
     return this.plugins.delete(pluginName);
   }
 
+  clearPlugins(): void {
+    this.plugins.clear();
+    this.executionEngine.clearPlugins();
+    this.planGenerator.clearPlugins();
+  }
+
   getRegisteredPlugins(): PluginManifest[] {
     return Array.from(this.plugins.values()).map((plugin) =>
       plugin.getManifest(),

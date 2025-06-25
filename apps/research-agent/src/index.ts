@@ -1,4 +1,3 @@
-import { getContainer } from "@cloudflare/containers";
 import { sValidator } from "@hono/standard-validator";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -85,30 +84,35 @@ function initializeOrchestrator(
       maxConcurrentStages: 5,
       defaultTimeout: 300000,
     });
+  }
 
-    // Register containerized plugins if environment is available
-    if (env?.NLP_AGENT && env?.WEB_AGENT) {
-      try {
-        const sessionId = crypto.randomUUID();
-        const nlpContainer = getContainer(env.NLP_AGENT, sessionId);
-        const webContainer = getContainer(env.WEB_AGENT, sessionId);
+  // Always create fresh containers for each request to avoid cross-request I/O issues
+  if (env?.NLP_AGENT && env?.WEB_AGENT) {
+    try {
+      const nlpContainerId = env.NLP_AGENT.idFromName("nlp-agent");
+      const webContainerId = env.WEB_AGENT.idFromName("web-agent");
 
-        orchestrator.registerPlugin(new ContainerizedNLPPlugin(nlpContainer));
-        orchestrator.registerPlugin(new ContainerizedWebPlugin(webContainer));
+      const nlpContainer = env.NLP_AGENT.get(nlpContainerId);
+      const webContainer = env.WEB_AGENT.get(webContainerId);
 
-        console.log("Containerized plugins registered successfully");
-      } catch (error) {
-        console.error("Failed to register containerized plugins:", error);
-        throw new Error(
-          "Containerized plugins are required but failed to initialize",
-        );
-      }
-    } else {
+      // Clear existing plugins and register fresh ones
+      orchestrator.clearPlugins();
+      orchestrator.registerPlugin(new ContainerizedNLPPlugin(nlpContainer));
+      orchestrator.registerPlugin(new ContainerizedWebPlugin(webContainer));
+
+      console.log("Containerized plugins registered successfully");
+    } catch (error) {
+      console.error("Failed to register containerized plugins:", error);
       throw new Error(
-        "Container bindings (NLP_AGENT, WEB_AGENT) are required but not available",
+        "Containerized plugins are required but failed to initialize",
       );
     }
+  } else {
+    throw new Error(
+      "Container bindings (NLP_AGENT, WEB_AGENT) are required but not available",
+    );
   }
+
   return orchestrator;
 }
 

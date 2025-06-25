@@ -236,6 +236,9 @@ export class ContainerizedWebPlugin extends DataCollectorPlugin {
         extractContent: task.extract_content,
       });
 
+      // Wait for container to be ready with retries
+      await this.waitForContainerReady();
+
       // Call the containerized web service
       const response = await this.webContainer.fetch(
         "http://localhost:8080/scrape",
@@ -281,6 +284,38 @@ export class ContainerizedWebPlugin extends DataCollectorPlugin {
 
       throw error;
     }
+  }
+
+  private async waitForContainerReady(): Promise<void> {
+    const maxRetries = 10;
+    const retryDelay = 1000; // 1 second
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const isHealthy = await this.checkContainerHealth();
+        if (isHealthy) {
+          this.log("debug", "Web container is ready", { attempt });
+          return;
+        }
+      } catch (error) {
+        this.log("debug", "Web container health check failed", {
+          attempt,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+
+      if (attempt < maxRetries) {
+        this.log("debug", "Waiting for web container to be ready", {
+          attempt,
+          nextRetryIn: retryDelay,
+        });
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      }
+    }
+
+    throw new Error(
+      `Web container failed to become ready after ${maxRetries} attempts`,
+    );
   }
 
   private createContentArtifacts(sources: WebSource[]): Artifact[] {

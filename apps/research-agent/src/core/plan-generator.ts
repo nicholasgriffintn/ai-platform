@@ -21,6 +21,10 @@ export class PlanGenerator {
     this.plugins.set(manifest.name, manifest);
   }
 
+  clearPlugins(): void {
+    this.plugins.clear();
+  }
+
   async generatePlan(query: ResearchQuery): Promise<ExecutionPlan> {
     const planId = crypto.randomUUID();
 
