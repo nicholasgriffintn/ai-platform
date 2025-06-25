@@ -1,0 +1,54 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ai-platform-research-agent",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-06-24",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "placement": {
+    "mode": "smart"
+  },
+  "containers": [
+    {
+      "name": "nlp-agent",
+      "max_instances": 5,
+      "class_name": "NLPAgent",
+      "image": "./containers/nlp/Dockerfile",
+      "image_build_context": "./containers",
+      "instance_type": "basic"
+    },
+    {
+      "name": "web-agent",
+      "max_instances": 5,
+      "class_name": "WebAgent",
+      "image": "./containers/web/Dockerfile",
+      "image_build_context": "./containers",
+      "instance_type": "basic"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "class_name": "NLPAgent",
+        "name": "NLP_AGENT"
+      },
+      {
+        "class_name": "WebAgent",
+        "name": "WEB_AGENT"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "new_sqlite_classes": ["NLPAgent"],
+      "tag": "v1"
+    },
+    {
+      "new_sqlite_classes": ["WebAgent"],
+      "tag": "v2"
+    }
+  ]
+}

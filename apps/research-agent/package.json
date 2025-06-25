@@ -1,0 +1,31 @@
+{
+  "name": "ai-platform-research-agent",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@10.12.2",
+  "description": "AI Platform Research Agent - Multi-agent system focused on research and data analysis",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "lint": "eslint --max-warnings 0 .",
+    "format": "prettier --write .",
+    "format:ci": "prettier --check .",
+    "typecheck": "pnpm run cf-typegen && tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "check": "pnpm run cf-typegen && pnpm run lint && pnpm run format:ci && pnpm run typecheck && pnpm run test:run"
+  },
+  "dependencies": {
+    "@hono/standard-validator": "0.1.2",
+    "hono": "4.8.2",
+    "valibot": "1.1.0"
+  },
+  "devDependencies": {
+    "@cloudflare/containers": "0.0.12",
+    "@types/node": "24.0.3",
+    "eslint": "9.29.0",
+    "vitest": "3.2.4",
+    "wrangler": "4.21.2"
+  }
+}
