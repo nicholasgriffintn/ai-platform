@@ -8,13 +8,13 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
-    "lint": "eslint --max-warnings 0 .",
+    "lint": "pnpm biome lint ./src",
+    "check": "pnpm biome check ./src",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
-    "typecheck": "pnpm run cf-typegen && tsc --noEmit",
     "test": "vitest",
-    "test:run": "vitest run",
-    "check": "pnpm run cf-typegen && pnpm run lint && pnpm run format:ci && pnpm run typecheck && pnpm run test:run"
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@hono/standard-validator": "0.1.2",
@@ -24,7 +24,6 @@
   "devDependencies": {
     "@cloudflare/containers": "0.0.12",
     "@types/node": "24.0.3",
-    "eslint": "9.29.0",
     "vitest": "3.2.4",
     "wrangler": "4.21.2"
   }

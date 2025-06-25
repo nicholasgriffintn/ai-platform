@@ -1,3 +1,5 @@
+import type { ResearchError } from "../core/errors.js";
+
 export interface ResearchQuery {
   id: string;
   query: string;
@@ -160,15 +162,6 @@ export interface StageResult {
   metrics: ExecutionMetrics;
   artifacts: Artifact[];
   nextStages?: string[];
-}
-
-export interface ResearchError {
-  code: string;
-  message: string;
-  details?: Record<string, any>;
-  retryable: boolean;
-  cause?: Error;
-  context?: ExecutionContext;
 }
 
 export interface ResearchReport {

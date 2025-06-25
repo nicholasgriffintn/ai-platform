@@ -3,9 +3,9 @@ import type {
   ExecutionContext,
   ExecutionMetrics,
   PluginManifest,
-  ResearchError,
   StageResult,
-} from "./types.js";
+} from "../types/core.js";
+import { ResearchError } from "./errors.js";
 
 export abstract class BasePlugin {
   protected manifest: PluginManifest;
@@ -116,6 +116,7 @@ export abstract class BasePlugin {
     details?: Record<string, any>,
   ): ResearchError {
     return {
+      name: this.manifest.name,
       code,
       message,
       details,
@@ -222,7 +223,7 @@ export abstract class DataCollectorPlugin extends BasePlugin {
         metrics,
         artifacts,
       };
-    } catch (error) {
+    } catch (error: any) {
       const metrics = this.getMetrics();
       metrics.duration = performance.now() - startTime;
       metrics.errorCount++;
@@ -281,7 +282,7 @@ export abstract class AnalyzerPlugin extends BasePlugin {
         metrics,
         artifacts: [resultArtifact],
       };
-    } catch (error) {
+    } catch (error: any) {
       const metrics = this.getMetrics();
       metrics.duration = performance.now() - startTime;
       metrics.errorCount++;
@@ -342,7 +343,7 @@ export abstract class SynthesizerPlugin extends BasePlugin {
         metrics,
         artifacts: [synthesisArtifact],
       };
-    } catch (error) {
+    } catch (error: any) {
       const metrics = this.getMetrics();
       metrics.duration = performance.now() - startTime;
       metrics.errorCount++;

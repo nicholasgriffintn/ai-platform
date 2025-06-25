@@ -1,5 +1,7 @@
 import { Container } from "@cloudflare/containers";
 
+import type { WebScrapeTask } from "../types/index.js";
+
 export class NLPAgent extends Container {
   override defaultPort = 8080;
   override enableInternet = false;
@@ -31,10 +33,12 @@ export class NLPAgent extends Container {
   // Health check method
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await this.fetch("http://localhost:8080/health", {
-        method: "GET",
-        signal: AbortSignal.timeout(5000),
-      });
+      const response = await this.fetch(
+        new Request("http://localhost:8080/health", {
+          method: "GET",
+          signal: AbortSignal.timeout(5000),
+        }),
+      );
       return response.ok;
     } catch (error) {
       console.warn("NLP Agent health check failed:", error);
@@ -45,12 +49,14 @@ export class NLPAgent extends Container {
   // Process text with NLP operations
   async processText(text: string, operations: string[]): Promise<any> {
     try {
-      const response = await this.fetch("http://localhost:8080/process", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, operations }),
-        signal: AbortSignal.timeout(60000), // 1 minute timeout
-      });
+      const response = await this.fetch(
+        new Request("http://localhost:8080/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, operations }),
+          signal: AbortSignal.timeout(60000), // 1 minute timeout
+        }),
+      );
 
       if (!response.ok) {
         throw new Error(`NLP processing failed with status ${response.status}`);
@@ -95,10 +101,12 @@ export class WebAgent extends Container {
   // Health check method
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await this.fetch("http://localhost:8080/health", {
-        method: "GET",
-        signal: AbortSignal.timeout(5000),
-      });
+      const response = await this.fetch(
+        new Request("http://localhost:8080/health", {
+          method: "GET",
+          signal: AbortSignal.timeout(5000),
+        }),
+      );
       return response.ok;
     } catch (error) {
       console.warn("Web Agent health check failed:", error);
@@ -109,12 +117,14 @@ export class WebAgent extends Container {
   // Scrape web content
   async scrapeContent(task: WebScrapeTask): Promise<any> {
     try {
-      const response = await this.fetch("http://localhost:8080/scrape", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(task),
-        signal: AbortSignal.timeout(120000), // 2 minute timeout
-      });
+      const response = await this.fetch(
+        new Request("http://localhost:8080/scrape", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(task),
+          signal: AbortSignal.timeout(120000), // 2 minute timeout
+        }),
+      );
 
       if (!response.ok) {
         throw new Error(`Web scraping failed with status ${response.status}`);
@@ -126,16 +136,4 @@ export class WebAgent extends Container {
       throw error;
     }
   }
-}
-
-interface WebScrapeTask {
-  urls?: string[];
-  search_query?: string;
-  max_results?: number;
-  extract_content?: boolean;
-  languages?: string[];
-  domain_filters?: {
-    include?: string[];
-    exclude?: string[];
-  };
 }

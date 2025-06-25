@@ -5,12 +5,13 @@ import type {
   ExecutionContext,
   PluginManifest,
   SentimentAnalysis,
-} from "../core/types.js";
+} from "../types/core.js";
+import type { NLPContainerResponse, NLPTask } from "../types/plugins/nlp.js";
 
 export class ContainerizedNLPPlugin extends AnalyzerPlugin {
   private nlpContainer: any;
 
-  constructor(nlpContainer: any) {
+  constructor(nlpContainer: any, config: Record<string, any> = {}) {
     const manifest: PluginManifest = {
       name: "containerized-nlp-analyzer",
       version: "1.0.0",
@@ -114,7 +115,7 @@ export class ContainerizedNLPPlugin extends AnalyzerPlugin {
       ],
     };
 
-    super(manifest);
+    super(manifest, config);
     this.nlpContainer = nlpContainer;
   }
 
@@ -186,7 +187,7 @@ export class ContainerizedNLPPlugin extends AnalyzerPlugin {
         entityCount: results.entities?.entities?.length || 0,
         summaryCount: results.summaries.length,
       });
-    } catch (error) {
+    } catch (error: any) {
       this.log("error", "NLP container analysis failed", {
         error: error.message,
         operations,
@@ -291,7 +292,7 @@ export class ContainerizedNLPPlugin extends AnalyzerPlugin {
       });
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       const duration = performance.now() - startTime;
       this.metrics.errorCount++;
 
@@ -368,28 +369,11 @@ export class ContainerizedNLPPlugin extends AnalyzerPlugin {
       );
 
       return response.ok;
-    } catch (error) {
+    } catch (error: any) {
       this.log("warn", "NLP container health check failed", {
         error: error.message,
       });
       return false;
     }
   }
-}
-
-interface NLPTask {
-  text: string;
-  operations: string[];
-}
-
-interface NLPContainerResponse {
-  success: boolean;
-  data?: {
-    sentiment?: any;
-    entities?: any[];
-    summary?: string;
-    language?: any;
-  };
-  error?: string;
-  processing_time_ms: number;
 }

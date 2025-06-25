@@ -3,13 +3,17 @@ import type {
   Artifact,
   ExecutionContext,
   PluginManifest,
-  SourceType,
-} from "../core/types.js";
+} from "../types/core.js";
+import type {
+  WebContainerResponse,
+  WebSource,
+  WebTask,
+} from "../types/plugins/web.js";
 
 export class ContainerizedWebPlugin extends DataCollectorPlugin {
   private webContainer: any;
 
-  constructor(webContainer: any) {
+  constructor(webContainer: any, config: Record<string, any> = {}) {
     const manifest: PluginManifest = {
       name: "containerized-web-collector",
       version: "1.0.0",
@@ -46,9 +50,9 @@ export class ContainerizedWebPlugin extends DataCollectorPlugin {
       configuration: {
         query: {
           type: "string",
-          required: true,
+          required: false,
           default: "",
-          description: "Search query",
+          description: "Search query (will be provided at execution time)",
         },
         maxSources: {
           type: "number",
@@ -123,13 +127,16 @@ export class ContainerizedWebPlugin extends DataCollectorPlugin {
       ],
     };
 
-    super(manifest);
+    super(manifest, config);
     this.webContainer = webContainer;
   }
 
   async collect(context: ExecutionContext): Promise<Artifact[]> {
+    // Extract query from execution context (provided by the research orchestrator)
+    const query = context.data.query || this.config.query || "";
+
     this.log("info", "Starting containerized web collection", {
-      query: this.config.query,
+      query,
       maxSources: this.config.maxSources,
       stageId: context.stageId,
     });
@@ -138,7 +145,7 @@ export class ContainerizedWebPlugin extends DataCollectorPlugin {
 
     try {
       // Prepare the web scraping task
-      const webTask = this.createWebTask();
+      const webTask = this.createWebTask(query);
 
       // Call the containerized web service
       const webResult = await this.callWebContainer(webTask);
@@ -149,7 +156,7 @@ export class ContainerizedWebPlugin extends DataCollectorPlugin {
           "raw_data",
           "web_search_results",
           {
-            query: this.config.query,
+            query,
             sources: webResult.data.sources || [],
             searchResults: webResult.data.search_results || [],
             totalResults: (webResult.data.sources || []).length,
@@ -181,7 +188,7 @@ export class ContainerizedWebPlugin extends DataCollectorPlugin {
           error: webResult.error,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       this.log("error", "Web container collection failed", {
         error: error.message,
       });
@@ -195,15 +202,15 @@ export class ContainerizedWebPlugin extends DataCollectorPlugin {
     return artifacts;
   }
 
-  private createWebTask(): WebTask {
+  private createWebTask(query: string): WebTask {
     const task: WebTask = {
       max_results: this.config.maxSources as number,
       extract_content: this.config.extractContent as boolean,
     };
 
     // Add search query if provided
-    if (this.config.query) {
-      task.search_query = this.config.query as string;
+    if (query) {
+      task.search_query = query;
     }
 
     // Add language preferences
@@ -263,7 +270,7 @@ export class ContainerizedWebPlugin extends DataCollectorPlugin {
       });
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       const duration = performance.now() - startTime;
       this.metrics.errorCount++;
 
@@ -421,47 +428,11 @@ export class ContainerizedWebPlugin extends DataCollectorPlugin {
       );
 
       return response.ok;
-    } catch (error) {
+    } catch (error: any) {
       this.log("warn", "Web container health check failed", {
         error: error.message,
       });
       return false;
     }
   }
-}
-
-interface WebTask {
-  urls?: string[];
-  search_query?: string;
-  max_results?: number;
-  extract_content?: boolean;
-  languages?: string[];
-  domain_filters?: {
-    include?: string[];
-    exclude?: string[];
-  };
-}
-
-interface WebSource {
-  url: string;
-  title: string;
-  content?: string;
-  excerpt?: string;
-  author?: string;
-  publishedAt?: string;
-  scraped_at: string;
-}
-
-interface WebContainerResponse {
-  success: boolean;
-  data?: {
-    sources?: WebSource[];
-    search_results?: Array<{
-      title: string;
-      url: string;
-      snippet: string;
-    }>;
-  };
-  error?: string;
-  processing_time_ms: number;
 }

@@ -1,15 +1,13 @@
-import type { BasePlugin } from "./plugin.js";
 import type {
   Artifact,
   ExecutionContext,
   ExecutionMetrics,
   ExecutionPlan,
   ExecutionStage,
-  ResearchError,
-  ResearchQuery,
-  StageDepMap,
   StageResult,
-} from "./types.js";
+} from "../types/index.js";
+import { ResearchError } from "./errors.js";
+import type { BasePlugin } from "./plugin.js";
 
 export class ExecutionEngine {
   private plugins: Map<string, BasePlugin> = new Map();
@@ -50,7 +48,7 @@ export class ExecutionEngine {
           duration: totalDuration,
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       const totalDuration = performance.now() - startTime;
 
       return {
@@ -60,6 +58,7 @@ export class ExecutionEngine {
           error instanceof ResearchError
             ? error
             : {
+                name: "ResearchError",
                 code: "EXECUTION_FAILED",
                 message: `Plan execution failed: ${error.message}`,
                 retryable: false,
@@ -179,6 +178,7 @@ export class ExecutionEngine {
         stageResults[stage.id] = {
           success: false,
           error: {
+            name: "ResearchError",
             code: "STAGE_EXECUTION_ERROR",
             message: `Stage execution failed: ${result.reason}`,
             retryable: true,

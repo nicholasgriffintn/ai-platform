@@ -1,11 +1,14 @@
 import type {
   ExecutionPlan,
   ExecutionStage,
+  PlanTemplate,
   PluginManifest,
   ResearchQuery,
   RetryPolicy,
+  StageConditions,
+  StageTemplate,
   StageType,
-} from "./types.js";
+} from "../types/index.js";
 
 export class PlanGenerator {
   private plugins: Map<string, PluginManifest> = new Map();
@@ -43,9 +46,11 @@ export class PlanGenerator {
 
     if (depth === "deep" && analysisConfig.enableFactChecking) {
       return this.templates.get("comprehensive")!;
-    } else if (depth === "medium" && analysisConfig.enableTrends) {
+    }
+    if (depth === "medium" && analysisConfig.enableTrends) {
       return this.templates.get("analytical")!;
-    } else if (depth === "shallow") {
+    }
+    if (depth === "shallow") {
       return this.templates.get("basic")!;
     }
 
@@ -534,30 +539,4 @@ export class PlanGenerator {
       ],
     });
   }
-}
-
-interface PlanTemplate {
-  name: string;
-  description: string;
-  stageTemplates: StageTemplate[];
-}
-
-interface StageTemplate {
-  type: StageType;
-  name: string;
-  pluginHints?: string[];
-  dependsOn?: StageType[];
-  timeout?: number;
-  retryPolicy?: RetryPolicy;
-  conditions?: StageConditions;
-  defaultConfig: Record<string, any>;
-}
-
-interface StageConditions {
-  requiresSentiment?: boolean;
-  requiresEntities?: boolean;
-  requiresFactCheck?: boolean;
-  requiresTrends?: boolean;
-  minSources?: number;
-  requiredSourceTypes?: string[];
 }

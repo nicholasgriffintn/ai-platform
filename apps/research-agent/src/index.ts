@@ -5,18 +5,10 @@ import { HTTPException } from "hono/http-exception";
 import { timeout } from "hono/timeout";
 import * as v from "valibot";
 
-import { NLPAgent, WebAgent } from "./containers/container-definitions.js";
 import { ResearchOrchestrator } from "./core/research-orchestrator.js";
-import type {
-  AnalysisConfig,
-  OutputConfig,
-  QueryMetadata,
-  ResearchParameters,
-  ResearchQuery,
-  SourceConfig,
-} from "./core/types.js";
 import { ContainerizedNLPPlugin } from "./plugins/containerized-nlp-plugin.js";
 import { ContainerizedWebPlugin } from "./plugins/containerized-web-plugin.js";
+import type { ResearchQuery } from "./types/core.js";
 
 type HonoConfig = {
   Bindings: CloudflareBindings & {
@@ -101,7 +93,6 @@ function initializeOrchestrator(
         const nlpContainer = getRandom(env.NLP_AGENT);
         const webContainer = getRandom(env.WEB_AGENT);
 
-        // Register containerized plugins
         orchestrator.registerPlugin(new ContainerizedNLPPlugin(nlpContainer));
         orchestrator.registerPlugin(new ContainerizedWebPlugin(webContainer));
 
@@ -151,7 +142,7 @@ app.get("/", (c) => {
 
 app.get("/health", async (c) => {
   try {
-    const researchAgent = initializeOrchestrator();
+    const researchAgent = initializeOrchestrator(c.env);
     const status = await researchAgent.getSystemStatus();
 
     const statusCode =
@@ -162,7 +153,7 @@ app.get("/health", async (c) => {
           : 503;
 
     return c.json(status, statusCode);
-  } catch (error) {
+  } catch (error: any) {
     return c.json(
       {
         status: "unhealthy",
@@ -255,7 +246,7 @@ app.post("/research", sValidator("json", researchQuerySchema), async (c) => {
       processingTime: Math.round(processingTime),
       report,
     });
-  } catch (error) {
+  } catch (error: any) {
     const processingTime = performance.now() - startTime;
 
     console.error("Research request failed:", {
@@ -313,16 +304,15 @@ app.delete("/research/:id", async (c) => {
       message: `Research ${planId} has been cancelled`,
       timestamp: new Date().toISOString(),
     });
-  } else {
-    return c.json(
-      {
-        success: false,
-        message: `Research ${planId} not found or already completed`,
-        timestamp: new Date().toISOString(),
-      },
-      404,
-    );
   }
+  return c.json(
+    {
+      success: false,
+      message: `Research ${planId} not found or already completed`,
+      timestamp: new Date().toISOString(),
+    },
+    404,
+  );
 });
 
 app.get("/templates", (c) => {
@@ -426,7 +416,7 @@ app.notFound((c) => {
 
 export default app;
 
-export * from "./core/types.js";
+export * from "./types/core.js";
 export { NLPAgent, WebAgent } from "./containers/container-definitions.js";
 export { ContainerizedNLPPlugin } from "./plugins/containerized-nlp-plugin.js";
 export { ContainerizedWebPlugin } from "./plugins/containerized-web-plugin.js";

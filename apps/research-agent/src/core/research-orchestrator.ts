@@ -1,13 +1,13 @@
-import { ExecutionEngine } from "./execution-engine.js";
-import { PlanGenerator } from "./plan-generator.js";
-import type { BasePlugin } from "./plugin.js";
 import type {
   PluginManifest,
-  ResearchError,
   ResearchQuery,
   ResearchReport,
   SystemStatus,
-} from "./types.js";
+} from "../types/core.js";
+import { ResearchError } from "./errors.js";
+import { ExecutionEngine } from "./execution-engine.js";
+import { PlanGenerator } from "./plan-generator.js";
+import type { BasePlugin } from "./plugin.js";
 
 export class ResearchOrchestrator {
   private executionEngine: ExecutionEngine;
@@ -62,7 +62,7 @@ export class ResearchOrchestrator {
       this.updateSuccessMetrics(processingTime);
 
       return report;
-    } catch (error) {
+    } catch (error: any) {
       const processingTime = performance.now() - startTime;
       this.updateErrorMetrics(processingTime);
 
@@ -461,7 +461,7 @@ export class ResearchOrchestrator {
           lastCheck: new Date().toISOString(),
           responseTime,
         });
-      } catch (error) {
+      } catch (error: any) {
         components.push({
           name: `Plugin: ${name}`,
           status: "error",
