@@ -39,8 +39,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0
       agents:
-        specifier: ^0.0.97
-        version: 0.0.97(@cloudflare/workers-types@4.20250620.0)(react@19.1.0)
+        specifier: ^0.0.98
+        version: 0.0.98(@cloudflare/workers-types@4.20250620.0)(react@19.1.0)
       aws4fetch:
         specifier: 1.0.20
         version: 1.0.20
@@ -1248,8 +1248,8 @@ packages:
   '@mlc-ai/web-llm@0.2.79':
     resolution: {integrity: sha512-Hy1ZHQ0o2bZGZoVnGK48+fts/ZSKwLe96xjvqL/6C59Mem9HoHTcFE07NC2E23mRmhd01tL655N6CPeYmwWgwQ==}
 
-  '@modelcontextprotocol/sdk@1.13.0':
-    resolution: {integrity: sha512-P5FZsXU0kY881F6Hbk9GhsYx02/KgWK1DYf7/tyE/1lcFKhDYPQR9iYjhQXJn+Sg6hQleMo3DB7h7+p4wgp2Lw==}
+  '@modelcontextprotocol/sdk@1.13.1':
+    resolution: {integrity: sha512-8q6+9aF0yA39/qWT/uaIj6zTpC+Qu07DnN/lb9mjoquCJsAh6l3HyYqc9O3t2j7GilseOQOQimLg7W3By6jqvg==}
     engines: {node: '>=18'}
 
   '@npmcli/git@4.1.0':
@@ -2268,8 +2268,8 @@ packages:
     resolution: {integrity: sha512-jRR5wdylq8CkOe6hei19GGZnxM6rBGwFl3Bg0YItGDimvjGtAvdZk4Pu6Cl4u4Igsws4a1fd1Vq3ezrhn4KmFw==}
     engines: {node: '>= 14'}
 
-  agents@0.0.97:
-    resolution: {integrity: sha512-4SKVyuWhBKHS/oip+CXN8VFz6/UCr6y0Cng3xkj2+r5ES85zyNHlYWDLHKCJ5YEU3wZFhSJ3quwb8jFBVri4WA==}
+  agents@0.0.98:
+    resolution: {integrity: sha512-tl5/TMt2nheODiIc7ltbj0nLVKRZlqMEqSMehUu9unPF2H/XWBTC9owqY7iTle38yACfsJ129bJEg/CiqcIxRQ==}
     peerDependencies:
       react: '*'
 
@@ -5766,7 +5766,7 @@ snapshots:
     dependencies:
       loglevel: 1.9.2
 
-  '@modelcontextprotocol/sdk@1.13.0':
+  '@modelcontextprotocol/sdk@1.13.1':
     dependencies:
       ajv: 6.12.6
       content-type: 1.0.5
@@ -6872,9 +6872,9 @@ snapshots:
 
   agent-base@7.1.3: {}
 
-  agents@0.0.97(@cloudflare/workers-types@4.20250620.0)(react@19.1.0):
+  agents@0.0.98(@cloudflare/workers-types@4.20250620.0)(react@19.1.0):
     dependencies:
-      '@modelcontextprotocol/sdk': 1.13.0
+      '@modelcontextprotocol/sdk': 1.13.1
       ai: 4.3.16(react@19.1.0)(zod@3.25.67)
       cron-schedule: 5.0.4
       nanoid: 5.1.5
