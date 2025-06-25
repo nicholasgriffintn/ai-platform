@@ -17,12 +17,12 @@
     "test:run": "vitest run"
   },
   "dependencies": {
+    "@cloudflare/containers": "0.0.12",
     "@hono/standard-validator": "0.1.2",
     "hono": "4.8.2",
     "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@cloudflare/containers": "0.0.12",
     "@types/node": "24.0.3",
     "vitest": "3.2.4",
     "wrangler": "4.21.2"

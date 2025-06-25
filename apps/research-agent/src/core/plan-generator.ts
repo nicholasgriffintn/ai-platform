@@ -5,7 +5,6 @@ import type {
   PluginManifest,
   ResearchQuery,
   RetryPolicy,
-  StageConditions,
   StageTemplate,
   StageType,
 } from "../types/index.js";

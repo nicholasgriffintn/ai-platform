@@ -1,4 +1,4 @@
-import { getRandom } from "@cloudflare/containers";
+import { getContainer } from "@cloudflare/containers";
 import { sValidator } from "@hono/standard-validator";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -89,9 +89,9 @@ function initializeOrchestrator(
     // Register containerized plugins if environment is available
     if (env?.NLP_AGENT && env?.WEB_AGENT) {
       try {
-        // Get container instances
-        const nlpContainer = getRandom(env.NLP_AGENT);
-        const webContainer = getRandom(env.WEB_AGENT);
+        const sessionId = crypto.randomUUID();
+        const nlpContainer = getContainer(env.NLP_AGENT, sessionId);
+        const webContainer = getContainer(env.WEB_AGENT, sessionId);
 
         orchestrator.registerPlugin(new ContainerizedNLPPlugin(nlpContainer));
         orchestrator.registerPlugin(new ContainerizedWebPlugin(webContainer));
