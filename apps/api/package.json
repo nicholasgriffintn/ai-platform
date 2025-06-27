@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@cloudflare/workers-types": "4.20250620.0",
+    "@cloudflare/workers-types": "4.20250627.0",
     "@simplewebauthn/types": "^12.0.0",
     "@types/node": "22.15.33",
     "better-sqlite3": "^12.0.0",
