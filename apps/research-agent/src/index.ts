@@ -422,9 +422,5 @@ app.notFound((c) => {
   );
 });
 
-export default app;
-
-export * from "./types/core.js";
 export { NLPAgent, WebAgent } from "./containers/container-definitions.js";
-export { ContainerizedNLPPlugin } from "./plugins/containerized-nlp-plugin.js";
-export { ContainerizedWebPlugin } from "./plugins/containerized-web-plugin.js";
+export default app;
