@@ -6,7 +6,11 @@ import { uploadAudioFromChat, uploadImageFromChat } from "~/lib/upload";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { createCommonParameters } from "~/utils/parameters";
+import {
+  createCommonParameters,
+  getToolsForProvider,
+  shouldEnableStreaming,
+} from "~/utils/parameters";
 import { BaseProvider } from "./base";
 
 const logger = getLogger({ prefix: "WORKERS" });
@@ -55,7 +59,10 @@ export class WorkersProvider extends BaseProvider {
         params.messages.length > 2 ||
         (params.messages.length === 2 && params.messages[0].role !== "system")
       ) {
-        return null;
+        throw new AssistantError(
+          "You cannot use images with more than 2 user messages, Please start a new conversation.",
+          ErrorType.PARAMS_ERROR,
+        );
       }
 
       try {
@@ -199,8 +206,25 @@ export class WorkersProvider extends BaseProvider {
       this.isOpenAiCompatible,
     );
 
+    const streamingParams = shouldEnableStreaming(
+      modelConfig,
+      this.supportsStreaming,
+      params.stream,
+    )
+      ? { stream: true }
+      : {};
+
+    const toolsParams = getToolsForProvider(params, modelConfig, this.name);
+    const supportsFunctions = modelConfig?.supportsFunctions || false;
+
+    const toolConfig = supportsFunctions
+      ? { toolConfig: { tools: toolsParams.tools } }
+      : {};
+
     return {
       ...commonParams,
+      ...streamingParams,
+      ...toolConfig,
       stop: params.stop,
       n: params.n,
       random_seed: params.seed,
@@ -245,6 +269,8 @@ export class WorkersProvider extends BaseProvider {
         const modelConfig = await getModelConfigByMatchingModel(model);
         const type = modelConfig?.type || ["text"];
 
+        const responseWasStreamed = body.stream;
+
         if (
           // @ts-ignore
           modelResponse?.image ||
@@ -283,6 +309,11 @@ export class WorkersProvider extends BaseProvider {
                 ],
               },
             };
+
+            if (responseWasStreamed) {
+              return imageResponse;
+            }
+
             return await this.formatResponse(imageResponse, params);
           } catch (error) {
             logger.error("Error generating image", { error });
@@ -325,6 +356,11 @@ export class WorkersProvider extends BaseProvider {
                 ],
               },
             };
+
+            if (responseWasStreamed) {
+              return audioResponse;
+            }
+
             return await this.formatResponse(audioResponse, params);
           } catch (error) {
             logger.error("Error generating audio", { error });
@@ -339,7 +375,16 @@ export class WorkersProvider extends BaseProvider {
             response: modelResponse.description,
             data: modelResponse,
           };
+
+          if (responseWasStreamed) {
+            return descriptionResponse;
+          }
+
           return await this.formatResponse(descriptionResponse, params);
+        }
+
+        if (responseWasStreamed) {
+          return modelResponse;
         }
 
         return await this.formatResponse(modelResponse, params);
