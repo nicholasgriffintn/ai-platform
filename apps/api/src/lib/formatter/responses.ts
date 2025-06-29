@@ -224,7 +224,6 @@ export class ResponseFormatter {
     const message = data.choices?.[0]?.message;
     let content = message?.content || "";
 
-    // Preprocess QwQ model responses to add missing <think> tags
     content = ResponseFormatter.preprocessQwQResponse(content, options.model);
 
     return { ...data, response: content, ...message };
@@ -375,7 +374,6 @@ export class ResponseFormatter {
     }
 
     if (data.response) {
-      // Preprocess QwQ model responses to add missing <think> tags
       const processedResponse = ResponseFormatter.preprocessQwQResponse(
         data.response,
         options.model,
@@ -384,7 +382,6 @@ export class ResponseFormatter {
     }
 
     let content = data.result || "";
-    // Preprocess QwQ model responses to add missing <think> tags
     content = ResponseFormatter.preprocessQwQResponse(content, options.model);
 
     return { ...data, response: content };
