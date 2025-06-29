@@ -252,7 +252,9 @@ export class WorkersProvider extends BaseProvider {
           type.includes("image-to-image")
         ) {
           try {
-            const imageKey = `generations/${params.completion_id}/${model}/${Date.now()}.png`;
+            const imageKey = `generations/${
+              params.completion_id
+            }/${model}/${Date.now()}.png`;
             const upload = await uploadImageFromChat(
               // @ts-ignore
               modelResponse.image || modelResponse,
@@ -269,7 +271,7 @@ export class WorkersProvider extends BaseProvider {
 
             const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
 
-            return {
+            const imageResponse = {
               response: "Image Generated.",
               data: {
                 attachments: [
@@ -281,6 +283,7 @@ export class WorkersProvider extends BaseProvider {
                 ],
               },
             };
+            return await this.formatResponse(imageResponse, params);
           } catch (error) {
             logger.error("Error generating image", { error });
             return "";
@@ -291,7 +294,9 @@ export class WorkersProvider extends BaseProvider {
           (modelResponse && type.includes("text-to-speech"))
         ) {
           try {
-            const audioKey = `generations/${params.completion_id}/${model}/${Date.now()}.mp3`;
+            const audioKey = `generations/${
+              params.completion_id
+            }/${model}/${Date.now()}.mp3`;
             const upload = await uploadAudioFromChat(
               // @ts-ignore
               modelResponse.audio || modelResponse,
@@ -308,7 +313,7 @@ export class WorkersProvider extends BaseProvider {
 
             const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
 
-            return {
+            const audioResponse = {
               response: "Audio Generated.",
               data: {
                 attachments: [
@@ -320,6 +325,7 @@ export class WorkersProvider extends BaseProvider {
                 ],
               },
             };
+            return await this.formatResponse(audioResponse, params);
           } catch (error) {
             logger.error("Error generating audio", { error });
             return "";
@@ -328,14 +334,15 @@ export class WorkersProvider extends BaseProvider {
           // @ts-ignore
           modelResponse?.description
         ) {
-          return {
-            // @ts-ignore - types of wrong
+          const descriptionResponse = {
+            // @ts-ignore - types are wrong
             response: modelResponse.description,
             data: modelResponse,
           };
+          return await this.formatResponse(descriptionResponse, params);
         }
 
-        return modelResponse;
+        return await this.formatResponse(modelResponse, params);
       },
       analyticsEngine: env.ANALYTICS,
       settings: {
