@@ -1,0 +1,47 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+       - "apps/api/**/*.ts"
+       - "apps/api/**/*.tsx"
+       - "apps/app/**/*.ts"
+       - "apps/app/**/*.tsx"
+       - "apps/metrics/**/*.ts"
+       - "apps/metrics/**/*.tsx"
+
+jobs:
+  claude-review:
+    if: |
+      github.event.pull_request.user.login == 'nicholasgriffintn' &&
+      !contains(github.event.pull_request.title, '[skip-review]') &&
+      !contains(github.event.pull_request.title, '[WIP]')
+    
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          direct_prompt: |
+            Please review this pull request and provide feedback on:
+            - Code quality and best practices
+            - Potential bugs or issues
+            - Performance considerations
+            - Security concerns
+            - Test coverage
+            Be constructive and helpful in your feedback.
+          allowed_tools: "Bash(pnpm run test),Bash(pnpm run lint),Bash(pnpm run typecheck)"
