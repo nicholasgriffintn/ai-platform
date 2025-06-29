@@ -1,12 +1,12 @@
 import { formatAssistantMessage } from "~/lib/chat/responses";
 import { getAIResponse } from "~/lib/chat/responses";
 import { handleToolCalls } from "~/lib/chat/tools";
+import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
 import { Guardrails } from "~/lib/guardrails";
 import { MemoryManager } from "~/lib/memory";
 import { getModelConfigByMatchingModel } from "~/lib/models";
-import { preprocessQwQResponse } from "~/lib/utils/qwq";
 import type {
   ChatMode,
   ContentType,
@@ -123,6 +123,8 @@ export async function createStreamWithPostProcessing(
   let buffer = "";
   let currentEventType = "";
   const currentToolCalls: Record<string, any> = {};
+  let isFirstContentChunk = true;
+  let qwqThinkTagAdded = false;
 
   const guardrails = Guardrails.getInstance(env, user, userSettings);
   const modelConfig = await getModelConfigByMatchingModel(model);
@@ -246,7 +248,27 @@ export async function createStreamWithPostProcessing(
               }
 
               if (contentDelta) {
+                // Handle QwQ models: add <think> tag if needed on first content chunk
+                const isQwQModel = model.toLowerCase().includes("qwq");
+                if (isQwQModel && isFirstContentChunk && !qwqThinkTagAdded) {
+                  const contentStartsWithThink = contentDelta
+                    .trim()
+                    .startsWith("<think>");
+                  if (!contentStartsWithThink) {
+                    const thinkOpenEvent = new TextEncoder().encode(
+                      `data: ${JSON.stringify({
+                        type: "content_block_delta",
+                        content: "<think>\n",
+                      })}\n\n`,
+                    );
+                    controller.enqueue(thinkOpenEvent);
+                    fullContent += "<think>\n";
+                    qwqThinkTagAdded = true;
+                  }
+                }
+
                 fullContent += contentDelta;
+                isFirstContentChunk = false;
 
                 const contentDeltaEvent = new TextEncoder().encode(
                   `data: ${JSON.stringify({
