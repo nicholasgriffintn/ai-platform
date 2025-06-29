@@ -152,7 +152,6 @@ export class GoogleStudioProvider extends BaseProvider {
   private formatGoogleStudioContents(params: ChatCompletionParameters): any[] {
     const contents = [];
 
-    // biome-ignore lint/complexity/noForEach: It Works.
     params.messages.forEach((message) => {
       contents.push({
         role: message.role === "assistant" ? "model" : message.role,

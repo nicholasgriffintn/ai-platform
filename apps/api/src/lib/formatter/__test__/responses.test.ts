@@ -312,7 +312,9 @@ describe("ResponseFormatter", () => {
           model: "QWEN-QWQ-32B",
         });
 
-        expect(result.response).toBe("<think>\nThinking...\n</think>\nResponse");
+        expect(result.response).toBe(
+          "<think>\nThinking...\n</think>\nResponse",
+        );
       });
 
       it("should handle content with whitespace around <think>", async () => {
@@ -330,7 +332,9 @@ describe("ResponseFormatter", () => {
           model: "qwq-32b",
         });
 
-        expect(result.response).toBe("  \n  <think>Already has think tag</think>  ");
+        expect(result.response).toBe(
+          "  \n  <think>Already has think tag</think>  ",
+        );
       });
 
       it("should handle complex content with multiple </think> tags", async () => {
@@ -338,7 +342,8 @@ describe("ResponseFormatter", () => {
           choices: [
             {
               message: {
-                content: "First thought\n</think>\nSome text\n</think>\nFinal response",
+                content:
+                  "First thought\n</think>\nSome text\n</think>\nFinal response",
               },
             },
           ],
@@ -658,7 +663,9 @@ describe("ResponseFormatter", () => {
           },
         );
 
-        expect(result.response).toBe("<think>\nThinking...\n</think>\nResponse");
+        expect(result.response).toBe(
+          "<think>\nThinking...\n</think>\nResponse",
+        );
       });
 
       it("should handle Workers formatter alias", async () => {
@@ -670,7 +677,9 @@ describe("ResponseFormatter", () => {
           model: "qwq-32b",
         });
 
-        expect(result.response).toBe("<think>\nThinking...\n</think>\nResponse");
+        expect(result.response).toBe(
+          "<think>\nThinking...\n</think>\nResponse",
+        );
       });
     });
   });
