@@ -12,6 +12,34 @@ interface ResponseFormatOptions {
 // biome-ignore lint/complexity/noStaticOnlyClass: CBA
 export class ResponseFormatter {
   /**
+   * Preprocesses QwQ model responses to ensure proper <think> tag formatting
+   * QwQ models generate thinking content but don't include the opening <think> tag
+   * @param content - The response content to preprocess
+   * @param model - The model identifier
+   * @returns The preprocessed content with <think> tag if needed
+   */
+  private static preprocessQwQResponse(content: string, model?: string): string {
+    if (!model || !content) {
+      return content;
+    }
+
+    // Check if this is a QwQ model
+    const isQwQModel = model.toLowerCase().includes("qwq");
+    if (!isQwQModel) {
+      return content;
+    }
+
+    // Check if response contains </think> but doesn't start with <think>
+    const hasClosingThink = content.includes("</think>");
+    const startsWithThink = content.trim().startsWith("<think>");
+
+    if (hasClosingThink && !startsWithThink) {
+      return `<think>\n${content}`;
+    }
+
+    return content;
+  }
+  /**
    * Formats responses from any provider
    * Handles specific response formats for each provider
    * @param data - The data to format
@@ -198,7 +226,12 @@ export class ResponseFormatter {
     }
 
     const message = data.choices?.[0]?.message;
-    return { ...data, response: message?.content || "", ...message };
+    let content = message?.content || "";
+    
+    // Preprocess QwQ model responses to add missing <think> tags
+    content = ResponseFormatter.preprocessQwQResponse(content, options.model);
+    
+    return { ...data, response: content, ...message };
   }
 
   private static formatOpenRouterResponse(data: any): any {
@@ -346,10 +379,16 @@ export class ResponseFormatter {
     }
 
     if (data.response) {
-      return data;
+      // Preprocess QwQ model responses to add missing <think> tags
+      const processedResponse = ResponseFormatter.preprocessQwQResponse(data.response, options.model);
+      return { ...data, response: processedResponse };
     }
 
-    return { ...data, response: data.result || "" };
+    let content = data.result || "";
+    // Preprocess QwQ model responses to add missing <think> tags
+    content = ResponseFormatter.preprocessQwQResponse(content, options.model);
+
+    return { ...data, response: content };
   }
 
   private static async formatBedrockResponse(
