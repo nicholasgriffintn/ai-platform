@@ -1,4 +1,8 @@
+import { KVCache } from "~/lib/cache";
+import { Database } from "~/lib/database";
 import type { IUser, ModelConfig } from "~/types";
+import type { IEnv, ModelConfigItem } from "~/types";
+import { getLogger } from "~/utils/logger";
 import {
   type availableCapabilities,
   type availableModelTypes,
@@ -24,19 +28,16 @@ import { togetherAiModelConfig } from "./together-ai";
 import { v0ModelConfig } from "./v0";
 import { workersAiModelConfig } from "./workersai";
 
-import { KVCache } from "~/lib/cache";
-import { Database } from "~/lib/database";
-import type { IEnv, ModelConfigItem } from "~/types";
-import { getLogger } from "~/utils/logger";
-
 const logger = getLogger({ prefix: "MODELS" });
 
-export {
-  availableCapabilities,
-  availableModelTypes,
-  defaultModel,
-  defaultProvider,
-} from "./constants";
+let cachedModels: typeof modelConfig | null = null;
+let cachedFreeModels: typeof modelConfig | null = null;
+let cachedFeaturedModels: typeof modelConfig | null = null;
+let cachedRouterModels: typeof modelConfig | null = null;
+
+export interface ModelsOptions {
+  shouldUseCache?: boolean;
+}
 
 const modelConfig: ModelConfig = {
   ...openaiModelConfig,
@@ -159,13 +160,14 @@ export async function getModelConfigByMatchingModel(
   });
 }
 
-let cachedModels: typeof modelConfig | null = null;
-let cachedFreeModels: typeof modelConfig | null = null;
-let cachedFeaturedModels: typeof modelConfig | null = null;
-let cachedRouterModels: typeof modelConfig | null = null;
-
-export function getModels() {
-  if (cachedModels) return cachedModels;
+export function getModels(
+  options: ModelsOptions = {
+    shouldUseCache: true,
+  },
+) {
+  if (cachedModels && !options.shouldUseCache) {
+    return cachedModels;
+  }
 
   cachedModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
@@ -180,8 +182,14 @@ export function getModels() {
   return cachedModels;
 }
 
-export function getFreeModels() {
-  if (cachedFreeModels) return cachedFreeModels;
+export function getFreeModels(
+  options: ModelsOptions = {
+    shouldUseCache: true,
+  },
+) {
+  if (cachedFreeModels && !options.shouldUseCache) {
+    return cachedFreeModels;
+  }
 
   cachedFreeModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
@@ -196,8 +204,14 @@ export function getFreeModels() {
   return cachedFreeModels;
 }
 
-export function getFeaturedModels() {
-  if (cachedFeaturedModels) return cachedFeaturedModels;
+export function getFeaturedModels(
+  options: ModelsOptions = {
+    shouldUseCache: true,
+  },
+) {
+  if (cachedFeaturedModels && !options.shouldUseCache) {
+    return cachedFeaturedModels;
+  }
 
   cachedFeaturedModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
@@ -212,8 +226,14 @@ export function getFeaturedModels() {
   return cachedFeaturedModels;
 }
 
-export function getIncludedInRouterModels() {
-  if (cachedRouterModels) return cachedRouterModels;
+export function getIncludedInRouterModels(
+  options: ModelsOptions = {
+    shouldUseCache: true,
+  },
+) {
+  if (cachedRouterModels && !options.shouldUseCache) {
+    return cachedRouterModels;
+  }
 
   cachedRouterModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
@@ -260,6 +280,7 @@ export async function filterModelsForUserAccess(
   allModels: Record<string, ModelConfigItem>,
   env: IEnv,
   userId?: number,
+  options: ModelsOptions = { shouldUseCache: true },
 ): Promise<Record<string, ModelConfigItem>> {
   const cache = getUserModelCache(env);
   const cacheKey = KVCache.createKey(
@@ -267,7 +288,7 @@ export async function filterModelsForUserAccess(
     userId?.toString() || "anonymous",
   );
 
-  if (cache) {
+  if (cache && options.shouldUseCache) {
     const cached = await cache.get<Record<string, ModelConfigItem>>(cacheKey);
     if (cached) {
       return cached;
@@ -301,7 +322,7 @@ export async function filterModelsForUserAccess(
       }
     }
 
-    if (cache) {
+    if (cache && options.shouldUseCache) {
       cache.set(cacheKey, filteredModels).catch(() => {});
     }
 
@@ -429,3 +450,10 @@ export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
 
   return { model: modelToUse, provider };
 };
+
+export {
+  availableCapabilities,
+  availableModelTypes,
+  defaultModel,
+  defaultProvider,
+} from "./constants";

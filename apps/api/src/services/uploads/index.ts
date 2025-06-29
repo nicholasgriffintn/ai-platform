@@ -82,9 +82,12 @@ export async function handleFileUpload(
 
   try {
     const storageService = new StorageService(env.ASSETS_BUCKET);
-    await storageService.uploadObject(key, arrayBuffer, {
+    const uploaded = await storageService.uploadObject(key, arrayBuffer, {
       contentType: file.type,
     });
+    if (!uploaded) {
+      throw new Error("Failed to upload file to storage");
+    }
   } catch (storageError) {
     logger.error("Failed to upload file to storage", {
       error:

@@ -8,7 +8,7 @@ import { handleFileUpload } from "~/services/uploads";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IEnv } from "../types";
 import { errorResponseSchema } from "./schemas/shared";
-import { uploadRequestSchema, uploadResponseSchema } from "./schemas/uploads";
+import { uploadResponseSchema } from "./schemas/uploads";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("UPLOADS");

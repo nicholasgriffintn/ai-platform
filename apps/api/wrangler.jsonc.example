@@ -26,12 +26,14 @@
 		"LOG_LEVEL": "warn"
 	},
 	"ai": {
-		"binding": "AI"
+		"binding": "AI",
+		"experimental_remote": true
 	},
 	"vectorize": [
 		{
 			"binding": "VECTOR_DB",
-			"index_name": "<INDEX_NAME>"
+			"index_name": "<INDEX_NAME>",
+			"experimental_remote": true
 		}
 	],
 	"observability": {
@@ -52,7 +54,8 @@
 		{
 			"binding": "ASSETS_BUCKET",
 			"bucket_name": "<BUCKET_NAME>",
-			"preview_bucket_name": "<PREVIEW_BUCKET_NAME>"
+			"preview_bucket_name": "<PREVIEW_BUCKET_NAME>",
+			"experimental_remote": true
 		}
 	],
 	"d1_databases": [

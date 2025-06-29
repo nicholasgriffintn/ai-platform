@@ -6,7 +6,7 @@
   "main": "src/index.ts",
   "scripts": {
     "deploy": "pnpm typecheck && wrangler deploy src/index.ts --name=assistant",
-    "dev": "wrangler dev src/index.ts --experimental-vectorize-bind-to-prod",
+    "dev": "wrangler dev src/index.ts --x-remote-bindings",
     "start": "wrangler dev src/index.ts",
     "test": "vitest",
     "coverage": "vitest run --coverage",

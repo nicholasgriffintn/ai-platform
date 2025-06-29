@@ -13,8 +13,12 @@ import type { IEnv } from "~/types";
  * List all models available to the user.
  */
 export async function listModels(env: IEnv, userId?: number) {
-  const allModels = getModels();
-  return await filterModelsForUserAccess(allModels, env, userId);
+  const allModels = getModels({
+    shouldUseCache: false,
+  });
+  return await filterModelsForUserAccess(allModels, env, userId, {
+    shouldUseCache: false,
+  });
 }
 
 /**
