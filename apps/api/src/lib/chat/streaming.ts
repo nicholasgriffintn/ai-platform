@@ -6,6 +6,7 @@ import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
 import { Guardrails } from "~/lib/guardrails";
 import { MemoryManager } from "~/lib/memory";
 import { getModelConfigByMatchingModel } from "~/lib/models";
+import { preprocessQwQResponse } from "~/lib/utils/qwq";
 import type {
   ChatMode,
   ContentType,
@@ -13,7 +14,6 @@ import type {
   IUser,
   IUserSettings,
   MessageContent,
-  ModelConfigInfo,
   Platform,
 } from "~/types";
 import { generateId } from "~/utils/id";
@@ -230,6 +230,7 @@ export async function createStreamWithPostProcessing(
                   model,
                   type: modelConfig?.type,
                   env,
+                  is_streaming: true,
                 },
               );
 
@@ -551,8 +552,10 @@ export async function createStreamWithPostProcessing(
 
             const logId = env.AI?.aiGatewayLogId;
 
+            const processedContent = preprocessQwQResponse(fullContent, model);
+
             const assistantMessage = formatAssistantMessage({
-              content: fullContent,
+              content: processedContent,
               thinking: fullThinking,
               signature: signature,
               citations: citationsResponse,

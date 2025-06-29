@@ -1,45 +1,18 @@
 import type { IEnv } from "~/types";
 import { StorageService } from "../storage";
 import { uploadAudioFromChat, uploadImageFromChat } from "../upload";
+import { preprocessQwQResponse } from "../utils/qwq";
 
 interface ResponseFormatOptions {
   model?: string;
   type?: string[];
   env?: IEnv;
   completion_id?: string;
+  is_streaming?: boolean;
 }
 
 // biome-ignore lint/complexity/noStaticOnlyClass: CBA
 export class ResponseFormatter {
-  /**
-   * Preprocesses QwQ model responses to ensure proper <think> tag formatting
-   * QwQ models generate thinking content but don't include the opening <think> tag
-   * @param content - The response content to preprocess
-   * @param model - The model identifier
-   * @returns The preprocessed content with <think> tag if needed
-   */
-  private static preprocessQwQResponse(
-    content: string,
-    model?: string,
-  ): string {
-    if (!model || !content) {
-      return content;
-    }
-
-    const isQwQModel = model.toLowerCase().includes("qwq");
-    if (!isQwQModel) {
-      return content;
-    }
-
-    const hasClosingThink = content.includes("</think>");
-    const startsWithThink = content.trim().startsWith("<think>");
-
-    if (hasClosingThink && !startsWithThink) {
-      return `<think>\n${content}`;
-    }
-
-    return content;
-  }
   /**
    * Formats responses from any provider
    * Handles specific response formats for each provider
@@ -124,7 +97,10 @@ export class ResponseFormatter {
    * @param data - The data to format
    * @returns The formatted data
    */
-  private static formatGenericResponse(data: any): any {
+  private static formatGenericResponse(
+    data: any,
+    options: ResponseFormatOptions,
+  ): any {
     if (data.response !== undefined) {
       return data;
     }
@@ -175,10 +151,9 @@ export class ResponseFormatter {
       }
     }
 
-    const processedTextContent = ResponseFormatter.preprocessQwQResponse(
-      textContent,
-      data.model || "",
-    );
+    const processedTextContent = !options.is_streaming
+      ? preprocessQwQResponse(textContent, data.model || "")
+      : textContent;
 
     return {
       ...data,
@@ -222,11 +197,13 @@ export class ResponseFormatter {
     }
 
     const message = data.choices?.[0]?.message;
-    let content = message?.content || "";
+    const textContent = message?.content || "";
 
-    content = ResponseFormatter.preprocessQwQResponse(content, options.model);
+    const processedTextContent = !options.is_streaming
+      ? preprocessQwQResponse(textContent, data.model || "")
+      : textContent;
 
-    return { ...data, response: content, ...message };
+    return { ...data, response: processedTextContent, ...message };
   }
 
   private static formatOpenRouterResponse(data: any): any {
@@ -373,18 +350,18 @@ export class ResponseFormatter {
       return { ...data, response: audioContent };
     }
 
+    let textContent = "";
     if (data.response) {
-      const processedResponse = ResponseFormatter.preprocessQwQResponse(
-        data.response,
-        options.model,
-      );
-      return { ...data, response: processedResponse };
+      textContent = data.response;
+    } else {
+      textContent = data.result || "";
     }
 
-    let content = data.result || "";
-    content = ResponseFormatter.preprocessQwQResponse(content, options.model);
+    const processedTextContent = !options.is_streaming
+      ? preprocessQwQResponse(textContent, data.model || "")
+      : textContent;
 
-    return { ...data, response: content };
+    return { ...data, response: processedTextContent };
   }
 
   private static async formatBedrockResponse(
