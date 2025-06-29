@@ -129,68 +129,63 @@ export class ResponseFormatter {
       return data;
     }
 
+    let textContent = "";
+    let thinkingContent = "";
+    let signatureContent = "";
+
     if (data.choices?.[0]) {
       if (data.choices[0].message?.content) {
-        return { ...data, response: data.choices[0].message.content };
+        textContent = data.choices[0].message.content;
+      } else if (data.choices[0].delta?.content !== undefined) {
+        textContent = data.choices[0].delta.content;
+      } else if (data.choices[0].text) {
+        textContent = data.choices[0].text;
       }
-      if (data.choices[0].delta?.content !== undefined) {
-        return { ...data, response: data.choices[0].delta.content || "" };
-      }
-      if (data.choices[0].text) {
-        return { ...data, response: data.choices[0].text };
-      }
-    }
-
-    if (data.delta?.text) {
-      return { ...data, response: data.delta.text };
-    }
-
-    if (data.content && typeof data.content === "string") {
-      return { ...data, response: data.content };
-    }
-
-    if (data.content && Array.isArray(data.content)) {
-      const textContent = data.content
+    } else if (data.delta?.text) {
+      textContent = data.delta.text;
+    } else if (data.content && typeof data.content === "string") {
+      textContent = data.content;
+    } else if (data.content && Array.isArray(data.content)) {
+      textContent = data.content
         .filter((item: any) => item.type === "text" && item.text)
         .map((item: any) => item.text)
         .join(" ");
 
-      const thinkingContent = data.content.find(
+      const thinkingContentItem = data.content.find(
         (item: any) => item.type === "thinking" && item.thinking,
       );
 
-      return {
-        ...data,
-        response: textContent || "",
-        thinking: thinkingContent?.thinking || "",
-        signature: thinkingContent?.signature || "",
-      };
-    }
-
-    if (data.message?.content) {
+      thinkingContent = thinkingContentItem?.thinking || "";
+      signatureContent = thinkingContentItem?.signature || "";
+    } else if (data.message?.content) {
       if (typeof data.message.content === "string") {
-        return { ...data, response: data.message.content };
-      }
-      if (Array.isArray(data.message.content)) {
-        const textContent = data.message.content
+        textContent = data.message.content;
+      } else if (Array.isArray(data.message.content)) {
+        textContent = data.message.content
           .filter((item: any) => item.type === "text" && item.text)
           .map((item: any) => item.text)
           .join(" ");
 
-        const thinkingContent = data.message.content.find(
+        const thinkingContentItem = data.message.content.find(
           (item: any) => item.type === "thinking" && item.thinking,
         );
 
-        return {
-          ...data,
-          response: textContent || "",
-          thinking: thinkingContent?.thinking || "",
-          signature: thinkingContent?.signature || "",
-        };
+        thinkingContent = thinkingContentItem?.thinking || "";
+        signatureContent = thinkingContentItem?.signature || "";
       }
     }
 
-    return { ...data, response: "" };
+    const processedTextContent = ResponseFormatter.preprocessQwQResponse(
+      textContent,
+      data.model || "",
+    );
+
+    return {
+      ...data,
+      response: processedTextContent,
+      thinking: thinkingContent,
+      signature: signatureContent,
+    };
   }
 
   private static async formatOpenAIResponse(
