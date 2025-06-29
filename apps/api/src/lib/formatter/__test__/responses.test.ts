@@ -185,6 +185,174 @@ describe("ResponseFormatter", () => {
       expect(result.response).toBe("Chat response");
       expect(result.tool_calls).toHaveLength(1);
     });
+
+    describe("QwQ preprocessing", () => {
+      it("should add <think> tag for QwQ models with </think> but no <think>", async () => {
+        const data = {
+          choices: [
+            {
+              message: {
+                content: "Some thinking content\n</think>\nActual response",
+              },
+            },
+          ],
+        };
+
+        const result = await ResponseFormatter.formatResponse(data, "openai", {
+          model: "qwen-qwq-32b",
+        });
+
+        expect(result.response).toBe(
+          "<think>\nSome thinking content\n</think>\nActual response",
+        );
+      });
+
+      it("should not modify content that already has <think> tag", async () => {
+        const data = {
+          choices: [
+            {
+              message: {
+                content: "<think>Some thinking</think>\nResponse",
+              },
+            },
+          ],
+        };
+
+        const result = await ResponseFormatter.formatResponse(data, "openai", {
+          model: "qwen-qwq-32b",
+        });
+
+        expect(result.response).toBe("<think>Some thinking</think>\nResponse");
+      });
+
+      it("should not modify non-QwQ model responses", async () => {
+        const data = {
+          choices: [
+            {
+              message: {
+                content: "Some content\n</think>",
+              },
+            },
+          ],
+        };
+
+        const result = await ResponseFormatter.formatResponse(data, "openai", {
+          model: "gpt-4",
+        });
+
+        expect(result.response).toBe("Some content\n</think>");
+      });
+
+      it("should not modify content without </think> tag", async () => {
+        const data = {
+          choices: [
+            {
+              message: {
+                content: "Regular response content",
+              },
+            },
+          ],
+        };
+
+        const result = await ResponseFormatter.formatResponse(data, "openai", {
+          model: "qwen-qwq-32b",
+        });
+
+        expect(result.response).toBe("Regular response content");
+      });
+
+      it("should handle empty content gracefully", async () => {
+        const data = {
+          choices: [
+            {
+              message: {
+                content: "",
+              },
+            },
+          ],
+        };
+
+        const result = await ResponseFormatter.formatResponse(data, "openai", {
+          model: "qwen-qwq-32b",
+        });
+
+        expect(result.response).toBe("");
+      });
+
+      it("should handle undefined model gracefully", async () => {
+        const data = {
+          choices: [
+            {
+              message: {
+                content: "Some content\n</think>",
+              },
+            },
+          ],
+        };
+
+        const result = await ResponseFormatter.formatResponse(data, "openai", {
+          model: undefined,
+        });
+
+        expect(result.response).toBe("Some content\n</think>");
+      });
+
+      it("should detect QwQ models case-insensitively", async () => {
+        const data = {
+          choices: [
+            {
+              message: {
+                content: "Thinking...\n</think>\nResponse",
+              },
+            },
+          ],
+        };
+
+        const result = await ResponseFormatter.formatResponse(data, "openai", {
+          model: "QWEN-QWQ-32B",
+        });
+
+        expect(result.response).toBe("<think>\nThinking...\n</think>\nResponse");
+      });
+
+      it("should handle content with whitespace around <think>", async () => {
+        const data = {
+          choices: [
+            {
+              message: {
+                content: "  \n  <think>Already has think tag</think>  ",
+              },
+            },
+          ],
+        };
+
+        const result = await ResponseFormatter.formatResponse(data, "openai", {
+          model: "qwq-32b",
+        });
+
+        expect(result.response).toBe("  \n  <think>Already has think tag</think>  ");
+      });
+
+      it("should handle complex content with multiple </think> tags", async () => {
+        const data = {
+          choices: [
+            {
+              message: {
+                content: "First thought\n</think>\nSome text\n</think>\nFinal response",
+              },
+            },
+          ],
+        };
+
+        const result = await ResponseFormatter.formatResponse(data, "openai", {
+          model: "qwq-model",
+        });
+
+        expect(result.response).toBe(
+          "<think>\nFirst thought\n</think>\nSome text\n</think>\nFinal response",
+        );
+      });
+    });
   });
 
   describe("formatAnthropicResponse", () => {
@@ -358,6 +526,152 @@ describe("ResponseFormatter", () => {
       );
 
       expect(result.response).toEqual([1, 2, 3, 4, 5]);
+    });
+
+    describe("QwQ preprocessing", () => {
+      it("should add <think> tag for QwQ models with </think> but no <think> in data.response", async () => {
+        const data = {
+          response: "Some thinking content\n</think>\nActual response",
+        };
+
+        const result = await ResponseFormatter.formatResponse(
+          data,
+          "workers-ai",
+          {
+            model: "qwq-32b",
+          },
+        );
+
+        expect(result.response).toBe(
+          "<think>\nSome thinking content\n</think>\nActual response",
+        );
+      });
+
+      it("should add <think> tag for QwQ models with </think> but no <think> in data.result", async () => {
+        const data = {
+          result: "Some thinking content\n</think>\nActual response",
+        };
+
+        const result = await ResponseFormatter.formatResponse(
+          data,
+          "workers-ai",
+          {
+            model: "qwq-32b",
+          },
+        );
+
+        expect(result.response).toBe(
+          "<think>\nSome thinking content\n</think>\nActual response",
+        );
+      });
+
+      it("should not modify content that already has <think> tag in data.response", async () => {
+        const data = {
+          response: "<think>Some thinking</think>\nResponse",
+        };
+
+        const result = await ResponseFormatter.formatResponse(
+          data,
+          "workers-ai",
+          {
+            model: "qwq-32b",
+          },
+        );
+
+        expect(result.response).toBe("<think>Some thinking</think>\nResponse");
+      });
+
+      it("should not modify content that already has <think> tag in data.result", async () => {
+        const data = {
+          result: "<think>Some thinking</think>\nResponse",
+        };
+
+        const result = await ResponseFormatter.formatResponse(
+          data,
+          "workers-ai",
+          {
+            model: "qwq-32b",
+          },
+        );
+
+        expect(result.response).toBe("<think>Some thinking</think>\nResponse");
+      });
+
+      it("should not modify non-QwQ model responses", async () => {
+        const data = {
+          response: "Some content\n</think>",
+        };
+
+        const result = await ResponseFormatter.formatResponse(
+          data,
+          "workers-ai",
+          {
+            model: "llama-2-7b",
+          },
+        );
+
+        expect(result.response).toBe("Some content\n</think>");
+      });
+
+      it("should handle empty response gracefully", async () => {
+        const data = {
+          response: "",
+        };
+
+        const result = await ResponseFormatter.formatResponse(
+          data,
+          "workers-ai",
+          {
+            model: "qwq-32b",
+          },
+        );
+
+        expect(result.response).toBe("");
+      });
+
+      it("should handle empty result gracefully", async () => {
+        const data = {
+          result: "",
+        };
+
+        const result = await ResponseFormatter.formatResponse(
+          data,
+          "workers-ai",
+          {
+            model: "qwq-32b",
+          },
+        );
+
+        expect(result.response).toBe("");
+      });
+
+      it("should detect QwQ models case-insensitively", async () => {
+        const data = {
+          result: "Thinking...\n</think>\nResponse",
+        };
+
+        const result = await ResponseFormatter.formatResponse(
+          data,
+          "workers-ai",
+          {
+            model: "QWQ-32B",
+          },
+        );
+
+        expect(result.response).toBe("<think>\nThinking...\n</think>\nResponse");
+      });
+
+      it("should handle Workers formatter alias", async () => {
+        const data = {
+          result: "Thinking...\n</think>\nResponse",
+        };
+
+        const result = await ResponseFormatter.formatResponse(data, "workers", {
+          model: "qwq-32b",
+        });
+
+        expect(result.response).toBe("<think>\nThinking...\n</think>\nResponse");
+      });
     });
   });
 
