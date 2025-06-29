@@ -30,6 +30,7 @@ export const groqModelConfig: ModelConfig = {
     strengths: ["chat", "general_knowledge", "analysis", "multilingual"],
     contextComplexity: 4,
     reliability: 4,
+    hasThinking: true,
   },
   "deepseek-r1-distill-qwen-32b": {
     name: "Groq DeepSeek R1 Distill Qwen 32B",

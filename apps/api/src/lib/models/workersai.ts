@@ -322,6 +322,7 @@ export const workersAiModelConfig: ModelConfig = {
     speed: 3,
     reliability: 5,
     contextComplexity: 5,
+    hasThinking: true,
   },
   "qwen2.5-coder-32b": {
     name: "Qwen 2.5 Coder 32B",
