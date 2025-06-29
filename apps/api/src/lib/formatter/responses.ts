@@ -12,6 +12,35 @@ interface ResponseFormatOptions {
 // biome-ignore lint/complexity/noStaticOnlyClass: CBA
 export class ResponseFormatter {
   /**
+   * Preprocesses QwQ model responses to ensure proper <think> tag formatting
+   * QwQ models generate thinking content but don't include the opening <think> tag
+   * @param content - The response content to preprocess
+   * @param model - The model identifier
+   * @returns The preprocessed content with <think> tag if needed
+   */
+  private static preprocessQwQResponse(
+    content: string,
+    model?: string,
+  ): string {
+    if (!model || !content) {
+      return content;
+    }
+
+    const isQwQModel = model.toLowerCase().includes("qwq");
+    if (!isQwQModel) {
+      return content;
+    }
+
+    const hasClosingThink = content.includes("</think>");
+    const startsWithThink = content.trim().startsWith("<think>");
+
+    if (hasClosingThink && !startsWithThink) {
+      return `<think>\n${content}`;
+    }
+
+    return content;
+  }
+  /**
    * Formats responses from any provider
    * Handles specific response formats for each provider
    * @param data - The data to format
@@ -100,68 +129,63 @@ export class ResponseFormatter {
       return data;
     }
 
+    let textContent = "";
+    let thinkingContent = "";
+    let signatureContent = "";
+
     if (data.choices?.[0]) {
       if (data.choices[0].message?.content) {
-        return { ...data, response: data.choices[0].message.content };
+        textContent = data.choices[0].message.content;
+      } else if (data.choices[0].delta?.content !== undefined) {
+        textContent = data.choices[0].delta.content;
+      } else if (data.choices[0].text) {
+        textContent = data.choices[0].text;
       }
-      if (data.choices[0].delta?.content !== undefined) {
-        return { ...data, response: data.choices[0].delta.content || "" };
-      }
-      if (data.choices[0].text) {
-        return { ...data, response: data.choices[0].text };
-      }
-    }
-
-    if (data.delta?.text) {
-      return { ...data, response: data.delta.text };
-    }
-
-    if (data.content && typeof data.content === "string") {
-      return { ...data, response: data.content };
-    }
-
-    if (data.content && Array.isArray(data.content)) {
-      const textContent = data.content
+    } else if (data.delta?.text) {
+      textContent = data.delta.text;
+    } else if (data.content && typeof data.content === "string") {
+      textContent = data.content;
+    } else if (data.content && Array.isArray(data.content)) {
+      textContent = data.content
         .filter((item: any) => item.type === "text" && item.text)
         .map((item: any) => item.text)
         .join(" ");
 
-      const thinkingContent = data.content.find(
+      const thinkingContentItem = data.content.find(
         (item: any) => item.type === "thinking" && item.thinking,
       );
 
-      return {
-        ...data,
-        response: textContent || "",
-        thinking: thinkingContent?.thinking || "",
-        signature: thinkingContent?.signature || "",
-      };
-    }
-
-    if (data.message?.content) {
+      thinkingContent = thinkingContentItem?.thinking || "";
+      signatureContent = thinkingContentItem?.signature || "";
+    } else if (data.message?.content) {
       if (typeof data.message.content === "string") {
-        return { ...data, response: data.message.content };
-      }
-      if (Array.isArray(data.message.content)) {
-        const textContent = data.message.content
+        textContent = data.message.content;
+      } else if (Array.isArray(data.message.content)) {
+        textContent = data.message.content
           .filter((item: any) => item.type === "text" && item.text)
           .map((item: any) => item.text)
           .join(" ");
 
-        const thinkingContent = data.message.content.find(
+        const thinkingContentItem = data.message.content.find(
           (item: any) => item.type === "thinking" && item.thinking,
         );
 
-        return {
-          ...data,
-          response: textContent || "",
-          thinking: thinkingContent?.thinking || "",
-          signature: thinkingContent?.signature || "",
-        };
+        thinkingContent = thinkingContentItem?.thinking || "";
+        signatureContent = thinkingContentItem?.signature || "";
       }
     }
 
-    return { ...data, response: "" };
+    const processedTextContent = ResponseFormatter.preprocessQwQResponse(
+      textContent,
+      data.model || "",
+    );
+
+    return {
+      ...data,
+      response: processedTextContent,
+      thinking: thinkingContent,
+      signature: signatureContent,
+    };
   }
 
   private static async formatOpenAIResponse(
@@ -198,7 +222,11 @@ export class ResponseFormatter {
     }
 
     const message = data.choices?.[0]?.message;
-    return { ...data, response: message?.content || "", ...message };
+    let content = message?.content || "";
+
+    content = ResponseFormatter.preprocessQwQResponse(content, options.model);
+
+    return { ...data, response: content, ...message };
   }
 
   private static formatOpenRouterResponse(data: any): any {
@@ -346,10 +374,17 @@ export class ResponseFormatter {
     }
 
     if (data.response) {
-      return data;
+      const processedResponse = ResponseFormatter.preprocessQwQResponse(
+        data.response,
+        options.model,
+      );
+      return { ...data, response: processedResponse };
     }
 
-    return { ...data, response: data.result || "" };
+    let content = data.result || "";
+    content = ResponseFormatter.preprocessQwQResponse(content, options.model);
+
+    return { ...data, response: content };
   }
 
   private static async formatBedrockResponse(

@@ -54,7 +54,6 @@ export function useVoiceRecorder({ onTranscribe }: UseVoiceRecorderProps) {
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
-      // biome-ignore lint/complexity/noForEach: It works
       mediaRecorderRef.current.stream
         .getTracks()
         .forEach((track) => track.stop());
