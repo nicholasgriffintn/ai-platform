@@ -165,7 +165,7 @@ export function getModels(
     shouldUseCache: true,
   },
 ) {
-  if (cachedModels && !options.shouldUseCache) {
+  if (cachedModels && options.shouldUseCache) {
     return cachedModels;
   }
 
@@ -187,7 +187,7 @@ export function getFreeModels(
     shouldUseCache: true,
   },
 ) {
-  if (cachedFreeModels && !options.shouldUseCache) {
+  if (cachedFreeModels && options.shouldUseCache) {
     return cachedFreeModels;
   }
 
@@ -209,7 +209,7 @@ export function getFeaturedModels(
     shouldUseCache: true,
   },
 ) {
-  if (cachedFeaturedModels && !options.shouldUseCache) {
+  if (cachedFeaturedModels && options.shouldUseCache) {
     return cachedFeaturedModels;
   }
 
@@ -231,7 +231,7 @@ export function getIncludedInRouterModels(
     shouldUseCache: true,
   },
 ) {
-  if (cachedRouterModels && !options.shouldUseCache) {
+  if (cachedRouterModels && options.shouldUseCache) {
     return cachedRouterModels;
   }
 

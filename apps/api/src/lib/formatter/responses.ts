@@ -152,7 +152,7 @@ export class ResponseFormatter {
     }
 
     const processedTextContent = !options.is_streaming
-      ? preprocessQwQResponse(textContent, data.model || "")
+      ? preprocessQwQResponse(textContent, options.model || data.model || "")
       : textContent;
 
     return {
@@ -200,7 +200,7 @@ export class ResponseFormatter {
     const textContent = message?.content || "";
 
     const processedTextContent = !options.is_streaming
-      ? preprocessQwQResponse(textContent, data.model || "")
+      ? preprocessQwQResponse(textContent, options.model || data.model || "")
       : textContent;
 
     return { ...data, response: processedTextContent, ...message };
@@ -358,7 +358,7 @@ export class ResponseFormatter {
     }
 
     const processedTextContent = !options.is_streaming
-      ? preprocessQwQResponse(textContent, data.model || "")
+      ? preprocessQwQResponse(textContent, options.model || data.model || "")
       : textContent;
 
     return { ...data, response: processedTextContent };

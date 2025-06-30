@@ -81,7 +81,7 @@ describe("handleFileUpload", () => {
         formData.append("file", file);
         formData.append("file_type", "image");
 
-        mockStorageService.uploadObject.mockResolvedValue(undefined);
+        mockStorageService.uploadObject.mockResolvedValue("test-key");
 
         const result = await handleFileUpload(mockEnv, 1, formData);
 
@@ -104,7 +104,7 @@ describe("handleFileUpload", () => {
         formData.append("file", file);
         formData.append("file_type", "document");
 
-        mockStorageService.uploadObject.mockResolvedValue(undefined);
+        mockStorageService.uploadObject.mockResolvedValue("test-key");
 
         const result = await handleFileUpload(mockEnv, 1, formData);
 
@@ -145,7 +145,7 @@ describe("handleFileUpload", () => {
       formData.append("file", file);
       formData.append("file_type", "image");
 
-      mockStorageService.uploadObject.mockResolvedValue(undefined);
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
 
       const result = await handleFileUpload(mockEnv, 1, formData);
 
@@ -170,7 +170,7 @@ describe("handleFileUpload", () => {
       formData.append("file", file);
       formData.append("file_type", "document");
 
-      mockStorageService.uploadObject.mockResolvedValue(undefined);
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
 
       const result = await handleFileUpload(mockEnv, 1, formData);
 
@@ -197,7 +197,7 @@ describe("handleFileUpload", () => {
       formData.append("file", file);
       formData.append("file_type", "document");
 
-      mockStorageService.uploadObject.mockResolvedValue(undefined);
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
       mockConvertToMarkdownViaCloudflare.mockResolvedValue({
         result: "# Converted Markdown",
         error: null,
@@ -228,7 +228,7 @@ describe("handleFileUpload", () => {
       formData.append("file_type", "document");
       formData.append("convert_to_markdown", "true");
 
-      mockStorageService.uploadObject.mockResolvedValue(undefined);
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
       mockConvertToMarkdownViaCloudflare.mockResolvedValue({
         result: "# PDF Converted",
         error: null,
@@ -284,7 +284,7 @@ describe("handleFileUpload", () => {
       formData.append("file", file);
       formData.append("file_type", "document");
 
-      mockStorageService.uploadObject.mockResolvedValue(undefined);
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
       mockConvertToMarkdownViaCloudflare.mockRejectedValue(
         new Error("Conversion error"),
       );
@@ -301,7 +301,7 @@ describe("handleFileUpload", () => {
       formData.append("file", file);
       formData.append("file_type", "document");
 
-      mockStorageService.uploadObject.mockResolvedValue(undefined);
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
       mockConvertToMarkdownViaCloudflare.mockResolvedValue({
         result: null,
         error: "Conversion failed",
@@ -321,7 +321,7 @@ describe("handleFileUpload", () => {
       formData.append("file", file);
       formData.append("file_type", "image");
 
-      mockStorageService.uploadObject.mockResolvedValue(undefined);
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
 
       const result = await handleFileUpload(mockEnv, 1, formData);
 
@@ -337,7 +337,7 @@ describe("handleFileUpload", () => {
       formData.append("file", file);
       formData.append("file_type", "image");
 
-      mockStorageService.uploadObject.mockResolvedValue(undefined);
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
 
       const result = await handleFileUpload(envWithoutUrl, 1, formData);
 

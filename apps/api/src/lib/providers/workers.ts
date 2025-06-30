@@ -48,7 +48,7 @@ export class WorkersProvider extends BaseProvider {
 
     const type = modelConfig?.type || ["text"];
 
-    let imageData;
+    let imageData: any;
     if (
       type.includes("image-to-text") ||
       type.includes("image-to-image") ||
@@ -66,14 +66,28 @@ export class WorkersProvider extends BaseProvider {
       }
 
       try {
-        const imageContent =
-          Array.isArray(params.messages[0].content) &&
-          params.messages[0].content[1] &&
-          "image_url" in params.messages[0].content[1]
-            ? // @ts-ignore - types of wrong
-              params.messages[0].content[1].image_url.url
-            : // @ts-ignore - types of wrong
-              params.messages[0].content?.image;
+        let imageContent = null;
+        for (const message of params.messages) {
+          if (Array.isArray(message.content)) {
+            const imageContentItem = message.content.find(
+              (item) => "image_url" in item,
+            );
+            if (imageContentItem) {
+              // @ts-ignore - types are wrong
+              imageContent = imageContentItem.image_url.url;
+              break;
+            }
+          } else if (
+            typeof message.content === "object" &&
+            message.content &&
+            // @ts-ignore - types are wrong
+            message.content.image
+          ) {
+            // @ts-ignore - types are wrong
+            imageContent = message.content.image;
+            break;
+          }
+        }
 
         if (imageContent) {
           const isUrl = imageContent.startsWith("http");
@@ -104,9 +118,9 @@ export class WorkersProvider extends BaseProvider {
               }
 
               const imageKeyFromUrl = imageContent.replace(assetsUrl, "");
-              const imageData =
+              const retrievedImageData =
                 await storageService?.getObject(imageKeyFromUrl);
-              base64Data = imageData;
+              base64Data = retrievedImageData;
             } else {
               base64Data = imageContent;
             }

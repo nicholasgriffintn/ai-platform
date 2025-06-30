@@ -64,6 +64,7 @@ describe("Models Service", () => {
         mockModels,
         {},
         123,
+        { shouldUseCache: false },
       );
       expect(result).toEqual(mockFilteredModels);
     });
@@ -80,6 +81,7 @@ describe("Models Service", () => {
         mockModels,
         {},
         undefined,
+        { shouldUseCache: false },
       );
       expect(result).toEqual(mockModels);
     });
@@ -108,6 +110,7 @@ describe("Models Service", () => {
         mockModels,
         {},
         123,
+        { shouldUseCache: false },
       );
       expect(result).toEqual(mockFilteredModels);
     });
@@ -136,6 +139,7 @@ describe("Models Service", () => {
         mockModels,
         {},
         123,
+        { shouldUseCache: false },
       );
       expect(result).toEqual(mockFilteredModels);
     });
@@ -156,6 +160,7 @@ describe("Models Service", () => {
         { "gpt-4": mockModel },
         {},
         123,
+        { shouldUseCache: false },
       );
       expect(result).toEqual(mockModel);
     });

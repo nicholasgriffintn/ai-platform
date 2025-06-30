@@ -102,7 +102,7 @@ describe("WorkersProvider", () => {
 
       vi.mocked(createCommonParameters).mockReturnValue({});
 
-      (global.atob as any).mockReturnValue("binary");
+      (global.atob as any).mockReturnValue("binary-data");
 
       const { WorkersProvider } = await import("../workers");
       const provider = new WorkersProvider();
@@ -115,7 +115,12 @@ describe("WorkersProvider", () => {
             role: "user",
             content: [
               { type: "text", text: "What do you see?" },
-              { type: "image_url", image_url: { url: "base64" } },
+              {
+                type: "image_url",
+                image_url: {
+                  url: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+                },
+              },
             ],
           },
         ],

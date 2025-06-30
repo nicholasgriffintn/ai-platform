@@ -37,7 +37,9 @@ export async function listModelsByCapability(
   userId?: number,
 ) {
   const models = getModelsByCapability(capability);
-  return await filterModelsForUserAccess(models, env, userId);
+  return await filterModelsForUserAccess(models, env, userId, {
+    shouldUseCache: false,
+  });
 }
 
 /**
@@ -56,7 +58,9 @@ export async function listModelsByType(
   userId?: number,
 ) {
   const models = getModelsByType(type);
-  return await filterModelsForUserAccess(models, env, userId);
+  return await filterModelsForUserAccess(models, env, userId, {
+    shouldUseCache: false,
+  });
 }
 
 /**
@@ -68,6 +72,9 @@ export async function getModelDetails(env: IEnv, id: string, userId?: number) {
     { [id]: model },
     env,
     userId,
+    {
+      shouldUseCache: false,
+    },
   );
   if (!accessibleModels[id]) {
     throw new Error("Model not found or user does not have access");
