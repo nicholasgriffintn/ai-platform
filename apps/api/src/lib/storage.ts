@@ -4,7 +4,8 @@ export class StorageService {
   constructor(private readonly bucket: R2Bucket) {}
 
   async getObject(key: string): Promise<string | null> {
-    const object = await this.bucket.get(key);
+    const normalizedKey = key.startsWith("/") ? key.slice(1) : key;
+    const object = await this.bucket.get(normalizedKey);
     if (!object) {
       return null;
     }

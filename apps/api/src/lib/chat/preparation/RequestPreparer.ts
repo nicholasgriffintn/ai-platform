@@ -343,13 +343,23 @@ export class RequestPreparer {
           )
         : [];
 
-    const chatMessages = prunedWithAttachments.map((msg, index) => ({
-      ...msg,
-      content:
-        index === prunedWithAttachments.length - 1
-          ? messageWithContext
-          : msg.content,
-    }));
+    const chatMessages = prunedWithAttachments.map((msg, index) => {
+      if (index === prunedWithAttachments.length - 1) {
+        if (Array.isArray(msg.content)) {
+          return {
+            ...msg,
+            content: msg.content.map((part) =>
+              part.type === "text"
+                ? { ...part, text: messageWithContext }
+                : part,
+            ),
+          };
+        }
+
+        return { ...msg, content: messageWithContext };
+      }
+      return msg;
+    });
 
     return chatMessages.filter((msg) => msg.role !== "system");
   }

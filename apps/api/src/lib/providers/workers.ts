@@ -80,16 +80,26 @@ export class WorkersProvider extends BaseProvider {
 
           if (type.includes("image-to-text")) {
             let base64Data = null;
-            if (isUrl) {
-              if (!storageService) {
-                throw new Error(
-                  "Storage service is required for image URL processing",
-                );
-              }
 
+            if (isUrl) {
               if (!assetsUrl) {
                 throw new Error(
                   "Assets URL is required for image URL processing",
+                );
+              }
+
+              const isFirstPartyUrl = imageContent.startsWith(assetsUrl);
+
+              if (!isFirstPartyUrl) {
+                throw new AssistantError(
+                  "Image URL must be from the same domain as the assets URL",
+                  ErrorType.PARAMS_ERROR,
+                );
+              }
+
+              if (!storageService) {
+                throw new Error(
+                  "Storage service is required for image URL processing",
                 );
               }
 
@@ -184,6 +194,13 @@ export class WorkersProvider extends BaseProvider {
           // @ts-ignore - types might be wrong
           prompt = params.messages[0].content?.text;
         }
+      }
+
+      if (!imageData) {
+        throw new AssistantError(
+          "No image data found in the request",
+          ErrorType.PARAMS_ERROR,
+        );
       }
 
       if (!prompt) {

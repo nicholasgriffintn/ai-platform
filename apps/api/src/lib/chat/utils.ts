@@ -183,7 +183,9 @@ export function pruneMessagesToFitContext(
     const content =
       typeof msg.content === "string"
         ? msg.content
-        : JSON.stringify(msg.content);
+        : Array.isArray(msg.content)
+          ? msg.content.find((c) => c.type === "text")?.text || ""
+          : JSON.stringify(msg.content);
     return sum + estimateTokens(content) + 4;
   }, 0);
 
@@ -195,7 +197,9 @@ export function pruneMessagesToFitContext(
     const content =
       typeof removed.content === "string"
         ? removed.content
-        : JSON.stringify(removed.content);
+        : Array.isArray(removed.content)
+          ? removed.content.find((c) => c.type === "text")?.text || ""
+          : JSON.stringify(removed.content);
     existingTokens -= estimateTokens(content) + 4;
     totalTokens = existingTokens + newTokens;
   }
