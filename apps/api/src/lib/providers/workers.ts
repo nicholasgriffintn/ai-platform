@@ -210,7 +210,7 @@ export class WorkersProvider extends BaseProvider {
         }
       }
 
-      if (!imageData) {
+      if (!imageData && !type.includes("text-to-image")) {
         throw new AssistantError(
           "No image data found in the request",
           ErrorType.PARAMS_ERROR,
@@ -218,16 +218,18 @@ export class WorkersProvider extends BaseProvider {
       }
 
       if (!prompt) {
-        return {
-          prompt: "",
-          image: imageData,
-        };
+        const result: any = { prompt: "" };
+        if (imageData) {
+          result.image = imageData;
+        }
+        return result;
       }
 
-      return {
-        prompt,
-        image: imageData,
-      };
+      const result: any = { prompt };
+      if (imageData) {
+        result.image = imageData;
+      }
+      return result;
     }
 
     const commonParams = createCommonParameters(
