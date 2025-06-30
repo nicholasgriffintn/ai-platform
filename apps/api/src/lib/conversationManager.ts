@@ -273,11 +273,11 @@ export class ConversationManager {
       const existingMessages =
         await this.database.getConversationMessages(conversation_id);
 
-      for (const message of existingMessages) {
-        if (message.id) {
-          await this.database.deleteMessage(message.id as string);
-        }
-      }
+      const deletePromises = existingMessages
+        .filter((message) => message.id)
+        .map((message) => this.database.deleteMessage(message.id as string));
+
+      await Promise.all(deletePromises);
     }
 
     return await this.addBatch(conversation_id, messages);
