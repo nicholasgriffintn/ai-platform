@@ -27,6 +27,7 @@ Here are some example chats that you can try out:
 - [Image generation](https://polychat.app/s/fa89a9da-12e0-4308-8ce8-093c4c309de2)
 - [Multi Step Tool Calls](https://polychat.app/s/9265e7d7-35e5-438e-b76c-576d12c2f770)
 - [Multi Step MCP Calls](https://polychat.app/s/b8e6450f-3a26-4ec8-9c7a-07efd85f88e3)
+- [Image Generation](https://polychat.app/s/f4b8f515-d825-4f18-ae01-1310012b1e48)
 
 ## Project Structure
 
