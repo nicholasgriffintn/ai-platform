@@ -66,7 +66,6 @@ export const EditableMessageContent = ({
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
 
-    // Auto-resize textarea
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
@@ -81,46 +80,47 @@ export const EditableMessageContent = ({
         onChange={handleTextareaChange}
         onKeyDown={handleKeyDown}
         disabled={isUpdating}
-        className="resize-none min-h-[80px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className="resize-none min-h-[80px] min-w-full md:min-w-[460px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         placeholder="Edit your message..."
       />
 
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={onCancel}
-          disabled={isUpdating}
-          className="flex items-center gap-1"
-        >
-          <X size={14} />
-          Cancel
-        </Button>
-        <Button
-          type="button"
-          variant="primary"
-          size="sm"
-          onClick={handleSave}
-          disabled={isUpdating || !content.trim()}
-          isLoading={isUpdating}
-          className="flex items-center gap-1"
-        >
-          <Check size={14} />
-          Save
-        </Button>
-      </div>
-
-      <div className="text-xs text-zinc-500 dark:text-zinc-400">
-        Press{" "}
-        <kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-xs">
-          Cmd+Enter
-        </kbd>{" "}
-        to save,{" "}
-        <kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-xs">
-          Esc
-        </kbd>{" "}
-        to cancel
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+          Press{" "}
+          <kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-xs">
+            Cmd+Enter
+          </kbd>
+          to save,
+          <kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-xs">
+            Esc
+          </kbd>
+          to cancel
+        </span>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={onCancel}
+            disabled={isUpdating}
+            className="flex items-center gap-1"
+          >
+            <X size={14} />
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={handleSave}
+            disabled={isUpdating || !content.trim()}
+            isLoading={isUpdating}
+            className="flex items-center gap-1"
+          >
+            <Check size={14} />
+            Save
+          </Button>
+        </div>
       </div>
     </div>
   );
