@@ -179,14 +179,12 @@ const renderTextContent = (
 
 const renderImageContent = (imageUrl: string, index?: number): ReactNode => {
   return (
-    <div
-      key={`image-attachment-${index ?? 0}`}
-      className="relative overflow-hidden rounded-lg"
-    >
+    <div key={`image-attachment-${index ?? 0}`}>
       <ImageModal
         src={imageUrl}
         alt="Attached content"
         thumbnailClassName="rounded-lg"
+        imageClassName="rounded-lg"
       />
     </div>
   );
