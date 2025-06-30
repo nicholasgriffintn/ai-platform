@@ -347,6 +347,123 @@ describe("MessageFormatter", () => {
     });
   });
 
+  describe("markdown_document filtering", () => {
+    it("should exclude markdown_document content for anthropic provider", () => {
+      const messages: Message[] = [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Hello" },
+            {
+              type: "markdown_document",
+              markdown_document: { markdown: "# Test Document\nContent" },
+            },
+          ],
+        },
+      ];
+
+      const result = MessageFormatter.formatMessages(messages, {
+        provider: "anthropic",
+      });
+
+      expect(result[0].content).toHaveLength(1);
+      expect(result[0].content[0]).toEqual({
+        type: "text",
+        text: "Hello",
+      });
+    });
+
+    it("should exclude markdown_document content for google-ai-studio provider", () => {
+      const messages: Message[] = [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Hello" },
+            {
+              type: "markdown_document",
+              markdown_document: { markdown: "# Test Document\nContent" },
+            },
+          ],
+        },
+      ];
+
+      const result = MessageFormatter.formatMessages(messages, {
+        provider: "google-ai-studio",
+      });
+
+      expect(result[0].parts).toHaveLength(1);
+      expect(result[0].parts[0]).toEqual({ text: "Hello" });
+    });
+
+    it("should exclude markdown_document content for bedrock provider", () => {
+      const messages: Message[] = [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Hello" },
+            {
+              type: "markdown_document",
+              markdown_document: { markdown: "# Test Document\nContent" },
+            },
+          ],
+        },
+      ];
+
+      const result = MessageFormatter.formatMessages(messages, {
+        provider: "bedrock",
+      });
+
+      expect(result[0].content).toHaveLength(1);
+      expect(result[0].content[0]).toEqual({ text: "Hello" });
+    });
+
+    it("should exclude markdown_document content for default provider", () => {
+      const messages: Message[] = [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Hello" },
+            {
+              type: "markdown_document",
+              markdown_document: { markdown: "# Test Document\nContent" },
+            },
+          ],
+        },
+      ];
+
+      const result = MessageFormatter.formatMessages(messages, {
+        provider: "unknown-provider",
+      });
+
+      expect(result[0].content).toHaveLength(1);
+      expect(result[0].content[0]).toEqual({
+        type: "text",
+        text: "Hello",
+      });
+    });
+
+    it("should exclude markdown_document for workers-ai provider (already filters to text only)", () => {
+      const messages: Message[] = [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Hello" },
+            {
+              type: "markdown_document",
+              markdown_document: { markdown: "# Test Document\nContent" },
+            },
+          ],
+        },
+      ];
+
+      const result = MessageFormatter.formatMessages(messages, {
+        provider: "workers-ai",
+      });
+
+      expect(result[0].content).toBe("Hello");
+    });
+  });
+
   describe("edge cases", () => {
     it("should handle empty messages array", () => {
       const result = MessageFormatter.formatMessages([]);

@@ -29,6 +29,10 @@ export type MessageContent = {
     url: string;
     name?: string;
   };
+  markdown_document?: {
+    markdown: string;
+    name?: string;
+  };
   thinking?: string;
   signature?: string;
   image?: number[] | string;

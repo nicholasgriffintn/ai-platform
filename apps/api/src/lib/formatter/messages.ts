@@ -199,17 +199,17 @@ export class MessageFormatter {
 
     switch (provider) {
       case "google-ai-studio":
-        return content.map((item) =>
-          MessageFormatter.formatGoogleAIContent(item),
-        );
+        return content
+          .map((item) => MessageFormatter.formatGoogleAIContent(item))
+          .filter((item) => item !== null);
       case "anthropic":
         return content
           .map((item) => MessageFormatter.formatAnthropicContent(item))
           .filter((item) => item !== null);
       case "bedrock":
-        return content.map((item) =>
-          MessageFormatter.formatBedrockContent(item),
-        );
+        return content
+          .map((item) => MessageFormatter.formatBedrockContent(item))
+          .filter((item) => item !== null);
       case "workers-ai":
       case "ollama":
       case "github-models": {
@@ -257,7 +257,12 @@ export class MessageFormatter {
           .join("\n");
       }
       default:
-        return content;
+        return content.filter(
+          (item) =>
+            typeof item === "object" &&
+            "type" in item &&
+            item.type !== "markdown_document",
+        );
     }
   }
 
@@ -344,6 +349,9 @@ export class MessageFormatter {
         },
       };
     }
+    if (item.type === "markdown_document") {
+      return null;
+    }
     return item;
   }
 
@@ -378,6 +386,9 @@ export class MessageFormatter {
         },
       };
     }
+    if (item.type === "markdown_document") {
+      return null;
+    }
 
     return item;
   }
@@ -388,6 +399,9 @@ export class MessageFormatter {
     }
     if (typeof item === "string") {
       return { text: item };
+    }
+    if (item.type === "markdown_document") {
+      return null;
     }
     return item;
   }
