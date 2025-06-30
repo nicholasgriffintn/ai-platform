@@ -1,4 +1,11 @@
-import { Check, Copy, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Edit,
+  RefreshCw,
+  ThumbsDown,
+  ThumbsUp,
+} from "lucide-react";
 
 import { Button } from "~/components/ui";
 import type { Message } from "~/types";
@@ -14,6 +21,8 @@ interface MessageActionsProps {
   isSharedView: boolean;
   onRetry?: () => void;
   isRetrying?: boolean;
+  onEdit?: () => void;
+  isEditing?: boolean;
 }
 
 export const MessageActions = ({
@@ -26,6 +35,8 @@ export const MessageActions = ({
   isSharedView = false,
   onRetry,
   isRetrying = false,
+  onEdit,
+  isEditing = false,
 }: MessageActionsProps) => {
   return (
     <div className="flex flex-wrap justify-end items-center gap-2">
@@ -44,6 +55,21 @@ export const MessageActions = ({
             aria-label={copied ? "Copied!" : "Copy message"}
           >
             {copied ? <Check size={14} /> : <Copy size={14} />}
+          </Button>
+        )}
+        {message.role === "user" && onEdit && !isSharedView && (
+          <Button
+            type="button"
+            variant="icon"
+            onClick={onEdit}
+            disabled={isEditing}
+            className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
+              isEditing ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            title={isEditing ? "Editing..." : "Edit message"}
+            aria-label={isEditing ? "Editing..." : "Edit message"}
+          >
+            <Edit size={14} />
           </Button>
         )}
         {onRetry && !isSharedView && (

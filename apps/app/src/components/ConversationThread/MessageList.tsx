@@ -44,7 +44,14 @@ export const MessageList = ({
     !isSharedView ? currentConversationId : undefined,
   );
 
-  const { streamStarted, retryMessage } = useChatManager();
+  const {
+    streamStarted,
+    retryMessage,
+    updateUserMessage,
+    editingMessageId,
+    startEditingMessage,
+    stopEditingMessage,
+  } = useChatManager();
 
   const messages = propMessages || conversation?.messages || [];
 
@@ -146,6 +153,19 @@ export const MessageList = ({
                   isSharedView={isSharedView}
                   onRetry={retryMessage}
                   isRetrying={streamStarted}
+                  onEdit={
+                    message.id
+                      ? () => startEditingMessage(message.id!)
+                      : undefined
+                  }
+                  isEditing={editingMessageId === message.id}
+                  onSaveEdit={(newContent) => {
+                    if (message.id) {
+                      updateUserMessage(message.id, newContent);
+                      stopEditingMessage();
+                    }
+                  }}
+                  onCancelEdit={stopEditingMessage}
                 />
               </div>
             ))}

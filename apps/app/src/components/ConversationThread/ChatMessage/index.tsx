@@ -5,6 +5,7 @@ import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { apiService } from "~/lib/api/api-service";
 import type { ChatRole, Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
+import { EditableMessageContent } from "./EditableMessageContent";
 import { MessageActions } from "./MessageActions";
 import { MessageContent } from "./MessageContent";
 import { ToolMessage } from "./ToolMessage";
@@ -17,6 +18,10 @@ export const ChatMessage = ({
   isSharedView = false,
   onRetry,
   isRetrying = false,
+  onEdit,
+  isEditing = false,
+  onSaveEdit,
+  onCancelEdit,
 }: {
   conversationId?: string;
   message: Message;
@@ -33,6 +38,10 @@ export const ChatMessage = ({
   isSharedView?: boolean;
   onRetry?: (messageId: string) => void;
   isRetrying?: boolean;
+  onEdit?: () => void;
+  isEditing?: boolean;
+  onSaveEdit?: (newContent: string) => void;
+  onCancelEdit?: () => void;
 }) => {
   const { copied, copy } = useCopyToClipboard();
   const [feedbackState, setFeedbackState] = useState<
@@ -92,7 +101,9 @@ export const ChatMessage = ({
 
   return (
     <article
-      className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+      className={`flex ${
+        message.role === "user" ? "justify-end" : "justify-start"
+      }`}
       data-role={message.role}
       data-tool-response={isToolResponse}
       data-external-function-call={isExternalFunctionCall}
@@ -112,7 +123,9 @@ export const ChatMessage = ({
 				`}
       >
         <div
-          className={`flex flex-col gap-2 py-2 ${message.role === "user" ? "px-3" : ""}`}
+          className={`flex flex-col gap-2 py-2 ${
+            message.role === "user" ? "px-3" : ""
+          }`}
         >
           <div className="flex items-start gap-2">
             {message.role === "assistant" && message.model && (
@@ -131,6 +144,16 @@ export const ChatMessage = ({
                   message={message}
                   onToolInteraction={onToolInteraction}
                 />
+              ) : isEditing &&
+                message.role === "user" &&
+                onSaveEdit &&
+                onCancelEdit ? (
+                <EditableMessageContent
+                  message={message}
+                  onSave={onSaveEdit}
+                  onCancel={onCancelEdit}
+                  isUpdating={isRetrying}
+                />
               ) : (
                 (!isExternalFunctionCall || message?.content) && (
                   <MessageContent
@@ -144,8 +167,7 @@ export const ChatMessage = ({
 
           {conversationId &&
             message.content &&
-            ((message.role !== "user" && message.log_id) ||
-              (message.role !== "user" && message.created)) && (
+            (message.log_id || message.created) && (
               <MessageActions
                 message={message}
                 copied={copied}
@@ -158,6 +180,8 @@ export const ChatMessage = ({
                   onRetry && message.id ? () => onRetry(message.id!) : undefined
                 }
                 isRetrying={isRetrying}
+                onEdit={onEdit}
+                isEditing={isEditing}
               />
             )}
         </div>

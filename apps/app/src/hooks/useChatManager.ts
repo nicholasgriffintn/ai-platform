@@ -36,6 +36,7 @@ export function useChatManager() {
 
   const [streamStarted, setStreamStarted] = useState(false);
   const [controller, setController] = useState(() => new AbortController());
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
 
   const webLLMService = useRef<WebLLMService>(WebLLMService.getInstance());
   const assistantResponseRef = useRef<string>("");
@@ -809,19 +810,20 @@ export function useChatManager() {
         return;
       }
 
-      const messagesToRetry = conversation.messages.slice(0, messageIndex);
+      const message = conversation.messages[messageIndex];
 
-      if (messagesToRetry.length === 0) {
-        toast.error("Unable to retry: no previous messages found");
-        return;
+      let messagesToRetry: Message[];
+
+      if (message.role === "assistant") {
+        messagesToRetry = conversation.messages.slice(0, messageIndex);
+      } else {
+        messagesToRetry = conversation.messages.slice(0, messageIndex + 1);
       }
 
       try {
-        const updatedMessages = messagesToRetry;
-
         await updateConversation(currentConversationId, (prev) => ({
           ...prev!,
-          messages: updatedMessages,
+          messages: messagesToRetry,
         }));
 
         await generateResponse(messagesToRetry, currentConversationId);
@@ -833,16 +835,78 @@ export function useChatManager() {
     [queryClient, currentConversationId, updateConversation, generateResponse],
   );
 
+  const updateUserMessage = useCallback(
+    async (messageId: string, newContent: string) => {
+      const conversation = queryClient.getQueryData<Conversation>([
+        CHATS_QUERY_KEY,
+        currentConversationId || "",
+      ]);
+
+      if (!conversation?.messages || !currentConversationId) {
+        toast.error("Unable to edit: conversation not found");
+        return;
+      }
+
+      const messageIndex = conversation.messages.findIndex(
+        (msg) => msg.id === messageId,
+      );
+
+      if (messageIndex === -1) {
+        toast.error("Unable to edit: message not found");
+        return;
+      }
+
+      const message = conversation.messages[messageIndex];
+
+      if (message.role !== "user") {
+        toast.error("Can only edit user messages");
+        return;
+      }
+
+      try {
+        const updatedMessages = [...conversation.messages];
+        updatedMessages[messageIndex] = {
+          ...message,
+          content: newContent.trim(),
+        };
+
+        const messagesToRegenerate = updatedMessages.slice(0, messageIndex + 1);
+
+        await updateConversation(currentConversationId, (prev) => ({
+          ...prev!,
+          messages: messagesToRegenerate,
+        }));
+
+        await generateResponse(messagesToRegenerate, currentConversationId);
+      } catch (error) {
+        console.error("Error updating message:", error);
+        toast.error("Failed to update message");
+      }
+    },
+    [queryClient, currentConversationId, updateConversation, generateResponse],
+  );
+
+  const startEditingMessage = useCallback((messageId: string) => {
+    setEditingMessageId(messageId);
+  }, []);
+
+  const stopEditingMessage = useCallback(() => {
+    setEditingMessageId(null);
+  }, []);
+
   return {
     streamStarted,
     controller,
     assistantResponseRef,
     assistantReasoningRef,
-
+    editingMessageId,
     sendMessage,
     streamResponse,
     abortStream,
     updateAssistantMessage,
     retryMessage,
+    updateUserMessage,
+    startEditingMessage,
+    stopEditingMessage,
   };
 }
