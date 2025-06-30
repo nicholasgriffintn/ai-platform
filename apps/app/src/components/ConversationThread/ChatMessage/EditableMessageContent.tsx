@@ -84,8 +84,8 @@ export const EditableMessageContent = ({
         placeholder="Edit your message..."
       />
 
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <span className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1 flex-wrap">
           Press{" "}
           <kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-xs">
             Cmd+Enter
@@ -96,14 +96,14 @@ export const EditableMessageContent = ({
           </kbd>
           to cancel
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:justify-end sm:w-auto">
           <Button
             type="button"
             variant="secondary"
             size="sm"
             onClick={onCancel}
             disabled={isUpdating}
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 w-full sm:w-auto"
           >
             <X size={14} />
             Cancel
@@ -115,7 +115,7 @@ export const EditableMessageContent = ({
             onClick={handleSave}
             disabled={isUpdating || !content.trim()}
             isLoading={isUpdating}
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 w-full sm:w-auto"
           >
             <Check size={14} />
             Save
