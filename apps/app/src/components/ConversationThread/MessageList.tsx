@@ -44,7 +44,7 @@ export const MessageList = ({
     !isSharedView ? currentConversationId : undefined,
   );
 
-  const { streamStarted } = useChatManager();
+  const { streamStarted, retryMessage } = useChatManager();
 
   const messages = propMessages || conversation?.messages || [];
 
@@ -144,6 +144,8 @@ export const MessageList = ({
                   onToolInteraction={onToolInteraction}
                   onArtifactOpen={onArtifactOpen}
                   isSharedView={isSharedView}
+                  onRetry={retryMessage}
+                  isRetrying={streamStarted}
                 />
               </div>
             ))}

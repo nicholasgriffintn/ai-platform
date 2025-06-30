@@ -788,6 +788,51 @@ export function useChatManager() {
     }
   }, [controller]);
 
+  const retryMessage = useCallback(
+    async (messageId: string) => {
+      const conversation = queryClient.getQueryData<Conversation>([
+        CHATS_QUERY_KEY,
+        currentConversationId || "",
+      ]);
+
+      if (!conversation?.messages || !currentConversationId) {
+        toast.error("Unable to retry: conversation not found");
+        return;
+      }
+
+      const messageIndex = conversation.messages.findIndex(
+        (msg) => msg.id === messageId,
+      );
+
+      if (messageIndex === -1) {
+        toast.error("Unable to retry: message not found");
+        return;
+      }
+
+      const messagesToRetry = conversation.messages.slice(0, messageIndex);
+
+      if (messagesToRetry.length === 0) {
+        toast.error("Unable to retry: no previous messages found");
+        return;
+      }
+
+      try {
+        const updatedMessages = messagesToRetry;
+
+        await updateConversation(currentConversationId, (prev) => ({
+          ...prev!,
+          messages: updatedMessages,
+        }));
+
+        await generateResponse(messagesToRetry, currentConversationId);
+      } catch (error) {
+        console.error("Error retrying message:", error);
+        toast.error("Failed to retry message");
+      }
+    },
+    [queryClient, currentConversationId, updateConversation, generateResponse],
+  );
+
   return {
     streamStarted,
     controller,
@@ -798,5 +843,6 @@ export function useChatManager() {
     streamResponse,
     abortStream,
     updateAssistantMessage,
+    retryMessage,
   };
 }

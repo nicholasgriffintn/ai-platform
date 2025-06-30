@@ -242,6 +242,48 @@ export class ConversationManager {
   }
 
   /**
+   * Replace all messages in a conversation with new ones, cleaning up any extras
+   * @param conversation_id - The ID of the conversation to replace messages in
+   * @param messages - The messages to set for the conversation
+   */
+  async replaceMessages(
+    conversation_id: string,
+    messages: Message[],
+  ): Promise<Message[]> {
+    if (!this.store) {
+      return messages;
+    }
+
+    if (!this.user?.id) {
+      throw new AssistantError(
+        "User ID is required to replace messages",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const conversation = await this.database.getConversation(conversation_id);
+    if (conversation && conversation.user_id !== this.user?.id) {
+      throw new AssistantError(
+        "You don't have permission to update this conversation",
+        ErrorType.FORBIDDEN,
+      );
+    }
+
+    if (conversation) {
+      const existingMessages =
+        await this.database.getConversationMessages(conversation_id);
+
+      for (const message of existingMessages) {
+        if (message.id) {
+          await this.database.deleteMessage(message.id as string);
+        }
+      }
+    }
+
+    return await this.addBatch(conversation_id, messages);
+  }
+
+  /**
    * Update existing messages in a conversation
    * @param conversation_id - The ID of the conversation to update the messages in
    * @param messages - The messages to update in the conversation

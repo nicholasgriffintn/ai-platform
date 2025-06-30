@@ -10,6 +10,8 @@ const mockDatabase = {
 
 const mockConversationManager = {
   addBatch: vi.fn(),
+  get: vi.fn(),
+  replaceMessages: vi.fn(),
 };
 
 const mockEmbedding = {
@@ -377,6 +379,84 @@ describe("RequestPreparer", () => {
           }),
         ]),
       );
+    });
+
+    it("should use replaceMessages when existing messages exceed incoming messages (retry scenario)", async () => {
+      mockConversationManagerInstance.get.mockResolvedValueOnce([
+        { id: "1", role: "user", content: "First message" },
+        { id: "2", role: "assistant", content: "First response" },
+        { id: "3", role: "user", content: "Second message" },
+        { id: "4", role: "assistant", content: "Second response" },
+      ]);
+
+      const optionsWithRetry = {
+        ...baseOptions,
+        messages: [
+          { id: "1", role: "user", content: "First message" },
+          { id: "2", role: "assistant", content: "First response" },
+        ],
+      };
+
+      const lastMessage = { role: "user", content: "Test message" };
+
+      await (preparer as any).storeMessages(
+        optionsWithRetry,
+        mockConversationManagerInstance,
+        lastMessage,
+        "Test message",
+        "claude-3-sonnet",
+        "api",
+        "normal",
+      );
+
+      expect(
+        mockConversationManagerInstance.replaceMessages,
+      ).toHaveBeenCalledWith("completion-123", optionsWithRetry.messages);
+      expect(mockConversationManagerInstance.addBatch).not.toHaveBeenCalled();
+    });
+
+    it("should use addBatch when existing messages are less than or equal to incoming messages (normal scenario)", async () => {
+      mockConversationManagerInstance.get.mockResolvedValueOnce([
+        { id: "1", role: "user", content: "First message" },
+      ]);
+
+      const optionsWithNormal = {
+        ...baseOptions,
+        messages: [
+          { id: "1", role: "user", content: "First message" },
+          { id: "2", role: "user", content: "Second message" },
+        ],
+      };
+
+      const lastMessage = { role: "user", content: "Test message" };
+
+      await (preparer as any).storeMessages(
+        optionsWithNormal,
+        mockConversationManagerInstance,
+        lastMessage,
+        "Test message",
+        "claude-3-sonnet",
+        "api",
+        "normal",
+      );
+
+      expect(mockConversationManagerInstance.addBatch).toHaveBeenCalledWith(
+        "completion-123",
+        [
+          {
+            role: "user",
+            content: "Test message",
+            id: "test-id-123",
+            timestamp: 1234567890,
+            model: "claude-3-sonnet",
+            platform: "api",
+            mode: "normal",
+          },
+        ],
+      );
+      expect(
+        mockConversationManagerInstance.replaceMessages,
+      ).not.toHaveBeenCalled();
     });
   });
 

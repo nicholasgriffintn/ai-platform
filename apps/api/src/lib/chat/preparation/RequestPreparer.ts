@@ -217,7 +217,24 @@ export class RequestPreparer {
       messagesToStore.push(attachmentMessage);
     }
 
-    await conversationManager.addBatch(options.completion_id, messagesToStore);
+    const existingMessages = await conversationManager.get(
+      options.completion_id,
+    );
+
+    if (
+      existingMessages &&
+      existingMessages?.length > options?.messages.length
+    ) {
+      await conversationManager.replaceMessages(
+        options.completion_id,
+        options.messages,
+      );
+    } else {
+      await conversationManager.addBatch(
+        options.completion_id,
+        messagesToStore,
+      );
+    }
   }
 
   private async buildSystemPrompt(

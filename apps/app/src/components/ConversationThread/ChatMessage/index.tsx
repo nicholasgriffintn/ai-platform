@@ -15,6 +15,8 @@ export const ChatMessage = ({
   onToolInteraction,
   onArtifactOpen,
   isSharedView = false,
+  onRetry,
+  isRetrying = false,
 }: {
   conversationId?: string;
   message: Message;
@@ -29,6 +31,8 @@ export const ChatMessage = ({
     artifacts?: ArtifactProps[],
   ) => void;
   isSharedView?: boolean;
+  onRetry?: (messageId: string) => void;
+  isRetrying?: boolean;
 }) => {
   const { copied, copy } = useCopyToClipboard();
   const [feedbackState, setFeedbackState] = useState<
@@ -150,6 +154,10 @@ export const ChatMessage = ({
                 isSubmittingFeedback={isSubmittingFeedback}
                 submitFeedback={submitFeedback}
                 isSharedView={isSharedView}
+                onRetry={
+                  onRetry && message.id ? () => onRetry(message.id!) : undefined
+                }
+                isRetrying={isRetrying}
               />
             )}
         </div>
