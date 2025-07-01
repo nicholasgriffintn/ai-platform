@@ -985,20 +985,22 @@ class ApiService {
       console.error("Error getting headers for createAgent:", error);
     }
 
+    const body = {
+      name,
+      description: description || undefined,
+      avatar_url: avatarUrl || undefined,
+      servers: servers || undefined,
+      model: model || undefined,
+      temperature: temperature !== undefined ? temperature : undefined,
+      max_steps: maxSteps !== undefined ? maxSteps : undefined,
+      system_prompt: systemPrompt || undefined,
+      few_shot_examples: fewShotExamples || undefined,
+    };
+
     const response = await fetchApi("/agents", {
       method: "POST",
       headers,
-      body: {
-        name,
-        description,
-        avatar_url: avatarUrl,
-        servers,
-        model,
-        temperature,
-        max_steps: maxSteps,
-        system_prompt: systemPrompt,
-        few_shot_examples: fewShotExamples,
-      },
+      body,
     });
 
     if (!response.ok) {
