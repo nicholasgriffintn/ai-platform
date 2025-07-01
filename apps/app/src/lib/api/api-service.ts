@@ -1033,10 +1033,23 @@ class ApiService {
       console.error("Error getting headers for updateAgent:", error);
     }
 
+    const body = {
+      name: data.name || undefined,
+      description: data.description || undefined,
+      avatar_url: data.avatar_url || undefined,
+      servers: data.servers || undefined,
+      model: data.model || undefined,
+      temperature:
+        data.temperature !== undefined ? data.temperature : undefined,
+      max_steps: data.max_steps !== undefined ? data.max_steps : undefined,
+      system_prompt: data.system_prompt || undefined,
+      few_shot_examples: data.few_shot_examples || undefined,
+    };
+
     const response = await fetchApi(`/agents/${agentId}`, {
       method: "PUT",
       headers,
-      body: data,
+      body,
     });
 
     if (!response.ok) {
