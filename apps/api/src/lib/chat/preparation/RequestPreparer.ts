@@ -217,9 +217,14 @@ export class RequestPreparer {
       messagesToStore.push(attachmentMessage);
     }
 
-    const existingMessages = await conversationManager.get(
-      options.completion_id,
-    );
+    let existingMessages: Message[] | null = null;
+    try {
+      if (options.completion_id) {
+        existingMessages = await conversationManager.get(options.completion_id);
+      }
+    } catch (error) {
+      // We can ignore this.
+    }
 
     if (
       existingMessages &&
