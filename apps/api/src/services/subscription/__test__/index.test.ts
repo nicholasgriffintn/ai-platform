@@ -43,7 +43,7 @@ vi.mock("~/lib/database", () => ({
   },
 }));
 
-vi.mock("~/services/subscription/emails", () => ({
+vi.mock("~/services/notifications/subscriptions", () => ({
   sendSubscriptionEmail: vi.fn(),
   sendSubscriptionCancellationNoticeEmail: vi.fn(),
   sendUnsubscriptionEmail: vi.fn(),
@@ -68,7 +68,7 @@ describe("Subscription Service", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    mockEmailService = await import("~/services/subscription/emails");
+    mockEmailService = await import("~/services/notifications/subscriptions");
   });
 
   describe("createCheckoutSession", () => {

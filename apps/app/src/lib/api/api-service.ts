@@ -6,6 +6,9 @@ import type {
   ChatMode,
   ChatSettings,
   Conversation,
+  MarketplaceAgent,
+  MarketplaceFilters,
+  MarketplaceStats,
   Message,
   ModelConfig,
 } from "~/types";
@@ -985,20 +988,22 @@ class ApiService {
       console.error("Error getting headers for createAgent:", error);
     }
 
+    const body = {
+      name,
+      description: description || undefined,
+      avatar_url: avatarUrl || undefined,
+      servers: servers || undefined,
+      model: model || undefined,
+      temperature: temperature !== undefined ? temperature : undefined,
+      max_steps: maxSteps !== undefined ? maxSteps : undefined,
+      system_prompt: systemPrompt || undefined,
+      few_shot_examples: fewShotExamples || undefined,
+    };
+
     const response = await fetchApi("/agents", {
       method: "POST",
       headers,
-      body: {
-        name,
-        description,
-        avatar_url: avatarUrl,
-        servers,
-        model,
-        temperature,
-        max_steps: maxSteps,
-        system_prompt: systemPrompt,
-        few_shot_examples: fewShotExamples,
-      },
+      body,
     });
 
     if (!response.ok) {
@@ -1064,6 +1069,289 @@ class ApiService {
     }
 
     const responseData = (await response.json()) as { data: any };
+    return responseData.data;
+  };
+
+  // Marketplace methods
+  public listMarketplaceAgents = async (
+    filters?: MarketplaceFilters,
+  ): Promise<MarketplaceAgent[]> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for listMarketplaceAgents:", error);
+    }
+
+    const params = new URLSearchParams();
+    if (filters?.search) {
+      params.append("search", filters.search);
+    }
+    if (filters?.category) {
+      params.append("category", filters.category);
+    }
+    if (filters?.tags?.length) {
+      params.append("tags", filters.tags.join(","));
+    }
+    if (filters?.sort) {
+      params.append("sort", filters.sort);
+    }
+    if (filters?.featured !== undefined) {
+      params.append("featured", filters.featured.toString());
+    }
+
+    const url = `/marketplace/agents${params.toString() ? `?${params.toString()}` : ""}`;
+    const response = await fetchApi(url, { method: "GET", headers });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to list marketplace agents: ${response.statusText}`,
+      );
+    }
+
+    const responseData = (await response.json()) as {
+      data: MarketplaceAgent[];
+    };
+    return responseData.data || [];
+  };
+
+  public getMarketplaceAgent = async (
+    agentId: string,
+  ): Promise<MarketplaceAgent> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for getMarketplaceAgent:", error);
+    }
+
+    const response = await fetchApi(`/marketplace/agents/${agentId}`, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to get marketplace agent: ${response.statusText}`,
+      );
+    }
+
+    const responseData = (await response.json()) as { data: MarketplaceAgent };
+    return responseData.data;
+  };
+
+  public getFeaturedAgents = async (): Promise<MarketplaceAgent[]> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for getFeaturedAgents:", error);
+    }
+
+    const response = await fetchApi("/marketplace/agents/featured", {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get featured agents: ${response.statusText}`);
+    }
+
+    const responseData = (await response.json()) as {
+      data: MarketplaceAgent[];
+    };
+    return responseData.data || [];
+  };
+
+  public installMarketplaceAgent = async (agentId: string): Promise<any> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error(
+        "Error getting headers for installMarketplaceAgent:",
+        error,
+      );
+    }
+
+    const response = await fetchApi(`/marketplace/agents/${agentId}/install`, {
+      method: "POST",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to install marketplace agent: ${response.statusText}`,
+      );
+    }
+
+    const responseData = (await response.json()) as { data: any };
+    return responseData.data;
+  };
+
+  public shareAgent = async (
+    agentId: string,
+    data: {
+      name: string;
+      description?: string;
+      category?: string;
+      tags?: string[];
+    },
+  ): Promise<MarketplaceAgent> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for shareAgent:", error);
+    }
+
+    const response = await fetchApi("/marketplace/agents/share", {
+      method: "POST",
+      headers,
+      body: {
+        agent_id: agentId,
+        ...data,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to share agent: ${response.statusText}`);
+    }
+
+    const responseData = (await response.json()) as { data: MarketplaceAgent };
+    return responseData.data;
+  };
+
+  public rateAgent = async (
+    agentId: string,
+    rating: number,
+    review?: string,
+  ): Promise<void> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for rateAgent:", error);
+    }
+
+    const response = await fetchApi(`/marketplace/agents/${agentId}/rate`, {
+      method: "POST",
+      headers,
+      body: {
+        rating,
+        review,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to rate agent: ${response.statusText}`);
+    }
+  };
+
+  public getMarketplaceCategories = async (): Promise<string[]> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error(
+        "Error getting headers for getMarketplaceCategories:",
+        error,
+      );
+    }
+
+    const response = await fetchApi("/marketplace/agents/categories", {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to get marketplace categories: ${response.statusText}`,
+      );
+    }
+
+    const responseData = (await response.json()) as { data: string[] };
+    return responseData.data || [];
+  };
+
+  public getMarketplaceTags = async (): Promise<string[]> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for getMarketplaceTags:", error);
+    }
+
+    const response = await fetchApi("/marketplace/agents/tags", {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get marketplace tags: ${response.statusText}`);
+    }
+
+    const responseData = (await response.json()) as { data: string[] };
+    return responseData.data || [];
+  };
+
+  public getMarketplaceStats = async (): Promise<MarketplaceStats> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for getMarketplaceStats:", error);
+    }
+
+    const response = await fetchApi("/marketplace/agents/stats", {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to get marketplace stats: ${response.statusText}`,
+      );
+    }
+
+    const responseData = (await response.json()) as { data: MarketplaceStats };
+    return responseData.data;
+  };
+
+  public checkAgentShared = async (
+    agentId: string,
+  ): Promise<{ isShared: boolean; sharedAgent: any | null }> => {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for checkAgentShared:", error);
+    }
+
+    const response = await fetchApi(`/marketplace/agents/check/${agentId}`, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to check agent shared status: ${response.statusText}`,
+      );
+    }
+
+    const responseData = (await response.json()) as {
+      data: { isShared: boolean; sharedAgent: any | null };
+    };
     return responseData.data;
   };
 }

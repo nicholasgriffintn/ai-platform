@@ -44,6 +44,9 @@ export const user = sqliteTable("user", {
   location: text(),
   bio: text(),
   twitter_username: text(),
+  role: text({
+    enum: ["user", "admin", "moderator"],
+  }).default("user"),
   created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
   updated_at: text()
     .default(sql`(CURRENT_TIMESTAMP)`)
@@ -435,3 +438,104 @@ export const agents = sqliteTable(
 );
 
 export type Agent = typeof agents.$inferSelect;
+
+export const sharedAgents = sqliteTable(
+  "shared_agents",
+  {
+    id: text().primaryKey(),
+    agent_id: text()
+      .notNull()
+      .references(() => agents.id),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    name: text().notNull(),
+    description: text().default("").notNull(),
+    avatar_url: text(),
+    category: text(),
+    tags: text({ mode: "json" }),
+    is_featured: integer({ mode: "boolean" }).default(false),
+    is_public: integer({ mode: "boolean" }).default(true),
+    usage_count: integer().default(0),
+    rating_count: integer().default(0),
+    rating_average: text().default("0"),
+    template_data: text({ mode: "json" }).notNull(),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    agentIdIdx: index("shared_agents_agent_id_idx").on(table.agent_id),
+    userIdIdx: index("shared_agents_user_id_idx").on(table.user_id),
+    categoryIdx: index("shared_agents_category_idx").on(table.category),
+    featuredIdx: index("shared_agents_featured_idx").on(table.is_featured),
+    publicIdx: index("shared_agents_public_idx").on(table.is_public),
+    usageIdx: index("shared_agents_usage_idx").on(table.usage_count),
+    ratingIdx: index("shared_agents_rating_idx").on(table.rating_average),
+  }),
+);
+
+export type SharedAgent = typeof sharedAgents.$inferSelect;
+
+export const agentInstalls = sqliteTable(
+  "agent_installs",
+  {
+    id: text().primaryKey(),
+    shared_agent_id: text()
+      .notNull()
+      .references(() => sharedAgents.id),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    agent_id: text()
+      .notNull()
+      .references(() => agents.id),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+  },
+  (table) => ({
+    sharedAgentIdIdx: index("agent_installs_shared_agent_id_idx").on(
+      table.shared_agent_id,
+    ),
+    userIdIdx: index("agent_installs_user_id_idx").on(table.user_id),
+    agentIdIdx: index("agent_installs_agent_id_idx").on(table.agent_id),
+    uniqueInstall: index("agent_installs_unique_idx").on(
+      table.shared_agent_id,
+      table.user_id,
+    ),
+  }),
+);
+
+export type AgentInstall = typeof agentInstalls.$inferSelect;
+
+export const agentRatings = sqliteTable(
+  "agent_ratings",
+  {
+    id: text().primaryKey(),
+    shared_agent_id: text()
+      .notNull()
+      .references(() => sharedAgents.id),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    rating: integer().notNull(),
+    review: text(),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    sharedAgentIdIdx: index("agent_ratings_shared_agent_id_idx").on(
+      table.shared_agent_id,
+    ),
+    userIdIdx: index("agent_ratings_user_id_idx").on(table.user_id),
+    ratingIdx: index("agent_ratings_rating_idx").on(table.rating),
+    uniqueRating: index("agent_ratings_unique_idx").on(
+      table.shared_agent_id,
+      table.user_id,
+    ),
+  }),
+);
+
+export type AgentRating = typeof agentRatings.$inferSelect;

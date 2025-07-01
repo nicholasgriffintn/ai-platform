@@ -63,7 +63,7 @@ export function PageShell({
       {isBeta && (
         <NotificationBar
           title="Beta Feature"
-          description="Dynamic Apps is currently in beta. Some features may change, not work or be unavailable."
+          description="This page is currently in beta. Some features may change, not work or be unavailable."
         />
       )}
       {fullBleed ? (

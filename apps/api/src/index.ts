@@ -27,12 +27,14 @@ import {
 import { LogLevel, getLogger } from "./utils/logger";
 
 import { ROUTES } from "./constants/app";
+import admin from "./routes/admin";
 import agents from "./routes/agents";
 import apps from "./routes/apps";
 import audio from "./routes/audio";
 import auth from "./routes/auth";
 import chat from "./routes/chat";
 import dynamicApps from "./routes/dynamic-apps";
+import marketplace from "./routes/marketplace";
 import models from "./routes/models";
 import plans from "./routes/plans";
 import realtime from "./routes/realtime";
@@ -194,6 +196,8 @@ app.route(ROUTES.PLANS, plans);
 app.route(ROUTES.STRIPE, stripe);
 app.route(ROUTES.REALTIME, realtime);
 app.route(ROUTES.AGENTS, agents);
+app.route(ROUTES.MARKETPLACE, marketplace);
+app.route(ROUTES.ADMIN, admin);
 
 app.notFound((c) => c.json({ status: "not found" }, 404));
 

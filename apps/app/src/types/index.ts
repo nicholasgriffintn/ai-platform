@@ -7,3 +7,4 @@ export * from "./models";
 export * from "./podcast";
 export * from "./note";
 export * from "./user";
+export * from "./marketplace";

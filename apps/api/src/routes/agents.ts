@@ -10,11 +10,11 @@ import { requireAuth } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { AgentRepository } from "~/repositories/AgentRepository";
+import { SharedAgentRepository } from "~/repositories/SharedAgentRepository";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { registerMCPClient } from "~/services/functions/mcp";
 import { add_reasoning_step } from "~/services/functions/reasoning";
-import type { IEnv } from "~/types";
-import type { ChatCompletionParameters } from "~/types";
+import type { ChatCompletionParameters, IEnv } from "~/types";
 import { createAgentSchema, updateAgentSchema } from "./schemas/agents";
 import { createChatCompletionsJsonSchema } from "./schemas/chat";
 import { apiResponseSchema } from "./schemas/shared";
@@ -356,6 +356,9 @@ app.delete(
       return ctx.json({ error: "Forbidden" }, 403);
     }
 
+    const sharedRepo = new SharedAgentRepository(ctx.env);
+    await sharedRepo.uninstallAgent(user.id, agentId);
+
     await repo.deleteAgent(agentId);
     return ctx.json({
       status: "success",
@@ -561,6 +564,55 @@ app.post(
     });
 
     return response instanceof Response ? response : ctx.json(response);
+  },
+);
+
+app.get(
+  "/:agentId/shared",
+  requireAuth,
+  describeRoute({
+    tags: ["agents"],
+    summary: "Get shared status of agent",
+    description: "Check if an agent is shared and get shared details",
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  async (ctx: Context) => {
+    const { agentId } = ctx.req.param();
+    const user = ctx.get("user");
+
+    if (!user?.id) {
+      return ctx.json(
+        {
+          status: "error",
+          error: "Unauthorized",
+        },
+        401,
+      );
+    }
+
+    const agentRepo = new AgentRepository(ctx.env);
+    const agent = await agentRepo.getAgentById(agentId);
+
+    if (!agent || agent.user_id !== user.id) {
+      return ctx.json({ error: "Agent not found" }, 404);
+    }
+
+    const sharedRepo = new SharedAgentRepository(ctx.env);
+    const sharedAgent = await sharedRepo.getSharedAgentByAgentId(agentId);
+
+    return ctx.json({
+      status: "success",
+      data: sharedAgent,
+    });
   },
 );
 

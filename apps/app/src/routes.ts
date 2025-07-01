@@ -7,6 +7,7 @@ export default [
   route("/auth/callback", "pages/auth/callback.tsx"),
   route("/auth/verify-magic-link", "pages/auth/verify-magic-link.tsx"),
   route("/profile", "pages/profile.tsx"),
+  route("/marketplace", "pages/marketplace.tsx"),
   route("/s/:share_id", "pages/shared/[share_id].tsx"),
   route("/s/apps/:share_id", "pages/shared/apps/[share_id].tsx"),
   route("/apps", "pages/apps/index.tsx"),

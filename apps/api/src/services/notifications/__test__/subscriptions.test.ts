@@ -7,7 +7,7 @@ import {
   sendSubscriptionEmail,
   sendTrialEndingEmail,
   sendUnsubscriptionEmail,
-} from "../emails";
+} from "../subscriptions";
 
 vi.mock("~/services/email", () => ({
   sendEmail: vi.fn(),

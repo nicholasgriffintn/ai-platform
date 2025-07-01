@@ -1,5 +1,6 @@
-import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
+import { Edit, Loader2, Plus, Share, Store, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Button as UiButton } from "~/components/ui/Button";
 import { FormInput } from "~/components/ui/Form/Input";
@@ -7,6 +8,7 @@ import { FormSelect } from "~/components/ui/Form/Select";
 import { Switch } from "~/components/ui/Form/Switch";
 import { Textarea } from "~/components/ui/Textarea";
 import { Label } from "~/components/ui/label";
+import { useMultipleAgentsSharedStatus } from "~/hooks/useAgentSharedStatus";
 import { type AgentData, useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { generateId } from "~/lib/utils";
@@ -15,6 +17,7 @@ import { cn } from "~/lib/utils";
 import { EmptyState } from "~/components/EmptyState";
 import { PageHeader } from "~/components/PageHeader";
 import { PageTitle } from "~/components/PageTitle";
+import { ShareAgentModal } from "~/components/ShareAgentModal";
 import { Button } from "~/components/ui/Button";
 import { Card } from "~/components/ui/Card";
 import {
@@ -79,6 +82,7 @@ interface FewShotExample {
 }
 
 export function ProfileAgentsTab() {
+  const navigate = useNavigate();
   const {
     agents,
     isLoadingAgents,
@@ -91,6 +95,10 @@ export function ProfileAgentsTab() {
   } = useAgents();
 
   const { data: apiModels = {}, isLoading: isLoadingModels } = useModels();
+
+  const agentIds = agents.map((agent: any) => agent.id);
+  const { data: sharedStatusMap = {} } =
+    useMultipleAgentsSharedStatus(agentIds);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -120,6 +128,9 @@ export function ProfileAgentsTab() {
     id: string;
     name: string;
   } | null>(null);
+
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [agentToShare, setAgentToShare] = useState<any>(null);
 
   const resetForm = () => {
     setIsEditMode(false);
@@ -268,6 +279,11 @@ export function ProfileAgentsTab() {
     setAgentToDelete({ id: agentId, name: agentName });
   };
 
+  const handleShareClick = (agent: any) => {
+    setAgentToShare(agent);
+    setShareModalOpen(true);
+  };
+
   const handleConfirmDelete = () => {
     if (agentToDelete) {
       deleteAgent(agentToDelete.id, {
@@ -296,6 +312,12 @@ export function ProfileAgentsTab() {
     <div>
       <PageHeader
         actions={[
+          {
+            label: "Browse Marketplace",
+            onClick: () => navigate("/marketplace"),
+            icon: <Store className="mr-2 h-4 w-4" />,
+            variant: "secondary",
+          },
           {
             label: "Add Agent",
             onClick: () => {
@@ -383,9 +405,35 @@ export function ProfileAgentsTab() {
                               Has Servers
                             </span>
                           )}
+                        {sharedStatusMap[agent.id]?.isShared && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-800/30 dark:text-indigo-400">
+                            Shared
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex space-x-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleShareClick(agent)}
+                        disabled={sharedStatusMap[agent.id]?.isShared}
+                        aria-label={
+                          sharedStatusMap[agent.id]?.isShared
+                            ? `Agent ${agent.name} is already shared`
+                            : `Share agent ${agent.name}`
+                        }
+                        title={
+                          sharedStatusMap[agent.id]?.isShared
+                            ? `This agent is already shared to the marketplace`
+                            : `Share agent ${agent.name} to marketplace`
+                        }
+                      >
+                        <Share className="h-4 w-4 mr-2" />
+                        {sharedStatusMap[agent.id]?.isShared
+                          ? "Shared"
+                          : "Share"}
+                      </Button>
                       <Button
                         variant="secondary"
                         size="sm"
@@ -762,6 +810,15 @@ export function ProfileAgentsTab() {
           isDeleting={isDeletingAgent}
         />
       )}
+
+      <ShareAgentModal
+        isOpen={shareModalOpen}
+        onClose={() => {
+          setShareModalOpen(false);
+          setAgentToShare(null);
+        }}
+        agent={agentToShare}
+      />
     </div>
   );
 }

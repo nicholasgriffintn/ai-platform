@@ -176,6 +176,13 @@
       "when": 1748737490115,
       "tag": "0024_last_killmonger",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1751320043666,
+      "tag": "0025_acoustic_nebula",
+      "breakpoints": true
     }
   ]
 }

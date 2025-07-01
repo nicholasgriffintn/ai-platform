@@ -24,17 +24,19 @@ export class AgentRepository extends BaseRepository {
     await this.executeRun(
       "INSERT INTO agents (id, user_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
-        id,
-        userId,
-        name,
-        description,
-        avatarUrl,
-        serversJson,
-        model,
-        temperature?.toString(),
-        maxSteps,
-        systemPrompt,
-        fewShotExamplesJson,
+        id ?? null,
+        userId ?? null,
+        name ?? null,
+        description ?? null,
+        avatarUrl ?? null,
+        serversJson ?? null,
+        model ?? null,
+        temperature !== undefined && temperature !== null
+          ? temperature.toString()
+          : null,
+        maxSteps !== undefined && maxSteps !== null ? maxSteps : null,
+        systemPrompt ?? null,
+        fewShotExamplesJson ?? null,
       ],
     );
     const now = new Date().toISOString();

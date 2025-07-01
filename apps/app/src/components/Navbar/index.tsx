@@ -4,6 +4,7 @@ import {
   Menu,
   MoreVertical,
   PanelLeftOpen,
+  Store,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -52,6 +53,14 @@ export const ChatNavbar = ({ showSidebarToggle = true }: ChatNavbarProps) => {
       >
         <Grid size={16} />
         <span>Apps</span>
+      </Link>
+      <Link
+        to="/marketplace"
+        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-lg no-underline"
+        onClick={() => setIsMobileMenuOpen(false)}
+      >
+        <Store size={16} />
+        <span>Marketplace</span>
       </Link>
       <a
         href="https://metrics.polychat.app/"
