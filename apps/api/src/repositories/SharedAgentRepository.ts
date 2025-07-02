@@ -180,7 +180,7 @@ export class SharedAgentRepository extends BaseRepository {
       `SELECT sa.*, u.name as author_name, u.avatar_url as author_avatar_url
        FROM shared_agents sa
        JOIN user u ON sa.user_id = u.id
-       WHERE sa.id = ? AND sa.is_public = 1`,
+       WHERE sa.id = ?`,
       [id],
       true,
     );

@@ -144,6 +144,7 @@ export async function getPasskeyWithUser(
       email: result.email as string,
       name: (result.name as string) || null,
       github_username: (result.github_username as string) || null,
+      role: (result.role as string) || null,
       avatar_url: (result.avatar_url as string) || null,
     };
 

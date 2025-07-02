@@ -9,6 +9,7 @@ export interface User {
   location: string | null;
   bio: string | null;
   twitter_username: string | null;
+  role?: string | null;
   created_at: string;
   updated_at: string;
   setup_at: string | null;

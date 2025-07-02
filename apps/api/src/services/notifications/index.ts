@@ -96,7 +96,7 @@ function createEmailTemplate({
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                 <tr>
                                     <td align="center">
-                                        <img src="${PROD_HOST}/logos/abstract.svg" alt="${APP_NAME} Logo" width="150" height="50" style="display: block; max-width: 150px; height: auto;" />
+                                        <img src="https://${PROD_HOST}/logos/abstract.svg" alt="${APP_NAME} Logo" width="150" height="50" style="display: block; max-width: 150px; height: auto;" />
                                     </td>
                                 </tr>
                             </table>
@@ -345,7 +345,7 @@ export async function sendAgentModerationNotification(
     subject,
     title: `Your Agent ${isApproved ? "has been Approved" : "Requires Changes"} ${statusEmoji}`,
     content: `
-      <p><strong>Your agent "${agentName}" has been ${status} for the ${APP_NAME} marketplace.</strong></p>
+      <p><strong>Your agent "${agentName}" has been reviewed and ${status} for the ${APP_NAME} marketplace.</strong></p>
       ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
       ${
         isApproved

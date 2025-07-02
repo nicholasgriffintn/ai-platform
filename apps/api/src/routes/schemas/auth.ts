@@ -18,6 +18,7 @@ export const userSchema = z.object({
   location: z.string().nullable(),
   bio: z.string().nullable(),
   twitter_username: z.string().nullable(),
+  role: z.enum(["user", "admin", "moderator"]).nullable(),
   created_at: z.string(),
   updated_at: z.string(),
   setup_at: z.string().nullable(),

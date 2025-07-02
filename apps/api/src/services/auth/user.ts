@@ -22,6 +22,7 @@ function mapToUser(result: Record<string, unknown>): User {
     location: result.location as string | null,
     bio: result.bio as string | null,
     twitter_username: result.twitter_username as string | null,
+    role: result.role as string | null,
     created_at: result.created_at as string,
     updated_at: result.updated_at as string,
     setup_at: result.setup_at as string | null,
