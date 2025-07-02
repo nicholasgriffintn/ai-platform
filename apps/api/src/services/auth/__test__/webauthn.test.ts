@@ -251,6 +251,7 @@ describe("WebAuthn Service", () => {
           name: "Test User",
           github_username: null,
           avatar_url: null,
+          role: null,
         },
       });
     });
@@ -455,6 +456,7 @@ describe("WebAuthn Service", () => {
           name: null,
           github_username: null,
           avatar_url: null,
+          role: null,
         },
       });
     });

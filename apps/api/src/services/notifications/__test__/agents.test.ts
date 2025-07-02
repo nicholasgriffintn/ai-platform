@@ -44,7 +44,7 @@ describe("Agent Notification Emails", () => {
         mockEnv,
         "user@example.com",
         '🎉 Your agent "Test Agent" has been approved for the marketplace',
-        expect.stringContaining("Agent Approved ✅"),
+        expect.stringContaining("Your Agent has been Approved ✅"),
         expect.stringContaining("Test Agent"),
       );
     });
@@ -71,7 +71,7 @@ describe("Agent Notification Emails", () => {
         mockEnv,
         "user@example.com",
         '📝 Your agent "Test Agent" needs attention',
-        expect.stringContaining("Agent Review Required ⚠️"),
+        expect.stringContaining("Your Agent Requires Changes ⚠️"),
         expect.stringContaining("Content needs improvement"),
       );
     });
@@ -118,8 +118,8 @@ describe("Agent Notification Emails", () => {
         mockEnv,
         "user@example.com",
         '🌟 Your agent "Test Agent" has been featured!',
-        expect.stringContaining("🌟 Agent Featured!"),
-        expect.stringContaining("Congratulations!"),
+        expect.stringContaining("🌟 Your Agent has been Featured!"),
+        expect.stringContaining("🎉 Congratulations!"),
       );
     });
 

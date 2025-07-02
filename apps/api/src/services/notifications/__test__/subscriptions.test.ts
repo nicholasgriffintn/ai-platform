@@ -34,7 +34,7 @@ describe("Subscription Emails", () => {
         mockEnv,
         "test@example.com",
         "Subscription Confirmation",
-        expect.stringContaining("Subscription Confirmed"),
+        expect.stringContaining("Your Subscription has been Confirmed"),
         expect.stringContaining("Thank you for subscribing to the Pro plan!"),
       );
     });
@@ -58,7 +58,7 @@ describe("Subscription Emails", () => {
         mockEnv,
         "test@example.com",
         "Subscription Cancelled",
-        expect.stringContaining("Subscription Cancelled"),
+        expect.stringContaining("Your Subscription has been Cancelled"),
         expect.stringContaining("We're sorry to see you go"),
       );
     });
@@ -85,7 +85,7 @@ describe("Subscription Emails", () => {
         mockEnv,
         "test@example.com",
         "Your Subscription Will End Soon",
-        expect.stringContaining("Subscription Will End Soon"),
+        expect.stringContaining("Your Subscription Will End Soon"),
         expect.stringContaining("current billing period"),
       );
     });
@@ -109,7 +109,7 @@ describe("Subscription Emails", () => {
         mockEnv,
         "test@example.com",
         "Payment Failed",
-        expect.stringContaining("Payment Failed"),
+        expect.stringContaining("Your Payment has Failed"),
         expect.stringContaining("update your payment method"),
       );
     });
@@ -133,7 +133,7 @@ describe("Subscription Emails", () => {
         mockEnv,
         "test@example.com",
         "Your Trial is Ending Soon",
-        expect.stringContaining("Your Trial is Ending Soon"),
+        expect.stringContaining("Your Free Trial is Ending Soon"),
         expect.stringContaining("free trial period is ending"),
       );
     });
