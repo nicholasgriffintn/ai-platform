@@ -7,7 +7,7 @@ import {
   Trash2,
   User,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { EmptyState } from "~/components/EmptyState";
@@ -63,8 +63,17 @@ export function ProfileAgentsTab() {
 
   const { data: apiModels = {}, isLoading: isLoadingModels } = useModels();
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm.length >= 3 ? searchTerm : "");
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const {
     sharedAgents,
@@ -80,7 +89,7 @@ export function ProfileAgentsTab() {
   } = useSharedAgents({
     category: selectedCategory,
     tags: selectedTag ? [selectedTag] : [],
-    search: searchTerm,
+    search: debouncedSearchTerm,
   });
 
   const [modalOpen, setModalOpen] = useState(false);

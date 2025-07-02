@@ -49,42 +49,42 @@ export function SharedAgentCard({ agent, onInstall, isInstalling }: any) {
                 </Badge>
               )}
             </div>
-
-            <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                <span>
-                  {agent.rating_average} ({agent.rating_count})
-                </span>
-              </div>
-
-              {agent.author_name && (
-                <div className="flex items-center gap-1.5">
-                  {agent.author_avatar_url && (
-                    <img
-                      src={agent.author_avatar_url || "/placeholder.svg"}
-                      alt={agent.author_name}
-                      className="w-4 h-4 rounded-full"
-                    />
-                  )}
-                  <span className="truncate max-w-20">{agent.author_name}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-end mt-4">
-              <Button
-                size="sm"
-                variant="primary"
-                onClick={() => onInstall(agent.id)}
-                disabled={isInstalling}
-                className="shrink-0"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Install
-              </Button>
-            </div>
           </div>
+        </div>
+
+        <hr className="my-4" />
+
+        <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+            <span>
+              {agent.rating_average} ({agent.rating_count})
+            </span>
+          </div>
+
+          {agent.author_name && (
+            <div className="flex items-center gap-1.5">
+              {agent.author_avatar_url && (
+                <img
+                  src={agent.author_avatar_url || "/placeholder.svg"}
+                  alt={agent.author_name}
+                  className="w-4 h-4 rounded-full"
+                />
+              )}
+              <span className="truncate max-w-20">{agent.author_name}</span>
+            </div>
+          )}
+
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={() => onInstall(agent.id)}
+            disabled={isInstalling}
+            className="shrink-0"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Install
+          </Button>
         </div>
       </CardContent>
     </Card>
