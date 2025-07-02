@@ -1,4 +1,5 @@
 import { MAGIC_LINK_EXPIRATION_MINUTES } from "~/constants/app";
+import { APP_NAME, PROD_HOST } from "~/constants/app";
 import { sendEmail } from "~/services/email";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -95,7 +96,7 @@ function createEmailTemplate({
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                 <tr>
                                     <td align="center">
-                                        <img src="https://polychat.app/logos/abstract.svg" alt="Polychat Logo" width="150" height="50" style="display: block; max-width: 150px; height: auto;" />
+                                        <img src="${PROD_HOST}/logos/abstract.svg" alt="${APP_NAME} Logo" width="150" height="50" style="display: block; max-width: 150px; height: auto;" />
                                     </td>
                                 </tr>
                             </table>
@@ -136,7 +137,7 @@ function createEmailTemplate({
                                 <tr>
                                     <td align="center" style="padding-bottom: 10px;">
                                         <p style="margin: 0; font-size: 14px; line-height: 20px; color: #6b7280;">
-                                            ${footer || "Thank you for using Polychat!"}
+                                            ${footer || `Thank you for using ${APP_NAME}!`}
                                         </p>
                                     </td>
                                 </tr>
@@ -261,7 +262,7 @@ export async function sendPaymentFailedEmail(
     subject: "Payment Failed",
     title: "Your Payment has Failed",
     content: `
-      <p>Your payment has failed. Please update your payment method to continue using Polychat.</p>
+      <p>Your payment has failed. Please update your payment method to continue using ${APP_NAME}.</p>
     `,
   });
 
@@ -344,7 +345,7 @@ export async function sendAgentModerationNotification(
     subject,
     title: `Your Agent ${isApproved ? "has been Approved" : "Requires Changes"} ${statusEmoji}`,
     content: `
-      <p><strong>Your agent "${agentName}" has been ${status} for the Polychat marketplace.</strong></p>
+      <p><strong>Your agent "${agentName}" has been ${status} for the ${APP_NAME} marketplace.</strong></p>
       ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
       ${
         isApproved
@@ -353,7 +354,7 @@ export async function sendAgentModerationNotification(
       }
       ${moderatorName ? `<p><em>Reviewed by: ${moderatorName}</em></p>` : ""}
     `,
-    footer: "Best regards,<br>The Polychat Team",
+    footer: `Best regards,<br>The ${APP_NAME} Team`,
     userName,
   });
 
@@ -395,12 +396,12 @@ export async function sendAgentFeaturedNotification(
     subject,
     title: "🌟 Your Agent has been Featured!",
     content: `
-      <p><strong>🎉 Congratulations! Your agent "${agentName}" has been selected as a featured agent on the Polychat marketplace.</strong></p>
+      <p><strong>🎉 Congratulations! Your agent "${agentName}" has been selected as a featured agent on the ${APP_NAME} marketplace.</strong></p>
       <p>Featured agents get premium placement and increased visibility to help more users discover your creation.</p>
       ${moderatorName ? `<p><em>Selected by: ${moderatorName}</em></p>` : ""}
       <p><strong>Keep up the great work!</strong></p>
     `,
-    footer: "Best regards,<br>The Polychat Team",
+    footer: `Best regards,<br>The ${APP_NAME} Team`,
     userName,
   });
 
@@ -439,7 +440,7 @@ export async function sendMagicLinkEmail(
         <tr>
           <td align="center" style="background-color: #2563eb; border-radius: 6px;">
             <a href="${magicLink}" style="display: inline-block; padding: 16px 32px; font-size: 16px; font-weight: bold; color: #ffffff; text-decoration: none; border-radius: 6px;">
-              Log In to Polychat
+              Log In to ${APP_NAME}
             </a>
           </td>
         </tr>

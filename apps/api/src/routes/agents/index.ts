@@ -121,6 +121,8 @@ app.post(
   },
 );
 
+app.route("/shared", sharedAgents);
+
 app.get(
   "/:agentId",
   requireAuth,
@@ -564,7 +566,5 @@ app.post(
     return response instanceof Response ? response : ctx.json(response);
   },
 );
-
-app.route("/shared", sharedAgents);
 
 export default app;

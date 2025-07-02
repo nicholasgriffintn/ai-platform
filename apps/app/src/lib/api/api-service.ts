@@ -966,6 +966,197 @@ class ApiService {
     return responseData.data || [];
   };
 
+  public listSharedAgents = async ({
+    category,
+    tags,
+    search,
+    featured,
+    limit,
+    offset,
+    sort_by,
+  }: {
+    category?: string;
+    tags?: string[];
+    search?: string;
+    featured?: boolean;
+    limit?: number;
+    offset?: number;
+    sort_by?: string;
+  } = {}): Promise<any[]> => {
+    const params = new URLSearchParams();
+
+    if (category) {
+      params.append("category", category);
+    }
+
+    if (tags?.length) {
+      tags.forEach((tag) => params.append("tags", tag));
+    }
+
+    if (search) {
+      params.append("search", search);
+    }
+
+    if (featured !== undefined) {
+      params.append("featured", String(featured));
+    }
+
+    if (limit !== undefined) {
+      params.append("limit", String(limit));
+    }
+
+    if (offset !== undefined) {
+      params.append("offset", String(offset));
+    }
+
+    if (sort_by) {
+      params.append("sort_by", sort_by);
+    }
+
+    const response = await fetchApi(`/agents/shared?${params.toString()}`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to list shared agents: ${response.statusText}`);
+    }
+
+    const responseData = (await response.json()) as { data: any[] };
+
+    return responseData.data || [];
+  };
+
+  public listFeaturedSharedAgents = async (limit = 10): Promise<any[]> => {
+    const params = new URLSearchParams();
+    params.append("limit", String(limit));
+    const response = await fetchApi(
+      `/agents/shared/featured?${params.toString()}`,
+      { method: "GET" },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to list featured agents: ${response.statusText}`);
+    }
+
+    const responseData = (await response.json()) as { data: any[] };
+
+    return responseData.data || [];
+  };
+
+  public installSharedAgent = async (agentId: string): Promise<any> => {
+    const response = await fetchApi(`/agents/shared/${agentId}/install`, {
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to install shared agent: ${response.statusText}`);
+    }
+
+    const responseData = (await response.json()) as { data: any[] };
+
+    return responseData.data || [];
+  };
+
+  public shareAgent = async (
+    agentId: string,
+    name: string,
+    description?: string | null,
+    avatarUrl?: string | null,
+    category?: string | null,
+    tags?: string[] | null,
+  ): Promise<any> => {
+    const body = {
+      agent_id: agentId,
+      name,
+      description,
+      avatar_url: avatarUrl,
+      category,
+      tags,
+    };
+    const response = await fetchApi(`/agents/shared/share`, {
+      method: "POST",
+      body,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to share agent: ${response.statusText}`);
+    }
+
+    const responseData = (await response.json()) as { data: any[] };
+
+    return responseData.data || [];
+  };
+
+  public rateSharedAgent = async (
+    agentId: string,
+    rating: number,
+    review?: string,
+  ): Promise<any> => {
+    const body = { rating, review };
+    const response = await fetchApi(`/agents/shared/${agentId}/rate`, {
+      method: "POST",
+      body,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to rate shared agent: ${response.statusText}`);
+    }
+
+    const responseData = (await response.json()) as { data: any[] };
+
+    return responseData.data || [];
+  };
+
+  public getAgentRatings = async (
+    agentId: string,
+    limit = 10,
+  ): Promise<any[]> => {
+    const params = new URLSearchParams();
+    params.append("limit", String(limit));
+    const response = await fetchApi(
+      `/agents/shared/${agentId}/ratings?${params.toString()}`,
+      { method: "GET" },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to get agent ratings: ${response.statusText}`);
+    }
+
+    const responseData = (await response.json()) as { data: any[] };
+
+    return responseData.data || [];
+  };
+
+  public getSharedCategories = async (): Promise<string[]> => {
+    const response = await fetchApi(`/agents/shared/categories`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to get shared agent categories: ${response.statusText}`,
+      );
+    }
+
+    const responseData = (await response.json()) as { data: any[] };
+
+    return responseData.data || [];
+  };
+
+  public getSharedTags = async (): Promise<string[]> => {
+    const response = await fetchApi(`/agents/shared/tags`, { method: "GET" });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to get shared agent tags: ${response.statusText}`,
+      );
+    }
+
+    const responseData = (await response.json()) as { data: any[] };
+
+    return responseData.data || [];
+  };
+
   public createAgent = async (
     name: string,
     servers?: any[],

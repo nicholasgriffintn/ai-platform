@@ -97,7 +97,7 @@ export const sharedAgentFiltersSchema = z.object({
 });
 
 export const featuredAgentsSchema = z.object({
-  limit: z
+  limit: z.coerce
     .number()
     .int()
     .positive()

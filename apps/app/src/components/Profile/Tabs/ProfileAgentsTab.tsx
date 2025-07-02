@@ -1,76 +1,47 @@
-import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
+import {
+  Filter,
+  Loader2,
+  Plus,
+  Search,
+  Star,
+  Trash2,
+  User,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button as UiButton } from "~/components/ui/Button";
-import { FormInput } from "~/components/ui/Form/Input";
-import { FormSelect } from "~/components/ui/Form/Select";
-import { Switch } from "~/components/ui/Form/Switch";
-import { Textarea } from "~/components/ui/Textarea";
-import { Label } from "~/components/ui/label";
-import { type AgentData, useAgents } from "~/hooks/useAgents";
-import { useModels } from "~/hooks/useModels";
-import { generateId } from "~/lib/utils";
-import { cn } from "~/lib/utils";
 
 import { EmptyState } from "~/components/EmptyState";
 import { PageHeader } from "~/components/PageHeader";
 import { PageTitle } from "~/components/PageTitle";
 import { Button } from "~/components/ui/Button";
-import { Card } from "~/components/ui/Card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/Card";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/Dialog";
+import { FormInput } from "~/components/ui/Form/Input";
+import { FormSelect } from "~/components/ui/Form/Select";
+import { Switch } from "~/components/ui/Form/Switch";
+import { Textarea } from "~/components/ui/Textarea";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-
-function ConfirmDeleteModal({
-  isOpen,
-  onClose,
-  onConfirm,
-  agentName,
-  isDeleting,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  agentName: string;
-  isDeleting: boolean;
-}) {
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Confirm Deletion</DialogTitle>
-          <DialogClose onClick={onClose} />
-        </DialogHeader>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          {`Are you sure you want to delete the agent "${agentName}"? This action cannot be undone.`}
-        </p>
-        <div className="flex justify-end space-x-3 mt-6">
-          <Button variant="secondary" onClick={onClose} disabled={isDeleting}>
-            Cancel
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={onConfirm}
-            disabled={isDeleting}
-          >
-            {isDeleting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...
-              </>
-            ) : (
-              "Delete Agent"
-            )}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
+import { type AgentData, useAgents } from "~/hooks/useAgents";
+import { useModels } from "~/hooks/useModels";
+import { useSharedAgents } from "~/hooks/useSharedAgents";
+import { generateId } from "~/lib/utils";
+import { cn } from "~/lib/utils";
+import { ConfirmDeleteModal } from "../Modals/ConfirmDeleteModal";
+import { AgentCard } from "./cards/AgentCard";
+import { SharedAgentCard } from "./cards/SharedAgentCard";
 
 interface FewShotExample {
   id: string;
@@ -91,6 +62,26 @@ export function ProfileAgentsTab() {
   } = useAgents();
 
   const { data: apiModels = {}, isLoading: isLoadingModels } = useModels();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedTag, setSelectedTag] = useState("");
+
+  const {
+    sharedAgents,
+    isLoadingSharedAgents,
+    featuredAgents,
+    isLoadingFeaturedAgents,
+    installSharedAgent,
+    isInstalling,
+    shareAgent,
+    isSharing,
+    categories,
+    tags,
+  } = useSharedAgents({
+    category: selectedCategory,
+    tags: selectedTag ? [selectedTag] : [],
+    search: searchTerm,
+  });
 
   const [modalOpen, setModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -98,28 +89,34 @@ export function ProfileAgentsTab() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
-
   const [useServers, setUseServers] = useState(false);
   const [servers, setServers] = useState<
     Array<{ id: string; url: string; type: "sse" | "stdio" }>
   >([{ id: generateId(), url: "", type: "sse" }]);
-
   const [selectedModel, setSelectedModel] = useState("");
   const [temperature, setTemperature] = useState(0.7);
   const [maxSteps, setMaxSteps] = useState(20);
   const [systemPrompt, setSystemPrompt] = useState("");
-
   const [useFewShotExamples, setUseFewShotExamples] = useState(false);
   const [fewShotExamples, setFewShotExamples] = useState<FewShotExample[]>([
     { id: generateId(), input: "", output: "" },
   ]);
-
   const [activeTab, setActiveTab] = useState("basic");
-
   const [agentToDelete, setAgentToDelete] = useState<{
     id: string;
     name: string;
   } | null>(null);
+  const [agentToShare, setAgentToShare] = useState<{
+    id: string;
+    name: string;
+    description?: string;
+    avatar_url?: string;
+  } | null>(null);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareName, setShareName] = useState("");
+  const [shareDescription, setShareDescription] = useState("");
+  const [shareCategory, setShareCategory] = useState("");
+  const [shareTagsInput, setShareTagsInput] = useState("");
 
   const resetForm = () => {
     setIsEditMode(false);
@@ -227,13 +224,10 @@ export function ProfileAgentsTab() {
     }
 
     setSelectedModel(agent.model || "");
-
     setTemperature(
       agent.temperature ? Number.parseFloat(agent.temperature) : 0.7,
     );
-
     setMaxSteps(agent.max_steps || 20);
-
     setSystemPrompt(agent.system_prompt || "");
 
     if (agent.few_shot_examples) {
@@ -285,6 +279,35 @@ export function ProfileAgentsTab() {
     }
   };
 
+  const handleShareClick = (agent: any) => {
+    setAgentToShare(agent);
+    setShareName(agent.name || "");
+    setShareDescription(agent.description || "");
+    setShareCategory("");
+    setShareTagsInput("");
+    setShareModalOpen(true);
+  };
+
+  const handleConfirmShare = async () => {
+    if (agentToShare) {
+      const tagsArray = shareTagsInput
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+
+      await shareAgent({
+        agentId: agentToShare.id,
+        name: shareName,
+        description: shareDescription || undefined,
+        avatarUrl: agentToShare.avatar_url || undefined,
+        category: shareCategory || undefined,
+        tags: tagsArray,
+      });
+      setShareModalOpen(false);
+      setAgentToShare(null);
+    }
+  };
+
   const modelOptions = Object.entries(apiModels)
     .filter(([_, model]) => model.supportsFunctions)
     .map(([id, model]) => ({
@@ -293,7 +316,7 @@ export function ProfileAgentsTab() {
     }));
 
   return (
-    <div>
+    <div className="space-y-8">
       <PageHeader
         actions={[
           {
@@ -310,124 +333,158 @@ export function ProfileAgentsTab() {
         <PageTitle title="Agents" />
       </PageHeader>
 
-      <div className="space-y-8">
-        <Card>
-          <div className="px-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Your Agents
-            </h3>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Agents are extendable chatbots that can be used for more advanced
-              conversations within Polychat. They are configured to return
-              within a multi-step process and can be configured with fixed
-              settings and MCP connections.
-            </p>
-          </div>
-          <div className="px-6 py-4">
-            {isLoadingAgents ? (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
-                <span className="ml-2 text-zinc-500 dark:text-zinc-400">
-                  Loading agents...
-                </span>
-              </div>
-            ) : agents.length === 0 ? (
-              <EmptyState
-                message="No agents configured"
-                className="bg-transparent border-none py-6 px-0"
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Your Agents
+          </CardTitle>
+          <CardDescription>
+            Agents are extendable chatbots that can be used for more advanced
+            conversations within Polychat. They are configured to return within
+            a multi-step process and can be configured with fixed settings and
+            MCP connections.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoadingAgents ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-muted-foreground">
+                Loading your agents...
+              </span>
+            </div>
+          ) : agents.length === 0 ? (
+            <EmptyState
+              title="No Agents Yet"
+              message="Create your first agent to get started with advanced AI conversations"
+              icon={<User className="h-5 w-5" />}
+            />
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {agents.map((agent: any) => (
+                <AgentCard
+                  key={agent.id}
+                  agent={agent}
+                  onEdit={handleEditClick}
+                  onShare={handleShareClick}
+                  onDelete={handleDeleteClick}
+                  isUpdating={isUpdatingAgent && currentAgentId === agent.id}
+                  isSharing={isSharing && agentToShare?.id === agent.id}
+                  isDeleting={isDeletingAgent && agentToDelete?.id === agent.id}
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Search className="h-5 w-5" />
+            Browse Agents
+          </CardTitle>
+          <CardDescription>
+            Search and filter community-shared agents
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {isLoadingFeaturedAgents ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-muted-foreground">
+                Loading featured agents...
+              </span>
+            </div>
+          ) : featuredAgents.length === 0 ? (
+            <EmptyState
+              title="No Featured Agents"
+              message="Check back later for featured agents from the community"
+              icon={<Star className="h-5 w-5 text-yellow-500" />}
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-yellow-500" />
+                  Featured
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {featuredAgents.map((agent: any) => (
+                    <SharedAgentCard
+                      key={agent.id}
+                      agent={agent}
+                      onInstall={installSharedAgent}
+                      isInstalling={isInstalling}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name or description..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
               />
-            ) : (
-              <ul className="space-y-3">
-                {agents.map((agent: any) => (
-                  <li
-                    key={agent.id}
-                    className="flex gap-4 items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-700/50 rounded-md"
-                  >
-                    {agent.avatar_url && (
-                      <div className="flex items-center justify-center w-10 h-10">
-                        <img
-                          src={agent.avatar_url}
-                          alt={agent.name}
-                          className="w-10 h-10 rounded-full"
-                        />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <p className="font-medium text-zinc-800 dark:text-zinc-100">
-                        {agent.name}
-                      </p>
-                      {agent.description && (
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                          {agent.description}
-                        </p>
-                      )}
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {agent.model && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800/30 dark:text-blue-400">
-                            Model: {agent.model}
-                          </span>
-                        )}
-                        {agent.system_prompt && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-400">
-                            Has System Prompt
-                          </span>
-                        )}
-                        {agent.few_shot_examples && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-800/30 dark:text-purple-400">
-                            Has Examples
-                          </span>
-                        )}
-                        {agent.servers &&
-                          JSON.parse(agent.servers).length > 0 && (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-800/30 dark:text-amber-400">
-                              Has Servers
-                            </span>
-                          )}
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleEditClick(agent)}
-                        disabled={
-                          isUpdatingAgent && currentAgentId === agent.id
-                        }
-                        aria-label={`Edit agent ${agent.name}`}
-                        title={`Edit agent ${agent.name}`}
-                      >
-                        {isUpdatingAgent && currentAgentId === agent.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Edit className="h-4 w-4 mr-2" />
-                        )}
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteClick(agent.id, agent.name)}
-                        disabled={
-                          isDeletingAgent && agentToDelete?.id === agent.id
-                        }
-                        aria-label={`Delete agent ${agent.name}`}
-                        title={`Delete agent ${agent.name}`}
-                      >
-                        {isDeletingAgent && agentToDelete?.id === agent.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4 mr-2" />
-                        )}
-                        Delete
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+            </div>
+            <div className="flex gap-2">
+              <FormSelect
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                options={[
+                  { value: "", label: "All categories" },
+                  ...categories.map((c) => ({ value: c, label: c })),
+                ]}
+                className="min-w-40"
+              />
+              <FormSelect
+                value={selectedTag}
+                onChange={(e) => setSelectedTag(e.target.value)}
+                options={[
+                  { value: "", label: "All tags" },
+                  ...tags.map((t) => ({ value: t, label: t })),
+                ]}
+                className="min-w-32"
+              />
+            </div>
           </div>
-        </Card>
-      </div>
+
+          {isLoadingSharedAgents ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-muted-foreground">
+                Searching agents...
+              </span>
+            </div>
+          ) : sharedAgents.length === 0 ? (
+            <EmptyState
+              title="No Agents Found"
+              message="Try adjusting your search terms or filters to find more agents"
+              icon={<Filter className="h-5 w-5" />}
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {sharedAgents.map((agent: any) => (
+                <SharedAgentCard
+                  key={agent.id}
+                  agent={agent}
+                  onInstall={installSharedAgent}
+                  isInstalling={isInstalling}
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Dialog
         open={modalOpen}
@@ -437,37 +494,40 @@ export function ProfileAgentsTab() {
           }
           setModalOpen(open);
         }}
-        width="600px"
       >
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{isEditMode ? "Edit Agent" : "New Agent"}</DialogTitle>
-            <DialogClose onClick={() => setModalOpen(false)} />
+            <DialogTitle>
+              {isEditMode ? "Edit Agent" : "Create New Agent"}
+            </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <TabsList className="mb-4">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="basic">Basic</TabsTrigger>
-                <TabsTrigger value="model">Model Settings</TabsTrigger>
+                <TabsTrigger value="model">Model</TabsTrigger>
                 <TabsTrigger value="servers">Servers</TabsTrigger>
                 <TabsTrigger value="advanced">Advanced</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="basic" className="space-y-4">
+              <TabsContent value="basic" className="space-y-4 mt-6">
                 <FormInput
                   label="Name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
+                  placeholder="Enter agent name"
                 />
                 <FormInput
                   label="Description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe what this agent does"
                 />
                 <FormInput
                   label="Avatar URL"
@@ -479,11 +539,14 @@ export function ProfileAgentsTab() {
                 />
               </TabsContent>
 
-              <TabsContent value="model" className="space-y-4">
+              <TabsContent value="model" className="space-y-4 mt-6">
                 {isLoadingModels ? (
-                  <span className="ml-2 text-zinc-500 dark:text-zinc-400">
-                    Loading models...
-                  </span>
+                  <div className="flex items-center py-4">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <span className="text-sm text-muted-foreground">
+                      Loading models...
+                    </span>
+                  </div>
                 ) : (
                   <FormSelect
                     label="Model"
@@ -494,7 +557,6 @@ export function ProfileAgentsTab() {
                       ...modelOptions,
                     ]}
                     description="Select a model to use with this agent"
-                    disabled={isLoadingModels}
                   />
                 )}
 
@@ -511,7 +573,6 @@ export function ProfileAgentsTab() {
                     }
                     description="Controls randomness (0-1)"
                   />
-
                   <FormInput
                     label="Max Steps"
                     type="number"
@@ -526,32 +587,33 @@ export function ProfileAgentsTab() {
                   />
                 </div>
 
-                <Label htmlFor="system-prompt">System Prompt</Label>
-
-                <Textarea
-                  id="system-prompt"
-                  value={systemPrompt}
-                  onChange={(e) => setSystemPrompt(e.target.value)}
-                  rows={4}
-                  placeholder="Enter a system prompt to customize the agent's behavior..."
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="system-prompt">System Prompt</Label>
+                  <Textarea
+                    id="system-prompt"
+                    value={systemPrompt}
+                    onChange={(e) => setSystemPrompt(e.target.value)}
+                    rows={4}
+                    placeholder="Enter a system prompt to customize the agent's behavior..."
+                  />
+                </div>
               </TabsContent>
 
-              <TabsContent value="servers" className="space-y-4">
-                <div className="flex items-start gap-2">
+              <TabsContent value="servers" className="space-y-4 mt-6">
+                <div className="flex items-start gap-3">
                   <Switch
                     id="use-servers"
                     checked={useServers}
                     onChange={(e) => setUseServers(e.target.checked)}
                   />
-                  <div className="grid gap-1.5 leading-none">
+                  <div className="space-y-1">
                     <Label
                       htmlFor="use-servers"
                       className="text-sm font-medium"
                     >
                       Use MCP Servers
                     </Label>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs text-muted-foreground">
                       Enable to connect to MCP servers for additional
                       capabilities
                     </p>
@@ -559,10 +621,13 @@ export function ProfileAgentsTab() {
                 </div>
 
                 {useServers && (
-                  <div className="space-y-2 mt-4">
+                  <div className="space-y-4 mt-4">
                     <Label>Servers</Label>
                     {servers.map((srv) => (
-                      <div key={srv.id} className="flex items-start gap-2 mb-3">
+                      <div
+                        key={srv.id}
+                        className="flex items-end gap-3 p-4 border rounded-lg"
+                      >
                         <FormInput
                           label="URL"
                           value={srv.url}
@@ -600,14 +665,11 @@ export function ProfileAgentsTab() {
                             { value: "stdio", label: "Stdio" },
                           ]}
                         />
-                        <UiButton
+                        <Button
                           variant="destructive"
                           size="icon"
                           icon={<Trash2 className="h-4 w-4" />}
-                          className={cn(
-                            "mt-7",
-                            servers.length <= 1 && "invisible",
-                          )}
+                          className={cn(servers.length <= 1 && "invisible")}
                           onClick={() =>
                             setServers((all) =>
                               all.filter((s) => s.id !== srv.id),
@@ -617,39 +679,38 @@ export function ProfileAgentsTab() {
                         />
                       </div>
                     ))}
-                    <UiButton
+                    <Button
                       type="button"
-                      variant="secondary"
+                      variant="outline"
                       onClick={() =>
                         setServers((all) => [
                           ...all,
                           { id: generateId(), url: "", type: "sse" },
                         ])
                       }
-                      className="mt-1"
                       icon={<Plus className="h-4 w-4" />}
                     >
                       Add Server
-                    </UiButton>
+                    </Button>
                   </div>
                 )}
               </TabsContent>
 
-              <TabsContent value="advanced" className="space-y-4">
-                <div className="flex items-start gap-2">
+              <TabsContent value="advanced" className="space-y-4 mt-6">
+                <div className="flex items-start gap-3">
                   <Switch
                     id="use-few-shot"
                     checked={useFewShotExamples}
                     onChange={(e) => setUseFewShotExamples(e.target.checked)}
                   />
-                  <div className="grid gap-1.5 leading-none">
+                  <div className="space-y-1">
                     <Label
                       htmlFor="use-few-shot"
                       className="text-sm font-medium"
                     >
                       Few-Shot Examples
                     </Label>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs text-muted-foreground">
                       Add example interactions to guide the agent's responses
                     </p>
                   </div>
@@ -660,11 +721,11 @@ export function ProfileAgentsTab() {
                     {fewShotExamples.map((example, index) => (
                       <div
                         key={example.id}
-                        className="p-4 border border-zinc-200 dark:border-zinc-700 rounded-md"
+                        className="p-4 border rounded-lg space-y-3"
                       >
-                        <div className="flex justify-between mb-2">
+                        <div className="flex justify-between items-center">
                           <h4 className="font-medium">Example {index + 1}</h4>
-                          <UiButton
+                          <Button
                             variant="destructive"
                             size="icon"
                             icon={<Trash2 className="h-4 w-4" />}
@@ -679,44 +740,49 @@ export function ProfileAgentsTab() {
                             disabled={fewShotExamples.length <= 1}
                           />
                         </div>
-
-                        <Textarea
-                          value={example.input}
-                          onChange={(e) => {
-                            setFewShotExamples((all) =>
-                              all.map((ex) =>
-                                ex.id === example.id
-                                  ? { ...ex, input: e.target.value }
-                                  : ex,
-                              ),
-                            );
-                          }}
-                          rows={2}
-                          placeholder="What the user might say..."
-                          required={useFewShotExamples}
-                        />
-
-                        <Textarea
-                          value={example.output}
-                          onChange={(e) => {
-                            setFewShotExamples((all) =>
-                              all.map((ex) =>
-                                ex.id === example.id
-                                  ? { ...ex, output: e.target.value }
-                                  : ex,
-                              ),
-                            );
-                          }}
-                          rows={2}
-                          placeholder="How the assistant should respond..."
-                          required={useFewShotExamples}
-                        />
+                        <div className="space-y-3">
+                          <div>
+                            <Label className="text-sm">User Input</Label>
+                            <Textarea
+                              value={example.input}
+                              onChange={(e) => {
+                                setFewShotExamples((all) =>
+                                  all.map((ex) =>
+                                    ex.id === example.id
+                                      ? { ...ex, input: e.target.value }
+                                      : ex,
+                                  ),
+                                );
+                              }}
+                              rows={2}
+                              placeholder="What the user might say..."
+                              required={useFewShotExamples}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-sm">Agent Response</Label>
+                            <Textarea
+                              value={example.output}
+                              onChange={(e) => {
+                                setFewShotExamples((all) =>
+                                  all.map((ex) =>
+                                    ex.id === example.id
+                                      ? { ...ex, output: e.target.value }
+                                      : ex,
+                                  ),
+                                );
+                              }}
+                              rows={2}
+                              placeholder="How the assistant should respond..."
+                              required={useFewShotExamples}
+                            />
+                          </div>
+                        </div>
                       </div>
                     ))}
-
-                    <UiButton
+                    <Button
                       type="button"
-                      variant="secondary"
+                      variant="outline"
                       onClick={() =>
                         setFewShotExamples((all) => [
                           ...all,
@@ -726,16 +792,18 @@ export function ProfileAgentsTab() {
                       icon={<Plus className="h-4 w-4" />}
                     >
                       Add Example
-                    </UiButton>
+                    </Button>
                   </div>
                 )}
               </TabsContent>
             </Tabs>
 
-            <div className="flex justify-end space-x-2 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+            <hr className="my-4" />
+
+            <div className="flex justify-end gap-3">
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 onClick={() => setModalOpen(false)}
                 disabled={isCreatingAgent || isUpdatingAgent}
               >
@@ -744,15 +812,24 @@ export function ProfileAgentsTab() {
               <Button
                 type="submit"
                 disabled={!name || isCreatingAgent || isUpdatingAgent}
-                isLoading={isCreatingAgent || isUpdatingAgent}
               >
-                {isEditMode ? "Update" : "Create"}
+                {isCreatingAgent || isUpdatingAgent ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {isEditMode ? "Updating..." : "Creating..."}
+                  </>
+                ) : isEditMode ? (
+                  "Update Agent"
+                ) : (
+                  "Create Agent"
+                )}
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Modal */}
       {agentToDelete && (
         <ConfirmDeleteModal
           isOpen={!!agentToDelete}
@@ -761,6 +838,72 @@ export function ProfileAgentsTab() {
           agentName={agentToDelete.name}
           isDeleting={isDeletingAgent}
         />
+      )}
+
+      {/* Share Agent Modal */}
+      {shareModalOpen && agentToShare && (
+        <Dialog
+          open={shareModalOpen}
+          onOpenChange={(open) => {
+            if (!open) setShareModalOpen(false);
+          }}
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Share Agent</DialogTitle>
+            </DialogHeader>
+            <form className="space-y-4">
+              <FormInput
+                label="Name"
+                value={shareName}
+                onChange={(e) => setShareName(e.target.value)}
+                required
+              />
+              <FormInput
+                label="Description"
+                value={shareDescription}
+                onChange={(e) => setShareDescription(e.target.value)}
+              />
+              <FormSelect
+                label="Category"
+                value={shareCategory}
+                onChange={(e) => setShareCategory(e.target.value)}
+                options={[
+                  { value: "", label: "Select category" },
+                  ...categories.map((c) => ({ value: c, label: c })),
+                ]}
+              />
+              <FormInput
+                label="Tags (comma separated)"
+                value={shareTagsInput}
+                onChange={(e) => setShareTagsInput(e.target.value)}
+                placeholder="writing, assistant, productivity"
+              />
+
+              <hr className="my-4" />
+
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShareModalOpen(false)}
+                  disabled={isSharing}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleConfirmShare} disabled={isSharing}>
+                  {isSharing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sharing...
+                    </>
+                  ) : (
+                    "Share Agent"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
