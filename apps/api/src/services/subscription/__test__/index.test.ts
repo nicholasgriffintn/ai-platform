@@ -43,7 +43,15 @@ vi.mock("~/lib/database", () => ({
   },
 }));
 
-vi.mock("~/services/subscription/emails", () => ({
+import {
+  sendPaymentFailedEmail,
+  sendSubscriptionCancellationNoticeEmail,
+  sendSubscriptionEmail,
+  sendTrialEndingEmail,
+  sendUnsubscriptionEmail,
+} from "~/services/notifications";
+
+vi.mock("~/services/notifications", () => ({
   sendSubscriptionEmail: vi.fn(),
   sendSubscriptionCancellationNoticeEmail: vi.fn(),
   sendUnsubscriptionEmail: vi.fn(),
@@ -64,11 +72,15 @@ const mockUser: IUser = {
 } as IUser;
 
 describe("Subscription Service", () => {
-  let mockEmailService: any;
+  const mockSendSubscriptionEmail = vi.mocked(sendSubscriptionEmail);
+  const mockSendSubscriptionCancellationNoticeEmail = vi.mocked(
+    sendSubscriptionCancellationNoticeEmail,
+  );
+  const mockSendUnsubscriptionEmail = vi.mocked(sendUnsubscriptionEmail);
+  const mockSendPaymentFailedEmail = vi.mocked(sendPaymentFailedEmail);
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
-    mockEmailService = await import("~/services/subscription/emails");
   });
 
   describe("createCheckoutSession", () => {
@@ -248,9 +260,10 @@ describe("Subscription Service", () => {
       expect(mockStripe.subscriptions.update).toHaveBeenCalledWith("sub_123", {
         cancel_at_period_end: true,
       });
-      expect(
-        mockEmailService.sendSubscriptionCancellationNoticeEmail,
-      ).toHaveBeenCalledWith(mockEnv, "test@example.com");
+      expect(mockSendSubscriptionCancellationNoticeEmail).toHaveBeenCalledWith(
+        mockEnv,
+        "test@example.com",
+      );
       expect(result).toEqual({
         status: "active",
         cancel_at_period_end: true,
@@ -385,7 +398,7 @@ describe("Subscription Service", () => {
         stripe_subscription_id: "sub_123",
         plan_id: "pro",
       });
-      expect(mockEmailService.sendSubscriptionEmail).toHaveBeenCalledWith(
+      expect(mockSendSubscriptionEmail).toHaveBeenCalledWith(
         mockEnv,
         "test@example.com",
         "Pro",
@@ -419,7 +432,7 @@ describe("Subscription Service", () => {
         stripe_subscription_id: null,
         plan_id: "free",
       });
-      expect(mockEmailService.sendUnsubscriptionEmail).toHaveBeenCalledWith(
+      expect(mockSendUnsubscriptionEmail).toHaveBeenCalledWith(
         mockEnv,
         "test@example.com",
       );
@@ -447,7 +460,7 @@ describe("Subscription Service", () => {
         "test-payload",
       );
 
-      expect(mockEmailService.sendPaymentFailedEmail).toHaveBeenCalledWith(
+      expect(mockSendPaymentFailedEmail).toHaveBeenCalledWith(
         mockEnv,
         "test@example.com",
       );

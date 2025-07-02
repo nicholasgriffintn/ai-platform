@@ -7,12 +7,9 @@ import {
   vi,
 } from "vitest";
 
+import { sendMagicLinkEmail } from "~/services/notifications";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import {
-  requestMagicLink,
-  sendMagicLinkEmail,
-  verifyMagicLink,
-} from "../magicLink";
+import { requestMagicLink, verifyMagicLink } from "../magicLink";
 
 vi.mock("@tsndr/cloudflare-worker-jwt", () => ({
   sign: vi.fn(),
@@ -30,6 +27,10 @@ vi.mock("~/lib/database", () => ({
   },
 }));
 
+vi.mock("~/services/notifications", () => ({
+  sendMagicLinkEmail: vi.fn(),
+}));
+
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 global.TextEncoder = class {
@@ -44,6 +45,7 @@ describe("Magic Link Service", () => {
   let mockJwtDecode: MockedFunction<any>;
   let mockAwsClient: any;
   let mockDatabase: any;
+  let mockSendMagicLinkEmail: MockedFunction<any>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -68,42 +70,47 @@ describe("Magic Link Service", () => {
       getUserById: vi.fn(),
     };
     vi.mocked(Database.getInstance).mockReturnValue(mockDatabase);
+
+    const notifications = await import("~/services/notifications");
+    mockSendMagicLinkEmail = vi.mocked(notifications.sendMagicLinkEmail);
   });
 
   describe("sendMagicLinkEmail", () => {
-    const mockContext = {
-      env: {
-        AWS_SES_ACCESS_KEY_ID: "test-key",
-        AWS_SES_SECRET_ACCESS_KEY: "test-secret",
-        SES_EMAIL_FROM: "test@example.com",
-      },
+    const mockEnv = {
+      AWS_SES_ACCESS_KEY_ID: "test-key",
+      AWS_SES_SECRET_ACCESS_KEY: "test-secret",
+      SES_EMAIL_FROM: "test@example.com",
     } as any;
 
     it("should send magic link email successfully", async () => {
-      const mockSignedRequest = new Request("https://example.com");
-      const mockResponse = { ok: true, statusText: "OK" };
-
-      mockAwsClient.sign.mockResolvedValue(mockSignedRequest);
-      mockFetch.mockResolvedValue(mockResponse);
+      mockSendMagicLinkEmail.mockResolvedValue(undefined);
 
       await sendMagicLinkEmail(
-        mockContext,
+        mockEnv,
         "user@example.com",
         "https://example.com/auth/magic?token=abc&nonce=123",
       );
 
-      expect(mockAwsClient.sign).toHaveBeenCalledWith(expect.any(Request));
-      expect(mockFetch).toHaveBeenCalledWith(mockSignedRequest);
+      expect(mockSendMagicLinkEmail).toHaveBeenCalledWith(
+        mockEnv,
+        "user@example.com",
+        "https://example.com/auth/magic?token=abc&nonce=123",
+      );
     });
 
     it("should throw error for missing AWS configuration", async () => {
-      const incompleteContext = {
-        env: { AWS_SES_ACCESS_KEY_ID: "test-key" },
-      } as any;
+      const incompleteEnv = { AWS_SES_ACCESS_KEY_ID: "test-key" } as any;
+
+      mockSendMagicLinkEmail.mockRejectedValue(
+        new AssistantError(
+          "AWS SES configuration missing",
+          ErrorType.CONFIGURATION_ERROR,
+        ),
+      );
 
       await expect(
         sendMagicLinkEmail(
-          incompleteContext,
+          incompleteEnv,
           "user@example.com",
           "https://example.com/magic",
         ),
@@ -116,19 +123,16 @@ describe("Magic Link Service", () => {
     });
 
     it("should handle SES API errors", async () => {
-      const mockSignedRequest = new Request("https://example.com");
-      const mockResponse = {
-        ok: false,
-        statusText: "Bad Request",
-        text: vi.fn().mockResolvedValue("SES error"),
-      };
-
-      mockAwsClient.sign.mockResolvedValue(mockSignedRequest);
-      mockFetch.mockResolvedValue(mockResponse);
+      mockSendMagicLinkEmail.mockRejectedValue(
+        new AssistantError(
+          "Failed to send magic link: error",
+          ErrorType.EMAIL_SEND_FAILED,
+        ),
+      );
 
       await expect(
         sendMagicLinkEmail(
-          mockContext,
+          mockEnv,
           "user@example.com",
           "https://example.com/magic",
         ),

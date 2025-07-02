@@ -1,6 +1,4 @@
 import * as jwt from "@tsndr/cloudflare-worker-jwt";
-import { AwsClient } from "aws4fetch";
-import type { Context } from "hono";
 
 import { MAGIC_LINK_EXPIRATION_MINUTES } from "~/constants/app";
 import { Database } from "~/lib/database";
@@ -45,106 +43,6 @@ async function generateMagicLinkToken(
   const nonce = crypto.randomUUID();
 
   return { token, nonce };
-}
-
-/**
- * Sends a magic link email using AWS SES.
- * @param context - The context of the request
- * @param email - The user's email
- * @param magicLink - The magic link to send
- */
-export async function sendMagicLinkEmail(
-  context: Context,
-  email: string,
-  magicLink: string,
-): Promise<void> {
-  const { AWS_SES_ACCESS_KEY_ID, AWS_SES_SECRET_ACCESS_KEY, SES_EMAIL_FROM } =
-    context.env;
-
-  if (!AWS_SES_ACCESS_KEY_ID || !AWS_SES_SECRET_ACCESS_KEY || !SES_EMAIL_FROM) {
-    throw new AssistantError(
-      "AWS SES configuration missing",
-      ErrorType.CONFIGURATION_ERROR,
-    );
-  }
-
-  const awsClient = new AwsClient({
-    accessKeyId: AWS_SES_ACCESS_KEY_ID,
-    secretAccessKey: AWS_SES_SECRET_ACCESS_KEY,
-    region: "us-east-1",
-  });
-
-  const subject = "Login to Polychat";
-  const bodyText = `Click this link to log in: ${magicLink}`;
-  const bodyHtml = `
-    <html>
-      <head></head>
-      <body>
-        <h1>Login to Your Account</h1>
-        <p>Click the link below to log in:</p>
-        <a href="${magicLink}">Log In</a>
-        <p>If you didn\'t request this link, you can safely ignore this email.</p>
-        <p>This link will expire in ${MAGIC_LINK_EXPIRATION_MINUTES} minutes.</p>
-      </body>
-    </html>
-  `;
-
-  const requestBody = JSON.stringify({
-    FromEmailAddress: SES_EMAIL_FROM,
-    Destination: {
-      ToAddresses: [email],
-    },
-    Content: {
-      Simple: {
-        Subject: {
-          Data: subject,
-          Charset: "UTF-8",
-        },
-        Body: {
-          Text: {
-            Data: bodyText,
-            Charset: "UTF-8",
-          },
-          Html: {
-            Data: bodyHtml,
-            Charset: "UTF-8",
-          },
-        },
-      },
-    },
-  });
-
-  const contentLength = new TextEncoder().encode(requestBody).length;
-
-  const request = new Request(
-    "https://email.us-east-1.amazonaws.com/v2/email/outbound-emails",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Content-Length": contentLength.toString(),
-      },
-      body: requestBody,
-    },
-  );
-
-  try {
-    const signedRequest = await awsClient.sign(request);
-    const response = await fetch(signedRequest);
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      logger.error("SES error response:", errorBody);
-      throw new Error(`Failed to send email: ${response.statusText}`);
-    }
-    logger.info(`Magic link email sent to ${email}`);
-  } catch (error: any) {
-    logger.error("Failed to send magic link email:", { error });
-    throw new AssistantError(
-      `Failed to send magic link: ${error.message}`,
-      ErrorType.EMAIL_SEND_FAILED,
-    );
-  }
 }
 
 /**

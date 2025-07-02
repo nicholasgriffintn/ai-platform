@@ -4,12 +4,9 @@ import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 
 import { Database } from "~/lib/database";
-import {
-  requestMagicLink,
-  sendMagicLinkEmail,
-  verifyMagicLink,
-} from "~/services/auth/magicLink";
+import { requestMagicLink, verifyMagicLink } from "~/services/auth/magicLink";
 import { createSession } from "~/services/auth/user";
+import { sendMagicLinkEmail } from "~/services/notifications";
 import {
   magicLinkRequestSchema,
   magicLinkVerifySchema,
@@ -72,7 +69,7 @@ app.post(
 
     if (token && nonce && baseUrl) {
       const link = `${baseUrl}/auth/verify-magic-link?token=${token}&nonce=${nonce}`;
-      await sendMagicLinkEmail(c, email, link);
+      await sendMagicLinkEmail(c.env, email, link);
     }
     return c.json({ success: true });
   },

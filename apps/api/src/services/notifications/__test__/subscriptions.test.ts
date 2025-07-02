@@ -7,7 +7,9 @@ import {
   sendSubscriptionEmail,
   sendTrialEndingEmail,
   sendUnsubscriptionEmail,
-} from "../emails";
+} from "../index";
+
+import { sendEmail } from "~/services/email";
 
 vi.mock("~/services/email", () => ({
   sendEmail: vi.fn(),
@@ -16,12 +18,10 @@ vi.mock("~/services/email", () => ({
 const mockEnv: IEnv = {} as IEnv;
 
 describe("Subscription Emails", () => {
-  let mockSendEmail: any;
+  const mockSendEmail = vi.mocked(sendEmail);
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
-    const emailModule = await import("~/services/email");
-    mockSendEmail = vi.mocked(emailModule.sendEmail);
   });
 
   describe("sendSubscriptionEmail", () => {
@@ -34,8 +34,8 @@ describe("Subscription Emails", () => {
         mockEnv,
         "test@example.com",
         "Subscription Confirmation",
-        "Thank you for subscribing to the Pro plan!",
-        expect.stringContaining("<h1>Subscription Confirmed</h1>"),
+        expect.stringContaining("Subscription Confirmed"),
+        expect.stringContaining("Thank you for subscribing to the Pro plan!"),
       );
     });
 
@@ -58,8 +58,8 @@ describe("Subscription Emails", () => {
         mockEnv,
         "test@example.com",
         "Subscription Cancelled",
-        "We're sorry to see you go. Your subscription has been cancelled.",
-        expect.stringContaining("<h1>Subscription Cancelled</h1>"),
+        expect.stringContaining("Subscription Cancelled"),
+        expect.stringContaining("We're sorry to see you go"),
       );
     });
 
@@ -85,8 +85,8 @@ describe("Subscription Emails", () => {
         mockEnv,
         "test@example.com",
         "Your Subscription Will End Soon",
-        "Your subscription will be canceled at the end of your current billing period.",
-        expect.stringContaining("<h1>Subscription Will End Soon</h1>"),
+        expect.stringContaining("Subscription Will End Soon"),
+        expect.stringContaining("current billing period"),
       );
     });
 
@@ -109,8 +109,8 @@ describe("Subscription Emails", () => {
         mockEnv,
         "test@example.com",
         "Payment Failed",
-        "Your payment has failed. Please update your payment method to continue using Polychat.",
-        expect.stringContaining("<h1>Payment Failed</h1>"),
+        expect.stringContaining("Payment Failed"),
+        expect.stringContaining("update your payment method"),
       );
     });
 
@@ -133,8 +133,8 @@ describe("Subscription Emails", () => {
         mockEnv,
         "test@example.com",
         "Your Trial is Ending Soon",
-        "Your free trial period is ending soon. To continue using premium features, please update your payment method.",
-        expect.stringContaining("<h1>Your Trial is Ending Soon</h1>"),
+        expect.stringContaining("Your Trial is Ending Soon"),
+        expect.stringContaining("free trial period is ending"),
       );
     });
 

@@ -7,7 +7,7 @@ import {
   sendSubscriptionEmail,
   sendTrialEndingEmail,
   sendUnsubscriptionEmail,
-} from "~/services/subscription/emails";
+} from "~/services/notifications";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";

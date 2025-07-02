@@ -27,6 +27,7 @@ import {
 import { LogLevel, getLogger } from "./utils/logger";
 
 import { ROUTES } from "./constants/app";
+import admin from "./routes/admin";
 import agents from "./routes/agents";
 import apps from "./routes/apps";
 import audio from "./routes/audio";

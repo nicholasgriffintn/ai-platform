@@ -15,9 +15,10 @@ import { registerMCPClient } from "~/services/functions/mcp";
 import { add_reasoning_step } from "~/services/functions/reasoning";
 import type { IEnv } from "~/types";
 import type { ChatCompletionParameters } from "~/types";
-import { createAgentSchema, updateAgentSchema } from "./schemas/agents";
-import { createChatCompletionsJsonSchema } from "./schemas/chat";
-import { apiResponseSchema } from "./schemas/shared";
+import { createAgentSchema, updateAgentSchema } from "../schemas/agents";
+import { createChatCompletionsJsonSchema } from "../schemas/chat";
+import { apiResponseSchema } from "../schemas/shared";
+import sharedAgents from "./shared";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("AGENTS");
@@ -563,5 +564,7 @@ app.post(
     return response instanceof Response ? response : ctx.json(response);
   },
 );
+
+app.route("/shared", sharedAgents);
 
 export default app;
