@@ -195,6 +195,7 @@ app.route(ROUTES.PLANS, plans);
 app.route(ROUTES.STRIPE, stripe);
 app.route(ROUTES.REALTIME, realtime);
 app.route(ROUTES.AGENTS, agents);
+app.route(ROUTES.ADMIN, admin);
 
 app.notFound((c) => c.json({ status: "not found" }, 404));
 
