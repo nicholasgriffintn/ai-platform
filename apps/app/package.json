@@ -62,9 +62,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@capacitor/cli": "7.4.0",
-    "@capacitor/core": "7.4.0",
-    "@capacitor/ios": "7.4.0",
+    "@capacitor/cli": "7.4.1",
+    "@capacitor/core": "7.4.1",
+    "@capacitor/ios": "7.4.1",
     "@cloudflare/workers-types": "4.20250702.0",
     "@react-router/dev": "7.6.3",
     "@simplewebauthn/types": "^12.0.0",
