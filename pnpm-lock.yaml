@@ -98,7 +98,7 @@ importers:
     dependencies:
       '@babel/standalone':
         specifier: ^7.26.10
-        version: 7.27.7
+        version: 7.28.0
       '@mlc-ai/web-llm':
         specifier: 0.2.79
         version: 0.2.79
@@ -572,8 +572,8 @@ packages:
     resolution: {integrity: sha512-vbavdySgbTTrmFE+EsiqUTzlOr5bzlnJtUv9PynGCAKvfQqjIXbvFdumPM/GxMDfyuGMJaJAU6TO4zc1Jf1i8Q==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/standalone@7.27.7':
-    resolution: {integrity: sha512-vYgHkle44HY5d0qshIR2rKZBfFGHj0OaH7oBAe1NUEkI2DhZdU2+KrEt2qMkdiUjbClQFS8FQQrvdKB8kLn7aw==}
+  '@babel/standalone@7.28.0':
+    resolution: {integrity: sha512-KwedtFtU9oE/1zih0Cxb7Orudibv40KfklaQvUexeQ/2b6dktEHwa/Uqpdqr0AM1vD1+QZSQOXHwRQpt/JO0hQ==}
     engines: {node: '>=6.9.0'}
 
   '@babel/template@7.27.2':
@@ -5284,7 +5284,7 @@ snapshots:
 
   '@babel/runtime@7.27.6': {}
 
-  '@babel/standalone@7.27.7': {}
+  '@babel/standalone@7.28.0': {}
 
   '@babel/template@7.27.2':
     dependencies:
