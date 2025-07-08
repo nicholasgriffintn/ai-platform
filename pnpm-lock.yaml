@@ -25,7 +25,7 @@ importers:
     dependencies:
       '@hono/zod-validator':
         specifier: 0.7.0
-        version: 0.7.0(hono@4.8.4)(zod@3.25.75)
+        version: 0.7.0(hono@4.8.4)(zod@3.25.76)
       '@octokit/rest':
         specifier: 22.0.0
         version: 22.0.0
@@ -52,7 +52,7 @@ importers:
         version: 4.8.4
       hono-openapi:
         specifier: 0.4.8
-        version: 0.4.8(@hono/zod-validator@0.7.0(hono@4.8.4)(zod@3.25.75))(hono@4.8.4)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.25.75))(zod@3.25.75)
+        version: 0.4.8(@hono/zod-validator@0.7.0(hono@4.8.4)(zod@3.25.76))(hono@4.8.4)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.25.76))(zod@3.25.76)
       isbot:
         specifier: 5.1.28
         version: 5.1.28
@@ -60,11 +60,11 @@ importers:
         specifier: ^18.0.0
         version: 18.3.0(@types/node@22.16.0)
       zod:
-        specifier: 3.25.75
-        version: 3.25.75
+        specifier: 3.25.76
+        version: 3.25.76
       zod-openapi:
         specifier: 4.2.4
-        version: 4.2.4(zod@3.25.75)
+        version: 4.2.4(zod@3.25.76)
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -5153,8 +5153,8 @@ packages:
   zod@3.24.1:
     resolution: {integrity: sha512-muH7gBL9sI1nciMZV67X5fTKKBLtwpZ5VBp1vsOQzj1MhrBZ4wlVCm3gedKZWLp0Oyel8sIGfeiz54Su+OVT+A==}
 
-  zod@3.25.75:
-    resolution: {integrity: sha512-OhpzAmVzabPOL6C3A3gpAifqr9MqihV/Msx3gor2b2kviCgcb+HM9SEOpMWwwNp9MRunWnhtAKUoo0AHhjyPPg==}
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
   zustand@5.0.6:
     resolution: {integrity: sha512-ihAqNeUVhe0MAD+X8M5UzqyZ9k3FFZLBTtqo6JLPwV53cbRB/mJwBI0PxcIgqhBBHlEs8G45OTDTMq3gNcLq3A==}
@@ -5181,33 +5181,33 @@ snapshots:
 
   '@adobe/css-tools@4.4.3': {}
 
-  '@ai-sdk/provider-utils@2.2.8(zod@3.25.75)':
+  '@ai-sdk/provider-utils@2.2.8(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
       nanoid: 3.3.11
       secure-json-parse: 2.7.0
-      zod: 3.25.75
+      zod: 3.25.76
 
   '@ai-sdk/provider@1.1.3':
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@1.2.12(react@19.1.0)(zod@3.25.75)':
+  '@ai-sdk/react@1.2.12(react@19.1.0)(zod@3.25.76)':
     dependencies:
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.75)
-      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.75)
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.76)
+      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.76)
       react: 19.1.0
       swr: 2.3.4(react@19.1.0)
       throttleit: 2.1.0
     optionalDependencies:
-      zod: 3.25.75
+      zod: 3.25.76
 
-  '@ai-sdk/ui-utils@1.2.11(zod@3.25.75)':
+  '@ai-sdk/ui-utils@1.2.11(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.75)
-      zod: 3.25.75
-      zod-to-json-schema: 3.24.6(zod@3.25.75)
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.76)
+      zod: 3.25.76
+      zod-to-json-schema: 3.24.6(zod@3.25.76)
 
   '@ampproject/remapping@2.3.0':
     dependencies:
@@ -5805,10 +5805,10 @@ snapshots:
 
   '@hexagon/base64@1.1.28': {}
 
-  '@hono/zod-validator@0.7.0(hono@4.8.4)(zod@3.25.75)':
+  '@hono/zod-validator@0.7.0(hono@4.8.4)(zod@3.25.76)':
     dependencies:
       hono: 4.8.4
-      zod: 3.25.75
+      zod: 3.25.76
 
   '@img/sharp-darwin-arm64@0.33.5':
     optionalDependencies:
@@ -6028,8 +6028,8 @@ snapshots:
       express-rate-limit: 7.5.1(express@5.1.0)
       pkce-challenge: 5.0.0
       raw-body: 3.0.0
-      zod: 3.25.75
-      zod-to-json-schema: 3.24.6(zod@3.25.75)
+      zod: 3.25.76
+      zod-to-json-schema: 3.24.6(zod@3.25.76)
     transitivePeerDependencies:
       - supports-color
 
@@ -7123,26 +7123,26 @@ snapshots:
   agents@0.0.101(@cloudflare/workers-types@4.20250708.0)(react@19.1.0):
     dependencies:
       '@modelcontextprotocol/sdk': 1.15.0
-      ai: 4.3.16(react@19.1.0)(zod@3.25.75)
+      ai: 4.3.16(react@19.1.0)(zod@3.25.76)
       cron-schedule: 5.0.4
       nanoid: 5.1.5
       partyserver: 0.0.72(@cloudflare/workers-types@4.20250708.0)
       partysocket: 1.1.4
       react: 19.1.0
-      zod: 3.25.75
+      zod: 3.25.76
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
       - supports-color
 
-  ai@4.3.16(react@19.1.0)(zod@3.25.75):
+  ai@4.3.16(react@19.1.0)(zod@3.25.76):
     dependencies:
       '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.75)
-      '@ai-sdk/react': 1.2.12(react@19.1.0)(zod@3.25.75)
-      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.75)
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.76)
+      '@ai-sdk/react': 1.2.12(react@19.1.0)(zod@3.25.76)
+      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.76)
       '@opentelemetry/api': 1.9.0
       jsondiffpatch: 0.6.0
-      zod: 3.25.75
+      zod: 3.25.76
     optionalDependencies:
       react: 19.1.0
 
@@ -8011,15 +8011,15 @@ snapshots:
 
   highlight.js@11.11.1: {}
 
-  hono-openapi@0.4.8(@hono/zod-validator@0.7.0(hono@4.8.4)(zod@3.25.75))(hono@4.8.4)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.25.75))(zod@3.25.75):
+  hono-openapi@0.4.8(@hono/zod-validator@0.7.0(hono@4.8.4)(zod@3.25.76))(hono@4.8.4)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.25.76))(zod@3.25.76):
     dependencies:
       json-schema-walker: 2.0.0
       openapi-types: 12.1.3
     optionalDependencies:
-      '@hono/zod-validator': 0.7.0(hono@4.8.4)(zod@3.25.75)
+      '@hono/zod-validator': 0.7.0(hono@4.8.4)(zod@3.25.76)
       hono: 4.8.4
-      zod: 3.25.75
-      zod-openapi: 4.2.4(zod@3.25.75)
+      zod: 3.25.76
+      zod-openapi: 4.2.4(zod@3.25.76)
 
   hono@4.8.4: {}
 
@@ -10032,19 +10032,19 @@ snapshots:
       mustache: 4.2.0
       stacktracey: 2.1.8
 
-  zod-openapi@4.2.4(zod@3.25.75):
+  zod-openapi@4.2.4(zod@3.25.76):
     dependencies:
-      zod: 3.25.75
+      zod: 3.25.76
 
-  zod-to-json-schema@3.24.6(zod@3.25.75):
+  zod-to-json-schema@3.24.6(zod@3.25.76):
     dependencies:
-      zod: 3.25.75
+      zod: 3.25.76
 
   zod@3.22.3: {}
 
   zod@3.24.1: {}
 
-  zod@3.25.75: {}
+  zod@3.25.76: {}
 
   zustand@5.0.6(@types/react@19.1.8)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)):
     optionalDependencies:
