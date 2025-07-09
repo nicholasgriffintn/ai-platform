@@ -1,3 +1,8 @@
+import {
+  MAX_BUFFER_LENGTH,
+  MAX_CONTENT_LENGTH,
+  MAX_THINKING_LENGTH,
+} from "~/constants/app";
 import { formatAssistantMessage } from "~/lib/chat/responses";
 import { getAIResponse } from "~/lib/chat/responses";
 import { handleToolCalls } from "~/lib/chat/tools";
@@ -97,19 +102,98 @@ export async function createStreamWithPostProcessing(
     current_step = 1,
   } = options;
 
-  let fullContent = "";
-  let fullThinking = "";
+  const fullContentChunks: string[] = [];
+  const fullThinkingChunks: string[] = [];
+  const bufferChunks: string[] = [];
+  let totalContentLength = 0;
+  let totalThinkingLength = 0;
+  let totalBufferLength = 0;
+
   let signature = "";
   let citationsResponse = [];
   let toolCallsData: any[] = [];
   let usageData: any = null;
   let structuredData: any = null;
   let postProcessingDone = false;
-  let buffer = "";
   let currentEventType = "";
   const currentToolCalls: Record<string, any> = {};
   let isFirstContentChunk = true;
   let qwqThinkTagAdded = false;
+
+  const getFullContent = () => fullContentChunks.join("");
+  const getFullThinking = () => fullThinkingChunks.join("");
+  const getBuffer = () => bufferChunks.join("");
+
+  const addToFullContent = (chunk: string) => {
+    fullContentChunks.push(chunk);
+    totalContentLength += chunk.length;
+
+    if (totalContentLength > MAX_CONTENT_LENGTH) {
+      logger.warn("Content size exceeded limit, trimming older content", {
+        completion_id,
+        totalLength: totalContentLength,
+        maxLength: MAX_CONTENT_LENGTH,
+      });
+
+      while (
+        totalContentLength > MAX_CONTENT_LENGTH * 0.8 &&
+        fullContentChunks.length > 1
+      ) {
+        const removedChunk = fullContentChunks.shift()!;
+        totalContentLength -= removedChunk.length;
+      }
+    }
+  };
+
+  const addToFullThinking = (chunk: string) => {
+    fullThinkingChunks.push(chunk);
+    totalThinkingLength += chunk.length;
+
+    if (totalThinkingLength > MAX_THINKING_LENGTH) {
+      logger.warn("Thinking size exceeded limit, trimming older content", {
+        completion_id,
+        totalLength: totalThinkingLength,
+        maxLength: MAX_THINKING_LENGTH,
+      });
+
+      while (
+        totalThinkingLength > MAX_THINKING_LENGTH * 0.8 &&
+        fullThinkingChunks.length > 1
+      ) {
+        const removedChunk = fullThinkingChunks.shift()!;
+        totalThinkingLength -= removedChunk.length;
+      }
+    }
+  };
+
+  const addToBuffer = (chunk: string) => {
+    bufferChunks.push(chunk);
+    totalBufferLength += chunk.length;
+
+    if (totalBufferLength > MAX_BUFFER_LENGTH) {
+      logger.warn("Buffer size exceeded limit, trimming older content", {
+        completion_id,
+        totalLength: totalBufferLength,
+        maxLength: MAX_BUFFER_LENGTH,
+      });
+
+      while (
+        totalBufferLength > MAX_BUFFER_LENGTH * 0.8 &&
+        bufferChunks.length > 1
+      ) {
+        const removedChunk = bufferChunks.shift()!;
+        totalBufferLength -= removedChunk.length;
+      }
+    }
+  };
+
+  const setBuffer = (newBuffer: string) => {
+    bufferChunks.length = 0;
+    totalBufferLength = 0;
+    if (newBuffer) {
+      addToBuffer(newBuffer);
+    }
+  };
 
   const guardrails = Guardrails.getInstance(env, user, userSettings);
   const modelConfig = await getModelConfigByMatchingModel(model);
@@ -145,21 +229,14 @@ export async function createStreamWithPostProcessing(
 
         logger.trace("Incoming chunk", {
           chunkSize: chunk.byteLength,
-          bufferBefore: buffer.length,
+          bufferBefore: totalBufferLength,
         });
 
-        if (buffer.length > 100000) {
-          logger.warn("Buffer size exceeded limit, truncating", {
-            completion_id,
-            bufferSize: buffer.length,
-          });
-          buffer = buffer.substring(buffer.length - 50000);
-        }
+        addToBuffer(text);
 
-        buffer += text;
-
+        const buffer = getBuffer();
         const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
+        setBuffer(lines.pop() || "");
 
         for (const line of lines) {
           if (!line.trim()) {
@@ -241,12 +318,12 @@ export async function createStreamWithPostProcessing(
                     emitEvent(controller, "content_block_delta", {
                       content: "<think>\n",
                     });
-                    fullContent += "<think>\n";
+                    addToFullContent("<think>\n");
                     qwqThinkTagAdded = true;
                   }
                 }
 
-                fullContent += contentDelta;
+                addToFullContent(contentDelta);
                 isFirstContentChunk = false;
 
                 emitEvent(controller, "content_block_delta", {
@@ -261,7 +338,7 @@ export async function createStreamWithPostProcessing(
 
               if (thinkingData) {
                 if (typeof thinkingData === "string") {
-                  fullThinking += thinkingData;
+                  addToFullThinking(thinkingData);
 
                   emitEvent(controller, "thinking_delta", {
                     thinking: thinkingData,
@@ -508,6 +585,7 @@ export async function createStreamWithPostProcessing(
             let guardrailError = "";
             let guardrailViolations: any[] = [];
 
+            const fullContent = getFullContent();
             if (fullContent) {
               const outputValidation = await guardrails.validateOutput(
                 fullContent,
@@ -539,7 +617,7 @@ export async function createStreamWithPostProcessing(
 
             const assistantMessage = formatAssistantMessage({
               content: processedContent,
-              thinking: fullThinking,
+              thinking: getFullThinking(),
               signature: signature,
               citations: citationsResponse,
               tool_calls: toolCallsData,
