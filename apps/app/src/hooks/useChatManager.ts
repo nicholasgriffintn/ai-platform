@@ -32,11 +32,13 @@ export function useChatManager() {
     setModel,
     useMultiModel,
     selectedAgentId,
+    setCurrentConversationId,
   } = useChatStore();
 
   const [streamStarted, setStreamStarted] = useState(false);
   const [controller, setController] = useState(() => new AbortController());
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [isBranching, setIsBranching] = useState(false);
 
   const webLLMService = useRef<WebLLMService>(WebLLMService.getInstance());
   const assistantResponseRef = useRef<string>("");
@@ -894,12 +896,153 @@ export function useChatManager() {
     setEditingMessageId(null);
   }, []);
 
+  const branchConversation = useCallback(
+    async (messageId: string) => {
+      const conversation = queryClient.getQueryData<Conversation>([
+        CHATS_QUERY_KEY,
+        currentConversationId || "",
+      ]);
+
+      if (!conversation?.messages || !currentConversationId) {
+        toast.error("Unable to branch: conversation not found");
+        return;
+      }
+
+      const messageIndex = conversation.messages.findIndex(
+        (msg) => msg.id === messageId,
+      );
+
+      if (messageIndex === -1) {
+        toast.error("Unable to branch: message not found");
+        return;
+      }
+
+      try {
+        setIsBranching(true);
+
+        const messagesUpToPoint = conversation.messages.slice(
+          0,
+          messageIndex + 1,
+        );
+
+        const newConversationId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+        const branchMetadata = {
+          branch_of: JSON.stringify({
+            conversation_id: currentConversationId,
+            message_id: messageId,
+          }),
+        };
+
+        const shouldStore =
+          isAuthenticated && isPro && !localOnlyMode && !chatSettings.localOnly;
+
+        await updateConversation(newConversationId, () => ({
+          id: newConversationId,
+          title: conversation.title || "Branched Conversation",
+          messages: messagesUpToPoint,
+          isLocalOnly: !shouldStore,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          last_message_at: new Date().toISOString(),
+        }));
+
+        if (shouldStore) {
+          const normalizedMessages = messagesUpToPoint.map(normalizeMessage);
+          const modelToSend = model === null ? undefined : model;
+
+          const chatSettingsWithMetadata = {
+            ...chatSettings,
+            metadata: branchMetadata,
+          };
+
+          let lastContent = "";
+          let lastReasoning = "";
+
+          await apiService.streamChatCompletions(
+            newConversationId,
+            normalizedMessages,
+            modelToSend,
+            chatMode,
+            chatSettingsWithMetadata,
+            new AbortController().signal,
+            (content, reasoning, _toolResponses, done) => {
+              lastContent = content;
+              if (reasoning) lastReasoning = reasoning;
+
+              if (done) {
+                updateAssistantMessage(newConversationId, content, reasoning);
+              } else {
+                updateAssistantMessage(newConversationId, content);
+              }
+            },
+            () => {},
+            shouldStore,
+            true,
+            useMultiModel,
+            chatMode === "agent"
+              ? `/agents/${selectedAgentId}/completions`
+              : undefined,
+          );
+
+          await updateAssistantMessage(
+            newConversationId,
+            lastContent,
+            lastReasoning,
+          );
+
+          setTimeout(() => {
+            const lastMessage = messagesUpToPoint[messagesUpToPoint.length - 1];
+            if (lastMessage) {
+              generateConversationTitle(
+                newConversationId,
+                messagesUpToPoint.slice(0, -1),
+                lastMessage,
+              ).catch((err) =>
+                console.error(
+                  "Background title generation failed for branched conversation:",
+                  err,
+                ),
+              );
+            }
+          }, 0);
+        }
+
+        setCurrentConversationId(newConversationId);
+
+        toast.success("Conversation branched successfully!");
+      } catch (error) {
+        console.error("Error branching conversation:", error);
+        toast.error("Failed to branch conversation");
+      } finally {
+        setIsBranching(false);
+      }
+    },
+    [
+      queryClient,
+      currentConversationId,
+      isAuthenticated,
+      isPro,
+      localOnlyMode,
+      chatSettings,
+      model,
+      chatMode,
+      useMultiModel,
+      selectedAgentId,
+      updateConversation,
+      updateAssistantMessage,
+      setCurrentConversationId,
+      generateConversationTitle,
+    ],
+  );
+
   return {
     streamStarted,
     controller,
     assistantResponseRef,
     assistantReasoningRef,
     editingMessageId,
+    isBranching,
     sendMessage,
     streamResponse,
     abortStream,
@@ -908,5 +1051,6 @@ export function useChatManager() {
     updateUserMessage,
     startEditingMessage,
     stopEditingMessage,
+    branchConversation,
   };
 }

@@ -69,6 +69,8 @@ class ApiService {
           title: string;
           messages: string[];
           last_message_at: string;
+          parent_conversation_id?: string;
+          parent_message_id?: string;
         }[];
       };
 
@@ -84,6 +86,8 @@ class ApiService {
         ...conversation,
         messages: [],
         message_ids: conversation.messages,
+        parent_conversation_id: conversation.parent_conversation_id,
+        parent_message_id: conversation.parent_message_id,
       }));
 
       return results.sort((a, b) => {
@@ -140,6 +144,8 @@ class ApiService {
       messages: transformedMessages,
       is_public: conversation.is_public,
       share_id: conversation.share_id,
+      parent_conversation_id: conversation.parent_conversation_id,
+      parent_message_id: conversation.parent_message_id,
     };
   };
 

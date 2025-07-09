@@ -153,11 +153,13 @@ export class ConversationManager {
    * Add multiple messages to a conversation in batch
    * @param conversation_id - The ID of the conversation to add the messages to
    * @param messages - The messages to add to the conversation
+   * @param options - Optional metadata for conversation creation
    * @returns The messages that were added to the conversation
    */
   async addBatch(
     conversation_id: string,
     messages: Message[],
+    options?: { metadata?: Record<string, string> },
   ): Promise<Message[]> {
     if (!messages.length) return [];
 
@@ -199,10 +201,28 @@ export class ConversationManager {
 
     if (!conversation) {
       logger.debug("No conversation found, creating new conversation");
+
+      let parentConversationId: string | undefined;
+      let parentMessageId: string | undefined;
+
+      if (options?.metadata?.branch_of) {
+        try {
+          const branchData = JSON.parse(options.metadata.branch_of);
+          parentConversationId = branchData.conversation_id;
+          parentMessageId = branchData.message_id;
+        } catch (error) {
+          logger.error("Failed to parse branch_of metadata:", error);
+        }
+      }
+
       conversation = await this.database.createConversation(
         conversation_id,
         this.user?.id,
         "New Conversation",
+        {
+          parent_conversation_id: parentConversationId,
+          parent_message_id: parentMessageId,
+        },
       );
     } else if (conversation.user_id !== this.user?.id) {
       throw new AssistantError(
@@ -424,6 +444,8 @@ export class ConversationManager {
       return {
         ...conversation,
         messages: messagesString ? messagesString.split(",") : [],
+        parent_conversation_id: conversation.parent_conversation_id,
+        parent_message_id: conversation.parent_message_id,
       };
     });
 

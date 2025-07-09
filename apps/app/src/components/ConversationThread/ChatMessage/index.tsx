@@ -22,6 +22,8 @@ export const ChatMessage = ({
   isEditing = false,
   onSaveEdit,
   onCancelEdit,
+  onBranch,
+  isBranching = false,
 }: {
   conversationId?: string;
   message: Message;
@@ -42,6 +44,8 @@ export const ChatMessage = ({
   isEditing?: boolean;
   onSaveEdit?: (newContent: string) => void;
   onCancelEdit?: () => void;
+  onBranch?: (messageId: string) => void;
+  isBranching?: boolean;
 }) => {
   const { copied, copy } = useCopyToClipboard();
   const [feedbackState, setFeedbackState] = useState<
@@ -182,6 +186,8 @@ export const ChatMessage = ({
                 isRetrying={isRetrying}
                 onEdit={onEdit}
                 isEditing={isEditing}
+                onBranch={onBranch}
+                isBranching={isBranching}
               />
             )}
         </div>

@@ -31,8 +31,14 @@ export const ConversationThread = () => {
   const { currentConversationId, model, chatInput, setChatInput } =
     useChatStore();
   const { data: currentConversation } = useChat(currentConversationId);
-  const { streamStarted, controller, sendMessage, abortStream } =
-    useChatManager();
+  const {
+    streamStarted,
+    controller,
+    sendMessage,
+    abortStream,
+    branchConversation,
+    isBranching,
+  } = useChatManager();
   const { data: apiModels } = useModels();
 
   const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(
@@ -268,6 +274,8 @@ export const ConversationThread = () => {
               messages={messages}
               onToolInteraction={handleToolInteraction}
               onArtifactOpen={handleArtifactOpen}
+              onBranch={branchConversation}
+              isBranching={isBranching}
             />
           </div>
         </div>
