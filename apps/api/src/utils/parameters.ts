@@ -104,7 +104,7 @@ export function createCommonParameters(
     commonParams.presence_penalty = params.presence_penalty;
   }
 
-  if (providerName === "openai") {
+  if (providerName === "openai" && params.metadata) {
     commonParams.metadata = params.metadata;
   }
 

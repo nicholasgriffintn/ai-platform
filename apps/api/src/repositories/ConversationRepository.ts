@@ -27,9 +27,9 @@ export class ConversationRepository extends BaseRepository {
       [
         conversationId,
         userId,
-        title || null,
-        parentConversationId || null,
-        parentMessageId || null,
+        title ?? null,
+        parentConversationId ?? null,
+        parentMessageId ?? null,
       ],
       true,
     );
