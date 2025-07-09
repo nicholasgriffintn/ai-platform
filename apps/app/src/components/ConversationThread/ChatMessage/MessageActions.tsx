@@ -7,6 +7,7 @@ import {
   ThumbsDown,
   ThumbsUp,
 } from "lucide-react";
+import { useCallback } from "react";
 
 import { Button } from "~/components/ui";
 import type { Message } from "~/types";
@@ -43,6 +44,12 @@ export const MessageActions = ({
   onBranch,
   isBranching = false,
 }: MessageActionsProps) => {
+  const handleBranch = useCallback(() => {
+    if (onBranch) {
+      onBranch(message.id);
+    }
+  }, [onBranch, message.id]);
+
   return (
     <div className="flex flex-wrap justify-end items-center gap-2">
       <div className="flex items-center space-x-1">
@@ -96,7 +103,7 @@ export const MessageActions = ({
           <Button
             type="button"
             variant="icon"
-            onClick={() => onBranch(message.id)}
+            onClick={handleBranch}
             disabled={isBranching}
             className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
               isBranching ? "opacity-50 cursor-not-allowed" : ""
