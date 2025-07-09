@@ -130,20 +130,23 @@ export class RequestPreparer {
       throw new Error("No selected models available from validation context");
     }
 
-    const modelConfigs: ModelConfigInfo[] = [];
-    for (const model of selectedModels) {
-      const config = await getModelConfig(model, env);
+    const configPromises = selectedModels.map((model) =>
+      getModelConfig(model, env),
+    );
+    const configResults = await Promise.all(configPromises);
+
+    return configResults.map((config, index) => {
       if (!config) {
-        throw new Error(`Invalid model configuration for ${model}`);
+        throw new Error(
+          `Invalid model configuration for ${selectedModels[index]}`,
+        );
       }
-      modelConfigs.push({
+      return {
         model: config.matchingModel,
         provider: config.provider,
         displayName: config.name || config.matchingModel,
-      });
-    }
-
-    return modelConfigs;
+      };
+    });
   }
 
   private async processMessageContent(
