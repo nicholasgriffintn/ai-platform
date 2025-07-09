@@ -22,7 +22,7 @@
 		"PUBLIC_ASSETS_BUCKET": "<PUBLIC_ASSETS_BUCKET>",
 		"REQUIRE_CAPTCHA_SECRET_KEY": "false",
 		"HCAPTCHA_SITE_KEY": "<HCAPTCHA_SITE_KEY>",
-		"ALWAYS_ENABLED_PROVIDERS": "workers-ai,mistral",
+		"ALWAYS_ENABLED_PROVIDERS": "workers-ai,mistral,deepseek,google-ai-studio",
 		"LOG_LEVEL": "warn"
 	},
 	"ai": {
