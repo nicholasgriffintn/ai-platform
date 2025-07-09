@@ -341,7 +341,7 @@ describe("RequestPreparer", () => {
           },
         ],
         {
-          metadata: undefined,
+          metadata: expect.any(Object),
         },
       );
     });
@@ -382,7 +382,7 @@ describe("RequestPreparer", () => {
           }),
         ]),
         {
-          metadata: undefined,
+          metadata: expect.any(Object),
         },
       );
     });
@@ -460,7 +460,7 @@ describe("RequestPreparer", () => {
           },
         ],
         {
-          metadata: undefined,
+          metadata: expect.any(Object),
         },
       );
       expect(
@@ -500,6 +500,38 @@ describe("RequestPreparer", () => {
           },
         ],
         { metadata: { key: "value" } },
+      );
+    });
+
+    it("should default metadata to empty object when undefined", async () => {
+      const lastMessage = { role: "user", content: "Test message" };
+
+      await (preparer as any).storeMessages(
+        baseOptions,
+        mockConversationManagerInstance,
+        lastMessage,
+        "Test message",
+        "claude-3-sonnet",
+        "api",
+        "normal",
+      );
+
+      expect(mockConversationManagerInstance.addBatch).toHaveBeenCalledWith(
+        "completion-123",
+        [
+          {
+            role: "user",
+            content: "Test message",
+            id: "test-id-123",
+            timestamp: 1234567890,
+            model: "claude-3-sonnet",
+            platform: "api",
+            mode: "normal",
+          },
+        ],
+        {
+          metadata: expect.any(Object),
+        },
       );
     });
   });

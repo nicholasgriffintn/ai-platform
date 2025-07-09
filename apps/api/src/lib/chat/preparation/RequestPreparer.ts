@@ -241,7 +241,7 @@ export class RequestPreparer {
       await conversationManager.addBatch(
         options.completion_id,
         messagesToStore,
-        { metadata: options.metadata },
+        { metadata: options.metadata || {} },
       );
     }
   }
