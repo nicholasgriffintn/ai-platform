@@ -7,14 +7,20 @@ import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
 import { Guardrails } from "~/lib/guardrails";
 import { MemoryManager } from "~/lib/memory";
 import { getModelConfigByMatchingModel } from "~/lib/models";
-import type {
-  ChatMode,
-  ContentType,
-  IEnv,
-  IUser,
-  IUserSettings,
-  MessageContent,
-  Platform,
+import {
+  type ChatMode,
+  type ContentType,
+  type IEnv,
+  type IUser,
+  type IUserSettings,
+  type MessageContent,
+  type ParsedSSEData,
+  type Platform,
+  SSEEventType,
+  StreamState,
+  type ToolCall,
+  type ToolEventPayload,
+  ToolStage,
 } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -31,18 +37,24 @@ const logger = getLogger({ prefix: "CHAT_STREAMING" });
  */
 function emitToolEvents(
   controller: TransformStreamDefaultController,
-  toolCall: any,
-  stage: "start" | "delta" | "stop",
+  toolCall: ToolCall,
+  stage: ToolStage,
   parameters?: string,
 ) {
-  const eventType = `tool_use_${stage}`;
-  const payload: Record<string, any> = {
+  const eventType =
+    stage === ToolStage.START
+      ? SSEEventType.TOOL_USE_START
+      : stage === ToolStage.DELTA
+        ? SSEEventType.TOOL_USE_DELTA
+        : SSEEventType.TOOL_USE_STOP;
+
+  const payload: ToolEventPayload = {
     tool_id: toolCall.id,
   };
 
-  if (stage === "start") {
+  if (stage === ToolStage.START) {
     payload.tool_name = toolCall.function?.name || "";
-  } else if (stage === "delta") {
+  } else if (stage === ToolStage.DELTA) {
     payload.parameters = parameters || "{}";
   }
 
@@ -116,20 +128,24 @@ export async function createStreamWithPostProcessing(
     new TransformStream({
       async start(controller) {
         try {
-          emitEvent(controller, "state", { state: "init" });
+          emitEvent(controller, SSEEventType.STATE, {
+            state: StreamState.INIT,
+          });
           const usageLimits = await conversationManager.getUsageLimits();
           if (usageLimits) {
-            emitEvent(controller, "usage_limits", {
+            emitEvent(controller, SSEEventType.USAGE_LIMITS, {
               usage_limits: usageLimits,
             });
           }
-          emitEvent(controller, "state", { state: "thinking" });
+          emitEvent(controller, SSEEventType.STATE, {
+            state: StreamState.THINKING,
+          });
         } catch (error) {
           logger.error("Failed in stream start:", error);
         }
       },
       async transform(chunk, controller) {
-        let text;
+        let text: string;
         try {
           text = new TextDecoder().decode(chunk);
         } catch (error) {
@@ -185,16 +201,18 @@ export async function createStreamWithPostProcessing(
             }
 
             try {
-              let data;
+              let data: ParsedSSEData;
               try {
-                data = JSON.parse(dataStr);
+                data = JSON.parse(dataStr) as ParsedSSEData;
               } catch (e) {
                 throw new Error("Failed to parse data");
               }
               logger.trace("Parsed SSE data", { currentEventType, data });
 
               if (data.error) {
-                emitEvent(controller, "error", { error: data.error });
+                emitEvent(controller, SSEEventType.ERROR, {
+                  error: data.error,
+                });
                 emitDoneEvent(controller);
                 logger.error("Error in data", { error: data.error });
                 return;
@@ -230,7 +248,7 @@ export async function createStreamWithPostProcessing(
                     .trim()
                     .startsWith("<think>");
                   if (!contentStartsWithThink) {
-                    emitEvent(controller, "content_block_delta", {
+                    emitEvent(controller, SSEEventType.CONTENT_BLOCK_DELTA, {
                       content: "<think>\n",
                     });
                     fullContent += "<think>\n";
@@ -241,7 +259,7 @@ export async function createStreamWithPostProcessing(
                 fullContent += contentDelta;
                 isFirstContentChunk = false;
 
-                emitEvent(controller, "content_block_delta", {
+                emitEvent(controller, SSEEventType.CONTENT_BLOCK_DELTA, {
                   content: contentDelta,
                 });
               }
@@ -255,13 +273,13 @@ export async function createStreamWithPostProcessing(
                 if (typeof thinkingData === "string") {
                   fullThinking += thinkingData;
 
-                  emitEvent(controller, "thinking_delta", {
+                  emitEvent(controller, SSEEventType.THINKING_DELTA, {
                     thinking: thinkingData,
                   });
                 } else if (thinkingData.type === "signature") {
                   signature = thinkingData.signature;
 
-                  emitEvent(controller, "signature_delta", {
+                  emitEvent(controller, SSEEventType.SIGNATURE_DELTA, {
                     signature: thinkingData.signature,
                   });
                 }
@@ -325,18 +343,16 @@ export async function createStreamWithPostProcessing(
               }
 
               if (
-                [
-                  "message_start",
-                  "message_delta",
-                  "message_stop",
-                  "content_block_start",
-                  "content_block_stop",
-                ].includes(currentEventType)
+                currentEventType === SSEEventType.MESSAGE_START ||
+                currentEventType === SSEEventType.MESSAGE_DELTA ||
+                currentEventType === SSEEventType.MESSAGE_STOP ||
+                currentEventType === SSEEventType.CONTENT_BLOCK_START ||
+                currentEventType === SSEEventType.CONTENT_BLOCK_STOP
               ) {
                 emitEvent(controller, currentEventType, data);
 
                 if (
-                  currentEventType === "content_block_stop" &&
+                  currentEventType === SSEEventType.CONTENT_BLOCK_STOP &&
                   data.index !== undefined &&
                   Object.prototype.hasOwnProperty.call(
                     currentToolCalls,
@@ -397,7 +413,7 @@ export async function createStreamWithPostProcessing(
                 }
 
                 if (
-                  currentEventType === "message_stop" &&
+                  currentEventType === SSEEventType.MESSAGE_STOP &&
                   !postProcessingDone
                 ) {
                   await handlePostProcessing();
@@ -445,7 +461,9 @@ export async function createStreamWithPostProcessing(
               return;
             }
 
-            emitEvent(controller, "state", { state: "post_processing" });
+            emitEvent(controller, SSEEventType.STATE, {
+              state: StreamState.POST_PROCESSING,
+            });
             postProcessingDone = true;
 
             const isProUser = user?.plan_id === "pro";
@@ -523,7 +541,7 @@ export async function createStreamWithPostProcessing(
               }
             }
 
-            emitEvent(controller, "content_block_stop", {});
+            emitEvent(controller, SSEEventType.CONTENT_BLOCK_STOP, {});
 
             const logId = env.AI?.aiGatewayLogId;
 
@@ -585,7 +603,7 @@ export async function createStreamWithPostProcessing(
               finish_reason: assistantMessage.finish_reason,
             });
 
-            emitEvent(controller, "message_delta", {
+            emitEvent(controller, SSEEventType.MESSAGE_DELTA, {
               id: completion_id,
               object: "chat.completion",
               created: assistantMessage.timestamp,
@@ -601,21 +619,21 @@ export async function createStreamWithPostProcessing(
               data: assistantMessage.data,
             });
 
-            emitEvent(controller, "message_stop", {});
+            emitEvent(controller, SSEEventType.MESSAGE_STOP, {});
 
             if (toolCallsData.length > 0) {
               for (const toolCall of toolCallsData) {
-                emitToolEvents(controller, toolCall, "start");
+                emitToolEvents(controller, toolCall, ToolStage.START);
                 emitToolEvents(
                   controller,
                   toolCall,
-                  "delta",
+                  ToolStage.DELTA,
                   toolCall.function?.arguments || "{}",
                 );
-                emitToolEvents(controller, toolCall, "stop");
+                emitToolEvents(controller, toolCall, ToolStage.STOP);
               }
 
-              emitEvent(controller, "tool_response_start", {
+              emitEvent(controller, SSEEventType.TOOL_RESPONSE_START, {
                 tool_calls: toolCallsData,
               });
 
@@ -637,20 +655,20 @@ export async function createStreamWithPostProcessing(
               );
 
               for (const toolResult of toolResults) {
-                emitEvent(controller, "tool_response", {
+                emitEvent(controller, SSEEventType.TOOL_RESPONSE, {
                   tool_id: toolResult.id,
                   result: toolResult,
                 });
               }
 
-              emitEvent(controller, "tool_response_end", {});
+              emitEvent(controller, SSEEventType.TOOL_RESPONSE_END, {});
             }
 
             try {
               const updatedUsageLimits =
                 await conversationManager.getUsageLimits();
               if (updatedUsageLimits) {
-                emitEvent(controller, "usage_limits", {
+                emitEvent(controller, SSEEventType.USAGE_LIMITS, {
                   usage_limits: updatedUsageLimits,
                 });
               }
@@ -704,7 +722,9 @@ export async function createStreamWithPostProcessing(
               }
             }
 
-            emitEvent(controller, "state", { state: "done" });
+            emitEvent(controller, SSEEventType.STATE, {
+              state: StreamState.DONE,
+            });
 
             emitDoneEvent(controller);
           } catch (error) {

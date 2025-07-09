@@ -1,3 +1,5 @@
+import type { SSEEventPayload } from "../../types/streaming";
+
 /**
  * Creates a standardized SSE event data string
  * @param type - The type of event
@@ -6,7 +8,7 @@
  */
 export function createEventData(
   type: string,
-  payload: Record<string, any> = {},
+  payload: SSEEventPayload = {},
 ): string {
   return `data: ${JSON.stringify({ type, ...payload })}\n\n`;
 }
@@ -38,7 +40,7 @@ export function emitDoneEvent(controller: TransformStreamDefaultController) {
 export function emitEvent(
   controller: TransformStreamDefaultController,
   type: string,
-  payload: Record<string, any> = {},
+  payload: SSEEventPayload = {},
 ) {
   const eventData = createEventData(type, payload);
   const encodedEvent = encodeEventData(eventData);
