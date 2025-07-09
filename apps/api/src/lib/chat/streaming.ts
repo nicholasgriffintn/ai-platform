@@ -18,39 +18,22 @@ import type {
 } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { emitDoneEvent, emitEvent } from "./emitter";
 
 const logger = getLogger({ prefix: "CHAT_STREAMING" });
-
-/**
- * Helper to emit a standardized SSE event to the stream controller
- * @param controller - The stream controller
- * @param type - The type of event
- * @param payload - The payload of the event
- * @returns The event
- */
-function emitEvent(
-  controller: TransformStreamDefaultController,
-  type: string,
-  payload: Record<string, any>,
-) {
-  const event = new TextEncoder().encode(
-    `data: ${JSON.stringify({ type, ...payload })}\n\n`,
-  );
-  controller.enqueue(event);
-}
 
 /**
  * Helper to emit standardized tool events
  * @param controller - The stream controller
  * @param toolCall - The tool call
  * @param stage - The stage of the tool call
- * @param data - The data of the tool call
+ * @param parameters - The parameters for delta stage
  */
 function emitToolEvents(
   controller: TransformStreamDefaultController,
   toolCall: any,
   stage: "start" | "delta" | "stop",
-  data?: any,
+  parameters?: string,
 ) {
   const eventType = `tool_use_${stage}`;
   const payload: Record<string, any> = {
@@ -60,7 +43,7 @@ function emitToolEvents(
   if (stage === "start") {
     payload.tool_name = toolCall.function?.name || "";
   } else if (stage === "delta") {
-    payload.parameters = data || "{}";
+    payload.parameters = parameters || "{}";
   }
 
   emitEvent(controller, eventType, payload);
@@ -211,16 +194,8 @@ export async function createStreamWithPostProcessing(
               logger.trace("Parsed SSE data", { currentEventType, data });
 
               if (data.error) {
-                const errorEvent = new TextEncoder().encode(
-                  `data: ${JSON.stringify({
-                    type: "error",
-                    error: data.error,
-                  })}\n\n`,
-                );
-                controller.enqueue(errorEvent);
-                controller.enqueue(
-                  new TextEncoder().encode("data: [DONE]\n\n"),
-                );
+                emitEvent(controller, "error", { error: data.error });
+                emitDoneEvent(controller);
                 logger.error("Error in data", { error: data.error });
                 return;
               }
@@ -255,13 +230,9 @@ export async function createStreamWithPostProcessing(
                     .trim()
                     .startsWith("<think>");
                   if (!contentStartsWithThink) {
-                    const thinkOpenEvent = new TextEncoder().encode(
-                      `data: ${JSON.stringify({
-                        type: "content_block_delta",
-                        content: "<think>\n",
-                      })}\n\n`,
-                    );
-                    controller.enqueue(thinkOpenEvent);
+                    emitEvent(controller, "content_block_delta", {
+                      content: "<think>\n",
+                    });
                     fullContent += "<think>\n";
                     qwqThinkTagAdded = true;
                   }
@@ -270,13 +241,9 @@ export async function createStreamWithPostProcessing(
                 fullContent += contentDelta;
                 isFirstContentChunk = false;
 
-                const contentDeltaEvent = new TextEncoder().encode(
-                  `data: ${JSON.stringify({
-                    type: "content_block_delta",
-                    content: contentDelta,
-                  })}\n\n`,
-                );
-                controller.enqueue(contentDeltaEvent);
+                emitEvent(controller, "content_block_delta", {
+                  content: contentDelta,
+                });
               }
 
               const thinkingData = StreamingFormatter.extractThinkingFromChunk(
@@ -288,23 +255,15 @@ export async function createStreamWithPostProcessing(
                 if (typeof thinkingData === "string") {
                   fullThinking += thinkingData;
 
-                  const thinkingDeltaEvent = new TextEncoder().encode(
-                    `data: ${JSON.stringify({
-                      type: "thinking_delta",
-                      thinking: thinkingData,
-                    })}\n\n`,
-                  );
-                  controller.enqueue(thinkingDeltaEvent);
+                  emitEvent(controller, "thinking_delta", {
+                    thinking: thinkingData,
+                  });
                 } else if (thinkingData.type === "signature") {
                   signature = thinkingData.signature;
 
-                  const signatureDeltaEvent = new TextEncoder().encode(
-                    `data: ${JSON.stringify({
-                      type: "signature_delta",
-                      signature: thinkingData.signature,
-                    })}\n\n`,
-                  );
-                  controller.enqueue(signatureDeltaEvent);
+                  emitEvent(controller, "signature_delta", {
+                    signature: thinkingData.signature,
+                  });
                 }
               }
 
@@ -374,13 +333,7 @@ export async function createStreamWithPostProcessing(
                   "content_block_stop",
                 ].includes(currentEventType)
               ) {
-                const forwardEvent = new TextEncoder().encode(
-                  `data: ${JSON.stringify({
-                    type: currentEventType,
-                    ...data,
-                  })}\n\n`,
-                );
-                controller.enqueue(forwardEvent);
+                emitEvent(controller, currentEventType, data);
 
                 if (
                   currentEventType === "content_block_stop" &&
@@ -753,7 +706,7 @@ export async function createStreamWithPostProcessing(
 
             emitEvent(controller, "state", { state: "done" });
 
-            controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+            emitDoneEvent(controller);
           } catch (error) {
             logger.error("Error in stream post-processing:", error);
           }
