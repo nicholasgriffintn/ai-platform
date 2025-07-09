@@ -2,6 +2,7 @@ import {
   Cloud,
   CloudOff,
   Edit,
+  GitBranch,
   Loader2,
   PanelLeftClose,
   PanelLeftOpen,
@@ -177,6 +178,29 @@ export const ChatSidebar = () => {
                   <span className="mr-2 text-xs text-blue-500 dark:text-blue-400 inline-flex items-center flex-shrink-0">
                     <CloudOff size={14} className="mr-1" />
                     <span className="sr-only">Local only</span>
+                  </span>
+                )}
+                {conversation.parent_conversation_id && (
+                  <span
+                    className="mr-2 text-xs text-zinc-600 dark:text-zinc-400 inline-flex items-center flex-shrink-0 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100"
+                    title="Go to original conversation"
+                    aria-label="Go to original conversation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleConversationClick(
+                        conversation.parent_conversation_id,
+                      );
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.stopPropagation();
+                        handleConversationClick(
+                          conversation.parent_conversation_id!,
+                        );
+                      }
+                    }}
+                  >
+                    <GitBranch size={14} className="mr-1" />
                   </span>
                 )}
                 <span className="whitespace-nowrap overflow-hidden text-ellipsis">

@@ -1,4 +1,4 @@
-import { Loader2, MessagesSquare } from "lucide-react";
+import { GitBranch, Loader2, MessagesSquare } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { VList, type VListHandle } from "virtua";
 
@@ -42,7 +42,8 @@ export const MessageList = ({
   onBranch,
   isBranching = false,
 }: MessageListProps) => {
-  const { currentConversationId, isAuthenticated } = useChatStore();
+  const { currentConversationId, isAuthenticated, setCurrentConversationId } =
+    useChatStore();
 
   const { data: conversation, isLoading: isLoadingConversation } = useChat(
     !isSharedView ? currentConversationId : undefined,
@@ -117,6 +118,18 @@ export const MessageList = ({
         {!isSharedView && (
           <div className="flex items-center mb-3">
             <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-2 min-w-0 truncate flex-grow">
+              {conversation?.parent_conversation_id && (
+                <GitBranch
+                  size={16}
+                  className="flex-shrink-0 text-zinc-600 dark:text-zinc-400 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100"
+                  aria-label="Go to original conversation"
+                  onClick={() =>
+                    setCurrentConversationId(
+                      conversation.parent_conversation_id!,
+                    )
+                  }
+                />
+              )}
               <MessagesSquare size={16} className="flex-shrink-0" />
               <span className="truncate">
                 {conversation?.title || "New conversation"}

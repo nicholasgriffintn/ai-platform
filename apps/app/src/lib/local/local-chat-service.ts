@@ -139,6 +139,8 @@ class LocalChatService {
     const chatWithFlag = {
       ...chat,
       isLocalOnly: true,
+      parent_conversation_id: chat.parent_conversation_id,
+      parent_message_id: chat.parent_message_id,
     };
 
     if (!chatWithFlag.id) {

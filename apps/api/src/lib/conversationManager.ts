@@ -444,6 +444,8 @@ export class ConversationManager {
       return {
         ...conversation,
         messages: messagesString ? messagesString.split(",") : [],
+        parent_conversation_id: conversation.parent_conversation_id,
+        parent_message_id: conversation.parent_message_id,
       };
     });
 

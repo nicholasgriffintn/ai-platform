@@ -143,6 +143,8 @@ export interface Conversation {
   created_at?: string;
   updated_at?: string;
   last_message_at?: string;
+  parent_conversation_id?: string;
+  parent_message_id?: string;
   isLocalOnly?: boolean;
   is_public?: boolean;
   share_id?: string;

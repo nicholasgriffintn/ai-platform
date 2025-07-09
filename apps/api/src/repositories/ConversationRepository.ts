@@ -7,10 +7,8 @@ export class ConversationRepository extends BaseRepository {
     title?: string,
     options: Record<string, unknown> = {},
   ): Promise<Record<string, unknown> | null> {
-    const parentConversationId = options.parent_conversation_id as
-      | string
-      | undefined;
-    const parentMessageId = options.parent_message_id as string | undefined;
+    const parentConversationId = options.parent_conversation_id;
+    const parentMessageId = options.parent_message_id;
 
     const result = this.runQuery<Record<string, unknown>>(
       `INSERT INTO conversation (
