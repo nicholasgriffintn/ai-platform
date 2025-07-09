@@ -200,7 +200,7 @@ describe("chat utils", () => {
       expect(result).toHaveLength(2);
     });
 
-    it("should keep attachments without url or markdown", () => {
+    it("should filter out attachments without url or markdown", () => {
       const attachments = [
         { type: "other", data: "test1" },
         { type: "other", data: "test2" },
@@ -208,7 +208,21 @@ describe("chat utils", () => {
 
       const result = dedupeAttachments(attachments as any);
 
-      expect(result).toHaveLength(2);
+      expect(result).toHaveLength(0);
+    });
+
+    it("should filter out attachments with empty keys", () => {
+      const attachments = [
+        { type: "image", url: "" },
+        { type: "markdown_document", markdown: "" },
+        { type: "image", url: "https://example.com/image.jpg" },
+        { type: "markdown_document", markdown: "" }, // another empty one
+      ];
+
+      const result = dedupeAttachments(attachments as any);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].url).toBe("https://example.com/image.jpg");
     });
   });
 

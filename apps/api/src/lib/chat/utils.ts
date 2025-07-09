@@ -104,7 +104,9 @@ export function dedupeAttachments(attachments: Attachment[]): Attachment[] {
   const seen = new Set<string>();
   return attachments.filter((att) => {
     const key = att.url ?? att.markdown ?? "";
-    if (!key) return true;
+    if (!key) {
+      return false;
+    }
     if (seen.has(key)) {
       return false;
     }
