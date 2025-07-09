@@ -102,6 +102,9 @@ export function createCommonParameters(
     commonParams.repetition_penalty = params.repetition_penalty;
     commonParams.frequency_penalty = params.frequency_penalty;
     commonParams.presence_penalty = params.presence_penalty;
+  }
+
+  if (providerName === "openai") {
     commonParams.metadata = params.metadata;
   }
 

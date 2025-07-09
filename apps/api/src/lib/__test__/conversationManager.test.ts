@@ -205,6 +205,10 @@ describe("ConversationManager", () => {
         conversationId,
         mockUser.id,
         "New Conversation",
+        {
+          parent_conversation_id: undefined,
+          parent_message_id: undefined,
+        },
       );
     });
 
