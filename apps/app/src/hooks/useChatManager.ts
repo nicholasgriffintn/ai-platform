@@ -937,6 +937,16 @@ export function useChatManager() {
         const shouldStore =
           isAuthenticated && isPro && !localOnlyMode && !chatSettings.localOnly;
 
+        await updateConversation(newConversationId, () => ({
+          id: newConversationId,
+          title: conversation.title || "Branched Conversation",
+          messages: messagesUpToPoint,
+          isLocalOnly: !shouldStore,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          last_message_at: new Date().toISOString(),
+        }));
+
         if (shouldStore) {
           const normalizedMessages = messagesUpToPoint.map(normalizeMessage);
           const modelToSend = model === null ? undefined : model;
@@ -946,6 +956,9 @@ export function useChatManager() {
             metadata: branchMetadata,
           };
 
+          let lastContent = "";
+          let lastReasoning = "";
+
           await apiService.streamChatCompletions(
             newConversationId,
             normalizedMessages,
@@ -953,25 +966,46 @@ export function useChatManager() {
             chatMode,
             chatSettingsWithMetadata,
             new AbortController().signal,
-            () => {},
+            (content, reasoning, _toolResponses, done) => {
+              lastContent = content;
+              if (reasoning) lastReasoning = reasoning;
+
+              if (done) {
+                updateAssistantMessage(newConversationId, content, reasoning);
+              } else {
+                updateAssistantMessage(newConversationId, content);
+              }
+            },
             () => {},
             shouldStore,
-            false,
+            true,
             useMultiModel,
             chatMode === "agent"
               ? `/agents/${selectedAgentId}/completions`
               : undefined,
           );
-        } else {
-          await updateConversation(newConversationId, () => ({
-            id: newConversationId,
-            title: conversation.title || "Branched Conversation",
-            messages: messagesUpToPoint,
-            isLocalOnly: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            last_message_at: new Date().toISOString(),
-          }));
+
+          await updateAssistantMessage(
+            newConversationId,
+            lastContent,
+            lastReasoning,
+          );
+
+          setTimeout(() => {
+            const lastMessage = messagesUpToPoint[messagesUpToPoint.length - 1];
+            if (lastMessage) {
+              generateConversationTitle(
+                newConversationId,
+                messagesUpToPoint.slice(0, -1),
+                lastMessage,
+              ).catch((err) =>
+                console.error(
+                  "Background title generation failed for branched conversation:",
+                  err,
+                ),
+              );
+            }
+          }, 0);
         }
 
         setCurrentConversationId(newConversationId);
@@ -996,7 +1030,9 @@ export function useChatManager() {
       useMultiModel,
       selectedAgentId,
       updateConversation,
+      updateAssistantMessage,
       setCurrentConversationId,
+      generateConversationTitle,
     ],
   );
 
