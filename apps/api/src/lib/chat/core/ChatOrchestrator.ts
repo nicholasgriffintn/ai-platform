@@ -11,7 +11,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "CHAT_ORCHESTRATOR" });
+const logger = getLogger({ prefix: "CHAT:CORE:ORCHESTRATOR" });
 
 export class ChatOrchestrator {
   private validator: ValidationPipeline;

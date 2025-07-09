@@ -1,25 +1,24 @@
 /**
  * SSE Event Types
  */
-export enum SSEEventType {
-  STATE = "state",
-  ERROR = "error",
-  USAGE_LIMITS = "usage_limits",
-  CONTENT_BLOCK_DELTA = "content_block_delta",
-  CONTENT_BLOCK_STOP = "content_block_stop",
-  THINKING_DELTA = "thinking_delta",
-  SIGNATURE_DELTA = "signature_delta",
-  MESSAGE_START = "message_start",
-  MESSAGE_DELTA = "message_delta",
-  MESSAGE_STOP = "message_stop",
-  CONTENT_BLOCK_START = "content_block_start",
-  TOOL_RESPONSE_START = "tool_response_start",
-  TOOL_RESPONSE = "tool_response",
-  TOOL_RESPONSE_END = "tool_response_end",
-  TOOL_USE_START = "tool_use_start",
-  TOOL_USE_DELTA = "tool_use_delta",
-  TOOL_USE_STOP = "tool_use_stop",
-}
+export type SSEEventType =
+  | "state"
+  | "error"
+  | "usage_limits"
+  | "content_block_delta"
+  | "content_block_stop"
+  | "thinking_delta"
+  | "signature_delta"
+  | "message_start"
+  | "message_delta"
+  | "message_stop"
+  | "content_block_start"
+  | "tool_response_start"
+  | "tool_response"
+  | "tool_response_end"
+  | "tool_use_start"
+  | "tool_use_delta"
+  | "tool_use_stop";
 
 /**
  * Tool Event Stages

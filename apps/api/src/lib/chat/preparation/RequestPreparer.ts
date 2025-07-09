@@ -12,7 +12,7 @@ import { getAllAttachments, sanitiseInput } from "../utils";
 import { pruneMessagesToFitContext } from "../utils";
 import type { ValidationContext } from "../validation/ValidationPipeline";
 
-const logger = getLogger({ prefix: "CHAT_REQUEST_PREPARER" });
+const logger = getLogger({ prefix: "CHAT:PREPARATION:REQUEST_PREPARER" });
 
 export interface PreparedRequest {
   modelConfigs: ModelConfigInfo[];

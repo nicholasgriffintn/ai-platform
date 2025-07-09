@@ -9,7 +9,7 @@ import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults } from "~/utils/parameters";
 import { withRetry } from "~/utils/retries";
 
-const responseLogger = getLogger({ prefix: "CHAT_RESPONSE" });
+const responseLogger = getLogger({ prefix: "CHAT:RESPONSES" });
 
 /**
  * Formats assistant message data into a standardized structure that can be used

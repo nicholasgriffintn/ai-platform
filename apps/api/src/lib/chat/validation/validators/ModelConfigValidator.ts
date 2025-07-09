@@ -9,7 +9,7 @@ import { getModelConfig } from "~/lib/models";
 import type { CoreChatOptions } from "~/types";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "CHAT_VALIDATOR_CONFIG" });
+const logger = getLogger({ prefix: "CHAT:VALIDATION:VALIDATORS:MODEL_CONFIG" });
 
 export class ModelConfigValidator implements Validator {
   async validate(

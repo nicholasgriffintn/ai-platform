@@ -105,7 +105,9 @@ export function dedupeAttachments(attachments: Attachment[]): Attachment[] {
   return attachments.filter((att) => {
     const key = att.url ?? att.markdown ?? "";
     if (!key) return true;
-    if (seen.has(key)) return false;
+    if (seen.has(key)) {
+      return false;
+    }
     seen.add(key);
     return true;
   });
@@ -291,7 +293,10 @@ export function getToolEventPayload(
       break;
     default: {
       const exhaustiveCheck: never = stage;
-      throw new Error(`Unsupported ToolStage: ${exhaustiveCheck}`);
+      throw new AssistantError(
+        `Unsupported ToolStage: ${exhaustiveCheck}`,
+        ErrorType.INTERNAL_ERROR,
+      );
     }
   }
 

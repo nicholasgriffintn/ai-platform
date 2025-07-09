@@ -8,7 +8,7 @@ import {
   formatToolResponse,
 } from "~/utils/tool-responses";
 
-const logger = getLogger({ prefix: "TOOLS" });
+const logger = getLogger({ prefix: "CHAT:TOOLS" });
 
 interface ToolCallError extends Error {
   functionName?: string;

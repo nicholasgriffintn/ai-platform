@@ -1,6 +1,11 @@
 import type { SSEEventPayload } from "~/types";
+import { getLogger } from "~/utils/logger";
 
 const encoder = new TextEncoder();
+
+const logger = getLogger({
+  prefix: "CHAT:EMITTER",
+});
 
 /**
  * Creates a standardized SSE event data string
@@ -12,7 +17,14 @@ export function createEventData(
   type: string,
   payload: SSEEventPayload = {},
 ): string {
-  return `data: ${JSON.stringify({ ...payload, type })}\n\n`;
+  let data;
+  try {
+    data = JSON.stringify({ ...payload, type });
+  } catch (error) {
+    logger.error("Error creating event data", { error, type, payload });
+    throw error;
+  }
+  return `data: ${data}\n\n`;
 }
 
 /**
