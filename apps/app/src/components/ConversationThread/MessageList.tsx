@@ -30,6 +30,8 @@ interface MessageListProps {
   ) => void;
   messages?: Message[];
   isSharedView?: boolean;
+  onBranch?: (messageId: string) => void;
+  isBranching?: boolean;
 }
 
 export const MessageList = ({
@@ -37,6 +39,8 @@ export const MessageList = ({
   onArtifactOpen,
   messages: propMessages,
   isSharedView = false,
+  onBranch,
+  isBranching = false,
 }: MessageListProps) => {
   const { currentConversationId, isAuthenticated } = useChatStore();
 
@@ -166,6 +170,8 @@ export const MessageList = ({
                     }
                   }}
                   onCancelEdit={stopEditingMessage}
+                  onBranch={onBranch}
+                  isBranching={isBranching}
                 />
               </div>
             ))}

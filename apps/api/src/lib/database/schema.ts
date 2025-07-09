@@ -121,6 +121,8 @@ export const conversation = sqliteTable(
     last_message_id: text(),
     last_message_at: text(),
     message_count: integer().default(0),
+    parent_conversation_id: text().references(() => conversation.id),
+    parent_message_id: text(),
     created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
     updated_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
@@ -132,6 +134,12 @@ export const conversation = sqliteTable(
     publicIdx: index("conversation_public_idx").on(table.is_public),
     shareIdIdx: index("conversation_share_id_idx").on(table.share_id),
     userIdIdx: index("conversation_user_id_idx").on(table.user_id),
+    parentConversationIdIdx: index(
+      "conversation_parent_conversation_id_idx",
+    ).on(table.parent_conversation_id),
+    parentMessageIdIdx: index("conversation_parent_message_id_idx").on(
+      table.parent_message_id,
+    ),
   }),
 );
 

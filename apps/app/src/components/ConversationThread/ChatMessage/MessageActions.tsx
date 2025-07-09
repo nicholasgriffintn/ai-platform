@@ -2,6 +2,7 @@ import {
   Check,
   Copy,
   Edit,
+  GitBranch,
   RefreshCw,
   ThumbsDown,
   ThumbsUp,
@@ -23,6 +24,8 @@ interface MessageActionsProps {
   isRetrying?: boolean;
   onEdit?: () => void;
   isEditing?: boolean;
+  onBranch?: (messageId: string) => void;
+  isBranching?: boolean;
 }
 
 export const MessageActions = ({
@@ -37,6 +40,8 @@ export const MessageActions = ({
   isRetrying = false,
   onEdit,
   isEditing = false,
+  onBranch,
+  isBranching = false,
 }: MessageActionsProps) => {
   return (
     <div className="flex flex-wrap justify-end items-center gap-2">
@@ -85,6 +90,21 @@ export const MessageActions = ({
             aria-label={isRetrying ? "Retrying..." : "Retry message"}
           >
             <RefreshCw size={14} className={isRetrying ? "animate-spin" : ""} />
+          </Button>
+        )}
+        {onBranch && !isSharedView && (
+          <Button
+            type="button"
+            variant="icon"
+            onClick={() => onBranch(message.id)}
+            disabled={isBranching}
+            className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
+              isBranching ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            title={isBranching ? "Branching..." : "Branch conversation"}
+            aria-label={isBranching ? "Branching..." : "Branch conversation"}
+          >
+            <GitBranch size={14} />
           </Button>
         )}
         {message.role !== "user" && (message.created || message.timestamp) && (
