@@ -10,7 +10,6 @@ This is the web and mobile frontend for the Personal Assistant project, built wi
 - Local conversation storage with IndexedDB (falls back to LocalStorage)
 - Settings configuration for models and preferences
 - Web LLM support for offline usage
-- Mobile app with Capacitor
 
 ## Setup
 
@@ -29,26 +28,6 @@ pnpm run dev
 4. Build for production
 ```bash
 pnpm run build
-```
-
-## Mobile Development
-
-This app uses Capacitor to support mobile platforms:
-
-```bash
-# Build the app first
-pnpm run build
-
-# Add mobile platforms if not already added
-npx cap add ios
-npx cap add android
-
-# Sync web code to mobile projects
-npx cap sync
-
-# Open in native IDEs
-npx cap open ios
-npx cap open android
 ```
 
 ## Deployment

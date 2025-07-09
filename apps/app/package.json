@@ -16,7 +16,6 @@
     "wrangler:dev": "pnpm run build && wrangler dev --remote",
     "deploy": "pnpm run build && wrangler deploy --minify",
     "sync": "npx cap sync",
-    "dev:ios": "npx cap run ios",
     "test": "vitest run",
     "coverage": "vitest run --coverage"
   },
@@ -62,9 +61,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@capacitor/cli": "7.4.1",
-    "@capacitor/core": "7.4.1",
-    "@capacitor/ios": "7.4.1",
     "@cloudflare/workers-types": "4.20250709.0",
     "@react-router/dev": "7.6.3",
     "@simplewebauthn/types": "^12.0.0",

@@ -33,7 +33,7 @@ Here are some example chats that you can try out:
 
 This project is organized as a monorepo with multiple applications:
 
-- **app** - Web and mobile frontend application built with React, TailwindCSS, and React Router
+- **app** - Web (PWA) frontend application built with React, TailwindCSS, and React Router
 - **api** - Backend API built with Cloudflare Workers that interfaces with AI models and manages user data
 - **metrics** - Analytics and monitoring application to track usage and performance
 
@@ -236,30 +236,6 @@ The metrics application provides dashboards for monitoring:
 - User activity and engagement
 
 Access the metrics dashboard at [metrics.polychat.app](https://metrics.polychat.app).
-
-## Mobile Application
-
-> [!NOTE]
-> The mobile application is not yet fully developed and is not ready for use.
-
-The project includes a mobile application built with Capacitor:
-
-```bash
-# Build the web app
-cd apps/app
-npm run build
-
-# Add mobile platforms
-npx cap add ios
-npx cap add android
-
-# Sync web code to mobile projects
-npx cap sync
-
-# Open in native IDEs
-npx cap open ios
-npx cap open android
-```
 
 ## Contributing
 
