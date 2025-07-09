@@ -1,4 +1,6 @@
 import type { Attachment } from "~/types";
+import type { ToolCall, ToolEventPayload } from "~/types";
+import { ToolStage } from "~/types";
 import type { Message } from "~/types/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -260,4 +262,29 @@ export function sanitiseMessages(messages: Message[]): Message[] {
     }
     return msg;
   });
+}
+
+/**
+ * Constructs payload for tool events based on stage
+ * @param toolCall - The tool call
+ * @param stage - The stage of the tool call
+ * @param parameters - Optional string containing the parameters for delta stage
+ * @returns The payload object
+ */
+export function getToolEventPayload(
+  toolCall: ToolCall,
+  stage: ToolStage,
+  parameters?: string,
+): ToolEventPayload {
+  const payload: ToolEventPayload = {
+    tool_id: toolCall.id,
+  };
+
+  if (stage === ToolStage.START) {
+    payload.tool_name = toolCall.function?.name || "";
+  } else if (stage === ToolStage.DELTA) {
+    payload.parameters = parameters || "{}";
+  }
+
+  return payload;
 }

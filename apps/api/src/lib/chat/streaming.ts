@@ -1,6 +1,7 @@
 import { formatAssistantMessage } from "~/lib/chat/responses";
 import { getAIResponse } from "~/lib/chat/responses";
 import { handleToolCalls } from "~/lib/chat/tools";
+import { getToolEventPayload } from "~/lib/chat/utils";
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
@@ -19,7 +20,6 @@ import {
   SSEEventType,
   StreamState,
   type ToolCall,
-  type ToolEventPayload,
   ToolStage,
 } from "~/types";
 import { generateId } from "~/utils/id";
@@ -33,10 +33,10 @@ const logger = getLogger({ prefix: "CHAT_STREAMING" });
  * @param controller - The stream controller
  * @param toolCall - The tool call
  * @param stage - The stage of the tool call
- * @param parameters - The parameters for delta stage
+ * @param parameters - Optional string containing the parameters for delta stage
  */
 function emitToolEvents(
-  controller: TransformStreamDefaultController,
+  controller: TransformStreamDefaultController<Uint8Array>,
   toolCall: ToolCall,
   stage: ToolStage,
   parameters?: string,
@@ -48,16 +48,7 @@ function emitToolEvents(
         ? SSEEventType.TOOL_USE_DELTA
         : SSEEventType.TOOL_USE_STOP;
 
-  const payload: ToolEventPayload = {
-    tool_id: toolCall.id,
-  };
-
-  if (stage === ToolStage.START) {
-    payload.tool_name = toolCall.function?.name || "";
-  } else if (stage === ToolStage.DELTA) {
-    payload.parameters = parameters || "{}";
-  }
-
+  const payload = getToolEventPayload(toolCall, stage, parameters);
   emitEvent(controller, eventType, payload);
 }
 
