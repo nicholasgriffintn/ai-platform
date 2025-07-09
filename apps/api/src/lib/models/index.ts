@@ -37,6 +37,7 @@ let cachedRouterModels: typeof modelConfig | null = null;
 
 export interface ModelsOptions {
   shouldUseCache?: boolean;
+  excludeTypes?: Array<(typeof availableModelTypes)[number]>;
 }
 
 const modelConfig: ModelConfig = {
@@ -163,21 +164,22 @@ export async function getModelConfigByMatchingModel(
 export function getModels(
   options: ModelsOptions = {
     shouldUseCache: true,
+    excludeTypes: [],
   },
 ) {
   if (cachedModels && options.shouldUseCache) {
     return cachedModels;
   }
 
-  cachedModels = Object.entries(modelConfig).reduce(
-    (acc, [key, model]) => {
-      if (!model.beta) {
-        acc[key] = model;
-      }
-      return acc;
-    },
-    {} as typeof modelConfig,
-  );
+  cachedModels = Object.entries(modelConfig).reduce((acc, [key, model]) => {
+    if (
+      !model.beta &&
+      !options.excludeTypes?.some((excluded) => model.type.includes(excluded))
+    ) {
+      acc[key] = model;
+    }
+    return acc;
+  }, {});
 
   return cachedModels;
 }

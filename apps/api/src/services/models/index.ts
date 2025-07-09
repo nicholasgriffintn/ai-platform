@@ -15,6 +15,7 @@ import type { IEnv } from "~/types";
 export async function listModels(env: IEnv, userId?: number) {
   const allModels = getModels({
     shouldUseCache: false,
+    excludeTypes: ["guardrails"],
   });
   return await filterModelsForUserAccess(allModels, env, userId, {
     shouldUseCache: false,

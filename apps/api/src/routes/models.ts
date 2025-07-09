@@ -59,7 +59,7 @@ app.get(
   }),
   async (context: Context) => {
     const userId = context.get("user")?.id;
-    const models = await listModels(context.env as IEnv, userId);
+    const models = await listModels(context.env, userId);
     return context.json({
       success: true,
       message: "Models fetched successfully",

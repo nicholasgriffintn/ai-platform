@@ -337,13 +337,6 @@ export const workersAiModelConfig: ModelConfig = {
     reliability: 5,
     contextComplexity: 5,
   },
-  "@hf/thebloke/llamaguard-7b-awq": {
-    name: "LlamaGuard 3 8B",
-    matchingModel: "@hf/thebloke/llamaguard-7b-awq",
-    provider: "workers-ai",
-    type: ["guardrails"],
-    isFree: true,
-  },
   "@cf/meta/llama-guard-3-8b": {
     name: "LlamaGuard 3 8B",
     matchingModel: "@cf/meta/llama-guard-3-8b",
