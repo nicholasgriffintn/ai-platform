@@ -614,14 +614,35 @@ export async function createStreamWithPostProcessing(
 
             if (toolCallsData.length > 0) {
               for (const toolCall of toolCallsData) {
-                emitToolEvents(controller, toolCall, ToolStage.START);
-                emitToolEvents(
-                  controller,
-                  toolCall,
-                  ToolStage.DELTA,
-                  toolCall.function?.arguments || "{}",
-                );
-                emitToolEvents(controller, toolCall, ToolStage.STOP);
+                try {
+                  emitToolEvents(controller, toolCall, ToolStage.START);
+                } catch (error) {
+                  logger.error("Error emitting tool start event", {
+                    error,
+                    toolCall,
+                  });
+                }
+                try {
+                  emitToolEvents(
+                    controller,
+                    toolCall,
+                    ToolStage.DELTA,
+                    toolCall.function?.arguments || "{}",
+                  );
+                } catch (error) {
+                  logger.error("Error emitting tool delta event", {
+                    error,
+                    toolCall,
+                  });
+                }
+                try {
+                  emitToolEvents(controller, toolCall, ToolStage.STOP);
+                } catch (error) {
+                  logger.error("Error emitting tool stop event", {
+                    error,
+                    toolCall,
+                  });
+                }
               }
 
               emitEvent(controller, SSEEventType.TOOL_RESPONSE_START, {

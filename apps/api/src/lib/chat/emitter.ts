@@ -1,4 +1,6 @@
-import type { SSEEventPayload } from "../../types/streaming";
+import type { SSEEventPayload } from "~/types";
+
+const encoder = new TextEncoder();
 
 /**
  * Creates a standardized SSE event data string
@@ -10,7 +12,7 @@ export function createEventData(
   type: string,
   payload: SSEEventPayload = {},
 ): string {
-  return `data: ${JSON.stringify({ type, ...payload })}\n\n`;
+  return `data: ${JSON.stringify({ ...payload, type })}\n\n`;
 }
 
 /**
@@ -19,7 +21,7 @@ export function createEventData(
  * @returns The encoded Uint8Array
  */
 export function encodeEventData(data: string): Uint8Array {
-  return new TextEncoder().encode(data);
+  return encoder.encode(data);
 }
 
 /**

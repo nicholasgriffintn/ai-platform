@@ -280,10 +280,19 @@ export function getToolEventPayload(
     tool_id: toolCall.id,
   };
 
-  if (stage === ToolStage.START) {
-    payload.tool_name = toolCall.function?.name || "";
-  } else if (stage === ToolStage.DELTA) {
-    payload.parameters = parameters || "{}";
+  switch (stage) {
+    case ToolStage.START:
+      payload.tool_name = toolCall.function?.name || "";
+      break;
+    case ToolStage.DELTA:
+      payload.parameters = parameters || "{}";
+      break;
+    case ToolStage.STOP:
+      break;
+    default: {
+      const exhaustiveCheck: never = stage;
+      throw new Error(`Unsupported ToolStage: ${exhaustiveCheck}`);
+    }
   }
 
   return payload;
