@@ -133,20 +133,31 @@ export class RequestPreparer {
     const configPromises = selectedModels.map((model) =>
       getModelConfig(model, env),
     );
-    const configResults = await Promise.all(configPromises);
+    const configResults = await Promise.allSettled(configPromises);
 
-    return configResults.map((config, index) => {
-      if (!config) {
-        throw new Error(
-          `Invalid model configuration for ${selectedModels[index]}`,
-        );
+    const successfulConfigs: ModelConfigInfo[] = [];
+
+    configResults.forEach((result, index) => {
+      if (result.status === "fulfilled" && result.value) {
+        successfulConfigs.push({
+          model: result.value.matchingModel,
+          provider: result.value.provider,
+          displayName: result.value.name || result.value.matchingModel,
+        });
+      } else {
+        logger.warn("Failed to get model configuration", {
+          model: selectedModels[index],
+          error:
+            result.status === "rejected" ? result.reason : "No config returned",
+        });
       }
-      return {
-        model: config.matchingModel,
-        provider: config.provider,
-        displayName: config.name || config.matchingModel,
-      };
     });
+
+    if (successfulConfigs.length === 0) {
+      throw new Error("No valid model configurations available");
+    }
+
+    return successfulConfigs;
   }
 
   private async processMessageContent(
