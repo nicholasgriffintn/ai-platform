@@ -92,7 +92,7 @@ export const MessageActions = ({
             <RefreshCw size={14} className={isRetrying ? "animate-spin" : ""} />
           </Button>
         )}
-        {onBranch && !isSharedView && (
+        {message.role === "user" && onBranch && !isSharedView && (
           <Button
             type="button"
             variant="icon"
