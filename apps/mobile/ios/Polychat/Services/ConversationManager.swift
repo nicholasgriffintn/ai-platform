@@ -73,9 +73,13 @@ class ConversationManager: ObservableObject {
     }
 }
 
-struct Conversation: Identifiable {
+struct Conversation: Identifiable, Equatable {
     let id: String
     var title: String
     var messages: [ChatMessage]
     let createdAt: Date
+    
+    static func == (lhs: Conversation, rhs: Conversation) -> Bool {
+        return lhs.id == rhs.id
+    }
 }

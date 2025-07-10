@@ -6,23 +6,29 @@ struct ConversationListView: View {
     var body: some View {
         List {
             ForEach(conversationManager.conversations) { conversation in
-                NavigationLink {
-                    ChatView()
-                        .onAppear {
-                            conversationManager.currentConversation = conversation
+                Button(action: {
+                    conversationManager.currentConversation = conversation
+                }) {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(conversation.title)
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            if let lastMessage = conversation.messages.last {
+                                Text(lastMessage.content)
+                                    .font(.subheadline)
+                                    .lineLimit(1)
+                                    .foregroundColor(.gray)
+                            }
                         }
-                } label: {
-                    VStack(alignment: .leading) {
-                        Text(conversation.title)
-                            .font(.headline)
-                        if let lastMessage = conversation.messages.last {
-                            Text(lastMessage.content)
-                                .font(.subheadline)
-                                .lineLimit(1)
-                                .foregroundColor(.gray)
+                        Spacer()
+                        if conversation.id == conversationManager.currentConversation?.id {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(.blue)
                         }
                     }
                 }
+                .buttonStyle(PlainButtonStyle())
             }
             .onDelete(perform: deleteConversations)
         }

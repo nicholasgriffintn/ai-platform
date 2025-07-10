@@ -17,6 +17,15 @@ struct ChatView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    conversationManager.startNewConversation()
+                }) {
+                    Image(systemName: "plus")
+                }
+            }
+        }
     }
     
     private func sendMessage() {
