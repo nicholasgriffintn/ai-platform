@@ -97,6 +97,27 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     supportsArtifacts: true,
   }),
 
+  createModelConfig("devstral-medium", PROVIDER, {
+    name: "Devstral Medium",
+    matchingModel: "devstral-medium-latest",
+    description:
+      "Devstral Medium offers exceptional performance at a competitive price point.",
+    type: ["coding"],
+    supportsFunctions: true,
+    isFree: true,
+    contextWindow: 128000,
+    maxTokens: 128000,
+    costPer1kInputTokens: 0.4,
+    costPer1kOutputTokens: 2,
+    strengths: ["coding", "agents"],
+    contextComplexity: 4,
+    reliability: 4,
+    speed: 4,
+    isFeatured: true,
+    includedInRouter: true,
+    supportsArtifacts: true,
+  }),
+
   createModelConfig("magistral-small", PROVIDER, {
     name: "Magistral Small",
     matchingModel: "magistral-small-latest",
