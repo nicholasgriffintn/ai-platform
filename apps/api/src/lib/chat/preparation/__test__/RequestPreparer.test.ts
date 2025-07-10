@@ -247,7 +247,7 @@ describe("RequestPreparer", () => {
 
       await expect(
         (preparer as any).buildModelConfigs(baseOptions, baseValidationContext),
-      ).rejects.toThrow("Invalid model configuration for claude-3-sonnet");
+      ).rejects.toThrow("No valid model configurations available");
     });
   });
 
