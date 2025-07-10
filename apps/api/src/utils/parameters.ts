@@ -99,9 +99,11 @@ export function createCommonParameters(
 
   if (providerName !== "anthropic") {
     commonParams.seed = params.seed;
-    commonParams.repetition_penalty = params.repetition_penalty;
-    commonParams.frequency_penalty = params.frequency_penalty;
-    commonParams.presence_penalty = params.presence_penalty;
+    if (modelConfig.matchingModel !== "grok-4-latest") {
+      commonParams.repetition_penalty = params.repetition_penalty;
+      commonParams.frequency_penalty = params.frequency_penalty;
+      commonParams.presence_penalty = params.presence_penalty;
+    }
   }
 
   if (providerName === "openai" && params.metadata) {
