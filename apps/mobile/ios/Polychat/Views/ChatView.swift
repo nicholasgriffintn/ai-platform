@@ -2,7 +2,10 @@ import SwiftUI
 
 struct ChatView: View {
     @EnvironmentObject var conversationManager: ConversationManager
+    @EnvironmentObject var modelsStore: ModelsStore
     @State private var messageText = ""
+    @State private var showingModelSelector = false
+    @FocusState private var isInputFocused: Bool
     
     private var messages: [ChatMessage] {
         conversationManager.currentConversation?.messages ?? []
@@ -18,6 +21,21 @@ struct ChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    showingModelSelector = true
+                }) {
+                    HStack {
+                        Image(systemName: "brain.head.profile")
+                        if let selectedModel = modelsStore.getSelectedModel() {
+                            Text(selectedModel.name ?? selectedModel.id)
+                                .font(.caption)
+                                .lineLimit(1)
+                        }
+                    }
+                }
+            }
+            
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
                     conversationManager.startNewConversation()
@@ -25,6 +43,12 @@ struct ChatView: View {
                     Image(systemName: "plus")
                 }
             }
+        }
+        .sheet(isPresented: $showingModelSelector) {
+            ModelSelectorView()
+        }
+        .onTapGesture {
+            isInputFocused = false
         }
     }
     
@@ -75,20 +99,43 @@ struct MessageListView: View {
 struct MessageInputView: View {
     @Binding var messageText: String
     let sendMessage: () -> Void
+    @FocusState private var isInputFocused: Bool
     
     var body: some View {
         HStack(spacing: 12) {
-            TextField("Type a message...", text: $messageText)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
+            TextEditor(text: $messageText)
+                .focused($isInputFocused)
+                .frame(minHeight: 36, maxHeight: 120)
+                .padding(.horizontal, 12)
                 .padding(.vertical, 8)
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(Color(.systemGray4), lineWidth: 1)
+                )
+                .onSubmit {
+                    sendMessage()
+                }
             
             Button(action: sendMessage) {
                 Image(systemName: "paperplane.fill")
                     .font(.system(size: 20))
+                    .foregroundColor(.white)
+                    .frame(width: 36, height: 36)
+                    .background(messageText.isEmpty ? Color.gray : Color.blue)
+                    .clipShape(Circle())
             }
             .disabled(messageText.isEmpty)
         }
         .padding()
+        .background(Color(.systemBackground))
+        .overlay(
+            Rectangle()
+                .frame(height: 1)
+                .foregroundColor(Color(.systemGray5)),
+            alignment: .top
+        )
     }
 }
 
@@ -99,18 +146,53 @@ struct MessageBubble: View {
     var body: some View {
         HStack {
             if message.role == "user" {
-                Spacer()
+                Spacer(minLength: 60)
             }
             
-            Text(message.content)
-                .padding(12)
-                .background(message.role == "user" ? Color.blue : Color.gray.opacity(0.2))
-                .foregroundColor(message.role == "user" ? .white : .primary)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            VStack(alignment: message.role == "user" ? .trailing : .leading, spacing: 4) {
+                Text(message.content)
+                    .font(.body)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(messageBackground)
+                    .foregroundColor(messageTextColor)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                
+                if message.content == "..." {
+                    HStack {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("AI is thinking...")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
             
             if message.role != "user" {
-                Spacer()
+                Spacer(minLength: 60)
             }
+        }
+        .padding(.horizontal, 4)
+    }
+    
+    private var messageBackground: Color {
+        switch message.role {
+        case "user":
+            return Color.blue
+        case "assistant":
+            return Color(.systemGray5)
+        default:
+            return Color.gray.opacity(0.2)
+        }
+    }
+    
+    private var messageTextColor: Color {
+        switch message.role {
+        case "user":
+            return .white
+        default:
+            return .primary
         }
     }
 }

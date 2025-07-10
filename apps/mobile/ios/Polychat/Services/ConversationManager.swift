@@ -1,16 +1,20 @@
 import Foundation
 import Combine
 
+@MainActor
 class ConversationManager: ObservableObject {
     @Published var currentConversation: Conversation?
     @Published var conversations: [Conversation] = []
+    @Published var selectedModelId: String?
     
     private var apiClient: APIClient?
     private var authManager: AuthenticationManager?
+    private var modelsStore: ModelsStore?
     
-    func configure(apiClient: APIClient, authManager: AuthenticationManager) {
+    func configure(apiClient: APIClient, authManager: AuthenticationManager, modelsStore: ModelsStore? = nil) {
         self.apiClient = apiClient
         self.authManager = authManager
+        self.modelsStore = modelsStore
 
         if currentConversation == nil {
             _ = startNewConversation()
@@ -18,10 +22,12 @@ class ConversationManager: ObservableObject {
     }
     
     func startNewConversation() -> Conversation {
+        let modelId = selectedModelId ?? modelsStore?.selectedModelId
         let newConversation = Conversation(id: UUID().uuidString, 
                                          title: "New Conversation",
                                          messages: [],
-                                         createdAt: Date())
+                                         createdAt: Date(),
+                                         modelId: modelId)
         currentConversation = newConversation
         conversations.insert(newConversation, at: 0)
         return newConversation
@@ -45,8 +51,15 @@ class ConversationManager: ObservableObject {
         updateConversationInArray(conversation)
         
         do {
+            // Get the model to use - from conversation, selected, or default
+            let currentSelectedModelId = await MainActor.run { modelsStore?.selectedModelId }
+            let modelToUse = conversation.modelId ?? 
+                           selectedModelId ?? 
+                           currentSelectedModelId ?? 
+                           "mistral-small"
+            
             // Get API response
-            if let response = try await apiClient?.createChatCompletion(messages: conversation.messages.dropLast()) {
+            if let response = try await apiClient?.createChatCompletion(messages: Array(conversation.messages.dropLast()), modelId: modelToUse) {
                 // Remove loading message
                 conversation.messages.removeLast()
                 
@@ -55,6 +68,9 @@ class ConversationManager: ObservableObject {
                 conversation.messages.append(assistantMessage)
                 currentConversation = conversation
                 updateConversationInArray(conversation)
+                
+                // Generate title if needed
+                await generateTitleIfNeeded(for: conversation)
             }
         } catch {
             // Remove loading message and add error message
@@ -71,6 +87,41 @@ class ConversationManager: ObservableObject {
             conversations[index] = conversation
         }
     }
+    
+    func setModelForCurrentConversation(_ modelId: String) {
+        selectedModelId = modelId
+        currentConversation?.modelId = modelId
+        if let conversation = currentConversation {
+            updateConversationInArray(conversation)
+        }
+    }
+    
+    func generateTitleIfNeeded(for conversation: Conversation) async {
+        // Only generate title if we have at least 2 messages and the title is still default
+        guard conversation.messages.count >= 2,
+              conversation.title == "New Conversation" || conversation.title.hasPrefix("New Conversation") else {
+            return
+        }
+        
+        do {
+            try await apiClient?.generateTitle(conversationId: conversation.id, messages: conversation.messages)
+        } catch {
+            // If title generation fails, use truncated first message as fallback
+            if let firstUserMessage = conversation.messages.first(where: { $0.role == "user" }) {
+                let truncatedTitle = String(firstUserMessage.content.prefix(30))
+                await updateConversationTitle(conversation.id, title: truncatedTitle)
+            }
+        }
+    }
+    
+    func updateConversationTitle(_ conversationId: String, title: String) async {
+        if let index = conversations.firstIndex(where: { $0.id == conversationId }) {
+            conversations[index].title = title
+            if currentConversation?.id == conversationId {
+                currentConversation?.title = title
+            }
+        }
+    }
 }
 
 struct Conversation: Identifiable, Equatable {
@@ -78,6 +129,7 @@ struct Conversation: Identifiable, Equatable {
     var title: String
     var messages: [ChatMessage]
     let createdAt: Date
+    var modelId: String?
     
     static func == (lhs: Conversation, rhs: Conversation) -> Bool {
         return lhs.id == rhs.id
