@@ -17,7 +17,10 @@
     "deploy:app": "pnpm --filter @assistant/app deploy",
     "deploy:metrics": "pnpm --filter @assistant/metrics deploy",
     "deploy": "pnpm --filter @assistant/api --filter @assistant/app --filter @assistant/metrics deploy",
-    "test:e2e": "playwright test --config=playwright.config.ts --tsconfig=tsconfig.playwright.json"
+    "test:e2e": "playwright test --config=playwright.config.ts --tsconfig=tsconfig.playwright.json",
+    "dev:mobile": "cd apps/mobile/ios && xcodebuild -scheme Polychat -destination 'platform=iOS Simulator,name=iPhone 15' build",
+    "build:mobile": "cd apps/mobile/ios && xcodebuild -scheme Polychat -configuration Release build",
+    "test:mobile": "cd apps/mobile/ios && xcodebuild test -scheme Polychat -destination 'platform=iOS Simulator,name=iPhone 15'"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

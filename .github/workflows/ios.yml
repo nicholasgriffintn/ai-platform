@@ -1,0 +1,49 @@
+name: iOS CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apps/mobile/ios/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'apps/mobile/ios/**'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+        
+    - name: Install dependencies
+      run: pnpm install
+      working-directory: apps/mobile/ios
+    
+    - name: Build
+      run: xcodebuild -scheme Polychat -destination 'platform=iOS Simulator,name=iPhone 15' build
+      working-directory: apps/mobile/ios
+    
+    - name: Run tests
+      run: xcodebuild test -scheme Polychat -destination 'platform=iOS Simulator,name=iPhone 15'
+      working-directory: apps/mobile/ios
+      
+    - name: Archive
+      if: github.ref == 'refs/heads/main'
+      run: xcodebuild -scheme Polychat -configuration Release archive -archivePath $PWD/build/Polychat.xcarchive
+      working-directory: apps/mobile/ios
+      
+    - name: Export IPA
+      if: github.ref == 'refs/heads/main'
+      run: |
+        xcodebuild -exportArchive \
+          -archivePath $PWD/build/Polychat.xcarchive \
+          -exportOptionsPlist $PWD/ExportOptions.plist \
+          -exportPath $PWD/build
+      working-directory: apps/mobile/ios
