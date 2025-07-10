@@ -32,7 +32,9 @@ struct ChatIntentShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: ChatIntent(),
-            phrases: ["Ask \(\.applicationName) about \(\.$prompt)"],
+            phrases: [
+                "Ask \(.applicationName) about \(\.$prompt)"
+            ],
             shortTitle: "Ask Polychat",
             systemImageName: "message.fill"
         )
