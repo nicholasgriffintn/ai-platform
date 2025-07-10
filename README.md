@@ -39,6 +39,9 @@ This project is organized as a monorepo with multiple applications:
 
 ## Features
 
+> [!NOTE]
+> I'm also working on a mobile application for this for fun, iOS only. If you're interested, you can [try it out here](https://testflight.apple.com/join/52xrwxRP).
+
 - API structure designed to match the OpenAI API for easy integration with various SDKs and applications.
 - Multiple provider and model support
   - Anthropic

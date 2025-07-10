@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  Polychat
-//
-//  Created by Nicholas Griffin on 10/07/2025.
-//
-
 import SwiftUI
 
 struct ContentView: View {
