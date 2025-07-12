@@ -32,6 +32,8 @@ export const availableModelTypes = [
   "text-to-video",
   "image-to-video",
   "guardrails",
+  "code-edits",
+  "function-calling",
 ] as const;
 
 export const defaultModel = "mistral-medium";
