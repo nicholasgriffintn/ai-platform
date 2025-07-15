@@ -6,6 +6,7 @@ import {
   Pause,
   Send,
   Square,
+  Volume2,
   X,
 } from "lucide-react";
 import {
@@ -65,6 +66,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     const [isImageModel, setIsImageModel] = useState(false);
     const [isTextToImageOnlyModel, setIsTextToImageOnlyModel] = useState(false);
     const [supportsDocuments, setSupportsDocuments] = useState(false);
+    const [supportsAudio, setSupportsAudio] = useState(false);
     const [supportsFunctions, setSupportsFunctions] = useState(false);
     const { data: apiModels } = useModels();
     const [isUploading, setIsUploading] = useState(false);
@@ -92,6 +94,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         setIsImageModel(false);
         setIsTextToImageOnlyModel(false);
         setSupportsDocuments(false);
+        setSupportsAudio(false);
         setSupportsFunctions(false);
         return;
       }
@@ -111,6 +114,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       setIsImageModel(imageOnly);
       setSupportsDocuments(
         !!modelData?.supportsDocuments && !imageOnly && !textOnlyToImage,
+      );
+      setSupportsAudio(
+        !!modelData?.supportsAudio && !imageOnly && !textOnlyToImage,
       );
       setSupportsFunctions(!!modelData?.supportsFunctions);
     }, [model, apiModels]);
@@ -175,6 +181,24 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
           setSelectedAttachment({
             type: "image",
+            data: url,
+            name: file.name,
+          });
+          setIsUploading(false);
+          return;
+        }
+
+        if (file.type.startsWith("audio/")) {
+          if (!supportsAudio) {
+            alert("This model does not support audio uploads");
+            setIsUploading(false);
+            return;
+          }
+
+          const { url } = await apiService.uploadFile(file, "audio");
+
+          setSelectedAttachment({
+            type: "audio",
             data: url,
             name: file.name,
           });
@@ -263,6 +287,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         fileTypes += ",image/*";
       }
 
+      if (supportsAudio) {
+        fileTypes += ",audio/*";
+      }
+
       return fileTypes;
     };
 
@@ -270,13 +298,13 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       if (isImageModel) {
         return <Image className="h-4 w-4" />;
       }
-      if (isMultimodalModel) {
+      if (isMultimodalModel || supportsAudio) {
         return (
           <span className="flex space-x-1">
-            <Image className="h-4 w-4" />
-            {supportsDocuments ? (
-              <File className="h-4 w-4" />
-            ) : (
+            {isMultimodalModel && <Image className="h-4 w-4" />}
+            {supportsDocuments && <File className="h-4 w-4" />}
+            {supportsAudio && <Volume2 className="h-4 w-4" />}
+            {!supportsDocuments && !supportsAudio && (
               <Paperclip className="h-4 w-4" />
             )}
           </span>
@@ -314,6 +342,14 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
             selectedAttachment?.type === "markdown_document"
               ? `${selectedAttachment.name || "Document"} (converted to text)`
               : selectedAttachment.name || "Document attached",
+        };
+      }
+      if (selectedAttachment?.type === "audio") {
+        return {
+          preview: (
+            <Volume2 className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
+          ),
+          label: selectedAttachment.name || "Audio attached",
         };
       }
       return { preview: null, label: "" };
@@ -405,8 +441,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                               onClick={() => fileInputRef.current?.click()}
                               disabled={isLoading || isUploading}
                               className="cursor-pointer p-1.5 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                              title={`Upload ${isMultimodalModel ? "an Image or Document" : "a Document"}`}
-                              aria-label={`Upload ${isMultimodalModel ? "an Image or Document" : "a Document"}`}
+                              title={`Upload ${isMultimodalModel || supportsAudio ? "files" : "a Document"}`}
+                              aria-label={`Upload ${isMultimodalModel || supportsAudio ? "files" : "a Document"}`}
                               variant="icon"
                               aria-haspopup="dialog"
                               aria-controls="file-upload"

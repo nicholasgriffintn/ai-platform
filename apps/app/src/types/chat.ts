@@ -24,11 +24,25 @@ export interface ChatSettings {
 }
 
 export interface MessageContent {
-  type: "text" | "image_url" | "artifact" | "document_url" | "thinking";
+  type:
+    | "text"
+    | "image_url"
+    | "audio_url"
+    | "input_audio"
+    | "artifact"
+    | "document_url"
+    | "thinking";
   text?: string;
   image_url?: {
     url: string;
     detail?: "auto" | "low" | "high";
+  };
+  audio_url?: {
+    url: string;
+  };
+  input_audio?: {
+    data?: string;
+    format?: "wav" | "mp3";
   };
   document_url?: {
     url: string;
@@ -46,7 +60,7 @@ export interface MessageContent {
 }
 
 export interface Attachment {
-  type: "image" | "document";
+  type: "image" | "document" | "audio";
   url: string;
   detail?: "low" | "high";
   name?: string;

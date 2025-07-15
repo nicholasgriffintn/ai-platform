@@ -255,7 +255,10 @@ export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
         model.type.includes("video-to-video") ||
         model.type.includes("speech") ||
         model.type.includes("text-to-speech");
-      const isIncompatible = hasIncompatibleProvider || hasIncompatibleType;
+      const hasIncompatibleTypeAndIsNotText =
+        hasIncompatibleType && !model.type.includes("text");
+      const isIncompatible =
+        hasIncompatibleProvider || hasIncompatibleTypeAndIsNotText;
 
       if (
         !isIncompatible &&

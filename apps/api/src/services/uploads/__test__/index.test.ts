@@ -50,7 +50,7 @@ describe("handleFileUpload", () => {
       formData.append("file", file);
 
       await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
-        "Invalid file type. Must be 'image' or 'document'",
+        "Invalid file type. Must be 'image', 'document', or 'audio'",
       );
     });
 
@@ -61,7 +61,7 @@ describe("handleFileUpload", () => {
       formData.append("file_type", "invalid");
 
       await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
-        "Invalid file type. Must be 'image' or 'document'",
+        "Invalid file type. Must be 'image', 'document', or 'audio'",
       );
     });
   });
@@ -113,6 +113,30 @@ describe("handleFileUpload", () => {
       }
     });
 
+    it("should accept valid audio types", async () => {
+      const validAudioTypes = [
+        "audio/mpeg",
+        "audio/wav",
+        "audio/mp3",
+        "audio/x-wav",
+        "audio/mp4",
+      ];
+
+      for (const mimeType of validAudioTypes) {
+        const file = new File(["test"], "test.mp3", { type: mimeType });
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("file_type", "audio");
+
+        mockStorageService.uploadObject.mockResolvedValue("test-key");
+
+        const result = await handleFileUpload(mockEnv, 1, formData);
+
+        expect(result.type).toBe("audio");
+        vi.clearAllMocks();
+      }
+    });
+
     it("should reject invalid image types", async () => {
       const file = new File(["test"], "test.txt", { type: "text/plain" });
       const formData = new FormData();
@@ -132,6 +156,17 @@ describe("handleFileUpload", () => {
 
       await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
         "Invalid file type. Allowed types for document:",
+      );
+    });
+
+    it("should reject invalid audio types", async () => {
+      const file = new File(["test"], "test.txt", { type: "text/plain" });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "audio");
+
+      await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+        "Invalid file type. Allowed types for audio:",
       );
     });
   });
@@ -239,6 +274,58 @@ describe("handleFileUpload", () => {
       expect(mockConvertToMarkdownViaCloudflare).toHaveBeenCalled();
       expect(result.type).toBe("markdown_document");
       expect(result.markdown).toBe("# PDF Converted");
+    });
+
+    it("should upload audio file successfully", async () => {
+      const file = new File(["test audio content"], "test.mp3", {
+        type: "audio/mpeg",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "audio");
+
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
+
+      const result = await handleFileUpload(mockEnv, 1, formData);
+
+      expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
+        `uploads/1/audios/${mockUUID}.mpeg`,
+        expect.any(ArrayBuffer),
+        { contentType: "audio/mpeg" },
+      );
+
+      expect(result).toEqual({
+        url: `https://assets.example.com/uploads/1/audios/${mockUUID}.mpeg`,
+        type: "audio",
+        name: "test.mp3",
+      });
+
+      expect(mockConvertToMarkdownViaCloudflare).not.toHaveBeenCalled();
+    });
+
+    it("should upload WAV audio file successfully", async () => {
+      const file = new File(["test audio content"], "test.wav", {
+        type: "audio/wav",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "audio");
+
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
+
+      const result = await handleFileUpload(mockEnv, 1, formData);
+
+      expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
+        `uploads/1/audios/${mockUUID}.wav`,
+        expect.any(ArrayBuffer),
+        { contentType: "audio/wav" },
+      );
+
+      expect(result).toEqual({
+        url: `https://assets.example.com/uploads/1/audios/${mockUUID}.wav`,
+        type: "audio",
+        name: "test.wav",
+      });
     });
   });
 

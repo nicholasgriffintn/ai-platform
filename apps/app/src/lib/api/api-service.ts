@@ -713,7 +713,7 @@ class ApiService {
 
   uploadFile = async (
     file: File,
-    fileType: "image" | "document",
+    fileType: "image" | "document" | "audio",
     options?: { convertToMarkdown?: boolean },
   ): Promise<{
     url: string;

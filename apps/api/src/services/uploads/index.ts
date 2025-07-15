@@ -17,14 +17,18 @@ export async function handleFileUpload(
   markdown?: string;
 }> {
   const file = formData.get("file") as File | null;
-  const fileType = formData.get("file_type") as "image" | "document" | null;
+  const fileType = formData.get("file_type") as
+    | "image"
+    | "document"
+    | "audio"
+    | null;
 
   if (!file) {
     throw new AssistantError("No file uploaded", ErrorType.PARAMS_ERROR, 400);
   }
-  if (!fileType || !["image", "document"].includes(fileType)) {
+  if (!fileType || !["image", "document", "audio"].includes(fileType)) {
     throw new AssistantError(
-      "Invalid file type. Must be 'image' or 'document'",
+      "Invalid file type. Must be 'image', 'document', or 'audio'",
       ErrorType.PARAMS_ERROR,
       400,
     );
@@ -44,6 +48,7 @@ export async function handleFileUpload(
       "text/csv",
       "application/vnd.apple.numbers",
     ],
+    audio: ["audio/mpeg", "audio/wav", "audio/mp3", "audio/x-wav", "audio/mp4"],
   };
 
   if (!allowedMimeTypes[fileType].includes(file.type)) {

@@ -27,6 +27,7 @@ export interface ModelConfigItem {
   supportsDocuments?: boolean;
   supportsSearchGrounding?: boolean;
   supportsCodeExecution?: boolean;
+  supportsAudio?: boolean;
 }
 
 export interface ModelConfig {

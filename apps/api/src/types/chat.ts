@@ -7,6 +7,7 @@ export type ContentType =
   | "text"
   | "image_url"
   | "audio_url"
+  | "input_audio"
   | "thinking"
   | "document_url"
   | "markdown_document"
@@ -24,6 +25,10 @@ export type MessageContent = {
   };
   audio_url?: {
     url: string;
+  };
+  input_audio?: {
+    data?: string;
+    format?: "wav" | "mp3";
   };
   document_url?: {
     url: string;
@@ -44,7 +49,7 @@ export type MessageContent = {
 };
 
 export type Attachment = {
-  type: "image" | "document" | "markdown_document";
+  type: "image" | "document" | "markdown_document" | "audio";
   url?: string;
   detail?: "low" | "high";
   name?: string;

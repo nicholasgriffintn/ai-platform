@@ -243,4 +243,22 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     isFeatured: true,
     includedInRouter: true,
   }),
+
+  createModelConfig("voxtral-small", PROVIDER, {
+    name: "Voxtral Small",
+    matchingModel: "voxtral-small-2507",
+    description:
+      "Audio input capabilities enable models to chat and understand audio directly, this can be used for both chat use cases via audio or for optimal transcription purposes.",
+    type: ["text", "speech"],
+    supportsAudio: true,
+  }),
+
+  createModelConfig("voxtral-mini", PROVIDER, {
+    name: "Voxtral Mini",
+    matchingModel: "voxtral-mini-2507",
+    description:
+      "Audio input capabilities enable models to chat and understand audio directly, this can be used for both chat use cases via audio or for optimal transcription purposes.",
+    type: ["text", "speech"],
+    supportsAudio: true,
+  }),
 ]);

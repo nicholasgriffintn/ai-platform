@@ -1,4 +1,4 @@
-import { File } from "lucide-react";
+import { File, Volume2 } from "lucide-react";
 import { memo, useMemo } from "react";
 import type { ReactNode } from "react";
 
@@ -113,6 +113,11 @@ const renderTextContent = (
               ),
             );
           }
+          if (attachment.type === "audio") {
+            renderedParts.push(
+              renderAudioContent(attachment.url, attachment.name),
+            );
+          }
           if (attachment.type) {
             renderedParts.push(`[[CONTENT:${attachment.url}]]`);
           }
@@ -169,6 +174,9 @@ const renderTextContent = (
                 attachment.isMarkdown,
               );
             }
+            if (attachment.type === "audio") {
+              return renderAudioContent(attachment.url, attachment.name, i);
+            }
             return `[[CONTENT:${attachment.url}]]`;
           })}
         </div>
@@ -219,6 +227,33 @@ const renderDocumentContent = (
         >
           View document
         </a>
+      )}
+    </div>
+  );
+};
+
+const renderAudioContent = (
+  audioUrl: string,
+  audioName?: string,
+  index?: number,
+): ReactNode => {
+  return (
+    <div
+      key={`audio-attachment-${index ?? 0}`}
+      className="flex flex-col items-start gap-2 border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 bg-zinc-50 dark:bg-zinc-800/50 text-sm"
+    >
+      <div className="flex items-center gap-2">
+        <Volume2 className="h-5 w-5 text-purple-500 dark:text-purple-400" />
+        <span className="text-zinc-700 dark:text-zinc-300">
+          {audioName || "Audio"}
+        </span>
+      </div>
+      {audioUrl && (
+        <audio controls className="w-full rounded-lg">
+          <source src={audioUrl} type="audio/mpeg" />
+          <track kind="captions" />
+          Your browser does not support the audio element.
+        </audio>
       )}
     </div>
   );
@@ -287,6 +322,18 @@ export const MessageContent = memo(
                   return renderImageContent(item.image_url.url, i);
                 }
 
+                if (item.type === "audio_url" && item.audio_url) {
+                  return renderAudioContent(item.audio_url.url, undefined, i);
+                }
+
+                if (item.type === "input_audio" && item.input_audio) {
+                  return renderAudioContent(
+                    item.input_audio.data || "",
+                    undefined,
+                    i,
+                  );
+                }
+
                 if (item.type === "artifact" && item.artifact) {
                   const artifacts: ArtifactProps[] = Array.isArray(
                     message.content,
@@ -344,6 +391,9 @@ export const MessageContent = memo(
                     i,
                     attachment.isMarkdown,
                   );
+                }
+                if (attachment.type === "audio") {
+                  return renderAudioContent(attachment.url, attachment.name, i);
                 }
                 return null;
               })}

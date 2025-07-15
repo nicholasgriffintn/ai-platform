@@ -696,6 +696,16 @@ export function useChatManager() {
                 name: attachmentData.name,
               },
             });
+          } else if (attachmentData.type === "audio") {
+            contentItems.push({
+              type: "input_audio",
+              input_audio: {
+                data: attachmentData.data,
+                format: attachmentData.name?.toLowerCase().endsWith(".wav")
+                  ? "wav"
+                  : "mp3",
+              },
+            });
           }
 
           if (

@@ -41,6 +41,7 @@ export type ModelConfigItem = {
   supportsSearchGrounding?: boolean;
   supportsCodeExecution?: boolean;
   timeout?: number;
+  supportsAudio?: boolean;
 };
 
 export type ModelConfig = {
