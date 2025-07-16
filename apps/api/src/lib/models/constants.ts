@@ -17,6 +17,7 @@ export const availableCapabilities = [
   "image_generation",
   "agents",
   "audio",
+  "tool_use",
 ] as const;
 
 export const availableModelTypes = [
