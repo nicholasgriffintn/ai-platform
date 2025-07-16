@@ -7,6 +7,9 @@ export const MODEL_ICONS: Record<string, string> = {
   gemma: "gemma",
   mistral: "mistral",
   codestral: "mistral",
+  voxtral: "mistral",
+  devstral: "mistral",
+  magistral: "mistral",
   qwen: "qwen",
   "gpt-4": "openai",
   "gpt-3": "openai",
@@ -31,6 +34,8 @@ export const MODEL_ICONS: Record<string, string> = {
   sonar: "perplexity",
   titan: "bedrock",
   nova: "bedrock",
+  moonshot: "moonshot",
+  kimi: "moonshot",
 };
 
 export const PROVIDER_ICONS: Record<string, string> = {
@@ -56,4 +61,7 @@ export const PROVIDER_ICONS: Record<string, string> = {
   openrouter: "openrouter",
   "workers-ai": "workers-ai",
   cloudflare: "cloudflare",
+  fireworks: "fireworks",
+  hyperbolic: "hyperbolic",
+  v0: "v0",
 };
