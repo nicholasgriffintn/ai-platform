@@ -69,6 +69,21 @@ export function calculateReasoningBudget(
   }
 }
 
+function returnValidatedPenalty(
+  key: "repetition_penalty" | "frequency_penalty" | "presence_penalty",
+  value: number | undefined,
+): void {
+  if (value === undefined) return;
+
+  if (key === "repetition_penalty") {
+    if (value < 0 || value > 2) {
+      throw new Error("Repetition penalty must be between 0 and 2, inclusive.");
+    }
+  } else if (value < -2) {
+    throw new Error(`${key} must be greater than or equal to -2.`);
+  }
+}
+
 /**
  * Creates common parameters that most providers use
  * @param params - The chat completion parameters
@@ -100,9 +115,18 @@ export function createCommonParameters(
   if (providerName !== "anthropic") {
     commonParams.seed = params.seed;
     if (modelConfig.matchingModel !== "grok-4-latest") {
-      commonParams.repetition_penalty = params.repetition_penalty;
-      commonParams.frequency_penalty = params.frequency_penalty;
-      commonParams.presence_penalty = params.presence_penalty;
+      commonParams.repetition_penalty = returnValidatedPenalty(
+        "repetition_penalty",
+        params.repetition_penalty,
+      );
+      commonParams.frequency_penalty = returnValidatedPenalty(
+        "frequency_penalty",
+        params.frequency_penalty,
+      );
+      commonParams.presence_penalty = returnValidatedPenalty(
+        "presence_penalty",
+        params.presence_penalty,
+      );
     }
   }
 
