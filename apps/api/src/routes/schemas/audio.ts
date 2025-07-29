@@ -1,8 +1,16 @@
 import z from "zod";
 import "zod-openapi/extend";
 
+export const transcribeQuerySchema = z.object({
+  provider: z.enum(["workers", "mistral"]).optional(),
+  timestamps: z.coerce.boolean().optional(),
+});
+
 export const transcribeFormSchema = z.object({
-  audio: z.instanceof(Blob),
+  audio: z.instanceof(File).or(z.instanceof(Blob)).or(z.string()).openapi({
+    description:
+      "The audio file to transcribe. Can be a File, Blob, or a URL string. If a URL, it must start with http:// or https://.",
+  }),
 });
 
 export const textToSpeechSchema = z.object({

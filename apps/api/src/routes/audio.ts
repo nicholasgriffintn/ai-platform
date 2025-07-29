@@ -7,7 +7,11 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleTextToSpeech } from "~/services/audio/speech";
 import { handleTranscribe } from "~/services/audio/transcribe";
 import type { IEnv } from "~/types";
-import { textToSpeechSchema, transcribeFormSchema } from "./schemas/audio";
+import {
+  textToSpeechSchema,
+  transcribeFormSchema,
+  transcribeQuerySchema,
+} from "./schemas/audio";
 import { apiResponseSchema, errorResponseSchema } from "./schemas/shared";
 
 const app = new Hono();
@@ -21,7 +25,6 @@ app.use("/*", (c, next) => {
   return next();
 });
 
-// TODO: Expand this to be able to provide more capability for the model settings.
 app.post(
   "/transcribe",
   describeRoute({
@@ -45,16 +48,23 @@ app.post(
       },
     },
   }),
+  zValidator("query", transcribeQuerySchema),
   zValidator("form", transcribeFormSchema),
   async (context: Context) => {
+    const query = context.req.valid("query" as never) as {
+      provider?: "workers" | "mistral";
+      timestamps?: boolean;
+    };
     const body = context.req.valid("form" as never) as {
-      audio: Blob;
+      audio: File | Blob | string;
     };
     const user = context.get("user");
 
     const response = await handleTranscribe({
       env: context.env as IEnv,
-      audio: body.audio as Blob,
+      audio: body.audio,
+      provider: query.provider,
+      timestamps: query.timestamps === true,
       user,
     });
 

@@ -72,8 +72,10 @@ export function calculateReasoningBudget(
 function returnValidatedPenalty(
   key: "repetition_penalty" | "frequency_penalty" | "presence_penalty",
   value: number | undefined,
-): void {
-  if (value === undefined) return;
+): number | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
 
   if (key === "repetition_penalty") {
     if (value < 0 || value > 2) {
@@ -82,6 +84,8 @@ function returnValidatedPenalty(
   } else if (value < -2) {
     throw new Error(`${key} must be greater than or equal to -2.`);
   }
+
+  return value;
 }
 
 /**
