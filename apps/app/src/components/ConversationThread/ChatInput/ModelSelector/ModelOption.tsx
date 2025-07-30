@@ -56,7 +56,9 @@ export const ModelOption = ({
       aria-selected={isSelected}
       id={`model-${model.matchingModel}`}
       tabIndex={disabled ? -1 : 0}
-      className={`${!disabled ? "cursor-pointer" : "cursor-not-allowed opacity-50"} w-full text-left px-2 py-1.5 rounded-md text-sm ${
+      className={`${
+        !disabled ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+      } w-full text-left px-2 py-1.5 rounded-md text-sm ${
         isSelected
           ? "bg-off-white-highlight dark:bg-zinc-800"
           : isActive
@@ -87,14 +89,14 @@ export const ModelOption = ({
               />
             </div>
           )}
-          {isTeamAgent && (
+          {isTeamAgent ? (
             <div
               className="p-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30"
               title="Team Agent"
             >
               <Users size={12} className="text-blue-600 dark:text-blue-400" />
             </div>
-          )}
+          ) : null}
         </div>
         <div className="flex items-center gap-1.5">
           {model.hasThinking && (
