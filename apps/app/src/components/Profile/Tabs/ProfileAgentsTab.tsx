@@ -42,6 +42,7 @@ import { cn } from "~/lib/utils";
 import { ConfirmDeleteModal } from "../Modals/ConfirmDeleteModal";
 import { AgentCard } from "./cards/AgentCard";
 import { SharedAgentCard } from "./cards/SharedAgentCard";
+import { TeamCard } from "./cards/TeamCard";
 
 interface FewShotExample {
   id: string;
@@ -51,7 +52,7 @@ interface FewShotExample {
 
 export function ProfileAgentsTab() {
   const {
-    agents,
+    groupedAgents,
     isLoadingAgents,
     createAgent,
     isCreatingAgent,
@@ -110,6 +111,9 @@ export function ProfileAgentsTab() {
   const [fewShotExamples, setFewShotExamples] = useState<FewShotExample[]>([
     { id: generateId(), input: "", output: "" },
   ]);
+  const [teamId, setTeamId] = useState("");
+  const [teamRole, setTeamRole] = useState("");
+  const [isTeamAgent, setIsTeamAgent] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
   const [agentToDelete, setAgentToDelete] = useState<{
     id: string;
@@ -141,6 +145,9 @@ export function ProfileAgentsTab() {
     setSystemPrompt("");
     setUseFewShotExamples(false);
     setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
+    setTeamId("");
+    setTeamRole("");
+    setIsTeamAgent(false);
     setActiveTab("basic");
   };
 
@@ -177,6 +184,9 @@ export function ProfileAgentsTab() {
           output,
         })),
       }),
+      ...(isTeamAgent && { is_team_agent: isTeamAgent }),
+      ...(teamId && { team_id: teamId }),
+      ...(teamRole && { team_role: teamRole }),
     };
 
     try {
@@ -232,7 +242,11 @@ export function ProfileAgentsTab() {
       setServers([{ id: generateId(), url: "", type: "sse" }]);
     }
 
-    setSelectedModel(agent.model || "");
+    const agentModel = agent.model || "";
+    const isModelAvailable =
+      agentModel === "" || apiModels[agentModel]?.supportsFunctions;
+
+    setSelectedModel(isModelAvailable ? agentModel : "");
     setTemperature(
       agent.temperature ? Number.parseFloat(agent.temperature) : 0.7,
     );
@@ -263,6 +277,10 @@ export function ProfileAgentsTab() {
       setUseFewShotExamples(false);
       setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
     }
+
+    setTeamId(agent.team_id || "");
+    setTeamRole(agent.team_role || "");
+    setIsTeamAgent(agent.is_team_agent || false);
 
     setModalOpen(true);
   };
@@ -363,26 +381,76 @@ export function ProfileAgentsTab() {
                 Loading your agents...
               </span>
             </div>
-          ) : agents.length === 0 ? (
+          ) : !groupedAgents.teams &&
+            (!groupedAgents.individual ||
+              groupedAgents.individual.length === 0) ? (
             <EmptyState
               title="No Agents Yet"
               message="Create your first agent to get started with advanced AI conversations"
               icon={<User className="h-5 w-5" />}
             />
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {agents.map((agent: any) => (
-                <AgentCard
-                  key={agent.id}
-                  agent={agent}
-                  onEdit={handleEditClick}
-                  onShare={handleShareClick}
-                  onDelete={handleDeleteClick}
-                  isUpdating={isUpdatingAgent && currentAgentId === agent.id}
-                  isSharing={isSharing && agentToShare?.id === agent.id}
-                  isDeleting={isDeletingAgent && agentToDelete?.id === agent.id}
-                />
-              ))}
+            <div className="space-y-6">
+              {/* Team Agents */}
+              {groupedAgents.teams &&
+                Object.values(groupedAgents.teams).length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+                      Agent Teams
+                    </h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {Object.values(groupedAgents.teams).map((team: any) => (
+                        <TeamCard
+                          key={team.id}
+                          team={team}
+                          onEdit={handleEditClick}
+                          onShare={handleShareClick}
+                          onDelete={handleDeleteClick}
+                          isUpdating={
+                            isUpdatingAgent &&
+                            currentAgentId === team.orchestrator?.id
+                          }
+                          isSharing={
+                            isSharing &&
+                            agentToShare?.id === team.orchestrator?.id
+                          }
+                          isDeleting={
+                            isDeletingAgent &&
+                            agentToDelete?.id === team.orchestrator?.id
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {/* Individual Agents */}
+              {groupedAgents.individual &&
+                groupedAgents.individual.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+                      Individual Agents
+                    </h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {groupedAgents.individual.map((agent: any) => (
+                        <AgentCard
+                          key={agent.id}
+                          agent={agent}
+                          onEdit={handleEditClick}
+                          onShare={handleShareClick}
+                          onDelete={handleDeleteClick}
+                          isUpdating={
+                            isUpdatingAgent && currentAgentId === agent.id
+                          }
+                          isSharing={isSharing && agentToShare?.id === agent.id}
+                          isDeleting={
+                            isDeletingAgent && agentToDelete?.id === agent.id
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
             </div>
           )}
         </CardContent>
@@ -517,9 +585,10 @@ export function ProfileAgentsTab() {
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="basic">Basic</TabsTrigger>
                 <TabsTrigger value="model">Model</TabsTrigger>
+                <TabsTrigger value="team">Team</TabsTrigger>
                 <TabsTrigger value="servers">Servers</TabsTrigger>
                 <TabsTrigger value="advanced">Advanced</TabsTrigger>
               </TabsList>
@@ -606,6 +675,81 @@ export function ProfileAgentsTab() {
                     placeholder="Enter a system prompt to customize the agent's behavior..."
                   />
                 </div>
+              </TabsContent>
+
+              <TabsContent value="team" className="space-y-4 mt-6">
+                <div className="flex items-start gap-3 mb-4">
+                  <Switch
+                    id="is-team-agent"
+                    checked={isTeamAgent}
+                    onChange={(e) => setIsTeamAgent(e.target.checked)}
+                  />
+                  <div className="space-y-1">
+                    <Label
+                      htmlFor="is-team-agent"
+                      className="text-sm font-medium"
+                    >
+                      Team Agent
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      This agent is part of a team and can collaborate with
+                      other agents
+                    </p>
+                  </div>
+                </div>
+
+                {isTeamAgent && (
+                  <div className="space-y-4 mt-4">
+                    <div>
+                      <FormInput
+                        label="Team ID"
+                        value={teamId}
+                        onChange={(e) => setTeamId(e.target.value)}
+                        placeholder="e.g., dev-team, marketing-team"
+                        description="Unique identifier for the team this agent belongs to"
+                      />
+                      {groupedAgents.teams &&
+                        Object.keys(groupedAgents.teams).length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-xs text-muted-foreground mb-2">
+                              Existing teams:
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {Object.keys(groupedAgents.teams).map(
+                                (existingTeamId) => (
+                                  <button
+                                    key={existingTeamId}
+                                    type="button"
+                                    onClick={() => setTeamId(existingTeamId)}
+                                    className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors font-mono"
+                                  >
+                                    {existingTeamId}
+                                  </button>
+                                ),
+                              )}
+                            </div>
+                          </div>
+                        )}
+                    </div>
+                    <FormSelect
+                      label="Team Role"
+                      value={teamRole}
+                      onChange={(e) => setTeamRole(e.target.value)}
+                      options={[
+                        { value: "", label: "Select role" },
+                        {
+                          value: "orchestrator",
+                          label: "Orchestrator (Team Lead)",
+                        },
+                        { value: "leader", label: "Leader" },
+                        { value: "specialist", label: "Specialist" },
+                        { value: "coordinator", label: "Coordinator" },
+                        { value: "member", label: "Member" },
+                      ]}
+                      description="The role this agent plays within the team"
+                    />
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="servers" className="space-y-4 mt-6">

@@ -1,4 +1,4 @@
-import { BrainCircuit, Crown, Eye, Hammer, Info } from "lucide-react";
+import { BrainCircuit, Crown, Eye, Hammer, Info, Users } from "lucide-react";
 import { useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
@@ -11,6 +11,7 @@ interface ModelOptionProps {
   onClick: () => void;
   disabled?: boolean;
   mono?: boolean;
+  isTeamAgent?: boolean;
 }
 
 export const ModelOption = ({
@@ -20,6 +21,7 @@ export const ModelOption = ({
   onClick,
   disabled,
   mono = false,
+  isTeamAgent = false,
 }: ModelOptionProps) => {
   const [showDetails, setShowDetails] = useState(false);
 
@@ -83,6 +85,14 @@ export const ModelOption = ({
                 size={12}
                 className="text-purple-800 dark:text-purple-300"
               />
+            </div>
+          )}
+          {isTeamAgent && (
+            <div
+              className="p-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30"
+              title="Team Agent"
+            >
+              <Users size={12} className="text-blue-600 dark:text-blue-400" />
             </div>
           )}
         </div>

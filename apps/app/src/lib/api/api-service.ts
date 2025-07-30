@@ -1173,6 +1173,9 @@ class ApiService {
     maxSteps?: number | null,
     systemPrompt?: string | null,
     fewShotExamples?: any[] | null,
+    teamId?: string | null,
+    teamRole?: string | null,
+    isTeamAgent?: boolean | null,
   ): Promise<any> => {
     let headers: Record<string, string> = {};
 
@@ -1192,6 +1195,9 @@ class ApiService {
       max_steps: maxSteps !== undefined ? maxSteps : undefined,
       system_prompt: systemPrompt || undefined,
       few_shot_examples: fewShotExamples || undefined,
+      team_id: teamId || undefined,
+      team_role: teamRole || undefined,
+      is_team_agent: isTeamAgent ? isTeamAgent : undefined,
     };
 
     const response = await fetchApi("/agents", {
