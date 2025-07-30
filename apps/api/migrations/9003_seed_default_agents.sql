@@ -12,7 +12,10 @@ INSERT OR IGNORE INTO agents(
   temperature, 
   max_steps, 
   system_prompt, 
-  few_shot_examples
+  few_shot_examples,
+  team_id,
+  team_role,
+  is_team_agent
 )
 VALUES (
   '87df8ba4-0d45-42c3-ae44-d7184aa38426',
@@ -39,7 +42,10 @@ A brief, descriptive title (5-10 words) that captures the document''s main focus
 ## Summary
 
 A 5-10 bullet point list that summarizes the key points of the document, presented in a logical flow. NEVER use more than one sentence per bullet point, and NEVER use more than ten bullets. Choose the most important information and include concrete details. When quotes, anecdotes, key datapoints, or concrete examples are present in the source material, ALWAYS include one or two as separate bullet points to balance abstract concepts with concrete illustrations that make the summary more engaging.',
-  NULL
+  NULL,
+  NULL,
+  NULL,
+  0
 );
 
 -- Personal Tutor Agent
@@ -54,7 +60,10 @@ INSERT OR IGNORE INTO agents(
   temperature, 
   max_steps, 
   system_prompt, 
-  few_shot_examples
+  few_shot_examples,
+  team_id,
+  team_role,
+  is_team_agent
 )
 VALUES (
   '1dc962b2-3d34-4a14-97bb-a5b2c3f349fe',
@@ -83,7 +92,10 @@ You cultivate genuine dialogue by responding to the details shared, asking targe
 "Hi! What would you like to learn today?"
 
 "Welcome to your personal tutoring session! An easy way to get started is by uploading a PDF of your materials and we can begin with a pop quiz to better understand your strengths and areas of improvement."',
-  NULL
+  NULL,
+  NULL,
+  NULL,
+  0
 );
 
 -- Writing Assistant Agent
@@ -98,7 +110,10 @@ INSERT OR IGNORE INTO agents(
   temperature, 
   max_steps, 
   system_prompt, 
-  few_shot_examples
+  few_shot_examples,
+  team_id,
+  team_role,
+  is_team_agent
 )
 VALUES (
   '34009e5d-a416-42a9-947e-1fa1e9bebcca',
@@ -117,7 +132,10 @@ You are a personal writing assistant, and embody the tone, voice, and personalit
 ## Your Writing Taste References
 
 Pay special attention to accredited writing sources. Remember that good writing requires both proofreading, grammar, and punctuation as well as an emphasis on style, clarity, and simplicity.',
-  NULL
+  NULL,
+  NULL,
+  NULL,
+  0
 );
 
 -- shadcn/ui Agent
@@ -132,18 +150,24 @@ INSERT OR IGNORE INTO agents(
   temperature, 
   max_steps, 
   system_prompt, 
-  few_shot_examples
+  few_shot_examples,
+  team_id,
+  team_role,
+  is_team_agent
 )
 VALUES (
   'b32518bb-4c4b-4672-9467-3cbf693740cf',
   1,
   'shadcn/ui',
-  'Chat with the shadcn/ui GitHub Repo. A set of beautifully-designed, accessible components and a code distribution platform. Works with your favorite frameworks. Open Source. Open Code.',
+  'Chat with the shadcn/ui GitHub Repo. A set of beautifully-designed, accessible components and a code distribution platform. Works with your frameworks. Open Source. Open Code.',
   'https://avatars.githubusercontent.com/u/124599?v=4',
   '[{"url":"https://gitmcp.io/shadcn-ui/ui","type":"sse"}]',
   NULL,
   NULL,
   NULL,
   NULL,
-  NULL
-);dWh
+  NULL,
+  NULL,
+  NULL,
+  0
+);
