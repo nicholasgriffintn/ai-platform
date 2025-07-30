@@ -280,6 +280,13 @@ export class SharedAgentRepository extends BaseRepository {
     }
 
     const templateData = JSON.parse(sharedAgent.template_data as string);
+
+    if (templateData.team_id) {
+      throw new Error(
+        "Team agents are not supported for sharing yet. Please contact support.",
+      );
+    }
+
     const agentId = generateId();
     const installId = generateId();
 
@@ -313,6 +320,7 @@ export class SharedAgentRepository extends BaseRepository {
     );
 
     const now = new Date().toISOString();
+    // TODO: Make team agents sharable
     const agent: Agent = {
       id: agentId,
       user_id: userId,
@@ -325,6 +333,9 @@ export class SharedAgentRepository extends BaseRepository {
       max_steps: templateData.max_steps,
       system_prompt: templateData.system_prompt,
       few_shot_examples: JSON.stringify(templateData.few_shot_examples),
+      is_team_agent: false,
+      team_id: null,
+      team_role: null,
       created_at: now,
       updated_at: now,
     };

@@ -11,6 +11,11 @@ import { prompt_coach } from "./prompt_coach";
 import { add_reasoning_step } from "./reasoning";
 import { capture_screenshot } from "./screenshot";
 import { create_speech } from "./speech";
+import {
+  delegateToTeamMember,
+  delegateToTeamMemberByRole,
+  getTeamMembers,
+} from "./teamDelegation";
 import { tutor } from "./tutor";
 import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
@@ -33,6 +38,9 @@ export const availableFunctions: IFunction[] = [
   add_reasoning_step,
   analyse_hacker_news,
   v0_code_generation,
+  delegateToTeamMember,
+  delegateToTeamMemberByRole,
+  getTeamMembers,
 ];
 
 export const handleFunctions = async ({

@@ -13,6 +13,11 @@ import { AgentRepository } from "~/repositories/AgentRepository";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { registerMCPClient } from "~/services/functions/mcp";
 import { add_reasoning_step } from "~/services/functions/reasoning";
+import {
+  delegateToTeamMember,
+  delegateToTeamMemberByRole,
+  getTeamMembers,
+} from "~/services/functions/teamDelegation";
 import type { IEnv } from "~/types";
 import type { ChatCompletionParameters } from "~/types";
 import { createAgentSchema, updateAgentSchema } from "../schemas/agents";
@@ -112,11 +117,98 @@ app.post(
       body.max_steps,
       body.system_prompt,
       body.few_shot_examples,
+      body.team_id,
+      body.team_role,
+      body.is_team_agent,
     );
 
     return ctx.json({
       status: "success",
       data: agent,
+    });
+  },
+);
+
+app.get(
+  "/teams",
+  requireAuth,
+  describeRoute({
+    tags: ["agents"],
+    summary: "Get team agents",
+    description: "Get all team agents for the current user",
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  async (ctx: Context) => {
+    const user = ctx.get("user");
+
+    if (!user?.id) {
+      return ctx.json(
+        {
+          status: "error",
+          error: "Unauthorized",
+        },
+        401,
+      );
+    }
+
+    const repo = new AgentRepository(ctx.env);
+    const agents = await repo.getTeamAgents(user.id);
+
+    return ctx.json({
+      status: "success",
+      data: agents,
+    });
+  },
+);
+
+app.get(
+  "/teams/:teamId",
+  requireAuth,
+  describeRoute({
+    tags: ["agents"],
+    summary: "Get agents by team ID",
+    description:
+      "Get all agents belonging to a specific team for the current user",
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  async (ctx: Context) => {
+    const { teamId } = ctx.req.param();
+    const user = ctx.get("user");
+
+    if (!user?.id) {
+      return ctx.json(
+        {
+          status: "error",
+          error: "Unauthorized",
+        },
+        401,
+      );
+    }
+
+    const repo = new AgentRepository(ctx.env);
+    const agents = await repo.getAgentsByTeamAndUser(teamId, user.id);
+
+    return ctx.json({
+      status: "success",
+      data: agents,
     });
   },
 );
@@ -486,12 +578,34 @@ app.post(
       }
     }
 
+    const teamDelegationTools =
+      agent.team_role === "orchestrator"
+        ? [
+            {
+              name: delegateToTeamMember.name,
+              description: delegateToTeamMember.description,
+              parameters: delegateToTeamMember.parameters,
+            },
+            {
+              name: delegateToTeamMemberByRole.name,
+              description: delegateToTeamMemberByRole.description,
+              parameters: delegateToTeamMemberByRole.parameters,
+            },
+            {
+              name: getTeamMembers.name,
+              description: getTeamMembers.description,
+              parameters: getTeamMembers.parameters,
+            },
+          ]
+        : [];
+
     const functionSchemas = [
       {
         name: add_reasoning_step.name,
         description: add_reasoning_step.description,
         parameters: add_reasoning_step.parameters,
       },
+      ...teamDelegationTools,
       ...mcpFunctions.map((fn) => ({
         name: fn.name,
         description: fn.description,
@@ -554,6 +668,7 @@ app.post(
       max_steps: agent.max_steps || body.max_steps || 20,
       temperature:
         Number.parseFloat(agent.temperature) || body.temperature || 0.8,
+      current_agent_id: agentId,
     };
 
     const response = await handleCreateChatCompletions({

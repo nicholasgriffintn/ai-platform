@@ -14,6 +14,9 @@ export class AgentRepository extends BaseRepository {
     maxSteps?: number,
     systemPrompt?: string,
     fewShotExamples?: any[],
+    teamId?: string | null,
+    teamRole?: string | null,
+    isTeamAgent?: boolean,
   ): Promise<Agent> {
     const id = generateId();
     const serversJson = servers ? JSON.stringify(servers) : null;
@@ -22,7 +25,7 @@ export class AgentRepository extends BaseRepository {
       : null;
 
     await this.executeRun(
-      "INSERT INTO agents (id, user_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO agents (id, user_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples, team_id, team_role, is_team_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         id ?? null,
         userId ?? null,
@@ -37,6 +40,9 @@ export class AgentRepository extends BaseRepository {
         maxSteps !== undefined && maxSteps !== null ? maxSteps : null,
         systemPrompt ?? null,
         fewShotExamplesJson ?? null,
+        teamId ?? null,
+        teamRole ?? null,
+        isTeamAgent ? 1 : 0,
       ],
     );
     const now = new Date().toISOString();
@@ -52,6 +58,9 @@ export class AgentRepository extends BaseRepository {
       max_steps: maxSteps,
       system_prompt: systemPrompt,
       few_shot_examples: fewShotExamplesJson,
+      team_id: teamId,
+      team_role: teamRole,
+      is_team_agent: isTeamAgent ?? false,
       created_at: now,
       updated_at: now,
     };
@@ -84,6 +93,9 @@ export class AgentRepository extends BaseRepository {
       max_steps: number;
       system_prompt: string;
       few_shot_examples: any[];
+      team_id: string;
+      team_role: string;
+      is_team_agent: boolean;
     }>,
   ): Promise<void> {
     const sets: string[] = [];
@@ -125,6 +137,18 @@ export class AgentRepository extends BaseRepository {
       sets.push("few_shot_examples = ?");
       params.push(JSON.stringify(data.few_shot_examples));
     }
+    if (data.team_id !== undefined) {
+      sets.push("team_id = ?");
+      params.push(data.team_id);
+    }
+    if (data.team_role !== undefined) {
+      sets.push("team_role = ?");
+      params.push(data.team_role);
+    }
+    if (data.is_team_agent !== undefined) {
+      sets.push("is_team_agent = ?");
+      params.push(data.is_team_agent ? 1 : 0);
+    }
 
     if (sets.length === 0) return;
     params.push(agentId);
@@ -134,5 +158,60 @@ export class AgentRepository extends BaseRepository {
 
   public async deleteAgent(agentId: string): Promise<void> {
     await this.executeRun("DELETE FROM agents WHERE id = ?", [agentId]);
+  }
+
+  public async createTeamAgent(
+    userId: number,
+    teamId: string,
+    teamRole: string,
+    name: string,
+    description: string,
+    avatarUrl: string | null,
+    servers?: any[],
+    model?: string,
+    temperature?: number,
+    maxSteps?: number,
+    systemPrompt?: string,
+    fewShotExamples?: any[],
+  ): Promise<Agent> {
+    return this.createAgent(
+      userId,
+      name,
+      description,
+      avatarUrl,
+      servers,
+      model,
+      temperature,
+      maxSteps,
+      systemPrompt,
+      fewShotExamples,
+      teamId,
+      teamRole,
+      true,
+    );
+  }
+
+  public async getTeamAgents(userId: number): Promise<Agent[]> {
+    return this.runQuery<Agent>(
+      "SELECT * FROM agents WHERE user_id = ? AND is_team_agent = 1 ORDER BY created_at DESC",
+      [userId],
+    );
+  }
+
+  public async getAgentsByTeam(teamId: string): Promise<Agent[]> {
+    return this.runQuery<Agent>(
+      "SELECT * FROM agents WHERE team_id = ? ORDER BY created_at DESC",
+      [teamId],
+    );
+  }
+
+  public async getAgentsByTeamAndUser(
+    teamId: string,
+    userId: number,
+  ): Promise<Agent[]> {
+    return this.runQuery<Agent>(
+      "SELECT * FROM agents WHERE team_id = ? AND user_id = ? ORDER BY created_at DESC",
+      [teamId, userId],
+    );
   }
 }

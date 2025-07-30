@@ -238,6 +238,8 @@ interface AIResponseParamsBase extends AIControlParams {
     type: "enabled" | "disabled";
     budget_tokens?: number;
   };
+  // The ID of the current agent, used for team delegation.
+  current_agent_id?: string;
 }
 
 export type ChatCompletionParametersWithModel = RequireAtLeastOne<
