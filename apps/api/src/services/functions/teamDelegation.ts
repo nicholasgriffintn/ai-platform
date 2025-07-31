@@ -59,10 +59,32 @@ export const delegateToTeamMember: IFunction = {
         };
       }
 
+      const targetAgent = await agentRepository.getAgentById(args.agent_id);
+
+      if (!targetAgent) {
+        return {
+          status: "error",
+          content: `Team delegation failed: Target agent '${args.agent_id}' not found. Please verify the agent ID is correct.`,
+          role: "tool",
+        };
+      }
+
+      if (targetAgent.user_id !== req.user?.id) {
+        return {
+          status: "error",
+          content: `Team delegation failed: Access denied to agent '${targetAgent.name}' (${args.agent_id}). You can only delegate to agents you own.`,
+          role: "tool",
+        };
+      }
+
       const delegation = new TeamDelegation({
         env: req.env,
         user: req.user,
         currentAgent,
+        delegationStack: req.request.delegation_stack,
+        maxDelegationDepth: req.request.max_delegation_depth,
+        rateLimitWindowMs: 60000,
+        maxDelegationsPerWindow: 10,
       });
 
       const messages: Message[] = [
@@ -180,6 +202,10 @@ export const delegateToTeamMemberByRole: IFunction = {
         env: req.env,
         user: req.user,
         currentAgent,
+        delegationStack: req.request.delegation_stack,
+        maxDelegationDepth: req.request.max_delegation_depth,
+        rateLimitWindowMs: 60000,
+        maxDelegationsPerWindow: 10,
       });
 
       const agent = await delegation.findAgentByRole(args.role);

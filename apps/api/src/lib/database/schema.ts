@@ -445,6 +445,7 @@ export const agents = sqliteTable(
   },
   (table) => ({
     userIdIdx: index("agents_user_id_idx").on(table.user_id),
+    teamIdIdx: index("agents_team_id_idx").on(table.team_id),
   }),
 );
 
