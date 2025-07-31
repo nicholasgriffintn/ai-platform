@@ -6,6 +6,11 @@ import type {
 import { Database } from "~/lib/database";
 import { Guardrails } from "~/lib/guardrails";
 import type { CoreChatOptions } from "~/types";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({
+  prefix: "CHAT:VALIDATION:VALIDATORS:GUARDRAILS",
+});
 
 export class GuardrailsValidator implements Validator {
   async validate(
@@ -38,6 +43,9 @@ export class GuardrailsValidator implements Validator {
       );
 
       if (!inputValidation?.isValid) {
+        logger.error("Guardrails validation failed", {
+          inputValidation,
+        });
         return {
           validation: {
             isValid: false,
