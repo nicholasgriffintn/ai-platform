@@ -92,7 +92,7 @@ export async function fetchAIResponse<
     } catch (jsonError) {
       const responseText = await response.text();
       logger.error(
-        `Failed to get response for ${provider} from ${endpointOrUrl}. Response not valid JSON:`,
+        `Failed to parse response ${provider} from ${endpointOrUrl}. Response not valid JSON:`,
         {
           responseText,
           status: response.status,

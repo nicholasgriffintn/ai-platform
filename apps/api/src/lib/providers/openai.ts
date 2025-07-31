@@ -9,6 +9,16 @@ import {
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
 
+interface ImageEditParams {
+  model: string;
+  prompt: string;
+  size?: string;
+  n?: number;
+}
+
+const DEFAULT_IMAGE_SIZE = "1024x1024";
+const DEFAULT_IMAGE_COUNT = 1;
+
 export class OpenAIProvider extends BaseProvider {
   name = "openai";
   supportsStreaming = true;
@@ -71,22 +81,26 @@ export class OpenAIProvider extends BaseProvider {
     return headers;
   }
 
-  private async downloadImageFromUrl(url: string): Promise<Blob> {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(
-        `Failed to download image: ${response.status} ${response.statusText}`,
-      );
-    }
-    return await response.blob();
+  private getImageFileName(blob: Blob): string {
+    const mimeTypeToExtension: Record<string, string> = {
+      "image/png": "image.png",
+      "image/jpeg": "image.jpg",
+      "image/jpg": "image.jpg",
+      "image/webp": "image.webp",
+    };
+
+    return mimeTypeToExtension[blob.type] || "image.png";
   }
 
-  private buildImageEditFormData(params: any, imageBlob: Blob): FormData {
+  private buildImageEditFormData(
+    params: ImageEditParams,
+    imageBlob: Blob,
+  ): FormData {
     const formData = new FormData();
 
     formData.append("model", params.model || "gpt-image-1");
     formData.append("prompt", params.prompt);
-    formData.append("image", imageBlob, "image.png");
+    formData.append("image", imageBlob, this.getImageFileName(imageBlob));
 
     if (params.size) {
       formData.append("size", params.size);
@@ -94,11 +108,81 @@ export class OpenAIProvider extends BaseProvider {
     if (params.n) {
       formData.append("n", params.n.toString());
     }
-    if (params.response_format) {
-      formData.append("response_format", params.response_format);
-    }
 
     return formData;
+  }
+
+  private async handleImageEditRequest(
+    params: ChatCompletionParameters,
+    prompt: string,
+    storageService: StorageService,
+  ): Promise<FormData> {
+    const messageWithImage = params.messages.find(
+      (message) =>
+        typeof message.content !== "string" &&
+        message.content.some((item: any) => item.type === "image_url"),
+    );
+
+    if (!messageWithImage || typeof messageWithImage.content === "string") {
+      throw new AssistantError(
+        "No valid image found for image editing",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const imageItem = messageWithImage.content.find(
+      (item: any) => item.type === "image_url",
+    );
+    if (!imageItem?.image_url?.url) {
+      throw new AssistantError(
+        "No image URL found for editing",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const imageBlob = await storageService.downloadFile(
+      imageItem.image_url.url,
+    );
+
+    const formDataParams: ImageEditParams = {
+      model: params.model,
+      prompt,
+      size: DEFAULT_IMAGE_SIZE,
+      n: DEFAULT_IMAGE_COUNT,
+    };
+
+    return this.buildImageEditFormData(formDataParams, imageBlob);
+  }
+
+  private handleImageToImageRequest(
+    params: ChatCompletionParameters,
+    prompt: string,
+  ): Record<string, any> {
+    if (typeof params.messages[1].content === "string") {
+      throw new AssistantError(
+        "Image to image is not supported for text input",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const imageUrls = params.messages[1].content
+      .filter((item: any) => item.type === "image_url")
+      .map((item: any) => item.image_url.url);
+
+    if (imageUrls.length === 0) {
+      throw new AssistantError("No image urls found", ErrorType.PARAMS_ERROR);
+    }
+
+    return {
+      prompt,
+      image: imageUrls,
+    };
+  }
+
+  private handleTextToImageRequest(prompt: string): Record<string, any> {
+    return {
+      prompt,
+    };
   }
 
   async createRealtimeSession(
@@ -142,7 +226,10 @@ export class OpenAIProvider extends BaseProvider {
   ): Promise<Record<string, any>> {
     const modelConfig = await getModelConfigByMatchingModel(params.model || "");
     if (!modelConfig) {
-      throw new Error(`Model configuration not found for ${params.model}`);
+      throw new AssistantError(
+        `Model configuration not found for ${params.model}`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
 
     const commonParams = createCommonParameters(
@@ -221,60 +308,24 @@ export class OpenAIProvider extends BaseProvider {
       const endpoint = this.getEndpoint(params);
 
       if (endpoint.includes("images/edits") && hasImages) {
-        const messageWithImage = params.messages.find(
-          (message) =>
-            typeof message.content !== "string" &&
-            message.content.some((item: any) => item.type === "image_url"),
-        );
-
-        if (!messageWithImage || typeof messageWithImage.content === "string") {
-          throw new Error("No valid image found for image editing");
+        if (!_storageService) {
+          throw new AssistantError(
+            "StorageService is required for image editing",
+            ErrorType.CONFIGURATION_ERROR,
+          );
         }
-
-        const imageItem = messageWithImage.content.find(
-          (item: any) => item.type === "image_url",
-        );
-        if (!imageItem?.image_url?.url) {
-          throw new Error("No image URL found for editing");
-        }
-
-        const imageBlob = await this.downloadImageFromUrl(
-          imageItem.image_url.url,
-        );
-
-        const formDataParams = {
-          model: params.model,
+        return await this.handleImageEditRequest(
+          params,
           prompt,
-          size: "1024x1024",
-          response_format: "url",
-          n: 1,
-        };
-
-        return this.buildImageEditFormData(formDataParams, imageBlob);
+          _storageService,
+        );
       }
 
       if (type.includes("image-to-image") && hasImages) {
-        if (typeof params.messages[1].content === "string") {
-          throw new Error("Image to image is not supported for text input");
-        }
-
-        const imageUrls = params.messages[1].content
-          .filter((item: any) => item.type === "image_url")
-          .map((item: any) => item.image_url.url);
-
-        if (imageUrls.length === 0) {
-          throw new Error("No image urls found");
-        }
-
-        return {
-          prompt,
-          image: imageUrls,
-        };
+        return this.handleImageToImageRequest(params, prompt);
       }
 
-      return {
-        prompt,
-      };
+      return this.handleTextToImageRequest(prompt);
     }
 
     return {
