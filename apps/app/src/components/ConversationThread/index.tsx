@@ -160,14 +160,20 @@ export const ConversationThread = () => {
         return;
       }
 
-      // For text-to-image models, only allow the first message
-      const isTextToImageModel =
-        model !== null && apiModels?.[model]?.type?.includes("text-to-image");
-      if (isTextToImageModel && messages.length > 0) {
-        toast.error(
-          "Text-to-image models only support one message per conversation. Please start a new conversation.",
-        );
-        return;
+      // For text-to-image models, only allow the first message unless they support image edits
+      if (model && apiModels?.[model]) {
+        const modelConfig = apiModels[model];
+        const isTextToImageModel = modelConfig.type?.includes("text-to-image");
+        if (
+          isTextToImageModel &&
+          !modelConfig.supportsImageEdits &&
+          messages.length > 0
+        ) {
+          toast.error(
+            "Text-to-image models only support one message per conversation. Please start a new conversation.",
+          );
+          return;
+        }
       }
 
       try {

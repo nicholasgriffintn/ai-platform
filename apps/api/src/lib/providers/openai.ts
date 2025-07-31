@@ -40,7 +40,9 @@ export class OpenAIProvider extends BaseProvider {
           Array.isArray(message.content) &&
           message.content.some((c) => c.type === "image_url"),
       );
-      return hasAttachments ? "images/edits" : "images/generations";
+      return hasAttachments
+        ? "https://api.openai.com/v1/images/edits"
+        : "images/generations";
     }
     return "chat/completions";
   }
@@ -50,14 +52,53 @@ export class OpenAIProvider extends BaseProvider {
   ): Promise<Record<string, string>> {
     const apiKey = await this.getApiKey(params, params.user?.id);
 
-    return {
+    const endpoint = this.getEndpoint(params);
+
+    const isImageEdits = endpoint.includes("images/edits");
+
+    const headers: Record<string, string> = {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
       Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify({
         email: params.user?.email,
       }),
     };
+
+    if (!isImageEdits) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    return headers;
+  }
+
+  private async downloadImageFromUrl(url: string): Promise<Blob> {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `Failed to download image: ${response.status} ${response.statusText}`,
+      );
+    }
+    return await response.blob();
+  }
+
+  private buildImageEditFormData(params: any, imageBlob: Blob): FormData {
+    const formData = new FormData();
+
+    formData.append("model", params.model || "gpt-image-1");
+    formData.append("prompt", params.prompt);
+    formData.append("image", imageBlob, "image.png");
+
+    if (params.size) {
+      formData.append("size", params.size);
+    }
+    if (params.n) {
+      formData.append("n", params.n.toString());
+    }
+    if (params.response_format) {
+      formData.append("response_format", params.response_format);
+    }
+
+    return formData;
   }
 
   async createRealtimeSession(
@@ -161,7 +202,6 @@ export class OpenAIProvider extends BaseProvider {
 
     const type = modelConfig?.type || ["text"];
 
-    // Handle image generation
     if (type.includes("image-to-image") || type.includes("text-to-image")) {
       let prompt = "";
       if (params.messages.length > 1) {
@@ -177,6 +217,41 @@ export class OpenAIProvider extends BaseProvider {
           typeof message.content !== "string" &&
           message.content.some((item: any) => item.type === "image_url"),
       );
+
+      const endpoint = this.getEndpoint(params);
+
+      if (endpoint.includes("images/edits") && hasImages) {
+        const messageWithImage = params.messages.find(
+          (message) =>
+            typeof message.content !== "string" &&
+            message.content.some((item: any) => item.type === "image_url"),
+        );
+
+        if (!messageWithImage || typeof messageWithImage.content === "string") {
+          throw new Error("No valid image found for image editing");
+        }
+
+        const imageItem = messageWithImage.content.find(
+          (item: any) => item.type === "image_url",
+        );
+        if (!imageItem?.image_url?.url) {
+          throw new Error("No image URL found for editing");
+        }
+
+        const imageBlob = await this.downloadImageFromUrl(
+          imageItem.image_url.url,
+        );
+
+        const formDataParams = {
+          model: params.model,
+          prompt,
+          size: "1024x1024",
+          response_format: "url",
+          n: 1,
+        };
+
+        return this.buildImageEditFormData(formDataParams, imageBlob);
+      }
 
       if (type.includes("image-to-image") && hasImages) {
         if (typeof params.messages[1].content === "string") {

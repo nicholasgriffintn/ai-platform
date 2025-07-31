@@ -318,6 +318,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.01,
     costPer1kOutputTokens: 0.04,
     isFeatured: true,
+    supportsImageEdits: true,
     timeout: 1000000,
   }),
 ]);
