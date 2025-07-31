@@ -56,7 +56,7 @@ export const ModelSelector = ({
     selectedAgentId,
     setSelectedAgentId,
   } = useChatStore();
-  const { agents, isLoadingAgents } = useAgents();
+  const { chatAgents: agents, isLoadingAgents } = useAgents();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllModels, setShowAllModels] = useState(false);
@@ -494,6 +494,7 @@ export const ModelSelector = ({
                             }}
                             disabled={isDisabled}
                             mono={mono}
+                            isTeamAgent={agent.is_team_agent}
                           />
                         ))}
                       </div>

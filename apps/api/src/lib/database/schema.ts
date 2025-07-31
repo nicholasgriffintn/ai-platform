@@ -435,6 +435,9 @@ export const agents = sqliteTable(
     max_steps: integer(),
     system_prompt: text(),
     few_shot_examples: text({ mode: "json" }),
+    team_id: text(),
+    team_role: text(),
+    is_team_agent: integer({ mode: "boolean" }).default(false),
     created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
     updated_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
@@ -442,6 +445,7 @@ export const agents = sqliteTable(
   },
   (table) => ({
     userIdIdx: index("agents_user_id_idx").on(table.user_id),
+    teamIdIdx: index("agents_team_id_idx").on(table.team_id),
   }),
 );
 

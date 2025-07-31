@@ -1,4 +1,4 @@
-import { BrainCircuit, Crown, Eye, Hammer, Info } from "lucide-react";
+import { BrainCircuit, Crown, Eye, Hammer, Info, Users } from "lucide-react";
 import { useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
@@ -11,6 +11,7 @@ interface ModelOptionProps {
   onClick: () => void;
   disabled?: boolean;
   mono?: boolean;
+  isTeamAgent?: boolean;
 }
 
 export const ModelOption = ({
@@ -20,6 +21,7 @@ export const ModelOption = ({
   onClick,
   disabled,
   mono = false,
+  isTeamAgent = false,
 }: ModelOptionProps) => {
   const [showDetails, setShowDetails] = useState(false);
 
@@ -54,7 +56,9 @@ export const ModelOption = ({
       aria-selected={isSelected}
       id={`model-${model.matchingModel}`}
       tabIndex={disabled ? -1 : 0}
-      className={`${!disabled ? "cursor-pointer" : "cursor-not-allowed opacity-50"} w-full text-left px-2 py-1.5 rounded-md text-sm ${
+      className={`${
+        !disabled ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+      } w-full text-left px-2 py-1.5 rounded-md text-sm ${
         isSelected
           ? "bg-off-white-highlight dark:bg-zinc-800"
           : isActive
@@ -85,6 +89,14 @@ export const ModelOption = ({
               />
             </div>
           )}
+          {isTeamAgent ? (
+            <div
+              className="p-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30"
+              title="Team Agent"
+            >
+              <Users size={12} className="text-blue-600 dark:text-blue-400" />
+            </div>
+          ) : null}
         </div>
         <div className="flex items-center gap-1.5">
           {model.hasThinking && (

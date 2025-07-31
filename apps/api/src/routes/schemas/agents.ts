@@ -69,6 +69,19 @@ export const createAgentSchema = z.object({
     .array(fewShotExampleSchema)
     .optional()
     .openapi({ description: "Few-shot examples for the agent" }),
+  team_id: z
+    .string()
+    .optional()
+    .openapi({ description: "Team ID this agent belongs to" }),
+  team_role: z
+    .string()
+    .optional()
+    .openapi({ description: "Role of this agent within the team" }),
+  is_team_agent: z
+    .boolean()
+    .optional()
+    .default(false)
+    .openapi({ description: "Whether this is a team agent" }),
 });
 
 export const updateAgentSchema = z
@@ -112,6 +125,18 @@ export const updateAgentSchema = z
       .array(fewShotExampleSchema)
       .optional()
       .openapi({ description: "Few-shot examples for the agent" }),
+    team_id: z
+      .string()
+      .optional()
+      .openapi({ description: "Team ID this agent belongs to" }),
+    team_role: z
+      .string()
+      .optional()
+      .openapi({ description: "Role of this agent within the team" }),
+    is_team_agent: z
+      .boolean()
+      .optional()
+      .openapi({ description: "Whether this is a team agent" }),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided",
