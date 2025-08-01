@@ -19,7 +19,7 @@ export async function fetchAIResponse<
   provider: string,
   endpointOrUrl: string,
   headers: Record<string, string>,
-  body: Record<string, any>,
+  body: Record<string, any> | FormData,
   env?: IEnv,
   options: {
     requestTimeout?: number;
@@ -35,13 +35,21 @@ export async function fetchAIResponse<
 ): Promise<T> {
   const isUrl = endpointOrUrl.startsWith("http");
 
-  const isStreaming = detectStreaming(body, endpointOrUrl);
+  const isFormData = body instanceof FormData;
+  const isStreaming = isFormData ? false : detectStreaming(body, endpointOrUrl);
 
   const tools = provider === "tool-use" ? availableFunctions : undefined;
-  const bodyWithTools = tools ? { ...body, tools } : body;
+  const bodyWithTools = isFormData ? body : tools ? { ...body, tools } : body;
 
   let response: Response;
   if (!isUrl) {
+    if (isFormData) {
+      throw new AssistantError(
+        "FormData requests are not supported through Cloudflare AI Gateway. Use direct URL endpoints for image edits.",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
     if (!env?.AI) {
       throw new AssistantError(
         "AI binding is required to fetch gateway responses",
@@ -71,18 +79,20 @@ export async function fetchAIResponse<
     response = await fetch(endpointOrUrl, {
       method: "POST",
       headers,
-      body: JSON.stringify(bodyWithTools),
+      body: isFormData
+        ? (bodyWithTools as FormData)
+        : JSON.stringify(bodyWithTools),
     });
   }
 
   if (!response.ok) {
-    let responseJson;
+    let responseJson: any;
     try {
       responseJson = await response.json();
     } catch (jsonError) {
       const responseText = await response.text();
       logger.error(
-        `Failed to get response for ${provider} from ${endpointOrUrl}. Response not valid JSON:`,
+        `Failed to parse response ${provider} from ${endpointOrUrl}. Response not valid JSON:`,
         {
           responseText,
           status: response.status,

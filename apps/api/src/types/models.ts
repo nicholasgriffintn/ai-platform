@@ -40,6 +40,7 @@ export type ModelConfigItem = {
   beta?: boolean;
   supportsSearchGrounding?: boolean;
   supportsCodeExecution?: boolean;
+  supportsImageEdits?: boolean;
   timeout?: number;
   supportsAudio?: boolean;
 };

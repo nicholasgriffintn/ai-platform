@@ -1,7 +1,7 @@
 import { ResponseFormatter } from "~/lib/formatter";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
-import type { StorageService } from "~/lib/storage";
+import { StorageService } from "~/lib/storage";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -236,11 +236,18 @@ export abstract class BaseProvider implements AIProvider {
 
     const timeout = modelConfig.timeout || 100000;
 
+    const storageService = new StorageService(params.env.ASSETS_BUCKET);
+    const assetsUrl = params.env.PUBLIC_ASSETS_URL || "";
+
     return trackProviderMetrics({
       provider: this.name,
       model: params.model as string,
       operation: async () => {
-        const body = await this.getParameterMapping(params);
+        const body = await this.getParameterMapping(
+          params,
+          storageService,
+          assetsUrl,
+        );
         const data = await fetchAIResponse(
           isOpenAiCompatible,
           this.name,
