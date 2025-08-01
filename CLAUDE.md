@@ -159,3 +159,21 @@ npx cap open ios           # Open Xcode
 4. **Multi-App Changes**: Use root-level commands for consistency
 
 The platform follows a **mobile-first, offline-capable, multi-provider** architecture that prioritizes user experience and developer productivity. All applications use modern JavaScript/TypeScript patterns with comprehensive type safety.
+
+## Claude Code Behavior Guidelines
+
+### Critical Implementation Rules
+
+1. **NEVER add comments** unless explicitly requested by the user or for documenting API methods.
+2. **Production System Mindset** - This is a live, production AI platform serving real users. All code changes must be production-ready
+3. **No Placeholder Code** - Every implementation must be complete and functional, not demo/example code
+4. **Zero Tolerance for TODO Comments** - Complete all implementations fully
+5. **Minimal Output** - Provide only essential information, avoid explanations unless asked
+
+### Code Standards
+
+- Write production-grade code that handles edge cases and errors properly
+- Use existing patterns and conventions from the codebase
+- Implement proper error handling and validation
+- Follow the established architecture patterns
+- Test implementations thoroughly with type checking and full unit tests before considering them complete
