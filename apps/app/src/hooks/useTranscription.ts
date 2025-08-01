@@ -172,47 +172,21 @@ export function useTranscription({
 
     if (!cleanedText) return "";
 
-    const words = cleanedText.split(" ");
-    const bufferWords = buffer.split(" ");
+    const paragraphEndRegex = /([.!?])\s+/g;
+    const sentences = cleanedText.split(paragraphEndRegex);
+    const paragraphs: string[] = [];
 
-    if (words.length <= 3) {
-      const lastFewWords = bufferWords.slice(-10);
+    for (let i = 0; i < sentences.length; i += 2) {
+      const sentence = sentences[i];
+      const punctuation = sentences[i + 1] || "";
+      const full = (sentence + punctuation).trim();
 
-      const shortSegmentAlreadyInBuffer = lastFewWords
-        .join(" ")
-        .toLowerCase()
-        .includes(cleanedText.toLowerCase());
-      if (shortSegmentAlreadyInBuffer) {
-        return "";
+      if (full.length > 5 && !buffer.includes(full)) {
+        paragraphs.push(full);
       }
     }
 
-    for (
-      let i = Math.max(0, bufferWords.length - 10);
-      i < bufferWords.length;
-      i++
-    ) {
-      const partialBuffer = bufferWords.slice(i).join(" ").toLowerCase();
-      if (
-        partialBuffer.length > 5 &&
-        cleanedText.toLowerCase().startsWith(partialBuffer)
-      ) {
-        const uniqueContent = cleanedText.slice(partialBuffer.length).trim();
-        return uniqueContent;
-      }
-    }
-
-    if (
-      cleanedText.endsWith(".") ||
-      cleanedText.endsWith("!") ||
-      cleanedText.endsWith("?")
-    ) {
-      if (buffer.toLowerCase().includes(cleanedText.toLowerCase())) {
-        return "";
-      }
-    }
-
-    return cleanedText;
+    return paragraphs.join("\n\n");
   };
 
   const startTranscription = async (externalStream?: MediaStream) => {
