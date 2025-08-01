@@ -6,11 +6,13 @@ import { fetchApi } from "~/lib/api/fetch-wrapper";
 interface TranscriptionOptions {
   onTranscriptionReceived: (text: string, isPartial?: boolean) => void;
   onSpeechDetected?: (isActive: boolean) => void;
+  inputStream?: MediaStream;
 }
 
 export function useTranscription({
   onTranscriptionReceived,
   onSpeechDetected,
+  inputStream,
 }: TranscriptionOptions) {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [status, setStatus] = useState<
@@ -213,7 +215,7 @@ export function useTranscription({
     return cleanedText;
   };
 
-  const startTranscription = async () => {
+  const startTranscription = async (externalStream?: MediaStream) => {
     if (isTranscribing) {
       console.warn("Transcription already in progress");
       return;
@@ -264,7 +266,8 @@ export function useTranscription({
       const clientSecret = session.client_secret.value;
       const sessionId = session.id;
 
-      const stream = await getOptimalAudioStream();
+      const stream =
+        externalStream ?? inputStream ?? (await getOptimalAudioStream());
       mediaStreamRef.current = stream;
 
       setupAudioAnalysis(stream);
@@ -434,20 +437,6 @@ export function useTranscription({
         offerToReceiveVideo: false,
       });
 
-      let modifiedSdp = offer.sdp;
-      if (modifiedSdp) {
-        modifiedSdp = modifiedSdp.replace(
-          /(a=rtpmap:\d+ opus\/48000\/2)/,
-          "$1\r\na=fmtp:111 minptime=10;useinbandfec=1;stereo=0;sprop-stereo=0;cbr=1;maxaveragebitrate=24000",
-        );
-
-        modifiedSdp = modifiedSdp.replace(
-          /(a=rtpmap:\d+ opus\/48000\/2\r\n)/g,
-          "$1a=rtcp-fb:111 nack\r\na=rtcp-fb:111 transport-cc\r\n",
-        );
-      }
-
-      offer.sdp = modifiedSdp;
       await pc.setLocalDescription(offer);
 
       const answerController = new AbortController();

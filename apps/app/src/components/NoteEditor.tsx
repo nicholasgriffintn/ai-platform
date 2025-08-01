@@ -5,6 +5,8 @@ import {
   Maximize2,
   Mic,
   Minimize2,
+  MonitorDot,
+  MonitorStop,
   Trash2,
   Volume2,
   VolumeX,
@@ -23,6 +25,7 @@ import {
   Textarea as UITextarea,
 } from "~/components/ui";
 import { useNoteFormatter } from "~/hooks/useNoteFormatter";
+import { useTabAudioCapture } from "~/hooks/useTabAudioCapture";
 import { useTranscription } from "~/hooks/useTranscription";
 import {
   formatTextWithSpacing,
@@ -81,6 +84,8 @@ export function NoteEditor({
     runFormat,
     openFormatModal,
   } = useNoteFormatter(noteId ?? "");
+
+  const tabCapture = useTabAudioCapture();
 
   const {
     isTranscribing,
@@ -383,6 +388,41 @@ export function NoteEditor({
               size={16}
               className={isSpeechDetected ? "animate-pulse" : ""}
             />
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              if (tabCapture.isCapturing) {
+                stopTranscription(true);
+                tabCapture.stop();
+                setPartialTranscript("");
+                setIsSpeechDetected(false);
+                setLastSilenceTime(0);
+              } else {
+                const stream = await tabCapture.start();
+                if (stream) {
+                  startTranscription(stream);
+                }
+              }
+            }}
+            aria-pressed={tabCapture.isCapturing}
+            className={cn(
+              "p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-offset-2",
+              tabCapture.isCapturing
+                ? "text-purple-600 dark:text-purple-400"
+                : "",
+            )}
+            aria-label={
+              tabCapture.isCapturing
+                ? "Stop tab audio transcription"
+                : "Start tab audio transcription"
+            }
+          >
+            {tabCapture.isCapturing ? (
+              <MonitorDot size={16} className="animate-pulse" />
+            ) : (
+              <MonitorStop size={16} />
+            )}
           </button>
           <button
             type="button"
