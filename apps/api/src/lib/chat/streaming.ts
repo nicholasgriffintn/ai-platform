@@ -798,6 +798,7 @@ export async function createStreamWithPostProcessing(
                     messages: history,
                     tools,
                     enabled_tools,
+                    stream: true,
                   });
                   const nextTransformed = await createStreamWithPostProcessing(
                     nextStream,
@@ -811,7 +812,10 @@ export async function createStreamWithPostProcessing(
                     if (done) break;
                     controller.enqueue(value);
                   }
-                } catch (error) {
+                } catch (error: any) {
+                  console.log("Next stream error:", error);
+                  console.log("Error type:", typeof error);
+                  console.log("Error message:", error?.message);
                   logger.error("Error in next stream:", error);
                 }
               }
