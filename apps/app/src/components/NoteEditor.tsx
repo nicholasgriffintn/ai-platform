@@ -1,6 +1,7 @@
 import {
   Copy,
   Download,
+  Hash,
   Loader2,
   Maximize2,
   Mic,
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { NoteMetadata } from "~/components/NoteMetadata";
 import {
   Button,
   Dialog,
@@ -38,7 +40,12 @@ import { cn } from "~/lib/utils";
 interface NoteEditorProps {
   noteId?: string;
   initialText?: string;
-  onSave: (title: string, content: string) => Promise<string>;
+  initialMetadata?: Record<string, any>;
+  onSave: (
+    title: string,
+    content: string,
+    metadata?: Record<string, any>,
+  ) => Promise<string>;
   onDelete?: () => Promise<void>;
   onToggleFullBleed?: () => void;
   isFullBleed?: boolean;
@@ -53,6 +60,7 @@ interface NoteEditorProps {
 export function NoteEditor({
   noteId,
   initialText = "",
+  initialMetadata,
   onSave,
   onDelete,
   onToggleFullBleed,
@@ -73,6 +81,30 @@ export function NoteEditor({
   const [partialTranscript, setPartialTranscript] = useState<string>("");
   const [isSpeechDetected, setIsSpeechDetected] = useState<boolean>(false);
   const [lastSilenceTime, setLastSilenceTime] = useState<number>(0);
+  const [currentMetadata, setCurrentMetadata] = useState<Record<string, any>>(
+    initialMetadata || {},
+  );
+  const [showMetadata, setShowMetadata] = useState<boolean>(false);
+
+  const handleMetadataUpdate = async (newMetadata: Record<string, any>) => {
+    setCurrentMetadata(newMetadata);
+
+    if (noteId) {
+      setIsSaving(true);
+      try {
+        const [title, content] = splitTitleAndContent(textRef.current);
+        const tabMetadata = tabCapture.tabInfo
+          ? { tabSource: tabCapture.tabInfo }
+          : {};
+        const finalMetadata = { ...newMetadata, ...tabMetadata };
+        await onSave(title, content, finalMetadata);
+      } catch {
+        toast.error("Failed to save metadata changes");
+      } finally {
+        setIsSaving(false);
+      }
+    }
+  };
 
   const {
     isAIModalOpen,
@@ -140,7 +172,11 @@ export function NoteEditor({
         setIsSaving(true);
         try {
           const [title, content] = splitTitleAndContent(text);
-          await onSave(title, content);
+          const tabMetadata = tabCapture.tabInfo
+            ? { tabSource: tabCapture.tabInfo }
+            : {};
+          const finalMetadata = { ...currentMetadata, ...tabMetadata };
+          await onSave(title, content, finalMetadata);
           setLastSavedText(text);
         } catch {
           toast.error("Failed to save note");
@@ -150,7 +186,7 @@ export function NoteEditor({
       })();
     }, 1000);
     return () => clearTimeout(timeout);
-  }, [text, lastSavedText, onSave]);
+  }, [text, lastSavedText, onSave, tabCapture.tabInfo, currentMetadata]);
 
   useEffect(() => {
     setFontFamily(initialFontFamily);
@@ -169,7 +205,11 @@ export function NoteEditor({
           (async () => {
             try {
               const [title, content] = splitTitleAndContent(textRef.current);
-              await onSave(title, content);
+              const tabMetadata = tabCapture.tabInfo
+                ? { tabSource: tabCapture.tabInfo }
+                : {};
+              const finalMetadata = { ...currentMetadata, ...tabMetadata };
+              await onSave(title, content, finalMetadata);
               setLastSavedText(textRef.current);
             } catch {
               toast.error("Failed to save note");
@@ -185,7 +225,13 @@ export function NoteEditor({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isFullBleed, onSave, onToggleFullBleed]);
+  }, [
+    isFullBleed,
+    onSave,
+    onToggleFullBleed,
+    tabCapture.tabInfo,
+    currentMetadata,
+  ]);
 
   return (
     <div className="relative flex flex-col flex-1 h-full">
@@ -203,6 +249,33 @@ export function NoteEditor({
           {isSaving ? "Saving..." : "All changes saved"}
         </span>
       </output>
+
+      {currentMetadata && Object.keys(currentMetadata).length > 0 && (
+        <div className="border-b">
+          <div className="px-4 py-2">
+            <button
+              type="button"
+              onClick={() => setShowMetadata(!showMetadata)}
+              className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-black-800 dark:hover:text-black-200"
+            >
+              <Hash size={14} />
+              Metadata
+              <span className="text-xs">
+                ({showMetadata ? "hide" : "show"})
+              </span>
+            </button>
+          </div>
+          {showMetadata && (
+            <div className="px-4 pb-4">
+              <NoteMetadata
+                metadata={currentMetadata}
+                onMetadataUpdate={handleMetadataUpdate}
+                isEditable={!!noteId}
+              />
+            </div>
+          )}
+        </div>
+      )}
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -495,6 +568,7 @@ export function NoteEditor({
           </span>
         </div>
       </div>
+
       <Dialog
         open={isAIModalOpen}
         onOpenChange={setIsAIModalOpen}

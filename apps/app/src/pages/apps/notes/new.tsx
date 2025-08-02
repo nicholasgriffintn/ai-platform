@@ -23,8 +23,17 @@ export default function NewNotePage() {
   const [fontSize, setFontSize] = useState<number>(25);
 
   const handleSave = useCallback(
-    async (title: string, content: string) => {
-      const metadata = { themeMode, fontFamily, fontSize };
+    async (
+      title: string,
+      content: string,
+      additionalMetadata?: Record<string, any>,
+    ) => {
+      const metadata = {
+        themeMode,
+        fontFamily,
+        fontSize,
+        ...additionalMetadata,
+      };
       if (!noteId) {
         const note = await createMutation.mutateAsync({
           title,

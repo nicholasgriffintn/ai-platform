@@ -25,8 +25,17 @@ export default function NoteDetailPage() {
   const [fontSize, setFontSize] = useState<number>(25);
 
   const handleSave = useCallback(
-    async (title: string, content: string) => {
-      const metadata = { themeMode, fontFamily, fontSize };
+    async (
+      title: string,
+      content: string,
+      additionalMetadata?: Record<string, any>,
+    ) => {
+      const metadata = {
+        themeMode,
+        fontFamily,
+        fontSize,
+        ...additionalMetadata,
+      };
       const note = await updateMutation.mutateAsync({
         title,
         content,
@@ -87,6 +96,7 @@ export default function NoteDetailPage() {
       <NoteEditor
         noteId={id!}
         initialText={initialText}
+        initialMetadata={note.metadata}
         onSave={handleSave}
         onDelete={handleDelete}
         isFullBleed={isFullBleed}

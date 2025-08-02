@@ -103,10 +103,18 @@ export async function createNote({
   const sanitisedTitle = sanitiseInput(data.title);
   const sanitisedContent = sanitiseInput(data.content);
 
+  const generatedMetadata = await generateNoteMetadata(
+    env,
+    user,
+    sanitisedTitle,
+    sanitisedContent,
+    data.metadata,
+  );
+
   const appData = {
     title: sanitisedTitle,
     content: sanitisedContent,
-    metadata: data.metadata,
+    metadata: { ...generatedMetadata, ...data.metadata },
   };
 
   const entry = await repo.createAppDataWithItem(
@@ -161,7 +169,19 @@ export async function updateNote({
     throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
   }
 
-  await repo.updateAppData(noteId, data);
+  const generatedMetadata = await generateNoteMetadata(
+    env,
+    { id: userId } as IUser,
+    data.title,
+    data.content,
+    data.metadata,
+  );
+  const finalData = {
+    ...data,
+    metadata: { ...generatedMetadata, ...data.metadata },
+  };
+
+  await repo.updateAppData(noteId, finalData);
   const updated = await repo.getAppDataById(noteId);
   let parsedData;
   try {
@@ -303,5 +323,73 @@ ${note.content}`;
       "Error formatting note with AI",
       ErrorType.EXTERNAL_API_ERROR,
     );
+  }
+}
+
+async function generateNoteMetadata(
+  env: IEnv,
+  user: IUser,
+  title: string,
+  content: string,
+  existingMetadata?: Record<string, any>,
+): Promise<Record<string, any>> {
+  const tabSource = existingMetadata?.tabSource;
+  const tabSourceText = tabSource
+    ? `\n\nNote: This content was captured from tab audio recording:
+- URL: ${tabSource.url || "Unknown"}  
+- Page Title: ${tabSource.title || "Unknown"}
+- Captured: ${tabSource.timestamp}`
+    : "";
+
+  const prompt = `Analyze this note and generate metadata in JSON format. Include:
+- tags: array of relevant tags (max 8)  
+- summary: brief 1-2 sentence summary
+- keyTopics: array of main topics/keywords (max 5)
+- wordCount: number of words
+- readingTime: estimated reading time in minutes
+- contentType: "text", "list", "outline", or "mixed"
+- sentiment: "positive", "neutral", or "negative" based on the tone
+${tabSource ? '- sourceType: "tab_recording" since this was captured from a tab' : '- sourceType: "manual" since this was manually written'}
+
+Title: ${title}
+Content: ${content}${tabSourceText}
+
+Return only valid JSON without any markdown formatting.`;
+
+  try {
+    const { model: modelToUse, provider: providerToUse } =
+      await getAuxiliaryModel(env, user);
+    const provider = AIProviderFactory.getProvider(providerToUse);
+
+    const aiResult = await provider.getResponse(
+      {
+        model: modelToUse,
+        env,
+        user,
+        messages: [{ role: "user" as ChatRole, content: prompt }],
+        temperature: 0.3,
+        max_tokens: 500,
+      },
+      user.id,
+    );
+
+    const response =
+      aiResult?.response ||
+      (Array.isArray(aiResult.choices) &&
+        aiResult.choices[0]?.message?.content) ||
+      (typeof aiResult === "string" ? aiResult : "{}");
+
+    return JSON.parse(response);
+  } catch (error) {
+    logger.error("Error generating note metadata", { error });
+    const wordCount = content.split(/\s+/).length;
+    return {
+      tags: [],
+      summary: content.slice(0, 100) + (content.length > 100 ? "..." : ""),
+      keyTopics: [],
+      wordCount,
+      readingTime: Math.max(1, Math.ceil(wordCount / 200)),
+      contentType: "text",
+    };
   }
 }
