@@ -198,7 +198,7 @@ export default function NewDrawingPage() {
   return (
     <PageShell
       sidebarContent={<StandardSidebarContent />}
-      className="max-w-5xl mx-auto"
+      className="max-w-7xl mx-auto"
       headerContent={
         <PageHeader>
           <BackLink to="/apps/drawing" label="Back to Drawings" />
