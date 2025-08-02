@@ -74,7 +74,7 @@ export async function fetchApi(
       options.body instanceof ReadableStream ||
       ArrayBuffer.isView(options.body)
     ) {
-      fetchOptions.body = options.body;
+      fetchOptions.body = options.body as BodyInit;
     } else if (typeof options.body === "object") {
       fetchOptions.body = JSON.stringify(options.body);
     }
