@@ -33,7 +33,7 @@
     "agents": "^0.0.109",
     "aws4fetch": "1.0.20",
     "drizzle-orm": "0.44.4",
-    "hono": "4.8.10",
+    "hono": "4.8.12",
     "hono-openapi": "0.4.8",
     "isbot": "5.1.29",
     "stripe": "^18.0.0",
