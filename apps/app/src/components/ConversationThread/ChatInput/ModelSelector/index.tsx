@@ -342,13 +342,17 @@ export const ModelSelector = ({
               <span
                 className="text-sm max-w-[250px] truncate w-full"
                 title={
-                  isModelLockedByAgent
-                    ? `${selectedModelInfo?.name || "Model"} (set by agent)`
-                    : selectedModelInfo?.name || "Select model"
+                  selectedAgent && chatMode === "agent"
+                    ? `${selectedAgent.name} - ${selectedModelInfo?.name || "Model"}`
+                    : isModelLockedByAgent
+                      ? `${selectedModelInfo?.name || "Model"} (set by agent)`
+                      : selectedModelInfo?.name || "Select model"
                 }
               >
-                {selectedModelInfo?.name || "Select model"}
-                {isModelLockedByAgent && " (set by agent)"}
+                {selectedAgent && chatMode === "agent"
+                  ? `${selectedAgent.name} - ${selectedModelInfo?.name || "Model"}`
+                  : selectedModelInfo?.name || "Select model"}
+                {isModelLockedByAgent && !selectedAgent && " (set by agent)"}
               </span>
             )}
           </>
