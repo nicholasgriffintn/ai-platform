@@ -64,6 +64,17 @@ app.post(
     const env = c.env as IEnv;
     const user = c.get("user");
     const type = c.req.param("type");
+    const model = c.req.param("model") || "gpt-4o-mini-transcribe";
+
+    const availableModels = [
+      "gpt-4o-mini-transcribe",
+      "gpt-4o-transcribe",
+      "whisper",
+    ];
+
+    if (!availableModels.includes(model)) {
+      return c.json({ error: "Invalid model specified" }, 400);
+    }
 
     if (!user?.id) {
       return c.json({ error: "Unauthorized" }, 401);
@@ -77,7 +88,7 @@ app.post(
 
     if (type === "transcription") {
       body.input_audio_transcription = {
-        model: "gpt-4o-transcribe",
+        model,
         language: "en",
       };
       body.turn_detection = {
