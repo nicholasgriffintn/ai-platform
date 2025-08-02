@@ -1,4 +1,5 @@
 import type { Agent } from "~/lib/database/schema";
+import { getAuxiliaryModel } from "~/lib/models";
 import { AgentRepository } from "~/repositories/AgentRepository";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import type { AnonymousUser, IEnv, IUser, Message } from "~/types";
@@ -111,12 +112,17 @@ export class TeamDelegation {
 
     const nestedStack = [...this.delegationStack, agentId];
 
+    const { model: modelToUse } = await getAuxiliaryModel(
+      this.context.env,
+      this.context.user,
+    );
+
     const response = await handleCreateChatCompletions({
       env: this.context.env,
       request: {
         env: this.context.env,
         messages,
-        model: agent.model || "mistral-medium",
+        model: agent.model || modelToUse,
         system_prompt: agent.system_prompt,
         temperature: agent.temperature
           ? Number.parseFloat(agent.temperature)
