@@ -222,6 +222,8 @@ export class ChatOrchestrator {
           userSettings,
           app_url: options.app_url,
           mode: currentMode,
+          max_steps: options.max_steps,
+          current_step: options.current_step,
         },
         conversationManager,
       );

@@ -779,7 +779,15 @@ export async function createStreamWithPostProcessing(
                 (message) => message.status === "error",
               );
 
-              if (!hasToolErrors) {
+              if (hasToolErrors) {
+                logger.warn(
+                  "Tool errors detected, stopping multi-step execution",
+                  {
+                    completion_id,
+                    current_step,
+                  },
+                );
+              } else {
                 try {
                   const nextStream = await getAIResponse({
                     ...options,
@@ -800,14 +808,6 @@ export async function createStreamWithPostProcessing(
                 } catch (error) {
                   logger.error("Error in next stream:", error);
                 }
-              } else {
-                logger.info(
-                  "Tool errors detected, stopping multi-step execution",
-                  {
-                    completion_id,
-                    current_step,
-                  },
-                );
               }
             }
 

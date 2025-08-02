@@ -542,7 +542,19 @@ app.post(
           for (const cfg of serverConfigs) {
             try {
               const { id } = await mcp.connect(cfg.url);
+
+              if (!id) {
+                console.error("No ID returned from MCP connect");
+                continue;
+              }
+
               const connection = mcp.mcpConnections[id];
+
+              if (!connection?.connectionState) {
+                console.error("No connection found for ID:", id);
+                continue;
+              }
+
               while (connection.connectionState !== "ready") {
                 await new Promise((resolve) => setTimeout(resolve, 50));
               }
