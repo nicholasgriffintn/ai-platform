@@ -78,6 +78,8 @@ export async function createStreamWithPostProcessing(
     mode?: ChatMode;
     max_steps?: number;
     current_step?: number;
+    tools?: any[];
+    enabled_tools?: string[];
   },
   conversationManager: ConversationManager,
 ): Promise<ReadableStream> {
@@ -100,6 +102,8 @@ export async function createStreamWithPostProcessing(
     mode,
     max_steps = 1,
     current_step = 1,
+    tools,
+    enabled_tools,
   } = options;
 
   const fullContentChunks: string[] = [];
@@ -792,6 +796,8 @@ export async function createStreamWithPostProcessing(
                   const nextStream = await getAIResponse({
                     ...options,
                     messages: history,
+                    tools,
+                    enabled_tools,
                   });
                   const nextTransformed = await createStreamWithPostProcessing(
                     nextStream,

@@ -33,6 +33,8 @@ export function createMultiModelStream(
     userSettings?: IUserSettings;
     app_url?: string;
     mode?: ChatMode;
+    tools?: any[];
+    enabled_tools?: string[];
   },
   conversationManager: ConversationManager,
 ): ReadableStream {
