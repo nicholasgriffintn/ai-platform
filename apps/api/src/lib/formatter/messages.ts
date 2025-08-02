@@ -172,17 +172,27 @@ export class MessageFormatter {
             content.length === 1 &&
             typeof content[0] === "string"
           ) {
-            formattedMessages.push({
+            const newMessage: Message = {
               role: message.role,
               content: content[0],
-              tool_calls: message.tool_calls,
-            } as Message);
+            };
+
+            if (message.role === "assistant" && message.tool_calls) {
+              newMessage.tool_calls = message.tool_calls;
+            }
+
+            formattedMessages.push(newMessage);
           } else {
-            formattedMessages.push({
+            const newMessage: Message = {
               role: message.role,
               content,
-              tool_calls: message.tool_calls,
-            } as Message);
+            };
+
+            if (message.role === "assistant" && message.tool_calls) {
+              newMessage.tool_calls = message.tool_calls;
+            }
+
+            formattedMessages.push(newMessage);
           }
       }
     }

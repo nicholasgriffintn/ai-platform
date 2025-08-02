@@ -1,7 +1,10 @@
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { AIProviderFactory } from "~/lib/providers/factory";
-import type { ChatCompletionParameters, Message } from "~/types";
-import type { AssistantMessageData } from "~/types/chat";
+import type {
+  AssistantMessageData,
+  ChatCompletionParameters,
+  Message,
+} from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
