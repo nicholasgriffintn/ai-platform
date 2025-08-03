@@ -6,7 +6,9 @@ import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger();
+const logger = getLogger({
+  prefix: "SERVICES:APPS:ARTICLES:GET_SOURCE_ARTICLES",
+});
 
 export interface GetSourceArticlesSuccessResponse {
   status: "success";
@@ -65,7 +67,10 @@ export async function getSourceArticles({
         }
         return null;
       } catch (error) {
-        console.error(`Error fetching article with ID ${id}:`, error);
+        logger.error(`Error fetching article with ID ${id}:`, {
+          error_message:
+            error instanceof Error ? error.message : "Unknown error",
+        });
         return null;
       }
     });
@@ -83,7 +88,9 @@ export async function getSourceArticles({
       articles,
     };
   } catch (error) {
-    console.error("Error fetching source articles:", error);
+    logger.error("Error fetching source articles:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
     if (error instanceof AssistantError) {
       throw error;
     }

@@ -138,7 +138,9 @@ export const delegateToTeamMember: IFunction = {
         role: "tool",
       };
     } catch (error) {
-      logger.error("Team delegation failed:", error);
+      logger.error("Team delegation failed:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       return {
         status: "error",
         content: `Failed to delegate to team member: ${error}`,
@@ -234,7 +236,9 @@ export const delegateToTeamMemberByRole: IFunction = {
         req,
       );
     } catch (error) {
-      logger.error("Team delegation by role failed:", error);
+      logger.error("Team delegation by role failed:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       return {
         status: "error",
         content: `Failed to delegate to team member by role: ${error}`,
@@ -314,7 +318,9 @@ export const getTeamMembers: IFunction = {
         role: "tool",
       };
     } catch (error) {
-      logger.error("Failed to get team members:", error);
+      logger.error("Failed to get team members:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       return {
         status: "error",
         content: `Failed to get team members: ${error}`,

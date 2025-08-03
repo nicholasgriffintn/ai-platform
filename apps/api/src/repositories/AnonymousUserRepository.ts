@@ -1,5 +1,8 @@
 import type { AnonymousUser } from "~/types";
+import { getLogger } from "~/utils/logger";
 import { BaseRepository } from "./BaseRepository";
+
+const logger = getLogger({ prefix: "REPOSITORIES:ANONYMOUS_USER" });
 
 export class AnonymousUserRepository extends BaseRepository {
   /**
@@ -151,14 +154,16 @@ export class AnonymousUserRepository extends BaseRepository {
           return ipUser;
         }
 
-        console.error(
+        logger.error(
           "Unexpected error in anonymous user creation:",
           insertError,
         );
         return null;
       }
     } catch (error) {
-      console.error("Error in getOrCreateAnonymousUser:", error);
+      logger.error("Error in getOrCreateAnonymousUser:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw error;
     }
   }

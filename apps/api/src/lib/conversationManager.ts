@@ -95,7 +95,9 @@ export class ConversationManager {
     try {
       return await this.usageManager.getUsageLimits();
     } catch (error) {
-      logger.error("Failed to get usage limits:", error);
+      logger.error("Failed to get usage limits:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       return null;
     }
   }
@@ -180,7 +182,10 @@ export class ConversationManager {
             break;
           }
         } catch (error) {
-          logger.error("Failed to increment usage:", error);
+          logger.error("Failed to increment usage:", {
+            error_message:
+              error instanceof Error ? error.message : "Unknown error",
+          });
         }
       }
     }
@@ -211,7 +216,10 @@ export class ConversationManager {
           parentConversationId = branchData.conversation_id;
           parentMessageId = branchData.message_id;
         } catch (error) {
-          logger.error("Failed to parse branch_of metadata:", error);
+          logger.error("Failed to parse branch_of metadata:", {
+            error_message:
+              error instanceof Error ? error.message : "Unknown error",
+          });
         }
       }
 

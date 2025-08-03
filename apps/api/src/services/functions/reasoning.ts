@@ -134,7 +134,9 @@ ${evaluation ? `**Evaluation**: ${evaluation}\n\n` : ""}**Next action**: ${
         },
       };
     } catch (error) {
-      logger.error("Error in reasoning step:", error);
+      logger.error("Error in reasoning step:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
 
       return {
         status: "success",

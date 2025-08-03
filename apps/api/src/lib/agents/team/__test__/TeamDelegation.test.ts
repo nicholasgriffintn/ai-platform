@@ -86,7 +86,7 @@ describe("TeamDelegation", () => {
         env: mockEnv,
         user: mockUser,
         messages,
-        model: "test-model",
+        model: "mistral-medium-latest",
         system_prompt: "Target prompt",
         temperature: 0.8,
         stream: false,

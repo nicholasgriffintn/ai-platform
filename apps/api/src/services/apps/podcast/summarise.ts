@@ -4,7 +4,7 @@ import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger();
+const logger = getLogger({ prefix: "SERVICES:APPS:PODCAST:SUMMARISE" });
 
 function generateFullTranscription(
   transcription: {
@@ -190,7 +190,9 @@ export const handlePodcastSummarise = async (
       data: appData,
     };
   } catch (error) {
-    console.error("Failed to summarize podcast:", error);
+    logger.error("Failed to summarize podcast:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
     throw new AssistantError("Failed to summarize podcast");
   }
 };

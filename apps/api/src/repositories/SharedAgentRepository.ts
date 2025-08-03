@@ -5,7 +5,10 @@ import type {
   SharedAgent,
 } from "~/lib/database/schema";
 import { generateId } from "~/utils/id";
+import { getLogger } from "~/utils/logger";
 import { BaseRepository } from "./BaseRepository";
+
+const logger = getLogger({ prefix: "REPOSITORIES:SHARED_AGENT" });
 
 export interface SharedAgentWithAuthor extends SharedAgent {
   author_name: string;
@@ -579,7 +582,7 @@ export class SharedAgentRepository extends BaseRepository {
           tagCounts[tag] = (tagCounts[tag] || 0) + 1;
         }
       } catch (e) {
-        console.error("Error parsing tags:", e, result.tags);
+        logger.error("Error parsing tags:", e, result.tags);
       }
     }
 

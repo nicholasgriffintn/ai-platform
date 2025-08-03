@@ -194,7 +194,18 @@ describe("notes service", () => {
         "notes",
         "test-note-id-123",
         "note",
-        { title: "New Note", content: "New content", metadata: undefined },
+        {
+          title: "New Note",
+          content: "New content",
+          metadata: {
+            contentType: "text",
+            keyTopics: [],
+            readingTime: 1,
+            summary: "New content",
+            tags: [],
+            wordCount: 2,
+          },
+        },
       );
     });
 

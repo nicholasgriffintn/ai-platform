@@ -79,7 +79,9 @@ app.get(
       if (error instanceof AssistantError) {
         throw error;
       }
-      routeLogger.error("Error listing notes:", error);
+      routeLogger.error("Error listing notes:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw new AssistantError("Failed to list notes", ErrorType.UNKNOWN_ERROR);
     }
   },
@@ -144,7 +146,9 @@ app.get(
       if (error instanceof AssistantError) {
         throw error;
       }
-      routeLogger.error("Error fetching note:", error);
+      routeLogger.error("Error fetching note:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw new AssistantError("Failed to fetch note", ErrorType.UNKNOWN_ERROR);
     }
   },
@@ -223,7 +227,9 @@ app.post(
       if (error instanceof AssistantError) {
         throw error;
       }
-      routeLogger.error("Error creating note:", error);
+      routeLogger.error("Error creating note:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw new AssistantError(
         "Failed to create note",
         ErrorType.UNKNOWN_ERROR,
@@ -320,7 +326,9 @@ app.put(
       if (error instanceof AssistantError) {
         throw error;
       }
-      routeLogger.error("Error updating note:", error);
+      routeLogger.error("Error updating note:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw new AssistantError(
         "Failed to update note",
         ErrorType.UNKNOWN_ERROR,
@@ -384,7 +392,9 @@ app.delete(
       if (error instanceof AssistantError) {
         throw error;
       }
-      routeLogger.error("Error deleting note:", error);
+      routeLogger.error("Error deleting note:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw new AssistantError(
         "Failed to delete note",
         ErrorType.UNKNOWN_ERROR,
@@ -474,7 +484,9 @@ app.post(
       return c.json(result);
     } catch (error) {
       if (error instanceof AssistantError) throw error;
-      routeLogger.error("Error formatting note:", error);
+      routeLogger.error("Error formatting note:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw new AssistantError(
         "Failed to format note",
         ErrorType.UNKNOWN_ERROR,

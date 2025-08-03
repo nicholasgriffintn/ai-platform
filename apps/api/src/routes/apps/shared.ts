@@ -119,7 +119,9 @@ app.post(
         share_id: shareId,
       });
     } catch (error) {
-      routeLogger.error("Error sharing item:", error);
+      routeLogger.error("Error sharing item:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
 
       if (error instanceof AssistantError) {
         return c.json({
@@ -224,7 +226,9 @@ app.get(
         },
       });
     } catch (error) {
-      routeLogger.error("Error retrieving shared item:", error);
+      routeLogger.error("Error retrieving shared item:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
 
       if (error instanceof AssistantError) {
         return c.json({

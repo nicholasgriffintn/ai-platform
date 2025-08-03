@@ -254,7 +254,10 @@ export function createMultiModelStream(
           secondaryIndex++;
         }
       } catch (error) {
-        logger.error("Error processing secondary streams:", error);
+        logger.error("Error processing secondary streams:", {
+          error_message:
+            error instanceof Error ? error.message : "Unknown error",
+        });
 
         const errorMessage =
           "\n\n***\n### Error processing additional model responses\n\nThere was an error processing responses from secondary models. Only the primary model response is available.\n\n";
@@ -353,7 +356,10 @@ export function createMultiModelStream(
         controller.enqueue(encoder.encode("data: [DONE]\n\n"));
         controller.close();
       } catch (error) {
-        logger.error("Error during finalization/storage:", error);
+        logger.error("Error during finalization/storage:", {
+          error_message:
+            error instanceof Error ? error.message : "Unknown error",
+        });
         controller.error(error);
       }
     },

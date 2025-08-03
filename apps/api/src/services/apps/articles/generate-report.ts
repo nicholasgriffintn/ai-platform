@@ -8,7 +8,7 @@ import { extractQuotes } from "~/utils/extract";
 import { getLogger } from "~/utils/logger";
 import { verifyQuotes } from "~/utils/verify";
 
-const logger = getLogger();
+const logger = getLogger({ prefix: "SERVICES:APPS:ARTICLES:GENERATE_REPORT" });
 
 export interface Params {
   itemId: string;
@@ -143,7 +143,9 @@ export async function generateArticlesReport({
       itemId: args.itemId,
     };
   } catch (error) {
-    console.error("Error generating article report:", error);
+    logger.error("Error generating article report:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
     if (error instanceof AssistantError) {
       throw error;
     }

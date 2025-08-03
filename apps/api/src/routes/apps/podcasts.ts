@@ -95,7 +95,9 @@ app.get(
         throw error;
       }
 
-      routeLogger.error("Error fetching podcasts:", error);
+      routeLogger.error("Error fetching podcasts:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw new AssistantError(
         "Failed to fetch podcasts",
         ErrorType.UNKNOWN_ERROR,
@@ -163,7 +165,9 @@ app.get(
         throw error;
       }
 
-      routeLogger.error("Error fetching podcast:", error);
+      routeLogger.error("Error fetching podcast:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw new AssistantError(
         "Failed to fetch podcast",
         ErrorType.UNKNOWN_ERROR,
@@ -254,7 +258,9 @@ app.post(
       if (error instanceof AssistantError) {
         throw error;
       }
-      routeLogger.error("Error uploading podcast:", error);
+      routeLogger.error("Error uploading podcast:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw new AssistantError(
         "Failed to upload podcast",
         ErrorType.UNKNOWN_ERROR,

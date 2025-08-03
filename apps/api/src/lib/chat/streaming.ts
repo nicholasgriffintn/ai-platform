@@ -222,7 +222,10 @@ export async function createStreamWithPostProcessing(
             state: StreamState.THINKING,
           });
         } catch (error) {
-          logger.error("Failed in stream start:", error);
+          logger.error("Failed in stream start:", {
+            error_message:
+              error instanceof Error ? error.message : "Unknown error",
+          });
         }
       },
       async transform(chunk, controller) {
@@ -230,7 +233,10 @@ export async function createStreamWithPostProcessing(
         try {
           text = new TextDecoder().decode(chunk);
         } catch (error) {
-          logger.error("Failed to decode chunk:", error);
+          logger.error("Failed to decode chunk:", {
+            error_message:
+              error instanceof Error ? error.message : "Unknown error",
+          });
           return;
         }
 
@@ -772,7 +778,10 @@ export async function createStreamWithPostProcessing(
                 });
               }
             } catch (error) {
-              logger.error("Failed to get updated usage limits:", error);
+              logger.error("Failed to get updated usage limits:", {
+                error_message:
+                  error instanceof Error ? error.message : "Unknown error",
+              });
             }
 
             if (
@@ -819,10 +828,10 @@ export async function createStreamWithPostProcessing(
                     controller.enqueue(value);
                   }
                 } catch (error: any) {
-                  console.log("Next stream error:", error);
-                  console.log("Error type:", typeof error);
-                  console.log("Error message:", error?.message);
-                  logger.error("Error in next stream:", error);
+                  console.log("Next stream error:", {
+                    error_message:
+                      error instanceof Error ? error.message : "Unknown error",
+                  });
                 }
               }
             }
@@ -833,7 +842,10 @@ export async function createStreamWithPostProcessing(
 
             emitDoneEvent(controller);
           } catch (error) {
-            logger.error("Error in stream post-processing:", error);
+            logger.error("Error in stream post-processing:", {
+              error_message:
+                error instanceof Error ? error.message : "Unknown error",
+            });
           }
         }
       },

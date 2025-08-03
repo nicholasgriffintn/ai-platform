@@ -442,7 +442,7 @@ describe("ChatOrchestrator", () => {
           new AssistantError(
             "Rate limit exceeded. Please try again later.",
             ErrorType.RATE_LIMIT_ERROR,
-            rateLimitError,
+            429,
           ),
         );
       });
@@ -456,7 +456,7 @@ describe("ChatOrchestrator", () => {
           new AssistantError(
             "Authentication error with AI provider",
             ErrorType.AUTHENTICATION_ERROR,
-            authError,
+            401,
           ),
         );
       });
@@ -467,11 +467,7 @@ describe("ChatOrchestrator", () => {
         mockPreparer.prepare.mockRejectedValue(providerError);
 
         await expect(orchestrator.process(mockOptions)).rejects.toThrow(
-          new AssistantError(
-            "Model error",
-            ErrorType.PROVIDER_ERROR,
-            providerError,
-          ),
+          new AssistantError("Model error", ErrorType.PROVIDER_ERROR, 500),
         );
       });
 

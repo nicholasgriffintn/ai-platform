@@ -6,7 +6,7 @@ import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger();
+const logger = getLogger({ prefix: "SERVICES:APPS:ARTICLES:GET_DETAILS" });
 
 export interface GetDetailsSuccessResponse {
   status: "success";
@@ -69,7 +69,9 @@ export async function getArticleDetails({
       article: parsedArticle,
     };
   } catch (error) {
-    console.error("Error fetching article details:", error);
+    logger.error("Error fetching article details:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
     if (error instanceof AssistantError) {
       throw error;
     }

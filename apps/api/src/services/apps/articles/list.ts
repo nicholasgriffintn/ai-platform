@@ -4,6 +4,9 @@ import {
 } from "~/repositories/AppDataRepository";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "SERVICES:APPS:ARTICLES:LIST" });
 
 export interface ArticleSessionSummary {
   item_id: string;
@@ -89,7 +92,7 @@ export async function listArticles({
           try {
             reportData = JSON.parse(reportItem.data);
           } catch (e) {
-            console.error(
+            logger.error(
               `Failed to parse report data for itemId ${group.itemId}`,
               e,
             );
@@ -99,7 +102,7 @@ export async function listArticles({
           sourceArticleCount = reportData.sourceItemIds?.length || 0;
           reportId = reportItem.id;
         } catch (e) {
-          console.error(
+          logger.error(
             `Failed to parse report data for itemId ${group.itemId}`,
             e,
           );
@@ -126,7 +129,9 @@ export async function listArticles({
       sessions: sessions,
     };
   } catch (error) {
-    console.error("Error listing article sessions:", error);
+    logger.error("Error listing article sessions:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
     if (error instanceof AssistantError) {
       throw error;
     }

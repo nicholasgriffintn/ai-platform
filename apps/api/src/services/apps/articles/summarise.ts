@@ -6,7 +6,10 @@ import { AppDataRepository } from "~/repositories/AppDataRepository";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
+import { getLogger } from "~/utils/logger";
 import { verifyQuotes } from "~/utils/verify";
+
+const logger = getLogger({ prefix: "SERVICES:APPS:ARTICLES:SUMMARISE" });
 
 export interface Params {
   article: string;
@@ -116,7 +119,9 @@ export async function summariseArticle({
       },
     };
   } catch (error) {
-    console.error("Error during article summary or saving:", error);
+    logger.error("Error during article summary or saving:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
     if (error instanceof AssistantError) {
       throw error;
     }

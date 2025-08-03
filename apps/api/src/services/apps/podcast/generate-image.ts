@@ -6,7 +6,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger();
+const logger = getLogger({ prefix: "SERVICES:APPS:PODCAST:GENERATE_IMAGE" });
 
 export interface IPodcastGenerateImageBody {
   podcastId: string;
@@ -160,7 +160,9 @@ export const handlePodcastGenerateImage = async (
       data: appData,
     };
   } catch (error) {
-    console.error("Failed to generate podcast image:", error);
+    logger.error("Failed to generate podcast image:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
     throw new AssistantError("Failed to generate podcast image");
   }
 };

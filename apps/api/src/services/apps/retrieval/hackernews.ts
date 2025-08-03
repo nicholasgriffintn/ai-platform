@@ -2,6 +2,9 @@ import { getAuxiliaryModelForRetrieval } from "~/lib/models";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "SERVICES:APPS:RETRIEVAL:HACKERNEWS" });
 
 export async function retrieveHackerNewsTopStories({
   count,
@@ -108,7 +111,9 @@ export async function retrieveHackerNewsTopStories({
 
     return stories;
   } catch (error) {
-    console.error("Error retrieving HackerNews top stories", error);
+    logger.error("Error retrieving HackerNews top stories", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
     return [];
   }
 }
@@ -190,7 +195,9 @@ export async function analyseHackerNewsStories({
 
     return response;
   } catch (error) {
-    console.error("Error analysing HackerNews stories", error);
+    logger.error("Error analysing HackerNews stories", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
     return "";
   }
 }

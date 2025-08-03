@@ -97,7 +97,9 @@ export const handleFunctions = async ({
     try {
       await conversationManager.checkUsageLimits(foundFunction.type);
     } catch (error) {
-      logger.error("Failed to check usage limits:", error);
+      logger.error("Failed to check usage limits:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw error;
     }
   }
@@ -118,7 +120,9 @@ export const handleFunctions = async ({
         foundFunction.costPerCall,
       );
     } catch (error) {
-      logger.error("Failed to track function usage:", error);
+      logger.error("Failed to track function usage:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   } else {
     logger.info("No conversation manager provided, skipping usage tracking");

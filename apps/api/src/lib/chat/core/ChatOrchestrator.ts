@@ -62,8 +62,9 @@ export class ChatOrchestrator {
 
       const errorType = this.determineErrorType(error);
       const errorMessage = this.getErrorMessage(error, errorType);
+      const statusCode = error.status || error.statusCode || 500;
 
-      throw new AssistantError(errorMessage, errorType, error);
+      throw new AssistantError(errorMessage, errorType, statusCode);
     }
   }
 

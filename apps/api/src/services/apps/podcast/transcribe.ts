@@ -6,7 +6,7 @@ import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger();
+const logger = getLogger({ prefix: "SERVICES:APPS:PODCAST:TRANSCRIBE" });
 
 const REPLICATE_MODEL_VERSION =
   "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f";
@@ -160,7 +160,9 @@ export const handlePodcastTranscribe = async (
       data: appData,
     };
   } catch (error) {
-    console.error("Failed to transcribe podcast:", error);
+    logger.error("Failed to transcribe podcast:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
     throw new AssistantError("Failed to transcribe podcast");
   }
 };

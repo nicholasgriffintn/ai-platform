@@ -1,3 +1,7 @@
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "CAPTCHA" });
+
 export interface CaptchaVerificationResponse {
   success: boolean;
   challenge_ts?: string;
@@ -41,7 +45,9 @@ export async function verifyCaptchaToken(
 
     return { verified: true };
   } catch (error) {
-    console.error("Error verifying captcha:", error);
+    logger.error("Error verifying captcha:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
     return {
       verified: false,
       error: error instanceof Error ? error.message : "Unknown error",

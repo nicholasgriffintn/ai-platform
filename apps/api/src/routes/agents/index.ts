@@ -544,14 +544,14 @@ app.post(
               const { id } = await mcp.connect(cfg.url);
 
               if (!id) {
-                console.error("No ID returned from MCP connect");
+                logger.error("No ID returned from MCP connect");
                 continue;
               }
 
               const connection = mcp.mcpConnections[id];
 
               if (!connection?.connectionState) {
-                console.error("No connection found for ID:", id);
+                logger.error("No connection found for ID:", id);
                 continue;
               }
 
@@ -581,12 +581,16 @@ app.post(
                 });
               }
             } catch (e) {
-              console.error("Error connecting to MCP", e);
+              logger.error("Error connecting to MCP", {
+                error_message: e instanceof Error ? e.message : "Unknown error",
+              });
             }
           }
         }
       } catch (e) {
-        console.error("Error getting MCP functions", e);
+        logger.error("Error getting MCP functions", {
+          error_message: e instanceof Error ? e.message : "Unknown error",
+        });
       }
     }
 
@@ -660,7 +664,9 @@ app.post(
             .join("\n")}
         `;
       } catch (e) {
-        console.error("Error parsing few-shot examples", e);
+        logger.error("Error parsing few-shot examples", {
+          error_message: e instanceof Error ? e.message : "Unknown error",
+        });
       }
     }
 

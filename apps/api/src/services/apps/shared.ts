@@ -2,6 +2,9 @@ import { AppDataRepository } from "~/repositories/AppDataRepository";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "SERVICES:APPS:SHARED" });
 
 export interface ShareItemParams {
   userId: number;
@@ -83,7 +86,9 @@ export async function getSharedItem({
   try {
     parsedData = JSON.parse(appData.data);
   } catch (error) {
-    console.error("Error parsing app data:", error);
+    logger.error("Error parsing app data:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 
   return {

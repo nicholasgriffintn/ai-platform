@@ -100,7 +100,9 @@ export const handleMCPTool = async (
       conversationManager,
     );
   } catch (error) {
-    logger.error("Error in MCP tool execution:", error);
+    logger.error("Error in MCP tool execution:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
     throw new AssistantError(
       `MCP tool execution failed: ${(error as Error).message}`,
       ErrorType.EXTERNAL_API_ERROR,
@@ -185,7 +187,9 @@ async function executeTool(
       },
     };
   } catch (error) {
-    logger.error(`Error calling tool ${baseFunctionName}:`, error);
+    logger.error(`Error calling tool ${baseFunctionName}:`, {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
     throw error;
   }
 }

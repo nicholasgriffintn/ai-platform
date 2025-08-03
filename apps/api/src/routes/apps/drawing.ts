@@ -86,7 +86,9 @@ app.get(
       if (error instanceof AssistantError) {
         throw error;
       }
-      routeLogger.error("Error listing drawings:", error);
+      routeLogger.error("Error listing drawings:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw new AssistantError(
         "Failed to list drawings",
         ErrorType.UNKNOWN_ERROR,
@@ -158,7 +160,9 @@ app.get(
       if (error instanceof AssistantError) {
         throw error;
       }
-      routeLogger.error("Error fetching drawing:", error);
+      routeLogger.error("Error fetching drawing:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw new AssistantError(
         "Failed to fetch drawing",
         ErrorType.UNKNOWN_ERROR,
@@ -231,7 +235,9 @@ app.post(
       if (error instanceof AssistantError) {
         throw error;
       }
-      routeLogger.error("Error generating image from drawing:", error);
+      routeLogger.error("Error generating image from drawing:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw new AssistantError(
         "Failed to generate image",
         ErrorType.UNKNOWN_ERROR,
@@ -300,7 +306,9 @@ app.post(
       if (error instanceof AssistantError) {
         throw error;
       }
-      routeLogger.error("Error guessing drawing from image:", error);
+      routeLogger.error("Error guessing drawing from image:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
       throw new AssistantError(
         "Failed to guess drawing",
         ErrorType.UNKNOWN_ERROR,
