@@ -82,9 +82,9 @@ export const sharedAgentFiltersSchema = z.object({
 });
 
 export const featuredAgentsSchema = z.object({
-  limit: z
-    .int()
-    .positive()
+  limit: z.coerce
+    .number()
+    .min(1)
     .max(50)
     .prefault(10)
     .optional()
@@ -92,9 +92,9 @@ export const featuredAgentsSchema = z.object({
 });
 
 export const agentRatingsSchema = z.object({
-  limit: z
-    .int()
-    .positive()
+  limit: z.coerce
+    .number()
+    .min(1)
     .max(50)
     .prefault(10)
     .optional()
