@@ -1,4 +1,4 @@
-import z from "zod";
+import z from "zod/v4";
 
 export const transcribeQuerySchema = z.object({
   provider: z.enum(["workers", "mistral"]).optional(),

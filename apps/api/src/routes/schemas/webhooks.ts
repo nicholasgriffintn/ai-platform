@@ -1,4 +1,4 @@
-import z from "zod";
+import z from "zod/v4";
 
 export const replicateWebhookQuerySchema = z.object({
   completion_id: z.string().min(1, "completion_id is required"),

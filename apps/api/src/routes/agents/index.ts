@@ -2,7 +2,7 @@ import { MCPClientManager } from "agents/mcp/client";
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
-import type z from "zod";
+import type z from "zod/v4";
 
 import { formatToolCalls } from "~/lib/chat/tools";
 import { getModelConfig } from "~/lib/models";

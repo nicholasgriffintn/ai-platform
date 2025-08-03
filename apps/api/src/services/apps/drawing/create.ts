@@ -94,6 +94,7 @@ export async function generateImageFromDrawing({
     },
   );
 
+  // @ts-expect-error
   const paintingArrayBuffer = await new Response(painting).arrayBuffer();
   const paintingLength = paintingArrayBuffer.byteLength;
 

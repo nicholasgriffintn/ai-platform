@@ -1,7 +1,7 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -194,7 +194,7 @@ dynamicApps.post(
         description: "App execution result",
         content: {
           "application/json": {
-            schema: resolver(z.record(z.any())),
+            schema: resolver(z.string()),
           },
         },
       },

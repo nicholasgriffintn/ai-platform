@@ -1,4 +1,4 @@
-import z from "zod";
+import z from "zod/v4";
 
 import { messageSchema } from "./shared";
 
@@ -75,7 +75,7 @@ export const createChatCompletionsJsonSchema = z.object({
                   text: z.string().optional(),
                   document_url: z
                     .object({
-                      url: z.string().url().meta({
+                      url: z.url().meta({
                         description: "The URL of the document.",
                       }),
                       name: z.string().optional().meta({
@@ -92,14 +92,14 @@ export const createChatCompletionsJsonSchema = z.object({
                     .optional(),
                   image_url: z
                     .object({
-                      url: z.string().url().meta({
+                      url: z.url().meta({
                         description:
                           "Either a URL for the image or the base64 encoded data for the image.",
                       }),
                       detail: z
                         .enum(["auto", "low", "high"])
                         .optional()
-                        .default("auto")
+                        .prefault("auto")
                         .meta({
                           description: "The detail level of the image.",
                         }),
@@ -124,8 +124,8 @@ export const createChatCompletionsJsonSchema = z.object({
                     return true;
                   },
                   {
-                    message: "Field is required based on the specified type",
                     path: ["type"],
+                    error: "Field is required based on the specified type",
                   },
                 ),
             ),
@@ -170,11 +170,11 @@ export const createChatCompletionsJsonSchema = z.object({
     .meta({
       description: "A list of messages comprising the conversation so far.",
     }),
-  temperature: z.number().min(0).max(2).default(0.8).optional().meta({
+  temperature: z.number().min(0).max(2).prefault(0.8).optional().meta({
     description:
       "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.",
   }),
-  top_p: z.number().min(0).max(1).default(0.9).optional().meta({
+  top_p: z.number().min(0).max(1).prefault(0.9).optional().meta({
     description:
       "An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered. Don't specify both top_p and temperature.",
   }),
@@ -182,7 +182,7 @@ export const createChatCompletionsJsonSchema = z.object({
     description:
       "The number of top most likely tokens to consider for the model to sample from.",
   }),
-  n: z.number().min(1).max(4).default(1).optional().meta({
+  n: z.number().min(1).max(4).prefault(1).optional().meta({
     description:
       "How many chat completion choices to generate for each input message. Note that you will be charged based on the number of generated tokens across all of the choices. Keep n as 1 to minimize costs.",
   }),
@@ -197,19 +197,19 @@ export const createChatCompletionsJsonSchema = z.object({
       description:
         "Up to 4 sequences where the model will stop generating further tokens. The returned text will not contain these sequences.",
     }),
-  max_tokens: z.number().default(1024).optional().meta({
+  max_tokens: z.number().prefault(1024).optional().meta({
     description:
       "An upper bound for the number of tokens that can be generated for a completion, including visible output tokens and reasoning tokens.",
   }),
-  presence_penalty: z.number().min(-2).max(2).default(0).optional().meta({
+  presence_penalty: z.number().min(-2).max(2).prefault(0).optional().meta({
     description:
       "Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.",
   }),
-  frequency_penalty: z.number().min(-2).max(2).default(0).optional().meta({
+  frequency_penalty: z.number().min(-2).max(2).prefault(0).optional().meta({
     description:
       "The frequency penalty for the response. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.",
   }),
-  logit_bias: z.record(z.number()).optional().meta({
+  logit_bias: z.record(z.string(), z.number()).optional().meta({
     description:
       "Modify the likelihood of specified tokens appearing in the response. The exact effect will vary per model, but values between -1 and 1 should decrease or increase likelihood of selection; values like -100 or 100 should result in a ban or exclusive selection of the relevant token.",
   }),
@@ -221,7 +221,7 @@ export const createChatCompletionsJsonSchema = z.object({
     description:
       "A random seed for the completion. If provided, the seed will be included in the completion log.",
   }),
-  metadata: z.record(z.string()).optional().meta({
+  metadata: z.record(z.string(), z.string()).optional().meta({
     description:
       "Set of key-value pairs that can be attached to a chat completion for tracking or display purposes. Both keys and values must be strings.",
   }),
@@ -235,7 +235,7 @@ export const createChatCompletionsJsonSchema = z.object({
         function: z.object({
           name: z.string(),
           description: z.string().optional(),
-          parameters: z.record(z.any()),
+          parameters: z.record(z.string(), z.any()),
         }),
       }),
     )
@@ -264,13 +264,13 @@ export const createChatCompletionsJsonSchema = z.object({
   }),
   reasoning_effort: z
     .enum(["low", "medium", "high"])
-    .default("medium")
+    .prefault("medium")
     .optional()
     .meta({
       description:
         "Constrains effort on reasoning for reasoning models. Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response. Only supported in certain reasoning models.",
     }),
-  store: z.boolean().default(false).meta({
+  store: z.boolean().prefault(false).meta({
     description: "Whether to store the output of the completion.",
   }),
   response_format: z
@@ -279,12 +279,12 @@ export const createChatCompletionsJsonSchema = z.object({
       json_schema: z
         .object({
           name: z.string(),
-          strict: z.boolean().default(true),
+          strict: z.boolean().prefault(true),
           schema: z.object({
             type: z.enum(["object"]),
-            properties: z.record(z.any()),
+            properties: z.record(z.string(), z.any()),
             required: z.array(z.string()),
-            additionalProperties: z.boolean().default(false),
+            additionalProperties: z.boolean().prefault(false),
           }),
         })
         .optional(),
@@ -332,7 +332,7 @@ export const createChatCompletionsJsonSchema = z.object({
     .meta({
       description: "The options for RAG.",
     }),
-  max_steps: z.number().int().min(1).optional().meta({
+  max_steps: z.int().min(1).optional().meta({
     description:
       "Maximum number of sequential LLM calls (steps), e.g. when you use tool calls.",
   }),
@@ -374,7 +374,7 @@ export const updateChatCompletionJsonSchema = z
     archived: z.boolean().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
-    message: "At least one field must be provided for update",
+    error: "At least one field must be provided for update",
   });
 
 export const deleteChatCompletionParamsSchema = z.object({
@@ -427,7 +427,7 @@ export const getChatCompletionResponseSchema = z.object({
   is_archived: z.boolean(),
   user_id: z.string().nullable(),
   share_id: z.string().nullable(),
-  settings: z.record(z.any()).optional(),
+  settings: z.record(z.string(), z.any()).optional(),
 });
 
 export const getChatCompletionMessagesResponseSchema = z.object({

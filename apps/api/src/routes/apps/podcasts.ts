@@ -1,7 +1,7 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handlePodcastGenerateImage } from "~/services/apps/podcast/generate-image";

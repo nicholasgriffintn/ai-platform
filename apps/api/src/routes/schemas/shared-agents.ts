@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const shareAgentSchema = z.object({
   agent_id: z.string().meta({ description: "ID of the agent to share" }),
@@ -8,7 +8,6 @@ export const shareAgentSchema = z.object({
     .optional()
     .meta({ description: "Public description for the shared agent" }),
   avatar_url: z
-    .string()
     .url()
     .optional()
     .meta({ description: "Avatar URL for the shared agent" }),
@@ -32,7 +31,6 @@ export const updateSharedAgentSchema = z.object({
     .optional()
     .meta({ description: "Updated description for the shared agent" }),
   avatar_url: z
-    .string()
     .url()
     .optional()
     .meta({ description: "Updated avatar URL for the shared agent" }),
@@ -48,7 +46,6 @@ export const updateSharedAgentSchema = z.object({
 
 export const rateAgentSchema = z.object({
   rating: z
-    .number()
     .int()
     .min(1)
     .max(5)
@@ -65,45 +62,41 @@ export const sharedAgentFiltersSchema = z.object({
     .optional()
     .meta({ description: "Show only featured agents" }),
   limit: z
-    .number()
     .int()
     .positive()
     .max(100)
-    .default(20)
+    .prefault(20)
     .optional()
     .meta({ description: "Number of results to return" }),
   offset: z
-    .number()
     .int()
     .min(0)
-    .default(0)
+    .prefault(0)
     .optional()
     .meta({ description: "Number of results to skip" }),
   sort_by: z
     .enum(["recent", "popular", "rating"])
-    .default("recent")
+    .prefault("recent")
     .optional()
     .meta({ description: "Sort order" }),
 });
 
 export const featuredAgentsSchema = z.object({
-  limit: z.coerce
-    .number()
+  limit: z
     .int()
     .positive()
     .max(50)
-    .default(10)
+    .prefault(10)
     .optional()
     .meta({ description: "Number of featured agents to return" }),
 });
 
 export const agentRatingsSchema = z.object({
   limit: z
-    .number()
     .int()
     .positive()
     .max(50)
-    .default(10)
+    .prefault(10)
     .optional()
     .meta({ description: "Number of ratings to return" }),
 });

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const githubLoginSchema = z.object({});
 
@@ -9,8 +9,8 @@ export const githubCallbackSchema = z.object({
 export const userSchema = z.object({
   id: z.number(),
   name: z.string().nullable(),
-  avatar_url: z.string().url().nullable(),
-  email: z.string().email(),
+  avatar_url: z.url().nullable(),
+  email: z.email(),
   github_username: z.string().nullable(),
   company: z.string().nullable(),
   site: z.string().nullable(),

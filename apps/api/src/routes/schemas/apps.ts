@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const insertEmbeddingSchema = z.object({
   type: z.string(),
   content: z.string(),
   id: z.string().optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
   title: z.string().optional(),
   rag_options: z
     .object({
@@ -82,7 +82,7 @@ export const podcastTranscribeSchema = z.object({
 
 export const podcastSummarizeSchema = z.object({
   podcastId: z.string(),
-  speakers: z.record(z.string()),
+  speakers: z.record(z.string(), z.string()),
 });
 
 export const podcastGenerateImageSchema = z.object({
@@ -105,7 +105,7 @@ export const generateArticlesReportSchema = z.object({
 });
 
 export const contentExtractSchema = z.object({
-  urls: z.array(z.string().url()),
+  urls: z.array(z.url()),
   extract_depth: z.enum(["basic", "advanced"]).optional(),
   include_images: z.boolean().optional(),
   should_vectorize: z.boolean().optional(),
@@ -199,7 +199,7 @@ export const tutorSchema = z.object({
   topic: z.string(),
   level: z
     .enum(["beginner", "intermediate", "advanced"])
-    .default("advanced")
+    .prefault("advanced")
     .optional(),
   options: z
     .object({
@@ -242,7 +242,7 @@ export const appInfoArraySchema = z.array(appInfoSchema);
 
 export const dynamicAppIdParamSchema = z.object({ id: z.string() });
 
-export const dynamicAppExecuteRequestSchema = z.record(z.any());
+export const dynamicAppExecuteRequestSchema = z.record(z.string(), z.any());
 
 export const weatherResponseSchema = z.object({
   response: z.object({
@@ -330,7 +330,7 @@ export const noteSchema = z.object({
 export const noteCreateSchema = z.object({
   title: z.string(),
   content: z.string(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 export const noteUpdateSchema = noteCreateSchema;

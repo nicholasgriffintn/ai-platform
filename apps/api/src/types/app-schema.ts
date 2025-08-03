@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { type ResponseDisplay, ResponseDisplayType } from "./functions";
 
@@ -59,7 +59,7 @@ export interface AppSchema {
 
 export const formFieldSchema = z.object({
   id: z.string(),
-  type: z.nativeEnum(FieldType),
+  type: z.enum(FieldType),
   label: z.string(),
   description: z.string().optional(),
   placeholder: z.string().optional(),
@@ -102,7 +102,7 @@ export const responseFieldSchema = z.object({
 });
 
 export const responseSchema = z.object({
-  type: z.nativeEnum(ResponseDisplayType),
+  type: z.enum(ResponseDisplayType),
   display: z.object({
     fields: z.array(responseFieldSchema).optional(),
     template: z.string().optional(),

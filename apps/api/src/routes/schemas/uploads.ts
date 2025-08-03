@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const uploadRequestSchema = z.object({
   file: z.any().refine((file) => file && file instanceof File, {
-    message: "File is required",
+    error: "File is required",
   }),
   file_type: z.enum(["image", "document"]),
 });

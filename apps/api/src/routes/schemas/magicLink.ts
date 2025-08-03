@@ -1,4 +1,4 @@
-import z from "zod";
+import z from "zod/v4";
 
 export const magicLinkVerifySchema = z.object({
   token: z.string(),
@@ -6,5 +6,5 @@ export const magicLinkVerifySchema = z.object({
 });
 
 export const magicLinkRequestSchema = z.object({
-  email: z.string().email("Invalid email format"),
+  email: z.email(),
 });

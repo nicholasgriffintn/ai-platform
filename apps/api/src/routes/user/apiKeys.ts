@@ -95,7 +95,7 @@ app.post(
     const parsed = createApiKeySchema.safeParse(value);
     if (!parsed.success) {
       throw new AssistantError(
-        `Invalid input: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
+        `Invalid input: ${parsed.error.message}`,
         ErrorType.PARAMS_ERROR,
         400,
       );

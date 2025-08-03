@@ -1,13 +1,22 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const messageSchema = z.object({
   role: z.enum(["user", "assistant", "tool"]),
   name: z.string().optional(),
-  tool_calls: z.array(z.record(z.any())).optional(),
+  tool_calls: z
+    .array(
+      z.object({
+        id: z.string(),
+        function: z.object({
+          name: z.string(),
+        }),
+      }),
+    )
+    .optional(),
   parts: z.array(z.object({ text: z.string() })).optional(),
   content: z.string(),
   status: z.string().optional(),
-  data: z.record(z.any()).optional(),
+  data: z.record(z.string(), z.any()).optional(),
   model: z.string().optional(),
   log_id: z.string().optional(),
   citations: z.array(z.string()).optional(),

@@ -2,7 +2,7 @@ import { Octokit } from "@octokit/rest";
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { Database } from "~/lib/database";
 import { requireAuth } from "~/middleware/auth";
@@ -230,7 +230,7 @@ app.get(
             schema: resolver(
               z.object({
                 user: userSchema.nullable(),
-                userSettings: z.record(z.any()).optional(),
+                userSettings: z.record(z.string(), z.any()).optional(),
               }),
             ),
           },

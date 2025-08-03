@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const mcpServerSchema = z.object({
-  url: z.string().url().meta({
+  url: z.url().meta({
     description: "The endpoint URL of the MCP server",
   }),
-  type: z.enum(["sse", "stdio"]).default("sse").optional().meta({
+  type: z.enum(["sse", "stdio"]).prefault("sse").optional().meta({
     description: "Transport type for MCP connection",
   }),
   command: z.string().optional().meta({
@@ -35,7 +35,6 @@ export const createAgentSchema = z.object({
     .optional()
     .meta({ description: "Optional agent description" }),
   avatar_url: z
-    .string()
     .url()
     .nullable()
     .optional()
@@ -55,7 +54,6 @@ export const createAgentSchema = z.object({
     .optional()
     .meta({ description: "Temperature setting for the model" }),
   max_steps: z
-    .number()
     .int()
     .positive()
     .optional()
@@ -79,7 +77,7 @@ export const createAgentSchema = z.object({
   is_team_agent: z
     .boolean()
     .optional()
-    .default(false)
+    .prefault(false)
     .meta({ description: "Whether this is a team agent" }),
 });
 
@@ -91,7 +89,6 @@ export const updateAgentSchema = z
       .optional()
       .meta({ description: "New agent description" }),
     avatar_url: z
-      .string()
       .url()
       .optional()
       .meta({ description: "New avatar URL" })
@@ -111,7 +108,6 @@ export const updateAgentSchema = z
       .optional()
       .meta({ description: "Temperature setting for the model" }),
     max_steps: z
-      .number()
       .int()
       .positive()
       .optional()
@@ -138,5 +134,5 @@ export const updateAgentSchema = z
       .meta({ description: "Whether this is a team agent" }),
   })
   .refine((data) => Object.keys(data).length > 0, {
-    message: "At least one field must be provided",
+    error: "At least one field must be provided",
   });
