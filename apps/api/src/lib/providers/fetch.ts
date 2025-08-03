@@ -86,15 +86,14 @@ export async function fetchAIResponse<
   }
 
   if (!response.ok) {
-    let responseJson: any;
+    let responseText: string;
     try {
-      responseJson = await response.json();
-    } catch (jsonError) {
-      const responseText = await response.text();
+      responseText = await response.text();
+    } catch (textError) {
       logger.error(
-        `Failed to parse response ${provider} from ${endpointOrUrl}. Response not valid JSON:`,
+        `Failed to read response body for ${provider} from ${endpointOrUrl}:`,
         {
-          responseText,
+          error: textError,
           status: response.status,
           statusText: response.statusText,
         },
@@ -104,10 +103,25 @@ export async function fetchAIResponse<
         ErrorType.PROVIDER_ERROR,
       );
     }
-    logger.error(
-      `Failed to get response for ${provider} from ${endpointOrUrl}`,
-      responseJson,
-    );
+
+    let responseJson: any;
+    try {
+      responseJson = JSON.parse(responseText);
+      logger.error(
+        `Failed to get response for ${provider} from ${endpointOrUrl}`,
+        responseJson,
+      );
+    } catch (jsonError) {
+      logger.error(
+        `Failed to parse response ${provider} from ${endpointOrUrl}. Response not valid JSON:`,
+        {
+          responseText,
+          status: response.status,
+          statusText: response.statusText,
+        },
+      );
+    }
+
     throw new AssistantError(
       `Failed to get response for ${provider} from ${endpointOrUrl}`,
       ErrorType.PROVIDER_ERROR,
