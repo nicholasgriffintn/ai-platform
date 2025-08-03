@@ -279,6 +279,90 @@ describe("ChatOrchestrator", () => {
         }
       });
 
+      it("should preserve delegation context when handling tool calls", async () => {
+        const mockResponse = {
+          response: "Test response",
+          tool_calls: [
+            { id: "tool-1", function: { name: "delegate_to_team_member" } },
+          ],
+          usage: { total_tokens: 100 },
+        };
+
+        const mockToolResults = [
+          {
+            role: "tool",
+            content: "delegation result",
+            tool_call_id: "tool-1",
+          },
+        ];
+
+        const optionsWithDelegation = {
+          ...mockOptions,
+          current_agent_id: "agent-123",
+          delegation_stack: ["agent-456"],
+          max_delegation_depth: 3,
+        };
+
+        mockGetAIResponse.mockResolvedValue(mockResponse);
+        mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
+        mockHandleToolCalls.mockResolvedValue(mockToolResults);
+        mockConversationManager.add.mockResolvedValue(undefined);
+
+        await orchestrator.process(optionsWithDelegation);
+
+        expect(mockHandleToolCalls).toHaveBeenCalledWith(
+          "test-completion-id",
+          mockResponse,
+          mockConversationManager,
+          expect.objectContaining({
+            request: expect.objectContaining({
+              current_agent_id: "agent-123",
+              delegation_stack: ["agent-456"],
+              max_delegation_depth: 3,
+            }),
+          }),
+        );
+      });
+
+      it("should preserve delegation context in multi-model streaming", async () => {
+        const multiModelConfig = [{ model: "model-1" }, { model: "model-2" }];
+
+        mockPreparer.prepare.mockResolvedValue({
+          modelConfigs: multiModelConfig,
+          primaryModel: "model-1",
+          primaryProvider: "provider-1",
+          conversationManager: mockConversationManager,
+          messages: [{ role: "user", content: "Hello" }],
+          systemPrompt: "Test system prompt",
+          messageWithContext: "Hello with context",
+          userSettings: {},
+          currentMode: "chat",
+        });
+
+        const mockStream = new ReadableStream();
+        mockCreateMultiModelStream.mockReturnValue(mockStream);
+
+        const optionsWithDelegation = {
+          ...mockOptions,
+          stream: true,
+          current_agent_id: "agent-789",
+          delegation_stack: ["agent-101"],
+          max_delegation_depth: 5,
+        };
+
+        await orchestrator.process(optionsWithDelegation);
+
+        expect(mockCreateMultiModelStream).toHaveBeenCalledWith(
+          expect.objectContaining({
+            current_agent_id: "agent-789",
+            delegation_stack: ["agent-101"],
+            max_delegation_depth: 5,
+          }),
+          expect.any(Object),
+          mockConversationManager,
+        );
+      });
+
       it("should return output validation error", async () => {
         const mockResponse = {
           response: "Inappropriate response",

@@ -42,6 +42,9 @@ export const delegateToTeamMember: IFunction = {
       const currentAgentId = req.request.current_agent_id;
 
       if (!currentAgentId) {
+        logger.error("Delegation failed - no current_agent_id", {
+          completion_id,
+        });
         return {
           status: "error",
           content: "Current agent context not available for team delegation",
@@ -181,6 +184,9 @@ export const delegateToTeamMemberByRole: IFunction = {
       const currentAgentId = req.request.current_agent_id;
 
       if (!currentAgentId) {
+        logger.error("Delegation by role failed - no current_agent_id", {
+          completion_id,
+        });
         return {
           status: "error",
           content: "Current agent context not available for team delegation",
@@ -259,6 +265,9 @@ export const getTeamMembers: IFunction = {
       const currentAgentId = req.request.current_agent_id;
 
       if (!currentAgentId) {
+        logger.error("get_team_members failed - no current_agent_id", {
+          completion_id,
+        });
         return {
           status: "error",
           content: "Current agent context not available for team operations",

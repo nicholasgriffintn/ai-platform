@@ -74,6 +74,9 @@ export const handleCreateChatCompletions = async (req: {
     use_multi_model: request.use_multi_model,
     current_step: request.current_step,
     max_steps: request.max_steps,
+    current_agent_id: request.current_agent_id,
+    delegation_stack: request.delegation_stack,
+    max_delegation_depth: request.max_delegation_depth,
   });
 
   if ("validation" in result) {

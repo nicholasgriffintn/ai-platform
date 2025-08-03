@@ -80,6 +80,9 @@ export async function createStreamWithPostProcessing(
     current_step?: number;
     tools?: any[];
     enabled_tools?: string[];
+    current_agent_id?: string;
+    delegation_stack?: string[];
+    max_delegation_depth?: number;
   },
   conversationManager: ConversationManager,
 ): Promise<ReadableStream> {
@@ -741,6 +744,9 @@ export async function createStreamWithPostProcessing(
                     input: fullContent || "",
                     model,
                     date: new Date().toISOString().split("T")[0],
+                    current_agent_id: options.current_agent_id,
+                    delegation_stack: options.delegation_stack,
+                    max_delegation_depth: options.max_delegation_depth,
                   },
                   app_url,
                   user: user?.id ? user : undefined,

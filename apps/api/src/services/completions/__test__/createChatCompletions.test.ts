@@ -251,6 +251,53 @@ describe("handleCreateChatCompletions", () => {
         }),
       );
     });
+
+    it("should propagate delegation fields to processChatRequest", async () => {
+      const request = {
+        messages: [{ role: "user", content: "Delegate this task" }],
+        model: "gpt-4",
+        current_agent_id: "agent-123",
+        delegation_stack: ["agent-456"],
+        max_delegation_depth: 3,
+        tools: [
+          {
+            type: "function",
+            function: { name: "delegate_to_team_member" },
+          },
+        ],
+      } as any;
+
+      const mockResponse = {
+        response: {
+          response: "I'll delegate this task.",
+          usage: { total_tokens: 40 },
+        },
+        selectedModel: "gpt-4",
+      };
+
+      mockProcessChatRequest.mockResolvedValue(mockResponse);
+      mockFormatAssistantMessage.mockReturnValue({
+        content: "I'll delegate this task.",
+        model: "gpt-4",
+        usage: { total_tokens: 40 },
+        finish_reason: "stop",
+      });
+
+      await handleCreateChatCompletions({
+        env: mockEnv,
+        request,
+        user: mockUser,
+      });
+
+      expect(mockProcessChatRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          current_agent_id: "agent-123",
+          delegation_stack: ["agent-456"],
+          max_delegation_depth: 3,
+          tools: request.tools,
+        }),
+      );
+    });
   });
 
   describe("streaming responses", () => {
