@@ -25,7 +25,7 @@ importers:
     dependencies:
       '@hono/zod-validator':
         specifier: 0.7.2
-        version: 0.7.2(hono@4.8.12)(zod@3.25.76)
+        version: 0.7.2(hono@4.8.12)(zod@4.0.14)
       '@octokit/rest':
         specifier: 22.0.0
         version: 22.0.0
@@ -52,7 +52,7 @@ importers:
         version: 4.8.12
       hono-openapi:
         specifier: 0.4.8
-        version: 0.4.8(@hono/zod-validator@0.7.2(hono@4.8.12)(zod@3.25.76))(hono@4.8.12)(openapi-types@12.1.3)(zod-openapi@5.3.0(zod@3.25.76))(zod@3.25.76)
+        version: 0.4.8(@hono/zod-validator@0.7.2(hono@4.8.12)(zod@4.0.14))(hono@4.8.12)(openapi-types@12.1.3)(zod-openapi@5.3.0(zod@4.0.14))(zod@4.0.14)
       isbot:
         specifier: 5.1.29
         version: 5.1.29
@@ -60,11 +60,11 @@ importers:
         specifier: ^18.0.0
         version: 18.4.0(@types/node@22.17.0)
       zod:
-        specifier: 3.25.76
-        version: 3.25.76
+        specifier: 4.0.14
+        version: 4.0.14
       zod-openapi:
         specifier: 5.3.0
-        version: 5.3.0(zod@3.25.76)
+        version: 5.3.0(zod@4.0.14)
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -4875,6 +4875,9 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
+  zod@4.0.14:
+    resolution: {integrity: sha512-nGFJTnJN6cM2v9kXL+SOBq3AtjQby3Mv5ySGFof5UGRHrRioSJ5iG680cYNjE/yWk671nROcpPj4hAS8nyLhSw==}
+
   zustand@5.0.7:
     resolution: {integrity: sha512-Ot6uqHDW/O2VdYsKLLU8GQu8sCOM1LcoE8RwvLv9uuRT9s6SOHCKs0ZEOhxg+I1Ld+A1Q5lwx+UlKXXUoCZITg==}
     engines: {node: '>=12.20.0'}
@@ -5494,10 +5497,10 @@ snapshots:
 
   '@hexagon/base64@1.1.28': {}
 
-  '@hono/zod-validator@0.7.2(hono@4.8.12)(zod@3.25.76)':
+  '@hono/zod-validator@0.7.2(hono@4.8.12)(zod@4.0.14)':
     dependencies:
       hono: 4.8.12
-      zod: 3.25.76
+      zod: 4.0.14
 
   '@img/sharp-darwin-arm64@0.33.5':
     optionalDependencies:
@@ -7559,15 +7562,15 @@ snapshots:
 
   highlight.js@11.11.1: {}
 
-  hono-openapi@0.4.8(@hono/zod-validator@0.7.2(hono@4.8.12)(zod@3.25.76))(hono@4.8.12)(openapi-types@12.1.3)(zod-openapi@5.3.0(zod@3.25.76))(zod@3.25.76):
+  hono-openapi@0.4.8(@hono/zod-validator@0.7.2(hono@4.8.12)(zod@4.0.14))(hono@4.8.12)(openapi-types@12.1.3)(zod-openapi@5.3.0(zod@4.0.14))(zod@4.0.14):
     dependencies:
       json-schema-walker: 2.0.0
       openapi-types: 12.1.3
     optionalDependencies:
-      '@hono/zod-validator': 0.7.2(hono@4.8.12)(zod@3.25.76)
+      '@hono/zod-validator': 0.7.2(hono@4.8.12)(zod@4.0.14)
       hono: 4.8.12
-      zod: 3.25.76
-      zod-openapi: 5.3.0(zod@3.25.76)
+      zod: 4.0.14
+      zod-openapi: 5.3.0(zod@4.0.14)
 
   hono@4.8.12: {}
 
@@ -9449,9 +9452,9 @@ snapshots:
       cookie: 1.0.2
       youch-core: 0.3.3
 
-  zod-openapi@5.3.0(zod@3.25.76):
+  zod-openapi@5.3.0(zod@4.0.14):
     dependencies:
-      zod: 3.25.76
+      zod: 4.0.14
 
   zod-to-json-schema@3.24.6(zod@3.25.76):
     dependencies:
@@ -9462,6 +9465,8 @@ snapshots:
   zod@3.24.1: {}
 
   zod@3.25.76: {}
+
+  zod@4.0.14: {}
 
   zustand@5.0.7(@types/react@19.1.9)(react@19.1.1)(use-sync-external-store@1.5.0(react@19.1.1)):
     optionalDependencies:
