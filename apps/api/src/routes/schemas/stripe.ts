@@ -1,5 +1,4 @@
 import { z } from "zod";
-import "zod-openapi/extend";
 
 export const checkoutSchema = z.object({
   plan_id: z.string(),

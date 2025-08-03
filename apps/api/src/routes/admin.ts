@@ -24,9 +24,7 @@ app.use("/*", async (ctx, next) => {
 });
 
 const setFeaturedSchema = z.object({
-  featured: z
-    .boolean()
-    .openapi({ description: "Whether to feature the agent" }),
+  featured: z.boolean().meta({ description: "Whether to feature the agent" }),
 });
 
 app.put(
@@ -144,11 +142,11 @@ app.get(
 const moderateAgentSchema = z.object({
   is_public: z
     .boolean()
-    .openapi({ description: "Whether the agent should be public" }),
+    .meta({ description: "Whether the agent should be public" }),
   reason: z
     .string()
     .optional()
-    .openapi({ description: "Reason for moderation action" }),
+    .meta({ description: "Reason for moderation action" }),
 });
 
 app.put(

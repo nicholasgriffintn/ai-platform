@@ -1,10 +1,9 @@
 import { z } from "zod";
-import "zod-openapi/extend";
 
 export const githubLoginSchema = z.object({});
 
 export const githubCallbackSchema = z.object({
-  code: z.string().openapi({ example: "a1b2c3d4" }),
+  code: z.string().meta({ example: "a1b2c3d4" }),
 });
 
 export const userSchema = z.object({
@@ -34,9 +33,9 @@ export const sessionSchema = z.object({
 export const jwtTokenResponseSchema = z.object({
   token: z
     .string()
-    .openapi({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
-  expires_in: z.number().openapi({ example: 604800 }),
-  token_type: z.literal("Bearer").openapi({ example: "Bearer" }),
+    .meta({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
+  expires_in: z.number().meta({ example: 604800 }),
+  token_type: z.literal("Bearer").meta({ example: "Bearer" }),
 });
 
 export type User = z.infer<typeof userSchema>;

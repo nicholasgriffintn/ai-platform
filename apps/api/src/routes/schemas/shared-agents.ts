@@ -1,50 +1,49 @@
 import { z } from "zod";
-import "zod-openapi/extend";
 
 export const shareAgentSchema = z.object({
-  agent_id: z.string().openapi({ description: "ID of the agent to share" }),
-  name: z.string().openapi({ description: "Public name for the shared agent" }),
+  agent_id: z.string().meta({ description: "ID of the agent to share" }),
+  name: z.string().meta({ description: "Public name for the shared agent" }),
   description: z
     .string()
     .optional()
-    .openapi({ description: "Public description for the shared agent" }),
+    .meta({ description: "Public description for the shared agent" }),
   avatar_url: z
     .string()
     .url()
     .optional()
-    .openapi({ description: "Avatar URL for the shared agent" }),
+    .meta({ description: "Avatar URL for the shared agent" }),
   category: z
     .string()
     .optional()
-    .openapi({ description: "Category for the shared agent" }),
+    .meta({ description: "Category for the shared agent" }),
   tags: z
     .array(z.string())
     .optional()
-    .openapi({ description: "Tags for the shared agent" }),
+    .meta({ description: "Tags for the shared agent" }),
 });
 
 export const updateSharedAgentSchema = z.object({
   name: z
     .string()
     .optional()
-    .openapi({ description: "Updated name for the shared agent" }),
+    .meta({ description: "Updated name for the shared agent" }),
   description: z
     .string()
     .optional()
-    .openapi({ description: "Updated description for the shared agent" }),
+    .meta({ description: "Updated description for the shared agent" }),
   avatar_url: z
     .string()
     .url()
     .optional()
-    .openapi({ description: "Updated avatar URL for the shared agent" }),
+    .meta({ description: "Updated avatar URL for the shared agent" }),
   category: z
     .string()
     .optional()
-    .openapi({ description: "Updated category for the shared agent" }),
+    .meta({ description: "Updated category for the shared agent" }),
   tags: z
     .array(z.string())
     .optional()
-    .openapi({ description: "Updated tags for the shared agent" }),
+    .meta({ description: "Updated tags for the shared agent" }),
 });
 
 export const rateAgentSchema = z.object({
@@ -53,27 +52,18 @@ export const rateAgentSchema = z.object({
     .int()
     .min(1)
     .max(5)
-    .openapi({ description: "Rating from 1 to 5 stars" }),
-  review: z
-    .string()
-    .optional()
-    .openapi({ description: "Optional review text" }),
+    .meta({ description: "Rating from 1 to 5 stars" }),
+  review: z.string().optional().meta({ description: "Optional review text" }),
 });
 
 export const sharedAgentFiltersSchema = z.object({
-  category: z
-    .string()
-    .optional()
-    .openapi({ description: "Filter by category" }),
-  tags: z
-    .array(z.string())
-    .optional()
-    .openapi({ description: "Filter by tags" }),
-  search: z.string().optional().openapi({ description: "Search query" }),
+  category: z.string().optional().meta({ description: "Filter by category" }),
+  tags: z.array(z.string()).optional().meta({ description: "Filter by tags" }),
+  search: z.string().optional().meta({ description: "Search query" }),
   featured: z
     .boolean()
     .optional()
-    .openapi({ description: "Show only featured agents" }),
+    .meta({ description: "Show only featured agents" }),
   limit: z
     .number()
     .int()
@@ -81,19 +71,19 @@ export const sharedAgentFiltersSchema = z.object({
     .max(100)
     .default(20)
     .optional()
-    .openapi({ description: "Number of results to return" }),
+    .meta({ description: "Number of results to return" }),
   offset: z
     .number()
     .int()
     .min(0)
     .default(0)
     .optional()
-    .openapi({ description: "Number of results to skip" }),
+    .meta({ description: "Number of results to skip" }),
   sort_by: z
     .enum(["recent", "popular", "rating"])
     .default("recent")
     .optional()
-    .openapi({ description: "Sort order" }),
+    .meta({ description: "Sort order" }),
 });
 
 export const featuredAgentsSchema = z.object({
@@ -104,7 +94,7 @@ export const featuredAgentsSchema = z.object({
     .max(50)
     .default(10)
     .optional()
-    .openapi({ description: "Number of featured agents to return" }),
+    .meta({ description: "Number of featured agents to return" }),
 });
 
 export const agentRatingsSchema = z.object({
@@ -115,5 +105,5 @@ export const agentRatingsSchema = z.object({
     .max(50)
     .default(10)
     .optional()
-    .openapi({ description: "Number of ratings to return" }),
+    .meta({ description: "Number of ratings to return" }),
 });

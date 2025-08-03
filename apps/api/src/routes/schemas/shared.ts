@@ -1,5 +1,4 @@
 import { z } from "zod";
-import "zod-openapi/extend";
 
 export const messageSchema = z.object({
   role: z.enum(["user", "assistant", "tool"]),
@@ -40,7 +39,7 @@ export const successResponseSchema = z.object({
 });
 
 export const statusResponseSchema = z.object({
-  status: z.string().openapi({ example: "ok" }),
+  status: z.string().meta({ example: "ok" }),
 });
 
 export const metricsParamsSchema = z.object({

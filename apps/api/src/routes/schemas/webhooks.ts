@@ -1,5 +1,4 @@
 import z from "zod";
-import "zod-openapi/extend";
 
 export const replicateWebhookQuerySchema = z.object({
   completion_id: z.string().min(1, "completion_id is required"),
@@ -10,21 +9,21 @@ export const replicateWebhookJsonSchema = z.object({
   id: z
     .string()
     .min(1, "id is required")
-    .openapi({ example: "ufawqhfynnddngldkgtslldrkq" }),
-  version: z.string().optional().openapi({
+    .meta({ example: "ufawqhfynnddngldkgtslldrkq" }),
+  version: z.string().optional().meta({
     example: "5c7d5dc6dd8bf75c1acaa8565735e7986bc5b66206b55cca93cb72c9bf15ccaa",
   }),
   created_at: z
     .string()
     .optional()
-    .openapi({ example: "2024-01-01T00:00:00.000Z" }),
-  started_at: z.string().optional().nullable().openapi({ example: null }),
-  completed_at: z.string().optional().nullable().openapi({ example: null }),
-  status: z.string().optional().openapi({ example: "starting" }),
+    .meta({ example: "2024-01-01T00:00:00.000Z" }),
+  started_at: z.string().optional().nullable().meta({ example: null }),
+  completed_at: z.string().optional().nullable().meta({ example: null }),
+  status: z.string().optional().meta({ example: "starting" }),
   input: z
     .object({
-      prompt: z.string().optional().openapi({ example: "Alice" }),
-      guidance_scale: z.number().optional().openapi({ example: 7 }),
+      prompt: z.string().optional().meta({ example: "Alice" }),
+      guidance_scale: z.number().optional().meta({ example: 7 }),
     })
     .optional(),
   output: z.array(z.string()).optional().nullable(),

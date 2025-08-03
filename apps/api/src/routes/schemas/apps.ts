@@ -1,5 +1,4 @@
 import { z } from "zod";
-import "zod-openapi/extend";
 
 export const insertEmbeddingSchema = z.object({
   type: z.string(),
@@ -160,21 +159,21 @@ export const ocrSchema = z.object({
     document_name: z.string().optional(),
   }),
   id: z.string().optional(),
-  pages: z.array(z.number()).optional().openapi({
+  pages: z.array(z.number()).optional().meta({
     description:
       "Specific pages user wants to process in various formats: single number, range, or list of both. Starts from 0",
   }),
-  include_image_base64: z.boolean().optional().openapi({
+  include_image_base64: z.boolean().optional().meta({
     description:
       "Whether to include the images in a base64 format in the response",
   }),
-  image_limit: z.number().optional().openapi({
+  image_limit: z.number().optional().meta({
     description: "Limit the number of images to extract",
   }),
-  image_min_size: z.number().optional().openapi({
+  image_min_size: z.number().optional().meta({
     description: "Minimum height and width of image to extract",
   }),
-  output_format: z.enum(["json", "html", "markdown"]).optional().openapi({
+  output_format: z.enum(["json", "html", "markdown"]).optional().meta({
     description: "Output format of the response",
   }),
 });
@@ -345,25 +344,25 @@ export const noteDetailResponseSchema = z.object({
 });
 
 export const noteFormatSchema = z.object({
-  prompt: z.string().optional().openapi({
+  prompt: z.string().optional().meta({
     description:
       "Optional additional instructions to refine the note formatting",
   }),
 });
 
 export const noteFormatResponseSchema = z.object({
-  content: z.string().openapi({
+  content: z.string().meta({
     description: "The reformatted note contents",
   }),
 });
 
 export const shareItemSchema = z
   .object({
-    app_id: z.string().openapi({
+    app_id: z.string().meta({
       description: "The ID of the app",
     }),
   })
-  .openapi({
+  .meta({
     description: "Schema for sharing an app item",
   });
 
@@ -385,6 +384,6 @@ export const sharedItemResponseSchema = z
       })
       .optional(),
   })
-  .openapi({
+  .meta({
     description: "Response for shared item operations",
   });

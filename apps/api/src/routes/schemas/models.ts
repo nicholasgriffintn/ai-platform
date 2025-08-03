@@ -1,5 +1,4 @@
 import { z } from "zod";
-import "zod-openapi/extend";
 
 export const modelSchema = z.object({
   id: z.string(),

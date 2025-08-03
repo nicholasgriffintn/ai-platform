@@ -1,5 +1,4 @@
 import { z } from "zod";
-import "zod-openapi/extend";
 
 export const uploadRequestSchema = z.object({
   file: z.any().refine((file) => file && file instanceof File, {
