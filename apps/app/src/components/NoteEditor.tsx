@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+
 import { NoteMetadata } from "~/components/NoteMetadata";
 import {
   Button,
@@ -331,7 +332,9 @@ export function NoteEditor({
             </div>
           </div>
           {partialTranscript ? (
-            <p className="text-sm opacity-70 italic">{partialTranscript}</p>
+            <p className="text-sm opacity-70 text-gray-500 dark:text-gray-400 italic">
+              {partialTranscript}
+            </p>
           ) : (
             <p className="text-sm opacity-50 text-gray-500 dark:text-gray-400 animate-pulse">
               {isSpeechDetected ? "Listening..." : "Waiting for speech..."}
