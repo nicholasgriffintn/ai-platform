@@ -1,7 +1,7 @@
+import { getAIResponse } from "~/lib/chat/responses";
 import type { Agent } from "~/lib/database/schema";
-import { getAuxiliaryModel } from "~/lib/models";
+import { getAuxiliaryModel, getModelConfig } from "~/lib/models";
 import { AgentRepository } from "~/repositories/AgentRepository";
-import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import type { AnonymousUser, IEnv, IUser, Message } from "~/types";
 import { getLogger } from "~/utils/logger";
 
@@ -110,36 +110,35 @@ export class TeamDelegation {
       `Orchestrator ${this.context.currentAgent.name} calling team member ${agent.name}. Stack: ${this.delegationStack.join(" -> ")}`,
     );
 
-    const nestedStack = [...this.delegationStack, agentId];
-
     const { model: modelToUse } = await getAuxiliaryModel(
       this.context.env,
       this.context.user,
     );
 
-    const response = await handleCreateChatCompletions({
+    const agentModelConfig = agent.model
+      ? await getModelConfig(agent.model, this.context.env)
+      : null;
+
+    const response = await getAIResponse({
       env: this.context.env,
-      request: {
-        env: this.context.env,
-        messages,
-        model: agent.model || modelToUse,
-        system_prompt: agent.system_prompt,
-        temperature: agent.temperature
-          ? Number.parseFloat(agent.temperature)
-          : 0.7,
-        max_steps: agent.max_steps || 20,
-        stream: false,
-        mode: "agent",
-        current_agent_id: agentId,
-        delegation_stack: nestedStack,
-        max_delegation_depth: this.maxDelegationDepth,
-      },
       user: this.context.user,
-      anonymousUser: this.context.anonymousUser,
+      messages,
+      model: agentModelConfig?.matchingModel || modelToUse,
+      system_prompt: agent.system_prompt,
+      temperature: agent.temperature
+        ? Number.parseFloat(agent.temperature)
+        : 0.7,
+      stream: false,
+      mode: "agent",
     });
 
-    if (response && typeof response === "object" && "messages" in response) {
-      return response.messages as Message[];
+    if (response && typeof response === "object" && "response" in response) {
+      return [
+        {
+          role: "assistant",
+          content: response.response,
+        },
+      ];
     }
 
     return [];

@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getAIResponse } from "~/lib/chat/responses";
 import { AgentRepository } from "~/repositories/AgentRepository";
-import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import type { Agent, IEnv, IUser, Message } from "~/types";
 import { TeamDelegation } from "../TeamDelegation";
 
 vi.mock("~/repositories/AgentRepository");
-vi.mock("~/services/completions/createChatCompletions");
+vi.mock("~/lib/chat/responses");
 vi.mock("~/utils/logger", () => ({
   getLogger: vi.fn(() => ({
     info: vi.fn(),
@@ -68,13 +68,11 @@ describe("TeamDelegation", () => {
       const messages: Message[] = [{ role: "user", content: "Test task" }];
 
       const mockResponse = {
-        messages: [
-          { role: "assistant", content: "Task completed successfully" },
-        ],
+        response: "Task completed successfully",
       };
 
       mockAgentRepository.getAgentById.mockResolvedValue(targetAgent);
-      (handleCreateChatCompletions as any).mockResolvedValue(mockResponse);
+      (getAIResponse as any).mockResolvedValue(mockResponse);
 
       const result = await teamDelegation.callAgent(
         "target-agent-id",
@@ -84,25 +82,19 @@ describe("TeamDelegation", () => {
       expect(mockAgentRepository.getAgentById).toHaveBeenCalledWith(
         "target-agent-id",
       );
-      expect(handleCreateChatCompletions).toHaveBeenCalledWith({
+      expect(getAIResponse).toHaveBeenCalledWith({
         env: mockEnv,
-        request: {
-          env: mockEnv,
-          messages,
-          model: "test-model",
-          system_prompt: "Target prompt",
-          temperature: 0.8,
-          max_steps: 15,
-          stream: false,
-          mode: "agent",
-          current_agent_id: "target-agent-id",
-          delegation_stack: ["current-agent-id", "target-agent-id"],
-          max_delegation_depth: 5,
-        },
         user: mockUser,
-        anonymousUser: undefined,
+        messages,
+        model: "test-model",
+        system_prompt: "Target prompt",
+        temperature: 0.8,
+        stream: false,
+        mode: "agent",
       });
-      expect(result).toEqual(mockResponse.messages);
+      expect(result).toEqual([
+        { role: "assistant", content: "Task completed successfully" },
+      ]);
     });
 
     it("should throw error when agent not found", async () => {
