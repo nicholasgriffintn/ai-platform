@@ -177,3 +177,8 @@ The platform follows a **mobile-first, offline-capable, multi-provider** archite
 - Implement proper error handling and validation
 - Follow the established architecture patterns
 - Test implementations thoroughly with type checking and full unit tests before considering them complete
+
+ ## Search Behavior
+- Use Read tool directly when file paths are known or can be reasonably inferred
+- Use Glob tool for pattern matching (e.g., "**/*.ts") before using search
+- Only use Grep/search tools when the location is truly unknown
