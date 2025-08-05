@@ -39,8 +39,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0
       agents:
-        specifier: ^0.0.109
-        version: 0.0.109(@cloudflare/workers-types@4.20250805.0)(react@19.1.1)
+        specifier: ^0.0.111
+        version: 0.0.111(@cloudflare/workers-types@4.20250805.0)(react@19.1.1)
       aws4fetch:
         specifier: 1.0.20
         version: 1.0.20
@@ -2361,8 +2361,8 @@ packages:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
-  agents@0.0.109:
-    resolution: {integrity: sha512-QExGnLWyQZ0JzYOv3QAKM2LM8jmnGi+WhCASQhsCtARoGk1xfo0ho0aSjXUmPbcL0OnTsqZm3W/Lu6fygCTQgA==}
+  agents@0.0.111:
+    resolution: {integrity: sha512-olF3ke0svv/BxI1fHAuUGOfztHpwAYkJOMGmAAmNRUPH8zAit1VDgfOi8JC1uoulC8ICqk9Y0K1G+lkxW1eNUw==}
     peerDependencies:
       react: '*'
 
@@ -3881,8 +3881,8 @@ packages:
     peerDependencies:
       '@cloudflare/workers-types': ^4.20240729.0
 
-  partysocket@1.1.4:
-    resolution: {integrity: sha512-jXP7PFj2h5/v4UjDS8P7MZy6NJUQ7sspiFyxL4uc/+oKOL+KdtXzHnTV8INPGxBrLTXgalyG3kd12Qm7WrYc3A==}
+  partysocket@1.1.5:
+    resolution: {integrity: sha512-8uw9foq9bij4sKLCtTSHvyqMrMTQ5FJjrHc7BjoM2s95Vu7xYCN63ABpI7OZHC7ZMP5xaom/A+SsoFPXmTV6ZQ==}
 
   path-key@3.1.1:
     resolution: {integrity: sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==}
@@ -6738,7 +6738,7 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  agents@0.0.109(@cloudflare/workers-types@4.20250805.0)(react@19.1.1):
+  agents@0.0.111(@cloudflare/workers-types@4.20250805.0)(react@19.1.1):
     dependencies:
       '@modelcontextprotocol/sdk': 1.17.1
       ai: 4.3.19(react@19.1.1)(zod@3.25.76)
@@ -6746,7 +6746,7 @@ snapshots:
       mimetext: 3.0.27
       nanoid: 5.1.5
       partyserver: 0.0.72(@cloudflare/workers-types@4.20250805.0)
-      partysocket: 1.1.4
+      partysocket: 1.1.5
       react: 19.1.1
       zod: 3.25.76
     transitivePeerDependencies:
@@ -8389,7 +8389,7 @@ snapshots:
       '@cloudflare/workers-types': 4.20250805.0
       nanoid: 5.1.5
 
-  partysocket@1.1.4:
+  partysocket@1.1.5:
     dependencies:
       event-target-polyfill: 0.0.4
 
