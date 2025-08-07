@@ -11,6 +11,8 @@ import {
 
 import { anthropicModelConfig } from "./anthropic";
 import { bedrockModelConfig } from "./bedrock";
+import { chutesModelConfig } from "./chutes";
+import { deepinfraModelConfig } from "./deepinfra";
 import { deepseekModelConfig } from "./deepseek";
 import { fireworksModelConfig } from "./fireworks";
 import { githubModelsConfig } from "./githubmodels";
@@ -18,13 +20,19 @@ import { googleAiStudioModelConfig } from "./google-ai-studio";
 import { groqModelConfig } from "./groq";
 import { huggingfaceModelConfig } from "./huggingface";
 import { hyperbolicModelConfig } from "./hyperbolic";
+import { inceptionModelConfig } from "./inception";
+import { inferenceModelConfig } from "./inference";
 import { mistralModelConfig } from "./mistral";
+import { morphModelConfig } from "./morph";
 import { ollamaModelConfig } from "./ollama";
 import { openaiModelConfig } from "./openai";
 import { openrouterModelConfig } from "./openrouter";
 import { perplexityModelConfig } from "./perplexity";
+import { requestyModelConfig } from "./requesty";
 import { togetherAiModelConfig } from "./together-ai";
+import { upstageModelConfig } from "./upstage";
 import { v0ModelConfig } from "./v0";
+import { vercelModelConfig } from "./vercel";
 import { workersAiModelConfig } from "./workersai";
 import { xaiModelConfig } from "./xai";
 
@@ -44,8 +52,10 @@ const modelConfig: ModelConfig = {
   ...openaiModelConfig,
   ...anthropicModelConfig,
   ...mistralModelConfig,
+  ...morphModelConfig,
   ...ollamaModelConfig,
   ...bedrockModelConfig,
+  ...deepinfraModelConfig,
   ...deepseekModelConfig,
   ...githubModelsConfig,
   ...xaiModelConfig,
@@ -53,11 +63,17 @@ const modelConfig: ModelConfig = {
   ...huggingfaceModelConfig,
   ...openrouterModelConfig,
   ...perplexityModelConfig,
+  ...requestyModelConfig,
   ...workersAiModelConfig,
   ...togetherAiModelConfig,
   ...googleAiStudioModelConfig,
   ...fireworksModelConfig,
   ...hyperbolicModelConfig,
+  ...inferenceModelConfig,
+  ...chutesModelConfig,
+  ...vercelModelConfig,
+  ...upstageModelConfig,
+  ...inceptionModelConfig,
   ...v0ModelConfig,
 };
 

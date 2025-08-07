@@ -2,6 +2,8 @@ import { AnthropicProvider } from "./anthropic";
 import type { AIProvider } from "./base";
 import { BedrockProvider } from "./bedrock";
 import { CertesiaProvider } from "./certesia";
+import { ChutesProvider } from "./chutes";
+import { DeepInfraProvider } from "./deepinfra";
 import { DeepSeekProvider } from "./deepseek";
 import { ElevenLabsProvider } from "./elevenlabs";
 import { FireworksProvider } from "./fireworks";
@@ -11,15 +13,21 @@ import { GrokProvider } from "./grok";
 import { GroqProvider } from "./groq";
 import { HuggingFaceProvider } from "./huggingface";
 import { HyperbolicProvider } from "./hyperbolic";
+import { InceptionProvider } from "./inception";
+import { InferenceProvider } from "./inference";
 import { MistralProvider } from "./mistral";
+import { MorphProvider } from "./morph";
 import { OllamaProvider } from "./ollama";
 import { OpenAIProvider } from "./openai";
 import { OpenRouterProvider } from "./openrouter";
 import { PerplexityProvider } from "./perplexity";
 import { PollyProvider } from "./polly";
 import { ReplicateProvider } from "./replicate";
+import { RequestyProvider } from "./requesty";
 import { TogetherAiProvider } from "./together-ai";
+import { UpstageProvider } from "./upstage";
 import { V0Provider } from "./v0";
+import { VercelGatewayProvider } from "./vercel";
 import { WorkersProvider } from "./workers";
 
 export interface ProviderConfig {
@@ -37,6 +45,7 @@ export class AIProviderFactory {
     { key: "perplexity-ai", provider: new PerplexityProvider() },
     { key: "replicate", provider: new ReplicateProvider() },
     { key: "mistral", provider: new MistralProvider() },
+    { key: "morph", provider: new MorphProvider() },
     { key: "openrouter", provider: new OpenRouterProvider() },
     { key: "workers", provider: new WorkersProvider() },
     { key: "bedrock", provider: new BedrockProvider() },
@@ -53,13 +62,20 @@ export class AIProviderFactory {
       provider: new GithubModelsProvider(),
       aliases: ["github"],
     },
+    { key: "deepinfra", provider: new DeepInfraProvider() },
     { key: "deepseek", provider: new DeepSeekProvider() },
     { key: "together-ai", provider: new TogetherAiProvider() },
     { key: "certesia", provider: new CertesiaProvider() },
     { key: "elevenlabs", provider: new ElevenLabsProvider() },
     { key: "polly", provider: new PollyProvider() },
+    { key: "requesty", provider: new RequestyProvider() },
     { key: "fireworks", provider: new FireworksProvider() },
     { key: "hyperbolic", provider: new HyperbolicProvider() },
+    { key: "vercel", provider: new VercelGatewayProvider() },
+    { key: "chutes", provider: new ChutesProvider() },
+    { key: "upstage", provider: new UpstageProvider() },
+    { key: "inference", provider: new InferenceProvider() },
+    { key: "inception", provider: new InceptionProvider() },
     { key: "v0", provider: new V0Provider() },
   ];
 
