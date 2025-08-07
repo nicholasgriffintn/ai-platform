@@ -111,7 +111,7 @@ export function createCommonParameters(
     messages: params.messages,
   };
 
-  if (modelConfig.supportsTemperature) {
+  if (modelConfig.supportsTemperature !== false) {
     commonParams.temperature = params.temperature;
   }
 
@@ -159,7 +159,11 @@ export function createCommonParameters(
     }
   }
 
-  if (modelConfig.supportsTopP && params.model && !params.should_think) {
+  if (
+    modelConfig.supportsTopP !== false &&
+    params.model &&
+    !params.should_think
+  ) {
     commonParams.top_p = params.top_p;
   }
 

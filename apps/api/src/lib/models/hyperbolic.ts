@@ -15,5 +15,6 @@ export const hyperbolicModelConfig: ModelConfig = {
     contextWindow: 24000,
     maxTokens: 1024,
     strengths: ["instruction", "coding", "reasoning", "chat"],
+    supportsTemperature: true,
   },
 };

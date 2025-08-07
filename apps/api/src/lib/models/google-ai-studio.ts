@@ -24,6 +24,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
     contextComplexity: 5,
     reliability: 5,
     speed: 3,
+    supportsTemperature: true,
   },
   "gemini-2.5-flash": {
     name: "Gemini 2.5 Flash",
@@ -47,6 +48,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
     supportsArtifacts: true,
     supportsSearchGrounding: true,
     isFree: true,
+    supportsTemperature: true,
   },
   "gemini-2.5-flash-lite": {
     name: "Gemini 2.5 Flash Lite",
@@ -65,5 +67,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
     contextComplexity: 3,
     reliability: 3,
     speed: 2,
+    supportsTemperature: true,
   },
 };
