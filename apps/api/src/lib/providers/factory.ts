@@ -8,6 +8,7 @@ import { DeepSeekProvider } from "./deepseek";
 import { ElevenLabsProvider } from "./elevenlabs";
 import { FireworksProvider } from "./fireworks";
 import { GithubModelsProvider } from "./github";
+import { GithubCopilotProvider } from "./githubcopilot";
 import { GoogleStudioProvider } from "./googlestudio";
 import { GrokProvider } from "./grok";
 import { GroqProvider } from "./groq";
@@ -72,6 +73,7 @@ export class AIProviderFactory {
     { key: "fireworks", provider: new FireworksProvider() },
     { key: "hyperbolic", provider: new HyperbolicProvider() },
     { key: "vercel", provider: new VercelGatewayProvider() },
+    { key: "github-copilot", provider: new GithubCopilotProvider() },
     { key: "chutes", provider: new ChutesProvider() },
     { key: "upstage", provider: new UpstageProvider() },
     { key: "inference", provider: new InferenceProvider() },

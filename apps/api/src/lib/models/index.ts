@@ -15,6 +15,7 @@ import { chutesModelConfig } from "./chutes";
 import { deepinfraModelConfig } from "./deepinfra";
 import { deepseekModelConfig } from "./deepseek";
 import { fireworksModelConfig } from "./fireworks";
+import { githubCopilotModelConfig } from "./githubcopilot";
 import { githubModelsConfig } from "./githubmodels";
 import { googleAiStudioModelConfig } from "./google-ai-studio";
 import { groqModelConfig } from "./groq";
@@ -73,6 +74,7 @@ const modelConfig: ModelConfig = {
   ...chutesModelConfig,
   ...vercelModelConfig,
   ...upstageModelConfig,
+  ...githubCopilotModelConfig,
   ...inceptionModelConfig,
   ...v0ModelConfig,
 };
