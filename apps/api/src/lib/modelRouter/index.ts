@@ -141,7 +141,7 @@ export class ModelRouter {
       score += ModelRouter.WEIGHTS.MULTIMODAL;
     }
 
-    if (requirements.needsFunctions && model.supportsFunctions) {
+    if (requirements.needsFunctions && model.supportsToolCalls) {
       score += ModelRouter.WEIGHTS.FUNCTIONS;
     }
 

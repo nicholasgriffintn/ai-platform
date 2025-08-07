@@ -248,9 +248,9 @@ export class WorkersProvider extends BaseProvider {
       : {};
 
     const toolsParams = getToolsForProvider(params, modelConfig, this.name);
-    const supportsFunctions = modelConfig?.supportsFunctions || false;
+    const supportsToolCalls = modelConfig?.supportsToolCalls || false;
 
-    const toolConfig = supportsFunctions
+    const toolConfig = supportsToolCalls
       ? { toolConfig: { tools: toolsParams.tools } }
       : {};
 

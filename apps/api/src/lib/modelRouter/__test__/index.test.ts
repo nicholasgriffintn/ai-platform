@@ -56,7 +56,7 @@ describe("ModelRouter", () => {
     reliability: 4,
     speed: 2,
     multimodal: true,
-    supportsFunctions: true,
+    supportsToolCalls: true,
     strengths: ["reasoning", "coding"],
   };
 

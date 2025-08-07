@@ -99,7 +99,7 @@ export const ModelOption = ({
           ) : null}
         </div>
         <div className="flex items-center gap-1.5">
-          {model.hasThinking && (
+          {model.supportsReasoning && (
             <div className="p-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30">
               <BrainCircuit
                 size={14}
@@ -107,7 +107,7 @@ export const ModelOption = ({
               />
             </div>
           )}
-          {model.supportsFunctions && (
+          {model.supportsToolCalls && (
             <div className="p-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30">
               <Hammer
                 size={14}

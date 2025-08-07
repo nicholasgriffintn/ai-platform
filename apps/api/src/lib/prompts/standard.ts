@@ -9,9 +9,9 @@ export async function returnStandardPrompt(
   request: IBody,
   user?: IUser,
   userSettings?: IUserSettings,
-  supportsFunctions?: boolean,
+  supportsToolCalls?: boolean,
   supportsArtifacts?: boolean,
-  hasThinking?: boolean,
+  supportsReasoning?: boolean,
   requiresThinkingPrompt?: boolean,
 ): Promise<string> {
   try {
@@ -39,9 +39,9 @@ export async function returnStandardPrompt(
       answerFormatInstructions,
     } = getResponseStyle(
       response_mode,
-      hasThinking,
+      supportsReasoning,
       requiresThinkingPrompt,
-      supportsFunctions,
+      supportsToolCalls,
       supportsArtifacts,
       isAgent,
       memoriesEnabled,
@@ -73,7 +73,7 @@ export async function returnStandardPrompt(
       builder.addLine("Here is an example of the output you should provide:");
       builder.addLine("<example_output>");
 
-      if (!hasThinking) {
+      if (!supportsReasoning) {
         builder
           .addLine("<think>")
           .addLine(problemBreakdownInstructions)

@@ -131,7 +131,7 @@ describe("returnStandardPrompt", () => {
   });
 
   describe("feature flags handling", () => {
-    it("should include thinking example when hasThinking is false", async () => {
+    it("should include thinking example when supportsReasoning is false", async () => {
       // @ts-expect-error - mock implementation
       const request: IBody = {};
       const result = await returnStandardPrompt(
@@ -145,7 +145,7 @@ describe("returnStandardPrompt", () => {
       expect(result).toContain("<think>");
     });
 
-    it("should skip thinking example when hasThinking is true", async () => {
+    it("should skip thinking example when supportsReasoning is true", async () => {
       // @ts-expect-error - mock implementation
       const request: IBody = {};
       const result = await returnStandardPrompt(

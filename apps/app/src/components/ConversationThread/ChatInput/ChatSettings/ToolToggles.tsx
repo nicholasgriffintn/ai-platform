@@ -19,7 +19,7 @@ export const ToolToggles = ({
 
   const modelCapabilities = model ? apiModels?.[model] : undefined;
 
-  const supportsFunctions = modelCapabilities?.supportsFunctions;
+  const supportsToolCalls = modelCapabilities?.supportsToolCalls;
   const supportsSearchGrounding = modelCapabilities?.supportsSearchGrounding;
   const supportsCodeExecution = modelCapabilities?.supportsCodeExecution;
 
@@ -51,7 +51,7 @@ export const ToolToggles = ({
         </div>
       )}
 
-      {supportsFunctions && availableTools.length !== 0 ? (
+      {supportsToolCalls && availableTools.length !== 0 ? (
         <>
           <ToggleGroup
             type="multiple"

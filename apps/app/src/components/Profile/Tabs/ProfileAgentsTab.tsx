@@ -244,7 +244,7 @@ export function ProfileAgentsTab() {
 
     const agentModel = agent.model || "";
     const isModelAvailable =
-      agentModel === "" || apiModels[agentModel]?.supportsFunctions;
+      agentModel === "" || apiModels[agentModel]?.supportsToolCalls;
 
     setSelectedModel(isModelAvailable ? agentModel : "");
     setTemperature(
@@ -336,7 +336,7 @@ export function ProfileAgentsTab() {
   };
 
   const modelOptions = Object.entries(apiModels)
-    .filter(([_, model]) => model.supportsFunctions)
+    .filter(([_, model]) => model.supportsToolCalls)
     .map(([id, model]) => ({
       value: id,
       label: model.name || id,

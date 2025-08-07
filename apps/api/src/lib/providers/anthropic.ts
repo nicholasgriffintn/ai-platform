@@ -81,7 +81,7 @@ export class AnthropicProvider extends BaseProvider {
 
     // Anthropic-specific tools
     const tools = [];
-    if (modelConfig?.supportsFunctions) {
+    if (modelConfig?.supportsToolCalls) {
       if (
         modelConfig?.supportsSearchGrounding &&
         params.enabled_tools.includes("search_grounding")
@@ -105,12 +105,12 @@ export class AnthropicProvider extends BaseProvider {
     const allTools = [...tools, ...(toolsParams.tools || [])];
 
     const anthropicSpecificTools =
-      modelConfig?.supportsFunctions && tools.length > 0
+      modelConfig?.supportsToolCalls && tools.length > 0
         ? { tools: allTools }
         : {};
 
     // Handle thinking models
-    const supportsThinking = modelConfig?.hasThinking || false;
+    const supportsThinking = modelConfig?.supportsReasoning || false;
     const thinkingParams = supportsThinking
       ? {
           thinking: {

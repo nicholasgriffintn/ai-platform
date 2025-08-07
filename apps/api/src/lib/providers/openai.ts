@@ -250,7 +250,7 @@ export class OpenAIProvider extends BaseProvider {
     const toolsParams = getToolsForProvider(params, modelConfig, this.name);
 
     const tools = [];
-    if (modelConfig?.supportsFunctions) {
+    if (modelConfig?.supportsToolCalls) {
       if (
         modelConfig?.supportsSearchGrounding &&
         params.enabled_tools.includes("search_grounding")
@@ -261,21 +261,15 @@ export class OpenAIProvider extends BaseProvider {
     const allTools = [...tools, ...(toolsParams.tools || [])];
 
     const openaiSpecificTools =
-      modelConfig?.supportsFunctions && tools.length > 0
+      modelConfig?.supportsToolCalls && tools.length > 0
         ? { tools: allTools }
         : {};
 
-    const thinkingParams = modelConfig?.hasThinking
+    const thinkingParams = modelConfig?.supportsReasoning
       ? { reasoning_effort: params.reasoning_effort }
       : {};
 
     let modelSpecificParams = {};
-    if (params.model === "o1" || params.model === "o4-mini") {
-      modelSpecificParams = {
-        temperature: 1,
-        top_p: undefined,
-      };
-    }
 
     if (params.model.includes("-search-preview")) {
       modelSpecificParams = {

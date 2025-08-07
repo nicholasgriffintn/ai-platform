@@ -1,8 +1,8 @@
 export function getResponseStyle(
   response_mode = "normal",
-  hasThinking = false,
+  supportsReasoning = false,
   requiresThinkingPrompt = false,
-  supportsFunctions = false,
+  supportsToolCalls = false,
   supportsArtifacts = false,
   isAgent = false,
   memoriesEnabled = false,
@@ -48,7 +48,7 @@ export function getResponseStyle(
   PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Read and understand questions carefully.\n`;
   PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If the question is unclear or lacks necessary information, ask for clarification.\n`;
 
-  if (!hasThinking || requiresThinkingPrompt) {
+  if (!supportsReasoning || requiresThinkingPrompt) {
     PREFERENCES_WITH_INSTRUCTIONS += `${step}. Analyze the question and context thoroughly before answering and identify key information from the user's question, return this analysis using the following template:
     <think>
       Your thoughts or/and draft, like working through an exercise on scratch paper.
@@ -84,7 +84,7 @@ export function getResponseStyle(
       }
     }
 
-    if (supportsFunctions) {
+    if (supportsToolCalls) {
       const subBase = isCoding ? `${step}.7` : `${step}.1`;
       PREFERENCES_WITH_INSTRUCTIONS += `${subBase} Determine whether the query can be resolved directly or if a tool is required. Use the description of the tool to help you decide.\n`;
       PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.1 If a tool is required, use it to answer the question.\n`;
@@ -93,7 +93,7 @@ export function getResponseStyle(
 
     if (supportsArtifacts) {
       let artifactSub;
-      if (isCoding && supportsFunctions) {
+      if (isCoding && supportsToolCalls) {
         artifactSub = `${step}.8`;
       } else if (isCoding) {
         artifactSub = `${step}.7`;
@@ -104,14 +104,14 @@ export function getResponseStyle(
     }
 
     let finalSub;
-    if (isCoding && supportsFunctions && supportsArtifacts) {
+    if (isCoding && supportsToolCalls && supportsArtifacts) {
       finalSub = `${step}.9`;
-    } else if (isCoding && (supportsFunctions || supportsArtifacts)) {
-      finalSub = `${step}.${supportsFunctions && supportsArtifacts ? 9 : 8}`;
+    } else if (isCoding && (supportsToolCalls || supportsArtifacts)) {
+      finalSub = `${step}.${supportsToolCalls && supportsArtifacts ? 9 : 8}`;
     } else if (isCoding) {
       finalSub = `${step}.7`;
     } else {
-      finalSub = `${step}.${supportsFunctions && supportsArtifacts ? 3 : supportsFunctions || supportsArtifacts ? 2 : 1}`;
+      finalSub = `${step}.${supportsToolCalls && supportsArtifacts ? 3 : supportsToolCalls || supportsArtifacts ? 2 : 1}`;
     }
     PREFERENCES_WITH_INSTRUCTIONS += `${finalSub} It's OK for this section to be quite long.\n`;
     step++;

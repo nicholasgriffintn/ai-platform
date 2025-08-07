@@ -54,7 +54,7 @@ export const workersAiModelConfig: ModelConfig = {
     speed: 4,
     reliability: 5,
     contextComplexity: 5,
-    supportsFunctions: true,
+    supportsToolCalls: true,
   },
   "llama-3.2-1b-instruct": {
     name: "Meta Llama 3.2 1B Instruct",
@@ -105,7 +105,7 @@ export const workersAiModelConfig: ModelConfig = {
       "Meta's Llama 4 Scout is a 17 billion parameter model with 16 experts that is natively multimodal. These models leverage a mixture-of-experts architecture to offer industry-leading performance in text and image understanding.",
     provider: "workers-ai",
     type: ["text"],
-    supportsFunctions: true,
+    supportsToolCalls: true,
     isFeatured: true,
     multimodal: true,
     strengths: [
@@ -126,7 +126,7 @@ export const workersAiModelConfig: ModelConfig = {
       "An upgraded, retrained version of Nous Hermes 2, consisting of an updated and cleaned version of the OpenHermes 2.5 Dataset, as well as a newly introduced Function Calling and JSON Mode dataset developed in-house.",
     provider: "workers-ai",
     type: ["text"],
-    supportsFunctions: true,
+    supportsToolCalls: true,
     isFree: true,
     isFeatured: true,
     supportsResponseFormat: true,
@@ -322,7 +322,7 @@ export const workersAiModelConfig: ModelConfig = {
     speed: 3,
     reliability: 5,
     contextComplexity: 5,
-    hasThinking: true,
+    supportsReasoning: true,
   },
   "qwen2.5-coder-32b": {
     name: "Qwen 2.5 Coder 32B",

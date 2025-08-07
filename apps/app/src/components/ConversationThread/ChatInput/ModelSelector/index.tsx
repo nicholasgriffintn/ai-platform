@@ -93,7 +93,7 @@ export const ModelSelector = ({
     availableModels,
   ).reduce(
     (acc, [key, m]) => {
-      if (m.supportsFunctions) acc[key] = { ...m, id: key };
+      if (m.supportsToolCalls) acc[key] = { ...m, id: key };
       return acc;
     },
     {} as Record<string, ModelConfigItem>,

@@ -13,9 +13,9 @@ export async function getSystemPrompt(
   userSettings?: IUserSettings,
 ): Promise<string> {
   const modelConfig = await getModelConfigByMatchingModel(model);
-  const supportsFunctions = modelConfig?.supportsFunctions || false;
+  const supportsToolCalls = modelConfig?.supportsToolCalls || false;
   const supportsArtifacts = modelConfig?.supportsArtifacts || false;
-  const hasThinking = modelConfig?.hasThinking || false;
+  const supportsReasoning = modelConfig?.supportsReasoning || false;
   const requiresThinkingPrompt = modelConfig?.requiresThinkingPrompt || false;
 
   let prompt: string;
@@ -25,9 +25,9 @@ export async function getSystemPrompt(
       request,
       user,
       userSettings,
-      supportsFunctions,
+      supportsToolCalls,
       supportsArtifacts,
-      hasThinking,
+      supportsReasoning,
       requiresThinkingPrompt,
     );
   } else {
@@ -38,9 +38,9 @@ export async function getSystemPrompt(
       prompt = returnCodingPrompt(
         request,
         userSettings,
-        supportsFunctions,
+        supportsToolCalls,
         supportsArtifacts,
-        hasThinking,
+        supportsReasoning,
         requiresThinkingPrompt,
       );
     } else {
@@ -54,9 +54,9 @@ export async function getSystemPrompt(
           request,
           user,
           userSettings,
-          supportsFunctions,
+          supportsToolCalls,
           supportsArtifacts,
-          hasThinking,
+          supportsReasoning,
           requiresThinkingPrompt,
         );
       }

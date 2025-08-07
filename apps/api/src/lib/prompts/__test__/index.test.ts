@@ -76,9 +76,9 @@ describe("prompts index", () => {
     it("should use coding prompt for coding models", async () => {
       mockGetModelConfigByMatchingModel.mockResolvedValue({
         type: ["coding"],
-        supportsFunctions: true,
+        supportsToolCalls: true,
         supportsArtifacts: true,
-        hasThinking: false,
+        supportsReasoning: false,
         requiresThinkingPrompt: false,
       });
       mockReturnCodingPrompt.mockResolvedValue("coding prompt");
@@ -142,9 +142,9 @@ describe("prompts index", () => {
     it("should use standard prompt for text models", async () => {
       mockGetModelConfigByMatchingModel.mockResolvedValue({
         type: ["text"],
-        supportsFunctions: false,
+        supportsToolCalls: false,
         supportsArtifacts: false,
-        hasThinking: true,
+        supportsReasoning: true,
         requiresThinkingPrompt: true,
       });
       mockReturnStandardPrompt.mockResolvedValue("text prompt");
@@ -172,7 +172,7 @@ describe("prompts index", () => {
     it("should prefer standard prompt for text+coding models", async () => {
       mockGetModelConfigByMatchingModel.mockResolvedValue({
         type: ["text", "coding"],
-        supportsFunctions: true,
+        supportsToolCalls: true,
         supportsArtifacts: true,
       });
       mockReturnStandardPrompt.mockResolvedValue("mixed prompt");

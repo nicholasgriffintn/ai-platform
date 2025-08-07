@@ -85,7 +85,7 @@ export class GoogleStudioProvider extends BaseProvider {
       enabledTools.includes("search_grounding");
 
     if (
-      modelConfig?.supportsFunctions &&
+      modelConfig?.supportsToolCalls &&
       !hasEnabledExclusiveTools &&
       params.tools?.length > 0
     ) {
@@ -106,7 +106,7 @@ export class GoogleStudioProvider extends BaseProvider {
     return {
       model: params.model,
       contents: this.formatGoogleStudioContents(params),
-      tools: modelConfig?.supportsFunctions ? tools : undefined,
+      tools: modelConfig?.supportsToolCalls ? tools : undefined,
       systemInstruction: {
         role: "system",
         parts: [

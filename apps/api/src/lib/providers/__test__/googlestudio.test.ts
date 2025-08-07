@@ -93,7 +93,7 @@ describe("GoogleStudioProvider", () => {
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "gemini-pro",
-        supportsFunctions: true,
+        supportsToolCalls: true,
         supportsCodeExecution: true,
       });
 
@@ -128,7 +128,7 @@ describe("GoogleStudioProvider", () => {
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "gemini-pro",
-        supportsFunctions: true,
+        supportsToolCalls: true,
         supportsSearchGrounding: true,
       });
 

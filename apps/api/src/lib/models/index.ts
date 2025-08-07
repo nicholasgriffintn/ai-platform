@@ -15,7 +15,6 @@ import { deepseekModelConfig } from "./deepseek";
 import { fireworksModelConfig } from "./fireworks";
 import { githubModelsConfig } from "./githubmodels";
 import { googleAiStudioModelConfig } from "./google-ai-studio";
-import { grokModelConfig } from "./grok";
 import { groqModelConfig } from "./groq";
 import { huggingfaceModelConfig } from "./huggingface";
 import { hyperbolicModelConfig } from "./hyperbolic";
@@ -27,6 +26,7 @@ import { perplexityModelConfig } from "./perplexity";
 import { togetherAiModelConfig } from "./together-ai";
 import { v0ModelConfig } from "./v0";
 import { workersAiModelConfig } from "./workersai";
+import { xaiModelConfig } from "./xai";
 
 const logger = getLogger({ prefix: "MODELS" });
 
@@ -48,7 +48,7 @@ const modelConfig: ModelConfig = {
   ...bedrockModelConfig,
   ...deepseekModelConfig,
   ...githubModelsConfig,
-  ...grokModelConfig,
+  ...xaiModelConfig,
   ...groqModelConfig,
   ...huggingfaceModelConfig,
   ...openrouterModelConfig,

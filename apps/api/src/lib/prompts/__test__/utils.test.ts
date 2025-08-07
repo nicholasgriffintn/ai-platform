@@ -193,7 +193,7 @@ describe("prompts utils", () => {
     });
 
     describe("function support adjustments", () => {
-      it("should include function instructions when supportsFunctions is true", () => {
+      it("should include function instructions when supportsToolCalls is true", () => {
         const result = getResponseStyle("normal", false, false, true);
         expect(result.preferences).toContain(
           "Determine whether the query can be resolved directly or if a tool is required",
@@ -201,20 +201,20 @@ describe("prompts utils", () => {
         expect(result.preferences).toContain("Use the description of the tool");
       });
 
-      it("should not include function instructions when supportsFunctions is false", () => {
+      it("should not include function instructions when supportsToolCalls is false", () => {
         const result = getResponseStyle("normal", false, false, false);
         expect(result.preferences).not.toContain("tool is required");
       });
     });
 
     describe("thinking mode adjustments", () => {
-      it("should include thinking instructions when hasThinking is false or requiresThinkingPrompt is true", () => {
+      it("should include thinking instructions when supportsReasoning is false or requiresThinkingPrompt is true", () => {
         const result = getResponseStyle("normal", false, false);
         expect(result.preferences).toContain("<think>");
         expect(result.preferences).toContain("thoughts or/and draft");
       });
 
-      it("should not include thinking instructions when hasThinking is true and requiresThinkingPrompt is false", () => {
+      it("should not include thinking instructions when supportsReasoning is true and requiresThinkingPrompt is false", () => {
         const result = getResponseStyle("normal", true, false);
         expect(result.preferences).not.toContain("<think>");
       });

@@ -51,7 +51,7 @@ const mockModelConfig: ModelConfigItem = {
   provider: "test-provider",
   type: ["text"],
   isBeta: false,
-  supportsFunctions: true,
+  supportsToolCalls: true,
   isFree: false,
   contextWindow: 4096,
   maxTokens: 2048,

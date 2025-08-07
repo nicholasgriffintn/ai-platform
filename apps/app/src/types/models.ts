@@ -9,7 +9,7 @@ export interface ModelConfigItem {
   provider: string;
   type: string[];
   isBeta?: boolean;
-  supportsFunctions?: boolean;
+  supportsToolCalls?: boolean;
   isFree?: boolean;
   card?: string;
   contextWindow?: number;
@@ -23,7 +23,7 @@ export interface ModelConfigItem {
   multimodal?: boolean;
   includedInRouter?: boolean;
   isFeatured?: boolean;
-  hasThinking?: boolean;
+  supportsReasoning?: boolean;
   supportsDocuments?: boolean;
   supportsSearchGrounding?: boolean;
   supportsCodeExecution?: boolean;

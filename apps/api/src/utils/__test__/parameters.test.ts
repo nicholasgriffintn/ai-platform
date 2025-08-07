@@ -416,7 +416,7 @@ describe("parameters", () => {
     } as ChatCompletionParameters;
 
     const modelConfig = {
-      supportsFunctions: true,
+      supportsToolCalls: true,
       supportsSearchGrounding: true,
     };
 
@@ -453,7 +453,7 @@ describe("parameters", () => {
     it("should return empty object when model doesn't support functions", () => {
       const configWithoutFunctions = {
         ...modelConfig,
-        supportsFunctions: false,
+        supportsToolCalls: false,
       };
 
       const result = getToolsForProvider(

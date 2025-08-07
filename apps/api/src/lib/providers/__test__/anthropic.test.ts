@@ -93,7 +93,7 @@ describe("AnthropicProvider", () => {
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "claude-3-sonnet",
-        supportsFunctions: true,
+        supportsToolCalls: true,
         supportsSearchGrounding: true,
       });
 
@@ -138,7 +138,7 @@ describe("AnthropicProvider", () => {
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "claude-3-thinking",
-        hasThinking: true,
+        supportsReasoning: true,
       });
 
       vi.mocked(createCommonParameters).mockReturnValue({

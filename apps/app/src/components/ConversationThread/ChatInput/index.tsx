@@ -67,7 +67,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     const [isTextToImageOnlyModel, setIsTextToImageOnlyModel] = useState(false);
     const [supportsDocuments, setSupportsDocuments] = useState(false);
     const [supportsAudio, setSupportsAudio] = useState(false);
-    const [supportsFunctions, setSupportsFunctions] = useState(false);
+    const [supportsToolCalls, setsupportsToolCalls] = useState(false);
     const { data: apiModels } = useModels();
     const [isUploading, setIsUploading] = useState(false);
 
@@ -95,7 +95,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         setIsTextToImageOnlyModel(false);
         setSupportsDocuments(false);
         setSupportsAudio(false);
-        setSupportsFunctions(false);
+        setsupportsToolCalls(false);
         return;
       }
 
@@ -118,7 +118,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       setSupportsAudio(
         !!modelData?.supportsAudio && !imageOnly && !textOnlyToImage,
       );
-      setSupportsFunctions(!!modelData?.supportsFunctions);
+      setsupportsToolCalls(!!modelData?.supportsToolCalls);
     }, [model, apiModels]);
 
     const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -537,7 +537,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                 )}
                 <ChatSettingsComponent
                   isDisabled={isLoading}
-                  supportsFunctions={supportsFunctions}
+                  supportsToolCalls={supportsToolCalls}
                 />
               </div>
             </div>

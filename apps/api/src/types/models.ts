@@ -15,7 +15,7 @@ export type ModelConfigItem = {
   provider: string;
   type: Array<(typeof availableModelTypes)[number]>;
   isBeta?: boolean;
-  supportsFunctions?: boolean;
+  supportsToolCalls?: boolean;
   isFree?: boolean;
   card?: string;
   contextWindow?: number;
@@ -29,7 +29,7 @@ export type ModelConfigItem = {
   reliability?: ModelRanking;
   speed?: ModelRanking;
   multimodal?: boolean;
-  hasThinking?: boolean;
+  supportsReasoning?: boolean;
   requiresThinkingPrompt?: boolean;
   includedInRouter?: boolean;
   isFeatured?: boolean;
@@ -43,6 +43,16 @@ export type ModelConfigItem = {
   supportsImageEdits?: boolean;
   timeout?: number;
   supportsAudio?: boolean;
+  knowledgeCutoffDate?: string;
+  releaseDate?: string;
+  lastUpdated?: string;
+  modalities?: {
+    input: string[];
+    output: string[];
+  };
+  supportsAttachments?: boolean;
+  supportsTemperature?: boolean;
+  supportsTopP?: boolean;
 };
 
 export type ModelConfig = {

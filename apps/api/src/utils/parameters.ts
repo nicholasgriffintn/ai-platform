@@ -109,8 +109,11 @@ export function createCommonParameters(
   const commonParams: Record<string, any> = {
     model: modelName,
     messages: params.messages,
-    temperature: params.temperature,
   };
+
+  if (modelConfig.supportsTemperature) {
+    commonParams.temperature = params.temperature;
+  }
 
   if (params.version) {
     commonParams.version = params.version;
@@ -156,7 +159,7 @@ export function createCommonParameters(
     }
   }
 
-  if (params.model && !params.should_think) {
+  if (modelConfig.supportsTopP && params.model && !params.should_think) {
     commonParams.top_p = params.top_p;
   }
 
@@ -179,9 +182,9 @@ export function getToolsForProvider(
     return {};
   }
 
-  const supportsFunctions = modelConfig?.supportsFunctions || false;
+  const supportsToolCalls = modelConfig?.supportsToolCalls || false;
 
-  if (!supportsFunctions) {
+  if (!supportsToolCalls) {
     return {};
   }
 

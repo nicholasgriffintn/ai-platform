@@ -195,7 +195,7 @@ describe("OpenAIProvider", () => {
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "gpt-4",
         type: ["text"],
-        supportsFunctions: true,
+        supportsToolCalls: true,
         supportsSearchGrounding: true,
       });
 
@@ -234,7 +234,7 @@ describe("OpenAIProvider", () => {
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "gpt-4-thinking",
         type: ["text"],
-        hasThinking: true,
+        supportsReasoning: true,
       });
 
       vi.mocked(createCommonParameters).mockReturnValue({

@@ -102,7 +102,7 @@ describe("returnCodingPrompt", () => {
   });
 
   describe("feature flags handling", () => {
-    it("should include thinking section when hasThinking is false", () => {
+    it("should include thinking section when supportsReasoning is false", () => {
       // @ts-expect-error - mock implementation
       const request: IBody = {};
       const result = returnCodingPrompt(
@@ -115,7 +115,7 @@ describe("returnCodingPrompt", () => {
       expect(result).toContain("<think>");
     });
 
-    it("should skip thinking section when hasThinking is true", () => {
+    it("should skip thinking section when supportsReasoning is true", () => {
       // @ts-expect-error - mock implementation
       const request: IBody = {};
       const result = returnCodingPrompt(request, undefined, false, false, true);
@@ -142,7 +142,7 @@ describe("returnCodingPrompt", () => {
       expect(result).toContain("<solution>");
     });
 
-    it("should handle supportsFunctions flag", () => {
+    it("should handle supportsToolCalls flag", () => {
       // @ts-expect-error - mock implementation
       const request: IBody = {};
       const result = returnCodingPrompt(request, undefined, true, false, false);

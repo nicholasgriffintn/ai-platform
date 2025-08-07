@@ -5,9 +5,9 @@ import { getArtifactExample, getResponseStyle } from "./utils";
 export function returnCodingPrompt(
   request: IBody,
   userSettings?: IUserSettings,
-  supportsFunctions?: boolean,
+  supportsToolCalls?: boolean,
   supportsArtifacts?: boolean,
-  hasThinking?: boolean,
+  supportsReasoning?: boolean,
   requiresThinkingPrompt?: boolean,
 ): string {
   const chatMode = request.mode || "standard";
@@ -31,9 +31,9 @@ export function returnCodingPrompt(
     answerFormatInstructions,
   } = getResponseStyle(
     response_mode,
-    hasThinking,
+    supportsReasoning,
     requiresThinkingPrompt,
-    supportsFunctions,
+    supportsToolCalls,
     supportsArtifacts,
     isAgent,
     memoriesEnabled,
@@ -64,7 +64,7 @@ export function returnCodingPrompt(
     )
     .addLine();
 
-  if (!hasThinking) {
+  if (!supportsReasoning) {
     builder
       .addLine("<think>")
       .addLine(problemBreakdownInstructions)
