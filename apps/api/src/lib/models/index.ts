@@ -10,6 +10,7 @@ import {
 } from "./constants";
 
 import { anthropicModelConfig } from "./anthropic";
+import { azureModelConfig } from "./azure";
 import { bedrockModelConfig } from "./bedrock";
 import { chutesModelConfig } from "./chutes";
 import { deepinfraModelConfig } from "./deepinfra";
@@ -58,6 +59,7 @@ const modelConfig: ModelConfig = {
   ...bedrockModelConfig,
   ...deepinfraModelConfig,
   ...deepseekModelConfig,
+  ...azureModelConfig,
   ...githubModelsConfig,
   ...xaiModelConfig,
   ...groqModelConfig,

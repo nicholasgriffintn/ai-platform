@@ -56,6 +56,9 @@ export interface IEnv {
   ELEVENLABS_API_KEY?: string;
   TOGETHER_AI_API_KEY?: string;
   VERCEL_AI_GATEWAY_API_KEY?: string;
+  AZURE_API_KEY?: string;
+  AZURE_RESOURCE_NAME?: string;
+  AZURE_API_VERSION?: string;
   GITHUB_COPILOT_TOKEN?: string;
   UPSTAGE_API_KEY?: string;
   CHUTES_API_KEY?: string;

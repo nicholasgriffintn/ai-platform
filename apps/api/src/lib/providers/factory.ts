@@ -1,4 +1,5 @@
 import { AnthropicProvider } from "./anthropic";
+import { AzureOpenAIProvider } from "./azure";
 import type { AIProvider } from "./base";
 import { BedrockProvider } from "./bedrock";
 import { CertesiaProvider } from "./certesia";
@@ -73,6 +74,7 @@ export class AIProviderFactory {
     { key: "fireworks", provider: new FireworksProvider() },
     { key: "hyperbolic", provider: new HyperbolicProvider() },
     { key: "vercel", provider: new VercelGatewayProvider() },
+    { key: "azure-openai", provider: new AzureOpenAIProvider() },
     { key: "github-copilot", provider: new GithubCopilotProvider() },
     { key: "chutes", provider: new ChutesProvider() },
     { key: "upstage", provider: new UpstageProvider() },
