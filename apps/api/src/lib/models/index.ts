@@ -416,6 +416,7 @@ export async function getAuxiliaryModel(
 
   if (hasGroqModel) {
     modelToUse = "llama-3.3-70b-versatile";
+    return { model: modelToUse, provider: "groq" };
   }
 
   const modelConfig = await getModelConfig(modelToUse, env);
@@ -465,6 +466,7 @@ export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
 
   if (hasGroqModel) {
     modelToUse = "meta-llama/llama-guard-4-12b";
+    return { model: modelToUse, provider: "groq" };
   }
 
   const modelConfig = await getModelConfig(modelToUse, env);

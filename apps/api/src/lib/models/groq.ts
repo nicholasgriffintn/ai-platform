@@ -1,7 +1,7 @@
 import type { ModelConfig } from "~/types";
 
 export const groqModelConfig: ModelConfig = {
-  "gemma2-9b-it-groq": {
+  "gemma2-9b-it": {
     name: "Groq Gemma 2 9B IT",
     matchingModel: "gemma2-9b-it",
     provider: "groq",
@@ -29,7 +29,7 @@ export const groqModelConfig: ModelConfig = {
     reliability: 3,
     supportsArtifacts: true,
   },
-  "qwen-qwq-32b-groq": {
+  "qwen-qwq-32b": {
     name: "Groq Qwen QWQ 32B",
     matchingModel: "qwen-qwq-32b",
     provider: "groq",
@@ -57,7 +57,7 @@ export const groqModelConfig: ModelConfig = {
     reliability: 4,
     supportsArtifacts: true,
   },
-  "deepseek-r1-distill-qwen-32b-groq": {
+  "deepseek-r1-distill-qwen-32b": {
     name: "Groq DeepSeek R1 Distill Qwen 32B",
     matchingModel: "deepseek-r1-distill-qwen-32b",
     provider: "groq",
@@ -85,7 +85,7 @@ export const groqModelConfig: ModelConfig = {
     supportsArtifacts: true,
     supportsToolCalls: true,
   },
-  "deepseek-r1-distill-llama-70b-groq": {
+  "deepseek-r1-distill-llama-70b": {
     name: "Groq DeepSeek R1 Distill Llama 70B",
     matchingModel: "deepseek-r1-distill-llama-70b",
     provider: "groq",
@@ -113,7 +113,7 @@ export const groqModelConfig: ModelConfig = {
     supportsArtifacts: true,
     supportsToolCalls: true,
   },
-  "deepseek-r1-distill-llama-70b-specdec-groq": {
+  "deepseek-r1-distill-llama-70b-specdec": {
     name: "Groq DeepSeek R1 Distill Llama 70B SpecDec",
     matchingModel: "deepseek-r1-distill-llama-70b-specdec",
     provider: "groq",
@@ -141,9 +141,9 @@ export const groqModelConfig: ModelConfig = {
     supportsArtifacts: true,
     supportsToolCalls: true,
   },
-  "llama3-groq-70b-groq": {
+  "llama3-70b": {
     name: "Groq Llama 3 70B",
-    matchingModel: "llama3-groq-70b-8192-tool-use-preview",
+    matchingModel: "llama3-70b-8192-tool-use-preview",
     provider: "groq",
     type: ["text"],
     knowledgeCutoffDate: "December 2023",
@@ -168,9 +168,9 @@ export const groqModelConfig: ModelConfig = {
     reliability: 4,
     supportsArtifacts: true,
   },
-  "llama3-groq-8b-groq": {
+  "llama3-8b": {
     name: "Groq Llama 3 8B",
-    matchingModel: "llama3-groq-8b-8192-tool-use-preview",
+    matchingModel: "llama3-8b-8192-tool-use-preview",
     provider: "groq",
     type: ["text"],
     knowledgeCutoffDate: "December 2023",
@@ -195,7 +195,7 @@ export const groqModelConfig: ModelConfig = {
     reliability: 3,
     supportsArtifacts: true,
   },
-  "llama-3.3-70b-versatile-groq": {
+  "llama-3.3-70b-versatile": {
     name: "Groq Llama 3.3 70B Versatile",
     matchingModel: "llama-3.3-70b-versatile",
     provider: "groq",
@@ -230,7 +230,7 @@ export const groqModelConfig: ModelConfig = {
     includedInRouter: true,
     supportsArtifacts: true,
   },
-  "llama-guard-4-12b-groq": {
+  "meta-llama/llama-guard-4-12b": {
     name: "Groq Llama Guard 4 12B",
     matchingModel: "meta-llama/llama-guard-4-12b",
     provider: "groq",
@@ -242,22 +242,15 @@ export const groqModelConfig: ModelConfig = {
       input: ["text"],
       output: ["text"],
     },
-    supportsAttachments: false,
-    supportsTemperature: false,
-    supportsReasoning: false,
-    supportsToolCalls: false,
     contextWindow: 131072,
     maxTokens: 1024,
     costPer1kInputTokens: 0.00004,
     costPer1kOutputTokens: 0.00004,
     speed: 5,
-    strengths: ["analysis"],
     contextComplexity: 3,
     reliability: 3,
-    includedInRouter: false,
-    supportsArtifacts: false,
   },
-  "groq-llama-4-scout-17b-groq": {
+  "groq-llama-4-scout-17b": {
     name: "Groq Llama 4 Scout 17B",
     matchingModel: "meta-llama/llama-4-scout-17b-16e-instruct",
     provider: "groq",
@@ -294,7 +287,7 @@ export const groqModelConfig: ModelConfig = {
     speed: 5,
     supportsArtifacts: true,
   },
-  "kimi-k2-groq": {
+  "kimi-k2": {
     name: "Groq Kimi K2",
     matchingModel: "moonshotai/kimi-k2-instruct",
     provider: "groq",
@@ -324,7 +317,7 @@ export const groqModelConfig: ModelConfig = {
     supportsArtifacts: true,
     isFeatured: true,
   },
-  "llama-3.1-8b-instant-groq": {
+  "llama-3.1-8b-instant": {
     name: "Llama 3.1 8B Instant",
     matchingModel: "llama-3.1-8b-instant",
     provider: "groq",
@@ -351,7 +344,7 @@ export const groqModelConfig: ModelConfig = {
     includedInRouter: true,
     supportsArtifacts: true,
   },
-  "llama-guard-3-8b-groq": {
+  "llama-guard-3-8b": {
     name: "Llama Guard 3 8B",
     matchingModel: "llama-guard-3-8b",
     provider: "groq",
@@ -378,7 +371,7 @@ export const groqModelConfig: ModelConfig = {
     includedInRouter: false,
     supportsArtifacts: false,
   },
-  "mistral-saba-24b-groq": {
+  "mistral-saba-24b": {
     name: "Mistral SABA 24B",
     matchingModel: "mistral-saba-24b",
     provider: "groq",
@@ -405,7 +398,7 @@ export const groqModelConfig: ModelConfig = {
     includedInRouter: true,
     supportsArtifacts: true,
   },
-  "mixtral-8x7b-32768-groq": {
+  "mixtral-8x7b-32768": {
     name: "Mixtral 8x7B Instruct",
     matchingModel: "mixtral-8x7b-32768",
     provider: "groq",
@@ -432,7 +425,7 @@ export const groqModelConfig: ModelConfig = {
     includedInRouter: true,
     supportsArtifacts: true,
   },
-  "gemma-2-2b-it-groq": {
+  "gemma-2-2b-it": {
     name: "Gemma 2 2B IT",
     matchingModel: "gemma-2-2b-it",
     provider: "groq",
@@ -459,7 +452,7 @@ export const groqModelConfig: ModelConfig = {
     includedInRouter: true,
     supportsArtifacts: true,
   },
-  "gemma-2-27b-it-groq": {
+  "gemma-2-27b-it": {
     name: "Gemma 2 27B IT",
     matchingModel: "gemma-2-27b-it",
     provider: "groq",
