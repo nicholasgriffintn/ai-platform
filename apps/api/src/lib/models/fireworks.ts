@@ -1,7 +1,7 @@
 import type { ModelConfig } from "~/types";
 
 export const fireworksModelConfig: ModelConfig = {
-  "gpt-oss-120b-fireworks": {
+  "openai/gpt-oss-120b": {
     name: "GPT OSS 120B",
     matchingModel: "accounts/fireworks/gpt-oss-120b",
     description:
@@ -30,7 +30,7 @@ export const fireworksModelConfig: ModelConfig = {
     supportsArtifacts: true,
   },
 
-  "gpt-oss-20b-fireworks": {
+  "openai/gpt-oss-20b": {
     name: "GPT OSS 20B",
     matchingModel: "accounts/fireworks/gpt-oss-20b",
     description:
@@ -59,7 +59,7 @@ export const fireworksModelConfig: ModelConfig = {
     supportsArtifacts: true,
   },
 
-  "deepseek-r1-fireworks": {
+  "deepseek/deepseek-r1": {
     name: "DeepSeek R1 (Fireworks)",
     matchingModel: "accounts/fireworks/models/deepseek-r1-0528",
     description:
@@ -89,7 +89,7 @@ export const fireworksModelConfig: ModelConfig = {
     supportsArtifacts: true,
   },
 
-  "qwen3-235b-fireworks": {
+  "qwen/qwen3-235b-a22b": {
     name: "Qwen3 235B-A22B",
     matchingModel: "accounts/fireworks/models/qwen3-235b-a22b",
     description:
@@ -119,7 +119,7 @@ export const fireworksModelConfig: ModelConfig = {
     supportsArtifacts: true,
   },
 
-  "deepseek-v3-fireworks": {
+  "deepseek/deepseek-v3-0324": {
     name: "DeepSeek V3 (Fireworks)",
     matchingModel: "accounts/fireworks/models/deepseek-v3-0324",
     description:
@@ -149,7 +149,7 @@ export const fireworksModelConfig: ModelConfig = {
     supportsArtifacts: true,
   },
 
-  "kimi-k2-fireworks": {
+  "moonshotai/kimi-k2-instruct": {
     name: "Kimi K2 Instruct",
     matchingModel: "accounts/fireworks/models/kimi-k2-instruct",
     description:

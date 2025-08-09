@@ -4,7 +4,7 @@ import { createModelConfig, createModelConfigObject } from "./utils";
 const PROVIDER = "azure-openai";
 
 export const azureModelConfig: ModelConfig = createModelConfigObject([
-  createModelConfig("gpt-4-turbo-vision", PROVIDER, {
+  createModelConfig("openai/gpt-4-turbo-vision", PROVIDER, {
     name: "GPT-4 Turbo Vision",
     matchingModel: "gpt-4-turbo-vision",
     type: ["text", "image-to-text"],
@@ -22,7 +22,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.03,
   }),
 
-  createModelConfig("gpt-4", PROVIDER, {
+  createModelConfig("openai/gpt-4", PROVIDER, {
     name: "GPT-4",
     matchingModel: "gpt-4",
     type: ["text"],
@@ -40,7 +40,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.12,
   }),
 
-  createModelConfig("gpt-3.5-turbo-0125", PROVIDER, {
+  createModelConfig("openai/gpt-3.5-turbo-0125", PROVIDER, {
     name: "GPT-3.5 Turbo 0125",
     matchingModel: "gpt-3.5-turbo-0125",
     type: ["text"],
@@ -58,7 +58,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0015,
   }),
 
-  createModelConfig("gpt-4.1-mini", PROVIDER, {
+  createModelConfig("openai/gpt-4.1-mini", PROVIDER, {
     name: "GPT-4.1 mini",
     matchingModel: "gpt-4.1-mini",
     type: ["text", "image-to-text"],
@@ -76,7 +76,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0016,
   }),
 
-  createModelConfig("o4-mini", PROVIDER, {
+  createModelConfig("openai/o4-mini", PROVIDER, {
     name: "o4-mini",
     matchingModel: "o4-mini",
     type: ["text", "image-to-text"],
@@ -94,7 +94,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0044,
   }),
 
-  createModelConfig("gpt-3.5-turbo-0613", PROVIDER, {
+  createModelConfig("openai/gpt-3.5-turbo-0613", PROVIDER, {
     name: "GPT-3.5 Turbo 0613",
     matchingModel: "gpt-3.5-turbo-0613",
     type: ["text"],
@@ -112,7 +112,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.004,
   }),
 
-  createModelConfig("o1-mini", PROVIDER, {
+  createModelConfig("openai/o1-mini", PROVIDER, {
     name: "o1-mini",
     matchingModel: "o1-mini",
     type: ["text"],
@@ -130,7 +130,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0044,
   }),
 
-  createModelConfig("codex-mini", PROVIDER, {
+  createModelConfig("openai/codex-mini", PROVIDER, {
     name: "Codex Mini",
     matchingModel: "codex-mini",
     type: ["text"],
@@ -148,7 +148,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.006,
   }),
 
-  createModelConfig("gpt-4.1-nano", PROVIDER, {
+  createModelConfig("openai/gpt-4.1-nano", PROVIDER, {
     name: "GPT-4.1 nano",
     matchingModel: "gpt-4.1-nano",
     type: ["text", "image-to-text"],
@@ -166,7 +166,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0004,
   }),
 
-  createModelConfig("o1-preview", PROVIDER, {
+  createModelConfig("openai/o1-preview", PROVIDER, {
     name: "o1-preview",
     matchingModel: "o1-preview",
     type: ["text"],
@@ -184,7 +184,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.066,
   }),
 
-  createModelConfig("gpt-3.5-turbo-1106", PROVIDER, {
+  createModelConfig("openai/gpt-3.5-turbo-1106", PROVIDER, {
     name: "GPT-3.5 Turbo 1106",
     matchingModel: "gpt-3.5-turbo-1106",
     type: ["text"],
@@ -202,7 +202,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.002,
   }),
 
-  createModelConfig("gpt-3.5-turbo-instruct", PROVIDER, {
+  createModelConfig("openai/gpt-3.5-turbo-instruct", PROVIDER, {
     name: "GPT-3.5 Turbo Instruct",
     matchingModel: "gpt-3.5-turbo-instruct",
     type: ["text"],
@@ -220,7 +220,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.002,
   }),
 
-  createModelConfig("gpt-4o-mini", PROVIDER, {
+  createModelConfig("openai/gpt-4o-mini", PROVIDER, {
     name: "GPT-4o mini",
     matchingModel: "gpt-4o-mini",
     type: ["text", "image-to-text"],
@@ -238,7 +238,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0006,
   }),
 
-  createModelConfig("gpt-4-turbo", PROVIDER, {
+  createModelConfig("openai/gpt-4-turbo", PROVIDER, {
     name: "GPT-4 Turbo",
     matchingModel: "gpt-4-turbo",
     type: ["text", "image-to-text"],
@@ -256,7 +256,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.03,
   }),
 
-  createModelConfig("o3-mini", PROVIDER, {
+  createModelConfig("openai/o3-mini", PROVIDER, {
     name: "o3-mini",
     matchingModel: "o3-mini",
     type: ["text"],
@@ -274,7 +274,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0044,
   }),
 
-  createModelConfig("gpt-3.5-turbo-0301", PROVIDER, {
+  createModelConfig("openai/gpt-3.5-turbo-0301", PROVIDER, {
     name: "GPT-3.5 Turbo 0301",
     matchingModel: "gpt-3.5-turbo-0301",
     type: ["text"],
@@ -292,7 +292,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.002,
   }),
 
-  createModelConfig("o1", PROVIDER, {
+  createModelConfig("openai/o1", PROVIDER, {
     name: "o1",
     matchingModel: "o1",
     type: ["text", "image-to-text"],
@@ -310,7 +310,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.06,
   }),
 
-  createModelConfig("gpt-4.1", PROVIDER, {
+  createModelConfig("openai/gpt-4.1", PROVIDER, {
     name: "GPT-4.1",
     matchingModel: "gpt-4.1",
     type: ["text", "image-to-text"],
@@ -328,7 +328,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.008,
   }),
 
-  createModelConfig("gpt-4o", PROVIDER, {
+  createModelConfig("openai/gpt-4o", PROVIDER, {
     name: "GPT-4o",
     matchingModel: "gpt-4o",
     type: ["text", "image-to-text"],
@@ -346,7 +346,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.01,
   }),
 
-  createModelConfig("gpt-4-32k", PROVIDER, {
+  createModelConfig("openai/gpt-4-32k", PROVIDER, {
     name: "GPT-4 32K",
     matchingModel: "gpt-4-32k",
     type: ["text"],
@@ -364,7 +364,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.12,
   }),
 
-  createModelConfig("o3", PROVIDER, {
+  createModelConfig("openai/o3", PROVIDER, {
     name: "o3",
     matchingModel: "o3",
     type: ["text", "image-to-text"],

@@ -4,7 +4,7 @@ import { createModelConfig, createModelConfigObject } from "./utils";
 const PROVIDER = "github-copilot";
 
 export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
-  createModelConfig("claude-sonnet-4", PROVIDER, {
+  createModelConfig("ghcopilot/anthropic/claude-sonnet-4", PROVIDER, {
     name: "Claude Sonnet 4",
     matchingModel: "claude-sonnet-4",
     type: ["text", "image-to-text"],
@@ -20,7 +20,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     maxTokens: 8192,
   }),
 
-  createModelConfig("o4-mini", PROVIDER, {
+  createModelConfig("ghcopilot/openai/o4-mini", PROVIDER, {
     name: "o4-mini (Preview)",
     matchingModel: "o4-mini",
     type: ["text"],
@@ -36,7 +36,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     maxTokens: 65536,
   }),
 
-  createModelConfig("claude-3.5-sonnet", PROVIDER, {
+  createModelConfig("ghcopilot/anthropic/claude-3.5-sonnet", PROVIDER, {
     name: "Claude Sonnet 3.5",
     matchingModel: "claude-3.5-sonnet",
     type: ["text", "image-to-text"],
@@ -52,7 +52,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     maxTokens: 8192,
   }),
 
-  createModelConfig("gemini-2.0-flash-001", PROVIDER, {
+  createModelConfig("ghcopilot/google/gemini-2.0-flash-001", PROVIDER, {
     name: "Gemini 2.0 Flash",
     matchingModel: "gemini-2.0-flash-001",
     type: ["text", "image-to-text"],
@@ -71,7 +71,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     maxTokens: 8192,
   }),
 
-  createModelConfig("claude-opus-4.1", PROVIDER, {
+  createModelConfig("ghcopilot/anthropic/claude-opus-4.1", PROVIDER, {
     name: "Claude Opus 4.1",
     matchingModel: "claude-opus-4.1",
     type: ["text", "image-to-text"],
@@ -87,7 +87,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     maxTokens: 32000,
   }),
 
-  createModelConfig("claude-3.7-sonnet-thought", PROVIDER, {
+  createModelConfig("ghcopilot/anthropic/claude-3.7-sonnet-thought", PROVIDER, {
     name: "Claude Sonnet 3.7 Thinking",
     matchingModel: "claude-3.7-sonnet-thought",
     type: ["text", "image-to-text"],
@@ -103,7 +103,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     maxTokens: 8192,
   }),
 
-  createModelConfig("claude-3.7-sonnet", PROVIDER, {
+  createModelConfig("ghcopilot/anthropic/claude-3.7-sonnet", PROVIDER, {
     name: "Claude Sonnet 3.7",
     matchingModel: "claude-3.7-sonnet",
     type: ["text", "image-to-text"],
@@ -119,7 +119,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     maxTokens: 8192,
   }),
 
-  createModelConfig("gemini-2.5-pro", PROVIDER, {
+  createModelConfig("ghcopilot/google/gemini-2.5-pro", PROVIDER, {
     name: "Gemini 2.5 Pro (Preview)",
     matchingModel: "gemini-2.5-pro",
     type: ["text", "image-to-text"],
@@ -138,7 +138,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     maxTokens: 65536,
   }),
 
-  createModelConfig("claude-opus-4", PROVIDER, {
+  createModelConfig("ghcopilot/anthropic/claude-opus-4", PROVIDER, {
     name: "Claude Opus 4",
     matchingModel: "claude-opus-4",
     type: ["text", "image-to-text"],
@@ -154,7 +154,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     maxTokens: 16000,
   }),
 
-  createModelConfig("o3-mini", PROVIDER, {
+  createModelConfig("ghcopilot/openai/o3-mini", PROVIDER, {
     name: "o3-mini",
     matchingModel: "o3-mini",
     type: ["text"],
@@ -170,7 +170,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     maxTokens: 65536,
   }),
 
-  createModelConfig("gpt-4.1", PROVIDER, {
+  createModelConfig("ghcopilot/openai/gpt-4.1", PROVIDER, {
     name: "GPT-4.1",
     matchingModel: "gpt-4.1",
     type: ["text", "image-to-text"],
@@ -186,7 +186,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     maxTokens: 16384,
   }),
 
-  createModelConfig("gpt-4o", PROVIDER, {
+  createModelConfig("ghcopilot/openai/gpt-4o", PROVIDER, {
     name: "GPT-4o",
     matchingModel: "gpt-4o",
     type: ["text", "image-to-text"],
@@ -202,7 +202,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     maxTokens: 16384,
   }),
 
-  createModelConfig("o3", PROVIDER, {
+  createModelConfig("openai/o3", PROVIDER, {
     name: "o3 (Preview)",
     matchingModel: "o3",
     type: ["text", "image-to-text"],

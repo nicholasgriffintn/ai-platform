@@ -1,7 +1,7 @@
 import type { ModelConfig } from "~/types";
 
 export const hyperbolicModelConfig: ModelConfig = {
-  "Hermes-3-Llama-3.1-70B": {
+  "nousresearch/hermes-3-llama-3.1-70b": {
     name: "Hermes-3-Llama-3.1-70B",
     matchingModel: "NousResearch/Hermes-3-Llama-3.1-70B",
     description:
