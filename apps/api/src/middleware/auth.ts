@@ -238,22 +238,22 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
     const method = context.req.method;
 
     const isGenerateTitlePath =
-      /^\/chat\/completions\/[^\/]+\/generate-title$/.test(path) &&
+      /^\/chat\/completions\/[^/]+\/generate-title$/.test(path) &&
       method === "POST";
     const isUpdatePath =
-      /^\/chat\/completions\/[^\/]+$/.test(path) && method === "PUT";
+      /^\/chat\/completions\/[^/]+$/.test(path) && method === "PUT";
     const isDeletePath =
-      /^\/chat\/completions\/[^\/]+$/.test(path) && method === "DELETE";
+      /^\/chat\/completions\/[^/]+$/.test(path) && method === "DELETE";
     const isCheckPath =
-      /^\/chat\/completions\/[^\/]+\/check$/.test(path) && method === "POST";
+      /^\/chat\/completions\/[^/]+\/check$/.test(path) && method === "POST";
     const isFeedbackPath =
-      /^\/chat\/completions\/[^\/]+\/feedback$/.test(path) && method === "POST";
+      /^\/chat\/completions\/[^/]+\/feedback$/.test(path) && method === "POST";
     const isSharePath =
-      /^\/chat\/completions\/[^\/]+\/share$/.test(path) && method === "POST";
+      /^\/chat\/completions\/[^/]+\/share$/.test(path) && method === "POST";
     const isUnsharePath =
-      /^\/chat\/completions\/[^\/]+\/unshare$/.test(path) && method === "POST";
+      /^\/chat\/completions\/[^/]+\/unshare$/.test(path) && method === "POST";
     const isGetSharedPath =
-      /^\/chat\/shared\/[^\/]+$/.test(path) && method === "GET";
+      /^\/chat\/shared\/[^/]+$/.test(path) && method === "GET";
 
     const isAllowedPath =
       isGenerateTitlePath ||

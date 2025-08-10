@@ -110,7 +110,7 @@ describe("prompt-coach service", () => {
       const { getAIResponse } = await import("~/lib/chat/responses");
       vi.mocked(getAIResponse).mockResolvedValue(mockAIResponse);
 
-      const result = await handlePromptCoachSuggestion({
+      const _result = await handlePromptCoachSuggestion({
         env: mockEnv,
         user: mockUser,
         prompt: "Write something",

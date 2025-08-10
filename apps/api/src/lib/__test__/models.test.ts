@@ -83,7 +83,7 @@ const mockFreeModel: ModelConfigItem = {
   isFree: true,
 };
 
-const mockFeaturedModel: ModelConfigItem = {
+const _mockFeaturedModel: ModelConfigItem = {
   ...mockModelConfig,
   matchingModel: "featured-model",
   name: "Featured Model",
@@ -91,7 +91,7 @@ const mockFeaturedModel: ModelConfigItem = {
   isFeatured: true,
 };
 
-const mockBetaModel: ModelConfigItem = {
+const _mockBetaModel: ModelConfigItem = {
   ...mockModelConfig,
   matchingModel: "beta-model",
   name: "Beta Model",
@@ -254,7 +254,7 @@ describe("Models", () => {
       expect(result).toBeDefined();
       expect(typeof result).toBe("object");
 
-      for (const [key, model] of Object.entries(result)) {
+      for (const [_key, model] of Object.entries(result)) {
         expect(model.beta).not.toBe(true);
       }
     });
@@ -274,7 +274,7 @@ describe("Models", () => {
       expect(result).toBeDefined();
       expect(typeof result).toBe("object");
 
-      for (const [key, model] of Object.entries(result)) {
+      for (const [_key, model] of Object.entries(result)) {
         expect(model.isFree).toBe(true);
       }
     });
@@ -294,7 +294,7 @@ describe("Models", () => {
       expect(result).toBeDefined();
       expect(typeof result).toBe("object");
 
-      for (const [key, model] of Object.entries(result)) {
+      for (const [_key, model] of Object.entries(result)) {
         expect(model.isFeatured).toBe(true);
       }
     });
@@ -314,7 +314,7 @@ describe("Models", () => {
       expect(result).toBeDefined();
       expect(typeof result).toBe("object");
 
-      for (const [key, model] of Object.entries(result)) {
+      for (const [_key, model] of Object.entries(result)) {
         expect(model.includedInRouter).toBe(true);
       }
     });
@@ -334,7 +334,7 @@ describe("Models", () => {
       expect(result).toBeDefined();
       expect(typeof result).toBe("object");
 
-      for (const [key, model] of Object.entries(result)) {
+      for (const [_key, model] of Object.entries(result)) {
         expect(model.strengths).toContain("coding");
       }
     });
@@ -353,7 +353,7 @@ describe("Models", () => {
       expect(result).toBeDefined();
       expect(typeof result).toBe("object");
 
-      for (const [key, model] of Object.entries(result)) {
+      for (const [_key, model] of Object.entries(result)) {
         expect(model.type).toContain("text");
       }
     });

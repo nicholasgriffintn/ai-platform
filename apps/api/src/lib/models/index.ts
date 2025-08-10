@@ -1,18 +1,16 @@
 import { KVCache } from "~/lib/cache";
 import { Database } from "~/lib/database";
-import type { IUser, ModelConfig } from "~/types";
-import type { IEnv, ModelConfigItem } from "~/types";
+import type { IEnv, IUser, ModelConfig, ModelConfigItem } from "~/types";
 import { getLogger } from "~/utils/logger";
+import { anthropicModelConfig } from "./anthropic";
+import { azureModelConfig } from "./azure";
+import { bedrockModelConfig } from "./bedrock";
+import { chutesModelConfig } from "./chutes";
 import {
   type availableCapabilities,
   type availableModelTypes,
   defaultModel,
 } from "./constants";
-
-import { anthropicModelConfig } from "./anthropic";
-import { azureModelConfig } from "./azure";
-import { bedrockModelConfig } from "./bedrock";
-import { chutesModelConfig } from "./chutes";
 import { deepinfraModelConfig } from "./deepinfra";
 import { deepseekModelConfig } from "./deepseek";
 import { fireworksModelConfig } from "./fireworks";

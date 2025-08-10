@@ -316,7 +316,7 @@ app.get(
         message: "Model fetched successfully",
         data: model,
       });
-    } catch (error) {
+    } catch (_error) {
       return context.json(
         {
           success: false,

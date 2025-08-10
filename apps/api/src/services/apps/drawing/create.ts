@@ -37,10 +37,10 @@ export async function generateImageFromDrawing({
   const drawingId = request.drawingId || existingDrawingId || generateId();
   const drawingImageKey = `drawings/${drawingId}/image.png`;
 
-  let drawingUrl = "";
+  let _drawingUrl = "";
   try {
     const storageService = new StorageService(env.ASSETS_BUCKET);
-    drawingUrl = await storageService.uploadObject(
+    _drawingUrl = await storageService.uploadObject(
       drawingImageKey,
       arrayBuffer,
       {
@@ -48,7 +48,7 @@ export async function generateImageFromDrawing({
         contentLength: length,
       },
     );
-  } catch (error) {
+  } catch (_error) {
     throw new AssistantError("Error uploading drawing");
   }
 
@@ -105,7 +105,7 @@ export async function generateImageFromDrawing({
       contentType: "image/png",
       contentLength: paintingLength,
     });
-  } catch (error) {
+  } catch (_error) {
     throw new AssistantError("Error uploading painting");
   }
 

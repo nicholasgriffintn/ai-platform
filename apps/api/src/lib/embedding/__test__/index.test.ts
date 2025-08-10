@@ -96,7 +96,7 @@ describe("Embedding", () => {
         bedrock_knowledge_base_custom_data_source_id: "test-ds-id",
       } as IUserSettings;
 
-      const embedding = Embedding.getInstance(
+      const _embedding = Embedding.getInstance(
         mockEnv,
         mockUser,
         bedrockSettings,

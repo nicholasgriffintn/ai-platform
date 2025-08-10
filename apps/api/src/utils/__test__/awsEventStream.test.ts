@@ -8,11 +8,11 @@ vi.mock("../logger", () => ({
 }));
 
 describe("awsEventStream", () => {
-  let mockLogger: any;
+  let _mockLogger: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockLogger = {
+    _mockLogger = {
       error: vi.fn(),
     };
   });

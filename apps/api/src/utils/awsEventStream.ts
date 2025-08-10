@@ -57,7 +57,7 @@ export function createEventStreamParser(): TransformStream {
             buffer.buffer,
             buffer.byteOffset,
           ).getUint32(4, false);
-          const preludeCrc = new DataView(
+          const _preludeCrc = new DataView(
             buffer.buffer,
             buffer.byteOffset,
           ).getUint32(8, false);

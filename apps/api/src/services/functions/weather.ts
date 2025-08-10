@@ -22,10 +22,10 @@ export const get_weather: IFunction = {
   type: "normal",
   costPerCall: 0,
   function: async (
-    completion_id: string,
+    _completion_id: string,
     args: any,
     req: IRequest,
-    app_url?: string,
+    _app_url?: string,
   ) => {
     const location = {
       longitude: args.longitude || args.lat,

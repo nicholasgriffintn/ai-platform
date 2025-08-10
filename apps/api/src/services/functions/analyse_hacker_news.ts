@@ -1,10 +1,8 @@
-import { getAIResponse } from "~/lib/chat";
-import { extractContentsystem_prompt } from "~/lib/prompts";
 import {
   analyseHackerNewsStories,
   retrieveHackerNewsTopStories,
 } from "~/services/apps/retrieval/hackernews";
-import type { IFunction, IRequest, Message } from "~/types";
+import type { IFunction, IRequest } from "~/types";
 
 export const analyse_hacker_news: IFunction = {
   name: "analyse_hacker_news",
@@ -34,10 +32,10 @@ export const analyse_hacker_news: IFunction = {
   type: "normal",
   costPerCall: 1,
   function: async (
-    completion_id: string,
+    _completion_id: string,
     args: any,
     req: IRequest,
-    app_url?: string,
+    _app_url?: string,
   ) => {
     const stories = await retrieveHackerNewsTopStories({
       count: args.count,

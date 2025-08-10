@@ -165,7 +165,7 @@ Ensure the output is nothing but the JSON object itself.`;
         } else {
           throw new Error("Could not extract valid JSON");
         }
-      } catch (fallbackError) {
+      } catch (_fallbackError) {
         throw new AssistantError(
           "Invalid JSON response from AI analysis",
           ErrorType.PROVIDER_ERROR,
@@ -211,7 +211,7 @@ Ensure the output is nothing but the JSON object itself.`;
 
   private static extractKeywords(prompt: string): string[] {
     const categorizedMatches = Object.entries(PromptAnalyzer.FILTERS).reduce(
-      (acc, [domain, filter]) => {
+      (acc, [_domain, filter]) => {
         const matches = filter.getCategorizedMatches(prompt);
         for (const [key, value] of Object.entries(matches)) {
           acc[key] = [...(acc[key] || []), ...value];

@@ -32,7 +32,7 @@ describe("ModelConfigValidator", () => {
   let mockSelectModels: any;
   let mockGetAllAttachments: any;
   let mockGetModelConfig: any;
-  let mockLogger: any;
+  let _mockLogger: any;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -52,7 +52,7 @@ describe("ModelConfigValidator", () => {
     mockSelectModels = vi.mocked(selectModels);
     mockGetAllAttachments = vi.mocked(getAllAttachments);
     mockGetModelConfig = vi.mocked(getModelConfig);
-    mockLogger = vi.mocked(getLogger)().info;
+    _mockLogger = vi.mocked(getLogger)().info;
 
     validator = new ModelConfigValidator();
 

@@ -13,7 +13,7 @@ import type { CoreChatOptions } from "~/types";
 
 export class ContextLimitValidator implements Validator {
   async validate(
-    options: CoreChatOptions,
+    _options: CoreChatOptions,
     context: ValidationContext,
   ): Promise<ValidatorResult> {
     if (

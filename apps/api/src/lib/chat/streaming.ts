@@ -3,8 +3,7 @@ import {
   MAX_CONTENT_LENGTH,
   MAX_THINKING_LENGTH,
 } from "~/constants/app";
-import { formatAssistantMessage } from "~/lib/chat/responses";
-import { getAIResponse } from "~/lib/chat/responses";
+import { formatAssistantMessage, getAIResponse } from "~/lib/chat/responses";
 import { handleToolCalls } from "~/lib/chat/tools";
 import { getToolEventPayload } from "~/lib/chat/utils";
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
@@ -284,7 +283,7 @@ export async function createStreamWithPostProcessing(
               let data: ParsedSSEData;
               try {
                 data = JSON.parse(dataStr) as ParsedSSEData;
-              } catch (e) {
+              } catch (_e) {
                 throw new Error("Failed to parse data");
               }
               logger.trace("Parsed SSE data", { currentEventType, data });
@@ -434,10 +433,7 @@ export async function createStreamWithPostProcessing(
                 if (
                   currentEventType === "content_block_stop" &&
                   data.index !== undefined &&
-                  Object.prototype.hasOwnProperty.call(
-                    currentToolCalls,
-                    data.index,
-                  ) &&
+                  Object.hasOwn(currentToolCalls, data.index) &&
                   currentToolCalls[data.index] &&
                   !currentToolCalls[data.index].isComplete
                 ) {

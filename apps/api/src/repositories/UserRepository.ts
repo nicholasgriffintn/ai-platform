@@ -138,7 +138,7 @@ export class UserRepository extends BaseRepository {
 
   public async createOauthAccount(
     userId: number,
-    providerId: string,
+    _providerId: string,
     providerUserId: string,
   ): Promise<void> {
     await this.executeRun(

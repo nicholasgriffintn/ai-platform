@@ -9,10 +9,10 @@ vi.mock("../storage", () => ({
   StorageService: vi.fn().mockImplementation(() => mockStorageService),
 }));
 
-const createMockReadableStream = (data: Uint8Array[]) => {
-  const index = 0;
+const _createMockReadableStream = (_data: Uint8Array[]) => {
+  const _index = 0;
   return new ReadableStream({
-    start(controller) {},
+    start(_controller) {},
   }) as ReadableStream & {
     getReader: () => {
       read: () => Promise<{ done: boolean; value?: Uint8Array }>;
@@ -32,7 +32,7 @@ describe("Upload Functions", () => {
   describe("uploadImageFromChat", () => {
     it("should upload image from ReadableStream", async () => {
       const chunks = [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])];
-      const chunkIndex = 0;
+      const _chunkIndex = 0;
 
       const mockStream = new ReadableStream({
         start(controller) {

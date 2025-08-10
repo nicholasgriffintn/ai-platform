@@ -1,6 +1,5 @@
 import type { AppDataItem } from "~/components/Apps/ContentRenderers";
-import type { AppSchema } from "~/types/apps";
-import type { AppListItem } from "~/types/apps";
+import type { AppListItem, AppSchema } from "~/types/apps";
 import type {
   AnalyseArticleParams,
   AnalyseArticleResponse,

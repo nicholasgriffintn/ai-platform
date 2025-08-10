@@ -13,7 +13,9 @@ interface ThemeOption {
 
 export const ChatThemeDropdown = ({
   position = "bottom",
-}: { position?: "top" | "bottom" } = {}) => {
+}: {
+  position?: "top" | "bottom";
+} = {}) => {
   const [theme, setTheme] = useTheme();
   const [isMounted, setIsMounted] = useState(false);
 

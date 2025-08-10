@@ -77,7 +77,7 @@ class Logger {
 
     try {
       return JSON.stringify(logObject);
-    } catch (e) {
+    } catch (_e) {
       return JSON.stringify({
         timestamp,
         level: levelName,

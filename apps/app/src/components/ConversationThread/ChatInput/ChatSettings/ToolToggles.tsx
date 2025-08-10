@@ -52,46 +52,42 @@ export const ToolToggles = ({
       )}
 
       {supportsToolCalls && availableTools.length !== 0 ? (
-        <>
-          <ToggleGroup
-            type="multiple"
-            size="sm"
-            value={selectedTools.filter((tool) =>
-              availableTools.includes(tool),
-            )}
-            onValueChange={handleValueChange}
-            disabled={isDisabled}
-            aria-label="Select tools"
-            className="ml-1"
-          >
-            {supportsCodeExecution && (
-              <ToggleGroupItem
-                value="code_execution"
-                aria-label="Toggle code execution"
-                title={
-                  selectedTools.includes("code_execution")
-                    ? "Disable code execution"
-                    : "Enable code execution"
-                }
-              >
-                <Code className="h-4 w-4" />
-              </ToggleGroupItem>
-            )}
-            {supportsSearchGrounding && (
-              <ToggleGroupItem
-                value="search_grounding"
-                aria-label="Toggle search grounding"
-                title={
-                  selectedTools.includes("search_grounding")
-                    ? "Disable search grounding"
-                    : "Enable search grounding"
-                }
-              >
-                <Search className="h-4 w-4" />
-              </ToggleGroupItem>
-            )}
-          </ToggleGroup>
-        </>
+        <ToggleGroup
+          type="multiple"
+          size="sm"
+          value={selectedTools.filter((tool) => availableTools.includes(tool))}
+          onValueChange={handleValueChange}
+          disabled={isDisabled}
+          aria-label="Select tools"
+          className="ml-1"
+        >
+          {supportsCodeExecution && (
+            <ToggleGroupItem
+              value="code_execution"
+              aria-label="Toggle code execution"
+              title={
+                selectedTools.includes("code_execution")
+                  ? "Disable code execution"
+                  : "Enable code execution"
+              }
+            >
+              <Code className="h-4 w-4" />
+            </ToggleGroupItem>
+          )}
+          {supportsSearchGrounding && (
+            <ToggleGroupItem
+              value="search_grounding"
+              aria-label="Toggle search grounding"
+              title={
+                selectedTools.includes("search_grounding")
+                  ? "Disable search grounding"
+                  : "Enable search grounding"
+              }
+            >
+              <Search className="h-4 w-4" />
+            </ToggleGroupItem>
+          )}
+        </ToggleGroup>
       ) : null}
     </div>
   );

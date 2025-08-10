@@ -220,7 +220,7 @@ describe("extractContent", () => {
     mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
     mockEmbedding.insert.mockResolvedValue({ mutationId: "mutation-123" });
 
-    const result = await extractContent(params, mockRequest);
+    const _result = await extractContent(params, mockRequest);
 
     expect(mockEmbedding.insert).toHaveBeenCalledWith([{ id: "vec-1" }], {
       namespace: "webpages",

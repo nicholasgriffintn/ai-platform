@@ -1,7 +1,6 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
-import { z } from "zod/v4";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handlePodcastGenerateImage } from "~/services/apps/podcast/generate-image";
@@ -19,13 +18,11 @@ import { handlePodcastUpload } from "~/services/apps/podcast/upload";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import {
+  listPodcastsResponseSchema,
+  podcastDetailResponseSchema,
   podcastGenerateImageSchema,
   podcastSummarizeSchema,
   podcastTranscribeSchema,
-} from "../schemas/apps";
-import {
-  listPodcastsResponseSchema,
-  podcastDetailResponseSchema,
 } from "../schemas/apps";
 import { apiResponseSchema } from "../schemas/shared";
 

@@ -1,6 +1,6 @@
 import { Link2, Loader2, Plus, Save, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { BackLink } from "~/components/BackLink";

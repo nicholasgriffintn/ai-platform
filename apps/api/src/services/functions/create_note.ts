@@ -1,8 +1,7 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { insertEmbedding } from "~/services/apps/embeddings/insert";
 import type { IFunction, IRequest } from "~/types";
-import { AssistantError } from "../../utils/errors";
-import { ErrorType } from "../../utils/errors";
+import { AssistantError, ErrorType } from "../../utils/errors";
 
 export const create_note: IFunction = {
   name: "create_note",
@@ -30,10 +29,10 @@ export const create_note: IFunction = {
   type: "normal",
   costPerCall: 1,
   function: async (
-    completion_id: string,
+    _completion_id: string,
     args: any,
     req: IRequest,
-    app_url?: string,
+    _app_url?: string,
   ) => {
     // TODO: Remove this once we have a proper way to handle this
     if (req.user?.github_username !== "nicholasgriffintn") {

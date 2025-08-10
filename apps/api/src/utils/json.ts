@@ -1,6 +1,6 @@
 import { getLogger } from "./logger";
 
-const logger = getLogger();
+const _logger = getLogger();
 
 export interface ParseResult<T> {
   data: T | null;

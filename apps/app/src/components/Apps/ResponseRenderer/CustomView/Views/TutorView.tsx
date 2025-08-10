@@ -7,7 +7,10 @@ import { MemoizedMarkdown } from "~/components/ui/Markdown";
 export function TutorView({
   data,
   embedded,
-}: { data: any; embedded: boolean }) {
+}: {
+  data: any;
+  embedded: boolean;
+}) {
   const [showAllSources, setShowAllSources] = useState(false);
 
   if (!data) {
@@ -19,7 +22,7 @@ export function TutorView({
   const getDomain = (url: string) => {
     try {
       return url.replace(/(https?:\/\/)?(www\.)?/i, "").split("/")[0];
-    } catch (e) {
+    } catch (_e) {
       return url;
     }
   };

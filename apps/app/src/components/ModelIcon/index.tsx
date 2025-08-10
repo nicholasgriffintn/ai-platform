@@ -1,8 +1,8 @@
 "use client";
 
 import { Wand2 } from "lucide-react";
-import { Suspense, forwardRef, lazy, useMemo, useState } from "react";
 import type { ComponentProps, FC } from "react";
+import { Suspense, forwardRef, lazy, useMemo, useState } from "react";
 
 import { MODEL_ICONS, PROVIDER_ICONS } from "./iconDefinitions";
 import { getProviderColor } from "./utils";
@@ -51,16 +51,6 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
     },
     ref,
   ) => {
-    if (url) {
-      return (
-        <img
-          src={url}
-          alt={modelName}
-          className="w-6 h-6 rounded-full object-cover"
-        />
-      );
-    }
-
     const { iconName, iconType } = useMemo(() => {
       const normalizedModelName = modelName.toLowerCase();
 
@@ -109,6 +99,16 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
         ? size
         : Number.parseInt(size as string, 10) || 20;
     const iconLabel = provider ? `${modelName} by ${provider}` : modelName;
+
+    if (url) {
+      return (
+        <img
+          src={url}
+          alt={modelName}
+          className="w-6 h-6 rounded-full object-cover"
+        />
+      );
+    }
 
     return (
       <div

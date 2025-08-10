@@ -348,7 +348,7 @@ describe("HackerNews Services", () => {
       const mockResponse = { response: "These startups are RAW!" };
       mockProvider.getResponse.mockResolvedValue(mockResponse);
 
-      const result = await analyseHackerNewsStories({
+      const _result = await analyseHackerNewsStories({
         character: "gordonramsay",
         stories: mockStories,
         env: mockEnv,
@@ -374,7 +374,7 @@ describe("HackerNews Services", () => {
       };
       mockProvider.getResponse.mockResolvedValue(mockResponse);
 
-      const result = await analyseHackerNewsStories({
+      const _result = await analyseHackerNewsStories({
         character: "davidattenborough",
         stories: mockStories,
         env: mockEnv,
@@ -402,7 +402,7 @@ describe("HackerNews Services", () => {
       };
       mockProvider.getResponse.mockResolvedValue(mockResponse);
 
-      const result = await analyseHackerNewsStories({
+      const _result = await analyseHackerNewsStories({
         character: "clippy",
         stories: mockStories,
         env: mockEnv,

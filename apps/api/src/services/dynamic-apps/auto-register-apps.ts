@@ -110,7 +110,7 @@ const mapJsonSchemaTypeToFieldType = (
 
 const generateValidationFromSchema = (
   schema: any,
-  fieldType: FieldType,
+  _fieldType: FieldType,
 ): any => {
   const validation: any = {};
 

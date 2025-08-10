@@ -30,7 +30,6 @@ vi.mock("~/utils/logger", () => ({
 }));
 
 import { Database } from "~/lib/database";
-import { Embedding } from "~/lib/embedding";
 import { queryEmbeddings } from "../query";
 
 describe("queryEmbeddings", () => {

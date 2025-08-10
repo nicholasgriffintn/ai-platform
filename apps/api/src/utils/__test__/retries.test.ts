@@ -136,7 +136,7 @@ describe("retries", () => {
     });
 
     it("should respect isRetryableError predicate", async () => {
-      const retryableError = new Error("retryable");
+      const _retryableError = new Error("retryable");
       const nonRetryableError = new Error("non-retryable");
 
       const mockFn = vi.fn().mockRejectedValue(nonRetryableError);

@@ -23,8 +23,8 @@ Object.defineProperty(global, "fetch", {
   value: mockFetch,
 });
 
-import { captureScreenshot } from "../screenshot";
 import type { CaptureScreenshotParams } from "../screenshot";
+import { captureScreenshot } from "../screenshot";
 
 describe("captureScreenshot", () => {
   const mockRequest: IRequest = {

@@ -37,8 +37,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { type AgentData, useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { useSharedAgents } from "~/hooks/useSharedAgents";
-import { generateId } from "~/lib/utils";
-import { cn } from "~/lib/utils";
+import { cn, generateId } from "~/lib/utils";
 import { ConfirmDeleteModal } from "../Modals/ConfirmDeleteModal";
 import { AgentCard } from "./cards/AgentCard";
 import { SharedAgentCard } from "./cards/SharedAgentCard";
@@ -233,7 +232,7 @@ export function ProfileAgentsTab() {
           setUseServers(false);
           setServers([{ id: generateId(), url: "", type: "sse" }]);
         }
-      } catch (e) {
+      } catch (_e) {
         setUseServers(false);
         setServers([{ id: generateId(), url: "", type: "sse" }]);
       }
@@ -269,7 +268,7 @@ export function ProfileAgentsTab() {
           setUseFewShotExamples(false);
           setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
         }
-      } catch (e) {
+      } catch (_e) {
         setUseFewShotExamples(false);
         setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
       }

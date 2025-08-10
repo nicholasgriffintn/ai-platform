@@ -1,7 +1,6 @@
 import { queryEmbeddings } from "~/services/apps/embeddings/query";
 import type { IFunction, IRequest } from "~/types";
-import { AssistantError } from "../../utils/errors";
-import { ErrorType } from "../../utils/errors";
+import { AssistantError, ErrorType } from "../../utils/errors";
 
 export const get_note: IFunction = {
   name: "get_note",
@@ -20,10 +19,10 @@ export const get_note: IFunction = {
   type: "normal",
   costPerCall: 0,
   function: async (
-    completion_id: string,
+    _completion_id: string,
     args: any,
     req: IRequest,
-    app_url?: string,
+    _app_url?: string,
   ) => {
     // TODO: Remove this once we have a proper way to handle this
     if (req.user?.github_username !== "nicholasgriffintn") {

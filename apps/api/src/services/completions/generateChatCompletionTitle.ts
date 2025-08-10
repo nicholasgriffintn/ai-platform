@@ -45,7 +45,7 @@ export const handleGenerateChatCompletionTitle = async (
 
   try {
     await conversationManager.get(completion_id);
-  } catch (error) {
+  } catch (_error) {
     throw new AssistantError(
       "Conversation not found or you don't have access to it",
       ErrorType.NOT_FOUND,

@@ -1,5 +1,8 @@
-import { MAGIC_LINK_EXPIRATION_MINUTES } from "~/constants/app";
-import { APP_NAME, PROD_HOST } from "~/constants/app";
+import {
+  APP_NAME,
+  MAGIC_LINK_EXPIRATION_MINUTES,
+  PROD_HOST,
+} from "~/constants/app";
 import { sendEmail } from "~/services/email";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

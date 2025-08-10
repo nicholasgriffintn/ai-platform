@@ -96,7 +96,6 @@
   --sh-sign: #89ddff;
   --sh-string: #9ece6a;
   --sh-keyword: #bb9af7;
-  --sh-comment: #565f89;
   --sh-jsxliterals: #7aa2f7;
   --sh-property: #73daca;
   --sh-entity: #e0af68;
@@ -187,17 +186,17 @@ h6:hover .anchor {
   color: hsl(var(--foreground));
 }
 
-.prose pre > code {
-  @apply block text-sm whitespace-pre-wrap break-words;
-  display: grid;
-  min-width: 100%;
-}
-
 :not(pre) > code {
   background-color: hsl(var(--muted));
   border-radius: 0.3em;
   font-size: 0.9em;
   font-family: var(--font-mono);
+}
+
+.prose pre > code {
+  @apply block text-sm whitespace-pre-wrap break-words;
+  display: grid;
+  min-width: 100%;
 }
 
 .list-disc {

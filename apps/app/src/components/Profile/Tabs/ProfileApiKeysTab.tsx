@@ -185,7 +185,7 @@ export function ProfileApiKeysTab() {
     try {
       const date = new Date(dateString);
       return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-    } catch (e) {
+    } catch (_e) {
       return "Invalid Date";
     }
   };

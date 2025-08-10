@@ -33,7 +33,7 @@ const mockProvider = {
   createRealtimeSession: vi.fn(),
 };
 
-const mockLogger = {
+const _mockLogger = {
   error: vi.fn(),
   info: vi.fn(),
   warn: vi.fn(),
@@ -156,7 +156,7 @@ describe("generateArticlesReport", () => {
 
     mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(mockItems);
 
-    const reportItems = [
+    const _reportItems = [
       {
         id: "1",
         item_type: "analysis",

@@ -9,7 +9,7 @@ import type { CoreChatOptions } from "~/types";
 export class BasicInputValidator implements Validator {
   async validate(
     options: CoreChatOptions,
-    context: ValidationContext,
+    _context: ValidationContext,
   ): Promise<ValidatorResult> {
     const { messages: rawMessages } = options;
 

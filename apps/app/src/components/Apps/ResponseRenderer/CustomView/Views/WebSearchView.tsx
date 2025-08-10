@@ -28,7 +28,7 @@ export function WebSearchView({
   const getDomain = (url: string) => {
     try {
       return url.replace(/(https?:\/\/)?(www\.)?/i, "").split("/")[0];
-    } catch (e) {
+    } catch (_e) {
       return url;
     }
   };

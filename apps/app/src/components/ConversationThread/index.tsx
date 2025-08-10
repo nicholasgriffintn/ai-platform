@@ -111,45 +111,6 @@ export const ConversationThread = () => {
     [chatInput, isStreamLoading, isModelInitializing],
   );
 
-  const handleKeyPress = useCallback(
-    (e: KeyboardEvent) => {
-      if (isStreamLoading || isModelInitializing) return;
-
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault();
-        if (canSubmit) {
-          handleSubmit(e as unknown as FormEvent);
-        }
-      }
-      if (e.key === "Escape") {
-        if (isPanelVisible) {
-          handlePanelClose();
-        } else if (controller) {
-          abortStream();
-          setTimeout(() => {
-            chatInputRef.current?.focus();
-          }, 0);
-        }
-      }
-    },
-    [
-      canSubmit,
-      controller,
-      abortStream,
-      isPanelVisible,
-      handlePanelClose,
-      isStreamLoading,
-      isModelInitializing,
-    ],
-  );
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyPress);
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [handleKeyPress]);
-
   const handleSubmit = useCallback(
     async (
       e: FormEvent,
@@ -221,6 +182,46 @@ export const ConversationThread = () => {
       setChatInput,
     ],
   );
+
+  const handleKeyPress = useCallback(
+    (e: KeyboardEvent) => {
+      if (isStreamLoading || isModelInitializing) return;
+
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (canSubmit) {
+          handleSubmit(e as unknown as FormEvent);
+        }
+      }
+      if (e.key === "Escape") {
+        if (isPanelVisible) {
+          handlePanelClose();
+        } else if (controller) {
+          abortStream();
+          setTimeout(() => {
+            chatInputRef.current?.focus();
+          }, 0);
+        }
+      }
+    },
+    [
+      canSubmit,
+      controller,
+      abortStream,
+      isPanelVisible,
+      handlePanelClose,
+      isStreamLoading,
+      isModelInitializing,
+      handleSubmit,
+    ],
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [handleKeyPress]);
 
   const handleTranscribe = useCallback(
     async (data: {

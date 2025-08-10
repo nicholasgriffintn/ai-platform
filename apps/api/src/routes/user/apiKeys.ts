@@ -91,7 +91,7 @@ app.post(
       },
     },
   }),
-  validator("json", (value, c) => {
+  validator("json", (value, _c) => {
     const parsed = createApiKeySchema.safeParse(value);
     if (!parsed.success) {
       throw new AssistantError(
@@ -154,7 +154,7 @@ app.delete(
       },
     },
   }),
-  validator("param", (value, c) => {
+  validator("param", (value, _c) => {
     const parsed = deleteApiKeyParamsSchema.safeParse(value);
     if (!parsed.success) {
       throw new AssistantError(

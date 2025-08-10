@@ -146,7 +146,7 @@ dynamicApps.get(
     },
   }),
   async (c: Context) => {
-    const user = c.get("user") as IUser | undefined;
+    const _user = c.get("user") as IUser | undefined;
 
     const id = c.req.param("id");
     if (!id) {

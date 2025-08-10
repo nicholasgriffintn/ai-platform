@@ -412,7 +412,7 @@ describe("logger", () => {
 
     it("should not update level when no level provided on subsequent calls", () => {
       const logger1 = getLogger({ prefix: "SAME", level: LogLevel.ERROR });
-      const logger2 = getLogger({ prefix: "SAME" });
+      const _logger2 = getLogger({ prefix: "SAME" });
 
       logger1.info("Should not log");
       expect(consoleSpy.info).not.toHaveBeenCalled();

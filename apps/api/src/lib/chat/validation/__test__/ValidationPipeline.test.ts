@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CoreChatOptions } from "~/types";
-import { ValidationPipeline } from "../ValidationPipeline";
 import type {
   ValidationContext,
   Validator,
   ValidatorResult,
 } from "../ValidationPipeline";
+import { ValidationPipeline } from "../ValidationPipeline";
 
 const mockBasicInputValidator = {
   validate: vi.fn(),

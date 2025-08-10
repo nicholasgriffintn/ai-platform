@@ -6,7 +6,6 @@ import type {
 
 import { gatewayId } from "~/constants/app";
 import type { Database } from "~/lib/database";
-import { AIProviderFactory } from "~/lib/providers/factory";
 import type {
   EmbeddingMutationResult,
   EmbeddingProvider,

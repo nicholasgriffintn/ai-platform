@@ -1,17 +1,12 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
-import { z } from "zod/v4";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleWebSearch } from "~/services/search/web";
 import type { IEnv, SearchOptions } from "~/types";
-import {
-  searchResultSchema,
-  searchWebSchema,
-  webSearchResponseSchema,
-} from "./schemas/search";
+import { searchWebSchema, webSearchResponseSchema } from "./schemas/search";
 import { errorResponseSchema } from "./schemas/shared";
 
 const app = new Hono();

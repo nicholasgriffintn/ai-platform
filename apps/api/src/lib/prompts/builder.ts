@@ -2,7 +2,7 @@ export class PromptBuilder {
   private parts: string[] = [];
   private indentLevel = 0;
 
-  constructor(private initialPrompt = "") {
+  constructor(initialPrompt = "") {
     if (initialPrompt) {
       this.parts.push(initialPrompt);
     }

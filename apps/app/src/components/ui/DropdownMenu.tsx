@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { Button } from "./Button";
 import type { ButtonProps } from "./Button";
+import { Button } from "./Button";
 
 interface DropdownMenuProps {
   trigger: ReactNode;

@@ -18,8 +18,7 @@ import {
   delegateToTeamMemberByRole,
   getTeamMembers,
 } from "~/services/functions/teamDelegation";
-import type { IEnv } from "~/types";
-import type { ChatCompletionParameters } from "~/types";
+import type { ChatCompletionParameters, IEnv } from "~/types";
 import { createAgentSchema, updateAgentSchema } from "../schemas/agents";
 import { createChatCompletionsJsonSchema } from "../schemas/chat";
 import { apiResponseSchema } from "../schemas/shared";
@@ -312,37 +311,32 @@ app.get(
 
     try {
       servers = JSON.parse(agent.servers as string);
-    } catch (error) {
+    } catch (_error) {
       return ctx.json({ error: "Invalid servers" }, 400);
     }
 
     const mcp = new MCPClientManager(agent.id, "1.0.0");
 
     const serverDetails = await Promise.all(
-      servers.map(
-        async (server: {
-          url: string;
-          type: "sse";
-        }) => {
-          const { id } = await mcp.connect(server.url);
+      servers.map(async (server: { url: string; type: "sse" }) => {
+        const { id } = await mcp.connect(server.url);
 
-          const connection = mcp.mcpConnections[id];
-          while (connection.connectionState !== "ready") {
-            await new Promise((resolve) => setTimeout(resolve, 50));
-          }
-          const tools = connection.tools;
-          const prompts = connection.prompts;
-          const resources = connection.resources;
+        const connection = mcp.mcpConnections[id];
+        while (connection.connectionState !== "ready") {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        const tools = connection.tools;
+        const prompts = connection.prompts;
+        const resources = connection.resources;
 
-          return {
-            id,
-            connectionState: connection.connectionState,
-            tools,
-            prompts,
-            resources,
-          };
-        },
-      ),
+        return {
+          id,
+          connectionState: connection.connectionState,
+          tools,
+          prompts,
+          resources,
+        };
+      }),
     );
 
     return ctx.json({
@@ -531,7 +525,7 @@ app.post(
         let serverConfigs = [];
         try {
           serverConfigs = JSON.parse(serversJson) as Array<{ url: string }>;
-        } catch (e) {
+        } catch (_e) {
           throw new Error("Invalid servers");
         }
 
@@ -645,7 +639,7 @@ app.post(
       functionSchemas,
     );
 
-    let fewShotExamples = undefined;
+    let fewShotExamples;
     if (agent.few_shot_examples) {
       try {
         const rawFewShotExamples = JSON.parse(

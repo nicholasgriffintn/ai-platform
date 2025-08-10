@@ -57,7 +57,9 @@ export function useExecuteDynamicApp() {
     mutationFn: ({
       id,
       formData,
-    }: { id: string; formData: Record<string, any> }) =>
-      executeDynamicApp(id, formData),
+    }: {
+      id: string;
+      formData: Record<string, any>;
+    }) => executeDynamicApp(id, formData),
   });
 }

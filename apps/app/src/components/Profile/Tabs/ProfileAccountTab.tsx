@@ -41,7 +41,7 @@ export function ProfileAccountTab() {
       }
 
       return `in ${diffSecs} second${diffSecs !== 1 ? "s" : ""}`;
-    } catch (e) {
+    } catch (_e) {
       return "unknown time";
     }
   };

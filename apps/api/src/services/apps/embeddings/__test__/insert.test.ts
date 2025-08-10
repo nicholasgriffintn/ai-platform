@@ -42,8 +42,6 @@ vi.mock("~/utils/logger", () => ({
   })),
 }));
 
-import { Database } from "~/lib/database";
-import { Embedding } from "~/lib/embedding";
 import { chunkText } from "~/utils/embeddings";
 import { generateId } from "~/utils/id";
 import { insertEmbedding } from "../insert";

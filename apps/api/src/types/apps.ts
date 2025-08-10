@@ -1,6 +1,11 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import type { ChatMode, ChatRole, MessageContent, Platform } from "./chat";
-import type { IRequest } from "./chat";
+import type {
+  ChatMode,
+  ChatRole,
+  IRequest,
+  MessageContent,
+  Platform,
+} from "./chat";
 
 export type IFunctionResponse = {
   status?: string;

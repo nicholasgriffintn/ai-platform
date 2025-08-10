@@ -85,7 +85,7 @@ app.post(
     let formData: FormData;
     try {
       formData = await context.req.formData();
-    } catch (formError) {
+    } catch (_formError) {
       throw new AssistantError(
         "Failed to parse upload data",
         ErrorType.PARAMS_ERROR,

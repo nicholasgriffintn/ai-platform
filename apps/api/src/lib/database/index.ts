@@ -1,5 +1,4 @@
-import type { D1Database } from "@cloudflare/workers-types";
-import type { D1Result } from "@cloudflare/workers-types";
+import type { D1Database, D1Result } from "@cloudflare/workers-types";
 
 import { RepositoryManager } from "~/repositories";
 import type { ApiKeyMetadata } from "~/repositories/ApiKeyRepository";
@@ -17,9 +16,9 @@ export interface Env {
 const logger = getLogger({ prefix: "DATABASE" });
 
 export class Database {
-  private env: IEnv;
   private static instance: Database | null = null;
   private repositories: RepositoryManager;
+  private env: IEnv;
 
   private constructor(env: IEnv) {
     if (!env?.DB) {

@@ -261,7 +261,7 @@ export const getTeamMembers: IFunction = {
   },
   function: async (
     completion_id: string,
-    args: any,
+    _args: any,
     req: IRequest,
   ): Promise<IFunctionResponse> => {
     try {

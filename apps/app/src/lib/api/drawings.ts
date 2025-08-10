@@ -53,7 +53,10 @@ export const fetchDrawing = async (id: string): Promise<Drawing> => {
 export const generateImageFromDrawing = async ({
   drawing,
   drawingId,
-}: { drawing: File; drawingId?: string }): Promise<GenerateImageResponse> => {
+}: {
+  drawing: File;
+  drawingId?: string;
+}): Promise<GenerateImageResponse> => {
   const formData = new FormData();
   formData.append("drawing", drawing);
 
@@ -85,7 +88,9 @@ export const generateImageFromDrawing = async ({
 
 export const guessDrawingFromImage = async ({
   drawing,
-}: { drawing: File }): Promise<GuessResponse> => {
+}: {
+  drawing: File;
+}): Promise<GuessResponse> => {
   const formData = new FormData();
   formData.append("drawing", drawing);
 

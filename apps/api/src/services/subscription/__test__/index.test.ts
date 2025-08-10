@@ -47,7 +47,6 @@ import {
   sendPaymentFailedEmail,
   sendSubscriptionCancellationNoticeEmail,
   sendSubscriptionEmail,
-  sendTrialEndingEmail,
   sendUnsubscriptionEmail,
 } from "~/services/notifications";
 

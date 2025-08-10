@@ -9,7 +9,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 
 export class SerperProvider implements SearchProvider {
   private apiKey;
-  private env;
+  private env: IEnv;
 
   constructor(env: IEnv) {
     this.env = env;

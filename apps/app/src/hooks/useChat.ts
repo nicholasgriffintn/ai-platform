@@ -155,7 +155,10 @@ export function useUpdateChatTitle() {
     mutationFn: async ({
       completion_id,
       title,
-    }: { completion_id: string; title: string }) => {
+    }: {
+      completion_id: string;
+      title: string;
+    }) => {
       await localChatService.updateLocalChatTitle(completion_id, title);
 
       const localChat = await localChatService.getLocalChat(completion_id);
@@ -179,7 +182,10 @@ export function useGenerateTitle() {
     mutationFn: async ({
       completion_id,
       messages,
-    }: { completion_id: string; messages: Message[] }) => {
+    }: {
+      completion_id: string;
+      messages: Message[];
+    }) => {
       const localChat = await localChatService.getLocalChat(completion_id);
       const isLocalOnly = localChat?.isLocalOnly || false;
 

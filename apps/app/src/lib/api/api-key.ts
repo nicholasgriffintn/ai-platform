@@ -68,7 +68,7 @@ export const apiKeyService = {
       try {
         console.warn("Encryption failed, falling back to direct storage");
         window.localStorage.setItem(FALLBACK_STORAGE_KEY, apiKey);
-      } catch (fallbackError) {
+      } catch (_fallbackError) {
         throw new Error("Failed to store API key");
       }
     }

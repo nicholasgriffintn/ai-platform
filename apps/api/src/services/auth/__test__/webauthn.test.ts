@@ -39,7 +39,7 @@ vi.mock("~/lib/database", () => ({
 describe("WebAuthn Service", () => {
   let mockDatabase: any;
   let mockGenerateRegistrationOptions: MockedFunction<any>;
-  let mockGenerateAuthenticationOptions: MockedFunction<any>;
+  let _mockGenerateAuthenticationOptions: MockedFunction<any>;
   let mockVerifyRegistrationResponse: MockedFunction<any>;
   let mockVerifyAuthenticationResponse: MockedFunction<any>;
   let mockDecodeBase64Url: MockedFunction<any>;
@@ -51,7 +51,7 @@ describe("WebAuthn Service", () => {
     mockGenerateRegistrationOptions = vi.mocked(
       webauthnServer.generateRegistrationOptions,
     );
-    mockGenerateAuthenticationOptions = vi.mocked(
+    _mockGenerateAuthenticationOptions = vi.mocked(
       webauthnServer.generateAuthenticationOptions,
     );
     mockVerifyRegistrationResponse = vi.mocked(

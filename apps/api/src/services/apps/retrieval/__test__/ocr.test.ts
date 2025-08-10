@@ -41,8 +41,8 @@ Object.defineProperty(global, "crypto", {
   value: mockCrypto,
 });
 
-import { performOcr } from "../ocr";
 import type { OcrParams } from "../ocr";
+import { performOcr } from "../ocr";
 
 describe("performOcr", () => {
   const mockRequest: IRequest = {
@@ -304,7 +304,7 @@ describe("performOcr", () => {
 
       mockProvider.getResponse.mockResolvedValue(responseWithImageRefs);
 
-      const result = await performOcr(baseMockParams, mockRequest);
+      const _result = await performOcr(baseMockParams, mockRequest);
 
       expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
         expect.any(String),

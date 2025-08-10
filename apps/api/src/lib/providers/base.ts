@@ -290,10 +290,10 @@ export abstract class BaseProvider implements AIProvider {
    * @returns The realtime session
    */
   async createRealtimeSession(
-    env: IEnv,
-    user: IUser,
-    type: string,
-    body: Record<string, any>,
+    _env: IEnv,
+    _user: IUser,
+    _type: string,
+    _body: Record<string, any>,
   ): Promise<any> {
     return null;
   }

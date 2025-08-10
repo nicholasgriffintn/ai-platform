@@ -16,11 +16,11 @@ import { useTrackEvent } from "~/hooks/use-track-event";
 import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import {
+  defaultModel,
   getAvailableModels,
   getFeaturedModelIds,
   getModelsByMode,
 } from "~/lib/models";
-import { defaultModel } from "~/lib/models";
 import {
   useIsLoading,
   useLoadingMessage,

@@ -1,6 +1,5 @@
 import { AIProviderFactory } from "~/lib/providers/factory";
-import type { IEnv, IUser, IUserSettings } from "~/types";
-import type { Message } from "~/types";
+import type { IEnv, IUser, IUserSettings, Message } from "~/types";
 import { generateId } from "~/utils/id";
 import { parseAIResponseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";

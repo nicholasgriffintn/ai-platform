@@ -59,7 +59,7 @@ let hookState: IndexedDBState = {
   isSupported: isIndexedDBSupported(),
 };
 
-let subscribers = 0;
+let _subscribers = 0;
 
 /**
  * React hook for IndexedDB access.
@@ -70,7 +70,7 @@ export function useIndexedDB() {
 
   useEffect(() => {
     let mounted = true;
-    subscribers++;
+    _subscribers++;
 
     if (hookState.loading && !hookState.db && !hookState.error) {
       const initDb = async () => {
@@ -113,7 +113,7 @@ export function useIndexedDB() {
 
     return () => {
       mounted = false;
-      subscribers--;
+      _subscribers--;
     };
   }, [state]);
 

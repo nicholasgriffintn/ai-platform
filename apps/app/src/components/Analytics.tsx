@@ -47,9 +47,7 @@ declare global {
     _beaconInitialized?: boolean;
     _expBeaconInitialized?: boolean;
     BeaconExperiments?: {
-      init: (config: {
-        debug: boolean;
-      }) => void;
+      init: (config: { debug: boolean }) => void;
       defineExperimentBehaviors: (experiments: Experiment[]) => void;
       activate: (experimentId: string) => void;
       getVariant: (experimentId: string) => {

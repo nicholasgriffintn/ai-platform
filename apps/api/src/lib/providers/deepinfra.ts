@@ -14,7 +14,7 @@ export class DeepInfraProvider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(params): string {
+  protected getEndpoint(_params): string {
     return "https://api.deepinfra.com/v1/openai/chat/completions";
   }
 

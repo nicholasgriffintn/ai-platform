@@ -45,7 +45,7 @@ export class UserSettingsRepository extends BaseRepository {
         iv: bufferToBase64(iv),
         data: bufferToBase64(new Uint8Array(encryptedData)),
       };
-    } catch (error) {
+    } catch (_error) {
       throw new AssistantError(
         "Failed to encrypt data",
         ErrorType.UNKNOWN_ERROR,
@@ -59,7 +59,7 @@ export class UserSettingsRepository extends BaseRepository {
       let parsedEncryptedData;
       try {
         parsedEncryptedData = JSON.parse(encryptedData);
-      } catch (e) {
+      } catch (_e) {
         throw new AssistantError(
           "Failed to parse encrypted data",
           ErrorType.INTERNAL_ERROR,
@@ -75,7 +75,7 @@ export class UserSettingsRepository extends BaseRepository {
       );
 
       return new TextDecoder().decode(decryptedData);
-    } catch (error) {
+    } catch (_error) {
       throw new AssistantError(
         "Failed to decrypt data",
         ErrorType.UNKNOWN_ERROR,
@@ -113,7 +113,7 @@ export class UserSettingsRepository extends BaseRepository {
          VALUES (?, ?, ?, ?)`,
         [userSettingsId, userId, publicKeyString, encryptedPrivateKeyString],
       );
-    } catch (error) {
+    } catch (_error) {
       throw new AssistantError(
         "Failed to create user settings",
         ErrorType.UNKNOWN_ERROR,
@@ -291,7 +291,7 @@ export class UserSettingsRepository extends BaseRepository {
       let publicKeyJwk;
       try {
         publicKeyJwk = JSON.parse(result.public_key);
-      } catch (e) {
+      } catch (_e) {
         throw new AssistantError(
           "Failed to parse public key",
           ErrorType.INTERNAL_ERROR,
@@ -377,7 +377,7 @@ export class UserSettingsRepository extends BaseRepository {
       let privateKeyJwk;
       try {
         privateKeyJwk = JSON.parse(decryptedPrivateKeyString);
-      } catch (e) {
+      } catch (_e) {
         throw new AssistantError(
           "Failed to parse private key",
           ErrorType.INTERNAL_ERROR,

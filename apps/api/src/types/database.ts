@@ -1,6 +1,6 @@
 export type {
   Agent,
-  SharedAgent,
   AgentInstall,
   AgentRating,
+  SharedAgent,
 } from "~/lib/database/schema";

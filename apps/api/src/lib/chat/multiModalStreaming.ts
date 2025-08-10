@@ -171,7 +171,7 @@ export function createMultiModelStream(
                 let data;
                 try {
                   data = JSON.parse(dataStr);
-                } catch (e) {
+                } catch (_e) {
                   throw new Error("Failed to parse data");
                 }
                 if (data.type === "content_block_delta" && data.content) {
@@ -181,7 +181,7 @@ export function createMultiModelStream(
                 }
               }
             }
-          } catch (e) {
+          } catch (_e) {
             /* ignore parse errors during capture */
           }
 
@@ -228,7 +228,7 @@ export function createMultiModelStream(
                   let data;
                   try {
                     data = JSON.parse(dataStr);
-                  } catch (e) {
+                  } catch (_e) {
                     throw new Error("Failed to parse data");
                   }
                   if (data.type === "content_block_delta" && data.content) {
@@ -247,7 +247,7 @@ export function createMultiModelStream(
               } else {
                 controller.enqueue(value);
               }
-            } catch (e) {
+            } catch (_e) {
               controller.enqueue(value);
             }
           }

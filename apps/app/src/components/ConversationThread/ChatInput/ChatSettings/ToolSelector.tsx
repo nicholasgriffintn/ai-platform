@@ -11,8 +11,8 @@ import {
 } from "~/components/ui";
 import { useTools } from "~/hooks/useTools";
 import { cn } from "~/lib/utils";
-import { useToolsStore } from "~/state/stores/toolsStore";
 import type { Tool } from "~/state/stores/toolsStore";
+import { useToolsStore } from "~/state/stores/toolsStore";
 
 export const ToolSelector = ({
   isDisabled = false,

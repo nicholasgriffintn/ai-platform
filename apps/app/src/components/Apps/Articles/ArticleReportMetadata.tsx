@@ -174,7 +174,10 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
 function MetadataItem({
   label,
   children,
-}: { label: string; children: React.ReactNode }) {
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-start py-1.5 border-b border-zinc-200 dark:border-zinc-700 last:border-0">
       <span className="font-medium text-zinc-700 dark:text-zinc-300 w-32 flex-shrink-0 mb-1 sm:mb-0">

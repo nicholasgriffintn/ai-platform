@@ -111,7 +111,7 @@ export async function fetchAIResponse<
         `Failed to get response for ${provider} from ${endpointOrUrl}`,
         responseJson,
       );
-    } catch (jsonError) {
+    } catch (_jsonError) {
       logger.error(
         `Failed to parse response ${provider} from ${endpointOrUrl}. Response not valid JSON:`,
         {

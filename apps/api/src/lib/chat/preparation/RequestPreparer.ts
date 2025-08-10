@@ -4,12 +4,20 @@ import { Embedding } from "~/lib/embedding";
 import { MemoryManager } from "~/lib/memory";
 import { getModelConfig } from "~/lib/models";
 import { getSystemPrompt } from "~/lib/prompts";
-import type { ChatMode, Message, ModelConfigInfo, Platform } from "~/types";
-import type { CoreChatOptions } from "~/types";
+import type {
+  ChatMode,
+  CoreChatOptions,
+  Message,
+  ModelConfigInfo,
+  Platform,
+} from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
-import { getAllAttachments, sanitiseInput } from "../utils";
-import { pruneMessagesToFitContext } from "../utils";
+import {
+  getAllAttachments,
+  pruneMessagesToFitContext,
+  sanitiseInput,
+} from "../utils";
 import type { ValidationContext } from "../validation/ValidationPipeline";
 
 const logger = getLogger({ prefix: "CHAT:PREPARATION:REQUEST_PREPARER" });
@@ -236,7 +244,7 @@ export class RequestPreparer {
       if (options.completion_id) {
         existingMessages = await conversationManager.get(options.completion_id);
       }
-    } catch (error) {
+    } catch (_error) {
       // We can ignore this.
     }
 

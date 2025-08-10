@@ -19,7 +19,7 @@ vi.mock("~/services/functions", () => ({
 }));
 
 vi.mock("../../lib/chat/tools", () => ({
-  formatToolCalls: vi.fn((provider, functions) =>
+  formatToolCalls: vi.fn((_provider, functions) =>
     functions.map((func: any) => ({ type: "function", function: func })),
   ),
 }));

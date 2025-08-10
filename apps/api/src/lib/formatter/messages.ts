@@ -280,7 +280,7 @@ export class MessageFormatter {
     messages: Message[],
     system_prompt: string,
     provider: string,
-    model?: string,
+    _model?: string,
   ): Message[] {
     if (!system_prompt) {
       return messages;

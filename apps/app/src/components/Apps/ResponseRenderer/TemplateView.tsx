@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
-import { memo } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 
 import { markdownToHtml } from "~/lib/markdown";
 

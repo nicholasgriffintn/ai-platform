@@ -21,7 +21,10 @@ export interface Note {
 export async function listNotes({
   env,
   userId,
-}: { env: IEnv; userId: number }): Promise<Note[]> {
+}: {
+  env: IEnv;
+  userId: number;
+}): Promise<Note[]> {
   if (!userId) {
     throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
   }
@@ -52,7 +55,11 @@ export async function getNote({
   env,
   userId,
   noteId,
-}: { env: IEnv; userId: number; noteId: string }): Promise<Note> {
+}: {
+  env: IEnv;
+  userId: number;
+  noteId: string;
+}): Promise<Note> {
   if (!userId || !noteId) {
     throw new AssistantError(
       "Note ID and user ID are required",
@@ -205,7 +212,11 @@ export async function deleteNote({
   env,
   userId,
   noteId,
-}: { env: IEnv; userId: number; noteId: string }): Promise<void> {
+}: {
+  env: IEnv;
+  userId: number;
+  noteId: string;
+}): Promise<void> {
   if (!userId || !noteId) {
     throw new AssistantError(
       "Note ID and user ID are required",

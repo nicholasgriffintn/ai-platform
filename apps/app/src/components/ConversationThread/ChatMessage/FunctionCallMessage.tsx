@@ -29,7 +29,7 @@ export const FunctionCallMessage = ({ message }: FunctionCallMessageProps) => {
                     }
 
                     return JSON.stringify(args, null, 2);
-                  } catch (e) {
+                  } catch (_e) {
                     return typeof tool.function.arguments === "string"
                       ? tool.function.arguments
                       : JSON.stringify(tool.function.arguments);

@@ -45,7 +45,7 @@ vi.mock("~/utils/logger", () => ({
 vi.mock("~/utils/errors", () => ({
   AssistantError: class extends Error {
     type: string;
-    constructor(message: string, type?: string, originalError?: any) {
+    constructor(message: string, type?: string, _originalError?: any) {
       super(message);
       this.type = type || "UNKNOWN";
       this.name = "AssistantError";

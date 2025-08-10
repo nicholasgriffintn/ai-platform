@@ -1,9 +1,8 @@
 import React from "react";
-import { cn } from "~/lib/utils";
-
 import { LoginModal } from "~/components/LoginModal";
 import { ChatNavbar } from "~/components/Navbar";
 import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
+import { cn } from "~/lib/utils";
 import { useUIStore } from "~/state/stores/uiStore";
 import { KeyboardShortcutsHelp } from "../components/KeyboardShortcutsHelp";
 

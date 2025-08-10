@@ -98,52 +98,50 @@ export function ProfileProvidersTab() {
             className="bg-transparent dark:bg-transparent border-none py-10 px-0"
           />
         ) : (
-          <>
-            {Object.entries(providerSettings).map(([providerId, provider]) => (
-              <Card key={providerId} className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                      {(provider as ProviderSetting).name ||
-                        (provider as ProviderSetting).provider_id}
-                    </h3>
-                    {(provider as ProviderSetting).description && (
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        {(provider as ProviderSetting).description}
-                      </p>
-                    )}
-                  </div>
-                  <Button
-                    variant={
-                      (provider as ProviderSetting).enabled
-                        ? "secondary"
-                        : "default"
-                    }
-                    size="sm"
-                    onClick={() =>
-                      handleEnableProvider(
-                        (provider as ProviderSetting).id,
-                        (provider as ProviderSetting).name ||
-                          (provider as ProviderSetting).provider_id,
-                      )
-                    }
-                    className="flex items-center gap-2"
-                    icon={
-                      (provider as ProviderSetting).enabled ? (
-                        <Power className="h-4 w-4" />
-                      ) : (
-                        <Plus className="h-4 w-4" />
-                      )
-                    }
-                  >
-                    {(provider as ProviderSetting).enabled
-                      ? "Configure"
-                      : "Enable"}
-                  </Button>
+          Object.entries(providerSettings).map(([providerId, provider]) => (
+            <Card key={providerId} className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                    {(provider as ProviderSetting).name ||
+                      (provider as ProviderSetting).provider_id}
+                  </h3>
+                  {(provider as ProviderSetting).description && (
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      {(provider as ProviderSetting).description}
+                    </p>
+                  )}
                 </div>
-              </Card>
-            ))}
-          </>
+                <Button
+                  variant={
+                    (provider as ProviderSetting).enabled
+                      ? "secondary"
+                      : "default"
+                  }
+                  size="sm"
+                  onClick={() =>
+                    handleEnableProvider(
+                      (provider as ProviderSetting).id,
+                      (provider as ProviderSetting).name ||
+                        (provider as ProviderSetting).provider_id,
+                    )
+                  }
+                  className="flex items-center gap-2"
+                  icon={
+                    (provider as ProviderSetting).enabled ? (
+                      <Power className="h-4 w-4" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )
+                  }
+                >
+                  {(provider as ProviderSetting).enabled
+                    ? "Configure"
+                    : "Enable"}
+                </Button>
+              </div>
+            </Card>
+          ))
         )}
       </div>
 

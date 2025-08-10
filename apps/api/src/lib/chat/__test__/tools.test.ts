@@ -28,10 +28,7 @@ vi.mock("~/utils/tool-responses", () => ({
 }));
 
 import { handleFunctions } from "~/services/functions";
-import {
-  formatToolErrorResponse,
-  formatToolResponse,
-} from "~/utils/tool-responses";
+import { formatToolErrorResponse } from "~/utils/tool-responses";
 import { formatToolCalls, handleToolCalls } from "../tools";
 
 describe("tools", () => {

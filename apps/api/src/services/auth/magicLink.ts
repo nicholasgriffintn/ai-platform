@@ -2,8 +2,7 @@ import * as jwt from "@tsndr/cloudflare-worker-jwt";
 
 import { MAGIC_LINK_EXPIRATION_MINUTES } from "~/constants/app";
 import { Database } from "~/lib/database";
-import type { IEnv } from "~/types";
-import type { User } from "~/types";
+import type { IEnv, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 

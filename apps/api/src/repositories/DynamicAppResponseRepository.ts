@@ -1,6 +1,6 @@
 import type { IEnv } from "~/types";
-import { AppDataRepository } from "./AppDataRepository";
 import type { AppData } from "./AppDataRepository";
+import { AppDataRepository } from "./AppDataRepository";
 
 export class DynamicAppResponseRepository {
   private repo: AppDataRepository;

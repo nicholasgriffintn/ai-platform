@@ -27,7 +27,7 @@ export const tutor: IFunction = {
     completion_id: string,
     args: any,
     req: IRequest,
-    app_url?: string,
+    _app_url?: string,
     conversationManager?: ConversationManager,
   ) => {
     const { topic, level } = args;

@@ -3,15 +3,18 @@ import { useEffect, useState } from "react";
 import type { Theme } from "~/types";
 
 export function useTheme() {
-  if (typeof window === "undefined") {
-    return ["system", () => {}];
-  }
-
   const [theme, setTheme] = useState<Theme>(
-    () => (window.localStorage.getItem("theme") as Theme) || "system",
+    () =>
+      (typeof window !== "undefined"
+        ? (window.localStorage.getItem("theme") as Theme)
+        : "system") || "system",
   );
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
 

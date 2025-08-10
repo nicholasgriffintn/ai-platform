@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
+import { sendEmail } from "~/services/email";
 import type { IEnv } from "~/types";
 import {
   sendPaymentFailedEmail,
@@ -8,8 +8,6 @@ import {
   sendTrialEndingEmail,
   sendUnsubscriptionEmail,
 } from "../index";
-
-import { sendEmail } from "~/services/email";
 
 vi.mock("~/services/email", () => ({
   sendEmail: vi.fn(),

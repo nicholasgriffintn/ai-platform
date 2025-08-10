@@ -31,8 +31,8 @@ export {
 };
 
 export class RepositoryManager {
-  private env: IEnv;
   private static instance: RepositoryManager;
+  private env: IEnv;
 
   private planRepo: PlanRepository;
   private userRepo: UserRepository;

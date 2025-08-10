@@ -11,7 +11,9 @@ const HCaptchaVerifierLazy = lazy(() =>
 
 export const CaptchaProvider = ({
   children,
-}: { children: React.ReactNode }) => {
+}: {
+  children: React.ReactNode;
+}) => {
   const { captchaToken, setCaptchaToken, setIsVerified } = useCaptchaStore();
 
   const handleVerify = (token: string) => {

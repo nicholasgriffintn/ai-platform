@@ -21,7 +21,7 @@ export const handleMCPTool = async (
   completion_id: string,
   args: unknown,
   request: IRequest,
-  app_url?: string,
+  _app_url?: string,
   conversationManager?: ConversationManager,
 ): Promise<IFunctionResponse> => {
   try {
