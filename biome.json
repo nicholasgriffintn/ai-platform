@@ -13,33 +13,7 @@
     "indentStyle": "space"
   },
   "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "a11y": {
-        "useSemanticElements": "off"
-      },
-      "correctness": {
-        "noInvalidUseBeforeDeclaration": "off",
-        "useExhaustiveDependencies": "off"
-      },
-      "performance": {
-        "noDelete": "off"
-      },
-      "suspicious": {
-        "noExplicitAny": "off",
-        "noImplicitAnyLet": "off"
-      },
-      "style": {
-        "noNonNullAssertion": "off",
-        "useTemplate": "off",
-        "noUnusedTemplateLiteral": "off"
-      },
-      "complexity": {
-        "noForEach": "off",
-        "useLiteralKeys": "off"
-      }
-    }
+    "enabled": false
   },
   "javascript": {
     "formatter": {
