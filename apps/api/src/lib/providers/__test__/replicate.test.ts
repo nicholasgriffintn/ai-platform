@@ -1,4 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import {
+  createCommonParameters,
+  getToolsForProvider,
+  shouldEnableStreaming,
+} from "~/utils/parameters";
+import { ReplicateProvider } from "../replicate";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {
@@ -28,13 +35,6 @@ global.fetch = vi.fn();
 describe("ReplicateProvider", () => {
   describe("mapParameters", () => {
     it("should create basic parameters in mapParameters", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const {
-        createCommonParameters,
-        getToolsForProvider,
-        shouldEnableStreaming,
-      } = await import("~/utils/parameters");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "replicate-model",
@@ -50,7 +50,6 @@ describe("ReplicateProvider", () => {
       vi.mocked(shouldEnableStreaming).mockReturnValue(false);
       vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
 
-      const { ReplicateProvider } = await import("../replicate");
       const provider = new ReplicateProvider();
 
       const params = {
@@ -70,7 +69,6 @@ describe("ReplicateProvider", () => {
 
   describe("validateParams", () => {
     it("should validate required parameters", async () => {
-      const { ReplicateProvider } = await import("../replicate");
       const provider = new ReplicateProvider();
 
       // Test missing completion_id

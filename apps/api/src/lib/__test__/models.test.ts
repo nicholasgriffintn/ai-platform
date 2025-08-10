@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { KVCache } from "~/lib/cache";
+import { Database } from "~/lib/database";
 import type { ModelConfigItem } from "~/types";
 import {
   filterModelsForUserAccess,
@@ -110,9 +112,6 @@ describe("Models", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-
-    const { KVCache } = await import("~/lib/cache");
-    const { Database } = await import("~/lib/database");
 
     mockDatabase = Database.getInstance({} as any);
     mockCache = new KVCache({} as any);

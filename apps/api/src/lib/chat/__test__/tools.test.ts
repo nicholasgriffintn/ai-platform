@@ -32,11 +32,9 @@ import {
   formatToolErrorResponse,
   formatToolResponse,
 } from "~/utils/tool-responses";
+import { formatToolCalls, handleToolCalls } from "../tools";
 
 describe("tools", () => {
-  let handleToolCalls: any;
-  let formatToolCalls: any;
-
   const mockConversationManager = {
     addBatch: vi.fn(),
   };
@@ -49,10 +47,6 @@ describe("tools", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-
-    const module = await import("../tools");
-    handleToolCalls = module.handleToolCalls;
-    formatToolCalls = module.formatToolCalls;
   });
 
   describe("handleToolCalls", () => {
@@ -609,6 +603,7 @@ describe("tools", () => {
 
       const result = formatToolCalls("openai", functionsWithJsonSchema);
 
+      // @ts-expect-error - test data
       expect(result[0].function.parameters).toEqual({
         type: "object",
         properties: { test: { type: "string" } },
@@ -631,6 +626,7 @@ describe("tools", () => {
       const result = formatToolCalls("anthropic", invalidFunctions);
 
       expect(result).toHaveLength(1);
+      // @ts-expect-error - test data
       expect(result[0].name).toBe("valid");
     });
 
@@ -650,12 +646,13 @@ describe("tools", () => {
       const result = formatToolCalls("openai", invalidFunctions);
 
       expect(result).toHaveLength(1);
+      // @ts-expect-error - test data
       expect(result[0].function.name).toBe("valid");
     });
 
     it("should handle null or undefined functions", () => {
-      expect(formatToolCalls("openai", null as any)).toEqual([]);
-      expect(formatToolCalls("openai", undefined as any)).toEqual([]);
+      expect(formatToolCalls("openai", null)).toEqual([]);
+      expect(formatToolCalls("openai", undefined)).toEqual([]);
     });
 
     it("should handle empty functions array", () => {
@@ -664,7 +661,8 @@ describe("tools", () => {
     });
 
     it("should handle non-array functions", () => {
-      expect(formatToolCalls("openai", "not an array" as any)).toEqual([]);
+      // @ts-expect-error - test data
+      expect(formatToolCalls("openai", "not an array")).toEqual([]);
     });
   });
 });

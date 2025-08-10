@@ -1,4 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import { createCommonParameters } from "~/utils/parameters";
+import { WorkersProvider } from "../workers";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {
@@ -28,7 +31,6 @@ global.atob = vi.fn();
 describe("WorkersProvider", () => {
   describe("validateParams", () => {
     it("should validate params correctly", async () => {
-      const { WorkersProvider } = await import("../workers");
       const provider = new WorkersProvider();
 
       const validParams = {
@@ -52,9 +54,6 @@ describe("WorkersProvider", () => {
 
   describe("mapParameters", () => {
     it("should handle image-to-text processing in mapParameters", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const { createCommonParameters } = await import("~/utils/parameters");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "worker-vision",
@@ -65,7 +64,6 @@ describe("WorkersProvider", () => {
 
       (global.atob as any).mockReturnValue("binary-data");
 
-      const { WorkersProvider } = await import("../workers");
       const provider = new WorkersProvider();
 
       const params = {
@@ -91,9 +89,6 @@ describe("WorkersProvider", () => {
     });
 
     it("should combine system and user prompts in mapParameters", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const { createCommonParameters } = await import("~/utils/parameters");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "worker-vision",
@@ -104,7 +99,6 @@ describe("WorkersProvider", () => {
 
       (global.atob as any).mockReturnValue("binary-data");
 
-      const { WorkersProvider } = await import("../workers");
       const provider = new WorkersProvider();
 
       const params = {

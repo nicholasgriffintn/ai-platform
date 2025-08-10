@@ -6,6 +6,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults } from "~/utils/parameters";
 import { withRetry } from "~/utils/retries";
+import { formatAssistantMessage, getAIResponse } from "../responses";
 
 vi.mock("~/lib/models", () => ({
   getModelConfigByMatchingModel: vi.fn(),
@@ -59,15 +60,8 @@ vi.mock("~/utils/errors", () => ({
 }));
 
 describe("responses", () => {
-  let formatAssistantMessage: any;
-  let getAIResponse: any;
-
   beforeEach(async () => {
     vi.clearAllMocks();
-
-    const module = await import("../responses");
-    formatAssistantMessage = module.formatAssistantMessage;
-    getAIResponse = module.getAIResponse;
   });
 
   describe("formatAssistantMessage", () => {
@@ -118,6 +112,7 @@ describe("responses", () => {
         mode: "creative",
       };
 
+      // @ts-expect-error - test data
       const result = formatAssistantMessage(input);
 
       expect(result.content).toEqual([
@@ -192,14 +187,15 @@ describe("responses", () => {
     const baseParams = {
       app_url: "https://test.com",
       system_prompt: "You are helpful",
-      env: {} as any,
-      user: { id: "user123" } as any,
-      mode: "normal" as const,
+      env: {},
+      user: { id: "user123" },
+      mode: "normal",
       model: "gpt-4",
       messages: [{ role: "user", content: "Hello" }],
       message: "Hello",
       enabled_tools: [],
       tools: [],
+      body: {},
     };
 
     const mockModelConfig = {
@@ -234,6 +230,7 @@ describe("responses", () => {
     });
 
     it("should successfully get AI response", async () => {
+      // @ts-expect-error - test data
       const result = await getAIResponse(baseParams);
 
       expect(getModelConfigByMatchingModel).toHaveBeenCalledWith("gpt-4");
@@ -251,6 +248,7 @@ describe("responses", () => {
     });
 
     it("should throw error when model is missing", async () => {
+      // @ts-expect-error - test data
       await expect(getAIResponse({ ...baseParams, model: "" })).rejects.toThrow(
         new AssistantError("Model is required", ErrorType.PARAMS_ERROR),
       );
@@ -258,6 +256,7 @@ describe("responses", () => {
 
     it("should throw error when messages is empty", async () => {
       await expect(
+        // @ts-expect-error - test data
         getAIResponse({ ...baseParams, messages: [] }),
       ).rejects.toThrow(
         new AssistantError(
@@ -269,6 +268,7 @@ describe("responses", () => {
 
     it("should throw error when messages is not an array", async () => {
       await expect(
+        // @ts-expect-error - test data
         getAIResponse({ ...baseParams, messages: null as any }),
       ).rejects.toThrow(
         new AssistantError(
@@ -281,6 +281,7 @@ describe("responses", () => {
     it("should handle model configuration not found", async () => {
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue(null);
 
+      // @ts-expect-error - test data
       await expect(getAIResponse(baseParams)).rejects.toThrow(
         "Invalid model configuration for gpt-4: Model configuration not found for gpt-4",
       );
@@ -291,6 +292,7 @@ describe("responses", () => {
         new Error("Config error"),
       );
 
+      // @ts-expect-error - test data
       await expect(getAIResponse(baseParams)).rejects.toThrow(
         new AssistantError(
           "Invalid model configuration for gpt-4: Config error",
@@ -304,6 +306,7 @@ describe("responses", () => {
         throw new Error("Provider error");
       });
 
+      // @ts-expect-error - test data
       await expect(getAIResponse(baseParams)).rejects.toThrow(
         new AssistantError(
           "Failed to initialize provider openai: Provider error",
@@ -321,6 +324,7 @@ describe("responses", () => {
 
       await getAIResponse({
         ...baseParams,
+        // @ts-expect-error - test data
         messages: messagesWithModes,
         mode: "normal",
       });
@@ -344,6 +348,7 @@ describe("responses", () => {
       await expect(
         getAIResponse({
           ...baseParams,
+          // @ts-expect-error - test data
           messages: messagesWithModes,
           mode: "normal",
         }),
@@ -360,6 +365,7 @@ describe("responses", () => {
         throw new Error("Format error");
       });
 
+      // @ts-expect-error - test data
       await expect(getAIResponse(baseParams)).rejects.toThrow(
         new AssistantError(
           "Failed to format messages: Format error",
@@ -369,6 +375,7 @@ describe("responses", () => {
     });
 
     it("should enable streaming when conditions are met", async () => {
+      // @ts-expect-error - test data
       await getAIResponse({
         ...baseParams,
         stream: true,
@@ -388,6 +395,7 @@ describe("responses", () => {
         type: ["text-to-image"],
       });
 
+      // @ts-expect-error - test data
       await getAIResponse({
         ...baseParams,
         stream: true,
@@ -405,6 +413,7 @@ describe("responses", () => {
         throw new Error("Parameter error");
       });
 
+      // @ts-expect-error - test data
       await expect(getAIResponse(baseParams)).rejects.toThrow(
         new AssistantError(
           "Failed to prepare request parameters: Parameter error",
@@ -419,6 +428,7 @@ describe("responses", () => {
         status: 429,
       });
 
+      // @ts-expect-error - test data
       await expect(getAIResponse(baseParams)).rejects.toThrow(
         new AssistantError(
           "openai error: rate limit exceeded",
@@ -433,6 +443,7 @@ describe("responses", () => {
         status: 401,
       });
 
+      // @ts-expect-error - test data
       await expect(getAIResponse(baseParams)).rejects.toThrow(
         new AssistantError(
           "openai error: unauthorized",
@@ -447,6 +458,7 @@ describe("responses", () => {
         status: 500,
       });
 
+      // @ts-expect-error - test data
       await expect(getAIResponse(baseParams)).rejects.toThrow(
         new AssistantError(
           "openai error: internal server error",
@@ -458,6 +470,7 @@ describe("responses", () => {
     it("should handle empty response from provider", async () => {
       mockProvider.getResponse.mockResolvedValue(null);
 
+      // @ts-expect-error - test data
       await expect(getAIResponse(baseParams)).rejects.toThrow(
         new AssistantError(
           "Provider returned empty response",
@@ -473,6 +486,7 @@ describe("responses", () => {
       };
       mockProvider.getResponse.mockResolvedValue(responseWithUsage);
 
+      // @ts-expect-error - test data
       await getAIResponse(baseParams);
 
       expect(responseWithUsage).toEqual({

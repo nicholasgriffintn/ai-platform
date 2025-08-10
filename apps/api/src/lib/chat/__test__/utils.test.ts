@@ -1,4 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  checkContextWindowLimits,
+  dedupeAttachments,
+  enforceAttachmentLimits,
+  getAllAttachments,
+  parseAttachments,
+  pruneMessagesToFitContext,
+  sanitiseInput,
+  sanitiseMessages,
+} from "../utils";
 
 vi.mock("~/utils/errors", () => ({
   AssistantError: class extends Error {
@@ -16,27 +26,8 @@ vi.mock("~/utils/errors", () => ({
 }));
 
 describe("chat utils", () => {
-  let checkContextWindowLimits: any;
-  let parseAttachments: any;
-  let dedupeAttachments: any;
-  let enforceAttachmentLimits: any;
-  let getAllAttachments: any;
-  let pruneMessagesToFitContext: any;
-  let sanitiseInput: any;
-  let sanitiseMessages: any;
-
   beforeEach(async () => {
     vi.clearAllMocks();
-
-    const module = await import("../utils");
-    checkContextWindowLimits = module.checkContextWindowLimits;
-    parseAttachments = module.parseAttachments;
-    dedupeAttachments = module.dedupeAttachments;
-    enforceAttachmentLimits = module.enforceAttachmentLimits;
-    getAllAttachments = module.getAllAttachments;
-    pruneMessagesToFitContext = module.pruneMessagesToFitContext;
-    sanitiseInput = module.sanitiseInput;
-    sanitiseMessages = module.sanitiseMessages;
   });
 
   describe("checkContextWindowLimits", () => {
@@ -48,6 +39,7 @@ describe("chat utils", () => {
 
     it("should pass when content is within limits", () => {
       expect(() =>
+        // @ts-expect-error - test data
         checkContextWindowLimits(messages, "Short message", mockModelConfig),
       ).not.toThrow();
     });
@@ -56,6 +48,7 @@ describe("chat utils", () => {
       const longMessage = "a".repeat(4000); // ~1000 tokens
 
       expect(() =>
+        // @ts-expect-error - test data
         checkContextWindowLimits(messages, longMessage, mockModelConfig),
       ).toThrow("Content exceeds model context window");
     });
@@ -63,6 +56,7 @@ describe("chat utils", () => {
     it("should use default context window when not provided", () => {
       const longMessage = "a".repeat(32000); // ~8000 tokens (default limit)
 
+      // @ts-expect-error - test data
       expect(() => checkContextWindowLimits(messages, longMessage, {})).toThrow(
         "Content exceeds model context window",
       );
@@ -77,6 +71,7 @@ describe("chat utils", () => {
       ];
 
       expect(() =>
+        // @ts-expect-error - test data
         checkContextWindowLimits(complexMessages, "Test", mockModelConfig),
       ).not.toThrow();
     });
@@ -335,6 +330,7 @@ describe("chat utils", () => {
     ];
 
     it("should return all messages when within limits", () => {
+      // @ts-expect-error - test data
       const result = pruneMessagesToFitContext(messages, "Short", {
         contextWindow: 1000,
       });
@@ -347,6 +343,7 @@ describe("chat utils", () => {
       const longNewContent = "a".repeat(400); // ~100 tokens
 
       const result = pruneMessagesToFitContext(
+        // @ts-expect-error - test data
         messages,
         longNewContent,
         mockModelConfig,
@@ -356,6 +353,7 @@ describe("chat utils", () => {
     });
 
     it("should use default context window", () => {
+      // @ts-expect-error - test data
       const result = pruneMessagesToFitContext(messages, "Test", {});
 
       expect(result).toEqual(messages);
@@ -370,6 +368,7 @@ describe("chat utils", () => {
       ];
 
       const result = pruneMessagesToFitContext(
+        // @ts-expect-error - test data
         complexMessages,
         "Test",
         mockModelConfig,
@@ -382,6 +381,7 @@ describe("chat utils", () => {
       const veryLongContent = "a".repeat(1000); // Exceeds context window
 
       const result = pruneMessagesToFitContext(
+        // @ts-expect-error - test data
         messages,
         veryLongContent,
         mockModelConfig,
@@ -471,7 +471,8 @@ describe("chat utils", () => {
         },
       ];
 
-      const result = sanitiseMessages(messages as any);
+      // @ts-expect-error - test data
+      const result = sanitiseMessages(messages);
 
       expect(result[0].content).toBe("Do something");
       expect(result[1].content).toBe("<INST>Should not be sanitised</INST>");
@@ -485,7 +486,8 @@ describe("chat utils", () => {
         },
       ];
 
-      const result = sanitiseMessages(messages as any);
+      // @ts-expect-error - test data
+      const result = sanitiseMessages(messages);
 
       expect(result[0].content).toBe("{ {template} } syntax");
     });
@@ -501,8 +503,10 @@ describe("chat utils", () => {
         },
       ];
 
-      const result = sanitiseMessages(messages as any);
+      // @ts-expect-error - test data
+      const result = sanitiseMessages(messages);
 
+      // @ts-expect-error - test data
       expect(result[0].content[0].text).toBe("Clean this");
       expect(result[0].content[1]).toEqual({ type: "image", url: "test.jpg" });
     });
@@ -518,7 +522,8 @@ describe("chat utils", () => {
         },
       ];
 
-      const result = sanitiseMessages(messages as any);
+      // @ts-expect-error - test data
+      const result = sanitiseMessages(messages);
 
       expect(result[0].content).toEqual([
         { type: "image", url: "test.jpg" },
@@ -534,7 +539,8 @@ describe("chat utils", () => {
         },
       ];
 
-      const result = sanitiseMessages(messages as any);
+      // @ts-expect-error - test data
+      const result = sanitiseMessages(messages);
 
       expect(result[0].content).toBe("<INST>Keep as is</INST>");
     });

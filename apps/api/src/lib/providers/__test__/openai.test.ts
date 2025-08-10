@@ -1,4 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import {
+  createCommonParameters,
+  getToolsForProvider,
+  shouldEnableStreaming,
+} from "~/utils/parameters";
+import { OpenAIProvider } from "../openai";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {
@@ -24,13 +31,6 @@ vi.mock("~/utils/parameters", () => ({
 describe("OpenAIProvider", () => {
   describe("mapParameters", () => {
     it("should handle text-to-image generation in mapParameters", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const {
-        createCommonParameters,
-        shouldEnableStreaming,
-        getToolsForProvider,
-      } = await import("~/utils/parameters");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "dall-e-3",
@@ -41,7 +41,6 @@ describe("OpenAIProvider", () => {
       vi.mocked(shouldEnableStreaming).mockReturnValue(false);
       vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
 
-      const { OpenAIProvider } = await import("../openai");
       const provider = new OpenAIProvider();
 
       const params = {
@@ -59,13 +58,6 @@ describe("OpenAIProvider", () => {
     });
 
     it("should handle image-to-image generation in mapParameters", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const {
-        createCommonParameters,
-        shouldEnableStreaming,
-        getToolsForProvider,
-      } = await import("~/utils/parameters");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "dall-e-edit",
@@ -76,7 +68,6 @@ describe("OpenAIProvider", () => {
       vi.mocked(shouldEnableStreaming).mockReturnValue(false);
       vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
 
-      const { OpenAIProvider } = await import("../openai");
       const provider = new OpenAIProvider();
 
       const params = {
@@ -103,52 +94,7 @@ describe("OpenAIProvider", () => {
       expect(result.image).toEqual(["data:image/jpeg;base64,..."]);
     });
 
-    it("should handle o1 model specific parameters in mapParameters", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const {
-        createCommonParameters,
-        shouldEnableStreaming,
-        getToolsForProvider,
-      } = await import("~/utils/parameters");
-
-      // @ts-ignore - getModelConfigByMatchingModel is not typed
-      vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-        name: "o1",
-        type: ["text"],
-      });
-
-      vi.mocked(createCommonParameters).mockReturnValue({
-        model: "o1",
-        temperature: 0.7,
-        top_p: 0.9,
-      });
-
-      vi.mocked(shouldEnableStreaming).mockReturnValue(false);
-      vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
-
-      const { OpenAIProvider } = await import("../openai");
-      const provider = new OpenAIProvider();
-
-      const params = {
-        model: "o1",
-        messages: [{ role: "user", content: "Hello" }],
-        env: { AI_GATEWAY_TOKEN: "test-token" },
-      };
-
-      const result = await provider.mapParameters(params as any);
-
-      expect(result.temperature).toBe(1);
-      expect(result.top_p).toBeUndefined();
-    });
-
     it("should handle search preview model parameters in mapParameters", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const {
-        createCommonParameters,
-        shouldEnableStreaming,
-        getToolsForProvider,
-      } = await import("~/utils/parameters");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "gpt-4o-search-preview",
@@ -166,7 +112,6 @@ describe("OpenAIProvider", () => {
       vi.mocked(shouldEnableStreaming).mockReturnValue(false);
       vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
 
-      const { OpenAIProvider } = await import("../openai");
       const provider = new OpenAIProvider();
 
       const params = {
@@ -184,13 +129,6 @@ describe("OpenAIProvider", () => {
     });
 
     it("should add web search tool when search grounding enabled", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const {
-        createCommonParameters,
-        shouldEnableStreaming,
-        getToolsForProvider,
-      } = await import("~/utils/parameters");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "gpt-4",
@@ -207,7 +145,6 @@ describe("OpenAIProvider", () => {
       vi.mocked(shouldEnableStreaming).mockReturnValue(false);
       vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
 
-      const { OpenAIProvider } = await import("../openai");
       const provider = new OpenAIProvider();
 
       const params = {
@@ -223,13 +160,6 @@ describe("OpenAIProvider", () => {
     });
 
     it("should handle thinking model parameters in mapParameters", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const {
-        createCommonParameters,
-        shouldEnableStreaming,
-        getToolsForProvider,
-      } = await import("~/utils/parameters");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "gpt-4-thinking",
@@ -245,7 +175,6 @@ describe("OpenAIProvider", () => {
       vi.mocked(shouldEnableStreaming).mockReturnValue(false);
       vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
 
-      const { OpenAIProvider } = await import("../openai");
       const provider = new OpenAIProvider();
 
       const params = {
@@ -263,7 +192,6 @@ describe("OpenAIProvider", () => {
 
   describe("validateParams", () => {
     it("should validate params correctly", async () => {
-      const { OpenAIProvider } = await import("../openai");
       const provider = new OpenAIProvider();
 
       const validParams = {

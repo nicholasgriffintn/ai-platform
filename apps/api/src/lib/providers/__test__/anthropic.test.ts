@@ -1,4 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import {
+  calculateReasoningBudget,
+  createCommonParameters,
+  getToolsForProvider,
+  shouldEnableStreaming,
+} from "~/utils/parameters";
+import { AnthropicProvider } from "../anthropic";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {
@@ -28,7 +36,6 @@ vi.mock("~/utils/parameters", () => ({
 describe("AnthropicProvider", () => {
   describe("validateParams", () => {
     it("should validate params correctly", async () => {
-      const { AnthropicProvider } = await import("../anthropic");
       const provider = new AnthropicProvider();
 
       const validParams = {
@@ -55,7 +62,6 @@ describe("AnthropicProvider", () => {
 
   describe("getHeaders", () => {
     it("should generate correct headers", async () => {
-      const { AnthropicProvider } = await import("../anthropic");
       const provider = new AnthropicProvider();
 
       const params = {
@@ -82,14 +88,6 @@ describe("AnthropicProvider", () => {
 
   describe("mapParameters", () => {
     it("should add web search tool in mapParameters when search grounding enabled", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const {
-        createCommonParameters,
-        shouldEnableStreaming,
-        getToolsForProvider,
-        calculateReasoningBudget,
-      } = await import("~/utils/parameters");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "claude-3-sonnet",
@@ -107,7 +105,6 @@ describe("AnthropicProvider", () => {
       vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
       vi.mocked(calculateReasoningBudget).mockReturnValue(2000);
 
-      const { AnthropicProvider } = await import("../anthropic");
       const provider = new AnthropicProvider();
 
       const params = {
@@ -127,14 +124,6 @@ describe("AnthropicProvider", () => {
     });
 
     it("should handle thinking model parameters in mapParameters", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const {
-        createCommonParameters,
-        shouldEnableStreaming,
-        getToolsForProvider,
-        calculateReasoningBudget,
-      } = await import("~/utils/parameters");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "claude-3-thinking",
@@ -151,7 +140,6 @@ describe("AnthropicProvider", () => {
       vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
       vi.mocked(calculateReasoningBudget).mockReturnValue(2000);
 
-      const { AnthropicProvider } = await import("../anthropic");
       const provider = new AnthropicProvider();
 
       const params = {

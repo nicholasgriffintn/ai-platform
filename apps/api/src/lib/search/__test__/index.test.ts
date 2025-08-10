@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv, SearchOptions } from "~/types";
+import { SearchProviderFactory } from "../factory";
 import { Search } from "../index";
 
 const mockPerformWebSearch = vi.fn();
@@ -42,9 +43,7 @@ describe("Search", () => {
       expect(instance1).toBe(instance2);
     });
 
-    it("should create provider through factory", async () => {
-      const { SearchProviderFactory } = await import("../factory");
-
+    it("should create provider through factory", () => {
       Search.getInstance(mockEnv, "serper");
 
       expect(SearchProviderFactory.getProvider).toHaveBeenCalledWith(
@@ -53,9 +52,7 @@ describe("Search", () => {
       );
     });
 
-    it("should work with tavily provider", async () => {
-      const { SearchProviderFactory } = await import("../factory");
-
+    it("should work with tavily provider", () => {
       Search.getInstance(mockEnv, "tavily");
 
       expect(SearchProviderFactory.getProvider).toHaveBeenCalledWith(

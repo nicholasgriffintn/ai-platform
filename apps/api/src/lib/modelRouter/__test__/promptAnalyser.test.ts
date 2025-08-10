@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IEnv, IUser } from "~/types";
 import { PromptAnalyzer } from "../promptAnalyser";
 
@@ -99,8 +100,6 @@ describe("PromptAnalyzer", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-
-    const { AIProviderFactory } = await import("~/lib/providers/factory");
 
     mockProvider = {
       getResponse: vi.fn().mockResolvedValue({
@@ -387,7 +386,8 @@ describe("PromptAnalyzer", () => {
 
   describe("keyword extraction", () => {
     it("should extract keywords using filters", async () => {
-      const { KeywordFilter } = await import("~/lib/keywords");
+      const { KeywordFilter } =
+        await vi.importMock<typeof import("~/lib/keywords")>("~/lib/keywords");
       const mockFilter = new KeywordFilter([]);
       vi.mocked(mockFilter.getCategorizedMatches).mockReturnValue({
         coding: ["function", "code"],

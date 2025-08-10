@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getModelConfigByMatchingModel } from "~/lib/models";
 import { UsageManager } from "../usageManager";
 
 const mockDatabase = {
@@ -209,7 +210,6 @@ describe("UsageManager", () => {
 
   describe("checkProUsage", () => {
     it("should check pro usage for model", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
       (getModelConfigByMatchingModel as any).mockResolvedValue({
         costPer1kInputTokens: 0.001,
         costPer1kOutputTokens: 0.003,
@@ -243,7 +243,6 @@ describe("UsageManager", () => {
         null,
       );
 
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
       (getModelConfigByMatchingModel as any).mockResolvedValue({
         costPer1kInputTokens: 0.001,
         costPer1kOutputTokens: 0.003,
@@ -275,7 +274,6 @@ describe("UsageManager", () => {
         null,
       );
 
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
       (getModelConfigByMatchingModel as any).mockResolvedValue({
         costPer1kInputTokens: 0.001,
         costPer1kOutputTokens: 0.003,
@@ -289,7 +287,6 @@ describe("UsageManager", () => {
 
   describe("checkUsageByModel", () => {
     it("should check regular model usage for free user", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
       (getModelConfigByMatchingModel as any).mockResolvedValue({
         isFree: true,
       });
@@ -306,7 +303,6 @@ describe("UsageManager", () => {
     });
 
     it("should throw error for pro model with free user", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
       (getModelConfigByMatchingModel as any).mockResolvedValue({
         isFree: false,
       });
@@ -319,7 +315,6 @@ describe("UsageManager", () => {
     });
 
     it("should check pro model usage for pro user", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
       (getModelConfigByMatchingModel as any).mockResolvedValue({
         isFree: false,
         costPer1kInputTokens: 0.001,

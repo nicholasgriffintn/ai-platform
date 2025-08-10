@@ -1,6 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  getAllAttachments,
+  pruneMessagesToFitContext,
+  sanitiseInput,
+} from "~/lib/chat/utils";
+import { getModelConfig } from "~/lib/models";
+import { getSystemPrompt } from "~/lib/prompts";
 import type { CoreChatOptions } from "~/types";
+import { generateId } from "~/utils/id";
 import type { ValidationContext } from "../../validation/ValidationPipeline";
 import { RequestPreparer } from "../RequestPreparer";
 
@@ -127,12 +135,6 @@ describe("RequestPreparer", () => {
       memories_save_enabled: true,
     });
 
-    const { getModelConfig } = await import("~/lib/models");
-    const { getSystemPrompt } = await import("~/lib/prompts");
-    const { generateId } = await import("~/utils/id");
-    const { getAllAttachments, sanitiseInput, pruneMessagesToFitContext } =
-      await import("~/lib/chat/utils");
-
     vi.mocked(getModelConfig).mockResolvedValue(mockModelConfig);
     vi.mocked(getSystemPrompt).mockResolvedValue("Generated system prompt");
     vi.mocked(generateId).mockReturnValue("test-id-123");
@@ -242,7 +244,6 @@ describe("RequestPreparer", () => {
     });
 
     it("should throw error when model config is invalid", async () => {
-      const { getModelConfig } = await import("~/lib/models");
       vi.mocked(getModelConfig).mockResolvedValue(null);
 
       await expect(
@@ -347,7 +348,6 @@ describe("RequestPreparer", () => {
     });
 
     it("should store message with attachments", async () => {
-      const { getAllAttachments } = await import("~/lib/chat/utils");
       vi.mocked(getAllAttachments).mockReturnValueOnce({
         allAttachments: [{ type: "image", url: "test.jpg" }],
         imageAttachments: [{ type: "image", url: "test.jpg" }],

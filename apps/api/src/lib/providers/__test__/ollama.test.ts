@@ -1,4 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import {
+  createCommonParameters,
+  getToolsForProvider,
+  shouldEnableStreaming,
+} from "~/utils/parameters";
+import { OllamaProvider } from "../ollama";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {
@@ -24,13 +31,6 @@ vi.mock("~/utils/parameters", () => ({
 describe("OllamaProvider", () => {
   describe("mapParameters", () => {
     it("should create parameters with streaming disabled in mapParameters", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const {
-        createCommonParameters,
-        getToolsForProvider,
-        shouldEnableStreaming,
-      } = await import("~/utils/parameters");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "llama2",
@@ -48,7 +48,6 @@ describe("OllamaProvider", () => {
         tools: [{ type: "function", function: { name: "test_tool" } }],
       });
 
-      const { OllamaProvider } = await import("../ollama");
       const provider = new OllamaProvider();
 
       const params = {
@@ -71,7 +70,6 @@ describe("OllamaProvider", () => {
 
   describe("validateParams", () => {
     it("should validate OLLAMA_ENABLED requirement", async () => {
-      const { OllamaProvider } = await import("../ollama");
       const provider = new OllamaProvider();
 
       const paramsWithoutEnabled = {
@@ -100,7 +98,6 @@ describe("OllamaProvider", () => {
 
   describe("getEndpoint", () => {
     it("should use custom OLLAMA_URL in endpoint", async () => {
-      const { OllamaProvider } = await import("../ollama");
       const provider = new OllamaProvider();
 
       const paramsWithCustomUrl = {
@@ -115,7 +112,6 @@ describe("OllamaProvider", () => {
     });
 
     it("should use default OLLAMA_URL when not provided", async () => {
-      const { OllamaProvider } = await import("../ollama");
       const provider = new OllamaProvider();
 
       const paramsWithoutUrl = {

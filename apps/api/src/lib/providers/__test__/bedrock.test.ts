@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import { BedrockProvider } from "../bedrock";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {
@@ -23,15 +25,12 @@ vi.mock("~/utils/parameters", () => ({
 describe("BedrockProvider", () => {
   describe("mapParameters", () => {
     it("should handle video generation in mapParameters", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "bedrock-video",
         type: ["text-to-video"],
       });
 
-      const { BedrockProvider } = await import("../bedrock");
       const provider = new BedrockProvider();
 
       const params = {
@@ -52,15 +51,12 @@ describe("BedrockProvider", () => {
     });
 
     it("should handle image generation in mapParameters", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "bedrock-image",
         type: ["text-to-image"],
       });
 
-      const { BedrockProvider } = await import("../bedrock");
       const provider = new BedrockProvider();
 
       const params = {
@@ -84,7 +80,6 @@ describe("BedrockProvider", () => {
 
   describe("parseAwsCredentials", () => {
     it("should parse AWS credentials correctly", async () => {
-      const { BedrockProvider } = await import("../bedrock");
       const provider = new BedrockProvider();
 
       // Test valid credentials format

@@ -1,4 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getEffectiveMaxTokens } from "~/utils/parameters";
+import { GoogleStudioProvider } from "../googlestudio";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {
@@ -22,7 +25,6 @@ vi.mock("~/utils/parameters", () => ({
 describe("GoogleStudioProvider", () => {
   describe("validateParams", () => {
     it("should validate params correctly", async () => {
-      const { GoogleStudioProvider } = await import("../googlestudio");
       const provider = new GoogleStudioProvider();
 
       const validParams = {
@@ -48,7 +50,6 @@ describe("GoogleStudioProvider", () => {
 
   describe("getEndpoint", () => {
     it("should return the correct non streaming endpoint", async () => {
-      const { GoogleStudioProvider } = await import("../googlestudio");
       const provider = new GoogleStudioProvider();
 
       const params = {
@@ -65,7 +66,6 @@ describe("GoogleStudioProvider", () => {
     });
 
     it("should return the correct streaming endpoint", async () => {
-      const { GoogleStudioProvider } = await import("../googlestudio");
       const provider = new GoogleStudioProvider();
 
       const params = {
@@ -87,9 +87,6 @@ describe("GoogleStudioProvider", () => {
 
   describe("mapParameters", () => {
     it("should add code execution tool in mapParameters", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const { getEffectiveMaxTokens } = await import("~/utils/parameters");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "gemini-pro",
@@ -99,7 +96,6 @@ describe("GoogleStudioProvider", () => {
 
       vi.mocked(getEffectiveMaxTokens).mockReturnValue(1024);
 
-      const { GoogleStudioProvider } = await import("../googlestudio");
       const provider = new GoogleStudioProvider();
 
       const params = {
@@ -122,9 +118,6 @@ describe("GoogleStudioProvider", () => {
     });
 
     it("should filter web_search tool when search grounding is supported", async () => {
-      const { getModelConfigByMatchingModel } = await import("~/lib/models");
-      const { getEffectiveMaxTokens } = await import("~/utils/parameters");
-
       // @ts-ignore - getModelConfigByMatchingModel is not typed
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
         name: "gemini-pro",
@@ -134,7 +127,6 @@ describe("GoogleStudioProvider", () => {
 
       vi.mocked(getEffectiveMaxTokens).mockReturnValue(1024);
 
-      const { GoogleStudioProvider } = await import("../googlestudio");
       const provider = new GoogleStudioProvider();
 
       const params = {

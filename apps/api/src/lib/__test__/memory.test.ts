@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { AIProviderFactory } from "~/lib/providers/factory";
+import { parseAIResponseJson } from "~/utils/json";
 import { MemoryManager } from "../memory";
 
 vi.mock("~/lib/embedding", () => ({
@@ -89,7 +91,6 @@ describe("MemoryManager", () => {
         { role: "user", content: "I love Python programming" },
       ] as any;
 
-      const { AIProviderFactory } = await import("~/lib/providers/factory");
       const mockProvider = {
         getResponse: vi.fn().mockResolvedValue({
           response: JSON.stringify({
@@ -104,7 +105,6 @@ describe("MemoryManager", () => {
       };
       vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
 
-      const { parseAIResponseJson } = await import("~/utils/json");
       vi.mocked(parseAIResponseJson).mockReturnValue({
         data: {
           storeMemory: true,
@@ -156,7 +156,6 @@ describe("MemoryManager", () => {
         get: vi.fn().mockResolvedValue(messages),
       };
 
-      const { AIProviderFactory } = await import("~/lib/providers/factory");
       const mockProvider = {
         getResponse: vi.fn().mockResolvedValue({
           response: "Summary of recent conversation",
@@ -216,7 +215,6 @@ describe("MemoryManager", () => {
 
       const messages = [{ role: "user", content: "test" }] as any;
 
-      const { AIProviderFactory } = await import("~/lib/providers/factory");
       const mockProvider = {
         getResponse: vi.fn().mockRejectedValue(new Error("AI API error")),
         name: "test-provider",
