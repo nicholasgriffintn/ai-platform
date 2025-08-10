@@ -40,7 +40,7 @@
     "@testing-library/react": "16.3.0",
     "@types/react": "19.1.9",
     "@types/react-dom": "19.1.7",
-    "@vitejs/plugin-react": "4.7.0",
+    "@vitejs/plugin-react": "5.0.0",
     "globals": "16.3.0",
     "jsdom": "26.1.0",
     "rollup-plugin-visualizer": "6.0.3",
