@@ -31,6 +31,7 @@ export const deepseekModelConfig: ModelConfig = {
     isFeatured: true,
     includedInRouter: true,
     supportsArtifacts: true,
+    isFree: true,
   },
   "deepseek-reasoner": {
     name: "DeepSeek Reasoner",
@@ -60,5 +61,6 @@ export const deepseekModelConfig: ModelConfig = {
     isFeatured: true,
     includedInRouter: true,
     supportsArtifacts: true,
+    isFree: true,
   },
 };
