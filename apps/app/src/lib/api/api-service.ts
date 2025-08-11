@@ -464,6 +464,18 @@ class ApiService {
                   if (parsedData.model) {
                     responseModel = parsedData.model;
                   }
+                } else if (parsedData.type === "server_tool_use") {
+                  // Dev logging for Claude server tool usage start
+                  // eslint-disable-next-line no-console
+                  console.debug?.("server_tool_use", parsedData);
+                } else if (parsedData.type === "web_search_tool_result") {
+                  // Dev logging for Claude web search result chunks
+                  // eslint-disable-next-line no-console
+                  console.debug?.("web_search_tool_result", parsedData);
+                } else if (parsedData.type === "web_search_tool_result_end") {
+                  // Dev logging for Claude web search result end
+                  // eslint-disable-next-line no-console
+                  console.debug?.("web_search_tool_result_end", parsedData);
                 }
               } catch (e) {
                 console.error("Error parsing SSE data:", e, data);

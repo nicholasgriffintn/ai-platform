@@ -116,7 +116,7 @@ export async function createStreamWithPostProcessing(
   let totalBufferLength = 0;
 
   let signature = "";
-  let citationsResponse = [];
+  let citationsResponse: any[] = [];
   let toolCallsData: any[] = [];
   let usageData: any = null;
   let structuredData: any = null;
@@ -125,6 +125,11 @@ export async function createStreamWithPostProcessing(
   const currentToolCalls: Record<string, any> = {};
   let isFirstContentChunk = true;
   let qwqThinkTagAdded = false;
+
+  // Claude web search accumulation state
+  let currentServerToolUse: any = null;
+  let webSearchResults: any[] = [];
+  let webSearchToolId: string = "";
 
   const getFullContent = () => fullContentChunks.join("");
   const getFullThinking = () => fullThinkingChunks.join("");
@@ -183,13 +188,13 @@ export async function createStreamWithPostProcessing(
         maxLength: MAX_BUFFER_LENGTH,
       });
 
-      while (
-        totalBufferLength > MAX_BUFFER_LENGTH * 0.8 &&
-        bufferChunks.length > 1
-      ) {
-        const removedChunk = bufferChunks.shift()!;
-        totalBufferLength -= removedChunk.length;
-      }
+        while (
+          totalBufferLength > MAX_BUFFER_LENGTH * 0.8 &&
+          bufferChunks.length > 1
+        ) {
+          const removedChunk = bufferChunks.shift()!;
+          totalBufferLength -= removedChunk.length;
+        }
     }
   };
 
@@ -297,6 +302,30 @@ export async function createStreamWithPostProcessing(
                 return;
               }
 
+              // Claude server tool use start
+              if (currentEventType === "server_tool_use") {
+                currentServerToolUse = data;
+                const toolName = (data as any)?.name || (data as any)?.tool_name;
+                const toolId = (data as any)?.id || (data as any)?.tool_id;
+                if (toolName && typeof toolName === "string" && toolName.toLowerCase().includes("search")) {
+                  webSearchResults = [];
+                  webSearchToolId = toolId || generateId();
+                }
+              }
+
+              // Claude web search result chunk
+              if (StreamingFormatter.isWebSearchToolResult(data, currentEventType)) {
+                const result = StreamingFormatter.extractWebSearchResult(
+                  data,
+                  currentEventType,
+                );
+                if (result) {
+                  webSearchResults.push(result);
+                }
+                // Skip normal content handling for these chunks
+                continue;
+              }
+
               const formattedData = await ResponseFormatter.formatResponse(
                 data,
                 options.provider,
@@ -311,7 +340,7 @@ export async function createStreamWithPostProcessing(
               let contentDelta = "";
 
               if (data.choices?.[0]?.delta?.content !== undefined) {
-                contentDelta = data.choices[0].delta.content;
+                contentDelta = data.choices[0].delta.content as string;
               } else {
                 contentDelta = StreamingFormatter.extractContentFromChunk(
                   formattedData,
@@ -428,19 +457,48 @@ export async function createStreamWithPostProcessing(
                 currentEventType === "content_block_start" ||
                 currentEventType === "content_block_stop"
               ) {
-                emitEvent(controller, currentEventType, data);
+                emitEvent(controller, currentEventType, data as any);
 
                 if (
                   currentEventType === "content_block_stop" &&
-                  data.index !== undefined &&
-                  Object.hasOwn(currentToolCalls, data.index) &&
-                  currentToolCalls[data.index] &&
-                  !currentToolCalls[data.index].isComplete
+                  // If we have accumulated Claude web search results, emit a consolidated tool response
+                  webSearchResults.length > 0
                 ) {
-                  currentToolCalls[data.index].isComplete = true;
+                  const toolResultData = formatWebSearchToolResult(
+                    webSearchResults,
+                    completion_id,
+                  );
 
-                  const toolState = currentToolCalls[data.index];
-                  let parsedInput = {};
+                  emitEvent(controller, "tool_response", {
+                    tool_id: webSearchToolId || generateId(),
+                    result: {
+                      id: toolResultData.id,
+                      role: "tool",
+                      name: "web_search",
+                      content: toolResultData.answer,
+                      status: "success",
+                      timestamp: new Date().toISOString(),
+                      data: toolResultData,
+                    },
+                  });
+
+                  // reset state
+                  currentServerToolUse = null;
+                  webSearchResults = [];
+                  webSearchToolId = "";
+                }
+
+                if (
+                  currentEventType === "content_block_stop" &&
+                  (data as any).index !== undefined &&
+                  Object.hasOwn(currentToolCalls, (data as any).index) &&
+                  currentToolCalls[(data as any).index] &&
+                  !currentToolCalls[(data as any).index].isComplete
+                ) {
+                  currentToolCalls[(data as any).index].isComplete = true;
+
+                  const toolState = currentToolCalls[(data as any).index];
+                  let parsedInput: any = {};
                   try {
                     if (toolState.accumulatedInput) {
                       parsedInput;
@@ -847,4 +905,26 @@ export async function createStreamWithPostProcessing(
       },
     }),
   );
+}
+
+// Helper to format Claude web search results for existing UI expectations
+function formatWebSearchToolResult(results: any[], completion_id: string) {
+  const sources = results
+    .filter((r) => r && r.url)
+    .map((r) => ({
+      title: r.title || r.url,
+      url: r.url,
+      page_age: r.page_age ?? null,
+      encrypted_content: r.encrypted_content === true,
+      content: r.content || "",
+    }));
+
+  return {
+    id: generateId(),
+    completion_id,
+    name: "web_search",
+    answer: "", // backend does not author an answer; UI will render sources and any answer if present
+    sources,
+    similarQuestions: [],
+  };
 }

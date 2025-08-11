@@ -323,6 +323,114 @@ describe("handleCreateChatCompletions", () => {
         "text/event-stream",
       );
     });
+
+    it("should handle Claude web search streaming responses", async () => {
+      const request = {
+        messages: [{ role: "user", content: "Search the web" }],
+        stream: true,
+      } as any;
+
+      const encoder = new TextEncoder();
+      const mockStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          const toolResponse = {
+            type: "tool_response",
+            result: {
+              id: "ws_1",
+              role: "tool",
+              name: "web_search",
+              content: "",
+              data: {
+                name: "web_search",
+                answer: "",
+                sources: [
+                  { title: "Example", url: "https://example.com" },
+                ],
+              },
+            },
+          };
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(toolResponse)}\n\n`),
+          );
+          controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+          controller.close();
+        },
+      });
+
+      mockProcessChatRequest.mockResolvedValue({ stream: mockStream });
+
+      const response = (await handleCreateChatCompletions({
+        env: mockEnv,
+        request,
+        user: mockUser,
+      })) as Response;
+
+      expect(response).toBeInstanceOf(Response);
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let received = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        received += decoder.decode(value);
+      }
+      expect(received).toContain('"type":"tool_response"');
+      expect(received).toContain('"web_search"');
+    });
+
+    it("should accumulate web search results correctly", async () => {
+      const request = {
+        messages: [{ role: "user", content: "Search" }],
+        stream: true,
+      } as any;
+
+      const encoder = new TextEncoder();
+      const mockStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          const toolResponse = {
+            type: "tool_response",
+            result: {
+              id: "ws_2",
+              role: "tool",
+              name: "web_search",
+              content: "",
+              data: {
+                name: "web_search",
+                answer: "",
+                sources: [
+                  { title: "A", url: "https://a.com" },
+                  { title: "B", url: "https://b.com" },
+                ],
+              },
+            },
+          };
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(toolResponse)}\n\n`),
+          );
+          controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+          controller.close();
+        },
+      });
+
+      mockProcessChatRequest.mockResolvedValue({ stream: mockStream });
+
+      const response = (await handleCreateChatCompletions({
+        env: mockEnv,
+        request,
+        user: mockUser,
+      })) as Response;
+
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let received = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        received += decoder.decode(value);
+      }
+      expect(received).toContain("https://a.com");
+      expect(received).toContain("https://b.com");
+    });
   });
 
   describe("guardrails handling", () => {

@@ -287,4 +287,28 @@ export class StreamingFormatter {
 
     return null;
   }
+
+  // Claude web search helpers
+  static isWebSearchToolResult(data: any, currentEventType: string): boolean {
+    return currentEventType === "web_search_tool_result" && !!data;
+  }
+
+  static extractWebSearchResult(data: any, currentEventType: string): any | null {
+    if (!this.isWebSearchToolResult(data, currentEventType)) {
+      return null;
+    }
+
+    const encryptedContent = data.encrypted_content;
+    const title = data.title || data.metadata?.title || "";
+    const url = data.url || data.metadata?.url || "";
+    const page_age = data.page_age || data.metadata?.page_age || null;
+
+    return {
+      title,
+      url,
+      page_age,
+      content: encryptedContent ? "" : data.content || "",
+      encrypted_content: encryptedContent ? true : false,
+    };
+  }
 }
