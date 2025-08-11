@@ -19,6 +19,7 @@ import {
 import { tutor } from "./tutor";
 import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
+import { video_to_note } from "./video_to_note";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
 
@@ -27,6 +28,7 @@ const logger = getLogger({ prefix: "FUNCTIONS" });
 export const availableFunctions: IFunction[] = [
   get_weather,
   create_video,
+  video_to_note,
   create_music,
   create_image,
   web_search,
