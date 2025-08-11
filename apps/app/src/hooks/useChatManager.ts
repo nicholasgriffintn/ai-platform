@@ -440,13 +440,13 @@ export function useChatManager() {
       await updateAssistantMessage(conversationId, "");
 
       const handleMessageUpdate = (
-        content: any,
+        content: Message["content"],
         reasoning?: string,
         toolResponses?: Message[],
         done?: boolean,
       ) => {
         if (done) {
-          updateAssistantMessage(conversationId, content as any, reasoning);
+          updateAssistantMessage(conversationId, content, reasoning);
           response = "";
           return;
         }
@@ -460,7 +460,7 @@ export function useChatManager() {
             }
           }, 0);
         } else {
-          updateAssistantMessage(conversationId, content as any, reasoning);
+          updateAssistantMessage(conversationId, content, reasoning);
         }
       };
 
@@ -554,7 +554,7 @@ export function useChatManager() {
 
           await updateAssistantMessage(
             conversationId,
-            messageContentToDisplay as any,
+            messageContentToDisplay,
             assistantMessage.reasoning?.content,
             assistantMessage,
           );
