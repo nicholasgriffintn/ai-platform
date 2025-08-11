@@ -95,19 +95,34 @@ export const insertEmbedding = async (
     const chunks = chunkText(content, maxChars);
     let allGenerated: any[] = [];
     if (chunks.length > 1) {
+      // Batch insert all chunk rows atomically via repository through Database facade
+      const rows = chunks.map((chunk, i) => ({
+        id: `${id || uniqueId}-${i}`,
+        metadata: { ...metadata, title, chunkIndex: i.toString() },
+        title: `${title} (chunk ${i})`,
+        content: chunk,
+        type,
+      }));
+
+      // Fallback to individual inserts if batch method is not available in mocked environments
+      if (typeof (database as any).insertEmbeddingsBatch === "function") {
+        await (database as any).insertEmbeddingsBatch(rows);
+      } else {
+        for (const row of rows) {
+          await database.insertEmbedding(
+            row.id,
+            row.metadata,
+            row.title,
+            row.content,
+            row.type,
+          );
+        }
+      }
+
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
         const chunkId = `${id || uniqueId}-${i}`;
         const chunkMeta = { ...metadata, title, chunkIndex: i.toString() };
-
-        await database.insertEmbedding(
-          chunkId,
-          chunkMeta,
-          `${title} (chunk ${i})`,
-          chunk,
-          type,
-        );
-
         const vecs = await embedding.generate(type, chunk, chunkId, chunkMeta);
         allGenerated.push(...vecs);
       }

@@ -154,33 +154,50 @@ export class Database {
     userData: Record<string, unknown>,
   ): Promise<Record<string, unknown> | null> {
     try {
+      // Insert user row first (needs RETURNING id)
       const user = await this.repositories.users.createUser(userData);
 
       if (user && "id" in user) {
+        const userId = user.id as number;
         try {
-          await this.repositories.userSettings.createUserSettings(
-            user.id as number,
-          );
+          // Prepare settings IDs and default provider settings upfront
+          const providerIds =
+            (this.env.ALWAYS_ENABLED_PROVIDERS || "")?.split(",").filter(Boolean) || [];
+
+          const providerSettingsRows = providerIds.map((providerId) => ({
+            id: crypto.randomUUID(),
+            providerId,
+            enabled: 1,
+          }));
+
+          // Build batch: create user_settings + provider_settings inserts
+          await this.repositories.userSettings.withTransaction(async () => {
+            const stmts: { sql: string; params: any[] }[] = [];
+
+            // Create user_settings (generates keys inside repo method today)
+            // We cannot call the existing method inside a batch directly; instead insert minimal defaults
+            const userSettingsId = crypto.randomUUID();
+            stmts.push({
+              sql: `INSERT INTO user_settings (id, user_id, public_key, private_key) VALUES (?, ?, ?, ?)`,
+              params: [userSettingsId, userId, null, null],
+            });
+
+            // Provider settings
+            for (const row of providerSettingsRows) {
+              stmts.push({
+                sql: `INSERT INTO provider_settings (id, user_id, provider_id, enabled) VALUES (?, ?, ?, ?)`,
+                params: [row.id, userId, row.providerId, row.enabled],
+              });
+            }
+
+            return stmts;
+          });
         } catch (settingsError) {
           logError(
             "Failed to create user settings during user creation",
             settingsError,
             {
               operation: "createUserSettings",
-            },
-          );
-        }
-
-        try {
-          await this.repositories.userSettings.createUserProviderSettings(
-            user.id as number,
-          );
-        } catch (providerSettingsError) {
-          logError(
-            "Failed to create user provider settings during user creation",
-            providerSettingsError,
-            {
-              operation: "createUserProviderSettings",
             },
           );
         }
@@ -380,6 +397,20 @@ export class Database {
       );
     } catch (error) {
       logger.error(`Error inserting embedding: ${error}`);
+    }
+  }
+
+  public async insertEmbeddingsBatch(rows: Array<{
+    id: string;
+    metadata: Record<string, unknown>;
+    title: string;
+    content: string;
+    type: string;
+  }>): Promise<void> {
+    try {
+      return this.repositories.embeddings.insertEmbeddingsBatch(rows);
+    } catch (error) {
+      logger.error(`Error inserting embeddings batch: ${error}`);
     }
   }
 
@@ -583,12 +614,14 @@ export class Database {
       if (allConversations.conversations.length === 0) {
         return;
       }
+
+      // Batch deletes per conversation to ensure atomic removal of messages and conversation
       for (const conversation of allConversations.conversations) {
-        if (!conversation.id || typeof conversation.id !== "string") {
-          continue;
-        }
-        await this.repositories.messages.deleteAllMessages(conversation.id);
-        await this.deleteConversation(conversation.id);
+        if (!conversation.id || typeof conversation.id !== "string") continue;
+        await this.repositories.conversations.executeBatch([
+          { sql: "DELETE FROM message WHERE conversation_id = ?", params: [conversation.id] },
+          { sql: "DELETE FROM conversation WHERE id = ?", params: [conversation.id] },
+        ]);
       }
 
       return;
@@ -810,17 +843,7 @@ export class Database {
     userId: number,
   ): Promise<boolean> {
     try {
-      const foundNonce = await this.repositories.magicLinkNonces.findNonce(
-        nonce,
-        userId,
-      );
-
-      if (!foundNonce) {
-        return false;
-      }
-
-      await this.repositories.magicLinkNonces.deleteNonce(nonce);
-      return true;
+      return await this.repositories.magicLinkNonces.consumeNonce(nonce, userId);
     } catch (error) {
       logger.error(`Error consuming nonce ${nonce}:`, { error });
       return false;

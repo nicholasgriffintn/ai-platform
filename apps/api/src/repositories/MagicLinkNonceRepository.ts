@@ -56,6 +56,19 @@ export class MagicLinkNonceRepository extends BaseRepository {
   }
 
   /**
+   * Atomically consume a nonce by deleting only if it is valid, unexpired, and belongs to the user.
+   * Returns true if one was consumed.
+   */
+  public async consumeNonce(nonce: string, userId: number): Promise<boolean> {
+    const nowTimestamp = Math.floor(Date.now() / 1000);
+    const result = await this.executeRun(
+      "DELETE FROM magic_link_nonce WHERE nonce = ? AND user_id = ? AND expires_at > ?",
+      [nonce, userId, nowTimestamp],
+    );
+    return Boolean(result?.success && (result.meta as any)?.changes > 0);
+  }
+
+  /**
    * Deletes expired nonces (optional cleanup task).
    * @returns The number of nonces deleted
    */

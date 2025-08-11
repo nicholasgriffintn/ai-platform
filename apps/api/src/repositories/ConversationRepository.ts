@@ -151,12 +151,9 @@ export class ConversationRepository extends BaseRepository {
   }
 
   public async deleteConversation(conversationId: string): Promise<void> {
-    await this.executeRun("DELETE FROM message WHERE conversation_id = ?", [
-      conversationId,
-    ]);
-
-    await this.executeRun("DELETE FROM conversation WHERE id = ?", [
-      conversationId,
+    await this.executeBatch([
+      { sql: "DELETE FROM message WHERE conversation_id = ?", params: [conversationId] },
+      { sql: "DELETE FROM conversation WHERE id = ?", params: [conversationId] },
     ]);
   }
 

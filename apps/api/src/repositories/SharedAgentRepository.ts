@@ -293,37 +293,36 @@ export class SharedAgentRepository extends BaseRepository {
     const agentId = generateId();
     const installId = generateId();
 
-    await this.executeRun(
-      `INSERT INTO agents 
+    await this.executeBatch([
+      {
+        sql: `INSERT INTO agents 
        (id, user_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        agentId,
-        userId,
-        templateData.name,
-        templateData.description,
-        templateData.avatar_url,
-        JSON.stringify(templateData.servers),
-        templateData.model,
-        templateData.temperature,
-        templateData.max_steps,
-        templateData.system_prompt,
-        JSON.stringify(templateData.few_shot_examples),
-      ],
-    );
-
-    await this.executeRun(
-      "INSERT INTO agent_installs (id, shared_agent_id, user_id, agent_id) VALUES (?, ?, ?, ?)",
-      [installId, sharedAgentId, userId, agentId],
-    );
-
-    await this.executeRun(
-      "UPDATE shared_agents SET usage_count = usage_count + 1 WHERE id = ?",
-      [sharedAgentId],
-    );
+        params: [
+          agentId,
+          userId,
+          templateData.name,
+          templateData.description,
+          templateData.avatar_url,
+          JSON.stringify(templateData.servers),
+          templateData.model,
+          templateData.temperature,
+          templateData.max_steps,
+          templateData.system_prompt,
+          JSON.stringify(templateData.few_shot_examples),
+        ],
+      },
+      {
+        sql: "INSERT INTO agent_installs (id, shared_agent_id, user_id, agent_id) VALUES (?, ?, ?, ?)",
+        params: [installId, sharedAgentId, userId, agentId],
+      },
+      {
+        sql: "UPDATE shared_agents SET usage_count = usage_count + 1 WHERE id = ?",
+        params: [sharedAgentId],
+      },
+    ]);
 
     const now = new Date().toISOString();
-    // TODO: Make team agents sharable
     const agent: Agent = {
       id: agentId,
       user_id: userId,
@@ -375,14 +374,13 @@ export class SharedAgentRepository extends BaseRepository {
       throw new Error("Shared agent not found");
     }
 
-    await this.executeRun("DELETE FROM agent_installs WHERE id = ?", [
-      install.id,
+    await this.executeBatch([
+      { sql: "DELETE FROM agent_installs WHERE id = ?", params: [install.id] },
+      {
+        sql: "UPDATE shared_agents SET usage_count = usage_count - 1 WHERE id = ?",
+        params: [sharedAgent.id],
+      },
     ]);
-
-    await this.executeRun(
-      "UPDATE shared_agents SET usage_count = usage_count - 1 WHERE id = ?",
-      [sharedAgent.id],
-    );
   }
 
   public async rateAgent(
@@ -409,32 +407,30 @@ export class SharedAgentRepository extends BaseRepository {
     const id = existingRating?.id || generateId();
     const now = new Date().toISOString();
 
-    if (existingRating) {
-      await this.executeRun(
-        "UPDATE agent_ratings SET rating = ?, review = ?, updated_at = ? WHERE id = ?",
-        [rating, review || null, now, id],
-      );
-    } else {
-      await this.executeRun(
-        "INSERT INTO agent_ratings (id, shared_agent_id, user_id, rating, review) VALUES (?, ?, ?, ?, ?)",
-        [id, sharedAgentId, userId, rating, review || null],
-      );
-    }
+    // Update or insert rating, then recompute stats and update shared_agents atomically
+    const upsertSql = existingRating
+      ? "UPDATE agent_ratings SET rating = ?, review = ?, updated_at = ? WHERE id = ?"
+      : "INSERT INTO agent_ratings (id, shared_agent_id, user_id, rating, review) VALUES (?, ?, ?, ?, ?)";
+    const upsertParams = existingRating
+      ? [rating, review || null, now, id]
+      : [id, sharedAgentId, userId, rating, review || null];
 
+    // Recompute stats within the batch by using deterministic update based on current values
+    // Since D1 batch does not support multi-statement expressions depending on previous statements' results,
+    // we compute stats outside, then apply together.
     const ratingStats = await this.runQuery<{ count: number; average: number }>(
       "SELECT COUNT(*) as count, AVG(rating) as average FROM agent_ratings WHERE shared_agent_id = ?",
       [sharedAgentId],
       true,
     );
 
-    await this.executeRun(
-      "UPDATE shared_agents SET rating_count = ?, rating_average = ? WHERE id = ?",
-      [
-        ratingStats?.count || 0,
-        (ratingStats?.average || 0).toFixed(1),
-        sharedAgentId,
-      ],
-    );
+    await this.executeBatch([
+      { sql: upsertSql, params: upsertParams },
+      {
+        sql: "UPDATE shared_agents SET rating_count = ?, rating_average = ? WHERE id = ?",
+        params: [ratingStats?.count || 0, (ratingStats?.average || 0).toFixed(1), sharedAgentId],
+      },
+    ]);
 
     return {
       id,
@@ -527,16 +523,10 @@ export class SharedAgentRepository extends BaseRepository {
       throw new Error("Shared agent not found or unauthorized");
     }
 
-    await this.executeRun(
-      "DELETE FROM agent_ratings WHERE shared_agent_id = ?",
-      [sharedAgentId],
-    );
-    await this.executeRun(
-      "DELETE FROM agent_installs WHERE shared_agent_id = ?",
-      [sharedAgentId],
-    );
-    await this.executeRun("DELETE FROM shared_agents WHERE id = ?", [
-      sharedAgentId,
+    await this.executeBatch([
+      { sql: "DELETE FROM agent_ratings WHERE shared_agent_id = ?", params: [sharedAgentId] },
+      { sql: "DELETE FROM agent_installs WHERE shared_agent_id = ?", params: [sharedAgentId] },
+      { sql: "DELETE FROM shared_agents WHERE id = ?", params: [sharedAgentId] },
     ]);
   }
 
