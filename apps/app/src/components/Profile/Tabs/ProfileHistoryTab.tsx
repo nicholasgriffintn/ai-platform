@@ -1,5 +1,3 @@
-import { Construction } from "lucide-react";
-
 import { PageHeader } from "~/components/PageHeader";
 import { PageTitle } from "~/components/PageTitle";
 import { useTrackEvent } from "~/hooks/use-track-event";
@@ -7,13 +5,16 @@ import {
   useDeleteAllLocalChats,
   useDeleteAllRemoteChats,
 } from "~/hooks/useChat";
-import { Alert, AlertDescription, AlertTitle, Button } from "../../ui";
+import { apiService } from "~/lib/api/api-service";
+import { Button } from "../../ui";
+import { useState } from "react";
 
 export function ProfileHistoryTab() {
   const { trackEvent } = useTrackEvent();
 
   const deleteAllChats = useDeleteAllLocalChats();
   const deleteAllRemoteChats = useDeleteAllRemoteChats();
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleDeleteAllLocalChats = async () => {
     if (
@@ -61,6 +62,37 @@ export function ProfileHistoryTab() {
     }
   };
 
+  const handleExportCsv = async () => {
+    setIsExporting(true);
+    try {
+      trackEvent({
+        name: "export_chat_history_csv",
+        category: "profile",
+        label: "export_chat_history_csv",
+        value: 1,
+      });
+      const blob = await apiService.exportChatHistory();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const ts = new Date().toISOString().replace(/[:.]/g, "-");
+      a.href = url;
+      a.download = `chat-history-${ts}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to export chat history:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to export chat history. Please try again.",
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div>
       <PageHeader>
@@ -73,13 +105,13 @@ export function ProfileHistoryTab() {
             Message History
           </h3>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-            Export your history as JSON, or import existing data.
+            Export your history as CSV.
           </p>
-          <Alert variant="info">
-            <Construction className="h-4 w-4 mr-2" />
-            <AlertTitle>Coming soon</AlertTitle>
-            <AlertDescription>This feature is coming soon.</AlertDescription>
-          </Alert>
+          <div className="flex gap-2 mb-4">
+            <Button onClick={handleExportCsv} disabled={isExporting}>
+              {isExporting ? "Exporting..." : "Export CSV"}
+            </Button>
+          </div>
           <div className="border-b border-zinc-200 dark:border-zinc-800 mb-4" />
           <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-4">
             Danger Zone

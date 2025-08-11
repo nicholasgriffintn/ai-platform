@@ -234,6 +234,34 @@ class ApiService {
     }
   };
 
+  exportChatHistory = async (): Promise<Blob> => {
+    let headers = {} as Record<string, string>;
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error preparing headers for export:", error);
+    }
+
+    const response = await fetchApi("/user/export-chat-history", {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      let message = `Failed to export chat history: ${response.statusText}`;
+      try {
+        const data = (await response.json()) as any;
+        if (data && typeof data === "object" && typeof data.error === "string") {
+          message = data.error;
+        }
+      } catch {}
+      throw new Error(message);
+    }
+
+    const blob = await response.blob();
+    return blob;
+  };
+
   streamChatCompletions = async (
     completion_id: string,
     messages: Message[],
