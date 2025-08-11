@@ -7,6 +7,7 @@ import {
   formatToolErrorResponse,
   formatToolResponse,
 } from "~/utils/tool-responses";
+import { isNovaModel } from "~/utils/parameters";
 
 const logger = getLogger({ prefix: "CHAT:TOOLS" });
 
@@ -242,10 +243,38 @@ export const handleToolCalls = async (
   return functionResults;
 };
 
-export function formatToolCalls(provider: string, functions: any[]) {
+export function formatToolCalls(
+  provider: string,
+  functions: any[],
+  model?: string,
+) {
   if (!functions || !Array.isArray(functions)) {
     logger.warn("Invalid functions provided to formatToolCalls");
     return [];
+  }
+
+  // Bedrock Nova models expect `toolSpec` objects without the OpenAI-style wrapper
+  if (provider === "bedrock" && isNovaModel(model)) {
+    return functions
+      .map((func) => {
+        const parameters = func.parameters?.jsonSchema || func.parameters;
+        if (!parameters) {
+          logger.warn(`Missing parameters for function ${func.name}`);
+          return null;
+        }
+
+        // Nova expects inputSchema.json to hold the JSON Schema for inputs
+        return {
+          toolSpec: {
+            name: func.name,
+            description: func.description,
+            inputSchema: {
+              json: parameters,
+            },
+          },
+        };
+      })
+      .filter(Boolean);
   }
 
   if (provider === "anthropic") {
