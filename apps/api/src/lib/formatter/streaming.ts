@@ -287,4 +287,46 @@ export class StreamingFormatter {
 
     return null;
   }
+
+  // New helpers for Claude streamed_data format
+  static isStreamedDataResponse(data: any): boolean {
+    return Array.isArray(data?.streamed_data);
+  }
+
+  static extractStreamedDataEvents(data: any): any[] {
+    if (!this.isStreamedDataResponse(data)) return [];
+    return data.streamed_data || [];
+  }
+
+  static extractCodeExecutionResult(streamedEvent: any): {
+    stdout?: string;
+    stderr?: string;
+    return_code?: number;
+  } | null {
+    if (!streamedEvent) return null;
+    // Anthropic Code Execution tool result block example type
+    // e.g., { type: "content_block_delta", delta: { type: "output_json", ... } }
+    if (streamedEvent.type === "code_execution_tool_result") {
+      const { stdout, stderr, return_code } = streamedEvent;
+      return { stdout, stderr, return_code };
+    }
+    // Some providers may include result inside content blocks
+    const block = streamedEvent.content_block || streamedEvent.message;
+    if (block && block.type === "code_execution_tool_result") {
+      return {
+        stdout: block.stdout,
+        stderr: block.stderr,
+        return_code: block.return_code,
+      };
+    }
+    // Generic fallback
+    if (
+      streamedEvent?.delta?.type === "code_execution_tool_result" ||
+      streamedEvent?.delta?.name === "code_execution"
+    ) {
+      const d = streamedEvent.delta;
+      return { stdout: d.stdout, stderr: d.stderr, return_code: d.return_code };
+    }
+    return null;
+  }
 }

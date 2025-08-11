@@ -1,0 +1,47 @@
+{
+  "id": "msg_123",
+  "type": "message_stream",
+  "streamed_data": [
+    { "type": "message_start" },
+    {
+      "type": "content_block_start",
+      "index": 0,
+      "content_block": { "type": "analysis" }
+    },
+    {
+      "type": "content_block_delta",
+      "index": 0,
+      "delta": { "type": "text_delta", "text": "Thinking..." }
+    },
+    { "type": "content_block_stop", "index": 0 },
+    {
+      "type": "content_block_start",
+      "index": 1,
+      "content_block": { "type": "server_tool_use", "name": "code_execution" }
+    },
+    {
+      "type": "content_block_delta",
+      "index": 1,
+      "delta": { "type": "input_json_delta", "partial_json": "{\"code\":\"print('hi')\"}" }
+    },
+    { "type": "content_block_stop", "index": 1 },
+    {
+      "type": "content_block_start",
+      "index": 2,
+      "content_block": { "type": "code_execution_tool_result", "stdout": "hi\n", "stderr": "", "return_code": 0 }
+    },
+    { "type": "content_block_stop", "index": 2 },
+    {
+      "type": "content_block_start",
+      "index": 3,
+      "content_block": { "type": "text" }
+    },
+    {
+      "type": "content_block_delta",
+      "index": 3,
+      "delta": { "type": "text_delta", "text": "Done." }
+    },
+    { "type": "content_block_stop", "index": 3 },
+    { "type": "message_stop" }
+  ]
+}

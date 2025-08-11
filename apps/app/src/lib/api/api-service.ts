@@ -434,13 +434,36 @@ class ApiService {
                   const toolResult = parsedData.result;
                   const toolResponseData = toolResult.data || null;
 
+                  // Normalize code execution responses
+                  if (toolResult.name === "code_execution") {
+                    const codeData = toolResponseData?.codeExecution || toolResponseData;
+                    const stdout = codeData?.stdout || "";
+                    const stderr = codeData?.stderr || "";
+                    const returnCode =
+                      typeof codeData?.return_code === "number"
+                        ? codeData.return_code
+                        : typeof codeData?.returnCode === "number"
+                          ? codeData.returnCode
+                          : 0;
+
+                    toolResult.data = {
+                      ...(toolResponseData || {}),
+                      responseType: "code_execution",
+                      codeExecution: {
+                        stdout,
+                        stderr,
+                        return_code: returnCode,
+                      },
+                    };
+                  }
+
                   const toolResponse = normalizeMessage({
                     role: toolResult.role || "tool",
                     id: toolResult.id || crypto.randomUUID(),
                     content: toolResult.content || "",
                     name: toolResult.name,
                     status: toolResult.status || null,
-                    data: toolResponseData,
+                    data: toolResult.data,
                     created: Date.now(),
                     timestamp: toolResult.timestamp,
                     log_id: toolResult.log_id,

@@ -7,6 +7,7 @@ import { JsonView } from "./JsonView";
 import { TableView } from "./TableView";
 import { TemplateView } from "./TemplateView";
 import { TextView } from "./TextView";
+import { CodeExecutionRenderer } from "./CodeExecutionRenderer";
 
 interface ResponseRendererProps {
   app?: AppSchema;
@@ -95,6 +96,17 @@ export const ResponseRenderer = ({
           />
         );
 
+      case "code_execution": {
+        const codeData = result.data?.codeExecution || responseData?.codeExecution;
+        return (
+          <CodeExecutionRenderer
+            stdout={codeData?.stdout || ""}
+            stderr={codeData?.stderr || ""}
+            returnCode={codeData?.return_code ?? 0}
+          />
+        );
+      }
+
       default:
         return (
           <CustomView
@@ -135,9 +147,9 @@ export const ResponseRenderer = ({
                 >
                   {app.name} - Results
                 </h1>
-                <p className={cn("text-zinc-600 dark:text-zinc-300")}>
-                  {result.data?.message || `Results for ${app.name}`}
-                </p>
+                <p className={cn("text-zinc-600 dark:text-zinc-300")}>{
+                  result.data?.message || `Results for ${app.name}`
+                }</p>
                 {result.data?.timestamp && (
                   <p
                     className={cn(
@@ -145,8 +157,7 @@ export const ResponseRenderer = ({
                       "mt-1",
                     )}
                   >
-                    Generated on:{" "}
-                    {new Date(result.data.timestamp).toLocaleString()}
+                    Generated on: {new Date(result.data.timestamp).toLocaleString()}
                   </p>
                 )}
               </div>

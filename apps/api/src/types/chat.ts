@@ -65,7 +65,14 @@ export interface Message {
   }[];
   content: string | MessageContent[];
   status?: string;
-  data?: Record<string, any>;
+  data?: (Record<string, any> & {
+    responseType?: string;
+    codeExecution?: {
+      stdout?: string;
+      stderr?: string;
+      return_code?: number;
+    };
+  });
   model?: string;
   log_id?: string;
   citations?: string[];
