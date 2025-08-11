@@ -92,7 +92,7 @@ export class MessageRepository extends BaseRepository {
   ): Promise<Record<string, unknown>[]> {
     let query = `
       SELECT * FROM message WHERE conversation_id = ?
-      ORDER BY created_at ASC
+      ORDER BY timestamp ASC, created_at ASC, id ASC
     `;
 
     const params: Array<string | number> = [conversationId];
@@ -100,10 +100,16 @@ export class MessageRepository extends BaseRepository {
     if (after) {
       query = `
         SELECT * FROM message
-        WHERE conversation_id = ? AND id > ?
-        ORDER BY created_at ASC
+        WHERE conversation_id = ? AND (
+          timestamp > (SELECT timestamp FROM message WHERE id = ?)
+          OR (
+            timestamp = (SELECT timestamp FROM message WHERE id = ?)
+            AND id > ?
+          )
+        )
+        ORDER BY timestamp ASC, created_at ASC, id ASC
       `;
-      params.push(after);
+      params.push(after, after, after);
     }
 
     if (limit) {
@@ -198,7 +204,7 @@ export class MessageRepository extends BaseRepository {
     const result = await this.runQuery<Record<string, unknown>>(
       `SELECT * FROM message 
        WHERE parent_message_id = ?
-       ORDER BY created_at ASC 
+       ORDER BY timestamp ASC, created_at ASC, id ASC 
        LIMIT ?`,
       [parentMessageId, limit],
     );
