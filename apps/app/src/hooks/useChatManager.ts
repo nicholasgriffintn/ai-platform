@@ -275,11 +275,16 @@ export function useChatManager() {
   const updateAssistantMessage = useCallback(
     async (
       conversationId: string,
-      content: string,
+      content: string | Message["content"],
       reasoning?: string,
       messageData?: Partial<Message>,
     ) => {
-      assistantResponseRef.current = content;
+      assistantResponseRef.current =
+        typeof content === "string"
+          ? content
+          : content
+              .map((item: any) => (item.type === "text" ? item.text || "" : ""))
+              .join("");
       if (reasoning) {
         assistantReasoningRef.current = reasoning;
       }
@@ -288,6 +293,13 @@ export function useChatManager() {
         const now = Date.now();
         const nowISOString = new Date(now).toISOString();
         const currentModel = model === null ? undefined : model;
+
+        const contentPreview =
+          typeof content === "string"
+            ? content
+            : content
+                .map((item: any) => (item.type === "text" ? item.text || "" : ""))
+                .join("");
 
         if (!oldData) {
           const assistantMessage = normalizeMessage({
@@ -308,7 +320,7 @@ export function useChatManager() {
 
           return {
             id: conversationId,
-            title: `${content.slice(0, 20)}...`,
+            title: `${contentPreview.slice(0, 20)}...`,
             messages: [assistantMessage],
             isLocalOnly: false,
             created_at: nowISOString,
@@ -320,8 +332,7 @@ export function useChatManager() {
         const messages = [...oldData.messages];
         const lastMessageIndex = messages.length - 1;
         const hasAssistantLastMessage =
-          lastMessageIndex >= 0 &&
-          messages[lastMessageIndex].role === "assistant";
+          lastMessageIndex >= 0 && messages[lastMessageIndex].role === "assistant";
 
         let updatedMessages;
 
@@ -429,18 +440,18 @@ export function useChatManager() {
       await updateAssistantMessage(conversationId, "");
 
       const handleMessageUpdate = (
-        content: string,
+        content: any,
         reasoning?: string,
         toolResponses?: Message[],
         done?: boolean,
       ) => {
         if (done) {
-          updateAssistantMessage(conversationId, content, reasoning);
+          updateAssistantMessage(conversationId, content as any, reasoning);
           response = "";
           return;
         }
 
-        response = content;
+        response = typeof content === "string" ? content : response;
 
         if (toolResponses && toolResponses.length > 0) {
           setTimeout(() => {
@@ -449,7 +460,7 @@ export function useChatManager() {
             }
           }, 0);
         } else {
-          updateAssistantMessage(conversationId, content, reasoning);
+          updateAssistantMessage(conversationId, content as any, reasoning);
         }
       };
 
@@ -533,21 +544,22 @@ export function useChatManager() {
               : undefined,
           );
 
-          const messageContent =
+          const messageContentToDisplay = assistantMessage.content;
+          const textPreview =
             typeof assistantMessage.content === "string"
               ? assistantMessage.content
               : assistantMessage.content
-                  .map((item) => item.text || "")
+                  .map((item: any) => (item.type === "text" ? item.text || "" : ""))
                   .join("");
 
           await updateAssistantMessage(
             conversationId,
-            messageContent,
+            messageContentToDisplay as any,
             assistantMessage.reasoning?.content,
             assistantMessage,
           );
 
-          response = messageContent;
+          response = textPreview;
         }
 
         if (messages.length <= 1) {
