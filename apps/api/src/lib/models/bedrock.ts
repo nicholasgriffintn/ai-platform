@@ -9,7 +9,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     name: "Amazon Nova Lite",
     matchingModel: "amazon.nova-lite-v1:0",
     description:
-      "Amazon Nova Lite is a very low-cost multimodal model that is lightning fast for processing image, video, and text inputs. Amazon Nova Lite's accuracy across a breadth of tasks, coupled with its lightning-fast speed, makes it suitable for a wide range of interactive and high-volume applications where cost is a key consideration.",
+      "Amazon Nova Lite is a very low-cost multimodal model that is lightning fast for processing image, video, and text inputs. It supports image understanding (image-to-text) including OCR and visual Q&A.",
     type: ["text", "image-to-text"],
     knowledgeCutoffDate: "October 2024",
     releaseDate: "December 3, 2024",
@@ -64,7 +64,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     name: "Amazon Nova Pro",
     matchingModel: "amazon.nova-pro-v1:0",
     description:
-      "Amazon Nova Pro is a highly capable multimodal model with the best combination of accuracy, speed, and cost for a wide range of tasks.  Amazon Nova Pro's capabilities, coupled with its industry-leading speed and cost efficiency, makes it a compelling model for almost any task, including video summarization, Q&A, mathematical reasoning, software development, and AI agents that can execute multi-step workflows.",
+      "Amazon Nova Pro is a highly capable multimodal model with the best combination of accuracy, speed, and cost for a wide range of tasks. It supports vision understanding (image-to-text), including OCR, charts, and complex visual reasoning.",
     type: ["text", "image-to-text"],
     knowledgeCutoffDate: "October 2024",
     releaseDate: "December 3, 2024",

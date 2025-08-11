@@ -4,7 +4,7 @@ import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { StorageService } from "~/lib/storage";
-import type { ChatCompletionParameters } from "~/types";
+import type { ChatCompletionParameters, Message, MessageContent } from "~/types";
 import { createEventStreamParser } from "~/utils/awsEventStream";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -13,6 +13,11 @@ import {
   getToolsForProvider,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
+import {
+  fetchImageAsBase64,
+  getImageFormat,
+  validateImageFormat,
+} from "~/lib/utils/imageProcessor";
 
 const logger = getLogger({ prefix: "BEDROCK" });
 
@@ -65,6 +70,15 @@ export class BedrockProvider extends BaseProvider {
     return {};
   }
 
+  private messageHasImageContent(message: Message): boolean {
+    if (typeof message.content === "string") return false;
+    return message.content.some((c) => c.type === "image_url");
+  }
+
+  private anyMessageHasImageContent(messages: Message[] = []): boolean {
+    return messages.some((m) => this.messageHasImageContent(m));
+  }
+
   async mapParameters(
     params: ChatCompletionParameters,
     _storageService?: StorageService,
@@ -83,7 +97,7 @@ export class BedrockProvider extends BaseProvider {
 
     if (isVideoType) {
       return {
-        messages: this.formatBedrockMessages(params),
+        messages: await this.formatBedrockMessages(params),
         taskType: "TEXT_VIDEO",
         textToVideoParams: {
           text:
@@ -91,8 +105,8 @@ export class BedrockProvider extends BaseProvider {
             "string"
               ? params.messages[params.messages.length - 1].content
               : Array.isArray(
-                    params.messages[params.messages.length - 1].content,
-                  )
+                  params.messages[params.messages.length - 1].content,
+                )
                 ? (
                     params.messages[params.messages.length - 1]
                       .content[0] as any
@@ -115,8 +129,8 @@ export class BedrockProvider extends BaseProvider {
             "string"
               ? params.messages[params.messages.length - 1].content
               : Array.isArray(
-                    params.messages[params.messages.length - 1].content,
-                  )
+                  params.messages[params.messages.length - 1].content,
+                )
                 ? (
                     params.messages[params.messages.length - 1]
                       .content[0] as any
@@ -147,11 +161,21 @@ export class BedrockProvider extends BaseProvider {
       ? { toolConfig: { tools: toolsParams.tools } }
       : {};
 
+    const hasImageBlocks = this.anyMessageHasImageContent(params.messages || []);
+    if (hasImageBlocks) {
+      if (!modelConfig.multimodal || !modelConfig.type.includes("image-to-text")) {
+        throw new AssistantError(
+          "Selected model does not support image inputs",
+          ErrorType.PARAMS_ERROR,
+        );
+      }
+    }
+
     return {
       ...(params.system_prompt && {
         system: [{ text: params.system_prompt }],
       }),
-      messages: this.formatBedrockMessages(params),
+      messages: await this.formatBedrockMessages(params),
       inferenceConfig: {
         temperature: commonParams.temperature,
         maxTokens: commonParams.max_tokens,
@@ -166,16 +190,68 @@ export class BedrockProvider extends BaseProvider {
    * @param params - The chat completion parameters
    * @returns The formatted messages
    */
-  private formatBedrockMessages(params: ChatCompletionParameters): any[] {
-    return params.messages.map((message) => ({
-      role: message.role,
-      content: [
-        {
-          type: "text",
-          text: message.content,
-        },
-      ],
-    }));
+  private async formatBedrockMessages(
+    params: ChatCompletionParameters,
+  ): Promise<any[]> {
+    const formatted = [] as any[];
+
+    for (const message of params.messages || []) {
+      const role = message.role;
+
+      if (typeof message.content === "string") {
+        formatted.push({
+          role,
+          content: [
+            {
+              type: "text",
+              text: message.content,
+            },
+          ],
+        });
+        continue;
+      }
+
+      const contentBlocks: MessageContent[] = message.content as MessageContent[];
+      const parts: any[] = [];
+
+      for (const block of contentBlocks) {
+        if (block.type === "text" && typeof block.text === "string") {
+          parts.push({ type: "text", text: block.text });
+          continue;
+        }
+
+        if (block.type === "image_url" && block.image_url?.url) {
+          const imageUrl = block.image_url.url;
+
+          if (!validateImageFormat(imageUrl)) {
+            throw new AssistantError(
+              "Image format not supported by Amazon Nova (supported: JPEG, PNG, GIF, WEBP)",
+              ErrorType.PARAMS_ERROR,
+            );
+          }
+
+          const base64 = await fetchImageAsBase64(imageUrl);
+          const format = getImageFormat(imageUrl) || "png";
+
+          parts.push({
+            image: {
+              format,
+              source: { bytes: base64 },
+            },
+          });
+          continue;
+        }
+      }
+
+      if (parts.length === 0) {
+        // Fallback to empty text to avoid provider errors
+        parts.push({ type: "text", text: "" });
+      }
+
+      formatted.push({ role, content: parts });
+    }
+
+    return formatted;
   }
 
   async getResponse(
