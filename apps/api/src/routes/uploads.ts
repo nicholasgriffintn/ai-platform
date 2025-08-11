@@ -25,7 +25,7 @@ app.post(
   describeRoute({
     tags: ["uploads"],
     summary: "Upload file",
-    description: "Upload an image or document to the server",
+    description: "Upload an image, audio, code, or document to the server",
     requestBody: {
       description: "Multipart form data containing file",
       required: true,

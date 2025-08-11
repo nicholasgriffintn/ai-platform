@@ -8,6 +8,7 @@ import {
   Square,
   Volume2,
   X,
+  FileCode,
 } from "lucide-react";
 import {
   type ChangeEvent,
@@ -67,6 +68,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     const [isTextToImageOnlyModel, setIsTextToImageOnlyModel] = useState(false);
     const [supportsDocuments, setSupportsDocuments] = useState(false);
     const [supportsAudio, setSupportsAudio] = useState(false);
+    const [supportsCode, setSupportsCode] = useState(false);
     const [supportsToolCalls, setsupportsToolCalls] = useState(false);
     const { data: apiModels } = useModels();
     const [isUploading, setIsUploading] = useState(false);
@@ -95,6 +97,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         setIsTextToImageOnlyModel(false);
         setSupportsDocuments(false);
         setSupportsAudio(false);
+        setSupportsCode(false);
         setsupportsToolCalls(false);
         return;
       }
@@ -117,6 +120,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       );
       setSupportsAudio(
         !!modelData?.supportsAudio && !imageOnly && !textOnlyToImage,
+      );
+      setSupportsCode(
+        !!modelData?.supportsDocuments && !imageOnly && !textOnlyToImage,
       );
       setsupportsToolCalls(!!modelData?.supportsToolCalls);
     }, [model, apiModels]);
@@ -206,6 +212,31 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           return;
         }
 
+        // Code files (typescript/javascript and common source types)
+        const codeLike =
+          file.type.startsWith("text/") ||
+          file.type === "application/javascript" ||
+          file.type === "application/typescript" ||
+          file.name.match(/\.(ts|tsx|js|jsx|json|py|go|java|rb|php|rs|cs|kt|swift|scala|sh|yml|yaml|sql|toml|c|cc|cpp|cxx|hpp|h)$/i);
+
+        if (codeLike && supportsDocuments) {
+          const { url, name, markdown, type } = await apiService.uploadFile(
+            file,
+            "code",
+          );
+
+          if (type === "markdown_document" && markdown) {
+            setSelectedAttachment({
+              type: "markdown_document",
+              data: url,
+              name: name || file.name,
+              markdown: markdown,
+            });
+            setIsUploading(false);
+            return;
+          }
+        }
+
         if (file.type === "application/pdf") {
           if (supportsDocuments) {
             const { url, name } = await apiService.uploadFile(file, "document");
@@ -283,6 +314,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       let fileTypes =
         "text/html,application/xml,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroenabled.12,application/vnd.ms-excel.sheet.binary.macroenabled.12,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet,text/csv,application/vnd.apple.numbers,application/pdf";
 
+      // Code files support when documents are supported
+      if (supportsDocuments) {
+        fileTypes += ",.ts,.tsx,.js,.jsx,.json,.py,.go,.java,.rb,.php,.rs,.cs,.kt,.swift,.scala,.sh,.yml,.yaml,.sql,.toml,.c,.cc,.cpp,.cxx,.hpp,.h";
+        fileTypes += ",text/javascript,application/javascript,text/typescript,application/typescript,text/plain,application/json";
+      }
+
       if (isMultimodalModel) {
         fileTypes += ",image/*";
       }
@@ -303,6 +340,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           <span className="flex space-x-1">
             {isMultimodalModel && <Image className="h-4 w-4" />}
             {supportsDocuments && <File className="h-4 w-4" />}
+            {supportsCode && <FileCode className="h-4 w-4" />}
             {supportsAudio && <Volume2 className="h-4 w-4" />}
             {!supportsDocuments && !supportsAudio && (
               <Paperclip className="h-4 w-4" />
@@ -311,7 +349,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         );
       }
       if (supportsDocuments) {
-        return <File className="h-4 w-4" />;
+        return supportsCode ? <FileCode className="h-4 w-4" /> : <File className="h-4 w-4" />;
       }
 
       return <Paperclip className="h-4 w-4" />;
@@ -434,15 +472,15 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                               onChange={handleFileUpload}
                               className="hidden"
                               id="file-upload"
-                              aria-label="Upload a file"
+                              aria-label="Upload a file (images, documents, audio, and code)"
                             />
                             <Button
                               type="button"
                               onClick={() => fileInputRef.current?.click()}
                               disabled={isLoading || isUploading}
                               className="cursor-pointer p-1.5 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                              title={`Upload ${isMultimodalModel || supportsAudio ? "files" : "a Document"}`}
-                              aria-label={`Upload ${isMultimodalModel || supportsAudio ? "files" : "a Document"}`}
+                              title={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
+                              aria-label={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
                               variant="icon"
                               aria-haspopup="dialog"
                               aria-controls="file-upload"

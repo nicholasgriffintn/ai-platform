@@ -713,7 +713,7 @@ class ApiService {
 
   uploadFile = async (
     file: File,
-    fileType: "image" | "document" | "audio",
+    fileType: "image" | "document" | "audio" | "code",
     options?: { convertToMarkdown?: boolean },
   ): Promise<{
     url: string;
@@ -750,7 +750,7 @@ class ApiService {
         typeof errorData === "object" &&
         errorData !== null &&
         "error" in errorData
-          ? String(errorData.error)
+          ? String((errorData as any).error)
           : response.statusText;
       throw new Error(`Failed to upload file: ${errorMessage}`);
     }

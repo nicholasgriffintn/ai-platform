@@ -21,14 +21,15 @@ export async function handleFileUpload(
     | "image"
     | "document"
     | "audio"
+    | "code"
     | null;
 
   if (!file) {
     throw new AssistantError("No file uploaded", ErrorType.PARAMS_ERROR, 400);
   }
-  if (!fileType || !["image", "document", "audio"].includes(fileType)) {
+  if (!fileType || !["image", "document", "audio", "code"].includes(fileType)) {
     throw new AssistantError(
-      "Invalid file type. Must be 'image', 'document', or 'audio'",
+      "Invalid file type. Must be 'image', 'document', 'audio', or 'code'",
       ErrorType.PARAMS_ERROR,
       400,
     );
@@ -49,6 +50,33 @@ export async function handleFileUpload(
       "application/vnd.apple.numbers",
     ],
     audio: ["audio/mpeg", "audio/wav", "audio/mp3", "audio/x-wav", "audio/mp4"],
+    code: [
+      // JavaScript/TypeScript
+      "text/javascript",
+      "application/javascript",
+      "text/typescript",
+      "application/typescript",
+      // Many browsers default to text/plain for source files
+      "text/plain",
+      // JSON/YAML and other common text-based config/code formats
+      "application/json",
+      "text/yaml",
+      "application/x-yaml",
+      // Other common languages (best-effort; browsers often report text/plain)
+      "text/x-python",
+      "application/x-python",
+      "text/x-go",
+      "text/x-java-source",
+      "text/x-ruby",
+      "application/x-ruby",
+      "application/x-php",
+      "text/x-php",
+      "text/x-csrc",
+      "text/x-c++src",
+      "text/x-shellscript",
+      "text/x-sql",
+      "application/sql",
+    ],
   };
 
   if (!allowedMimeTypes[fileType].includes(file.type)) {
@@ -59,12 +87,28 @@ export async function handleFileUpload(
     );
   }
 
+  // Enforce size limits for specific categories
+  if (fileType === "code") {
+    const maxCodeSizeBytes = 200 * 1024; // 200KB
+    if (file.size > maxCodeSizeBytes) {
+      throw new AssistantError(
+        "Code files must be 200KB or smaller",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+  }
+
   const isPdf = file.type === "application/pdf";
   const convertFlag = formData.get("convert_to_markdown") as string | null;
   const shouldConvert =
     fileType === "document" && (!isPdf || convertFlag === "true");
 
-  const fileExtension = file.type.split("/")[1];
+  // Determine file extension
+  const nameParts = file.name.split(".");
+  const inferredExtension = nameParts.length > 1 ? nameParts.pop()!.toLowerCase() : "";
+  const mimeExtension = (file.type.split("/")[1] || "").toLowerCase();
+  const fileExtension = fileType === "code" ? (inferredExtension || mimeExtension) : mimeExtension;
   const key = `uploads/${userId}/${fileType}s/${crypto.randomUUID()}.${fileExtension}`;
 
   let arrayBuffer: ArrayBuffer;
@@ -133,6 +177,50 @@ export async function handleFileUpload(
             : String(markdownError),
         stack: markdownError instanceof Error ? markdownError.stack : undefined,
       });
+    }
+  }
+
+  // For code files, read as text and wrap in markdown fences
+  if (fileType === "code") {
+    try {
+      const rawText = await file.text();
+      const extToLang: Record<string, string> = {
+        ts: "typescript",
+        tsx: "tsx",
+        js: "javascript",
+        jsx: "jsx",
+        json: "json",
+        py: "python",
+        go: "go",
+        java: "java",
+        rb: "ruby",
+        php: "php",
+        rs: "rust",
+        cs: "csharp",
+        kt: "kotlin",
+        swift: "swift",
+        scala: "scala",
+        sh: "bash",
+        bash: "bash",
+        yml: "yaml",
+        yaml: "yaml",
+        sql: "sql",
+        toml: "toml",
+        c: "c",
+        h: "c",
+        cc: "cpp",
+        cpp: "cpp",
+        cxx: "cpp",
+        hpp: "cpp",
+      };
+      const lang = extToLang[(inferredExtension || "").toLowerCase()] || "";
+      const fence = lang ? `\`\`\`${lang}` : "```";
+      markdownContent = `${fence}\n${rawText}\n\`\`\``;
+    } catch (err) {
+      logger.error("Failed to read code file as text", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      // If reading as text fails, we still return without markdown
     }
   }
 
