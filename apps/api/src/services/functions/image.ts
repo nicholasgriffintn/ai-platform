@@ -28,6 +28,11 @@ export const create_image: IFunction = {
         minimum: 1,
         maximum: 8,
       },
+      model: {
+        type: "string",
+        description:
+          "Optional model ID to use for generation (e.g., 'amazon.nova-canvas-v1:0', '@cf/black-forest-labs/flux-1-schnell')",
+      },
     },
     required: ["prompt"],
   },

@@ -91,8 +91,8 @@ export class BedrockProvider extends BaseProvider {
             "string"
               ? params.messages[params.messages.length - 1].content
               : Array.isArray(
-                    params.messages[params.messages.length - 1].content,
-                  )
+                  params.messages[params.messages.length - 1].content,
+                )
                 ? (
                     params.messages[params.messages.length - 1]
                       .content[0] as any
@@ -115,8 +115,8 @@ export class BedrockProvider extends BaseProvider {
             "string"
               ? params.messages[params.messages.length - 1].content
               : Array.isArray(
-                    params.messages[params.messages.length - 1].content,
-                  )
+                  params.messages[params.messages.length - 1].content,
+                )
                 ? (
                     params.messages[params.messages.length - 1]
                       .content[0] as any
@@ -167,15 +167,48 @@ export class BedrockProvider extends BaseProvider {
    * @returns The formatted messages
    */
   private formatBedrockMessages(params: ChatCompletionParameters): any[] {
-    return params.messages.map((message) => ({
-      role: message.role,
-      content: [
-        {
-          type: "text",
-          text: message.content,
-        },
-      ],
-    }));
+    return params.messages.map((message) => {
+      let contentArray: Array<{ type: string; text: string }> = [];
+
+      if (typeof message.content === "string") {
+        contentArray = [
+          {
+            type: "text",
+            text: message.content,
+          },
+        ];
+      } else if (Array.isArray(message.content)) {
+        contentArray = message.content
+          .map((part: any) => {
+            if (typeof part === "string") {
+              return { type: "text", text: part };
+            }
+            if (part?.text) {
+              return { type: "text", text: part.text };
+            }
+            if (part?.markdown_document?.markdown) {
+              return { type: "text", text: part.markdown_document.markdown };
+            }
+            if (part?.document_url?.url) {
+              return { type: "text", text: part.document_url.url };
+            }
+            // Fallback: ignore non-text parts for bedrock text content
+            return null;
+          })
+          .filter((p: any) => p && typeof p.text === "string" && p.text.length);
+
+        if (contentArray.length === 0) {
+          contentArray = [{ type: "text", text: "" }];
+        }
+      } else {
+        contentArray = [{ type: "text", text: "" }];
+      }
+
+      return {
+        role: message.role,
+        content: contentArray,
+      };
+    });
   }
 
   async getResponse(

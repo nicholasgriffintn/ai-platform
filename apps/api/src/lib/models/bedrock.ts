@@ -93,11 +93,12 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     description:
       "Amazon Nova Canvas is a state-of-the-art image generation model that creates professional grade images from text or images provided in prompts. Amazon Nova Canvas also provides features that make it easy to edit images using text inputs, controls for adjusting color scheme and layout, and built-in controls to support safe and responsible use of AI.",
     type: ["text-to-image", "image-to-image"],
-    beta: true,
+    // General availability
     costPer1kInputTokens: 0.002,
     contextWindow: 1024,
     maxTokens: 1024,
     multimodal: true,
+    includedInRouter: true,
   }),
 
   createModelConfig("nova-reel", PROVIDER, {
@@ -106,10 +107,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     description:
       "Amazon Nova Reel is a state-of-the-art video generation model that allows customers to easily create high quality video from text and images. Amazon Nova Reel supports use of natural language prompts to control visual style and pacing, including camera motion control, and built-in controls to support safe and responsible use of AI.",
     type: ["text-to-video", "image-to-video"],
-    beta: true,
     contextWindow: 512,
     maxTokens: 512,
     multimodal: true,
+    includedInRouter: true,
   }),
 
   createModelConfig("embed-english", PROVIDER, {
