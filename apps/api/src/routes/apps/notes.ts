@@ -162,14 +162,7 @@ app.post(
     requestBody: {
       content: {
         "application/json": {
-          schema: {
-            type: "object",
-            properties: {
-              title: { type: "string" },
-              content: { type: "string" },
-            },
-            required: ["title", "content"],
-          },
+          schema: resolver(noteCreateSchema),
         },
       },
     },
@@ -219,6 +212,8 @@ app.post(
     const body = c.req.valid("json" as never) as {
       title: string;
       content: string;
+      metadata?: Record<string, any>;
+      attachments?: Array<any>;
     };
     try {
       const note = await createNote({ env: c.env as IEnv, user, data: body });
@@ -249,14 +244,7 @@ app.put(
     requestBody: {
       content: {
         "application/json": {
-          schema: {
-            type: "object",
-            properties: {
-              title: { type: "string" },
-              content: { type: "string" },
-            },
-            required: ["title", "content"],
-          },
+          schema: resolver(noteUpdateSchema),
         },
       },
     },
@@ -287,6 +275,8 @@ app.put(
     const body = c.req.valid("json" as never) as {
       title: string;
       content: string;
+      metadata?: Record<string, any>;
+      attachments?: Array<any>;
     };
     const user = c.get("user") as IUser;
 

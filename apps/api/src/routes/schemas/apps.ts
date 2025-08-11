@@ -319,18 +319,29 @@ export const podcastDetailResponseSchema = z.object({
   }),
 });
 
+export const attachmentSchema = z.object({
+  url: z.string(),
+  type: z.enum(["image", "document", "markdown_document", "audio", "video"]),
+  name: z.string().optional(),
+  size: z.number().optional(),
+  mimeType: z.string().optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
+});
+
 export const noteSchema = z.object({
   id: z.string(),
   title: z.string(),
   content: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  attachments: z.array(attachmentSchema).optional(),
 });
 
 export const noteCreateSchema = z.object({
   title: z.string(),
   content: z.string(),
   metadata: z.record(z.string(), z.any()).optional(),
+  attachments: z.array(attachmentSchema).optional(),
 });
 
 export const noteUpdateSchema = noteCreateSchema;

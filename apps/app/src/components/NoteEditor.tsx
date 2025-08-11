@@ -37,15 +37,20 @@ import {
   splitTitleAndContent,
 } from "~/lib/text-utils";
 import { cn } from "~/lib/utils";
+import AttachmentUploader from "~/components/AttachmentUploader";
+import AttachmentViewer from "~/components/AttachmentViewer";
+import type { Attachment } from "~/types/note";
 
 interface NoteEditorProps {
   noteId?: string;
   initialText?: string;
   initialMetadata?: Record<string, any>;
+  initialAttachments?: Attachment[];
   onSave: (
     title: string,
     content: string,
     metadata?: Record<string, any>,
+    attachments?: Attachment[],
   ) => Promise<string>;
   onDelete?: () => Promise<void>;
   onToggleFullBleed?: () => void;
@@ -62,6 +67,7 @@ export function NoteEditor({
   noteId,
   initialText = "",
   initialMetadata,
+  initialAttachments = [],
   onSave,
   onDelete,
   onToggleFullBleed,
@@ -85,6 +91,7 @@ export function NoteEditor({
   const [currentMetadata, setCurrentMetadata] = useState<Record<string, any>>(
     initialMetadata || {},
   );
+  const [attachments, setAttachments] = useState<Attachment[]>(initialAttachments);
   const [showMetadata, setShowMetadata] = useState<boolean>(false);
 
   const handleMetadataUpdate = async (newMetadata: Record<string, any>) => {
@@ -98,7 +105,7 @@ export function NoteEditor({
           ? { tabSource: tabCapture.tabInfo }
           : {};
         const finalMetadata = { ...newMetadata, ...tabMetadata };
-        await onSave(title, content, finalMetadata);
+        await onSave(title, content, finalMetadata, attachments);
       } catch {
         toast.error("Failed to save metadata changes");
       } finally {
@@ -177,7 +184,7 @@ export function NoteEditor({
             ? { tabSource: tabCapture.tabInfo }
             : {};
           const finalMetadata = { ...currentMetadata, ...tabMetadata };
-          await onSave(title, content, finalMetadata);
+          await onSave(title, content, finalMetadata, attachments);
           setLastSavedText(text);
         } catch {
           toast.error("Failed to save note");
@@ -187,7 +194,7 @@ export function NoteEditor({
       })();
     }, 1000);
     return () => clearTimeout(timeout);
-  }, [text, lastSavedText, onSave, tabCapture.tabInfo, currentMetadata]);
+  }, [text, lastSavedText, onSave, tabCapture.tabInfo, currentMetadata, attachments]);
 
   useEffect(() => {
     setFontFamily(initialFontFamily);
@@ -210,7 +217,7 @@ export function NoteEditor({
                 ? { tabSource: tabCapture.tabInfo }
                 : {};
               const finalMetadata = { ...currentMetadata, ...tabMetadata };
-              await onSave(title, content, finalMetadata);
+              await onSave(title, content, finalMetadata, attachments);
               setLastSavedText(textRef.current);
             } catch {
               toast.error("Failed to save note");
@@ -232,6 +239,7 @@ export function NoteEditor({
     onToggleFullBleed,
     tabCapture.tabInfo,
     currentMetadata,
+    attachments,
   ]);
 
   return (
@@ -277,6 +285,16 @@ export function NoteEditor({
           )}
         </div>
       )}
+
+      <div className="px-4 py-3 border-b">
+        <AttachmentUploader value={attachments} onChange={setAttachments} multiple />
+        {attachments.length > 0 && (
+          <div className="mt-3">
+            <AttachmentViewer attachments={attachments} view="grid" />
+          </div>
+        )}
+      </div>
+
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -323,10 +341,7 @@ export function NoteEditor({
               ) : (
                 <span className="flex items-center text-gray-500 dark:text-gray-400">
                   <VolumeX size={14} className="mr-1" />
-                  Silence{" "}
-                  {lastSilenceTime
-                    ? `(${Math.floor((Date.now() - lastSilenceTime) / 1000)}s)`
-                    : ""}
+                  Silence {lastSilenceTime ? `(${Math.floor((Date.now() - lastSilenceTime) / 1000)}s)` : ""}
                 </span>
               )}
             </div>
@@ -599,61 +614,28 @@ export function NoteEditor({
               <div className="mb-4 h-48 border rounded">
                 {formatNoteMutation.status === "pending" ? (
                   <div className="flex items-center justify-center h-full">
-                    <Loader2 className="animate-spin text-gray-500" />
+                    <Loader2 className="animate-spin" />
                   </div>
-                ) : formatNoteMutation.status === "error" ? (
-                  <p className="text-red-500 p-4">
-                    Formatting failed. Try again.
-                  </p>
                 ) : (
-                  <>
-                    <label htmlFor="ai-result" className="sr-only">
-                      AI Result
-                    </label>
-                    <UITextarea
-                      id="ai-result"
-                      value={aiResult}
-                      readOnly
-                      className="h-full"
-                    />
-                  </>
+                  <pre className="p-3 whitespace-pre-wrap text-sm overflow-auto h-full">
+                    {aiResult}
+                  </pre>
                 )}
               </div>
             )}
-            <label htmlFor="ai-prompt" className="sr-only">
-              Additional instructions
-            </label>
-            <UITextarea
-              id="ai-prompt"
-              value={aiPrompt}
-              onChange={(e) => setAIPrompt(e.target.value)}
-              placeholder="Add more instructions..."
-              className="mb-4 h-24"
-            />
-            <DialogFooter>
-              <Button
-                variant="secondary"
-                onClick={runFormat}
-                isLoading={formatNoteMutation.status === "pending"}
-                disabled={!noteId || formatNoteMutation.status === "pending"}
-                className="mr-2"
-              >
-                {formatNoteMutation.status === "pending"
-                  ? "Running..."
-                  : "Run Formatting"}
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  setText(aiResult);
-                  setIsAIModalOpen(false);
-                }}
-                disabled={formatNoteMutation.status !== "success"}
-              >
-                Accept
-              </Button>
-            </DialogFooter>
           </div>
+          <UITextarea
+            value={aiPrompt}
+            onChange={(e) => setAIPrompt(e.target.value)}
+            placeholder="Add optional instructions (e.g., tone, structure, emphasis)"
+            rows={5}
+          />
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setIsAIModalOpen(false)}>
+              Close
+            </Button>
+            <Button onClick={runFormat}>Run</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

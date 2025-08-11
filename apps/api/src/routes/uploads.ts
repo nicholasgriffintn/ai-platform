@@ -25,7 +25,7 @@ app.post(
   describeRoute({
     tags: ["uploads"],
     summary: "Upload file",
-    description: "Upload an image or document to the server",
+    description: "Upload an image, document, audio, or video to the server",
     requestBody: {
       description: "Multipart form data containing file",
       required: true,
@@ -38,8 +38,12 @@ app.post(
                 type: "string",
                 format: "binary",
               },
+              file_type: {
+                type: "string",
+                enum: ["image", "document", "audio", "video"],
+              },
             },
-            required: ["file"],
+            required: ["file", "file_type"],
           },
         },
       },

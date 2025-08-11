@@ -6,6 +6,7 @@ import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { generateAttachmentMetadata } from "./attachments";
 
 const logger = getLogger();
 
@@ -16,6 +17,14 @@ export interface Note {
   createdAt: string;
   updatedAt: string;
   metadata?: Record<string, any>;
+  attachments?: Array<{
+    url: string;
+    type: string;
+    name?: string;
+    size?: number;
+    mimeType?: string;
+    metadata?: Record<string, any>;
+  }>;
 }
 
 export async function listNotes({
@@ -47,6 +56,7 @@ export async function listNotes({
       createdAt: entry.created_at,
       updatedAt: entry.updated_at,
       metadata: data.metadata,
+      attachments: data.attachments,
     };
   });
 }
@@ -89,6 +99,7 @@ export async function getNote({
     createdAt: entry.created_at,
     updatedAt: entry.updated_at,
     metadata: data.metadata,
+    attachments: data.attachments,
   };
 }
 
@@ -99,7 +110,7 @@ export async function createNote({
 }: {
   env: IEnv;
   user: IUser;
-  data: { title: string; content: string; metadata?: Record<string, any> };
+  data: { title: string; content: string; metadata?: Record<string, any>; attachments?: Note["attachments"] };
 }): Promise<Note> {
   if (!user?.id) {
     throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
@@ -118,10 +129,13 @@ export async function createNote({
     data.metadata,
   );
 
+  const validAttachments = await validateAndEnrichAttachments(env, user, data.attachments);
+
   const appData = {
     title: sanitisedTitle,
     content: sanitisedContent,
     metadata: { ...generatedMetadata, ...data.metadata },
+    attachments: validAttachments,
   };
 
   const entry = await repo.createAppDataWithItem(
@@ -148,6 +162,7 @@ export async function createNote({
     createdAt: full!.created_at,
     updatedAt: full!.updated_at,
     metadata: parsed.metadata,
+    attachments: parsed.attachments,
   };
 }
 
@@ -160,7 +175,7 @@ export async function updateNote({
   env: IEnv;
   userId: number;
   noteId: string;
-  data: { title: string; content: string; metadata?: Record<string, any> };
+  data: { title: string; content: string; metadata?: Record<string, any>; attachments?: Note["attachments"] };
 }): Promise<Note> {
   if (!userId || !noteId) {
     throw new AssistantError(
@@ -183,8 +198,10 @@ export async function updateNote({
     data.content,
     data.metadata,
   );
+  const validAttachments = await validateAndEnrichAttachments(env, { id: userId } as IUser, data.attachments);
   const finalData = {
     ...data,
+    attachments: validAttachments,
     metadata: { ...generatedMetadata, ...data.metadata },
   };
 
@@ -205,6 +222,7 @@ export async function updateNote({
     createdAt: updated!.created_at,
     updatedAt: updated!.updated_at,
     metadata: parsedData.metadata,
+    attachments: parsedData.attachments,
   };
 }
 
@@ -403,4 +421,39 @@ Return only valid JSON without any markdown formatting.`;
       contentType: "text",
     };
   }
+}
+
+async function validateAndEnrichAttachments(
+  env: IEnv,
+  user: IUser,
+  attachments?: Note["attachments"],
+): Promise<Note["attachments"]> {
+  if (!attachments || attachments.length === 0) return attachments;
+  const baseUrl = env.PUBLIC_ASSETS_URL || "";
+  const userPrefix = `${baseUrl}/uploads/${user.id}/`;
+
+  for (const a of attachments) {
+    if (!a.url?.startsWith(userPrefix)) {
+      throw new AssistantError("Invalid attachment URL", ErrorType.PARAMS_ERROR, 400);
+    }
+  }
+
+  const enriched = await Promise.all(
+    attachments.map(async (a) => {
+      try {
+        const meta = await generateAttachmentMetadata(env, user, {
+          url: a.url,
+          type: a.type as any,
+          name: a.name,
+          size: a.size,
+          mimeType: a.mimeType,
+        });
+        return { ...a, metadata: { ...(a.metadata || {}), ...meta } };
+      } catch {
+        return a;
+      }
+    }),
+  );
+
+  return enriched;
 }

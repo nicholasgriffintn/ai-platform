@@ -490,6 +490,7 @@ export const createNote = async (params: {
   title: string;
   content: string;
   metadata?: any;
+  attachments?: any[];
 }): Promise<Note> => {
   let headers = {};
   try {
@@ -520,6 +521,7 @@ export const updateNote = async (params: {
   title: string;
   content: string;
   metadata?: any;
+  attachments?: any[];
 }): Promise<Note> => {
   let headers = {};
   try {

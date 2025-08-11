@@ -69,7 +69,14 @@ export default function NewNotePage() {
       <NoteEditor
         noteId={noteId}
         initialText=""
-        onSave={handleSave}
+        onSave={async (title, content, metadata, attachments) => {
+          const id = await handleSave(title, content, metadata);
+          if (!noteId) {
+            setNoteId(id);
+          }
+          await updateMutation.mutateAsync({ title, content, metadata, attachments });
+          return id;
+        }}
         isFullBleed={isFullBleed}
         onToggleFullBleed={() => setIsFullBleed(!isFullBleed)}
         initialThemeMode={themeMode}

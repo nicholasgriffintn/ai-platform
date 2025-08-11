@@ -1,6 +1,8 @@
 import { convertToMarkdownViaCloudflare } from "~/lib/documentConverter";
 import { StorageService } from "~/lib/storage";
-import type { IEnv } from "~/types";
+import { extractVideoMetadata } from "~/lib/videoProcessor";
+import { generateAttachmentMetadata } from "~/services/apps/attachments";
+import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
@@ -15,20 +17,24 @@ export async function handleFileUpload(
   type: string;
   name: string;
   markdown?: string;
+  size?: number;
+  mimeType?: string;
+  metadata?: { duration?: number; width?: number; height?: number; thumbnailUrl?: string; [k: string]: any };
 }> {
   const file = formData.get("file") as File | null;
   const fileType = formData.get("file_type") as
     | "image"
     | "document"
     | "audio"
+    | "video"
     | null;
 
   if (!file) {
     throw new AssistantError("No file uploaded", ErrorType.PARAMS_ERROR, 400);
   }
-  if (!fileType || !["image", "document", "audio"].includes(fileType)) {
+  if (!fileType || !["image", "document", "audio", "video"].includes(fileType)) {
     throw new AssistantError(
-      "Invalid file type. Must be 'image', 'document', or 'audio'",
+      "Invalid file type. Must be 'image', 'document', 'audio', or 'video'",
       ErrorType.PARAMS_ERROR,
       400,
     );
@@ -49,6 +55,13 @@ export async function handleFileUpload(
       "application/vnd.apple.numbers",
     ],
     audio: ["audio/mpeg", "audio/wav", "audio/mp3", "audio/x-wav", "audio/mp4"],
+    // Added common video mime types
+    video: [
+      "video/mp4",
+      "video/webm",
+      "video/quicktime", // mov
+      "video/x-msvideo", // avi
+    ],
   };
 
   if (!allowedMimeTypes[fileType].includes(file.type)) {
@@ -141,14 +154,47 @@ export async function handleFileUpload(
     type: string;
     name: string;
     markdown?: string;
+    size?: number;
+    mimeType?: string;
+    metadata?: { duration?: number; width?: number; height?: number; thumbnailUrl?: string; [k: string]: any };
   } = {
     url: fileUrl,
     type: markdownContent ? "markdown_document" : fileType,
     name: file.name,
+    size: file.size,
+    mimeType: file.type,
   };
 
   if (markdownContent) {
     response.markdown = markdownContent;
+  }
+
+  // Basic media metadata
+  if (fileType === "video") {
+    try {
+      const videoMeta = await extractVideoMetadata(env, fileUrl);
+      response.metadata = { ...response.metadata, ...videoMeta };
+    } catch (e) {
+      logger.warn("Failed to extract video metadata", { error: e instanceof Error ? e.message : String(e) });
+    }
+  }
+
+  // AI/processing metadata per attachment
+  try {
+    const user = { id: userId } as unknown as IUser;
+    const meta = await generateAttachmentMetadata(env, user, {
+      url: fileUrl,
+      type: response.type as any,
+      name: file.name,
+      size: file.size,
+      mimeType: file.type,
+    });
+    response.metadata = { ...(response.metadata || {}), ...meta };
+    if (markdownContent && !response.metadata?.summary) {
+      response.metadata.summary = markdownContent.slice(0, 300);
+    }
+  } catch (e) {
+    logger.warn("Attachment metadata generation failed", { error: e instanceof Error ? e.message : String(e) });
   }
 
   return response;

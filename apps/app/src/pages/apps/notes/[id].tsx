@@ -97,7 +97,13 @@ export default function NoteDetailPage() {
         noteId={id!}
         initialText={initialText}
         initialMetadata={note.metadata}
-        onSave={handleSave}
+        initialAttachments={note.attachments}
+        onSave={async (title, content, metadata, attachments) => {
+          const savedId = await handleSave(title, content, metadata);
+          // Update note with attachments after save
+          await updateMutation.mutateAsync({ title, content, metadata, attachments });
+          return savedId;
+        }}
         onDelete={handleDelete}
         isFullBleed={isFullBleed}
         onToggleFullBleed={() => setIsFullBleed(!isFullBleed)}
