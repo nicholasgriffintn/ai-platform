@@ -151,6 +151,8 @@ export const handleCreateChatCompletions = async (req: {
       (result.selectedModels ? result.selectedModels.join(", ") : ""),
     selected_models: result.selectedModels,
     finish_reason: result.response.tool_calls?.length ? "tool_calls" : "stop",
+    refusal: (result.response as any).refusal ?? null,
+    annotations: (result.response as any).annotations ?? null,
   });
 
   return {
