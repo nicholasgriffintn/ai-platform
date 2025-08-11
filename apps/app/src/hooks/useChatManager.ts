@@ -275,7 +275,7 @@ export function useChatManager() {
   const updateAssistantMessage = useCallback(
     async (
       conversationId: string,
-      content: string | Message["content"],
+      content: Message["content"],
       reasoning?: string,
       messageData?: Partial<Message>,
     ) => {
