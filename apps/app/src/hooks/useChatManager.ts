@@ -283,7 +283,7 @@ export function useChatManager() {
         typeof content === "string"
           ? content
           : content
-              .map((item: any) => (item.type === "text" ? item.text || "" : ""))
+              .map((item: import("~/types").MessageContent) => (item.type === "text" ? item.text || "" : ""))
               .join("");
       if (reasoning) {
         assistantReasoningRef.current = reasoning;
@@ -298,7 +298,7 @@ export function useChatManager() {
           typeof content === "string"
             ? content
             : content
-                .map((item: any) => (item.type === "text" ? item.text || "" : ""))
+                .map((item: import("~/types").MessageContent) => (item.type === "text" ? item.text || "" : ""))
                 .join("");
 
         if (!oldData) {
@@ -549,7 +549,7 @@ export function useChatManager() {
             typeof assistantMessage.content === "string"
               ? assistantMessage.content
               : assistantMessage.content
-                  .map((item: any) => (item.type === "text" ? item.text || "" : ""))
+                  .map((item: import("~/types").MessageContent) => (item.type === "text" ? item.text || "" : ""))
                   .join("");
 
           await updateAssistantMessage(
