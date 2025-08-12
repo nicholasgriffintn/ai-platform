@@ -43,6 +43,8 @@ export async function handleExportChatHistory(
 
       const messagePageSize = 500;
       let after: string | undefined = undefined;
+      let iterations = 0;
+      const maxIterations = 10000;
 
       while (true) {
         const messages = await messageRepo.getConversationMessages(
@@ -51,6 +53,11 @@ export async function handleExportChatHistory(
           after,
         );
         if (!messages.length) break;
+
+        const endCursor = String(messages[messages.length - 1].id);
+        if (after && endCursor === after) {
+          break;
+        }
 
         for (const m of messages) {
           rows.push({
@@ -67,9 +74,10 @@ export async function handleExportChatHistory(
             message_model: (m.model as string | null) ?? null,
           });
         }
-
-        if (messages.length < messagePageSize) break;
-        after = String(messages[messages.length - 1].id);
+        after = endCursor;
+        if (++iterations >= maxIterations) {
+          break;
+        }
       }
     }
   } while (page++ < totalPages);
