@@ -416,6 +416,21 @@ export async function createStreamWithPostProcessing(
                     currentToolCalls[toolCallData.index].accumulatedInput +=
                       toolCallData.partial_json;
                   }
+                } else if (toolCallData.format === "nova") {
+                  currentToolCalls[toolCallData.index] = {
+                    id: toolCallData.id,
+                    name: toolCallData.name,
+                    accumulatedInput: "",
+                    isComplete: false,
+                  };
+                } else if (toolCallData.format === "nova_delta") {
+                  if (
+                    currentToolCalls[toolCallData.index] &&
+                    toolCallData.partial_json
+                  ) {
+                    currentToolCalls[toolCallData.index].accumulatedInput +=
+                      toolCallData.partial_json;
+                  }
                 } else if (toolCallData.format === "direct") {
                   toolCallsData = [...toolCallsData, ...toolCallData.toolCalls];
                 }
