@@ -30,7 +30,10 @@ describe("handleExportChatHistory", () => {
   });
 
   it("returns empty array when no conversations", async () => {
-    vi.spyOn(ConversationRepoModule, "ConversationRepository").mockImplementation(
+    vi.spyOn(
+      ConversationRepoModule,
+      "ConversationRepository",
+    ).mockImplementation(
       // @ts-ignore
       function () {
         return {
@@ -58,7 +61,10 @@ describe("handleExportChatHistory", () => {
   });
 
   it("flattens conversations and messages", async () => {
-    vi.spyOn(ConversationRepoModule, "ConversationRepository").mockImplementation(
+    vi.spyOn(
+      ConversationRepoModule,
+      "ConversationRepository",
+    ).mockImplementation(
       // @ts-ignore
       function () {
         return {
@@ -82,12 +88,30 @@ describe("handleExportChatHistory", () => {
           getConversationMessages: async (conversationId: string) => {
             if (conversationId === "c1") {
               return [
-                { id: "m1", role: "user", content: "hi", model: null, timestamp: 1 },
+                {
+                  id: "m1",
+                  role: "user",
+                  content: "hi",
+                  model: null,
+                  timestamp: 1,
+                },
               ];
             }
             return [
-              { id: "m2", role: "assistant", content: "hey", model: "gpt", timestamp: 2 },
-              { id: "m3", role: "user", content: "yo", model: null, timestamp: 3 },
+              {
+                id: "m2",
+                role: "assistant",
+                content: "hey",
+                model: "gpt",
+                timestamp: 2,
+              },
+              {
+                id: "m3",
+                role: "user",
+                content: "yo",
+                model: null,
+                timestamp: 3,
+              },
             ];
           },
         } as any;
@@ -103,14 +127,18 @@ describe("handleExportChatHistory", () => {
   });
 
   it("paginates messages using 'after' when large list", async () => {
-    const getConversationMessages = vi.fn()
+    const getConversationMessages = vi
+      .fn()
       .mockResolvedValueOnce([
         { id: "m1", role: "user", content: "1" },
         { id: "m2", role: "user", content: "2" },
       ])
       .mockResolvedValueOnce([]);
 
-    vi.spyOn(ConversationRepoModule, "ConversationRepository").mockImplementation(
+    vi.spyOn(
+      ConversationRepoModule,
+      "ConversationRepository",
+    ).mockImplementation(
       // @ts-ignore
       function () {
         return {

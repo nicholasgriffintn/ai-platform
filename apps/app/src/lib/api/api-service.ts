@@ -251,7 +251,11 @@ class ApiService {
       let message = `Failed to export chat history: ${response.statusText}`;
       try {
         const data = (await response.json()) as any;
-        if (data && typeof data === "object" && typeof data.error === "string") {
+        if (
+          data &&
+          typeof data === "object" &&
+          typeof data.error === "string"
+        ) {
           message = data.error;
         }
       } catch {}
