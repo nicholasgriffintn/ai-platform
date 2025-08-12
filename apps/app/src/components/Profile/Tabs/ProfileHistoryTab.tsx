@@ -62,13 +62,13 @@ export function ProfileHistoryTab() {
     }
   };
 
-  const handleExportCsv = async () => {
+  const handleExportJson = async () => {
     setIsExporting(true);
     try {
       trackEvent({
-        name: "export_chat_history_csv",
+        name: "export_chat_history_json",
         category: "profile",
-        label: "export_chat_history_csv",
+        label: "export_chat_history_json",
         value: 1,
       });
       const blob = await apiService.exportChatHistory();
@@ -76,7 +76,7 @@ export function ProfileHistoryTab() {
       const a = document.createElement("a");
       const ts = new Date().toISOString().replace(/[:.]/g, "-");
       a.href = url;
-      a.download = `chat-history-${ts}.csv`;
+      a.download = `chat-history-${ts}.json`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -105,11 +105,15 @@ export function ProfileHistoryTab() {
             Message History
           </h3>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-            Export your history as CSV.
+            Export your history as JSON.
           </p>
           <div className="flex gap-2 mb-4">
-            <Button onClick={handleExportCsv} disabled={isExporting}>
-              {isExporting ? "Exporting..." : "Export CSV"}
+            <Button
+              variant="primary"
+              onClick={handleExportJson}
+              disabled={isExporting}
+            >
+              {isExporting ? "Exporting..." : "Export JSON"}
             </Button>
           </div>
           <div className="border-b border-zinc-200 dark:border-zinc-800 mb-4" />

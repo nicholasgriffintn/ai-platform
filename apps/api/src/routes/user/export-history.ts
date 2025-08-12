@@ -1,9 +1,9 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
+
 import { requireAuth } from "~/middleware/auth";
 import type { User } from "~/types";
-import { generateChatHistoryCSV } from "~/lib/csv";
 import { handleExportChatHistory } from "~/services/user/exportChatHistory";
 import { errorResponseSchema } from "../schemas/shared";
 
@@ -26,31 +26,37 @@ app.get(
       },
       401: {
         description: "Authentication required",
-        content: { "application/json": { schema: resolver(errorResponseSchema) } },
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
       },
       500: {
         description: "Server error",
-        content: { "application/json": { schema: resolver(errorResponseSchema) } },
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
       },
     },
   }),
   async (c: Context) => {
     const user = c.get("user") as User | undefined;
     if (!user?.id) {
-      return c.json({ error: "Authentication required", type: "AUTHENTICATION_ERROR" }, 401);
+      return c.json(
+        { error: "Authentication required", type: "AUTHENTICATION_ERROR" },
+        401,
+      );
     }
 
     try {
-      const rows = await handleExportChatHistory(c.env, user);
-      const csv = generateChatHistoryCSV(rows);
+      const json = await handleExportChatHistory(c.env, user);
 
       const ts = new Date().toISOString().replace(/[:.]/g, "-");
-      const filename = `chat-history-${ts}.csv`;
+      const filename = `chat-history-${ts}.json`;
 
-      return new Response(csv, {
+      return new Response(JSON.stringify(json, null, 2), {
         status: 200,
         headers: {
-          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Type": "application/json",
           "Content-Disposition": `attachment; filename=\"${filename}\"`,
           "Cache-Control": "no-store",
         },
