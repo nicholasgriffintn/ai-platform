@@ -614,4 +614,67 @@ describe("StreamingFormatter", () => {
       expect(result).toBeNull();
     });
   });
+
+  // New tests for Claude web search
+  describe("Claude web search streaming helpers", () => {
+    it("should identify web search result events", () => {
+      const data = { title: "Example", url: "https://example.com" };
+      const isResult = StreamingFormatter.isWebSearchToolResult(
+        data,
+        "web_search_tool_result",
+      );
+      expect(isResult).toBe(true);
+    });
+
+    it("should not identify non-web-search events", () => {
+      const data = { title: "Example", url: "https://example.com" };
+      const isResult = StreamingFormatter.isWebSearchToolResult(data, "other");
+      expect(isResult).toBe(false);
+    });
+
+    it("should extract normalized web search result with metadata", () => {
+      const data = {
+        title: "Example Page",
+        url: "https://example.com",
+        page_age: "2 days",
+      };
+      const result = StreamingFormatter.extractWebSearchResult(
+        data,
+        "web_search_tool_result",
+      );
+      expect(result).toEqual({
+        title: "Example Page",
+        url: "https://example.com",
+        page_age: "2 days",
+        content: "",
+        encrypted_content: false,
+      });
+    });
+
+    it("should handle encrypted content by omitting content text", () => {
+      const data = {
+        title: "Secure Page",
+        url: "https://secure.example.com",
+        encrypted_content: true,
+        content: "should be hidden",
+      };
+      const result = StreamingFormatter.extractWebSearchResult(
+        data,
+        "web_search_tool_result",
+      );
+      expect(result).toEqual({
+        title: "Secure Page",
+        url: "https://secure.example.com",
+        page_age: null,
+        content: "",
+        encrypted_content: true,
+      });
+    });
+
+    it("should return null for non-web-search event types", () => {
+      const data = { title: "x" };
+      const result = StreamingFormatter.extractWebSearchResult(data, "other");
+      expect(result).toBeNull();
+    });
+  });
 });

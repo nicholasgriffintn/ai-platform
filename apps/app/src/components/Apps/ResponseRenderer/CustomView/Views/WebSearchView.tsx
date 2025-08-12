@@ -23,7 +23,16 @@ export function WebSearchView({
     return <p className="text-red-500">No search data available</p>;
   }
 
-  const { answer, sources, similarQuestions, completion_id } = data;
+  // Dev aid
+  // eslint-disable-next-line no-console
+  console.debug?.("WebSearchView:data", data);
+
+  const answer: string = typeof data.answer === "string" ? data.answer : "";
+  const sources: any[] = Array.isArray(data.sources) ? data.sources : [];
+  const similarQuestions: string[] = Array.isArray(data.similarQuestions)
+    ? data.similarQuestions
+    : [];
+  const completion_id: string | undefined = data.completion_id;
 
   const getDomain = (url: string) => {
     try {
@@ -40,34 +49,45 @@ export function WebSearchView({
   const displayedSources = showAllSources ? sources : sources?.slice(0, 3);
 
   return (
-    <div className="max-w-full overflow-x-hidden">
+    <div className="max-w-full overflow-x-hidden" data-testid="web-search-view">
       <div className="mb-6">
         <div className="flex items-center text-sm mb-2 text-zinc-600 dark:text-zinc-300">
           <ArrowRight className="h-5 w-5 mr-2" aria-hidden="true" />
-          <span>{sources?.length || 0} sources</span>
+          <span data-testid="source-count">{sources?.length || 0} sources</span>
         </div>
 
         <div id="source-list" className="flex flex-wrap gap-2 mb-4">
-          {displayedSources?.map((source: any) => (
-            <a
-              key={`source-card-${source.url}`}
-              href={source.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 min-w-[150px] border border-gray-700 rounded-md p-3 hover:bg-gray-800 transition-colors"
-              aria-label={`View source: ${source.title}`}
-            >
-              <div className="flex items-center mb-2">
-                <Favicon url={source.url} />
-                <div className="text-xs text-zinc-600 dark:text-zinc-300 truncate">
-                  {getDomain(source.url)}
+          {displayedSources?.map((source: any) => {
+            const url = source?.url || "#";
+            const title = source?.title || getDomain(url);
+            const encrypted = !!source?.encrypted_content;
+            return (
+              <a
+                key={`source-card-${url}`}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 min-w-[150px] border border-gray-700 rounded-md p-3 hover:bg-gray-800 transition-colors"
+                aria-label={`View source: ${title}`}
+                data-testid="source-card"
+              >
+                <div className="flex items-center mb-2">
+                  <Favicon url={url} />
+                  <div className="text-xs text-zinc-600 dark:text-zinc-300 truncate">
+                    {getDomain(url)}
+                  </div>
                 </div>
-              </div>
-              <p className="text-sm font-medium line-clamp-2 text-zinc-600 dark:text-zinc-300">
-                {source.title}
-              </p>
-            </a>
-          ))}
+                <p className="text-sm font-medium line-clamp-2 text-zinc-600 dark:text-zinc-300">
+                  {title}
+                </p>
+                {encrypted && (
+                  <p className="mt-1 text-xs text-zinc-500" data-testid="encrypted-indicator">
+                    Content not available
+                  </p>
+                )}
+              </a>
+            );
+          })}
 
           {!showAllSources && sources?.length > 3 && (
             <button
@@ -76,6 +96,7 @@ export function WebSearchView({
               className="flex items-center justify-center min-w-[100px] p-3 border border-gray-700 rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
               aria-expanded={showAllSources}
               aria-controls="source-list"
+              data-testid="show-more-sources"
             >
               <span className="text-zinc-600 dark:text-zinc-300">
                 +{sources.length - 3} sources
@@ -90,10 +111,9 @@ export function WebSearchView({
               className="flex items-center justify-center min-w-[100px] p-3 border border-gray-700 rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
               aria-expanded={showAllSources}
               aria-controls="source-list"
+              data-testid="show-less-sources"
             >
-              <span className="text-zinc-600 dark:text-zinc-300">
-                Show less
-              </span>
+              <span className="text-zinc-600 dark:text-zinc-300">Show less</span>
             </button>
           )}
         </div>
@@ -101,7 +121,7 @@ export function WebSearchView({
 
       <div className="mb-6 text-zinc-600 dark:text-zinc-300">
         <div className="prose dark:prose-invert text-zinc-600 dark:text-zinc-300">
-          <MemoizedMarkdown>{answer}</MemoizedMarkdown>
+          <MemoizedMarkdown>{answer || ""}</MemoizedMarkdown>
         </div>
       </div>
 

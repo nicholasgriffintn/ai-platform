@@ -18,7 +18,11 @@ export type SSEEventType =
   | "tool_response_end"
   | "tool_use_start"
   | "tool_use_delta"
-  | "tool_use_stop";
+  | "tool_use_stop"
+  // Claude web search streaming events
+  | "server_tool_use"
+  | "web_search_tool_result"
+  | "web_search_tool_result_end";
 
 /**
  * Tool Event Stages
