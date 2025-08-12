@@ -203,7 +203,7 @@ export class ResponseFormatter {
       ? preprocessQwQResponse(textContent, options.model || data.model || "")
       : textContent;
 
-    return { ...data, response: processedTextContent, ...message, refusal: message?.refusal ?? data?.refusal ?? null, annotations: message?.annotations ?? data?.annotations ?? null };
+    return { ...data, response: processedTextContent, ...message };
   }
 
   private static formatOpenRouterResponse(data: any): any {
