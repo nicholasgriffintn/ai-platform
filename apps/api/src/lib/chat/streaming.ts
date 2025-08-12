@@ -297,6 +297,223 @@ export async function createStreamWithPostProcessing(
                 return;
               }
 
+              // Handle Claude streamed_data wrapper
+              if (StreamingFormatter.isStreamedDataResponse(data)) {
+                const streamedEvents = StreamingFormatter.extractStreamedDataEvents(
+                  data,
+                );
+
+                for (const ev of streamedEvents) {
+                  const evType = (ev as any).type || "";
+
+                  // Emit passthrough message/meta events
+                  if (
+                    evType === "message_start" ||
+                    evType === "message_delta" ||
+                    evType === "message_stop" ||
+                    evType === "content_block_start" ||
+                    evType === "content_block_stop"
+                  ) {
+                    emitEvent(controller, evType as any, ev as any);
+
+                    if (
+                      evType === "content_block_stop" &&
+                      (ev as any).index !== undefined &&
+                      Object.hasOwn(currentToolCalls, (ev as any).index) &&
+                      currentToolCalls[(ev as any).index] &&
+                      !currentToolCalls[(ev as any).index].isComplete
+                    ) {
+                      currentToolCalls[(ev as any).index].isComplete = true;
+
+                      const toolState = currentToolCalls[(ev as any).index];
+                      let parsedInput: any = {};
+                      try {
+                        if (toolState.accumulatedInput) {
+                          try {
+                            parsedInput = JSON.parse(
+                              toolState.accumulatedInput,
+                            );
+                          } catch (e) {
+                            logger.error("Failed to parse tool input:", {
+                              error: e,
+                            });
+                          }
+
+                          if (
+                            parsedInput === null ||
+                            typeof parsedInput !== "object" ||
+                            Array.isArray(parsedInput)
+                          ) {
+                            logger.warn(
+                              "Tool input parsed to non-object value",
+                              {
+                                toolId: toolState.id,
+                                toolName: toolState.name,
+                                parsed: typeof parsedInput,
+                              },
+                            );
+                            parsedInput = {};
+                          }
+                        }
+                      } catch (e) {
+                        logger.error("Failed to parse tool input:", {
+                          error: e,
+                          toolId: toolState.id,
+                          toolName: toolState.name,
+                          input:
+                            toolState.accumulatedInput?.substring(0, 100) +
+                            (toolState.accumulatedInput?.length > 100
+                              ? "..."
+                              : ""),
+                        });
+                      }
+
+                      const toolCall = {
+                        id: toolState.id,
+                        type: toolState.type || "function",
+                        function: {
+                          name: toolState.name,
+                          arguments: JSON.stringify(parsedInput),
+                        },
+                      };
+
+                      toolCallsData.push(toolCall);
+                    }
+
+                    if (evType === "message_stop" && !postProcessingDone) {
+                      await handlePostProcessing();
+                    }
+                  }
+
+                  // Content/text deltas
+                  const contentDelta = StreamingFormatter.extractContentFromChunk(
+                    ev,
+                    evType,
+                  );
+                  if (contentDelta) {
+                    addToFullContent(contentDelta);
+                    isFirstContentChunk = false;
+                    emitEvent(controller, "content_block_delta", {
+                      content: contentDelta,
+                    });
+                  }
+
+                  // Thinking/signature deltas
+                  const thinkingData =
+                    StreamingFormatter.extractThinkingFromChunk(ev, evType);
+                  if (thinkingData) {
+                    if (typeof thinkingData === "string") {
+                      addToFullThinking(thinkingData);
+                      emitEvent(controller, "thinking_delta", {
+                        thinking: thinkingData,
+                      });
+                    } else if (thinkingData.type === "signature") {
+                      signature = thinkingData.signature;
+                      emitEvent(controller, "signature_delta", {
+                        signature: thinkingData.signature,
+                      });
+                    }
+                  }
+
+                  // Tool call detection and accumulation
+                  const toolCallData = StreamingFormatter.extractToolCall(
+                    ev,
+                    evType,
+                  );
+                  if (toolCallData) {
+                    logger.debug("Detected tool call delta", { toolCallData });
+
+                    if (toolCallData.format === "openai") {
+                      const deltaToolCalls = toolCallData.toolCalls;
+                      for (const toolCall of deltaToolCalls) {
+                        const index = toolCall.index;
+                        if (!currentToolCalls[index]) {
+                          currentToolCalls[index] = {
+                            id: toolCall.id,
+                            type: toolCall.type || "function",
+                            function: {
+                              name: toolCall.function?.name || "",
+                              arguments: "",
+                            },
+                          };
+                        }
+                        if (toolCall.function) {
+                          if (toolCall.function.name) {
+                            currentToolCalls[index].function.name =
+                              toolCall.function.name;
+                          }
+                          if (toolCall.function.arguments) {
+                            currentToolCalls[index].function.arguments +=
+                              toolCall.function.arguments;
+                          }
+                        }
+                      }
+                    } else if (toolCallData.format === "anthropic") {
+                      currentToolCalls[toolCallData.index] = {
+                        id: toolCallData.id,
+                        name: toolCallData.name,
+                        accumulatedInput: "",
+                        isComplete: false,
+                      };
+                    } else if (toolCallData.format === "anthropic_delta") {
+                      if (
+                        currentToolCalls[toolCallData.index] &&
+                        toolCallData.partial_json
+                      ) {
+                        currentToolCalls[toolCallData.index].accumulatedInput +=
+                          toolCallData.partial_json;
+                      }
+                    } else if (toolCallData.format === "direct") {
+                      toolCallsData = [
+                        ...toolCallsData,
+                        ...toolCallData.toolCalls,
+                      ];
+                    }
+                  }
+
+                  // Code execution results passthrough as tool_response
+                  const codeExec = StreamingFormatter.extractCodeExecutionResult(
+                    ev,
+                  );
+                  if (codeExec) {
+                    const return_code = codeExec.return_code ?? 0;
+                    const status = return_code === 0 ? "success" : "error";
+                    const resultMessage = {
+                      role: "tool",
+                      name: "code_execution",
+                      content:
+                        return_code === 0
+                          ? "Code executed successfully"
+                          : "Code execution failed",
+                      status,
+                      data: {
+                        responseType: "code_execution",
+                        codeExecution: {
+                          stdout: codeExec.stdout || "",
+                          stderr: codeExec.stderr || "",
+                          return_code,
+                        },
+                      },
+                      log_id: (data as any)?.log_id || "",
+                      id: generateId(),
+                      tool_call_id: generateId(),
+                      tool_call_arguments: {},
+                      timestamp: Date.now(),
+                      model,
+                      platform,
+                    };
+
+                    emitEvent(controller, "tool_response", {
+                      tool_id: resultMessage.id,
+                      result: resultMessage,
+                    });
+                  }
+                }
+
+                // Continue to next line since we fully handled streamed_data
+                continue;
+              }
+
               const formattedData = await ResponseFormatter.formatResponse(
                 data,
                 options.provider,

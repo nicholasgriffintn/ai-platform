@@ -45,11 +45,11 @@ const renderTextContent = (
   );
   content = processCustomXmlTags(content);
 
-  const hasOpenReasoning = reasoning.some((item) => item.isOpen);
+  const hasOpenReasoning = reasoning.some((item: { isOpen?: boolean }) => item.isOpen);
 
   const reasoningProps = messageReasoning || {
     collapsed: !hasOpenReasoning,
-    content: reasoning.map((item) => item.content).join("\n"),
+    content: reasoning.map((item: { content?: string }) => item.content).join("\n"),
   };
 
   if (artifacts && artifacts.length > 0) {
@@ -340,11 +340,11 @@ export const MessageContent = memo(
                   )
                     ? message.content
                         .filter(
-                          (contentItem) =>
+                          (contentItem: MessageContentType) =>
                             contentItem.type === "artifact" &&
                             contentItem.artifact,
                         )
-                        .map((contentItem) => {
+                        .map((contentItem: MessageContentType) => {
                           const artifact = (contentItem as any).artifact;
                           return {
                             identifier: artifact.identifier,

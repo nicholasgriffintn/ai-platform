@@ -36,6 +36,8 @@ export function normalizeMessage(message: Message): Message {
       }
     : reasoning;
 
+  const data = message.data;
+
   return {
     ...message,
     role: message.role,
@@ -49,7 +51,7 @@ export function normalizeMessage(message: Message): Message {
     log_id: message.log_id,
     tool_calls: message.tool_calls,
     usage: message.usage,
-    data: message.data,
+    data,
     status: message.status,
   };
 }
@@ -64,7 +66,7 @@ export function formatMessageContent(messageContent: string): {
     return {
       content: messageContent,
       reasoning: "",
-    };
+    } as any;
   }
 
   const analysisMatch = messageContent.match(
@@ -105,7 +107,7 @@ export function formatMessageContent(messageContent: string): {
   return {
     content: cleanedContent,
     reasoning,
-  };
+  } as any;
 }
 
 export const formattedMessageContent = (
@@ -113,8 +115,8 @@ export const formattedMessageContent = (
   originalContent: string,
 ) => {
   let content = originalContent;
-  const reasoning = [];
-  const artifacts = [];
+  const reasoning = [] as any[];
+  const artifacts = [] as any[];
 
   const thinkRegex = /<think>([\s\S]*?)(<\/think>|$)/g;
   while (true) {
@@ -145,7 +147,7 @@ export const formattedMessageContent = (
 
   if (role === "assistant") {
     const artifactRegex = /<artifact\s+([^>]*)>([\s\S]*?)(<\/artifact>|$)/g;
-    let artifactMatch = null;
+    let artifactMatch = null as any;
     const tempContent = content;
 
     artifactRegex.lastIndex = 0;
@@ -211,5 +213,5 @@ export const formattedMessageContent = (
     content: content.trim(),
     reasoning,
     artifacts,
-  };
+  } as any;
 };

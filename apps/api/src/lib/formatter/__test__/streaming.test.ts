@@ -614,4 +614,49 @@ describe("StreamingFormatter", () => {
       expect(result).toBeNull();
     });
   });
+
+  describe("streamed_data helpers", () => {
+    it("detects streamed_data response", () => {
+      const data = { streamed_data: [{ type: "message_start" }] };
+      expect(StreamingFormatter.isStreamedDataResponse(data)).toBe(true);
+      expect(StreamingFormatter.isStreamedDataResponse({})).toBe(false);
+    });
+
+    it("extracts streamed_data events", () => {
+      const evs = [{ type: "message_start" }, { type: "message_stop" }];
+      const data = { streamed_data: evs } as any;
+      expect(StreamingFormatter.extractStreamedDataEvents(data)).toEqual(evs);
+    });
+
+    it("parses code execution result from direct event", () => {
+      const ev = {
+        type: "code_execution_tool_result",
+        stdout: "hello\n",
+        stderr: "",
+        return_code: 0,
+      };
+      expect(StreamingFormatter.extractCodeExecutionResult(ev)).toEqual({
+        stdout: "hello\n",
+        stderr: "",
+        return_code: 0,
+      });
+    });
+
+    it("parses code execution result from content block", () => {
+      const ev = {
+        type: "content_block_delta",
+        content_block: {
+          type: "code_execution_tool_result",
+          stdout: "out",
+          stderr: "err",
+          return_code: 2,
+        },
+      };
+      expect(StreamingFormatter.extractCodeExecutionResult(ev)).toEqual({
+        stdout: "out",
+        stderr: "err",
+        return_code: 2,
+      });
+    });
+  });
 });

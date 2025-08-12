@@ -67,8 +67,14 @@ export interface Attachment {
   isMarkdown?: boolean;
 }
 
+export interface CodeExecutionData {
+  stdout: string;
+  stderr: string;
+  returnCode: number;
+}
+
 export interface MessageData {
-  responseType?: "table" | "json" | "text" | "template" | "custom";
+  responseType?: "table" | "json" | "text" | "template" | "custom" | "code_execution";
   responseDisplay?: {
     fields?: {
       key: string;
@@ -100,6 +106,11 @@ export interface MessageData {
     }>;
     webSearchQueries?: string[];
   };
+  codeExecution?: {
+    stdout?: string;
+    stderr?: string;
+    return_code?: number;
+  } | CodeExecutionData;
 }
 
 export interface Message {

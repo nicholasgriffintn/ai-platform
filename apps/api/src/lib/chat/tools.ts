@@ -177,6 +177,49 @@ export const handleToolCalls = async (
         result.data,
       );
 
+      // Special handling for code execution tool
+      if (functionName === "code_execution") {
+        const stdout = result.data?.stdout || "";
+        const stderr = result.data?.stderr || "";
+        const returnCode =
+          typeof result.data?.return_code === "number"
+            ? result.data.return_code
+            : typeof result.data?.returnCode === "number"
+              ? result.data.returnCode
+              : 0;
+
+        const status = returnCode === 0 ? "success" : "error";
+
+        const message: Message = {
+          role: "tool",
+          name: functionName,
+          content:
+            returnCode === 0
+              ? "Code executed successfully"
+              : "Code execution failed",
+          status,
+          data: {
+            ...(formattedResponse.data || {}),
+            responseType: "code_execution",
+            codeExecution: {
+              stdout,
+              stderr,
+              return_code: returnCode,
+            },
+          },
+          log_id: modelResponseLogId || "",
+          id: generateId(),
+          tool_call_id: toolCall.id,
+          tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
+          timestamp,
+          model: req.request?.model || "unknown",
+          platform: req.request?.platform || "api",
+        };
+
+        functionResults.push(message);
+        continue;
+      }
+
       const message: Message = {
         role: "tool",
         name: functionName,

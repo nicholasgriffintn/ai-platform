@@ -18,7 +18,8 @@ export type SSEEventType =
   | "tool_response_end"
   | "tool_use_start"
   | "tool_use_delta"
-  | "tool_use_stop";
+  | "tool_use_stop"
+  | "code_execution_result";
 
 /**
  * Tool Event Stages
@@ -92,4 +93,35 @@ export interface ToolEventPayload extends SSEEventPayload {
   tool_id: string;
   tool_name?: string;
   parameters?: string;
+}
+
+// New Claude streamed_data types
+export interface StreamedDataEvent {
+  type: string;
+  nonce?: string;
+  index?: number;
+  content_block?: {
+    id?: string;
+    type?: string;
+    name?: string;
+  };
+  content_block_index?: number;
+  delta?: Record<string, any>;
+  message?: Record<string, any>;
+  input_json_delta?: string;
+  [key: string]: unknown;
+}
+
+export interface CodeExecutionResult {
+  stdout?: string;
+  stderr?: string;
+  return_code?: number;
+  content?: string;
+}
+
+export interface StreamedDataResponse {
+  id?: string;
+  type?: string;
+  streamed_data: StreamedDataEvent[];
+  [key: string]: unknown;
 }
