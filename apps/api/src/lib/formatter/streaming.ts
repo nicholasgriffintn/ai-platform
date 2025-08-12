@@ -181,6 +181,27 @@ export class StreamingFormatter {
       };
     }
 
+    // Bedrock Nova style tool use start
+    // Example: { contentBlockIndex: 1, start: { toolUse: { name, toolUseId } } }
+    if (data.start?.toolUse && data.contentBlockIndex !== undefined) {
+      return {
+        format: "nova",
+        id: data.start.toolUse.toolUseId,
+        name: data.start.toolUse.name,
+        index: data.contentBlockIndex,
+      };
+    }
+
+    // Bedrock Nova style tool input delta
+    // Example: { contentBlockIndex: 1, delta: { toolUse: { input: "{...}" } } }
+    if (data.delta?.toolUse?.input && data.contentBlockIndex !== undefined) {
+      return {
+        format: "nova_delta",
+        index: data.contentBlockIndex,
+        partial_json: data.delta.toolUse.input || "",
+      };
+    }
+
     // Other direct tool_calls formats
     if (data.tool_calls) {
       return {
@@ -211,6 +232,12 @@ export class StreamingFormatter {
     const googleFinishReason =
       data.candidates?.[0]?.finishReason?.toLowerCase();
     if (googleFinishReason === "stop" || googleFinishReason === "length") {
+      return true;
+    }
+
+    // Bedrock format
+    const bedrockFinishReason = data.stopReason;
+    if (bedrockFinishReason === "stop" || bedrockFinishReason === "length") {
       return true;
     }
 
