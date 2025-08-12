@@ -607,29 +607,44 @@ describe("tools", () => {
       });
     });
 
-    it("should format tools for bedrock provider", () => {
-      const result = formatToolCalls("bedrock", sampleFunctions);
+    it("should format tools for bedrock nova models", () => {
+      const result = formatToolCalls(
+        "bedrock",
+        sampleFunctions,
+        "amazon.nova-pro-v1:0",
+      );
       expect(result).toEqual([
         {
-          name: "search",
-          description: "Search the web",
-          inputSchema: {
-            type: "object",
-            properties: {
-              query: { type: "string", description: "Search query" },
+          toolSpec: {
+            name: "search",
+            description: "Search the web",
+            inputSchema: {
+              json: {
+                type: "object",
+                properties: {
+                  query: { type: "string", description: "Search query" },
+                },
+                required: ["query"],
+              },
             },
-            required: ["query"],
           },
         },
         {
-          name: "calculator",
-          description: "Perform calculations",
-          inputSchema: {
-            type: "object",
-            properties: {
-              expression: { type: "string", description: "Math expression" },
+          toolSpec: {
+            name: "calculator",
+            description: "Perform calculations",
+            inputSchema: {
+              json: {
+                type: "object",
+                properties: {
+                  expression: {
+                    type: "string",
+                    description: "Math expression",
+                  },
+                },
+                required: ["expression"],
+              },
             },
-            required: ["expression"],
           },
         },
       ]);

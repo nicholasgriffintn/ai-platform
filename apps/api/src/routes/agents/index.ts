@@ -637,6 +637,7 @@ app.post(
     const formattedTools = formatToolCalls(
       modelDetails.provider,
       functionSchemas,
+      modelToUse,
     );
 
     let fewShotExamples;
