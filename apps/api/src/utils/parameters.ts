@@ -171,19 +171,6 @@ export function createCommonParameters(
 }
 
 /**
- * Detects Amazon Nova models by their naming scheme.
- * Supports short names like 'nova-lite' and full Bedrock names like 'amazon.nova-lite-v1:0'.
- */
-export function isNovaModel(model?: string | null): boolean {
-  if (!model) {
-    return false;
-  }
-
-  const normalized = model.toLowerCase();
-  return normalized.startsWith("nova-") || normalized.startsWith("amazon.nova");
-}
-
-/**
  * Gets tools configuration for a provider if the model supports functions
  * @param params - The chat completion parameters
  * @param modelConfig - The model configuration
@@ -220,14 +207,13 @@ export function getToolsForProvider(
       const availableToolDeclarations = formatToolCalls(
         providerName,
         filteredFunctions,
-        params.model,
       );
       tools = [...availableToolDeclarations, ...providedTools];
     } else {
       const filteredFunctions = availableFunctions.filter((func) =>
         enabledTools.includes(func.name),
       );
-      tools = formatToolCalls(providerName, filteredFunctions, params.model);
+      tools = formatToolCalls(providerName, filteredFunctions);
     }
 
     const result: {

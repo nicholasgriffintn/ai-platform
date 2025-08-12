@@ -608,11 +608,7 @@ describe("tools", () => {
     });
 
     it("should format tools for bedrock nova models", () => {
-      const result = formatToolCalls(
-        "bedrock",
-        sampleFunctions,
-        "amazon.nova-pro-v1:0",
-      );
+      const result = formatToolCalls("bedrock", sampleFunctions);
       expect(result).toEqual([
         {
           toolSpec: {

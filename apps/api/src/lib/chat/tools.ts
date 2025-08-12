@@ -7,7 +7,6 @@ import {
   formatToolErrorResponse,
   formatToolResponse,
 } from "~/utils/tool-responses";
-import { isNovaModel } from "~/utils/parameters";
 
 const logger = getLogger({ prefix: "CHAT:TOOLS" });
 
@@ -243,17 +242,13 @@ export const handleToolCalls = async (
   return functionResults;
 };
 
-export function formatToolCalls(
-  provider: string,
-  functions: any[],
-  model?: string,
-) {
+export function formatToolCalls(provider: string, functions: any[]) {
   if (!functions || !Array.isArray(functions)) {
     logger.warn("Invalid functions provided to formatToolCalls");
     return [];
   }
 
-  if (provider === "bedrock" && isNovaModel(model)) {
+  if (provider === "bedrock") {
     return functions
       .map((func) => {
         const parameters = func.parameters?.jsonSchema || func.parameters;
