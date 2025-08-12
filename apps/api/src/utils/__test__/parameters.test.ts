@@ -8,6 +8,7 @@ import {
   getToolsForProvider,
   mergeParametersWithDefaults,
   shouldEnableStreaming,
+  isNovaModel,
 } from "../parameters";
 
 vi.mock("~/services/functions", () => ({
@@ -620,6 +621,33 @@ describe("parameters", () => {
       const result = shouldEnableStreaming(modelConfig, true, true);
 
       expect(result).toBe(true); // Contains text type
+    });
+  });
+
+  describe("isNovaModel", () => {
+    it("should return true for nova-lite", () => {
+      const result = isNovaModel("nova-lite");
+      expect(result).toBe(true);
+    });
+
+    it("should return true for amazon.nova-lite-v1:0", () => {
+      const result = isNovaModel("amazon.nova-lite-v1:0");
+      expect(result).toBe(true);
+    });
+
+    it("should return false for non-nova models", () => {
+      const result = isNovaModel("gpt-4");
+      expect(result).toBe(false);
+    });
+
+    it("should return false for null model", () => {
+      const result = isNovaModel(null);
+      expect(result).toBe(false);
+    });
+
+    it("should return false for undefined model", () => {
+      const result = isNovaModel(undefined);
+      expect(result).toBe(false);
     });
   });
 });

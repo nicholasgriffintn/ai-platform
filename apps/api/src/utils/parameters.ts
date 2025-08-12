@@ -175,7 +175,10 @@ export function createCommonParameters(
  * Supports short names like 'nova-lite' and full Bedrock names like 'amazon.nova-lite-v1:0'.
  */
 export function isNovaModel(model?: string | null): boolean {
-  if (!model) return false;
+  if (!model) {
+    return false;
+  }
+
   const normalized = model.toLowerCase();
   return normalized.startsWith("nova-") || normalized.startsWith("amazon.nova");
 }

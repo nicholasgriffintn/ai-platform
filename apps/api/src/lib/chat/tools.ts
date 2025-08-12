@@ -253,7 +253,6 @@ export function formatToolCalls(
     return [];
   }
 
-  // Bedrock Nova models expect `toolSpec` objects without the OpenAI-style wrapper
   if (provider === "bedrock" && isNovaModel(model)) {
     return functions
       .map((func) => {
@@ -263,7 +262,6 @@ export function formatToolCalls(
           return null;
         }
 
-        // Nova expects inputSchema.json to hold the JSON Schema for inputs
         return {
           toolSpec: {
             name: func.name,
