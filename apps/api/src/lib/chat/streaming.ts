@@ -125,6 +125,8 @@ export async function createStreamWithPostProcessing(
   const currentToolCalls: Record<string, any> = {};
   let isFirstContentChunk = true;
   let qwqThinkTagAdded = false;
+  let refusalData: string | null = null;
+  let annotationsData: any = null;
 
   const getFullContent = () => fullContentChunks.join("");
   const getFullThinking = () => fullThinkingChunks.join("");
@@ -528,6 +530,18 @@ export async function createStreamWithPostProcessing(
                 structuredData = extractedStructuredData;
               }
 
+              const refusalDelta =
+                StreamingFormatter.extractRefusalFromChunk(data);
+              if (typeof refusalDelta === "string") {
+                refusalData = refusalDelta;
+              }
+
+              const annotationsDelta =
+                StreamingFormatter.extractAnnotationsFromChunk(data);
+              if (annotationsDelta !== null && annotationsDelta !== undefined) {
+                annotationsData = annotationsDelta;
+              }
+
               if (
                 StreamingFormatter.isCompletionIndicated(data) &&
                 !postProcessingDone
@@ -658,6 +672,8 @@ export async function createStreamWithPostProcessing(
               timestamp: Date.now(),
               mode,
               finish_reason: toolCallsData.length > 0 ? "tool_calls" : "stop",
+              refusal: refusalData,
+              annotations: annotationsData,
             });
 
             await conversationManager.add(completion_id, {

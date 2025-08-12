@@ -314,4 +314,52 @@ export class StreamingFormatter {
 
     return null;
   }
+
+  /**
+   * Extract refusal information from a streaming chunk (OpenAI-like)
+   * Returns null when not present
+   */
+  static extractRefusalFromChunk(data: any): string | null {
+    // OpenAI streaming delta
+    const deltaRefusal = data?.choices?.[0]?.delta?.refusal;
+    if (typeof deltaRefusal === "string") {
+      return deltaRefusal;
+    }
+
+    // OpenAI non-delta message form in stream
+    const messageRefusal = data?.choices?.[0]?.message?.refusal;
+    if (typeof messageRefusal === "string") {
+      return messageRefusal;
+    }
+
+    // Direct refusal field
+    if (typeof data?.refusal === "string") {
+      return data.refusal;
+    }
+
+    return null;
+  }
+
+  /**
+   * Extract annotations information from a streaming chunk
+   * Returns null when not present
+   */
+  static extractAnnotationsFromChunk(data: any): unknown {
+    // OpenAI streaming delta
+    if (data?.choices?.[0]?.delta?.annotations !== undefined) {
+      return data.choices[0].delta.annotations;
+    }
+
+    // OpenAI non-delta message form
+    if (data?.choices?.[0]?.message?.annotations !== undefined) {
+      return data.choices[0].message.annotations;
+    }
+
+    // Direct field
+    if (data?.annotations !== undefined) {
+      return data.annotations;
+    }
+
+    return null;
+  }
 }

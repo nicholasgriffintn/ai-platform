@@ -319,6 +319,8 @@ export interface AssistantMessageData {
   id?: string;
   finish_reason?: string;
   mode?: ChatMode;
+  refusal?: string | null;
+  annotations?: unknown;
 }
 
 export type CoreChatOptions = ChatCompletionParameters & {
