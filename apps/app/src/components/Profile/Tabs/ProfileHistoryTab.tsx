@@ -117,6 +117,11 @@ export function ProfileHistoryTab() {
               {isExporting ? "Exporting..." : "Export JSON"}
             </Button>
           </div>
+          {isExporting && (
+            <div className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+              Exporting please do not close the page...
+            </div>
+          )}
           <div className="border-b border-zinc-200 dark:border-zinc-800 mb-4" />
           <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-4">
             Danger Zone
@@ -127,18 +132,17 @@ export function ProfileHistoryTab() {
           <Button
             variant="destructive"
             onClick={handleDeleteAllLocalChats}
-            disabled={deleteAllChats.isPending}
+            disabled={deleteAllChats.isPending || isExporting}
           >
             Delete all local chats
           </Button>
-          <div className="border-b border-zinc-200 dark:border-zinc-800 mb-4" />
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
             Permanently delete your history from our servers*:
           </p>
           <Button
             variant="destructive"
             onClick={handleDeleteAllRemoteChats}
-            disabled={deleteAllRemoteChats.isPending}
+            disabled={deleteAllRemoteChats.isPending || isExporting}
           >
             Delete all remote chats
           </Button>
