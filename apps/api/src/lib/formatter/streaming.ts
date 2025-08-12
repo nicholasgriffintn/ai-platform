@@ -322,14 +322,20 @@ export class StreamingFormatter {
   static extractRefusalFromChunk(data: any): string | null {
     // OpenAI streaming delta
     const deltaRefusal = data?.choices?.[0]?.delta?.refusal;
-    if (typeof deltaRefusal === "string") return deltaRefusal;
+    if (typeof deltaRefusal === "string") {
+      return deltaRefusal;
+    }
 
     // OpenAI non-delta message form in stream
     const messageRefusal = data?.choices?.[0]?.message?.refusal;
-    if (typeof messageRefusal === "string") return messageRefusal;
+    if (typeof messageRefusal === "string") {
+      return messageRefusal;
+    }
 
     // Direct refusal field
-    if (typeof data?.refusal === "string") return data.refusal;
+    if (typeof data?.refusal === "string") {
+      return data.refusal;
+    }
 
     return null;
   }
@@ -350,7 +356,9 @@ export class StreamingFormatter {
     }
 
     // Direct field
-    if (data?.annotations !== undefined) return data.annotations;
+    if (data?.annotations !== undefined) {
+      return data.annotations;
+    }
 
     return null;
   }
