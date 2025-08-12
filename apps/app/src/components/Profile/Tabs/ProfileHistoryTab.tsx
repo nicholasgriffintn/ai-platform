@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { PageHeader } from "~/components/PageHeader";
 import { PageTitle } from "~/components/PageTitle";
 import { useTrackEvent } from "~/hooks/use-track-event";
@@ -6,8 +8,7 @@ import {
   useDeleteAllRemoteChats,
 } from "~/hooks/useChat";
 import { apiService } from "~/lib/api/api-service";
-import { Button } from "../../ui";
-import { useState } from "react";
+import { Button } from "~/components/ui";
 
 export function ProfileHistoryTab() {
   const { trackEvent } = useTrackEvent();
