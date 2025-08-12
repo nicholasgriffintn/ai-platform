@@ -15,13 +15,13 @@ app.get(
   "/",
   describeRoute({
     tags: ["user"],
-    summary: "Export chat history as CSV",
-    description: "Returns a CSV file containing the user's chat history.",
+    summary: "Export chat history as JSON",
+    description: "Returns a JSON file containing the user's chat history.",
     responses: {
       200: {
-        description: "CSV file stream with chat history",
+        description: "JSON file stream with chat history",
         content: {
-          "text/csv": { schema: { type: "string", format: "binary" } },
+          "application/json": { schema: { type: "string", format: "binary" } },
         },
       },
       401: {
