@@ -10,7 +10,7 @@ import { webLLMModels } from "~/lib/models";
 import { WebLLMService } from "~/lib/web-llm";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { Conversation, Message } from "~/types";
+import type { Conversation, Message, MessageContent } from "~/types";
 import { useGenerateTitle } from "./useChat";
 import { useModels } from "./useModels";
 
@@ -283,7 +283,9 @@ export function useChatManager() {
         typeof content === "string"
           ? content
           : content
-              .map((item: import("~/types").MessageContent) => (item.type === "text" ? item.text || "" : ""))
+              .map((item: MessageContent) =>
+                item.type === "text" ? item.text || "" : "",
+              )
               .join("");
       if (reasoning) {
         assistantReasoningRef.current = reasoning;
@@ -298,7 +300,9 @@ export function useChatManager() {
           typeof content === "string"
             ? content
             : content
-                .map((item: import("~/types").MessageContent) => (item.type === "text" ? item.text || "" : ""))
+                .map((item: MessageContent) =>
+                  item.type === "text" ? item.text || "" : "",
+                )
                 .join("");
 
         if (!oldData) {
@@ -332,7 +336,8 @@ export function useChatManager() {
         const messages = [...oldData.messages];
         const lastMessageIndex = messages.length - 1;
         const hasAssistantLastMessage =
-          lastMessageIndex >= 0 && messages[lastMessageIndex].role === "assistant";
+          lastMessageIndex >= 0 &&
+          messages[lastMessageIndex].role === "assistant";
 
         let updatedMessages;
 
@@ -549,7 +554,9 @@ export function useChatManager() {
             typeof assistantMessage.content === "string"
               ? assistantMessage.content
               : assistantMessage.content
-                  .map((item: import("~/types").MessageContent) => (item.type === "text" ? item.text || "" : ""))
+                  .map((item: MessageContent) =>
+                    item.type === "text" ? item.text || "" : "",
+                  )
                   .join("");
 
           await updateAssistantMessage(
