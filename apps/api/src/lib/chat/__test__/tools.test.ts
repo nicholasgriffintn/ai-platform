@@ -607,6 +607,45 @@ describe("tools", () => {
       });
     });
 
+    it("should format tools for bedrock nova models", () => {
+      const result = formatToolCalls("bedrock", sampleFunctions);
+      expect(result).toEqual([
+        {
+          toolSpec: {
+            name: "search",
+            description: "Search the web",
+            inputSchema: {
+              json: {
+                type: "object",
+                properties: {
+                  query: { type: "string", description: "Search query" },
+                },
+                required: ["query"],
+              },
+            },
+          },
+        },
+        {
+          toolSpec: {
+            name: "calculator",
+            description: "Perform calculations",
+            inputSchema: {
+              json: {
+                type: "object",
+                properties: {
+                  expression: {
+                    type: "string",
+                    description: "Math expression",
+                  },
+                },
+                required: ["expression"],
+              },
+            },
+          },
+        },
+      ]);
+    });
+
     it("should filter out functions without parameters for anthropic", () => {
       const invalidFunctions = [
         {
