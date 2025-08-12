@@ -530,9 +530,8 @@ export async function createStreamWithPostProcessing(
                 structuredData = extractedStructuredData;
               }
 
-              const refusalDelta = StreamingFormatter.extractRefusalFromChunk(
-                data,
-              );
+              const refusalDelta =
+                StreamingFormatter.extractRefusalFromChunk(data);
               if (typeof refusalDelta === "string") {
                 refusalData = refusalDelta;
               }

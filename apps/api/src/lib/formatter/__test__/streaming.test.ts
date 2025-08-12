@@ -617,7 +617,9 @@ describe("StreamingFormatter", () => {
 
   describe("extractRefusalFromChunk", () => {
     it("should extract refusal from OpenAI delta", () => {
-      const data = { choices: [{ delta: { refusal: "content_policy_violation" } }] };
+      const data = {
+        choices: [{ delta: { refusal: "content_policy_violation" } }],
+      };
       const result = StreamingFormatter.extractRefusalFromChunk(data);
       expect(result).toBe("content_policy_violation");
     });
@@ -637,7 +639,9 @@ describe("StreamingFormatter", () => {
 
   describe("extractAnnotationsFromChunk", () => {
     it("should extract annotations from OpenAI delta", () => {
-      const data = { choices: [{ delta: { annotations: [{ type: "citation" }] } }] };
+      const data = {
+        choices: [{ delta: { annotations: [{ type: "citation" }] } }],
+      };
       const result = StreamingFormatter.extractAnnotationsFromChunk(data);
       expect(result).toEqual([{ type: "citation" }]);
     });
