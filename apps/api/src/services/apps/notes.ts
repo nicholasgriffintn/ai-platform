@@ -337,6 +337,97 @@ ${note.content}`;
   }
 }
 
+export async function generateNotesFromTranscript({
+  env,
+  user,
+  transcript,
+  category,
+  prompt,
+}: {
+  env: IEnv;
+  user: IUser;
+  transcript: string;
+  category?: "tutorial_only" | "class_lecture";
+  prompt?: string;
+}): Promise<{ content: string }> {
+  if (!transcript?.trim()) {
+    throw new AssistantError("Transcript is required", ErrorType.PARAMS_ERROR);
+  }
+
+  const baseSystemPrompt = `You create detailed, well-structured notes from audio transcripts.
+- Organize with headings, subheadings, and bullet points
+- Capture key concepts, definitions, methodologies, examples, and any code
+- Add a brief summary and suggested follow-ups
+- Ensure clarity and accuracy`;
+
+  const tutorialOnlyPrompt = `You are an advanced AI assistant specializing in Deep Learning and audio processing. Analyze the provided transcript and create comprehensive notes following these guidelines:
+- Extract all relevant information, technical details, examples, and explanations
+- Organize logically with headings, subheadings, and bullet points
+- Provide context and deeper insights as a Deep Learning Engineer
+- Elaborate on examples and applications
+- Enhance with your own knowledge and provide links to related concepts
+- Ensure clarity and accuracy, noting ambiguities when present
+- Conclude with a brief summary and suggested areas for further exploration`;
+
+  const classLecturePrompt = `You are an expert AI assistant for ML/DL/AI lectures. From the transcript, produce comprehensive lecture notes including:
+1) Main content (topics, concepts, definitions, techniques, examples, code)
+2) Structure and flow with clear headings and subheadings
+3) Technical details and parameters
+4) Practical applications
+5) Q&A summaries (if present)
+6) Visual aids descriptions (if referenced)
+7) References/resources
+8) Additional context/insights
+9) Proper formatting (lists, numbered steps, code blocks, italics for emphasis)
+10) Comprehensiveness and clarity; note ambiguities if any`;
+
+  const categorySystemPrompt =
+    category === "tutorial_only"
+      ? tutorialOnlyPrompt
+      : category === "class_lecture"
+        ? classLecturePrompt
+        : baseSystemPrompt;
+
+  try {
+    const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
+    const provider = AIProviderFactory.getProvider(providerToUse);
+
+    const messages = [
+      { role: "system" as ChatRole, content: categorySystemPrompt },
+      { role: "user" as ChatRole, content: sanitiseInput(transcript) },
+    ];
+
+    if (prompt) {
+      messages.push({ role: "user" as ChatRole, content: sanitiseInput(prompt) });
+    }
+
+    const aiResult = await provider.getResponse(
+      {
+        model: modelToUse,
+        env,
+        user,
+        messages,
+        temperature: 0.4,
+        max_tokens: 4096,
+      },
+      user.id,
+    );
+
+    const content =
+      (aiResult as any)?.response ||
+      (Array.isArray((aiResult as any).choices) && (aiResult as any).choices[0]?.message?.content) ||
+      (typeof aiResult === "string" ? (aiResult as string) : JSON.stringify(aiResult));
+
+    return { content };
+  } catch (error) {
+    if (error instanceof AssistantError) throw error;
+    throw new AssistantError(
+      "Error generating notes from transcript",
+      ErrorType.EXTERNAL_API_ERROR,
+    );
+  }
+}
+
 async function generateNoteMetadata(
   env: IEnv,
   user: IUser,

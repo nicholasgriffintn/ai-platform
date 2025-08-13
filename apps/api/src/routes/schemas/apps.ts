@@ -356,6 +356,27 @@ export const noteFormatResponseSchema = z.object({
   }),
 });
 
+export const noteGenerateFromTranscriptSchema = z.object({
+  transcript: z.string().min(1).meta({
+    description: "Raw transcript text to generate notes from",
+  }),
+  category: z
+    .enum(["tutorial_only", "class_lecture"]) // extendable on server
+    .optional()
+    .meta({
+      description: "Prompt category to guide the style of generated notes",
+    }),
+  prompt: z.string().optional().meta({
+    description: "Optional additional instructions to refine the notes",
+  }),
+});
+
+export const noteGenerateFromTranscriptResponseSchema = z.object({
+  content: z.string().meta({
+    description: "Generated note content from the transcript",
+  }),
+});
+
 export const shareItemSchema = z
   .object({
     app_id: z.string().meta({

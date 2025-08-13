@@ -28,6 +28,7 @@ import {
   Textarea as UITextarea,
 } from "~/components/ui";
 import { useNoteFormatter } from "~/hooks/useNoteFormatter";
+import { useGenerateNotesFromTranscript } from "~/hooks/useNotes";
 import { useTabAudioCapture } from "~/hooks/useTabAudioCapture";
 import { useTranscription } from "~/hooks/useTranscription";
 import {
@@ -37,6 +38,7 @@ import {
   splitTitleAndContent,
 } from "~/lib/text-utils";
 import { cn } from "~/lib/utils";
+import { apiService } from "~/lib/api/api-service";
 
 interface NoteEditorProps {
   noteId?: string;
@@ -119,6 +121,15 @@ export function NoteEditor({
   } = useNoteFormatter(noteId ?? "");
 
   const tabCapture = useTabAudioCapture();
+
+  const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [transcript, setTranscript] = useState<string>("");
+  const [genCategory, setGenCategory] = useState<"tutorial_only" | "class_lecture">("tutorial_only");
+  const [genPrompt, setGenPrompt] = useState<string>("");
+  const [generatedNotes, setGeneratedNotes] = useState<string>("");
+  const [isTranscribingUpload, setIsTranscribingUpload] = useState(false);
+  const generateFromTranscript = useGenerateNotesFromTranscript(noteId ?? "");
 
   const {
     isTranscribing,
@@ -403,6 +414,20 @@ export function NoteEditor({
           <button
             type="button"
             disabled={!noteId}
+            onClick={() => setIsAudioModalOpen(true)}
+            aria-disabled={!noteId}
+            className={cn(
+              "p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+              !noteId && "opacity-50 cursor-not-allowed",
+            )}
+            aria-label="Generate notes from audio"
+            title="Generate notes from audio"
+          >
+            <Mic size={16} />
+          </button>
+          <button
+            type="button"
+            disabled={!noteId}
             onClick={openFormatModal}
             aria-disabled={!noteId}
             className={cn(
@@ -653,6 +678,122 @@ export function NoteEditor({
                 Accept
               </Button>
             </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAudioModalOpen} onOpenChange={setIsAudioModalOpen} width="640px">
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Generate Notes from Audio</DialogTitle>
+            <DialogDescription>Upload an audio file, transcribe it, and generate structured notes.</DialogDescription>
+          </DialogHeader>
+          <div className="mt-2 space-y-4">
+            <div>
+              <input
+                type="file"
+                accept="audio/*"
+                onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+              />
+              <div className="mt-2 flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={async () => {
+                    if (!audioFile) {
+                      toast.error("Please select an audio file");
+                      return;
+                    }
+                    try {
+                      setIsTranscribingUpload(true);
+                      const arrayBuffer = await audioFile.arrayBuffer();
+                      const blob = new Blob([arrayBuffer], { type: audioFile.type || "audio/mpeg" });
+                      const res = await apiService.transcribeAudio(blob);
+                      const text = res?.response?.content || res?.response?.text || res?.text || "";
+                      if (!text) throw new Error("Empty transcription result");
+                      setTranscript(text);
+                      toast.success("Transcription complete");
+                    } catch (err) {
+                      console.error(err);
+                      toast.error("Failed to transcribe audio");
+                    } finally {
+                      setIsTranscribingUpload(false);
+                    }
+                  }}
+                  isLoading={isTranscribingUpload}
+                  disabled={!audioFile || isTranscribingUpload}
+                >
+                  {isTranscribingUpload ? "Transcribing..." : "Transcribe"}
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="transcript" className="block text-sm mb-1">Transcript</label>
+              <UITextarea id="transcript" value={transcript} onChange={(e) => setTranscript(e.target.value)} className="h-28" />
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1">
+                <label htmlFor="gen-category" className="block text-sm mb-1">Category</label>
+                <select
+                  id="gen-category"
+                  value={genCategory}
+                  onChange={(e) => setGenCategory(e.target.value as any)}
+                  className="bg-transparent border rounded px-2 py-1 w-full"
+                >
+                  <option value="tutorial_only">Tutorial Notes</option>
+                  <option value="class_lecture">Class Lecture</option>
+                </select>
+              </div>
+              <div className="flex-1">
+                <label htmlFor="gen-prompt" className="block text-sm mb-1">Additional instructions</label>
+                <UITextarea id="gen-prompt" value={genPrompt} onChange={(e) => setGenPrompt(e.target.value)} className="h-20" />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                onClick={async () => {
+                  if (!noteId) return;
+                  if (!transcript.trim()) {
+                    toast.error("Transcript is empty");
+                    return;
+                  }
+                  try {
+                    const content = await generateFromTranscript.mutateAsync({
+                      transcript,
+                      category: genCategory,
+                      prompt: genPrompt || undefined,
+                    });
+                    setGeneratedNotes(content);
+                    toast.success("Notes generated");
+                  } catch {
+                    toast.error("Failed to generate notes");
+                  }
+                }}
+                isLoading={generateFromTranscript.status === "pending"}
+                disabled={!noteId || generateFromTranscript.status === "pending"}
+              >
+                {generateFromTranscript.status === "pending" ? "Generating..." : "Generate Notes"}
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  if (!generatedNotes) return;
+                  setText((prev) => formatTextWithSpacing(prev, generatedNotes));
+                  setIsAudioModalOpen(false);
+                }}
+                disabled={!generatedNotes}
+              >
+                Insert into note
+              </Button>
+            </div>
+
+            <div className="mt-2">
+              <label htmlFor="generated-notes" className="block text-sm mb-1">Generated Notes</label>
+              <UITextarea id="generated-notes" value={generatedNotes} readOnly className="h-48" />
+            </div>
           </div>
         </DialogContent>
       </Dialog>

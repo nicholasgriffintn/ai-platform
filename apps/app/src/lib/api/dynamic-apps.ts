@@ -596,6 +596,42 @@ export const formatNoteAPI = async (
   return data.content;
 };
 
+export const generateNotesFromTranscriptAPI = async (
+  id: string,
+  transcript: string,
+  options?: { category?: "tutorial_only" | "class_lecture"; prompt?: string },
+): Promise<string> => {
+  let headers = {} as Record<string, string>;
+  try {
+    headers = await apiService.getHeaders();
+  } catch (e) {
+    console.error("Error getting headers for note generation:", e);
+  }
+
+  headers["Content-Type"] = "application/json";
+
+  const response = await fetchApi(`/apps/notes/${id}/generate-from-transcript`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      transcript,
+      category: options?.category,
+      prompt: options?.prompt,
+    }),
+  });
+
+  if (!response.ok) {
+    const errData = (await response.json().catch(() => ({}))) as any;
+    throw new Error(
+      errData?.message ||
+        `Failed to generate notes: ${response.statusText}`,
+    );
+  }
+
+  const data = (await response.json().catch(() => ({}))) as { content: string };
+  return data.content;
+};
+
 export const extractArticleContent = async (
   params: ExtractArticleContentParams,
 ): Promise<ExtractArticleContentResponse> => {

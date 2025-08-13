@@ -6,6 +6,7 @@ import {
   fetchNote,
   fetchNotes,
   formatNoteAPI,
+  generateNotesFromTranscriptAPI,
   updateNote,
 } from "~/lib/api/dynamic-apps";
 import type { Note } from "~/types/note";
@@ -65,6 +66,21 @@ export const useFormatNote = (id: string) => {
         throw new Error("Note ID is required");
       }
       return formatNoteAPI(id, prompt);
+    },
+  });
+};
+
+export const useGenerateNotesFromTranscript = (id: string) => {
+  return useMutation<
+    string,
+    Error,
+    { transcript: string; category?: "tutorial_only" | "class_lecture"; prompt?: string }
+  >({
+    mutationFn: ({ transcript, category, prompt }) => {
+      if (!id) {
+        throw new Error("Note ID is required");
+      }
+      return generateNotesFromTranscriptAPI(id, transcript, { category, prompt });
     },
   });
 };

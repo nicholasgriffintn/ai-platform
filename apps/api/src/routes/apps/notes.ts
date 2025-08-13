@@ -20,6 +20,8 @@ import {
   noteFormatResponseSchema,
   noteFormatSchema,
   noteUpdateSchema,
+  noteGenerateFromTranscriptSchema,
+  noteGenerateFromTranscriptResponseSchema,
 } from "../schemas/apps";
 import { errorResponseSchema, successResponseSchema } from "../schemas/shared";
 
@@ -489,6 +491,101 @@ app.post(
       });
       throw new AssistantError(
         "Failed to format note",
+        ErrorType.UNKNOWN_ERROR,
+      );
+    }
+  },
+);
+
+app.post(
+  "/:id/generate-from-transcript",
+  describeRoute({
+    tags: ["apps", "notes"],
+    description: "Generate note content from an uploaded audio transcript",
+    parameters: [
+      { name: "id", in: "path", required: true, schema: { type: "string" } },
+    ],
+    requestBody: {
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              transcript: { type: "string" },
+              category: { type: "string", enum: ["tutorial_only", "class_lecture"] },
+              prompt: { type: "string" },
+            },
+            required: ["transcript"],
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Generated note content",
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              properties: { content: { type: "string" } },
+              required: ["content"],
+            },
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: { "application/json": { schema: resolver(errorResponseSchema) } },
+      },
+    },
+  }),
+  zValidator("json", noteGenerateFromTranscriptSchema),
+  async (c: Context) => {
+    const id = c.req.param("id");
+    const user = c.get("user") as IUser;
+    const body = c.req.valid("json" as never) as {
+      transcript: string;
+      category?: "tutorial_only" | "class_lecture";
+      prompt?: string;
+    };
+
+    if (!user?.id) {
+      return c.json(
+        { response: { status: "error", message: "User not authenticated" } },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return c.json(
+        { response: { status: "error", message: "User is not on pro plan" } },
+        401,
+      );
+    }
+
+    try {
+      // Validate the user has access to the note id (throws if not)
+      await getNote({ env: c.env as IEnv, userId: user.id, noteId: id });
+
+      const { generateNotesFromTranscript } = await import(
+        "~/services/apps/notes"
+      );
+
+      const result = await generateNotesFromTranscript({
+        env: c.env as IEnv,
+        user,
+        transcript: body.transcript,
+        category: body.category,
+        prompt: body.prompt,
+      });
+      return c.json(result);
+    } catch (error) {
+      if (error instanceof AssistantError) throw error;
+      routeLogger.error("Error generating notes from transcript:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
+      throw new AssistantError(
+        "Failed to generate notes from transcript",
         ErrorType.UNKNOWN_ERROR,
       );
     }
