@@ -24,8 +24,10 @@ function detectPlatform(url: string): SupportedVideoPlatform {
   try {
     const u = new URL(url);
     const host = u.hostname.toLowerCase();
-    if (host.includes("youtube.com") || host.includes("youtu.be")) return "youtube";
-    if (host.includes("vimeo.com")) return "vimeo";
+    const youtubeHosts = ["youtube.com", "www.youtube.com", "youtu.be"];
+    const vimeoHosts = ["vimeo.com", "www.vimeo.com"];
+    if (youtubeHosts.includes(host)) return "youtube";
+    if (vimeoHosts.includes(host)) return "vimeo";
     const pathname = u.pathname.toLowerCase();
     if (pathname.endsWith(".mp3") || pathname.endsWith(".wav") || pathname.endsWith(".m4a") || pathname.endsWith(".aac")) {
       return "direct";
