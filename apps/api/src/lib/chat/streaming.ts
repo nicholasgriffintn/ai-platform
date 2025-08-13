@@ -203,7 +203,7 @@ export async function createStreamWithPostProcessing(
     }
   };
 
-  const guardrails = Guardrails.getInstance(env, user, userSettings);
+  const guardrails = new Guardrails(env, user, userSettings);
   const modelConfig = await getModelConfigByMatchingModel(model);
 
   return providerStream.pipeThrough(
