@@ -98,7 +98,7 @@ importers:
     dependencies:
       '@babel/standalone':
         specifier: ^7.26.10
-        version: 7.28.2
+        version: 7.28.3
       '@mlc-ai/web-llm':
         specifier: 0.2.79
         version: 0.2.79
@@ -560,8 +560,12 @@ packages:
     resolution: {integrity: sha512-KHp2IflsnGywDjBWDkR9iEqiWSpc8GIi0lgTT3mOElT0PP1tG26P4tmFI2YvAdzgq9RGyoHZQEIEdZy6Ec5xCA==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/standalone@7.28.2':
-    resolution: {integrity: sha512-1kjA8XzBRN68HoDDYKP38bucHtxYWCIX8XdYwe1drRNUOjOVNt8EMy9jiE6UwaGFfU7NOHCG+C8KgBc9CR08nA==}
+  '@babel/runtime@7.28.3':
+    resolution: {integrity: sha512-9uIQ10o0WGdpP6GDhXcdOJPJuDgFtIDtN/9+ArJQ2NAfAmiuhTQdzkaTGR33v43GYS2UrSA0eX2pPPHoFVvpxA==}
+    engines: {node: '>=6.9.0'}
+
+  '@babel/standalone@7.28.3':
+    resolution: {integrity: sha512-VHmaaU23OkxShTtkwXlte7/uHDK8v55J9YLMqlucjnYujeB9YgrYCHU6LREqUegTVq+/KlLgjoUu8lbeI3XQPA==}
     engines: {node: '>=6.9.0'}
 
   '@babel/template@7.27.2':
@@ -5208,7 +5212,9 @@ snapshots:
 
   '@babel/runtime@7.28.2': {}
 
-  '@babel/standalone@7.28.2': {}
+  '@babel/runtime@7.28.3': {}
+
+  '@babel/standalone@7.28.3': {}
 
   '@babel/template@7.27.2':
     dependencies:
@@ -6600,7 +6606,7 @@ snapshots:
   '@testing-library/dom@10.4.1':
     dependencies:
       '@babel/code-frame': 7.27.1
-      '@babel/runtime': 7.28.2
+      '@babel/runtime': 7.28.3
       '@types/aria-query': 5.0.4
       aria-query: 5.3.0
       dom-accessibility-api: 0.5.16
