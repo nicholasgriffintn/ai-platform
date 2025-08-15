@@ -2,11 +2,13 @@ import { TranscriptionProviderFactory } from "~/lib/transcription/factory";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+export type TranscriptionProvider = "workers" | "mistral" | "replicate";
+
 type TranscribeRequest = {
   env: IEnv;
   audio: File | Blob | string;
   user: IUser;
-  provider?: "workers" | "mistral";
+  provider?: TranscriptionProvider;
   timestamps?: boolean;
 };
 

@@ -506,7 +506,16 @@ app.post(
     requestBody: {
       content: {
         "application/json": {
-          schema: resolver(generateNotesFromMediaSchema),
+          schema: {
+            type: "object",
+            properties: {
+              url: { type: "string" },
+              outputs: { type: "array", items: { type: "string" } },
+              noteType: { type: "string" },
+              extraPrompt: { type: "string" },
+              timestamps: { type: "boolean" },
+            },
+          },
         },
       },
     },
