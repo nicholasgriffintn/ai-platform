@@ -697,8 +697,7 @@ export const generateNotesFromMedia = async (params: {
   if (!response.ok) {
     const errData = (await response.json().catch(() => ({}))) as any;
     throw new Error(
-      errData?.message ||
-        `Failed to generate notes: ${response.statusText}`,
+      errData?.message || `Failed to generate notes: ${response.statusText}`,
     );
   }
 

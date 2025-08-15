@@ -71,29 +71,33 @@ export const useFormatNote = (id: string) => {
 };
 
 export const useGenerateNotesFromMedia = () => {
-  return useMutation<{ content: string }, Error, {
-    url: string;
-    outputs: (
-      | "concise_summary"
-      | "detailed_outline"
-      | "key_takeaways"
-      | "action_items"
-      | "meeting_minutes"
-      | "qa_extraction"
-    )[];
-    noteType:
-      | "general"
-      | "meeting"
-      | "training"
-      | "lecture"
-      | "interview"
-      | "podcast"
-      | "webinar"
-      | "tutorial"
-      | "other";
-    extraPrompt?: string;
-    timestamps?: boolean;
-  }>({
+  return useMutation<
+    { content: string },
+    Error,
+    {
+      url: string;
+      outputs: (
+        | "concise_summary"
+        | "detailed_outline"
+        | "key_takeaways"
+        | "action_items"
+        | "meeting_minutes"
+        | "qa_extraction"
+      )[];
+      noteType:
+        | "general"
+        | "meeting"
+        | "training"
+        | "lecture"
+        | "interview"
+        | "podcast"
+        | "webinar"
+        | "tutorial"
+        | "other";
+      extraPrompt?: string;
+      timestamps?: boolean;
+    }
+  >({
     mutationFn: (params) => generateNotesFromMedia(params),
   });
 };

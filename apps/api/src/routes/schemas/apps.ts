@@ -389,7 +389,10 @@ export const sharedItemResponseSchema = z
   });
 
 export const generateNotesFromMediaSchema = z.object({
-  url: z.string().url().describe("The audio/video URL to transcribe and analyze."),
+  url: z
+    .string()
+    .url()
+    .describe("The audio/video URL to transcribe and analyze."),
   outputs: z
     .array(
       z.enum([
@@ -418,7 +421,10 @@ export const generateNotesFromMediaSchema = z.object({
     .default("general")
     .describe("Adjusts prompt style for the content type."),
   extraPrompt: z.string().optional().describe("Additional instructions."),
-  timestamps: z.boolean().optional().describe("Whether to enable timestamped transcription."),
+  timestamps: z
+    .boolean()
+    .optional()
+    .describe("Whether to enable timestamped transcription."),
 });
 
 export const generateNotesFromMediaResponseSchema = z.object({
