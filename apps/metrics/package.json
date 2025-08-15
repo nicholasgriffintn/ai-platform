@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
-    "@cloudflare/workers-types": "4.20250812.0",
+    "@cloudflare/workers-types": "4.20250813.0",
     "@tailwindcss/typography": "0.5.16",
     "@tailwindcss/vite": "4.1.12",
     "@testing-library/jest-dom": "6.6.4",
