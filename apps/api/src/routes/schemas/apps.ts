@@ -387,3 +387,40 @@ export const sharedItemResponseSchema = z
   .meta({
     description: "Response for shared item operations",
   });
+
+export const generateNotesFromMediaSchema = z.object({
+  url: z.string().url().describe("The audio/video URL to transcribe and analyze."),
+  outputs: z
+    .array(
+      z.enum([
+        "concise_summary",
+        "detailed_outline",
+        "key_takeaways",
+        "action_items",
+        "meeting_minutes",
+        "qa_extraction",
+      ]),
+    )
+    .min(1)
+    .describe("Which outputs to generate. Can select multiple."),
+  noteType: z
+    .enum([
+      "general",
+      "meeting",
+      "training",
+      "lecture",
+      "interview",
+      "podcast",
+      "webinar",
+      "tutorial",
+      "other",
+    ])
+    .default("general")
+    .describe("Adjusts prompt style for the content type."),
+  extraPrompt: z.string().optional().describe("Additional instructions."),
+  timestamps: z.boolean().optional().describe("Whether to enable timestamped transcription."),
+});
+
+export const generateNotesFromMediaResponseSchema = z.object({
+  content: z.string().describe("Generated notes content in Markdown."),
+});

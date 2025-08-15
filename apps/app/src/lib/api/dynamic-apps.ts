@@ -654,3 +654,53 @@ export const prepareSessionForRerun = async (itemId: string): Promise<void> => {
     );
   }
 };
+
+export const generateNotesFromMedia = async (params: {
+  url: string;
+  outputs: (
+    | "concise_summary"
+    | "detailed_outline"
+    | "key_takeaways"
+    | "action_items"
+    | "meeting_minutes"
+    | "qa_extraction"
+  )[];
+  noteType:
+    | "general"
+    | "meeting"
+    | "training"
+    | "lecture"
+    | "interview"
+    | "podcast"
+    | "webinar"
+    | "tutorial"
+    | "other";
+  extraPrompt?: string;
+  timestamps?: boolean;
+}): Promise<{ content: string }> => {
+  let headers = {};
+  try {
+    headers = await apiService.getHeaders();
+  } catch (e) {
+    console.error("Error getting headers for media generation:", e);
+  }
+
+  const response = await fetchApi(`/apps/notes/generate-from-media`, {
+    method: "POST",
+    headers: {
+      ...headers,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) {
+    const errData = (await response.json().catch(() => ({}))) as any;
+    throw new Error(
+      errData?.message ||
+        `Failed to generate notes: ${response.statusText}`,
+    );
+  }
+
+  return (await response.json()) as { content: string };
+};
