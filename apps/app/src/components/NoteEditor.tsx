@@ -12,6 +12,7 @@ import {
   Volume2,
   VolumeX,
   Zap,
+  TvMinimalPlay,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -418,7 +419,7 @@ export function NoteEditor({
             aria-label="Generate notes from media URL"
             title="Generate notes from media URL"
           >
-            <span className="text-xs font-medium">URL → Notes</span>
+            <TvMinimalPlay size={16} />
           </button>
           <button
             type="button"
@@ -601,11 +602,14 @@ export function NoteEditor({
           <DialogHeader>
             <DialogTitle>Generate Notes from Media URL</DialogTitle>
             <DialogDescription>
-              Provide an audio/video URL, choose outputs, and generate structured notes.
+              Provide an audio/video URL, choose outputs, and generate
+              structured notes.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-2 space-y-4">
-            <label htmlFor="media-url" className="sr-only">Media URL</label>
+            <label htmlFor="media-url" className="sr-only">
+              Media URL
+            </label>
             <input
               id="media-url"
               type="url"
@@ -627,7 +631,10 @@ export function NoteEditor({
                     { id: "meeting_minutes", label: "Meeting minutes" },
                     { id: "qa_extraction", label: "Q&A extraction" },
                   ].map((opt) => (
-                    <label key={opt.id} className="flex items-center gap-2 text-sm">
+                    <label
+                      key={opt.id}
+                      className="flex items-center gap-2 text-sm"
+                    >
                       <input
                         type="checkbox"
                         checked={selectedOutputs.includes(opt.id)}
@@ -672,7 +679,10 @@ export function NoteEditor({
                   ))}
                 </select>
 
-                <label htmlFor="timestamps" className="mt-3 flex items-center gap-2 text-sm">
+                <label
+                  htmlFor="timestamps"
+                  className="mt-3 flex items-center gap-2 text-sm"
+                >
                   <input
                     id="timestamps"
                     type="checkbox"
@@ -711,7 +721,9 @@ export function NoteEditor({
                       extraPrompt,
                       timestamps: withTimestamps,
                     });
-                    setText((prev) => formatTextWithSpacing(prev, `\n\n${result.content}`));
+                    setText((prev) =>
+                      formatTextWithSpacing(prev, `\n\n${result.content}`),
+                    );
                     setIsMediaModalOpen(false);
                     toast.success("Generated notes added to editor");
                   } catch {
@@ -722,9 +734,14 @@ export function NoteEditor({
                 disabled={generateNotesMutation.status === "pending"}
                 className="mr-2"
               >
-                {generateNotesMutation.status === "pending" ? "Generating..." : "Generate"}
+                {generateNotesMutation.status === "pending"
+                  ? "Generating..."
+                  : "Generate"}
               </Button>
-              <Button variant="primary" onClick={() => setIsMediaModalOpen(false)}>
+              <Button
+                variant="primary"
+                onClick={() => setIsMediaModalOpen(false)}
+              >
                 Close
               </Button>
             </DialogFooter>
