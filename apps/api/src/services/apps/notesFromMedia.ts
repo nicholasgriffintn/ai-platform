@@ -33,11 +33,18 @@ export async function generateNotesFromMedia({
 	}
 
 	try {
+		const preferMistral =
+			typeof url === "string" &&
+			(url.startsWith("http://") || url.startsWith("https://")) &&
+			Boolean((env as any).MISTRAL_API_KEY) &&
+			Boolean((env as any).AI_GATEWAY_TOKEN) &&
+			Boolean((env as any).ACCOUNT_ID);
+
 		const transcription = await handleTranscribe({
 			env,
 			user,
 			audio: url,
-			provider: "workers",
+			provider: preferMistral ? "mistral" : "workers",
 			timestamps: !!timestamps,
 		});
 
