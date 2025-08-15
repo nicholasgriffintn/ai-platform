@@ -1,8 +1,62 @@
 import { handleTranscribe } from "~/services/audio/transcribe";
 import { AIProviderFactory } from "~/lib/providers/factory";
-import { getAuxiliaryModel } from "~/lib/models";
+import { getAuxiliaryModel, getModelConfigByMatchingModel } from "~/lib/models";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+
+const REPLICATE_TRANSCRIBE_VERSION =
+	"cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f"; // same as podcasts
+
+async function transcribeWithReplicate(env: IEnv, user: IUser, url: string) {
+	const modelConfig = await getModelConfigByMatchingModel(
+		REPLICATE_TRANSCRIBE_VERSION,
+	);
+	const provider = AIProviderFactory.getProvider(
+		modelConfig?.provider || "replicate",
+	);
+
+	const transcriptionData = await provider.getResponse({
+		version: REPLICATE_TRANSCRIBE_VERSION,
+		messages: [
+			{
+				role: "user",
+				// @ts-ignore replicate format
+				content: {
+					file: url,
+					language: "en",
+					transcript_output_format: "segments_only",
+					group_segments: true,
+					translate: false,
+					offset_seconds: 0,
+				},
+			},
+		],
+		env,
+		user,
+		should_poll: true,
+	});
+
+	let text = "";
+	try {
+		const out: any = transcriptionData?.output ?? transcriptionData;
+		if (Array.isArray(out?.segments)) {
+			text = out.segments.map((s: any) => s.text).join(" ").trim();
+		} else if (typeof out?.text === "string") {
+			text = out.text;
+		} else if (typeof transcriptionData?.text === "string") {
+			text = transcriptionData.text;
+		}
+	} catch {}
+
+	if (!text) {
+		throw new AssistantError(
+			"Failed to parse transcription output from Replicate",
+			ErrorType.EXTERNAL_API_ERROR,
+		);
+	}
+
+	return text;
+}
 
 export async function generateNotesFromMedia({
 	env,
@@ -33,15 +87,48 @@ export async function generateNotesFromMedia({
 	}
 
 	try {
-		const transcription = await handleTranscribe({
-			env,
-			user,
-			audio: url,
-			provider: "workers",
-			timestamps: !!timestamps,
-		});
+		// Try to determine size (for Mistral 20MB limit)
+		let contentLengthBytes = 0;
+		try {
+			const head = await fetch(url, { method: "HEAD" });
+			const len = head.headers.get("content-length");
+			contentLengthBytes = len ? Number(len) : 0;
+		} catch {
+			// ignore if HEAD fails
+		}
 
-		const transcriptText = typeof transcription.content === "string" ? transcription.content : "";
+		const TWENTY_MB = 20 * 1024 * 1024;
+		const canUseMistral = Boolean((env as any).MISTRAL_API_KEY) &&
+			Boolean((env as any).AI_GATEWAY_TOKEN) &&
+			Boolean((env as any).ACCOUNT_ID);
+
+		let transcriptText = "";
+
+		if (canUseMistral && contentLengthBytes > 0 && contentLengthBytes <= TWENTY_MB) {
+			// Prefer Mistral when within size limits
+			const transcription = await handleTranscribe({
+				env,
+				user,
+				audio: url,
+				provider: "mistral",
+				timestamps: !!timestamps,
+			});
+			transcriptText = typeof transcription.content === "string" ? transcription.content : "";
+		} else if (contentLengthBytes > TWENTY_MB) {
+			// Large file: use Replicate async polling
+			transcriptText = await transcribeWithReplicate(env, user, url);
+		} else {
+			// Fallback: Workers (will fetch and transcribe)
+			const transcription = await handleTranscribe({
+				env,
+				user,
+				audio: url,
+				provider: "workers",
+				timestamps: !!timestamps,
+			});
+			transcriptText = typeof transcription.content === "string" ? transcription.content : "";
+		}
+
 		if (!transcriptText) {
 			throw new AssistantError("Empty transcript returned", ErrorType.EXTERNAL_API_ERROR);
 		}
