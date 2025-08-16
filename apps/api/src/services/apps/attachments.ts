@@ -21,7 +21,11 @@ export async function generateAttachmentMetadata(
     if (attachment.type === "image") {
       const ocr = await performOcr(
         {
-          document: { type: "document_url", document_url: attachment.url, document_name: attachment.name || "image" },
+          document: {
+            type: "document_url",
+            document_url: attachment.url,
+            document_name: attachment.name || "image",
+          },
           output_format: "markdown",
         },
         { env, user },
@@ -35,7 +39,11 @@ export async function generateAttachmentMetadata(
     }
 
     if (attachment.type === "document") {
-      const { result } = await convertToMarkdownViaCloudflare(env, attachment.url, attachment.name);
+      const { result } = await convertToMarkdownViaCloudflare(
+        env,
+        attachment.url,
+        attachment.name,
+      );
       return {
         summary: result ? result.slice(0, 300) : undefined,
         textContent: result,

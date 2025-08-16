@@ -74,7 +74,12 @@ export default function NewNotePage() {
           if (!noteId) {
             setNoteId(id);
           }
-          await updateMutation.mutateAsync({ title, content, metadata, attachments });
+          await updateMutation.mutateAsync({
+            title,
+            content,
+            metadata,
+            attachments,
+          });
           return id;
         }}
         isFullBleed={isFullBleed}

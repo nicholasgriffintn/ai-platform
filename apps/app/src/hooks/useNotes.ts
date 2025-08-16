@@ -29,8 +29,12 @@ export const useFetchNote = (id: string | undefined) => {
 export const useCreateNote = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { title: string; content: string; metadata?: any; attachments?: Note["attachments"] }) =>
-      createNote(data),
+    mutationFn: (data: {
+      title: string;
+      content: string;
+      metadata?: any;
+      attachments?: Note["attachments"];
+    }) => createNote(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
@@ -40,8 +44,12 @@ export const useCreateNote = () => {
 export const useUpdateNote = (id: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { title: string; content: string; metadata?: any; attachments?: Note["attachments"] }) =>
-      updateNote({ id, ...data }),
+    mutationFn: (data: {
+      title: string;
+      content: string;
+      metadata?: any;
+      attachments?: Note["attachments"];
+    }) => updateNote({ id, ...data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
       queryClient.invalidateQueries({ queryKey: ["note", id] });

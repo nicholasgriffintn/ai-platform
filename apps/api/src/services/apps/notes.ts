@@ -110,7 +110,12 @@ export async function createNote({
 }: {
   env: IEnv;
   user: IUser;
-  data: { title: string; content: string; metadata?: Record<string, any>; attachments?: Note["attachments"] };
+  data: {
+    title: string;
+    content: string;
+    metadata?: Record<string, any>;
+    attachments?: Note["attachments"];
+  };
 }): Promise<Note> {
   if (!user?.id) {
     throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
@@ -129,7 +134,11 @@ export async function createNote({
     data.metadata,
   );
 
-  const validAttachments = await validateAndEnrichAttachments(env, user, data.attachments);
+  const validAttachments = await validateAndEnrichAttachments(
+    env,
+    user,
+    data.attachments,
+  );
 
   const appData = {
     title: sanitisedTitle,
@@ -175,7 +184,12 @@ export async function updateNote({
   env: IEnv;
   userId: number;
   noteId: string;
-  data: { title: string; content: string; metadata?: Record<string, any>; attachments?: Note["attachments"] };
+  data: {
+    title: string;
+    content: string;
+    metadata?: Record<string, any>;
+    attachments?: Note["attachments"];
+  };
 }): Promise<Note> {
   if (!userId || !noteId) {
     throw new AssistantError(
@@ -198,7 +212,11 @@ export async function updateNote({
     data.content,
     data.metadata,
   );
-  const validAttachments = await validateAndEnrichAttachments(env, { id: userId } as IUser, data.attachments);
+  const validAttachments = await validateAndEnrichAttachments(
+    env,
+    { id: userId } as IUser,
+    data.attachments,
+  );
   const finalData = {
     ...data,
     attachments: validAttachments,
@@ -434,7 +452,11 @@ async function validateAndEnrichAttachments(
 
   for (const a of attachments) {
     if (!a.url?.startsWith(userPrefix)) {
-      throw new AssistantError("Invalid attachment URL", ErrorType.PARAMS_ERROR, 400);
+      throw new AssistantError(
+        "Invalid attachment URL",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
     }
   }
 

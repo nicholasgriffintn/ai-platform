@@ -93,7 +93,8 @@ export function NoteEditor({
   const [currentMetadata, setCurrentMetadata] = useState<Record<string, any>>(
     initialMetadata || {},
   );
-  const [attachments, setAttachments] = useState<Attachment[]>(initialAttachments);
+  const [attachments, setAttachments] =
+    useState<Attachment[]>(initialAttachments);
   const [showMetadata, setShowMetadata] = useState<boolean>(false);
 
   const handleMetadataUpdate = async (newMetadata: Record<string, any>) => {
@@ -206,7 +207,14 @@ export function NoteEditor({
       })();
     }, 1000);
     return () => clearTimeout(timeout);
-  }, [text, lastSavedText, onSave, tabCapture.tabInfo, currentMetadata, attachments]);
+  }, [
+    text,
+    lastSavedText,
+    onSave,
+    tabCapture.tabInfo,
+    currentMetadata,
+    attachments,
+  ]);
 
   useEffect(() => {
     setFontFamily(initialFontFamily);
@@ -299,7 +307,11 @@ export function NoteEditor({
       )}
 
       <div className="px-4 py-3 border-b">
-        <AttachmentUploader value={attachments} onChange={setAttachments} multiple />
+        <AttachmentUploader
+          value={attachments}
+          onChange={setAttachments}
+          multiple
+        />
         {attachments.length > 0 && (
           <div className="mt-3">
             <AttachmentViewer attachments={attachments} view="grid" />
@@ -353,7 +365,10 @@ export function NoteEditor({
               ) : (
                 <span className="flex items-center text-gray-500 dark:text-gray-400">
                   <VolumeX size={14} className="mr-1" />
-                  Silence {lastSilenceTime ? `(${Math.floor((Date.now() - lastSilenceTime) / 1000)}s)` : ""}
+                  Silence{" "}
+                  {lastSilenceTime
+                    ? `(${Math.floor((Date.now() - lastSilenceTime) / 1000)}s)`
+                    : ""}
                 </span>
               )}
             </div>

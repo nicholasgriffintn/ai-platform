@@ -101,7 +101,12 @@ export default function NoteDetailPage() {
         onSave={async (title, content, metadata, attachments) => {
           const savedId = await handleSave(title, content, metadata);
           // Update note with attachments after save
-          await updateMutation.mutateAsync({ title, content, metadata, attachments });
+          await updateMutation.mutateAsync({
+            title,
+            content,
+            metadata,
+            attachments,
+          });
           return savedId;
         }}
         onDelete={handleDelete}
