@@ -1,6 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router";
-import { Button } from "./ui";
+import { Button } from "../ui";
 
 export function BackLink({
   to,

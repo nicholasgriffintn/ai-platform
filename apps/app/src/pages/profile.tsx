@@ -1,8 +1,8 @@
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router";
 
-import { PageShell } from "~/components/PageShell";
-import { PageStatus } from "~/components/PageStatus";
+import { PageShell } from "~/components/Core/PageShell";
+import { PageStatus } from "~/components/Core/PageStatus";
 import {
   ProfileSidebar,
   profileSidebarItems,

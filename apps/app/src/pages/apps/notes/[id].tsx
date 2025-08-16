@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { NoteEditor } from "~/components/NoteEditor";
-import { PageShell } from "~/components/PageShell";
-import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { NoteEditor } from "~/components/Apps/Notes/NoteEditor";
+import { PageShell } from "~/components/Core/PageShell";
+import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 import { useDeleteNote, useFetchNote, useUpdateNote } from "~/hooks/useNotes";
 import { cn } from "~/lib/utils";
 

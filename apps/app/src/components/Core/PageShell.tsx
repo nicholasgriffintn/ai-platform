@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { useCallback, useEffect } from "react";
-import { NotificationBar } from "~/components/NotificationBar";
-import { PageHeader } from "~/components/PageHeader";
-import { PageTitle } from "~/components/PageTitle";
+import { NotificationBar } from "~/components/ui/NotificationBar";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageTitle } from "~/components/Core/PageTitle";
 import { SidebarLayout } from "~/layouts/SidebarLayout";
 import { cn } from "~/lib/utils";
 import { useUIStore } from "~/state/stores/uiStore";

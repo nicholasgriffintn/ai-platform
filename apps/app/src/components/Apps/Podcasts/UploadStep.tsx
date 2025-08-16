@@ -1,6 +1,6 @@
 import { Link as LinkIcon } from "lucide-react";
 
-import { SingleFileUploader } from "~/components/SingleFileUploader";
+import { SingleFileUploader } from "~/components/Uploader/SingleFileUploader";
 import { Button, FormInput, Label, Textarea } from "~/components/ui";
 import type { PodcastFormData } from "~/types/podcast";
 

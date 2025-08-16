@@ -3,11 +3,11 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Suspense, lazy } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
 
-import { AppInitializer } from "~/components/AppInitializer";
-import { AppShell } from "~/components/AppShell";
+import { AppInitializer } from "~/components/Core/AppInitializer";
+import { AppShell } from "~/components/Core/AppShell";
 import { CaptchaProvider } from "~/components/HCaptcha/CaptchaProvider";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
-import { ServiceWorkerRegistration } from "~/components/ServiceWorkerRegistration";
+import { ServiceWorkerRegistration } from "~/components/Core/ServiceWorkerRegistration";
 import { Toaster } from "~/components/ui/sonner";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import ErrorRoute from "~/pages/error";
@@ -15,7 +15,7 @@ import { LoadingProvider } from "~/state/contexts/LoadingContext";
 import type { Route } from "./+types/root";
 
 const AnalyticsLazy = lazy(() =>
-  import("~/components/Analytics").then((d) => ({
+  import("~/components/Core/Analytics").then((d) => ({
     default: d.Analytics,
   })),
 );

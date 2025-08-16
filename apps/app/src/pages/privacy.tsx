@@ -1,6 +1,6 @@
-import { PageShell } from "~/components/PageShell";
-import { Prose } from "~/components/Prose";
-import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { PageShell } from "~/components/Core/PageShell";
+import { Prose } from "~/components/ui/Prose";
+import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 import { APP_NAME, CONTACT_LINK, PRIVACY_EFFECTIVE_DATE } from "~/constants";
 
 export function meta() {

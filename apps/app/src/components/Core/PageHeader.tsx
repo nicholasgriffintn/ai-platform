@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Button } from "./ui";
+import { Button } from "../ui";
 
 export function PageHeader({
   children,

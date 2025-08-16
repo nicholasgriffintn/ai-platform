@@ -17,7 +17,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { NoteMetadata } from "~/components/NoteMetadata";
+import { NoteMetadata } from "~/components/Apps/Notes/NoteMetadata";
 import {
   Button,
   Dialog,

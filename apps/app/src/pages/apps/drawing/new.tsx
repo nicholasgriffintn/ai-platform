@@ -6,10 +6,10 @@ import { ColorPicker } from "~/components/Apps/Drawings/ColorPicker";
 import { LineWidthPicker } from "~/components/Apps/Drawings/LineWidthPicker";
 import { ToolPicker } from "~/components/Apps/Drawings/ToolPicker";
 import { LINE_WIDTHS } from "~/components/Apps/Drawings/constants";
-import { BackLink } from "~/components/BackLink";
-import { PageHeader } from "~/components/PageHeader";
-import { PageShell } from "~/components/PageShell";
-import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { BackLink } from "~/components/Core/BackLink";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageShell } from "~/components/Core/PageShell";
+import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 import { Button, Card } from "~/components/ui";
 import { useGenerateDrawing, useGuessDrawing } from "~/hooks/useDrawings";
 

@@ -10,8 +10,8 @@ import {
 } from "~/hooks/useDynamicApps";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
-import { BackLink } from "../BackLink";
-import { PageHeader } from "../PageHeader";
+import { BackLink } from "../Core/BackLink";
+import { PageHeader } from "../Core/PageHeader";
 import { AppCard } from "./AppCard";
 import { DynamicForm } from "./DynamicForm";
 import { FeaturedApps } from "./FeaturedApps";

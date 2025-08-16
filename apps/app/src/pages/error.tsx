@@ -1,4 +1,4 @@
-import { PageShell } from "~/components/PageShell";
+import { PageShell } from "~/components/Core/PageShell";
 
 export function meta() {
   return {

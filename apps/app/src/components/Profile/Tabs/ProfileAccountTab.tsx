@@ -1,5 +1,5 @@
-import { PageHeader } from "~/components/PageHeader";
-import { PageTitle } from "~/components/PageTitle";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageTitle } from "~/components/Core/PageTitle";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { formatDate } from "~/lib/dates";

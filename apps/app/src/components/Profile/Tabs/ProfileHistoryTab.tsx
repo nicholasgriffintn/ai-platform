@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { PageHeader } from "~/components/PageHeader";
-import { PageTitle } from "~/components/PageTitle";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageTitle } from "~/components/Core/PageTitle";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import {
   useDeleteAllLocalChats,

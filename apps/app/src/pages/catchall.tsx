@@ -1,6 +1,6 @@
-import { PageShell } from "~/components/PageShell";
-import { PageStatus } from "~/components/PageStatus";
-import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { PageShell } from "~/components/Core/PageShell";
+import { PageStatus } from "~/components/Core/PageStatus";
+import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 
 export function meta() {
   return [

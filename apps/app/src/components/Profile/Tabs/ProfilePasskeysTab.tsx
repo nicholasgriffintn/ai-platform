@@ -1,7 +1,7 @@
 import { Fingerprint, KeyRound, Shield, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { EmptyState } from "~/components/EmptyState";
+import { EmptyState } from "~/components/Core/EmptyState";
 import { Button } from "~/components/ui/Button";
 import { Card } from "~/components/ui/Card";
 import {
@@ -14,8 +14,8 @@ import { Skeleton } from "~/components/ui/Skeleton";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { usePasskeys } from "~/hooks/usePasskeys";
 import { formatRelativeTime } from "~/lib/dates";
-import { PageHeader } from "../../PageHeader";
-import { PageTitle } from "../../PageTitle";
+import { PageHeader } from "../../Core/PageHeader";
+import { PageTitle } from "../../Core/PageTitle";
 
 export function ProfilePasskeysTab() {
   const { trackEvent } = useTrackEvent();
