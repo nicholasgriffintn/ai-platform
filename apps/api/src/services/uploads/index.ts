@@ -284,7 +284,6 @@ export async function handleFileUpload(
     response.markdown = markdownContent;
   }
 
-  // Basic media metadata
   if (fileType === "video") {
     try {
       const videoMeta = await extractVideoMetadata(env, fileUrl);
@@ -296,9 +295,8 @@ export async function handleFileUpload(
     }
   }
 
-  // AI/processing metadata per attachment
   try {
-    const user = { id: userId } as unknown as IUser;
+    const user = { id: userId } as IUser;
     const meta = await generateAttachmentMetadata(env, user, {
       url: fileUrl,
       type: response.type as any,
