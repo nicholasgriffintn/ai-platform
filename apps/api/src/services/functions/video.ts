@@ -67,6 +67,11 @@ export const create_video: IFunction = {
         default: DEFAULT_WIDTH,
         maximum: MAX_DIMENSION,
       },
+      model: {
+        type: "string",
+        description:
+          "Optional model ID to use for video generation (e.g., 'amazon.nova-reel-v1:0').",
+      },
     },
     required: ["prompt"],
   },

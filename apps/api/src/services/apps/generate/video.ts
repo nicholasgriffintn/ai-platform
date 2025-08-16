@@ -1,6 +1,8 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { AIProviderFactory } from "~/lib/providers/factory";
+import { getModelConfigByMatchingModel } from "~/lib/models";
 import type { IEnv, IUser } from "~/types";
+import type { Message, MessageContent } from "~/types/chat";
 
 export interface VideoGenerationParams {
   prompt: string;
@@ -9,6 +11,7 @@ export interface VideoGenerationParams {
   video_length?: number;
   height?: number;
   width?: number;
+  model?: string;
 }
 
 export interface VideoResponse {
@@ -46,26 +49,47 @@ export async function generateVideo({
 
     const sanitisedPrompt = sanitiseInput(args.prompt);
 
-    const provider = AIProviderFactory.getProvider("replicate");
+    const requestedModel = args.model || REPLICATE_MODEL_VERSION;
+    const modelConfig = await getModelConfigByMatchingModel(requestedModel, env);
+    const providerKey = modelConfig?.provider || "replicate";
 
-    const videoData = await provider.getResponse({
-      completion_id,
-      app_url,
-      model: REPLICATE_MODEL_VERSION,
-      messages: [
+    const provider = AIProviderFactory.getProvider(providerKey);
+
+    let messages: Message[];
+    if (providerKey === "bedrock") {
+      const contentParts: MessageContent[] = [
+        { type: "text", text: sanitisedPrompt },
+      ];
+      messages = [
         {
           role: "user",
-          // @ts-ignore
+          content: contentParts,
+        },
+      ];
+    } else {
+      messages = [
+        {
+          role: "user",
+          // @ts-ignore replicate expects raw object content as last message
           content: {
             ...args,
             // @ts-ignore
             prompt: sanitisedPrompt,
           },
         },
-      ],
+      ];
+    }
+
+    const videoData = await provider.getResponse({
+      completion_id,
+      app_url,
+      model: requestedModel,
+      messages,
       env: env,
       user: user,
-      should_poll: true,
+      // Bedrock Nova Reel is async-only and does not support streaming; Replicate polling handled by should_poll
+      stream: false,
+      should_poll: providerKey === "replicate",
     });
 
     return {

@@ -48,6 +48,7 @@ export const imageGenerationSchema = z.object({
     "watercolor",
   ]),
   steps: z.number().optional(),
+  model: z.string().optional(),
 });
 
 export const videoGenerationSchema = z.object({
@@ -57,6 +58,7 @@ export const videoGenerationSchema = z.object({
   video_length: z.number().optional(),
   height: z.number().optional(),
   width: z.number().optional(),
+  model: z.string().optional(),
 });
 
 export const musicGenerationSchema = z.object({

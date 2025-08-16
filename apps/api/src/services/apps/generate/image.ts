@@ -4,12 +4,15 @@ import {
   type imagePrompts,
 } from "~/lib/prompts/image";
 import { AIProviderFactory } from "~/lib/providers/factory";
+import { getModelConfigByMatchingModel } from "~/lib/models";
 import type { IEnv, IUser } from "~/types";
+import type { Message, MessageContent } from "~/types/chat";
 
 export interface ImageGenerationParams {
   prompt: string;
   image_style: keyof typeof imagePrompts;
   steps: number;
+  model?: string;
 }
 
 export interface ImageResponse {
@@ -42,7 +45,11 @@ export async function generateImage({
   }
 
   try {
-    const provider = AIProviderFactory.getProvider("workers-ai");
+    const requestedModel = args.model || "@cf/black-forest-labs/flux-1-schnell";
+    const modelConfig = await getModelConfigByMatchingModel(requestedModel, env);
+
+    const providerKey = modelConfig?.provider || "workers";
+    const provider = AIProviderFactory.getProvider(providerKey);
 
     const sanitisedPrompt = sanitiseInput(args.prompt);
 
@@ -58,24 +65,25 @@ export async function generateImage({
       };
     }
 
+    const contentParts: MessageContent[] = [
+      { type: "text", text: `${systemPrompt}\n\n${sanitisedPrompt}` },
+    ];
+
+    const messages: Message[] = [
+      {
+        role: "user",
+        content: contentParts,
+      },
+    ];
+
     const imageData = await provider.getResponse({
       completion_id,
-      model: "@cf/black-forest-labs/flux-1-schnell",
+      model: requestedModel,
       app_url,
-      messages: [
-        {
-          role: "user",
-          // @ts-ignore
-          content: [
-            {
-              type: "text",
-              text: `${systemPrompt}\n\n${sanitisedPrompt}`,
-            },
-          ],
-        },
-      ],
+      messages,
       env: env,
       user: user,
+      stream: false,
     });
 
     return {
