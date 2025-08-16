@@ -220,7 +220,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
             /\.(ts|tsx|js|jsx|json|py|go|java|rb|php|rs|cs|kt|swift|scala|sh|yml|yaml|sql|toml|c|cc|cpp|cxx|hpp|h)$/i,
           );
 
-        if (codeLike && supportsDocuments) {
+        if (codeLike) {
           const { url, name, markdown, type } = await apiService.uploadFile(
             file,
             "code",
@@ -313,14 +313,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         return "image/*";
       }
       let fileTypes =
-        "text/html,application/xml,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroenabled.12,application/vnd.ms-excel.sheet.binary.macroenabled.12,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet,text/csv,application/vnd.apple.numbers,application/pdf";
+        "text/markdown,text/html,application/xml,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroenabled.12,application/vnd.ms-excel.sheet.binary.macroenabled.12,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet,text/csv,application/vnd.apple.numbers,application/pdf";
 
-      if (supportsDocuments) {
-        fileTypes +=
-          ",.ts,.tsx,.js,.jsx,.json,.py,.go,.java,.rb,.php,.rs,.cs,.kt,.swift,.scala,.sh,.yml,.yaml,.sql,.toml,.c,.cc,.cpp,.cxx,.hpp,.h";
-        fileTypes +=
-          ",text/javascript,application/javascript,text/typescript,application/typescript,text/plain,application/json";
-      }
+      fileTypes +=
+        ",.ts,.tsx,.js,.jsx,.json,.py,.go,.java,.rb,.php,.rs,.cs,.kt,.swift,.scala,.sh,.yml,.yaml,.sql,.toml,.c,.cc,.cpp,.cxx,.hpp,.h";
+      fileTypes +=
+        ",text/javascript,application/javascript,text/typescript,application/typescript,text/plain,application/json";
 
       if (isMultimodalModel) {
         fileTypes += ",image/*";

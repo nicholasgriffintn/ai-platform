@@ -38,6 +38,7 @@ export async function handleFileUpload(
   const allowedMimeTypes: Record<string, string[]> = {
     image: ["image/jpeg", "image/png", "image/gif", "image/webp"],
     document: [
+      "text/markdown",
       "application/pdf",
       "text/html",
       "application/xml",
@@ -77,7 +78,7 @@ export async function handleFileUpload(
 
   if (!allowedMimeTypes[fileType].includes(file.type)) {
     throw new AssistantError(
-      `Invalid file type. Allowed types for ${fileType}: ${allowedMimeTypes[fileType].join(", ")}`,
+      `Invalid file type ${file.type}. Allowed types for ${fileType}: ${allowedMimeTypes[fileType].join(", ")}`,
       ErrorType.PARAMS_ERROR,
       400,
     );

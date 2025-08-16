@@ -169,7 +169,7 @@ describe("handleFileUpload", () => {
       formData.append("file_type", "image");
 
       await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
-        "Invalid file type. Allowed types for image:",
+        "Invalid file type text/plain. Allowed types for image:",
       );
     });
 
@@ -180,7 +180,7 @@ describe("handleFileUpload", () => {
       formData.append("file_type", "document");
 
       await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
-        "Invalid file type. Allowed types for document:",
+        "Invalid file type image/jpeg. Allowed types for document:",
       );
     });
 
@@ -191,13 +191,15 @@ describe("handleFileUpload", () => {
       formData.append("file_type", "audio");
 
       await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
-        "Invalid file type. Allowed types for audio:",
+        "Invalid file type text/plain. Allowed types for audio:",
       );
     });
 
     it("should enforce code size limit", async () => {
       const largeContent = "x".repeat(201 * 1024); // 201KB
-      const file = new File([largeContent], "big.ts", { type: "text/typescript" });
+      const file = new File([largeContent], "big.ts", {
+        type: "text/typescript",
+      });
       const formData = new FormData();
       formData.append("file", file);
       formData.append("file_type", "code");
