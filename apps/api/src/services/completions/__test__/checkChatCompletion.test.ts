@@ -1,4 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  type Mock,
+} from "vitest";
 
 import { handleCheckChatCompletion } from "../checkChatCompletion";
 
@@ -15,9 +23,7 @@ vi.mock("~/lib/conversationManager", () => ({
 }));
 
 vi.mock("~/lib/guardrails", () => ({
-  Guardrails: {
-    getInstance: vi.fn(),
-  },
+  Guardrails: vi.fn(),
 }));
 
 const mockEnv = {
@@ -63,7 +69,7 @@ describe("handleCheckChatCompletion", () => {
     vi.mocked(ConversationManager.getInstance).mockReturnValue(
       mockConversationManager,
     );
-    vi.mocked(Guardrails.getInstance).mockReturnValue(mockGuardrails);
+    (Guardrails as unknown as Mock).mockImplementation(() => mockGuardrails);
   });
 
   afterEach(() => {

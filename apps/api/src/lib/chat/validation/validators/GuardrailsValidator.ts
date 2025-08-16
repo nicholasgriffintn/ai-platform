@@ -34,7 +34,7 @@ export class GuardrailsValidator implements Validator {
       const database = Database.getInstance(env);
       const userSettings = await database.getUserSettings(user?.id);
 
-      const guardrails = Guardrails.getInstance(env, user, userSettings);
+      const guardrails = new Guardrails(env, user, userSettings);
 
       const inputValidation = await guardrails.validateInput(
         context.messageWithContext,

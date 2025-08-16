@@ -20,6 +20,8 @@ import {
   noteFormatResponseSchema,
   noteFormatSchema,
   noteUpdateSchema,
+  generateNotesFromMediaSchema,
+  generateNotesFromMediaResponseSchema,
 } from "../schemas/apps";
 import { errorResponseSchema, successResponseSchema } from "../schemas/shared";
 
@@ -489,6 +491,103 @@ app.post(
       });
       throw new AssistantError(
         "Failed to format note",
+        ErrorType.UNKNOWN_ERROR,
+      );
+    }
+  },
+);
+
+app.post(
+  "/generate-from-media",
+  describeRoute({
+    tags: ["apps", "notes"],
+    description:
+      "Generate note content by transcribing an audio/video URL and producing selected outputs.",
+    requestBody: {
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              url: { type: "string" },
+              outputs: { type: "array", items: { type: "string" } },
+              noteType: { type: "string" },
+              extraPrompt: { type: "string" },
+              timestamps: { type: "boolean" },
+            },
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Generated notes content",
+        content: {
+          "application/json": {
+            schema: resolver(generateNotesFromMediaResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": { schema: resolver(errorResponseSchema) },
+        },
+      },
+    },
+  }),
+  zValidator("json", generateNotesFromMediaSchema),
+  async (c: Context) => {
+    const body = c.req.valid("json" as never) as any;
+    const user = c.get("user") as IUser;
+
+    if (!user?.id) {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (user.plan_id !== "pro") {
+      return c.json(
+        {
+          response: {
+            status: "error",
+            message: "User is not on pro plan",
+          },
+        },
+        401,
+      );
+    }
+
+    try {
+      const { generateNotesFromMedia } = await import(
+        "~/services/apps/notesFromMedia"
+      );
+      const result = await generateNotesFromMedia({
+        env: c.env as IEnv,
+        user,
+        url: body.url,
+        outputs: body.outputs,
+        noteType: body.noteType,
+        extraPrompt: body.extraPrompt,
+        timestamps: body.timestamps,
+      });
+      return c.json({ content: result.content });
+    } catch (error) {
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+      routeLogger.error("Error generating notes from media:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
+      throw new AssistantError(
+        "Failed to generate notes from media",
         ErrorType.UNKNOWN_ERROR,
       );
     }

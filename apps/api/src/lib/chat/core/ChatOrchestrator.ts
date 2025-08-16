@@ -253,7 +253,7 @@ export class ChatOrchestrator {
     }
 
     if (response.response) {
-      const guardrails = Guardrails.getInstance(
+      const guardrails = new Guardrails(
         options.env,
         options.user,
         userSettings,

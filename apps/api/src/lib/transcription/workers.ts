@@ -18,14 +18,28 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
     }
 
     try {
-      if (!(audio instanceof Blob)) {
+      let arrayBuffer: ArrayBuffer;
+
+      if (
+        typeof audio === "string" &&
+        (audio.startsWith("http://") || audio.startsWith("https://"))
+      ) {
+        const res = await fetch(audio);
+        if (!res.ok) {
+          throw new AssistantError(
+            `Failed to fetch audio from URL: ${res.status} ${res.statusText}`,
+            ErrorType.PARAMS_ERROR,
+          );
+        }
+        arrayBuffer = await res.arrayBuffer();
+      } else if (audio instanceof Blob) {
+        arrayBuffer = await audio.arrayBuffer();
+      } else {
         throw new AssistantError(
-          "Audio must be a Blob",
+          "Audio must be a Blob or a URL string",
           ErrorType.PARAMS_ERROR,
         );
       }
-
-      const arrayBuffer = await audio.arrayBuffer();
 
       const response = await env.AI.run(
         "@cf/openai/whisper",
