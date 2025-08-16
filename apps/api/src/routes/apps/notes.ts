@@ -164,7 +164,16 @@ app.post(
     requestBody: {
       content: {
         "application/json": {
-          schema: resolver(noteCreateSchema),
+          schema: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              content: { type: "string" },
+              metadata: { type: "object" },
+              attachments: { type: "array", items: { type: "object" } },
+            },
+            required: ["title", "content"],
+          },
         },
       },
     },
@@ -246,7 +255,16 @@ app.put(
     requestBody: {
       content: {
         "application/json": {
-          schema: resolver(noteUpdateSchema),
+          schema: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              content: { type: "string" },
+              metadata: { type: "object" },
+              attachments: { type: "array", items: { type: "object" } },
+            },
+            required: ["title", "content"],
+          },
         },
       },
     },

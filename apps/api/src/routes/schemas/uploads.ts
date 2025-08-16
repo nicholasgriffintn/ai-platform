@@ -10,7 +10,14 @@ export const uploadRequestSchema = z.object({
 
 export const uploadResponseSchema = z.object({
   url: z.string(),
-  type: z.enum(["image", "document", "markdown_document", "audio", "video"]),
+  type: z.enum([
+    "image",
+    "document",
+    "audio",
+    "video",
+    "code",
+    "markdown_document",
+  ]),
   name: z.string().optional(),
   markdown: z.string().optional(),
   size: z.number().optional(),

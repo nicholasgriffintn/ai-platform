@@ -8,6 +8,36 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "UPLOADS_SERVICE" });
 
+const CODE_EXTENSION_TO_LANG: Record<string, string> = {
+  ts: "typescript",
+  tsx: "tsx",
+  js: "javascript",
+  jsx: "jsx",
+  json: "json",
+  py: "python",
+  go: "go",
+  java: "java",
+  rb: "ruby",
+  php: "php",
+  rs: "rust",
+  cs: "csharp",
+  kt: "kotlin",
+  swift: "swift",
+  scala: "scala",
+  sh: "bash",
+  bash: "bash",
+  yml: "yaml",
+  yaml: "yaml",
+  sql: "sql",
+  toml: "toml",
+  c: "c",
+  h: "c",
+  cc: "cpp",
+  cpp: "cpp",
+  cxx: "cpp",
+  hpp: "cpp",
+};
+
 export async function handleFileUpload(
   env: IEnv,
   userId: number,
@@ -19,7 +49,13 @@ export async function handleFileUpload(
   markdown?: string;
   size?: number;
   mimeType?: string;
-  metadata?: { duration?: number; width?: number; height?: number; thumbnailUrl?: string; [k: string]: any };
+  metadata?: {
+    duration?: number;
+    width?: number;
+    height?: number;
+    thumbnailUrl?: string;
+    [k: string]: any;
+  };
 }> {
   const file = formData.get("file") as File | null;
   const fileType = formData.get("file_type") as
@@ -27,22 +63,31 @@ export async function handleFileUpload(
     | "document"
     | "audio"
     | "video"
+    | "code"
     | null;
 
   if (!file) {
     throw new AssistantError("No file uploaded", ErrorType.PARAMS_ERROR, 400);
   }
-  if (!fileType || !["image", "document", "audio", "video"].includes(fileType)) {
+
+  const acceptedFileTypes = ["image", "document", "audio", "video", "code"];
+
+  if (!fileType || !acceptedFileTypes.includes(fileType)) {
     throw new AssistantError(
-      "Invalid file type. Must be 'image', 'document', 'audio', or 'video'",
+      `Invalid file type. Must be ${acceptedFileTypes.map((type) => `'${type}'`).join(", ")}`,
       ErrorType.PARAMS_ERROR,
       400,
     );
   }
 
+  const nameParts = file.name.split(".");
+  const inferredExtension =
+    nameParts.length > 1 ? nameParts.pop()!.toLowerCase() : "";
+
   const allowedMimeTypes: Record<string, string[]> = {
     image: ["image/jpeg", "image/png", "image/gif", "image/webp"],
     document: [
+      "text/markdown",
       "application/pdf",
       "text/html",
       "application/xml",
@@ -55,21 +100,69 @@ export async function handleFileUpload(
       "application/vnd.apple.numbers",
     ],
     audio: ["audio/mpeg", "audio/wav", "audio/mp3", "audio/x-wav", "audio/mp4"],
-    // Added common video mime types
     video: [
       "video/mp4",
       "video/webm",
       "video/quicktime", // mov
       "video/x-msvideo", // avi
     ],
+    code: [
+      "text/javascript",
+      "application/javascript",
+      "text/typescript",
+      "application/typescript",
+      "text/plain",
+      "application/json",
+      "text/yaml",
+      "application/x-yaml",
+      "text/x-python",
+      "application/x-python",
+      "text/x-go",
+      "text/x-java-source",
+      "text/x-ruby",
+      "application/x-ruby",
+      "application/x-php",
+      "text/x-php",
+      "text/x-csrc",
+      "text/x-c++src",
+      "text/x-shellscript",
+      "text/x-sql",
+      "application/sql",
+    ],
   };
 
-  if (!allowedMimeTypes[fileType].includes(file.type)) {
-    throw new AssistantError(
-      `Invalid file type. Allowed types for ${fileType}: ${allowedMimeTypes[fileType].join(", ")}`,
-      ErrorType.PARAMS_ERROR,
-      400,
-    );
+  if (fileType === "code") {
+    const isAllowedByMime = allowedMimeTypes.code.includes(file.type);
+    const isOctetStreamWithKnownExtension =
+      file.type === "application/octet-stream" &&
+      Boolean(inferredExtension && CODE_EXTENSION_TO_LANG[inferredExtension]);
+
+    if (!isAllowedByMime && !isOctetStreamWithKnownExtension) {
+      throw new AssistantError(
+        `Invalid file type ${file.type}. Allowed types for code: ${[...allowedMimeTypes.code, "application/octet-stream (with known code extension)"].join(", ")}`,
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+  } else {
+    if (!allowedMimeTypes[fileType].includes(file.type)) {
+      throw new AssistantError(
+        `Invalid file type ${file.type}. Allowed types for ${fileType}: ${allowedMimeTypes[fileType].join(", ")}`,
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+  }
+
+  if (fileType === "code") {
+    const maxCodeSizeBytes = 200 * 1024;
+    if (file.size > maxCodeSizeBytes) {
+      throw new AssistantError(
+        "Code files must be 200KB or smaller",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
   }
 
   const isPdf = file.type === "application/pdf";
@@ -77,7 +170,9 @@ export async function handleFileUpload(
   const shouldConvert =
     fileType === "document" && (!isPdf || convertFlag === "true");
 
-  const fileExtension = file.type.split("/")[1];
+  const mimeExtension = (file.type.split("/")[1] || "").toLowerCase();
+  const fileExtension =
+    fileType === "code" ? inferredExtension || mimeExtension : mimeExtension;
   const key = `uploads/${userId}/${fileType}s/${crypto.randomUUID()}.${fileExtension}`;
 
   let arrayBuffer: ArrayBuffer;
@@ -149,6 +244,20 @@ export async function handleFileUpload(
     }
   }
 
+  if (fileType === "code") {
+    try {
+      const rawText = await file.text();
+      const lang =
+        CODE_EXTENSION_TO_LANG[(inferredExtension || "").toLowerCase()] || "";
+      const fence = lang ? `\`\`\`${lang}` : "```";
+      markdownContent = `${fence}\n${rawText}\n\`\`\``;
+    } catch (err) {
+      logger.error("Failed to read code file as text", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
   const response: {
     url: string;
     type: string;
@@ -156,7 +265,13 @@ export async function handleFileUpload(
     markdown?: string;
     size?: number;
     mimeType?: string;
-    metadata?: { duration?: number; width?: number; height?: number; thumbnailUrl?: string; [k: string]: any };
+    metadata?: {
+      duration?: number;
+      width?: number;
+      height?: number;
+      thumbnailUrl?: string;
+      [k: string]: any;
+    };
   } = {
     url: fileUrl,
     type: markdownContent ? "markdown_document" : fileType,
@@ -175,7 +290,9 @@ export async function handleFileUpload(
       const videoMeta = await extractVideoMetadata(env, fileUrl);
       response.metadata = { ...response.metadata, ...videoMeta };
     } catch (e) {
-      logger.warn("Failed to extract video metadata", { error: e instanceof Error ? e.message : String(e) });
+      logger.warn("Failed to extract video metadata", {
+        error: e instanceof Error ? e.message : String(e),
+      });
     }
   }
 
@@ -194,7 +311,9 @@ export async function handleFileUpload(
       response.metadata.summary = markdownContent.slice(0, 300);
     }
   } catch (e) {
-    logger.warn("Attachment metadata generation failed", { error: e instanceof Error ? e.message : String(e) });
+    logger.warn("Attachment metadata generation failed", {
+      error: e instanceof Error ? e.message : String(e),
+    });
   }
 
   return response;
