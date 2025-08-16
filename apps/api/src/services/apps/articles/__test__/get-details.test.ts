@@ -29,7 +29,7 @@ describe("getArticleDetails", () => {
   it("should throw AssistantError when id is missing", async () => {
     await expect(
       getArticleDetails({ env: mockEnv, id: "", userId: 123 }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       getArticleDetails({ env: mockEnv, id: "", userId: 123 }),
@@ -39,7 +39,7 @@ describe("getArticleDetails", () => {
   it("should throw AssistantError when userId is missing", async () => {
     await expect(
       getArticleDetails({ env: mockEnv, id: "article-1", userId: 0 }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       getArticleDetails({ env: mockEnv, id: "article-1", userId: 0 }),
@@ -51,7 +51,7 @@ describe("getArticleDetails", () => {
 
     await expect(
       getArticleDetails({ env: mockEnv, id: "non-existent", userId: 123 }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       getArticleDetails({ env: mockEnv, id: "non-existent", userId: 123 }),
@@ -69,7 +69,7 @@ describe("getArticleDetails", () => {
 
     await expect(
       getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 }),
@@ -151,7 +151,7 @@ describe("getArticleDetails", () => {
 
     await expect(
       getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 }),

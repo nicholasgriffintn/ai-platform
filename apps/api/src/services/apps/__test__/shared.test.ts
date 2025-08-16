@@ -73,7 +73,7 @@ describe("shared services", () => {
           id: "item-1",
           env: mockEnv,
         }),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
 
     it("should throw error if item not found", async () => {
@@ -85,7 +85,7 @@ describe("shared services", () => {
           id: "item-1",
           env: mockEnv,
         }),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
 
     it("should throw error if item doesn't belong to user", async () => {
@@ -103,7 +103,7 @@ describe("shared services", () => {
           id: "item-1",
           env: mockEnv,
         }),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
   });
 
@@ -147,7 +147,7 @@ describe("shared services", () => {
           env: mockEnv,
           shareId: "",
         }),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
 
     it("should throw error if shared item not found", async () => {
@@ -158,7 +158,7 @@ describe("shared services", () => {
           env: mockEnv,
           shareId: "non-existent",
         }),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
 
     it("should handle invalid JSON data gracefully", async () => {

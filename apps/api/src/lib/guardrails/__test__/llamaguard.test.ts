@@ -232,7 +232,7 @@ describe("LlamaGuardProvider", () => {
 
       await expect(
         provider.validateContent("test content", "INPUT"),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
 
     it("should handle case-insensitive safe responses", async () => {

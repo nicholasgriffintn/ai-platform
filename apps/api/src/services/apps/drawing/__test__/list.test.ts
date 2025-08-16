@@ -42,7 +42,7 @@ describe("listDrawings", () => {
         env: mockEnv,
         userId: 0,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       listDrawings({

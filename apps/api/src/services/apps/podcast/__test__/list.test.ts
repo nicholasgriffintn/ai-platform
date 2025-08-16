@@ -265,7 +265,7 @@ describe("handlePodcastList", () => {
         env: mockEnv,
         user: {} as any,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 
   it("should skip items without item_id", async () => {

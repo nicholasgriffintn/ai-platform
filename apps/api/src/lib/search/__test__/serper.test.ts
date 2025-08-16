@@ -183,7 +183,7 @@ describe("SerperProvider", () => {
 
       await expect(
         providerWithDynamicKey.performWebSearch("test query"),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
       await expect(
         providerWithDynamicKey.performWebSearch("test query"),
       ).rejects.toThrow("SERPER_API_KEY is not set");

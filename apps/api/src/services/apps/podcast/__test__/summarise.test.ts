@@ -123,7 +123,7 @@ describe("handlePodcastSummarise", () => {
         },
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 
   it("should throw error for missing user ID", async () => {
@@ -136,6 +136,6 @@ describe("handlePodcastSummarise", () => {
         },
         user: {} as any,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 });

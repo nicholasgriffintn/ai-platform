@@ -172,7 +172,11 @@ describe("WorkersTranscriptionProvider", () => {
           audio: mockAudio,
           user: mockUser,
         }),
-      ).rejects.toThrow(new AssistantError("No response from the model"));
+      ).rejects.toMatchObject({
+        message: "No response from the model",
+        type: ErrorType.UNKNOWN_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error when model returns empty text", async () => {
@@ -187,7 +191,11 @@ describe("WorkersTranscriptionProvider", () => {
           audio: mockAudio,
           user: mockUser,
         }),
-      ).rejects.toThrow(new AssistantError("No response from the model"));
+      ).rejects.toMatchObject({
+        message: "No response from the model",
+        type: ErrorType.UNKNOWN_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should handle AI.run errors", async () => {
@@ -201,12 +209,11 @@ describe("WorkersTranscriptionProvider", () => {
           audio: mockAudio,
           user: mockUser,
         }),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Workers AI transcription error: AI service error",
-          ErrorType.EXTERNAL_API_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Workers AI transcription error: AI service error",
+        type: ErrorType.EXTERNAL_API_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 

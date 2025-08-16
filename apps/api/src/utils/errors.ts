@@ -21,6 +21,7 @@ export enum ErrorType {
   USER_NOT_FOUND = "USER_NOT_FOUND",
   CONFLICT_ERROR = "CONFLICT_ERROR",
   STORAGE_ERROR = "STORAGE_ERROR",
+  DATABASE_ERROR = "DATABASE_ERROR",
 }
 
 export interface ErrorContext {
@@ -245,6 +246,15 @@ export function handleAIServiceError(error: AssistantError): Response {
       return Response.json(
         {
           error: "Storage service temporarily unavailable",
+          requestId: error.context.requestId,
+        },
+        { status: 500 },
+      );
+    case ErrorType.DATABASE_ERROR:
+      logger.error("Database error", logContext);
+      return Response.json(
+        {
+          error: "Database service temporarily unavailable",
           requestId: error.context.requestId,
         },
         { status: 500 },

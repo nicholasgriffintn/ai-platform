@@ -123,7 +123,7 @@ describe("tutor service", () => {
             max_results: 5,
           },
         }),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
 
     it("should throw error if options are missing", async () => {
@@ -132,7 +132,7 @@ describe("tutor service", () => {
           topic: "machine learning",
           level: "beginner",
         } as any),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
 
     it("should handle different difficulty levels", async () => {

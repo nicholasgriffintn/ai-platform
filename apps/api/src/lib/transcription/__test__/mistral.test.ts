@@ -144,12 +144,11 @@ describe("MistralTranscriptionProvider", () => {
           audio: mockAudio,
           user: mockUser,
         }),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Missing MISTRAL_API_KEY, AI_GATEWAY_TOKEN, or ACCOUNT_ID",
-          ErrorType.CONFIGURATION_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Missing MISTRAL_API_KEY, AI_GATEWAY_TOKEN, or ACCOUNT_ID",
+        type: ErrorType.CONFIGURATION_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error when audio is missing", async () => {
@@ -192,7 +191,7 @@ describe("MistralTranscriptionProvider", () => {
           audio: mockAudio,
           user: mockUser,
         }),
-      ).rejects.toThrow(
+      ).rejects.toMatchObject(
         new AssistantError(
           "Missing MISTRAL_API_KEY, AI_GATEWAY_TOKEN, or ACCOUNT_ID",
           ErrorType.CONFIGURATION_ERROR,
@@ -209,9 +208,11 @@ describe("MistralTranscriptionProvider", () => {
           audio: mockAudio,
           user: null as any,
         }),
-      ).rejects.toThrow(
-        new AssistantError("Missing user", ErrorType.PARAMS_ERROR),
-      );
+      ).rejects.toMatchObject({
+        message: "Missing user",
+        type: ErrorType.PARAMS_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should handle API errors", async () => {
@@ -252,12 +253,11 @@ describe("MistralTranscriptionProvider", () => {
           audio: mockAudio,
           user: mockUser,
         }),
-      ).rejects.toThrow(
-        new AssistantError(
-          "No transcription text returned from Mistral",
-          ErrorType.EXTERNAL_API_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "No transcription text returned from Mistral",
+        type: ErrorType.EXTERNAL_API_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should handle network errors", async () => {
@@ -271,12 +271,11 @@ describe("MistralTranscriptionProvider", () => {
           audio: mockAudio,
           user: mockUser,
         }),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Mistral transcription error: Network error",
-          ErrorType.EXTERNAL_API_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Mistral transcription error: Network error",
+        type: ErrorType.EXTERNAL_API_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 

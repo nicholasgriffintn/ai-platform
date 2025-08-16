@@ -232,7 +232,7 @@ describe("handlePodcastDetail", () => {
         podcastId: "podcast-123",
         user: {} as any,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 
   it("should throw error for podcast not found", async () => {
@@ -244,7 +244,7 @@ describe("handlePodcastDetail", () => {
         podcastId: "non-existent",
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 
   it("should skip items without item_type", async () => {

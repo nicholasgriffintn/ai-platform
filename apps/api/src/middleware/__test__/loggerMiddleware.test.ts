@@ -5,6 +5,7 @@ vi.mock("~/utils/logger", () => ({
   getLogger: vi.fn(() => ({
     info: vi.fn(),
     error: vi.fn(),
+    warn: vi.fn(),
   })),
 }));
 
@@ -17,8 +18,10 @@ function createMockContext(overrides: any = {}): Context {
     },
     res: {
       status: 200,
+      headers: new Headers(),
     },
     get: vi.fn(),
+    set: vi.fn(),
     ...overrides,
   } as any;
 
@@ -41,6 +44,7 @@ describe("Logger Middleware", () => {
     mockLogger = {
       info: vi.fn(),
       error: vi.fn(),
+      warn: vi.fn(),
     };
 
     const { getLogger } = await import("~/utils/logger");
@@ -96,7 +100,7 @@ describe("Logger Middleware", () => {
           method: "GET",
           url: "http://example.com/test",
           status: 200,
-          duration: "100ms",
+          duration: "0.1s",
           userId: "user-123",
         },
       );
@@ -161,7 +165,7 @@ describe("Logger Middleware", () => {
           method: "GET",
           url: "http://example.com/test",
           error: "Test error",
-          duration: "50ms",
+          duration: "0.05s",
           userId: "user-123",
           userAgent: "Mozilla/5.0",
           stack: expect.any(String),
@@ -263,8 +267,8 @@ describe("Logger Middleware", () => {
 
       await loggerMiddleware(context, mockNext);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        "Request completed: GET http://example.com/test",
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        "Request completed with client error: GET http://example.com/test",
         expect.objectContaining({
           status: 404,
         }),
@@ -289,7 +293,7 @@ describe("Logger Middleware", () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         "Request completed: GET http://example.com/test",
         expect.objectContaining({
-          duration: "250ms",
+          duration: "0.25s",
         }),
       );
     });

@@ -140,7 +140,7 @@ describe("handlePodcastGenerateImage", () => {
         request: { podcastId: "" },
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 
   it("should throw error for missing user ID", async () => {
@@ -150,7 +150,7 @@ describe("handlePodcastGenerateImage", () => {
         request: { podcastId: "podcast-123" },
         user: {} as any,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 
   it("should throw error when summary not found", async () => {
@@ -164,7 +164,7 @@ describe("handlePodcastGenerateImage", () => {
         request: { podcastId: "podcast-123" },
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 
   it("should throw error when AI fails to generate image", async () => {
@@ -186,6 +186,6 @@ describe("handlePodcastGenerateImage", () => {
         request: { podcastId: "podcast-123" },
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 });

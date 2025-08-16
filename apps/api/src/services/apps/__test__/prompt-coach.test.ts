@@ -152,7 +152,7 @@ describe("prompt-coach service", () => {
           user: mockUser,
           prompt: "Test prompt",
         }),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
 
     it("should handle different prompt types", async () => {

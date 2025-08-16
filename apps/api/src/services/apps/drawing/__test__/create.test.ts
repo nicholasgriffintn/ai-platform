@@ -79,7 +79,7 @@ describe("generateImageFromDrawing", () => {
         request: {},
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       generateImageFromDrawing({
@@ -417,7 +417,7 @@ describe("generateImageFromDrawing", () => {
         request: { drawing: mockDrawing },
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       generateImageFromDrawing({
@@ -456,7 +456,7 @@ describe("generateImageFromDrawing", () => {
         request: { drawing: mockDrawing },
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 
   it("should handle AI description generation errors", async () => {

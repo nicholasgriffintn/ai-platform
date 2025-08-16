@@ -94,12 +94,11 @@ describe("Email Service", () => {
           "Test body text",
           "<p>Test body HTML</p>",
         ),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Failed to send email: Failed to send email: Bad Request",
-          ErrorType.EMAIL_SEND_FAILED,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Failed to send email: Failed to send email: Bad Request",
+        type: ErrorType.EMAIL_SEND_FAILED,
+        name: "AssistantError",
+      });
     });
 
     it("should handle network errors", async () => {
@@ -116,12 +115,11 @@ describe("Email Service", () => {
           "Test body text",
           "<p>Test body HTML</p>",
         ),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Failed to send email: Network error",
-          ErrorType.EMAIL_SEND_FAILED,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Failed to send email: Network error",
+        type: ErrorType.EMAIL_SEND_FAILED,
+        name: "AssistantError",
+      });
     });
 
     it("should construct correct request", async () => {

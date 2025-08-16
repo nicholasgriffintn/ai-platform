@@ -44,9 +44,11 @@ describe("handleTranscribe", () => {
           audio: null as any,
           user: mockUser,
         }),
-      ).rejects.toThrow(
-        new AssistantError("Missing audio", ErrorType.PARAMS_ERROR),
-      );
+      ).rejects.toMatchObject({
+        message: "Missing audio",
+        type: ErrorType.PARAMS_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 
@@ -144,12 +146,11 @@ describe("handleTranscribe", () => {
           audio: mockAudio,
           user: mockUser,
         }),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Transcription failed: Unknown error",
-          ErrorType.EXTERNAL_API_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Transcription failed: Unknown error",
+        type: ErrorType.EXTERNAL_API_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 });

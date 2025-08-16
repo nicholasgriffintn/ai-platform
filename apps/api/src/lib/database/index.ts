@@ -195,7 +195,7 @@ export class Database {
 
       throw new AssistantError(
         "Unable to create user account",
-        ErrorType.INTERNAL_ERROR,
+        ErrorType.DATABASE_ERROR,
         500,
       );
     }
@@ -222,7 +222,7 @@ export class Database {
 
       throw new AssistantError(
         "Unable to create user session",
-        ErrorType.INTERNAL_ERROR,
+        ErrorType.DATABASE_ERROR,
         500,
         { userId },
       );

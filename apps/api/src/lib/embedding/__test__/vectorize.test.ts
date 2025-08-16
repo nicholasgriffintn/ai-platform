@@ -95,7 +95,7 @@ describe("VectorizeEmbeddingProvider", () => {
     it("should throw error for missing id", async () => {
       await expect(
         provider.generate("type", "content", "", {}),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
 
     it("should throw error when AI returns no data", async () => {
@@ -103,7 +103,7 @@ describe("VectorizeEmbeddingProvider", () => {
 
       await expect(
         provider.generate("article", "test content", "test-id", {}),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
 
     it("should handle AI API errors", async () => {

@@ -104,7 +104,7 @@ describe("generateArticlesReport", () => {
 
     await expect(
       generateArticlesReport({ ...mockParams, user: userWithoutId }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       generateArticlesReport({ ...mockParams, user: userWithoutId }),
@@ -116,7 +116,7 @@ describe("generateArticlesReport", () => {
 
     await expect(
       generateArticlesReport({ ...mockParams, args: argsWithoutItemId }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       generateArticlesReport({ ...mockParams, args: argsWithoutItemId }),

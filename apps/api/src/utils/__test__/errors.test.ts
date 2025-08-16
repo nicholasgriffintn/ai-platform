@@ -5,6 +5,8 @@ import { AssistantError, ErrorType, handleAIServiceError } from "../errors";
 vi.mock("../logger", () => ({
   getLogger: vi.fn(() => ({
     error: vi.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
   })),
 }));
 
@@ -21,7 +23,7 @@ describe("errors", () => {
       expect(error.type).toBe(ErrorType.NETWORK_ERROR);
       expect(error.name).toBe("AssistantError");
       expect(error.statusCode).toBe(500);
-      expect(error.context).toBeUndefined();
+      expect(error.context).toEqual({});
     });
 
     it("should create error with custom status code", () => {
@@ -60,8 +62,11 @@ describe("errors", () => {
       const json = error.toJSON();
 
       expect(json).toEqual({
+        name: "AssistantError",
         message: "Test error",
         type: ErrorType.AUTHENTICATION_ERROR,
+        statusCode: 401,
+        timestamp: expect.any(Number),
         context,
       });
     });
@@ -76,7 +81,10 @@ describe("errors", () => {
       expect(assistantError.message).toBe("Original error");
       expect(assistantError.type).toBe(ErrorType.PROVIDER_ERROR);
       expect(assistantError.statusCode).toBe(500);
-      expect(assistantError.context).toEqual({ originalError });
+      expect(assistantError.context).toEqual({
+        originalError: "Error",
+        stack: expect.any(String),
+      });
     });
 
     it("should create from existing error with default type", () => {
@@ -145,7 +153,7 @@ describe("errors", () => {
 
       const response = handleAIServiceError(error);
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(403);
     });
 
     it("should handle PARAMS_ERROR", () => {
@@ -186,7 +194,7 @@ describe("errors", () => {
 
       const response = handleAIServiceError(error);
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(502);
     });
 
     it("should handle EXTERNAL_API_ERROR", () => {
@@ -197,7 +205,7 @@ describe("errors", () => {
 
       const response = handleAIServiceError(error);
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(502);
     });
 
     it("should handle CONTEXT_WINDOW_EXCEEDED", () => {
@@ -272,7 +280,7 @@ describe("errors", () => {
 
       const response = handleAIServiceError(error);
 
-      expect(response.status).toBe(418);
+      expect(response.status).toBe(500);
     });
 
     it("should return JSON response with error message", async () => {
@@ -281,7 +289,11 @@ describe("errors", () => {
       const response = handleAIServiceError(error);
       const data = await response.json();
 
-      expect(data).toEqual({ error: "Test error" });
+      expect(data).toEqual({
+        error: "Invalid request parameters.",
+        details: undefined,
+        requestId: undefined,
+      });
     });
 
     it("should log errors for appropriate types", () => {

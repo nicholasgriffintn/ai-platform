@@ -114,12 +114,11 @@ describe("Magic Link Service", () => {
           "user@example.com",
           "https://example.com/magic",
         ),
-      ).rejects.toThrow(
-        new AssistantError(
-          "AWS SES configuration missing",
-          ErrorType.CONFIGURATION_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "AWS SES configuration missing",
+        type: ErrorType.CONFIGURATION_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should handle SES API errors", async () => {
@@ -261,12 +260,11 @@ describe("Magic Link Service", () => {
 
       await expect(
         verifyMagicLink(mockEnv, "invalid-token", "nonce"),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Invalid or expired token/nonce",
-          ErrorType.AUTHENTICATION_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Invalid or expired token/nonce",
+        type: ErrorType.AUTHENTICATION_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error for expired token", async () => {
@@ -280,12 +278,11 @@ describe("Magic Link Service", () => {
 
       await expect(
         verifyMagicLink(mockEnv, "expired-token", "nonce"),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Invalid or expired token/nonce",
-          ErrorType.AUTHENTICATION_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Invalid or expired token/nonce",
+        type: ErrorType.AUTHENTICATION_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error for invalid nonce", async () => {

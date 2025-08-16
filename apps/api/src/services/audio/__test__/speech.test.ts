@@ -84,9 +84,11 @@ describe("handleTextToSpeech", () => {
           input: "",
           user: mockUser,
         }),
-      ).rejects.toThrow(
-        new AssistantError("Missing input", ErrorType.PARAMS_ERROR),
-      );
+      ).rejects.toMatchObject({
+        message: "Missing input",
+        type: ErrorType.PARAMS_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error for input too long", async () => {
@@ -279,7 +281,7 @@ describe("handleTextToSpeech", () => {
           input: "test input",
           user: mockUser,
         }),
-      ).rejects.toThrow(
+      ).rejects.toMatchObject(
         new AssistantError("No response from the text-to-speech service"),
       );
     });
