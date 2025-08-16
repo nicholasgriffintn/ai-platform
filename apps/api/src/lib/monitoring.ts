@@ -1,6 +1,6 @@
 import type { AnalyticsEngineDataset } from "@cloudflare/workers-types";
 
-import { AssistantError } from "~/utils/errors";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
@@ -22,10 +22,6 @@ export class Monitoring {
   private analyticsEngine: AnalyticsEngineDataset;
 
   private constructor(analyticsEngine?: AnalyticsEngineDataset) {
-    if (!analyticsEngine) {
-      throw new AssistantError("Analytics Engine not configured");
-    }
-
     this.analyticsEngine = analyticsEngine;
   }
 
@@ -33,6 +29,12 @@ export class Monitoring {
     analyticsEngine?: AnalyticsEngineDataset,
   ): Monitoring {
     if (!Monitoring.instance) {
+      if (!analyticsEngine) {
+        throw new AssistantError(
+          "Analytics Engine not configured",
+          ErrorType.CONFIGURATION_ERROR,
+        );
+      }
       Monitoring.instance = new Monitoring(analyticsEngine);
     }
     return Monitoring.instance;
@@ -49,26 +51,10 @@ export class Monitoring {
       return;
     }
 
-    if (this.analyticsEngine) {
-      if (typeof this.analyticsEngine.writeDataPoint === "function") {
-        this.analyticsEngine.writeDataPoint({
-          blobs: [
-            metricWithTraceId.type,
-            metricWithTraceId.name,
-            metricWithTraceId.status,
-            metricWithTraceId.error || "None",
-            metricWithTraceId.traceId,
-            JSON.stringify(metricWithTraceId.metadata),
-          ],
-          doubles: [metricWithTraceId.value, metricWithTraceId.timestamp],
-          indexes: [metricWithTraceId.traceId],
-        });
-      } else {
-        logger.warn("Analytics engine does not have writeDataPoint method.", {
-          engine: this.analyticsEngine,
-        });
-      }
-    } else {
+    if (
+      !this.analyticsEngine ||
+      typeof this.analyticsEngine.writeDataPoint !== "function"
+    ) {
       logger.debug(
         `[Metric] ${metricWithTraceId.type}:${metricWithTraceId.name}`,
         JSON.stringify(
@@ -82,7 +68,21 @@ export class Monitoring {
           2,
         ),
       );
+      return;
     }
+
+    this.analyticsEngine.writeDataPoint({
+      blobs: [
+        metricWithTraceId.type,
+        metricWithTraceId.name,
+        metricWithTraceId.status,
+        metricWithTraceId.error || "None",
+        metricWithTraceId.traceId,
+        JSON.stringify(metricWithTraceId.metadata),
+      ],
+      doubles: [metricWithTraceId.value, metricWithTraceId.timestamp],
+      indexes: [metricWithTraceId.traceId],
+    });
   }
 
   private validateMetric(metric: Metric): boolean {
