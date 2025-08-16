@@ -153,6 +153,24 @@ npm run deploy:metrics
 
 ## API Documentation
 
+### Bedrock Nova multimodal (image-to-text)
+
+- Nova Lite and Nova Pro now support image understanding through the chat API.
+- Supported image formats: JPEG, PNG, GIF, WEBP. Max size: 25MB per image.
+- Example message format:
+
+```json
+{
+  "model": "amazon.nova-pro-v1:0",
+  "messages": [
+    { "role": "user", "content": [
+      { "type": "text", "text": "What is in this image?" },
+      { "type": "image_url", "image_url": { "url": "https://example.com/cat.png" } }
+    ]}
+  ]
+}
+```
+
 ### Authentication Flow
 
 1. User initiates login by visiting: `https://api.polychat.app/auth/github`

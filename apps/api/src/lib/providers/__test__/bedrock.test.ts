@@ -18,8 +18,14 @@ vi.mock("~/lib/models", () => ({
 }));
 
 vi.mock("~/utils/parameters", () => ({
-  createCommonParameters: vi.fn(),
-  getToolsForProvider: vi.fn(),
+  createCommonParameters: vi.fn().mockReturnValue({ temperature: 0.2, max_tokens: 1000, top_p: 1 }),
+  getToolsForProvider: vi.fn().mockReturnValue({ tools: [] }),
+}));
+
+vi.mock("~/lib/utils/imageProcessor", () => ({
+  fetchImageAsBase64: vi.fn(async () => "BASE64DATA"),
+  getImageFormat: vi.fn(() => "png"),
+  validateImageFormat: vi.fn(() => true),
 }));
 
 describe("BedrockProvider", () => {
@@ -75,6 +81,57 @@ describe("BedrockProvider", () => {
         height: 1280,
         numberOfImages: 1,
       });
+    });
+
+    it("should include image parts for image_url content blocks on supported models", async () => {
+      // @ts-ignore - getModelConfigByMatchingModel is not typed
+      vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+        name: "nova-pro",
+        type: ["text", "image-to-text"],
+        multimodal: true,
+        supportsAttachments: true,
+      });
+
+      const provider = new BedrockProvider();
+
+      const params = {
+        model: "amazon.nova-pro-v1:0",
+        env: { AI_GATEWAY_TOKEN: "test-token" },
+        messages: [
+          { role: "user", content: [
+            { type: "text", text: "What is in this image?" },
+            { type: "image_url", image_url: { url: "https://example.com/cat.png" } },
+          ] },
+        ],
+      } as any;
+
+      const mapped = await provider.mapParameters(params);
+      expect(mapped.messages[0].content.some((p: any) => p.image)).toBe(true);
+    });
+
+    it("should throw when image blocks are used with non-multimodal models", async () => {
+      // @ts-ignore - getModelConfigByMatchingModel is not typed
+      vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+        name: "text-only",
+        type: ["text"],
+        multimodal: false,
+      });
+
+      const provider = new BedrockProvider();
+      const params = {
+        model: "text-only",
+        env: { AI_GATEWAY_TOKEN: "test-token" },
+        messages: [
+          { role: "user", content: [
+            { type: "text", text: "Describe" },
+            { type: "image_url", image_url: { url: "https://example.com/cat.png" } },
+          ] },
+        ],
+      } as any;
+
+      await expect(provider.mapParameters(params)).rejects.toThrow(
+        /does not support image inputs/,
+      );
     });
   });
 
