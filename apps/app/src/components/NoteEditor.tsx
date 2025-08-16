@@ -108,7 +108,7 @@ export function NoteEditor({
           ? { tabSource: tabCapture.tabInfo }
           : {};
         const finalMetadata = { ...newMetadata, ...tabMetadata };
-        await onSave(title, content, finalMetadata, attachments);
+        await onSave(title, content, finalMetadata, attachmentsRef.current);
       } catch {
         toast.error("Failed to save metadata changes");
       } finally {
@@ -165,6 +165,7 @@ export function NoteEditor({
 
   const textRef = useRef(text);
   const lastSavedRef = useRef(lastSavedText);
+  const attachmentsRef = useRef(attachments);
 
   useEffect(() => {
     textRef.current = text;
@@ -173,6 +174,10 @@ export function NoteEditor({
   useEffect(() => {
     lastSavedRef.current = lastSavedText;
   }, [lastSavedText]);
+
+  useEffect(() => {
+    attachmentsRef.current = attachments;
+  }, [attachments]);
 
   const wordCount = getWordCount(text);
   const charCount = getCharCount(text);
@@ -197,7 +202,7 @@ export function NoteEditor({
             ? { tabSource: tabCapture.tabInfo }
             : {};
           const finalMetadata = { ...currentMetadata, ...tabMetadata };
-          await onSave(title, content, finalMetadata, attachments);
+          await onSave(title, content, finalMetadata, attachmentsRef.current);
           setLastSavedText(text);
         } catch {
           toast.error("Failed to save note");
@@ -213,7 +218,6 @@ export function NoteEditor({
     onSave,
     tabCapture.tabInfo,
     currentMetadata,
-    attachments,
   ]);
 
   useEffect(() => {
@@ -224,9 +228,33 @@ export function NoteEditor({
     setFontSize(initialFontSize);
   }, [initialFontSize]);
 
+  // Initialize attachments only when switching notes
   useEffect(() => {
     setAttachments(initialAttachments || []);
-  }, [initialAttachments]);
+  }, [noteId]);
+
+  // Save when attachments change (debounced), without resyncing from props to avoid loops
+  useEffect(() => {
+    if (!noteId) return;
+    const timeout = setTimeout(() => {
+      (async () => {
+        setIsSaving(true);
+        try {
+          const [title, content] = splitTitleAndContent(textRef.current);
+          const tabMetadata = tabCapture.tabInfo
+            ? { tabSource: tabCapture.tabInfo }
+            : {};
+          const finalMetadata = { ...currentMetadata, ...tabMetadata };
+          await onSave(title, content, finalMetadata, attachmentsRef.current);
+        } catch {
+          toast.error("Failed to save attachments");
+        } finally {
+          setIsSaving(false);
+        }
+      })();
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [attachments, noteId, onSave, currentMetadata, tabCapture.tabInfo]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -241,7 +269,7 @@ export function NoteEditor({
                 ? { tabSource: tabCapture.tabInfo }
                 : {};
               const finalMetadata = { ...currentMetadata, ...tabMetadata };
-              await onSave(title, content, finalMetadata, attachments);
+              await onSave(title, content, finalMetadata, attachmentsRef.current);
               setLastSavedText(textRef.current);
             } catch {
               toast.error("Failed to save note");
@@ -263,7 +291,6 @@ export function NoteEditor({
     onToggleFullBleed,
     tabCapture.tabInfo,
     currentMetadata,
-    attachments,
   ]);
 
   return (
@@ -369,10 +396,7 @@ export function NoteEditor({
               ) : (
                 <span className="flex items-center text-gray-500 dark:text-gray-400">
                   <VolumeX size={14} className="mr-1" />
-                  Silence{" "}
-                  {lastSilenceTime
-                    ? `(${Math.floor((Date.now() - lastSilenceTime) / 1000)}s)`
-                    : ""}
+                  Silence {lastSilenceTime ? `(${Math.floor((Date.now() - lastSilenceTime) / 1000)}s)` : ""}
                 </span>
               )}
             </div>
