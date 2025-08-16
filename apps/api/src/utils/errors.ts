@@ -23,91 +23,241 @@ export enum ErrorType {
   STORAGE_ERROR = "STORAGE_ERROR",
 }
 
+export interface ErrorContext {
+  userId?: string | number;
+  requestId?: string;
+  operation?: string;
+  resource?: string;
+  timestamp?: number;
+  [key: string]: any;
+}
+
 export class AssistantError extends Error {
   type: ErrorType;
   statusCode?: number;
-  context?: Record<string, any>;
+  context?: ErrorContext;
+  timestamp?: number;
 
   constructor(
     message: string,
     type: ErrorType = ErrorType.UNKNOWN_ERROR,
-    statusCode?: number,
-    context?: Record<string, any>,
+    statusCode = 500,
+    context: ErrorContext = {},
   ) {
     super(message);
     this.name = "AssistantError";
     this.type = type;
-    this.statusCode = statusCode || 500;
+    this.statusCode = statusCode;
     this.context = context;
+    this.timestamp = Date.now();
+
+    Error.captureStackTrace(this, AssistantError);
   }
 
-  static fromError(error: Error, type?: ErrorType): AssistantError {
+  static fromError(
+    error: Error,
+    type?: ErrorType,
+    context: ErrorContext = {},
+  ): AssistantError {
     return new AssistantError(
       error.message,
       type || ErrorType.UNKNOWN_ERROR,
       500,
-      { originalError: error },
+      {
+        ...context,
+        originalError: error.name,
+        stack: error.stack,
+      },
     );
   }
 
   toJSON() {
     return {
+      name: this.name,
       message: this.message,
       type: this.type,
+      statusCode: this.statusCode,
+      timestamp: this.timestamp,
       context: this.context,
     };
+  }
+
+  /**
+   * Get user-safe error message (strips sensitive information)
+   */
+  getUserMessage(): string {
+    const userSafeMessages: Partial<Record<ErrorType, string>> = {
+      [ErrorType.AUTHENTICATION_ERROR]:
+        "Authentication failed. Please check your credentials.",
+      [ErrorType.RATE_LIMIT_ERROR]: this.message,
+      [ErrorType.PARAMS_ERROR]: "Invalid request parameters.",
+      [ErrorType.NOT_FOUND]: "Requested resource not found.",
+      [ErrorType.FORBIDDEN]: "Access denied.",
+      [ErrorType.UNAUTHORIZED]: "Authentication required.",
+      [ErrorType.USAGE_LIMIT_ERROR]: this.message,
+      [ErrorType.CONFLICT_ERROR]: "Resource conflict occurred.",
+    };
+
+    return (
+      userSafeMessages[this.type] ||
+      "An internal error occurred. Please try again later."
+    );
   }
 }
 
 export function handleAIServiceError(error: AssistantError): Response {
+  const logContext = {
+    errorType: error.type,
+    statusCode: error.statusCode,
+    message: error.message,
+    context: error.context,
+    timestamp: error.timestamp,
+  };
+
   switch (error.type) {
     case ErrorType.CONFIGURATION_ERROR:
-      logger.error("Configuration error:", error.message);
-
-      return Response.json({ error: error.message }, { status: 500 });
-    case ErrorType.NETWORK_ERROR:
-      logger.error("Network error:", error.message, error.context);
-
-      return Response.json({ error: error.message }, { status: 500 });
-    case ErrorType.RATE_LIMIT_ERROR:
-      return Response.json({ error: error.message }, { status: 429 });
-    case ErrorType.AUTHENTICATION_ERROR:
-    case ErrorType.UNAUTHORIZED:
-    case ErrorType.FORBIDDEN:
-      return Response.json({ error: error.message }, { status: 401 });
-    case ErrorType.PARAMS_ERROR:
-      return Response.json({ error: error.message }, { status: 400 });
-    case ErrorType.NOT_FOUND:
-    case ErrorType.USER_NOT_FOUND:
-      return Response.json({ error: error.message }, { status: 404 });
-    case ErrorType.PROVIDER_ERROR:
-      logger.error("Provider error:", error.message, error.context);
-      return Response.json({ error: error.message }, { status: 500 });
-    case ErrorType.EXTERNAL_API_ERROR:
-      logger.error("External API error:", error.message, error.context);
-      return Response.json({ error: error.message }, { status: 500 });
-    case ErrorType.CONTEXT_WINDOW_EXCEEDED:
-      return Response.json({ error: error.message }, { status: 413 });
-    case ErrorType.EMAIL_SEND_FAILED:
-      logger.error("Email send failed:", error.message);
-      return Response.json({ error: error.message }, { status: 500 });
-    case ErrorType.INTERNAL_ERROR:
-      logger.error("Internal error:", error.message);
-      return Response.json({ error: error.message }, { status: 500 });
-    case ErrorType.USAGE_LIMIT_ERROR:
-      return Response.json({ error: error.message }, { status: 429 });
-    case ErrorType.CONFLICT_ERROR:
-      return Response.json({ error: error.message }, { status: 409 });
-    default:
-      logger.error(
-        `${error.type || "Unknown error"}:`,
-        error.message,
-        error.context,
-      );
+      logger.error("Configuration error occurred", logContext);
 
       return Response.json(
-        { error: error.message },
-        { status: error.statusCode },
+        {
+          error: "Service configuration error",
+          requestId: error.context.requestId,
+        },
+        { status: 500 },
+      );
+    case ErrorType.NETWORK_ERROR:
+      logger.error("Network error occurred", logContext);
+
+      return Response.json(
+        {
+          error: "Network connectivity issue",
+          requestId: error.context.requestId,
+        },
+        { status: 500 },
+      );
+    case ErrorType.RATE_LIMIT_ERROR:
+      logger.debug("Rate limit exceeded", logContext);
+
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          retryAfter: 60,
+          requestId: error.context.requestId,
+        },
+        { status: 429 },
+      );
+    case ErrorType.AUTHENTICATION_ERROR:
+    case ErrorType.UNAUTHORIZED:
+      logger.debug("Authentication error", logContext);
+
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          requestId: error.context.requestId,
+        },
+        { status: 401 },
+      );
+    case ErrorType.FORBIDDEN:
+      logger.debug("Authorization error", logContext);
+
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          requestId: error.context.requestId,
+        },
+        { status: 403 },
+      );
+    case ErrorType.PARAMS_ERROR:
+      logger.debug("Parameter validation error", logContext);
+
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          details: error.context.validationErrors,
+          requestId: error.context.requestId,
+        },
+        { status: 400 },
+      );
+    case ErrorType.NOT_FOUND:
+    case ErrorType.USER_NOT_FOUND:
+      logger.info("Resource not found", logContext);
+
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          requestId: error.context.requestId,
+        },
+        { status: 404 },
+      );
+    case ErrorType.CONFLICT_ERROR:
+      logger.debug("Resource conflict", logContext);
+
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          requestId: error.context.requestId,
+        },
+        { status: 409 },
+      );
+    case ErrorType.CONTEXT_WINDOW_EXCEEDED:
+      logger.debug("Context window exceeded", logContext);
+
+      return Response.json(
+        {
+          error: "Request too large. Please reduce the input size.",
+          requestId: error.context.requestId,
+        },
+        { status: 413 },
+      );
+    case ErrorType.USAGE_LIMIT_ERROR:
+      logger.debug("Usage limit exceeded", logContext);
+
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          requestId: error.context.requestId,
+        },
+        { status: 429 },
+      );
+    case ErrorType.PROVIDER_ERROR:
+    case ErrorType.EXTERNAL_API_ERROR:
+      logger.error("External service error", logContext);
+
+      return Response.json(
+        {
+          error: "External service temporarily unavailable",
+          requestId: error.context.requestId,
+        },
+        { status: 502 },
+      );
+    case ErrorType.EMAIL_SEND_FAILED:
+      logger.error("Email service error", logContext);
+
+      return Response.json(
+        {
+          error: "Email delivery failed",
+          requestId: error.context.requestId,
+        },
+        { status: 500 },
+      );
+    case ErrorType.STORAGE_ERROR:
+      logger.error("Storage service error", logContext);
+      return Response.json(
+        {
+          error: "Storage service temporarily unavailable",
+          requestId: error.context.requestId,
+        },
+        { status: 500 },
+      );
+    default:
+      logger.error("Unknown error occurred", logContext);
+
+      return Response.json(
+        {
+          error: "An unexpected error occurred",
+          requestId: error.context.requestId,
+        },
+        { status: 500 },
       );
   }
 }
