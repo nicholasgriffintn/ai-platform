@@ -2,6 +2,7 @@ import {
   Copy,
   Download,
   Hash,
+  Loader2,
   Maximize2,
   Mic,
   Minimize2,
@@ -10,6 +11,7 @@ import {
   Trash2,
   Volume2,
   VolumeX,
+  Zap,
   TvMinimalPlay,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -29,6 +31,7 @@ import {
 import { useGenerateNotesFromMedia } from "~/hooks/useNotes";
 import { useTabAudioCapture } from "~/hooks/useTabAudioCapture";
 import { useTranscription } from "~/hooks/useTranscription";
+import { useNoteFormatter } from "~/hooks/useNoteFormatter";
 import {
   formatTextWithSpacing,
   getCharCount,
@@ -114,7 +117,16 @@ export function NoteEditor({
     }
   };
 
-  // AI formatting modal removed
+  const {
+    isAIModalOpen,
+    setIsAIModalOpen,
+    aiPrompt,
+    setAIPrompt,
+    aiResult,
+    formatNoteMutation,
+    runFormat,
+    openFormatModal,
+  } = useNoteFormatter(noteId ?? "");
 
   const generateNotesMutation = useGenerateNotesFromMedia();
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
@@ -487,7 +499,19 @@ export function NoteEditor({
           >
             <TvMinimalPlay size={16} />
           </button>
-          {/* AI formatting button removed */}
+          <button
+            type="button"
+            disabled={!noteId}
+            onClick={openFormatModal}
+            aria-disabled={!noteId}
+            className={cn(
+              "p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+              !noteId && "opacity-50 cursor-not-allowed",
+            )}
+            aria-label="AI Assist"
+          >
+            <Zap size={16} />
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -803,7 +827,57 @@ export function NoteEditor({
         </DialogContent>
       </Dialog>
 
-      {/* AI formatting modal removed */}
+      <Dialog
+        open={isAIModalOpen}
+        onOpenChange={setIsAIModalOpen}
+        width="600px"
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>AI Formatting</DialogTitle>
+            <DialogDescription>
+              Review and re-prompt AI suggestions
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-2 space-y-4">
+            {formatNoteMutation.status === "idle" ? (
+              <>
+                <p className="text-sm">
+                  This feature restructures and refines your note for clarity
+                  and organization.
+                </p>
+                <p className="text-sm">
+                  Add additional instructions below, then click Run to format.
+                </p>
+              </>
+            ) : (
+              <div className="mb-4 h-48 border rounded">
+                {formatNoteMutation.status === "pending" ? (
+                  <div className="flex items-center justify-center h-full">
+                    <Loader2 className="animate-spin" />
+                  </div>
+                ) : (
+                  <pre className="p-3 whitespace-pre-wrap text-sm overflow-auto h-full">
+                    {aiResult}
+                  </pre>
+                )}
+              </div>
+            )}
+          </div>
+          <UITextarea
+            value={aiPrompt}
+            onChange={(e) => setAIPrompt(e.target.value)}
+            placeholder="Add optional instructions (e.g., tone, structure, emphasis)"
+            rows={5}
+          />
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setIsAIModalOpen(false)}>
+              Close
+            </Button>
+            <Button onClick={runFormat}>Run</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
