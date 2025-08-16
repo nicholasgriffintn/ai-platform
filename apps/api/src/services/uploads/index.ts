@@ -6,7 +6,6 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "UPLOADS_SERVICE" });
 
-// Hoisted extension to language map for code files so we can use it in validation and markdown formatting
 const CODE_EXTENSION_TO_LANG: Record<string, string> = {
   ts: "typescript",
   tsx: "tsx",
@@ -66,7 +65,6 @@ export async function handleFileUpload(
     );
   }
 
-  // Infer extension early so we can use it in validation
   const nameParts = file.name.split(".");
   const inferredExtension =
     nameParts.length > 1 ? nameParts.pop()!.toLowerCase() : "";
@@ -112,7 +110,6 @@ export async function handleFileUpload(
     ],
   };
 
-  // Validate content type, with special handling for octet-stream code files based on extension
   if (fileType === "code") {
     const isAllowedByMime = allowedMimeTypes.code.includes(file.type);
     const isOctetStreamWithKnownExtension =
