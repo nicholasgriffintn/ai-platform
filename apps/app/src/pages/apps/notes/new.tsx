@@ -27,6 +27,7 @@ export default function NewNotePage() {
       title: string,
       content: string,
       additionalMetadata?: Record<string, any>,
+      attachments?: any[],
     ) => {
       const metadata = {
         themeMode,
@@ -39,12 +40,18 @@ export default function NewNotePage() {
           title,
           content,
           metadata,
+          attachments,
         });
         setNoteId(note.id);
         return note.id;
       }
-      await updateMutation.mutateAsync({ title, content, metadata });
-      return noteId;
+      const updated = await updateMutation.mutateAsync({
+        title,
+        content,
+        metadata,
+        attachments,
+      });
+      return updated.id;
     },
     [noteId, createMutation, updateMutation, themeMode, fontFamily, fontSize],
   );
@@ -69,19 +76,7 @@ export default function NewNotePage() {
       <NoteEditor
         noteId={noteId}
         initialText=""
-        onSave={async (title, content, metadata, attachments) => {
-          const id = await handleSave(title, content, metadata);
-          if (!noteId) {
-            setNoteId(id);
-          }
-          await updateMutation.mutateAsync({
-            title,
-            content,
-            metadata,
-            attachments,
-          });
-          return id;
-        }}
+        onSave={handleSave}
         isFullBleed={isFullBleed}
         onToggleFullBleed={() => setIsFullBleed(!isFullBleed)}
         initialThemeMode={themeMode}

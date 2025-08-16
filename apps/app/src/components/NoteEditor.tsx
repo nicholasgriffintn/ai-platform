@@ -225,6 +225,10 @@ export function NoteEditor({
   }, [initialFontSize]);
 
   useEffect(() => {
+    setAttachments(initialAttachments || []);
+  }, [initialAttachments]);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.code === "KeyS") {
         e.preventDefault();

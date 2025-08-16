@@ -29,6 +29,7 @@ export default function NoteDetailPage() {
       title: string,
       content: string,
       additionalMetadata?: Record<string, any>,
+      attachments?: any[],
     ) => {
       const metadata = {
         themeMode,
@@ -36,12 +37,13 @@ export default function NoteDetailPage() {
         fontSize,
         ...additionalMetadata,
       };
-      const note = await updateMutation.mutateAsync({
+      const updated = await updateMutation.mutateAsync({
         title,
         content,
         metadata,
+        attachments,
       });
-      return note.id;
+      return updated.id;
     },
     [updateMutation, themeMode, fontFamily, fontSize],
   );
@@ -98,17 +100,7 @@ export default function NoteDetailPage() {
         initialText={initialText}
         initialMetadata={note.metadata}
         initialAttachments={note.attachments}
-        onSave={async (title, content, metadata, attachments) => {
-          const savedId = await handleSave(title, content, metadata);
-          // Update note with attachments after save
-          await updateMutation.mutateAsync({
-            title,
-            content,
-            metadata,
-            attachments,
-          });
-          return savedId;
-        }}
+        onSave={handleSave}
         onDelete={handleDelete}
         isFullBleed={isFullBleed}
         onToggleFullBleed={() => setIsFullBleed(!isFullBleed)}
