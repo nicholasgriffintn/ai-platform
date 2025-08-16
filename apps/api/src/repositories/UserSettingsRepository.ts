@@ -432,28 +432,30 @@ export class UserSettingsRepository extends BaseRepository {
     const alwaysEnabledProviders = this.env.ALWAYS_ENABLED_PROVIDERS || "";
     const defaultProviders = alwaysEnabledProviders?.split(",") || [];
 
-    await Promise.all(
-      providers.map(async (provider) => {
-        const existingSettings = await this.runQuery<{ id: string }>(
-          "SELECT id FROM provider_settings WHERE user_id = ? AND provider_id = ?",
-          [userId, provider],
-          true,
-        );
+    const stmts: { sql: string; params: any[] }[] = [];
+    for (const provider of providers) {
+      const existingSettings = await this.runQuery<{ id: string }>(
+        "SELECT id FROM provider_settings WHERE user_id = ? AND provider_id = ?",
+        [userId, provider],
+        true,
+      );
 
-        if (existingSettings) {
-          return;
-        }
+      if (existingSettings) {
+        continue;
+      }
 
-        const providerSettingsId = crypto.randomUUID();
+      const providerSettingsId = crypto.randomUUID();
+      const isEnabled = defaultProviders.includes(provider);
 
-        const isEnabled = defaultProviders.includes(provider);
+      stmts.push({
+        sql: "INSERT INTO provider_settings (id, user_id, provider_id, enabled) VALUES (?, ?, ?, ?)",
+        params: [providerSettingsId, userId, provider, isEnabled ? 1 : 0],
+      });
+    }
 
-        await this.executeRun(
-          "INSERT INTO provider_settings (id, user_id, provider_id, enabled) VALUES (?, ?, ?, ?)",
-          [providerSettingsId, userId, provider, isEnabled ? 1 : 0],
-        );
-      }),
-    );
+    if (stmts.length > 0) {
+      await this.executeBatch(stmts);
+    }
   }
 
   public async getUserProviderSettings(

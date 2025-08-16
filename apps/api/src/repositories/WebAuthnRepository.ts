@@ -17,17 +17,17 @@ export class WebAuthnRepository extends BaseRepository {
 
     try {
       if (userId) {
-        // Delete existing challenges for the user first
-        await this.executeRun(
-          "DELETE FROM webauthn_challenge WHERE user_id = ?",
-          [userId],
-        );
-        // Then insert the new challenge
-        await this.executeRun(
-          `INSERT INTO webauthn_challenge (user_id, challenge, expires_at)
+        await this.executeBatch([
+          {
+            sql: "DELETE FROM webauthn_challenge WHERE user_id = ?",
+            params: [userId],
+          },
+          {
+            sql: `INSERT INTO webauthn_challenge (user_id, challenge, expires_at)
            VALUES (?, ?, ?)`,
-          [userId, challenge, expiresAt.toISOString()],
-        );
+            params: [userId, challenge, expiresAt.toISOString()],
+          },
+        ]);
       } else {
         // Insert anonymous challenge
         await this.executeRun(
@@ -130,7 +130,7 @@ export class WebAuthnRepository extends BaseRepository {
     return this.runQuery<Record<string, unknown>>(
       "SELECT * FROM passkey WHERE user_id = ?",
       [userId],
-    );
+      );
   }
 
   public async getPasskeyByCredentialId(

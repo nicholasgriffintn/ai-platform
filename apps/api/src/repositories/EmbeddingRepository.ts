@@ -39,4 +39,22 @@ export class EmbeddingRepository extends BaseRepository {
       [id, JSON.stringify(metadata), title, content, type],
     );
   }
+
+  public async insertEmbeddingsBatch(
+    rows: Array<{
+      id: string;
+      metadata: Record<string, unknown>;
+      title: string;
+      content: string;
+      type: string;
+    }>,
+  ): Promise<void> {
+    if (!rows.length) return;
+    await this.executeBatch(
+      rows.map((r) => ({
+        sql: "INSERT INTO embedding (id, metadata, title, content, type) VALUES (?1, ?2, ?3, ?4, ?5)",
+        params: [r.id, JSON.stringify(r.metadata), r.title, r.content, r.type],
+      })),
+    );
+  }
 }

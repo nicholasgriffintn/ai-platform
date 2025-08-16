@@ -4,6 +4,11 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "BASE_REPOSITORY" });
 
+export interface BatchStatement {
+  sql: string;
+  params?: any[];
+}
+
 export class BaseRepository {
   protected env: IEnv;
 
@@ -97,6 +102,82 @@ export class BaseRepository {
         ErrorType.UNKNOWN_ERROR,
         500,
         { originalError: error },
+      );
+    }
+  }
+
+  // New: Execute multiple statements atomically using D1 batch API
+  public async executeBatch(
+    statements: BatchStatement[],
+  ): Promise<D1Result<unknown>[]> {
+    if (!this.env.DB) {
+      throw new AssistantError(
+        "DB is not configured in executeBatch",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    if (!Array.isArray(statements)) {
+      throw new AssistantError(
+        "Statements must be an array",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    if (statements.length === 0) {
+      return [];
+    }
+
+    try {
+      const prepared = statements.map(({ sql, params = [] }) =>
+        this.env.DB.prepare(sql).bind(...params),
+      );
+      const results = await this.env.DB.batch(prepared);
+
+      // Validate all succeeded
+      for (const res of results) {
+        if (!res?.success) {
+          throw new AssistantError(
+            "One or more statements in batch failed",
+            ErrorType.UNKNOWN_ERROR,
+            500,
+            { meta: res?.meta },
+          );
+        }
+      }
+
+      return results as D1Result<unknown>[];
+    } catch (error: any) {
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+      logger.error("Database batch execution error:", { error });
+      throw new AssistantError(
+        `Error executing database batch: ${error.message}`,
+        ErrorType.UNKNOWN_ERROR,
+        500,
+        { originalError: error },
+      );
+    }
+  }
+
+  // New: Helper to build and run a transactional batch
+  public async withTransaction(
+    factory: () => BatchStatement[] | Promise<BatchStatement[]>,
+  ): Promise<D1Result<unknown>[]> {
+    try {
+      const stmts = await factory();
+      return await this.executeBatch(stmts);
+    } catch (error) {
+      // Preserve error shape
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+      logger.error("withTransaction failed:", { error });
+      throw new AssistantError(
+        `Transaction failed: ${error instanceof Error ? error.message : String(error)}`,
+        ErrorType.UNKNOWN_ERROR,
+        500,
       );
     }
   }
