@@ -181,6 +181,27 @@ export class StreamingFormatter {
       };
     }
 
+    // Bedrock Nova style tool use start
+    // Example: { contentBlockIndex: 1, start: { toolUse: { name, toolUseId } } }
+    if (data.start?.toolUse && data.contentBlockIndex !== undefined) {
+      return {
+        format: "nova",
+        id: data.start.toolUse.toolUseId,
+        name: data.start.toolUse.name,
+        index: data.contentBlockIndex,
+      };
+    }
+
+    // Bedrock Nova style tool input delta
+    // Example: { contentBlockIndex: 1, delta: { toolUse: { input: "{...}" } } }
+    if (data.delta?.toolUse?.input && data.contentBlockIndex !== undefined) {
+      return {
+        format: "nova_delta",
+        index: data.contentBlockIndex,
+        partial_json: data.delta.toolUse.input || "",
+      };
+    }
+
     // Other direct tool_calls formats
     if (data.tool_calls) {
       return {
@@ -211,6 +232,12 @@ export class StreamingFormatter {
     const googleFinishReason =
       data.candidates?.[0]?.finishReason?.toLowerCase();
     if (googleFinishReason === "stop" || googleFinishReason === "length") {
+      return true;
+    }
+
+    // Bedrock format
+    const bedrockFinishReason = data.stopReason;
+    if (bedrockFinishReason === "stop" || bedrockFinishReason === "length") {
       return true;
     }
 
@@ -283,6 +310,54 @@ export class StreamingFormatter {
           groundingSupports: {},
         },
       };
+    }
+
+    return null;
+  }
+
+  /**
+   * Extract refusal information from a streaming chunk (OpenAI-like)
+   * Returns null when not present
+   */
+  static extractRefusalFromChunk(data: any): string | null {
+    // OpenAI streaming delta
+    const deltaRefusal = data?.choices?.[0]?.delta?.refusal;
+    if (typeof deltaRefusal === "string") {
+      return deltaRefusal;
+    }
+
+    // OpenAI non-delta message form in stream
+    const messageRefusal = data?.choices?.[0]?.message?.refusal;
+    if (typeof messageRefusal === "string") {
+      return messageRefusal;
+    }
+
+    // Direct refusal field
+    if (typeof data?.refusal === "string") {
+      return data.refusal;
+    }
+
+    return null;
+  }
+
+  /**
+   * Extract annotations information from a streaming chunk
+   * Returns null when not present
+   */
+  static extractAnnotationsFromChunk(data: any): unknown {
+    // OpenAI streaming delta
+    if (data?.choices?.[0]?.delta?.annotations !== undefined) {
+      return data.choices[0].delta.annotations;
+    }
+
+    // OpenAI non-delta message form
+    if (data?.choices?.[0]?.message?.annotations !== undefined) {
+      return data.choices[0].message.annotations;
+    }
+
+    // Direct field
+    if (data?.annotations !== undefined) {
+      return data.annotations;
     }
 
     return null;

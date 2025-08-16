@@ -614,4 +614,48 @@ describe("StreamingFormatter", () => {
       expect(result).toBeNull();
     });
   });
+
+  describe("extractRefusalFromChunk", () => {
+    it("should extract refusal from OpenAI delta", () => {
+      const data = {
+        choices: [{ delta: { refusal: "content_policy_violation" } }],
+      };
+      const result = StreamingFormatter.extractRefusalFromChunk(data);
+      expect(result).toBe("content_policy_violation");
+    });
+
+    it("should extract refusal from OpenAI message", () => {
+      const data = { choices: [{ message: { refusal: "blocked" } }] };
+      const result = StreamingFormatter.extractRefusalFromChunk(data);
+      expect(result).toBe("blocked");
+    });
+
+    it("should return null when refusal is missing", () => {
+      const data = { choices: [{ delta: { content: "hi" } }] };
+      const result = StreamingFormatter.extractRefusalFromChunk(data);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("extractAnnotationsFromChunk", () => {
+    it("should extract annotations from OpenAI delta", () => {
+      const data = {
+        choices: [{ delta: { annotations: [{ type: "citation" }] } }],
+      };
+      const result = StreamingFormatter.extractAnnotationsFromChunk(data);
+      expect(result).toEqual([{ type: "citation" }]);
+    });
+
+    it("should extract annotations from OpenAI message", () => {
+      const data = { choices: [{ message: { annotations: { key: "val" } } }] };
+      const result = StreamingFormatter.extractAnnotationsFromChunk(data);
+      expect(result).toEqual({ key: "val" });
+    });
+
+    it("should return null when annotations are missing", () => {
+      const data = { other: "field" };
+      const result = StreamingFormatter.extractAnnotationsFromChunk(data);
+      expect(result).toBeNull();
+    });
+  });
 });

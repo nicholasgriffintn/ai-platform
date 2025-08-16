@@ -248,6 +248,28 @@ export function formatToolCalls(provider: string, functions: any[]) {
     return [];
   }
 
+  if (provider === "bedrock") {
+    return functions
+      .map((func) => {
+        const parameters = func.parameters?.jsonSchema || func.parameters;
+        if (!parameters) {
+          logger.warn(`Missing parameters for function ${func.name}`);
+          return null;
+        }
+
+        return {
+          toolSpec: {
+            name: func.name,
+            description: func.description,
+            inputSchema: {
+              json: parameters,
+            },
+          },
+        };
+      })
+      .filter(Boolean);
+  }
+
   if (provider === "anthropic") {
     return functions
       .map((func) => {

@@ -35,6 +35,8 @@ export function formatAssistantMessage({
   id = generateId(),
   finish_reason = null,
   mode,
+  refusal = null,
+  annotations = null,
 }: Partial<AssistantMessageData>): AssistantMessageData {
   if (tool_calls && !Array.isArray(tool_calls)) {
     responseLogger.warn("Invalid tool_calls format, expected array", {
@@ -100,6 +102,8 @@ export function formatAssistantMessage({
     id,
     finish_reason: determinedFinishReason,
     mode,
+    refusal,
+    annotations,
   };
 }
 

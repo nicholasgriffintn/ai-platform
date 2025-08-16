@@ -125,6 +125,8 @@ export async function createStreamWithPostProcessing(
   const currentToolCalls: Record<string, any> = {};
   let isFirstContentChunk = true;
   let qwqThinkTagAdded = false;
+  let refusalData: string | null = null;
+  let annotationsData: any = null;
 
   const getFullContent = () => fullContentChunks.join("");
   const getFullThinking = () => fullThinkingChunks.join("");
@@ -201,7 +203,7 @@ export async function createStreamWithPostProcessing(
     }
   };
 
-  const guardrails = Guardrails.getInstance(env, user, userSettings);
+  const guardrails = new Guardrails(env, user, userSettings);
   const modelConfig = await getModelConfigByMatchingModel(model);
 
   return providerStream.pipeThrough(
@@ -416,6 +418,21 @@ export async function createStreamWithPostProcessing(
                     currentToolCalls[toolCallData.index].accumulatedInput +=
                       toolCallData.partial_json;
                   }
+                } else if (toolCallData.format === "nova") {
+                  currentToolCalls[toolCallData.index] = {
+                    id: toolCallData.id,
+                    name: toolCallData.name,
+                    accumulatedInput: "",
+                    isComplete: false,
+                  };
+                } else if (toolCallData.format === "nova_delta") {
+                  if (
+                    currentToolCalls[toolCallData.index] &&
+                    toolCallData.partial_json
+                  ) {
+                    currentToolCalls[toolCallData.index].accumulatedInput +=
+                      toolCallData.partial_json;
+                  }
                 } else if (toolCallData.format === "direct") {
                   toolCallsData = [...toolCallsData, ...toolCallData.toolCalls];
                 }
@@ -511,6 +528,18 @@ export async function createStreamWithPostProcessing(
                 StreamingFormatter.extractStructuredData(data);
               if (extractedStructuredData) {
                 structuredData = extractedStructuredData;
+              }
+
+              const refusalDelta =
+                StreamingFormatter.extractRefusalFromChunk(data);
+              if (typeof refusalDelta === "string") {
+                refusalData = refusalDelta;
+              }
+
+              const annotationsDelta =
+                StreamingFormatter.extractAnnotationsFromChunk(data);
+              if (annotationsDelta !== null && annotationsDelta !== undefined) {
+                annotationsData = annotationsDelta;
               }
 
               if (
@@ -643,6 +672,8 @@ export async function createStreamWithPostProcessing(
               timestamp: Date.now(),
               mode,
               finish_reason: toolCallsData.length > 0 ? "tool_calls" : "stop",
+              refusal: refusalData,
+              annotations: annotationsData,
             });
 
             await conversationManager.add(completion_id, {

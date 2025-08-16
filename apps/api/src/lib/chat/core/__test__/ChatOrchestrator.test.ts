@@ -57,9 +57,7 @@ vi.mock("~/lib/chat/tools", () => ({
 }));
 
 vi.mock("~/lib/guardrails", () => ({
-  Guardrails: {
-    getInstance: () => mockGuardrails,
-  },
+  Guardrails: vi.fn(() => mockGuardrails),
 }));
 
 vi.mock("~/utils/id", () => ({

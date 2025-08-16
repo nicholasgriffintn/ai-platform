@@ -31,6 +31,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     multimodal: true,
     includedInRouter: true,
     supportsDocuments: true,
+    supportsToolCalls: true,
   }),
 
   createModelConfig("nova-micro", PROVIDER, {
@@ -58,6 +59,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     speed: 5,
     multimodal: false,
     includedInRouter: true,
+    supportsToolCalls: true,
   }),
 
   createModelConfig("nova-pro", PROVIDER, {
@@ -85,6 +87,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     speed: 3,
     multimodal: true,
     supportsDocuments: true,
+    supportsToolCalls: true,
   }),
 
   createModelConfig("nova-canvas", PROVIDER, {

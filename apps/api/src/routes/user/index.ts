@@ -15,6 +15,7 @@ import {
   updateUserSettingsSchema,
 } from "../schemas/user";
 import apiKeys from "./apiKeys";
+import exportHistoryRoute from "./export-history";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("USER");
@@ -383,5 +384,6 @@ app.post(
 );
 
 app.route("/api-keys", apiKeys);
+app.route("/export-chat-history", exportHistoryRoute);
 
 export default app;
