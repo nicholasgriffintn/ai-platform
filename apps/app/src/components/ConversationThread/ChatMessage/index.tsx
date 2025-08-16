@@ -44,7 +44,7 @@ export const ChatMessage = ({
   isEditing?: boolean;
   onSaveEdit?: (newContent: string) => void;
   onCancelEdit?: () => void;
-  onBranch?: (messageId: string) => void;
+  onBranch?: (messageId: string, modelId?: string) => void;
   isBranching?: boolean;
 }) => {
   const { copied, copy } = useCopyToClipboard();

@@ -30,7 +30,7 @@ interface MessageListProps {
   ) => void;
   messages?: Message[];
   isSharedView?: boolean;
-  onBranch?: (messageId: string) => void;
+  onBranch?: (messageId: string, modelId?: string) => void;
   isBranching?: boolean;
 }
 

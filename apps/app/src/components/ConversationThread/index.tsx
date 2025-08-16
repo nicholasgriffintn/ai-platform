@@ -266,6 +266,13 @@ export const ConversationThread = () => {
     !isStreamLoading &&
     !streamStarted;
 
+  const handleBranch = useCallback(
+    (messageId: string, modelId?: string) => {
+      branchConversation(messageId, modelId);
+    },
+    [branchConversation],
+  );
+
   return (
     <div
       className={`flex flex-col h-[calc(100%-3rem)] w-full ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
@@ -281,7 +288,7 @@ export const ConversationThread = () => {
               messages={messages}
               onToolInteraction={handleToolInteraction}
               onArtifactOpen={handleArtifactOpen}
-              onBranch={branchConversation}
+              onBranch={handleBranch}
               isBranching={isBranching}
             />
           </div>

@@ -7,11 +7,12 @@ import {
   ThumbsDown,
   ThumbsUp,
 } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { Button } from "~/components/ui";
 import type { Message } from "~/types";
 import { MessageInfo } from "./MessageInfo";
+import { BranchModelSelector } from "../BranchModelSelector";
 
 interface MessageActionsProps {
   message: Message;
@@ -25,7 +26,7 @@ interface MessageActionsProps {
   isRetrying?: boolean;
   onEdit?: () => void;
   isEditing?: boolean;
-  onBranch?: (messageId: string) => void;
+  onBranch?: (messageId: string, modelId?: string) => void;
   isBranching?: boolean;
 }
 
@@ -44,8 +45,29 @@ export const MessageActions = ({
   onBranch,
   isBranching = false,
 }: MessageActionsProps) => {
-  const handleBranch = useCallback(() => {
-    if (onBranch) {
+  const [showBranchModelDialog, setShowBranchModelDialog] = useState(false);
+  const didSelectRef = useRef(false);
+
+  const handleOpenBranchDialog = useCallback(() => {
+    if (!onBranch) return;
+    didSelectRef.current = false;
+    setShowBranchModelDialog(true);
+  }, [onBranch]);
+
+  const handleModelSelected = useCallback(
+    (modelId: string) => {
+      didSelectRef.current = true;
+      setShowBranchModelDialog(false);
+      if (onBranch) {
+        onBranch(message.id, modelId);
+      }
+    },
+    [onBranch, message.id],
+  );
+
+  const handleDialogClose = useCallback(() => {
+    setShowBranchModelDialog(false);
+    if (!didSelectRef.current && onBranch) {
       onBranch(message.id);
     }
   }, [onBranch, message.id]);
@@ -100,19 +122,28 @@ export const MessageActions = ({
           </Button>
         )}
         {message.role === "user" && onBranch && !isSharedView && (
-          <Button
-            type="button"
-            variant="icon"
-            onClick={handleBranch}
-            disabled={isBranching}
-            className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
-              isBranching ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            title={isBranching ? "Branching..." : "Branch conversation"}
-            aria-label={isBranching ? "Branching..." : "Branch conversation"}
-          >
-            <GitBranch size={14} />
-          </Button>
+          <>
+            <Button
+              type="button"
+              variant="icon"
+              onClick={handleOpenBranchDialog}
+              disabled={isBranching}
+              className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
+                isBranching ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              title={isBranching ? "Branching..." : "Branch conversation"}
+              aria-label={isBranching ? "Branching..." : "Branch conversation"}
+            >
+              <GitBranch size={14} />
+            </Button>
+            {showBranchModelDialog && (
+              <BranchModelSelector
+                isOpen={showBranchModelDialog}
+                onClose={handleDialogClose}
+                onModelSelect={handleModelSelected}
+              />
+            )}
+          </>
         )}
         {message.role !== "user" && (message.created || message.timestamp) && (
           <MessageInfo
@@ -125,9 +156,7 @@ export const MessageActions = ({
       </div>
       {!isSharedView && message.role !== "user" && message.log_id && (
         <div className="flex items-center space-x-1">
-          <span className="text-xs text-zinc-600 dark:text-zinc-300">
-            Helpful?
-          </span>
+          <span className="text-xs text-zinc-600 dark:text-zinc-300">Helpful?</span>
           <Button
             type="button"
             variant="icon"
@@ -142,12 +171,8 @@ export const MessageActions = ({
                 ? "opacity-50 cursor-not-allowed"
                 : ""
             }`}
-            title={
-              feedbackState === "liked" ? "Feedback submitted" : "Thumbs up"
-            }
-            aria-label={
-              feedbackState === "liked" ? "Feedback submitted" : "Thumbs up"
-            }
+            title={feedbackState === "liked" ? "Feedback submitted" : "Thumbs up"}
+            aria-label={feedbackState === "liked" ? "Feedback submitted" : "Thumbs up"}
           >
             <ThumbsUp size={14} />
           </Button>
@@ -166,14 +191,10 @@ export const MessageActions = ({
                 : ""
             }`}
             title={
-              feedbackState === "disliked"
-                ? "Feedback submitted"
-                : "Thumbs down"
+              feedbackState === "disliked" ? "Feedback submitted" : "Thumbs down"
             }
             aria-label={
-              feedbackState === "disliked"
-                ? "Feedback submitted"
-                : "Thumbs down"
+              feedbackState === "disliked" ? "Feedback submitted" : "Thumbs down"
             }
           >
             <ThumbsDown size={14} />
