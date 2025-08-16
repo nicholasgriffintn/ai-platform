@@ -400,6 +400,36 @@ describe("handleFileUpload", () => {
       expect(result.markdown).toContain("```python");
       expect(result.markdown).toContain("print('hi')");
     });
+
+    it("should accept application/octet-stream for code with known extension and wrap", async () => {
+      const file = new File(["console.log('ok')"], "app.js", {
+        type: "application/octet-stream",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "code");
+
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
+
+      const result = await handleFileUpload(mockEnv, 1, formData);
+
+      expect(result.type).toBe("markdown_document");
+      expect(result.markdown).toContain("```javascript");
+      expect(result.markdown).toContain("console.log('ok')");
+    });
+
+    it("should reject application/octet-stream for code with unknown extension", async () => {
+      const file = new File(["some content"], "file.unknownext", {
+        type: "application/octet-stream",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "code");
+
+      await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+        "Invalid file type application/octet-stream",
+      );
+    });
   });
 
   describe("error handling", () => {
