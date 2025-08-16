@@ -5,6 +5,9 @@ import { describeRoute, openAPISpecs } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
+import { z } from "zod";
+
+import packageJson from "../package.json";
 import {
   API_LOCAL_HOST,
   API_PROD_HOST,
@@ -133,7 +136,7 @@ app.get(
 app.get(
   "/status",
   describeRoute({
-    description: "Check if the API is running",
+    description: "Check if the API is running with optional health information",
     responses: {
       200: {
         description: "API is running",
@@ -143,9 +146,103 @@ app.get(
           },
         },
       },
+      503: {
+        description: "API is unhealthy",
+        content: {
+          "application/json": {
+            schema: resolver(statusResponseSchema),
+          },
+        },
+      },
     },
   }),
-  (c) => c.json({ status: "ok" }),
+  zValidator(
+    "query",
+    z.object({
+      detailed: z.enum(["true", "false"]).optional().default("false"),
+    }),
+  ),
+  async (c) => {
+    const query = c.req.query();
+
+    if (query.detailed !== "true") {
+      const response = {
+        status: "ok",
+        timestamp: new Date().toISOString(),
+        version: packageJson.version,
+        environment: c.env.ENV || "unknown",
+      };
+
+      return c.json(response);
+    }
+
+    const startTime = Date.now();
+    const healthChecks: Record<
+      string,
+      { status: string; responseTime?: number; error?: string }
+    > = {};
+
+    try {
+      const dbStart = Date.now();
+      await c.env.DB.prepare("SELECT 1").first();
+      healthChecks.database = {
+        status: "healthy",
+        responseTime: Date.now() - dbStart,
+      };
+    } catch (error) {
+      healthChecks.database = {
+        status: "unhealthy",
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+
+    try {
+      if (c.env.CACHE) {
+        const cacheStart = Date.now();
+        await c.env.CACHE.get("health-check");
+        healthChecks.cache = {
+          status: "healthy",
+          responseTime: Date.now() - cacheStart,
+        };
+      } else {
+        healthChecks.cache = {
+          status: "not_configured",
+        };
+      }
+    } catch (error) {
+      healthChecks.cache = {
+        status: "unhealthy",
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+
+    if (c.env.FREE_RATE_LIMITER && c.env.PRO_RATE_LIMITER) {
+      healthChecks.rateLimiter = {
+        status: "configured",
+      };
+    } else {
+      healthChecks.rateLimiter = {
+        status: "not_configured",
+      };
+    }
+
+    const totalResponseTime = Date.now() - startTime;
+    const allHealthy = Object.values(healthChecks).every(
+      (check) =>
+        check.status === "healthy" || check.status === "not_configured",
+    );
+
+    const response = {
+      status: allHealthy ? "ok" : "degraded",
+      timestamp: new Date().toISOString(),
+      version: packageJson.version,
+      responseTime: totalResponseTime,
+      checks: healthChecks,
+      environment: c.env.ENV || "unknown",
+    };
+
+    return c.json(response, allHealthy ? 200 : 503);
+  },
 );
 
 app.get(
