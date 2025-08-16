@@ -101,7 +101,9 @@ export const useFileUpload = (
         const acceptedTypes = accept.split(",").map((type) => type.trim());
         const fileType = file instanceof File ? file.type || "" : file.type;
         const fileExtension = `.${
-          file instanceof File ? file.name.split(".").pop() : file.name.split(".").pop()
+          file instanceof File
+            ? file.name.split(".").pop()
+            : file.name.split(".").pop()
         }`;
 
         const isAccepted = acceptedTypes.some((type) => {
@@ -112,7 +114,6 @@ export const useFileUpload = (
             const baseType = type.split("/")[0];
             return fileType.startsWith(`${baseType}/`);
           }
-          // If the file reports text/plain but an accepted extension matches, allow it
           if (fileType === "text/plain" && type.startsWith(".")) {
             return fileExtension.toLowerCase() === type.toLowerCase();
           }

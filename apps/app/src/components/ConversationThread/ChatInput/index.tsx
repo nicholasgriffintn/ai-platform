@@ -212,12 +212,13 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           return;
         }
 
-        // Code files (typescript/javascript and common source types)
         const codeLike =
           file.type.startsWith("text/") ||
           file.type === "application/javascript" ||
           file.type === "application/typescript" ||
-          file.name.match(/\.(ts|tsx|js|jsx|json|py|go|java|rb|php|rs|cs|kt|swift|scala|sh|yml|yaml|sql|toml|c|cc|cpp|cxx|hpp|h)$/i);
+          file.name.match(
+            /\.(ts|tsx|js|jsx|json|py|go|java|rb|php|rs|cs|kt|swift|scala|sh|yml|yaml|sql|toml|c|cc|cpp|cxx|hpp|h)$/i,
+          );
 
         if (codeLike && supportsDocuments) {
           const { url, name, markdown, type } = await apiService.uploadFile(
@@ -314,10 +315,11 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       let fileTypes =
         "text/html,application/xml,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroenabled.12,application/vnd.ms-excel.sheet.binary.macroenabled.12,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet,text/csv,application/vnd.apple.numbers,application/pdf";
 
-      // Code files support when documents are supported
       if (supportsDocuments) {
-        fileTypes += ",.ts,.tsx,.js,.jsx,.json,.py,.go,.java,.rb,.php,.rs,.cs,.kt,.swift,.scala,.sh,.yml,.yaml,.sql,.toml,.c,.cc,.cpp,.cxx,.hpp,.h";
-        fileTypes += ",text/javascript,application/javascript,text/typescript,application/typescript,text/plain,application/json";
+        fileTypes +=
+          ",.ts,.tsx,.js,.jsx,.json,.py,.go,.java,.rb,.php,.rs,.cs,.kt,.swift,.scala,.sh,.yml,.yaml,.sql,.toml,.c,.cc,.cpp,.cxx,.hpp,.h";
+        fileTypes +=
+          ",text/javascript,application/javascript,text/typescript,application/typescript,text/plain,application/json";
       }
 
       if (isMultimodalModel) {
@@ -349,7 +351,11 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         );
       }
       if (supportsDocuments) {
-        return supportsCode ? <FileCode className="h-4 w-4" /> : <File className="h-4 w-4" />;
+        return supportsCode ? (
+          <FileCode className="h-4 w-4" />
+        ) : (
+          <File className="h-4 w-4" />
+        );
       }
 
       return <Paperclip className="h-4 w-4" />;
@@ -393,7 +399,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       return { preview: null, label: "" };
     };
 
-    // Disable upload UI for pure text-to-image only models
     const canUploadFiles = !isTextToImageOnlyModel;
 
     const { preview, label } = selectedAttachment

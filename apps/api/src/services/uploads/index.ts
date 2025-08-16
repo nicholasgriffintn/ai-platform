@@ -51,18 +51,14 @@ export async function handleFileUpload(
     ],
     audio: ["audio/mpeg", "audio/wav", "audio/mp3", "audio/x-wav", "audio/mp4"],
     code: [
-      // JavaScript/TypeScript
       "text/javascript",
       "application/javascript",
       "text/typescript",
       "application/typescript",
-      // Many browsers default to text/plain for source files
       "text/plain",
-      // JSON/YAML and other common text-based config/code formats
       "application/json",
       "text/yaml",
       "application/x-yaml",
-      // Other common languages (best-effort; browsers often report text/plain)
       "text/x-python",
       "application/x-python",
       "text/x-go",
@@ -87,9 +83,8 @@ export async function handleFileUpload(
     );
   }
 
-  // Enforce size limits for specific categories
   if (fileType === "code") {
-    const maxCodeSizeBytes = 200 * 1024; // 200KB
+    const maxCodeSizeBytes = 200 * 1024;
     if (file.size > maxCodeSizeBytes) {
       throw new AssistantError(
         "Code files must be 200KB or smaller",
@@ -104,11 +99,12 @@ export async function handleFileUpload(
   const shouldConvert =
     fileType === "document" && (!isPdf || convertFlag === "true");
 
-  // Determine file extension
   const nameParts = file.name.split(".");
-  const inferredExtension = nameParts.length > 1 ? nameParts.pop()!.toLowerCase() : "";
+  const inferredExtension =
+    nameParts.length > 1 ? nameParts.pop()!.toLowerCase() : "";
   const mimeExtension = (file.type.split("/")[1] || "").toLowerCase();
-  const fileExtension = fileType === "code" ? (inferredExtension || mimeExtension) : mimeExtension;
+  const fileExtension =
+    fileType === "code" ? inferredExtension || mimeExtension : mimeExtension;
   const key = `uploads/${userId}/${fileType}s/${crypto.randomUUID()}.${fileExtension}`;
 
   let arrayBuffer: ArrayBuffer;
@@ -180,7 +176,6 @@ export async function handleFileUpload(
     }
   }
 
-  // For code files, read as text and wrap in markdown fences
   if (fileType === "code") {
     try {
       const rawText = await file.text();
@@ -220,7 +215,6 @@ export async function handleFileUpload(
       logger.error("Failed to read code file as text", {
         error: err instanceof Error ? err.message : String(err),
       });
-      // If reading as text fails, we still return without markdown
     }
   }
 
