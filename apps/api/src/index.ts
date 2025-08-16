@@ -133,7 +133,7 @@ app.get(
 app.get(
   "/status",
   describeRoute({
-    description: "Check if the API is running",
+    description: "Check if the API is running with detailed health information",
     responses: {
       200: {
         description: "API is running",
@@ -143,9 +143,91 @@ app.get(
           },
         },
       },
+      503: {
+        description: "API is unhealthy",
+        content: {
+          "application/json": {
+            schema: resolver(statusResponseSchema),
+          },
+        },
+      },
     },
   }),
-  (c) => c.json({ status: "ok" }),
+  async (c) => {
+    const startTime = Date.now();
+    const healthChecks: Record<string, { status: string; responseTime?: number; error?: string }> = {};
+
+    // Database health check
+    try {
+      const dbStart = Date.now();
+      await c.env.DB.prepare("SELECT 1").first();
+      healthChecks.database = {
+        status: "healthy",
+        responseTime: Date.now() - dbStart,
+      };
+    } catch (error) {
+      healthChecks.database = {
+        status: "unhealthy",
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+
+    // Cache health check
+    try {
+      if (c.env.CACHE) {
+        const cacheStart = Date.now();
+        await c.env.CACHE.get("health-check");
+        healthChecks.cache = {
+          status: "healthy",
+          responseTime: Date.now() - cacheStart,
+        };
+      } else {
+        healthChecks.cache = {
+          status: "not_configured",
+        };
+      }
+    } catch (error) {
+      healthChecks.cache = {
+        status: "unhealthy",
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+
+    // Rate limiter health check
+    try {
+      if (c.env.FREE_RATE_LIMITER && c.env.PRO_RATE_LIMITER) {
+        healthChecks.rateLimiter = {
+          status: "healthy",
+        };
+      } else {
+        healthChecks.rateLimiter = {
+          status: "not_configured",
+        };
+      }
+    } catch (error) {
+      healthChecks.rateLimiter = {
+        status: "unhealthy",
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+
+    const totalResponseTime = Date.now() - startTime;
+    const allHealthy = Object.values(healthChecks).every(
+      check => check.status === "healthy" || check.status === "not_configured"
+    );
+
+    const response = {
+      status: allHealthy ? "ok" : "degraded",
+      timestamp: new Date().toISOString(),
+      version: "0.0.1",
+      uptime: process.uptime?.() || 0,
+      responseTime: totalResponseTime,
+      checks: healthChecks,
+      environment: c.env.NODE_ENV || "unknown",
+    };
+
+    return c.json(response, allHealthy ? 200 : 503);
+  },
 );
 
 app.get(

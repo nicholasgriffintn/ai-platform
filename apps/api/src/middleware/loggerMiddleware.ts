@@ -2,12 +2,13 @@ import type { Context, Next } from "hono";
 
 import type { IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
+import { generateId } from "~/utils/id";
 
 const logger = getLogger({ prefix: "HTTP" });
 
 /**
  * Middleware that logs request and response details
- * Includes timing information and customizable log level
+ * Includes timing information, request IDs, and customizable log level
  * @param c - The context of the request
  * @param next - The next middleware function
  * @returns The next middleware function
@@ -16,41 +17,74 @@ export const loggerMiddleware = async (c: Context, next: Next) => {
   const method = c.req.method;
   const url = c.req.url;
   const userAgent = c.req.header("user-agent") || "unknown";
+  const ipAddress = c.req.header("CF-Connecting-IP") || 
+                   c.req.header("X-Forwarded-For") || 
+                   c.req.header("X-Real-IP") || 
+                   "unknown";
+
+  // Generate unique request ID for tracing
+  const requestId = c.req.header("x-request-id") || generateId();
+  c.set("requestId", requestId);
 
   const user = c.get("user") as IUser | undefined;
   const userId = user?.id;
 
   const startTime = Date.now();
-  logger.info(`Request started: ${method} ${url}`, {
+  
+  const requestContext = {
+    requestId,
     method,
     url,
     userId,
-  });
+    ipAddress,
+    userAgent: userAgent.substring(0, 200), // Truncate long user agents
+  };
+
+  logger.info(`Request started: ${method} ${url}`, requestContext);
 
   try {
     await next();
 
     const duration = Date.now() - startTime;
+    const responseSize = c.res.headers.get("content-length");
 
-    logger.info(`Request completed: ${method} ${url}`, {
-      method,
-      url,
+    const responseContext = {
+      ...requestContext,
       status: c.res.status,
       duration: `${duration}ms`,
-      userId,
-    });
+      responseSize: responseSize ? `${responseSize} bytes` : undefined,
+    };
+
+    // Log different levels based on status code
+    if (c.res.status >= 500) {
+      logger.error(`Request completed with server error: ${method} ${url}`, responseContext);
+    } else if (c.res.status >= 400) {
+      logger.warn(`Request completed with client error: ${method} ${url}`, responseContext);
+    } else if (duration > 5000) {
+      logger.warn(`Slow request completed: ${method} ${url}`, responseContext);
+    } else {
+      logger.info(`Request completed: ${method} ${url}`, responseContext);
+    }
+
+    // Add request ID to response headers for client-side tracing
+    c.res.headers.set("x-request-id", requestId);
+    
   } catch (error) {
     const duration = Date.now() - startTime;
 
-    logger.error(`Request failed: ${method} ${url}`, {
-      method,
-      url,
+    const errorContext = {
+      ...requestContext,
       error: error instanceof Error ? error.message : String(error),
       duration: `${duration}ms`,
-      userId,
-      userAgent,
-      stack: error instanceof Error ? error.stack : "No stack trace",
-    });
+      stack: error instanceof Error ? error.stack?.substring(0, 1000) : "No stack trace",
+    };
+
+    logger.error(`Request failed: ${method} ${url}`, errorContext);
+
+    // Ensure request ID is included in error responses
+    if (error instanceof Error) {
+      (error as any).requestId = requestId;
+    }
 
     throw error;
   }

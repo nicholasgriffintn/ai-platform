@@ -103,18 +103,63 @@ export class KVCache {
     }
   }
 
+  /**
+   * Batch cache operations for better performance
+   */
+  async batchGet<T>(keys: string[]): Promise<Map<string, T | null>> {
+    const results = new Map<string, T | null>();
+    
+    try {
+      // D1 doesn't support batch operations, so we'll use Promise.all for parallel requests
+      const promises = keys.map(async (key) => {
+        const value = await this.get<T>(key);
+        return { key, value };
+      });
+      
+      const resolved = await Promise.all(promises);
+      resolved.forEach(({ key, value }) => {
+        results.set(key, value);
+      });
+    } catch (error) {
+      logger.error("Failed to batch get cache keys", { keys, error });
+    }
+    
+    return results;
+  }
+
+  /**
+   * Invalidate cache keys by pattern
+   */
+  async invalidatePattern(pattern: string): Promise<void> {
+    try {
+      // For KV, we need to maintain a list of keys to support pattern invalidation
+      const listKey = `_cache_keys:${pattern.replace('*', '')}`;
+      const keyList = await this.get<string[]>(listKey) || [];
+      
+      const deletePromises = keyList
+        .filter(key => this.matchesPattern(key, pattern))
+        .map(key => this.delete(key));
+        
+      await Promise.all(deletePromises);
+      
+      // Update the key list
+      const remainingKeys = keyList.filter(key => !this.matchesPattern(key, pattern));
+      await this.set(listKey, remainingKeys, { ttl: 86400 });
+      
+    } catch (error) {
+      logger.error("Failed to invalidate cache pattern", { pattern, error });
+    }
+  }
+
+  private matchesPattern(key: string, pattern: string): boolean {
+    const regex = new RegExp(pattern.replace('*', '.*'));
+    return regex.test(key);
+  }
+
   async clearUserModelCache(userId: string): Promise<boolean> {
     try {
-      const userModelKey = KVCache.createKey("user-models", userId);
-      const providerSettingsKey = KVCache.createKey(
-        "user-provider-settings",
-        userId,
-      );
-      await Promise.all([
-        this.kv.delete(userModelKey),
-        this.kv.delete(providerSettingsKey),
-      ]);
-      logger.info("Cleared user model cache", { userId, key: userModelKey });
+      const userCachePattern = `user-models:${userId}*`;
+      await this.invalidatePattern(userCachePattern);
       return true;
     } catch (error) {
       logger.error("Failed to clear user model cache", { userId, error });

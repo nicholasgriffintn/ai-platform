@@ -82,21 +82,28 @@ export class ConversationRepository extends BaseRepository {
     const total = countResult?.total || 0;
     const totalPages = Math.ceil(total / limit);
 
+    // Optimized query using LEFT JOIN instead of subquery for better performance
     const listQuery = includeArchived
       ? `
         SELECT c.*, 
-        (SELECT GROUP_CONCAT(m.id) FROM message m WHERE m.conversation_id = c.id) as messages
+        COUNT(m.id) as message_count,
+        MAX(m.created_at) as last_message_at
         FROM conversation c
+        LEFT JOIN message m ON c.id = m.conversation_id
         WHERE c.user_id = ?
-        ORDER BY c.updated_at DESC
+        GROUP BY c.id
+        ORDER BY COALESCE(MAX(m.created_at), c.updated_at) DESC
         LIMIT ? OFFSET ?
       `
       : `
         SELECT c.*, 
-        (SELECT GROUP_CONCAT(m.id) FROM message m WHERE m.conversation_id = c.id) as messages
+        COUNT(m.id) as message_count,
+        MAX(m.created_at) as last_message_at
         FROM conversation c
+        LEFT JOIN message m ON c.id = m.conversation_id
         WHERE c.user_id = ? AND c.is_archived = 0
-        ORDER BY c.updated_at DESC
+        GROUP BY c.id
+        ORDER BY COALESCE(MAX(m.created_at), c.updated_at) DESC
         LIMIT ? OFFSET ?
       `;
 

@@ -21,11 +21,7 @@ export class Monitoring {
   private static instance: Monitoring;
   private analyticsEngine: AnalyticsEngineDataset;
 
-  private constructor(analyticsEngine?: AnalyticsEngineDataset) {
-    if (!analyticsEngine) {
-      throw new AssistantError("Analytics Engine not configured");
-    }
-
+  constructor(analyticsEngine: AnalyticsEngineDataset) {
     this.analyticsEngine = analyticsEngine;
   }
 
@@ -33,66 +29,151 @@ export class Monitoring {
     analyticsEngine?: AnalyticsEngineDataset,
   ): Monitoring {
     if (!Monitoring.instance) {
+      if (!analyticsEngine) {
+        throw new AssistantError(
+          "Analytics Engine not configured",
+          ErrorType.CONFIGURATION_ERROR,
+        );
+      }
       Monitoring.instance = new Monitoring(analyticsEngine);
     }
     return Monitoring.instance;
   }
 
-  public recordMetric(metric: Metric): void {
-    const metricWithTraceId = {
-      ...metric,
-      traceId: metric.traceId || generateId(),
-    };
-
-    if (!this.validateMetric(metricWithTraceId)) {
-      logger.warn("Invalid metric structure:", { metric: metricWithTraceId });
-      return;
-    }
-
-    if (this.analyticsEngine) {
-      if (typeof this.analyticsEngine.writeDataPoint === "function") {
-        this.analyticsEngine.writeDataPoint({
-          blobs: [
-            metricWithTraceId.type,
-            metricWithTraceId.name,
-            metricWithTraceId.status,
-            metricWithTraceId.error || "None",
-            metricWithTraceId.traceId,
-            JSON.stringify(metricWithTraceId.metadata),
-          ],
-          doubles: [metricWithTraceId.value, metricWithTraceId.timestamp],
-          indexes: [metricWithTraceId.traceId],
-        });
-      } else {
-        logger.warn("Analytics engine does not have writeDataPoint method.", {
-          engine: this.analyticsEngine,
-        });
-      }
-    } else {
-      logger.debug(
-        `[Metric] ${metricWithTraceId.type}:${metricWithTraceId.name}`,
-        JSON.stringify(
-          {
-            value: metricWithTraceId.value,
-            status: metricWithTraceId.status,
-            metadata: metricWithTraceId.metadata,
-            error: metricWithTraceId.error || "",
-          },
-          null,
-          2,
-        ),
-      );
+  public async recordMetric(
+    metricName: string,
+    value: number,
+    labels: Record<string, string> = {},
+  ): Promise<void> {
+    try {
+      await this.analyticsEngine.writeDataPoint({
+        blobs: [metricName],
+        doubles: [value],
+        indexes: [labels.userId || "anonymous"],
+      });
+    } catch (error) {
+      logger.error("Failed to record metric", {
+        metricName,
+        value,
+        labels,
+        error,
+      });
     }
   }
 
-  private validateMetric(metric: Metric): boolean {
-    return (
-      typeof metric.traceId === "string" &&
-      typeof metric.timestamp === "number" &&
-      ["performance", "error", "usage", "guardrail"].includes(metric.type) &&
-      typeof metric.name === "string" &&
-      typeof metric.value === "number"
-    );
+  /**
+   * Track database query performance
+   */
+  public async trackQueryPerformance(
+    query: string,
+    duration: number,
+    success: boolean,
+    userId?: string,
+  ): Promise<void> {
+    const queryType = this.extractQueryType(query);
+    
+    await this.recordMetric("db_query_duration", duration, {
+      queryType,
+      success: success.toString(),
+      userId: userId || "anonymous",
+    });
+
+    // Track slow queries separately
+    if (duration > 1000) {
+      await this.recordMetric("db_slow_query", duration, {
+        queryType,
+        userId: userId || "anonymous",
+      });
+    }
+  }
+
+  /**
+   * Track API endpoint performance
+   */
+  public async trackEndpointPerformance(
+    endpoint: string,
+    method: string,
+    duration: number,
+    statusCode: number,
+    userId?: string,
+  ): Promise<void> {
+    await this.recordMetric("api_request_duration", duration, {
+      endpoint,
+      method,
+      statusCode: statusCode.toString(),
+      userId: userId || "anonymous",
+    });
+
+    // Track errors separately
+    if (statusCode >= 400) {
+      await this.recordMetric("api_error", 1, {
+        endpoint,
+        method,
+        statusCode: statusCode.toString(),
+        userId: userId || "anonymous",
+      });
+    }
+  }
+
+  /**
+   * Track cache hit/miss rates
+   */
+  public async trackCacheMetrics(
+    cacheKey: string,
+    hit: boolean,
+    duration?: number,
+  ): Promise<void> {
+    await this.recordMetric("cache_operation", 1, {
+      operation: hit ? "hit" : "miss",
+      keyType: this.extractCacheKeyType(cacheKey),
+    });
+
+    if (duration) {
+      await this.recordMetric("cache_operation_duration", duration, {
+        operation: hit ? "hit" : "miss",
+        keyType: this.extractCacheKeyType(cacheKey),
+      });
+    }
+  }
+
+  /**
+   * Track external API calls
+   */
+  public async trackExternalApiCall(
+    provider: string,
+    endpoint: string,
+    duration: number,
+    success: boolean,
+    userId?: string,
+  ): Promise<void> {
+    await this.recordMetric("external_api_duration", duration, {
+      provider,
+      endpoint,
+      success: success.toString(),
+      userId: userId || "anonymous",
+    });
+
+    if (!success) {
+      await this.recordMetric("external_api_error", 1, {
+        provider,
+        endpoint,
+        userId: userId || "anonymous",
+      });
+    }
+  }
+
+  private extractQueryType(query: string): string {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (normalizedQuery.startsWith("select")) return "SELECT";
+    if (normalizedQuery.startsWith("insert")) return "INSERT";
+    if (normalizedQuery.startsWith("update")) return "UPDATE";
+    if (normalizedQuery.startsWith("delete")) return "DELETE";
+    return "OTHER";
+  }
+
+  private extractCacheKeyType(key: string): string {
+    const parts = key.split(":");
+    return parts[0] || "unknown";
   }
 }
 
@@ -311,4 +392,56 @@ export function trackModelRoutingMetrics<T>(
       });
       throw error;
     });
+}
+
+// Enhanced tracking functions
+export async function trackQueryPerformance(
+  query: string,
+  duration: number,
+  success: boolean,
+  analyticsEngine?: AnalyticsEngineDataset,
+  userId?: string,
+): Promise<void> {
+  if (!analyticsEngine) return;
+  
+  try {
+    const monitoring = Monitoring.getInstance(analyticsEngine);
+    await monitoring.trackQueryPerformance(query, duration, success, userId);
+  } catch (error) {
+    logger.error("Failed to track query performance", { error });
+  }
+}
+
+export async function trackEndpointPerformance(
+  endpoint: string,
+  method: string,
+  duration: number,
+  statusCode: number,
+  analyticsEngine?: AnalyticsEngineDataset,
+  userId?: string,
+): Promise<void> {
+  if (!analyticsEngine) return;
+  
+  try {
+    const monitoring = Monitoring.getInstance(analyticsEngine);
+    await monitoring.trackEndpointPerformance(endpoint, method, duration, statusCode, userId);
+  } catch (error) {
+    logger.error("Failed to track endpoint performance", { error });
+  }
+}
+
+export async function trackCacheMetrics(
+  cacheKey: string,
+  hit: boolean,
+  duration?: number,
+  analyticsEngine?: AnalyticsEngineDataset,
+): Promise<void> {
+  if (!analyticsEngine) return;
+  
+  try {
+    const monitoring = Monitoring.getInstance(analyticsEngine);
+    await monitoring.trackCacheMetrics(cacheKey, hit, duration);
+  } catch (error) {
+    logger.error("Failed to track cache metrics", { error });
+  }
 }
