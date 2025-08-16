@@ -63,6 +63,7 @@ interface NoteEditorProps {
   onFontFamilyChange?: (fontFamily: string) => void;
   initialFontSize?: number;
   onFontSizeChange?: (fontSize: number) => void;
+  showAIFormatting?: boolean;
 }
 
 export function NoteEditor({
@@ -80,6 +81,7 @@ export function NoteEditor({
   onFontFamilyChange,
   initialFontSize = 25,
   onFontSizeChange,
+  showAIFormatting = false,
 }: NoteEditorProps) {
   const [text, setText] = useState<string>(initialText);
   const [fontFamily, setFontFamily] = useState<string>(initialFontFamily);
@@ -166,6 +168,9 @@ export function NoteEditor({
   const textRef = useRef(text);
   const lastSavedRef = useRef(lastSavedText);
   const attachmentsRef = useRef(attachments);
+  const lastSavedAttachmentsRef = useRef<string>(
+    JSON.stringify(initialAttachments || []),
+  );
 
   useEffect(() => {
     textRef.current = text;
@@ -204,6 +209,9 @@ export function NoteEditor({
           const finalMetadata = { ...currentMetadata, ...tabMetadata };
           await onSave(title, content, finalMetadata, attachmentsRef.current);
           setLastSavedText(text);
+          lastSavedAttachmentsRef.current = JSON.stringify(
+            attachmentsRef.current || [],
+          );
         } catch {
           toast.error("Failed to save note");
         } finally {
@@ -231,11 +239,16 @@ export function NoteEditor({
   // Initialize attachments only when switching notes
   useEffect(() => {
     setAttachments(initialAttachments || []);
+    lastSavedAttachmentsRef.current = JSON.stringify(
+      initialAttachments || [],
+    );
   }, [noteId]);
 
-  // Save when attachments change (debounced), without resyncing from props to avoid loops
+  // Save when attachments actually change (deep compare), debounced
   useEffect(() => {
     if (!noteId) return;
+    const serialized = JSON.stringify(attachmentsRef.current || []);
+    if (serialized === lastSavedAttachmentsRef.current) return;
     const timeout = setTimeout(() => {
       (async () => {
         setIsSaving(true);
@@ -246,6 +259,7 @@ export function NoteEditor({
             : {};
           const finalMetadata = { ...currentMetadata, ...tabMetadata };
           await onSave(title, content, finalMetadata, attachmentsRef.current);
+          lastSavedAttachmentsRef.current = serialized;
         } catch {
           toast.error("Failed to save attachments");
         } finally {
@@ -269,8 +283,16 @@ export function NoteEditor({
                 ? { tabSource: tabCapture.tabInfo }
                 : {};
               const finalMetadata = { ...currentMetadata, ...tabMetadata };
-              await onSave(title, content, finalMetadata, attachmentsRef.current);
+              await onSave(
+                title,
+                content,
+                finalMetadata,
+                attachmentsRef.current,
+              );
               setLastSavedText(textRef.current);
+              lastSavedAttachmentsRef.current = JSON.stringify(
+                attachmentsRef.current || [],
+              );
             } catch {
               toast.error("Failed to save note");
             } finally {
@@ -479,19 +501,21 @@ export function NoteEditor({
           >
             <TvMinimalPlay size={16} />
           </button>
-          <button
-            type="button"
-            disabled={!noteId}
-            onClick={openFormatModal}
-            aria-disabled={!noteId}
-            className={cn(
-              "p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-offset-2",
-              !noteId && "opacity-50 cursor-not-allowed",
-            )}
-            aria-label="AI Assist"
-          >
-            <Zap size={16} />
-          </button>
+          {showAIFormatting && (
+            <button
+              type="button"
+              disabled={!noteId}
+              onClick={openFormatModal}
+              aria-disabled={!noteId}
+              className={cn(
+                "p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+                !noteId && "opacity-50 cursor-not-allowed",
+              )}
+              aria-label="AI Assist"
+            >
+              <Zap size={16} />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {
@@ -807,57 +831,59 @@ export function NoteEditor({
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={isAIModalOpen}
-        onOpenChange={setIsAIModalOpen}
-        width="600px"
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>AI Formatting</DialogTitle>
-            <DialogDescription>
-              Review and re-prompt AI suggestions
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-2 space-y-4">
-            {formatNoteMutation.status === "idle" ? (
-              <>
-                <p className="text-sm">
-                  This feature restructures and refines your note for clarity
-                  and organization.
-                </p>
-                <p className="text-sm">
-                  Add additional instructions below, then click Run to format.
-                </p>
-              </>
-            ) : (
-              <div className="mb-4 h-48 border rounded">
-                {formatNoteMutation.status === "pending" ? (
-                  <div className="flex items-center justify-center h-full">
-                    <Loader2 className="animate-spin" />
-                  </div>
-                ) : (
-                  <pre className="p-3 whitespace-pre-wrap text-sm overflow-auto h-full">
-                    {aiResult}
-                  </pre>
-                )}
-              </div>
-            )}
-          </div>
-          <UITextarea
-            value={aiPrompt}
-            onChange={(e) => setAIPrompt(e.target.value)}
-            placeholder="Add optional instructions (e.g., tone, structure, emphasis)"
-            rows={5}
-          />
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setIsAIModalOpen(false)}>
-              Close
-            </Button>
-            <Button onClick={runFormat}>Run</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {showAIFormatting && (
+        <Dialog
+          open={isAIModalOpen}
+          onOpenChange={setIsAIModalOpen}
+          width="600px"
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>AI Formatting</DialogTitle>
+              <DialogDescription>
+                Review and re-prompt AI suggestions
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-2 space-y-4">
+              {formatNoteMutation.status === "idle" ? (
+                <>
+                  <p className="text-sm">
+                    This feature restructures and refines your note for clarity
+                    and organization.
+                  </p>
+                  <p className="text-sm">
+                    Add additional instructions below, then click Run to format.
+                  </p>
+                </>
+              ) : (
+                <div className="mb-4 h-48 border rounded">
+                  {formatNoteMutation.status === "pending" ? (
+                    <div className="flex items-center justify-center h-full">
+                      <Loader2 className="animate-spin" />
+                    </div>
+                  ) : (
+                    <pre className="p-3 whitespace-pre-wrap text-sm overflow-auto h-full">
+                      {aiResult}
+                    </pre>
+                  )}
+                </div>
+              )}
+            </div>
+            <UITextarea
+              value={aiPrompt}
+              onChange={(e) => setAIPrompt(e.target.value)}
+              placeholder="Add optional instructions (e.g., tone, structure, emphasis)"
+              rows={5}
+            />
+            <DialogFooter>
+              <Button variant="secondary" onClick={() => setIsAIModalOpen(false)}>
+                Close
+              </Button>
+              <Button onClick={runFormat}>Run</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
