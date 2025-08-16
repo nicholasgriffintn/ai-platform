@@ -7,6 +7,7 @@
     "dev": "react-router dev",
     "dev:scan": "pnpm dev & npx react-scan@latest localhost:5173",
     "build": "pnpm run typecheck && react-router build",
+    "build:analyze": "pnpm run build && open dist/stats.html",
     "start": "wrangler dev",
     "watch": "react-router build --watch",
     "typecheck": "react-router typegen && tsc -b",
@@ -17,7 +18,10 @@
     "deploy": "pnpm run build && wrangler deploy --minify",
     "sync": "npx cap sync",
     "test": "vitest run",
-    "coverage": "vitest run --coverage"
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "coverage": "vitest run --coverage",
+    "coverage:open": "vitest run --coverage && open coverage/index.html"
   },
   "dependencies": {
     "@babel/standalone": "^7.26.10",

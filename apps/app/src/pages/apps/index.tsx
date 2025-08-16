@@ -1,22 +1,31 @@
-import type { FC } from "react";
-
-import { DynamicApps } from "~/components/Apps";
+import { Suspense, lazy } from "react";
 import { PageShell } from "~/components/Core/PageShell";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { LoadingSpinner } from "~/components/LoadingSpinner";
+
+// Lazy load the DynamicApps component
+const DynamicApps = lazy(() => 
+  import("~/components/Apps").then(module => ({ default: module.DynamicApps }))
+);
 
 export function meta() {
-  return [
-    { title: "Apps - Polychat" },
-    { name: "description", content: "Apps for Polychat" },
-  ];
+  return {
+    title: "Apps",
+    description: "Explore and run dynamic applications",
+  };
 }
 
-const DynamicAppsRoute: FC = () => {
+export default function AppsPage() {
   return (
-    <PageShell sidebarContent={<StandardSidebarContent />} isBeta={true}>
-      <DynamicApps />
+    <PageShell title="Apps" fullBleed>
+      <Suspense 
+        fallback={
+          <div className="flex items-center justify-center min-h-96">
+            <LoadingSpinner message="Loading apps..." />
+          </div>
+        }
+      >
+        <DynamicApps />
+      </Suspense>
     </PageShell>
   );
-};
-
-export default DynamicAppsRoute;
+}

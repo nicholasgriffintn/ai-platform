@@ -1,5 +1,12 @@
 import { GitBranch, Loader2, MessagesSquare } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  memo,
+} from "react";
 import { VList, type VListHandle } from "virtua";
 
 import { useChat } from "~/hooks/useChat";
@@ -34,14 +41,14 @@ interface MessageListProps {
   isBranching?: boolean;
 }
 
-export const MessageList = ({
+export const MessageList = memo<MessageListProps>(({
   onToolInteraction,
   onArtifactOpen,
   messages: propMessages,
   isSharedView = false,
   onBranch,
   isBranching = false,
-}: MessageListProps) => {
+}) => {
   const { currentConversationId, isAuthenticated, setCurrentConversationId } =
     useChatStore();
 
@@ -58,7 +65,10 @@ export const MessageList = ({
     stopEditingMessage,
   } = useChatManager();
 
-  const messages = propMessages || conversation?.messages || [];
+  const messages = useMemo(() => 
+    propMessages || conversation?.messages || [],
+    [propMessages, conversation?.messages]
+  );
 
   const isStreamLoading = useIsLoading("stream-response");
   const isModelInitializing = useIsLoading("model-init");
@@ -90,16 +100,86 @@ export const MessageList = ({
 
   // show/hide the "scroll to bottom" button when user scrolls up
   const [showScroll, setShowScroll] = useState(false);
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     const v = virtualRef.current;
-    if (!v) {
-      setShowScroll(false);
-      return;
+    if (!v) return;
+    const scrollTop = v.scrollOffset;
+    const scrollHeight = v.scrollSize;
+    const clientHeight = v.viewportSize;
+    setShowScroll(scrollTop < scrollHeight - clientHeight - 100);
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    if (virtualRef.current && messages.length > 0) {
+      virtualRef.current.scrollToIndex(messages.length - 1, { align: "end" });
     }
-    const { scrollSize, scrollOffset, viewportSize } = v;
-    const distance = scrollSize - (scrollOffset + viewportSize);
-    setShowScroll(distance > 100);
-  };
+  }, [messages.length]);
+
+  const handleRetryMessage = useCallback((messageId: string) => {
+    retryMessage(messageId);
+  }, [retryMessage]);
+
+  const handleUpdateUserMessage = useCallback((messageId: string, content: string) => {
+    updateUserMessage(messageId, content);
+  }, [updateUserMessage]);
+
+  const handleStartEditingMessage = useCallback((messageId: string) => {
+    startEditingMessage(messageId);
+  }, [startEditingMessage]);
+
+  const handleStopEditingMessage = useCallback(() => {
+    stopEditingMessage();
+  }, [stopEditingMessage]);
+
+  const handleBranch = useCallback((messageId: string) => {
+    onBranch?.(messageId);
+  }, [onBranch]);
+
+  const renderMessage = useCallback((index: number) => {
+    const message = messages[index];
+    if (!message) return null;
+
+    return (
+      <ChatMessage
+        key={message.id}
+        conversationId={currentConversationId}
+        message={message}
+        onToolInteraction={onToolInteraction}
+        onArtifactOpen={onArtifactOpen}
+        onRetry={handleRetryMessage}
+        isRetrying={streamStarted}
+        onEdit={
+          message.id
+            ? () => handleStartEditingMessage(message.id!)
+            : undefined
+        }
+        isEditing={editingMessageId === message.id}
+        onSaveEdit={(newContent) => {
+          if (message.id) {
+            handleUpdateUserMessage(message.id, newContent);
+            handleStopEditingMessage();
+          }
+        }}
+        onCancelEdit={handleStopEditingMessage}
+        onBranch={handleBranch}
+        isBranching={isBranching}
+      />
+    );
+  }, [
+    messages,
+    onToolInteraction,
+    onArtifactOpen,
+    handleRetryMessage,
+    handleUpdateUserMessage,
+    handleStartEditingMessage,
+    handleStopEditingMessage,
+    handleBranch,
+    editingMessageId,
+    isBranching,
+    isSharedView,
+    isAuthenticated,
+    setCurrentConversationId,
+  ]);
 
   return (
     <div
@@ -162,30 +242,7 @@ export const MessageList = ({
                 key={`${message.id || index}-${index}`}
                 className={index > 0 ? "mt-4" : ""}
               >
-                <ChatMessage
-                  conversationId={currentConversationId}
-                  message={message}
-                  onToolInteraction={onToolInteraction}
-                  onArtifactOpen={onArtifactOpen}
-                  isSharedView={isSharedView}
-                  onRetry={retryMessage}
-                  isRetrying={streamStarted}
-                  onEdit={
-                    message.id
-                      ? () => startEditingMessage(message.id!)
-                      : undefined
-                  }
-                  isEditing={editingMessageId === message.id}
-                  onSaveEdit={(newContent) => {
-                    if (message.id) {
-                      updateUserMessage(message.id, newContent);
-                      stopEditingMessage();
-                    }
-                  }}
-                  onCancelEdit={stopEditingMessage}
-                  onBranch={onBranch}
-                  isBranching={isBranching}
-                />
+                {renderMessage(index)}
               </div>
             ))}
             {!isSharedView && (isStreamLoading || streamStarted) && (
@@ -211,14 +268,10 @@ export const MessageList = ({
       {showScroll && !isSharedView && (
         <div className="absolute bottom-2 right-2 z-10">
           <ScrollButton
-            onClick={() =>
-              virtualRef.current?.scrollToIndex(messages.length - 1, {
-                align: "end",
-              })
-            }
+            onClick={scrollToBottom}
           />
         </div>
       )}
     </div>
   );
-};
+});
