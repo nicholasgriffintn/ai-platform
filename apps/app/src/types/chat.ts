@@ -60,7 +60,7 @@ export interface MessageContent {
 }
 
 export interface Attachment {
-  type: "image" | "document" | "audio";
+  type: "image" | "document" | "audio" | "code" | "markdown_document";
   url: string;
   detail?: "low" | "high";
   name?: string;
