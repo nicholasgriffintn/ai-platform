@@ -104,17 +104,25 @@ export function trackUsageMetric(
   const monitor = Monitoring.getInstance(analyticsEngine);
   const traceId = userId?.toString() || generateId();
 
-  monitor.recordMetric({
-    traceId,
-    timestamp: Date.now(),
-    type: "usage",
-    name: name || "user_usage",
-    value: 1,
-    metadata: {
+  try {
+    monitor.recordMetric({
+      traceId,
+      timestamp: Date.now(),
+      type: "usage",
+      name: name || "user_usage",
+      value: 1,
+      metadata: {
+        userId,
+      },
+      status: "success",
+    });
+  } catch (error) {
+    logger.error("Failed to track usage metric", {
+      error,
       userId,
-    },
-    status: "success",
-  });
+      name,
+    });
+  }
 }
 
 export function trackProviderMetrics<T>({
