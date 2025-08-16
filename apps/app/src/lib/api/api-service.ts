@@ -782,7 +782,7 @@ class ApiService {
         typeof errorData === "object" &&
         errorData !== null &&
         "error" in errorData
-          ? String((errorData as any).error)
+          ? String(errorData.error)
           : response.statusText;
       throw new Error(`Failed to upload file: ${errorMessage}`);
     }
