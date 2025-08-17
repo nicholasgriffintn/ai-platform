@@ -926,7 +926,7 @@ export function useChatManager() {
   }, []);
 
   const branchConversation = useCallback(
-    async (messageId: string) => {
+    async (messageId: string, selectedModelId?: string) => {
       const conversation = queryClient.getQueryData<Conversation>([
         CHATS_QUERY_KEY,
         currentConversationId || "",
@@ -978,7 +978,8 @@ export function useChatManager() {
 
         if (shouldStore) {
           const normalizedMessages = messagesUpToPoint.map(normalizeMessage);
-          const modelToSend = model === null ? undefined : model;
+          const modelToSend =
+            selectedModelId || (model === null ? undefined : model);
 
           const chatSettingsWithMetadata = {
             ...chatSettings,
@@ -987,6 +988,8 @@ export function useChatManager() {
 
           let lastContent = "";
           let lastReasoning = "";
+
+          setCurrentConversationId(newConversationId);
 
           await apiService.streamChatCompletions(
             newConversationId,
@@ -1036,8 +1039,6 @@ export function useChatManager() {
             }
           }, 0);
         }
-
-        setCurrentConversationId(newConversationId);
 
         toast.success("Conversation branched successfully!");
       } catch (error) {

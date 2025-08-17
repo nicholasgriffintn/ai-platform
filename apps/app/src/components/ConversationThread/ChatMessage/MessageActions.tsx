@@ -7,11 +7,12 @@ import {
   ThumbsDown,
   ThumbsUp,
 } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 import { Button } from "~/components/ui";
 import type { Message } from "~/types";
 import { MessageInfo } from "./MessageInfo";
+import { InlineModelSelector } from "../InlineModelSelector";
 
 interface MessageActionsProps {
   message: Message;
@@ -25,7 +26,7 @@ interface MessageActionsProps {
   isRetrying?: boolean;
   onEdit?: () => void;
   isEditing?: boolean;
-  onBranch?: (messageId: string) => void;
+  onBranch?: (messageId: string, modelId?: string) => void;
   isBranching?: boolean;
 }
 
@@ -44,11 +45,28 @@ export const MessageActions = ({
   onBranch,
   isBranching = false,
 }: MessageActionsProps) => {
-  const handleBranch = useCallback(() => {
-    if (onBranch) {
-      onBranch(message.id);
+  const [showBranchModelSelector, setShowBranchModelSelector] = useState(false);
+
+  const handleBranchClick = useCallback(() => {
+    if (!onBranch) {
+      return;
     }
-  }, [onBranch, message.id]);
+    setShowBranchModelSelector(true);
+  }, [onBranch]);
+
+  const handleModelSelected = useCallback(
+    (modelId: string) => {
+      setShowBranchModelSelector(false);
+      if (onBranch) {
+        onBranch(message.id, modelId);
+      }
+    },
+    [onBranch, message.id],
+  );
+
+  const handleCancelModelSelection = useCallback(() => {
+    setShowBranchModelSelector(false);
+  }, []);
 
   return (
     <div className="flex flex-wrap justify-end items-center gap-2">
@@ -100,19 +118,29 @@ export const MessageActions = ({
           </Button>
         )}
         {message.role === "user" && onBranch && !isSharedView && (
-          <Button
-            type="button"
-            variant="icon"
-            onClick={handleBranch}
-            disabled={isBranching}
-            className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
-              isBranching ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            title={isBranching ? "Branching..." : "Branch conversation"}
-            aria-label={isBranching ? "Branching..." : "Branch conversation"}
-          >
-            <GitBranch size={14} />
-          </Button>
+          <div className="relative flex items-center">
+            <Button
+              type="button"
+              variant="icon"
+              onClick={handleBranchClick}
+              disabled={isBranching}
+              className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
+                isBranching ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              title={isBranching ? "Branching..." : "Branch conversation"}
+              aria-label={isBranching ? "Branching..." : "Branch conversation"}
+            >
+              <GitBranch size={14} />
+            </Button>
+            {showBranchModelSelector && (
+              <div className="absolute top-full right-0 mt-1 z-50">
+                <InlineModelSelector
+                  onModelSelect={handleModelSelected}
+                  onCancel={handleCancelModelSelection}
+                />
+              </div>
+            )}
+          </div>
         )}
         {message.role !== "user" && (message.created || message.timestamp) && (
           <MessageInfo

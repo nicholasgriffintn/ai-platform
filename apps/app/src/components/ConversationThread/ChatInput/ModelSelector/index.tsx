@@ -36,12 +36,14 @@ interface ModelSelectorProps {
   isDisabled?: boolean;
   minimal?: boolean;
   mono?: boolean;
+  featuredOnly?: boolean;
 }
 
 export const ModelSelector = ({
   isDisabled,
   minimal = false,
   mono = false,
+  featuredOnly = false,
 }: ModelSelectorProps) => {
   const { trackEvent } = useTrackEvent();
   const { isMobile } = useUIStore();
@@ -100,10 +102,18 @@ export const ModelSelector = ({
   );
   const featuredModelIds = getFeaturedModelIds(availableModels);
 
-  const filteredModels =
+  const baseFilteredModels =
     chatMode === "agent"
       ? functionModels
       : getModelsByMode(availableModels, chatMode);
+
+  const filteredModels = featuredOnly
+    ? Object.fromEntries(
+        Object.entries(baseFilteredModels).filter(([id]) =>
+          Boolean(featuredModelIds[id]),
+        ),
+      )
+    : baseFilteredModels;
 
   useEffect(() => {
     if (searchQuery || selectedCapability) {
@@ -259,7 +269,9 @@ export const ModelSelector = ({
   };
 
   const filteredFeaturedModels = filterModels(groupedFeaturedModels);
-  const filteredOtherModels = filterModels(groupedOtherModels);
+  const filteredOtherModels = featuredOnly
+    ? ({} as Record<string, ModelConfigItem[]>)
+    : filterModels(groupedOtherModels);
 
   const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
   const isModelLockedByAgent = selectedAgent?.model;
