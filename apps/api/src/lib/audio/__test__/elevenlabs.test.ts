@@ -133,12 +133,11 @@ describe("ElevenLabsService", () => {
           mockStorageService as any,
           slug,
         ),
-      ).rejects.toThrow(
-        new AssistantError(
-          "No audio data in ElevenLabs response",
-          ErrorType.PROVIDER_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "No audio data in ElevenLabs response",
+        type: ErrorType.PROVIDER_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should handle provider errors", async () => {

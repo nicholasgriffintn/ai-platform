@@ -134,12 +134,11 @@ describe("User Service", () => {
     it("should handle database errors", async () => {
       mockDatabase.getUserSettings.mockRejectedValue(new Error("DB error"));
 
-      await expect(getUserSettings(mockDatabase, 123)).rejects.toThrow(
-        new AssistantError(
-          "Failed to retrieve user settings",
-          ErrorType.UNKNOWN_ERROR,
-        ),
-      );
+      await expect(getUserSettings(mockDatabase, 123)).rejects.toMatchObject({
+        message: "Failed to retrieve user settings",
+        type: ErrorType.UNKNOWN_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 

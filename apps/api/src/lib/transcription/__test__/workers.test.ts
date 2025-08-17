@@ -129,9 +129,11 @@ describe("WorkersTranscriptionProvider", () => {
           audio: mockAudio,
           user: mockUser,
         }),
-      ).rejects.toThrow(
-        new AssistantError("Missing AI binding", ErrorType.PARAMS_ERROR),
-      );
+      ).rejects.toMatchObject({
+        message: "Missing AI binding",
+        type: ErrorType.PARAMS_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error when audio is missing", async () => {
@@ -141,9 +143,11 @@ describe("WorkersTranscriptionProvider", () => {
           audio: null as any,
           user: mockUser,
         }),
-      ).rejects.toThrow(
-        new AssistantError("Missing audio", ErrorType.PARAMS_ERROR),
-      );
+      ).rejects.toMatchObject({
+        message: "Missing audio",
+        type: ErrorType.PARAMS_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error when user is missing", async () => {
@@ -155,9 +159,11 @@ describe("WorkersTranscriptionProvider", () => {
           audio: mockAudio,
           user: null as any,
         }),
-      ).rejects.toThrow(
-        new AssistantError("Missing user", ErrorType.PARAMS_ERROR),
-      );
+      ).rejects.toMatchObject({
+        message: "Missing user",
+        type: ErrorType.PARAMS_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error when model returns no text", async () => {

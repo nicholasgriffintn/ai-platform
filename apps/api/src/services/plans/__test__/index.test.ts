@@ -54,9 +54,11 @@ describe("Plans Service", () => {
     it("should throw error for non-existent plan", async () => {
       mockDatabase.getPlanById.mockResolvedValue(null);
 
-      await expect(getPlanDetails({} as any, "999")).rejects.toThrow(
-        new AssistantError("Plan not found", ErrorType.NOT_FOUND),
-      );
+      await expect(getPlanDetails({} as any, "999")).rejects.toMatchObject({
+        message: "Plan not found",
+        type: ErrorType.NOT_FOUND,
+        name: "AssistantError",
+      });
     });
 
     it("should handle database errors", async () => {

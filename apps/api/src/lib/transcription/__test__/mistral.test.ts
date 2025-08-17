@@ -158,9 +158,11 @@ describe("MistralTranscriptionProvider", () => {
           audio: null as any,
           user: mockUser,
         }),
-      ).rejects.toThrow(
-        new AssistantError("Missing audio", ErrorType.PARAMS_ERROR),
-      );
+      ).rejects.toMatchObject({
+        message: "Missing audio",
+        type: ErrorType.PARAMS_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error when AI_GATEWAY_TOKEN is missing", async () => {
@@ -173,12 +175,11 @@ describe("MistralTranscriptionProvider", () => {
           audio: mockAudio,
           user: mockUser,
         }),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Missing MISTRAL_API_KEY, AI_GATEWAY_TOKEN, or ACCOUNT_ID",
-          ErrorType.CONFIGURATION_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Missing MISTRAL_API_KEY, AI_GATEWAY_TOKEN, or ACCOUNT_ID",
+        type: ErrorType.CONFIGURATION_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error when ACCOUNT_ID is missing", async () => {

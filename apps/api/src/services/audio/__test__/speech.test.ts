@@ -100,9 +100,11 @@ describe("handleTextToSpeech", () => {
           input: longInput,
           user: mockUser,
         }),
-      ).rejects.toThrow(
-        new AssistantError("Input is too long", ErrorType.PARAMS_ERROR),
-      );
+      ).rejects.toMatchObject({
+        message: "Input is too long",
+        type: ErrorType.PARAMS_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should sanitize input", async () => {

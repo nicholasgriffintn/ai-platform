@@ -95,7 +95,7 @@ describe("Guardrails", () => {
 
       expect(() => {
         new Guardrails(mockEnv, mockUser, userSettings);
-      }).toThrow(AssistantError);
+      }).toThrow(expect.any(AssistantError));
 
       expect(() => {
         new Guardrails(mockEnv, mockUser, userSettings);
@@ -321,7 +321,7 @@ describe("Guardrails", () => {
 
       expect(() => {
         new Guardrails(mockEnv, mockUser, userSettings);
-      }).toThrow(AssistantError);
+      }).toThrow(expect.any(AssistantError));
     });
 
     it("should propagate error type correctly", () => {

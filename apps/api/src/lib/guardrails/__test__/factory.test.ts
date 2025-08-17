@@ -54,7 +54,7 @@ describe("GuardrailsProviderFactory", () => {
 
       expect(() => {
         GuardrailsProviderFactory.getProvider("unsupported", config);
-      }).toThrow(AssistantError);
+      }).toThrow(expect.any(AssistantError));
 
       expect(() => {
         GuardrailsProviderFactory.getProvider("unsupported", config);
@@ -69,7 +69,7 @@ describe("GuardrailsProviderFactory", () => {
 
       expect(() => {
         GuardrailsProviderFactory.getProvider("bedrock", invalidConfig);
-      }).toThrow(AssistantError);
+      }).toThrow(expect.any(AssistantError));
 
       expect(() => {
         GuardrailsProviderFactory.getProvider("bedrock", invalidConfig);
@@ -84,7 +84,7 @@ describe("GuardrailsProviderFactory", () => {
 
       expect(() => {
         GuardrailsProviderFactory.getProvider("llamaguard", invalidConfig);
-      }).toThrow(AssistantError);
+      }).toThrow(expect.any(AssistantError));
 
       expect(() => {
         GuardrailsProviderFactory.getProvider("llamaguard", invalidConfig);

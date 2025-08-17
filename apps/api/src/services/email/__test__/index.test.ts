@@ -67,12 +67,11 @@ describe("Email Service", () => {
           "Test body text",
           "<p>Test body HTML</p>",
         ),
-      ).rejects.toThrow(
-        new AssistantError(
-          "AWS SES configuration missing",
-          ErrorType.CONFIGURATION_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "AWS SES configuration missing",
+        type: ErrorType.CONFIGURATION_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should handle SES API errors", async () => {

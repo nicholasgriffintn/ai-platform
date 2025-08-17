@@ -110,7 +110,7 @@ describe("EmbeddingProviderFactory", () => {
           mockEnv,
           mockUser,
         );
-      }).toThrow(AssistantError);
+      }).toThrow(expect.any(AssistantError));
     });
 
     it("should throw error for invalid vectorize config", () => {
@@ -127,7 +127,7 @@ describe("EmbeddingProviderFactory", () => {
           mockEnv,
           mockUser,
         );
-      }).toThrow(AssistantError);
+      }).toThrow(expect.any(AssistantError));
     });
 
     it("should throw error for unsupported provider type", () => {
@@ -144,7 +144,7 @@ describe("EmbeddingProviderFactory", () => {
           mockEnv,
           mockUser,
         );
-      }).toThrow(AssistantError);
+      }).toThrow(expect.any(AssistantError));
     });
 
     it("should throw error with correct error type for unsupported provider", () => {

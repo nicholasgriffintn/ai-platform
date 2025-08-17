@@ -202,12 +202,11 @@ describe("Magic Link Service", () => {
 
       await expect(
         requestMagicLink(envWithoutSecret, "user@example.com"),
-      ).rejects.toThrow(
-        new AssistantError(
-          "JWT secret not configured",
-          ErrorType.CONFIGURATION_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "JWT secret not configured",
+        type: ErrorType.CONFIGURATION_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should handle user creation failure", async () => {
@@ -297,12 +296,11 @@ describe("Magic Link Service", () => {
 
       await expect(
         verifyMagicLink(mockEnv, "token", "invalid-nonce"),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Invalid or expired token/nonce",
-          ErrorType.AUTHENTICATION_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Invalid or expired token/nonce",
+        type: ErrorType.AUTHENTICATION_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error if user not found", async () => {
@@ -316,12 +314,13 @@ describe("Magic Link Service", () => {
       mockDatabase.consumeMagicLinkNonce.mockResolvedValue(true);
       mockDatabase.getUserById.mockResolvedValue(null);
 
-      await expect(verifyMagicLink(mockEnv, "token", "nonce")).rejects.toThrow(
-        new AssistantError(
-          "User not found for valid token",
-          ErrorType.INTERNAL_ERROR,
-        ),
-      );
+      await expect(
+        verifyMagicLink(mockEnv, "token", "nonce"),
+      ).rejects.toMatchObject({
+        message: "User not found for valid token",
+        type: ErrorType.INTERNAL_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 });

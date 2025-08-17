@@ -27,7 +27,9 @@ describe("SerperProvider", () => {
     it("should throw error when API key is missing", () => {
       const envWithoutKey = { ...mockEnv, SERPER_API_KEY: undefined } as IEnv;
 
-      expect(() => new SerperProvider(envWithoutKey)).toThrow(AssistantError);
+      expect(() => new SerperProvider(envWithoutKey)).toThrow(
+        expect.any(AssistantError),
+      );
       expect(() => new SerperProvider(envWithoutKey)).toThrow(
         "SERPER_API_KEY is not set",
       );

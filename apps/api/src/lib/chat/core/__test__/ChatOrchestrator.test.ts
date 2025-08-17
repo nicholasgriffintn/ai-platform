@@ -435,13 +435,11 @@ describe("ChatOrchestrator", () => {
         rateLimitError.status = 429;
         mockPreparer.prepare.mockRejectedValue(rateLimitError);
 
-        await expect(orchestrator.process(mockOptions)).rejects.toThrow(
-          new AssistantError(
-            "Rate limit exceeded. Please try again later.",
-            ErrorType.RATE_LIMIT_ERROR,
-            429,
-          ),
-        );
+        await expect(orchestrator.process(mockOptions)).rejects.toMatchObject({
+          message: "Rate limit exceeded. Please try again later.",
+          type: ErrorType.RATE_LIMIT_ERROR,
+          name: "AssistantError",
+        });
       });
 
       it("should wrap authentication errors", async () => {

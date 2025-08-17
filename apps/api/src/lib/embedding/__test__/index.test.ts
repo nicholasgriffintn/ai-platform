@@ -123,7 +123,7 @@ describe("Embedding", () => {
 
       expect(() => {
         Embedding.getInstance(mockEnv, mockUser, incompleteBedrockSettings);
-      }).toThrow(AssistantError);
+      }).toThrow(expect.any(AssistantError));
     });
 
     it("should return same instance on subsequent calls", () => {
