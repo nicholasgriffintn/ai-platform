@@ -192,12 +192,11 @@ describe("MistralTranscriptionProvider", () => {
           audio: mockAudio,
           user: mockUser,
         }),
-      ).rejects.toMatchObject(
-        new AssistantError(
-          "Missing MISTRAL_API_KEY, AI_GATEWAY_TOKEN, or ACCOUNT_ID",
-          ErrorType.CONFIGURATION_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Missing MISTRAL_API_KEY, AI_GATEWAY_TOKEN, or ACCOUNT_ID",
+        type: ErrorType.CONFIGURATION_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error when user is missing", async () => {
@@ -231,12 +230,11 @@ describe("MistralTranscriptionProvider", () => {
           audio: mockAudio,
           user: mockUser,
         }),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Mistral transcription failed: 400 Bad Request",
-          ErrorType.EXTERNAL_API_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Mistral transcription failed: 400 Bad Request",
+        type: ErrorType.EXTERNAL_API_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should handle missing text in response", async () => {
