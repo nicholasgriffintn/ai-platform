@@ -6,8 +6,8 @@ import {
   AppContentRenderer,
   type AppDataItem,
 } from "~/components/Apps/ContentRenderers";
-import { PageShell } from "~/components/PageShell";
-import { PageStatus } from "~/components/PageStatus";
+import { PageShell } from "~/components/Core/PageShell";
+import { PageStatus } from "~/components/Core/PageStatus";
 import { getSharedItem } from "~/hooks/useAppsSharing";
 
 export function meta({ params }: { params: { share_id: string } }) {

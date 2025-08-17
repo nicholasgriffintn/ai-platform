@@ -29,7 +29,7 @@ describe("getSourceArticles", () => {
   it("should throw AssistantError when ids array is empty", async () => {
     await expect(
       getSourceArticles({ env: mockEnv, ids: [], userId: 123 }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       getSourceArticles({ env: mockEnv, ids: [], userId: 123 }),
@@ -39,13 +39,13 @@ describe("getSourceArticles", () => {
   it("should throw AssistantError when ids is null", async () => {
     await expect(
       getSourceArticles({ env: mockEnv, ids: null as any, userId: 123 }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 
   it("should throw AssistantError when userId is missing", async () => {
     await expect(
       getSourceArticles({ env: mockEnv, ids: ["id1"], userId: 0 }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       getSourceArticles({ env: mockEnv, ids: ["id1"], userId: 0 }),
@@ -257,7 +257,7 @@ describe("getSourceArticles", () => {
         ids: ["article-1"],
         userId: 123,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       getSourceArticles({

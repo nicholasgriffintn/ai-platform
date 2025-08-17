@@ -3,8 +3,8 @@ import { Link } from "react-router";
 
 import { cn } from "~/lib/utils";
 import { useUIStore } from "~/state/stores/uiStore";
-import { SidebarFooter } from "./Sidebar/SidebarFooter";
-import { SidebarHeader } from "./Sidebar/SidebarHeader";
+import { SidebarFooter } from "./SidebarFooter";
+import { SidebarHeader } from "./SidebarHeader";
 
 export function StandardSidebarContent() {
   const { sidebarVisible, isMobile, setSidebarVisible } = useUIStore();

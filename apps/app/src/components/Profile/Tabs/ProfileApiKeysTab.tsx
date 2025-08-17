@@ -2,7 +2,7 @@ import { Copy, Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { EmptyState } from "~/components/EmptyState";
+import { EmptyState } from "~/components/Core/EmptyState";
 import {
   Button,
   Dialog,
@@ -14,8 +14,8 @@ import {
 } from "~/components/ui";
 import { Card } from "~/components/ui/Card";
 import { useApiKeys } from "~/hooks/useApiKeys";
-import { PageHeader } from "../../PageHeader";
-import { PageTitle } from "../../PageTitle";
+import { PageHeader } from "../../Core/PageHeader";
+import { PageTitle } from "../../Core/PageTitle";
 
 function GeneratedApiKeyModal({
   isOpen,

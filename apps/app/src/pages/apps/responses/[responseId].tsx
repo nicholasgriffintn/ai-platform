@@ -4,10 +4,10 @@ import { useNavigate, useParams } from "react-router";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { getIcon } from "~/components/Apps/utils";
-import { BackLink } from "~/components/BackLink";
-import { PageHeader } from "~/components/PageHeader";
-import { PageShell } from "~/components/PageShell";
-import { PageStatus } from "~/components/PageStatus";
+import { BackLink } from "~/components/Core/BackLink";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageShell } from "~/components/Core/PageShell";
+import { PageStatus } from "~/components/Core/PageStatus";
 import { useDynamicApp, useDynamicAppResponse } from "~/hooks/useDynamicApps";
 
 export function meta({ params }: { params: { responseId: string } }) {

@@ -123,7 +123,7 @@ describe("handlePodcastTranscribe", () => {
         },
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 
   it("should throw error for missing user ID", async () => {
@@ -137,7 +137,7 @@ describe("handlePodcastTranscribe", () => {
         },
         user: {} as any,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 
   it("should throw error when upload not found", async () => {
@@ -155,6 +155,6 @@ describe("handlePodcastTranscribe", () => {
         },
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 });

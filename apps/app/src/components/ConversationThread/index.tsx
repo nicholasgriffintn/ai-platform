@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
-import { UsageLimitWarning } from "~/components/UsageLimitWarning";
+import { UsageLimitWarning } from "~/components/ConversationThread/UsageLimitWarning";
 import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";

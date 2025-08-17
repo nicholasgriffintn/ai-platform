@@ -47,14 +47,8 @@ export async function rateLimit(context: Context, next: Next) {
     throw new AssistantError(errorMessage, ErrorType.RATE_LIMIT_ERROR);
   }
 
-  const name = pathname.split("/").pop();
-  Promise.resolve().then(async () => {
-    try {
-      await trackUsageMetric(userId, name, context.env.ANALYTICS);
-    } catch (error) {
-      logger.error("Failed to track usage metric", { error, userId, name });
-    }
-  });
+  const routeName = pathname.split("/").pop() || "unknown";
+  trackUsageMetric(userId, routeName, context.env.ANALYTICS);
 
   return next();
 }

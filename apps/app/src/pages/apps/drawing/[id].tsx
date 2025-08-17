@@ -1,11 +1,11 @@
 import { ChevronLeft } from "lucide-react";
 import { Link, useParams } from "react-router";
 
-import { BackLink } from "~/components/BackLink";
-import { PageHeader } from "~/components/PageHeader";
-import { PageShell } from "~/components/PageShell";
-import { ShareButton } from "~/components/ShareButton";
-import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { BackLink } from "~/components/Core/BackLink";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageShell } from "~/components/Core/PageShell";
+import { ShareButton } from "~/components/ui/ShareButton";
+import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 import { Button } from "~/components/ui";
 import { useFetchDrawing } from "~/hooks/useDrawings";
 import { DrawingView } from "../../../components/Apps/Drawings/View";

@@ -2,12 +2,12 @@ import { Clock } from "lucide-react";
 import { Link } from "react-router";
 
 import { getIcon } from "~/components/Apps/utils";
-import { BackLink } from "~/components/BackLink";
-import { EmptyState } from "~/components/EmptyState";
-import { PageHeader } from "~/components/PageHeader";
-import { PageShell } from "~/components/PageShell";
-import { PageTitle } from "~/components/PageTitle";
-import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { BackLink } from "~/components/Core/BackLink";
+import { EmptyState } from "~/components/Core/EmptyState";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageShell } from "~/components/Core/PageShell";
+import { PageTitle } from "~/components/Core/PageTitle";
+import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 import { Card } from "~/components/ui";
 import { useDynamicAppResponses, useDynamicApps } from "~/hooks/useDynamicApps";
 import { formatRelativeTime } from "~/lib/dates";

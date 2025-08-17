@@ -49,6 +49,13 @@ export const successResponseSchema = z.object({
 
 export const statusResponseSchema = z.object({
   status: z.string().meta({ example: "ok" }),
+  timestamp: z.string().meta({ example: "2021-01-01T00:00:00.000Z" }),
+  version: z.string().meta({ example: "1.0.0" }),
+  environment: z.string().meta({ example: "development" }),
+  responseTime: z.number().meta({ example: 100 }),
+  checks: z
+    .record(z.string(), z.any())
+    .meta({ example: { database: { status: "healthy" } } }),
 });
 
 export const metricsParamsSchema = z.object({

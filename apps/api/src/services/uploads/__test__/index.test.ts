@@ -50,7 +50,7 @@ describe("handleFileUpload", () => {
       formData.append("file", file);
 
       await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
-        "Invalid file type. Must be 'image', 'document', or 'audio'",
+        "Invalid file type. Must be 'image', 'document', 'audio', or 'code'",
       );
     });
 
@@ -61,7 +61,7 @@ describe("handleFileUpload", () => {
       formData.append("file_type", "invalid");
 
       await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
-        "Invalid file type. Must be 'image', 'document', or 'audio'",
+        "Invalid file type. Must be 'image', 'document', 'audio', or 'code'",
       );
     });
   });
@@ -137,6 +137,31 @@ describe("handleFileUpload", () => {
       }
     });
 
+    it("should accept valid code types", async () => {
+      const validCodeTypes = [
+        { mime: "text/typescript", name: "example.ts" },
+        { mime: "application/typescript", name: "example.tsx" },
+        { mime: "text/javascript", name: "example.js" },
+        { mime: "application/javascript", name: "example.jsx" },
+        { mime: "text/plain", name: "example.py" },
+        { mime: "application/json", name: "package.json" },
+      ];
+
+      for (const { mime, name } of validCodeTypes) {
+        const file = new File(["console.log('hello')"], name, { type: mime });
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("file_type", "code");
+
+        mockStorageService.uploadObject.mockResolvedValue("test-key");
+
+        const result = await handleFileUpload(mockEnv, 1, formData);
+
+        expect(["code", "markdown_document"]).toContain(result.type);
+        vi.clearAllMocks();
+      }
+    });
+
     it("should reject invalid image types", async () => {
       const file = new File(["test"], "test.txt", { type: "text/plain" });
       const formData = new FormData();
@@ -144,7 +169,7 @@ describe("handleFileUpload", () => {
       formData.append("file_type", "image");
 
       await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
-        "Invalid file type. Allowed types for image:",
+        "Invalid file type text/plain. Allowed types for image:",
       );
     });
 
@@ -155,7 +180,7 @@ describe("handleFileUpload", () => {
       formData.append("file_type", "document");
 
       await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
-        "Invalid file type. Allowed types for document:",
+        "Invalid file type image/jpeg. Allowed types for document:",
       );
     });
 
@@ -166,7 +191,21 @@ describe("handleFileUpload", () => {
       formData.append("file_type", "audio");
 
       await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
-        "Invalid file type. Allowed types for audio:",
+        "Invalid file type text/plain. Allowed types for audio:",
+      );
+    });
+
+    it("should enforce code size limit", async () => {
+      const largeContent = "x".repeat(201 * 1024); // 201KB
+      const file = new File([largeContent], "big.ts", {
+        type: "text/typescript",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "code");
+
+      await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+        "Code files must be 200KB or smaller",
       );
     });
   });
@@ -326,6 +365,70 @@ describe("handleFileUpload", () => {
         type: "audio",
         name: "test.wav",
       });
+    });
+
+    it("should wrap code files in markdown fences with language", async () => {
+      const file = new File(["const x: number = 1;"], "example.ts", {
+        type: "text/typescript",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "code");
+
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
+
+      const result = await handleFileUpload(mockEnv, 1, formData);
+
+      expect(result.type).toBe("markdown_document");
+      expect(result.markdown).toContain("```typescript");
+      expect(result.markdown).toContain("const x: number = 1;");
+    });
+
+    it("should handle text/plain code files by extension and wrap appropriately", async () => {
+      const file = new File(["print('hi')"], "script.py", {
+        type: "text/plain",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "code");
+
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
+
+      const result = await handleFileUpload(mockEnv, 1, formData);
+
+      expect(result.type).toBe("markdown_document");
+      expect(result.markdown).toContain("```python");
+      expect(result.markdown).toContain("print('hi')");
+    });
+
+    it("should accept application/octet-stream for code with known extension and wrap", async () => {
+      const file = new File(["console.log('ok')"], "app.js", {
+        type: "application/octet-stream",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "code");
+
+      mockStorageService.uploadObject.mockResolvedValue("test-key");
+
+      const result = await handleFileUpload(mockEnv, 1, formData);
+
+      expect(result.type).toBe("markdown_document");
+      expect(result.markdown).toContain("```javascript");
+      expect(result.markdown).toContain("console.log('ok')");
+    });
+
+    it("should reject application/octet-stream for code with unknown extension", async () => {
+      const file = new File(["some content"], "file.unknownext", {
+        type: "application/octet-stream",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("file_type", "code");
+
+      await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+        "Invalid file type application/octet-stream",
+      );
     });
   });
 

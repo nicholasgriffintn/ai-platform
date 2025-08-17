@@ -81,7 +81,7 @@ describe("BedrockGuardrailsProvider", () => {
 
       await expect(
         provider.validateContent("test content", "INPUT"),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
   });
 
@@ -255,7 +255,7 @@ describe("BedrockGuardrailsProvider", () => {
 
       await expect(
         provider.validateContent("test content", "INPUT"),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
       await expect(
         provider.validateContent("test content", "INPUT"),
       ).rejects.toThrow("No valid credentials found for Bedrock Guardrails");
@@ -274,7 +274,7 @@ describe("BedrockGuardrailsProvider", () => {
 
       await expect(
         provider.validateContent("test content", "INPUT"),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
 
     it("should handle user API key retrieval errors gracefully", async () => {

@@ -92,13 +92,13 @@ describe("BedrockEmbeddingProvider", () => {
     it("should throw error for invalid credentials format", () => {
       expect(() => {
         (provider as any).parseAwsCredentials("invalid-format");
-      }).toThrow(AssistantError);
+      }).toThrow(expect.any(AssistantError));
     });
 
     it("should throw error for missing delimiter", () => {
       expect(() => {
         (provider as any).parseAwsCredentials("access-key-secret-key");
-      }).toThrow(AssistantError);
+      }).toThrow(expect.any(AssistantError));
     });
   });
 
@@ -199,7 +199,7 @@ describe("BedrockEmbeddingProvider", () => {
     it("should throw error for missing id", async () => {
       await expect(
         provider.generate("type", "content", "", {}),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
   });
 
@@ -252,7 +252,9 @@ describe("BedrockEmbeddingProvider", () => {
         },
       ];
 
-      await expect(provider.insert(embeddings)).rejects.toThrow(AssistantError);
+      await expect(provider.insert(embeddings)).rejects.toThrow(
+        expect.any(AssistantError),
+      );
     });
   });
 

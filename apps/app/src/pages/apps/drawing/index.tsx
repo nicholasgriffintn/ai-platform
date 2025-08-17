@@ -2,12 +2,12 @@ import { Brush, Plus } from "lucide-react";
 import { useCallback } from "react";
 import { Link, useNavigate } from "react-router";
 
-import { BackLink } from "~/components/BackLink";
-import { EmptyState } from "~/components/EmptyState";
-import { PageHeader } from "~/components/PageHeader";
-import { PageShell } from "~/components/PageShell";
-import { PageTitle } from "~/components/PageTitle";
-import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { BackLink } from "~/components/Core/BackLink";
+import { EmptyState } from "~/components/Core/EmptyState";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageShell } from "~/components/Core/PageShell";
+import { PageTitle } from "~/components/Core/PageTitle";
+import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 import { Button, Card } from "~/components/ui";
 import { useFetchDrawings } from "~/hooks/useDrawings";
 import { cn } from "~/lib/utils";

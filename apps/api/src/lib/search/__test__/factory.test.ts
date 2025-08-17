@@ -30,7 +30,7 @@ describe("SearchProviderFactory", () => {
 
       expect(() =>
         SearchProviderFactory.getProvider("serper", envWithoutSerper),
-      ).toThrow(AssistantError);
+      ).toThrow(expect.any(AssistantError));
       expect(() =>
         SearchProviderFactory.getProvider("serper", envWithoutSerper),
       ).toThrow("SERPER_API_KEY is not set");
@@ -44,7 +44,7 @@ describe("SearchProviderFactory", () => {
 
       expect(() =>
         SearchProviderFactory.getProvider("tavily", envWithoutTavily),
-      ).toThrow(AssistantError);
+      ).toThrow(expect.any(AssistantError));
       expect(() =>
         SearchProviderFactory.getProvider("tavily", envWithoutTavily),
       ).toThrow("TAVILY_API_KEY is not set");
@@ -53,7 +53,7 @@ describe("SearchProviderFactory", () => {
     it("should throw error for unknown provider", () => {
       expect(() =>
         SearchProviderFactory.getProvider("unknown" as any, mockEnv),
-      ).toThrow(AssistantError);
+      ).toThrow(expect.any(AssistantError));
       expect(() =>
         SearchProviderFactory.getProvider("unknown" as any, mockEnv),
       ).toThrow("Unknown search provider: unknown");

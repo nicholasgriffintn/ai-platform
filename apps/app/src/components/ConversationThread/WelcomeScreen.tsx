@@ -1,4 +1,4 @@
-import { Logo } from "~/components/Logo";
+import { Logo } from "~/components/Core/Logo";
 import { SampleQuestions } from "./SampleQuestions";
 
 interface WelcomeScreenProps {

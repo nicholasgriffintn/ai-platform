@@ -7,11 +7,11 @@ import {
   ProgressStepper,
   UploadStep,
 } from "~/components/Apps/Podcasts";
-import { BackLink } from "~/components/BackLink";
-import { PageHeader } from "~/components/PageHeader";
-import { PageShell } from "~/components/PageShell";
-import { PageTitle } from "~/components/PageTitle";
-import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { BackLink } from "~/components/Core/BackLink";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageShell } from "~/components/Core/PageShell";
+import { PageTitle } from "~/components/Core/PageTitle";
+import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 import { useProcessPodcast, useUploadPodcast } from "~/hooks/usePodcasts";
 import type { PodcastFormData } from "~/types/podcast";
 

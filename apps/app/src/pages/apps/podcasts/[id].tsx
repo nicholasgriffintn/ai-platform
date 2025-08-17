@@ -3,11 +3,11 @@ import type { JSX } from "react";
 import { Link, useParams } from "react-router";
 
 import { PodcastView } from "~/components/Apps/Podcasts/View";
-import { BackLink } from "~/components/BackLink";
-import { PageShell } from "~/components/PageShell";
-import { PageTitle } from "~/components/PageTitle";
-import { ShareButton } from "~/components/ShareButton";
-import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { BackLink } from "~/components/Core/BackLink";
+import { PageShell } from "~/components/Core/PageShell";
+import { PageTitle } from "~/components/Core/PageTitle";
+import { ShareButton } from "~/components/ui/ShareButton";
+import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 import { Button } from "~/components/ui";
 import { useFetchPodcast } from "~/hooks/usePodcasts";
 import { cn } from "~/lib/utils";

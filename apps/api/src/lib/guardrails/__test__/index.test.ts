@@ -35,25 +35,13 @@ describe("Guardrails", () => {
     mockGuardrailsProviderFactory.getProvider.mockReturnValue(mockProvider);
   });
 
-  describe("getInstance", () => {
-    it("should create singleton instance", () => {
-      const userSettings = {
-        guardrails_enabled: true,
-        guardrails_provider: "llamaguard",
-      } as any;
-
-      const instance1 = Guardrails.getInstance(mockEnv, mockUser, userSettings);
-      const instance2 = Guardrails.getInstance(mockEnv, mockUser, userSettings);
-
-      expect(instance1).toBe(instance2);
-    });
-
+  describe("construction", () => {
     it("should initialize with disabled guardrails", () => {
       const userSettings = {
         guardrails_enabled: false,
       } as any;
 
-      const instance = Guardrails.getInstance(mockEnv, mockUser, userSettings);
+      const instance = new Guardrails(mockEnv, mockUser, userSettings);
       expect(instance).toBeDefined();
     });
 
@@ -65,7 +53,7 @@ describe("Guardrails", () => {
         bedrock_guardrail_version: "1",
       } as any;
 
-      Guardrails.getInstance(mockEnv, mockUser, userSettings);
+      new Guardrails(mockEnv, mockUser, userSettings);
 
       expect(mockGuardrailsProviderFactory.getProvider).toHaveBeenCalledWith(
         "bedrock",
@@ -87,7 +75,7 @@ describe("Guardrails", () => {
         guardrails_provider: "unknown",
       } as any;
 
-      Guardrails.getInstance(mockEnv, mockUser, userSettings);
+      new Guardrails(mockEnv, mockUser, userSettings);
 
       expect(mockGuardrailsProviderFactory.getProvider).toHaveBeenCalledWith(
         "llamaguard",
@@ -106,11 +94,11 @@ describe("Guardrails", () => {
       } as any;
 
       expect(() => {
-        Guardrails.getInstance(mockEnv, mockUser, userSettings);
-      }).toThrow(AssistantError);
+        new Guardrails(mockEnv, mockUser, userSettings);
+      }).toThrow(expect.any(AssistantError));
 
       expect(() => {
-        Guardrails.getInstance(mockEnv, mockUser, userSettings);
+        new Guardrails(mockEnv, mockUser, userSettings);
       }).toThrow("Missing required guardrail ID");
     });
 
@@ -121,7 +109,7 @@ describe("Guardrails", () => {
         bedrock_guardrail_id: "test-guardrail-id",
       } as any;
 
-      Guardrails.getInstance(mockEnv, mockUser, userSettings);
+      new Guardrails(mockEnv, mockUser, userSettings);
 
       expect(mockGuardrailsProviderFactory.getProvider).toHaveBeenCalledWith(
         "bedrock",
@@ -139,7 +127,7 @@ describe("Guardrails", () => {
         guardrails_enabled: false,
       } as any;
 
-      const instance = Guardrails.getInstance(mockEnv, mockUser, userSettings);
+      const instance = new Guardrails(mockEnv, mockUser, userSettings);
       const result = await instance.validateInput("test message");
 
       expect(result.isValid).toBe(true);
@@ -158,7 +146,7 @@ describe("Guardrails", () => {
         violations: [],
       });
 
-      const instance = Guardrails.getInstance(mockEnv, mockUser, userSettings);
+      const instance = new Guardrails(mockEnv, mockUser, userSettings);
       const result = await instance.validateInput("test message");
 
       expect(mockProvider.validateContent).toHaveBeenCalledWith(
@@ -180,7 +168,7 @@ describe("Guardrails", () => {
         violations: ["Violence detected"],
       });
 
-      const instance = Guardrails.getInstance(mockEnv, mockUser, userSettings);
+      const instance = new Guardrails(mockEnv, mockUser, userSettings);
       const result = await instance.validateInput(
         "violent message",
         123,
@@ -212,7 +200,7 @@ describe("Guardrails", () => {
         violations: [],
       });
 
-      const instance = Guardrails.getInstance(mockEnv, mockUser, userSettings);
+      const instance = new Guardrails(mockEnv, mockUser, userSettings);
       await instance.validateInput("safe message", 123, "completion-456");
 
       expect(mockTrackGuardrailViolation).not.toHaveBeenCalled();
@@ -225,7 +213,7 @@ describe("Guardrails", () => {
         guardrails_enabled: false,
       } as any;
 
-      const instance = Guardrails.getInstance(mockEnv, mockUser, userSettings);
+      const instance = new Guardrails(mockEnv, mockUser, userSettings);
       const result = await instance.validateOutput("test response");
 
       expect(result.isValid).toBe(true);
@@ -244,7 +232,7 @@ describe("Guardrails", () => {
         violations: [],
       });
 
-      const instance = Guardrails.getInstance(mockEnv, mockUser, userSettings);
+      const instance = new Guardrails(mockEnv, mockUser, userSettings);
       const result = await instance.validateOutput("test response");
 
       expect(mockProvider.validateContent).toHaveBeenCalledWith(
@@ -266,7 +254,7 @@ describe("Guardrails", () => {
         violations: ["Inappropriate content"],
       });
 
-      const instance = Guardrails.getInstance(mockEnv, mockUser, userSettings);
+      const instance = new Guardrails(mockEnv, mockUser, userSettings);
       const result = await instance.validateOutput(
         "inappropriate response",
         123,
@@ -298,7 +286,7 @@ describe("Guardrails", () => {
         violations: undefined,
       });
 
-      const instance = Guardrails.getInstance(mockEnv, mockUser, userSettings);
+      const instance = new Guardrails(mockEnv, mockUser, userSettings);
       const result = await instance.validateOutput("test response");
 
       expect(result.isValid).toBe(false);
@@ -316,7 +304,7 @@ describe("Guardrails", () => {
         violations: [],
       });
 
-      const instance = Guardrails.getInstance(mockEnv, mockUser, userSettings);
+      const instance = new Guardrails(mockEnv, mockUser, userSettings);
       const result = await instance.validateOutput("test response");
 
       expect(result.isValid).toBe(false);
@@ -332,8 +320,8 @@ describe("Guardrails", () => {
       } as any;
 
       expect(() => {
-        Guardrails.getInstance(mockEnv, mockUser, userSettings);
-      }).toThrow(AssistantError);
+        new Guardrails(mockEnv, mockUser, userSettings);
+      }).toThrow(expect.any(AssistantError));
     });
 
     it("should propagate error type correctly", () => {
@@ -343,7 +331,7 @@ describe("Guardrails", () => {
       } as any;
 
       try {
-        Guardrails.getInstance(mockEnv, mockUser, userSettings);
+        new Guardrails(mockEnv, mockUser, userSettings);
       } catch (error) {
         expect(error).toBeInstanceOf(AssistantError);
         expect((error as AssistantError).type).toBe(ErrorType.PARAMS_ERROR);

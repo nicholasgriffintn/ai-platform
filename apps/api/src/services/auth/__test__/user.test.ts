@@ -70,12 +70,11 @@ describe("User Service", () => {
 
       await expect(
         getUserByGithubId(mockDatabase, "github123"),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Failed to retrieve user by GitHub ID",
-          ErrorType.UNKNOWN_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Failed to retrieve user by GitHub ID",
+        type: ErrorType.UNKNOWN_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 
@@ -106,12 +105,11 @@ describe("User Service", () => {
 
       await expect(
         getUserBySessionId(mockDatabase, "session123"),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Failed to retrieve user by session ID",
-          ErrorType.UNKNOWN_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Failed to retrieve user by session ID",
+        type: ErrorType.UNKNOWN_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 
@@ -136,12 +134,11 @@ describe("User Service", () => {
     it("should handle database errors", async () => {
       mockDatabase.getUserSettings.mockRejectedValue(new Error("DB error"));
 
-      await expect(getUserSettings(mockDatabase, 123)).rejects.toThrow(
-        new AssistantError(
-          "Failed to retrieve user settings",
-          ErrorType.UNKNOWN_ERROR,
-        ),
-      );
+      await expect(getUserSettings(mockDatabase, 123)).rejects.toMatchObject({
+        message: "Failed to retrieve user settings",
+        type: ErrorType.UNKNOWN_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 
@@ -168,12 +165,11 @@ describe("User Service", () => {
     it("should handle database errors", async () => {
       mockDatabase.getUserById.mockRejectedValue(new Error("DB error"));
 
-      await expect(getUserById(mockDatabase, 123)).rejects.toThrow(
-        new AssistantError(
-          "Failed to retrieve user by ID",
-          ErrorType.UNKNOWN_ERROR,
-        ),
-      );
+      await expect(getUserById(mockDatabase, 123)).rejects.toMatchObject({
+        message: "Failed to retrieve user by ID",
+        type: ErrorType.UNKNOWN_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 
@@ -270,12 +266,11 @@ describe("User Service", () => {
 
       await expect(
         createOrUpdateGithubUser(mockDatabase, mockUserData),
-      ).rejects.toThrow(
-        new AssistantError(
-          "Failed to create or update user",
-          ErrorType.UNKNOWN_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "Failed to create or update user",
+        type: ErrorType.UNKNOWN_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 
@@ -324,9 +319,11 @@ describe("User Service", () => {
       });
       mockDatabase.createSession.mockRejectedValue(new Error("DB error"));
 
-      await expect(createSession(mockDatabase, 123)).rejects.toThrow(
-        new AssistantError("Failed to create session", ErrorType.UNKNOWN_ERROR),
-      );
+      await expect(createSession(mockDatabase, 123)).rejects.toMatchObject({
+        message: "Failed to create session",
+        type: ErrorType.UNKNOWN_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 
@@ -342,9 +339,13 @@ describe("User Service", () => {
     it("should handle database errors", async () => {
       mockDatabase.deleteSession.mockRejectedValue(new Error("DB error"));
 
-      await expect(deleteSession(mockDatabase, "session123")).rejects.toThrow(
-        new AssistantError("Failed to delete session", ErrorType.UNKNOWN_ERROR),
-      );
+      await expect(
+        deleteSession(mockDatabase, "session123"),
+      ).rejects.toMatchObject({
+        message: "Failed to delete session",
+        type: ErrorType.UNKNOWN_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 });

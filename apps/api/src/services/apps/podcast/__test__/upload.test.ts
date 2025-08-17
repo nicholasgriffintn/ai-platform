@@ -182,7 +182,7 @@ describe("handlePodcastUpload", () => {
         request: { audioUrl: "https://example.com/audio.mp3" },
         user: {} as any,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 
   it("should throw error for missing audio when no URL provided", async () => {
@@ -192,7 +192,7 @@ describe("handlePodcastUpload", () => {
         request: {},
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 
   it("should handle storage upload errors", async () => {
@@ -213,6 +213,6 @@ describe("handlePodcastUpload", () => {
         },
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
   });
 });

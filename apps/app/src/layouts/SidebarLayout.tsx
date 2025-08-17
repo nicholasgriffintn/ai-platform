@@ -1,10 +1,10 @@
 import React from "react";
-import { LoginModal } from "~/components/LoginModal";
+import { LoginModal } from "~/components/Models/LoginModal";
 import { ChatNavbar } from "~/components/Navbar";
 import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
 import { cn } from "~/lib/utils";
 import { useUIStore } from "~/state/stores/uiStore";
-import { KeyboardShortcutsHelp } from "../components/KeyboardShortcutsHelp";
+import { KeyboardShortcutsHelp } from "../components/Models/KeyboardShortcutsHelp";
 
 interface SidebarLayoutProps {
   children: React.ReactNode;

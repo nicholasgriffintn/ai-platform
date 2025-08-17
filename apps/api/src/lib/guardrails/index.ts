@@ -10,12 +10,11 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { GuardrailsProviderFactory } from "./factory";
 
 export class Guardrails {
-  private static instance: Guardrails;
   private provider: GuardrailsProvider;
   private env: IEnv;
   private userSettings: IUserSettings;
 
-  private constructor(env: IEnv, user?: IUser, userSettings?: IUserSettings) {
+  constructor(env: IEnv, user?: IUser, userSettings?: IUserSettings) {
     this.env = env;
     this.userSettings = userSettings;
 
@@ -48,17 +47,6 @@ export class Guardrails {
         user,
       });
     }
-  }
-
-  public static getInstance(
-    env: IEnv,
-    user?: IUser,
-    userSettings?: IUserSettings,
-  ): Guardrails {
-    if (!Guardrails.instance) {
-      Guardrails.instance = new Guardrails(env, user, userSettings);
-    }
-    return Guardrails.instance;
   }
 
   async validateInput(

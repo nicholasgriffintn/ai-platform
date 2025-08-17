@@ -89,7 +89,7 @@ describe("analyseArticle", () => {
 
     await expect(
       analyseArticle({ ...mockParams, user: userWithoutId }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       analyseArticle({ ...mockParams, user: userWithoutId }),
@@ -101,7 +101,7 @@ describe("analyseArticle", () => {
 
     await expect(
       analyseArticle({ ...mockParams, args: argsWithoutItemId }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       analyseArticle({ ...mockParams, args: argsWithoutItemId }),
@@ -113,7 +113,7 @@ describe("analyseArticle", () => {
 
     await expect(
       analyseArticle({ ...mockParams, args: argsWithoutArticle }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       analyseArticle({ ...mockParams, args: argsWithoutArticle }),
@@ -198,7 +198,9 @@ describe("analyseArticle", () => {
 
     mockProvider.getResponse.mockResolvedValue(mockAnalysisResponse);
 
-    await expect(analyseArticle(mockParams)).rejects.toThrow(AssistantError);
+    await expect(analyseArticle(mockParams)).rejects.toThrow(
+      expect.any(AssistantError),
+    );
 
     await expect(analyseArticle(mockParams)).rejects.toThrow(
       "Analysis content was empty",
@@ -208,7 +210,9 @@ describe("analyseArticle", () => {
   it("should throw AssistantError when provider throws non-AssistantError", async () => {
     mockProvider.getResponse.mockRejectedValue(new Error("API Error"));
 
-    await expect(analyseArticle(mockParams)).rejects.toThrow(AssistantError);
+    await expect(analyseArticle(mockParams)).rejects.toThrow(
+      expect.any(AssistantError),
+    );
 
     await expect(analyseArticle(mockParams)).rejects.toThrow(
       "Failed to analyse article",

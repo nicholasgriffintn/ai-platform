@@ -43,7 +43,7 @@ describe("getDrawingDetails", () => {
         userId: 0,
         drawingId: "drawing-1",
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       getDrawingDetails({
@@ -61,7 +61,7 @@ describe("getDrawingDetails", () => {
         userId: 123,
         drawingId: "",
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       getDrawingDetails({
@@ -116,7 +116,7 @@ describe("getDrawingDetails", () => {
         userId: 123,
         drawingId: "non-existent",
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       getDrawingDetails({
@@ -147,7 +147,7 @@ describe("getDrawingDetails", () => {
         userId: 123,
         drawingId: "drawing-1",
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       getDrawingDetails({
@@ -178,7 +178,7 @@ describe("getDrawingDetails", () => {
         userId: 123,
         drawingId: "entry-1",
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       getDrawingDetails({

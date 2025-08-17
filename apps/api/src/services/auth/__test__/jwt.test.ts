@@ -119,23 +119,23 @@ describe("JWT Service", () => {
     it("should throw error for invalid token", async () => {
       mockJwtVerify.mockResolvedValue(null);
 
-      await expect(verifyJwtToken("invalid-token", "secret")).rejects.toThrow(
-        new AssistantError(
-          "Invalid or expired authentication token",
-          ErrorType.AUTHENTICATION_ERROR,
-        ),
-      );
+      await expect(
+        verifyJwtToken("invalid-token", "secret"),
+      ).rejects.toMatchObject({
+        message: "Invalid or expired authentication token",
+        type: ErrorType.AUTHENTICATION_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should handle verification errors", async () => {
       mockJwtVerify.mockRejectedValue(new Error("Verification failed"));
 
-      await expect(verifyJwtToken("token", "secret")).rejects.toThrow(
-        new AssistantError(
-          "Invalid or expired authentication token",
-          ErrorType.AUTHENTICATION_ERROR,
-        ),
-      );
+      await expect(verifyJwtToken("token", "secret")).rejects.toMatchObject({
+        message: "Invalid or expired authentication token",
+        type: ErrorType.AUTHENTICATION_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 

@@ -10,9 +10,9 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { EmptyState } from "~/components/EmptyState";
-import { PageHeader } from "~/components/PageHeader";
-import { PageTitle } from "~/components/PageTitle";
+import { EmptyState } from "~/components/Core/EmptyState";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageTitle } from "~/components/Core/PageTitle";
 import { Button } from "~/components/ui/Button";
 import {
   Card,

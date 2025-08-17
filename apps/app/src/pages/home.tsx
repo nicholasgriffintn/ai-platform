@@ -2,10 +2,10 @@ import { useEffect } from "react";
 
 import { ChatSidebar } from "~/components/ChatSidebar";
 import { ConversationThread } from "~/components/ConversationThread";
-import { PageShell } from "~/components/PageShell";
-import { SearchDialog } from "~/components/SearchDialog";
+import { PageShell } from "~/components/Core/PageShell";
+import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useChatStore } from "~/state/stores/chatStore";
-import { PageTitle } from "../components/PageTitle";
+import { PageTitle } from "../components/Core/PageTitle";
 
 export function meta() {
   return [

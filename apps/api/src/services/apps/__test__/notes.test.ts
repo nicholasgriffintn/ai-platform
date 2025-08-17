@@ -147,7 +147,7 @@ describe("notes service", () => {
 
       await expect(
         getNote({ env: mockEnv, userId: 123, noteId: "non-existent" }),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
 
     it("should throw error if note doesn't belong to user", async () => {
@@ -164,7 +164,7 @@ describe("notes service", () => {
 
       await expect(
         getNote({ env: mockEnv, userId: 123, noteId: "note-1" }),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
   });
 
@@ -216,7 +216,7 @@ describe("notes service", () => {
           user: { id: 0 } as any,
           data: { title: "Test", content: "Test" },
         }),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
   });
 
@@ -259,7 +259,7 @@ describe("notes service", () => {
           noteId: "non-existent",
           data: { title: "Test", content: "Test" },
         }),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
   });
 
@@ -283,7 +283,7 @@ describe("notes service", () => {
 
       await expect(
         deleteNote({ env: mockEnv, userId: 123, noteId: "non-existent" }),
-      ).rejects.toThrow(AssistantError);
+      ).rejects.toThrow(expect.any(AssistantError));
     });
   });
 });

@@ -1,9 +1,9 @@
 import { Plus, Power, RefreshCcw } from "lucide-react";
 import { useState } from "react";
 
-import { EmptyState } from "~/components/EmptyState";
-import { PageHeader } from "~/components/PageHeader";
-import { PageTitle } from "~/components/PageTitle";
+import { EmptyState } from "~/components/Core/EmptyState";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageTitle } from "~/components/Core/PageTitle";
 import { Button } from "~/components/ui/Button";
 import { Card } from "~/components/ui/Card";
 import { useTrackEvent } from "~/hooks/use-track-event";

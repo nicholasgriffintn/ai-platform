@@ -3,11 +3,11 @@ import type { ChangeEvent, FormEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { BackLink } from "~/components/BackLink";
-import { PageHeader } from "~/components/PageHeader";
-import { PageShell } from "~/components/PageShell";
-import { PageTitle } from "~/components/PageTitle";
-import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { BackLink } from "~/components/Core/BackLink";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageShell } from "~/components/Core/PageShell";
+import { PageTitle } from "~/components/Core/PageTitle";
+import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 import { Button, Input, Textarea } from "~/components/ui";
 import {
   useAnalyseArticle,

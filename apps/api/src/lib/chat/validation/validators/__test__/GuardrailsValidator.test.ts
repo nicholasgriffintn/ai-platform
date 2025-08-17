@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
 import type { CoreChatOptions } from "~/types";
 import type { ValidationContext } from "../../ValidationPipeline";
@@ -19,9 +19,7 @@ vi.mock("~/lib/database", () => ({
 }));
 
 vi.mock("~/lib/guardrails", () => ({
-  Guardrails: {
-    getInstance: vi.fn(() => mockGuardrails),
-  },
+  Guardrails: vi.fn(() => mockGuardrails),
 }));
 
 describe("GuardrailsValidator", () => {
@@ -40,7 +38,9 @@ describe("GuardrailsValidator", () => {
       );
 
     vi.mocked(Database.getInstance).mockReturnValue(mockDatabase as any);
-    vi.mocked(Guardrails.getInstance).mockReturnValue(mockGuardrails as any);
+    (Guardrails as unknown as Mock).mockImplementation(
+      () => mockGuardrails as any,
+    );
 
     validator = new GuardrailsValidator();
 
@@ -253,9 +253,9 @@ describe("GuardrailsValidator", () => {
       expect(result.validation.validationType).toBe("input");
     });
 
-    it("should handle Guardrails.getInstance throwing an error", async () => {
+    it("should handle Guardrails initialization throwing an error", async () => {
       const { Guardrails } = await import("~/lib/guardrails");
-      vi.mocked(Guardrails.getInstance).mockImplementation(() => {
+      (Guardrails as unknown as Mock).mockImplementation(() => {
         throw new Error("Guardrails initialization failed");
       });
 

@@ -75,4 +75,7 @@ export interface IEnv {
   SES_EMAIL_FROM?: string;
   HCAPTCHA_SECRET_KEY?: string;
   HCAPTCHA_SITE_KEY?: string;
+  FREE_RATE_LIMITER?: unknown;
+  PRO_RATE_LIMITER?: unknown;
+  ENV?: string;
 }

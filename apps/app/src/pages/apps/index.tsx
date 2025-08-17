@@ -1,8 +1,8 @@
 import type { FC } from "react";
 
 import { DynamicApps } from "~/components/Apps";
-import { PageShell } from "~/components/PageShell";
-import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { PageShell } from "~/components/Core/PageShell";
+import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 
 export function meta() {
   return [

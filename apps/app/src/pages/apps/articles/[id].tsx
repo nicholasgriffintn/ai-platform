@@ -4,12 +4,12 @@ import { Info, Loader2 } from "lucide-react";
 import { useParams } from "react-router";
 
 import { ArticleView } from "~/components/Apps/Articles/View";
-import { BackLink } from "~/components/BackLink";
-import { PageHeader } from "~/components/PageHeader";
-import { PageShell } from "~/components/PageShell";
-import { PageTitle } from "~/components/PageTitle";
-import { ShareButton } from "~/components/ShareButton";
-import { StandardSidebarContent } from "~/components/StandardSidebarContent";
+import { BackLink } from "~/components/Core/BackLink";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageShell } from "~/components/Core/PageShell";
+import { PageTitle } from "~/components/Core/PageTitle";
+import { ShareButton } from "~/components/ui/ShareButton";
+import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 import { useFetchArticleReport } from "~/hooks/useArticles";
 
 export function meta({ params }: { params: { id?: string } }) {

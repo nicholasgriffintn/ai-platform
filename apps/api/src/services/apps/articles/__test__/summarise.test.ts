@@ -92,7 +92,7 @@ describe("summariseArticle", () => {
 
     await expect(
       summariseArticle({ ...mockParams, user: userWithoutId }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       summariseArticle({ ...mockParams, user: userWithoutId }),
@@ -104,7 +104,7 @@ describe("summariseArticle", () => {
 
     await expect(
       summariseArticle({ ...mockParams, args: argsWithoutItemId }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       summariseArticle({ ...mockParams, args: argsWithoutItemId }),
@@ -116,7 +116,7 @@ describe("summariseArticle", () => {
 
     await expect(
       summariseArticle({ ...mockParams, args: argsWithoutArticle }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       summariseArticle({ ...mockParams, args: argsWithoutArticle }),
@@ -207,7 +207,9 @@ describe("summariseArticle", () => {
 
     mockProvider.getResponse.mockResolvedValue(mockSummaryResponse);
 
-    await expect(summariseArticle(mockParams)).rejects.toThrow(AssistantError);
+    await expect(summariseArticle(mockParams)).rejects.toThrow(
+      expect.any(AssistantError),
+    );
 
     await expect(summariseArticle(mockParams)).rejects.toThrow(
       "Summary content was empty",
@@ -256,7 +258,9 @@ describe("summariseArticle", () => {
   it("should throw AssistantError when provider throws non-AssistantError", async () => {
     mockProvider.getResponse.mockRejectedValue(new Error("API Error"));
 
-    await expect(summariseArticle(mockParams)).rejects.toThrow(AssistantError);
+    await expect(summariseArticle(mockParams)).rejects.toThrow(
+      expect.any(AssistantError),
+    );
 
     await expect(summariseArticle(mockParams)).rejects.toThrow(
       "Failed to summarise article",

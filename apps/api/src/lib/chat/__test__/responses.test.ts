@@ -89,6 +89,8 @@ describe("responses", () => {
         id: "test-id-123",
         finish_reason: "stop",
         mode: undefined,
+        refusal: null,
+        annotations: null,
       });
     });
 
@@ -110,6 +112,8 @@ describe("responses", () => {
         id: "custom-id",
         finish_reason: "length",
         mode: "creative",
+        refusal: "blocked",
+        annotations: [{ note: "x" }],
       };
 
       // @ts-expect-error - test data
@@ -133,6 +137,8 @@ describe("responses", () => {
         { id: "tool1", function: { name: "test" } },
       ]);
       expect(result.finish_reason).toBe("length");
+      expect(result.refusal).toBe("blocked");
+      expect(result.annotations).toEqual([{ note: "x" }]);
     });
 
     it("should handle thinking without content", () => {
@@ -248,10 +254,14 @@ describe("responses", () => {
     });
 
     it("should throw error when model is missing", async () => {
-      // @ts-expect-error - test data
-      await expect(getAIResponse({ ...baseParams, model: "" })).rejects.toThrow(
-        new AssistantError("Model is required", ErrorType.PARAMS_ERROR),
-      );
+      await expect(
+        // @ts-expect-error - test data
+        getAIResponse({ ...baseParams, model: "" }),
+      ).rejects.toMatchObject({
+        message: "Model is required",
+        type: ErrorType.PARAMS_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error when messages is empty", async () => {

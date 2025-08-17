@@ -64,7 +64,7 @@ describe("guessDrawingFromImage", () => {
         request: {},
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       guessDrawingFromImage({
@@ -171,7 +171,7 @@ describe("guessDrawingFromImage", () => {
         request: { drawing: mockDrawing },
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       guessDrawingFromImage({
@@ -197,7 +197,7 @@ describe("guessDrawingFromImage", () => {
         request: { drawing: mockDrawing },
         user: mockUser,
       }),
-    ).rejects.toThrow(AssistantError);
+    ).rejects.toThrow(expect.any(AssistantError));
 
     await expect(
       guessDrawingFromImage({

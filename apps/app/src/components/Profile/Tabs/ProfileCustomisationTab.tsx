@@ -1,6 +1,6 @@
-import { PageHeader } from "~/components/PageHeader";
-import { PageTitle } from "~/components/PageTitle";
-import { UserSettingsForm } from "~/components/UserSettingsForm";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageTitle } from "~/components/Core/PageTitle";
+import { UserSettingsForm } from "~/components/Profile/UserSettingsForm";
 import { useAuthStatus } from "~/hooks/useAuth";
 
 export function ProfileCustomisationTab() {

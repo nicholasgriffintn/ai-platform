@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useShareItem } from "~/hooks/useAppsSharing";
-import { Button } from "./ui";
+import { Button } from ".";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/Dialog";
-import { Input } from "./ui/input";
+} from "./Dialog";
+import { Input } from "./input";
 
 interface ShareButtonProps {
   appId: string;
