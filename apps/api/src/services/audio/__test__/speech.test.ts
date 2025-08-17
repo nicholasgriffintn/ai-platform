@@ -283,9 +283,11 @@ describe("handleTextToSpeech", () => {
           input: "test input",
           user: mockUser,
         }),
-      ).rejects.toMatchObject(
-        new AssistantError("No response from the text-to-speech service"),
-      );
+      ).rejects.toMatchObject({
+        message: "No response from the text-to-speech service",
+        type: ErrorType.UNKNOWN_ERROR,
+        name: "AssistantError",
+      });
     });
   });
 

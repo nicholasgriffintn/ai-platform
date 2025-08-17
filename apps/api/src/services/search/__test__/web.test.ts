@@ -128,18 +128,22 @@ describe("Web Search Service", () => {
 
       await expect(
         handleWebSearch({ ...mockRequest, query: longQuery }),
-      ).rejects.toMatchObject(
-        new AssistantError("Query is too long", ErrorType.PARAMS_ERROR),
-      );
+      ).rejects.toMatchObject({
+        message: "Query is too long",
+        type: ErrorType.PARAMS_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should throw error when search returns no response", async () => {
       mockSanitiseInput.mockReturnValue("test query");
       mockSearch.search.mockResolvedValue(null);
 
-      await expect(handleWebSearch(mockRequest)).rejects.toThrow(
-        new AssistantError("No response from the web search service"),
-      );
+      await expect(handleWebSearch(mockRequest)).rejects.toMatchObject({
+        message: "No response from the web search service",
+        type: ErrorType.UNKNOWN_ERROR,
+        name: "AssistantError",
+      });
     });
 
     it("should handle search service errors", async () => {

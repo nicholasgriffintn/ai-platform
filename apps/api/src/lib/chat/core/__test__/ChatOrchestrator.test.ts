@@ -461,9 +461,11 @@ describe("ChatOrchestrator", () => {
         providerError.status = 500;
         mockPreparer.prepare.mockRejectedValue(providerError);
 
-        await expect(orchestrator.process(mockOptions)).rejects.toThrow(
-          new AssistantError("Model error", ErrorType.PROVIDER_ERROR, 500),
-        );
+        await expect(orchestrator.process(mockOptions)).rejects.toMatchObject({
+          message: "Model error",
+          type: ErrorType.PROVIDER_ERROR,
+          name: "AssistantError",
+        });
       });
 
       it("should wrap unknown errors", async () => {
