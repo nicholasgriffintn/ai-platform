@@ -989,6 +989,8 @@ export function useChatManager() {
           let lastContent = "";
           let lastReasoning = "";
 
+          setCurrentConversationId(newConversationId);
+
           await apiService.streamChatCompletions(
             newConversationId,
             normalizedMessages,
@@ -1037,8 +1039,6 @@ export function useChatManager() {
             }
           }, 0);
         }
-
-        setCurrentConversationId(newConversationId);
 
         toast.success("Conversation branched successfully!");
       } catch (error) {

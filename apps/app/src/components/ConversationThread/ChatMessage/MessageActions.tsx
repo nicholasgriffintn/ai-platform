@@ -7,12 +7,12 @@ import {
   ThumbsDown,
   ThumbsUp,
 } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { Button } from "~/components/ui";
 import type { Message } from "~/types";
 import { MessageInfo } from "./MessageInfo";
-import { BranchModelSelector } from "../BranchModelSelector";
+import { InlineModelSelector } from "../InlineModelSelector";
 
 interface MessageActionsProps {
   message: Message;
@@ -45,19 +45,18 @@ export const MessageActions = ({
   onBranch,
   isBranching = false,
 }: MessageActionsProps) => {
-  const [showBranchModelDialog, setShowBranchModelDialog] = useState(false);
-  const didSelectRef = useRef(false);
+  const [showBranchModelSelector, setShowBranchModelSelector] = useState(false);
 
-  const handleOpenBranchDialog = useCallback(() => {
-    if (!onBranch) return;
-    didSelectRef.current = false;
-    setShowBranchModelDialog(true);
+  const handleBranchClick = useCallback(() => {
+    if (!onBranch) {
+      return;
+    }
+    setShowBranchModelSelector(true);
   }, [onBranch]);
 
   const handleModelSelected = useCallback(
     (modelId: string) => {
-      didSelectRef.current = true;
-      setShowBranchModelDialog(false);
+      setShowBranchModelSelector(false);
       if (onBranch) {
         onBranch(message.id, modelId);
       }
@@ -65,12 +64,9 @@ export const MessageActions = ({
     [onBranch, message.id],
   );
 
-  const handleDialogClose = useCallback(() => {
-    setShowBranchModelDialog(false);
-    if (!didSelectRef.current && onBranch) {
-      onBranch(message.id);
-    }
-  }, [onBranch, message.id]);
+  const handleCancelModelSelection = useCallback(() => {
+    setShowBranchModelSelector(false);
+  }, []);
 
   return (
     <div className="flex flex-wrap justify-end items-center gap-2">
@@ -122,11 +118,11 @@ export const MessageActions = ({
           </Button>
         )}
         {message.role === "user" && onBranch && !isSharedView && (
-          <>
+          <div className="relative flex items-center">
             <Button
               type="button"
               variant="icon"
-              onClick={handleOpenBranchDialog}
+              onClick={handleBranchClick}
               disabled={isBranching}
               className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
                 isBranching ? "opacity-50 cursor-not-allowed" : ""
@@ -136,14 +132,15 @@ export const MessageActions = ({
             >
               <GitBranch size={14} />
             </Button>
-            {showBranchModelDialog && (
-              <BranchModelSelector
-                isOpen={showBranchModelDialog}
-                onClose={handleDialogClose}
-                onModelSelect={handleModelSelected}
-              />
+            {showBranchModelSelector && (
+              <div className="absolute top-full right-0 mt-1 z-50">
+                <InlineModelSelector
+                  onModelSelect={handleModelSelected}
+                  onCancel={handleCancelModelSelection}
+                />
+              </div>
             )}
-          </>
+          </div>
         )}
         {message.role !== "user" && (message.created || message.timestamp) && (
           <MessageInfo
