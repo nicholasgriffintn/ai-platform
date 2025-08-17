@@ -978,7 +978,8 @@ export function useChatManager() {
 
         if (shouldStore) {
           const normalizedMessages = messagesUpToPoint.map(normalizeMessage);
-          const modelToSend = selectedModelId || (model === null ? undefined : model);
+          const modelToSend =
+            selectedModelId || (model === null ? undefined : model);
 
           const chatSettingsWithMetadata = {
             ...chatSettings,

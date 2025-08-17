@@ -336,7 +336,8 @@ export const ModelSelector = ({
                 className="text-sm max-w-[250px] truncate w-full"
                 title={selectedModelInfo?.name || "Select model"}
               >
-                {modelLoadingMessage} {modelLoadingProgress !== undefined &&
+                {modelLoadingMessage}{" "}
+                {modelLoadingProgress !== undefined &&
                   `(${modelLoadingProgress}%)`}
               </span>
             )}
@@ -557,7 +558,8 @@ export const ModelSelector = ({
                           : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
                       }`}
                       onClick={() =>
-                        chatMode !== "remote" && handleToggleModelSource("remote")
+                        chatMode !== "remote" &&
+                        handleToggleModelSource("remote")
                       }
                       aria-pressed={chatMode === "remote"}
                     >

@@ -156,7 +156,9 @@ export const MessageActions = ({
       </div>
       {!isSharedView && message.role !== "user" && message.log_id && (
         <div className="flex items-center space-x-1">
-          <span className="text-xs text-zinc-600 dark:text-zinc-300">Helpful?</span>
+          <span className="text-xs text-zinc-600 dark:text-zinc-300">
+            Helpful?
+          </span>
           <Button
             type="button"
             variant="icon"
@@ -171,8 +173,12 @@ export const MessageActions = ({
                 ? "opacity-50 cursor-not-allowed"
                 : ""
             }`}
-            title={feedbackState === "liked" ? "Feedback submitted" : "Thumbs up"}
-            aria-label={feedbackState === "liked" ? "Feedback submitted" : "Thumbs up"}
+            title={
+              feedbackState === "liked" ? "Feedback submitted" : "Thumbs up"
+            }
+            aria-label={
+              feedbackState === "liked" ? "Feedback submitted" : "Thumbs up"
+            }
           >
             <ThumbsUp size={14} />
           </Button>
@@ -191,10 +197,14 @@ export const MessageActions = ({
                 : ""
             }`}
             title={
-              feedbackState === "disliked" ? "Feedback submitted" : "Thumbs down"
+              feedbackState === "disliked"
+                ? "Feedback submitted"
+                : "Thumbs down"
             }
             aria-label={
-              feedbackState === "disliked" ? "Feedback submitted" : "Thumbs down"
+              feedbackState === "disliked"
+                ? "Feedback submitted"
+                : "Thumbs down"
             }
           >
             <ThumbsDown size={14} />
