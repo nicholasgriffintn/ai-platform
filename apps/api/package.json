@@ -35,7 +35,7 @@
     "drizzle-orm": "0.44.4",
     "hono": "4.9.2",
     "hono-openapi": "0.4.8",
-    "isbot": "5.1.29",
+    "isbot": "5.1.30",
     "stripe": "^18.0.0",
     "zod": "4.0.17",
     "zod-openapi": "5.3.1"
