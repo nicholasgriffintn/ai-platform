@@ -18,7 +18,6 @@ export class UserSettingsRepository extends BaseRepository {
       );
     }
 
-    // @ts-expect-error
     return await crypto.subtle.importKey(
       "raw",
       decodeBase64(this.env.PRIVATE_KEY),
@@ -68,7 +67,6 @@ export class UserSettingsRepository extends BaseRepository {
       const { iv, data } = parsedEncryptedData;
 
       const decryptedData = await crypto.subtle.decrypt(
-        // @ts-expect-error
         { name: "AES-GCM", iv: decodeBase64(iv) },
         key,
         decodeBase64(data),
@@ -411,7 +409,6 @@ export class UserSettingsRepository extends BaseRepository {
           label: new TextEncoder().encode("provider-api-key"),
         },
         privateKey,
-        // @ts-expect-error
         decodeBase64(result.api_key),
       );
 

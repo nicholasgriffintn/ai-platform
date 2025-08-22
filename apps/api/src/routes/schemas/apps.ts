@@ -23,8 +23,8 @@ export const deleteEmbeddingSchema = z.object({
 });
 
 export const weatherQuerySchema = z.object({
-  longitude: z.string().transform((val) => Number.parseFloat(val)),
-  latitude: z.string().transform((val) => Number.parseFloat(val)),
+  longitude: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a valid number"),
+  latitude: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a valid number"),
 });
 
 export const imageGenerationSchema = z.object({

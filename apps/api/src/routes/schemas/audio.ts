@@ -6,7 +6,7 @@ export const transcribeQuerySchema = z.object({
 });
 
 export const transcribeFormSchema = z.object({
-  audio: z.instanceof(File).or(z.instanceof(Blob)).or(z.string()).meta({
+  audio: z.any().meta({
     description:
       "The audio file to transcribe. Can be a File, Blob, or a URL string. If a URL, it must start with http:// or https://.",
   }),
