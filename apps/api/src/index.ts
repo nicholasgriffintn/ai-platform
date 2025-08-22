@@ -35,6 +35,7 @@ import tools from "./routes/tools";
 import uploads from "./routes/uploads";
 import user from "./routes/user";
 import webhooks from "./routes/webhooks";
+import memories from "./routes/memories";
 import { autoRegisterDynamicApps } from "./services/dynamic-apps/auto-register-apps";
 import { handleGetMetrics } from "./services/metrics/getMetrics";
 import type { IEnv } from "./types";
@@ -290,6 +291,7 @@ app.route(ROUTES.STRIPE, stripe);
 app.route(ROUTES.REALTIME, realtime);
 app.route(ROUTES.AGENTS, agents);
 app.route(ROUTES.ADMIN, admin);
+app.route(ROUTES.MEMORIES, memories);
 
 app.notFound((c) => c.json({ status: "not found" }, 404));
 

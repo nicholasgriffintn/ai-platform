@@ -551,3 +551,86 @@ export const agentRatings = sqliteTable(
 );
 
 export type AgentRating = typeof agentRatings.$inferSelect;
+
+export const memories = sqliteTable(
+  "memories",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    text: text().notNull(),
+    category: text({
+      enum: ["fact", "preference", "schedule", "general", "snapshot"],
+    }).notNull(),
+    conversation_id: text(),
+    metadata: text(),
+    vector_id: text(),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    userIdIdx: index("memories_user_id_idx").on(table.user_id),
+    categoryIdx: index("memories_category_idx").on(table.category),
+    conversationIdIdx: index("memories_conversation_id_idx").on(
+      table.conversation_id,
+    ),
+    vectorIdIdx: index("memories_vector_id_idx").on(table.vector_id),
+  }),
+);
+
+export type Memory = typeof memories.$inferSelect;
+
+export const memoryGroups = sqliteTable(
+  "memory_groups",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    title: text().notNull(),
+    description: text(),
+    category: text({
+      enum: ["fact", "preference", "schedule", "general", "snapshot"],
+    }),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    userIdIdx: index("memory_groups_user_id_idx").on(table.user_id),
+    categoryIdx: index("memory_groups_category_idx").on(table.category),
+  }),
+);
+
+export type MemoryGroup = typeof memoryGroups.$inferSelect;
+
+export const memoryGroupMembers = sqliteTable(
+  "memory_group_members",
+  {
+    id: text().primaryKey(),
+    group_id: text()
+      .notNull()
+      .references(() => memoryGroups.id, { onDelete: "cascade" }),
+    memory_id: text()
+      .notNull()
+      .references(() => memories.id, { onDelete: "cascade" }),
+    similarity_score: text(),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+  },
+  (table) => ({
+    groupIdIdx: index("memory_group_members_group_id_idx").on(table.group_id),
+    memoryIdIdx: index("memory_group_members_memory_id_idx").on(
+      table.memory_id,
+    ),
+    uniqueMember: index("memory_group_members_unique_idx").on(
+      table.group_id,
+      table.memory_id,
+    ),
+  }),
+);
+
+export type MemoryGroupMember = typeof memoryGroupMembers.$inferSelect;

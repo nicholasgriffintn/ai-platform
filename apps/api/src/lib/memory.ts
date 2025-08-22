@@ -6,6 +6,7 @@ import { getLogger } from "~/utils/logger";
 import type { ConversationManager } from "./conversationManager";
 import { Embedding } from "./embedding";
 import { getAuxiliaryModel } from "./models";
+import { MemoryRepository } from "~/repositories/MemoryRepository";
 
 const logger = getLogger({ prefix: "MEMORY" });
 
@@ -35,17 +36,23 @@ export class MemoryManager {
   /**
    * Store a short summary or snippet into the memory vector store under a dedicated namespace
    * @param metadata arbitrary string-based metadata (e.g. conversationId, timestamp, category)
+   * @param conversationId optional conversation ID to link this memory to
    */
   public async storeMemory(
     text: string,
     metadata: Record<string, string>,
-  ): Promise<void> {
+    conversationId?: string,
+  ): Promise<string | null> {
+    if (!this.user?.id) {
+      throw new Error("User ID is required to store memories");
+    }
+
     const embedding = Embedding.getInstance(this.env, this.user);
-    const id = generateId();
+    const vectorId = generateId();
 
-    logger.debug("Storing memory", { text, metadata, id });
+    logger.debug("Storing memory", { text, metadata, vectorId });
 
-    const vectors = await embedding.generate("memory", text, id, {
+    const vectors = await embedding.generate("memory", text, vectorId, {
       ...metadata,
       text,
       stored_at: Date.now().toString(),
@@ -74,7 +81,7 @@ export class MemoryManager {
       logger.debug("Found similar memories, skipping insertion", {
         similarMemories,
       });
-      return;
+      return null;
     }
 
     logger.debug("Inserting memory", {
@@ -84,6 +91,62 @@ export class MemoryManager {
     });
 
     await embedding.insert(vectors, { namespace });
+
+    const repository = new MemoryRepository(this.env);
+    const memoryRecord = await repository.createMemory(
+      this.user.id,
+      text,
+      metadata.category || "general",
+      vectorId,
+      conversationId,
+      {
+        ...metadata,
+        stored_at: Date.now().toString(),
+      },
+    );
+
+    return memoryRecord?.id || null;
+  }
+
+  /**
+   * Delete a memory from both vector and transactional databases
+   * @param memoryId - The memory ID from the transactional database
+   */
+  public async deleteMemory(memoryId: string): Promise<boolean> {
+    if (!this.user?.id) {
+      throw new Error("User ID is required to delete memories");
+    }
+
+    const repository = new MemoryRepository(this.env);
+    const memory = await repository.getMemoryById(memoryId);
+
+    if (!memory || memory.user_id !== this.user.id) {
+      logger.warn("Memory not found or access denied", {
+        memoryId,
+        userId: this.user.id,
+      });
+      return false;
+    }
+
+    try {
+      if (memory.vector_id) {
+        const embedding = Embedding.getInstance(this.env, this.user);
+        await embedding.delete([memory.vector_id]);
+      }
+
+      await repository.deleteMemory(memoryId);
+
+      await repository.removeMemoryFromGroups(memoryId);
+
+      logger.debug("Memory deleted successfully", {
+        memoryId,
+        vectorId: memory.vector_id,
+      });
+      return true;
+    } catch (error) {
+      logger.error("Failed to delete memory", { error, memoryId });
+      return false;
+    }
   }
 
   /**
