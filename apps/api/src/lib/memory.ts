@@ -283,7 +283,7 @@ export class MemoryManager {
                       {
                         role: "system",
                         content:
-                          "You are a memory normalizer. Transform the following user information into 2-3 concise, alternative phrasings that might match how users would later ask about this information. Each alternative should be a plain, natural language sentence without any formatting, headers, or structured data. Respond with a JSON array of strings, where each string is a complete alternative phrasing. Focus on creating variations that would help with semantic search matching.",
+                          "You are a memory normalizer. Transform the following user information into 1-2 concise, factual statements that capture the same information but with different wording. Focus on creating clear, declarative statements (NOT questions) that would help with semantic search matching. Each alternative should be a plain, factual sentence. Respond with a JSON array of strings. Avoid creating questions or redundant phrasings.",
                       },
                       { role: "user", content: summaryText },
                     ],
