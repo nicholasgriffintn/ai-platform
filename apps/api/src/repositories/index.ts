@@ -7,6 +7,7 @@ import { BaseRepository } from "./BaseRepository";
 import { ConversationRepository } from "./ConversationRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
 import { MagicLinkNonceRepository } from "./MagicLinkNonceRepository";
+import { MemoryRepository } from "./MemoryRepository";
 import { MessageRepository } from "./MessageRepository";
 import { PlanRepository } from "./PlanRepository";
 import { SessionRepository } from "./SessionRepository";
@@ -22,6 +23,7 @@ export {
   ConversationRepository,
   EmbeddingRepository,
   MagicLinkNonceRepository,
+  MemoryRepository,
   MessageRepository,
   SessionRepository,
   UserRepository,
@@ -44,6 +46,7 @@ export class RepositoryManager {
   private embeddingRepo: EmbeddingRepository;
   private webAuthnRepo: WebAuthnRepository;
   private magicLinkNonceRepo: MagicLinkNonceRepository;
+  private memoryRepo: MemoryRepository;
   private apiKeyRepo: ApiKeyRepository;
   private appDataRepo: AppDataRepository;
 
@@ -59,6 +62,7 @@ export class RepositoryManager {
     this.embeddingRepo = new EmbeddingRepository(env);
     this.webAuthnRepo = new WebAuthnRepository(env);
     this.magicLinkNonceRepo = new MagicLinkNonceRepository(env);
+    this.memoryRepo = new MemoryRepository(env);
     this.apiKeyRepo = new ApiKeyRepository(env);
     this.appDataRepo = new AppDataRepository(env);
   }
@@ -116,5 +120,9 @@ export class RepositoryManager {
 
   public get appData(): AppDataRepository {
     return this.appDataRepo;
+  }
+
+  public get memories(): MemoryRepository {
+    return this.memoryRepo;
   }
 }

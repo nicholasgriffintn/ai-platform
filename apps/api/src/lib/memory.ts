@@ -6,6 +6,7 @@ import { getLogger } from "~/utils/logger";
 import type { ConversationManager } from "./conversationManager";
 import { Embedding } from "./embedding";
 import { getAuxiliaryModel } from "./models";
+import { MemoryRepository } from "~/repositories/MemoryRepository";
 
 const logger = getLogger({ prefix: "MEMORY" });
 
@@ -35,17 +36,19 @@ export class MemoryManager {
   /**
    * Store a short summary or snippet into the memory vector store under a dedicated namespace
    * @param metadata arbitrary string-based metadata (e.g. conversationId, timestamp, category)
+   * @param conversationId optional conversation ID to link this memory to
    */
   public async storeMemory(
     text: string,
     metadata: Record<string, string>,
-  ): Promise<void> {
+    conversationId?: string,
+  ): Promise<string | null> {
     const embedding = Embedding.getInstance(this.env, this.user);
-    const id = generateId();
+    const vectorId = generateId();
 
-    logger.debug("Storing memory", { text, metadata, id });
+    logger.debug("Storing memory", { text, metadata, vectorId });
 
-    const vectors = await embedding.generate("memory", text, id, {
+    const vectors = await embedding.generate("memory", text, vectorId, {
       ...metadata,
       text,
       stored_at: Date.now().toString(),
@@ -74,7 +77,7 @@ export class MemoryManager {
       logger.debug("Found similar memories, skipping insertion", {
         similarMemories,
       });
-      return;
+      return null;
     }
 
     logger.debug("Inserting memory", {
@@ -84,6 +87,71 @@ export class MemoryManager {
     });
 
     await embedding.insert(vectors, { namespace });
+
+    if (this.user?.id) {
+      try {
+        const repository = new MemoryRepository(this.env);
+        const memoryRecord = await repository.createMemory(
+          this.user.id,
+          text,
+          metadata.category || "general",
+          vectorId,
+          conversationId,
+          {
+            ...metadata,
+            stored_at: Date.now().toString(),
+          },
+        );
+        return memoryRecord?.id || null;
+      } catch (error) {
+        logger.warn("Failed to store memory in transactional database", {
+          error,
+        });
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Delete a memory from both vector and transactional databases
+   * @param memoryId - The memory ID from the transactional database
+   */
+  public async deleteMemory(memoryId: string): Promise<boolean> {
+    if (!this.user?.id) {
+      throw new Error("User ID is required to delete memories");
+    }
+
+    const repository = new MemoryRepository(this.env);
+    const memory = await repository.getMemoryById(memoryId);
+
+    if (!memory || memory.user_id !== this.user.id) {
+      logger.warn("Memory not found or access denied", {
+        memoryId,
+        userId: this.user.id,
+      });
+      return false;
+    }
+
+    try {
+      if (memory.vector_id) {
+        const embedding = Embedding.getInstance(this.env, this.user);
+        await embedding.delete([memory.vector_id]);
+      }
+
+      await repository.deleteMemory(memoryId);
+
+      await repository.removeMemoryFromGroups(memoryId);
+
+      logger.debug("Memory deleted successfully", {
+        memoryId,
+        vectorId: memory.vector_id,
+      });
+      return true;
+    } catch (error) {
+      logger.error("Failed to delete memory", { error, memoryId });
+      return false;
+    }
   }
 
   /**
@@ -172,8 +240,36 @@ export class MemoryManager {
               messages: [
                 {
                   role: "system",
-                  content:
-                    "You are a memory classifier for an AI assistant. Analyze the following user message and determine if it contains information worth remembering as a long-term memory. This could include facts about the user, preferences, important events, appointments, goals, or other significant information. For memories that should be stored, provide a clear, concise summary that will be easily retrievable when the user asks related questions later. Respond with JSON: { storeMemory: boolean, category: string, summary: string }. Use specific categories when possible (e.g., 'preference', 'schedule', 'goal', 'fact', 'opinion').",
+                  content: `You are a memory classifier for an AI assistant. Analyze the following user message and determine if it contains information worth remembering as a long-term memory. This could include facts about the user, preferences, important events, appointments, goals, or other significant information. 
+
+For memories that should be stored, provide a clear, concise summary that will be easily retrievable when the user asks related questions later. 
+
+IMPORTANT: Convert any relative dates to absolute dates. Today's date is ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.
+
+EXAMPLES:
+
+Input: "I love Italian food"
+Output: { "storeMemory": true, "category": "preference", "summary": "User loves Italian food" }
+
+Input: "My green sofa is arriving tomorrow"
+Output: { "storeMemory": true, "category": "schedule", "summary": "User's green sofa is arriving on ${new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString()}" }
+
+Input: "I work at Google as a software engineer"
+Output: { "storeMemory": true, "category": "fact", "summary": "User works at Google as a software engineer" }
+
+Input: "My goal is to learn Spanish this year"
+Output: { "storeMemory": true, "category": "goal", "summary": "User's goal is to learn Spanish in ${new Date().getFullYear()}" }
+
+Input: "I have a doctor appointment next Friday at 3pm"
+Output: { "storeMemory": true, "category": "schedule", "summary": "User has a doctor appointment on [next Friday's actual date] at 3pm" }
+
+Input: "What's the weather like?"
+Output: { "storeMemory": false, "category": "", "summary": "" }
+
+Input: "Thanks for helping me"
+Output: { "storeMemory": false, "category": "", "summary": "" }
+
+Respond with JSON: { storeMemory: boolean, category: string, summary: string }. Use specific categories: 'preference', 'schedule', 'goal', 'fact', 'opinion'.`,
                 },
                 { role: "user", content: lastUser },
               ],
@@ -215,7 +311,7 @@ export class MemoryManager {
                       {
                         role: "system",
                         content:
-                          "You are a memory normalizer. Transform the following user information into 2-3 concise, alternative phrasings that might match how users would later ask about this information. Each alternative should be a plain, natural language sentence without any formatting, headers, or structured data. Respond with a JSON array of strings, where each string is a complete alternative phrasing. Focus on creating variations that would help with semantic search matching.",
+                          "You are a memory normalizer. Transform the following user information into 1-2 concise, factual statements that capture the same information but with different wording. Focus on creating clear, declarative statements (NOT questions) that would help with semantic search matching. Each alternative should be a plain, factual sentence. Maintain any specific dates that are mentioned - do not convert them back to relative terms. Respond with a JSON array of strings. Avoid creating questions or redundant phrasings.",
                       },
                       { role: "user", content: summaryText },
                     ],

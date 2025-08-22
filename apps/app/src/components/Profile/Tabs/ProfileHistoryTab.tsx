@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Plus } from "lucide-react";
 
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
@@ -8,7 +9,11 @@ import {
   useDeleteAllRemoteChats,
 } from "~/hooks/useChat";
 import { apiService } from "~/lib/api/api-service";
+import { useMemories } from "~/hooks/useMemory";
 import { Button } from "~/components/ui";
+import { MemoryList } from "~/components/MemoryList";
+import { CreateGroupModal } from "~/components/CreateGroupModal";
+import { MemoryGroups } from "~/components/MemoryGroups";
 
 export function ProfileHistoryTab() {
   const { trackEvent } = useTrackEvent();
@@ -16,6 +21,55 @@ export function ProfileHistoryTab() {
   const deleteAllChats = useDeleteAllLocalChats();
   const deleteAllRemoteChats = useDeleteAllRemoteChats();
   const [isExporting, setIsExporting] = useState(false);
+
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+
+  const {
+    memories,
+    groups,
+    deleteMemory,
+    deleteGroup,
+    addMemoriesToGroup,
+    isDeletingMemory,
+    isAddingMemoriesToGroup,
+  } = useMemories(selectedGroup || undefined);
+
+  const handleDeleteMemory = async (memoryId: string) => {
+    if (!confirm("Are you sure you want to delete this memory?")) {
+      return;
+    }
+
+    deleteMemory(memoryId);
+  };
+
+  const handleGroupCreated = () => {
+    setShowCreateGroup(false);
+  };
+
+  const handleDeleteGroup = async (groupId: string) => {
+    try {
+      await deleteGroup(groupId);
+      if (selectedGroup === groupId) {
+        setSelectedGroup(null);
+      }
+    } catch (error) {
+      console.error("Failed to delete group:", error);
+      alert("Failed to delete group. Please try again.");
+    }
+  };
+
+  const handleAddMemoriesToGroup = async (
+    groupId: string,
+    memoryIds: string[],
+  ) => {
+    try {
+      await addMemoriesToGroup({ groupId, memoryIds });
+    } catch (error) {
+      console.error("Failed to add memories to group:", error);
+      alert("Failed to add memories to group. Please try again.");
+    }
+  };
 
   const handleDeleteAllLocalChats = async () => {
     if (
@@ -151,7 +205,60 @@ export function ProfileHistoryTab() {
             vary.
           </p>
         </div>
+
+        <div className="border-t border-zinc-200 dark:border-zinc-800 pt-8 mt-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
+                Memory Management
+              </h3>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                Organize and manage your AI conversation memories
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateGroup(true)}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Create Group
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-1">
+              <MemoryGroups
+                groups={groups}
+                selectedGroup={selectedGroup}
+                onGroupSelect={setSelectedGroup}
+                onDeleteGroup={handleDeleteGroup}
+              />
+            </div>
+
+            <div className="lg:col-span-3">
+              <MemoryList
+                memories={memories}
+                groups={groups}
+                selectedGroup={selectedGroup}
+                onMemoryDeleted={handleDeleteMemory}
+                onAddMemoriesToGroup={handleAddMemoriesToGroup}
+                isDeletingMemory={isDeletingMemory}
+                isAddingToGroup={isAddingMemoriesToGroup}
+              />
+            </div>
+          </div>
+        </div>
       </div>
+
+      {showCreateGroup && (
+        <CreateGroupModal
+          onClose={() => setShowCreateGroup(false)}
+          onGroupCreated={handleGroupCreated}
+        />
+      )}
     </div>
   );
 }

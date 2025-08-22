@@ -163,3 +163,21 @@ export interface Conversation {
   is_public?: boolean;
   share_id?: string;
 }
+
+export interface Memory {
+  id: string;
+  text: string;
+  category: string;
+  created_at: string;
+  group_id: string | null;
+  group_title: string | null;
+}
+
+export interface MemoryGroup {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  member_count: number;
+  created_at: string;
+}
