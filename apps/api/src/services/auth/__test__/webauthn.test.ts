@@ -151,12 +151,10 @@ describe("WebAuthn Service", () => {
 
       await expect(
         getWebAuthnChallenge(mockDatabase, "invalid"),
-      ).rejects.toThrow(
-        new AssistantError(
-          "WebAuthn challenge not found or expired",
-          ErrorType.AUTHENTICATION_ERROR,
-        ),
-      );
+      ).rejects.toMatchObject({
+        message: "WebAuthn challenge not found or expired",
+        type: "AUTHENTICATION_ERROR",
+      });
     });
   });
 

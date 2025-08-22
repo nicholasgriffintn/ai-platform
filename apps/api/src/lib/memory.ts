@@ -43,10 +43,6 @@ export class MemoryManager {
     metadata: Record<string, string>,
     conversationId?: string,
   ): Promise<string | null> {
-    if (!this.user?.id) {
-      throw new Error("User ID is required to store memories");
-    }
-
     const embedding = Embedding.getInstance(this.env, this.user);
     const vectorId = generateId();
 
@@ -92,20 +88,29 @@ export class MemoryManager {
 
     await embedding.insert(vectors, { namespace });
 
-    const repository = new MemoryRepository(this.env);
-    const memoryRecord = await repository.createMemory(
-      this.user.id,
-      text,
-      metadata.category || "general",
-      vectorId,
-      conversationId,
-      {
-        ...metadata,
-        stored_at: Date.now().toString(),
-      },
-    );
+    if (this.user?.id) {
+      try {
+        const repository = new MemoryRepository(this.env);
+        const memoryRecord = await repository.createMemory(
+          this.user.id,
+          text,
+          metadata.category || "general",
+          vectorId,
+          conversationId,
+          {
+            ...metadata,
+            stored_at: Date.now().toString(),
+          },
+        );
+        return memoryRecord?.id || null;
+      } catch (error) {
+        logger.warn("Failed to store memory in transactional database", {
+          error,
+        });
+      }
+    }
 
-    return memoryRecord?.id || null;
+    return null;
   }
 
   /**
