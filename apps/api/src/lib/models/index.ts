@@ -268,6 +268,17 @@ export function getIncludedInRouterModels(
   return cachedRouterModels;
 }
 
+export async function getIncludedInRouterModelsForUser(
+  env: IEnv,
+  userId?: number,
+  options: ModelsOptions = {
+    shouldUseCache: true,
+  },
+): Promise<Record<string, ModelConfigItem>> {
+  const allRouterModels = getIncludedInRouterModels(options);
+  return await filterModelsForUserAccess(allRouterModels, env, userId, options);
+}
+
 export function getModelsByCapability(capability: string) {
   return Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
@@ -401,12 +412,7 @@ export async function getAuxiliaryModel(
 ): Promise<{ model: string; provider: string }> {
   let modelToUse = "gemma-3-12b-it";
 
-  const allRouterModels = getIncludedInRouterModels();
-  const availableModels = await filterModelsForUserAccess(
-    allRouterModels,
-    env,
-    user?.id,
-  );
+  const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
 
   const hasGroqModel = Object.keys(availableModels).some(
     (model) => availableModels[model].provider === "groq",
@@ -428,12 +434,7 @@ export const getAuxiliaryModelForRetrieval = async (
 ) => {
   let modelToUse = "gemma-3-12b-it";
 
-  const allRouterModels = getIncludedInRouterModels();
-  const availableModels = await filterModelsForUserAccess(
-    allRouterModels,
-    env,
-    user?.id,
-  );
+  const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
 
   const hasPerplexityModel = Object.keys(availableModels).some(
     (model) => availableModels[model].provider === "perplexity-ai",
@@ -451,12 +452,7 @@ export const getAuxiliaryModelForRetrieval = async (
 export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
   let modelToUse = "@cf/meta/llama-guard-3-8b";
 
-  const allRouterModels = getIncludedInRouterModels();
-  const availableModels = await filterModelsForUserAccess(
-    allRouterModels,
-    env,
-    user?.id,
-  );
+  const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
 
   const hasGroqModel = Object.keys(availableModels).some(
     (model) => availableModels[model].provider === "groq",

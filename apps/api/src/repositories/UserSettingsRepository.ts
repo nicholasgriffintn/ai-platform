@@ -1,6 +1,6 @@
 import { decodeBase64 } from "hono/utils/encode";
 
-import { getModels } from "~/lib/models";
+import { filterModelsForUserAccess, getModels } from "~/lib/models";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IUserSettings } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
@@ -218,7 +218,7 @@ export class UserSettingsRepository extends BaseRepository {
       userModels.map((model) => [model.model_id, model.enabled === 1]),
     );
 
-    const models = await getModels();
+    const models = getModels();
 
     return Object.values(models).reduce(
       (enabledModels, model) => {

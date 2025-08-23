@@ -1,8 +1,7 @@
 import { PromptAnalyzer } from "~/lib/modelRouter/promptAnalyser";
 import {
   defaultModel,
-  filterModelsForUserAccess,
-  getIncludedInRouterModels,
+  getIncludedInRouterModelsForUser,
   getModelConfig,
 } from "~/lib/models";
 import { trackModelRoutingMetrics } from "~/lib/monitoring";
@@ -266,10 +265,7 @@ export class ModelRouter {
   ): Promise<string> {
     return trackModelRoutingMetrics(
       async () => {
-        const allRouterModels = getIncludedInRouterModels();
-
-        const availableModels = await filterModelsForUserAccess(
-          allRouterModels,
+        const availableModels = await getIncludedInRouterModelsForUser(
           env,
           user?.id,
         );
@@ -311,10 +307,7 @@ export class ModelRouter {
   ): Promise<string[]> {
     return trackModelRoutingMetrics(
       async () => {
-        const allRouterModels = getIncludedInRouterModels();
-
-        const availableModels = await filterModelsForUserAccess(
-          allRouterModels,
+        const availableModels = await getIncludedInRouterModelsForUser(
           env,
           user?.id,
         );
