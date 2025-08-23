@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
-    "@cloudflare/workers-types": "4.20250822.0",
+    "@cloudflare/workers-types": "4.20250823.0",
     "@react-router/dev": "7.8.2",
     "@simplewebauthn/types": "^12.0.0",
     "@tailwindcss/typography": "0.5.16",
