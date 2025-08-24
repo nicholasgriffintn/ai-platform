@@ -268,6 +268,22 @@ export function getIncludedInRouterModels(
   return cachedRouterModels;
 }
 
+export function getIncludedInRouterFreeModels(
+  options: ModelsOptions = {
+    shouldUseCache: true,
+  },
+) {
+  return Object.entries(getIncludedInRouterModels(options)).reduce(
+    (acc, [key, model]) => {
+      if (model.isFree) {
+        acc[key] = model;
+      }
+      return acc;
+    },
+    {} as typeof modelConfig,
+  );
+}
+
 export async function getIncludedInRouterModelsForUser(
   env: IEnv,
   userId?: number,
@@ -276,6 +292,21 @@ export async function getIncludedInRouterModelsForUser(
   },
 ): Promise<Record<string, ModelConfigItem>> {
   const allRouterModels = getIncludedInRouterModels(options);
+
+  if (!userId) {
+    const freeModels = getIncludedInRouterFreeModels(options);
+    return freeModels;
+  }
+
+  const database = Database.getInstance(env);
+  const user = await database.getUserById(userId);
+  const isPro = user?.plan_id === "pro";
+
+  if (!isPro) {
+    const freeModels = getIncludedInRouterFreeModels(options);
+    return freeModels;
+  }
+
   return await filterModelsForUserAccess(allRouterModels, env, userId, options);
 }
 
