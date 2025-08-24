@@ -295,7 +295,7 @@ export async function getIncludedInRouterModelsForUser(
 
   if (!userId) {
     const freeModels = getIncludedInRouterFreeModels(options);
-    return freeModels;
+    return await filterModelsForUserAccess(freeModels, env, userId, options);
   }
 
   const database = Database.getInstance(env);
@@ -304,7 +304,7 @@ export async function getIncludedInRouterModelsForUser(
 
   if (!isPro) {
     const freeModels = getIncludedInRouterFreeModels(options);
-    return freeModels;
+    return await filterModelsForUserAccess(freeModels, env, userId, options);
   }
 
   return await filterModelsForUserAccess(allRouterModels, env, userId, options);
