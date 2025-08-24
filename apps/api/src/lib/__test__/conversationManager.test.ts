@@ -40,7 +40,7 @@ describe("ConversationManager", () => {
   });
 
   describe("getInstance", () => {
-    it("should create singleton instance", () => {
+    it("should create new instance", () => {
       const instance1 = ConversationManager.getInstance({
         database: mockDatabase as any,
         user: mockUser,
@@ -51,10 +51,10 @@ describe("ConversationManager", () => {
         user: mockUser,
       });
 
-      expect(instance1).toBe(instance2);
+      expect(instance1).toStrictEqual(instance2);
     });
 
-    it("should update instance properties on subsequent calls", () => {
+    it("should create instance with different user properties", () => {
       const instance1 = ConversationManager.getInstance({
         database: mockDatabase as any,
         user: mockUser,
@@ -66,7 +66,8 @@ describe("ConversationManager", () => {
         user: newUser,
       });
 
-      expect(instance1).toBe(instance2);
+      expect(instance1).not.toBe(instance2);
+      expect(instance2["user"]).toEqual(newUser);
     });
   });
 

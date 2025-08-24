@@ -9,6 +9,7 @@ const mockPromptAnalyzer = vi.hoisted(() => ({
 
 const mockModels = vi.hoisted(() => ({
   getIncludedInRouterModels: vi.fn(),
+  getIncludedInRouterModelsForUser: vi.fn(),
   filterModelsForUserAccess: vi.fn(),
   getModelConfig: vi.fn(),
   defaultModel: "claude-3-5-sonnet-20241022",
@@ -93,8 +94,9 @@ describe("ModelRouter", () => {
         },
       };
 
-      mockModels.getIncludedInRouterModels.mockReturnValue(availableModels);
-      mockModels.filterModelsForUserAccess.mockResolvedValue(availableModels);
+      mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
+        availableModels,
+      );
       mockModels.getModelConfig.mockResolvedValue(mockModelConfig);
       mockPromptAnalyzer.analyzePrompt.mockResolvedValue(mockRequirements);
 
@@ -118,8 +120,7 @@ describe("ModelRouter", () => {
     });
 
     it("should return default model when no suitable models found", async () => {
-      mockModels.getIncludedInRouterModels.mockReturnValue({});
-      mockModels.filterModelsForUserAccess.mockResolvedValue({});
+      mockModels.getIncludedInRouterModelsForUser.mockResolvedValue({});
       mockPromptAnalyzer.analyzePrompt.mockResolvedValue(mockRequirements);
 
       const result = await ModelRouter.selectModel(
@@ -134,7 +135,7 @@ describe("ModelRouter", () => {
     });
 
     it("should handle errors and return default model", async () => {
-      mockModels.getIncludedInRouterModels.mockImplementation(() => {
+      mockModels.getIncludedInRouterModelsForUser.mockImplementation(() => {
         throw new Error("Test error");
       });
 
@@ -159,8 +160,9 @@ describe("ModelRouter", () => {
         "test-model": mockModelConfig,
       };
 
-      mockModels.getIncludedInRouterModels.mockReturnValue(availableModels);
-      mockModels.filterModelsForUserAccess.mockResolvedValue(availableModels);
+      mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
+        availableModels,
+      );
       mockModels.getModelConfig.mockResolvedValue(mockModelConfig);
       mockPromptAnalyzer.analyzePrompt.mockResolvedValue(criticalRequirements);
 
@@ -186,8 +188,9 @@ describe("ModelRouter", () => {
 
       const availableModels = { "test-model": mockModelConfig };
 
-      mockModels.getIncludedInRouterModels.mockReturnValue(availableModels);
-      mockModels.filterModelsForUserAccess.mockResolvedValue(availableModels);
+      mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
+        availableModels,
+      );
       mockModels.getModelConfig.mockResolvedValue(mockModelConfig);
       mockPromptAnalyzer.analyzePrompt.mockResolvedValue(simpleRequirements);
 
@@ -222,8 +225,9 @@ describe("ModelRouter", () => {
         },
       };
 
-      mockModels.getIncludedInRouterModels.mockReturnValue(availableModels);
-      mockModels.filterModelsForUserAccess.mockResolvedValue(availableModels);
+      mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
+        availableModels,
+      );
 
       mockModels.getModelConfig.mockImplementation((modelId: string) => {
         return availableModels[modelId];
@@ -244,7 +248,7 @@ describe("ModelRouter", () => {
     });
 
     it("should handle errors and return default model array", async () => {
-      mockModels.getIncludedInRouterModels.mockImplementation(() => {
+      mockModels.getIncludedInRouterModelsForUser.mockImplementation(() => {
         throw new Error("Test error");
       });
 
@@ -273,8 +277,9 @@ describe("ModelRouter", () => {
         },
       };
 
-      mockModels.getIncludedInRouterModels.mockReturnValue(availableModels);
-      mockModels.filterModelsForUserAccess.mockResolvedValue(availableModels);
+      mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
+        availableModels,
+      );
 
       mockModels.getModelConfig.mockImplementation((modelId: string) => {
         return availableModels[modelId];
@@ -312,8 +317,9 @@ describe("ModelRouter", () => {
         },
       };
 
-      mockModels.getIncludedInRouterModels.mockReturnValue(availableModels);
-      mockModels.filterModelsForUserAccess.mockResolvedValue(availableModels);
+      mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
+        availableModels,
+      );
 
       mockModels.getModelConfig.mockImplementation((modelId: string) => {
         return availableModels[modelId];
@@ -349,8 +355,9 @@ describe("ModelRouter", () => {
         },
       };
 
-      mockModels.getIncludedInRouterModels.mockReturnValue(availableModels);
-      mockModels.filterModelsForUserAccess.mockResolvedValue(availableModels);
+      mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
+        availableModels,
+      );
 
       mockModels.getModelConfig.mockImplementation((modelId: string) => {
         return availableModels[modelId];
@@ -388,8 +395,9 @@ describe("ModelRouter", () => {
         },
       };
 
-      mockModels.getIncludedInRouterModels.mockReturnValue(availableModels);
-      mockModels.filterModelsForUserAccess.mockResolvedValue(availableModels);
+      mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
+        availableModels,
+      );
 
       mockModels.getModelConfig.mockImplementation((modelId: string) => {
         return availableModels[modelId];

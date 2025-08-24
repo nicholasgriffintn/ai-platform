@@ -37,7 +37,7 @@ vi.mock("~/lib/providers/factory", () => ({
   },
 }));
 
-vi.mock("./models", () => ({
+vi.mock("~/lib/models", () => ({
   getAuxiliaryModel: vi.fn().mockResolvedValue({
     model: "gpt-3.5-turbo",
     provider: "openai",
@@ -92,30 +92,48 @@ describe("MemoryManager", () => {
       ] as any;
 
       const mockProvider = {
-        getResponse: vi.fn().mockResolvedValue({
-          response: JSON.stringify({
-            storeMemory: true,
-            category: "preference",
-            summary: "User loves Python programming",
+        getResponse: vi
+          .fn()
+          .mockResolvedValueOnce({
+            response: JSON.stringify({
+              storeMemory: true,
+              category: "preference",
+              summary: "User loves Python programming",
+            }),
+          })
+          .mockResolvedValueOnce({
+            response: JSON.stringify([
+              "The user enjoys Python programming",
+              "Python is preferred by the user for programming",
+            ]),
           }),
-        }),
         name: "test-provider",
         supportsStreaming: false,
         createRealtimeSession: vi.fn(),
       };
       vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
 
-      vi.mocked(parseAIResponseJson).mockReturnValue({
-        data: {
-          storeMemory: true,
-          category: "preference",
-          summary: "User loves Python programming",
-        },
-        error: null,
-      });
+      vi.mocked(parseAIResponseJson)
+        .mockReturnValueOnce({
+          data: {
+            storeMemory: true,
+            category: "preference",
+            summary: "User loves Python programming",
+          },
+          error: null,
+        })
+        .mockReturnValueOnce({
+          data: [
+            "The user enjoys Python programming",
+            "Python is preferred by the user for programming",
+          ],
+          error: null,
+        });
 
       const manager = MemoryManager.getInstance(mockEnv, mockUser);
       const mockConversationManager = { get: vi.fn() } as any;
+
+      vi.spyOn(manager, "storeMemory").mockResolvedValue("mock-id");
 
       const result = await manager.handleMemory(
         "I love Python programming",
@@ -167,6 +185,8 @@ describe("MemoryManager", () => {
       vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
 
       const manager = MemoryManager.getInstance(mockEnv, mockUser);
+
+      vi.spyOn(manager, "storeMemory").mockResolvedValue("mock-id");
 
       const result = await manager.handleMemory(
         "test message",

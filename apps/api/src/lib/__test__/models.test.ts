@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { KVCache } from "~/lib/cache";
 import { Database } from "~/lib/database";
-import type { ModelConfigItem } from "~/types";
+import type { ModelConfigItem, IUser } from "~/types";
 import {
   filterModelsForUserAccess,
   getAuxiliaryGuardrailsModel,
@@ -41,6 +41,7 @@ vi.mock("~/lib/cache", () => {
 vi.mock("~/lib/database", () => ({
   Database: {
     getInstance: vi.fn().mockReturnValue({
+      getUserById: vi.fn(),
       getUserProviderSettings: vi.fn(),
     }),
   },
@@ -83,27 +84,11 @@ const mockFreeModel: ModelConfigItem = {
   isFree: true,
 };
 
-const _mockFeaturedModel: ModelConfigItem = {
-  ...mockModelConfig,
-  matchingModel: "featured-model",
-  name: "Featured Model",
-  provider: "featured-provider",
-  isFeatured: true,
-};
-
-const _mockBetaModel: ModelConfigItem = {
-  ...mockModelConfig,
-  matchingModel: "beta-model",
-  name: "Beta Model",
-  provider: "beta-provider",
-  beta: true,
-};
-
 const mockUser = {
   id: 123,
   email: "test@example.com",
   plan_id: "free",
-} as any;
+} as IUser;
 
 describe("Models", () => {
   let mockCache: any;

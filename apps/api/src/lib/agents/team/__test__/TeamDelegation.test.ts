@@ -6,6 +6,15 @@ import { TeamDelegation } from "../TeamDelegation";
 
 vi.mock("~/repositories/AgentRepository");
 vi.mock("~/lib/chat/responses");
+vi.mock("~/lib/models", () => ({
+  getAuxiliaryModel: vi.fn().mockResolvedValue({
+    model: "mistral-medium-latest",
+    provider: "mistral",
+  }),
+  getModelConfig: vi.fn().mockResolvedValue({
+    matchingModel: "mistral-medium-latest",
+  }),
+}));
 vi.mock("~/utils/logger", () => ({
   getLogger: vi.fn(() => ({
     info: vi.fn(),

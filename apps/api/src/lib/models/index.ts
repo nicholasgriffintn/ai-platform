@@ -291,8 +291,6 @@ export async function getIncludedInRouterModelsForUser(
     shouldUseCache: true,
   },
 ): Promise<Record<string, ModelConfigItem>> {
-  const allRouterModels = getIncludedInRouterModels(options);
-
   if (!userId) {
     const freeModels = getIncludedInRouterFreeModels(options);
     return await filterModelsForUserAccess(freeModels, env, userId, options);
@@ -307,6 +305,7 @@ export async function getIncludedInRouterModelsForUser(
     return await filterModelsForUserAccess(freeModels, env, userId, options);
   }
 
+  const allRouterModels = getIncludedInRouterModels(options);
   return await filterModelsForUserAccess(allRouterModels, env, userId, options);
 }
 
