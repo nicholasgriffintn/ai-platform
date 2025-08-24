@@ -116,7 +116,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
   }),
 
   createModelConfig("anthropic.claude-sonnet-4", PROVIDER, {
-    name: "Claude 4 Sonnet",
+    name: "Claude 4 Sonnet (Bedrock)",
     matchingModel: "anthropic.claude-sonnet-4-20250514-v1:0",
     description:
       "Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
@@ -158,7 +158,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
   }),
 
   createModelConfig("anthropic.claude-3-5-haiku", PROVIDER, {
-    name: "Claude 3.5 Haiku",
+    name: "Claude 3.5 Haiku (Bedrock)",
     matchingModel: "anthropic.claude-3-5-haiku-20241022-v1:0",
     description:
       "With fast speeds, improved instruction following, and more accurate tool use, Claude 3.5 Haiku is well suited for user-facing products, specialized sub-agent tasks, and generating personalized experiences from huge volumes of data.",
@@ -198,7 +198,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
   }),
 
   createModelConfig("anthropic.claude-opus-4", PROVIDER, {
-    name: "Claude 4 Opus",
+    name: "Claude 4 Opus (Bedrock)",
     matchingModel: "anthropic.claude-opus-4-20250514-v1:0",
     description:
       "The Claude 4 Opus is an advanced AI model by Anthropic designed for enterprise-level applications. It offers unmatched performance in handling complex tasks, making it an ideal solution for businesses requiring high-level data processing and analysis.",
@@ -228,16 +228,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     reliability: 5,
     speed: 3,
     multimodal: true,
-    isFeatured: false,
     supportsToolCalls: true,
     supportsSearchGrounding: true,
     supportsCodeExecution: true,
     supportsDocuments: true,
     supportsTokenCounting: true,
+    isFeatured: false,
   }),
 
   createModelConfig("anthropic.claude-opus-4-1", PROVIDER, {
-    name: "Claude 4.1 Opus",
+    name: "Claude 4.1 Opus (Bedrock)",
     matchingModel: "anthropic.claude-opus-4-1-20250805-v1:0",
     description:
       "Enhanced Claude 4 Opus with improved reasoning and analysis capabilities.",
@@ -270,10 +270,11 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsReasoning: true,
     supportsArtifacts: true,
     supportsToolCalls: true,
+    isFeatured: true,
   }),
 
   createModelConfig("anthropic.claude-3-7-sonnet", PROVIDER, {
-    name: "Claude 3.7 Sonnet",
+    name: "Claude 3.7 Sonnet (Bedrock)",
     matchingModel: "anthropic.claude-3-7-sonnet-20250219-v1:0",
     description:
       "Advanced reasoning model with enhanced capabilities for complex analytical tasks.",
@@ -308,6 +309,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsArtifacts: true,
     supportsToolCalls: true,
     supportsTokenCounting: true,
+    isFeatured: true,
   }),
 
   createModelConfig("embed-english", PROVIDER, {
@@ -528,87 +530,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     contextComplexity: 4,
     reliability: 4,
     speed: 3,
-    supportsToolCalls: true,
-  }),
-
-  createModelConfig("claude-3-5-haiku-bedrock", PROVIDER, {
-    name: "Claude 3.5 Haiku (Bedrock)",
-    matchingModel: "anthropic.claude-3-5-haiku-20241022-v1:0",
-    description:
-      "Fast and efficient Claude model optimized for quick responses, available through Bedrock.",
-    type: ["text"],
-    knowledgeCutoffDate: "July 2024",
-    releaseDate: "October 22, 2024",
-    lastUpdated: "October 22, 2024",
-    modalities: {
-      input: ["text"],
-      output: ["text"],
-    },
-    supportsAttachments: true,
-    supportsTemperature: true,
-    contextWindow: 200000,
-    maxTokens: 8192,
-    costPer1kInputTokens: 0.0008,
-    costPer1kOutputTokens: 0.004,
-    strengths: ["chat", "analysis", "reasoning"],
-    contextComplexity: 3,
-    reliability: 4,
-    speed: 5,
-    supportsToolCalls: true,
-  }),
-
-  createModelConfig("claude-3-5-sonnet-bedrock", PROVIDER, {
-    name: "Claude 3.5 Sonnet (Bedrock)",
-    matchingModel: "anthropic.claude-3-5-sonnet-20241022-v2:0",
-    description:
-      "Balanced Claude model with strong performance across tasks, available through Bedrock.",
-    type: ["text"],
-    knowledgeCutoffDate: "April 2024",
-    releaseDate: "October 22, 2024",
-    lastUpdated: "October 22, 2024",
-    modalities: {
-      input: ["text", "image"],
-      output: ["text"],
-    },
-    supportsAttachments: true,
-    supportsTemperature: true,
-    contextWindow: 200000,
-    maxTokens: 8192,
-    costPer1kInputTokens: 0.003,
-    costPer1kOutputTokens: 0.015,
-    strengths: ["chat", "analysis", "coding", "reasoning"],
-    contextComplexity: 4,
-    reliability: 4,
-    speed: 4,
-    multimodal: true,
-    supportsToolCalls: true,
-  }),
-
-  createModelConfig("claude-4-opus-bedrock", PROVIDER, {
-    name: "Claude 4 Opus (Bedrock)",
-    matchingModel: "anthropic.claude-opus-4-20250514-v1:0",
-    description:
-      "Most capable Claude 4 model with advanced reasoning, available through Bedrock.",
-    type: ["text"],
-    knowledgeCutoffDate: "April 2024",
-    releaseDate: "May 22, 2025",
-    lastUpdated: "May 22, 2025",
-    modalities: {
-      input: ["text", "image"],
-      output: ["text"],
-    },
-    supportsAttachments: true,
-    supportsTemperature: true,
-    contextWindow: 200000,
-    maxTokens: 32000,
-    costPer1kInputTokens: 0.015,
-    costPer1kOutputTokens: 0.075,
-    strengths: ["chat", "analysis", "coding", "reasoning", "creative"],
-    contextComplexity: 5,
-    reliability: 5,
-    speed: 2,
-    multimodal: true,
-    supportsReasoning: true,
     supportsToolCalls: true,
   }),
 
