@@ -44,6 +44,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     supportsSearchGrounding: true,
     supportsCodeExecution: true,
     supportsDocuments: true,
+    supportsTokenCounting: true,
   }),
 
   createModelConfig("claude-4-sonnet-thinking", PROVIDER, {
@@ -86,6 +87,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     supportsSearchGrounding: true,
     supportsCodeExecution: true,
     supportsDocuments: true,
+    supportsTokenCounting: true,
   }),
 
   createModelConfig("claude-3.5-haiku", PROVIDER, {
@@ -125,6 +127,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     supportsSearchGrounding: true,
     supportsCodeExecution: true,
     includedInRouter: true,
+    supportsTokenCounting: true,
   }),
 
   createModelConfig("claude-4-opus", PROVIDER, {
@@ -163,6 +166,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     supportsSearchGrounding: true,
     supportsCodeExecution: true,
     supportsDocuments: true,
+    supportsTokenCounting: true,
   }),
 
   createModelConfig("claude-4.1-opus", PROVIDER, {
@@ -199,6 +203,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     supportsReasoning: true,
     supportsArtifacts: true,
     supportsToolCalls: true,
+    supportsTokenCounting: true,
   }),
 
   createModelConfig("claude-3.7-sonnet", PROVIDER, {
@@ -236,5 +241,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     supportsReasoning: true,
     supportsArtifacts: true,
     supportsToolCalls: true,
+    supportsTokenCounting: true,
   }),
 ]);

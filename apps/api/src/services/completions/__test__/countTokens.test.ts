@@ -397,4 +397,81 @@ describe("countTokens", () => {
       );
     });
   });
+
+  describe("Anthropic provider", () => {
+    it("should count tokens for Anthropic models", async () => {
+      const { getModelConfigByModel } = await import("~/lib/models");
+      const { AIProviderFactory } = await import("~/lib/providers/factory");
+
+      const mockModelConfig = createMockModelConfig(
+        "anthropic",
+        "claude-sonnet-4-0",
+      );
+      const mockProvider = createMockProvider(true, 28);
+
+      vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
+      vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+
+      const result = await handleCountTokens(
+        { env: mockEnv, user: mockUser },
+        {
+          model: "claude-4-sonnet",
+          messages: [{ role: "user", content: "Count these tokens please" }],
+          system_prompt: "You are a helpful assistant",
+        },
+      );
+
+      expect(result).toEqual({
+        status: "success",
+        inputTokens: 28,
+        model: "claude-4-sonnet",
+      });
+
+      expect(mockProvider.countTokens).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: "claude-sonnet-4-0",
+          messages: [{ role: "user", content: "Count these tokens please" }],
+          system_prompt: "You are a helpful assistant",
+        }),
+        mockUser.id,
+      );
+    });
+
+    it("should handle Anthropic models without system prompt", async () => {
+      const { getModelConfigByModel } = await import("~/lib/models");
+      const { AIProviderFactory } = await import("~/lib/providers/factory");
+
+      const mockModelConfig = createMockModelConfig(
+        "anthropic",
+        "claude-3-5-haiku-latest",
+      );
+      const mockProvider = createMockProvider(true, 15);
+
+      vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
+      vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+
+      const result = await handleCountTokens(
+        { env: mockEnv, user: mockUser },
+        {
+          model: "claude-3.5-haiku",
+          messages: [{ role: "user", content: "Hello Claude" }],
+        },
+      );
+
+      expect(result).toEqual({
+        status: "success",
+        inputTokens: 15,
+        model: "claude-3.5-haiku",
+      });
+
+      expect(mockProvider.countTokens).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: "claude-3-5-haiku-latest",
+          messages: [{ role: "user", content: "Hello Claude" }],
+          system_prompt: undefined,
+        }),
+        mockUser.id,
+      );
+    });
+  });
 });

@@ -1,7 +1,10 @@
+import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
+import { trackProviderMetrics } from "~/lib/monitoring";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import {
   calculateReasoningBudget,
   createCommonParameters,
@@ -9,6 +12,8 @@ import {
   shouldEnableStreaming,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
+
+const logger = getLogger({ prefix: "ANTHROPIC" });
 
 export class AnthropicProvider extends BaseProvider {
   name = "anthropic";
@@ -132,5 +137,73 @@ export class AnthropicProvider extends BaseProvider {
       system: params.system_prompt,
       stop_sequences: params.stop,
     };
+  }
+
+  async countTokens(
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<{ inputTokens: number }> {
+    this.validateParams(params);
+
+    const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+    if (!modelConfig) {
+      throw new Error(`Model configuration not found for ${params.model}`);
+    }
+
+    const body = {
+      model: modelConfig.matchingModel,
+      system: params.system_prompt,
+      messages: params.messages,
+    };
+
+    return trackProviderMetrics({
+      provider: this.name,
+      model: params.model as string,
+      operation: async () => {
+        const apiKey = await this.getApiKey(params, userId);
+        const headers = {
+          "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json",
+          "cf-aig-metadata": JSON.stringify({
+            email: params.user?.email,
+          }),
+        };
+
+        const endpoint = `https://gateway.ai.cloudflare.com/v1/${params.env.ACCOUNT_ID}/${gatewayId}/anthropic/v1/messages/count_tokens`;
+
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          logger.error("Failed to count tokens from Anthropic", {
+            error: errorText,
+            status: response.status,
+          });
+          throw new AssistantError("Failed to count tokens from Anthropic");
+        }
+
+        const data = (await response.json()) as { input_tokens: number };
+        return { inputTokens: data.input_tokens };
+      },
+      analyticsEngine: params.env?.ANALYTICS,
+      settings: {
+        temperature: params.temperature,
+        max_tokens: params.max_tokens,
+        top_p: params.top_p,
+        top_k: params.top_k,
+        seed: params.seed,
+        repetition_penalty: params.repetition_penalty,
+        frequency_penalty: params.frequency_penalty,
+        presence_penalty: params.presence_penalty,
+      },
+      userId,
+      completion_id: params.completion_id,
+    });
   }
 }
