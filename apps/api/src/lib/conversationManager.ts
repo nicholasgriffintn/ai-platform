@@ -14,7 +14,6 @@ import { type UsageLimits, UsageManager } from "./usageManager";
 const logger = getLogger({ prefix: "CONVERSATION_MANAGER" });
 
 export class ConversationManager {
-  private static instance: ConversationManager;
   private database: Database;
   private model?: string;
   private platform?: Platform;
@@ -56,31 +55,14 @@ export class ConversationManager {
     platform?: Platform;
     store?: boolean;
   }): ConversationManager {
-    if (!ConversationManager.instance) {
-      ConversationManager.instance = new ConversationManager(
-        database,
-        user,
-        anonymousUser,
-        model,
-        platform,
-        store ?? true,
-      );
-    } else {
-      ConversationManager.instance.database = database;
-      ConversationManager.instance.user = user;
-      ConversationManager.instance.anonymousUser = anonymousUser;
-      ConversationManager.instance.model = model;
-      ConversationManager.instance.platform = platform;
-      ConversationManager.instance.store = store ?? true;
-
-      ConversationManager.instance.usageManager = new UsageManager(
-        database,
-        user,
-        anonymousUser,
-      );
-    }
-
-    return ConversationManager.instance;
+    return new ConversationManager(
+      database,
+      user,
+      anonymousUser,
+      model,
+      platform,
+      store ?? true,
+    );
   }
 
   /**
