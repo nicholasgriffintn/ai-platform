@@ -116,8 +116,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
   }),
 
   createModelConfig("anthropic.claude-sonnet-4", PROVIDER, {
-    name: "Claude 4 Sonnet (Bedrock)",
-    matchingModel: "anthropic.claude-sonnet-4-20250514-v1:0",
+    name: "Claude 4 Sonnet (Bedrock US)",
+    matchingModel: "us.anthropic.claude-sonnet-4-20250514-v1:0",
     description:
       "Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
     type: ["text"],
@@ -158,8 +158,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
   }),
 
   createModelConfig("anthropic.claude-3-5-haiku", PROVIDER, {
-    name: "Claude 3.5 Haiku (Bedrock)",
-    matchingModel: "anthropic.claude-3-5-haiku-20241022-v1:0",
+    name: "Claude 3.5 Haiku (Bedrock US)",
+    matchingModel: "us.anthropic.claude-3-5-haiku-20241022-v1:0",
     description:
       "With fast speeds, improved instruction following, and more accurate tool use, Claude 3.5 Haiku is well suited for user-facing products, specialized sub-agent tasks, and generating personalized experiences from huge volumes of data.",
     type: ["text"],
@@ -198,8 +198,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
   }),
 
   createModelConfig("anthropic.claude-opus-4", PROVIDER, {
-    name: "Claude 4 Opus (Bedrock)",
-    matchingModel: "anthropic.claude-opus-4-20250514-v1:0",
+    name: "Claude 4 Opus (Bedrock US)",
+    matchingModel: "us.anthropic.claude-opus-4-20250514-v1:0",
     description:
       "The Claude 4 Opus is an advanced AI model by Anthropic designed for enterprise-level applications. It offers unmatched performance in handling complex tasks, making it an ideal solution for businesses requiring high-level data processing and analysis.",
     type: ["text"],
@@ -237,8 +237,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
   }),
 
   createModelConfig("anthropic.claude-opus-4-1", PROVIDER, {
-    name: "Claude 4.1 Opus (Bedrock)",
-    matchingModel: "anthropic.claude-opus-4-1-20250805-v1:0",
+    name: "Claude 4.1 Opus (Bedrock US)",
+    matchingModel: "us.anthropic.claude-opus-4-1-20250805-v1:0",
     description:
       "Enhanced Claude 4 Opus with improved reasoning and analysis capabilities.",
     type: ["text"],
@@ -274,8 +274,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
   }),
 
   createModelConfig("anthropic.claude-3-7-sonnet", PROVIDER, {
-    name: "Claude 3.7 Sonnet (Bedrock)",
-    matchingModel: "anthropic.claude-3-7-sonnet-20250219-v1:0",
+    name: "Claude 3.7 Sonnet (Bedrock US)",
+    matchingModel: "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
     description:
       "Advanced reasoning model with enhanced capabilities for complex analytical tasks.",
     type: ["text"],
