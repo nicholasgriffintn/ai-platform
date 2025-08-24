@@ -11,6 +11,7 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
+import { handleCountTokens } from "~/services/completions/countTokens";
 import { handleDeleteAllChatCompletions } from "~/services/completions/deleteAllChatCompletions";
 import { handleDeleteChatCompletion } from "~/services/completions/deleteChatCompletion";
 import { handleGenerateChatCompletionTitle } from "~/services/completions/generateChatCompletionTitle";
@@ -31,6 +32,8 @@ import {
   chatCompletionResponseSchema,
   checkChatCompletionJsonSchema,
   checkChatCompletionParamsSchema,
+  countTokensJsonSchema,
+  countTokensResponseSchema,
   createChatCompletionsJsonSchema,
   deleteChatCompletionParamsSchema,
   generateChatCompletionTitleJsonSchema,
@@ -122,6 +125,60 @@ app.post(
     if (response instanceof Response) {
       return response;
     }
+
+    return context.json(response);
+  },
+);
+
+app.post(
+  "/completions/count-tokens",
+  validateCaptcha,
+  describeRoute({
+    tags: ["chat"],
+    summary: "Count tokens for a chat request",
+    description:
+      "Count the number of tokens that would be used for a chat completion request. Useful for estimating costs and staying within token limits.",
+    responses: {
+      200: {
+        description: "Token count result",
+        content: {
+          "application/json": {
+            schema: resolver(countTokensResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      401: {
+        description: "Authentication error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("json", countTokensJsonSchema),
+  async (context: Context) => {
+    const body = context.req.valid("json" as never) as {
+      model: string;
+      messages: Message[];
+      system_prompt?: string;
+    };
+
+    const userContext = context.get("user");
+
+    const response = await handleCountTokens({
+      env: context.env as IEnv,
+      user: userContext,
+    }, body);
 
     return context.json(response);
   },

@@ -53,6 +53,7 @@ export type ModelConfigItem = {
   supportsAttachments?: boolean;
   supportsTemperature?: boolean;
   supportsTopP?: boolean;
+  supportsTokenCounting?: boolean;
 };
 
 export type ModelConfig = {

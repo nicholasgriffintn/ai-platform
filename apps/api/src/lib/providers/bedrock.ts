@@ -178,6 +178,135 @@ export class BedrockProvider extends BaseProvider {
     }));
   }
 
+  private async getAwsCredentials(params: ChatCompletionParameters, userId?: number): Promise<{ accessKey: string; secretKey: string }> {
+    let accessKey = params.env.BEDROCK_AWS_ACCESS_KEY || "";
+    let secretKey = params.env.BEDROCK_AWS_SECRET_KEY || "";
+
+    if (userId) {
+      try {
+        const userApiKey = await this.getApiKey(params, userId);
+        if (userApiKey) {
+          const credentials = this.parseAwsCredentials(userApiKey);
+          if (credentials.accessKey) {
+            accessKey = credentials.accessKey;
+          }
+          if (credentials.secretKey) {
+            secretKey = credentials.secretKey;
+          }
+        }
+      } catch (error) {
+        logger.warn(
+          "Failed to get user AWS credentials, using environment variables:",
+          { error },
+        );
+      }
+    }
+
+    if (!accessKey || !secretKey) {
+      throw new AssistantError(
+        "Missing AWS credentials",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    return { accessKey, secretKey };
+  }
+
+  private async makeBedrockRequest(
+    endpoint: string,
+    body: Record<string, any>,
+    params: ChatCompletionParameters,
+    operation: string,
+    userId?: number,
+  ): Promise<Response> {
+    const { accessKey, secretKey } = await this.getAwsCredentials(params, userId);
+    const region = "us-east-1";
+
+    const awsClient = new AwsClient({
+      accessKeyId: accessKey,
+      secretAccessKey: secretKey,
+      region,
+      service: "bedrock",
+    });
+
+    const presignedRequest = await awsClient.sign(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!presignedRequest.url) {
+      throw new AssistantError(
+        "Failed to get presigned request from Bedrock",
+      );
+    }
+
+    const signedUrl = new URL(presignedRequest.url);
+    signedUrl.host = "gateway.ai.cloudflare.com";
+    signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/${operation}`;
+
+    const response = await fetch(signedUrl, {
+      method: "POST",
+      headers: presignedRequest.headers,
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      logger.error(`Failed to ${operation} from Bedrock`, {
+        error: errorText,
+      });
+      throw new AssistantError(`Failed to ${operation} from Bedrock`);
+    }
+
+    return response;
+  }
+
+  async countTokens(
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<{ inputTokens: number }> {
+    this.validateParams(params);
+
+    const region = "us-east-1";
+    const endpoint = `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/count-tokens`;
+    const body = {
+      input: {
+        converse: {
+          ...(params.system_prompt && {
+            system: [{ text: params.system_prompt }],
+          }),
+          messages: this.formatBedrockMessages(params),
+        },
+      },
+    };
+
+    return trackProviderMetrics({
+      provider: this.name,
+      model: params.model as string,
+      operation: async () => {
+        const response = await this.makeBedrockRequest(endpoint, body, params, "count-tokens", userId);
+        const data = await response.json() as { inputTokens: number };
+        return { inputTokens: data.inputTokens };
+      },
+      analyticsEngine: params.env?.ANALYTICS,
+      settings: {
+        temperature: params.temperature,
+        max_tokens: params.max_tokens,
+        top_p: params.top_p,
+        top_k: params.top_k,
+        seed: params.seed,
+        repetition_penalty: params.repetition_penalty,
+        frequency_penalty: params.frequency_penalty,
+        presence_penalty: params.presence_penalty,
+      },
+      userId,
+      completion_id: params.completion_id,
+    });
+  }
+
   async getResponse(
     params: ChatCompletionParameters,
     userId?: number,
@@ -191,29 +320,7 @@ export class BedrockProvider extends BaseProvider {
       provider: this.name,
       model: params.model as string,
       operation: async () => {
-        let accessKey = params.env.BEDROCK_AWS_ACCESS_KEY || "";
-        let secretKey = params.env.BEDROCK_AWS_SECRET_KEY || "";
-
-        if (userId) {
-          try {
-            const userApiKey = await this.getApiKey(params, userId);
-            if (userApiKey) {
-              const credentials = this.parseAwsCredentials(userApiKey);
-              if (credentials.accessKey) {
-                accessKey = credentials.accessKey;
-              }
-              if (credentials.secretKey) {
-                secretKey = credentials.secretKey;
-              }
-            }
-          } catch (error) {
-            logger.warn(
-              "Failed to get user AWS credentials, using environment variables:",
-              { error },
-            );
-          }
-        }
-
+        const { accessKey, secretKey } = await this.getAwsCredentials(params, userId);
         const region = "us-east-1";
 
         const awsClient = new AwsClient({

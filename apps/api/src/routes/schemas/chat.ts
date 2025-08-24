@@ -24,6 +24,27 @@ export const chatCompletionResponseSchema = z.object({
   log_id: z.string().optional(),
 });
 
+export const countTokensJsonSchema = z.object({
+  model: z.string().meta({
+    description: "The model to use for token counting.",
+  }),
+  messages: z.array(z.any()).meta({
+    description: "The messages to count tokens for.",
+  }),
+  system_prompt: z.string().optional().meta({
+    description: "The system prompt to include in token count.",
+  }),
+});
+
+export const countTokensResponseSchema = z.object({
+  inputTokens: z.number().meta({
+    description: "The number of input tokens.",
+  }),
+  model: z.string().meta({
+    description: "The model used for token counting.",
+  }),
+});
+
 export const createChatCompletionsJsonSchema = z.object({
   completion_id: z.string().optional().meta({
     description:

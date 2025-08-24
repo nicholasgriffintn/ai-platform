@@ -26,6 +26,7 @@ export interface AIProvider {
     type: string,
     body: Record<string, any>,
   ): Promise<any>;
+  countTokens?(params: ChatCompletionParameters, userId?: number): Promise<{ inputTokens: number }>;
 }
 
 export abstract class BaseProvider implements AIProvider {
