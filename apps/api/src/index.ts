@@ -50,17 +50,27 @@ const app = new Hono<{
   Bindings: IEnv;
 }>();
 
-const origin = (origin, _c) => {
-  if (!origin) return "*";
-  if (origin.includes(PROD_HOST)) return origin;
-  if (origin.includes(LOCAL_HOST)) return origin;
-  return "*";
+const corsOrigin = (origin: string, c: Context) => {
+  if (!origin) return "";
+  const environment = c.env.ENV;
+  if (environment === "production" && origin.includes(PROD_HOST)) return origin;
+  if (environment === "development" && origin.includes(LOCAL_HOST))
+    return origin;
+  return "";
+};
+
+const csrfOrigin = (origin: string, c: Context) => {
+  if (!origin) return false;
+  const environment = c.env.ENV;
+  if (environment === "production" && origin.includes(PROD_HOST)) return true;
+  if (environment === "development" && origin.includes(LOCAL_HOST)) return true;
+  return false;
 };
 
 app.use(
   "*",
   cors({
-    origin,
+    origin: corsOrigin,
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: [
       "Content-Type",
@@ -75,7 +85,7 @@ app.use(
 
 app.use(
   csrf({
-    origin,
+    origin: csrfOrigin,
   }),
 );
 
