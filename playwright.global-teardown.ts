@@ -1,6 +1,9 @@
 import { readFileSync, unlinkSync } from "node:fs";
 import path from "node:path";
 import type { FullConfig } from "@playwright/test";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function globalTeardown(config: FullConfig) {
   // Read the stored PID

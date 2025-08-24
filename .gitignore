@@ -183,3 +183,6 @@ apps/app/build
 .react-router
 
 test-results
+
+*.pid
+playwright-report

@@ -1,5 +1,8 @@
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig, devices } from "@playwright/test";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   timeout: 120 * 1000,
@@ -12,6 +15,8 @@ export default defineConfig({
     baseURL: "http://localhost:5173",
     trace: "on-first-retry",
     viewport: { width: 1280, height: 720 },
+    screenshot: "only-on-failure",
+    video: "retain-on-failure",
   },
   webServer: {
     command: "pnpm --filter @assistant/app dev",
@@ -20,6 +25,11 @@ export default defineConfig({
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,
   },
+  reporter: [
+    ["html"],
+    ["json", { outputFile: "test-results/results.json" }],
+    ["junit", { outputFile: "test-results/results.xml" }],
+  ],
   projects: [
     {
       name: "Desktop Chrome",

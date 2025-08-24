@@ -1,7 +1,10 @@
 import { type ChildProcess, spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { FullConfig } from "@playwright/test";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function globalSetup(config: FullConfig) {
   // 1. Run DB migrations (including seed migration)
@@ -17,7 +20,12 @@ async function globalSetup(config: FullConfig) {
   });
 
   // 3. Persist the API PID for teardown
-  fs.writeFileSync(path.join(__dirname, "api.pid"), apiProcess.pid.toString());
+  if (apiProcess.pid) {
+    fs.writeFileSync(
+      path.join(__dirname, "api.pid"),
+      apiProcess.pid.toString(),
+    );
+  }
 
   // 4. Wait for the API to be ready
   await new Promise((resolve) => setTimeout(resolve, 5000));
