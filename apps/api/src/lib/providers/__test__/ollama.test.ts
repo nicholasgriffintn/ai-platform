@@ -106,7 +106,7 @@ describe("OllamaProvider", () => {
       };
 
       // @ts-ignore - getEndpoint is protected
-      const endpoint = provider.getEndpoint(paramsWithCustomUrl as any);
+      const endpoint = await provider.getEndpoint(paramsWithCustomUrl as any);
 
       expect(endpoint).toBe("http://custom-ollama:11434/api/chat");
     });
@@ -120,7 +120,7 @@ describe("OllamaProvider", () => {
       };
 
       // @ts-ignore - getEndpoint is protected
-      const endpoint = provider.getEndpoint(paramsWithoutUrl as any);
+      const endpoint = await provider.getEndpoint(paramsWithoutUrl as any);
 
       expect(endpoint).toBe("http://localhost:11434/api/chat");
     });
