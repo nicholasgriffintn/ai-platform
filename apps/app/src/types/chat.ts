@@ -28,6 +28,7 @@ export interface MessageContent {
     | "text"
     | "image_url"
     | "audio_url"
+    | "video_url"
     | "input_audio"
     | "artifact"
     | "document_url"
@@ -38,6 +39,9 @@ export interface MessageContent {
     detail?: "auto" | "low" | "high";
   };
   audio_url?: {
+    url: string;
+  };
+  video_url?: {
     url: string;
   };
   input_audio?: {

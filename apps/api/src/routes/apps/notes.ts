@@ -577,6 +577,8 @@ app.post(
         noteType: body.noteType,
         extraPrompt: body.extraPrompt,
         timestamps: body.timestamps,
+        useVideoAnalysis: body.useVideoAnalysis,
+        enableVideoSearch: body.enableVideoSearch,
       });
       return c.json({ content: result.content });
     } catch (error) {
