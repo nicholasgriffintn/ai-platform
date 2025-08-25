@@ -146,7 +146,6 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
     options: RagOptions = {},
   ): Promise<EmbeddingMutationResult> {
     try {
-      // Insert into Vectorize vector database
       await this.vector_db.upsert(
         embeddings.map((embedding) => ({
           id: embedding.id,

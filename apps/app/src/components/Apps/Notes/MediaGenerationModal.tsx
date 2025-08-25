@@ -203,7 +203,6 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                         const checked = e.target.checked;
                         setUseVideoAnalysis(checked);
                         if (!checked) {
-                          // Remove video-only outputs when disabling
                           setSelectedOutputs((prev) =>
                             prev.filter(
                               (output) =>
