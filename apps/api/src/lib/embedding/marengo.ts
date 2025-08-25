@@ -1,6 +1,5 @@
 import type { Vectorize } from "@cloudflare/workers-types";
 
-import type { Database } from "~/lib/database";
 import { getModelConfig } from "~/lib/models";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import type {
