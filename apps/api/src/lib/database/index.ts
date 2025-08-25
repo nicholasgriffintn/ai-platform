@@ -16,6 +16,7 @@ export interface Env {
 const logger = getLogger({ prefix: "DATABASE" });
 
 export class Database {
+  private static instance: Database;
   private repositories: RepositoryManager;
   private env: IEnv;
 
@@ -31,7 +32,10 @@ export class Database {
   }
 
   public static getInstance(env: IEnv): Database {
-    return new Database(env);
+    if (!Database.instance) {
+      Database.instance = new Database(env);
+    }
+    return Database.instance;
   }
 
   // User methods
