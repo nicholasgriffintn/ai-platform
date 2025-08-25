@@ -31,8 +31,29 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
             ErrorType.PARAMS_ERROR,
           );
         }
+
+        const contentLength = res.headers.get("content-length");
+        if (contentLength) {
+          const fileSizeBytes = parseInt(contentLength);
+          const MAX_SIZE = 25 * 1024 * 1024; // 25MB limit for Workers AI
+
+          if (fileSizeBytes > MAX_SIZE) {
+            throw new AssistantError(
+              `File too large for Workers AI (${Math.round(fileSizeBytes / 1024 / 1024)}MB > 25MB). Use a different transcription provider for larger files.`,
+              ErrorType.PARAMS_ERROR,
+            );
+          }
+        }
+
         arrayBuffer = await res.arrayBuffer();
       } else if (audio instanceof Blob) {
+        const MAX_SIZE = 25 * 1024 * 1024; // 25MB limit for Workers AI
+        if (audio.size > MAX_SIZE) {
+          throw new AssistantError(
+            `File too large for Workers AI (${Math.round(audio.size / 1024 / 1024)}MB > 25MB). Use a different transcription provider for larger files.`,
+            ErrorType.PARAMS_ERROR,
+          );
+        }
         arrayBuffer = await audio.arrayBuffer();
       } else {
         throw new AssistantError(

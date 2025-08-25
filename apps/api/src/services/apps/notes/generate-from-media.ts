@@ -52,15 +52,29 @@ export async function generateNotesFromMedia({
       // Do nothing
     }
 
-    const TWENTY_MB = 20 * 1024 * 1024;
+    if (contentLengthBytes === 0) {
+      throw new AssistantError("Empty file", ErrorType.PARAMS_ERROR);
+    }
 
-    let transcriptionProviderToUse: TranscriptionProvider = "workers";
+    const TWENTY_FIVE_MB = 25 * 1024 * 1024;
+    const FIFTY_MB = 50 * 1024 * 1024;
+
+    let transcriptionProviderToUse: TranscriptionProvider;
     let transcriptText = "";
 
-    if (contentLengthBytes > 0 && contentLengthBytes <= TWENTY_MB) {
+    if (contentLengthBytes <= TWENTY_FIVE_MB) {
+      transcriptionProviderToUse = "workers";
+    } else if (contentLengthBytes <= FIFTY_MB) {
       transcriptionProviderToUse = "mistral";
-    } else if (contentLengthBytes > TWENTY_MB) {
+    } else {
       transcriptionProviderToUse = "replicate";
+    }
+
+    if (!transcriptionProviderToUse) {
+      throw new AssistantError(
+        "No transcription provider was determined",
+        ErrorType.PARAMS_ERROR,
+      );
     }
 
     const transcription = await handleTranscribe({
@@ -85,8 +99,6 @@ export async function generateNotesFromMedia({
     }
 
     let videoAnalysisContent = "";
-    let modelToUse = "";
-    let providerToUse = "";
 
     if (useVideoAnalysis) {
       const pegasusProvider = AIProviderFactory.getProvider("bedrock");
@@ -163,10 +175,8 @@ export async function generateNotesFromMedia({
       }
     }
 
-    const { model: fallbackModel, provider: fallbackProvider } =
+    const { model: modelToUse, provider: providerToUse } =
       await getAuxiliaryModel(env, user);
-    modelToUse = fallbackModel;
-    providerToUse = fallbackProvider;
 
     const provider = AIProviderFactory.getProvider(providerToUse);
 
