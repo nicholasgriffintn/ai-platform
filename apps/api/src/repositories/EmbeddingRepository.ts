@@ -39,4 +39,8 @@ export class EmbeddingRepository extends BaseRepository {
       [id, JSON.stringify(metadata), title, content, type],
     );
   }
+
+  public async deleteEmbedding(id: string): Promise<void> {
+    await this.executeRun("DELETE FROM embedding WHERE id = ?1", [id]);
+  }
 }

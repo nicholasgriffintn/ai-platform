@@ -4,8 +4,11 @@ import {
 } from "~/services/audio/transcribe";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import { getAuxiliaryModel, getModelConfig } from "~/lib/models";
+import { Database } from "~/lib/database";
+import { Embedding } from "~/lib/embedding";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 
 export async function generateNotesFromMedia({
   env,
@@ -122,31 +125,36 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 
       if (enableVideoSearch) {
         try {
-          const marengoModelName = "marengo-embed";
-          const marengoModelConfig = await getModelConfig(marengoModelName);
-          const marengoProvider = AIProviderFactory.getProvider(
-            marengoModelConfig.provider,
+          const database = Database.getInstance(env);
+          const userSettings = await database.getUserSettings(user.id);
+          const embedding = Embedding.getInstance(env, user, userSettings);
+
+          const videoId = `video-${Date.now()}-${generateId()}`;
+          const metadata = {
+            url,
+            type: "video",
+            timestamp: new Date().toISOString(),
+            userId: user.id.toString(),
+          };
+
+          const embeddings = await embedding.generate(
+            "video",
+            `Video content from ${url}`,
+            videoId,
+            metadata,
           );
 
-          await marengoProvider.getResponse(
-            {
-              model: marengoModelConfig.matchingModel,
-              env,
-              user,
-              messages: [
-                {
-                  role: "user",
-                  content: [
-                    {
-                      type: "text",
-                      text: "Generate embeddings for video search",
-                    },
-                    { type: "video_url", video_url: { url } },
-                  ],
-                },
-              ],
-            },
-            user.id,
+          await embedding.insert(embeddings, {
+            namespace: `user_kb_${user.id}`,
+            type: "video",
+          });
+
+          await database.insertEmbedding(
+            videoId,
+            metadata,
+            `Video: ${url}`,
+            `Video content from ${url}`,
+            "video",
           );
         } catch (error) {
           console.warn("Video embedding generation failed:", error);
