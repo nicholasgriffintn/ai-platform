@@ -55,6 +55,22 @@ export class BedrockProvider extends BaseProvider {
 
   protected getEndpoint(params: ChatCompletionParameters): string {
     const region = "us-east-1";
+    
+    // TwelveLabs models use different endpoints
+    if (this.isTwelveLabsModel(params.model)) {
+      if (this.isPegasusModel(params.model)) {
+        // Pegasus uses InvokeModel/InvokeModelWithResponseStream
+        if (params.stream) {
+          return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/invoke-with-response-stream`;
+        }
+        return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/invoke`;
+      } else if (this.isMarengoModel(params.model)) {
+        // Marengo uses StartAsyncInvoke
+        return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/start-async-invoke`;
+      }
+    }
+    
+    // Default converse API for other models
     if (params.stream) {
       return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/converse-stream`;
     }
@@ -63,6 +79,18 @@ export class BedrockProvider extends BaseProvider {
 
   protected getHeaders(): Record<string, string> {
     return {};
+  }
+
+  private isTwelveLabsModel(model: string): boolean {
+    return model.startsWith('twelvelabs.');
+  }
+
+  private isPegasusModel(model: string): boolean {
+    return model.includes('pegasus');
+  }
+
+  private isMarengoModel(model: string): boolean {
+    return model.includes('marengo');
   }
 
   async mapParameters(
@@ -147,6 +175,11 @@ export class BedrockProvider extends BaseProvider {
       ? { toolConfig: { tools: toolsParams.tools } }
       : {};
 
+    // Handle TwelveLabs models with different parameter formats
+    if (this.isTwelveLabsModel(params.model)) {
+      return this.mapTwelveLabsParameters(params, commonParams);
+    }
+
     return {
       ...(params.system_prompt && {
         system: [{ text: params.system_prompt }],
@@ -158,6 +191,72 @@ export class BedrockProvider extends BaseProvider {
         topP: commonParams.top_p,
       },
       ...toolConfig,
+    };
+  }
+
+  /**
+   * Map parameters specifically for TwelveLabs models
+   */
+  private mapTwelveLabsParameters(
+    params: ChatCompletionParameters,
+    commonParams: any,
+  ): Record<string, any> {
+    if (this.isPegasusModel(params.model)) {
+      // Pegasus model for video analysis
+      const lastMessage = params.messages[params.messages.length - 1];
+      let prompt = "";
+      let videoUrl = "";
+      
+      if (Array.isArray(lastMessage.content)) {
+        for (const content of lastMessage.content) {
+          if (content.type === 'text') {
+            prompt = content.text;
+          } else if (content.type === 'video_url' && content.video_url) {
+            videoUrl = content.video_url.url;
+          }
+        }
+      } else if (typeof lastMessage.content === 'string') {
+        prompt = lastMessage.content;
+      }
+      
+      return {
+        prompt,
+        ...(videoUrl && { video_url: videoUrl }),
+        temperature: commonParams.temperature,
+        max_tokens: commonParams.max_tokens,
+        top_p: commonParams.top_p,
+      };
+    } else if (this.isMarengoModel(params.model)) {
+      // Marengo model for embeddings
+      const lastMessage = params.messages[params.messages.length - 1];
+      let text = "";
+      let videoUrl = "";
+      
+      if (Array.isArray(lastMessage.content)) {
+        for (const content of lastMessage.content) {
+          if (content.type === 'text') {
+            text = content.text;
+          } else if (content.type === 'video_url' && content.video_url) {
+            videoUrl = content.video_url.url;
+          }
+        }
+      } else if (typeof lastMessage.content === 'string') {
+        text = lastMessage.content;
+      }
+      
+      return {
+        input_type: "video",
+        ...(videoUrl && { video_url: videoUrl }),
+        ...(text && { text }),
+      };
+    }
+    
+    // Fallback to standard format
+    return {
+      messages: this.formatBedrockMessages(params),
+      temperature: commonParams.temperature,
+      max_tokens: commonParams.max_tokens,
+      top_p: commonParams.top_p,
     };
   }
 
@@ -249,7 +348,21 @@ export class BedrockProvider extends BaseProvider {
 
     const signedUrl = new URL(presignedRequest.url);
     signedUrl.host = "gateway.ai.cloudflare.com";
-    signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/${operation}`;
+    
+    // Set the correct pathway based on model type and operation
+    if (this.isTwelveLabsModel(params.model)) {
+      if (this.isPegasusModel(params.model)) {
+        if (operation === "invoke-with-response-stream") {
+          signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/invoke-with-response-stream`;
+        } else {
+          signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/invoke`;
+        }
+      } else if (this.isMarengoModel(params.model)) {
+        signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/start-async-invoke`;
+      }
+    } else {
+      signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/${operation}`;
+    }
 
     const response = await fetch(signedUrl, {
       method: "POST",
@@ -360,10 +473,26 @@ export class BedrockProvider extends BaseProvider {
         const signedUrl = new URL(presignedRequest.url);
         signedUrl.host = "gateway.ai.cloudflare.com";
 
-        if (params.stream) {
-          signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/converse-stream`;
+        // Set the correct pathway based on model type
+        if (this.isTwelveLabsModel(params.model)) {
+          if (this.isPegasusModel(params.model)) {
+            // Pegasus uses InvokeModel/InvokeModelWithResponseStream
+            if (params.stream) {
+              signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/invoke-with-response-stream`;
+            } else {
+              signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/invoke`;
+            }
+          } else if (this.isMarengoModel(params.model)) {
+            // Marengo uses StartAsyncInvoke
+            signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/start-async-invoke`;
+          }
         } else {
-          signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/converse`;
+          // Default converse API for other models
+          if (params.stream) {
+            signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/converse-stream`;
+          } else {
+            signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/converse`;
+          }
         }
 
         const response = await fetch(signedUrl, {
@@ -374,6 +503,11 @@ export class BedrockProvider extends BaseProvider {
 
         if (!response.ok) {
           throw new AssistantError("Failed to get response from Bedrock");
+        }
+
+        // Handle async invoke for Marengo model
+        if (this.isMarengoModel(params.model)) {
+          return this.handleAsyncInvokeResponse(response, params);
         }
 
         const isStreaming = params.stream;
@@ -402,6 +536,11 @@ export class BedrockProvider extends BaseProvider {
         const log_id = response.headers.get("cf-aig-log-id");
         const cacheStatus = response.headers.get("cf-aig-cache-status");
 
+        // Handle TwelveLabs model responses
+        if (this.isTwelveLabsModel(params.model)) {
+          return this.formatTwelveLabsResponse(data, params);
+        }
+
         return this.formatResponse(
           { ...data, eventId, log_id, cacheStatus },
           params,
@@ -421,5 +560,62 @@ export class BedrockProvider extends BaseProvider {
       userId,
       completion_id: params.completion_id,
     });
+  }
+
+  /**
+   * Handle async invoke response for Marengo embedding model
+   */
+  private async handleAsyncInvokeResponse(response: Response, params: ChatCompletionParameters): Promise<any> {
+    const data = await response.json() as any;
+    
+    // For async invoke, we get an invocation ARN that can be used to check status
+    if (data.invocationArn) {
+      // For now, return a simple response indicating the async operation started
+      // In a full implementation, you might want to poll for results or use webhooks
+      return {
+        response: "Embedding generation started successfully",
+        invocationArn: data.invocationArn,
+        status: "IN_PROGRESS"
+      };
+    }
+    
+    return data;
+  }
+
+  /**
+   * Format responses from TwelveLabs models
+   */
+  private formatTwelveLabsResponse(data: any, params: ChatCompletionParameters): any {
+    if (this.isPegasusModel(params.model)) {
+      // Pegasus returns text analysis of video
+      if (data.output && data.output.text) {
+        return {
+          response: data.output.text,
+          usage: data.usage || null,
+        };
+      } else if (data.completion) {
+        return {
+          response: data.completion,
+          usage: data.usage || null,
+        };
+      } else if (typeof data === 'string') {
+        return {
+          response: data,
+          usage: null,
+        };
+      }
+    } else if (this.isMarengoModel(params.model)) {
+      // Marengo returns embeddings
+      if (data.embeddings) {
+        return {
+          response: "Embeddings generated successfully",
+          embeddings: data.embeddings,
+          usage: data.usage || null,
+        };
+      }
+    }
+    
+    // Fallback to standard format
+    return this.formatResponse(data, params);
   }
 }
