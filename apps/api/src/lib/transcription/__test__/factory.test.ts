@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { TranscriptionProviderFactory } from "../factory";
 import { MistralTranscriptionProvider } from "../mistral";
+import { ReplicateTranscriptionProvider } from "../replicate";
 import { WorkersTranscriptionProvider } from "../workers";
 
 describe("TranscriptionProviderFactory", () => {
@@ -17,6 +18,12 @@ describe("TranscriptionProviderFactory", () => {
       expect(provider.name).toBe("mistral");
     });
 
+    it("should return replicate provider for 'replicate' key", () => {
+      const provider = TranscriptionProviderFactory.getProvider("replicate");
+      expect(provider).toBeInstanceOf(ReplicateTranscriptionProvider);
+      expect(provider.name).toBe("replicate");
+    });
+
     it("should return workers provider for unknown key (fallback)", () => {
       const provider = TranscriptionProviderFactory.getProvider("unknown");
       expect(provider).toBeInstanceOf(WorkersTranscriptionProvider);
@@ -27,8 +34,10 @@ describe("TranscriptionProviderFactory", () => {
   describe("getProviders", () => {
     it("should return all available provider keys", () => {
       const providers = TranscriptionProviderFactory.getProviders();
-      expect(providers).toEqual(expect.arrayContaining(["workers", "mistral"]));
-      expect(providers).toHaveLength(2);
+      expect(providers).toEqual(
+        expect.arrayContaining(["workers", "mistral", "replicate"]),
+      );
+      expect(providers).toHaveLength(3);
     });
   });
 });

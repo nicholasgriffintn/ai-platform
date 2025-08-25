@@ -1,5 +1,6 @@
 import type { TranscriptionProvider } from "./base";
 import { MistralTranscriptionProvider } from "./mistral";
+import { ReplicateTranscriptionProvider } from "./replicate";
 import { WorkersTranscriptionProvider } from "./workers";
 
 // biome-ignore lint/complexity/noStaticOnlyClass: I prefer this pattern
@@ -7,6 +8,7 @@ export class TranscriptionProviderFactory {
   private static providers: Record<string, TranscriptionProvider> = {
     workers: new WorkersTranscriptionProvider(),
     mistral: new MistralTranscriptionProvider(),
+    replicate: new ReplicateTranscriptionProvider(),
   };
 
   static getProvider(providerName: string): TranscriptionProvider {

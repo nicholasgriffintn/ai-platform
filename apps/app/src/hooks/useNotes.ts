@@ -83,6 +83,9 @@ export const useGenerateNotesFromMedia = () => {
         | "action_items"
         | "meeting_minutes"
         | "qa_extraction"
+        | "scene_analysis"
+        | "visual_insights"
+        | "smart_timestamps"
       )[];
       noteType:
         | "general"
@@ -93,9 +96,14 @@ export const useGenerateNotesFromMedia = () => {
         | "podcast"
         | "webinar"
         | "tutorial"
+        | "video_content"
+        | "educational_video"
+        | "documentary"
         | "other";
       extraPrompt?: string;
       timestamps?: boolean;
+      useVideoAnalysis?: boolean;
+      enableVideoSearch?: boolean;
     }
   >({
     mutationFn: (params) => generateNotesFromMedia(params),

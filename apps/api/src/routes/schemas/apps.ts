@@ -402,6 +402,9 @@ export const generateNotesFromMediaSchema = z.object({
         "action_items",
         "meeting_minutes",
         "qa_extraction",
+        "scene_analysis",
+        "visual_insights",
+        "smart_timestamps",
       ]),
     )
     .min(1)
@@ -416,6 +419,9 @@ export const generateNotesFromMediaSchema = z.object({
       "podcast",
       "webinar",
       "tutorial",
+      "video_content",
+      "educational_video",
+      "documentary",
       "other",
     ])
     .default("general")
@@ -425,6 +431,20 @@ export const generateNotesFromMediaSchema = z.object({
     .boolean()
     .optional()
     .describe("Whether to enable timestamped transcription."),
+  useVideoAnalysis: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe(
+      "Use Twelve Labs Pegasus for advanced video content analysis including visual elements.",
+    ),
+  enableVideoSearch: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe(
+      "Generate video embeddings with Twelve Labs Marengo for semantic search capabilities.",
+    ),
 });
 
 export const generateNotesFromMediaResponseSchema = z.object({

@@ -10,7 +10,7 @@ import {
   getNote,
   listNotes,
   updateNote,
-} from "~/services/apps/notes";
+} from "~/services/apps/notes/list";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import {
@@ -24,6 +24,7 @@ import {
   generateNotesFromMediaResponseSchema,
 } from "../schemas/apps";
 import { errorResponseSchema, successResponseSchema } from "../schemas/shared";
+import { generateNotesFromMedia } from "~/services/apps/notes/generate-from-media";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("APPS_NOTES");
@@ -566,9 +567,6 @@ app.post(
     }
 
     try {
-      const { generateNotesFromMedia } = await import(
-        "~/services/apps/notesFromMedia"
-      );
       const result = await generateNotesFromMedia({
         env: c.env as IEnv,
         user,
@@ -577,6 +575,8 @@ app.post(
         noteType: body.noteType,
         extraPrompt: body.extraPrompt,
         timestamps: body.timestamps,
+        useVideoAnalysis: body.useVideoAnalysis,
+        enableVideoSearch: body.enableVideoSearch,
       });
       return c.json({ content: result.content });
     } catch (error) {

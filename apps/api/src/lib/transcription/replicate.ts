@@ -7,8 +7,8 @@ import { getModelConfigByMatchingModel } from "~/lib/models";
 const REPLICATE_TRANSCRIBE_VERSION =
   "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f";
 
-export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
-  name = "mistral";
+export class ReplicateTranscriptionProvider extends BaseTranscriptionProvider {
+  name = "replicate";
 
   protected getProviderKeyName(): string {
     return "REPLICATE_API_TOKEN";
@@ -82,7 +82,7 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
       }
 
       throw new AssistantError(
-        `Mistral transcription error: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Replicate transcription error: ${error instanceof Error ? error.message : "Unknown error"}`,
         ErrorType.EXTERNAL_API_ERROR,
       );
     }

@@ -233,4 +233,133 @@ describe("WorkersTranscriptionProvider", () => {
       expect(provider.getProviderKeyName()).toBeUndefined();
     });
   });
+
+  describe("Size Limits", () => {
+    let provider: WorkersTranscriptionProvider;
+
+    beforeEach(() => {
+      provider = new WorkersTranscriptionProvider();
+      vi.clearAllMocks();
+    });
+
+    describe("URL transcription with size limits", () => {
+      it("should accept files under 25MB", async () => {
+        const mockArrayBuffer = new ArrayBuffer(20 * 1024 * 1024); // 20MB
+
+        global.fetch = vi.fn().mockResolvedValue({
+          ok: true,
+          headers: {
+            get: vi.fn().mockReturnValue((20 * 1024 * 1024).toString()),
+          },
+          arrayBuffer: vi.fn().mockResolvedValue(mockArrayBuffer),
+        });
+
+        (mockEnv.AI.run as any).mockResolvedValue({
+          text: "Mock transcription result",
+        });
+
+        const result = await provider.transcribe({
+          audio: "https://example.com/audio.mp3",
+          env: mockEnv,
+          user: mockUser,
+          provider: "workers",
+        });
+
+        expect(result.text).toBe("Mock transcription result");
+        expect(mockEnv.AI.run).toHaveBeenCalledWith(
+          "@cf/openai/whisper",
+          expect.objectContaining({
+            audio: expect.any(Array),
+          }),
+          expect.any(Object),
+        );
+      });
+
+      it("should reject files over 25MB", async () => {
+        global.fetch = vi.fn().mockResolvedValue({
+          ok: true,
+          headers: {
+            get: vi.fn().mockReturnValue((30 * 1024 * 1024).toString()), // 30MB
+          },
+        });
+
+        await expect(
+          provider.transcribe({
+            audio: "https://example.com/large-audio.mp3",
+            env: mockEnv,
+            user: mockUser,
+            provider: "workers",
+          }),
+        ).rejects.toThrow(AssistantError);
+
+        await expect(
+          provider.transcribe({
+            audio: "https://example.com/large-audio.mp3",
+            env: mockEnv,
+            user: mockUser,
+            provider: "workers",
+          }),
+        ).rejects.toThrow("File too large for Workers AI (30MB > 25MB)");
+      });
+
+      it("should handle missing content-length header", async () => {
+        const mockArrayBuffer = new ArrayBuffer(10 * 1024 * 1024); // 10MB
+
+        global.fetch = vi.fn().mockResolvedValue({
+          ok: true,
+          headers: {
+            get: vi.fn().mockReturnValue(null), // No content-length header
+          },
+          arrayBuffer: vi.fn().mockResolvedValue(mockArrayBuffer),
+        });
+
+        (mockEnv.AI.run as any).mockResolvedValue({
+          text: "Mock transcription result",
+        });
+
+        const result = await provider.transcribe({
+          audio: "https://example.com/audio.mp3",
+          env: mockEnv,
+          user: mockUser,
+          provider: "workers",
+        });
+
+        expect(result.text).toBe("Mock transcription result");
+      });
+    });
+
+    describe("Blob transcription with size limits", () => {
+      it("should accept blobs under 25MB", async () => {
+        const mockBlob = new Blob(["small content"], { type: "audio/mp3" });
+        Object.defineProperty(mockBlob, "size", { value: 20 * 1024 * 1024 }); // 20MB
+
+        (mockEnv.AI.run as any).mockResolvedValue({
+          text: "Mock transcription result",
+        });
+
+        const result = await provider.transcribe({
+          audio: mockBlob,
+          env: mockEnv,
+          user: mockUser,
+          provider: "workers",
+        });
+
+        expect(result.text).toBe("Mock transcription result");
+      });
+
+      it("should reject blobs over 25MB", async () => {
+        const mockBlob = new Blob(["large content"], { type: "audio/mp3" });
+        Object.defineProperty(mockBlob, "size", { value: 30 * 1024 * 1024 }); // 30MB
+
+        await expect(
+          provider.transcribe({
+            audio: mockBlob,
+            env: mockEnv,
+            user: mockUser,
+            provider: "workers",
+          }),
+        ).rejects.toThrow("File too large for Workers AI (30MB > 25MB)");
+      });
+    });
+  });
 });
