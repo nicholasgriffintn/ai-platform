@@ -78,4 +78,6 @@ export interface IEnv {
   FREE_RATE_LIMITER?: unknown;
   PRO_RATE_LIMITER?: unknown;
   ENV?: string;
+  EMBEDDINGS_OUTPUT_BUCKET_OWNER?: string;
+  EMBEDDINGS_OUTPUT_BUCKET?: string;
 }

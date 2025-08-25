@@ -268,7 +268,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 
           <DialogFooter>
             <Button
-              variant="secondary"
+              variant="primary"
               onClick={handleGenerate}
               isLoading={generateNotesMutation.status === "pending"}
               disabled={generateNotesMutation.status === "pending"}
@@ -278,7 +278,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                 ? "Generating..."
                 : "Generate"}
             </Button>
-            <Button variant="primary" onClick={onClose}>
+            <Button variant="secondary" onClick={onClose}>
               Close
             </Button>
           </DialogFooter>

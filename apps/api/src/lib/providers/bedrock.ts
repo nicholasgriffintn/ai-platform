@@ -76,6 +76,70 @@ export class BedrockProvider extends BaseProvider {
     return {};
   }
 
+  async getMediaSourceFromMessages(
+    params: ChatCompletionParameters,
+  ): Promise<Record<string, any>> {
+    if (!params.env.EMBEDDINGS_OUTPUT_BUCKET_OWNER) {
+      throw new AssistantError(
+        "Missing EMBEDDINGS_OUTPUT_BUCKET_OWNER",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    const lastMessage = params.messages[params.messages.length - 1];
+
+    if (!Array.isArray(lastMessage.content)) {
+      throw new AssistantError(
+        "Last message content must be an array",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    const videoContent = lastMessage.content.find(
+      (item: any) => item.type === "video_url",
+    );
+
+    if (!videoContent?.video_url?.url) {
+      throw new AssistantError(
+        "Video URL not found in last message content",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    if (videoContent.video_url.url.startsWith("s3://")) {
+      return {
+        s3Location: {
+          uri: videoContent.video_url.url,
+          bucketOwner: params.env.EMBEDDINGS_OUTPUT_BUCKET_OWNER,
+        },
+      };
+    } else if (videoContent.video_url.url.startsWith("data:")) {
+      const base64Data = videoContent.video_url.url.replace(
+        /^data:.*?;base64,/,
+        "",
+      );
+      return {
+        base64String: base64Data,
+      };
+    }
+
+    throw new AssistantError(
+      "Could not get media source from messages",
+      ErrorType.CONFIGURATION_ERROR,
+    );
+  }
+
+  async getInputPromptFromMessages(
+    params: ChatCompletionParameters,
+  ): Promise<string> {
+    const lastMessage = params.messages[params.messages.length - 1];
+    return typeof lastMessage.content === "string"
+      ? lastMessage.content
+      : Array.isArray(lastMessage.content)
+        ? (lastMessage.content[0] as any)?.text || ""
+        : "";
+  }
+
   async mapParameters(
     params: ChatCompletionParameters,
     _storageService?: StorageService,
@@ -86,53 +150,54 @@ export class BedrockProvider extends BaseProvider {
       throw new Error(`Model configuration not found for ${params.model}`);
     }
 
+    const isTwelveLabsEmbed = params.model?.includes(
+      "twelvelabs.marengo-embed",
+    );
+
+    if (isTwelveLabsEmbed) {
+      const mediaSource = await this.getMediaSourceFromMessages(params);
+
+      return {
+        modelId: params.model,
+        modelInput: {
+          inputType: "video",
+          mediaSource,
+        },
+        outputDataConfig: {
+          s3OutputDataConfig: {
+            s3Uri: `s3://${params.env.EMBEDDINGS_OUTPUT_BUCKET || "polychat-embeddings"}/${params.model}/${params.completion_id || Date.now()}`,
+          },
+        },
+      };
+    }
+
+    const isTwelveLabsPegasus = params.model?.includes("twelvelabs.pegasus");
+
+    if (isTwelveLabsPegasus) {
+      const inputPrompt = await this.getInputPromptFromMessages(params);
+      const mediaSource = await this.getMediaSourceFromMessages(params);
+
+      const requestBody: Record<string, any> = {
+        inputPrompt,
+        mediaSource,
+      };
+
+      if (params.temperature !== undefined) {
+        requestBody.temperature = params.temperature;
+      }
+
+      if (params.max_tokens !== undefined) {
+        requestBody.maxOutputTokens = params.max_tokens;
+      }
+
+      return requestBody;
+    }
+
     const type = modelConfig?.type || ["text"];
     const isImageType =
       type.includes("text-to-image") || type.includes("image-to-image");
     const isVideoType =
       type.includes("text-to-video") || type.includes("image-to-video");
-
-    const isTwelveLabsEmbed = params.model?.includes(
-      "twelvelabs.marengo-embed",
-    );
-    const isTwelveLabsPegasus = params.model?.includes("twelvelabs.pegasus");
-
-    if (isTwelveLabsEmbed) {
-      const lastMessage = params.messages[params.messages.length - 1];
-      const inputText =
-        typeof lastMessage.content === "string"
-          ? lastMessage.content
-          : Array.isArray(lastMessage.content)
-            ? (lastMessage.content[0] as any)?.text || ""
-            : "";
-
-      return {
-        inputText,
-        inputModalities: ["TEXT"],
-        embeddingConfig: {
-          outputEmbeddingLength: 1024,
-        },
-      };
-    }
-
-    if (isTwelveLabsPegasus) {
-      const lastMessage = params.messages[params.messages.length - 1];
-      const inputPrompt =
-        typeof lastMessage.content === "string"
-          ? lastMessage.content
-          : Array.isArray(lastMessage.content)
-            ? (lastMessage.content[0] as any)?.text || ""
-            : "";
-
-      return {
-        inputPrompt,
-        inferenceConfig: {
-          temperature: params.temperature || 0.7,
-          maxTokens: params.max_tokens || 4096,
-          topP: params.top_p || 0.9,
-        },
-      };
-    }
 
     if (isVideoType) {
       return {

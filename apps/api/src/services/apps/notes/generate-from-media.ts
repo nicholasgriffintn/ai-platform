@@ -43,56 +43,61 @@ export async function generateNotesFromMedia({
   }
 
   try {
-    let contentLengthBytes = 0;
-    try {
-      const head = await fetch(url, { method: "HEAD" });
-      const len = head.headers.get("content-length");
-      contentLengthBytes = len ? Number(len) : 0;
-    } catch {
-      // Do nothing
-    }
-
-    if (contentLengthBytes === 0) {
-      throw new AssistantError("Empty file", ErrorType.PARAMS_ERROR);
-    }
-
-    const TWENTY_MB = 20 * 1024 * 1024;
-
-    let transcriptionProviderToUse: TranscriptionProvider;
     let transcriptText = "";
 
-    if (contentLengthBytes <= TWENTY_MB) {
-      transcriptionProviderToUse = "mistral";
-    } else {
-      transcriptionProviderToUse = "replicate";
-    }
+    const isS3Url = url.startsWith("s3://");
 
-    if (!transcriptionProviderToUse) {
-      throw new AssistantError(
-        "No transcription provider was determined",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
+    if (!isS3Url) {
+      let contentLengthBytes = 0;
+      try {
+        const head = await fetch(url, { method: "HEAD" });
+        const len = head.headers.get("content-length");
+        contentLengthBytes = len ? Number(len) : 0;
+      } catch {
+        // Do nothing
+      }
 
-    const transcription = await handleTranscribe({
-      env,
-      user,
-      audio: url,
-      provider: transcriptionProviderToUse,
-      timestamps: !!timestamps,
-    });
+      if (contentLengthBytes === 0) {
+        throw new AssistantError("Empty file", ErrorType.PARAMS_ERROR);
+      }
 
-    const response = Array.isArray(transcription)
-      ? transcription[0]
-      : transcription;
-    transcriptText =
-      typeof response?.content === "string" ? response.content : "";
+      const TWENTY_MB = 20 * 1024 * 1024;
 
-    if (!transcriptText) {
-      throw new AssistantError(
-        "Empty transcript returned",
-        ErrorType.EXTERNAL_API_ERROR,
-      );
+      let transcriptionProviderToUse: TranscriptionProvider;
+
+      if (contentLengthBytes <= TWENTY_MB) {
+        transcriptionProviderToUse = "mistral";
+      } else {
+        transcriptionProviderToUse = "replicate";
+      }
+
+      if (!transcriptionProviderToUse) {
+        throw new AssistantError(
+          "No transcription provider was determined",
+          ErrorType.PARAMS_ERROR,
+        );
+      }
+
+      const transcription = await handleTranscribe({
+        env,
+        user,
+        audio: url,
+        provider: transcriptionProviderToUse,
+        timestamps: !!timestamps,
+      });
+
+      const response = Array.isArray(transcription)
+        ? transcription[0]
+        : transcription;
+      transcriptText =
+        typeof response?.content === "string" ? response.content : "";
+
+      if (!transcriptText) {
+        throw new AssistantError(
+          "Empty transcript returned",
+          ErrorType.EXTERNAL_API_ERROR,
+        );
+      }
     }
 
     let videoAnalysisContent = "";
@@ -134,11 +139,7 @@ export async function generateNotesFromMedia({
           user.id,
         );
 
-        videoAnalysisContent =
-          (videoResult as any)?.response ||
-          (Array.isArray((videoResult as any).choices) &&
-            (videoResult as any).choices[0]?.message?.content) ||
-          (typeof videoResult === "string" ? videoResult : "");
+        videoAnalysisContent = videoResult.response;
       } catch (error) {
         console.warn(
           "Video analysis failed, falling back to audio-only:",
@@ -223,11 +224,38 @@ export async function generateNotesFromMedia({
         ["scene_analysis", "visual_insights", "smart_timestamps"].includes(o),
       );
 
-    const systemPrompt = `You are an expert note taker. Given ${hasVideoAnalysis ? "a transcript and video analysis" : "a transcript"} from ${
-      typeDescriptorMap[noteType] || "content"
-    }, produce the following sections in Markdown. Use clear headings and bullet points where appropriate. Sections to include:\n${selectedSections}\n\nGuidelines:\n- Be accurate to the ${hasVideoAnalysis ? "transcript and visual content" : "transcript"} while improving clarity\n- Keep factual details, names, dates\n- Merge duplicates and remove filler\n- Prefer concise language\n- For Action Items, include owner (if identifiable) and due dates if present\n- For Meeting Minutes, include attendees (if identifiable), agenda, decisions, and next steps\n- For Q&A Extraction, list Q paired with A succinctly\n- For Scene Analysis, break down the content by visual scenes and topics\n- For Visual Insights, highlight important visual elements, diagrams, or on-screen content\n- For Smart Timestamps, provide key moment timestamps with descriptions\n${hasVideoAnalysis ? "- Integrate visual insights with audio content for comprehensive notes" : ""}\n`;
+    const systemPrompt = `You are an expert note taker. Given ${
+      hasVideoAnalysis ? "a transcript and video analysis" : "a transcript"
+    } from ${typeDescriptorMap[noteType] || "content"}, produce the following sections in Markdown. Use clear headings and bullet points where appropriate.
 
-    const userPrompt = `${extraPrompt ? `${extraPrompt}\n\n` : ""}${hasVideoAnalysis ? `Video Analysis:\n${videoAnalysisContent}\n\n` : ""}Transcript:\n\n${transcriptText}`;
+Sections to include:
+${selectedSections}
+
+Guidelines:
+- Be accurate to the ${
+      hasVideoAnalysis && transcriptText
+        ? "transcript and visual content analysis"
+        : hasVideoAnalysis
+          ? "visual content analysis"
+          : "transcript"
+    } while improving clarity
+- Keep factual details, names, dates
+- Merge duplicates and remove filler
+- Prefer concise language
+- For Action Items, include owner (if identifiable) and due dates if present
+- For Meeting Minutes, include attendees (if identifiable), agenda, decisions, and next steps
+- For Q&A Extraction, list Q paired with A succinctly
+- For Scene Analysis, break down the content by visual scenes and topics
+- For Visual Insights, highlight important visual elements, diagrams, or on-screen content
+- For Smart Timestamps, provide key moment timestamps with descriptions${
+      hasVideoAnalysis
+        ? "\n- Integrate visual insights with audio content for comprehensive notes"
+        : ""
+    }`;
+
+    const userPrompt = `${extraPrompt ? `${extraPrompt}\n\n` : ""}${hasVideoAnalysis ? `Video Analysis:\n${videoAnalysisContent}\n\n` : ""}${
+      transcriptText ? `Transcript:\n\n${transcriptText}` : ""
+    }`;
 
     const aiResult = await provider.getResponse(
       {
