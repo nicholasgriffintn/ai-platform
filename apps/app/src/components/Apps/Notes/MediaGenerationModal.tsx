@@ -79,7 +79,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
             type="url"
             value={mediaUrl}
             onChange={(e) => setMediaUrl(e.target.value)}
-            placeholder="https://example.com/audio-or-video.mp3"
+            placeholder="https:// or s3://"
             className="w-full border rounded p-2 bg-transparent"
           />
 

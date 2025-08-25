@@ -43,149 +43,6 @@ export async function generateNotesFromMedia({
   }
 
   try {
-    let transcriptText = "";
-
-    const isS3Url = url.startsWith("s3://");
-
-    if (!isS3Url) {
-      let contentLengthBytes = 0;
-      try {
-        const head = await fetch(url, { method: "HEAD" });
-        const len = head.headers.get("content-length");
-        contentLengthBytes = len ? Number(len) : 0;
-      } catch {
-        // Do nothing
-      }
-
-      if (contentLengthBytes === 0) {
-        throw new AssistantError("Empty file", ErrorType.PARAMS_ERROR);
-      }
-
-      const TWENTY_MB = 20 * 1024 * 1024;
-
-      let transcriptionProviderToUse: TranscriptionProvider;
-
-      if (contentLengthBytes <= TWENTY_MB) {
-        transcriptionProviderToUse = "mistral";
-      } else {
-        transcriptionProviderToUse = "replicate";
-      }
-
-      if (!transcriptionProviderToUse) {
-        throw new AssistantError(
-          "No transcription provider was determined",
-          ErrorType.PARAMS_ERROR,
-        );
-      }
-
-      const transcription = await handleTranscribe({
-        env,
-        user,
-        audio: url,
-        provider: transcriptionProviderToUse,
-        timestamps: !!timestamps,
-      });
-
-      const response = Array.isArray(transcription)
-        ? transcription[0]
-        : transcription;
-      transcriptText =
-        typeof response?.content === "string" ? response.content : "";
-
-      if (!transcriptText) {
-        throw new AssistantError(
-          "Empty transcript returned",
-          ErrorType.EXTERNAL_API_ERROR,
-        );
-      }
-    }
-
-    let videoAnalysisContent = "";
-
-    if (useVideoAnalysis) {
-      const videoPrompt = `Analyze this video and provide detailed insights about the visual content, scenes, and any visual elements that complement the audio. Focus on:
-      - Visual scenes and their context
-      - On-screen text, graphics, or diagrams
-      - Speaker gestures and expressions
-      - Environmental details
-      - Visual transitions and key moments
-      
-      ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
-
-      try {
-        const pegasusModelName = "pegasus-video";
-        const pegasusModelConfig = await getModelConfig(pegasusModelName);
-        const pegasusProvider = AIProviderFactory.getProvider(
-          pegasusModelConfig.provider,
-        );
-
-        const videoResult = await pegasusProvider.getResponse(
-          {
-            model: pegasusModelConfig.matchingModel,
-            env,
-            user,
-            messages: [
-              {
-                role: "user",
-                content: [
-                  { type: "text", text: videoPrompt },
-                  { type: "video_url", video_url: { url } },
-                ],
-              },
-            ],
-            temperature: 0.3,
-            max_tokens: 2000,
-          },
-          user.id,
-        );
-
-        videoAnalysisContent = videoResult.response;
-      } catch (error) {
-        console.warn(
-          "Video analysis failed, falling back to audio-only:",
-          error,
-        );
-      }
-    }
-
-    if (enableVideoSearch) {
-      try {
-        const marengoModelName = "marengo-embed";
-        const marengoModelConfig = await getModelConfig(marengoModelName);
-        const marengoProvider = AIProviderFactory.getProvider(
-          marengoModelConfig.provider,
-        );
-
-        await marengoProvider.getResponse(
-          {
-            model: marengoModelConfig.matchingModel,
-            env,
-            user,
-            messages: [
-              {
-                role: "user",
-                content: [
-                  {
-                    type: "text",
-                    text: "Generate embeddings for video search",
-                  },
-                  { type: "video_url", video_url: { url } },
-                ],
-              },
-            ],
-          },
-          user.id,
-        );
-      } catch (error) {
-        console.warn("Video embedding generation failed:", error);
-      }
-    }
-
-    const { model: modelToUse, provider: providerToUse } =
-      await getAuxiliaryModel(env, user);
-
-    const provider = AIProviderFactory.getProvider(providerToUse);
-
     const outputLabels: Record<string, string> = {
       concise_summary: "Concise Summary",
       detailed_outline: "Detailed Outline",
@@ -218,44 +75,154 @@ export async function generateNotesFromMedia({
       .map((label) => `- ${label}`)
       .join("\n");
 
-    const hasVideoAnalysis =
-      videoAnalysisContent &&
-      outputs.some((o) =>
-        ["scene_analysis", "visual_insights", "smart_timestamps"].includes(o),
-      );
-
-    const systemPrompt = `You are an expert note taker. Given ${
-      hasVideoAnalysis ? "a transcript and video analysis" : "a transcript"
-    } from ${typeDescriptorMap[noteType] || "content"}, produce the following sections in Markdown. Use clear headings and bullet points where appropriate.
-
-Sections to include:
-${selectedSections}
-
-Guidelines:
-- Be accurate to the ${
-      hasVideoAnalysis && transcriptText
-        ? "transcript and visual content analysis"
-        : hasVideoAnalysis
-          ? "visual content analysis"
-          : "transcript"
-    } while improving clarity
+    const baseGuidelines = `- Be accurate to the ${useVideoAnalysis ? "audio and visual content" : "transcript"} while improving clarity
 - Keep factual details, names, dates
 - Merge duplicates and remove filler
 - Prefer concise language
 - For Action Items, include owner (if identifiable) and due dates if present
 - For Meeting Minutes, include attendees (if identifiable), agenda, decisions, and next steps
-- For Q&A Extraction, list Q paired with A succinctly
-- For Scene Analysis, break down the content by visual scenes and topics
-- For Visual Insights, highlight important visual elements, diagrams, or on-screen content
-- For Smart Timestamps, provide key moment timestamps with descriptions${
-      hasVideoAnalysis
-        ? "\n- Integrate visual insights with audio content for comprehensive notes"
-        : ""
-    }`;
+- For Q&A Extraction, list Q paired with A succinctly${useVideoAnalysis ? "\n- For Scene Analysis, break down the content by visual scenes and topics\n- For Visual Insights, highlight important visual elements, diagrams, or on-screen content\n- For Smart Timestamps, provide key moment timestamps with visual and audio descriptions\n- Integrate visual insights with audio content for comprehensive notes" : "\n- For Smart Timestamps, provide key moment timestamps with descriptions"}${timestamps ? "\n- Include relevant timestamps where helpful" : ""}`;
 
-    const userPrompt = `${extraPrompt ? `${extraPrompt}\n\n` : ""}${hasVideoAnalysis ? `Video Analysis:\n${videoAnalysisContent}\n\n` : ""}${
-      transcriptText ? `Transcript:\n\n${transcriptText}` : ""
-    }`;
+    const notePrompt = `You are an expert note taker. ${useVideoAnalysis ? "Analyze this video content" : "Given a transcript"} from ${typeDescriptorMap[noteType] || "content"} and produce the following sections in Markdown. Use clear headings and bullet points where appropriate.
+
+Sections to include:
+${selectedSections}
+
+Guidelines:
+${baseGuidelines}
+
+${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
+
+    if (useVideoAnalysis) {
+      const pegasusModelName = "pegasus-video";
+      const pegasusModelConfig = await getModelConfig(pegasusModelName);
+      const pegasusProvider = AIProviderFactory.getProvider(
+        pegasusModelConfig.provider,
+      );
+
+      const videoResult = await pegasusProvider.getResponse(
+        {
+          model: pegasusModelConfig.matchingModel,
+          env,
+          user,
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: notePrompt },
+                { type: "video_url", video_url: { url } },
+              ],
+            },
+          ],
+          temperature: 0.3,
+          max_tokens: 3000,
+        },
+        user.id,
+      );
+
+      if (enableVideoSearch) {
+        try {
+          const marengoModelName = "marengo-embed";
+          const marengoModelConfig = await getModelConfig(marengoModelName);
+          const marengoProvider = AIProviderFactory.getProvider(
+            marengoModelConfig.provider,
+          );
+
+          await marengoProvider.getResponse(
+            {
+              model: marengoModelConfig.matchingModel,
+              env,
+              user,
+              messages: [
+                {
+                  role: "user",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Generate embeddings for video search",
+                    },
+                    { type: "video_url", video_url: { url } },
+                  ],
+                },
+              ],
+            },
+            user.id,
+          );
+        } catch (error) {
+          console.warn("Video embedding generation failed:", error);
+        }
+      }
+
+      return { content: videoResult.response };
+    }
+
+    const isS3Url = url.startsWith("s3://");
+    let transcriptText = "";
+
+    if (isS3Url) {
+      throw new AssistantError(
+        "S3 URLs are not supported for transcription",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    let contentLengthBytes = 0;
+    try {
+      const head = await fetch(url, { method: "HEAD" });
+      const len = head.headers.get("content-length");
+      contentLengthBytes = len ? Number(len) : 0;
+    } catch {
+      // Do nothing
+    }
+
+    if (contentLengthBytes === 0) {
+      throw new AssistantError("Empty file", ErrorType.PARAMS_ERROR);
+    }
+
+    const TWENTY_MB = 20 * 1024 * 1024;
+
+    let transcriptionProviderToUse: TranscriptionProvider;
+
+    if (contentLengthBytes <= TWENTY_MB) {
+      transcriptionProviderToUse = "mistral";
+    } else {
+      transcriptionProviderToUse = "replicate";
+    }
+
+    if (!transcriptionProviderToUse) {
+      throw new AssistantError(
+        "No transcription provider was determined",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const transcription = await handleTranscribe({
+      env,
+      user,
+      audio: url,
+      provider: transcriptionProviderToUse,
+      timestamps: !!timestamps,
+    });
+
+    const response = Array.isArray(transcription)
+      ? transcription[0]
+      : transcription;
+    transcriptText =
+      typeof response?.content === "string" ? response.content : "";
+
+    if (!transcriptText) {
+      throw new AssistantError(
+        "Empty transcript returned",
+        ErrorType.EXTERNAL_API_ERROR,
+      );
+    }
+
+    const { model: modelToUse, provider: providerToUse } =
+      await getAuxiliaryModel(env, user);
+
+    const provider = AIProviderFactory.getProvider(providerToUse);
+
+    const userPrompt = `${extraPrompt ? `${extraPrompt}\n\n` : ""}Transcript:\n\n${transcriptText}`;
 
     const aiResult = await provider.getResponse(
       {
@@ -263,7 +230,7 @@ Guidelines:
         env,
         user,
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: notePrompt },
           { role: "user", content: userPrompt },
         ],
         temperature: 0.3,
