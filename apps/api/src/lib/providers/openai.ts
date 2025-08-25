@@ -261,7 +261,7 @@ export class OpenAIProvider extends BaseProvider {
     const allTools = [...tools, ...(toolsParams.tools || [])];
 
     const openaiSpecificTools =
-      modelConfig?.supportsToolCalls && tools.length > 0
+      modelConfig?.supportsToolCalls && allTools.length > 0
         ? { tools: allTools }
         : {};
 
