@@ -14,7 +14,7 @@ export class VercelGatewayProvider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     return "https://gateway.ai.vercel.com/v1/chat/completions";
   }
 

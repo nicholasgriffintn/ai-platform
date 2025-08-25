@@ -157,7 +157,9 @@ export abstract class BaseProvider implements AIProvider {
    * @param params - The parameters of the request
    * @returns The endpoint
    */
-  protected abstract getEndpoint(params: ChatCompletionParameters): string;
+  protected abstract getEndpoint(
+    params: ChatCompletionParameters,
+  ): Promise<string>;
 
   /**
    * Gets the headers for the API call
@@ -222,11 +224,6 @@ export abstract class BaseProvider implements AIProvider {
   ): Promise<any> {
     this.validateParams(params);
 
-    const isOpenAiCompatible = this.isOpenAiCompatible;
-
-    const endpoint = isOpenAiCompatible
-      ? "chat/completions"
-      : this.getEndpoint(params);
     const headers = await this.getHeaders(params);
 
     const modelConfig = await getModelConfigByMatchingModel(params.model || "");
@@ -252,8 +249,9 @@ export abstract class BaseProvider implements AIProvider {
           storageService,
           assetsUrl,
         );
+        const endpoint = await this.getEndpoint(params);
         const data = await fetchAIResponse(
-          isOpenAiCompatible,
+          this.isOpenAiCompatible,
           this.name,
           endpoint,
           headers,

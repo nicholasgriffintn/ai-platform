@@ -14,7 +14,7 @@ export class V0Provider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     const voApiBaseUrl = "https://api.v0.dev/v1/";
     return `${voApiBaseUrl}chat/completions`;
   }

@@ -26,7 +26,9 @@ export class GoogleStudioProvider extends BaseProvider {
     }
   }
 
-  protected getEndpoint(params: ChatCompletionParameters): string {
+  protected async getEndpoint(
+    params: ChatCompletionParameters,
+  ): Promise<string> {
     if (params.stream) {
       return `v1beta/models/${params.model}:streamGenerateContent?alt=sse`;
     }

@@ -25,7 +25,7 @@ export class CertesiaProvider extends BaseProvider {
     }
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     return "tts/bytes";
   }
 
@@ -51,7 +51,7 @@ export class CertesiaProvider extends BaseProvider {
   ): Promise<any> {
     this.validateParams(params);
 
-    const endpoint = this.getEndpoint();
+    const endpoint = await this.getEndpoint();
     const headers = await this.getHeaders(params);
 
     const body = {

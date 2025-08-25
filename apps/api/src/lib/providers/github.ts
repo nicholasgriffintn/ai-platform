@@ -14,7 +14,7 @@ export class GithubModelsProvider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     const githubModelsUrl = "https://models.inference.ai.azure.com";
     return `${githubModelsUrl}/chat/completions`;
   }

@@ -149,7 +149,7 @@ export async function generateNotesFromMedia({
 
     if (enableVideoSearch) {
       try {
-        const marengoModelName = "marengo-embed-2-7";
+        const marengoModelName = "marengo-embed";
         const marengoModelConfig = await getModelConfig(marengoModelName);
         const marengoProvider = AIProviderFactory.getProvider(
           marengoModelConfig.provider,

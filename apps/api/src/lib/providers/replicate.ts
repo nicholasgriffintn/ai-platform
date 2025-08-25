@@ -44,7 +44,7 @@ export class ReplicateProvider extends BaseProvider {
     }
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     return "v1/predictions";
   }
 
@@ -146,7 +146,7 @@ export class ReplicateProvider extends BaseProvider {
   ): Promise<any> {
     this.validateParams(params);
 
-    const endpoint = this.getEndpoint();
+    const endpoint = await this.getEndpoint();
     const headers = await this.getHeaders(params);
 
     const base_webhook_url = params.app_url || `https://${API_PROD_HOST}`;

@@ -14,7 +14,7 @@ export class HyperbolicProvider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     const hyperbolicUrl = "https://api.hyperbolic.xyz";
     return `${hyperbolicUrl}/v1/chat/completions`;
   }

@@ -585,11 +585,12 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     speed: 4,
     multimodal: true,
     includedInRouter: false,
+    bedrockApiOperation: "start-async-invoke",
   }),
 
   createModelConfig("pegasus-video", PROVIDER, {
-    name: "Twelve Labs Pegasus",
-    matchingModel: "twelvelabs.pegasus-1-2-v1:0",
+    name: "Twelve Labs Pegasus (Bedrock US)",
+    matchingModel: "us.twelvelabs.pegasus-1-2-v1:0",
     description:
       "Advanced video understanding model that analyzes video content and generates detailed text responses, perfect for video summarization, content analysis, and multimodal question answering.",
     type: ["text"],
@@ -614,5 +615,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsStreaming: true,
     includedInRouter: false,
     supportsDocuments: false,
+    bedrockApiOperation: "invoke",
+    bedrockStreamingApiOperation: "invoke-with-response-stream",
   }),
 ]);

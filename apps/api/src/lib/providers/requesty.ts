@@ -14,7 +14,7 @@ export class RequestyProvider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     return "https://inference.net/v1/chat/completions";
   }
 

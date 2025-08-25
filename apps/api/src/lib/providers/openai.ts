@@ -43,7 +43,9 @@ export class OpenAIProvider extends BaseProvider {
     return params.model === "gpt-image-1";
   }
 
-  protected getEndpoint(params: ChatCompletionParameters): string {
+  protected async getEndpoint(
+    params: ChatCompletionParameters,
+  ): Promise<string> {
     if (this.isImageGeneration(params)) {
       const hasAttachments = params.messages.some(
         (message) =>
@@ -62,7 +64,7 @@ export class OpenAIProvider extends BaseProvider {
   ): Promise<Record<string, string>> {
     const apiKey = await this.getApiKey(params, params.user?.id);
 
-    const endpoint = this.getEndpoint(params);
+    const endpoint = await this.getEndpoint(params);
 
     const isImageEdits = endpoint.includes("images/edits");
 
@@ -299,7 +301,7 @@ export class OpenAIProvider extends BaseProvider {
           message.content.some((item: any) => item.type === "image_url"),
       );
 
-      const endpoint = this.getEndpoint(params);
+      const endpoint = await this.getEndpoint(params);
 
       if (endpoint.includes("images/edits") && hasImages) {
         if (!_storageService) {

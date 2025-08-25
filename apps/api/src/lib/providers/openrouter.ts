@@ -22,7 +22,7 @@ export class OpenRouterProvider extends BaseProvider {
     }
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     return "v1/chat/completions";
   }
 

@@ -14,7 +14,7 @@ export class ChutesProvider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     return "https://llm.chutes.ai/v1/chat/completions";
   }
 
