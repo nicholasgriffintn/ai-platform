@@ -96,5 +96,37 @@ describe("ReplicateProvider", () => {
         provider.validateParams(paramsWithoutContent as any);
       }).toThrow("Missing last message content");
     });
+
+    it("should not require completion_id if should_poll is true", async () => {
+      const provider = new ReplicateProvider();
+
+      const params = {
+        model: "replicate-model",
+        messages: [{ role: "user", content: "Hello" }],
+        env: { AI_GATEWAY_TOKEN: "test-token", WEBHOOK_SECRET: "secret" },
+        should_poll: true,
+      };
+
+      expect(() => {
+        // @ts-ignore - validateParams is protected
+        provider.validateParams(params as any);
+      }).not.toThrow();
+    });
+
+    it("should require completion_id if should_poll is false", async () => {
+      const provider = new ReplicateProvider();
+
+      const params = {
+        model: "replicate-model",
+        messages: [{ role: "user", content: "Hello" }],
+        env: { AI_GATEWAY_TOKEN: "test-token", WEBHOOK_SECRET: "secret" },
+        should_poll: false,
+      };
+
+      expect(() => {
+        // @ts-ignore - validateParams is protected
+        provider.validateParams(params as any);
+      }).toThrow("Missing completion_id");
+    });
   });
 });

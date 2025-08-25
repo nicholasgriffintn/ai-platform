@@ -31,7 +31,7 @@ export class ReplicateProvider extends BaseProvider {
       );
     }
 
-    if (!params.completion_id) {
+    if (!params.completion_id && !params.should_poll) {
       throw new AssistantError("Missing completion_id", ErrorType.PARAMS_ERROR);
     }
 
@@ -150,7 +150,13 @@ export class ReplicateProvider extends BaseProvider {
     const headers = await this.getHeaders(params);
 
     const base_webhook_url = params.app_url || `https://${API_PROD_HOST}`;
-    const webhook_url = `${base_webhook_url}/webhooks/replicate?completion_id=${params.completion_id}&token=${params.env.WEBHOOK_SECRET || ""}`;
+    let webhook_url = `${base_webhook_url}/webhooks/replicate`;
+    if (params.completion_id) {
+      webhook_url += `?completion_id=${params.completion_id}`;
+    }
+    if (params.env.WEBHOOK_SECRET) {
+      webhook_url += `&token=${params.env.WEBHOOK_SECRET}`;
+    }
 
     const lastMessage = params.messages[params.messages.length - 1];
 
