@@ -564,7 +564,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     name: "Twelve Labs Marengo Embed",
     matchingModel: "twelvelabs.marengo-embed-2-7-v1:0",
     description:
-      "Advanced multimodal embedding model that generates vector representations from text, image, speech, and video inputs for semantic search and retrieval applications. Uses StartAsyncInvoke API.",
+      "Advanced multimodal embedding model that generates vector representations from text, image, speech, and video inputs for semantic search and retrieval applications.",
     type: ["embedding"],
     knowledgeCutoffDate: "2024",
     releaseDate: "2024",
@@ -575,7 +575,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
-    supportsStreaming: false, // Uses async invoke
     contextWindow: 8192,
     maxTokens: 512,
     costPer1kInputTokens: 0.0001,
@@ -592,7 +591,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     name: "Twelve Labs Pegasus",
     matchingModel: "twelvelabs.pegasus-1-2-v1:0",
     description:
-      "Advanced video understanding model that analyzes video content and generates detailed text responses, perfect for video summarization, content analysis, and multimodal question answering. Uses InvokeModel and InvokeModelWithResponseStream APIs.",
+      "Advanced video understanding model that analyzes video content and generates detailed text responses, perfect for video summarization, content analysis, and multimodal question answering.",
     type: ["text"],
     knowledgeCutoffDate: "2024",
     releaseDate: "2024",
@@ -612,7 +611,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     reliability: 4,
     speed: 3,
     multimodal: true,
-    supportsStreaming: true, // Uses InvokeModelWithResponseStream
+    supportsStreaming: true,
     includedInRouter: false,
     supportsDocuments: false,
   }),
