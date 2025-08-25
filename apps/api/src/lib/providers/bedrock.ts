@@ -53,8 +53,19 @@ export class BedrockProvider extends BaseProvider {
     }
   }
 
-  protected getEndpoint(params: ChatCompletionParameters): string {
+  protected async getEndpoint(
+    params: ChatCompletionParameters,
+  ): Promise<string> {
     const region = "us-east-1";
+    const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+
+    if (modelConfig?.bedrockApiOperation) {
+      if (params.stream && modelConfig?.bedrockStreamingApiOperation) {
+        return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/${modelConfig.bedrockStreamingApiOperation}`;
+      }
+      return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/${modelConfig.bedrockApiOperation}`;
+    }
+
     if (params.stream) {
       return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/converse-stream`;
     }
@@ -65,6 +76,70 @@ export class BedrockProvider extends BaseProvider {
     return {};
   }
 
+  async getMediaSourceFromMessages(
+    params: ChatCompletionParameters,
+  ): Promise<Record<string, any>> {
+    if (!params.env.EMBEDDINGS_OUTPUT_BUCKET_OWNER) {
+      throw new AssistantError(
+        "Missing EMBEDDINGS_OUTPUT_BUCKET_OWNER",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    const lastMessage = params.messages[params.messages.length - 1];
+
+    if (!Array.isArray(lastMessage.content)) {
+      throw new AssistantError(
+        "Last message content must be an array",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    const videoContent = lastMessage.content.find(
+      (item: any) => item.type === "video_url",
+    );
+
+    if (!videoContent?.video_url?.url) {
+      throw new AssistantError(
+        "Video URL not found in last message content",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    if (videoContent.video_url.url.startsWith("s3://")) {
+      return {
+        s3Location: {
+          uri: videoContent.video_url.url,
+          bucketOwner: params.env.EMBEDDINGS_OUTPUT_BUCKET_OWNER,
+        },
+      };
+    } else if (videoContent.video_url.url.startsWith("data:")) {
+      const base64Data = videoContent.video_url.url.replace(
+        /^data:.*?;base64,/,
+        "",
+      );
+      return {
+        base64String: base64Data,
+      };
+    }
+
+    throw new AssistantError(
+      "Could not get media source from messages",
+      ErrorType.CONFIGURATION_ERROR,
+    );
+  }
+
+  async getInputPromptFromMessages(
+    params: ChatCompletionParameters,
+  ): Promise<string> {
+    const lastMessage = params.messages[params.messages.length - 1];
+    return typeof lastMessage.content === "string"
+      ? lastMessage.content
+      : Array.isArray(lastMessage.content)
+        ? (lastMessage.content[0] as any)?.text || ""
+        : "";
+  }
+
   async mapParameters(
     params: ChatCompletionParameters,
     _storageService?: StorageService,
@@ -73,6 +148,49 @@ export class BedrockProvider extends BaseProvider {
     const modelConfig = await getModelConfigByMatchingModel(params.model || "");
     if (!modelConfig) {
       throw new Error(`Model configuration not found for ${params.model}`);
+    }
+
+    const isTwelveLabsEmbed = params.model?.includes(
+      "twelvelabs.marengo-embed",
+    );
+
+    if (isTwelveLabsEmbed) {
+      const mediaSource = await this.getMediaSourceFromMessages(params);
+
+      return {
+        modelId: params.model,
+        modelInput: {
+          inputType: "video",
+          mediaSource,
+        },
+        outputDataConfig: {
+          s3OutputDataConfig: {
+            s3Uri: `s3://${params.env.EMBEDDINGS_OUTPUT_BUCKET || "polychat-embeddings"}/${params.model}/${params.completion_id || Date.now()}`,
+          },
+        },
+      };
+    }
+
+    const isTwelveLabsPegasus = params.model?.includes("twelvelabs.pegasus");
+
+    if (isTwelveLabsPegasus) {
+      const inputPrompt = await this.getInputPromptFromMessages(params);
+      const mediaSource = await this.getMediaSourceFromMessages(params);
+
+      const requestBody: Record<string, any> = {
+        inputPrompt,
+        mediaSource,
+      };
+
+      if (params.temperature !== undefined) {
+        requestBody.temperature = params.temperature;
+      }
+
+      if (params.max_tokens !== undefined) {
+        requestBody.maxOutputTokens = params.max_tokens;
+      }
+
+      return requestBody;
     }
 
     const type = modelConfig?.type || ["text"];
@@ -323,7 +441,7 @@ export class BedrockProvider extends BaseProvider {
   ): Promise<any> {
     this.validateParams(params);
 
-    const bedrockUrl = this.getEndpoint(params);
+    const bedrockUrl = await this.getEndpoint(params);
     const body = await this.mapParameters(params);
 
     return trackProviderMetrics({
@@ -360,11 +478,18 @@ export class BedrockProvider extends BaseProvider {
         const signedUrl = new URL(presignedRequest.url);
         signedUrl.host = "gateway.ai.cloudflare.com";
 
-        if (params.stream) {
-          signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/converse-stream`;
-        } else {
-          signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/converse`;
+        let operationPath = "converse";
+        if (params.model?.includes("twelvelabs.marengo-embed")) {
+          operationPath = "start-async-invoke";
+        } else if (params.model?.includes("twelvelabs.pegasus")) {
+          operationPath = params.stream
+            ? "invoke-with-response-stream"
+            : "invoke";
+        } else if (params.stream) {
+          operationPath = "converse-stream";
         }
+
+        signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/${operationPath}`;
 
         const response = await fetch(signedUrl, {
           method: "POST",

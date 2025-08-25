@@ -14,7 +14,7 @@ export class MorphProvider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     return "https://api.morphllm.com/v1";
   }
 

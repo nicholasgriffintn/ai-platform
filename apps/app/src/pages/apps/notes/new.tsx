@@ -41,6 +41,9 @@ export default function NewNotePage() {
           metadata,
         });
         setNoteId(note.id);
+        if (typeof window !== "undefined") {
+          window.history.replaceState({}, "", `/apps/notes/${note.id}`);
+        }
         return note.id;
       }
       await updateMutation.mutateAsync({ title, content, metadata });

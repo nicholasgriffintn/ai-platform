@@ -14,7 +14,7 @@ export class TogetherAiProvider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     const togetherAiUrl = "https://api.together.xyz/v1";
     return `${togetherAiUrl}/chat/completions`;
   }

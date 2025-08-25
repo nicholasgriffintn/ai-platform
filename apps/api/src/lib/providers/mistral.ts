@@ -22,7 +22,9 @@ export class MistralProvider extends BaseProvider {
     }
   }
 
-  protected getEndpoint(params: ChatCompletionParameters): string {
+  protected async getEndpoint(
+    params: ChatCompletionParameters,
+  ): Promise<string> {
     if (params.model === "mistral-ocr-latest") {
       return "v1/ocr";
     }

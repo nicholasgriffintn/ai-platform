@@ -14,7 +14,7 @@ export class InceptionProvider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     return "https://api.inceptionlabs.ai/v1/chat/completions";
   }
 

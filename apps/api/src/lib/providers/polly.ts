@@ -47,7 +47,9 @@ export class PollyProvider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(params: ChatCompletionParameters): string {
+  protected async getEndpoint(
+    params: ChatCompletionParameters,
+  ): Promise<string> {
     const region = params.env.AWS_REGION || "us-east-1";
     return `https://polly.${region}.amazonaws.com/v1/synthesisTasks`;
   }
@@ -62,7 +64,7 @@ export class PollyProvider extends BaseProvider {
   ): Promise<any> {
     this.validateParams(params);
 
-    const pollyUrl = this.getEndpoint(params);
+    const pollyUrl = await this.getEndpoint(params);
 
     return trackProviderMetrics({
       provider: this.name,

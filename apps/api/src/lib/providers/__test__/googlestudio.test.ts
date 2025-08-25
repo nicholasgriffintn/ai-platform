@@ -60,7 +60,7 @@ describe("GoogleStudioProvider", () => {
       };
 
       // @ts-ignore - getEndpoint is protected
-      const endpoint = provider.getEndpoint(params as any);
+      const endpoint = await provider.getEndpoint(params as any);
 
       expect(endpoint).toBe("v1beta/models/gemini-pro:generateContent");
     });
@@ -77,7 +77,7 @@ describe("GoogleStudioProvider", () => {
       };
 
       // @ts-ignore - getEndpoint is protected
-      const endpoint = provider.getEndpoint(params as any);
+      const endpoint = await provider.getEndpoint(params as any);
 
       expect(endpoint).toBe(
         "v1beta/models/gemini-pro:streamGenerateContent?alt=sse",

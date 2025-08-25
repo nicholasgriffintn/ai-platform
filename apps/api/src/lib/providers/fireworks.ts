@@ -14,7 +14,7 @@ export class FireworksProvider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     const fireworksUrl = "https://api.fireworks.ai/inference/v1";
     return `${fireworksUrl}/chat/completions`;
   }

@@ -383,6 +383,14 @@ export class Database {
     }
   }
 
+  public async deleteEmbedding(id: string): Promise<void> {
+    try {
+      return this.repositories.embeddings.deleteEmbedding(id);
+    } catch (error) {
+      logger.error(`Error deleting embedding: ${error}`);
+    }
+  }
+
   // Conversation methods
   public async createConversation(
     conversationId: string,

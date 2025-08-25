@@ -416,6 +416,10 @@ export class ResponseFormatter {
       return { ...data, response: data.delta.text };
     }
 
+    if (typeof data.message === "string") {
+      return { ...data, response: data.message };
+    }
+
     return { ...data, response: "" };
   }
 }

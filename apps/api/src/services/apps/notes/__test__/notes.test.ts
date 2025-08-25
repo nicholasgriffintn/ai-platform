@@ -7,7 +7,7 @@ import {
   getNote,
   listNotes,
   updateNote,
-} from "../notes";
+} from "../list";
 
 const mockRepo = {
   getAppDataByUserAndApp: vi.fn(),

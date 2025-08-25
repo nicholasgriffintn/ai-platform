@@ -29,7 +29,9 @@ export class OllamaProvider extends BaseProvider {
     }
   }
 
-  protected getEndpoint(params: ChatCompletionParameters): string {
+  protected async getEndpoint(
+    params: ChatCompletionParameters,
+  ): Promise<string> {
     const ollamaUrl = params.env.OLLAMA_URL || "http://localhost:11434";
     return `${ollamaUrl}/api/chat`;
   }

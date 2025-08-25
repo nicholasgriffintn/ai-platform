@@ -28,7 +28,7 @@ export class GithubCopilotProvider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     return "https://api.githubcopilot.com/chat/completions";
   }
 

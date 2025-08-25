@@ -5,6 +5,10 @@ import {
   type BedrockEmbeddingProviderConfig,
 } from "./bedrock";
 import {
+  MarengoEmbeddingProvider,
+  type MarengoEmbeddingProviderConfig,
+} from "./marengo";
+import {
   VectorizeEmbeddingProvider,
   type VectorizeEmbeddingProviderConfig,
 } from "./vectorize";
@@ -13,7 +17,10 @@ import {
 export class EmbeddingProviderFactory {
   static getProvider(
     type: string,
-    config: VectorizeEmbeddingProviderConfig | BedrockEmbeddingProviderConfig,
+    config:
+      | VectorizeEmbeddingProviderConfig
+      | BedrockEmbeddingProviderConfig
+      | MarengoEmbeddingProviderConfig,
     env: IEnv,
     user?: IUser,
   ): EmbeddingProvider {
@@ -34,6 +41,14 @@ export class EmbeddingProviderFactory {
           );
         }
         return new VectorizeEmbeddingProvider(config);
+      case "marengo":
+        if (!("vector_db" in config)) {
+          throw new AssistantError(
+            "Invalid config for Marengo provider",
+            ErrorType.CONFIGURATION_ERROR,
+          );
+        }
+        return new MarengoEmbeddingProvider(config, env, user);
       default:
         throw new AssistantError(
           `Unsupported embedding provider: ${type}`,

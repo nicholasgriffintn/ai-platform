@@ -22,7 +22,7 @@ export class DeepSeekProvider extends BaseProvider {
     }
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     return "chat/completions";
   }
 

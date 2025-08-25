@@ -28,7 +28,7 @@ export class WorkersProvider extends BaseProvider {
     super.validateParams(params);
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     return "";
   }
 

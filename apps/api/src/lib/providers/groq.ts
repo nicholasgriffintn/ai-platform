@@ -22,7 +22,7 @@ export class GroqProvider extends BaseProvider {
     }
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     return "chat/completions";
   }
 

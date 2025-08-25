@@ -447,13 +447,11 @@ describe("ChatOrchestrator", () => {
         authError.status = 401;
         mockPreparer.prepare.mockRejectedValue(authError);
 
-        await expect(orchestrator.process(mockOptions)).rejects.toThrow(
-          new AssistantError(
-            "Authentication error with AI provider",
-            ErrorType.AUTHENTICATION_ERROR,
-            401,
-          ),
-        );
+        const error = await orchestrator.process(mockOptions).catch((e) => e);
+        expect(error).toBeInstanceOf(AssistantError);
+        expect(error.message).toBe("Authentication error with AI provider");
+        expect(error.type).toBe(ErrorType.AUTHENTICATION_ERROR);
+        expect(error.statusCode).toBe(401);
       });
 
       it("should wrap provider errors", async () => {

@@ -25,7 +25,7 @@ export class ElevenLabsProvider extends BaseProvider {
     }
   }
 
-  protected getEndpoint(): string {
+  protected async getEndpoint(): Promise<string> {
     return `v1/text-to-speech/${this.voiceId}`;
   }
 
@@ -50,7 +50,7 @@ export class ElevenLabsProvider extends BaseProvider {
   ): Promise<any> {
     this.validateParams(params);
 
-    const endpoint = this.getEndpoint();
+    const endpoint = await this.getEndpoint();
     const headers = await this.getHeaders(params);
 
     const body = {
