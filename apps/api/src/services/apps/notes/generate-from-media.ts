@@ -56,15 +56,12 @@ export async function generateNotesFromMedia({
       throw new AssistantError("Empty file", ErrorType.PARAMS_ERROR);
     }
 
-    const TWENTY_FIVE_MB = 25 * 1024 * 1024;
-    const FIFTY_MB = 50 * 1024 * 1024;
+    const TWENTY_MB = 20 * 1024 * 1024;
 
     let transcriptionProviderToUse: TranscriptionProvider;
     let transcriptText = "";
 
-    if (contentLengthBytes <= TWENTY_FIVE_MB) {
-      transcriptionProviderToUse = "workers";
-    } else if (contentLengthBytes <= FIFTY_MB) {
+    if (contentLengthBytes <= TWENTY_MB) {
       transcriptionProviderToUse = "mistral";
     } else {
       transcriptionProviderToUse = "replicate";
