@@ -21,15 +21,14 @@ describe("Monitoring", () => {
   });
 
   describe("getInstance", () => {
-    it("should create singleton instance", () => {
+    it("should create new instance each time", () => {
       const instance1 = Monitoring.getInstance(mockAnalyticsEngine as any);
       const instance2 = Monitoring.getInstance(mockAnalyticsEngine as any);
 
-      expect(instance1).toBe(instance2);
+      expect(instance1).not.toBe(instance2);
     });
 
     it("should throw error when analytics engine not provided", () => {
-      Monitoring["instance"] = undefined as any;
       expect(() => Monitoring.getInstance()).toThrow(
         "Analytics Engine not configured",
       );

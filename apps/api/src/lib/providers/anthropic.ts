@@ -110,7 +110,7 @@ export class AnthropicProvider extends BaseProvider {
     const allTools = [...tools, ...(toolsParams.tools || [])];
 
     const anthropicSpecificTools =
-      modelConfig?.supportsToolCalls && tools.length > 0
+      modelConfig?.supportsToolCalls && allTools.length > 0
         ? { tools: allTools }
         : {};
 

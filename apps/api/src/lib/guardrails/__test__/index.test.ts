@@ -31,7 +31,6 @@ describe("Guardrails", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (Guardrails as any).instance = null;
     mockGuardrailsProviderFactory.getProvider.mockReturnValue(mockProvider);
   });
 

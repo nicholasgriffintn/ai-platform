@@ -33,9 +33,6 @@ export {
 };
 
 export class RepositoryManager {
-  private static instance: RepositoryManager;
-  private env: IEnv;
-
   private planRepo: PlanRepository;
   private userRepo: UserRepository;
   private anonymousUserRepo: AnonymousUserRepository;
@@ -50,8 +47,7 @@ export class RepositoryManager {
   private apiKeyRepo: ApiKeyRepository;
   private appDataRepo: AppDataRepository;
 
-  private constructor(env: IEnv) {
-    this.env = env;
+  constructor(env: IEnv) {
     this.planRepo = new PlanRepository(env);
     this.userRepo = new UserRepository(env);
     this.anonymousUserRepo = new AnonymousUserRepository(env);
@@ -68,10 +64,7 @@ export class RepositoryManager {
   }
 
   public static getInstance(env: IEnv): RepositoryManager {
-    if (!RepositoryManager.instance) {
-      RepositoryManager.instance = new RepositoryManager(env);
-    }
-    return RepositoryManager.instance;
+    return new RepositoryManager(env);
   }
 
   public get plans(): PlanRepository {

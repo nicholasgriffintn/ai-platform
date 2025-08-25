@@ -16,11 +16,10 @@ export interface Env {
 const logger = getLogger({ prefix: "DATABASE" });
 
 export class Database {
-  private static instance: Database | null = null;
   private repositories: RepositoryManager;
   private env: IEnv;
 
-  private constructor(env: IEnv) {
+  constructor(env: IEnv) {
     if (!env?.DB) {
       throw new AssistantError(
         "Database not configured",
@@ -28,14 +27,11 @@ export class Database {
       );
     }
     this.env = env;
-    this.repositories = RepositoryManager.getInstance(env);
+    this.repositories = new RepositoryManager(env);
   }
 
   public static getInstance(env: IEnv): Database {
-    if (!Database.instance) {
-      Database.instance = new Database(env);
-    }
-    return Database.instance;
+    return new Database(env);
   }
 
   // User methods

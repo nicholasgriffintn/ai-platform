@@ -175,10 +175,13 @@ app.post(
 
     const userContext = context.get("user");
 
-    const response = await handleCountTokens({
-      env: context.env as IEnv,
-      user: userContext,
-    }, body);
+    const response = await handleCountTokens(
+      {
+        env: context.env as IEnv,
+        user: userContext,
+      },
+      body,
+    );
 
     return context.json(response);
   },

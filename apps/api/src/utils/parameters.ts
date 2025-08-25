@@ -220,9 +220,11 @@ export function getToolsForProvider(
       tools?: any[];
       parallel_tool_calls?: boolean;
       tool_choice?: any;
-    } = {
-      tools,
-    };
+    } = {};
+
+    if (tools.length > 0) {
+      result.tools = tools;
+    }
 
     if (
       params.model !== "o1" &&

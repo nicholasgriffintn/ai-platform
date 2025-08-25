@@ -17,20 +17,16 @@ export interface MemoryEvent {
 }
 
 export class MemoryManager {
-  private static instance: MemoryManager;
   private env: IEnv;
   private user?: IUser;
 
-  private constructor(env: IEnv, user?: IUser) {
+  constructor(env: IEnv, user?: IUser) {
     this.env = env;
     this.user = user;
   }
 
   public static getInstance(env: IEnv, user?: IUser): MemoryManager {
-    if (!MemoryManager.instance) {
-      MemoryManager.instance = new MemoryManager(env, user);
-    }
-    return MemoryManager.instance;
+    return new MemoryManager(env, user);
   }
 
   /**

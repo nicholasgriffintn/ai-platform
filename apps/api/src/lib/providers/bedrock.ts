@@ -178,7 +178,10 @@ export class BedrockProvider extends BaseProvider {
     }));
   }
 
-  private async getAwsCredentials(params: ChatCompletionParameters, userId?: number): Promise<{ accessKey: string; secretKey: string }> {
+  private async getAwsCredentials(
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<{ accessKey: string; secretKey: string }> {
     let accessKey = params.env.BEDROCK_AWS_ACCESS_KEY || "";
     let secretKey = params.env.BEDROCK_AWS_SECRET_KEY || "";
 
@@ -219,7 +222,10 @@ export class BedrockProvider extends BaseProvider {
     operation: string,
     userId?: number,
   ): Promise<Response> {
-    const { accessKey, secretKey } = await this.getAwsCredentials(params, userId);
+    const { accessKey, secretKey } = await this.getAwsCredentials(
+      params,
+      userId,
+    );
     const region = "us-east-1";
 
     const awsClient = new AwsClient({
@@ -238,9 +244,7 @@ export class BedrockProvider extends BaseProvider {
     });
 
     if (!presignedRequest.url) {
-      throw new AssistantError(
-        "Failed to get presigned request from Bedrock",
-      );
+      throw new AssistantError("Failed to get presigned request from Bedrock");
     }
 
     const signedUrl = new URL(presignedRequest.url);
@@ -287,8 +291,14 @@ export class BedrockProvider extends BaseProvider {
       provider: this.name,
       model: params.model as string,
       operation: async () => {
-        const response = await this.makeBedrockRequest(endpoint, body, params, "count-tokens", userId);
-        const data = await response.json() as { inputTokens: number };
+        const response = await this.makeBedrockRequest(
+          endpoint,
+          body,
+          params,
+          "count-tokens",
+          userId,
+        );
+        const data = (await response.json()) as { inputTokens: number };
         return { inputTokens: data.inputTokens };
       },
       analyticsEngine: params.env?.ANALYTICS,
@@ -320,7 +330,10 @@ export class BedrockProvider extends BaseProvider {
       provider: this.name,
       model: params.model as string,
       operation: async () => {
-        const { accessKey, secretKey } = await this.getAwsCredentials(params, userId);
+        const { accessKey, secretKey } = await this.getAwsCredentials(
+          params,
+          userId,
+        );
         const region = "us-east-1";
 
         const awsClient = new AwsClient({
