@@ -26,6 +26,7 @@ export function useAutoSave({
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const textRef = useRef(text);
   const lastSavedRef = useRef(lastSavedText);
+  const isSavingRef = useRef(false);
 
   useEffect(() => {
     textRef.current = text;
@@ -36,11 +37,13 @@ export function useAutoSave({
   }, [lastSavedText]);
 
   useEffect(() => {
-    setLastSavedText(text);
-  }, [text]);
+    isSavingRef.current = isSaving;
+  }, [isSaving]);
 
   const saveNote = useCallback(
     async (textToSave: string) => {
+      if (isSavingRef.current) return;
+
       setIsSaving(true);
       try {
         const [title, content] = splitTitleAndContent(textToSave);
@@ -58,18 +61,22 @@ export function useAutoSave({
   );
 
   const forceSave = useCallback(() => {
-    if (textRef.current !== lastSavedRef.current) {
+    if (textRef.current !== lastSavedRef.current && !isSavingRef.current) {
       return saveNote(textRef.current);
     }
   }, [saveNote]);
 
   useEffect(() => {
     if (text === lastSavedText) return;
+
     const timeout = setTimeout(() => {
-      saveNote(text);
+      if (!isSavingRef.current) {
+        saveNote(text);
+      }
     }, delay);
+
     return () => clearTimeout(timeout);
-  }, [text, lastSavedText, saveNote, delay]);
+  }, [text, lastSavedText, delay]);
 
   return {
     isSaving,
