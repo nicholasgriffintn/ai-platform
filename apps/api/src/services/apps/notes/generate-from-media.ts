@@ -3,7 +3,7 @@ import {
   TranscriptionProvider,
 } from "~/services/audio/transcribe";
 import { AIProviderFactory } from "~/lib/providers/factory";
-import { getAuxiliaryModel } from "~/lib/models";
+import { getAuxiliaryModel, getModelConfig } from "~/lib/models";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -98,8 +98,6 @@ export async function generateNotesFromMedia({
     let videoAnalysisContent = "";
 
     if (useVideoAnalysis) {
-      const pegasusProvider = AIProviderFactory.getProvider("bedrock");
-
       const videoPrompt = `Analyze this video and provide detailed insights about the visual content, scenes, and any visual elements that complement the audio. Focus on:
       - Visual scenes and their context
       - On-screen text, graphics, or diagrams
@@ -110,9 +108,15 @@ export async function generateNotesFromMedia({
       ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 
       try {
+        const pegasusModelName = "pegasus-video";
+        const pegasusModelConfig = await getModelConfig(pegasusModelName);
+        const pegasusProvider = AIProviderFactory.getProvider(
+          pegasusModelConfig.provider,
+        );
+
         const videoResult = await pegasusProvider.getResponse(
           {
-            model: "twelvelabs.pegasus-1-2-v1:0",
+            model: pegasusModelConfig.matchingModel,
             env,
             user,
             messages: [
@@ -144,12 +148,16 @@ export async function generateNotesFromMedia({
     }
 
     if (enableVideoSearch) {
-      const marengoProvider = AIProviderFactory.getProvider("bedrock");
-
       try {
+        const marengoModelName = "marengo-embed-2-7";
+        const marengoModelConfig = await getModelConfig(marengoModelName);
+        const marengoProvider = AIProviderFactory.getProvider(
+          marengoModelConfig.provider,
+        );
+
         await marengoProvider.getResponse(
           {
-            model: "twelvelabs.marengo-embed-2-7-v1:0",
+            model: marengoModelConfig.matchingModel,
             env,
             user,
             messages: [
