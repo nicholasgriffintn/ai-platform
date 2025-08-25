@@ -18,26 +18,22 @@ export interface Metric {
 }
 
 export class Monitoring {
-  private static instance: Monitoring;
   private analyticsEngine: AnalyticsEngineDataset;
 
-  private constructor(analyticsEngine?: AnalyticsEngineDataset) {
+  constructor(analyticsEngine?: AnalyticsEngineDataset) {
+    if (!analyticsEngine) {
+      throw new AssistantError(
+        "Analytics Engine not configured",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
     this.analyticsEngine = analyticsEngine;
   }
 
   public static getInstance(
     analyticsEngine?: AnalyticsEngineDataset,
   ): Monitoring {
-    if (!Monitoring.instance) {
-      if (!analyticsEngine) {
-        throw new AssistantError(
-          "Analytics Engine not configured",
-          ErrorType.CONFIGURATION_ERROR,
-        );
-      }
-      Monitoring.instance = new Monitoring(analyticsEngine);
-    }
-    return Monitoring.instance;
+    return new Monitoring(analyticsEngine);
   }
 
   public recordMetric(metric: Metric): void {

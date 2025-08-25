@@ -7,11 +7,10 @@ import type {
 import { SearchProviderFactory } from "./factory";
 
 export class Search {
-  private static instance: Search;
   private provider: SearchProvider;
   private env: IEnv;
 
-  private constructor(env: IEnv, providerName: SearchProviderName) {
+  constructor(env: IEnv, providerName: SearchProviderName) {
     this.env = env;
 
     this.provider = SearchProviderFactory.getProvider(providerName, this.env);
@@ -21,10 +20,7 @@ export class Search {
     env: IEnv,
     providerName: SearchProviderName,
   ): Search {
-    if (!Search.instance) {
-      Search.instance = new Search(env, providerName);
-    }
-    return Search.instance;
+    return new Search(env, providerName);
   }
 
   async search(query: string, options?: SearchOptions) {

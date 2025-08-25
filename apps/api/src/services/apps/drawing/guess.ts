@@ -9,7 +9,7 @@ interface ImageFromDrawingResponse extends IFunctionResponse {
   completion_id?: string;
 }
 
-const usedGuesses = new Set<string>();
+const userGuessesCache = new Map<string, Set<string>>();
 
 export async function guessDrawingFromImage({
   env,
@@ -28,10 +28,13 @@ export async function guessDrawingFromImage({
 
   const arrayBuffer = await request.drawing.arrayBuffer();
 
+  const userId = user.id.toString();
+  const userGuesses = userGuessesCache.get(userId) || new Set<string>();
+
   const guessRequest = await env.AI.run(
     "@cf/llava-hf/llava-1.5-7b-hf",
     {
-      prompt: guessDrawingPrompt(usedGuesses),
+      prompt: guessDrawingPrompt(userGuesses),
       image: [...new Uint8Array(arrayBuffer)],
     },
     {
@@ -51,7 +54,8 @@ export async function guessDrawingFromImage({
   }
 
   const guess = guessRequest.description.trim();
-  usedGuesses.add(guess.toLowerCase());
+  userGuesses.add(guess.toLowerCase());
+  userGuessesCache.set(userId, userGuesses);
 
   const guessId = generateId();
 

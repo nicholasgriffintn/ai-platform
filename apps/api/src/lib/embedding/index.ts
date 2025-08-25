@@ -24,12 +24,11 @@ import { EmbeddingProviderFactory } from "./factory";
 const logger = getLogger({ prefix: "EMBEDDING" });
 
 export class Embedding {
-  private static instance: Embedding;
   private provider: EmbeddingProvider;
   private env: IEnv;
   private user?: IUser;
 
-  private constructor(env: IEnv, user?: IUser, userSettings?: IUserSettings) {
+  constructor(env: IEnv, user?: IUser, userSettings?: IUserSettings) {
     this.env = env;
     this.user = user;
 
@@ -104,10 +103,7 @@ export class Embedding {
     user?: IUser,
     userSettings?: IUserSettings,
   ): Embedding {
-    if (!Embedding.instance) {
-      Embedding.instance = new Embedding(env, user, userSettings);
-    }
-    return Embedding.instance;
+    return new Embedding(env, user, userSettings);
   }
 
   async generate(

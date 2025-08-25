@@ -73,10 +73,10 @@ describe("MemoryManager", () => {
   });
 
   describe("getInstance", () => {
-    it("should create singleton instance", () => {
+    it("should create new instance each time", () => {
       const instance1 = MemoryManager.getInstance(mockEnv, mockUser);
       const instance2 = MemoryManager.getInstance(mockEnv, mockUser);
-      expect(instance1).toBe(instance2);
+      expect(instance1).not.toBe(instance2);
     });
   });
 

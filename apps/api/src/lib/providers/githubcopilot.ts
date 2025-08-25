@@ -7,7 +7,7 @@ type CopilotTokenCache = {
   expiresAt?: number;
 };
 
-let cachedCopilotToken: CopilotTokenCache | null = null;
+const copilotTokenCache = new Map<string, CopilotTokenCache>();
 
 export class GithubCopilotProvider extends BaseProvider {
   name = "github-copilot";
@@ -35,13 +35,15 @@ export class GithubCopilotProvider extends BaseProvider {
   private async getCopilotBearer(
     params: ChatCompletionParameters,
   ): Promise<string> {
+    const userId = params.user?.id?.toString() || "anonymous";
     const now = Date.now();
+    const cachedToken = copilotTokenCache.get(userId);
+
     if (
-      cachedCopilotToken &&
-      (!cachedCopilotToken.expiresAt ||
-        cachedCopilotToken.expiresAt - 60_000 > now)
+      cachedToken &&
+      (!cachedToken.expiresAt || cachedToken.expiresAt - 60_000 > now)
     ) {
-      return cachedCopilotToken.token;
+      return cachedToken.token;
     }
 
     const hostToken = await this.getApiKey(params, params.user?.id);
@@ -58,7 +60,7 @@ export class GithubCopilotProvider extends BaseProvider {
     }
     const data = (await resp.json()) as { token: string; expires_at?: string };
     const expiresAt = data.expires_at ? Date.parse(data.expires_at) : undefined;
-    cachedCopilotToken = { token: data.token, expiresAt };
+    copilotTokenCache.set(userId, { token: data.token, expiresAt });
     return data.token;
   }
 

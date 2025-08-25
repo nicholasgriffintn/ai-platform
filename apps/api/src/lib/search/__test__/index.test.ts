@@ -22,12 +22,10 @@ describe("Search", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (Search as any).instance = undefined;
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
-    (Search as any).instance = undefined;
   });
 
   describe("getInstance", () => {
@@ -36,11 +34,11 @@ describe("Search", () => {
       expect(instance).toBeInstanceOf(Search);
     });
 
-    it("should return same instance when called multiple times", () => {
+    it("should return new instance when called multiple times", () => {
       const instance1 = Search.getInstance(mockEnv, "serper");
       const instance2 = Search.getInstance(mockEnv, "tavily");
 
-      expect(instance1).toBe(instance2);
+      expect(instance1).not.toBe(instance2);
     });
 
     it("should create provider through factory", () => {
@@ -146,7 +144,7 @@ describe("Search", () => {
       );
     });
 
-    it("should maintain singleton behavior across multiple searches", async () => {
+    it("should create separate instances for different searches", async () => {
       const mockResult1 = { results: [{ title: "Result 1" }] };
       const mockResult2 = { results: [{ title: "Result 2" }] };
 
@@ -157,7 +155,7 @@ describe("Search", () => {
       const searchInstance1 = Search.getInstance(mockEnv, "serper");
       const searchInstance2 = Search.getInstance(mockEnv, "tavily");
 
-      expect(searchInstance1).toBe(searchInstance2);
+      expect(searchInstance1).not.toBe(searchInstance2);
 
       const result1 = await searchInstance1.search("query 1");
       const result2 = await searchInstance2.search("query 2");

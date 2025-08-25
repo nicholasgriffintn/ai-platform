@@ -25,8 +25,6 @@ describe("Embedding", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    (Embedding as any).instance = undefined;
-
     mockEnv = {
       AI: {},
       VECTOR_DB: {},
@@ -126,7 +124,7 @@ describe("Embedding", () => {
       }).toThrow(expect.any(AssistantError));
     });
 
-    it("should return same instance on subsequent calls", () => {
+    it("should return new instance on each call", () => {
       const embedding1 = Embedding.getInstance(
         mockEnv,
         mockUser,
@@ -138,7 +136,7 @@ describe("Embedding", () => {
         mockUserSettings,
       );
 
-      expect(embedding1).toBe(embedding2);
+      expect(embedding1).not.toBe(embedding2);
     });
   });
 
@@ -175,7 +173,6 @@ describe("Embedding", () => {
     });
 
     it("should return default kb namespace when no user and no namespace", () => {
-      (Embedding as any).instance = undefined;
       const embeddingWithoutUser = Embedding.getInstance(mockEnv);
       const result = embeddingWithoutUser.getNamespace();
       expect(result).toBe("kb");
