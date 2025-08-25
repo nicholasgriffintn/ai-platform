@@ -55,7 +55,7 @@ importers:
         version: 4.9.4
       hono-openapi:
         specifier: 0.4.8
-        version: 0.4.8(@hono/zod-validator@0.7.2(hono@4.9.4)(zod@4.0.17))(hono@4.9.4)(openapi-types@12.1.3)(zod-openapi@5.3.1(zod@4.0.17))(zod@4.0.17)
+        version: 0.4.8(@hono/zod-validator@0.7.2(hono@4.9.4)(zod@4.0.17))(hono@4.9.4)(openapi-types@12.1.3)(zod-openapi@5.4.0(zod@4.0.17))(zod@4.0.17)
       isbot:
         specifier: 5.1.30
         version: 5.1.30
@@ -66,8 +66,8 @@ importers:
         specifier: 4.0.17
         version: 4.0.17
       zod-openapi:
-        specifier: 5.3.1
-        version: 5.3.1(zod@4.0.17)
+        specifier: 5.4.0
+        version: 5.4.0(zod@4.0.17)
     devDependencies:
       '@biomejs/biome':
         specifier: 2.2.2
@@ -2062,6 +2062,7 @@ packages:
 
   '@simplewebauthn/types@12.0.0':
     resolution: {integrity: sha512-q6y8MkoV8V8jB4zzp18Uyj2I7oFp2/ONL8c3j8uT06AOWu3cIChc1au71QYHrP2b+xDapkGTiv+9lX7xkTlAsA==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@sindresorhus/is@7.0.2':
     resolution: {integrity: sha512-d9xRovfKNz1SKieM0qJdO+PQonjnnIfSNWfHYnBSJ9hkjm0ZPw6HlxscDXYstp3z+7V2GOFHc+J0CYrYTjqCJw==}
@@ -4935,8 +4936,8 @@ packages:
   zimmerframe@1.1.2:
     resolution: {integrity: sha512-rAbqEGa8ovJy4pyBxZM70hg4pE6gDgaQ0Sl9M3enG3I0d6H4XSAM3GeNGLKnsBpuijUow064sf7ww1nutC5/3w==}
 
-  zod-openapi@5.3.1:
-    resolution: {integrity: sha512-lRb4p4+WAhLGBvQCQf5SFxeZtnzO5m3GmCT4IDjOzGNlZFiVOuey9rWN+EVEDSVJC59B54tP2gxah1wVUplONw==}
+  zod-openapi@5.4.0:
+    resolution: {integrity: sha512-5FdEnJmeNFmSEzfoH10GGF0OQFtSkJCnoXBZR618/Aozv2NF7dhS6y4dj+88rwAgNezbUH+9GJC3QsEiyu3rUQ==}
     engines: {node: '>=20'}
     peerDependencies:
       zod: ^3.25.74 || ^4.0.0
@@ -7664,7 +7665,7 @@ snapshots:
 
   highlight.js@11.11.1: {}
 
-  hono-openapi@0.4.8(@hono/zod-validator@0.7.2(hono@4.9.4)(zod@4.0.17))(hono@4.9.4)(openapi-types@12.1.3)(zod-openapi@5.3.1(zod@4.0.17))(zod@4.0.17):
+  hono-openapi@0.4.8(@hono/zod-validator@0.7.2(hono@4.9.4)(zod@4.0.17))(hono@4.9.4)(openapi-types@12.1.3)(zod-openapi@5.4.0(zod@4.0.17))(zod@4.0.17):
     dependencies:
       json-schema-walker: 2.0.0
       openapi-types: 12.1.3
@@ -7672,7 +7673,7 @@ snapshots:
       '@hono/zod-validator': 0.7.2(hono@4.9.4)(zod@4.0.17)
       hono: 4.9.4
       zod: 4.0.17
-      zod-openapi: 5.3.1(zod@4.0.17)
+      zod-openapi: 5.4.0(zod@4.0.17)
 
   hono@4.9.4: {}
 
@@ -9587,7 +9588,7 @@ snapshots:
 
   zimmerframe@1.1.2: {}
 
-  zod-openapi@5.3.1(zod@4.0.17):
+  zod-openapi@5.4.0(zod@4.0.17):
     dependencies:
       zod: 4.0.17
 
