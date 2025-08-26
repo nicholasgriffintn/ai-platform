@@ -118,6 +118,7 @@ export type RagOptions = {
   summaryThreshold?: number;
   returnValues?: boolean;
   returnMetadata?: "none" | "indexed" | "all";
+  filter?: Record<string, any>;
 };
 
 export interface IRequest {

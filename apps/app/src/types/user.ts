@@ -27,4 +27,16 @@ export interface UserSettings {
   job_role: string;
   traits: string;
   preferences: string;
+  guardrails_enabled?: boolean;
+  guardrails_provider?: string;
+  bedrock_guardrail_id?: string;
+  bedrock_guardrail_version?: string;
+  embedding_provider?: string;
+  bedrock_knowledge_base_id?: string;
+  bedrock_knowledge_base_custom_data_source_id?: string;
+  s3vectors_bucket_name?: string;
+  s3vectors_index_name?: string;
+  s3vectors_region?: string;
+  memories_save_enabled?: boolean;
+  memories_chat_history_enabled?: boolean;
 }

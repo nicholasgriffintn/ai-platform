@@ -138,6 +138,9 @@ export class UserSettingsRepository extends BaseRepository {
          embedding_provider = ?,
          bedrock_knowledge_base_id = ?,
          bedrock_knowledge_base_custom_data_source_id = ?,
+         s3vectors_bucket_name = ?,
+         s3vectors_index_name = ?,
+         s3vectors_region = ?,
          memories_save_enabled = ?,
          memories_chat_history_enabled = ?,
          updated_at = datetime('now')
@@ -163,6 +166,9 @@ export class UserSettingsRepository extends BaseRepository {
         settings.embedding_provider,
         settings.bedrock_knowledge_base_id,
         settings.bedrock_knowledge_base_custom_data_source_id,
+        settings.s3vectors_bucket_name,
+        settings.s3vectors_index_name,
+        settings.s3vectors_region,
         settings.memories_save_enabled !== undefined
           ? settings.memories_save_enabled
             ? 1
@@ -193,15 +199,31 @@ export class UserSettingsRepository extends BaseRepository {
       "embedding_provider",
       "bedrock_knowledge_base_id",
       "bedrock_knowledge_base_custom_data_source_id",
+      "s3vectors_bucket_name",
+      "s3vectors_index_name",
+      "s3vectors_region",
       "memories_save_enabled",
       "memories_chat_history_enabled",
     ];
-    const result = this.runQuery<IUserSettings>(
+    const result = await this.runQuery<any>(
       `SELECT ${columns.join(", ")} FROM user_settings WHERE user_id = ?`,
       [userId],
       true,
     );
-    return result;
+
+    if (!result) {
+      return null;
+    }
+
+    return {
+      ...result,
+      tracking_enabled: Boolean(result.tracking_enabled),
+      guardrails_enabled: Boolean(result.guardrails_enabled),
+      memories_save_enabled: Boolean(result.memories_save_enabled),
+      memories_chat_history_enabled: Boolean(
+        result.memories_chat_history_enabled,
+      ),
+    } as IUserSettings;
   }
 
   public async getUserEnabledModels(

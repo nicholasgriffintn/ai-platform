@@ -85,6 +85,9 @@ export const insertEmbedding = async (
     }
 
     const userSettings = await database.getUserSettings(req.user?.id);
+    if (!userSettings) {
+      throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
+    }
     const embedding = Embedding.getInstance(env, req.user, userSettings);
 
     const finalNamespace = embedding.getNamespace({

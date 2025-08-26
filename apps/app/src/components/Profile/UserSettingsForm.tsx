@@ -34,6 +34,9 @@ export function UserSettingsForm({
     bedrock_knowledge_base_id: userSettings?.bedrock_knowledge_base_id || "",
     bedrock_knowledge_base_custom_data_source_id:
       userSettings?.bedrock_knowledge_base_custom_data_source_id || "",
+    s3vectors_bucket_name: userSettings?.s3vectors_bucket_name || "",
+    s3vectors_index_name: userSettings?.s3vectors_index_name || "",
+    s3vectors_region: userSettings?.s3vectors_region || "us-east-1",
     memories_save_enabled: userSettings?.memories_save_enabled || false,
     memories_chat_history_enabled:
       userSettings?.memories_chat_history_enabled || false,
@@ -296,6 +299,7 @@ export function UserSettingsForm({
           >
             <option value="vectorize">Vectorize</option>
             <option value="bedrock">Bedrock</option>
+            <option value="s3vectors">S3 Vectors</option>
           </FormSelect>
         </div>
         {formData.embedding_provider === "bedrock" && (
@@ -335,6 +339,73 @@ export function UserSettingsForm({
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
               Please note that you will also need to configure the api key for
               Bedrock in the providers section for this to work.
+            </p>
+          </>
+        )}
+        {formData.embedding_provider === "s3vectors" && (
+          <>
+            <div>
+              <label
+                htmlFor="s3vectors_bucket_name"
+                className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+              >
+                S3 Vectors Bucket Name *
+              </label>
+              <FormInput
+                id="s3vectors_bucket_name"
+                name="s3vectors_bucket_name"
+                value={formData.s3vectors_bucket_name}
+                onChange={handleChange}
+                placeholder="Enter the S3 vectors bucket name"
+                className="w-full"
+                required
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="s3vectors_index_name"
+                className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+              >
+                Index Name (Optional)
+              </label>
+              <FormInput
+                id="s3vectors_index_name"
+                name="s3vectors_index_name"
+                value={formData.s3vectors_index_name}
+                onChange={handleChange}
+                placeholder="Enter the index name (optional)"
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="s3vectors_region"
+                className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+              >
+                AWS Region
+              </label>
+              <FormSelect
+                id="s3vectors_region"
+                name="s3vectors_region"
+                value={formData.s3vectors_region}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    s3vectors_region: e.target.value,
+                  })
+                }
+              >
+                <option value="us-east-1">US East (N. Virginia)</option>
+                <option value="us-west-2">US West (Oregon)</option>
+                <option value="eu-west-1">Europe (Ireland)</option>
+                <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                <option value="ap-northeast-1">Asia Pacific (Tokyo)</option>
+              </FormSelect>
+            </div>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Please note that you will also need to configure the AWS
+              credentials for S3 Vectors in the providers section for this to
+              work.
             </p>
           </>
         )}

@@ -88,6 +88,7 @@ app.post(
     const response = await insertEmbedding({
       request: body,
       env: context.env as IEnv,
+      user,
     });
 
     if (response.status === "error") {
@@ -159,6 +160,7 @@ app.get(
     const response = await queryEmbeddings({
       env: context.env as IEnv,
       request: { query },
+      user,
     });
 
     if (response.status === "error") {
@@ -232,6 +234,7 @@ app.post(
     const response = await deleteEmbedding({
       env: context.env as IEnv,
       request: body,
+      user,
     });
 
     if (response.status === "error") {

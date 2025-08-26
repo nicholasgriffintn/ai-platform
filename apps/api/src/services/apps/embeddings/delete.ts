@@ -30,6 +30,9 @@ export const deleteEmbedding = async (
 
     const database = Database.getInstance(env);
     const userSettings = await database.getUserSettings(req.user?.id);
+    if (!userSettings) {
+      throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
+    }
     const embedding = Embedding.getInstance(env, req.user, userSettings);
 
     const result = await embedding.delete(ids);

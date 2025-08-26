@@ -225,6 +225,13 @@
       "when": 1756169980992,
       "tag": "0031_ancient_tusk",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "6",
+      "when": 1756176881426,
+      "tag": "0032_lucky_cerebro",
+      "breakpoints": true
     }
   ]
 }

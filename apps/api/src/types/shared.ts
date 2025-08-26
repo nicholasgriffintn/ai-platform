@@ -35,6 +35,8 @@ export interface IEnv {
   OPENROUTER_API_KEY?: string;
   BEDROCK_AWS_ACCESS_KEY?: string;
   BEDROCK_AWS_SECRET_KEY?: string;
+  S3VECTORS_AWS_ACCESS_KEY?: string;
+  S3VECTORS_AWS_SECRET_KEY?: string;
   AWS_REGION?: string;
   OPENAI_API_KEY?: string;
   GOOGLE_STUDIO_API_KEY?: string;

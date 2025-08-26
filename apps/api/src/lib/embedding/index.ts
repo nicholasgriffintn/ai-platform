@@ -69,6 +69,31 @@ export class Embedding {
         this.user,
       );
       logger.debug("Using Marengo embedding provider");
+    } else if (userSettings?.embedding_provider === "s3vectors") {
+      if (!userSettings.s3vectors_bucket_name) {
+        throw new AssistantError("Missing required S3 vectors bucket name");
+      }
+
+      this.provider = EmbeddingProviderFactory.getProvider(
+        "s3vectors",
+        {
+          bucketName: userSettings.s3vectors_bucket_name,
+          indexName: userSettings.s3vectors_index_name || undefined,
+          region:
+            userSettings.s3vectors_region || this.env.AWS_REGION || "us-east-1",
+          accessKeyId: this.env.S3VECTORS_AWS_ACCESS_KEY || "",
+          secretAccessKey: this.env.S3VECTORS_AWS_SECRET_KEY || "",
+          ai: this.env.AI,
+        },
+        this.env,
+        this.user,
+      );
+      logger.debug("Using S3 Vectors embedding provider", {
+        bucketName: userSettings.s3vectors_bucket_name,
+        indexName: userSettings.s3vectors_index_name,
+        region:
+          userSettings.s3vectors_region || this.env.AWS_REGION || "us-east-1",
+      });
     } else {
       const database = Database.getInstance(this.env);
 

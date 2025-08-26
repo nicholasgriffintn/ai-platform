@@ -18,6 +18,9 @@ export const updateUserSettingsSchema = z.object({
   embedding_provider: z.string().optional(),
   bedrock_knowledge_base_id: z.string().optional(),
   bedrock_knowledge_base_custom_data_source_id: z.string().optional(),
+  s3vectors_bucket_name: z.string().optional(),
+  s3vectors_index_name: z.string().optional(),
+  s3vectors_region: z.string().optional(),
   memories_save_enabled: z.boolean().optional(),
   memories_chat_history_enabled: z.boolean().optional(),
 });
