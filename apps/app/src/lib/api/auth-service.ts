@@ -15,6 +15,8 @@ class AuthService {
   private static instance: AuthService;
   private user: User | null = null;
   private userSettings: UserSettings | null = null;
+  private tokenExpiry: Date | null = null;
+  private refreshTimer: NodeJS.Timeout | null = null;
 
   private constructor() {}
 
@@ -80,6 +82,16 @@ class AuthService {
 
   public async getToken(): Promise<string | null> {
     try {
+      if (
+        this.tokenExpiry &&
+        Date.now() < this.tokenExpiry.getTime() - 2 * 60 * 1000
+      ) {
+        const existingToken = await apiKeyService.getApiKey();
+        if (existingToken) {
+          return existingToken;
+        }
+      }
+
       const response = await fetchApi("/auth/token", {
         method: "GET",
       });
@@ -89,7 +101,9 @@ class AuthService {
       }
 
       const data = (await response.json()) as any;
-      if (data?.token) {
+      if (data?.token && data?.expires_in) {
+        this.tokenExpiry = new Date(Date.now() + data.expires_in * 1000);
+        this.scheduleTokenRefresh();
         await apiKeyService.setApiKey(data.token);
         return data.token;
       }
@@ -101,6 +115,32 @@ class AuthService {
     }
   }
 
+  private scheduleTokenRefresh(): void {
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+    }
+
+    if (!this.tokenExpiry) {
+      return;
+    }
+
+    const refreshTime = this.tokenExpiry.getTime() - Date.now() - 3 * 60 * 1000;
+
+    if (refreshTime > 0) {
+      this.refreshTimer = setTimeout(async () => {
+        await this.getToken();
+      }, refreshTime);
+    }
+  }
+
+  private clearTokenRefresh(): void {
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+      this.refreshTimer = null;
+    }
+    this.tokenExpiry = null;
+  }
+
   public async logout(): Promise<boolean> {
     try {
       const response = await fetchApi("/auth/logout", {
@@ -108,6 +148,7 @@ class AuthService {
       });
 
       if (response.ok) {
+        this.clearTokenRefresh();
         apiKeyService.removeApiKey();
         this.user = null;
         this.userSettings = null;

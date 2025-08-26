@@ -32,7 +32,7 @@ type FetchApiOptions = Omit<RequestInit, "body"> & {
  * @param options Custom fetch options extending RequestInit.
  * @returns The fetch Promise.
  */
-export async function fetchApi(
+async function performFetch(
   path: string,
   options: FetchApiOptions = {},
 ): Promise<Response> {
@@ -81,4 +81,13 @@ export async function fetchApi(
   }
 
   return fetch(url, fetchOptions);
+}
+
+export async function fetchApi(
+  path: string,
+  options: FetchApiOptions = {},
+): Promise<Response> {
+  let response = await performFetch(path, options);
+
+  return response;
 }
