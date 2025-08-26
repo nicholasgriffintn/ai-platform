@@ -370,7 +370,7 @@ app.get(
       );
     }
 
-    const expiresIn = 60 * 60 * 24 * 7; // 7 days in seconds
+    const expiresIn = 60 * 15; // 15 minutes in seconds
     const token = await generateJwtToken(user, c.env.JWT_SECRET, expiresIn);
 
     return c.json({

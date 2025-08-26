@@ -16,7 +16,7 @@ type JwtData = {
   payload: { [key: string]: any };
 };
 
-const DEFAULT_EXPIRATION = 60 * 60 * 24 * 7; // 7 days in seconds
+const DEFAULT_EXPIRATION = 60 * 15; // 15 minutes in seconds
 
 /**
  * Generate a JWT token for a user
