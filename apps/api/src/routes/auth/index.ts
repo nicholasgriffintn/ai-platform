@@ -370,8 +370,45 @@ app.get(
       );
     }
 
-    const expiresIn = 60 * 15; // 15 minutes in seconds
-    const token = await generateJwtToken(user, c.env.JWT_SECRET, expiresIn);
+    const database = Database.getInstance(c.env);
+    const cookies = c.req.header("Cookie") || "";
+    const sessionMatch = cookies.match(/session=([^;]+)/);
+    const sessionId = sessionMatch ? sessionMatch[1] : null;
+
+    let token: string;
+    let expiresIn: number;
+
+    if (sessionId) {
+      const sessionData = await database.getSessionWithJwt(sessionId);
+
+      if (sessionData?.jwt_token && sessionData?.jwt_expires_at) {
+        const jwtExpiresAt = new Date(sessionData.jwt_expires_at);
+        const now = new Date();
+        const minutesRemaining = Math.floor(
+          (jwtExpiresAt.getTime() - now.getTime()) / (1000 * 60),
+        );
+
+        if (minutesRemaining > 5) {
+          expiresIn = Math.floor(
+            (jwtExpiresAt.getTime() - now.getTime()) / 1000,
+          );
+          return c.json({
+            token: sessionData.jwt_token,
+            expires_in: expiresIn,
+            token_type: "Bearer",
+          });
+        }
+      }
+
+      expiresIn = 60 * 15; // 15 minutes in seconds
+      token = await generateJwtToken(user, c.env.JWT_SECRET, expiresIn);
+      const jwtExpiresAt = new Date(Date.now() + expiresIn * 1000);
+
+      await database.updateSessionJwt(sessionId, token, jwtExpiresAt);
+    } else {
+      expiresIn = 60 * 15; // 15 minutes in seconds
+      token = await generateJwtToken(user, c.env.JWT_SECRET, expiresIn);
+    }
 
     return c.json({
       token,

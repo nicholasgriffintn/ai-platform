@@ -206,12 +206,16 @@ export class Database {
     sessionId: string,
     userId: number,
     expiresAt: Date,
+    jwtToken?: string,
+    jwtExpiresAt?: Date,
   ): Promise<void> {
     try {
       return this.repositories.sessions.createSession(
         sessionId,
         userId,
         expiresAt,
+        jwtToken,
+        jwtExpiresAt,
       );
     } catch (error) {
       logError("Failed to create session", error, {
@@ -234,6 +238,37 @@ export class Database {
       return this.repositories.sessions.deleteSession(sessionId);
     } catch (error) {
       logger.error(`Error deleting session: ${error}`);
+    }
+  }
+
+  public async getSessionWithJwt(sessionId: string): Promise<{
+    id: string;
+    user_id: number;
+    expires_at: string;
+    jwt_token: string | null;
+    jwt_expires_at: string | null;
+  } | null> {
+    try {
+      return this.repositories.sessions.getSessionWithJwt(sessionId);
+    } catch (error) {
+      logger.error(`Error getting session with JWT: ${error}`);
+      return null;
+    }
+  }
+
+  public async updateSessionJwt(
+    sessionId: string,
+    jwtToken: string,
+    jwtExpiresAt: Date,
+  ): Promise<void> {
+    try {
+      return this.repositories.sessions.updateSessionJwt(
+        sessionId,
+        jwtToken,
+        jwtExpiresAt,
+      );
+    } catch (error) {
+      logger.error(`Error updating session JWT: ${error}`);
     }
   }
 

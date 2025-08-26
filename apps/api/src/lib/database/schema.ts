@@ -88,6 +88,8 @@ export const session = sqliteTable("session", {
     .notNull()
     .references(() => user.id),
   expires_at: text().notNull(),
+  jwt_token: text(),
+  jwt_expires_at: text(),
 });
 
 export type Session = typeof session.$inferSelect;
