@@ -160,7 +160,9 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 
     const vectors = embeddings.map((embedding) => ({
       key: embedding.id,
-      data: embedding.values,
+      data: {
+        float32: embedding.values,
+      },
       metadata: embedding.metadata,
     }));
 
@@ -265,15 +267,25 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
   ): Promise<EmbeddingQueryResult> {
     const url = `${this.endpoint}/QueryVectors`;
 
-    const body = JSON.stringify({
+    const request: Record<string, any> = {
       vectorBucketName: this.bucketName,
-      indexName: this.indexName,
-      queryVector: queryVector,
       topK: options.topK ?? 15,
       returnDistance: true,
       returnMetadata: true,
-      filter: options.filter,
-    });
+      queryVector: {
+        float32: queryVector,
+      },
+    };
+
+    if (this.indexName) {
+      request.indexName = this.indexName;
+    }
+
+    if (options.filter) {
+      request.filter = options.filter;
+    }
+
+    const body = JSON.stringify(request);
 
     const aws = await this.getAwsClient();
     const response = await aws.fetch(url, {
