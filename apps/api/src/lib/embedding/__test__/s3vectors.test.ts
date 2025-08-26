@@ -130,7 +130,7 @@ describe("S3VectorsEmbeddingProvider", () => {
           vectors: [
             {
               key: "test-1",
-              data: [0.1, 0.2, 0.3],
+              data: { float32: [0.1, 0.2, 0.3] },
               metadata: { type: "text", content: "test" },
             },
           ],
@@ -242,12 +242,11 @@ describe("S3VectorsEmbeddingProvider", () => {
         },
         body: JSON.stringify({
           vectorBucketName: "test-bucket",
-          indexName: "test-index",
-          queryVector,
           topK: 5,
           returnDistance: true,
           returnMetadata: true,
-          filter: undefined,
+          queryVector: { float32: queryVector },
+          indexName: "test-index",
         }),
       },
     );
