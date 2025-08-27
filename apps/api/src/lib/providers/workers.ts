@@ -12,6 +12,7 @@ import {
   shouldEnableStreaming,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
+import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
 const logger = getLogger({ prefix: "WORKERS" });
 
@@ -293,9 +294,7 @@ export class WorkersProvider extends BaseProvider {
             skipCache: false,
             cacheTtl: 7200,
             authorization: env.AI_GATEWAY_TOKEN,
-            metadata: {
-              email: user?.email,
-            },
+            metadata: getAiGatewayMetadataHeaders(params),
           },
         });
 

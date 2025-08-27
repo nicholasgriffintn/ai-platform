@@ -15,7 +15,7 @@ export class RequestyProvider extends BaseProvider {
   }
 
   protected async getEndpoint(): Promise<string> {
-    return "https://inference.net/v1/chat/completions";
+    return "https:/router.requesty.ai/chat/completions";
   }
 
   protected async getHeaders(

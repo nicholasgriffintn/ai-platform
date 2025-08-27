@@ -24,15 +24,8 @@ export class DeepInfraProvider extends BaseProvider {
     const apiKey = await this.getApiKey(params, params.user?.id);
 
     return {
-      "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "cf-aig-metadata": JSON.stringify({
-        email: params.user?.email,
-        userId: params.user?.id,
-        platform: params.platform,
-        completionId: params.completion_id,
-      }),
     };
   }
 }

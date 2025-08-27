@@ -8,6 +8,7 @@ import {
   shouldEnableStreaming,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
+import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
 interface ImageEditParams {
   model: string;
@@ -71,12 +72,7 @@ export class OpenAIProvider extends BaseProvider {
     const headers: Record<string, string> = {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
       Authorization: `Bearer ${apiKey}`,
-      "cf-aig-metadata": JSON.stringify({
-        email: params.user?.email,
-        userId: params.user?.id,
-        platform: params.platform,
-        completionId: params.completion_id,
-      }),
+      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
     };
 
     if (!isImageEdits) {

@@ -1,6 +1,7 @@
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseProvider } from "./base";
+import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
 export class MistralProvider extends BaseProvider {
   name = "mistral";
@@ -41,12 +42,7 @@ export class MistralProvider extends BaseProvider {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "cf-aig-metadata": JSON.stringify({
-        email: params.user?.email,
-        userId: params.user?.id,
-        platform: params.platform,
-        completionId: params.completion_id,
-      }),
+      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
     };
   }
 }

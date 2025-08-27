@@ -13,6 +13,7 @@ import {
   getToolsForProvider,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
+import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
 const logger = getLogger({ prefix: "BEDROCK" });
 
@@ -72,8 +73,13 @@ export class BedrockProvider extends BaseProvider {
     return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/converse`;
   }
 
-  protected getHeaders(): Record<string, string> {
-    return {};
+  protected async getHeaders(
+    params: ChatCompletionParameters,
+  ): Promise<Record<string, string>> {
+    return {
+      "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
+      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+    };
   }
 
   async getMediaSourceFromMessages(

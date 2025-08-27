@@ -12,6 +12,7 @@ import {
   shouldEnableStreaming,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
+import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
 const logger = getLogger({ prefix: "ANTHROPIC" });
 
@@ -51,12 +52,7 @@ export class AnthropicProvider extends BaseProvider {
       "anthropic-version": "2023-06-01",
       "anthropic-beta": "code-execution-2025-05-22",
       "Content-Type": "application/json",
-      "cf-aig-metadata": JSON.stringify({
-        email: params.user?.email,
-        userId: params.user?.id,
-        platform: params.platform,
-        completionId: params.completion_id,
-      }),
+      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
     };
   }
 

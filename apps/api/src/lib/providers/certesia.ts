@@ -3,6 +3,7 @@ import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseProvider } from "./base";
 import { fetchAIResponse } from "./fetch";
+import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
 export class CertesiaProvider extends BaseProvider {
   name = "certesia";
@@ -39,12 +40,7 @@ export class CertesiaProvider extends BaseProvider {
       "Cartesia-Version": "2024-06-10",
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
       "Content-Type": "application/json",
-      "cf-aig-metadata": JSON.stringify({
-        email: params.user?.email,
-        userId: params.user?.id,
-        platform: params.platform,
-        completionId: params.completion_id,
-      }),
+      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
     };
   }
 
