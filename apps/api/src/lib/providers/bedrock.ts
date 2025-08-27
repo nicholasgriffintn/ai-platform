@@ -77,8 +77,7 @@ export class BedrockProvider extends BaseProvider {
     params: ChatCompletionParameters,
   ): Promise<Record<string, string>> {
     return {
-      "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+      "Content-Type": "application/json",
     };
   }
 
@@ -359,11 +358,11 @@ export class BedrockProvider extends BaseProvider {
       service: "bedrock",
     });
 
+    const headers = await this.getHeaders(params);
+
     const presignedRequest = await awsClient.sign(endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify(body),
     });
 
@@ -467,11 +466,11 @@ export class BedrockProvider extends BaseProvider {
           service: "bedrock",
         });
 
+        const headers = await this.getHeaders(params);
+
         const presignedRequest = await awsClient.sign(bedrockUrl, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers,
           body: JSON.stringify(body),
         });
 
