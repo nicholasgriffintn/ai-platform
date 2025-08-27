@@ -130,10 +130,12 @@ export function createCommonParameters(
         "frequency_penalty",
         params.frequency_penalty,
       );
-      commonParams.presence_penalty = returnValidatedPenalty(
-        "presence_penalty",
-        params.presence_penalty,
-      );
+      if (modelConfig.supportsPresencePenalty !== false) {
+        commonParams.presence_penalty = returnValidatedPenalty(
+          "presence_penalty",
+          params.presence_penalty,
+        );
+      }
     }
   }
 

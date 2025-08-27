@@ -56,6 +56,7 @@ export type ModelConfigItem = {
   supportsTokenCounting?: boolean;
   bedrockApiOperation?: string;
   bedrockStreamingApiOperation?: string;
+  supportsPresencePenalty?: boolean;
 };
 
 export type ModelConfig = {

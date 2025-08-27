@@ -289,6 +289,7 @@ export const xaiModelConfig: ModelConfig = {
     isFeatured: true,
     includedInRouter: false,
     supportsArtifacts: true,
+    supportsPresencePenalty: false,
   },
 
   "grok-vision-beta": {
