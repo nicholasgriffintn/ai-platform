@@ -69,6 +69,7 @@ describe("AnthropicProvider", () => {
           AI_GATEWAY_TOKEN: "test-token",
           ANTHROPIC_API_KEY: "test-key",
         },
+        completion_id: "test-completion-id",
         user: { email: "test@example.com" },
       };
 
@@ -81,7 +82,10 @@ describe("AnthropicProvider", () => {
         "anthropic-version": "2023-06-01",
         "anthropic-beta": "code-execution-2025-05-22",
         "Content-Type": "application/json",
-        "cf-aig-metadata": JSON.stringify({ email: "test@example.com" }),
+        "cf-aig-metadata": JSON.stringify({
+          email: "test@example.com",
+          completionId: "test-completion-id",
+        }),
       });
     });
   });

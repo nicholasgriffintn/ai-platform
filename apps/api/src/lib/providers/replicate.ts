@@ -62,6 +62,7 @@ export class ReplicateProvider extends BaseProvider {
         email: params.user?.email,
         userId: params.user?.id,
         platform: params.platform,
+        completionId: params.completion_id,
       }),
     };
   }
