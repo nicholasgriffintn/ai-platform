@@ -77,7 +77,11 @@ export class AzureOpenAIProvider extends BaseProvider {
       "Content-Type": "application/json",
       "api-key": token,
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-      "cf-aig-metadata": JSON.stringify({ email: params.user?.email }),
+      "cf-aig-metadata": JSON.stringify({
+        email: params.user?.email,
+        userId: params.user?.id,
+        platform: params.platform,
+      }),
     };
   }
 

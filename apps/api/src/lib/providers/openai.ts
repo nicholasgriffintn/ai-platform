@@ -73,6 +73,8 @@ export class OpenAIProvider extends BaseProvider {
       Authorization: `Bearer ${apiKey}`,
       "cf-aig-metadata": JSON.stringify({
         email: params.user?.email,
+        userId: params.user?.id,
+        platform: params.platform,
       }),
     };
 

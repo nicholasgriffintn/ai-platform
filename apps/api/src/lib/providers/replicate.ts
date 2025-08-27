@@ -60,6 +60,8 @@ export class ReplicateProvider extends BaseProvider {
       Prefer: "wait=30",
       "cf-aig-metadata": JSON.stringify({
         email: params.user?.email,
+        userId: params.user?.id,
+        platform: params.platform,
       }),
     };
   }

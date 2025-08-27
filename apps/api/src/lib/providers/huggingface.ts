@@ -48,6 +48,8 @@ export class HuggingFaceProvider extends BaseProvider {
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify({
         email: params.user?.email,
+        userId: params.user?.id,
+        platform: params.platform,
       }),
     };
   }
