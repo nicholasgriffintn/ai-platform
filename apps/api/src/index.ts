@@ -18,6 +18,7 @@ import {
 import { authMiddleware } from "./middleware/auth";
 import { loggerMiddleware } from "./middleware/loggerMiddleware";
 import { rateLimit } from "./middleware/rateLimit";
+import { securityHeaders } from "./middleware/securityHeaders";
 import admin from "./routes/admin";
 import agents from "./routes/agents";
 import apps from "./routes/apps";
@@ -88,6 +89,8 @@ app.use(
     origin: csrfOrigin,
   }),
 );
+
+app.use(securityHeaders());
 
 app.use("*", loggerMiddleware);
 
