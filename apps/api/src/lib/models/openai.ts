@@ -127,6 +127,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: false,
     supportsTemperature: false,
+    supportsTopP: false,
     card: "https://www.prompthub.us/models/o3-mini",
     contextWindow: 200000,
     maxTokens: 100000,
