@@ -44,9 +44,22 @@ export function ModelsList({
     onSelect(modelId);
   };
 
+  const featuredKeys = Object.keys(featured);
+  const otherKeys = Object.keys(other);
+
+  if (!featuredKeys.length && !otherKeys.length) {
+    return (
+      <div className="p-2">
+        <p className="text-left text-sm text-zinc-500 dark:text-zinc-400 pb-4">
+          No models could be found with your filters.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <>
-      {Object.keys(featured).length > 0 && (
+      {featuredKeys.length > 0 && (
         <div className="border-b border-zinc-200 dark:border-zinc-700">
           <fieldset aria-labelledby="featured-models-heading">
             {Object.entries(featured)
@@ -76,7 +89,7 @@ export function ModelsList({
         </div>
       )}
 
-      {Object.keys(other).length > 0 && (
+      {otherKeys.length > 0 && (
         <div className="p-2">
           <button
             type="button"

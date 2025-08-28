@@ -36,6 +36,7 @@ export const availableModelTypes = [
   "guardrails",
   "code-edits",
   "function-calling",
+  "voice-activity-detection",
 ] as const;
 
 export const defaultModel = "mistral-medium";

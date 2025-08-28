@@ -15,7 +15,13 @@ import type { IEnv } from "~/types";
 export async function listModels(env: IEnv, userId?: number) {
   const allModels = getModels({
     shouldUseCache: false,
-    excludeTypes: ["guardrails"],
+    excludeTypes: [
+      "guardrails",
+      "voice-activity-detection",
+      "reranking",
+      "embedding",
+      "speech",
+    ],
   });
   return await filterModelsForUserAccess(allModels, env, userId, {
     shouldUseCache: false,
