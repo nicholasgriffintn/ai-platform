@@ -11,9 +11,7 @@ import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";
 
 const transcriptionProviders = {
-  workers: ["whisper", "whisper-large-v3-turbo", "nova-3"],
-  mistral: ["voxtral-mini", "voxtral-small"],
-  replicate: ["thomasmol /whisper-diarization"],
+  workers: ["whisper", "whisper-tiny"],
 };
 
 interface UserSettingsFormProps {

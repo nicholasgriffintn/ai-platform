@@ -2,6 +2,16 @@ import type { ModelConfig } from "~/types";
 
 // TODO: THere are some issues with the image models, probably whisper too, need to go over these
 export const workersAiModelConfig: ModelConfig = {
+  "whisper-tiny": {
+    name: "OpenAI Whisper",
+    matchingModel: "@cf/openai/whisper-tiny-en",
+    provider: "workers-ai",
+    type: ["speech"],
+    strengths: ["audio"],
+    speed: 3,
+    reliability: 2,
+    contextComplexity: 2,
+  },
   whisper: {
     name: "OpenAI Whisper",
     matchingModel: "@cf/openai/whisper",

@@ -1,3 +1,5 @@
+import { Buffer } from "node:buffer";
+
 import { gatewayId } from "~/constants/app";
 import { getAuxiliarySpeechModel } from "~/lib/models";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -5,7 +7,25 @@ import type { TranscriptionRequest, TranscriptionResponse } from "./base";
 import { BaseTranscriptionProvider } from "./base";
 import { Database } from "~/lib/database";
 
-// TODO: Only whisper has been configured to work with the body requirements, more to be done in order to configure it.
+async function getAudioForProvider(model: string, res: Response | Blob) {
+  // TODO: Only whisper has been configured to work with the body requirements, more to be done in order to configure it.
+  if (model === "@cf/deepgram/nova-3") {
+    if (res instanceof Blob) {
+      throw new Error("Blobs not supported with nova-3");
+    }
+    return res.body;
+  } else {
+    if (model === "@cf/openai/whisper-large-v3-turbo") {
+      throw new Error("Not implemented");
+      // const audioData = await res.arrayBuffer();
+      // const audioBuffer = Buffer.from(audioData, "binary").toString("base64");
+      // return audioBuffer;
+    } else {
+      const audioData = await res.arrayBuffer();
+      return [...new Uint8Array(audioData)];
+    }
+  }
+}
 
 export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
   name = "workers";
@@ -69,12 +89,7 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
           }
         }
 
-        if (modelToUse === "@cf/deepgram/nova-3") {
-          body.audio = res.body;
-        } else {
-          const audioData = await res.arrayBuffer();
-          body.audio = [...new Uint8Array(audioData)];
-        }
+        body.audio = await getAudioForProvider(modelToUse, res);
       } else if (audio instanceof Blob) {
         const MAX_SIZE = 25 * 1024 * 1024; // 25MB limit for Workers AI
         if (audio.size > MAX_SIZE) {
@@ -84,15 +99,7 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
           );
         }
 
-        if (modelToUse === "@cf/deepgram/nova-3") {
-          throw new AssistantError(
-            "Nova-3 does not support Blob input",
-            ErrorType.PARAMS_ERROR,
-          );
-        } else {
-          const audioData = await audio.arrayBuffer();
-          body.audio = [...new Uint8Array(audioData)];
-        }
+        body.audio = await getAudioForProvider(modelToUse, audio);
       } else {
         throw new AssistantError(
           "Audio must be a Blob or a URL string",
