@@ -232,6 +232,13 @@
       "when": 1756176881426,
       "tag": "0032_lucky_cerebro",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "6",
+      "when": 1756403185709,
+      "tag": "0033_lonely_frog_thor",
+      "breakpoints": true
     }
   ]
 }

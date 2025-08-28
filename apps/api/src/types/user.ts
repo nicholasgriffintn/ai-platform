@@ -47,6 +47,8 @@ export interface IUserSettings {
   preferences: string | null;
   memories_save_enabled: boolean;
   memories_chat_history_enabled: boolean;
+  transcription_provider: string;
+  transcription_model: string;
 }
 
 export interface UserSettings {

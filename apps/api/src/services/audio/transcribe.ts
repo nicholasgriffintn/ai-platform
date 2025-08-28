@@ -1,6 +1,8 @@
 import { TranscriptionProviderFactory } from "~/lib/transcription/factory";
+import { getAuxiliarySpeechModel } from "~/lib/models";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { Database } from "~/lib/database";
 
 export type TranscriptionProvider = "workers" | "mistral" | "replicate";
 
@@ -15,21 +17,32 @@ type TranscribeRequest = {
 export const handleTranscribe = async (
   req: TranscribeRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-  const { audio, env, user, provider = "workers", timestamps = false } = req;
+  const { audio, env, user, provider, timestamps = false } = req;
 
   if (!audio) {
     throw new AssistantError("Missing audio", ErrorType.PARAMS_ERROR);
   }
 
   try {
+    let selectedProvider = provider;
+
+    if (!selectedProvider) {
+      const database = Database.getInstance(env);
+      const userSettings = await database.getUserSettings(user?.id);
+
+      const speechModel = await getAuxiliarySpeechModel(env, userSettings);
+      selectedProvider =
+        speechModel.transcriptionProvider as TranscriptionProvider;
+    }
+
     const transcriptionProvider =
-      TranscriptionProviderFactory.getProvider(provider);
+      TranscriptionProviderFactory.getProvider(selectedProvider);
 
     const result = await transcriptionProvider.transcribe({
       env,
       audio,
       user,
-      provider,
+      provider: selectedProvider,
       timestamps,
     });
 

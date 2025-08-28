@@ -235,6 +235,10 @@ export const userSettings = sqliteTable(
     s3vectors_region: text(),
     memories_save_enabled: integer({ mode: "boolean" }).default(false),
     memories_chat_history_enabled: integer({ mode: "boolean" }).default(false),
+    transcription_provider: text({
+      enum: ["workers", "mistral", "replicate"],
+    }).default("workers"),
+    transcription_model: text().default("whisper"),
     tracking_enabled: integer({ mode: "boolean" }).default(true),
     public_key: text(),
     private_key: text(),

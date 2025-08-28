@@ -1,6 +1,12 @@
 import { KVCache } from "~/lib/cache";
 import { Database } from "~/lib/database";
-import type { IEnv, IUser, ModelConfig, ModelConfigItem } from "~/types";
+import type {
+  IEnv,
+  IUser,
+  IUserSettings,
+  ModelConfig,
+  ModelConfigItem,
+} from "~/types";
 import { getLogger } from "~/utils/logger";
 import { anthropicModelConfig } from "./anthropic";
 import { azureModelConfig } from "./azure";
@@ -497,6 +503,27 @@ export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
   const provider = modelConfig.provider;
 
   return { model: modelToUse, provider };
+};
+
+export const getAuxiliarySpeechModel = async (
+  env: IEnv,
+  userSettings?: IUserSettings,
+): Promise<{
+  model: string;
+  provider: string;
+  transcriptionProvider: string;
+}> => {
+  const transcriptionProvider =
+    userSettings?.transcription_provider || "workers";
+  const transcriptionModel = userSettings?.transcription_model || "whisper";
+
+  const modelConfig = await getModelConfig(transcriptionModel, env);
+
+  return {
+    model: modelConfig.matchingModel,
+    provider: modelConfig.provider,
+    transcriptionProvider,
+  };
 };
 
 export {

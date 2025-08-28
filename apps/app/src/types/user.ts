@@ -39,4 +39,6 @@ export interface UserSettings {
   s3vectors_region?: string;
   memories_save_enabled?: boolean;
   memories_chat_history_enabled?: boolean;
+  transcription_provider?: string;
+  transcription_model?: string;
 }

@@ -1,7 +1,11 @@
 import { gatewayId } from "~/constants/app";
+import { getAuxiliarySpeechModel } from "~/lib/models";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { TranscriptionRequest, TranscriptionResponse } from "./base";
 import { BaseTranscriptionProvider } from "./base";
+import { Database } from "~/lib/database";
+
+// TODO: Only whisper has been configured to work with the body requirements, more to be done in order to configure it.
 
 export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
   name = "workers";
@@ -17,8 +21,28 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
       throw new AssistantError("Missing AI binding", ErrorType.PARAMS_ERROR);
     }
 
+    const database = Database.getInstance(env);
+    const userSettings = await database.getUserSettings(user?.id);
+
+    const { model: modelToUse, provider: providerToUse } =
+      await getAuxiliarySpeechModel(env, userSettings);
+
+    if (!modelToUse || !providerToUse) {
+      throw new AssistantError(
+        "Missing model or provider",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    if (providerToUse !== "workers-ai") {
+      throw new AssistantError(
+        "This provider is only for Workers AI",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
     try {
-      let arrayBuffer: ArrayBuffer;
+      let body: Record<string, any> = {};
 
       if (
         typeof audio === "string" &&
@@ -45,7 +69,12 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
           }
         }
 
-        arrayBuffer = await res.arrayBuffer();
+        if (modelToUse === "@cf/deepgram/nova-3") {
+          body.audio = res.body;
+        } else {
+          const audioData = await res.arrayBuffer();
+          body.audio = [...new Uint8Array(audioData)];
+        }
       } else if (audio instanceof Blob) {
         const MAX_SIZE = 25 * 1024 * 1024; // 25MB limit for Workers AI
         if (audio.size > MAX_SIZE) {
@@ -54,7 +83,16 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
             ErrorType.PARAMS_ERROR,
           );
         }
-        arrayBuffer = await audio.arrayBuffer();
+
+        if (modelToUse === "@cf/deepgram/nova-3") {
+          throw new AssistantError(
+            "Nova-3 does not support Blob input",
+            ErrorType.PARAMS_ERROR,
+          );
+        } else {
+          const audioData = await audio.arrayBuffer();
+          body.audio = [...new Uint8Array(audioData)];
+        }
       } else {
         throw new AssistantError(
           "Audio must be a Blob or a URL string",
@@ -63,10 +101,9 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
       }
 
       const response = await env.AI.run(
-        "@cf/openai/whisper",
-        {
-          audio: [...new Uint8Array(arrayBuffer)],
-        },
+        // @ts-ignore
+        modelToUse,
+        body,
         {
           gateway: {
             id: gatewayId,
@@ -79,11 +116,13 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
         },
       );
 
+      // @ts-ignore - The types are wrong.
       if (!response.text) {
         throw new AssistantError("No response from the model");
       }
 
       return {
+        // @ts-ignore - The types are wrong.
         text: response.text,
         data: response,
       };

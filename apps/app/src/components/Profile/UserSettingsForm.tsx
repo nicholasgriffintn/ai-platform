@@ -10,6 +10,12 @@ import {
 import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";
 
+const transcriptionProviders = {
+  workers: ["whisper", "whisper-large-v3-turbo", "nova-3"],
+  mistral: ["voxtral-mini", "voxtral-small"],
+  replicate: ["thomasmol /whisper-diarization"],
+};
+
 interface UserSettingsFormProps {
   userSettings: any;
   isAuthenticated: boolean;
@@ -40,6 +46,8 @@ export function UserSettingsForm({
     memories_save_enabled: userSettings?.memories_save_enabled || false,
     memories_chat_history_enabled:
       userSettings?.memories_chat_history_enabled || false,
+    transcription_provider: userSettings?.transcription_provider || "workers",
+    transcription_model: userSettings?.transcription_model || "whisper-1",
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -59,6 +67,26 @@ export function UserSettingsForm({
       properties: {
         setting_name: name,
         has_value: value.trim().length > 0 ? "true" : "false",
+      },
+    });
+  };
+
+  const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newProvider = e.target.value as keyof typeof transcriptionProviders;
+    const firstModelForProvider = transcriptionProviders[newProvider][0];
+
+    setFormData((prev) => ({
+      ...prev,
+      transcription_provider: newProvider,
+      transcription_model: firstModelForProvider,
+    }));
+
+    trackEvent({
+      name: "transcription_provider_changed",
+      category: EventCategory.UI_INTERACTION,
+      properties: {
+        provider: newProvider,
+        auto_selected_model: firstModelForProvider,
       },
     });
   };
@@ -460,6 +488,71 @@ export function UserSettingsForm({
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Allow Polychat to save and use your chat history when responding.
           </p>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
+          Speech Transcription
+        </h3>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label
+            htmlFor="transcription_provider"
+            className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+          >
+            Transcription Provider
+          </label>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            Choose the provider for speech-to-text transcription used by
+            Polychat.
+          </p>
+          <FormSelect
+            id="transcription_provider"
+            name="transcription_provider"
+            value={formData.transcription_provider}
+            onChange={handleProviderChange}
+          >
+            {Object.keys(transcriptionProviders).map((provider) => (
+              <option key={provider} value={provider}>
+                {provider.charAt(0).toUpperCase() + provider.slice(1)}
+              </option>
+            ))}
+          </FormSelect>
+        </div>
+
+        <div>
+          <label
+            htmlFor="transcription_model"
+            className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+          >
+            Transcription Model
+          </label>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            Select from the available models for the{" "}
+            {formData.transcription_provider} provider.
+          </p>
+          <FormSelect
+            id="transcription_model"
+            name="transcription_model"
+            value={formData.transcription_model}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                transcription_model: e.target.value,
+              })
+            }
+          >
+            {transcriptionProviders[
+              formData.transcription_provider as keyof typeof transcriptionProviders
+            ]?.map((model) => (
+              <option key={model} value={model}>
+                {model}
+              </option>
+            ))}
+          </FormSelect>
         </div>
       </div>
 

@@ -143,6 +143,8 @@ export class UserSettingsRepository extends BaseRepository {
          s3vectors_region = ?,
          memories_save_enabled = ?,
          memories_chat_history_enabled = ?,
+         transcription_provider = ?,
+         transcription_model = ?,
          updated_at = datetime('now')
        WHERE user_id = ?`,
       [
@@ -179,6 +181,8 @@ export class UserSettingsRepository extends BaseRepository {
             ? 1
             : 0
           : null,
+        settings.transcription_provider,
+        settings.transcription_model,
         userId,
       ],
     );
@@ -204,6 +208,8 @@ export class UserSettingsRepository extends BaseRepository {
       "s3vectors_region",
       "memories_save_enabled",
       "memories_chat_history_enabled",
+      "transcription_provider",
+      "transcription_model",
     ];
     const result = await this.runQuery<any>(
       `SELECT ${columns.join(", ")} FROM user_settings WHERE user_id = ?`,
