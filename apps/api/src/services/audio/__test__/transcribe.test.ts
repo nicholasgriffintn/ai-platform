@@ -3,6 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+vi.mock("~/lib/database", () => ({
+  Database: {
+    getInstance: vi.fn().mockReturnValue({
+      getUserSettings: vi.fn(),
+    }),
+  },
+}));
+
 const mockWorkersProvider = vi.hoisted(() => ({
   name: "workers",
   transcribe: vi.fn(),
