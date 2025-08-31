@@ -31,10 +31,10 @@ const realtimeSessionResponseSchema = z.object({
 });
 
 const app = new Hono();
-const routeLogger = createRouteLogger("PLANS");
+const routeLogger = createRouteLogger("REALTIME");
 
 app.use("/*", (c, next) => {
-  routeLogger.info(`Processing plans route: ${c.req.path}`);
+  routeLogger.info(`Processing realtime route: ${c.req.path}`);
   return next();
 });
 
