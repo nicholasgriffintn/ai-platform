@@ -60,7 +60,7 @@
     "zustand": "5.0.8"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.2",
+    "@biomejs/biome": "2.2.3",
     "@cloudflare/workers-types": "4.20250823.0",
     "@react-router/dev": "7.8.2",
     "@simplewebauthn/types": "^12.0.0",
