@@ -34,7 +34,7 @@ importers:
         version: 22.0.0
       '@scalar/hono-api-reference':
         specifier: ^0.9.0
-        version: 0.9.16(hono@4.9.6)
+        version: 0.9.17(hono@4.9.6)
       '@simplewebauthn/server':
         specifier: ^13.1.1
         version: 13.1.2
@@ -2042,12 +2042,12 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@scalar/core@0.3.14':
-    resolution: {integrity: sha512-Fjgscu148WY1g28VNVZikQxGX8iwronPttIoCf7ayausnVMWX6s6wOZm0D3StNbxqMl2js8FQ/s0GlfCAG6XEg==}
+  '@scalar/core@0.3.15':
+    resolution: {integrity: sha512-8wAb2MHTgXIOyotjS1sD0lU9kbJjAencIVj1mFpjctyU+YzJNEAE2RDB2HM2T305gnHjHQ5oUi6MWOsIrjUiMw==}
     engines: {node: '>=20'}
 
-  '@scalar/hono-api-reference@0.9.16':
-    resolution: {integrity: sha512-kItGQFtZfUjKCI0L5B1WwVJ2Vf61ixFf4QqvjfwEiNh8hWirwkqGLlFwPGlvwZVGzuScfoVJrpXUjQQ782txUw==}
+  '@scalar/hono-api-reference@0.9.17':
+    resolution: {integrity: sha512-hp4uLs2r79kFvjfISXyvUnpIQLZqkp6aCKixateEqdazfRJOaTP7/YOFf/wX3jpB4yU4z60DqnfdDcDCn2gGaw==}
     engines: {node: '>=20'}
     peerDependencies:
       hono: ^4.0.0
@@ -2056,8 +2056,8 @@ packages:
     resolution: {integrity: sha512-QHSvHBVDze3+dUwAhIGq6l1iOev4jdoqdBK7QpfeN1Q4h+6qpVEw3EEqBiH0AXUSh/iWwObBv4uMgfIx0aNZ5g==}
     engines: {node: '>=20'}
 
-  '@scalar/types@0.2.13':
-    resolution: {integrity: sha512-rO6KGMJqOsBnN/2R4fErMFLpRSPVJElni+HABDpf+ZlLJp2lvxuPn0IXLumK5ytfplUH9iqKgSXjndnZfxSYLQ==}
+  '@scalar/types@0.2.14':
+    resolution: {integrity: sha512-KIPcTtOVlzEVNUohBJ3lBQJbgDBDp6ZbmLNU8Qn1wPfG/16xjT48WtOUyvObFk5N6x/ToSNBnD3ecHtQVGAd+w==}
     engines: {node: '>=20'}
 
   '@simplewebauthn/browser@13.1.2':
@@ -6485,20 +6485,20 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.48.1':
     optional: true
 
-  '@scalar/core@0.3.14':
+  '@scalar/core@0.3.15':
     dependencies:
-      '@scalar/types': 0.2.13
+      '@scalar/types': 0.2.14
 
-  '@scalar/hono-api-reference@0.9.16(hono@4.9.6)':
+  '@scalar/hono-api-reference@0.9.17(hono@4.9.6)':
     dependencies:
-      '@scalar/core': 0.3.14
+      '@scalar/core': 0.3.15
       hono: 4.9.6
 
   '@scalar/openapi-types@0.3.7':
     dependencies:
       zod: 3.24.1
 
-  '@scalar/types@0.2.13':
+  '@scalar/types@0.2.14':
     dependencies:
       '@scalar/openapi-types': 0.3.7
       nanoid: 5.1.5
