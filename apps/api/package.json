@@ -41,7 +41,7 @@
     "zod-openapi": "5.3.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.3",
+    "@biomejs/biome": "2.2.4",
     "@cloudflare/workers-types": "4.20250910.0",
     "@simplewebauthn/types": "^12.0.0",
     "@types/node": "22.18.1",
