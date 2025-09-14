@@ -43,7 +43,7 @@ importers:
         version: 3.2.0
       agents:
         specifier: ^0.1.0
-        version: 0.1.1(@cloudflare/workers-types@4.20250910.0)(react@19.1.1)
+        version: 0.1.3(@cloudflare/workers-types@4.20250910.0)(react@19.1.1)
       aws4fetch:
         specifier: 1.0.20
         version: 1.0.20
@@ -1341,8 +1341,8 @@ packages:
   '@mlc-ai/web-llm@0.2.79':
     resolution: {integrity: sha512-Hy1ZHQ0o2bZGZoVnGK48+fts/ZSKwLe96xjvqL/6C59Mem9HoHTcFE07NC2E23mRmhd01tL655N6CPeYmwWgwQ==}
 
-  '@modelcontextprotocol/sdk@1.17.5':
-    resolution: {integrity: sha512-QakrKIGniGuRVfWBdMsDea/dx1PNE739QJ7gCM41s9q+qaCYTHCdsIBXQVVXry3mfWAiaM9kT22Hyz53Uw8mfg==}
+  '@modelcontextprotocol/sdk@1.18.0':
+    resolution: {integrity: sha512-JvKyB6YwS3quM+88JPR0axeRgvdDu3Pv6mdZUy+w4qVkCzGgumb9bXG/TmtDRQv+671yaofVfXSQmFLlWU5qPQ==}
     engines: {node: '>=18'}
 
   '@npmcli/git@4.1.0':
@@ -2378,8 +2378,8 @@ packages:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
-  agents@0.1.1:
-    resolution: {integrity: sha512-UzMfkKaNmeq4ylkq/wkP6p9JVJzIIIfjr7eF0lAfGdDlmnBfko7R66wC9JI/x0h2XXjR56nzfgpK+B8dvsDUWw==}
+  agents@0.1.3:
+    resolution: {integrity: sha512-n7H7GtdAvQ+VMtninCnS8uA3Uy7ypZcqf0ogKFFTSksivXVhUKfb5jg/auCfgr2wvJM6vZ8EUWX3j6aGVAbYJA==}
     peerDependencies:
       react: '*'
 
@@ -2724,6 +2724,15 @@ packages:
 
   debug@4.4.1:
     resolution: {integrity: sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==}
+    engines: {node: '>=6.0'}
+    peerDependencies:
+      supports-color: '*'
+    peerDependenciesMeta:
+      supports-color:
+        optional: true
+
+  debug@4.4.3:
+    resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
     engines: {node: '>=6.0'}
     peerDependencies:
       supports-color: '*'
@@ -5681,7 +5690,7 @@ snapshots:
     dependencies:
       loglevel: 1.9.2
 
-  '@modelcontextprotocol/sdk@1.17.5':
+  '@modelcontextprotocol/sdk@1.18.0':
     dependencies:
       ajv: 6.12.6
       content-type: 1.0.5
@@ -6810,9 +6819,9 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  agents@0.1.1(@cloudflare/workers-types@4.20250910.0)(react@19.1.1):
+  agents@0.1.3(@cloudflare/workers-types@4.20250910.0)(react@19.1.1):
     dependencies:
-      '@modelcontextprotocol/sdk': 1.17.5
+      '@modelcontextprotocol/sdk': 1.18.0
       ai: 5.0.39(zod@3.25.76)
       cron-schedule: 5.0.4
       mimetext: 3.0.27
@@ -6947,7 +6956,7 @@ snapshots:
     dependencies:
       bytes: 3.1.2
       content-type: 1.0.5
-      debug: 4.4.1
+      debug: 4.4.3
       http-errors: 2.0.0
       iconv-lite: 0.6.3
       on-finished: 2.4.1
@@ -7167,6 +7176,10 @@ snapshots:
       ms: 2.0.0
 
   debug@4.4.1:
+    dependencies:
+      ms: 2.1.3
+
+  debug@4.4.3:
     dependencies:
       ms: 2.1.3
 
@@ -7442,7 +7455,7 @@ snapshots:
       content-type: 1.0.5
       cookie: 0.7.2
       cookie-signature: 1.2.2
-      debug: 4.4.1
+      debug: 4.4.3
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
@@ -7500,7 +7513,7 @@ snapshots:
 
   finalhandler@2.1.0:
     dependencies:
-      debug: 4.4.1
+      debug: 4.4.3
       encodeurl: 2.0.0
       escape-html: 1.0.3
       on-finished: 2.4.1
@@ -8258,7 +8271,7 @@ snapshots:
   micromark@4.0.2:
     dependencies:
       '@types/debug': 4.1.12
-      debug: 4.4.1
+      debug: 4.4.3
       decode-named-character-reference: 1.2.0
       devlop: 1.1.0
       micromark-core-commonmark: 2.0.3
@@ -8810,7 +8823,7 @@ snapshots:
 
   router@2.2.0:
     dependencies:
-      debug: 4.4.1
+      debug: 4.4.3
       depd: 2.0.0
       is-promise: 4.0.0
       parseurl: 1.3.3
@@ -8856,7 +8869,7 @@ snapshots:
 
   send@1.2.0:
     dependencies:
-      debug: 4.4.1
+      debug: 4.4.3
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
