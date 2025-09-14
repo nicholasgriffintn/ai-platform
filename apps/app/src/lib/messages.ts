@@ -73,11 +73,12 @@ export function formatMessageContent(messageContent: string): {
   const thinkMatch = messageContent.match(/<think>([\s\S]*?)(?:<\/think>|$)/s);
 
   if (analysisMatch) {
-    reasoning = analysisMatch[1]?.trim();
+    reasoning =
+      typeof analysisMatch[1] === "string" ? analysisMatch[1].trim() : "";
   }
 
   if (thinkMatch) {
-    reasoning = thinkMatch[1]?.trim();
+    reasoning = typeof thinkMatch[1] === "string" ? thinkMatch[1].trim() : "";
   }
 
   let cleanedContent = messageContent;
@@ -157,7 +158,8 @@ export const formattedMessageContent = (
       }
 
       const attributesStr = artifactMatch[1];
-      const artifactContent = artifactMatch[2]?.trim();
+      const artifactContent =
+        typeof artifactMatch[2] === "string" ? artifactMatch[2].trim() : "";
       const isOpen = !artifactMatch[0].includes("</artifact>");
 
       const identifier = attributesStr.match(/identifier="([^"]*)"/)?.[1] || "";
@@ -208,7 +210,7 @@ export const formattedMessageContent = (
   }
 
   return {
-    content: content?.trim(),
+    content: typeof content === "string" ? content.trim() : "",
     reasoning,
     artifacts,
   };
