@@ -75,7 +75,7 @@
     "@vitejs/plugin-react": "5.0.2",
     "babel-plugin-react-compiler": "19.0.0-beta-ebf51a3-20250411",
     "globals": "16.4.0",
-    "jsdom": "26.1.0",
+    "jsdom": "27.0.0",
     "rollup-plugin-visualizer": "6.0.3",
     "terser": "5.44.0",
     "typescript": "~5.9.0",
