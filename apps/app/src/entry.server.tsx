@@ -19,8 +19,14 @@ export default async function handleRequest(
 
   responseHeaders.set("Content-Security-Policy", generateCSP());
 
+  const isAnalyticsDisabled =
+    analyticsConfig.disabled ||
+    !analyticsConfig.apiKey ||
+    analyticsConfig.apiKey === "disabled" ||
+    !analyticsConfig.apiHost;
+
   const body = await renderToReadableStream(
-    analyticsConfig.disabled ? (
+    isAnalyticsDisabled ? (
       <ServerRouter context={routerContext} url={request.url} />
     ) : (
       <PostHogProvider
@@ -28,7 +34,7 @@ export default async function handleRequest(
         options={{
           api_host: analyticsConfig.apiHost,
           capture_exceptions: true,
-          debug: analyticsConfig.debug,
+          debug: analyticsConfig.debug || false,
         }}
       >
         <ServerRouter context={routerContext} url={request.url} />
