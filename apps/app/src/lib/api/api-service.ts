@@ -405,7 +405,8 @@ class ApiService {
           buffer = lines.pop() || "";
 
           for (const line of lines) {
-            if (!line.trim()) continue;
+            if (!line) continue;
+            if (!line?.trim()) continue;
 
             if (line.startsWith("data: ")) {
               const data = line.substring(6);

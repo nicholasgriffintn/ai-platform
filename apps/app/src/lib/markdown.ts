@@ -22,6 +22,8 @@ export function markdownToHtml(markdown: string): string {
       continue;
     }
 
+    if (!line) continue;
+
     if (line.trim() === "") {
       html += "\n";
       continue;
@@ -69,6 +71,8 @@ export function markdownToHtml(markdown: string): string {
       html += `<p>${processInlineMarkdown(line)}</p>\n`;
     }
   }
+
+  if (!html) return "";
 
   return html.trim();
 }

@@ -16,7 +16,7 @@ function completeMarkdownTags(markdown: string): string {
   if (inlineCodeCount % 2 === 1) {
     const lastTickIndex = content.lastIndexOf("`");
     const contentAfterTick = content.slice(lastTickIndex + 1);
-    if (contentAfterTick.trim().length > 0) {
+    if (contentAfterTick?.trim().length > 0) {
       content += "`";
     }
   }
@@ -26,7 +26,7 @@ function completeMarkdownTags(markdown: string): string {
   if (boldMarkers.length % 2 === 1) {
     const lastBoldIndex = content.lastIndexOf("**");
     const contentAfterBold = content.slice(lastBoldIndex + 2);
-    if (contentAfterBold.trim().length > 0) {
+    if (contentAfterBold?.trim().length > 0) {
       content += "**";
     }
   }
@@ -41,7 +41,7 @@ function completeMarkdownTags(markdown: string): string {
       content[lastItalicIndex + 1] !== "*"
     ) {
       const contentAfterItalic = content.slice(lastItalicIndex + 1);
-      if (contentAfterItalic.trim().length > 0) {
+      if (contentAfterItalic?.trim().length > 0) {
         content += "*";
       }
     }
@@ -59,8 +59,8 @@ function completeMarkdownTags(markdown: string): string {
   const lastLine = lines[lines.length - 1];
   if (
     lastLine?.includes("|") &&
-    lastLine.split("|").length > 2 &&
-    !lastLine.trim().endsWith("|")
+    lastLine?.split("|").length > 2 &&
+    !lastLine?.trim().endsWith("|")
   ) {
     content += " |";
   }
@@ -80,6 +80,7 @@ function safeParseMarkdown(markdown: string): string {
 }
 
 function isLikelyIncomplete(markdown: string): boolean {
+  if (!markdown) return false;
   const trimmed = markdown.trim();
 
   const boldMarkers = (trimmed.match(/\*\*/g) || []).length;
@@ -88,7 +89,7 @@ function isLikelyIncomplete(markdown: string): boolean {
     (() => {
       const lastBoldIndex = trimmed.lastIndexOf("**");
       const contentAfterBold = trimmed.slice(lastBoldIndex + 2);
-      return contentAfterBold.trim().length > 0;
+      return contentAfterBold?.trim().length > 0;
     })();
 
   const inlineCode = (trimmed.match(/(?<!\\)`/g) || []).length;
@@ -97,7 +98,7 @@ function isLikelyIncomplete(markdown: string): boolean {
     (() => {
       const lastTickIndex = trimmed.lastIndexOf("`");
       const contentAfterTick = trimmed.slice(lastTickIndex + 1);
-      return contentAfterTick.trim().length > 0;
+      return contentAfterTick?.trim().length > 0;
     })();
 
   const contentWithoutBold = trimmed.replace(/\*\*/g, "");
@@ -113,7 +114,7 @@ function isLikelyIncomplete(markdown: string): boolean {
         return false;
       }
       const contentAfterItalic = trimmed.slice(lastItalicIndex + 1);
-      return contentAfterItalic.trim().length > 0;
+      return contentAfterItalic?.trim().length > 0;
     })();
   const codeBlocks = (trimmed.match(/```/g) || []).length;
   const openBrackets = (trimmed.match(/\[/g) || []).length;

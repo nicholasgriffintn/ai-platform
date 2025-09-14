@@ -22,7 +22,7 @@ function getStripeClient(env: IEnv): Stripe {
       ErrorType.CONFIGURATION_ERROR,
     );
   }
-  return new Stripe(secret, { apiVersion: "2025-07-30.basil" });
+  return new Stripe(secret);
 }
 
 export async function createCheckoutSession(

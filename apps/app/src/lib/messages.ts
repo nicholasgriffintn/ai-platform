@@ -73,11 +73,11 @@ export function formatMessageContent(messageContent: string): {
   const thinkMatch = messageContent.match(/<think>([\s\S]*?)(?:<\/think>|$)/s);
 
   if (analysisMatch) {
-    reasoning = analysisMatch[1].trim();
+    reasoning = analysisMatch[1]?.trim();
   }
 
   if (thinkMatch) {
-    reasoning = thinkMatch[1].trim();
+    reasoning = thinkMatch[1]?.trim();
   }
 
   let cleanedContent = messageContent;
@@ -157,14 +157,14 @@ export const formattedMessageContent = (
       }
 
       const attributesStr = artifactMatch[1];
-      const artifactContent = artifactMatch[2].trim();
+      const artifactContent = artifactMatch[2]?.trim();
       const isOpen = !artifactMatch[0].includes("</artifact>");
 
       const identifier = attributesStr.match(/identifier="([^"]*)"/)?.[1] || "";
       if (!identifier) {
         console.warn(
           "Artifact missing identifier:",
-          artifactMatch[0].substring(0, 50),
+          artifactMatch[0]?.substring(0, 50),
         );
         continue;
       }
@@ -208,7 +208,7 @@ export const formattedMessageContent = (
   }
 
   return {
-    content: content.trim(),
+    content: content?.trim(),
     reasoning,
     artifacts,
   };
