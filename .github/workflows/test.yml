@@ -34,6 +34,8 @@ jobs:
         run: pnpm install
       - name: Run checks
         run: pnpm check
+      - name: Run typechecks
+        run: pnpm typecheck
       - name: Run test
         run: pnpm test
       - name: Run coverage
