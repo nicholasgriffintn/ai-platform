@@ -1,8 +1,7 @@
-import { zValidator } from "@hono/zod-validator";
 import { Scalar } from "@scalar/hono-api-reference";
 import { type Context, Hono } from "hono";
-import { describeRoute, openAPISpecs } from "hono-openapi";
-import { resolver } from "hono-openapi/zod";
+import { describeRoute, openAPIRouteHandler } from "hono-openapi";
+import { resolver, validator as zValidator } from "hono-openapi";
 import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
 import { z } from "zod";
@@ -111,7 +110,7 @@ app.get(
 
 app.get(
   "/openapi",
-  openAPISpecs(app, {
+  openAPIRouteHandler(app, {
     documentation: {
       info: {
         title: "Polychat API",

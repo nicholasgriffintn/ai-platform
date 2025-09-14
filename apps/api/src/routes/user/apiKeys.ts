@@ -2,7 +2,7 @@ import { type Context, Hono } from "hono";
 import { validator } from "hono/validator";
 
 import { describeRoute } from "hono-openapi";
-import { resolver } from "hono-openapi/zod";
+import { resolver } from "hono-openapi";
 import { Database } from "~/lib/database";
 import { requireAuth } from "~/middleware/auth";
 import { AssistantError, ErrorType } from "~/utils/errors";
