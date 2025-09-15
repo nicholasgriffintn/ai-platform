@@ -456,4 +456,14 @@ export const workersAiModelConfig: ModelConfig = {
     reliability: 4,
     contextComplexity: 3,
   },
+  "embeddinggemma-300m": {
+    name: "EmbeddingGemma 300M",
+    matchingModel: "@cf/google/embeddinggemma-300m",
+    provider: "workers-ai",
+    type: ["embedding"],
+    strengths: ["search"],
+    speed: 4,
+    reliability: 4,
+    contextComplexity: 3,
+  },
 };
