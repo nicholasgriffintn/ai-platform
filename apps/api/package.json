@@ -35,7 +35,7 @@
     "aws4fetch": "1.0.20",
     "drizzle-orm": "0.44.5",
     "hono": "4.9.7",
-    "hono-openapi": "1.0.7",
+    "hono-openapi": "1.0.8",
     "isbot": "5.1.30",
     "stripe": "^18.0.0",
     "zod": "4.1.8",
