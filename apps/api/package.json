@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@hono/standard-validator": "^0.1.5",
-    "@hono/zod-validator": "0.7.2",
+    "@hono/zod-validator": "0.7.3",
     "@octokit/rest": "22.0.0",
     "@scalar/hono-api-reference": "^0.9.0",
     "@simplewebauthn/server": "^13.1.1",
