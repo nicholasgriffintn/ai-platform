@@ -31,7 +31,7 @@ importers:
         version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.8)
       '@hono/zod-validator':
         specifier: 0.7.3
-        version: 0.7.3(hono@4.9.8)(zod@4.1.9)
+        version: 0.7.3(hono@4.9.8)(zod@4.1.11)
       '@octokit/rest':
         specifier: 22.0.0
         version: 22.0.0
@@ -58,7 +58,7 @@ importers:
         version: 4.9.8
       hono-openapi:
         specifier: 1.0.8
-        version: 1.0.8(@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.8))(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.9))(zod@4.1.9))(@standard-community/standard-openapi@0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.9))(zod@4.1.9))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(zod-openapi@5.4.1(zod@4.1.9))(zod@4.1.9))(@types/json-schema@7.0.15)(hono@4.9.8)(openapi-types@12.1.3)
+        version: 1.0.8(@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.8))(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.11))(zod@4.1.11))(@standard-community/standard-openapi@0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.11))(zod@4.1.11))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(zod-openapi@5.4.1(zod@4.1.11))(zod@4.1.11))(@types/json-schema@7.0.15)(hono@4.9.8)(openapi-types@12.1.3)
       isbot:
         specifier: 5.1.30
         version: 5.1.30
@@ -66,11 +66,11 @@ importers:
         specifier: ^18.0.0
         version: 18.5.0(@types/node@22.18.6)
       zod:
-        specifier: 4.1.9
-        version: 4.1.9
+        specifier: 4.1.11
+        version: 4.1.11
       zod-openapi:
         specifier: 5.4.1
-        version: 5.4.1(zod@4.1.9)
+        version: 5.4.1(zod@4.1.11)
     devDependencies:
       '@biomejs/biome':
         specifier: 2.2.4
@@ -4925,8 +4925,8 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.1.9:
-    resolution: {integrity: sha512-HI32jTq0AUAC125z30E8bQNz0RQ+9Uc+4J7V97gLYjZVKRjeydPgGt6dvQzFrav7MYOUGFqqOGiHpA/fdbd0cQ==}
+  zod@4.1.11:
+    resolution: {integrity: sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg==}
 
   zustand@5.0.8:
     resolution: {integrity: sha512-gyPKpIaxY9XcO2vSMrLbiER7QMAMGOQZVRdJ6Zi782jkbzZygq5GI9nG8g+sMgitRtndwaBSl7uiqC49o1SSiw==}
@@ -5548,10 +5548,10 @@ snapshots:
       '@standard-schema/spec': 1.0.0
       hono: 4.9.8
 
-  '@hono/zod-validator@0.7.3(hono@4.9.8)(zod@4.1.9)':
+  '@hono/zod-validator@0.7.3(hono@4.9.8)(zod@4.1.11)':
     dependencies:
       hono: 4.9.8
-      zod: 4.1.9
+      zod: 4.1.11
 
   '@img/sharp-darwin-arm64@0.33.5':
     optionalDependencies:
@@ -6475,23 +6475,23 @@ snapshots:
 
   '@speed-highlight/core@1.2.7': {}
 
-  '@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.9))(zod@4.1.9)':
+  '@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.11))(zod@4.1.11)':
     dependencies:
       '@standard-schema/spec': 1.0.0
       '@types/json-schema': 7.0.15
       quansync: 0.2.11
     optionalDependencies:
-      zod: 4.1.9
-      zod-to-json-schema: 3.24.6(zod@4.1.9)
+      zod: 4.1.11
+      zod-to-json-schema: 3.24.6(zod@4.1.11)
 
-  '@standard-community/standard-openapi@0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.9))(zod@4.1.9))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(zod-openapi@5.4.1(zod@4.1.9))(zod@4.1.9)':
+  '@standard-community/standard-openapi@0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.11))(zod@4.1.11))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(zod-openapi@5.4.1(zod@4.1.11))(zod@4.1.11)':
     dependencies:
-      '@standard-community/standard-json': 0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.9))(zod@4.1.9)
+      '@standard-community/standard-json': 0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.11))(zod@4.1.11)
       '@standard-schema/spec': 1.0.0
       openapi-types: 12.1.3
     optionalDependencies:
-      zod: 4.1.9
-      zod-openapi: 5.4.1(zod@4.1.9)
+      zod: 4.1.11
+      zod-openapi: 5.4.1(zod@4.1.11)
 
   '@standard-schema/spec@1.0.0': {}
 
@@ -7638,10 +7638,10 @@ snapshots:
 
   highlight.js@11.11.1: {}
 
-  hono-openapi@1.0.8(@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.8))(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.9))(zod@4.1.9))(@standard-community/standard-openapi@0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.9))(zod@4.1.9))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(zod-openapi@5.4.1(zod@4.1.9))(zod@4.1.9))(@types/json-schema@7.0.15)(hono@4.9.8)(openapi-types@12.1.3):
+  hono-openapi@1.0.8(@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.8))(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.11))(zod@4.1.11))(@standard-community/standard-openapi@0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.11))(zod@4.1.11))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(zod-openapi@5.4.1(zod@4.1.11))(zod@4.1.11))(@types/json-schema@7.0.15)(hono@4.9.8)(openapi-types@12.1.3):
     dependencies:
-      '@standard-community/standard-json': 0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.9))(zod@4.1.9)
-      '@standard-community/standard-openapi': 0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.9))(zod@4.1.9))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(zod-openapi@5.4.1(zod@4.1.9))(zod@4.1.9)
+      '@standard-community/standard-json': 0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.11))(zod@4.1.11)
+      '@standard-community/standard-openapi': 0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.24.6(zod@4.1.11))(zod@4.1.11))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(zod-openapi@5.4.1(zod@4.1.11))(zod@4.1.11)
       '@types/json-schema': 7.0.15
       openapi-types: 12.1.3
     optionalDependencies:
@@ -9521,17 +9521,17 @@ snapshots:
       cookie: 1.0.2
       youch-core: 0.3.3
 
-  zod-openapi@5.4.1(zod@4.1.9):
+  zod-openapi@5.4.1(zod@4.1.11):
     dependencies:
-      zod: 4.1.9
+      zod: 4.1.11
 
   zod-to-json-schema@3.24.6(zod@3.25.76):
     dependencies:
       zod: 3.25.76
 
-  zod-to-json-schema@3.24.6(zod@4.1.9):
+  zod-to-json-schema@3.24.6(zod@4.1.11):
     dependencies:
-      zod: 4.1.9
+      zod: 4.1.11
     optional: true
 
   zod@3.22.3: {}
@@ -9540,7 +9540,7 @@ snapshots:
 
   zod@3.25.76: {}
 
-  zod@4.1.9: {}
+  zod@4.1.11: {}
 
   zustand@5.0.8(@types/react@19.1.13)(react@19.1.1):
     optionalDependencies:
