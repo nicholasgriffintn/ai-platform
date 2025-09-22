@@ -1,17 +1,16 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import {
+  errorResponseSchema,
+  replicateWebhookJsonSchema,
+  replicateWebhookQuerySchema,
+  webhookResponseSchema,
+} from "@assistant/schemas";
 
 import { webhookAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleReplicateWebhook } from "~/services/webhooks/replicate";
 import type { IBody, IEnv } from "~/types";
-import { errorResponseSchema } from "../schemas/shared";
-import {
-  replicateWebhookJsonSchema,
-  replicateWebhookQuerySchema,
-  webhookResponseSchema,
-} from "../schemas/webhooks";
 
 const app = new Hono();
 

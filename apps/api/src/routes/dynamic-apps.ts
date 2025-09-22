@@ -1,7 +1,12 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
+import {
+  appDataSchema,
+  appInfoSchema,
+  listDynamicAppResponsesQuerySchema,
+  errorResponseSchema,
+} from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -18,12 +23,6 @@ import type { IRequest } from "~/types/chat";
 import type { IEnv } from "~/types/shared";
 import { getLogger } from "~/utils/logger";
 import type { IUser } from "../types";
-import { appDataSchema } from "../schemas/app-data";
-import {
-  appInfoSchema,
-  listDynamicAppResponsesQuerySchema,
-} from "../schemas/apps";
-import { errorResponseSchema } from "../schemas/shared";
 
 const logger = getLogger({ prefix: "routes/dynamic-apps" });
 

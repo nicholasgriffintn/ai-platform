@@ -1,10 +1,18 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import {
+  errorResponseSchema,
+  successResponseSchema,
+  storeProviderApiKeySchema,
+  updateUserSettingsResponseSchema,
+  updateUserSettingsSchema,
+  userModelsResponseSchema,
+  providersResponseSchema,
+  providerSettingsSchema,
+} from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { validatePlanRequirement } from "~/services/user/userOperations";
 import {
   updateUserSettings,
   getUserEnabledModels,
@@ -13,18 +21,6 @@ import {
   syncUserProviders,
 } from "~/services/user/userOperations";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import {
-  errorResponseSchema,
-  successResponseSchema,
-} from "../../schemas/shared";
-import {
-  storeProviderApiKeySchema,
-  updateUserSettingsResponseSchema,
-  updateUserSettingsSchema,
-  userModelsResponseSchema,
-  providersResponseSchema,
-  providerSettingsSchema,
-} from "../../schemas/user";
 import apiKeys from "./apiKeys";
 import exportHistoryRoute from "./export-history";
 

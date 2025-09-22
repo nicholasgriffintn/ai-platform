@@ -1,7 +1,7 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
-import type { z } from "zod/v4";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import { errorResponseSchema, checkoutSchema } from "@assistant/schemas";
+
 import { requireAuth } from "~/middleware/auth";
 import {
   cancelSubscription,
@@ -12,8 +12,6 @@ import {
 } from "~/services/subscription";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
 import { AssistantError, ErrorType } from "../utils/errors";
-import { errorResponseSchema } from "../schemas/shared";
-import { checkoutSchema } from "../schemas/stripe";
 
 const app = new Hono();
 

@@ -1,6 +1,13 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import {
+  listPodcastsResponseSchema,
+  podcastDetailResponseSchema,
+  podcastGenerateImageSchema,
+  podcastSummarizeSchema,
+  podcastTranscribeSchema,
+  apiResponseSchema,
+} from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { checkPlanRequirement } from "~/services/user/userOperations";
@@ -18,14 +25,6 @@ import {
 import { handlePodcastUpload } from "~/services/apps/podcast/upload";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import {
-  listPodcastsResponseSchema,
-  podcastDetailResponseSchema,
-  podcastGenerateImageSchema,
-  podcastSummarizeSchema,
-  podcastTranscribeSchema,
-} from "../../schemas/apps";
-import { apiResponseSchema } from "../../schemas/shared";
 
 const app = new Hono();
 

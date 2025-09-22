@@ -1,6 +1,14 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import {
+  capabilitiesResponseSchema,
+  capabilityParamsSchema,
+  modelParamsSchema,
+  modelResponseSchema,
+  modelsResponseSchema,
+  typeParamsSchema,
+  errorResponseSchema,
+} from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
@@ -12,15 +20,6 @@ import {
   listModelsByType,
 } from "~/services/models";
 import type { IEnv } from "~/types";
-import {
-  capabilitiesResponseSchema,
-  capabilityParamsSchema,
-  modelParamsSchema,
-  modelResponseSchema,
-  modelsResponseSchema,
-  typeParamsSchema,
-} from "../schemas/models";
-import { errorResponseSchema } from "../schemas/shared";
 
 const app = new Hono();
 

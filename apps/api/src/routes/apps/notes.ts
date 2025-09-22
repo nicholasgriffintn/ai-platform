@@ -1,6 +1,17 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import {
+  listNotesResponseSchema,
+  noteCreateSchema,
+  noteDetailResponseSchema,
+  noteFormatResponseSchema,
+  noteFormatSchema,
+  noteUpdateSchema,
+  generateNotesFromMediaSchema,
+  generateNotesFromMediaResponseSchema,
+  errorResponseSchema,
+  successResponseSchema,
+} from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { checkPlanRequirement } from "~/services/user/userOperations";
@@ -14,20 +25,6 @@ import {
 } from "~/services/apps/notes/list";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import {
-  listNotesResponseSchema,
-  noteCreateSchema,
-  noteDetailResponseSchema,
-  noteFormatResponseSchema,
-  noteFormatSchema,
-  noteUpdateSchema,
-  generateNotesFromMediaSchema,
-  generateNotesFromMediaResponseSchema,
-} from "../../schemas/apps";
-import {
-  errorResponseSchema,
-  successResponseSchema,
-} from "../../schemas/shared";
 import { generateNotesFromMedia } from "~/services/apps/notes/generate-from-media";
 
 const app = new Hono();

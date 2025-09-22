@@ -3,9 +3,16 @@ import type {
   RegistrationResponseJSON,
 } from "@simplewebauthn/types";
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
+import {
+  userSchema,
+  authenticationOptionsSchema,
+  authenticationVerificationSchema,
+  registrationOptionsSchema,
+  registrationVerificationSchema,
+  errorResponseSchema,
+} from "@assistant/schemas";
 
 import { APP_NAME, LOCAL_HOST, PROD_HOST } from "~/constants/app";
 import { Database } from "~/lib/database";
@@ -20,14 +27,6 @@ import {
   verifyPasskeyAuthentication,
 } from "~/services/auth/webauthn";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { userSchema } from "../../schemas/auth";
-import { errorResponseSchema } from "../../schemas/shared";
-import {
-  authenticationOptionsSchema,
-  authenticationVerificationSchema,
-  registrationOptionsSchema,
-  registrationVerificationSchema,
-} from "../../schemas/webAuthN";
 
 const app = new Hono();
 

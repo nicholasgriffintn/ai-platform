@@ -1,7 +1,13 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
+import {
+  githubCallbackSchema,
+  githubLoginSchema,
+  jwtTokenResponseSchema,
+  userSchema,
+  errorResponseSchema,
+} from "@assistant/schemas";
 
 import { Database } from "~/lib/database";
 import { requireAuth } from "~/middleware/auth";
@@ -21,13 +27,6 @@ import {
 import type { AnonymousUser, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import {
-  githubCallbackSchema,
-  githubLoginSchema,
-  jwtTokenResponseSchema,
-  userSchema,
-} from "../../schemas/auth";
-import { errorResponseSchema } from "../../schemas/shared";
 import authMagicLink from "./magic-link";
 import authWebauthn from "./webauthn";
 

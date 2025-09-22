@@ -1,8 +1,12 @@
 import { type Context, Hono } from "hono";
-import { validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import {
+  errorResponseSchema,
+  successResponseSchema,
+  createApiKeySchema,
+  deleteApiKeyParamsSchema,
+} from "@assistant/schemas";
 
-import { describeRoute } from "hono-openapi";
-import { resolver } from "hono-openapi";
 import { requireAuth } from "~/middleware/auth";
 import {
   createUserApiKey,
@@ -11,14 +15,6 @@ import {
 } from "~/services/user/apiKeys";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import {
-  errorResponseSchema,
-  successResponseSchema,
-} from "../../schemas/shared";
-import {
-  createApiKeySchema,
-  deleteApiKeyParamsSchema,
-} from "../../schemas/user/apiKeys";
 
 const logger = getLogger({ prefix: "routes/user/apiKeys" });
 

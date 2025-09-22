@@ -1,6 +1,10 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import {
+  setAgentFeaturedSchema,
+  moderateAgentSchema,
+  apiResponseSchema,
+} from "@assistant/schemas";
 
 import { requireAdmin, requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { requireAuth } from "~/middleware/auth";
@@ -11,11 +15,6 @@ import {
   getAllSharedAgentsForAdmin,
 } from "~/services/admin/sharedAgents";
 import type { IEnv } from "~/types";
-import { apiResponseSchema } from "../schemas/shared";
-import {
-  setAgentFeaturedSchema,
-  moderateAgentSchema,
-} from "../schemas/shared-agents";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("admin");

@@ -1,0 +1,40 @@
+{
+  "name": "@assistant/schemas",
+  "license": "Apache-2.0",
+  "version": "0.0.1",
+  "private": false,
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "format": "pnpm biome format --write ./src",
+    "lint": "pnpm biome lint ./src",
+    "check": "pnpm biome check ./src"
+  },
+  "dependencies": {
+    "zod": "4.1.11"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.4",
+    "@types/node": "24.5.2",
+    "tsup": "^8.5.0",
+    "typescript": "5.9.2"
+  },
+  "peerDependencies": {
+    "zod": "4.1.11"
+  }
+}

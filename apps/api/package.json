@@ -5,8 +5,9 @@
   "private": true,
   "main": "src/index.ts",
   "scripts": {
+    "build": "pnpm --filter @assistant/schemas build",
     "deploy": "pnpm typecheck && wrangler deploy src/index.ts --name=assistant",
-    "dev": "wrangler dev src/index.ts --x-remote-bindings",
+    "dev": "pnpm --filter @assistant/schemas build && wrangler dev src/index.ts --x-remote-bindings",
     "start": "wrangler dev src/index.ts",
     "test": "vitest",
     "coverage": "vitest run --coverage",
@@ -25,6 +26,7 @@
     "db:studio:prod": "drizzle-kit studio"
   },
   "dependencies": {
+    "@assistant/schemas": "workspace:*",
     "@hono/standard-validator": "^0.1.5",
     "@hono/zod-validator": "0.7.3",
     "@octokit/rest": "22.0.0",

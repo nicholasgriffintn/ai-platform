@@ -1,11 +1,9 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver } from "hono-openapi";
+import { describeRoute, resolver } from "hono-openapi";
+import { errorResponseSchema, toolsResponseSchema } from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { getAvailableTools } from "~/services/tools/toolsOperations";
-import { errorResponseSchema } from "../schemas/shared";
-import { toolsResponseSchema } from "../schemas/tools";
 
 const app = new Hono();
 

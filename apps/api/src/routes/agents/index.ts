@@ -1,8 +1,12 @@
-import { MCPClientManager } from "agents/mcp/client";
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import type z from "zod/v4";
+import {
+  createAgentSchema,
+  updateAgentSchema,
+  createChatCompletionsJsonSchema,
+  apiResponseSchema,
+} from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
@@ -19,9 +23,6 @@ import {
   createAgentCompletion,
 } from "~/services/agents";
 import type { ChatCompletionParameters, IEnv } from "~/types";
-import { createAgentSchema, updateAgentSchema } from "../../schemas/agents";
-import { createChatCompletionsJsonSchema } from "../../schemas/chat";
-import { apiResponseSchema } from "../../schemas/shared";
 import sharedAgents from "./shared";
 
 const app = new Hono<{ Bindings: IEnv }>();

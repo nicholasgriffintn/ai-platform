@@ -1,7 +1,15 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import type z from "zod/v4";
+import {
+  apiResponseSchema,
+  agentRatingsSchema,
+  featuredAgentsSchema,
+  rateAgentSchema,
+  shareAgentSchema,
+  sharedAgentFiltersSchema,
+  updateSharedAgentSchema,
+} from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -10,29 +18,16 @@ import {
   getFeaturedAgents,
   getSharedAgentById,
   getSharedAgentByAgentId,
-  getAllSharedAgentsForAdmin,
   installSharedAgent,
-  uninstallSharedAgent,
   rateSharedAgent,
   getSharedAgentRatings,
   updateSharedAgent,
   deleteSharedAgent,
-  setFeaturedStatus,
-  moderateSharedAgent,
   getSharedAgentCategories,
   getSharedAgentPopularTags,
   shareAgent,
 } from "~/services/agents/shared";
 import type { IEnv } from "~/types";
-import { apiResponseSchema } from "../../schemas/shared";
-import {
-  agentRatingsSchema,
-  featuredAgentsSchema,
-  rateAgentSchema,
-  shareAgentSchema,
-  sharedAgentFiltersSchema,
-  updateSharedAgentSchema,
-} from "../../schemas/shared-agents";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("agents/shared");

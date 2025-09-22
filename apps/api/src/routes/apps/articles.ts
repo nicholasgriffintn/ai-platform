@@ -1,7 +1,16 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
+import {
+  articleAnalyzeSchema,
+  articleDetailResponseSchema,
+  articleSummariseSchema,
+  contentExtractSchema,
+  generateArticlesReportSchema,
+  listArticlesResponseSchema,
+  sourceArticlesResponseSchema,
+  errorResponseSchema,
+} from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { checkPlanRequirement } from "~/services/user/userOperations";
@@ -18,16 +27,6 @@ import { extractContent } from "~/services/apps/retrieval/content-extract";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import {
-  articleAnalyzeSchema,
-  articleDetailResponseSchema,
-  articleSummariseSchema,
-  contentExtractSchema,
-  generateArticlesReportSchema,
-  listArticlesResponseSchema,
-  sourceArticlesResponseSchema,
-} from "../../schemas/apps";
-import { errorResponseSchema } from "../../schemas/shared";
 
 const app = new Hono();
 

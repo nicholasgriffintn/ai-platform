@@ -1,13 +1,15 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import {
+  errorResponseSchema,
+  searchWebSchema,
+  webSearchResponseSchema,
+} from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleWebSearch } from "~/services/search/web";
 import type { IEnv, SearchOptions } from "~/types";
-import { searchWebSchema, webSearchResponseSchema } from "../schemas/search";
-import { errorResponseSchema } from "../schemas/shared";
 
 const app = new Hono();
 

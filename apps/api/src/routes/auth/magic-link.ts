@@ -1,17 +1,16 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
+import {
+  magicLinkRequestSchema,
+  magicLinkVerifySchema,
+  errorResponseSchema,
+} from "@assistant/schemas";
 
 import { Database } from "~/lib/database";
 import { requestMagicLink, verifyMagicLink } from "~/services/auth/magicLink";
 import { createSession } from "~/services/auth/user";
 import { sendMagicLinkEmail } from "~/services/notifications";
-import {
-  magicLinkRequestSchema,
-  magicLinkVerifySchema,
-} from "../../schemas/magicLink";
-import { errorResponseSchema } from "../../schemas/shared";
 
 const app = new Hono();
 

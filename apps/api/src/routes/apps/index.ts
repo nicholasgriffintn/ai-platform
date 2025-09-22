@@ -1,7 +1,19 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
+import {
+  captureScreenshotSchema,
+  contentExtractSchema,
+  deepWebSearchSchema,
+  ocrSchema,
+  promptCoachJsonSchema,
+  promptCoachResponseSchema,
+  tutorSchema,
+  weatherQuerySchema,
+  weatherResponseSchema,
+  apiResponseSchema,
+  errorResponseSchema,
+} from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -27,18 +39,6 @@ import {
 } from "~/services/apps/tutor";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import {
-  captureScreenshotSchema,
-  contentExtractSchema,
-  deepWebSearchSchema,
-  ocrSchema,
-  promptCoachJsonSchema,
-  promptCoachResponseSchema,
-  tutorSchema,
-  weatherQuerySchema,
-  weatherResponseSchema,
-} from "../../schemas/apps";
-import { apiResponseSchema, errorResponseSchema } from "../../schemas/shared";
 import articles from "./articles";
 import drawing from "./drawing";
 import embeddings from "./embeddings";

@@ -1,18 +1,18 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import {
+  textToSpeechSchema,
+  transcribeFormSchema,
+  transcribeQuerySchema,
+  apiResponseSchema,
+  errorResponseSchema,
+} from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleTextToSpeech } from "~/services/audio/speech";
 import { handleTranscribe } from "~/services/audio/transcribe";
 import type { IEnv } from "~/types";
-import {
-  textToSpeechSchema,
-  transcribeFormSchema,
-  transcribeQuerySchema,
-} from "../schemas/audio";
-import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
 
 const app = new Hono();
 

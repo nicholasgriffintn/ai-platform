@@ -1,6 +1,7 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import { apiResponseSchema, errorResponseSchema } from "@assistant/schemas";
+import z from "zod/v4";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
@@ -8,8 +9,6 @@ import {
   retrieveHackerNewsTopStories,
 } from "~/services/apps/retrieval/hackernews";
 import type { IEnv, IUser } from "~/types";
-import { apiResponseSchema, errorResponseSchema } from "../../schemas/shared";
-import z from "zod/v4";
 
 const app = new Hono();
 

@@ -1,17 +1,16 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
-
-import type { IEnv, IRequest } from "~/types";
-import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { errorResponseSchema } from "../schemas/shared";
+import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import {
+  errorResponseSchema,
   memoryListResponseSchema,
   memoryGroupResponseSchema,
   memoryGroupCreateSchema,
   memoryGroupAddSchema,
   memoryOperationResponseSchema,
-} from "../schemas/memories";
+} from "@assistant/schemas";
+
+import type { IEnv, IRequest } from "~/types";
+import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleCreateMemoryGroup } from "~/services/memories/createGroup";
 import { handleListMemories } from "~/services/memories/listMemories";
 import { handleAddMemoriesToGroup } from "~/services/memories/addMemoriesToGroup";

@@ -1,14 +1,12 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver } from "hono-openapi";
+import { describeRoute, resolver } from "hono-openapi";
+import { errorResponseSchema, uploadResponseSchema } from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleFileUpload } from "~/services/uploads";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IEnv } from "../types";
-import { errorResponseSchema } from "../schemas/shared";
-import { uploadResponseSchema } from "../schemas/uploads";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("uploads");

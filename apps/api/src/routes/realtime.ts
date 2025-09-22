@@ -1,12 +1,13 @@
 import { type Context, Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, resolver } from "hono-openapi";
+import {
+  errorResponseSchema,
+  realtimeSessionResponseSchema,
+} from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import type { IEnv } from "~/types";
 import { AIProviderFactory } from "../lib/providers/factory";
-import { errorResponseSchema } from "../schemas/shared";
-import { realtimeSessionResponseSchema } from "../schemas/realtime";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("realtime");
