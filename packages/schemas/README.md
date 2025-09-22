@@ -21,12 +21,3 @@ const result = messageSchema.parse(data);
 // Use for TypeScript types
 type Message = z.infer<typeof messageSchema>;
 ```
-
-## Available Schemas
-
-- `messageSchema` - Schema for chat messages
-- `apiResponseSchema` - Standard API response format
-- `errorResponseSchema` - Error response format
-- `successResponseSchema` - Success response format
-- `statusResponseSchema` - Health check response format
-- `metricsParamsSchema` - Metrics query parameters
