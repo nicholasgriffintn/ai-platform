@@ -3,6 +3,7 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { checkPlanRequirement } from "~/services/user/userOperations";
 import {
   type ImageGenerationParams,
   generateImage,
@@ -85,12 +86,13 @@ app.post(
       );
     }
 
-    if (user.plan_id !== "pro") {
+    const planCheck = checkPlanRequirement(user, "pro");
+    if (!planCheck.isValid) {
       return context.json(
         {
           response: {
             status: "error",
-            message: "User is not on pro plan",
+            message: planCheck.message,
           },
         },
         401,
@@ -156,12 +158,13 @@ app.post(
       );
     }
 
-    if (user.plan_id !== "pro") {
+    const planCheck = checkPlanRequirement(user, "pro");
+    if (!planCheck.isValid) {
       return context.json(
         {
           response: {
             status: "error",
-            message: "User is not on pro plan",
+            message: planCheck.message,
           },
         },
         401,
@@ -228,12 +231,13 @@ app.post(
       );
     }
 
-    if (user.plan_id !== "pro") {
+    const planCheck = checkPlanRequirement(user, "pro");
+    if (!planCheck.isValid) {
       return context.json(
         {
           response: {
             status: "error",
-            message: "User is not on pro plan",
+            message: planCheck.message,
           },
         },
         401,
@@ -300,12 +304,13 @@ app.post(
       );
     }
 
-    if (user.plan_id !== "pro") {
+    const planCheck = checkPlanRequirement(user, "pro");
+    if (!planCheck.isValid) {
       return context.json(
         {
           response: {
             status: "error",
-            message: "User is not on pro plan",
+            message: planCheck.message,
           },
         },
         401,

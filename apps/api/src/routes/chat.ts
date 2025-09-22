@@ -3,8 +3,6 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
 
-import { ConversationManager } from "~/lib/conversationManager";
-import { Database } from "~/lib/database";
 import { allowRestrictedPaths } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -12,6 +10,10 @@ import { handleChatCompletionFeedbackSubmission } from "~/services/completions/c
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { handleCountTokens } from "~/services/completions/countTokens";
+import {
+  handleGetChatMessageById,
+  handleGetChatMessages,
+} from "~/services/completions/getChatMessages";
 import { handleDeleteAllChatCompletions } from "~/services/completions/deleteAllChatCompletions";
 import { handleDeleteChatCompletion } from "~/services/completions/deleteChatCompletion";
 import { handleGenerateChatCompletionTitle } from "~/services/completions/generateChatCompletionTitle";
@@ -307,25 +309,20 @@ app.get(
     const limit = Number.parseInt(context.req.query("limit") || "50", 10);
     const after = context.req.query("after");
 
-    const database = Database.getInstance(context.env);
     const anonymousUser = context.get("anonymousUser");
 
-    const conversationManager = ConversationManager.getInstance({
-      database,
-      user: userContext,
+    const { messages, conversation_id } = await handleGetChatMessages(
+      context.env,
+      userContext,
       anonymousUser,
-    });
-
-    const messages = await conversationManager.get(
       completion_id,
-      undefined,
       limit,
       after,
     );
 
     return context.json({
       messages,
-      conversation_id: completion_id,
+      conversation_id,
     });
   },
 );
@@ -368,16 +365,12 @@ app.get(
     const user = context.get("user");
     const anonymousUser = context.get("anonymousUser");
 
-    const database = Database.getInstance(context.env);
-
-    const conversationManager = ConversationManager.getInstance({
-      database,
+    const { message, conversation_id } = await handleGetChatMessageById(
+      context.env,
       user,
       anonymousUser,
-    });
-
-    const { message, conversation_id } =
-      await conversationManager.getMessageById(message_id);
+      message_id,
+    );
 
     return context.json({
       ...message,

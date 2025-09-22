@@ -3,8 +3,12 @@ import { validator } from "hono/validator";
 
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi";
-import { Database } from "~/lib/database";
 import { requireAuth } from "~/middleware/auth";
+import {
+  createUserApiKey,
+  deleteUserApiKey,
+  getUserApiKeys,
+} from "~/services/user/apiKeys";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { errorResponseSchema, successResponseSchema } from "../schemas/shared";
@@ -47,11 +51,9 @@ app.get(
   async (c: Context) => {
     const user = c.get("user");
     const userId = user.id;
-    const db = c.env.DB;
 
     try {
-      const database = Database.getInstance(db);
-      const keys = await database.getUserApiKeys(userId);
+      const keys = await getUserApiKeys(c.env, userId);
       return c.json(keys);
     } catch (error) {
       logger.error("Error fetching API keys:", { error });
@@ -109,8 +111,8 @@ app.post(
     const { name } = c.req.valid("json" as never) as { name: string };
 
     try {
-      const database = Database.getInstance(db);
-      const { plaintextKey, metadata } = await database.createApiKey(
+      const { plaintextKey, metadata } = await createUserApiKey(
+        c.env,
         userId,
         name,
       );
@@ -172,8 +174,7 @@ app.delete(
     const { keyId } = c.req.valid("param" as never) as { keyId: string };
 
     try {
-      const database = Database.getInstance(db);
-      await database.deleteApiKey(userId, keyId);
+      await deleteUserApiKey(c.env, userId, keyId);
       return c.json({ message: "API key deleted successfully" }, 200);
     } catch (error) {
       logger.error("Error deleting API key:", { error });

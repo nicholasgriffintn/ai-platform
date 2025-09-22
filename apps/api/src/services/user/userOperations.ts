@@ -128,3 +128,16 @@ export function validatePlanRequirement(
     );
   }
 }
+
+export function checkPlanRequirement(
+  user: IUser,
+  requiredPlan: string,
+): { isValid: boolean; message: string } {
+  if (user.plan_id !== requiredPlan) {
+    return {
+      isValid: false,
+      message: `User is not on ${requiredPlan} plan`,
+    };
+  }
+  return { isValid: true, message: "" };
+}

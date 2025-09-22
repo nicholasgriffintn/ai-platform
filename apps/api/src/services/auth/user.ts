@@ -1,4 +1,4 @@
-import type { Database } from "~/lib/database";
+import { Database } from "~/lib/database";
 import type { IUserSettings, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";

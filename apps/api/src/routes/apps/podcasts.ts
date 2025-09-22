@@ -3,6 +3,7 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { checkPlanRequirement } from "~/services/user/userOperations";
 import { handlePodcastGenerateImage } from "~/services/apps/podcast/generate-image";
 import { handlePodcastDetail } from "~/services/apps/podcast/get-details";
 import { handlePodcastList } from "~/services/apps/podcast/list";
@@ -66,12 +67,13 @@ app.get(
       );
     }
 
-    if (user.plan_id !== "pro") {
+    const planCheck = checkPlanRequirement(user, "pro");
+    if (!planCheck.isValid) {
       return context.json(
         {
           response: {
             status: "error",
-            message: "User is not on pro plan",
+            message: planCheck.message,
           },
         },
         401,
@@ -135,12 +137,13 @@ app.get(
       );
     }
 
-    if (user.plan_id !== "pro") {
+    const planCheck = checkPlanRequirement(user, "pro");
+    if (!planCheck.isValid) {
       return context.json(
         {
           response: {
             status: "error",
-            message: "User is not on pro plan",
+            message: planCheck.message,
           },
         },
         401,
@@ -218,12 +221,13 @@ app.post(
         );
       }
 
-      if (user.plan_id !== "pro") {
+      const planCheck = checkPlanRequirement(user, "pro");
+      if (!planCheck.isValid) {
         return context.json(
           {
             response: {
               status: "error",
-              message: "User is not on pro plan",
+              message: planCheck.message,
             },
           },
           401,
@@ -299,12 +303,13 @@ app.post(
       );
     }
 
-    if (user.plan_id !== "pro") {
+    const planCheck = checkPlanRequirement(user, "pro");
+    if (!planCheck.isValid) {
       return context.json(
         {
           response: {
             status: "error",
-            message: "User is not on pro plan",
+            message: planCheck.message,
           },
         },
         401,
@@ -360,12 +365,13 @@ app.post(
       );
     }
 
-    if (user.plan_id !== "pro") {
+    const planCheck = checkPlanRequirement(user, "pro");
+    if (!planCheck.isValid) {
       return context.json(
         {
           response: {
             status: "error",
-            message: "User is not on pro plan",
+            message: planCheck.message,
           },
         },
         401,
@@ -420,12 +426,13 @@ app.post(
       );
     }
 
-    if (user.plan_id !== "pro") {
+    const planCheck = checkPlanRequirement(user, "pro");
+    if (!planCheck.isValid) {
       return context.json(
         {
           response: {
             status: "error",
-            message: "User is not on pro plan",
+            message: planCheck.message,
           },
         },
         401,
