@@ -4,7 +4,7 @@ import { describeRoute, openAPIRouteHandler } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi";
 import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
-import { z } from "zod";
+import z from "zod/v4";
 
 import packageJson from "../package.json";
 import {

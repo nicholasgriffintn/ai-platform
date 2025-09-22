@@ -1,34 +1,12 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
-import { resolver } from "hono-openapi";
-import z from "zod/v4";
+import { resolver, validator as zValidator } from "hono-openapi";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import type { IEnv } from "~/types";
 import { AIProviderFactory } from "../lib/providers/factory";
 import { errorResponseSchema } from "./schemas/shared";
-
-const realtimeSessionResponseSchema = z.object({
-  id: z.string(),
-  object: z.string(),
-  modalities: z.array(z.string()),
-  turn_detection: z.object({
-    type: z.string(),
-    threshold: z.number(),
-    prefix_padding_ms: z.number(),
-    silence_duration_ms: z.number(),
-  }),
-  input_audio_format: z.string(),
-  input_audio_transcription: z.object({
-    model: z.string(),
-    language: z.string(),
-    language_code: z.string(),
-  }),
-  client_secret: z.object({
-    expires_at: z.number(),
-    value: z.string(),
-  }),
-});
+import { realtimeSessionResponseSchema } from "./schemas/realtime";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("realtime");
@@ -64,7 +42,7 @@ app.post(
     const env = c.env as IEnv;
     const user = c.get("user");
     const type = c.req.param("type");
-    const model = c.req.param("model") || "gpt-4o-mini-transcribe";
+    const model = c.req.query("model") || "gpt-4o-mini-transcribe";
 
     const availableModels = [
       "gpt-4o-mini-transcribe",
@@ -106,7 +84,7 @@ app.post(
       return c.json({ error: "Failed to create realtime session" }, 500);
     }
 
-    return c.json({ success: true, data: session });
+    return c.json(session);
   },
 );
 

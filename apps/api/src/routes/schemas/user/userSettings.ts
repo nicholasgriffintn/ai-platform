@@ -26,3 +26,33 @@ export const updateUserSettingsSchema = z.object({
   transcription_provider: z.string().optional(),
   transcription_model: z.string().optional(),
 });
+
+export const userModelsResponseSchema = z.object({
+  success: z.boolean(),
+  models: z.array(z.string()),
+});
+
+export const providersResponseSchema = z.object({
+  success: z.boolean(),
+  providers: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      type: z.string(),
+      enabled: z.boolean(),
+      hasApiKey: z.boolean().optional(),
+    }),
+  ),
+});
+
+export const providerSettingsSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.string(),
+  enabled: z.boolean(),
+  hasApiKey: z.boolean().optional(),
+  apiKey: z.string().optional(),
+  secretKey: z.string().optional(),
+  baseUrl: z.string().optional(),
+  customHeaders: z.record(z.string(), z.string()).optional(),
+});

@@ -66,12 +66,16 @@ export const musicGenerationSchema = z.object({
 });
 
 export const drawingSchema = z.object({
-  drawing: z.any(),
+  drawing: z.any().refine((file) => file && file instanceof File, {
+    error: "Drawing must be a valid file",
+  }),
   drawingId: z.string().optional(),
 });
 
 export const guessDrawingSchema = z.object({
-  drawing: z.any(),
+  drawing: z.any().refine((file) => file && file instanceof File, {
+    error: "Drawing must be a valid file",
+  }),
 });
 
 export const podcastTranscribeSchema = z.object({
@@ -278,17 +282,48 @@ export const weatherResponseSchema = z.object({
   }),
 });
 
+export const articleSessionSummarySchema = z.object({
+  item_id: z.string(),
+  id: z.string().optional(),
+  title: z.string(),
+  created_at: z.string(),
+  source_article_count: z.number().optional(),
+  status: z.enum(["processing", "complete"]),
+});
+
 export const listArticlesResponseSchema = z.object({
-  articles: z.array(z.any()),
+  articles: z.array(articleSessionSummarySchema),
 });
 
 export const sourceArticlesResponseSchema = z.object({
   status: z.string(),
-  articles: z.array(z.any()),
+  articles: z.array(
+    z.object({
+      id: z.string(),
+      user_id: z.number(),
+      app_id: z.string(),
+      item_id: z.string().optional(),
+      item_type: z.string().optional(),
+      data: z.string(),
+      share_id: z.string().optional(),
+      created_at: z.string(),
+      updated_at: z.string(),
+    }),
+  ),
 });
 
 export const articleDetailResponseSchema = z.object({
-  article: z.any(),
+  article: z.object({
+    id: z.string(),
+    user_id: z.number(),
+    app_id: z.string(),
+    item_id: z.string().optional(),
+    item_type: z.string().optional(),
+    data: z.string(),
+    share_id: z.string().optional(),
+    created_at: z.string(),
+    updated_at: z.string(),
+  }),
 });
 
 export const listPodcastsResponseSchema = z.object({
@@ -449,4 +484,8 @@ export const generateNotesFromMediaSchema = z.object({
 
 export const generateNotesFromMediaResponseSchema = z.object({
   content: z.string().describe("Generated notes content in Markdown."),
+});
+
+export const listDynamicAppResponsesQuerySchema = z.object({
+  appId: z.string().optional(),
 });

@@ -1,7 +1,6 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi";
-import z from "zod/v4";
 
 import { requireAdmin, requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { requireAuth } from "~/middleware/auth";
@@ -13,6 +12,10 @@ import {
 } from "~/services/admin/sharedAgents";
 import type { IEnv } from "~/types";
 import { apiResponseSchema } from "./schemas/shared";
+import {
+  setAgentFeaturedSchema,
+  moderateAgentSchema,
+} from "./schemas/shared-agents";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("admin");
@@ -20,10 +23,6 @@ const logger = createRouteLogger("admin");
 app.use("/*", async (ctx, next) => {
   logger.info(`Processing admin route: ${ctx.req.method} ${ctx.req.path}`);
   return next();
-});
-
-const setFeaturedSchema = z.object({
-  featured: z.boolean().meta({ description: "Whether to feature the agent" }),
 });
 
 app.put(
@@ -45,12 +44,12 @@ app.put(
       },
     },
   }),
-  zValidator("json", setFeaturedSchema),
+  zValidator("json", setAgentFeaturedSchema),
   async (ctx: Context) => {
     const { id } = ctx.req.param();
-    const { featured } = ctx.req.valid("json" as never) as z.infer<
-      typeof setFeaturedSchema
-    >;
+    const { featured } = ctx.req.valid("json" as never) as {
+      featured: boolean;
+    };
 
     const currentUser = ctx.get("user");
 
@@ -107,16 +106,6 @@ app.get(
   },
 );
 
-const moderateAgentSchema = z.object({
-  is_public: z
-    .boolean()
-    .meta({ description: "Whether the agent should be public" }),
-  reason: z
-    .string()
-    .optional()
-    .meta({ description: "Reason for moderation action" }),
-});
-
 app.put(
   "/shared-agents/:id/moderate",
   requireAuth,
@@ -139,9 +128,10 @@ app.put(
   zValidator("json", moderateAgentSchema),
   async (ctx: Context) => {
     const { id } = ctx.req.param();
-    const { is_public, reason } = ctx.req.valid("json" as never) as z.infer<
-      typeof moderateAgentSchema
-    >;
+    const { is_public, reason } = ctx.req.valid("json" as never) as {
+      is_public: boolean;
+      reason: string;
+    };
 
     const currentUser = ctx.get("user");
 

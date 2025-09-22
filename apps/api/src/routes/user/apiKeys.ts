@@ -1,5 +1,5 @@
 import { type Context, Hono } from "hono";
-import { validator } from "hono/validator";
+import { validator as zValidator } from "hono-openapi";
 
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi";
@@ -93,17 +93,7 @@ app.post(
       },
     },
   }),
-  validator("json", (value, _c) => {
-    const parsed = createApiKeySchema.safeParse(value);
-    if (!parsed.success) {
-      throw new AssistantError(
-        `Invalid input: ${parsed.error.message}`,
-        ErrorType.PARAMS_ERROR,
-        400,
-      );
-    }
-    return parsed.data;
-  }),
+  zValidator("json", createApiKeySchema),
   async (c: Context) => {
     const user = c.get("user");
     const userId = user.id;
@@ -156,17 +146,7 @@ app.delete(
       },
     },
   }),
-  validator("param", (value, _c) => {
-    const parsed = deleteApiKeyParamsSchema.safeParse(value);
-    if (!parsed.success) {
-      throw new AssistantError(
-        "Invalid API Key ID parameter",
-        ErrorType.PARAMS_ERROR,
-        400,
-      );
-    }
-    return parsed.data;
-  }),
+  zValidator("param", deleteApiKeyParamsSchema),
   async (c: Context) => {
     const user = c.get("user");
     const userId = user.id;

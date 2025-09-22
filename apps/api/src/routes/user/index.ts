@@ -1,7 +1,6 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi";
-import z from "zod/v4";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -19,6 +18,9 @@ import {
   storeProviderApiKeySchema,
   updateUserSettingsResponseSchema,
   updateUserSettingsSchema,
+  userModelsResponseSchema,
+  providersResponseSchema,
+  providerSettingsSchema,
 } from "../schemas/user";
 import apiKeys from "./apiKeys";
 import exportHistoryRoute from "./export-history";
@@ -31,24 +33,6 @@ app.use("/*", requireAuth);
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing user route: ${c.req.path}`);
   return next();
-});
-
-const modelsResponseSchema = z.object({
-  success: z.boolean(),
-  models: z.array(z.string()),
-});
-
-const providersResponseSchema = z.object({
-  success: z.boolean(),
-  providers: z.array(
-    z.object({
-      id: z.string(),
-      name: z.string(),
-      type: z.string(),
-      enabled: z.boolean(),
-      hasApiKey: z.boolean().optional(),
-    }),
-  ),
 });
 
 app.put(
@@ -107,9 +91,9 @@ app.put(
   }),
   zValidator("json", updateUserSettingsSchema),
   async (c: Context) => {
-    const settings = c.req.valid("json" as never) as z.infer<
-      typeof updateUserSettingsSchema
-    >;
+    const settings = c.req.valid(
+      "json" as never,
+    ) as typeof updateUserSettingsSchema;
     const user = c.get("user");
 
     if (!user) {
@@ -137,7 +121,7 @@ app.get(
         description: "List of enabled models",
         content: {
           "application/json": {
-            schema: resolver(modelsResponseSchema),
+            schema: resolver(userModelsResponseSchema),
           },
         },
       },
@@ -223,9 +207,11 @@ app.post(
   zValidator("json", storeProviderApiKeySchema),
   async (c: Context) => {
     const user = c.get("user");
-    const { providerId, apiKey, secretKey } = c.req.valid(
-      "json" as never,
-    ) as z.infer<typeof storeProviderApiKeySchema>;
+    const { providerId, apiKey, secretKey } = c.req.valid("json" as never) as {
+      providerId: string;
+      apiKey: string;
+      secretKey?: string;
+    };
 
     if (!user) {
       throw new AssistantError(
@@ -271,6 +257,7 @@ app.get(
       },
     },
   }),
+  zValidator("json", providerSettingsSchema),
   async (c: Context) => {
     const user = c.get("user");
 

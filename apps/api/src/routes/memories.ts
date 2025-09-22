@@ -1,11 +1,17 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi";
-import z from "zod/v4";
 
 import type { IEnv, IRequest } from "~/types";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { errorResponseSchema } from "./schemas/shared";
+import {
+  memoryListResponseSchema,
+  memoryGroupResponseSchema,
+  memoryGroupCreateSchema,
+  memoryGroupAddSchema,
+  memoryOperationResponseSchema,
+} from "./schemas/memories";
 import { handleCreateMemoryGroup } from "~/services/memories/createGroup";
 import { handleListMemories } from "~/services/memories/listMemories";
 import { handleAddMemoriesToGroup } from "~/services/memories/addMemoriesToGroup";
@@ -27,30 +33,7 @@ app.get(
         description: "List of user memories",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                memories: z.array(
-                  z.object({
-                    id: z.string(),
-                    text: z.string(),
-                    category: z.string(),
-                    created_at: z.string(),
-                    group_id: z.string().nullable(),
-                    group_title: z.string().nullable(),
-                  }),
-                ),
-                groups: z.array(
-                  z.object({
-                    id: z.string(),
-                    title: z.string(),
-                    description: z.string().nullable(),
-                    category: z.string().nullable(),
-                    member_count: z.number(),
-                    created_at: z.string(),
-                  }),
-                ),
-              }),
-            ),
+            schema: resolver(memoryListResponseSchema),
           },
         },
       },
@@ -98,15 +81,7 @@ app.post(
         description: "Group created successfully",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                id: z.string(),
-                title: z.string(),
-                description: z.string().nullable(),
-                category: z.string().nullable(),
-                created_at: z.string(),
-              }),
-            ),
+            schema: resolver(memoryGroupResponseSchema),
           },
         },
       },
@@ -120,20 +95,13 @@ app.post(
       },
     },
   }),
-  zValidator(
-    "json",
-    z.object({
-      title: z.string().min(1).max(100),
-      description: z.string().max(500).optional(),
-      category: z
-        .enum(["fact", "preference", "schedule", "general", "snapshot"])
-        .optional(),
-    }),
-  ),
+  zValidator("json", memoryGroupCreateSchema),
   async (context: Context) => {
     try {
       const userContext = context.get("user");
-      const body = context.req.valid("json" as never) as {
+      const { title, description, category } = context.req.valid(
+        "json" as never,
+      ) as {
         title: string;
         description?: string;
         category?: string;
@@ -146,9 +114,9 @@ app.post(
       const result = await handleCreateMemoryGroup(
         context.env as IEnv,
         userContext,
-        body.title,
-        body.description,
-        body.category,
+        title,
+        description,
+        category,
       );
 
       return context.json(result, 201);
@@ -170,12 +138,7 @@ app.post(
         description: "Memories added to group",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                success: z.boolean(),
-                added_count: z.number(),
-              }),
-            ),
+            schema: resolver(memoryOperationResponseSchema),
           },
         },
       },
@@ -189,17 +152,12 @@ app.post(
       },
     },
   }),
-  zValidator(
-    "json",
-    z.object({
-      memory_ids: z.array(z.string()).min(1),
-    }),
-  ),
+  zValidator("json", memoryGroupAddSchema),
   async (context: Context) => {
     try {
       const userContext = context.get("user");
       const groupId = context.req.param("group_id");
-      const body = context.req.valid("json" as never) as {
+      const { memory_ids } = context.req.valid("json" as never) as {
         memory_ids: string[];
       };
 
@@ -211,7 +169,7 @@ app.post(
         context.env as IEnv,
         userContext,
         groupId,
-        body.memory_ids,
+        memory_ids,
       );
 
       return context.json(result);
@@ -233,12 +191,7 @@ app.delete(
         description: "Memory deleted successfully",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                success: z.boolean(),
-                deleted_from_groups: z.number(),
-              }),
-            ),
+            schema: resolver(memoryOperationResponseSchema),
           },
         },
       },
@@ -286,11 +239,7 @@ app.delete(
         description: "Group deleted successfully",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                success: z.boolean(),
-              }),
-            ),
+            schema: resolver(memoryOperationResponseSchema),
           },
         },
       },

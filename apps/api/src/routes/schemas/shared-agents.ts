@@ -100,3 +100,17 @@ export const agentRatingsSchema = z.object({
     .optional()
     .meta({ description: "Number of ratings to return" }),
 });
+
+export const setAgentFeaturedSchema = z.object({
+  featured: z.boolean().meta({ description: "Whether to feature the agent" }),
+});
+
+export const moderateAgentSchema = z.object({
+  is_public: z
+    .boolean()
+    .meta({ description: "Whether the agent should be public" }),
+  reason: z
+    .string()
+    .optional()
+    .meta({ description: "Reason for moderation action" }),
+});

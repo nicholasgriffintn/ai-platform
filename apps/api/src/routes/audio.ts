@@ -51,20 +51,20 @@ app.post(
   zValidator("query", transcribeQuerySchema),
   zValidator("form", transcribeFormSchema),
   async (context: Context) => {
-    const query = context.req.valid("query" as never) as {
+    const { provider, timestamps } = context.req.valid("query" as never) as {
       provider?: "workers" | "mistral";
       timestamps?: boolean;
     };
-    const body = context.req.valid("form" as never) as {
+    const { audio } = context.req.valid("form" as never) as {
       audio: File | Blob | string;
     };
     const user = context.get("user");
 
     const response = await handleTranscribe({
       env: context.env as IEnv,
-      audio: body.audio,
-      provider: query.provider,
-      timestamps: query.timestamps === true,
+      audio,
+      provider,
+      timestamps: timestamps === true,
       user,
     });
 
@@ -100,7 +100,7 @@ app.post(
   }),
   zValidator("json", textToSpeechSchema),
   async (context: Context) => {
-    const body = context.req.valid("json" as never) as {
+    const { input, provider } = context.req.valid("json" as never) as {
       input: string;
       provider?: "polly" | "cartesia" | "elevenlabs";
     };
@@ -108,8 +108,8 @@ app.post(
 
     const response = await handleTextToSpeech({
       env: context.env as IEnv,
-      input: body.input,
-      provider: body.provider,
+      input,
+      provider,
       user,
     });
 

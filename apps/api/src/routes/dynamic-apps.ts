@@ -1,6 +1,6 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
-import { resolver } from "hono-openapi";
+import { resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
 
 import { requireAuth } from "~/middleware/auth";
@@ -19,7 +19,10 @@ import type { IEnv } from "~/types/shared";
 import { getLogger } from "~/utils/logger";
 import type { IUser } from "../types";
 import { appDataSchema } from "./schemas/app-data";
-import { appInfoSchema } from "./schemas/apps";
+import {
+  appInfoSchema,
+  listDynamicAppResponsesQuerySchema,
+} from "./schemas/apps";
 import { errorResponseSchema } from "./schemas/shared";
 
 const logger = getLogger({ prefix: "routes/dynamic-apps" });
@@ -70,14 +73,6 @@ dynamicApps.get(
   describeRoute({
     summary: "List stored dynamic-app responses for user",
     tags: ["Dynamic Apps"],
-    parameters: [
-      {
-        name: "appId",
-        in: "query",
-        required: false,
-        schema: { type: "string" },
-      },
-    ],
     responses: {
       200: {
         description: "Array of responses",
@@ -95,9 +90,12 @@ dynamicApps.get(
       },
     },
   }),
+  zValidator("query", listDynamicAppResponsesQuerySchema),
   async (c: Context) => {
     const user = c.get("user") as IUser;
-    const appId = c.req.query("appId");
+    const { appId } = c.req.valid("query" as never) as {
+      appId?: string;
+    };
 
     const list = await listDynamicAppResponsesForUser(
       c.env as IEnv,

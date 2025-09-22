@@ -31,38 +31,6 @@ app.post(
     summary: "Handle Replicate webhook",
     description:
       "Process webhook callbacks from Replicate for asynchronous model runs",
-    parameters: [
-      {
-        name: "completion_id",
-        in: "query",
-        required: true,
-        schema: { type: "string" },
-        description: "The ID of the completion to update",
-      },
-    ],
-    requestBody: {
-      description: "Webhook data from Replicate",
-      required: true,
-      content: {
-        "application/json": {
-          schema: {
-            type: "object",
-            properties: {
-              id: { type: "string" },
-              status: { type: "string" },
-              output: { type: "object", additionalProperties: true },
-              error: { type: "string" },
-              logs: { type: "string" },
-              metrics: {
-                type: "object",
-                additionalProperties: true,
-              },
-            },
-            required: ["id", "status"],
-          },
-        },
-      },
-    },
     responses: {
       200: {
         description: "Webhook processed successfully",

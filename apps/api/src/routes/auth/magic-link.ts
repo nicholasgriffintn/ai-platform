@@ -20,19 +20,6 @@ app.post(
   describeRoute({
     tags: ["auth"],
     summary: "Request a magic login link",
-    requestBody: {
-      content: {
-        "application/json": {
-          schema: {
-            type: "object",
-            properties: {
-              email: { type: "string", format: "email" },
-            },
-            required: ["email"],
-          },
-        },
-      },
-    },
     responses: {
       200: {
         description: "Magic link email sent successfully",
@@ -80,20 +67,6 @@ app.post(
   describeRoute({
     tags: ["auth"],
     summary: "Verify magic link token and nonce, logs user in",
-    requestBody: {
-      content: {
-        "application/json": {
-          schema: {
-            type: "object",
-            properties: {
-              token: { type: "string" },
-              nonce: { type: "string" },
-            },
-            required: ["token", "nonce"],
-          },
-        },
-      },
-    },
     responses: {
       200: {
         description: "Login successful",

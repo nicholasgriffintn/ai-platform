@@ -63,7 +63,7 @@ app.post(
   }),
   zValidator("json", searchWebSchema),
   async (context: Context) => {
-    const body = context.req.valid("json" as never) as {
+    const { query, provider, options } = context.req.valid("json" as never) as {
       query: string;
       provider?: "serper" | "tavily";
       options?: SearchOptions;
@@ -72,10 +72,10 @@ app.post(
 
     const response = await handleWebSearch({
       env: context.env as IEnv,
-      query: body.query,
+      query,
       user,
-      provider: body.provider,
-      options: body.options,
+      provider,
+      options,
     });
 
     return context.json(response);

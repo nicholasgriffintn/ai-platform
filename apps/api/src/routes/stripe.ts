@@ -29,23 +29,6 @@ app.post(
   describeRoute({
     tags: ["stripe"],
     summary: "Create a Stripe Checkout Session for a subscription",
-    requestBody: {
-      description: "Plan selection and redirect URLs",
-      required: true,
-      content: {
-        "application/json": {
-          schema: {
-            type: "object",
-            properties: {
-              plan_id: { type: "string" },
-              success_url: { type: "string", format: "uri" },
-              cancel_url: { type: "string", format: "uri" },
-            },
-            required: ["plan_id", "success_url", "cancel_url"],
-          },
-        },
-      },
-    },
     responses: {
       200: {
         description: "Stripe Checkout Session created",
@@ -70,7 +53,11 @@ app.post(
   async (c: Context) => {
     const { plan_id, success_url, cancel_url } = c.req.valid(
       "json" as never,
-    ) as z.infer<typeof checkoutSchema>;
+    ) as {
+      plan_id: string;
+      success_url: string;
+      cancel_url: string;
+    };
 
     const user = c.get("user");
     if (!user?.id) {

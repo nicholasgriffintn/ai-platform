@@ -5,7 +5,7 @@ export const createApiKeySchema = z.object({
 });
 
 export const deleteApiKeyParamsSchema = z.object({
-  keyId: z.uuid(),
+  keyId: z.string(),
 });
 
 export const storeProviderApiKeySchema = z.object({

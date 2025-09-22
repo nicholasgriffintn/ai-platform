@@ -1,6 +1,6 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
-import { resolver } from "hono-openapi";
+import { resolver, validator as zValidator } from "hono-openapi";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
@@ -9,10 +9,28 @@ import {
 } from "~/services/apps/retrieval/hackernews";
 import type { IEnv, IUser } from "~/types";
 import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
+import z from "zod/v4";
 
 const app = new Hono();
 
 const routeLogger = createRouteLogger("apps/retrieval");
+
+const hackerNewsQuerySchema = z.object({
+  count: z
+    .string()
+    .optional()
+    .transform((s) => {
+      const n = Number(s || "10");
+      if (isNaN(n) || n <= 0 || n > 100) {
+        throw new Error("Count must be between 1 and 100");
+      }
+      return n;
+    }),
+  character: z
+    .string()
+    .optional()
+    .transform((s) => s || "normal"),
+});
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing apps route: ${c.req.path}`);
@@ -43,9 +61,12 @@ app.get(
       },
     },
   }),
+  zValidator("query", hackerNewsQuerySchema),
   async (context: Context) => {
-    const count = Number(context.req.query("count") || 10);
-    const character = context.req.query("character") || "normal";
+    const { count, character } = context.req.valid("query" as never) as {
+      count: number;
+      character: string;
+    };
 
     const stories = await retrieveHackerNewsTopStories({
       count,

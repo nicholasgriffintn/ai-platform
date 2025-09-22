@@ -45,15 +45,6 @@ app.get(
   describeRoute({
     tags: ["plans"],
     summary: "Get subscription plan",
-    parameters: [
-      {
-        name: "id",
-        in: "path",
-        required: true,
-        schema: { type: "string" },
-        description: "Plan ID",
-      },
-    ],
     responses: {
       200: {
         description: "Plan found",
