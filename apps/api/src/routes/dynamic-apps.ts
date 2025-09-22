@@ -5,14 +5,16 @@ import z from "zod/v4";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
 import {
   executeDynamicApp,
   getDynamicAppById,
   getDynamicApps,
+  listDynamicAppResponsesForUser,
+  getDynamicAppResponseById,
 } from "~/services/dynamic-apps";
 import { appSchema } from "~/types/app-schema";
 import type { IRequest } from "~/types/chat";
+import type { IEnv } from "~/types/shared";
 import { getLogger } from "~/utils/logger";
 import type { IUser } from "../types";
 import { appDataSchema } from "./schemas/app-data";
@@ -96,8 +98,11 @@ dynamicApps.get(
     const user = c.get("user") as IUser;
     const appId = c.req.query("appId");
 
-    const repo = new DynamicAppResponseRepository(c.env);
-    const list = await repo.listResponsesForUser(user.id, appId);
+    const list = await listDynamicAppResponsesForUser(
+      c.env as IEnv,
+      user.id,
+      appId,
+    );
     return c.json(list);
   },
 );
@@ -343,8 +348,7 @@ dynamicApps.get(
     if (!responseId) {
       return c.json({ error: "responseId is required" }, 400);
     }
-    const repo = new DynamicAppResponseRepository(c.env);
-    const data = await repo.getResponseById(responseId);
+    const data = await getDynamicAppResponseById(c.env as IEnv, responseId);
     if (!data) {
       return c.json({ error: "Response not found" }, 404);
     }

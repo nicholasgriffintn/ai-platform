@@ -10,7 +10,7 @@ import {
   setAgentFeaturedStatus,
   moderateAgent,
   getAllSharedAgentsForAdmin,
-} from "~/services/admin";
+} from "~/services/admin/sharedAgents";
 import type { IEnv } from "~/types";
 import { apiResponseSchema } from "./schemas/shared";
 

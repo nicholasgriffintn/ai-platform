@@ -133,3 +133,32 @@ export async function summariseArticle({
     );
   }
 }
+
+/**
+ * Clean up existing article analyses and summaries for a session
+ * @param env The environment
+ * @param userId The user ID
+ * @param itemId The article item ID
+ */
+export const cleanupArticleSession = async (
+  env: IEnv,
+  userId: number,
+  itemId: string,
+): Promise<void> => {
+  const appDataRepo = new AppDataRepository(env);
+
+  // Clean up existing analyses and summaries
+  await appDataRepo.deleteAppDataByUserAppAndItem(
+    userId,
+    "articles",
+    itemId,
+    "analysis",
+  );
+
+  await appDataRepo.deleteAppDataByUserAppAndItem(
+    userId,
+    "articles",
+    itemId,
+    "summary",
+  );
+};

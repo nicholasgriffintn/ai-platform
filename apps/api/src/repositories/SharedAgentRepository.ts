@@ -123,7 +123,11 @@ export class SharedAgentRepository extends BaseRepository {
     filters: SharedAgentFilters = {},
   ): Promise<SharedAgentWithAuthor[]> {
     let query = `
-      SELECT sa.*, u.name as author_name, u.avatar_url as author_avatar_url
+      SELECT
+        sa.id, sa.agent_id, sa.user_id, sa.name, sa.description, sa.avatar_url,
+        sa.category, sa.tags, sa.is_featured, sa.is_public, sa.usage_count,
+        sa.rating_count, sa.rating_average, sa.template_data, sa.created_at, sa.updated_at,
+        u.name as author_name, u.avatar_url as author_avatar_url
       FROM shared_agents sa
       JOIN user u ON sa.user_id = u.id
       WHERE sa.is_public = 1
@@ -187,7 +191,11 @@ export class SharedAgentRepository extends BaseRepository {
     id: string,
   ): Promise<SharedAgentWithAuthor | null> {
     return this.runQuery<SharedAgentWithAuthor>(
-      `SELECT sa.*, u.name as author_name, u.avatar_url as author_avatar_url
+      `SELECT
+         sa.id, sa.agent_id, sa.user_id, sa.name, sa.description, sa.avatar_url,
+         sa.category, sa.tags, sa.is_featured, sa.is_public, sa.usage_count,
+         sa.rating_count, sa.rating_average, sa.template_data, sa.created_at, sa.updated_at,
+         u.name as author_name, u.avatar_url as author_avatar_url
        FROM shared_agents sa
        JOIN user u ON sa.user_id = u.id
        WHERE sa.id = ?`,
@@ -200,7 +208,11 @@ export class SharedAgentRepository extends BaseRepository {
     agentId: string,
   ): Promise<SharedAgent | null> {
     return this.runQuery<SharedAgent>(
-      "SELECT * FROM shared_agents WHERE agent_id = ?",
+      `SELECT
+         id, agent_id, user_id, name, description, avatar_url,
+         category, tags, is_featured, is_public, usage_count,
+         rating_count, rating_average, template_data, created_at, updated_at
+       FROM shared_agents WHERE agent_id = ?`,
       [agentId],
       true,
     );
@@ -210,7 +222,11 @@ export class SharedAgentRepository extends BaseRepository {
     filters: SharedAgentFilters = {},
   ): Promise<SharedAgentWithAuthor[]> {
     let query = `
-      SELECT sa.*, u.name as author_name, u.avatar_url as author_avatar_url
+      SELECT
+        sa.id, sa.agent_id, sa.user_id, sa.name, sa.description, sa.avatar_url,
+        sa.category, sa.tags, sa.is_featured, sa.is_public, sa.usage_count,
+        sa.rating_count, sa.rating_average, sa.template_data, sa.created_at, sa.updated_at,
+        u.name as author_name, u.avatar_url as author_avatar_url
       FROM shared_agents sa
       JOIN user u ON sa.user_id = u.id
     `;
@@ -632,3 +648,6 @@ export class SharedAgentRepository extends BaseRepository {
       .map(([tag]) => tag);
   }
 }
+
+// Re-export types for use in services
+export type { SharedAgent, AgentInstall, AgentRating };

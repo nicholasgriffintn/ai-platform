@@ -1,5 +1,4 @@
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { SharedAgentRepository } from "~/repositories/SharedAgentRepository";
 import { UserRepository } from "~/repositories/UserRepository";
@@ -59,7 +58,7 @@ export async function setAgentFeaturedStatus(
             agentName: sharedAgent.name,
             agentId: sharedAgent.id,
             isFeatured: featured,
-            moderatorName: moderator.name,
+            moderatorName: moderator?.name || "Admin",
           },
         );
       }
@@ -119,7 +118,7 @@ export async function moderateAgent(
           agentId: sharedAgent.id,
           isApproved: isPublic,
           reason,
-          moderatorName: moderator.name,
+          moderatorName: moderator?.name || "Admin",
         },
       );
     }

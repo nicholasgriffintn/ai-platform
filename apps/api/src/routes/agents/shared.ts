@@ -5,7 +5,24 @@ import type z from "zod/v4";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { SharedAgentRepository } from "~/repositories/SharedAgentRepository";
+import {
+  getSharedAgents,
+  getFeaturedAgents,
+  getSharedAgentById,
+  getSharedAgentByAgentId,
+  getAllSharedAgentsForAdmin,
+  installSharedAgent,
+  uninstallSharedAgent,
+  rateSharedAgent,
+  getSharedAgentRatings,
+  updateSharedAgent,
+  deleteSharedAgent,
+  setFeaturedStatus,
+  moderateSharedAgent,
+  getSharedAgentCategories,
+  getSharedAgentPopularTags,
+  shareAgent,
+} from "~/services/agents/shared";
 import type { IEnv } from "~/types";
 import { apiResponseSchema } from "../schemas/shared";
 import {
@@ -51,8 +68,7 @@ app.get(
       typeof sharedAgentFiltersSchema
     >;
 
-    const repo = new SharedAgentRepository(ctx.env);
-    const agents = await repo.getSharedAgents({
+    const agents = await getSharedAgents(ctx.env, {
       category: filters.category,
       tags: filters.tags,
       search: filters.search,
@@ -92,8 +108,7 @@ app.get(
       typeof featuredAgentsSchema
     >;
 
-    const repo = new SharedAgentRepository(ctx.env);
-    const agents = await repo.getFeaturedAgents(limit);
+    const agents = await getFeaturedAgents(ctx.env, limit);
 
     return ctx.json({
       status: "success",
@@ -120,8 +135,7 @@ app.get(
     },
   }),
   async (ctx: Context) => {
-    const repo = new SharedAgentRepository(ctx.env);
-    const categories = await repo.getCategories();
+    const categories = await getSharedAgentCategories(ctx.env);
 
     return ctx.json({
       status: "success",
@@ -148,8 +162,7 @@ app.get(
     },
   }),
   async (ctx: Context) => {
-    const repo = new SharedAgentRepository(ctx.env);
-    const tags = await repo.getPopularTags();
+    const tags = await getSharedAgentPopularTags(ctx.env);
 
     return ctx.json({
       status: "success",
@@ -178,8 +191,7 @@ app.get(
   async (ctx: Context) => {
     const { id } = ctx.req.param();
 
-    const repo = new SharedAgentRepository(ctx.env);
-    const agent = await repo.getSharedAgentById(id);
+    const agent = await getSharedAgentById(ctx.env, id);
 
     if (!agent) {
       return ctx.json(
@@ -230,10 +242,8 @@ app.post(
       );
     }
 
-    const repo = new SharedAgentRepository(ctx.env);
-
     try {
-      const result = await repo.installAgent(user.id, id);
+      const result = await installSharedAgent(ctx.env, user.id, id);
 
       return ctx.json({
         status: "success",
@@ -288,10 +298,9 @@ app.post(
       );
     }
 
-    const repo = new SharedAgentRepository(ctx.env);
-
     try {
-      const rating = await repo.rateAgent(
+      const rating = await rateSharedAgent(
+        ctx.env,
         user.id,
         id,
         body.rating,
@@ -339,8 +348,7 @@ app.get(
       typeof agentRatingsSchema
     >;
 
-    const repo = new SharedAgentRepository(ctx.env);
-    const ratings = await repo.getAgentRatings(id, limit);
+    const ratings = await getSharedAgentRatings(ctx.env, id, limit);
 
     return ctx.json({
       status: "success",
@@ -382,8 +390,7 @@ app.get(
       );
     }
 
-    const repo = new SharedAgentRepository(ctx.env);
-    const sharedAgent = await repo.getSharedAgentByAgentId(agentId);
+    const sharedAgent = await getSharedAgentByAgentId(ctx.env, agentId);
 
     return ctx.json({
       status: "success",
@@ -430,10 +437,8 @@ app.post(
       );
     }
 
-    const repo = new SharedAgentRepository(ctx.env);
-
     try {
-      const sharedAgent = await repo.shareAgent(user.id, {
+      const sharedAgent = await shareAgent(ctx.env, user.id, {
         agentId: body.agent_id,
         name: body.name,
         description: body.description,
@@ -495,10 +500,8 @@ app.put(
       );
     }
 
-    const repo = new SharedAgentRepository(ctx.env);
-
     try {
-      await repo.updateSharedAgent(user.id, id, body);
+      await updateSharedAgent(ctx.env, user.id, id, body);
 
       return ctx.json({
         status: "success",
@@ -550,10 +553,8 @@ app.delete(
       );
     }
 
-    const repo = new SharedAgentRepository(ctx.env);
-
     try {
-      await repo.deleteSharedAgent(user.id, id);
+      await deleteSharedAgent(ctx.env, user.id, id);
 
       return ctx.json({
         status: "success",

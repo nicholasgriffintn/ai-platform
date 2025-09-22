@@ -4,13 +4,15 @@ import { resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { AppDataRepository } from "~/repositories";
 import { analyseArticle } from "~/services/apps/articles/analyse";
 import { generateArticlesReport } from "~/services/apps/articles/generate-report";
 import { getArticleDetails } from "~/services/apps/articles/get-details";
 import { getSourceArticles } from "~/services/apps/articles/get-source-articles";
 import { listArticles } from "~/services/apps/articles/list";
-import { summariseArticle } from "~/services/apps/articles/summarise";
+import {
+  summariseArticle,
+  cleanupArticleSession,
+} from "~/services/apps/articles/summarise";
 import { extractContent } from "~/services/apps/retrieval/content-extract";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -721,22 +723,7 @@ app.post(
 
     try {
       // Delete existing analyses and summaries for this session
-      const appDataRepo = new AppDataRepository(context.env as IEnv);
-
-      // Clean up existing analyses and summaries
-      await appDataRepo.deleteAppDataByUserAppAndItem(
-        user.id,
-        "articles",
-        itemId,
-        "analysis",
-      );
-
-      await appDataRepo.deleteAppDataByUserAppAndItem(
-        user.id,
-        "articles",
-        itemId,
-        "summary",
-      );
+      await cleanupArticleSession(context.env as IEnv, user.id, itemId);
 
       return context.json({
         status: "success",

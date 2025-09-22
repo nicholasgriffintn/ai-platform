@@ -14,7 +14,7 @@ export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<
     [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>;
   }[Keys];
 
-export interface IEnv {
+export type IEnv = {
   ANALYTICS: AnalyticsEngineDataset;
   AI: Ai;
   VECTOR_DB: Vectorize;
@@ -82,4 +82,4 @@ export interface IEnv {
   ENV?: string;
   EMBEDDINGS_OUTPUT_BUCKET_OWNER?: string;
   EMBEDDINGS_OUTPUT_BUCKET?: string;
-}
+};

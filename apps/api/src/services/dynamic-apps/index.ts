@@ -3,7 +3,8 @@ import { Database } from "~/lib/database";
 import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
 import { handleFunctions } from "~/services/functions";
 import type { AppSchema } from "~/types/app-schema";
-import type { IRequest } from "~/types/chat";
+import type { IRequest, IEnv } from "~/types";
+import type { AppData } from "~/repositories/AppDataRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
@@ -106,8 +107,7 @@ export const executeDynamicApp = async (
 
       let response_id: string | undefined;
       if (user?.id) {
-        const responseRepo = new DynamicAppResponseRepository(env);
-        const saved = await responseRepo.createResponse(user.id, id, {
+        const saved = await createDynamicAppResponse(env, user.id, id, {
           formData,
           result: functionResult,
         });
@@ -324,4 +324,52 @@ const validateField = (
       }
       break;
   }
+};
+
+/**
+ * Create a response for a dynamic app execution
+ * @param env The environment
+ * @param userId The user ID
+ * @param appId The app ID
+ * @param payload The response payload
+ * @returns The created response
+ */
+export const createDynamicAppResponse = async (
+  env: IEnv,
+  userId: number,
+  appId: string,
+  payload: Record<string, any>,
+): Promise<AppData> => {
+  const repo = new DynamicAppResponseRepository(env);
+  return repo.createResponse(userId, appId, payload);
+};
+
+/**
+ * Get a dynamic app response by ID
+ * @param env The environment
+ * @param responseId The response ID
+ * @returns The response data or null if not found
+ */
+export const getDynamicAppResponseById = async (
+  env: IEnv,
+  responseId: string,
+): Promise<AppData | null> => {
+  const repo = new DynamicAppResponseRepository(env);
+  return repo.getResponseById(responseId);
+};
+
+/**
+ * List dynamic app responses for a user
+ * @param env The environment
+ * @param userId The user ID
+ * @param appId Optional app ID to filter by
+ * @returns Array of response data
+ */
+export const listDynamicAppResponsesForUser = async (
+  env: IEnv,
+  userId: number,
+  appId?: string,
+): Promise<AppData[]> => {
+  const repo = new DynamicAppResponseRepository(env);
+  return repo.listResponsesForUser(userId, appId);
 };
