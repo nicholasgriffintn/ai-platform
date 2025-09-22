@@ -10,6 +10,7 @@ import {
   delegateToTeamMemberByRole,
   getTeamMembers,
 } from "~/services/functions/teamDelegation";
+import { AgentRepository } from "~/repositories/AgentRepository";
 import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -231,7 +232,6 @@ function setupTeamDelegationTools(agent: any) {
 }
 
 async function getValidatedAgent(env: IEnv, agentId: string, userId?: number) {
-  const { AgentRepository } = await import("~/repositories/AgentRepository");
   const repo = new AgentRepository(env);
   const agent = await repo.getAgentById(agentId);
 

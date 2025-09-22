@@ -1,4 +1,3 @@
-import { Octokit } from "@octokit/rest";
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi";
@@ -7,13 +6,18 @@ import z from "zod/v4";
 import { Database } from "~/lib/database";
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { generateJwtToken } from "~/services/auth/jwt";
+import { getUserSettings } from "~/services/auth/user";
 import {
-  createOrUpdateGithubUser,
-  createSession,
-  deleteSession,
-  getUserSettings,
-} from "~/services/auth/user";
+  handleGitHubOAuthCallback,
+  getGitHubAuthUrl,
+} from "~/services/auth/github";
+import {
+  handleLogout,
+  generateUserToken,
+  extractSessionIdFromCookies,
+  createLogoutCookie,
+  createSessionCookie,
+} from "~/services/auth/sessions";
 import type { AnonymousUser, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -73,14 +77,7 @@ app.get(
   }),
   zValidator("query", githubLoginSchema),
   async (c: Context) => {
-    if (!c.env.GITHUB_CLIENT_ID) {
-      throw new AssistantError(
-        "Missing GitHub OAuth configuration",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
-
-    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${c.env.GITHUB_CLIENT_ID}&scope=user:email`;
+    const githubAuthUrl = getGitHubAuthUrl(c.env);
     return c.redirect(githubAuthUrl);
   },
 );
@@ -120,100 +117,14 @@ app.get(
   }),
   zValidator("query", githubCallbackSchema),
   async (c: Context) => {
-    try {
-      const { code } = c.req.valid("query" as never) as { code: string };
+    const { code } = c.req.valid("query" as never) as { code: string };
 
-      if (!c.env.GITHUB_CLIENT_ID || !c.env.GITHUB_CLIENT_SECRET) {
-        throw new AssistantError(
-          "Missing GitHub OAuth configuration",
-          ErrorType.CONFIGURATION_ERROR,
-        );
-      }
+    const { user, sessionId } = await handleGitHubOAuthCallback(c.env, code);
 
-      const tokenResponse = await fetch(
-        "https://github.com/login/oauth/access_token",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            client_id: c.env.GITHUB_CLIENT_ID,
-            client_secret: c.env.GITHUB_CLIENT_SECRET,
-            code,
-          }),
-        },
-      );
+    c.header("Set-Cookie", createSessionCookie(sessionId));
 
-      const tokenData = (await tokenResponse.json()) as {
-        access_token: string;
-        scope: string;
-        token_type: string;
-        error?: string;
-        error_description?: string;
-      };
-
-      if (tokenData.error) {
-        throw new AssistantError(
-          `GitHub OAuth error: ${tokenData.error_description}`,
-          ErrorType.AUTHENTICATION_ERROR,
-        );
-      }
-
-      const accessToken = tokenData.access_token;
-
-      const octokit = new Octokit({
-        auth: accessToken,
-      });
-      const { data: githubUser } = await octokit.users.getAuthenticated();
-
-      const { data: emails } =
-        await octokit.users.listEmailsForAuthenticatedUser();
-      const primaryEmail =
-        emails.find((email) => email.primary)?.email || emails[0]?.email;
-
-      if (!primaryEmail) {
-        throw new AssistantError(
-          "Could not retrieve email from GitHub account",
-          ErrorType.AUTHENTICATION_ERROR,
-        );
-      }
-
-      const database = Database.getInstance(c.env);
-
-      const user = await createOrUpdateGithubUser(database, {
-        githubId: githubUser.id.toString(),
-        username: githubUser.login,
-        email: primaryEmail,
-        name: githubUser.name || undefined,
-        avatar_url: githubUser.avatar_url,
-        company: githubUser.company || undefined,
-        location: githubUser.location || undefined,
-        bio: githubUser.bio || undefined,
-        twitter_username: githubUser.twitter_username || undefined,
-        site: githubUser.blog || undefined,
-      });
-
-      const sessionId = await createSession(database, user.id);
-
-      c.header(
-        "Set-Cookie",
-        `session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`,
-      ); // 7 days
-
-      const redirectUri = `${c.env.APP_BASE_URL}/auth/callback`;
-      return c.redirect(redirectUri);
-    } catch (error: any) {
-      if (error instanceof AssistantError) {
-        throw error;
-      }
-
-      throw new AssistantError(
-        `GitHub authentication failed: ${error.message}`,
-        ErrorType.AUTHENTICATION_ERROR,
-      );
-    }
+    const redirectUri = `${c.env.APP_BASE_URL}/auth/callback`;
+    return c.redirect(redirectUri);
   },
 );
 
@@ -300,19 +211,11 @@ app.post(
   }),
   async (c: Context) => {
     const cookies = c.req.header("Cookie") || "";
-    const sessionMatch = cookies.match(/session=([^;]+)/);
-    const sessionId = sessionMatch ? sessionMatch[1] : null;
+    const sessionId = extractSessionIdFromCookies(cookies);
 
-    if (sessionId) {
-      const database = Database.getInstance(c.env);
+    await handleLogout(c.env, sessionId);
 
-      await deleteSession(database, sessionId);
-
-      c.header(
-        "Set-Cookie",
-        "session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0",
-      );
-    }
+    c.header("Set-Cookie", createLogoutCookie());
 
     return c.json({
       success: true,
@@ -354,13 +257,6 @@ app.get(
   }),
   requireAuth,
   async (c: Context) => {
-    if (!c.env.JWT_SECRET) {
-      throw new AssistantError(
-        "JWT authentication not configured",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
-
     const user = c.get("user");
 
     if (!user) {
@@ -370,49 +266,18 @@ app.get(
       );
     }
 
-    const database = Database.getInstance(c.env);
     const cookies = c.req.header("Cookie") || "";
-    const sessionMatch = cookies.match(/session=([^;]+)/);
-    const sessionId = sessionMatch ? sessionMatch[1] : null;
+    const sessionId = extractSessionIdFromCookies(cookies);
 
-    let token: string;
-    let expiresIn: number;
-
-    if (sessionId) {
-      const sessionData = await database.getSessionWithJwt(sessionId);
-
-      if (sessionData?.jwt_token && sessionData?.jwt_expires_at) {
-        const jwtExpiresAt = new Date(sessionData.jwt_expires_at);
-        const now = new Date();
-        const minutesRemaining = Math.floor(
-          (jwtExpiresAt.getTime() - now.getTime()) / (1000 * 60),
-        );
-
-        if (minutesRemaining > 5) {
-          expiresIn = Math.floor(
-            (jwtExpiresAt.getTime() - now.getTime()) / 1000,
-          );
-          return c.json({
-            token: sessionData.jwt_token,
-            expires_in: expiresIn,
-            token_type: "Bearer",
-          });
-        }
-      }
-
-      expiresIn = 60 * 15; // 15 minutes in seconds
-      token = await generateJwtToken(user, c.env.JWT_SECRET, expiresIn);
-      const jwtExpiresAt = new Date(Date.now() + expiresIn * 1000);
-
-      await database.updateSessionJwt(sessionId, token, jwtExpiresAt);
-    } else {
-      expiresIn = 60 * 15; // 15 minutes in seconds
-      token = await generateJwtToken(user, c.env.JWT_SECRET, expiresIn);
-    }
+    const { token, expires_in } = await generateUserToken(
+      c.env,
+      user,
+      sessionId,
+    );
 
     return c.json({
       token,
-      expires_in: expiresIn,
+      expires_in: expires_in,
       token_type: "Bearer",
     });
   },

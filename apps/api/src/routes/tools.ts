@@ -3,7 +3,7 @@ import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { availableFunctions } from "~/services/functions";
+import { getAvailableTools } from "~/services/tools/toolsOperations";
 import { errorResponseSchema } from "./schemas/shared";
 import { toolsResponseSchema } from "./schemas/tools";
 
@@ -40,17 +40,11 @@ app.get(
     },
   }),
   async (context: Context) => {
-    const toolIds = availableFunctions.map((tool) => {
-      return {
-        id: tool.name,
-        name: tool.name,
-        description: tool.description,
-      };
-    });
+    const tools = getAvailableTools();
     return context.json({
       success: true,
       message: "Tools fetched successfully",
-      data: toolIds,
+      data: tools,
     });
   },
 );

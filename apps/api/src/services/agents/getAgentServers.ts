@@ -1,5 +1,6 @@
 import { MCPClientManager } from "agents/mcp/client";
 
+import { AgentRepository } from "~/repositories/AgentRepository";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -77,7 +78,6 @@ export async function getAgentServers(
 }
 
 async function getValidatedAgent(env: IEnv, agentId: string, userId: number) {
-  const { AgentRepository } = await import("~/repositories/AgentRepository");
   const repo = new AgentRepository(env);
   const agent = await repo.getAgentById(agentId);
 

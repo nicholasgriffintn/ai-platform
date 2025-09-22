@@ -3,10 +3,16 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
 
-import { KVCache } from "~/lib/cache";
-import { Database } from "~/lib/database";
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { validatePlanRequirement } from "~/services/user/userOperations";
+import {
+  updateUserSettings,
+  getUserEnabledModels,
+  storeProviderApiKey,
+  getUserProviderSettings,
+  syncUserProviders,
+} from "~/services/user/userOperations";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { errorResponseSchema, successResponseSchema } from "../schemas/shared";
 import {
@@ -26,17 +32,6 @@ app.use("/*", (c, next) => {
   routeLogger.info(`Processing user route: ${c.req.path}`);
   return next();
 });
-
-let userCache: KVCache | null = null;
-
-function getUserCache(env: any): KVCache | null {
-  if (!env.CACHE) return null;
-
-  if (!userCache) {
-    userCache = new KVCache(env.CACHE);
-  }
-  return userCache;
-}
 
 const modelsResponseSchema = z.object({
   success: z.boolean(),
@@ -124,26 +119,9 @@ app.put(
       );
     }
 
-    const database = Database.getInstance(c.env);
-    await database.updateUserSettings(user.id, settings);
+    const result = await updateUserSettings(c.env, user.id, settings);
 
-    const cache = getUserCache(c.env);
-    if (cache) {
-      cache.clearUserModelCache(user.id.toString()).catch((error) => {
-        routeLogger.error(
-          "Failed to clear user model cache after settings update",
-          {
-            userId: user.id,
-            error,
-          },
-        );
-      });
-    }
-
-    return c.json({
-      success: true,
-      message: "User settings updated successfully",
-    });
+    return c.json(result);
   },
 );
 
@@ -183,8 +161,7 @@ app.get(
       );
     }
 
-    const database = Database.getInstance(c.env);
-    const models = await database.getUserEnabledModels(user.id);
+    const models = await getUserEnabledModels(c.env, user.id);
 
     return c.json({
       success: true,
@@ -257,27 +234,15 @@ app.post(
       );
     }
 
-    const database = Database.getInstance(c.env);
-    await database.storeProviderApiKey(user.id, providerId, apiKey, secretKey);
+    const result = await storeProviderApiKey(
+      c.env,
+      user.id,
+      providerId,
+      apiKey,
+      secretKey,
+    );
 
-    const cache = getUserCache(c.env);
-    if (cache) {
-      cache.clearUserModelCache(user.id.toString()).catch((error) => {
-        routeLogger.error(
-          "Failed to clear user caches after provider API key update",
-          {
-            userId: user.id,
-            providerId,
-            error,
-          },
-        );
-      });
-    }
-
-    return c.json({
-      success: true,
-      message: "Provider API key stored successfully",
-    });
+    return c.json(result);
   },
 );
 
@@ -316,14 +281,11 @@ app.get(
       );
     }
 
-    const database = Database.getInstance(c.env);
-    const userProviderSettings = await database.getUserProviderSettings(
-      user.id,
-    );
+    const providers = await getUserProviderSettings(c.env, user.id);
 
     return c.json({
       success: true,
-      providers: userProviderSettings,
+      providers,
     });
   },
 );
@@ -363,23 +325,9 @@ app.post(
       );
     }
 
-    const database = Database.getInstance(c.env);
-    await database.createUserProviderSettings(user.id);
+    const result = await syncUserProviders(c.env, user.id);
 
-    const cache = getUserCache(c.env);
-    if (cache) {
-      cache.clearUserModelCache(user.id.toString()).catch((error) => {
-        routeLogger.error("Failed to clear user caches after provider sync", {
-          userId: user.id,
-          error,
-        });
-      });
-    }
-
-    return c.json({
-      success: true,
-      message: "Providers synced successfully",
-    });
+    return c.json(result);
   },
 );
 
