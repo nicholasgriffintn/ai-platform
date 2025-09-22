@@ -305,7 +305,9 @@ describe("Logger Middleware", () => {
 
       const routeLogger = createRouteLogger("AUTH");
 
-      expect(vi.mocked(getLogger)).toHaveBeenCalledWith({ prefix: "AUTH" });
+      expect(vi.mocked(getLogger)).toHaveBeenCalledWith({
+        prefix: "routes/AUTH",
+      });
       expect(routeLogger).toEqual(
         expect.objectContaining({
           info: expect.any(Function),
@@ -320,8 +322,12 @@ describe("Logger Middleware", () => {
       createRouteLogger("USERS");
       createRouteLogger("CHAT");
 
-      expect(vi.mocked(getLogger)).toHaveBeenCalledWith({ prefix: "USERS" });
-      expect(vi.mocked(getLogger)).toHaveBeenCalledWith({ prefix: "CHAT" });
+      expect(vi.mocked(getLogger)).toHaveBeenCalledWith({
+        prefix: "routes/USERS",
+      });
+      expect(vi.mocked(getLogger)).toHaveBeenCalledWith({
+        prefix: "routes/CHAT",
+      });
     });
 
     it("should handle empty route name", async () => {
@@ -329,7 +335,7 @@ describe("Logger Middleware", () => {
 
       createRouteLogger("");
 
-      expect(vi.mocked(getLogger)).toHaveBeenCalledWith({ prefix: "" });
+      expect(vi.mocked(getLogger)).toHaveBeenCalledWith({ prefix: "routes/" });
     });
   });
 });

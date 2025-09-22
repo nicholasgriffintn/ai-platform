@@ -2,6 +2,7 @@ import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IEnv, IUser, IUserSettings, Message } from "~/types";
 import { generateId } from "~/utils/id";
 import { parseAIResponseJson } from "~/utils/json";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import type { ConversationManager } from "./conversationManager";
 import { Embedding } from "./embedding";
@@ -115,7 +116,10 @@ export class MemoryManager {
    */
   public async deleteMemory(memoryId: string): Promise<boolean> {
     if (!this.user?.id) {
-      throw new Error("User ID is required to delete memories");
+      throw new AssistantError(
+        "User ID is required to delete memories",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
     }
 
     const repository = new MemoryRepository(this.env);

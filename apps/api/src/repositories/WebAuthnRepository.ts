@@ -2,6 +2,7 @@ import type { AuthenticatorTransportFuture } from "@simplewebauthn/types";
 
 import { encodeBase64Url } from "~/utils/base64url";
 import { getLogger } from "~/utils/logger";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseRepository } from "./BaseRepository";
 
 const logger = getLogger({ prefix: "repositories/WebAuthnRepository" });
@@ -35,7 +36,10 @@ export class WebAuthnRepository extends BaseRepository {
       }
     } catch (error) {
       logger.error("Error in createChallenge:", { error });
-      throw new Error("Failed to create challenge");
+      throw new AssistantError(
+        "Failed to create challenge",
+        ErrorType.DATABASE_ERROR,
+      );
     }
   }
 

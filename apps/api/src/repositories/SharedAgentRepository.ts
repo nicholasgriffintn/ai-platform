@@ -6,6 +6,7 @@ import type {
 } from "~/lib/database/schema";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseRepository } from "./BaseRepository";
 
 const logger = getLogger({ prefix: "repositories/SharedAgentRepository" });
@@ -46,7 +47,10 @@ export class SharedAgentRepository extends BaseRepository {
     );
 
     if (!agent) {
-      throw new Error("Agent not found or unauthorized");
+      throw new AssistantError(
+        "Agent not found or unauthorized",
+        ErrorType.NOT_FOUND,
+      );
     }
 
     const existingShared = await this.runQuery<SharedAgent>(
@@ -56,7 +60,10 @@ export class SharedAgentRepository extends BaseRepository {
     );
 
     if (existingShared) {
-      throw new Error("Agent is already shared");
+      throw new AssistantError(
+        "Agent is already shared",
+        ErrorType.CONFLICT_ERROR,
+      );
     }
 
     const id = generateId();
@@ -269,7 +276,7 @@ export class SharedAgentRepository extends BaseRepository {
   ): Promise<{ agent: Agent; install: AgentInstall }> {
     const sharedAgent = await this.getSharedAgentById(sharedAgentId);
     if (!sharedAgent) {
-      throw new Error("Shared agent not found");
+      throw new AssistantError("Shared agent not found", ErrorType.NOT_FOUND);
     }
 
     const existingInstall = await this.runQuery<AgentInstall>(
@@ -279,14 +286,35 @@ export class SharedAgentRepository extends BaseRepository {
     );
 
     if (existingInstall) {
-      throw new Error("Agent already installed");
+      throw new AssistantError(
+        "Agent already installed",
+        ErrorType.CONFLICT_ERROR,
+      );
     }
 
-    const templateData = JSON.parse(sharedAgent.template_data as string);
+    if (!sharedAgent.template_data) {
+      throw new AssistantError("Template data not found", ErrorType.NOT_FOUND);
+    }
+
+    let templateData = null;
+    try {
+      templateData = JSON.parse(sharedAgent.template_data as string);
+    } catch (e) {
+      logger.error(
+        "Error parsing template data:",
+        e,
+        sharedAgent.template_data,
+      );
+      throw new AssistantError(
+        "Error parsing template data",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
 
     if (templateData.team_id) {
-      throw new Error(
+      throw new AssistantError(
         "Team agents are not supported for sharing yet. Please contact support.",
+        ErrorType.PARAMS_ERROR,
       );
     }
 
@@ -362,7 +390,10 @@ export class SharedAgentRepository extends BaseRepository {
     );
 
     if (!install) {
-      throw new Error("Agent not installed by user");
+      throw new AssistantError(
+        "Agent not installed by user",
+        ErrorType.NOT_FOUND,
+      );
     }
 
     const sharedAgent = await this.runQuery<SharedAgent>(
@@ -372,7 +403,7 @@ export class SharedAgentRepository extends BaseRepository {
     );
 
     if (!sharedAgent) {
-      throw new Error("Shared agent not found");
+      throw new AssistantError("Shared agent not found", ErrorType.NOT_FOUND);
     }
 
     await this.executeRun("DELETE FROM agent_installs WHERE id = ?", [
@@ -392,12 +423,15 @@ export class SharedAgentRepository extends BaseRepository {
     review?: string,
   ): Promise<AgentRating> {
     if (rating < 1 || rating > 5) {
-      throw new Error("Rating must be between 1 and 5");
+      throw new AssistantError(
+        "Rating must be between 1 and 5",
+        ErrorType.PARAMS_ERROR,
+      );
     }
 
     const sharedAgent = await this.getSharedAgentById(sharedAgentId);
     if (!sharedAgent) {
-      throw new Error("Shared agent not found");
+      throw new AssistantError("Shared agent not found", ErrorType.NOT_FOUND);
     }
 
     const existingRating = await this.runQuery<AgentRating>(
@@ -479,7 +513,10 @@ export class SharedAgentRepository extends BaseRepository {
     );
 
     if (!sharedAgent) {
-      throw new Error("Shared agent not found or unauthorized");
+      throw new AssistantError(
+        "Shared agent not found or unauthorized",
+        ErrorType.NOT_FOUND,
+      );
     }
 
     const sets: string[] = [];
@@ -524,7 +561,10 @@ export class SharedAgentRepository extends BaseRepository {
     );
 
     if (!sharedAgent) {
-      throw new Error("Shared agent not found or unauthorized");
+      throw new AssistantError(
+        "Shared agent not found or unauthorized",
+        ErrorType.NOT_FOUND,
+      );
     }
 
     await this.executeRun(

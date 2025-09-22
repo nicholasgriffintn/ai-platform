@@ -1,5 +1,6 @@
 import type { AnonymousUser } from "~/types";
 import { getLogger } from "~/utils/logger";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseRepository } from "./BaseRepository";
 
 const logger = getLogger({ prefix: "repositories/AnonymousUserRepository" });
@@ -172,13 +173,13 @@ export class AnonymousUserRepository extends BaseRepository {
     id: string,
   ): Promise<{ count: number; isNewDay: boolean }> {
     if (!id) {
-      throw new Error("Invalid ID");
+      throw new AssistantError("Invalid ID", ErrorType.PARAMS_ERROR);
     }
 
     const user = await this.getAnonymousUserById(id);
 
     if (!user) {
-      throw new Error("User not found");
+      throw new AssistantError("User not found", ErrorType.NOT_FOUND);
     }
 
     const now = new Date();
@@ -208,7 +209,7 @@ export class AnonymousUserRepository extends BaseRepository {
     const user = await this.getAnonymousUserById(id);
 
     if (!user) {
-      throw new Error("User not found");
+      throw new AssistantError("User not found", ErrorType.NOT_FOUND);
     }
 
     const now = new Date();

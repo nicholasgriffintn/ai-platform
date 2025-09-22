@@ -1,6 +1,7 @@
 import { MemoryRepository } from "~/repositories/MemoryRepository";
 import type { IEnv } from "~/types";
 import type { User } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export interface DeleteGroupResponse {
   success: boolean;
@@ -16,11 +17,14 @@ export async function handleDeleteGroup(
 
     const group = await repository.getMemoryGroupById(groupId);
     if (!group) {
-      throw new Error("Group not found");
+      throw new AssistantError("Group not found", ErrorType.NOT_FOUND);
     }
 
     if (group.user_id !== user.id) {
-      throw new Error("Group not found or access denied");
+      throw new AssistantError(
+        "Group not found or access denied",
+        ErrorType.FORBIDDEN,
+      );
     }
 
     await repository.deleteMemoryGroupMembers(groupId);

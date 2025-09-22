@@ -44,7 +44,10 @@ export class WorkersProvider extends BaseProvider {
   ): Promise<Record<string, any>> {
     const modelConfig = await getModelConfigByMatchingModel(params.model || "");
     if (!modelConfig) {
-      throw new Error(`Model configuration not found for ${params.model}`);
+      throw new AssistantError(
+        `Model configuration not found for ${params.model}`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
 
     const type = modelConfig?.type || ["text"];
@@ -98,8 +101,9 @@ export class WorkersProvider extends BaseProvider {
 
             if (isUrl) {
               if (!assetsUrl) {
-                throw new Error(
+                throw new AssistantError(
                   "Assets URL is required for image URL processing",
+                  ErrorType.CONFIGURATION_ERROR,
                 );
               }
 
@@ -113,8 +117,9 @@ export class WorkersProvider extends BaseProvider {
               }
 
               if (!storageService) {
-                throw new Error(
+                throw new AssistantError(
                   "Storage service is required for image URL processing",
+                  ErrorType.CONFIGURATION_ERROR,
                 );
               }
 
@@ -127,7 +132,10 @@ export class WorkersProvider extends BaseProvider {
             }
 
             if (!base64Data) {
-              throw new Error("No image data found");
+              throw new AssistantError(
+                "No image data found",
+                ErrorType.PARAMS_ERROR,
+              );
             }
 
             try {
@@ -138,12 +146,16 @@ export class WorkersProvider extends BaseProvider {
               }
 
               if (array.length === 0) {
-                throw new Error("No image data found after processing");
+                throw new AssistantError(
+                  "No image data found after processing",
+                  ErrorType.PARAMS_ERROR,
+                );
               }
               imageData = Array.from(array);
             } catch (binaryError: any) {
-              throw new Error(
+              throw new AssistantError(
                 `Failed to process image data: ${binaryError.message}`,
+                ErrorType.PARAMS_ERROR,
               );
             }
           }
@@ -151,7 +163,10 @@ export class WorkersProvider extends BaseProvider {
           imageData = imageContent;
         }
       } catch (error: any) {
-        throw new Error(`Error processing image data: ${error.message}`);
+        throw new AssistantError(
+          `Error processing image data: ${error.message}`,
+          ErrorType.PARAMS_ERROR,
+        );
       }
 
       let prompt = null;

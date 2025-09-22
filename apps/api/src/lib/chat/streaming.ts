@@ -9,6 +9,7 @@ import { getToolEventPayload } from "~/lib/chat/utils";
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { Guardrails } from "~/lib/guardrails";
 import { MemoryManager } from "~/lib/memory";
 import { getModelConfigByMatchingModel } from "~/lib/models";
@@ -286,7 +287,10 @@ export async function createStreamWithPostProcessing(
               try {
                 data = JSON.parse(dataStr) as ParsedSSEData;
               } catch (_e) {
-                throw new Error("Failed to parse data");
+                throw new AssistantError(
+                  "Failed to parse data",
+                  ErrorType.PARAMS_ERROR,
+                );
               }
               logger.trace("Parsed SSE data", { currentEventType, data });
 

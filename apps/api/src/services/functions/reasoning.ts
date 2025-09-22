@@ -2,6 +2,7 @@ import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/models";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IFunction, IRequest } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/functions/reasoning" });
@@ -87,7 +88,10 @@ Respond with:
       });
 
       if (!aiResponse.response) {
-        throw new Error("AI reasoning evaluation failed");
+        throw new AssistantError(
+          "AI reasoning evaluation failed",
+          ErrorType.PROVIDER_ERROR,
+        );
       }
 
       const response = aiResponse.response;

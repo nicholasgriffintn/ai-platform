@@ -8,6 +8,7 @@ import {
   getModelsByType,
 } from "~/lib/models";
 import type { IEnv } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 /**
  * List all models available to the user.
@@ -84,7 +85,10 @@ export async function getModelDetails(env: IEnv, id: string, userId?: number) {
     },
   );
   if (!accessibleModels[id]) {
-    throw new Error("Model not found or user does not have access");
+    throw new AssistantError(
+      "Model not found or user does not have access",
+      ErrorType.NOT_FOUND,
+    );
   }
   return model;
 }

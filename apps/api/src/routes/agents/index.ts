@@ -7,6 +7,7 @@ import type z from "zod/v4";
 import { formatToolCalls } from "~/lib/chat/tools";
 import { getModelConfig } from "~/lib/models";
 import { requireAuth } from "~/middleware/auth";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { AgentRepository } from "~/repositories/AgentRepository";
@@ -526,7 +527,7 @@ app.post(
         try {
           serverConfigs = JSON.parse(serversJson) as Array<{ url: string }>;
         } catch (_e) {
-          throw new Error("Invalid servers");
+          throw new AssistantError("Invalid servers", ErrorType.PARAMS_ERROR);
         }
 
         if (serverConfigs && serverConfigs.length > 0) {

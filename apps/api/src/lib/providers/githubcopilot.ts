@@ -1,6 +1,7 @@
 import type { ChatCompletionParameters } from "~/types";
 import { randomHex, randomUUIDLike } from "~/utils/id";
 import { BaseProvider } from "./base";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 type CopilotTokenCache = {
   token: string;
@@ -56,7 +57,10 @@ export class GithubCopilotProvider extends BaseProvider {
       },
     );
     if (!resp.ok) {
-      throw new Error("Failed to fetch GitHub Copilot token");
+      throw new AssistantError(
+        "Failed to fetch GitHub Copilot token",
+        ErrorType.PROVIDER_ERROR,
+      );
     }
     const data = (await resp.json()) as { token: string; expires_at?: string };
     const expiresAt = data.expires_at ? Date.parse(data.expires_at) : undefined;

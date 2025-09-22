@@ -163,7 +163,10 @@ Ensure the output is nothing but the JSON object itself.`;
         if (jsonMatch) {
           requirementsAnalysis = JSON.parse(jsonMatch[0]);
         } else {
-          throw new Error("Could not extract valid JSON");
+          throw new AssistantError(
+            "Could not extract valid JSON",
+            ErrorType.PARAMS_ERROR,
+          );
         }
       } catch (_fallbackError) {
         throw new AssistantError(

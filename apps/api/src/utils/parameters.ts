@@ -1,5 +1,6 @@
 import { availableFunctions } from "~/services/functions";
 import type { ChatCompletionParameters } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { formatToolCalls } from "../lib/chat/tools";
 
 /**
@@ -79,10 +80,16 @@ function returnValidatedPenalty(
 
   if (key === "repetition_penalty") {
     if (value < 0 || value > 2) {
-      throw new Error("Repetition penalty must be between 0 and 2, inclusive.");
+      throw new AssistantError(
+        "Repetition penalty must be between 0 and 2, inclusive.",
+        ErrorType.PARAMS_ERROR,
+      );
     }
   } else if (value < -2) {
-    throw new Error(`${key} must be greater than or equal to -2.`);
+    throw new AssistantError(
+      `${key} must be greater than or equal to -2.`,
+      ErrorType.PARAMS_ERROR,
+    );
   }
 
   return value;
@@ -241,7 +248,10 @@ export function getToolsForProvider(
 
     return result;
   } catch (error: any) {
-    throw new Error(`Failed to format tool calls: ${error.message}`);
+    throw new AssistantError(
+      `Failed to format tool calls: ${error.message}`,
+      ErrorType.PARAMS_ERROR,
+    );
   }
 }
 

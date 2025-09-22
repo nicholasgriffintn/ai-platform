@@ -75,7 +75,10 @@ export async function sendEmail(
     if (!response.ok) {
       const errorBody = await response.text();
       logger.error("SES error response:", errorBody);
-      throw new Error(`Failed to send email: ${response.statusText}`);
+      throw new AssistantError(
+        `Failed to send email: ${response.statusText}`,
+        ErrorType.EMAIL_SEND_FAILED,
+      );
     }
     logger.info(`Email sent to ${email}`);
   } catch (error: any) {

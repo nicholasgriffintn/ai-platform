@@ -12,6 +12,7 @@ import type {
   Platform,
 } from "~/types";
 import { generateId } from "~/utils/id";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import {
   getAllAttachments,
@@ -55,7 +56,10 @@ export class RequestPreparer {
     } = validationContext;
 
     if (!sanitizedMessages || !primaryModelConfig || !messageWithContext) {
-      throw new Error("Missing required validation context");
+      throw new AssistantError(
+        "Missing required validation context",
+        ErrorType.PARAMS_ERROR,
+      );
     }
 
     const { platform = "api", user, anonymousUser, mode = "normal" } = options;
@@ -135,7 +139,10 @@ export class RequestPreparer {
     const selectedModels = validationContext.selectedModels;
 
     if (!selectedModels || selectedModels.length === 0) {
-      throw new Error("No selected models available from validation context");
+      throw new AssistantError(
+        "No selected models available from validation context",
+        ErrorType.PARAMS_ERROR,
+      );
     }
 
     const configPromises = selectedModels.map((model) =>
@@ -162,7 +169,10 @@ export class RequestPreparer {
     });
 
     if (successfulConfigs.length === 0) {
-      throw new Error("No valid model configurations available");
+      throw new AssistantError(
+        "No valid model configurations available",
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
 
     return successfulConfigs;

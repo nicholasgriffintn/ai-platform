@@ -178,7 +178,10 @@ export async function handleFileUpload(
       contentType: file.type,
     });
     if (!uploaded) {
-      throw new Error("Failed to upload file to storage");
+      throw new AssistantError(
+        "Failed to upload file to storage",
+        ErrorType.STORAGE_ERROR,
+      );
     }
   } catch (storageError) {
     logger.error("Failed to upload file to storage", {

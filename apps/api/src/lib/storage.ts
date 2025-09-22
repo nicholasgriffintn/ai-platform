@@ -1,4 +1,5 @@
 import type { R2Bucket } from "@cloudflare/workers-types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export class StorageService {
   constructor(private readonly bucket: R2Bucket) {}
@@ -24,29 +25,35 @@ export class StorageService {
 
   async downloadFile(url: string): Promise<Blob> {
     if (!this.isValidImageUrl(url)) {
-      throw new Error(`Invalid image URL: ${url}`);
+      throw new AssistantError(
+        `Invalid image URL: ${url}`,
+        ErrorType.PARAMS_ERROR,
+      );
     }
 
     try {
       const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(
+        throw new AssistantError(
           `Failed to download image: ${response.status} ${response.statusText}`,
+          ErrorType.NETWORK_ERROR,
         );
       }
 
       const blob = await response.blob();
 
       if (!this.isSupportedImageType(blob.type)) {
-        throw new Error(
+        throw new AssistantError(
           `Unsupported image type: ${blob.type}. Supported types: image/png, image/jpeg, image/webp`,
+          ErrorType.PARAMS_ERROR,
         );
       }
 
       return blob;
     } catch (error) {
-      throw new Error(
+      throw new AssistantError(
         `Network error downloading image: ${error instanceof Error ? error.message : "Unknown error"}`,
+        ErrorType.NETWORK_ERROR,
       );
     }
   }

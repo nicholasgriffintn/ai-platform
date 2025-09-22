@@ -3,6 +3,7 @@ import type { Agent } from "~/lib/database/schema";
 import { getAuxiliaryModel, getModelConfig } from "~/lib/models";
 import { AgentRepository } from "~/repositories/AgentRepository";
 import type { AnonymousUser, IEnv, IUser, Message } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/agents/team/TeamDelegation" });
@@ -58,9 +59,10 @@ export class TeamDelegation {
       const resetTime = oldestCall.timestamp + this.rateLimitWindowMs;
       const resetIn = Math.ceil((resetTime - now) / 1000);
 
-      throw new Error(
+      throw new AssistantError(
         `Rate limit exceeded: ${this.maxDelegationsPerWindow} delegations per ${this.rateLimitWindowMs / 1000}s. ` +
           `Try again in ${resetIn} seconds. Current delegation stack: ${this.delegationStack.join(" -> ")}`,
+        ErrorType.RATE_LIMIT_ERROR,
       );
     }
   }
@@ -85,28 +87,36 @@ export class TeamDelegation {
       const cycle = this.delegationStack
         .slice(this.delegationStack.indexOf(agentId))
         .join(" -> ");
-      throw new Error(`Circular delegation detected: ${cycle} -> ${agentId}`);
+      throw new AssistantError(
+        `Circular delegation detected: ${cycle} -> ${agentId}`,
+        ErrorType.PARAMS_ERROR,
+      );
     }
 
     if (this.delegationStack.length >= this.maxDelegationDepth) {
-      throw new Error(
+      throw new AssistantError(
         `Maximum delegation depth of ${this.maxDelegationDepth} exceeded. Current stack: ${this.delegationStack.join(" -> ")}`,
+        ErrorType.PARAMS_ERROR,
       );
     }
 
     const agent = await this.agentRepository.getAgentById(agentId);
 
     if (!agent) {
-      throw new Error(
+      throw new AssistantError(
         `Target agent '${agentId}' not found. Verify the agent ID is correct and the agent exists.`,
+        ErrorType.NOT_FOUND,
       );
     }
 
     if (agent.team_id !== this.context.currentAgent.team_id) {
-      throw new Error(
+      throw new AssistantError(
         `Team mismatch: Agent '${agent.name}' (${agentId}) belongs to team '${agent.team_id}' ` +
           `but current agent '${this.context.currentAgent.name}' belongs to team '${this.context.currentAgent.team_id}'. ` +
           `Agents can only delegate within their own team.`,
+        ErrorType.FORBIDDEN,
+        403,
+        {},
       );
     }
 

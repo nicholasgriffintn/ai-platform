@@ -1,5 +1,6 @@
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
 import type { IEnv } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { StorageService } from "../storage";
 import { uploadAudioFromChat, uploadImageFromChat } from "../upload";
 
@@ -69,7 +70,10 @@ export class ResponseFormatter {
     const env = options.env;
 
     if (!env?.ASSETS_BUCKET) {
-      throw new Error("ASSETS_BUCKET is not set");
+      throw new AssistantError(
+        "ASSETS_BUCKET is not set",
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
 
     const storageService = new StorageService(env.ASSETS_BUCKET);
@@ -381,7 +385,10 @@ export class ResponseFormatter {
     if (isImageType) {
       const images = (data as any).images;
       if (!images || !Array.isArray(images) || images.length === 0) {
-        throw new Error("No images returned from Bedrock");
+        throw new AssistantError(
+          "No images returned from Bedrock",
+          ErrorType.PROVIDER_ERROR,
+        );
       }
 
       const image = images[0];

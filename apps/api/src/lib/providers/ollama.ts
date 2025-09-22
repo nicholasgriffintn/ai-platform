@@ -49,7 +49,10 @@ export class OllamaProvider extends BaseProvider {
   ): Promise<Record<string, any>> {
     const modelConfig = await getModelConfigByMatchingModel(params.model || "");
     if (!modelConfig) {
-      throw new Error(`Model configuration not found for ${params.model}`);
+      throw new AssistantError(
+        `Model configuration not found for ${params.model}`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
 
     const commonParams = createCommonParameters(

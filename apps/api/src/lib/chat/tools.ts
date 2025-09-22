@@ -2,6 +2,7 @@ import type { ConversationManager } from "~/lib/conversationManager";
 import { handleFunctions } from "~/services/functions";
 import type { IRequest, Message } from "~/types";
 import { generateId } from "~/utils/id";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import {
   formatToolErrorResponse,
@@ -37,7 +38,10 @@ export const handleToolCalls = async (
 
     try {
       if (!toolCall.id) {
-        throw new Error("Missing tool call ID");
+        throw new AssistantError(
+          "Missing tool call ID",
+          ErrorType.TOOL_CALL_ERROR,
+        );
       }
 
       if (functionName === "memory") {
@@ -50,8 +54,9 @@ export const handleToolCalls = async (
             typeof rawArgs === "string" ? JSON.parse(rawArgs) : rawArgs;
         } catch (parseError: any) {
           logger.error(`Failed to parse memory arguments: ${parseError}`);
-          throw new Error(
+          throw new AssistantError(
             `Invalid memory tool arguments: ${parseError.message}`,
+            ErrorType.TOOL_CALL_ERROR,
           );
         }
 
@@ -92,14 +97,16 @@ export const handleToolCalls = async (
           `Failed to parse arguments for ${functionName}:`,
           parseError,
         );
-        throw new Error(
+        throw new AssistantError(
           `Invalid arguments for ${functionName}: ${parseError.message}`,
+          ErrorType.TOOL_CALL_ERROR,
         );
       }
 
       if (!functionArgs || typeof functionArgs !== "object") {
-        throw new Error(
+        throw new AssistantError(
           `Invalid arguments format for ${functionName}: expected object`,
+          ErrorType.TOOL_CALL_ERROR,
         );
       }
 

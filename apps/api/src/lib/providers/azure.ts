@@ -36,7 +36,10 @@ export class AzureOpenAIProvider extends BaseProvider {
     const delimiter = "::@@::";
     const parts = apiKey.split(delimiter);
     if (parts.length !== 3) {
-      throw new Error("Invalid Azure credentials format");
+      throw new AssistantError(
+        "Invalid Azure credentials format",
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
     return {
       resourceName: parts[0],

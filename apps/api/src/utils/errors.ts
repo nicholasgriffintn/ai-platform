@@ -22,6 +22,7 @@ export enum ErrorType {
   CONFLICT_ERROR = "CONFLICT_ERROR",
   STORAGE_ERROR = "STORAGE_ERROR",
   DATABASE_ERROR = "DATABASE_ERROR",
+  TOOL_CALL_ERROR = "TOOL_CALL_ERROR",
 }
 
 export interface ErrorContext {

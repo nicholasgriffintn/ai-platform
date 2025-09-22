@@ -8,6 +8,7 @@ import type {
   ModelConfigInfo,
   Platform,
 } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { createStreamWithPostProcessing } from "./streaming";
@@ -133,7 +134,10 @@ export function createMultiModelStream(
       try {
         const primaryResponse = await primaryResponsePromise;
         if (!(primaryResponse instanceof ReadableStream)) {
-          throw new Error("Primary model response is not a stream");
+          throw new AssistantError(
+            "Primary model response is not a stream",
+            ErrorType.PROVIDER_ERROR,
+          );
         }
 
         const primaryProcessedStream = await createStreamWithPostProcessing(
@@ -172,7 +176,10 @@ export function createMultiModelStream(
                 try {
                   data = JSON.parse(dataStr);
                 } catch (_e) {
-                  throw new Error("Failed to parse data");
+                  throw new AssistantError(
+                    "Failed to parse data",
+                    ErrorType.PARAMS_ERROR,
+                  );
                 }
                 if (data.type === "content_block_delta" && data.content) {
                   primaryContent += data.content;
@@ -229,7 +236,10 @@ export function createMultiModelStream(
                   try {
                     data = JSON.parse(dataStr);
                   } catch (_e) {
-                    throw new Error("Failed to parse data");
+                    throw new AssistantError(
+                      "Failed to parse data",
+                      ErrorType.PARAMS_ERROR,
+                    );
                   }
                   if (data.type === "content_block_delta" && data.content) {
                     secondaryContent += data.content;

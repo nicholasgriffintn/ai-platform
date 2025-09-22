@@ -11,12 +11,18 @@ async function getAudioForProvider(model: string, res: Response | Blob) {
   // TODO: Only whisper has been configured to work with the body requirements, more to be done in order to configure it.
   if (model === "@cf/deepgram/nova-3") {
     if (res instanceof Blob) {
-      throw new Error("Blobs not supported with nova-3");
+      throw new AssistantError(
+        "Blobs not supported with nova-3",
+        ErrorType.PARAMS_ERROR,
+      );
     }
     return res.body;
   } else {
     if (model === "@cf/openai/whisper-large-v3-turbo") {
-      throw new Error("Not implemented");
+      throw new AssistantError(
+        "Not implemented",
+        ErrorType.CONFIGURATION_ERROR,
+      );
       // const audioData = await res.arrayBuffer();
       // const audioBuffer = Buffer.from(audioData, "binary").toString("base64");
       // return audioBuffer;
