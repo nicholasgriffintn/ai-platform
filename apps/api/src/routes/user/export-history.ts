@@ -5,7 +5,7 @@ import { resolver } from "hono-openapi";
 import { requireAuth } from "~/middleware/auth";
 import type { User } from "~/types";
 import { handleExportChatHistory } from "~/services/user/exportChatHistory";
-import { errorResponseSchema } from "../schemas/shared";
+import { errorResponseSchema } from "../../schemas/shared";
 
 const app = new Hono();
 

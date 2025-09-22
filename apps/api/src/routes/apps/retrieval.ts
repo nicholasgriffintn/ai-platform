@@ -8,7 +8,7 @@ import {
   retrieveHackerNewsTopStories,
 } from "~/services/apps/retrieval/hackernews";
 import type { IEnv, IUser } from "~/types";
-import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
+import { apiResponseSchema, errorResponseSchema } from "../../schemas/shared";
 import z from "zod/v4";
 
 const app = new Hono();

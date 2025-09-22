@@ -11,11 +11,14 @@ import {
 } from "~/services/user/apiKeys";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { errorResponseSchema, successResponseSchema } from "../schemas/shared";
+import {
+  errorResponseSchema,
+  successResponseSchema,
+} from "../../schemas/shared";
 import {
   createApiKeySchema,
   deleteApiKeyParamsSchema,
-} from "../schemas/user/apiKeys";
+} from "../../schemas/user/apiKeys";
 
 const logger = getLogger({ prefix: "routes/user/apiKeys" });
 

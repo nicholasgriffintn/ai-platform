@@ -26,8 +26,8 @@ import {
   githubLoginSchema,
   jwtTokenResponseSchema,
   userSchema,
-} from "../schemas/auth";
-import { errorResponseSchema } from "../schemas/shared";
+} from "../../schemas/auth";
+import { errorResponseSchema } from "../../schemas/shared";
 import authMagicLink from "./magic-link";
 import authWebauthn from "./webauthn";
 

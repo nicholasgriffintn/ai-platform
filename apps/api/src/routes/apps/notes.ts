@@ -23,8 +23,11 @@ import {
   noteUpdateSchema,
   generateNotesFromMediaSchema,
   generateNotesFromMediaResponseSchema,
-} from "../schemas/apps";
-import { errorResponseSchema, successResponseSchema } from "../schemas/shared";
+} from "../../schemas/apps";
+import {
+  errorResponseSchema,
+  successResponseSchema,
+} from "../../schemas/shared";
 import { generateNotesFromMedia } from "~/services/apps/notes/generate-from-media";
 
 const app = new Hono();

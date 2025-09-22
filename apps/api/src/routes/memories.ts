@@ -4,14 +4,14 @@ import { resolver, validator as zValidator } from "hono-openapi";
 
 import type { IEnv, IRequest } from "~/types";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { errorResponseSchema } from "./schemas/shared";
+import { errorResponseSchema } from "../schemas/shared";
 import {
   memoryListResponseSchema,
   memoryGroupResponseSchema,
   memoryGroupCreateSchema,
   memoryGroupAddSchema,
   memoryOperationResponseSchema,
-} from "./schemas/memories";
+} from "../schemas/memories";
 import { handleCreateMemoryGroup } from "~/services/memories/createGroup";
 import { handleListMemories } from "~/services/memories/listMemories";
 import { handleAddMemoriesToGroup } from "~/services/memories/addMemoriesToGroup";

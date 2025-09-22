@@ -10,8 +10,8 @@ import { sendMagicLinkEmail } from "~/services/notifications";
 import {
   magicLinkRequestSchema,
   magicLinkVerifySchema,
-} from "../schemas/magicLink";
-import { errorResponseSchema } from "../schemas/shared";
+} from "../../schemas/magicLink";
+import { errorResponseSchema } from "../../schemas/shared";
 
 const app = new Hono();
 

@@ -7,8 +7,8 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleFileUpload } from "~/services/uploads";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IEnv } from "../types";
-import { errorResponseSchema } from "./schemas/shared";
-import { uploadResponseSchema } from "./schemas/uploads";
+import { errorResponseSchema } from "../schemas/shared";
+import { uploadResponseSchema } from "../schemas/uploads";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("uploads");

@@ -12,8 +12,8 @@ import {
 } from "~/services/subscription";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
 import { AssistantError, ErrorType } from "../utils/errors";
-import { errorResponseSchema } from "./schemas/shared";
-import { checkoutSchema } from "./schemas/stripe";
+import { errorResponseSchema } from "../schemas/shared";
+import { checkoutSchema } from "../schemas/stripe";
 
 const app = new Hono();
 

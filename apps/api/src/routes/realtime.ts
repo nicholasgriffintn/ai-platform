@@ -5,8 +5,8 @@ import { resolver, validator as zValidator } from "hono-openapi";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import type { IEnv } from "~/types";
 import { AIProviderFactory } from "../lib/providers/factory";
-import { errorResponseSchema } from "./schemas/shared";
-import { realtimeSessionResponseSchema } from "./schemas/realtime";
+import { errorResponseSchema } from "../schemas/shared";
+import { realtimeSessionResponseSchema } from "../schemas/realtime";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("realtime");

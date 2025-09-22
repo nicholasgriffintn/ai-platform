@@ -10,8 +10,8 @@ import { guessDrawingFromImage } from "~/services/apps/drawing/guess";
 import { listDrawings } from "~/services/apps/drawing/list";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { drawingSchema, guessDrawingSchema } from "../schemas/apps";
-import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
+import { drawingSchema, guessDrawingSchema } from "../../schemas/apps";
+import { apiResponseSchema, errorResponseSchema } from "../../schemas/shared";
 
 const app = new Hono();
 

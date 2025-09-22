@@ -6,8 +6,8 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { getSharedItem, shareItem } from "~/services/apps/shared";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError } from "~/utils/errors";
-import { shareItemSchema, sharedItemResponseSchema } from "../schemas/apps";
-import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
+import { shareItemSchema, sharedItemResponseSchema } from "../../schemas/apps";
+import { apiResponseSchema, errorResponseSchema } from "../../schemas/shared";
 
 const app = new Hono<{
   Bindings: IEnv;

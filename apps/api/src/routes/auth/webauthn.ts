@@ -20,14 +20,14 @@ import {
   verifyPasskeyAuthentication,
 } from "~/services/auth/webauthn";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { userSchema } from "../schemas/auth";
-import { errorResponseSchema } from "../schemas/shared";
+import { userSchema } from "../../schemas/auth";
+import { errorResponseSchema } from "../../schemas/shared";
 import {
   authenticationOptionsSchema,
   authenticationVerificationSchema,
   registrationOptionsSchema,
   registrationVerificationSchema,
-} from "../schemas/webAuthN";
+} from "../../schemas/webAuthN";
 
 const app = new Hono();
 

@@ -9,8 +9,8 @@ import {
   planParamsSchema,
   planResponseSchema,
   plansResponseSchema,
-} from "./schemas/plans";
-import { errorResponseSchema } from "./schemas/shared";
+} from "../schemas/plans";
+import { errorResponseSchema } from "../schemas/shared";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("plans");

@@ -24,8 +24,8 @@ import {
   podcastGenerateImageSchema,
   podcastSummarizeSchema,
   podcastTranscribeSchema,
-} from "../schemas/apps";
-import { apiResponseSchema } from "../schemas/shared";
+} from "../../schemas/apps";
+import { apiResponseSchema } from "../../schemas/shared";
 
 const app = new Hono();
 

@@ -4,8 +4,8 @@ import { resolver } from "hono-openapi";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { getAvailableTools } from "~/services/tools/toolsOperations";
-import { errorResponseSchema } from "./schemas/shared";
-import { toolsResponseSchema } from "./schemas/tools";
+import { errorResponseSchema } from "../schemas/shared";
+import { toolsResponseSchema } from "../schemas/tools";
 
 const app = new Hono();
 

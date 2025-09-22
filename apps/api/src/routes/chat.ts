@@ -51,8 +51,8 @@ import {
   unshareConversationParamsSchema,
   updateChatCompletionJsonSchema,
   updateChatCompletionParamsSchema,
-} from "./schemas/chat";
-import { errorResponseSchema, messageSchema } from "./schemas/shared";
+} from "../schemas/chat";
+import { errorResponseSchema, messageSchema } from "../schemas/shared";
 
 const app = new Hono();
 

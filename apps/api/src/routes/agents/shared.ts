@@ -24,7 +24,7 @@ import {
   shareAgent,
 } from "~/services/agents/shared";
 import type { IEnv } from "~/types";
-import { apiResponseSchema } from "../schemas/shared";
+import { apiResponseSchema } from "../../schemas/shared";
 import {
   agentRatingsSchema,
   featuredAgentsSchema,
@@ -32,7 +32,7 @@ import {
   shareAgentSchema,
   sharedAgentFiltersSchema,
   updateSharedAgentSchema,
-} from "../schemas/shared-agents";
+} from "../../schemas/shared-agents";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("agents/shared");

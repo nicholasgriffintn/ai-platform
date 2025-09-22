@@ -11,11 +11,11 @@ import {
   getAllSharedAgentsForAdmin,
 } from "~/services/admin/sharedAgents";
 import type { IEnv } from "~/types";
-import { apiResponseSchema } from "./schemas/shared";
+import { apiResponseSchema } from "../schemas/shared";
 import {
   setAgentFeaturedSchema,
   moderateAgentSchema,
-} from "./schemas/shared-agents";
+} from "../schemas/shared-agents";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("admin");

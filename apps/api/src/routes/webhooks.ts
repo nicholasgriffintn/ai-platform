@@ -6,12 +6,12 @@ import { webhookAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleReplicateWebhook } from "~/services/webhooks/replicate";
 import type { IBody, IEnv } from "~/types";
-import { errorResponseSchema } from "./schemas/shared";
+import { errorResponseSchema } from "../schemas/shared";
 import {
   replicateWebhookJsonSchema,
   replicateWebhookQuerySchema,
   webhookResponseSchema,
-} from "./schemas/webhooks";
+} from "../schemas/webhooks";
 
 const app = new Hono();
 

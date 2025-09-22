@@ -19,9 +19,9 @@ import {
   createAgentCompletion,
 } from "~/services/agents";
 import type { ChatCompletionParameters, IEnv } from "~/types";
-import { createAgentSchema, updateAgentSchema } from "../schemas/agents";
-import { createChatCompletionsJsonSchema } from "../schemas/chat";
-import { apiResponseSchema } from "../schemas/shared";
+import { createAgentSchema, updateAgentSchema } from "../../schemas/agents";
+import { createChatCompletionsJsonSchema } from "../../schemas/chat";
+import { apiResponseSchema } from "../../schemas/shared";
 import sharedAgents from "./shared";
 
 const app = new Hono<{ Bindings: IEnv }>();

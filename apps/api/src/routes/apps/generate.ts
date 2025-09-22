@@ -28,8 +28,8 @@ import {
   musicGenerationSchema,
   speechGenerationSchema,
   videoGenerationSchema,
-} from "../schemas/apps";
-import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
+} from "../../schemas/apps";
+import { apiResponseSchema, errorResponseSchema } from "../../schemas/shared";
 
 const app = new Hono();
 

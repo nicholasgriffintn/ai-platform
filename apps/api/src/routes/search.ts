@@ -6,8 +6,8 @@ import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleWebSearch } from "~/services/search/web";
 import type { IEnv, SearchOptions } from "~/types";
-import { searchWebSchema, webSearchResponseSchema } from "./schemas/search";
-import { errorResponseSchema } from "./schemas/shared";
+import { searchWebSchema, webSearchResponseSchema } from "../schemas/search";
+import { errorResponseSchema } from "../schemas/shared";
 
 const app = new Hono();
 

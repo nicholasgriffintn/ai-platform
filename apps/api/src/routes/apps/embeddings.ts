@@ -19,8 +19,8 @@ import {
   deleteEmbeddingSchema,
   insertEmbeddingSchema,
   queryEmbeddingsSchema,
-} from "../schemas/apps";
-import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
+} from "../../schemas/apps";
+import { apiResponseSchema, errorResponseSchema } from "../../schemas/shared";
 
 const app = new Hono();
 

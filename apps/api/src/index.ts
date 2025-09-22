@@ -28,7 +28,7 @@ import dynamicApps from "./routes/dynamic-apps";
 import models from "./routes/models";
 import plans from "./routes/plans";
 import realtime from "./routes/realtime";
-import { metricsParamsSchema, statusResponseSchema } from "./routes/schemas";
+import { metricsParamsSchema, statusResponseSchema } from "./schemas";
 import search from "./routes/search";
 import stripe from "./routes/stripe";
 import tools from "./routes/tools";

@@ -37,8 +37,8 @@ import {
   tutorSchema,
   weatherQuerySchema,
   weatherResponseSchema,
-} from "../schemas/apps";
-import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
+} from "../../schemas/apps";
+import { apiResponseSchema, errorResponseSchema } from "../../schemas/shared";
 import articles from "./articles";
 import drawing from "./drawing";
 import embeddings from "./embeddings";

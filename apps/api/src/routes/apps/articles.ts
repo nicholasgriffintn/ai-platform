@@ -26,8 +26,8 @@ import {
   generateArticlesReportSchema,
   listArticlesResponseSchema,
   sourceArticlesResponseSchema,
-} from "../schemas/apps";
-import { errorResponseSchema } from "../schemas/shared";
+} from "../../schemas/apps";
+import { errorResponseSchema } from "../../schemas/shared";
 
 const app = new Hono();
 

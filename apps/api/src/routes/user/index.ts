@@ -13,7 +13,10 @@ import {
   syncUserProviders,
 } from "~/services/user/userOperations";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { errorResponseSchema, successResponseSchema } from "../schemas/shared";
+import {
+  errorResponseSchema,
+  successResponseSchema,
+} from "../../schemas/shared";
 import {
   storeProviderApiKeySchema,
   updateUserSettingsResponseSchema,
@@ -21,7 +24,7 @@ import {
   userModelsResponseSchema,
   providersResponseSchema,
   providerSettingsSchema,
-} from "../schemas/user";
+} from "../../schemas/user";
 import apiKeys from "./apiKeys";
 import exportHistoryRoute from "./export-history";
 

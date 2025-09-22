@@ -19,8 +19,8 @@ import {
   modelResponseSchema,
   modelsResponseSchema,
   typeParamsSchema,
-} from "./schemas/models";
-import { errorResponseSchema } from "./schemas/shared";
+} from "../schemas/models";
+import { errorResponseSchema } from "../schemas/shared";
 
 const app = new Hono();
 

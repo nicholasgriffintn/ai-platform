@@ -11,8 +11,8 @@ import {
   textToSpeechSchema,
   transcribeFormSchema,
   transcribeQuerySchema,
-} from "./schemas/audio";
-import { apiResponseSchema, errorResponseSchema } from "./schemas/shared";
+} from "../schemas/audio";
+import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
 
 const app = new Hono();
 

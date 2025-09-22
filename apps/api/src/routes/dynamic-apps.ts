@@ -18,12 +18,12 @@ import type { IRequest } from "~/types/chat";
 import type { IEnv } from "~/types/shared";
 import { getLogger } from "~/utils/logger";
 import type { IUser } from "../types";
-import { appDataSchema } from "./schemas/app-data";
+import { appDataSchema } from "../schemas/app-data";
 import {
   appInfoSchema,
   listDynamicAppResponsesQuerySchema,
-} from "./schemas/apps";
-import { errorResponseSchema } from "./schemas/shared";
+} from "../schemas/apps";
+import { errorResponseSchema } from "../schemas/shared";
 
 const logger = getLogger({ prefix: "routes/dynamic-apps" });
 
