@@ -6,12 +6,11 @@ import z from "zod/v4";
 import { requireAdmin, requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { SharedAgentRepository } from "~/repositories/SharedAgentRepository";
-import { UserRepository } from "~/repositories/UserRepository";
 import {
-  sendAgentFeaturedNotification,
-  sendAgentModerationNotification,
-} from "~/services/notifications";
+  setAgentFeaturedStatus,
+  moderateAgent,
+  getAllSharedAgentsForAdmin,
+} from "~/services/admin";
 import type { IEnv } from "~/types";
 import { apiResponseSchema } from "./schemas/shared";
 
@@ -53,58 +52,29 @@ app.put(
       typeof setFeaturedSchema
     >;
 
-    const repo = new SharedAgentRepository(ctx.env);
+    const currentUser = ctx.get("user");
 
-    try {
-      const sharedAgent = await repo.getSharedAgentById(id);
-      if (!sharedAgent) {
-        return ctx.json(
-          {
-            status: "error",
-            error: "Shared agent not found",
-          },
-          404,
-        );
-      }
+    const result = await setAgentFeaturedStatus(
+      ctx.env,
+      id,
+      featured,
+      currentUser,
+    );
 
-      await repo.setFeatured(id, featured);
-
-      if (featured) {
-        const currentUser = ctx.get("user");
-        const userRepo = new UserRepository(ctx.env);
-        const agentOwner = await userRepo.getUserById(sharedAgent.user_id);
-
-        if (agentOwner?.email) {
-          await sendAgentFeaturedNotification(
-            ctx.env,
-            agentOwner.email,
-            agentOwner.name || "User",
-            {
-              agentName: sharedAgent.name,
-              agentId: sharedAgent.id,
-              isFeatured: featured,
-              moderatorName: currentUser?.name,
-            },
-          );
-        }
-      }
-
-      return ctx.json({
-        status: "success",
-        data: { featured },
-      });
-    } catch (error) {
+    if (!result.success) {
       return ctx.json(
         {
           status: "error",
-          error:
-            error instanceof Error
-              ? error.message
-              : "Failed to update featured status",
+          error: result.error,
         },
         400,
       );
     }
+
+    return ctx.json({
+      status: "success",
+      data: result.data,
+    });
   },
 );
 
@@ -128,9 +98,7 @@ app.get(
     },
   }),
   async (ctx: Context) => {
-    const repo = new SharedAgentRepository(ctx.env);
-
-    const agents = await repo.getAllSharedAgentsForAdmin({});
+    const agents = await getAllSharedAgentsForAdmin(ctx.env);
 
     return ctx.json({
       status: "success",
@@ -175,55 +143,30 @@ app.put(
       typeof moderateAgentSchema
     >;
 
-    const repo = new SharedAgentRepository(ctx.env);
+    const currentUser = ctx.get("user");
 
-    try {
-      const sharedAgent = await repo.getSharedAgentById(id);
-      if (!sharedAgent) {
-        return ctx.json(
-          {
-            status: "error",
-            error: "Shared agent not found",
-          },
-          404,
-        );
-      }
+    const result = await moderateAgent(
+      ctx.env,
+      id,
+      is_public,
+      reason,
+      currentUser,
+    );
 
-      await repo.moderateAgent(id, is_public);
-
-      const currentUser = ctx.get("user");
-      const userRepo = new UserRepository(ctx.env);
-      const agentOwner = await userRepo.getUserById(sharedAgent.user_id);
-
-      if (agentOwner?.email) {
-        await sendAgentModerationNotification(
-          ctx.env,
-          agentOwner.email,
-          agentOwner.name || "User",
-          {
-            agentName: sharedAgent.name,
-            agentId: sharedAgent.id,
-            isApproved: is_public,
-            reason,
-            moderatorName: currentUser?.name,
-          },
-        );
-      }
-
-      return ctx.json({
-        status: "success",
-        data: { is_public, reason },
-      });
-    } catch (error) {
+    if (!result.success) {
       return ctx.json(
         {
           status: "error",
-          error:
-            error instanceof Error ? error.message : "Failed to moderate agent",
+          error: result.error,
         },
         400,
       );
     }
+
+    return ctx.json({
+      status: "success",
+      data: result.data,
+    });
   },
 );
 

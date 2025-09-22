@@ -1,8 +1,8 @@
-import { Database } from "~/lib/database";
 import { generateJwtToken } from "~/services/auth/jwt";
 import { deleteSession } from "~/services/auth/user";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { SessionRepository } from "~/repositories/SessionRepository";
 
 export interface SessionWithJwt {
   jwt_token: string | null;
@@ -14,8 +14,8 @@ export async function handleLogout(
   sessionId: string | null,
 ): Promise<{ success: boolean }> {
   if (sessionId) {
-    const database = Database.getInstance(env);
-    await deleteSession(database, sessionId);
+    const sessionRepo = new SessionRepository(env);
+    await sessionRepo.deleteSession(sessionId);
   }
 
   return { success: true };
@@ -33,10 +33,10 @@ export async function generateUserToken(
     );
   }
 
-  const database = Database.getInstance(env);
+  const sessionRepo = new SessionRepository(env);
 
   if (sessionId) {
-    const sessionData = await database.getSessionWithJwt(sessionId);
+    const sessionData = await sessionRepo.getSessionWithJwt(sessionId);
 
     if (sessionData?.jwt_token && sessionData?.jwt_expires_at) {
       const jwtExpiresAt = new Date(sessionData.jwt_expires_at);
@@ -60,7 +60,7 @@ export async function generateUserToken(
     const token = await generateJwtToken(user, env.JWT_SECRET, expiresIn);
     const jwtExpiresAt = new Date(Date.now() + expiresIn * 1000);
 
-    await database.updateSessionJwt(sessionId, token, jwtExpiresAt);
+    await sessionRepo.updateSessionJwt(sessionId, token, jwtExpiresAt);
 
     return {
       token,

@@ -1,9 +1,10 @@
 import { Octokit } from "@octokit/rest";
 
-import { Database } from "~/lib/database";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { createOrUpdateGithubUser, createSession } from "~/services/auth/user";
+import { generateId } from "~/utils/id";
+import { UserRepository } from "~/repositories/UserRepository";
+import { SessionRepository } from "~/repositories/SessionRepository";
 
 export interface GitHubUser {
   id: number;
@@ -64,8 +65,8 @@ export async function handleGitHubOAuthCallback(
 
   const { githubUser, primaryEmail } = await getGitHubUserData(accessToken);
 
-  const database = Database.getInstance(env);
-  const user = await createOrUpdateGithubUser(database, {
+  const userRepo = new UserRepository(env);
+  const user = await userRepo.createOrUpdateGithubUser({
     githubId: githubUser.id.toString(),
     username: githubUser.login,
     email: primaryEmail,
@@ -78,7 +79,12 @@ export async function handleGitHubOAuthCallback(
     site: githubUser.site || undefined,
   });
 
-  const sessionId = await createSession(database, user.id);
+  const sessionId = generateId();
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+
+  const sessionRepo = new SessionRepository(env);
+  await sessionRepo.createSession(sessionId, user.id, expiresAt);
 
   return {
     user: {

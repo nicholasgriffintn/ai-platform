@@ -1,8 +1,8 @@
 import { KVCache } from "~/lib/cache";
-import { Database } from "~/lib/database";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 
 const logger = getLogger({ prefix: "services/user/operations" });
 
@@ -22,8 +22,8 @@ export async function updateUserSettings(
   userId: number,
   settings: any,
 ): Promise<{ success: boolean; message: string }> {
-  const database = Database.getInstance(env);
-  await database.updateUserSettings(userId, settings);
+  const settingsRepo = new UserSettingsRepository(env);
+  await settingsRepo.updateUserSettings(userId, settings);
 
   const cache = getUserCache(env);
   if (cache) {
@@ -47,8 +47,8 @@ export async function getUserEnabledModels(
   env: IEnv,
   userId: number,
 ): Promise<string[]> {
-  const database = Database.getInstance(env);
-  const models = await database.getUserEnabledModels(userId);
+  const settingsRepo = new UserSettingsRepository(env);
+  const models = await settingsRepo.getUserEnabledModels(userId);
   return models.map((model: any) => model.model_id || model);
 }
 
@@ -59,8 +59,8 @@ export async function storeProviderApiKey(
   apiKey: string,
   secretKey?: string,
 ): Promise<{ success: boolean; message: string }> {
-  const database = Database.getInstance(env);
-  await database.storeProviderApiKey(userId, providerId, apiKey, secretKey);
+  const settingsRepo = new UserSettingsRepository(env);
+  await settingsRepo.storeProviderApiKey(userId, providerId, apiKey, secretKey);
 
   const cache = getUserCache(env);
   if (cache) {
@@ -88,16 +88,16 @@ export async function getUserProviderSettings(
   env: IEnv,
   userId: number,
 ): Promise<any[]> {
-  const database = Database.getInstance(env);
-  return await database.getUserProviderSettings(userId);
+  const settingsRepo = new UserSettingsRepository(env);
+  return await settingsRepo.getUserProviderSettings(userId);
 }
 
 export async function syncUserProviders(
   env: IEnv,
   userId: number,
 ): Promise<{ success: boolean; message: string }> {
-  const database = Database.getInstance(env);
-  await database.createUserProviderSettings(userId);
+  const settingsRepo = new UserSettingsRepository(env);
+  await settingsRepo.createUserProviderSettings(userId);
 
   const cache = getUserCache(env);
   if (cache) {

@@ -1,26 +1,6 @@
 import { BaseRepository } from "./BaseRepository";
 
 export class SessionRepository extends BaseRepository {
-  public async createSession(
-    sessionId: string,
-    userId: number,
-    expiresAt: Date,
-    jwtToken?: string,
-    jwtExpiresAt?: Date,
-  ): Promise<void> {
-    await this.executeRun(
-      `INSERT INTO session (id, user_id, expires_at, jwt_token, jwt_expires_at)
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        sessionId,
-        userId,
-        expiresAt.toISOString(),
-        jwtToken || null,
-        jwtExpiresAt?.toISOString() || null,
-      ],
-    );
-  }
-
   public async deleteSession(sessionId: string): Promise<void> {
     await this.executeRun(
       `DELETE FROM session
@@ -57,10 +37,30 @@ export class SessionRepository extends BaseRepository {
     jwtExpiresAt: Date,
   ): Promise<void> {
     await this.executeRun(
-      `UPDATE session 
+      `UPDATE session
        SET jwt_token = ?, jwt_expires_at = ?
        WHERE id = ?`,
       [jwtToken, jwtExpiresAt.toISOString(), sessionId],
+    );
+  }
+
+  public async createSession(
+    sessionId: string,
+    userId: number,
+    expiresAt: Date,
+    jwtToken?: string,
+    jwtExpiresAt?: Date,
+  ): Promise<void> {
+    await this.executeRun(
+      `INSERT INTO session (id, user_id, expires_at, jwt_token, jwt_expires_at)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        sessionId,
+        userId,
+        expiresAt.toISOString(),
+        jwtToken || null,
+        jwtExpiresAt?.toISOString() || null,
+      ],
     );
   }
 }
