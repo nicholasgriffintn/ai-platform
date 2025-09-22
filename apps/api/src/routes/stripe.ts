@@ -17,7 +17,7 @@ import { checkoutSchema } from "./schemas/stripe";
 
 const app = new Hono();
 
-const routeLogger = createRouteLogger("STRIPE");
+const routeLogger = createRouteLogger("stripe");
 
 app.use("/*", (c: Context, next) => {
   routeLogger.info(`Processing stripe route: ${c.req.path}`);

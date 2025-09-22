@@ -4,7 +4,7 @@ import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "SERVICES:APPS:RETRIEVAL:HACKERNEWS" });
+const logger = getLogger({ prefix: "services/apps/retrieval/hackernews" });
 
 export async function retrieveHackerNewsTopStories({
   count,

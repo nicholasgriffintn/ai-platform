@@ -5,7 +5,7 @@ import { AgentRepository } from "~/repositories/AgentRepository";
 import type { AnonymousUser, IEnv, IUser, Message } from "~/types";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "AGENTS_TEAM_DELEGATION" });
+const logger = getLogger({ prefix: "lib/agents/team/TeamDelegation" });
 
 export interface DelegationContext {
   env: IEnv;
@@ -24,7 +24,7 @@ interface DelegationCall {
 }
 
 /**
- * Simple mechanism for orchestrator agents to call team members
+ * Mechanism for orchestrator agents to delegate tasks to team members
  */
 export class TeamDelegation {
   private agentRepository: AgentRepository;
@@ -42,6 +42,9 @@ export class TeamDelegation {
     this.maxDelegationsPerWindow = context.maxDelegationsPerWindow || 10;
   }
 
+  /**
+   * Check if the rate limit has been exceeded
+   */
   private checkRateLimit(): void {
     const now = Date.now();
     const windowStart = now - this.rateLimitWindowMs;
@@ -62,6 +65,9 @@ export class TeamDelegation {
     }
   }
 
+  /**
+   * Record a delegation call to prevent abuse
+   */
   private recordDelegation(agentId: string): void {
     this.delegationCalls.push({
       timestamp: Date.now(),

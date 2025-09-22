@@ -4,7 +4,7 @@ import { trackUsageMetric } from "~/lib/monitoring";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "RATE_LIMIT" });
+const logger = getLogger({ prefix: "middleware/rateLimit" });
 
 export async function rateLimit(context: Context, next: Next) {
   if (!context.env.FREE_RATE_LIMITER || !context.env.PRO_RATE_LIMITER) {

@@ -4,7 +4,7 @@ import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "ELEVENLABS" });
+const logger = getLogger({ prefix: "lib/audio/elevenlabs" });
 
 export class ElevenLabsService {
   constructor(
@@ -12,6 +12,9 @@ export class ElevenLabsService {
     private readonly user: IUser,
   ) {}
 
+  /**
+   * Synthesize speech using ElevenLabs
+   */
   async synthesizeSpeech(
     content: string,
     storageService: StorageService,

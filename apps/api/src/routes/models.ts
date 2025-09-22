@@ -24,7 +24,7 @@ import { errorResponseSchema } from "./schemas/shared";
 
 const app = new Hono();
 
-const routeLogger = createRouteLogger("MODELS");
+const routeLogger = createRouteLogger("models");
 
 app.use("/*", (c: Context, next) => {
   routeLogger.info(`Processing models route: ${c.req.path}`);

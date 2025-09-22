@@ -10,7 +10,9 @@ import type {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "CREATE_CHAT_COMPLETIONS" });
+const logger = getLogger({
+  prefix: "services/completions/createChatCompletions",
+});
 
 export const handleCreateChatCompletions = async (req: {
   env: IEnv;

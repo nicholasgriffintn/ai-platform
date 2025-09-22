@@ -31,7 +31,7 @@ const realtimeSessionResponseSchema = z.object({
 });
 
 const app = new Hono();
-const routeLogger = createRouteLogger("REALTIME");
+const routeLogger = createRouteLogger("realtime");
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing realtime route: ${c.req.path}`);

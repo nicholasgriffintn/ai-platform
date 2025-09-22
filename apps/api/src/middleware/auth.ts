@@ -9,7 +9,7 @@ import type { AnonymousUser, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "AUTH_MIDDLEWARE" });
+const logger = getLogger({ prefix: "middleware/auth" });
 
 const ANONYMOUS_ID_COOKIE = "anon_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days

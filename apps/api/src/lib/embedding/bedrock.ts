@@ -13,7 +13,7 @@ import type {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "BEDROCK" });
+const logger = getLogger({ prefix: "lib/embedding/bedrock" });
 
 export interface BedrockEmbeddingProviderConfig {
   knowledgeBaseId: string;

@@ -10,7 +10,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "CHAT:CORE:ORCHESTRATOR" });
+const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
 
 export class ChatOrchestrator {
   private validator: ValidationPipeline;

@@ -18,7 +18,7 @@ import { decodeBase64Url } from "~/utils/base64url";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "WEB_AUTHN" });
+const logger = getLogger({ prefix: "services/auth/webauthn" });
 
 export async function saveWebAuthnChallenge(
   database: Database,

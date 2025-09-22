@@ -13,7 +13,7 @@ const app = new Hono<{
   Bindings: IEnv;
 }>();
 
-const routeLogger = createRouteLogger("APPS_SHARED");
+const routeLogger = createRouteLogger("apps/shared");
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing shared apps route: ${c.req.path}`);

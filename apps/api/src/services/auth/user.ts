@@ -3,7 +3,7 @@ import type { IUserSettings, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "USER_SERVICE" });
+const logger = getLogger({ prefix: "services/auth/user" });
 
 /**
  * Map database result to User type

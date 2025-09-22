@@ -18,7 +18,7 @@ import {
 } from "../schemas/shared-agents";
 
 const app = new Hono<{ Bindings: IEnv }>();
-const logger = createRouteLogger("SHARED_AGENTS");
+const logger = createRouteLogger("agents/shared");
 
 app.use("/*", async (ctx, next) => {
   logger.info(

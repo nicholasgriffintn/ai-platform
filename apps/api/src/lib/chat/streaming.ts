@@ -29,7 +29,7 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { emitDoneEvent, emitEvent } from "./emitter";
 
-const logger = getLogger({ prefix: "CHAT:STREAMING" });
+const logger = getLogger({ prefix: "lib/chat/streaming" });
 
 /**
  * Helper to emit standardized tool events

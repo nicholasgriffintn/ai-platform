@@ -3,7 +3,7 @@ import { AgentRepository } from "~/repositories/AgentRepository";
 import type { IFunction, IFunctionResponse, IRequest, Message } from "~/types";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "TEAM_DELEGATION_FUNCTIONS" });
+const logger = getLogger({ prefix: "services/functions/teamDelegation" });
 
 export const delegateToTeamMember: IFunction = {
   name: "delegate_to_team_member",

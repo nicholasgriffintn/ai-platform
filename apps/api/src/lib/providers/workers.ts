@@ -14,7 +14,7 @@ import {
 import { BaseProvider } from "./base";
 import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
-const logger = getLogger({ prefix: "WORKERS" });
+const logger = getLogger({ prefix: "lib/providers/workers" });
 
 export class WorkersProvider extends BaseProvider {
   name = "workers-ai";

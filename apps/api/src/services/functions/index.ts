@@ -22,7 +22,7 @@ import { create_video } from "./video";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
 
-const logger = getLogger({ prefix: "FUNCTIONS" });
+const logger = getLogger({ prefix: "services/functions" });
 
 export const availableFunctions: IFunction[] = [
   get_weather,

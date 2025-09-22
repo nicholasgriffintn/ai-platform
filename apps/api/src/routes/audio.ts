@@ -16,7 +16,7 @@ import { apiResponseSchema, errorResponseSchema } from "./schemas/shared";
 
 const app = new Hono();
 
-const routeLogger = createRouteLogger("AUDIO");
+const routeLogger = createRouteLogger("audio");
 
 app.use("/*", requireAuth);
 

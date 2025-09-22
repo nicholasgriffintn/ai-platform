@@ -3,7 +3,7 @@ import type { StorageService } from "~/lib/storage";
 import type { IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "POLLY" });
+const logger = getLogger({ prefix: "lib/audio/polly" });
 
 export class PollyService {
   constructor(
@@ -11,6 +11,9 @@ export class PollyService {
     private readonly user: IUser,
   ) {}
 
+  /**
+   * Synthesize speech using Polly
+   */
   async synthesizeSpeech(
     content: string,
     storageService: StorageService,

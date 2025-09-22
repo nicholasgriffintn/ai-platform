@@ -6,7 +6,7 @@ import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "SERVICES:APPS:ARTICLES:GET_DETAILS" });
+const logger = getLogger({ prefix: "services/apps/articles/get-details" });
 
 export interface GetDetailsSuccessResponse {
   status: "success";

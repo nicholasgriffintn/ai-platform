@@ -54,7 +54,7 @@ import { errorResponseSchema, messageSchema } from "./schemas/shared";
 
 const app = new Hono();
 
-const routeLogger = createRouteLogger("CHAT");
+const routeLogger = createRouteLogger("chat");
 
 app.use("/*", async (context: Context, next: Next) => {
   routeLogger.info(`Processing chat route: ${context.req.path}`);

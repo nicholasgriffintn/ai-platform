@@ -27,11 +27,11 @@ import { errorResponseSchema } from "../schemas/shared";
 import authMagicLink from "./magic-link";
 import authWebauthn from "./webauthn";
 
-const logger = getLogger({ prefix: "AUTH_API" });
+const logger = getLogger({ prefix: "routes/auth" });
 
 const app = new Hono();
 
-const routeLogger = createRouteLogger("AUTH");
+const routeLogger = createRouteLogger("auth");
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing auth route: ${c.req.path}`);

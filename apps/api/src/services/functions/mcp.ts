@@ -6,7 +6,7 @@ import type { IFunctionResponse, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "MCP_FUNCTIONS" });
+const logger = getLogger({ prefix: "services/functions/mcp" });
 
 const mcpClients = new Map<string, MCPClientManager>();
 

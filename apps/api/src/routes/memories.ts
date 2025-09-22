@@ -1,7 +1,7 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi";
-import { z } from "zod/v4";
+import z from "zod/v4";
 
 import type { IEnv, IRequest } from "~/types";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -13,7 +13,7 @@ import { handleDeleteMemory } from "~/services/memories/deleteMemory";
 import { handleDeleteGroup } from "~/services/memories/deleteGroup";
 
 const app = new Hono();
-const routeLogger = createRouteLogger("MEMORIES");
+const routeLogger = createRouteLogger("memories");
 
 app.get(
   "/",

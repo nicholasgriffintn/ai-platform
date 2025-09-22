@@ -9,7 +9,7 @@ import { toolsResponseSchema } from "./schemas/tools";
 
 const app = new Hono();
 
-const routeLogger = createRouteLogger("TOOLS");
+const routeLogger = createRouteLogger("tools");
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing tools route: ${c.req.path}`);

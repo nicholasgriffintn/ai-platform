@@ -5,7 +5,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { detectStreaming } from "~/utils/streaming";
 
-const logger = getLogger({ prefix: "FETCH" });
+const logger = getLogger({ prefix: "lib/providers/fetch" });
 
 export async function fetchAIResponse<
   T = {

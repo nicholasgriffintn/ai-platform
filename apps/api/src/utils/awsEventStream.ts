@@ -1,6 +1,6 @@
 import { getLogger } from "./logger";
 
-const logger = getLogger({ prefix: "AWS_EVENT_STREAM" });
+const logger = getLogger({ prefix: "utils/awsEventStream" });
 
 /**
  * Parse AWS Event Stream format and convert to SSE format

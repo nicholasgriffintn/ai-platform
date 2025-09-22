@@ -2,7 +2,7 @@ import type { AnonymousUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { BaseRepository } from "./BaseRepository";
 
-const logger = getLogger({ prefix: "REPOSITORIES:ANONYMOUS_USER" });
+const logger = getLogger({ prefix: "repositories/AnonymousUserRepository" });
 
 export class AnonymousUserRepository extends BaseRepository {
   /**

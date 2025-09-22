@@ -42,7 +42,7 @@ import { vercelModelConfig } from "./vercel";
 import { workersAiModelConfig } from "./workersai";
 import { xaiModelConfig } from "./xai";
 
-const logger = getLogger({ prefix: "MODELS" });
+const logger = getLogger({ prefix: "lib/models" });
 
 let cachedModels: typeof modelConfig | null = null;
 let cachedFreeModels: typeof modelConfig | null = null;

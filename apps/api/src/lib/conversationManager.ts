@@ -11,7 +11,7 @@ import { getLogger } from "~/utils/logger";
 import type { Database } from "./database";
 import { type UsageLimits, UsageManager } from "./usageManager";
 
-const logger = getLogger({ prefix: "CONVERSATION_MANAGER" });
+const logger = getLogger({ prefix: "lib/conversationManager" });
 
 export class ConversationManager {
   private database: Database;

@@ -4,7 +4,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import type { IEnv } from "../../types";
 
-const logger = getLogger({ prefix: "EMAIL_SERVICE" });
+const logger = getLogger({ prefix: "services/email" });
 
 export async function sendEmail(
   env: IEnv,

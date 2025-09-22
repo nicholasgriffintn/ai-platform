@@ -14,7 +14,7 @@ import {
 import { detectStreaming } from "~/utils/streaming";
 import { fetchAIResponse } from "./fetch";
 
-const logger = getLogger({ prefix: "PROVIDERS" });
+const logger = getLogger({ prefix: "lib/providers/base" });
 
 export interface AIProvider {
   name: string;

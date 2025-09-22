@@ -12,7 +12,7 @@ import { apiResponseSchema, errorResponseSchema } from "../schemas/shared";
 
 const app = new Hono();
 
-const routeLogger = createRouteLogger("APPS_RETRIEVAL");
+const routeLogger = createRouteLogger("apps/retrieval");
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing apps route: ${c.req.path}`);

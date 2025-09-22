@@ -13,7 +13,7 @@ export interface Env {
   DB: D1Database;
 }
 
-const logger = getLogger({ prefix: "DATABASE" });
+const logger = getLogger({ prefix: "lib/database" });
 
 export class Database {
   private static instance: Database;

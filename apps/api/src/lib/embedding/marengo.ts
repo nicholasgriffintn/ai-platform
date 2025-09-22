@@ -14,7 +14,7 @@ import type {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "MARENGO" });
+const logger = getLogger({ prefix: "lib/embedding/marengo" });
 
 export interface MarengoEmbeddingProviderConfig {
   vector_db: Vectorize;

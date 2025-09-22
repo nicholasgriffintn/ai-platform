@@ -25,7 +25,7 @@ import { apiResponseSchema } from "../schemas/shared";
 import sharedAgents from "./shared";
 
 const app = new Hono<{ Bindings: IEnv }>();
-const logger = createRouteLogger("AGENTS");
+const logger = createRouteLogger("agents");
 
 app.use("/*", async (ctx, next) => {
   logger.info(`Processing agents route: ${ctx.req.method} ${ctx.req.path}`);

@@ -15,7 +15,7 @@ import {
 
 const app = new Hono();
 
-const routeLogger = createRouteLogger("WEBHOOKS");
+const routeLogger = createRouteLogger("webhooks");
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing webhooks route: ${c.req.path}`);

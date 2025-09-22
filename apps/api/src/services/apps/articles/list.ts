@@ -6,7 +6,7 @@ import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "SERVICES:APPS:ARTICLES:LIST" });
+const logger = getLogger({ prefix: "services/apps/articles/list" });
 
 export interface ArticleSessionSummary {
   item_id: string;

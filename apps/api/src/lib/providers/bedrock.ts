@@ -13,9 +13,8 @@ import {
   getToolsForProvider,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
-import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
-const logger = getLogger({ prefix: "BEDROCK" });
+const logger = getLogger({ prefix: "lib/providers/bedrock" });
 
 export class BedrockProvider extends BaseProvider {
   name = "bedrock";

@@ -4,7 +4,7 @@ import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "UPLOADS_SERVICE" });
+const logger = getLogger({ prefix: "services/uploads" });
 
 const CODE_EXTENSION_TO_LANG: Record<string, string> = {
   ts: "typescript",

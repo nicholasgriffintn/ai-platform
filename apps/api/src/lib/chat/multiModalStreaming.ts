@@ -12,7 +12,7 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { createStreamWithPostProcessing } from "./streaming";
 
-const logger = getLogger({ prefix: "CHAT:MULTI_MODEL_STREAMING" });
+const logger = getLogger({ prefix: "lib/chat/multiModalStreaming" });
 
 /**
  * Creates a multi-model stream that queries multiple models and combines their responses

@@ -13,7 +13,7 @@ import {
   deleteApiKeyParamsSchema,
 } from "../schemas/user/apiKeys";
 
-const logger = getLogger({ prefix: "API_KEYS" });
+const logger = getLogger({ prefix: "routes/user/apiKeys" });
 
 const app = new Hono();
 

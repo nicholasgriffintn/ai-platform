@@ -6,7 +6,7 @@ import type { IEnv, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "MAGIC_LINK" });
+const logger = getLogger({ prefix: "services/auth/magicLink" });
 
 interface MagicLinkPayload {
   userId: string;

@@ -21,7 +21,7 @@ import { AssistantError } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { EmbeddingProviderFactory } from "./factory";
 
-const logger = getLogger({ prefix: "EMBEDDING" });
+const logger = getLogger({ prefix: "lib/embedding" });
 
 export class Embedding {
   private provider: EmbeddingProvider;

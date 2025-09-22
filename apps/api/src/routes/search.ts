@@ -11,7 +11,7 @@ import { errorResponseSchema } from "./schemas/shared";
 
 const app = new Hono();
 
-const routeLogger = createRouteLogger("SEARCH");
+const routeLogger = createRouteLogger("search");
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing search route: ${c.req.path}`);

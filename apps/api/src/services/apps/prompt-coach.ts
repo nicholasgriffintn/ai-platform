@@ -5,7 +5,7 @@ import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "PROMPT_COACH_SERVICE" });
+const logger = getLogger({ prefix: "services/apps/prompt-coach" });
 
 export interface PromptCoachResponse {
   suggested_prompt: string | null;

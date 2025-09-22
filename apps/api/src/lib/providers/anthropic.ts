@@ -14,7 +14,7 @@ import {
 import { BaseProvider } from "./base";
 import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
-const logger = getLogger({ prefix: "ANTHROPIC" });
+const logger = getLogger({ prefix: "lib/providers/anthropic" });
 
 export class AnthropicProvider extends BaseProvider {
   name = "anthropic";

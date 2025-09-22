@@ -4,7 +4,7 @@ import { verifyCaptchaToken } from "~/lib/captcha";
 import { RepositoryManager } from "~/repositories";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "CAPTCHA" });
+const logger = getLogger({ prefix: "middleware/captchaMiddleware" });
 
 /**
  * Middleware to validate captcha token

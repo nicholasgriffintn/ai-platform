@@ -16,7 +16,7 @@ import type { IEnv } from "~/types";
 import { apiResponseSchema } from "./schemas/shared";
 
 const app = new Hono<{ Bindings: IEnv }>();
-const logger = createRouteLogger("ADMIN");
+const logger = createRouteLogger("admin");
 
 app.use("/*", async (ctx, next) => {
   logger.info(`Processing admin route: ${ctx.req.method} ${ctx.req.path}`);

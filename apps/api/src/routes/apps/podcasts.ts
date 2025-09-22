@@ -28,7 +28,7 @@ import { apiResponseSchema } from "../schemas/shared";
 
 const app = new Hono();
 
-const routeLogger = createRouteLogger("APPS_PODCASTS");
+const routeLogger = createRouteLogger("apps/podcasts");
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing apps route: ${c.req.path}`);

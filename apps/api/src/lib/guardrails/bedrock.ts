@@ -5,7 +5,7 @@ import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "BEDROCK_GUARDRAILS" });
+const logger = getLogger({ prefix: "lib/guardrails/bedrock" });
 
 export interface BedrockGuardrailsConfig {
   guardrailId: string;

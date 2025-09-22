@@ -2,7 +2,7 @@ import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "DOCUMENT_CONVERTER" });
+const logger = getLogger({ prefix: "lib/documentConverter" });
 
 interface ToMarkdownResult {
   name: string;

@@ -1,7 +1,7 @@
 import type { KVNamespace } from "@cloudflare/workers-types";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "CACHE" });
+const logger = getLogger({ prefix: "lib/cache" });
 
 export interface CacheOptions {
   ttl?: number;

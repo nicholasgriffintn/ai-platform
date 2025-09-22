@@ -4,7 +4,7 @@ import { encodeBase64Url } from "~/utils/base64url";
 import { getLogger } from "~/utils/logger";
 import { BaseRepository } from "./BaseRepository";
 
-const logger = getLogger({ prefix: "WEB_AUTHN_REPOSITORY" });
+const logger = getLogger({ prefix: "repositories/WebAuthnRepository" });
 
 export class WebAuthnRepository extends BaseRepository {
   public async createChallenge(
@@ -17,19 +17,16 @@ export class WebAuthnRepository extends BaseRepository {
 
     try {
       if (userId) {
-        // Delete existing challenges for the user first
         await this.executeRun(
           "DELETE FROM webauthn_challenge WHERE user_id = ?",
           [userId],
         );
-        // Then insert the new challenge
         await this.executeRun(
           `INSERT INTO webauthn_challenge (user_id, challenge, expires_at)
            VALUES (?, ?, ?)`,
           [userId, challenge, expiresAt.toISOString()],
         );
       } else {
-        // Insert anonymous challenge
         await this.executeRun(
           `INSERT INTO webauthn_challenge (challenge, expires_at)
            VALUES (?, ?)`,

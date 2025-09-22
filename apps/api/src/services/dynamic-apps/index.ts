@@ -7,7 +7,7 @@ import type { IRequest } from "~/types/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "DYNAMIC_APPS" });
+const logger = getLogger({ prefix: "services/dynamic-apps" });
 
 const dynamicApps = new Map<string, AppSchema>();
 

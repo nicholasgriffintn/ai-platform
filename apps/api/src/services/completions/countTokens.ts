@@ -4,7 +4,7 @@ import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "COUNT_TOKENS" });
+const logger = getLogger({ prefix: "services/completions/countTokens" });
 
 interface CountTokensRequest {
   model: string;

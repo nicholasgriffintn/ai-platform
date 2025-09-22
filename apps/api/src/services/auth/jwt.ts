@@ -6,7 +6,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { getUserById } from "./user";
 
-const logger = getLogger({ prefix: "JWT" });
+const logger = getLogger({ prefix: "services/auth/jwt" });
 
 type JwtData = {
   header: {

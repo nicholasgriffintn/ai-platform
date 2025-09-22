@@ -4,7 +4,7 @@ import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IFunction, IRequest } from "~/types";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "REASONING_FUNCTION" });
+const logger = getLogger({ prefix: "services/functions/reasoning" });
 
 export const add_reasoning_step: IFunction = {
   name: "add_reasoning_step",

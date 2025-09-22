@@ -27,7 +27,7 @@ import { errorResponseSchema, successResponseSchema } from "../schemas/shared";
 import { generateNotesFromMedia } from "~/services/apps/notes/generate-from-media";
 
 const app = new Hono();
-const routeLogger = createRouteLogger("APPS_NOTES");
+const routeLogger = createRouteLogger("apps/notes");
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing apps route: ${c.req.path}`);

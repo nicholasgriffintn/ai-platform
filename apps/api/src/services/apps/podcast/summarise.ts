@@ -4,7 +4,7 @@ import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "SERVICES:APPS:PODCAST:SUMMARISE" });
+const logger = getLogger({ prefix: "services/apps/podcast/summarise" });
 
 function generateFullTranscription(
   transcription: {

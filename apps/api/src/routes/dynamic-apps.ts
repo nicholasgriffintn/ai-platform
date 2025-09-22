@@ -19,11 +19,11 @@ import { appDataSchema } from "./schemas/app-data";
 import { appInfoSchema } from "./schemas/apps";
 import { errorResponseSchema } from "./schemas/shared";
 
-const logger = getLogger({ prefix: "DYNAMIC_APPS" });
+const logger = getLogger({ prefix: "routes/dynamic-apps" });
 
 const dynamicApps = new Hono();
 
-const routeLogger = createRouteLogger("DYNAMIC_APPS");
+const routeLogger = createRouteLogger("dynamic-apps");
 
 dynamicApps.use("*", requireAuth);
 

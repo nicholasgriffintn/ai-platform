@@ -6,7 +6,7 @@ import { getLogger } from "~/utils/logger";
 import { AssistantError } from "../../utils/errors";
 import { AIProviderFactory } from "../providers/factory";
 
-const logger = getLogger({ prefix: "LLAMAGUARD" });
+const logger = getLogger({ prefix: "lib/guardrails/llamaguard" });
 
 export interface LlamaGuardConfig {
   ai: Ai;

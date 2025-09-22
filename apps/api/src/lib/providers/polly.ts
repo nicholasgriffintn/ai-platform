@@ -6,7 +6,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { BaseProvider } from "./base";
 
-const logger = getLogger({ prefix: "POLY" });
+const logger = getLogger({ prefix: "lib/providers/polly" });
 
 interface PollyResponse {
   SynthesisTask: {

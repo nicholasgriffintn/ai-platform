@@ -5,7 +5,7 @@ import type { AnonymousUser, ModelConfigItem, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "USAGE_MANAGER" });
+const logger = getLogger({ prefix: "lib/usageManager" });
 
 async function isProModel(modelId: string): Promise<boolean> {
   const config: ModelConfigItem | undefined =

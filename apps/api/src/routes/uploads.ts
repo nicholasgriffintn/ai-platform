@@ -11,7 +11,7 @@ import { errorResponseSchema } from "./schemas/shared";
 import { uploadResponseSchema } from "./schemas/uploads";
 
 const app = new Hono();
-const routeLogger = createRouteLogger("UPLOADS");
+const routeLogger = createRouteLogger("uploads");
 
 app.use("/*", requireAuth);
 

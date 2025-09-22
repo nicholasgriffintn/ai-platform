@@ -4,7 +4,7 @@ import type { IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { generateId } from "~/utils/id";
 
-const logger = getLogger({ prefix: "HTTP" });
+const logger = getLogger({ prefix: "middleware/loggerMiddleware" });
 
 /**
  * Middleware that logs request and response details
@@ -91,5 +91,5 @@ export const loggerMiddleware = async (c: Context, next: Next) => {
  * @returns A logger instance specific to this route
  */
 export const createRouteLogger = (routeName: string) => {
-  return getLogger({ prefix: routeName });
+  return getLogger({ prefix: `routes/${routeName}` });
 };

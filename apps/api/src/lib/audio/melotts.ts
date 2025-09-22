@@ -2,7 +2,7 @@ import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "MELOTTS" });
+const logger = getLogger({ prefix: "lib/audio/melotts" });
 
 export class MelottsService {
   private readonly provider = AIProviderFactory.getProvider("workers-ai");
@@ -14,6 +14,9 @@ export class MelottsService {
     this.provider = AIProviderFactory.getProvider("workers-ai");
   }
 
+  /**
+   * Synthesize speech using Melotts
+   */
   async synthesizeSpeech(content: string, lang = "en") {
     try {
       const response = await this.provider.getResponse({

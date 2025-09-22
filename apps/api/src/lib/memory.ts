@@ -8,7 +8,7 @@ import { Embedding } from "./embedding";
 import { getAuxiliaryModel } from "./models";
 import { MemoryRepository } from "~/repositories/MemoryRepository";
 
-const logger = getLogger({ prefix: "MEMORY" });
+const logger = getLogger({ prefix: "lib/memory" });
 
 export interface MemoryEvent {
   type: "store" | "snapshot";

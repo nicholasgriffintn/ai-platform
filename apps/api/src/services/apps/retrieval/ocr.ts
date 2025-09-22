@@ -5,7 +5,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { convertMarkdownToHtml } from "~/utils/markdown";
 
-const logger = getLogger({ prefix: "OCR" });
+const logger = getLogger({ prefix: "services/apps/retrieval/ocr" });
 
 export interface OcrParams {
   model?: string;

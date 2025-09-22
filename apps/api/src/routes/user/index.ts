@@ -18,7 +18,7 @@ import apiKeys from "./apiKeys";
 import exportHistoryRoute from "./export-history";
 
 const app = new Hono();
-const routeLogger = createRouteLogger("USER");
+const routeLogger = createRouteLogger("user");
 
 app.use("/*", requireAuth);
 

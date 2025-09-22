@@ -13,7 +13,7 @@ import {
 import { errorResponseSchema } from "./schemas/shared";
 
 const app = new Hono();
-const routeLogger = createRouteLogger("PLANS");
+const routeLogger = createRouteLogger("plans");
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing plans route: ${c.req.path}`);

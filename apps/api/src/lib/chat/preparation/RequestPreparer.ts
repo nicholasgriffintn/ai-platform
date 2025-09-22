@@ -20,7 +20,7 @@ import {
 } from "../utils";
 import type { ValidationContext } from "../validation/ValidationPipeline";
 
-const logger = getLogger({ prefix: "CHAT:PREPARATION:REQUEST_PREPARER" });
+const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
 
 export interface PreparedRequest {
   modelConfigs: ModelConfigInfo[];

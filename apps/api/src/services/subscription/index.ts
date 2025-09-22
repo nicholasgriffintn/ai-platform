@@ -12,7 +12,7 @@ import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "SUBSCRIPTION_SERVICE" });
+const logger = getLogger({ prefix: "services/subscription" });
 
 function getStripeClient(env: IEnv): Stripe {
   const secret = env.STRIPE_SECRET_KEY;

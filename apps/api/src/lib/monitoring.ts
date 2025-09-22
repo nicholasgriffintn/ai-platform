@@ -4,7 +4,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "MONITORING" });
+const logger = getLogger({ prefix: "lib/monitoring" });
 
 export interface Metric {
   traceId: string;

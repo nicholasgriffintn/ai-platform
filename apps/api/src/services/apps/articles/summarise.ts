@@ -9,7 +9,7 @@ import { extractQuotes } from "~/utils/extract";
 import { getLogger } from "~/utils/logger";
 import { verifyQuotes } from "~/utils/verify";
 
-const logger = getLogger({ prefix: "SERVICES:APPS:ARTICLES:SUMMARISE" });
+const logger = getLogger({ prefix: "services/apps/articles/summarise" });
 
 export interface Params {
   article: string;

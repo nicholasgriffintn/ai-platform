@@ -11,7 +11,9 @@ import {
 import { getLogger } from "~/utils/logger";
 import { registerDynamicApp } from "./index";
 
-const logger = getLogger({ prefix: "AUTO_REGISTER_DYNAMIC_APPS" });
+const logger = getLogger({
+  prefix: "services/dynamic-apps/auto-register-apps",
+});
 
 export const autoRegisterDynamicApps = (): void => {
   for (const func of availableFunctions) {

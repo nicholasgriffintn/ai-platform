@@ -14,7 +14,7 @@ import type {
 } from "~/types";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "MODEL_ROUTER" });
+const logger = getLogger({ prefix: "lib/modelRouter" });
 
 interface ModelScore {
   model: string;

@@ -1,6 +1,6 @@
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "CAPTCHA" });
+const logger = getLogger({ prefix: "lib/captcha" });
 
 export interface CaptchaVerificationResponse {
   success: boolean;

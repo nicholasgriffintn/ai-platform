@@ -15,7 +15,7 @@ import type {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "S3VECTORS" });
+const logger = getLogger({ prefix: "lib/embedding/s3vectors" });
 
 export interface S3VectorsEmbeddingProviderConfig {
   bucketName: string;

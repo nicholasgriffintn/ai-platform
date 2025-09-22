@@ -316,13 +316,12 @@ let hasLoggedStart = false;
 
 export default {
   async fetch(request: Request, env: IEnv, ctx: ExecutionContext) {
-    const raw = env.LOG_LEVEL?.toUpperCase() ?? "INFO";
-    const level =
-      (LogLevel[raw as keyof typeof LogLevel] as LogLevel) ?? LogLevel.INFO;
+    const logLevel = LogLevel[env.LOG_LEVEL?.toUpperCase()] ?? LogLevel.INFO;
 
-    const logger = getLogger({ prefix: "API", level });
+    const logger = getLogger({ prefix: "api", level: logLevel });
+
     if (!hasLoggedStart) {
-      logger.info(`Application starting (log level=${LogLevel[level]})`);
+      logger.info(`Application starting (log level=${LogLevel[logLevel]})`);
       hasLoggedStart = true;
     }
 

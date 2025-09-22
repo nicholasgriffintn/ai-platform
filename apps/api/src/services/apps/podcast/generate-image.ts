@@ -6,7 +6,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "SERVICES:APPS:PODCAST:GENERATE_IMAGE" });
+const logger = getLogger({ prefix: "services/apps/podcast/generate-image" });
 
 export interface IPodcastGenerateImageBody {
   podcastId: string;

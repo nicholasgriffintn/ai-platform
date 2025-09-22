@@ -8,7 +8,7 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { BaseRepository } from "./BaseRepository";
 
-const logger = getLogger({ prefix: "REPOSITORIES:SHARED_AGENT" });
+const logger = getLogger({ prefix: "repositories/SharedAgentRepository" });
 
 export interface SharedAgentWithAuthor extends SharedAgent {
   author_name: string;

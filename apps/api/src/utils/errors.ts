@@ -1,6 +1,6 @@
 import { getLogger } from "./logger";
 
-const logger = getLogger({ prefix: "ERRORS" });
+const logger = getLogger({ prefix: "utils/errors" });
 
 export enum ErrorType {
   CONFIGURATION_ERROR = "CONFIGURATION_ERROR",

@@ -8,7 +8,7 @@ import { extractQuotes } from "~/utils/extract";
 import { getLogger } from "~/utils/logger";
 import { verifyQuotes } from "~/utils/verify";
 
-const logger = getLogger({ prefix: "SERVICES:APPS:ARTICLES:GENERATE_REPORT" });
+const logger = getLogger({ prefix: "services/apps/articles/generate-report" });
 
 export interface Params {
   itemId: string;

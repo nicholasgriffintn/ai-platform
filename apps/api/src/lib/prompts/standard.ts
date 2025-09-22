@@ -3,7 +3,7 @@ import { getLogger } from "~/utils/logger";
 import { PromptBuilder } from "./builder";
 import { getArtifactExample, getResponseStyle } from "./utils";
 
-const logger = getLogger({ prefix: "STANDARD_PROMPT" });
+const logger = getLogger({ prefix: "lib/prompts/standard" });
 
 export async function returnStandardPrompt(
   request: IBody,

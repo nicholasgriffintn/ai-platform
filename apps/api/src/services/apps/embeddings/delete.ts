@@ -4,7 +4,7 @@ import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "DELETE_EMBEDDING" });
+const logger = getLogger({ prefix: "services/apps/embeddings/delete" });
 
 // @ts-ignore
 export interface IDeleteEmbeddingRequest extends IRequest {

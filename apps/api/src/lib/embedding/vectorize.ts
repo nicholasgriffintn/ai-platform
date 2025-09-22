@@ -16,7 +16,7 @@ import type {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "VECTORIZE" });
+const logger = getLogger({ prefix: "lib/embedding/vectorize" });
 
 export interface VectorizeEmbeddingProviderConfig {
   ai: Ai;

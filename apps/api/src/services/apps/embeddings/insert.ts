@@ -7,7 +7,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "INSERT_EMBEDDING" });
+const logger = getLogger({ prefix: "services/apps/embeddings/insert" });
 
 // @ts-ignore
 export interface IInsertEmbeddingRequest extends IRequest {
