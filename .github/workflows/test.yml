@@ -34,6 +34,8 @@ jobs:
         run: pnpm install
       - name: Run checks
         run: pnpm check
+      - name: Build schemas
+        run: pnpm --filter @assistant/schemas build
       - name: Run typechecks
         run: pnpm typecheck
       - name: Run test
