@@ -1,7 +1,7 @@
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi";
-import { z } from "zod/v4";
+import z from "zod/v4";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import type { IEnv } from "~/types";

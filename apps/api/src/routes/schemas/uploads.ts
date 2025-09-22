@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import z from "zod/v4";
 
 export const uploadRequestSchema = z.object({
   file: z.any().refine((file) => file && file instanceof File, {

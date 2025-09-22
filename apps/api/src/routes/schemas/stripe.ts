@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import z from "zod/v4";
 
 export const checkoutSchema = z.object({
   plan_id: z.string(),

@@ -1,5 +1,5 @@
 import type { MCPClientManager } from "agents/mcp/client";
-import { z } from "zod/v4";
+import z from "zod/v4";
 
 import type { ConversationManager } from "~/lib/conversationManager";
 import type { IFunctionResponse, IRequest } from "~/types";

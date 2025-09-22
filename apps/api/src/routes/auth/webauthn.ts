@@ -5,7 +5,7 @@ import type {
 import { type Context, Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi";
-import { z } from "zod/v4";
+import z from "zod/v4";
 
 import { APP_NAME, LOCAL_HOST, PROD_HOST } from "~/constants/app";
 import { Database } from "~/lib/database";

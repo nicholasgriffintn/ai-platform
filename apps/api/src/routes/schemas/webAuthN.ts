@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import z from "zod/v4";
 
 const base64urlRegex = /^[A-Za-z0-9_-]*$/;
 const isBase64url = (v: string) => base64urlRegex.test(v);

@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import z from "zod/v4";
 
 export const mcpServerSchema = z.object({
   url: z.url().meta({

@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import z from "zod/v4";
 
 import { type ResponseDisplay, ResponseDisplayType } from "./functions";
 

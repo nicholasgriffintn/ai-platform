@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import z from "zod/v4";
 
 export const shareAgentSchema = z.object({
   agent_id: z.string().meta({ description: "ID of the agent to share" }),

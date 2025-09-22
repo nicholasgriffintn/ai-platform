@@ -1,7 +1,7 @@
 import { type Context, Hono, type Next } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi";
-import { z } from "zod/v4";
+import z from "zod/v4";
 
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";

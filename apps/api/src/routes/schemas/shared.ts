@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import z from "zod/v4";
 
 export const messageSchema = z.object({
   role: z.enum(["user", "assistant", "tool"]),
