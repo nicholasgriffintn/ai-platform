@@ -65,7 +65,7 @@
     "@cloudflare/workers-types": "4.20250924.0",
     "@react-router/dev": "7.9.1",
     "@simplewebauthn/types": "^12.0.0",
-    "@tailwindcss/typography": "0.5.18",
+    "@tailwindcss/typography": "0.5.19",
     "@tailwindcss/vite": "4.1.13",
     "@testing-library/jest-dom": "6.8.0",
     "@testing-library/react": "16.3.0",
