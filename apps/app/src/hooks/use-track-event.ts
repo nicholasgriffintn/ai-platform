@@ -18,7 +18,7 @@ export type TrackEventProps = {
   category: string;
   label?: string;
   value?: number | string;
-  nonInteraction?: boolean;
+  non_interaction?: boolean;
   properties?: Record<string, string | boolean | number | null | undefined>;
 };
 
@@ -61,8 +61,8 @@ export function useTrackEvent() {
         if (event.value !== undefined) {
           posthogProps.value = event.value;
         }
-        if (event.nonInteraction !== undefined) {
-          posthogProps.nonInteraction = event.nonInteraction;
+        if (event.non_interaction !== undefined) {
+          posthogProps.non_interaction = event.non_interaction;
         }
         posthog.capture(event.name, posthogProps);
       }

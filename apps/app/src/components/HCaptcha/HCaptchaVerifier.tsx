@@ -70,7 +70,7 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
         trackEvent({
           name: "captcha_expired",
           category: EventCategory.AUTH,
-          nonInteraction: true,
+          non_interaction: true,
           properties: {
             verification_method: "hcaptcha",
             site_key: siteKey,

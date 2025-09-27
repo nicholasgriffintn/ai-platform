@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+
 import { IS_PRODUCTION } from "~/constants";
 
 const BEACON_ENDPOINT = IS_PRODUCTION
@@ -22,19 +23,8 @@ export type Experiment = {
 declare global {
   interface Window {
     Beacon?: {
-      trackEvent: (event: {
-        name: string;
-        category: string;
-        label?: string;
-        value?: number | string;
-        nonInteraction?: boolean;
-        properties?: Record<string, string>;
-      }) => void;
-      trackPageView: (pageView: {
-        contentType?: string;
-        virtualPageview?: boolean;
-        properties?: Record<string, string>;
-      }) => void;
+      version: string;
+      config: Record<string, string>;
       init: (config: {
         endpoint: string;
         siteId: string;
@@ -42,12 +32,31 @@ declare global {
         trackClicks: boolean;
         trackUserTimings: boolean;
         respectDoNotTrack: boolean;
+        directEvents?: boolean;
+        directPageViews?: boolean;
+        batchSize?: number;
+        batchTimeout?: number;
       }) => void;
+      trackEvent: (event: {
+        name: string;
+        category: string;
+        label?: string;
+        value?: number | string;
+        non_interaction?: boolean;
+        properties?: Record<string, string>;
+      }) => void;
+      trackPageView: (pageView: {
+        content_type?: string;
+        virtual_pageview?: boolean;
+        properties?: Record<string, string>;
+      }) => void;
+      setConsent: (consent: boolean) => void;
+      hasConsent: () => boolean;
     };
     _beaconInitialized?: boolean;
     _expBeaconInitialized?: boolean;
     BeaconExperiments?: {
-      init: (config: { debug: boolean }) => void;
+      init: (config: { endpoint: string; debug: boolean }) => void;
       defineExperimentBehaviors: (experiments: Experiment[]) => void;
       activate: (experimentId: string) => void;
       getVariant: (experimentId: string) => {
@@ -64,11 +73,19 @@ export function Analytics({
   beaconEndpoint = BEACON_ENDPOINT,
   beaconSiteId = "test-beacon",
   beaconDebug = false,
+  directEvents = false,
+  directPageViews = true,
+  batchSize = 10,
+  batchTimeout = 5000,
 }: {
   isEnabled?: boolean;
   beaconEndpoint?: string;
   beaconSiteId?: string;
   beaconDebug?: boolean;
+  directEvents?: boolean;
+  directPageViews?: boolean;
+  batchSize?: number;
+  batchTimeout?: number;
 }) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
   useEffect(() => {
@@ -98,6 +115,10 @@ export function Analytics({
           trackClicks: true,
           trackUserTimings: true,
           respectDoNotTrack: false,
+          directEvents,
+          directPageViews,
+          batchSize,
+          batchTimeout,
         });
       }
     };
@@ -132,6 +153,7 @@ export function Analytics({
       if (window.BeaconExperiments) {
         window.BeaconExperiments.init({
           debug: beaconDebug,
+          endpoint: beaconEndpoint,
         });
       }
     };
