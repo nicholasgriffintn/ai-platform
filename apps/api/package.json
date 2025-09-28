@@ -41,7 +41,7 @@
     "isbot": "5.1.31",
     "stripe": "^18.0.0",
     "zod": "4.1.11",
-    "zod-openapi": "5.4.1"
+    "zod-openapi": "5.4.2"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.4",
