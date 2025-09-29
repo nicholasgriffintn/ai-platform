@@ -57,6 +57,7 @@ export type ModelConfigItem = {
   bedrockApiOperation?: string;
   bedrockStreamingApiOperation?: string;
   supportsPresencePenalty?: boolean;
+  restrictsCombinedTopPAndTemperature?: boolean;
 };
 
 export type ModelConfig = {

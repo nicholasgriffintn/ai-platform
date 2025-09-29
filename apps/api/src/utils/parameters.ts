@@ -173,7 +173,16 @@ export function createCommonParameters(
     params.model &&
     !params.should_think
   ) {
-    commonParams.top_p = params.top_p;
+    if (modelConfig.restrictsCombinedTopPAndTemperature) {
+      if (params.temperature !== undefined && params.top_p !== undefined) {
+        commonParams.temperature = params.temperature;
+        delete commonParams.top_p;
+      } else {
+        commonParams.top_p = params.top_p;
+      }
+    } else {
+      commonParams.top_p = params.top_p;
+    }
   }
 
   return commonParams;
