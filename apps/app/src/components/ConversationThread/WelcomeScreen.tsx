@@ -9,7 +9,7 @@ export const WelcomeScreen = ({ setInput }: WelcomeScreenProps) => {
   return (
     <div className="w-full text-center px-4 pt-4 pb-2">
       <div className="w-32 h-32 mx-auto">
-        <Logo variant="default" />
+        <Logo variant="logo_control" />
       </div>
       <h2 className="md:text-4xl text-2xl font-semibold text-zinc-800 dark:text-zinc-200">
         What would you like to know?

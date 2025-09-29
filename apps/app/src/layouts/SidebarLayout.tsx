@@ -23,7 +23,7 @@ export function SidebarLayout({
   displayNavBar = true,
   bgClassName,
 }: SidebarLayoutProps) {
-  const { defineExperimentBehaviors, isReady, activate } = useExperiments();
+  const { defineExperimentBehaviors, activate } = useExperiments();
 
   const {
     sidebarVisible,
@@ -44,10 +44,7 @@ export function SidebarLayout({
       })
     : sidebarContent;
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once
   useEffect(() => {
-    if (!isReady) return;
-
     const setupExperiment = async () => {
       await defineExperimentBehaviors([
         {
@@ -57,22 +54,22 @@ export function SidebarLayout({
           autoActivate: true,
           variants: [
             {
-              id: "control",
+              id: "logo_control",
               name: "Default",
               activate: () => {},
             },
             {
-              id: "minimalist",
+              id: "logo_minimalist",
               name: "Minimalist",
               activate: () => {},
             },
             {
-              id: "tropical",
+              id: "logo_tropical",
               name: "Tropical",
               activate: () => {},
             },
             {
-              id: "abstract",
+              id: "logo_abstract",
               name: "Abstract",
               activate: () => {},
             },
@@ -84,7 +81,7 @@ export function SidebarLayout({
     };
 
     setupExperiment();
-  }, [isReady]);
+  }, []);
 
   return (
     <>
