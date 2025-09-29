@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
+
 import { LoginModal } from "~/components/Models/LoginModal";
 import { ChatNavbar } from "~/components/Navbar";
 import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
 import { cn } from "~/lib/utils";
 import { useUIStore } from "~/state/stores/uiStore";
 import { KeyboardShortcutsHelp } from "../components/Models/KeyboardShortcutsHelp";
+import { useExperiments } from "~/hooks/use-experiments";
 
 interface SidebarLayoutProps {
   children: React.ReactNode;
@@ -21,6 +23,8 @@ export function SidebarLayout({
   displayNavBar = true,
   bgClassName,
 }: SidebarLayoutProps) {
+  const { defineExperimentBehaviors, isReady, activate } = useExperiments();
+
   const {
     sidebarVisible,
     showKeyboardShortcuts,
@@ -39,6 +43,48 @@ export function SidebarLayout({
         onEnterApiKey: handleEnterApiKey,
       })
     : sidebarContent;
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once
+  useEffect(() => {
+    if (!isReady) return;
+
+    const setupExperiment = async () => {
+      await defineExperimentBehaviors([
+        {
+          id: "logo",
+          name: "Polychat Logo",
+          description: "The logo of the app",
+          autoActivate: true,
+          variants: [
+            {
+              id: "control",
+              name: "Default",
+              activate: () => {},
+            },
+            {
+              id: "minimalist",
+              name: "Minimalist",
+              activate: () => {},
+            },
+            {
+              id: "tropical",
+              name: "Tropical",
+              activate: () => {},
+            },
+            {
+              id: "abstract",
+              name: "Abstract",
+              activate: () => {},
+            },
+          ],
+        },
+      ]);
+
+      await activate("logo");
+    };
+
+    setupExperiment();
+  }, [isReady]);
 
   return (
     <>
