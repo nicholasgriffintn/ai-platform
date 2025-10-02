@@ -275,8 +275,8 @@ importers:
         specifier: 27.0.0
         version: 27.0.0(bufferutil@4.0.9)(postcss@8.5.6)(utf-8-validate@5.0.10)
       rollup-plugin-visualizer:
-        specifier: 6.0.3
-        version: 6.0.3(rollup@4.50.1)
+        specifier: 6.0.4
+        version: 6.0.4(rollup@4.50.1)
       terser:
         specifier: 5.44.0
         version: 5.44.0
@@ -378,8 +378,8 @@ importers:
         specifier: 27.0.0
         version: 27.0.0(bufferutil@4.0.9)(postcss@8.5.6)(utf-8-validate@5.0.10)
       rollup-plugin-visualizer:
-        specifier: 6.0.3
-        version: 6.0.3(rollup@4.50.1)
+        specifier: 6.0.4
+        version: 6.0.4(rollup@4.50.1)
       terser:
         specifier: 5.44.0
         version: 5.44.0
@@ -5587,8 +5587,8 @@ packages:
     resolution: {integrity: sha512-9LkiTwjUh6rT555DtE9rTX+BKByPfrMzEAtnlEtdEwr3Nkffwiihqe2bWADg+OQRjt9gl6ICdmB/ZFDCGAtSow==}
     engines: {node: '>= 4'}
 
-  rollup-plugin-visualizer@6.0.3:
-    resolution: {integrity: sha512-ZU41GwrkDcCpVoffviuM9Clwjy5fcUxlz0oMoTXTYsK+tcIFzbdacnrr2n8TXcHxbGKKXtOdjxM2HUS4HjkwIw==}
+  rollup-plugin-visualizer@6.0.4:
+    resolution: {integrity: sha512-q8Q7J/6YofkmaGW1sH/fPRAz37x/+pd7VBuaUU7lwvOS/YikuiiEU9jeb9PH8XHiq50XFrUsBbOxeAMYQ7KZkg==}
     engines: {node: '>=18'}
     hasBin: true
     peerDependencies:
@@ -12951,7 +12951,7 @@ snapshots:
 
   retry@0.12.0: {}
 
-  rollup-plugin-visualizer@6.0.3(rollup@4.50.1):
+  rollup-plugin-visualizer@6.0.4(rollup@4.50.1):
     dependencies:
       open: 8.4.2
       picomatch: 4.0.3
