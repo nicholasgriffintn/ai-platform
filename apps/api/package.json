@@ -35,7 +35,7 @@
     "@tsndr/cloudflare-worker-jwt": "3.2.0",
     "agents": "^0.2.0",
     "aws4fetch": "1.0.20",
-    "drizzle-orm": "0.44.5",
+    "drizzle-orm": "0.44.6",
     "hono": "4.9.9",
     "hono-openapi": "1.1.0",
     "isbot": "5.1.31",
