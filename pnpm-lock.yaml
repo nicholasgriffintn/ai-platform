@@ -220,8 +220,8 @@ importers:
         specifier: ^1.2.7
         version: 1.4.0
       virtua:
-        specifier: ^0.43.0
-        version: 0.43.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^0.44.0
+        version: 0.44.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       zustand:
         specifier: 5.0.8
         version: 5.0.8(@types/react@19.1.16)(react@19.1.1)(use-sync-external-store@1.4.0(react@19.1.1))
@@ -6288,8 +6288,8 @@ packages:
       typescript:
         optional: true
 
-  virtua@0.43.6:
-    resolution: {integrity: sha512-FcIkIUibw5SSCywhTbg0R0nKmFhILWCVrAIWesckitsXX5IOrWYqtDpT/GLmIuZIrTB9A/+3DnmL5uvDgKWmFQ==}
+  virtua@0.44.2:
+    resolution: {integrity: sha512-YCzmduVzt3/V0i/fZpbOmucsyHAN8CNMqmHlRQt+q9Wd1dtNrgAJpSWi3jVywu7A6t5qf+q+5kOSMMC6iwpWcw==}
     peerDependencies:
       react: '>=16.14.0'
       react-dom: '>=16.14.0'
@@ -7823,7 +7823,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
       '@types/debug': 4.1.12
-      debug: 4.3.4
+      debug: 4.4.3
       pony-cause: 2.1.11
       semver: 7.7.2
       uuid: 9.0.1
@@ -7838,7 +7838,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
       '@types/debug': 4.1.12
-      debug: 4.3.4
+      debug: 4.4.3
       pony-cause: 2.1.11
       semver: 7.7.2
       uuid: 9.0.1
@@ -8997,7 +8997,7 @@ snapshots:
 
   '@scure/bip32@1.7.0':
     dependencies:
-      '@noble/curves': 1.9.1
+      '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
     optional: true
@@ -10443,6 +10443,12 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
       zod: 4.1.11
+    optional: true
+
+  abitype@1.1.1(typescript@5.9.3)(zod@3.22.4):
+    optionalDependencies:
+      typescript: 5.9.3
+      zod: 3.22.4
     optional: true
 
   abitype@1.1.1(typescript@5.9.3)(zod@4.1.11):
@@ -12633,11 +12639,11 @@ snapshots:
   ox@0.6.7(typescript@5.9.3)(zod@4.1.11):
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
-      '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
-      '@scure/bip32': 1.6.2
-      '@scure/bip39': 1.5.4
-      abitype: 1.0.8(typescript@5.9.3)(zod@4.1.11)
+      '@noble/curves': 1.9.7
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
+      abitype: 1.1.1(typescript@5.9.3)(zod@4.1.11)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.9.3
@@ -12668,7 +12674,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.1.0(typescript@5.9.3)(zod@3.22.4)
+      abitype: 1.1.1(typescript@5.9.3)(zod@3.22.4)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.9.3
@@ -12684,7 +12690,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.1.0(typescript@5.9.3)(zod@4.1.11)
+      abitype: 1.1.1(typescript@5.9.3)(zod@4.1.11)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.9.3
@@ -14004,7 +14010,7 @@ snapshots:
       - zod
     optional: true
 
-  virtua@0.43.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  virtua@0.44.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     optionalDependencies:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
