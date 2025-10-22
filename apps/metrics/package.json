@@ -32,7 +32,7 @@
     "tailwindcss": "4.1.15"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.6",
+    "@biomejs/biome": "2.2.7",
     "@cloudflare/workers-types": "4.20251014.0",
     "@tailwindcss/typography": "0.5.19",
     "@tailwindcss/vite": "4.1.15",
