@@ -58,6 +58,7 @@ describe("returnCodingPrompt", () => {
       const result = returnCodingPrompt(request);
       expect(result).toContain("<response_traits>");
       expect(result).toContain("<response_preferences>");
+      expect(result).toContain("Favor brevity");
     });
   });
 
@@ -99,6 +100,14 @@ describe("returnCodingPrompt", () => {
       expect(typeof result).toBe("string");
       expect(result.length).toBeGreaterThan(0);
     });
+
+    it("should include preferred language when provided", () => {
+      // @ts-expect-error - mock implementation
+      const request: IBody = { lang: "de" };
+      const result = returnCodingPrompt(request);
+      expect(result).toContain("<preferred_language>de</preferred_language>");
+      expect(result).toContain("Default to replying in de");
+    });
   });
 
   describe("feature flags handling", () => {
@@ -127,6 +136,9 @@ describe("returnCodingPrompt", () => {
       const request: IBody = {};
       const result = returnCodingPrompt(request, undefined, false, true, false);
       expect(result).toContain("artifact");
+      expect(result).toContain("<artifact_example>");
+      expect(result).toContain("<validation>");
+      expect(result).toContain("<next_steps>");
     });
 
     it("should include solution section when supportsArtifacts is false", () => {
@@ -140,6 +152,10 @@ describe("returnCodingPrompt", () => {
         false,
       );
       expect(result).toContain("<solution>");
+      expect(result).toContain("<code_block");
+      expect(result).toContain("<reference_note>");
+      expect(result).toContain("<validation>");
+      expect(result).toContain("<next_steps>");
     });
 
     it("should handle supportsToolCalls flag", () => {
@@ -163,6 +179,25 @@ describe("returnCodingPrompt", () => {
       );
       expect(result).toContain("<response_traits>");
       expect(result).toContain("<response_preferences>");
+    });
+
+    it("should derive supportsArtifacts from model metadata when not provided", () => {
+      // @ts-expect-error - mock implementation
+      const request: IBody = {};
+      const result = returnCodingPrompt(
+        request,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        {
+          modelConfig: {
+            supportsArtifacts: true,
+          } as any,
+        },
+      );
+      expect(result).toContain("artifact");
     });
   });
 
@@ -274,6 +309,7 @@ describe("returnCodingPrompt", () => {
       const result = returnCodingPrompt(request);
       expect(result).toContain("<response_traits>");
       expect(result).toContain("<response_preferences>");
+      expect(result).toContain("<tone_hint>");
     });
 
     it("should handle explanatory mode appropriately", () => {
@@ -282,6 +318,7 @@ describe("returnCodingPrompt", () => {
       const result = returnCodingPrompt(request);
       expect(result).toContain("<response_traits>");
       expect(result).toContain("<response_preferences>");
+      expect(result).toContain("<tone_hint>");
     });
 
     it("should handle formal mode appropriately", () => {
@@ -290,6 +327,7 @@ describe("returnCodingPrompt", () => {
       const result = returnCodingPrompt(request);
       expect(result).toContain("<response_traits>");
       expect(result).toContain("<response_preferences>");
+      expect(result).toContain("<tone_hint>");
     });
   });
 

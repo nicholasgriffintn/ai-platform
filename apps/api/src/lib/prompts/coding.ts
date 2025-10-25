@@ -1,6 +1,13 @@
 import type { IBody, IUserSettings } from "~/types";
 import { PromptBuilder } from "./builder";
-import { getArtifactExample, getResponseStyle } from "./utils";
+import {
+  buildAssistantMetadataSection,
+  type PromptModelMetadata,
+} from "./sections/metadata";
+import { buildAssistantPrinciplesSection } from "./sections/principles";
+import { buildCodingExampleOutputSection } from "./sections/examples";
+import { buildUserContextSection } from "./sections/user-context";
+import { getResponseStyle } from "./utils";
 
 export function returnCodingPrompt(
   request: IBody,
@@ -9,6 +16,7 @@ export function returnCodingPrompt(
   supportsArtifacts?: boolean,
   supportsReasoning?: boolean,
   requiresThinkingPrompt?: boolean,
+  modelMetadata?: PromptModelMetadata,
 ): string {
   const chatMode = request.mode || "standard";
 
@@ -21,8 +29,24 @@ export function returnCodingPrompt(
     userSettings?.memories_chat_history_enabled;
 
   const response_mode = request.response_mode || "normal";
+  const preferredLanguage = request.lang?.trim() || null;
 
   const isAgent = chatMode === "agent";
+
+  const latitude = request.location?.latitude ?? null;
+  const longitude = request.location?.longitude ?? null;
+  const date = request.date || new Date().toISOString().split("T")[0];
+
+  const effectiveSupportsToolCalls =
+    supportsToolCalls ?? modelMetadata?.modelConfig?.supportsToolCalls ?? false;
+  const effectiveSupportsArtifacts =
+    supportsArtifacts ?? modelMetadata?.modelConfig?.supportsArtifacts ?? false;
+  const effectiveSupportsReasoning =
+    supportsReasoning ?? modelMetadata?.modelConfig?.supportsReasoning ?? false;
+  const effectiveRequiresThinkingPrompt =
+    requiresThinkingPrompt ??
+    modelMetadata?.modelConfig?.requiresThinkingPrompt ??
+    false;
 
   const {
     traits,
@@ -31,10 +55,10 @@ export function returnCodingPrompt(
     answerFormatInstructions,
   } = getResponseStyle(
     response_mode,
-    supportsReasoning,
-    requiresThinkingPrompt,
-    supportsToolCalls,
-    supportsArtifacts,
+    effectiveSupportsReasoning,
+    effectiveRequiresThinkingPrompt,
+    effectiveSupportsToolCalls,
+    effectiveSupportsArtifacts,
     isAgent,
     memoriesEnabled,
     userTraits,
@@ -42,56 +66,55 @@ export function returnCodingPrompt(
     true,
   );
 
-  const builder = new PromptBuilder(
-    "<assistant_info>You are an experienced software developer tasked with answering coding questions or generating code based on user requests. Your responses should be professional, accurate, and tailored to the specified programming language when applicable.</assistant_info>",
-  )
+  const metadataSection = buildAssistantMetadataSection({
+    request: preferredLanguage
+      ? { ...request, lang: preferredLanguage }
+      : request,
+    modelId: modelMetadata?.modelId,
+    modelConfig: modelMetadata?.modelConfig,
+  });
+
+  const principlesSection = buildAssistantPrinciplesSection({
+    isAgent,
+    supportsToolCalls: effectiveSupportsToolCalls,
+    supportsArtifacts: effectiveSupportsArtifacts,
+    supportsReasoning: effectiveSupportsReasoning,
+    preferredLanguage,
+    responseMode: response_mode,
+  });
+
+  const builder = new PromptBuilder(metadataSection)
+    .addLine(
+      "<assistant_info>You are an experienced software developer tasked with answering coding questions or generating code based on user requests. Your responses should be professional, accurate, and tailored to the specified programming language when applicable.</assistant_info>",
+    )
     .addLine()
+    .add(principlesSection)
     .addLine(`<response_traits>${traits}</response_traits>`)
     .addLine(`<response_preferences>${preferences}</response_preferences>`)
     .addLine()
-    .addLine("<user_context>")
-    .addIf(!!userNickname, `<user_nickname>${userNickname}</user_nickname>`)
-    .addIf(!!userJobRole, `<user_job_role>${userJobRole}</user_job_role>`)
-    .addLine("</user_context>")
+    .add(
+      buildUserContextSection({
+        date,
+        userNickname,
+        userJobRole,
+        latitude,
+        longitude,
+        language: preferredLanguage,
+      }),
+    )
     .startSection();
 
   builder
-    .addLine("Here is an example of the output you should provide:")
-    .addLine("<example_output>")
-    .addLine("<answer>")
-    .addLine(
-      "<introduction>Brief introduction addressing the user's question or request</introduction>",
+    .add(
+      buildCodingExampleOutputSection({
+        supportsReasoning: effectiveSupportsReasoning,
+        supportsArtifacts: effectiveSupportsArtifacts,
+        problemBreakdownInstructions,
+        answerFormatInstructions,
+        preferredLanguage,
+        responseMode: response_mode,
+      }),
     )
-    .addLine();
-
-  if (!supportsReasoning) {
-    builder
-      .addLine("<think>")
-      .addLine(problemBreakdownInstructions)
-      .addLine("</think>")
-      .addLine();
-  }
-
-  if (supportsArtifacts) {
-    builder
-      .addLine()
-      .addLine(getArtifactExample(supportsArtifacts, true))
-      .addLine();
-  } else {
-    builder.addLine(`<solution>${answerFormatInstructions}</solution>`);
-  }
-
-  builder
-    .addLine()
-    .addLine(
-      "<implementation_explanation>Explanation of key parts of the implementation, if code was provided</implementation_explanation>",
-    )
-    .addLine()
-    .addLine(
-      "<additional_info>Additional considerations, best practices, or alternative approaches if relevant</additional_info>",
-    )
-    .addLine("</answer>")
-    .addLine("</example_output>")
     .startSection()
     .addLine(
       "Remember to tailor your response to the specified programming language when applicable, and always strive for accuracy and professionalism in your explanations and code examples.",

@@ -23,6 +23,24 @@ describe("returnStandardPrompt", () => {
       expect(typeof result).toBe("string");
       expect(result.length).toBeGreaterThan(0);
     });
+
+    it("should include session metadata and model information", async () => {
+      // @ts-expect-error - mock implementation
+      const request: IBody = {};
+      const result = await returnStandardPrompt(
+        request,
+        undefined,
+        undefined,
+        false,
+        false,
+        false,
+        false,
+        { modelId: "test-model" },
+      );
+      expect(result).toContain("<session_metadata>");
+      expect(result).toContain("<model_info>");
+      expect(result).toContain("<model_id>test-model</model_id>");
+    });
   });
 
   describe("parameter handling", () => {
@@ -63,6 +81,7 @@ describe("returnStandardPrompt", () => {
       const result = await returnStandardPrompt(request);
       expect(result).toContain("<response_traits>");
       expect(result).toContain("<response_preferences>");
+      expect(result).toContain("Favor brevity");
     });
   });
 
@@ -128,6 +147,14 @@ describe("returnStandardPrompt", () => {
       expect(result).toContain("<latitude>51.5074</latitude>");
       expect(result).toContain("<longitude>-0.1278</longitude>");
     });
+
+    it("should include preferred language when provided", async () => {
+      // @ts-expect-error - mock implementation
+      const request: IBody = { lang: "es" };
+      const result = await returnStandardPrompt(request);
+      expect(result).toContain("<preferred_language>es</preferred_language>");
+      expect(result).toContain("Default to replying in es");
+    });
   });
 
   describe("feature flags handling", () => {
@@ -178,6 +205,26 @@ describe("returnStandardPrompt", () => {
       const request: IBody = { mode: "agent" };
       const result = await returnStandardPrompt(request);
       expect(result).not.toContain("<example_output>");
+    });
+
+    it("should derive supportsReasoning from model metadata when not provided", async () => {
+      // @ts-expect-error - mock implementation
+      const request: IBody = {};
+      const result = await returnStandardPrompt(
+        request,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        {
+          modelConfig: {
+            supportsReasoning: true,
+          } as any,
+        },
+      );
+      expect(result).not.toContain("<think>");
     });
   });
 

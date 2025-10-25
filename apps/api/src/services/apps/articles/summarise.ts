@@ -1,5 +1,8 @@
 import { sanitiseInput } from "~/lib/chat/utils";
-import { getAuxiliaryModelForRetrieval } from "~/lib/models";
+import {
+  getAuxiliaryModelForRetrieval,
+  getModelConfigByMatchingModel,
+} from "~/lib/models";
 import { summariseArticlePrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import { AppDataRepository } from "~/repositories/AppDataRepository";
@@ -55,6 +58,7 @@ export async function summariseArticle({
   try {
     const { model: modelToUse, provider: providerToUse } =
       await getAuxiliaryModelForRetrieval(env, user);
+    const modelConfig = await getModelConfigByMatchingModel(modelToUse);
     const provider = AIProviderFactory.getProvider(providerToUse);
 
     const summaryGenData = await provider.getResponse({
@@ -64,7 +68,10 @@ export async function summariseArticle({
       messages: [
         {
           role: "user",
-          content: summariseArticlePrompt(sanitisedArticle),
+          content: summariseArticlePrompt(sanitisedArticle, {
+            modelId: modelToUse,
+            modelConfig,
+          }),
         },
       ],
       env: env,

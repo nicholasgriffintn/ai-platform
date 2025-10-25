@@ -69,6 +69,7 @@ describe("prompts index", () => {
         false,
         false,
         false,
+        { modelId: "unknown-model" },
       );
       expect(result).toBe("standard prompt");
     });
@@ -98,6 +99,16 @@ describe("prompts index", () => {
         true,
         false,
         false,
+        {
+          modelId: "coding-model",
+          modelConfig: {
+            type: ["coding"],
+            supportsToolCalls: true,
+            supportsArtifacts: true,
+            supportsReasoning: false,
+            requiresThinkingPrompt: false,
+          },
+        },
       );
       expect(result).toBe("coding prompt");
     });
@@ -165,6 +176,16 @@ describe("prompts index", () => {
         false,
         true,
         true,
+        {
+          modelId: "text-model",
+          modelConfig: {
+            type: ["text"],
+            supportsToolCalls: false,
+            supportsArtifacts: false,
+            supportsReasoning: true,
+            requiresThinkingPrompt: true,
+          },
+        },
       );
       expect(result).toBe("text prompt");
     });
@@ -201,6 +222,16 @@ describe("prompts index", () => {
       const { getSystemPrompt } = await import("../index");
       const result = await getSystemPrompt(mockRequest, "test-model");
 
+      expect(mockReturnStandardPrompt).toHaveBeenCalledWith(
+        mockRequest,
+        undefined,
+        undefined,
+        false,
+        false,
+        false,
+        false,
+        { modelId: "test-model" },
+      );
       expect(mockTrimTemplateWhitespace).toHaveBeenCalledWith(originalPrompt);
       expect(result).toBe(trimmedPrompt);
     });
@@ -217,6 +248,8 @@ describe("prompts index", () => {
       expect(result).toContain("comprehensive analysis");
       expect(result).toContain("Bias Detection");
       expect(result).toContain("Political Alignment");
+      expect(result).toContain("<session_metadata>");
+      expect(result).toContain("<model_id>");
     });
 
     it("should generate summarise article prompt with article content", async () => {
@@ -229,6 +262,8 @@ describe("prompts index", () => {
       expect(result).toContain("professional summary");
       expect(result).toContain("300-400 words");
       expect(result).toContain("Key Findings");
+      expect(result).toContain("<session_metadata>");
+      expect(result).toContain("<model_id>");
     });
 
     it("should generate article report prompt with articles content", async () => {
@@ -240,6 +275,8 @@ describe("prompts index", () => {
       expect(result).toContain(articles);
       expect(result).toContain("800-1500 words");
       expect(result).toContain("Article Summaries");
+      expect(result).toContain("<session_metadata>");
+      expect(result).toContain("<model_id>");
     });
 
     it("should generate web search questions system prompt", async () => {

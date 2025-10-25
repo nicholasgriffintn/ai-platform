@@ -1,10 +1,14 @@
 import { getModelConfigByMatchingModel } from "~/lib/models";
-import type { IBody, IUser, IUserSettings } from "~/types";
+import type { ChatMode, IBody, IUser, IUserSettings } from "~/types";
 import { trimTemplateWhitespace } from "~/utils/strings";
 import { returnCodingPrompt } from "./coding";
 import { getTextToImageSystemPrompt } from "./image";
 import { returnStandardPrompt } from "./standard";
 import { emptyPrompt } from "./utils";
+import {
+  buildAssistantMetadataSection,
+  type PromptModelMetadata,
+} from "./sections/metadata";
 
 export async function getSystemPrompt(
   request: IBody,
@@ -29,6 +33,7 @@ export async function getSystemPrompt(
       supportsArtifacts,
       supportsReasoning,
       requiresThinkingPrompt,
+      { modelId: model },
     );
   } else {
     const isTextModel = modelConfig.type.includes("text");
@@ -42,6 +47,7 @@ export async function getSystemPrompt(
         supportsArtifacts,
         supportsReasoning,
         requiresThinkingPrompt,
+        { modelId: model, modelConfig },
       );
     } else {
       const isTextToImageModel = modelConfig.type.includes("text-to-image");
@@ -58,6 +64,7 @@ export async function getSystemPrompt(
           supportsArtifacts,
           supportsReasoning,
           requiresThinkingPrompt,
+          { modelId: model, modelConfig },
         );
       }
     }
@@ -66,8 +73,26 @@ export async function getSystemPrompt(
   return trimTemplateWhitespace(prompt);
 }
 
-export function analyseArticlePrompt(article: string): string {
-  return `<s> [INST] Your task is provide a comprehensive analysis that identifies any potential bias, political leanings, and the tone of the content, evaluating the presence of bias and political alignment in the article provided.
+function buildArticlePromptMetadata(
+  metadata: PromptModelMetadata | undefined,
+  mode: ChatMode,
+): string {
+  return buildAssistantMetadataSection({
+    request: {
+      mode,
+      response_mode: "explanatory",
+    },
+    modelId: metadata?.modelId,
+    modelConfig: metadata?.modelConfig,
+  });
+}
+
+export function analyseArticlePrompt(
+  article: string,
+  metadata?: PromptModelMetadata,
+): string {
+  const metadataSection = buildArticlePromptMetadata(metadata, "normal");
+  return `<s> [INST] ${metadataSection}Your task is provide a comprehensive analysis that identifies any potential bias, political leanings, and the tone of the content, evaluating the presence of bias and political alignment in the article provided.
 
 Use the content provided under the heading "Article" and only that content to conduct your analysis. Do not embellish or add detail beyond the source material. The term "Article" is a placeholder for the actual content and should not be included in your output.
 
@@ -94,8 +119,12 @@ ${article}
 Analysis: </s>`;
 }
 
-export function summariseArticlePrompt(article: string): string {
-  return `<s> [INST] Your task is to provide a professional summary of the article provided.
+export function summariseArticlePrompt(
+  article: string,
+  metadata?: PromptModelMetadata,
+): string {
+  const metadataSection = buildArticlePromptMetadata(metadata, "normal");
+  return `<s> [INST] ${metadataSection}Your task is to provide a professional summary of the article provided.
 
 Use the content provided under the heading "Article" and only that content to conduct your analysis. Do not embellish or add detail beyond the source material. The term "Article" is a placeholder for the actual content and should not be included in your output.
 
@@ -123,8 +152,12 @@ ${article}
 Summary: </s>`;
 }
 
-export function generateArticleReportPrompt(articles: string): string {
-  return `<s> [INST] You have been given an article to summarize as a professional researcher. Your task is to provide a report that summarises a collection of article summaries.
+export function generateArticleReportPrompt(
+  articles: string,
+  metadata?: PromptModelMetadata,
+): string {
+  const metadataSection = buildArticlePromptMetadata(metadata, "normal");
+  return `<s> [INST] ${metadataSection}You have been given an article to summarize as a professional researcher. Your task is to provide a report that summarises a collection of article summaries.
 
 Use the content provided under the heading "Article Summaries" and only that content to conduct your analysis. Do not embellish or add detail beyond the source material. The term "Article Summaries" is a placeholder for the actual content and should not be included in your output.
 

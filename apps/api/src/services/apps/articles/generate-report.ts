@@ -1,4 +1,7 @@
-import { getAuxiliaryModelForRetrieval } from "~/lib/models";
+import {
+  getAuxiliaryModelForRetrieval,
+  getModelConfigByMatchingModel,
+} from "~/lib/models";
 import { generateArticleReportPrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import { AppDataRepository } from "~/repositories/AppDataRepository";
@@ -84,6 +87,7 @@ export async function generateArticlesReport({
 
     const { model: modelToUse, provider: providerToUse } =
       await getAuxiliaryModelForRetrieval(env, user);
+    const modelConfig = await getModelConfigByMatchingModel(modelToUse);
     const provider = AIProviderFactory.getProvider(providerToUse);
 
     const reportGenData = await provider.getResponse({
@@ -93,7 +97,10 @@ export async function generateArticlesReport({
       messages: [
         {
           role: "user",
-          content: generateArticleReportPrompt(combinedArticles),
+          content: generateArticleReportPrompt(combinedArticles, {
+            modelId: modelToUse,
+            modelConfig,
+          }),
         },
       ],
       env: env,

@@ -42,6 +42,7 @@ const _mockLogger = {
 
 vi.mock("~/lib/models", () => ({
   getAuxiliaryModelForRetrieval: vi.fn(),
+  getModelConfigByMatchingModel: vi.fn(),
 }));
 
 vi.mock("~/lib/providers/factory", () => ({
@@ -88,11 +89,13 @@ describe("generateArticlesReport", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const { getAuxiliaryModelForRetrieval } = await import("~/lib/models");
+    const { getAuxiliaryModelForRetrieval, getModelConfigByMatchingModel } =
+      await import("~/lib/models");
     vi.mocked(getAuxiliaryModelForRetrieval).mockResolvedValue({
       model: "test-model",
       provider: "test-provider",
     });
+    vi.mocked(getModelConfigByMatchingModel).mockResolvedValue(undefined);
   });
 
   afterEach(() => {
