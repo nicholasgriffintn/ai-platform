@@ -59,7 +59,7 @@ export function getResponseStyle(
     "direct, intellectually curious, balanced in verbosity (concise for simple questions, thorough for complex ones), systematic in reasoning for complex problems";
 
   const FULL_DEFAULT_PREFERENCES = `- Answer directly without unnecessary filler.
-  - Share a brief summary of the key steps you took so the user can follow along.
+  - Provide a brief overview of your approach so the user can follow along.
   - Match response length to question complexity—concise for simple questions, thorough for complex ones.
   - Offer to elaborate when the user asks; avoid over-explaining upfront.
   - Cite authoritative sources for specific facts and flag uncertainty only when information is incomplete.
@@ -153,7 +153,7 @@ export function getResponseStyle(
 
     if (!supportsReasoning || requiresThinkingPrompt) {
       additionalGuidelines.push(
-        "Before answering, outline the key steps you will take and share a short “Key steps” summary with the user.",
+        "Before answering, outline the essential steps you will take and share them briefly with the user.",
       );
       if (isCoding) {
         additionalGuidelines.push(
@@ -238,7 +238,7 @@ export function getResponseStyle(
   PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If the question is unclear or lacks necessary information, ask for clarification.\n`;
 
   if (!supportsReasoning || requiresThinkingPrompt) {
-    PREFERENCES_WITH_INSTRUCTIONS += `${step}. Analyze the question and context thoroughly before answering, then share a brief "Key steps" summary so the user understands how you reached the result.\n`;
+    PREFERENCES_WITH_INSTRUCTIONS += `${step}. Analyse the question and context thoroughly before answering, and outline the essential steps you will take.\n`;
     if (isCoding) {
       for (let sub = 1; sub <= 6; sub++) {
         switch (sub) {
@@ -263,7 +263,7 @@ export function getResponseStyle(
             break;
           }
           case 6: {
-            PREFERENCES_WITH_INSTRUCTIONS += `${step}.6: If generating code, write it out and then analyze it for correctness, efficiency, and adherence to best practices.\n`;
+            PREFERENCES_WITH_INSTRUCTIONS += `${step}.6: If generating code, write it out and then analyse it for correctness, efficiency, and adherence to best practices.\n`;
             break;
           }
         }
@@ -299,7 +299,7 @@ export function getResponseStyle(
     } else {
       finalSub = `${step}.${supportsToolCalls && supportsArtifacts ? 3 : supportsToolCalls || supportsArtifacts ? 2 : 1}`;
     }
-    PREFERENCES_WITH_INSTRUCTIONS += `${finalSub} Keep the Key steps summary concise (three to five bullets) and omit any sensitive personal details.\n`;
+    PREFERENCES_WITH_INSTRUCTIONS += `${finalSub} Keep any pre-answer summary concise and omit sensitive personal details.\n`;
     step++;
   }
 
@@ -341,7 +341,7 @@ export function getResponseStyle(
     step += 1;
   }
 
-  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. For complex questions, share a concise Key steps summary before the final answer; for simple questions, respond directly without extra narration.\n`;
+  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Include 'Key steps' for complex tasks.\n`;
   PREFERENCES_WITH_INSTRUCTIONS += `${step++}. When referencing external information, cite reliable sources or note when evidence is limited.\n`;
   PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Engage thoughtfully with the user's ideas while respecting privacy and platform policies.`;
 
@@ -527,7 +527,7 @@ export function getArtifactInstructions(
       - type: Appropriate content type that the type of content the artifact
         represents, assign one of the following:
         ${getArtifactTypeInstructions(forCode)}
-   f. Only use of artifact per message unless specifically requested.
+   f. Only use one artifact per message unless specifically requested.
    g. If a user asks the assistant to "draw an SVG" or "make a website", the
       assistant should create the code for that and place it within an artifact.`;
 

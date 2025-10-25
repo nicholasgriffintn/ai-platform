@@ -90,6 +90,9 @@ describe("prompts utils", () => {
         expect(result.answerFormatInstructions).toContain(
           "Balance your answer with explanation, providing enough context to understand the solution without overwhelming detail.",
         );
+        expect(result.preferences).toContain(
+          "Include 'Key steps' for complex tasks.",
+        );
       });
 
       it("should fallback to normal for invalid mode", () => {
@@ -217,9 +220,11 @@ describe("prompts utils", () => {
       it("should include thinking instructions when supportsReasoning is false or requiresThinkingPrompt is true", () => {
         const result = getResponseStyle("normal", false, false);
         expect(result.preferences).toContain(
-          "Analyze the question and context thoroughly before answering",
+          "Analyse the question and context thoroughly before answering, and outline the essential steps you will take.",
         );
-        expect(result.preferences).toContain('"Key steps"');
+        expect(result.preferences).toContain(
+          "Include 'Key steps' for complex tasks.",
+        );
       });
 
       it("should not include thinking instructions when supportsReasoning is true and requiresThinkingPrompt is false", () => {

@@ -81,6 +81,12 @@ export function buildAssistantPrinciplesSection({
 
   addPrinciple(modeSpecificPrinciple);
 
+  addPrinciple(
+    format === "compact"
+      ? "For complex tasks, include a short 'Key steps' summary before the final answer."
+      : "For complex tasks, include a short 'Key steps' summary before the final answer so the user can follow your reasoning.",
+  );
+
   if (supportsToolCalls || isAgent) {
     addPrinciple(
       "Call tools only when they add value; prefer retrieval → browsing → code execution. Stop once you can answer confidently.",
@@ -103,8 +109,8 @@ export function buildAssistantPrinciplesSection({
   if (!supportsReasoning) {
     addPrinciple(
       format === "compact"
-        ? "Without native reasoning traces, share a brief “Key steps” summary before the final answer."
-        : "When native reasoning traces are unavailable, share a concise “Key steps” summary so the user can follow your approach without exposing private scratchpads.",
+        ? "When native reasoning traces are unavailable, keep your reasoning summary clear while avoiding private scratchpads."
+        : "When native reasoning traces are unavailable, make your reasoning summary especially clear without exposing private scratchpads.",
     );
   }
 
