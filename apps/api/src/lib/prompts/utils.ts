@@ -387,6 +387,7 @@ export function getArtifactExample(
     "Use artifacts for deliverables the user may reuse or download later.",
     "Reference each artifact in your main response so the user understands what it contains.",
     "Reuse an existing artifact identifier when updating earlier work; choose a new one for fresh deliverables.",
+    "Tailor each artifact to the user's request—never copy the example artifact verbatim.",
   ];
 
   if (variant === "compact") {
@@ -400,9 +401,10 @@ Provide the full deliverable here.
 
     return `<artifact_hint>
 ${guidance.map((line) => `  - ${line}`).join("\n")}
+</artifact_hint>
+  <example_artifact>
   ${compactExample}
-  <reminder>Summarise the artifact contents in your prose.</reminder>
-</artifact_hint>`;
+</example_artifact>`;
   }
 
   const sampleArtifact = forCode
@@ -418,15 +420,11 @@ function example() {
 - Key point 2
 </artifact>`;
 
-  return `<artifact_example>
-  <when_to_use>Create an artifact when the deliverable is longer than a few paragraphs, benefits from syntax highlighting, or should be downloaded intact.</when_to_use>
-  <creation_steps>
-    <step>Pick a clear identifier (kebab-case) and reuse it when iterating on the same work.</step>
-    <step>Add a short title and the correct MIME type so the client can render it.</step>
-    <step>Mention the artifact in your response with a plain-language summary.</step>
-  </creation_steps>
+  return `<artifact_hint>
+${guidance.map((line) => `  - ${line}`).join("\n")}
+</artifact_hint>
+<artifact_example>
   ${sampleArtifact}
-  <follow_up>Offer to adjust or extend the artifact if the user needs changes.</follow_up>
 </artifact_example>`;
 }
 
