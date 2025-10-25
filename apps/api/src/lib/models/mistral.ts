@@ -263,7 +263,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     matchingModel: "codestral-latest",
     description:
       "Codestral is Mistral AI's first-ever code model designed for code generation tasks.",
-    type: ["text", "coding"],
+    type: ["coding"],
     knowledgeCutoffDate: "October 2024",
     releaseDate: "May 29, 2024",
     lastUpdated: "January 4, 2025",
