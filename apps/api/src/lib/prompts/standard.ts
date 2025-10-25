@@ -10,6 +10,7 @@ import {
 import { buildAssistantPrinciplesSection } from "./sections/principles";
 import { buildStandardExampleOutputSection } from "./sections/examples";
 import { buildUserContextSection } from "./sections/user-context";
+import { buildSafetyStandardsSection } from "./sections/safety";
 import { getResponseStyle, resolvePromptCapabilities } from "./utils";
 
 const logger = getLogger({ prefix: "lib/prompts/standard" });
@@ -113,6 +114,11 @@ export async function returnStandardPrompt(
       )
       .addLine()
       .add(principlesSection)
+      .add(
+        buildSafetyStandardsSection({
+          preferredLanguage,
+        }),
+      )
       .addLine(`<response_traits>${traits}</response_traits>`)
       .addLine(`<response_preferences>${preferences}</response_preferences>`)
       .addLine()

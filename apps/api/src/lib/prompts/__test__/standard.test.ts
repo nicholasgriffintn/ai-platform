@@ -155,6 +155,16 @@ describe("returnStandardPrompt", () => {
       expect(result).toContain("<preferred_language>es</preferred_language>");
       expect(result).toContain("Default to replying in es");
     });
+
+    it("should include safety standards section", async () => {
+      // @ts-expect-error - mock implementation
+      const request: IBody = {};
+      const result = await returnStandardPrompt(request);
+      expect(result).toContain("<safety_standards>");
+      expect(result).toContain(
+        "Decline or redirect any requests that involve disallowed or dangerous content",
+      );
+    });
   });
 
   describe("feature flags handling", () => {
@@ -169,7 +179,7 @@ describe("returnStandardPrompt", () => {
         false,
         false,
       );
-      expect(result).toContain("<think>");
+      expect(result).toContain("<key_steps>");
     });
 
     it("should skip thinking example when supportsReasoning is true", async () => {
@@ -183,7 +193,7 @@ describe("returnStandardPrompt", () => {
         false,
         true,
       );
-      expect(result).not.toContain("<think>");
+      expect(result).not.toContain("<key_steps>");
     });
 
     it("should include artifact example when supportsArtifacts is true", async () => {
@@ -228,7 +238,7 @@ describe("returnStandardPrompt", () => {
       );
 
       expect(result).toContain("<example_output>");
-      expect(result).toContain("<think>");
+      expect(result).toContain("<key_steps>");
     });
 
     it("should derive supportsReasoning from model metadata when not provided", async () => {
@@ -248,7 +258,7 @@ describe("returnStandardPrompt", () => {
           } as any,
         },
       );
-      expect(result).not.toContain("<think>");
+      expect(result).not.toContain("<key_steps>");
     });
   });
 

@@ -32,10 +32,12 @@ describe("buildAssistantPrinciplesSection", () => {
     });
 
     expect(result).toContain("Focus on the user's goal");
-    expect(result).toContain("Call tools only when they add value");
+    expect(result).toContain(
+      "Call tools only when they add value and summarise results only when it helps the user.",
+    );
     expect(result).toContain("Use artifacts for sizeable or reusable work");
     expect(result).toContain(
-      "Without native reasoning traces, share a short scratchpad",
+      "Without native reasoning traces, share a brief “Key steps” summary before the final answer.",
     );
     expect(result).toContain("Keep answers tight but complete");
     expect(result).toContain("Default to replying in fr");

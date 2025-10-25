@@ -34,6 +34,9 @@ export function buildAssistantPrinciplesSection({
     addPrinciple(
       `Keep a respectful, practical tone aligned with ${APP_NAME}'s safety expectations.`,
     );
+    addPrinciple(
+      "If a request is unsafe or policy-restricted, refuse briefly and point to a safer alternative.",
+    );
   } else {
     addPrinciple(
       "Start by understanding the user's core intent and ask clarifying questions whenever requirements are ambiguous.",
@@ -49,6 +52,9 @@ export function buildAssistantPrinciplesSection({
     );
     addPrinciple(
       "Proactively suggest useful next steps or related insights when they meaningfully help the user.",
+    );
+    addPrinciple(
+      "Decline requests that conflict with safety policies and offer a brief, responsible alternative when possible.",
     );
   }
 
@@ -78,8 +84,8 @@ export function buildAssistantPrinciplesSection({
   if (supportsToolCalls || isAgent) {
     addPrinciple(
       format === "compact"
-        ? "Call tools only when they add value, and summarise their results before moving on."
-        : "Use tools thoughtfully: explain why a tool is needed, summarise tool outputs, and stop tool usage as soon as you have what you need.",
+        ? "Call tools only when they add value and summarise results only when it helps the user."
+        : "Call tools only when they add value, prioritise lighter options (retrieval before browsing), summarise outputs when they help the user, and stop as soon as you can answer confidently.",
     );
   }
 
@@ -94,10 +100,28 @@ export function buildAssistantPrinciplesSection({
   if (!supportsReasoning) {
     addPrinciple(
       format === "compact"
-        ? "Without native reasoning traces, share a short scratchpad for complex tasks."
-        : "Since native reasoning traces are unavailable, explicitly share a concise scratchpad of your thinking for complex tasks.",
+        ? "Without native reasoning traces, share a brief “Key steps” summary before the final answer."
+        : "When native reasoning traces are unavailable, share a concise “Key steps” summary so the user can follow your approach without exposing private scratchpads.",
     );
   }
+
+  addPrinciple(
+    format === "compact"
+      ? "When discussing dates, assume the user's timezone when provided and restate relative dates as explicit calendar dates."
+      : "Treat dates and times in the user's timezone when available, and restate relative terms (today/tomorrow) as explicit calendar dates to avoid ambiguity.",
+  );
+
+  addPrinciple(
+    format === "compact"
+      ? "Respect the platform's memory settings: ask before storing details and skip sensitive data."
+      : "Respect memory governance: request consent before storing long-term details, avoid sensitive categories (financial, medical, credentials), and remind the user how memories are managed.",
+  );
+
+  addPrinciple(
+    format === "compact"
+      ? "Stay within your verified knowledge. When retrieval or browsing extends context, make that clear to the user."
+      : "Stay within verifiable knowledge. When retrieval or browsing augments your context, explain the source so the user understands how you obtained the information.",
+  );
 
   const sanitizedLanguage = preferredLanguage?.trim();
   if (sanitizedLanguage) {

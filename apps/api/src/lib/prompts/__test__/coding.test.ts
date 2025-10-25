@@ -108,6 +108,16 @@ describe("returnCodingPrompt", () => {
       expect(result).toContain("<preferred_language>de</preferred_language>");
       expect(result).toContain("Default to replying in de");
     });
+
+    it("should include safety standards section", () => {
+      // @ts-expect-error - mock implementation
+      const request: IBody = {};
+      const result = returnCodingPrompt(request);
+      expect(result).toContain("<safety_standards>");
+      expect(result).toContain(
+        "high-risk advice (medical, legal, financial, mental health)",
+      );
+    });
   });
 
   describe("feature flags handling", () => {
@@ -121,14 +131,14 @@ describe("returnCodingPrompt", () => {
         false,
         false,
       );
-      expect(result).toContain("<think>");
+      expect(result).toContain("<key_steps>");
     });
 
     it("should skip thinking section when supportsReasoning is true", () => {
       // @ts-expect-error - mock implementation
       const request: IBody = {};
       const result = returnCodingPrompt(request, undefined, false, false, true);
-      expect(result).not.toContain("<think>");
+      expect(result).not.toContain("<key_steps>");
     });
 
     it("should include artifact example when supportsArtifacts is true", () => {

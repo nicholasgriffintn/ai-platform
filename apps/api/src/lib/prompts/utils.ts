@@ -58,20 +58,19 @@ export function getResponseStyle(
     userTraits ||
     "direct, intellectually curious, balanced in verbosity (concise for simple questions, thorough for complex ones), systematic in reasoning for complex problems";
 
-  const FULL_DEFAULT_PREFERENCES = `- Answer directly without unnecessary affirmations or filler phrases
-  - Use step-by-step reasoning when solving math, logic, or complex problems
-  - Match response length to question complexity - concise for simple questions, thorough for complex ones
-  - Offer to elaborate rather than providing exhaustive detail upfront
-  - For obscure topics, acknowledge potential hallucination risk
-  - When citing specific sources, note that citations should be verified
-  - Ask at most one thoughtful follow-up question when appropriate
-  - You should use Markdown to format your response.
+  const FULL_DEFAULT_PREFERENCES = `- Answer directly without unnecessary filler.
+  - Share a brief summary of the key steps you took so the user can follow along.
+  - Match response length to question complexity—concise for simple questions, thorough for complex ones.
+  - Offer to elaborate when the user asks; avoid over-explaining upfront.
+  - Cite authoritative sources for specific facts and flag uncertainty only when information is incomplete.
+  - Ask follow-up questions only when information is missing or safety requires clarification (more than one is fine if essential).
+  - Use Markdown for structure (headings, lists) and keep substantial code or data in fenced blocks or artifacts.
   - Write your response in the same language as the task posed by the user.`;
 
   const COMPACT_DEFAULT_PREFERENCES = `- Provide clear, direct answers without filler.
-  - Ask for missing details only when they are essential to proceed.
+  - Ask for missing details only when essential; multiple follow-ups are fine when safety or accuracy demands it.
   - Match explanation depth to the task's complexity.
-  - Use Markdown sparingly; only when it improves readability.
+  - Use Markdown sparingly; keep code in fenced blocks or artifacts.
   - Reply in the same language the user used.`;
 
   const DEFAULT_PREFERENCES =
@@ -114,13 +113,13 @@ export function getResponseStyle(
 
       if (supportsToolCalls) {
         agentGuidelines.push(
-          "Coordinate tool use thoughtfully and summarise results before continuing.",
+          "Only narrate tool usage when it helps the user act on the result.",
         );
       }
 
       if (supportsArtifacts) {
         agentGuidelines.push(
-          "Place sizeable or reusable deliverables in artifacts and reference them succinctly.",
+          "Put reusable deliverables in artifacts and summarise them in one sentence.",
         );
       }
 
@@ -135,7 +134,7 @@ export function getResponseStyle(
       }
 
       if (memoriesEnabled) {
-        agentPreferences += `\n- Offer to store important facts or preferences when it will help future work.`;
+        agentPreferences += `\n- Ask before storing long-term memories and refuse to keep sensitive personal data.`;
       } else {
         agentPreferences += `\n- If asked to remember something, explain that memories are currently disabled for this user.`;
       }
@@ -152,24 +151,24 @@ export function getResponseStyle(
 
     if (!supportsReasoning || requiresThinkingPrompt) {
       additionalGuidelines.push(
-        "Use <think> to sketch your approach before sharing the final answer.",
+        "Before answering, outline the key steps you will take and share a short “Key steps” summary with the user.",
       );
       if (isCoding) {
         additionalGuidelines.push(
-          "Note the main components or edge cases in your plan before coding.",
+          "Call out critical components and edge cases in that summary before presenting code.",
         );
       }
     }
 
     if (supportsToolCalls) {
       additionalGuidelines.push(
-        "Use tools only when they add value and summarise their output briefly.",
+        "Use tools only when they add value; summarise outcomes when it helps the user act.",
       );
     }
 
     if (supportsArtifacts) {
       additionalGuidelines.push(
-        "Create an artifact for long or reusable deliverables and describe it in chat.",
+        "Store long-form or reusable deliverables in artifacts and provide a one-line description in chat.",
       );
     }
 
@@ -209,12 +208,23 @@ export function getResponseStyle(
   }
 
   if (isAgent) {
+    let agentPreferences = DEFAULT_PREFERENCES;
+    agentPreferences += `\n- Prioritise built-in knowledge and retrieval before browsing external sources unless the user requests otherwise.`;
+    if (supportsToolCalls) {
+      agentPreferences += `\n- Narrate tool usage only when it helps the user act on the results.`;
+    }
+    if (memoriesEnabled) {
+      agentPreferences += `\n- Ask for consent before storing long-term memories and never keep sensitive personal data (passwords, medical, financial).`;
+    } else {
+      agentPreferences += `\n- If the user asks you to remember something, explain that memories are disabled and suggest alternatives.`;
+    }
+
     return {
       traits: DEFAULT_TRAITS,
-      preferences: DEFAULT_PREFERENCES,
+      preferences: agentPreferences,
       problemBreakdownInstructions:
-        "Provide a balanced problem breakdown that covers the important aspects without being overly verbose.",
-      answerFormatInstructions: `Balance ${isCoding ? "code" : "answer"} with explanation, providing enough context to understand the solution without overwhelming detail.`,
+        "Outline the key steps in your plan so the user understands how you will proceed before executing.",
+      answerFormatInstructions: `Deliver the ${isCoding ? "solution" : "answer"} with a concise summary of outcomes and recommended next actions.`,
     };
   }
 
@@ -226,10 +236,7 @@ export function getResponseStyle(
   PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If the question is unclear or lacks necessary information, ask for clarification.\n`;
 
   if (!supportsReasoning || requiresThinkingPrompt) {
-    PREFERENCES_WITH_INSTRUCTIONS += `${step}. Analyze the question and context thoroughly before answering and identify key information from the user's question, return this analysis using the following template:
-    <think>
-      Your thoughts or/and draft, like working through an exercise on scratch paper.
-    </think>\n`;
+    PREFERENCES_WITH_INSTRUCTIONS += `${step}. Analyze the question and context thoroughly before answering, then share a brief "Key steps" summary so the user understands how you reached the result.\n`;
     if (isCoding) {
       for (let sub = 1; sub <= 6; sub++) {
         switch (sub) {
@@ -263,9 +270,9 @@ export function getResponseStyle(
 
     if (supportsToolCalls) {
       const subBase = isCoding ? `${step}.7` : `${step}.1`;
-      PREFERENCES_WITH_INSTRUCTIONS += `${subBase} Determine whether the query can be resolved directly or if a tool is required. Use the description of the tool to help you decide.\n`;
-      PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.1 If a tool is required, use it to answer the question.\n`;
-      PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.2 If the task can be effectively answered without a tool, prioritize a manual response.\n`;
+      PREFERENCES_WITH_INSTRUCTIONS += `${subBase} Determine whether the query can be resolved directly or if a tool is required. Prefer the lightest option (internal knowledge → retrieval → browsing → code execution).\n`;
+      PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.1 When using a tool, include a short outcome summary only if it helps the user.\n`;
+      PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.2 Stop calling tools once you have enough information to answer confidently.\n`;
     }
 
     if (supportsArtifacts) {
@@ -277,7 +284,7 @@ export function getResponseStyle(
       } else {
         artifactSub = `${step}.2`;
       }
-      PREFERENCES_WITH_INSTRUCTIONS += `${artifactSub} Determine if the response would benefit from using an artifact based on the included criteria.\n`;
+      PREFERENCES_WITH_INSTRUCTIONS += `${artifactSub} Use an artifact for long-form, reusable, or executable deliverables and provide a one-line summary in the chat.\n`;
     }
 
     let finalSub;
@@ -290,14 +297,14 @@ export function getResponseStyle(
     } else {
       finalSub = `${step}.${supportsToolCalls && supportsArtifacts ? 3 : supportsToolCalls || supportsArtifacts ? 2 : 1}`;
     }
-    PREFERENCES_WITH_INSTRUCTIONS += `${finalSub} It's OK for this section to be quite long.\n`;
+    PREFERENCES_WITH_INSTRUCTIONS += `${finalSub} Keep the Key steps summary concise (three to five bullets) and omit any sensitive personal details.\n`;
     step++;
   }
 
-  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If you're unsure or don't have the information to answer, say "I don't know" or offer to find more information.\n`;
+  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If you're unsure or don't have the information to answer, say "I don't know" or offer to find more information safely.\n`;
 
   if (isCoding) {
-    PREFERENCES_WITH_INSTRUCTIONS += `${step}. When coding, always use markdown to format your code.\n`;
+    PREFERENCES_WITH_INSTRUCTIONS += `${step}. When coding, present runnable code in fenced blocks or artifacts and call out assumptions or edge cases.\n`;
     for (let sub = 1; sub <= 5; sub++) {
       switch (sub) {
         case 1:
@@ -319,7 +326,7 @@ export function getResponseStyle(
     }
     step++;
   } else {
-    PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Always respond in plain text, not computer code.\n`;
+    PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Keep chat responses in Markdown prose; add short code snippets only when they clarify the explanation.\n`;
   }
 
   if (supportsArtifacts) {
@@ -332,15 +339,14 @@ export function getResponseStyle(
     step += 1;
   }
 
-  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. For complex questions requiring systematic thinking, show your reasoning step by step before providing your final answer.\n`;
-  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. For simple questions, provide direct and concise answers without unnecessary explanation.\n`;
-  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. When discussing obscure topics or citing specific sources, acknowledge limitations in knowledge when appropriate.\n`;
-  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Engage thoughtfully with user's ideas and show intellectual curiosity in the discussion.`;
+  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. For complex questions, share a concise Key steps summary before the final answer; for simple questions, respond directly without extra narration.\n`;
+  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. When referencing external information, cite reliable sources or note when evidence is limited.\n`;
+  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Engage thoughtfully with the user's ideas while respecting privacy and platform policies.`;
 
   if (memoriesEnabled) {
-    PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. You have the ability to store long-term conversational memories when the user asks you to remember important facts or events, and will recall them when relevant.`;
+    PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. Only store memories after explicit user consent and never retain sensitive categories such as passwords, financial data, or medical details.\n`;
   } else {
-    PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. The memories feature has been disabled for this user. If the user asks you to remember something, politely ask them to go to Settings > Customisation > Memories to enable it.`;
+    PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. If the user asks you to remember something, explain that memories are disabled and suggest they capture the detail another way.\n`;
   }
 
   switch (response_mode) {

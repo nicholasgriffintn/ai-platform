@@ -87,7 +87,9 @@ describe("prompts utils", () => {
       it("should handle normal/default mode", () => {
         const result = getResponseStyle("normal");
         expect(result.problemBreakdownInstructions).toContain("balanced");
-        expect(result.answerFormatInstructions).toContain("Balance");
+        expect(result.answerFormatInstructions).toContain(
+          "Balance your answer with explanation, providing enough context to understand the solution without overwhelming detail.",
+        );
       });
 
       it("should fallback to normal for invalid mode", () => {
@@ -116,9 +118,11 @@ describe("prompts utils", () => {
           "Please also follow these instructions",
         );
         expect(result.problemBreakdownInstructions).toContain(
-          "balanced problem breakdown",
+          "Outline the key steps in your plan so the user understands how you will proceed before executing.",
         );
-        expect(result.answerFormatInstructions).toContain("Balance");
+        expect(result.answerFormatInstructions).toContain(
+          "Deliver the answer with a concise summary of outcomes and recommended next actions.",
+        );
       });
 
       it("should not include step-by-step instructions for agent mode", () => {
@@ -149,7 +153,7 @@ describe("prompts utils", () => {
           true,
         );
         expect(result.preferences).toContain(
-          "When coding, always use markdown",
+          "When coding, present runnable code in fenced blocks or artifacts and call out assumptions or edge cases.",
         );
         expect(result.preferences).toContain("best practices and conventions");
         expect(result.answerFormatInstructions).toContain("code");
@@ -187,7 +191,7 @@ describe("prompts utils", () => {
           false,
         );
         expect(result.preferences).toContain(
-          "Always respond in plain text, not computer code",
+          "Keep chat responses in Markdown prose; add short code snippets only when they clarify the explanation.",
         );
       });
     });
@@ -196,9 +200,11 @@ describe("prompts utils", () => {
       it("should include function instructions when supportsToolCalls is true", () => {
         const result = getResponseStyle("normal", false, false, true);
         expect(result.preferences).toContain(
-          "Determine whether the query can be resolved directly or if a tool is required",
+          "Prefer the lightest option (internal knowledge → retrieval → browsing → code execution)",
         );
-        expect(result.preferences).toContain("Use the description of the tool");
+        expect(result.preferences).toContain(
+          "include a short outcome summary only if it helps the user",
+        );
       });
 
       it("should not include function instructions when supportsToolCalls is false", () => {
@@ -210,13 +216,17 @@ describe("prompts utils", () => {
     describe("thinking mode adjustments", () => {
       it("should include thinking instructions when supportsReasoning is false or requiresThinkingPrompt is true", () => {
         const result = getResponseStyle("normal", false, false);
-        expect(result.preferences).toContain("<think>");
-        expect(result.preferences).toContain("thoughts or/and draft");
+        expect(result.preferences).toContain(
+          "Analyze the question and context thoroughly before answering",
+        );
+        expect(result.preferences).toContain('"Key steps"');
       });
 
       it("should not include thinking instructions when supportsReasoning is true and requiresThinkingPrompt is false", () => {
         const result = getResponseStyle("normal", true, false);
-        expect(result.preferences).not.toContain("<think>");
+        expect(result.preferences).not.toContain(
+          "Analyze the question and context thoroughly before answering",
+        );
       });
     });
 
@@ -232,9 +242,11 @@ describe("prompts utils", () => {
           true,
         );
         expect(result.preferences).toContain(
-          "store long-term conversational memories",
+          "Only store memories after explicit user consent",
         );
-        expect(result.preferences).toContain("recall them when relevant");
+        expect(result.preferences).toContain(
+          "never retain sensitive categories such as passwords, financial data, or medical details",
+        );
       });
 
       it("should include disabled message when memories are disabled", () => {
@@ -248,10 +260,7 @@ describe("prompts utils", () => {
           false,
         );
         expect(result.preferences).toContain(
-          "memories feature has been disabled",
-        );
-        expect(result.preferences).toContain(
-          "Settings > Customisation > Memories",
+          "memories are disabled and suggest they capture the detail another way",
         );
       });
     });
@@ -299,10 +308,10 @@ describe("prompts utils", () => {
         );
 
         expect(result.preferences).toContain(
-          "Coordinate tool use thoughtfully",
+          "Only narrate tool usage when it helps the user act on the result.",
         );
         expect(result.preferences).toContain(
-          "Offer to store important facts or preferences when it will help future work.",
+          "Ask before storing long-term memories and refuse to keep sensitive personal data.",
         );
         expect(result.problemBreakdownInstructions).toContain(
           "Sketch the steps",
