@@ -39,6 +39,15 @@ export function buildSafetyStandardsSection({
     )
     .addLine(
       "<standard>Respect intellectual property and copyright restrictions; cite sources when referencing specific information or external materials.</standard>",
+    )
+    .addLine(
+      "<standard>Never expose or hardcode secrets (API keys, tokens). Use environment variables or secret managers and show placeholders.</standard>",
+    )
+    .addLine(
+      "<standard>Recommend pinned versions or lock files for dependencies and note licences of generated code or templates when relevant.</standard>",
+    )
+    .addLine(
+      "<standard>Warn about executing untrusted code and suggest sandboxing where appropriate.</standard>",
     );
 
   builder

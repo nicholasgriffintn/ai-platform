@@ -240,38 +240,17 @@ export function getResponseStyle(
   if (!supportsReasoning || requiresThinkingPrompt) {
     PREFERENCES_WITH_INSTRUCTIONS += `${step}. Analyse the question and context thoroughly before answering, and outline the essential steps you will take.\n`;
     if (isCoding) {
-      for (let sub = 1; sub <= 6; sub++) {
-        switch (sub) {
-          case 1: {
-            PREFERENCES_WITH_INSTRUCTIONS += `${step}.1: Break down the problem into smaller components.\n`;
-            break;
-          }
-          case 2: {
-            PREFERENCES_WITH_INSTRUCTIONS += `${step}.2: List any assumptions you're making about the problem.\n`;
-            break;
-          }
-          case 3: {
-            PREFERENCES_WITH_INSTRUCTIONS += `${step}.3: Plan your approach to solving the problem or generating the code.\n`;
-            break;
-          }
-          case 4: {
-            PREFERENCES_WITH_INSTRUCTIONS += `${step}.4: Write pseudocode for your solution.\n`;
-            break;
-          }
-          case 5: {
-            PREFERENCES_WITH_INSTRUCTIONS += `${step}.5: Consider potential edge cases or limitations of your solution.\n`;
-            break;
-          }
-          case 6: {
-            PREFERENCES_WITH_INSTRUCTIONS += `${step}.6: If generating code, write it out and then analyse it for correctness, efficiency, and adherence to best practices.\n`;
-            break;
-          }
-        }
-      }
+      PREFERENCES_WITH_INSTRUCTIONS += `${step}.1 Break down the problem into smaller components.\n`;
+      PREFERENCES_WITH_INSTRUCTIONS += `${step}.2 List any assumptions you're making about the problem.\n`;
+      PREFERENCES_WITH_INSTRUCTIONS += `${step}.3 Plan your approach to solving the problem or generating the code.\n`;
+      PREFERENCES_WITH_INSTRUCTIONS += `${step}.4 Write pseudocode for your solution.\n`;
+      PREFERENCES_WITH_INSTRUCTIONS += `${step}.5 Consider potential edge cases or limitations of your solution.\n`;
+      PREFERENCES_WITH_INSTRUCTIONS += `${step}.6 If generating code, write it out and then analyse it for correctness, efficiency, and adherence to best practices.\n`;
+      PREFERENCES_WITH_INSTRUCTIONS += `${step}.7 Validate your solution with tests where practical and consider complexity and performance trade-offs.\n`;
     }
 
     if (supportsToolCalls) {
-      const subBase = isCoding ? `${step}.7` : `${step}.1`;
+      const subBase = isCoding ? `${step}.8` : `${step}.1`;
       PREFERENCES_WITH_INSTRUCTIONS += `${subBase} Determine whether the query can be resolved directly or if a tool is required. Prefer the lightest option (internal knowledge → retrieval → browsing → code execution).\n`;
       PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.1 When using a tool, include a short outcome summary only if it helps the user.\n`;
       PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.2 Stop calling tools once you have enough information to answer confidently.\n`;
@@ -280,9 +259,9 @@ export function getResponseStyle(
     if (supportsArtifacts) {
       let artifactSub;
       if (isCoding && supportsToolCalls) {
-        artifactSub = `${step}.8`;
+        artifactSub = `${step}.9`;
       } else if (isCoding) {
-        artifactSub = `${step}.7`;
+        artifactSub = `${step}.8`;
       } else {
         artifactSub = `${step}.2`;
       }
@@ -291,11 +270,11 @@ export function getResponseStyle(
 
     let finalSub;
     if (isCoding && supportsToolCalls && supportsArtifacts) {
-      finalSub = `${step}.9`;
+      finalSub = `${step}.10`;
     } else if (isCoding && (supportsToolCalls || supportsArtifacts)) {
-      finalSub = `${step}.${supportsToolCalls && supportsArtifacts ? 9 : 8}`;
+      finalSub = `${step}.${supportsToolCalls && supportsArtifacts ? 10 : 9}`;
     } else if (isCoding) {
-      finalSub = `${step}.7`;
+      finalSub = `${step}.8`;
     } else {
       finalSub = `${step}.${supportsToolCalls && supportsArtifacts ? 3 : supportsToolCalls || supportsArtifacts ? 2 : 1}`;
     }
@@ -453,7 +432,7 @@ function example() {
 
 function getArtifactTypeInstructions(forCode = false): string {
   if (forCode) {
-    return `- Code: "application/vnd.code"
+    return `- Code: "application/vnd.code" or "application/code"
           - Use for code snippets or scripts in any programming language.
           - Include the language name as the value of the \`language\` attribute (e.g., \`language="python"\`).
           - Do not use triple backticks when putting code in an artifact.
@@ -487,7 +466,8 @@ function getArtifactTypeInstructions(forCode = false): string {
   return `- "text/markdown" for documentation
       - "text/html" for web content
       - "image/svg+xml" for diagrams
-      - "application/mermaid" for flowcharts`;
+      - "application/mermaid" for flowcharts
+      - "application/code" for code snippets or scripts in any programming language.`;
 }
 
 /**

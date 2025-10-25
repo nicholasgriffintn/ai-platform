@@ -97,7 +97,7 @@ export function buildAssistantMetadataSection({
         }</enabled_capabilities>`,
       )
       .addLine(
-        "<note>code_execution outputs must be summarised in chat; raw outputs and long code go into artifacts or fenced blocks.</note>",
+        "<note>If code_execution is enabled at runtime, its outputs must be summarised in chat; raw outputs and long code go into artifacts or fenced blocks.</note>",
       )
       .addLine("</model_info>")
       .addLine("</session_metadata>")
@@ -142,7 +142,7 @@ export function buildAssistantMetadataSection({
       }</enabled_capabilities>`,
     )
     .addLine(
-      "<note>If code_execution is enabled its outputs must be summarised in chat; raw outputs and long code go into artifacts or fenced blocks.</note>",
+      "<note>If code_execution is enabled at runtime, its outputs must be summarised in chat; raw outputs and long code go into artifacts or fenced blocks.</note>",
     )
     .addLine("</model_info>")
     .addLine("</session_metadata>")
