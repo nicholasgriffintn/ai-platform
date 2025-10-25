@@ -4,7 +4,7 @@ import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { StorageService } from "~/lib/storage";
-import type { ChatCompletionParameters } from "~/types";
+import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { createEventStreamParser } from "~/utils/awsEventStream";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -58,18 +58,35 @@ export class BedrockProvider extends BaseProvider {
   ): Promise<string> {
     const region = "us-east-1";
     const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+    const operationPath = this.resolveOperationPath(params, modelConfig);
 
-    if (modelConfig?.bedrockApiOperation) {
-      if (params.stream && modelConfig?.bedrockStreamingApiOperation) {
-        return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/${modelConfig.bedrockStreamingApiOperation}`;
-      }
-      return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/${modelConfig.bedrockApiOperation}`;
-    }
+    return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/${operationPath}`;
+  }
+
+  private resolveOperationPath(
+    params: ChatCompletionParameters,
+    modelConfig?: ModelConfigItem,
+  ): string {
+    const streamingOperation = modelConfig?.bedrockStreamingApiOperation;
+    const defaultOperation = modelConfig?.bedrockApiOperation;
 
     if (params.stream) {
-      return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/converse-stream`;
+      if (streamingOperation) {
+        return streamingOperation;
+      }
+
+      if (defaultOperation) {
+        return defaultOperation;
+      }
+
+      return "converse-stream";
     }
-    return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/converse`;
+
+    if (defaultOperation) {
+      return defaultOperation;
+    }
+
+    return "converse";
   }
 
   protected async getHeaders(
@@ -448,7 +465,10 @@ export class BedrockProvider extends BaseProvider {
   ): Promise<any> {
     this.validateParams(params);
 
-    const bedrockUrl = await this.getEndpoint(params);
+    const region = "us-east-1";
+    const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+    const operationPath = this.resolveOperationPath(params, modelConfig);
+    const bedrockUrl = `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/${operationPath}`;
     const body = await this.mapParameters(params);
 
     return trackProviderMetrics({
@@ -459,8 +479,6 @@ export class BedrockProvider extends BaseProvider {
           params,
           userId,
         );
-        const region = "us-east-1";
-
         const awsClient = new AwsClient({
           accessKeyId: accessKey,
           secretAccessKey: secretKey,
@@ -484,17 +502,6 @@ export class BedrockProvider extends BaseProvider {
 
         const signedUrl = new URL(presignedRequest.url);
         signedUrl.host = "gateway.ai.cloudflare.com";
-
-        let operationPath = "converse";
-        if (params.model?.includes("twelvelabs.marengo-embed")) {
-          operationPath = "start-async-invoke";
-        } else if (params.model?.includes("twelvelabs.pegasus")) {
-          operationPath = params.stream
-            ? "invoke-with-response-stream"
-            : "invoke";
-        } else if (params.stream) {
-          operationPath = "converse-stream";
-        }
 
         signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/${operationPath}`;
 
