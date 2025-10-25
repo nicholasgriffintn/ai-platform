@@ -39,9 +39,9 @@ export function buildStandardExampleOutputSection({
 
     if (!supportsReasoning) {
       builder
-        .addLine("<key_steps>")
+        .addLine("<think>")
         .addLine(problemBreakdownInstructions)
-        .addLine("</key_steps>");
+        .addLine("</think>");
     }
 
     builder.addLine("<answer>").addLine(answerFormatInstructions);
@@ -63,9 +63,9 @@ export function buildStandardExampleOutputSection({
 
   if (!supportsReasoning) {
     builder
-      .addLine("<key_steps>")
+      .addLine("<think>")
       .addLine(problemBreakdownInstructions)
-      .addLine("</key_steps>");
+      .addLine("</think>");
   }
 
   builder.addLine("<answer>").addLine(answerFormatInstructions);
@@ -124,9 +124,9 @@ export function buildCodingExampleOutputSection({
 
   if (!supportsReasoning) {
     builder
-      .addLine("<key_steps>")
+      .addLine("<think>")
       .addLine(problemBreakdownInstructions)
-      .addLine("</key_steps>");
+      .addLine("</think>");
     if (variant === "full") {
       builder.addLine();
     }

@@ -189,7 +189,7 @@ describe("returnStandardPrompt", () => {
         false,
         false,
       );
-      expect(result).toContain("<key_steps>");
+      expect(result).toContain("<think>");
     });
 
     it("should skip thinking example when supportsReasoning is true", async () => {
@@ -203,7 +203,7 @@ describe("returnStandardPrompt", () => {
         false,
         true,
       );
-      expect(result).not.toContain("<key_steps>");
+      expect(result).not.toContain("<think>");
     });
 
     it("should include artifact example when supportsArtifacts is true", async () => {
@@ -248,7 +248,7 @@ describe("returnStandardPrompt", () => {
       );
 
       expect(result).toContain("<example_output>");
-      expect(result).toContain("<key_steps>");
+      expect(result).toContain("<think>");
     });
 
     it("should derive supportsReasoning from model metadata when not provided", async () => {
@@ -268,7 +268,7 @@ describe("returnStandardPrompt", () => {
           } as any,
         },
       );
-      expect(result).not.toContain("<key_steps>");
+      expect(result).not.toContain("<think>");
     });
   });
 

@@ -141,14 +141,14 @@ describe("returnCodingPrompt", () => {
         false,
         false,
       );
-      expect(result).toContain("<key_steps>");
+      expect(result).toContain("<think>");
     });
 
     it("should skip thinking section when supportsReasoning is true", () => {
       // @ts-expect-error - mock implementation
       const request: IBody = {};
       const result = returnCodingPrompt(request, undefined, false, false, true);
-      expect(result).not.toContain("<key_steps>");
+      expect(result).not.toContain("<think>");
     });
 
     it("should include artifact example when supportsArtifacts is true", () => {
