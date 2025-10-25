@@ -1,6 +1,7 @@
 import type { IBody, IUser, IUserSettings } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { PromptBuilder } from "./builder";
+import { resolvePromptLayout } from "./layout";
 import { buildAgentGuidelinesSection } from "./sections/agent-guidelines";
 import {
   buildAssistantMetadataSection,
@@ -9,7 +10,7 @@ import {
 import { buildAssistantPrinciplesSection } from "./sections/principles";
 import { buildStandardExampleOutputSection } from "./sections/examples";
 import { buildUserContextSection } from "./sections/user-context";
-import { getResponseStyle } from "./utils";
+import { getResponseStyle, resolvePromptCapabilities } from "./utils";
 
 const logger = getLogger({ prefix: "lib/prompts/standard" });
 
@@ -42,22 +43,20 @@ export async function returnStandardPrompt(
 
     const isAgent = chatMode === "agent";
 
-    const effectiveSupportsToolCalls =
-      supportsToolCalls ??
-      modelMetadata?.modelConfig?.supportsToolCalls ??
-      false;
-    const effectiveSupportsArtifacts =
-      supportsArtifacts ??
-      modelMetadata?.modelConfig?.supportsArtifacts ??
-      false;
-    const effectiveSupportsReasoning =
-      supportsReasoning ??
-      modelMetadata?.modelConfig?.supportsReasoning ??
-      false;
-    const effectiveRequiresThinkingPrompt =
-      requiresThinkingPrompt ??
-      modelMetadata?.modelConfig?.requiresThinkingPrompt ??
-      false;
+    const capabilities = resolvePromptCapabilities({
+      supportsToolCalls,
+      supportsArtifacts,
+      supportsReasoning,
+      requiresThinkingPrompt,
+      modelMetadata,
+    });
+
+    const layout = resolvePromptLayout({
+      contextWindow: modelMetadata?.modelConfig?.contextWindow,
+      isAgent,
+      isCoding: false,
+      capabilities,
+    });
 
     const {
       traits,
@@ -66,15 +65,16 @@ export async function returnStandardPrompt(
       answerFormatInstructions,
     } = getResponseStyle(
       response_mode,
-      effectiveSupportsReasoning,
-      effectiveRequiresThinkingPrompt,
-      effectiveSupportsToolCalls,
-      effectiveSupportsArtifacts,
+      capabilities.supportsReasoning,
+      capabilities.requiresThinkingPrompt,
+      capabilities.supportsToolCalls,
+      capabilities.supportsArtifacts,
       isAgent,
       memoriesEnabled,
       userTraits,
       userPreferences,
       false,
+      layout.instructionVariant,
     );
 
     const metadataSection = buildAssistantMetadataSection({
@@ -83,15 +83,17 @@ export async function returnStandardPrompt(
         : request,
       modelId: modelMetadata?.modelId,
       modelConfig: modelMetadata?.modelConfig,
+      format: layout.metadataFormat,
     });
 
     const principlesSection = buildAssistantPrinciplesSection({
       isAgent,
-      supportsToolCalls: effectiveSupportsToolCalls,
-      supportsArtifacts: effectiveSupportsArtifacts,
-      supportsReasoning: effectiveSupportsReasoning,
+      supportsToolCalls: capabilities.supportsToolCalls,
+      supportsArtifacts: capabilities.supportsArtifacts,
+      supportsReasoning: capabilities.supportsReasoning,
       responseMode: response_mode,
       preferredLanguage,
+      format: layout.principlesFormat,
     });
 
     const userContextSection = buildUserContextSection({
@@ -116,13 +118,15 @@ export async function returnStandardPrompt(
       .addLine()
       .add(userContextSection);
 
-    if (!isAgent) {
+    if (layout.exampleVariant !== "omit") {
       builder.add(
         buildStandardExampleOutputSection({
-          supportsReasoning: effectiveSupportsReasoning,
-          supportsArtifacts: effectiveSupportsArtifacts,
+          supportsReasoning: capabilities.supportsReasoning,
+          supportsArtifacts: capabilities.supportsArtifacts,
           problemBreakdownInstructions,
           answerFormatInstructions,
+          variant: layout.exampleVariant === "full" ? "full" : "compact",
+          artifactVariant: layout.artifactExampleVariant,
         }),
       );
     }

@@ -255,6 +255,60 @@ describe("prompts utils", () => {
         );
       });
     });
+
+    describe("compact instruction variant", () => {
+      it("should return condensed preferences when instructionVariant is compact", () => {
+        const result = getResponseStyle(
+          "normal",
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          undefined,
+          undefined,
+          false,
+          "compact",
+        );
+
+        expect(result.preferences).toContain(
+          "Provide clear, direct answers without filler",
+        );
+        expect(result.preferences).not.toContain(
+          "Please also follow these instructions",
+        );
+        expect(result.problemBreakdownInstructions).toContain(
+          "Sketch the steps",
+        );
+      });
+
+      it("should include agent-specific compact guidance", () => {
+        const result = getResponseStyle(
+          "normal",
+          false,
+          false,
+          true,
+          true,
+          true,
+          true,
+          undefined,
+          undefined,
+          true,
+          "compact",
+        );
+
+        expect(result.preferences).toContain(
+          "Coordinate tool use thoughtfully",
+        );
+        expect(result.preferences).toContain(
+          "Offer to store important facts or preferences when it will help future work.",
+        );
+        expect(result.problemBreakdownInstructions).toContain(
+          "Sketch the steps",
+        );
+      });
+    });
   });
 
   describe("emptyPrompt", () => {

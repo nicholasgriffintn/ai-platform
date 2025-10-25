@@ -9,6 +9,7 @@ export interface PromptModelMetadata {
 
 interface AssistantMetadataSectionOptions extends PromptModelMetadata {
   request: Partial<IBody>;
+  format?: "full" | "compact";
 }
 
 const PLATFORM_CAPABILITIES = [
@@ -31,6 +32,7 @@ export function buildAssistantMetadataSection({
   request,
   modelId,
   modelConfig,
+  format = "full",
 }: AssistantMetadataSectionOptions): string {
   const activeModelId =
     modelId || request.model || modelConfig?.matchingModel || "unknown";
@@ -63,46 +65,56 @@ export function buildAssistantMetadataSection({
       `<preferred_language>${request.lang}</preferred_language>`,
     )
     .addLine("</application_info>")
-    .addLine()
+    .addLine();
+
+  const enabledCapabilities = [
+    modelConfig?.supportsToolCalls ? "tool_calls" : null,
+    modelConfig?.supportsArtifacts ? "artifacts" : null,
+    modelConfig?.supportsReasoning ? "reasoning" : null,
+    modelConfig?.supportsDocuments ? "documents" : null,
+    modelConfig?.supportsSearchGrounding ? "search_grounding" : null,
+    modelConfig?.supportsCodeExecution ? "code_execution" : null,
+    modelConfig?.supportsAttachments ? "attachments" : null,
+    modelConfig?.supportsResponseFormat ? "response_format" : null,
+  ].filter(Boolean);
+
+  if (format === "compact") {
+    builder
+      .addLine("<model_info>")
+      .addLine(`<model_id>${activeModelId}</model_id>`)
+      .addLine(`<provider>${modelConfig?.provider ?? "unknown"}</provider>`)
+      .addLine(
+        `<context_window>${modelConfig?.contextWindow ?? "unspecified"}</context_window>`,
+      )
+      .addLine(
+        `<max_tokens>${modelConfig?.maxTokens ?? "unspecified"}</max_tokens>`,
+      )
+      .addLine(
+        `<enabled_capabilities>${
+          enabledCapabilities.length > 0
+            ? enabledCapabilities.join(", ")
+            : "none"
+        }</enabled_capabilities>`,
+      )
+      .addLine("</model_info>")
+      .addLine("</session_metadata>")
+      .addLine();
+
+    return builder.build();
+  }
+
+  builder
     .addLine("<model_info>")
     .addLine(`<model_id>${activeModelId}</model_id>`)
     .addLine(`<provider>${modelConfig?.provider ?? "unknown"}</provider>`)
     .addLine(
       `<display_name>${modelConfig?.name ?? modelConfig?.matchingModel ?? activeModelId}</display_name>`,
     )
-    .addLine(`<types>${asList(modelConfig?.type)}</types>`)
     .addLine(
       `<input_modalities>${asList(modelConfig?.modalities?.input)}</input_modalities>`,
     )
     .addLine(
       `<output_modalities>${asList(modelConfig?.modalities?.output)}</output_modalities>`,
-    )
-    .addLine(
-      `<supports_tool_calls>${toBooleanString(modelConfig?.supportsToolCalls)}</supports_tool_calls>`,
-    )
-    .addLine(
-      `<supports_reasoning>${toBooleanString(modelConfig?.supportsReasoning)}</supports_reasoning>`,
-    )
-    .addLine(
-      `<supports_artifacts>${toBooleanString(modelConfig?.supportsArtifacts)}</supports_artifacts>`,
-    )
-    .addLine(
-      `<supports_documents>${toBooleanString(modelConfig?.supportsDocuments)}</supports_documents>`,
-    )
-    .addLine(
-      `<supports_search_grounding>${toBooleanString(modelConfig?.supportsSearchGrounding)}</supports_search_grounding>`,
-    )
-    .addLine(
-      `<supports_code_execution>${toBooleanString(modelConfig?.supportsCodeExecution)}</supports_code_execution>`,
-    )
-    .addLine(
-      `<supports_streaming>${toBooleanString(modelConfig?.supportsStreaming)}</supports_streaming>`,
-    )
-    .addLine(
-      `<supports_attachments>${toBooleanString(modelConfig?.supportsAttachments)}</supports_attachments>`,
-    )
-    .addLine(
-      `<supports_response_format>${toBooleanString(modelConfig?.supportsResponseFormat)}</supports_response_format>`,
     )
     .addLine(
       `<context_window>${modelConfig?.contextWindow ?? "unspecified"}</context_window>`,
@@ -120,6 +132,11 @@ export function buildAssistantMetadataSection({
     )
     .addLine(
       `<last_updated>${modelConfig?.lastUpdated ?? "unspecified"}</last_updated>`,
+    )
+    .addLine(
+      `<enabled_capabilities>${
+        enabledCapabilities.length > 0 ? enabledCapabilities.join(", ") : "none"
+      }</enabled_capabilities>`,
     )
     .addLine("</model_info>")
     .addLine("</session_metadata>")

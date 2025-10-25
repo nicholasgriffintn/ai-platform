@@ -200,11 +200,35 @@ describe("returnStandardPrompt", () => {
       expect(result).toContain("artifact");
     });
 
-    it("should not include example output for agent mode", async () => {
+    it("should not include example output for agent mode when reasoning is supported", async () => {
       // @ts-expect-error - mock implementation
       const request: IBody = { mode: "agent" };
-      const result = await returnStandardPrompt(request);
+      const result = await returnStandardPrompt(
+        request,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        true,
+      );
       expect(result).not.toContain("<example_output>");
+    });
+
+    it("should include compact example for agent mode when reasoning traces are unavailable", async () => {
+      // @ts-expect-error - mock implementation
+      const request: IBody = { mode: "agent" };
+      const result = await returnStandardPrompt(
+        request,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        false,
+        true,
+      );
+
+      expect(result).toContain("<example_output>");
+      expect(result).toContain("<think>");
     });
 
     it("should derive supportsReasoning from model metadata when not provided", async () => {

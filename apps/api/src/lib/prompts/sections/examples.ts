@@ -1,5 +1,6 @@
 import { ResponseMode } from "../../../types";
 import { PromptBuilder } from "../builder";
+import type { PromptExampleVariant } from "../layout";
 import { getArtifactExample } from "../utils";
 
 interface StandardExampleOptions {
@@ -7,6 +8,8 @@ interface StandardExampleOptions {
   supportsArtifacts?: boolean;
   problemBreakdownInstructions: string;
   answerFormatInstructions: string;
+  variant?: Exclude<PromptExampleVariant, "omit">;
+  artifactVariant?: "full" | "compact";
 }
 
 interface CodingExampleOptions {
@@ -16,6 +19,8 @@ interface CodingExampleOptions {
   answerFormatInstructions: string;
   preferredLanguage?: string;
   responseMode?: ResponseMode;
+  variant?: Exclude<PromptExampleVariant, "omit">;
+  artifactVariant?: "full" | "compact";
 }
 
 export function buildStandardExampleOutputSection({
@@ -23,22 +28,50 @@ export function buildStandardExampleOutputSection({
   supportsArtifacts,
   problemBreakdownInstructions,
   answerFormatInstructions,
+  variant = "full",
+  artifactVariant,
 }: StandardExampleOptions): string {
+  const effectiveArtifactVariant =
+    artifactVariant ?? (variant === "full" ? "full" : "compact");
+
+  if (variant === "compact") {
+    const builder = new PromptBuilder("<example_output>\n");
+
+    if (!supportsReasoning) {
+      builder
+        .addLine("<think>")
+        .addLine(problemBreakdownInstructions)
+        .addLine("</think>");
+    }
+
+    builder.addLine("<answer>").addLine(answerFormatInstructions);
+
+    if (supportsArtifacts) {
+      builder.addLine(
+        getArtifactExample(true, false, effectiveArtifactVariant),
+      );
+    }
+
+    builder.addLine("</answer>").addLine("</example_output>").addLine();
+
+    return builder.build();
+  }
+
   const builder = new PromptBuilder()
     .addLine("Here is an example of the output you should provide:")
     .addLine("<example_output>");
 
   if (!supportsReasoning) {
-    builder.addLine("<think>");
-    builder.addLine(problemBreakdownInstructions);
-    builder.addLine("</think>");
+    builder
+      .addLine("<think>")
+      .addLine(problemBreakdownInstructions)
+      .addLine("</think>");
   }
 
-  builder.addLine("<answer>");
-  builder.addLine(answerFormatInstructions);
+  builder.addLine("<answer>").addLine(answerFormatInstructions);
 
   if (supportsArtifacts) {
-    builder.addLine(getArtifactExample(supportsArtifacts, false));
+    builder.addLine(getArtifactExample(true, false, effectiveArtifactVariant));
   }
 
   builder.addLine("</answer>").addLine("</example_output>").addLine();
@@ -53,9 +86,13 @@ export function buildCodingExampleOutputSection({
   answerFormatInstructions,
   preferredLanguage,
   responseMode,
+  variant = "full",
+  artifactVariant,
 }: CodingExampleOptions): string {
   const proseLanguage = preferredLanguage || "the user's preferred language";
   const codeLanguagePlaceholder = "{{programming_language}}";
+  const effectiveArtifactVariant =
+    artifactVariant ?? (variant === "full" ? "full" : "compact");
 
   const toneHint = (() => {
     switch (responseMode) {
@@ -70,37 +107,38 @@ export function buildCodingExampleOutputSection({
     }
   })();
 
-  const builder = new PromptBuilder()
-    .addLine("Here is an example of the output you should provide:")
-    .addLine("<example_output>")
-    .addLine("<answer>")
-    .addLine(
-      "<introduction>Brief introduction addressing the user's question or request</introduction>",
-    )
-    .addLine();
+  const builder = new PromptBuilder();
+
+  if (variant === "full") {
+    builder
+      .addLine("Here is an example of the output you should provide:")
+      .addLine("<example_output>")
+      .addLine("<answer>")
+      .addLine(
+        "<introduction>Brief introduction addressing the user's question or request</introduction>",
+      )
+      .addLine();
+  } else {
+    builder.addLine("<example_output>").addLine("<answer>");
+  }
 
   if (!supportsReasoning) {
-    builder.addLine("<think>");
-    builder.addLine(problemBreakdownInstructions);
-    builder.addLine("</think>").addLine();
+    builder
+      .addLine("<think>")
+      .addLine(problemBreakdownInstructions)
+      .addLine("</think>");
+    if (variant === "full") {
+      builder.addLine();
+    }
   }
 
   if (supportsArtifacts) {
-    builder
-      .addLine("<artifact_example>")
-      .addLine(
-        `<artifact identifier="solution-snippet" type="application/code" language="${codeLanguagePlaceholder}">`,
-      )
-      .addLine("// Place the final implementation in this artifact.")
-      .addLine("</artifact>")
-      .addLine(
-        `<annotation>Reference the artifact in your prose and summarise its contents in ${proseLanguage}.</annotation>`,
-      )
-      .addLine(`<reference_note>${answerFormatInstructions}</reference_note>`)
-      .addLine("</artifact_example>")
-      .addLine(
-        "<summary>Highlight what the artifact delivers and how the user can run or extend it.</summary>",
+    builder.addLine(getArtifactExample(true, true, effectiveArtifactVariant));
+    if (variant === "full") {
+      builder.addLine(
+        `<summary>Highlight what the artifact delivers and how the user can run or extend it.</summary>`,
       );
+    }
   } else {
     builder
       .addLine("<solution>")
@@ -122,30 +160,21 @@ export function buildCodingExampleOutputSection({
   }
 
   builder
-    .addLine()
     .addLine(
-      "<implementation_explanation>Explanation of key parts of the implementation, if code was provided</implementation_explanation>",
-    )
-    .addLine()
-    .addLine(
-      "<additional_info>Additional considerations, best practices, or alternative approaches if relevant</additional_info>",
-    )
-    .addLine()
-    .addLine("<validation>")
-    .addLine(
-      "- tests: Summarise the checks you ran (unit, integration, or manual) and their outcomes.",
+      "<implementation_explanation>Explain the key pieces of the implementation.</implementation_explanation>",
     )
     .addLine(
-      "- edge_cases: List critical scenarios the user should keep in mind.",
+      "<additional_info>Add best practices or alternatives when they help the user.</additional_info>",
     )
-    .addLine("</validation>")
-    .addLine()
+    .addLine(
+      "<validation>Note tests or checks you ran plus critical edge cases.</validation>",
+    )
     .addLine(
       "<next_steps>Offer a helpful follow-up suggestion or optimisation when relevant.</next_steps>",
     );
 
-  if (toneHint) {
-    builder.addLine().addLine(toneHint);
+  if (toneHint && variant === "full") {
+    builder.addLine(toneHint);
   }
 
   builder.addLine("</answer>").addLine("</example_output>").addLine();

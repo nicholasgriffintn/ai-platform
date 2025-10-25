@@ -1,3 +1,41 @@
+import type { PromptModelMetadata } from "./sections/metadata";
+
+export interface PromptCapabilities {
+  supportsToolCalls: boolean;
+  supportsArtifacts: boolean;
+  supportsReasoning: boolean;
+  requiresThinkingPrompt: boolean;
+}
+
+interface ResolvePromptCapabilityArgs {
+  supportsToolCalls?: boolean;
+  supportsArtifacts?: boolean;
+  supportsReasoning?: boolean;
+  requiresThinkingPrompt?: boolean;
+  modelMetadata?: PromptModelMetadata;
+}
+
+export function resolvePromptCapabilities({
+  supportsToolCalls,
+  supportsArtifacts,
+  supportsReasoning,
+  requiresThinkingPrompt,
+  modelMetadata,
+}: ResolvePromptCapabilityArgs): PromptCapabilities {
+  const metadata = modelMetadata?.modelConfig;
+
+  return {
+    supportsToolCalls:
+      supportsToolCalls ?? metadata?.supportsToolCalls ?? false,
+    supportsArtifacts:
+      supportsArtifacts ?? metadata?.supportsArtifacts ?? false,
+    supportsReasoning:
+      supportsReasoning ?? metadata?.supportsReasoning ?? false,
+    requiresThinkingPrompt:
+      requiresThinkingPrompt ?? metadata?.requiresThinkingPrompt ?? false,
+  };
+}
+
 export function getResponseStyle(
   response_mode = "normal",
   supportsReasoning = false,
@@ -9,6 +47,7 @@ export function getResponseStyle(
   userTraits?: string,
   userPreferences?: string,
   isCoding = false,
+  instructionVariant: "full" | "compact" = "full",
 ): {
   traits: string;
   preferences: string;
@@ -19,9 +58,7 @@ export function getResponseStyle(
     userTraits ||
     "direct, intellectually curious, balanced in verbosity (concise for simple questions, thorough for complex ones), systematic in reasoning for complex problems";
 
-  const DEFAULT_PREFERENCES =
-    userPreferences ||
-    `- Answer directly without unnecessary affirmations or filler phrases
+  const FULL_DEFAULT_PREFERENCES = `- Answer directly without unnecessary affirmations or filler phrases
   - Use step-by-step reasoning when solving math, logic, or complex problems
   - Match response length to question complexity - concise for simple questions, thorough for complex ones
   - Offer to elaborate rather than providing exhaustive detail upfront
@@ -30,6 +67,146 @@ export function getResponseStyle(
   - Ask at most one thoughtful follow-up question when appropriate
   - You should use Markdown to format your response.
   - Write your response in the same language as the task posed by the user.`;
+
+  const COMPACT_DEFAULT_PREFERENCES = `- Provide clear, direct answers without filler.
+  - Ask for missing details only when they are essential to proceed.
+  - Match explanation depth to the task's complexity.
+  - Use Markdown sparingly; only when it improves readability.
+  - Reply in the same language the user used.`;
+
+  const DEFAULT_PREFERENCES =
+    userPreferences ||
+    (instructionVariant === "compact"
+      ? COMPACT_DEFAULT_PREFERENCES
+      : FULL_DEFAULT_PREFERENCES);
+
+  if (instructionVariant === "compact") {
+    const compactProblemBreakdownInstructions = (() => {
+      switch (response_mode) {
+        case "concise":
+          return "Capture only the key checks or steps before you answer.";
+        case "formal":
+          return "Outline the essential steps with precise terminology.";
+        case "explanatory":
+          return "Highlight the main stages you'll cover before the final answer.";
+        default:
+          return "Sketch the steps that matter so your answer stays focused.";
+      }
+    })();
+
+    const compactAnswerFormatInstructions = (() => {
+      const deliverable = isCoding ? "code" : "answer";
+      switch (response_mode) {
+        case "concise":
+          return `Provide the ${deliverable} with only the context the user needs to act.`;
+        case "formal":
+          return `Present the ${deliverable} with clear structure and precise language.`;
+        case "explanatory":
+          return `Deliver the ${deliverable} and briefly walk through the reasoning or workflow.`;
+        default:
+          return `Share the ${deliverable} and call out the key insight or next step for the user.`;
+      }
+    })();
+
+    if (isAgent) {
+      let agentPreferences = DEFAULT_PREFERENCES;
+      const agentGuidelines: string[] = [];
+
+      if (supportsToolCalls) {
+        agentGuidelines.push(
+          "Coordinate tool use thoughtfully and summarise results before continuing.",
+        );
+      }
+
+      if (supportsArtifacts) {
+        agentGuidelines.push(
+          "Place sizeable or reusable deliverables in artifacts and reference them succinctly.",
+        );
+      }
+
+      agentGuidelines.push(
+        "Flag uncertainty or blocking gaps early so the user can redirect you.",
+      );
+
+      if (agentGuidelines.length > 0) {
+        agentPreferences += `\n- Also keep in mind:\n${agentGuidelines
+          .map((line) => `  - ${line}`)
+          .join("\n")}`;
+      }
+
+      if (memoriesEnabled) {
+        agentPreferences += `\n- Offer to store important facts or preferences when it will help future work.`;
+      } else {
+        agentPreferences += `\n- If asked to remember something, explain that memories are currently disabled for this user.`;
+      }
+
+      return {
+        traits: DEFAULT_TRAITS,
+        preferences: agentPreferences,
+        problemBreakdownInstructions: compactProblemBreakdownInstructions,
+        answerFormatInstructions: compactAnswerFormatInstructions,
+      };
+    }
+
+    const additionalGuidelines: string[] = [];
+
+    if (!supportsReasoning || requiresThinkingPrompt) {
+      additionalGuidelines.push(
+        "Use <think> to sketch your approach before sharing the final answer.",
+      );
+      if (isCoding) {
+        additionalGuidelines.push(
+          "Note the main components or edge cases in your plan before coding.",
+        );
+      }
+    }
+
+    if (supportsToolCalls) {
+      additionalGuidelines.push(
+        "Use tools only when they add value and summarise their output briefly.",
+      );
+    }
+
+    if (supportsArtifacts) {
+      additionalGuidelines.push(
+        "Create an artifact for long or reusable deliverables and describe it in chat.",
+      );
+    }
+
+    additionalGuidelines.push(
+      "Flag uncertainty or missing information instead of guessing.",
+    );
+    additionalGuidelines.push(
+      "Scale your explanation to the complexity of the request.",
+    );
+
+    let preferences = DEFAULT_PREFERENCES;
+
+    if (additionalGuidelines.length > 0) {
+      preferences += `\n- Also follow:\n${additionalGuidelines
+        .map((line) => `  - ${line}`)
+        .join("\n")}`;
+    }
+
+    if (isCoding) {
+      preferences += `\n- Format code with fenced blocks and point out assumptions or edge cases.`;
+    } else {
+      preferences += `\n- Keep responses in plain text unless a short code sample improves clarity.`;
+    }
+
+    if (memoriesEnabled) {
+      preferences += `\n- Offer to store important details when it benefits the user later.`;
+    } else {
+      preferences += `\n- If the user asks you to remember something, explain that memories are disabled.`;
+    }
+
+    return {
+      traits: DEFAULT_TRAITS,
+      preferences,
+      problemBreakdownInstructions: compactProblemBreakdownInstructions,
+      answerFormatInstructions: compactAnswerFormatInstructions,
+    };
+  }
 
   if (isAgent) {
     return {
@@ -150,6 +327,7 @@ export function getResponseStyle(
       supportsArtifacts,
       false,
       step,
+      "full",
     );
     step += 1;
   }
@@ -210,241 +388,57 @@ export function getResponseStyle(
 export function getArtifactExample(
   supportsArtifacts = false,
   forCode = false,
+  variant: "full" | "compact" = "full",
 ): string {
-  if (!supportsArtifacts) return "";
-
-  let response = `When using artifacts, provide the response here in the following format:
-  <examples>`;
-
-  if (forCode) {
-    response += `<example_docstring>
-    This example demonstrates how to create a new artifact and reference it in the response.
-    </example_docstring>
-    <example>
-    <user_query>Can you help me create a Python script to calculate the factorial of a number?</user_query>
-
-    <assistant_response>
-      Sure! Here's a Python script that calculates the factorial of a number:
-
-      <think>
-        Creating a Python script to calculate factorials meets the criteria for a good artifact. It's a self-contained piece of code that can be understood on its own and is likely to be reused or modified. This is a new conversation, so there are no pre-existing artifacts. Therefore, I'm creating a new artifact.
-      </think>
-
-      <artifact identifier="factorial-script" type="application/code" language="python" title="Recursive factorial implementation">
-def factorial(n):
-    if n == 0:
-        return 1
-    else:
-        return n * factorial(n - 1)
-        
-# Example usage
-result = factorial(5)
-print(f"Factorial of 5 is {result}")
-</artifact>
-    </assistant_response>
-    </example>`;
-  } else {
-    response += `<example_docstring>
-    This example demonstrates how to create a new artifact and reference it in the response.
-    </example_docstring>
-    <example>
-    <user_query>Can you help me create a Python script to calculate the factorial of a number?</user_query>
-
-    <assistant_response>
-      Sure! Here's a Python script that calculates the factorial of a number:
-
-      <think>
-        Creating a Python script to calculate factorials meets the criteria for a good artifact. It's a self-contained piece of code that can be understood on its own and is likely to be reused or modified. This is a new conversation, so there are no pre-existing artifacts. Therefore, I'm creating a new artifact.
-      </think>
-
-      <artifact identifier="factorial-script" type="application/code" language="python" title="Recursive factorial implementation">
-def factorial(n):
-    if n == 0:
-        return 1
-    else:
-        return n * factorial(n - 1)
-        
-# Example usage
-result = factorial(5)
-print(f"Factorial of 5 is {result}")
-</artifact>
-    </assistant_response>
-    </example>
-
-    <example_docstring>
-    This example demonstrates how to update an existing artifact and reference it in the response.
-    </example_docstring>
-    <example>
-    <user_query>Thanks for the factorial script! Can you modify it to handle invalid input gracefully?</user_query>
-
-    <assistant_response>
-    Good point! It's important to handle invalid input to prevent errors. I'll update the script to include input validation.
-
-    <think>This request is a direct modification of the existing "factorial-calculator" artifact. It's not a new artifact but an update to make the script more robust. I'll reuse the "factorial-calculator" identifier to maintain continuity and show the evolution of our code.</think>
-
-    <artifact identifier="factorial-script" type="application/vnd.code" language="python" title="Simple Python factorial script">
-    def factorial(n):
-        if n == 0:
-            return 1
-        else:
-            return n * factorial(n - 1)
-    </artifact>
-    </assistant_response>
-    </example>
-    
-<example_docstring>
-This example shows how to create an SVG artifact and reference it in the response.
-</example_docstring>
-
-  <example>
-    <user_query>Can you draw a simple blue circle in SVG?</user_query>
-
-    <assistant_response>
-      I'll create a simple blue circle for you using SVG.
-
-      <think>Drawing a simple blue circle in SVG is a good candidate for an artifact. It's a standalone visual element that can be reused or modified. This is a new request, so I'll create a new artifact with the identifier "blue-circle-svg".</think>
-
-      <artifact identifier="blue-circle-svg" type="image/svg+xml" title="Simple blue circle SVG">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="40" fill="blue" />
-        </svg>
-      </artifact>
-
-      Here's a simple SVG image of a blue circle, as requested. The circle is centered at coordinates (50, 50) with a radius of 40 pixels, and it's filled with the color blue.
-
-      ...
-    </assistant_response>
-
-  </example>
-
-<example_docstring>
-    This example demonstrates how to create a Mermaid artifact for a simple flow chart.
-  </example_docstring>
-
-  <example>
-    <user_query>Can you create a simple flow chart showing the process of making tea using Mermaid?</user_query>
-
-    <assistant_response>
-      Sure! Here's a simple flow chart depicting the process of making tea using Mermaid syntax:
-
-      <think>Creating a flow chart to show the process of making tea is an excellent candidate for an artifact. It's a self-contained diagram that can be understood on its own and might be used in various contexts like a presentation or a how-to guide. This is a new request, so I'll create a new artifact with the identifier "tea-making-flowchart".</think>
-
-      <artifact identifier="tea-making-flowchart" type="application/vnd.mermaid" title="Flow chart: Making Tea">
-        graph TD
-            A[Start] --> B{Water boiled?}
-            B -->|Yes| C[Add tea leaves to cup]
-            B -->|No| D[Boil water]
-            D --> B
-            C --> E[Pour boiling water into cup]
-            E --> F[Steep tea for desired time]
-            F --> G[Remove tea leaves]
-            G --> H[Add milk or sugar, if desired]
-            H --> I[Enjoy your tea!]
-            I --> J[End]
-      </artifact>
-
-      This flow chart uses Mermaid syntax to visualize the steps involved in making a cup of tea.
-
-      ...
-    </assistant_response>
-  </example>
-  
-<example_docstring>
-  This example demonstrates how to create a React component artifact for a metrics dashboard.
-</example_docstring>
-
-  <example>
-    <user_query>Can you create a React component for a metrics dashboard?</user_query>
-
-    <assistant_response>
-      Absolutely! Here's a React component that implements a basic metrics dashboard:
-
-      <think>Creating a React component for a metrics dashboard is a good artifact. It's substantial, self-contained, and can be reused in various web applications. It's not just a brief code snippet or primarily explanatory content. This is a new request, so I'll create a new artifact with the identifier "metrics-dashboard-component".</think>
-
-      <artifact identifier="dashboard-component" type="application/vnd.react" title="React Component: Metrics Dashboard">
-        import React, { useState, useEffect } from 'react';
-        import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-        import { Card, CardHeader, CardContent } from '@/components/ui/card';
-
-        const generateData = () => [...Array(12)].map((_, i) => ({
-          month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-          revenue: Math.floor(Math.random() * 5000) + 1000
-        }));
-
-        const MetricCard = ({ title, value, change }) => (
-          <Card>
-            <CardHeader>{title}</CardHeader>
-
-      ...
-
-        export default Dashboard;
-      </artifact>
-
-      Feel free to ask if you want to extend this component!
-    </assistant_response>
-  </example>
-
-<example_docstring>
-This example demonstrates the assistant's decision not to use an artifact because it would make the information less accessible and hinder the natural flow of the conversation.
-</example_docstring>
-
-  <example>
-    <user_query>
-      Can you give me a quick rundown of some common Python list methods? I'm new to Python and trying to understand the basics.
-    </user_query>
-
-    <assistant_response>
-      Absolutely! Python lists are versatile and have many useful methods. Here's a quick overview of some common ones:
-
-      <think>The user asked about common Python list methods. While informative, putting this in a separate artifact window would make it harder for the user to quickly scan, understand, and ask follow-up questions. Keeping it in our chat makes the info more glanceable and our discussion more fluid.</think>
-
-      1. \`append(x)\`: Adds an item \`x\` to the end of the list.
-        Example: \`my_list.append(4)\`
-
-      2. \`extend(iterable)\`: Adds all items from an iterable (like another list) to the end.
-        Example: \`my_list.extend([5, 6, 7])\`
-
-      3. \`insert(i, x)\`: Inserts an item \`x\` at a given position \`i\`.
-        Example: \`my_list.insert(1, "new")\`
-
-      ...
-    </assistant_response>
-  </example>
-
-<example_docstring>
-This example demonstrates the assistant's decision not to use an artifact for an explanation that includes code samples, because the content is primarily educational and benefits from being part of the conversational flow.
-</example_docstring>
-
-  <example>
-    <user_query>
-      I'm learning Python and algorithms. Can you explain how binary search works and maybe show me a simple Python implementation? I learn best by seeing code.
-    </user_query>
-
-    <assistant_response>
-      Absolutely! Binary search is an efficient algorithm for finding an item in a sorted list. It works by repeatedly dividing the search interval in half. Let's walk through it with a simple Python implementation.
-
-      <think>The user asked for an explanation of binary search with a Python implementation. Although this involves code, it's primarily educational—the code is part of the explanation, not a standalone tool. Putting this in an artifact would disrupt the learning flow. The user learns best by seeing code in context, so keeping everything in our chat makes it easier for them to follow along and ask questions.</think>
-
-      First, let's define a function for binary search:
-
-      \`\`\`python
-      def binary_search(arr, target):
-          left, right = 0, len(arr) - 1
-
-          while left <= right:
-              mid = (left + right) // 2
-              if arr[mid] == target:
-                  return mid
-              elif arr[mid] < target:
-                  left = mid + 1
-      \`\`\`
-    </assistant_response>
-  </example>`;
+  if (!supportsArtifacts) {
+    return "";
   }
 
-  response += "</examples>";
+  const guidance = [
+    "Use artifacts for deliverables the user may reuse or download later.",
+    "Reference each artifact in your main response so the user understands what it contains.",
+    "Reuse an existing artifact identifier when updating earlier work; choose a new one for fresh deliverables.",
+  ];
 
-  return response;
+  if (variant === "compact") {
+    const compactExample = forCode
+      ? `<artifact identifier="solution-snippet" type="application/code" language="{{programming_language}}">
+// Final implementation
+</artifact>`
+      : `<artifact identifier="deliverable" type="text/markdown">
+Provide the full deliverable here.
+</artifact>`;
+
+    return `<artifact_hint>
+${guidance.map((line) => `  - ${line}`).join("\n")}
+  ${compactExample}
+  <reminder>Summarise the artifact contents in your prose.</reminder>
+</artifact_hint>`;
+  }
+
+  const sampleArtifact = forCode
+    ? `<artifact identifier="solution-snippet" type="application/code" language="{{programming_language}}">
+// Main implementation
+function example() {
+  // ...
+}
+</artifact>`
+    : `<artifact identifier="deliverable" type="text/markdown">
+# Outline
+- Key point 1
+- Key point 2
+</artifact>`;
+
+  return `<artifact_example>
+  <when_to_use>Create an artifact when the deliverable is longer than a few paragraphs, benefits from syntax highlighting, or should be downloaded intact.</when_to_use>
+  <creation_steps>
+    <step>Pick a clear identifier (kebab-case) and reuse it when iterating on the same work.</step>
+    <step>Add a short title and the correct MIME type so the client can render it.</step>
+    <step>Mention the artifact in your response with a plain-language summary.</step>
+  </creation_steps>
+  ${sampleArtifact}
+  <follow_up>Offer to adjust or extend the artifact if the user needs changes.</follow_up>
+</artifact_example>`;
 }
 
 function getArtifactTypeInstructions(forCode = false): string {
@@ -497,8 +491,16 @@ export function getArtifactInstructions(
   supportsArtifacts = false,
   forCode = false,
   startIndex = 1,
+  variant: "full" | "compact" = "full",
 ): string {
   if (!supportsArtifacts) return "";
+
+  if (variant === "compact") {
+    return `${startIndex}. When using artifacts, keep them lightweight:
+   - Reserve artifacts for deliverables the user may reuse or download.
+   - Summarise each artifact in your response so the user knows what's inside.
+   - Reuse identifiers when updating earlier work to keep context linked.`;
+  }
 
   const baseInstructions = `${startIndex}. When creating artifacts:
    a. Use artifacts for substantial, self-contained content (>15 lines) 

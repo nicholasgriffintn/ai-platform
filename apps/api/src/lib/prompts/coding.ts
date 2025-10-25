@@ -1,5 +1,6 @@
 import type { IBody, IUserSettings } from "~/types";
 import { PromptBuilder } from "./builder";
+import { resolvePromptLayout } from "./layout";
 import {
   buildAssistantMetadataSection,
   type PromptModelMetadata,
@@ -7,7 +8,7 @@ import {
 import { buildAssistantPrinciplesSection } from "./sections/principles";
 import { buildCodingExampleOutputSection } from "./sections/examples";
 import { buildUserContextSection } from "./sections/user-context";
-import { getResponseStyle } from "./utils";
+import { getResponseStyle, resolvePromptCapabilities } from "./utils";
 
 export function returnCodingPrompt(
   request: IBody,
@@ -37,16 +38,20 @@ export function returnCodingPrompt(
   const longitude = request.location?.longitude ?? null;
   const date = request.date || new Date().toISOString().split("T")[0];
 
-  const effectiveSupportsToolCalls =
-    supportsToolCalls ?? modelMetadata?.modelConfig?.supportsToolCalls ?? false;
-  const effectiveSupportsArtifacts =
-    supportsArtifacts ?? modelMetadata?.modelConfig?.supportsArtifacts ?? false;
-  const effectiveSupportsReasoning =
-    supportsReasoning ?? modelMetadata?.modelConfig?.supportsReasoning ?? false;
-  const effectiveRequiresThinkingPrompt =
-    requiresThinkingPrompt ??
-    modelMetadata?.modelConfig?.requiresThinkingPrompt ??
-    false;
+  const capabilities = resolvePromptCapabilities({
+    supportsToolCalls,
+    supportsArtifacts,
+    supportsReasoning,
+    requiresThinkingPrompt,
+    modelMetadata,
+  });
+
+  const layout = resolvePromptLayout({
+    contextWindow: modelMetadata?.modelConfig?.contextWindow,
+    isAgent,
+    isCoding: true,
+    capabilities,
+  });
 
   const {
     traits,
@@ -55,15 +60,16 @@ export function returnCodingPrompt(
     answerFormatInstructions,
   } = getResponseStyle(
     response_mode,
-    effectiveSupportsReasoning,
-    effectiveRequiresThinkingPrompt,
-    effectiveSupportsToolCalls,
-    effectiveSupportsArtifacts,
+    capabilities.supportsReasoning,
+    capabilities.requiresThinkingPrompt,
+    capabilities.supportsToolCalls,
+    capabilities.supportsArtifacts,
     isAgent,
     memoriesEnabled,
     userTraits,
     userPreferences,
     true,
+    layout.instructionVariant,
   );
 
   const metadataSection = buildAssistantMetadataSection({
@@ -72,15 +78,17 @@ export function returnCodingPrompt(
       : request,
     modelId: modelMetadata?.modelId,
     modelConfig: modelMetadata?.modelConfig,
+    format: layout.metadataFormat,
   });
 
   const principlesSection = buildAssistantPrinciplesSection({
     isAgent,
-    supportsToolCalls: effectiveSupportsToolCalls,
-    supportsArtifacts: effectiveSupportsArtifacts,
-    supportsReasoning: effectiveSupportsReasoning,
+    supportsToolCalls: capabilities.supportsToolCalls,
+    supportsArtifacts: capabilities.supportsArtifacts,
+    supportsReasoning: capabilities.supportsReasoning,
     preferredLanguage,
     responseMode: response_mode,
+    format: layout.principlesFormat,
   });
 
   const builder = new PromptBuilder(metadataSection)
@@ -107,12 +115,14 @@ export function returnCodingPrompt(
   builder
     .add(
       buildCodingExampleOutputSection({
-        supportsReasoning: effectiveSupportsReasoning,
-        supportsArtifacts: effectiveSupportsArtifacts,
+        supportsReasoning: capabilities.supportsReasoning,
+        supportsArtifacts: capabilities.supportsArtifacts,
         problemBreakdownInstructions,
         answerFormatInstructions,
         preferredLanguage,
         responseMode: response_mode,
+        variant: layout.exampleVariant === "full" ? "full" : "compact",
+        artifactVariant: layout.artifactExampleVariant,
       }),
     )
     .startSection()
