@@ -1,4 +1,12 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { BedrockProvider } from "../bedrock";
