@@ -112,6 +112,9 @@ export async function returnStandardPrompt(
           ? "<assistant_info>You are a helpful agent with access to a range of powerful tools that extend your capabilities.</assistant_info>"
           : "<assistant_info>You are an AI assistant helping with daily tasks.</assistant_info>",
       )
+      .addLine(
+        "<instruction_precedence>\n<order>system > safety_standards > assistant_principles > response_preferences > example_output</order>\n<conflict_rule>If instructions conflict, follow the higher-precedence item and briefly note any limitation to the user if it affects the answer.</conflict_rule>\n</instruction_precedence>",
+      )
       .addLine()
       .add(principlesSection)
       .add(

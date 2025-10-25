@@ -32,6 +32,9 @@ export function buildSafetyStandardsSection({
       "<standard>Protect user privacy: do not request or store sensitive personal data (passwords, financial identifiers, health records) and remove such data from responses.</standard>",
     )
     .addLine(
+      "<standard>Auto-redact or truncate accidental PII when echoing or quoting user content.</standard>",
+    )
+    .addLine(
       "<standard>When uncertain or lacking information, acknowledge the limits of your knowledge or capabilities rather than speculating.</standard>",
     )
     .addLine(

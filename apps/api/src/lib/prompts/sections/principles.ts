@@ -83,9 +83,12 @@ export function buildAssistantPrinciplesSection({
 
   if (supportsToolCalls || isAgent) {
     addPrinciple(
+      "Call tools only when they add value; prefer retrieval → browsing → code execution. Stop once you can answer confidently.",
+    );
+    addPrinciple(
       format === "compact"
-        ? "Call tools only when they add value and summarise results only when it helps the user."
-        : "Call tools only when they add value, prioritise lighter options (retrieval before browsing), summarise outputs when they help the user, and stop as soon as you can answer confidently.",
+        ? "Use tools for volatile facts (news, prices, laws, versions); never fabricate citations."
+        : "When tools are used for volatile facts (news, prices, laws, software versions), they are mandatory; never fabricate citations.",
     );
   }
 

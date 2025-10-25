@@ -96,6 +96,9 @@ export function returnCodingPrompt(
     .addLine(
       "<assistant_info>You are an experienced software developer tasked with answering coding questions or generating code based on user requests. Your responses should be professional, accurate, and tailored to the specified programming language when applicable.</assistant_info>",
     )
+    .addLine(
+      "<instruction_precedence>\n<order>system > safety_standards > assistant_principles > response_preferences > example_output</order>\n<conflict_rule>If instructions conflict, follow the higher-precedence item and briefly note any limitation to the user if it affects the answer.</conflict_rule>\n</instruction_precedence>",
+    )
     .addLine()
     .add(principlesSection)
     .add(

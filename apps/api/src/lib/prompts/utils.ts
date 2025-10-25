@@ -64,13 +64,15 @@ export function getResponseStyle(
   - Offer to elaborate when the user asks; avoid over-explaining upfront.
   - Cite authoritative sources for specific facts and flag uncertainty only when information is incomplete.
   - Ask follow-up questions only when information is missing or safety requires clarification (more than one is fine if essential).
-  - Use Markdown for structure (headings, lists) and keep substantial code or data in fenced blocks or artifacts.
+  - Keep chat in Markdown prose. Place substantial code/data or executable outputs in fenced blocks or a single artifact per message.
+  - If a tool fails: retry once if safe; otherwise summarise the failure briefly and offer an alternative.
   - Write your response in the same language as the task posed by the user.`;
 
   const COMPACT_DEFAULT_PREFERENCES = `- Provide clear, direct answers without filler.
   - Ask for missing details only when essential; multiple follow-ups are fine when safety or accuracy demands it.
   - Match explanation depth to the task's complexity.
-  - Use Markdown sparingly; keep code in fenced blocks or artifacts.
+  - Keep chat in Markdown; put substantial code/data in fenced blocks or a single artifact per message.
+  - If a tool fails: retry once if safe, otherwise summarise and suggest an alternative.
   - Reply in the same language the user used.`;
 
   const DEFAULT_PREFERENCES =
@@ -188,15 +190,15 @@ export function getResponseStyle(
     }
 
     if (isCoding) {
-      preferences += `\n- Format code with fenced blocks and point out assumptions or edge cases.`;
+      preferences += `\n- Present runnable code in fenced blocks or a single artifact and call out assumptions or edge cases.`;
     } else {
-      preferences += `\n- Keep responses in plain text unless a short code sample improves clarity.`;
+      preferences += `\n- Keep chat in Markdown prose; add short code snippets only when they clarify the explanation.`;
     }
 
     if (memoriesEnabled) {
-      preferences += `\n- Offer to store important details when it benefits the user later.`;
+      preferences += `\n- Only store memories after explicit user consent.\n- Do not store short-lived logistics (meetings, links, one-off codes) unless the user explicitly asks.\n- Never retain passwords, credentials, financial IDs, or medical details.`;
     } else {
-      preferences += `\n- If the user asks you to remember something, explain that memories are disabled.`;
+      preferences += `\n- If the user asks you to remember something, explain that memories are disabled and suggest alternatives.`;
     }
 
     return {
@@ -214,7 +216,7 @@ export function getResponseStyle(
       agentPreferences += `\n- Narrate tool usage only when it helps the user act on the results.`;
     }
     if (memoriesEnabled) {
-      agentPreferences += `\n- Ask for consent before storing long-term memories and never keep sensitive personal data (passwords, medical, financial).`;
+      agentPreferences += `\n- Only store memories after explicit user consent.\n- Do not store short-lived logistics (meetings, links, one-off codes) unless the user explicitly asks.\n- Never retain passwords, credentials, financial IDs, or medical details.`;
     } else {
       agentPreferences += `\n- If the user asks you to remember something, explain that memories are disabled and suggest alternatives.`;
     }
@@ -344,7 +346,9 @@ export function getResponseStyle(
   PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Engage thoughtfully with the user's ideas while respecting privacy and platform policies.`;
 
   if (memoriesEnabled) {
-    PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. Only store memories after explicit user consent and never retain sensitive categories such as passwords, financial data, or medical details.\n`;
+    PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. Only store memories after explicit user consent.\n`;
+    PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Do not store short-lived logistics (meetings, links, one-off codes) unless the user explicitly asks.\n`;
+    PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Never retain passwords, credentials, financial IDs, or medical details.\n`;
   } else {
     PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. If the user asks you to remember something, explain that memories are disabled and suggest they capture the detail another way.\n`;
   }

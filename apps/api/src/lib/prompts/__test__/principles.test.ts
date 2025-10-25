@@ -33,7 +33,10 @@ describe("buildAssistantPrinciplesSection", () => {
 
     expect(result).toContain("Focus on the user's goal");
     expect(result).toContain(
-      "Call tools only when they add value and summarise results only when it helps the user.",
+      "Call tools only when they add value; prefer retrieval → browsing → code execution. Stop once you can answer confidently.",
+    );
+    expect(result).toContain(
+      "Use tools for volatile facts (news, prices, laws, versions); never fabricate citations.",
     );
     expect(result).toContain("Use artifacts for sizeable or reusable work");
     expect(result).toContain(

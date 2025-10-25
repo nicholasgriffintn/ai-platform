@@ -165,6 +165,16 @@ describe("returnStandardPrompt", () => {
         "Decline or redirect any requests that involve disallowed or dangerous content",
       );
     });
+
+    it("should include instruction precedence block", async () => {
+      // @ts-expect-error - mock implementation
+      const request: IBody = {};
+      const result = await returnStandardPrompt(request);
+      expect(result).toContain("<instruction_precedence>");
+      expect(result).toContain(
+        "<order>system > safety_standards > assistant_principles > response_preferences > example_output</order>",
+      );
+    });
   });
 
   describe("feature flags handling", () => {

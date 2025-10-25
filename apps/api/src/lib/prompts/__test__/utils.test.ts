@@ -245,7 +245,7 @@ describe("prompts utils", () => {
           "Only store memories after explicit user consent",
         );
         expect(result.preferences).toContain(
-          "never retain sensitive categories such as passwords, financial data, or medical details",
+          "Never retain passwords, credentials, financial IDs, or medical details.",
         );
       });
 
