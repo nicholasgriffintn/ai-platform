@@ -136,35 +136,55 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
   ): Promise<EmbeddingMutationResult> {
     const url = `${this.agentEndpoint}/knowledgebases/${this.knowledgeBaseId}/datasources/${this.knowledgeBaseCustomDataSourceId}/documents`;
 
-    // TODO: Support file uploads: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_IngestKnowledgeBaseDocuments.html
     const body = JSON.stringify({
-      documents: embeddings.map((embedding) => ({
-        content: {
-          dataSourceType: "CUSTOM",
-          custom: {
-            customDocumentIdentifier: {
-              id: embedding.id,
-            },
-            sourceType: "IN_LINE",
-            inlineContent: {
-              type: "TEXT",
-              textContent: {
-                data: embedding.metadata.content || "",
+      documents: embeddings.map((embedding) => {
+        const hasFileData = embedding.metadata.fileData;
+
+        return {
+          content: {
+            dataSourceType: "CUSTOM",
+            custom: {
+              customDocumentIdentifier: {
+                id: embedding.id,
               },
+              sourceType: "IN_LINE",
+              inlineContent: hasFileData
+                ? {
+                    type: embedding.metadata.contentType || "BYTE",
+                    byteContent: {
+                      data: embedding.metadata.fileData,
+                      mimeType:
+                        embedding.metadata.mimeType ||
+                        "application/octet-stream",
+                    },
+                    textContent: {
+                      data: embedding.metadata.content || "",
+                    },
+                  }
+                : {
+                    type: "TEXT",
+                    textContent: {
+                      data: embedding.metadata.content || "",
+                    },
+                  },
             },
           },
-        },
-        metadata: {
-          type: "IN_LINE_ATTRIBUTE",
-          inlineAttributes: Object.keys(embedding.metadata).map((key) => ({
-            key,
-            value: {
-              type: "STRING",
-              stringValue: embedding.metadata[key],
-            },
-          })),
-        },
-      })),
+          metadata: {
+            type: "IN_LINE_ATTRIBUTE",
+            inlineAttributes: Object.keys(embedding.metadata)
+              .filter(
+                (key) => !["fileData", "mimeType", "contentType"].includes(key),
+              )
+              .map((key) => ({
+                key,
+                value: {
+                  type: "STRING",
+                  stringValue: String(embedding.metadata[key]),
+                },
+              })),
+          },
+        };
+      }),
     });
 
     const aws = await this.getAwsClient();

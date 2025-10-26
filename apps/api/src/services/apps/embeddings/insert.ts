@@ -13,7 +13,11 @@ const logger = getLogger({ prefix: "services/apps/embeddings/insert" });
 export interface IInsertEmbeddingRequest extends IRequest {
   request: {
     type: string;
-    content: string;
+    content?: string;
+    file?: {
+      data: any;
+      mimeType: string;
+    };
     id: string;
     metadata: Record<string, any>;
     title: string;
@@ -30,13 +34,19 @@ export const insertEmbedding = async (
     const {
       type,
       content: requestContent,
+      file,
       id,
       metadata,
       title: requestTitle,
       rag_options = {},
     } = request;
 
-    const content = sanitiseInput(requestContent);
+    let content: string;
+
+    if (requestContent) {
+      content = sanitiseInput(requestContent);
+    }
+
     const title = requestTitle ? sanitiseInput(requestTitle) : "";
 
     if (!type) {
@@ -53,7 +63,11 @@ export const insertEmbedding = async (
     }
 
     let uniqueId;
-    const newMetadata = { ...metadata, title };
+    const newMetadata = {
+      ...metadata,
+      title,
+      ...(file && { fileData: file.data, mimeType: file.mimeType }),
+    };
 
     const database = Database.getInstance(env);
 

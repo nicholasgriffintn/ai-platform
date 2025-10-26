@@ -2,7 +2,13 @@ import z from "zod/v4";
 
 export const insertEmbeddingSchema = z.object({
   type: z.string(),
-  content: z.string(),
+  content: z.string().optional(),
+  file: z
+    .object({
+      data: z.any(),
+      mimeType: z.string(),
+    })
+    .optional(),
   id: z.string().optional(),
   metadata: z.record(z.string(), z.any()).optional(),
   title: z.string().optional(),
