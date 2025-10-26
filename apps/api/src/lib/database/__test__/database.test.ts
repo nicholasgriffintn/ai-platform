@@ -61,7 +61,6 @@ describe("Database", () => {
     it("should maintain singleton across different call patterns", () => {
       const instance1 = Database.getInstance(mockEnv);
 
-      // Simulate multiple service calls
       const instance2 = Database.getInstance(mockEnv);
       const instance3 = Database.getInstance({ ...mockEnv });
 

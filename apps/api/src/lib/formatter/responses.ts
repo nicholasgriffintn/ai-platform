@@ -51,13 +51,13 @@ export class ResponseFormatter {
       workers: ResponseFormatter.formatWorkersResponse,
       "workers-ai": ResponseFormatter.formatWorkersResponse,
       openrouter: ResponseFormatter.formatOpenRouterResponse,
-      groq: ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
-      mistral: ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
-      "perplexity-ai": ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
-      deepseek: ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
-      huggingface: ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
-      "github-models": ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
-      "together-ai": ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
+      groq: ResponseFormatter.formatOpenAIResponse,
+      mistral: ResponseFormatter.formatOpenAIResponse,
+      "perplexity-ai": ResponseFormatter.formatOpenAIResponse,
+      deepseek: ResponseFormatter.formatOpenAIResponse,
+      huggingface: ResponseFormatter.formatOpenAIResponse,
+      "github-models": ResponseFormatter.formatOpenAIResponse,
+      "together-ai": ResponseFormatter.formatOpenAIResponse,
     };
 
     return formatters[provider] || ResponseFormatter.formatGenericResponse;

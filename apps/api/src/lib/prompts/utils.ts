@@ -393,7 +393,6 @@ export function getArtifactExample(
   if (variant === "compact") {
     const compactExample = forCode
       ? `<artifact identifier="solution-snippet" type="application/code" language="{{programming_language}}">
-// Final implementation
 </artifact>`
       : `<artifact identifier="deliverable" type="text/markdown">
 Provide the full deliverable here.
@@ -409,7 +408,6 @@ ${guidance.map((line) => `  - ${line}`).join("\n")}
 
   const sampleArtifact = forCode
     ? `<artifact identifier="solution-snippet" type="application/code" language="{{programming_language}}">
-// Main implementation
 function example() {
   // ...
 }

@@ -36,7 +36,6 @@ export class UnifiedPollingService {
           userId,
         );
 
-        // Update metadata with latest information
         const updatedMetadata: UnifiedAsyncInvocation = {
           ...metadata,
           ...result.metadata,

@@ -131,7 +131,7 @@ describe("TeamDelegation", () => {
 
     it("should detect circular delegation", async () => {
       const targetAgent: Agent = {
-        id: "current-agent-id", // Same as current agent
+        id: "current-agent-id",
         user_id: 1,
         team_id: "team-1",
         name: "Target Agent",

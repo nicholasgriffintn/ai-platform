@@ -118,7 +118,6 @@ export class ReplicateProvider extends BaseProvider {
     const body: Record<string, any> = {
       version: params.version || params.model,
       input: lastMessage.content,
-      // Always use polling - no webhook logic
     };
 
     return trackProviderMetrics({
@@ -134,13 +133,12 @@ export class ReplicateProvider extends BaseProvider {
           params.env,
         );
 
-        // Always return unified metadata for async operations
         if (initialResponse.status !== "succeeded") {
           const unifiedMetadata = UnifiedPollingService.createUnifiedMetadata(
             this.name,
             initialResponse.id,
             initialResponse,
-            4000, // 4 second polling interval for Replicate
+            4000,
           );
 
           return {

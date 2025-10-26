@@ -8,11 +8,7 @@ import {
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { StorageService } from "~/lib/storage";
-import type {
-  ChatCompletionParameters,
-  ModelConfigItem,
-  UnifiedAsyncInvocation,
-} from "~/types";
+import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { createEventStreamParser } from "~/utils/awsEventStream";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -743,9 +739,6 @@ export class BedrockProvider extends BaseProvider {
               ErrorType.PROVIDER_ERROR,
             );
           }
-
-          const encodedArn = encodeURIComponent(invocationArn);
-          const invocationUrl = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/async-invoke/${encodedArn}`;
 
           const unifiedMetadata = UnifiedPollingService.createUnifiedMetadata(
             this.name,
