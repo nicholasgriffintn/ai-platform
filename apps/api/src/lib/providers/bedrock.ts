@@ -8,7 +8,6 @@ import {
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { StorageService } from "~/lib/storage";
-import { parseS3Uri, resolveS3Artifact } from "~/lib/storage/s3Artifacts";
 import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { createEventStreamParser } from "~/utils/awsEventStream";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -19,7 +18,6 @@ import {
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
 import { formatBedrockMessages } from "./utils/bedrockContent";
-import { findDirectVideoUrl, VIDEO_FILE_EXTENSIONS } from "~/utils/video";
 
 const logger = getLogger({ prefix: "lib/providers/bedrock" });
 
@@ -482,91 +480,6 @@ export class BedrockProvider extends BaseProvider {
     return { accessKey, secretKey };
   }
 
-  private async createS3Client(
-    params: ChatCompletionParameters,
-    userId?: number,
-  ): Promise<AwsClient> {
-    const { accessKey, secretKey } = await this.getAwsCredentials(
-      params,
-      userId,
-    );
-
-    return new AwsClient({
-      accessKeyId: accessKey,
-      secretAccessKey: secretKey,
-      region: this.getRegion(),
-      service: "s3",
-    });
-  }
-
-  private async extractVideoMetadata(
-    raw: Record<string, any>,
-    params: ChatCompletionParameters,
-    userId?: number,
-  ): Promise<Record<string, any> | undefined> {
-    const directUrl = findDirectVideoUrl(raw);
-    if (directUrl) {
-      return { url: directUrl, source: "provider" };
-    }
-
-    const s3Config =
-      raw?.outputDataConfig?.s3OutputDataConfig ||
-      raw?.response?.outputDataConfig?.s3OutputDataConfig ||
-      raw?.output?.outputDataConfig?.s3OutputDataConfig;
-
-    if (!s3Config?.s3Uri) {
-      return undefined;
-    }
-
-    const parsed = parseS3Uri(s3Config.s3Uri);
-    if (!parsed) {
-      return undefined;
-    }
-
-    const bucketOwner =
-      s3Config.bucketOwner ||
-      s3Config.bucket_owner ||
-      params.env.EMBEDDINGS_OUTPUT_BUCKET_OWNER;
-
-    try {
-      const client = await this.createS3Client(params, userId);
-      const artifact = await resolveS3Artifact({
-        client,
-        bucket: parsed.bucket,
-        prefix: parsed.prefix,
-        bucketOwner,
-        region: this.getRegion(),
-        extensions: VIDEO_FILE_EXTENSIONS,
-      });
-
-      if (!artifact) {
-        return undefined;
-      }
-
-      return bucketOwner ? { ...artifact, bucketOwner } : artifact;
-    } catch (error) {
-      logger.error("Failed to resolve S3 video artifact", {
-        error,
-        bucket: parsed.bucket,
-        prefix: parsed.prefix,
-      });
-      return {
-        bucket: parsed.bucket,
-        prefix: parsed.prefix,
-        bucketOwner,
-        source: "s3",
-      };
-    }
-  }
-
-  private buildVideoResponseText(url?: string): string {
-    if (url) {
-      return `Your video is ready. [Download video](${url})`;
-    }
-
-    return "Your video is ready, but we couldn't generate a download link automatically.";
-  }
-
   private async enhanceAsyncResult(
     formatted: any,
     raw: Record<string, any>,
@@ -585,21 +498,18 @@ export class BedrockProvider extends BaseProvider {
         return formatted;
       }
 
-      const videoMetadata = await this.extractVideoMetadata(
-        raw,
-        params,
-        userId,
-      );
-      const videoUrl = videoMetadata?.url || findDirectVideoUrl(formatted);
-      const responseText = this.buildVideoResponseText(videoUrl);
+      const videoUrl = formatted?.outputDataConfig?.s3OutputDataConfig?.s3Uri;
+
+      let responseText = "";
+      if (!videoUrl) {
+        responseText = "Your video is being processed...";
+      } else {
+        responseText = `Your video is ready. You will find the video here: ${videoUrl}`;
+      }
 
       const mergedData: Record<string, any> = {
         ...(formatted?.data || {}),
       };
-
-      if (videoMetadata) {
-        mergedData.video = videoMetadata;
-      }
 
       return {
         ...formatted,
@@ -614,7 +524,7 @@ export class BedrockProvider extends BaseProvider {
 
       return {
         ...formatted,
-        response: this.buildVideoResponseText(undefined),
+        response: formatted.response || "Failed to enhance video result.",
       };
     }
   }
