@@ -96,7 +96,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     description:
       "Amazon Nova Canvas is a state-of-the-art image generation model that creates professional grade images from text or images provided in prompts. Amazon Nova Canvas also provides features that make it easy to edit images using text inputs, controls for adjusting color scheme and layout, and built-in controls to support safe and responsible use of AI.",
     type: ["text-to-image", "image-to-image"],
-    beta: true,
     costPer1kInputTokens: 0.002,
     contextWindow: 1024,
     maxTokens: 1024,
