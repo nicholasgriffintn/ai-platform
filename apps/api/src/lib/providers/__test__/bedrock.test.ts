@@ -10,6 +10,10 @@ import {
 import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { BedrockProvider } from "../bedrock";
+import {
+  createCommonParameters,
+  getToolsForProvider,
+} from "~/utils/parameters";
 
 const signMock = vi.fn();
 const fetchMock = vi.fn();
@@ -55,6 +59,8 @@ afterAll(() => {
 beforeEach(() => {
   fetchMock.mockReset();
   signMock.mockReset();
+  vi.mocked(createCommonParameters).mockReset();
+  vi.mocked(getToolsForProvider).mockReset();
 });
 
 describe("BedrockProvider", () => {
@@ -125,6 +131,104 @@ describe("BedrockProvider", () => {
         height: 1280,
         numberOfImages: 1,
       });
+    });
+
+    it("should format multimodal image content for bedrock", async () => {
+      // @ts-ignore - getModelConfigByMatchingModel is not typed
+      vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+        name: "bedrock-multimodal",
+        type: ["text"],
+        supportsToolCalls: false,
+      });
+
+      vi.mocked(createCommonParameters).mockReturnValue({
+        temperature: 0.5,
+        max_tokens: 128,
+        top_p: 0.9,
+      } as any);
+
+      vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] } as any);
+
+      const provider = new BedrockProvider();
+
+      const params = {
+        model: "bedrock-multimodal",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { text: "Describe the picture" },
+              {
+                type: "image_url",
+                image_url: {
+                  url: "data:image/png;base64,aGVsbG8=",
+                },
+              },
+            ],
+          },
+        ],
+        env: { AI_GATEWAY_TOKEN: "test-token" },
+      };
+
+      const result = await provider.mapParameters(params as any);
+
+      expect(result.messages[0].content).toEqual([
+        { text: "Describe the picture" },
+        {
+          image: {
+            format: "png",
+            source: { bytes: "aGVsbG8=" },
+          },
+        },
+      ]);
+    });
+
+    it("should format multimodal video content for bedrock", async () => {
+      // @ts-ignore - getModelConfigByMatchingModel is not typed
+      vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+        name: "bedrock-multimodal",
+        type: ["text"],
+        supportsToolCalls: false,
+      });
+
+      vi.mocked(createCommonParameters).mockReturnValue({
+        temperature: 0.5,
+        max_tokens: 128,
+        top_p: 0.9,
+      } as any);
+
+      vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] } as any);
+
+      const provider = new BedrockProvider();
+
+      const params = {
+        model: "bedrock-multimodal",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "video_url",
+                video_url: {
+                  url: "data:video/mp4;base64,QUJDRA==",
+                },
+              },
+            ],
+          },
+        ],
+        env: { AI_GATEWAY_TOKEN: "test-token" },
+      };
+
+      const result = await provider.mapParameters(params as any);
+
+      expect(result.messages[0].content).toEqual([
+        {
+          video: {
+            format: "mp4",
+            source: { bytes: "QUJDRA==" },
+          },
+        },
+      ]);
     });
   });
 
