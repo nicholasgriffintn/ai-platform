@@ -76,16 +76,27 @@ describe("BedrockProvider", () => {
         model: "bedrock-video",
         messages: [{ role: "user", content: "Create a video of a sunset" }],
         env: { AI_GATEWAY_TOKEN: "test-token" },
+        completion_id: "completion-123",
       };
 
       const result = await provider.mapParameters(params as any);
 
-      expect(result.taskType).toBe("TEXT_VIDEO");
-      expect(result.textToVideoParams.text).toBe("Create a video of a sunset");
-      expect(result.videoGenerationConfig).toEqual({
-        durationSeconds: 6,
-        fps: 24,
-        dimension: "1280x720",
+      expect(result.modelId).toBe("bedrock-video");
+      expect(result.modelInput).toEqual({
+        taskType: "TEXT_VIDEO",
+        textToVideoParams: {
+          text: "Create a video of a sunset",
+        },
+        videoGenerationConfig: {
+          durationSeconds: 6,
+          fps: 24,
+          dimension: "1280x720",
+        },
+      });
+      expect(result.outputDataConfig).toEqual({
+        s3OutputDataConfig: {
+          s3Uri: "s3://polychat-embeddings/bedrock-video/completion-123/",
+        },
       });
     });
 
@@ -160,7 +171,7 @@ describe("BedrockProvider", () => {
       );
     });
 
-    it("should use invoke endpoint for nova-reel", async () => {
+    it("should use async-invoke endpoint for nova-reel", async () => {
       const actualModels =
         await vi.importActual<typeof import("~/lib/models")>("~/lib/models");
 
@@ -172,13 +183,13 @@ describe("BedrockProvider", () => {
       const provider = new BedrockProvider();
 
       const endpoint = await (provider as any).getEndpoint({
-        model: "amazon.nova-reel-v1:0",
+        model: "amazon.nova-reel-v1:1",
         stream: false,
         env: { AI_GATEWAY_TOKEN: "test-token" },
       });
 
       expect(endpoint).toBe(
-        "https://bedrock-runtime.us-east-1.amazonaws.com/model/amazon.nova-reel-v1:0/invoke",
+        "https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke",
       );
     });
   });
@@ -230,6 +241,107 @@ describe("BedrockProvider", () => {
       expect(forwardedUrl.toString()).toBe(
         `https://gateway.ai.cloudflare.com/v1/test-account/${gatewayId}/aws-bedrock/bedrock-runtime/us-east-1/model/test-model/invoke`,
       );
+    });
+
+    it("should poll async invoke operations", async () => {
+      vi.useFakeTimers();
+      const provider = new BedrockProvider();
+      // @ts-ignore - overriding protected method for testing
+      provider.mapParameters = vi.fn().mockResolvedValue({ body: true });
+      const formatResponseMock = vi.fn().mockResolvedValue({ formatted: true });
+      // @ts-ignore - overriding protected method for testing
+      provider.formatResponse = formatResponseMock;
+
+      const params = {
+        model: "amazon.nova-reel-v1:1",
+        messages: [],
+        env: {
+          AI_GATEWAY_TOKEN: "token",
+          ACCOUNT_ID: "test-account",
+          BEDROCK_AWS_ACCESS_KEY: "access",
+          BEDROCK_AWS_SECRET_KEY: "secret",
+        },
+      };
+
+      // @ts-ignore - getModelConfigByMatchingModel is not typed
+      vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+        bedrockApiOperation: "async-invoke",
+      });
+
+      const encodedArn =
+        "arn%3Aaws%3Abedrock%3Aus-east-1%3A123456789012%3Aasync-invoke%2Fabc";
+
+      signMock
+        .mockResolvedValueOnce({
+          url: "https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke",
+          headers: new Headers(),
+        })
+        .mockResolvedValueOnce({
+          url: `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodedArn}`,
+          headers: new Headers(),
+        })
+        .mockResolvedValueOnce({
+          url: `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodedArn}`,
+          headers: new Headers(),
+        });
+
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            invocationArn:
+              "arn:aws:bedrock:us-east-1:123456789012:async-invoke/abc",
+          }),
+          text: async () => "",
+          headers: new Headers(),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            status: "IN_PROGRESS",
+          }),
+          text: async () => "",
+          headers: new Headers(),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            status: "SUCCEEDED",
+            outputDataConfig: {
+              s3OutputDataConfig: {
+                s3Uri: "s3://bucket/path/",
+              },
+            },
+          }),
+          text: async () => "",
+          headers: new Headers({
+            "cf-aig-event-id": "event-123",
+            "cf-aig-log-id": "log-123",
+            "cf-aig-cache-status": "MISS",
+          }),
+        });
+
+      try {
+        const responsePromise = provider.getResponse(params as any);
+        await Promise.resolve();
+        await vi.advanceTimersByTimeAsync(2000);
+        const result = await responsePromise;
+
+        expect(result).toEqual({ formatted: true });
+        expect(formatResponseMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: "SUCCEEDED",
+            invocationArn:
+              "arn:aws:bedrock:us-east-1:123456789012:async-invoke/abc",
+            eventId: "event-123",
+            log_id: "log-123",
+            cacheStatus: "MISS",
+          }),
+          expect.anything(),
+        );
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 });

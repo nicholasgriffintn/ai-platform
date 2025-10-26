@@ -105,15 +105,14 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 
   createModelConfig("nova-reel", PROVIDER, {
     name: "Amazon Nova Reel",
-    matchingModel: "amazon.nova-reel-v1:0",
+    matchingModel: "amazon.nova-reel-v1:1",
     description:
       "Amazon Nova Reel is a state-of-the-art video generation model that allows customers to easily create high quality video from text and images. Amazon Nova Reel supports use of natural language prompts to control visual style and pacing, including camera motion control, and built-in controls to support safe and responsible use of AI.",
     type: ["text-to-video", "image-to-video"],
-    beta: true,
     contextWindow: 512,
     maxTokens: 512,
     multimodal: true,
-    bedrockApiOperation: "invoke",
+    bedrockApiOperation: "async-invoke",
   }),
 
   createModelConfig("anthropic.claude-sonnet-4.5", PROVIDER, {

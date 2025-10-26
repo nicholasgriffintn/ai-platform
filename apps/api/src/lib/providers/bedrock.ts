@@ -15,6 +15,8 @@ import {
 import { BaseProvider } from "./base";
 
 const logger = getLogger({ prefix: "lib/providers/bedrock" });
+const ASYNC_POLL_INTERVAL_MS = 2000;
+const ASYNC_MAX_ATTEMPTS = 30;
 
 export class BedrockProvider extends BaseProvider {
   name = "bedrock";
@@ -60,7 +62,8 @@ export class BedrockProvider extends BaseProvider {
     const modelConfig = await getModelConfigByMatchingModel(params.model || "");
     const operationPath = this.resolveOperationPath(params, modelConfig);
 
-    return `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/${operationPath}`;
+    const { awsUrl } = this.buildOperationPaths(params, operationPath, region);
+    return awsUrl;
   }
 
   private resolveOperationPath(
@@ -89,12 +92,148 @@ export class BedrockProvider extends BaseProvider {
     return "converse";
   }
 
+  private isAsyncOperation(operationPath: string): boolean {
+    return operationPath === "async-invoke";
+  }
+
+  private buildOperationPaths(
+    params: ChatCompletionParameters,
+    operationPath: string,
+    region: string,
+  ): { awsUrl: string; cloudflarePath: string } {
+    if (this.isAsyncOperation(operationPath)) {
+      return {
+        awsUrl: `https://bedrock-runtime.${region}.amazonaws.com/async-invoke`,
+        cloudflarePath: "async-invoke",
+      };
+    }
+
+    return {
+      awsUrl: `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/${operationPath}`,
+      cloudflarePath: `model/${params.model}/${operationPath}`,
+    };
+  }
+
   protected async getHeaders(
     params: ChatCompletionParameters,
   ): Promise<Record<string, string>> {
     return {
       "Content-Type": "application/json",
     };
+  }
+
+  private async pollAsyncInvoke(
+    awsClient: AwsClient,
+    invocationArn: string,
+    params: ChatCompletionParameters,
+    region: string,
+    baseHeaders: Record<string, string>,
+  ): Promise<Record<string, any>> {
+    const encodedArn = encodeURIComponent(invocationArn);
+    const pollAwsUrl = `https://bedrock-runtime.${region}.amazonaws.com/async-invoke/${encodedArn}`;
+
+    for (let attempt = 0; attempt < ASYNC_MAX_ATTEMPTS; attempt++) {
+      if (attempt > 0) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, ASYNC_POLL_INTERVAL_MS),
+        );
+      }
+
+      const pollHeaders = { ...baseHeaders };
+      delete pollHeaders["Content-Type"];
+
+      const pollRequest = await awsClient.sign(pollAwsUrl, {
+        method: "GET",
+        headers: pollHeaders,
+      });
+
+      if (!pollRequest.url) {
+        throw new AssistantError(
+          "Failed to get presigned async poll request from Bedrock",
+          ErrorType.PROVIDER_ERROR,
+        );
+      }
+
+      const signedUrl = new URL(pollRequest.url);
+      signedUrl.host = "gateway.ai.cloudflare.com";
+      signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/async-invoke/${encodedArn}`;
+
+      const pollResponse = await fetch(signedUrl, {
+        method: "GET",
+        headers: pollRequest.headers,
+      });
+
+      if (!pollResponse.ok) {
+        const errorText = await pollResponse.text();
+        logger.error("Failed to poll async invocation from Bedrock", {
+          error: errorText.substring(0, 200),
+          invocationArn,
+        });
+        throw new AssistantError(
+          "Failed to poll async invocation from Bedrock",
+          ErrorType.PROVIDER_ERROR,
+        );
+      }
+
+      let pollData: Record<string, any>;
+      try {
+        pollData = (await pollResponse.json()) as Record<string, any>;
+      } catch (jsonError) {
+        const responseText = await pollResponse.text();
+        logger.error("Failed to parse async poll response from Bedrock", {
+          error: jsonError,
+          invocationArn,
+          responseText: responseText.substring(0, 200),
+        });
+        throw new AssistantError(
+          "Bedrock async poll returned invalid JSON response",
+          ErrorType.PROVIDER_ERROR,
+        );
+      }
+
+      const eventId = pollResponse.headers.get("cf-aig-event-id");
+      const logId = pollResponse.headers.get("cf-aig-log-id");
+      const cacheStatus = pollResponse.headers.get("cf-aig-cache-status");
+
+      if (eventId || logId || cacheStatus) {
+        pollData = {
+          ...pollData,
+          eventId,
+          log_id: logId,
+          cacheStatus,
+        };
+      }
+
+      const status =
+        pollData.status ||
+        pollData.invocationStatus ||
+        pollData.response?.status;
+
+      if (
+        status === "SUCCEEDED" ||
+        status === "SUCCESS" ||
+        status === "COMPLETED"
+      ) {
+        return pollData;
+      }
+
+      if (
+        status === "FAILED" ||
+        status === "ERROR" ||
+        status === "CANCELLED" ||
+        status === "TIMED_OUT"
+      ) {
+        throw new AssistantError(
+          `Bedrock async invocation failed with status ${status}`,
+          ErrorType.PROVIDER_ERROR,
+        );
+      }
+    }
+
+    throw new AssistantError(
+      "Timed out waiting for Bedrock async invocation to complete",
+      ErrorType.PROVIDER_ERROR,
+    );
   }
 
   async getMediaSourceFromMessages(
@@ -224,27 +363,39 @@ export class BedrockProvider extends BaseProvider {
       type.includes("text-to-video") || type.includes("image-to-video");
 
     if (isVideoType) {
+      const prompt = await this.getInputPromptFromMessages(params);
+      const bucket =
+        params.env.EMBEDDINGS_OUTPUT_BUCKET || "polychat-embeddings";
+      const sanitizedBucket = bucket.replace(/^s3:\/\//, "");
+      const outputPrefix = `${params.model}/${params.completion_id || Date.now()}`;
+      const s3Uri = `s3://${sanitizedBucket}/${outputPrefix}/`;
+      const bucketOwner = params.env.EMBEDDINGS_OUTPUT_BUCKET_OWNER;
+
+      const s3OutputDataConfig: Record<string, string> = {
+        s3Uri,
+      };
+
+      if (bucketOwner) {
+        s3OutputDataConfig.bucketOwner = bucketOwner;
+      }
+
       return {
-        messages: this.formatBedrockMessages(params),
-        taskType: "TEXT_VIDEO",
-        textToVideoParams: {
-          text:
-            typeof params.messages[params.messages.length - 1].content ===
-            "string"
-              ? params.messages[params.messages.length - 1].content
-              : Array.isArray(
-                    params.messages[params.messages.length - 1].content,
-                  )
-                ? (
-                    params.messages[params.messages.length - 1]
-                      .content[0] as any
-                  )?.text || ""
-                : "",
+        modelId: params.model,
+        modelInput: {
+          taskType: "TEXT_VIDEO",
+          textToVideoParams: {
+            text: prompt,
+          },
+          videoGenerationConfig: {
+            durationSeconds: 6,
+            fps: 24,
+            dimension: "1280x720",
+          },
         },
-        videoGenerationConfig: {
-          durationSeconds: 6,
-          fps: 24,
-          dimension: "1280x720",
+        outputDataConfig: {
+          s3OutputDataConfig: {
+            ...s3OutputDataConfig,
+          },
         },
       };
     }
@@ -468,7 +619,11 @@ export class BedrockProvider extends BaseProvider {
     const region = "us-east-1";
     const modelConfig = await getModelConfigByMatchingModel(params.model || "");
     const operationPath = this.resolveOperationPath(params, modelConfig);
-    const bedrockUrl = `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/${operationPath}`;
+    const { awsUrl: bedrockUrl, cloudflarePath } = this.buildOperationPaths(
+      params,
+      operationPath,
+      region,
+    );
     const body = await this.mapParameters(params);
 
     return trackProviderMetrics({
@@ -486,12 +641,13 @@ export class BedrockProvider extends BaseProvider {
           service: "bedrock",
         });
 
-        const headers = await this.getHeaders(params);
+        const baseHeaders = await this.getHeaders(params);
+        const serializedBody = JSON.stringify(body);
 
         const presignedRequest = await awsClient.sign(bedrockUrl, {
           method: "POST",
-          headers,
-          body: JSON.stringify(body),
+          headers: { ...baseHeaders },
+          body: serializedBody,
         });
 
         if (!presignedRequest.url) {
@@ -503,23 +659,78 @@ export class BedrockProvider extends BaseProvider {
         const signedUrl = new URL(presignedRequest.url);
         signedUrl.host = "gateway.ai.cloudflare.com";
 
-        signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/${operationPath}`;
+        signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/${cloudflarePath}`;
 
         const response = await fetch(signedUrl, {
           method: "POST",
           headers: presignedRequest.headers,
-          body: JSON.stringify(body),
+          body: serializedBody,
         });
 
         if (!response.ok) {
+          const errorText = await response.text();
+          logger.error("Failed to get response from Bedrock", {
+            model: params.model,
+            operation: operationPath,
+            error: errorText.substring(0, 200),
+          });
           throw new AssistantError("Failed to get response from Bedrock");
         }
 
-        const isStreaming = params.stream;
+        const isAsyncOperation = this.isAsyncOperation(operationPath);
+        const isStreaming = params.stream && !isAsyncOperation;
 
         if (isStreaming) {
           const eventStreamParser = createEventStreamParser();
           return response.body.pipeThrough(eventStreamParser);
+        }
+
+        if (isAsyncOperation) {
+          let initialData: Record<string, any>;
+          try {
+            initialData = (await response.json()) as Record<string, any>;
+          } catch (jsonError) {
+            const responseText = await response.text();
+            logger.error(`Failed to parse async response from ${this.name}`, {
+              error: jsonError,
+              responseText: responseText.substring(0, 200),
+            });
+            throw new AssistantError(
+              `${this.name} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
+              ErrorType.PROVIDER_ERROR,
+            );
+          }
+
+          const invocationArn =
+            initialData.invocationArn ||
+            initialData.arn ||
+            initialData.response?.invocationArn;
+
+          if (!invocationArn) {
+            logger.error("Missing invocationArn from async Bedrock response", {
+              initialData,
+            });
+            throw new AssistantError(
+              "Bedrock async invoke did not return an invocationArn",
+              ErrorType.PROVIDER_ERROR,
+            );
+          }
+
+          const pollData = await this.pollAsyncInvoke(
+            awsClient,
+            invocationArn,
+            params,
+            region,
+            baseHeaders,
+          );
+
+          const mergedData = {
+            ...initialData,
+            ...pollData,
+            invocationArn,
+          };
+
+          return this.formatResponse(mergedData, params);
         }
 
         let data: Record<string, any>;
