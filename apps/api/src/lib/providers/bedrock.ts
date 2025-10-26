@@ -13,6 +13,7 @@ import {
   getToolsForProvider,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
+import { formatBedrockMessages } from "./utils/bedrockContent";
 
 const logger = getLogger({ prefix: "lib/providers/bedrock" });
 const ASYNC_POLL_INTERVAL_MS = 2000;
@@ -440,11 +441,13 @@ export class BedrockProvider extends BaseProvider {
       ? { toolConfig: { tools: toolsParams.tools } }
       : {};
 
+    const bedrockMessages = formatBedrockMessages(params);
+
     return {
       ...(params.system_prompt && {
         system: [{ text: params.system_prompt }],
       }),
-      messages: this.formatBedrockMessages(params),
+      messages: bedrockMessages,
       inferenceConfig: {
         temperature: commonParams.temperature,
         maxTokens: commonParams.max_tokens,
@@ -452,23 +455,6 @@ export class BedrockProvider extends BaseProvider {
       },
       ...toolConfig,
     };
-  }
-
-  /**
-   * Format messages for Bedrock models
-   * @param params - The chat completion parameters
-   * @returns The formatted messages
-   */
-  private formatBedrockMessages(params: ChatCompletionParameters): any[] {
-    return params.messages.map((message) => ({
-      role: message.role,
-      content: [
-        {
-          type: "text",
-          text: message.content,
-        },
-      ],
-    }));
   }
 
   private async getAwsCredentials(
@@ -575,7 +561,7 @@ export class BedrockProvider extends BaseProvider {
           ...(params.system_prompt && {
             system: [{ text: params.system_prompt }],
           }),
-          messages: this.formatBedrockMessages(params),
+          messages: formatBedrockMessages(params),
         },
       },
     };
