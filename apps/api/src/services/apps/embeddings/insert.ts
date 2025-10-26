@@ -53,6 +53,25 @@ export const insertEmbedding = async (
     }
 
     let uniqueId;
+    // Metadata travels from the original upload request all the way through to
+    // the embedding provider. For file uploads the metadata object typically
+    // contains the public asset URL plus additional descriptors supplied by the
+    // upload service (see services/uploads). The current shape we rely on for
+    // Bedrock ingestion looks like:
+    // {
+    //   title: string;                // Added below for all documents
+    //   url?: string;                 // Public URL returned from handleFileUpload
+    //   fileUrl?: string;             // Some clients explicitly alias the URL
+    //   fileName?: string;            // Original filename supplied by the client
+    //   mimeType?: string;            // MIME type reported during upload
+    //   fileBase64?: string;          // Optional inline payload for direct ingest
+    //   storageKey?: string;          // Optional R2 key when known client side
+    //   chunkIndex?: string;          // Added when chunking in this service
+    //   [additional attributes]: any; // Free-form attributes preserved verbatim
+    // }
+    // The Bedrock embedding provider inspects these fields to decide whether a
+    // document should be sent as inline text (notes) or as a binary upload
+    // (files).
     const newMetadata = { ...metadata, title };
 
     const database = Database.getInstance(env);

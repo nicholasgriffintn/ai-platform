@@ -5,7 +5,7 @@ const mockDatabase = {
 };
 
 const mockEmbedding = {
-  delete: vi.fn(() => Promise.resolve({ status: "success" })),
+  delete: vi.fn(() => Promise.resolve({ status: "success", error: null })),
 };
 
 vi.mock("~/lib/database", () => ({
@@ -60,7 +60,7 @@ describe("deleteEmbedding", () => {
     };
 
     mockDatabase.getUserSettings.mockResolvedValue({});
-    mockEmbedding.delete.mockResolvedValue({ status: "success" });
+    mockEmbedding.delete.mockResolvedValue({ status: "success", error: null });
 
     const result = await deleteEmbedding(req);
 
@@ -88,7 +88,7 @@ describe("deleteEmbedding", () => {
     };
 
     mockDatabase.getUserSettings.mockResolvedValue({});
-    mockEmbedding.delete.mockResolvedValue({ status: "success" });
+    mockEmbedding.delete.mockResolvedValue({ status: "success", error: null });
 
     const result = await deleteEmbedding(req);
 
@@ -137,7 +137,7 @@ describe("deleteEmbedding", () => {
     };
 
     mockDatabase.getUserSettings.mockResolvedValue({});
-    mockEmbedding.delete.mockResolvedValue({ status: "success" });
+    mockEmbedding.delete.mockResolvedValue({ status: "success", error: null });
 
     const result = await deleteEmbedding(req);
 

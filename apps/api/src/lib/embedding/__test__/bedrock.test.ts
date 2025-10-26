@@ -1,3 +1,5 @@
+import { Buffer } from "node:buffer";
+
 import { AwsClient } from "aws4fetch";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -205,9 +207,15 @@ describe("BedrockEmbeddingProvider", () => {
 
   describe("insert", () => {
     it("should successfully insert embeddings", async () => {
+      const mockResponse = {
+        documentDetails: [
+          { documentId: "doc-1", status: "COMPLETE" },
+        ],
+      };
       mockAwsClient.fetch.mockResolvedValue({
         ok: true,
         status: 200,
+        json: vi.fn().mockResolvedValue(mockResponse),
       });
 
       const embeddings = [
@@ -223,6 +231,8 @@ describe("BedrockEmbeddingProvider", () => {
       expect(result).toEqual({
         status: "success",
         error: null,
+        documentDetails: mockResponse.documentDetails,
+        documentIds: ["doc-1"],
       });
       expect(mockAwsClient.fetch).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -234,6 +244,73 @@ describe("BedrockEmbeddingProvider", () => {
           body: expect.any(String),
         }),
       );
+
+      const body = JSON.parse(
+        mockAwsClient.fetch.mock.calls[0][1].body as string,
+      );
+      expect(body.dataSourceId).toBe("test-ds-id");
+      expect(body.documents).toHaveLength(1);
+      expect(
+        body.documents[0].content.custom.inlineContent.textContent.data,
+      ).toBe("test content");
+      expect(
+        body.documents[0].content.custom.inlineContent.type,
+      ).toBe("TEXT");
+    });
+
+    it("should format binary uploads when metadata includes file information", async () => {
+      const mockResponse = {
+        documentDetails: [
+          { documentId: "doc-file-1", status: "PROCESSING" },
+        ],
+      };
+      mockAwsClient.fetch.mockResolvedValue({
+        ok: true,
+        status: 202,
+        json: vi.fn().mockResolvedValue(mockResponse),
+      });
+
+      const fileBase64 = Buffer.from("example-binary").toString("base64");
+
+      const embeddings = [
+        {
+          id: "file-id",
+          values: [],
+          metadata: {
+            content: "", // plain text fallback not used for file uploads
+            type: "document",
+            fileBase64,
+            fileName: "example.pdf",
+            mimeType: "application/pdf",
+            url: "https://assets.example.com/uploads/1/documents/example.pdf",
+          },
+        },
+      ];
+
+      const result = await provider.insert(embeddings);
+
+      expect(result).toEqual({
+        status: "success",
+        error: null,
+        documentDetails: mockResponse.documentDetails,
+        documentIds: ["doc-file-1"],
+      });
+
+      const body = JSON.parse(
+        mockAwsClient.fetch.mock.calls[0][1].body as string,
+      );
+      const inlineContent =
+        body.documents[0].content.custom.inlineContent;
+      expect(inlineContent.type).toBe("BINARY");
+      expect(inlineContent.binaryContent.data).toBe(fileBase64);
+      expect(inlineContent.binaryContent.mimeType).toBe("application/pdf");
+      expect(inlineContent.binaryContent.fileName).toBe("example.pdf");
+
+      const inlineAttributes = body.documents[0].metadata.inlineAttributes;
+      const attributeKeys = inlineAttributes.map((attr: any) => attr.key);
+      expect(attributeKeys).toContain("mimeType");
+      expect(attributeKeys).toContain("fileName");
+      expect(attributeKeys).not.toContain("fileBase64");
     });
 
     it("should throw error when API request fails", async () => {

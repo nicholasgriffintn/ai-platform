@@ -22,6 +22,8 @@ export type EmbeddingQueryResult = {
 export type EmbeddingMutationResult = {
   status: string;
   error: string | null;
+  documentDetails?: any;
+  documentIds?: string[];
 };
 
 export interface EmbeddingProvider {

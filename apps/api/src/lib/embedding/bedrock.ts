@@ -1,5 +1,6 @@
 import { AwsClient } from "aws4fetch";
 
+import { StorageService } from "~/lib/storage";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
   EmbeddingMutationResult,
@@ -11,9 +12,38 @@ import type {
   RagOptions,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { bufferToBase64 } from "~/utils/base64";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/embedding/bedrock" });
+
+type RawFileMetadata = {
+  base64Input?: string;
+  sourceUrl?: string;
+  storageKey?: string;
+  fileName?: string;
+  mimeType?: string;
+};
+
+type ResolvedFileMetadata = {
+  base64Data: string;
+  fileName: string;
+  mimeType: string;
+  sourceUrl?: string;
+};
+
+const FILE_METADATA_EXCLUDED_KEYS = new Set([
+  "fileBase64",
+  "file_base64",
+  "base64",
+  "data",
+  "dataUrl",
+  "data_url",
+  "storageKey",
+  "storage_key",
+  "fileKey",
+  "file_key",
+]);
 
 export interface BedrockEmbeddingProviderConfig {
   knowledgeBaseId: string;
@@ -33,6 +63,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
   private user?: IUser;
   private defaultAccessKeyId: string;
   private defaultSecretAccessKey: string;
+  private storageService?: StorageService;
 
   constructor(config: BedrockEmbeddingProviderConfig, env: IEnv, user?: IUser) {
     this.knowledgeBaseId = config.knowledgeBaseId;
@@ -45,6 +76,270 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
     this.user = user;
     this.defaultAccessKeyId = config.accessKeyId || "";
     this.defaultSecretAccessKey = config.secretAccessKey || "";
+  }
+
+  private getStorageService(): StorageService | null {
+    if (!this.env.ASSETS_BUCKET) {
+      return null;
+    }
+    if (!this.storageService) {
+      this.storageService = new StorageService(this.env.ASSETS_BUCKET);
+    }
+    return this.storageService;
+  }
+
+  private shouldOmitMetadataKey(key: string): boolean {
+    return FILE_METADATA_EXCLUDED_KEYS.has(key);
+  }
+
+  private buildInlineAttributes(metadata: Record<string, any>) {
+    return Object.entries(metadata)
+      .filter(([key, value]) => {
+        if (value === undefined || value === null) {
+          return false;
+        }
+        return !this.shouldOmitMetadataKey(key);
+      })
+      .map(([key, value]) => ({
+        key,
+        value: {
+          type: "STRING",
+          stringValue:
+            typeof value === "string" ? value : JSON.stringify(value ?? {}),
+        },
+      }));
+  }
+
+  private isAssetUrl(url: string): boolean {
+    if (!url) {
+      return false;
+    }
+    if (url.startsWith("data:")) {
+      return true;
+    }
+    if (this.env.PUBLIC_ASSETS_URL && url.startsWith(this.env.PUBLIC_ASSETS_URL)) {
+      return true;
+    }
+    return /\/uploads\//.test(url);
+  }
+
+  private extractKeyFromUrl(url: string): string | null {
+    if (!url) {
+      return null;
+    }
+    if (url.startsWith("data:")) {
+      return null;
+    }
+    if (this.env.PUBLIC_ASSETS_URL && url.startsWith(this.env.PUBLIC_ASSETS_URL)) {
+      const base = this.env.PUBLIC_ASSETS_URL.endsWith("/")
+        ? this.env.PUBLIC_ASSETS_URL
+        : `${this.env.PUBLIC_ASSETS_URL}/`;
+      return url.slice(base.length);
+    }
+    try {
+      const parsed = new URL(url);
+      const key = parsed.pathname.startsWith("/")
+        ? parsed.pathname.slice(1)
+        : parsed.pathname;
+      return key || null;
+    } catch {
+      return url.startsWith("/") ? url.slice(1) : url;
+    }
+  }
+
+  private parseBase64Input(
+    input: string,
+  ): { base64: string; mimeType?: string } {
+    if (!input.startsWith("data:")) {
+      return { base64: input };
+    }
+    const match = input.match(/^data:([^;]+);base64,(.*)$/);
+    if (!match) {
+      return { base64: input };
+    }
+    const [, mimeType, data] = match;
+    return { base64: data, mimeType };
+  }
+
+  private async downloadUrlAsBase64(
+    url: string,
+  ): Promise<{ base64: string; mimeType?: string }> {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new AssistantError(
+          `Failed to download file: ${response.status} ${response.statusText}`,
+          ErrorType.NETWORK_ERROR,
+        );
+      }
+      const arrayBuffer = await response.arrayBuffer();
+      const mimeType = response.headers.get("content-type") || undefined;
+      return { base64: bufferToBase64(arrayBuffer), mimeType };
+    } catch (error) {
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+      throw new AssistantError(
+        `Network error downloading file: ${error instanceof Error ? error.message : "Unknown error"}`,
+        ErrorType.NETWORK_ERROR,
+      );
+    }
+  }
+
+  private extractRawFileMetadata(
+    metadata: Record<string, any>,
+  ): RawFileMetadata | null {
+    const base64Input =
+      typeof metadata.fileBase64 === "string"
+        ? metadata.fileBase64
+        : typeof metadata.file_base64 === "string"
+          ? metadata.file_base64
+          : typeof metadata.base64 === "string"
+            ? metadata.base64
+            : typeof metadata.data === "string"
+              ? metadata.data
+              : typeof metadata.dataUrl === "string"
+                ? metadata.dataUrl
+                : typeof metadata.data_url === "string"
+                  ? metadata.data_url
+                  : undefined;
+
+    const url =
+      typeof metadata.fileUrl === "string"
+        ? metadata.fileUrl
+        : typeof metadata.file_url === "string"
+          ? metadata.file_url
+          : typeof metadata.url === "string"
+            ? metadata.url
+            : undefined;
+
+    const storageKey =
+      typeof metadata.storageKey === "string"
+        ? metadata.storageKey
+        : typeof metadata.storage_key === "string"
+          ? metadata.storage_key
+          : typeof metadata.fileKey === "string"
+            ? metadata.fileKey
+            : typeof metadata.file_key === "string"
+              ? metadata.file_key
+              : undefined;
+
+    const mimeType =
+      typeof metadata.mimeType === "string"
+        ? metadata.mimeType
+        : typeof metadata.mime_type === "string"
+          ? metadata.mime_type
+          : typeof metadata.contentType === "string"
+            ? metadata.contentType
+            : typeof metadata.content_type === "string"
+              ? metadata.content_type
+              : typeof metadata.fileMimeType === "string"
+                ? metadata.fileMimeType
+                : undefined;
+
+    const fileName =
+      typeof metadata.fileName === "string"
+        ? metadata.fileName
+        : typeof metadata.file_name === "string"
+          ? metadata.file_name
+          : typeof metadata.name === "string"
+            ? metadata.name
+            : typeof metadata.title === "string"
+              ? metadata.title
+              : undefined;
+
+    const hasFileSignal =
+      !!base64Input ||
+      !!storageKey ||
+      (typeof url === "string" && this.isAssetUrl(url));
+
+    if (!hasFileSignal) {
+      return null;
+    }
+
+    return {
+      base64Input,
+      sourceUrl: url,
+      storageKey,
+      fileName,
+      mimeType,
+    };
+  }
+
+  private async resolveFileMetadata(
+    raw: RawFileMetadata,
+  ): Promise<ResolvedFileMetadata> {
+    let base64Data = "";
+    let mimeType = raw.mimeType;
+
+    if (raw.base64Input) {
+      const parsed = this.parseBase64Input(raw.base64Input);
+      base64Data = parsed.base64;
+      mimeType = mimeType || parsed.mimeType;
+    } else if (raw.storageKey) {
+      const storageService = this.getStorageService();
+      if (!storageService) {
+        throw new AssistantError(
+          "ASSETS_BUCKET binding is required to retrieve uploaded files",
+          ErrorType.CONFIGURATION_ERROR,
+        );
+      }
+      const data = await storageService.getObject(raw.storageKey);
+      if (!data) {
+        throw new AssistantError(
+          `Stored file not found for key ${raw.storageKey}`,
+          ErrorType.NOT_FOUND,
+        );
+      }
+      base64Data = data;
+    } else if (raw.sourceUrl) {
+      if (raw.sourceUrl.startsWith("data:")) {
+        const parsed = this.parseBase64Input(raw.sourceUrl);
+        base64Data = parsed.base64;
+        mimeType = mimeType || parsed.mimeType;
+      } else if (this.isAssetUrl(raw.sourceUrl)) {
+        const key = this.extractKeyFromUrl(raw.sourceUrl);
+        const storageService = this.getStorageService();
+        if (!storageService) {
+          throw new AssistantError(
+            "ASSETS_BUCKET binding is required to retrieve uploaded files",
+            ErrorType.CONFIGURATION_ERROR,
+          );
+        }
+        if (!key) {
+          throw new AssistantError(
+            `Unable to resolve storage key from URL ${raw.sourceUrl}`,
+            ErrorType.PARAMS_ERROR,
+          );
+        }
+        const data = await storageService.getObject(key);
+        if (!data) {
+          throw new AssistantError(
+            `Stored file not found for URL ${raw.sourceUrl}`,
+            ErrorType.NOT_FOUND,
+          );
+        }
+        base64Data = data;
+      } else {
+        const downloaded = await this.downloadUrlAsBase64(raw.sourceUrl);
+        base64Data = downloaded.base64;
+        mimeType = mimeType || downloaded.mimeType;
+      }
+    }
+
+    if (!base64Data) {
+      throw new AssistantError(
+        "Unable to resolve binary payload for file embedding",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    return {
+      base64Data,
+      mimeType: mimeType || "application/octet-stream",
+      fileName: raw.fileName || "uploaded-document",
+      sourceUrl: raw.sourceUrl,
+    };
   }
 
   private parseAwsCredentials(apiKey: string): {
@@ -134,37 +429,62 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
     embeddings: EmbeddingVector[],
     _options: RagOptions = {},
   ): Promise<EmbeddingMutationResult> {
-    const url = `${this.agentEndpoint}/knowledgebases/${this.knowledgeBaseId}/datasources/${this.knowledgeBaseCustomDataSourceId}/documents`;
+    if (!this.knowledgeBaseCustomDataSourceId) {
+      throw new AssistantError(
+        "Bedrock knowledge base data source ID is not configured",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
 
-    // TODO: Support file uploads: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_IngestKnowledgeBaseDocuments.html
-    const body = JSON.stringify({
-      documents: embeddings.map((embedding) => ({
-        content: {
-          dataSourceType: "CUSTOM",
-          custom: {
-            customDocumentIdentifier: {
-              id: embedding.id,
-            },
-            sourceType: "IN_LINE",
-            inlineContent: {
+    const url = `${this.agentEndpoint}/knowledgebases/${this.knowledgeBaseId}/datasources/${this.knowledgeBaseCustomDataSourceId}/documents`;
+    const documents = await Promise.all(
+      embeddings.map(async (embedding) => {
+        const metadata = embedding.metadata || {};
+        const rawFileMetadata = this.extractRawFileMetadata(metadata);
+        const resolvedFile = rawFileMetadata
+          ? await this.resolveFileMetadata(rawFileMetadata)
+          : null;
+
+        const inlineContent = resolvedFile
+          ? {
+              type: "BINARY",
+              binaryContent: {
+                data: resolvedFile.base64Data,
+                mimeType: resolvedFile.mimeType,
+                fileName: resolvedFile.fileName,
+              },
+            }
+          : {
               type: "TEXT",
               textContent: {
-                data: embedding.metadata.content || "",
+                data: metadata.content || "",
               },
+            };
+
+        const inlineAttributes = this.buildInlineAttributes(metadata);
+
+        return {
+          content: {
+            dataSourceType: "CUSTOM",
+            custom: {
+              customDocumentIdentifier: {
+                id: embedding.id,
+              },
+              sourceType: "IN_LINE",
+              inlineContent,
             },
           },
-        },
-        metadata: {
-          type: "IN_LINE_ATTRIBUTE",
-          inlineAttributes: Object.keys(embedding.metadata).map((key) => ({
-            key,
-            value: {
-              type: "STRING",
-              stringValue: embedding.metadata[key],
-            },
-          })),
-        },
-      })),
+          metadata: {
+            type: "IN_LINE_ATTRIBUTE",
+            inlineAttributes,
+          },
+        };
+      }),
+    );
+
+    const body = JSON.stringify({
+      dataSourceId: this.knowledgeBaseCustomDataSourceId,
+      documents,
     });
 
     const aws = await this.getAwsClient();
@@ -185,9 +505,32 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
       );
     }
 
+    let responseData: any = null;
+    try {
+      responseData = await response.json();
+    } catch {
+      responseData = null;
+    }
+
+    const documentDetails = Array.isArray(responseData?.documentDetails)
+      ? responseData.documentDetails
+      : Array.isArray(responseData?.documents)
+        ? responseData.documents
+        : undefined;
+
+    const documentIds = Array.isArray(documentDetails)
+      ? documentDetails
+          .map((detail: any) =>
+            detail?.documentId ?? detail?.document?.documentId ?? detail?.id,
+          )
+          .filter((id: unknown): id is string => typeof id === "string")
+      : undefined;
+
     return {
       status: "success",
       error: null,
+      documentDetails,
+      documentIds,
     };
   }
 

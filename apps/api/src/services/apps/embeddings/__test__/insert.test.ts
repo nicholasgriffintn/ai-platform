@@ -66,7 +66,7 @@ describe("insertEmbedding", () => {
     mockDatabase.getUserSettings.mockResolvedValue({});
     mockEmbedding.getNamespace.mockReturnValue("default-namespace");
     mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
-    mockEmbedding.insert.mockResolvedValue({ status: "success" });
+    mockEmbedding.insert.mockResolvedValue({ status: "success", error: null });
     vi.mocked(chunkText).mockReturnValue(["single chunk"]);
     vi.mocked(generateId).mockReturnValue("generated-id");
   });
@@ -93,7 +93,7 @@ describe("insertEmbedding", () => {
     mockDatabase.getUserSettings.mockResolvedValue({});
     mockEmbedding.getNamespace.mockReturnValue("custom-ns");
     mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
-    mockEmbedding.insert.mockResolvedValue({ status: "success" });
+    mockEmbedding.insert.mockResolvedValue({ status: "success", error: null });
 
     const result = await insertEmbedding(req);
 
@@ -134,7 +134,7 @@ describe("insertEmbedding", () => {
     mockDatabase.getEmbeddingIdByType.mockResolvedValue("blog-456");
     mockDatabase.getUserSettings.mockResolvedValue({});
     mockEmbedding.generate.mockResolvedValue([{ id: "vec-2" }]);
-    mockEmbedding.insert.mockResolvedValue({ status: "success" });
+    mockEmbedding.insert.mockResolvedValue({ status: "success", error: null });
 
     const result = await insertEmbedding(req);
 
@@ -222,7 +222,7 @@ describe("insertEmbedding", () => {
     mockDatabase.insertEmbedding.mockResolvedValue(undefined);
     mockDatabase.getUserSettings.mockResolvedValue({});
     mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
-    mockEmbedding.insert.mockResolvedValue({ status: "success" });
+    mockEmbedding.insert.mockResolvedValue({ status: "success", error: null });
 
     const result = await insertEmbedding(req);
 
@@ -250,7 +250,7 @@ describe("insertEmbedding", () => {
     mockDatabase.insertEmbedding.mockResolvedValue(undefined);
     mockDatabase.getUserSettings.mockResolvedValue({});
     mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
-    mockEmbedding.insert.mockResolvedValue({ status: "success" });
+    mockEmbedding.insert.mockResolvedValue({ status: "success", error: null });
 
     // @ts-ignore - req.request.id is required
     const result = await insertEmbedding(req);
