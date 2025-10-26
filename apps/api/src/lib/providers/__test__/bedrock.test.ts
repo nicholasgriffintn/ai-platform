@@ -410,7 +410,7 @@ describe("BedrockProvider", () => {
       expect(result.data?.asyncInvocation).toEqual(
         expect.objectContaining({
           provider: "bedrock",
-          predictionId: invocationArn,
+          id: invocationArn,
           status: "in_progress",
           pollIntervalMs: 6000,
           createdAt: expect.any(Number),
@@ -432,12 +432,11 @@ describe("BedrockProvider", () => {
         },
       } as unknown as ChatCompletionParameters;
 
-      const predictionId =
-        "arn:aws:bedrock:us-east-1:123456789012:async-invoke/test";
+      const id = "arn:aws:bedrock:us-east-1:123456789012:async-invoke/test";
 
       signMock.mockResolvedValueOnce(
         createSignedRequest(
-          `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(predictionId)}`,
+          `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(id)}`,
           {
             method: "GET",
             headers: new Headers(),
@@ -461,10 +460,11 @@ describe("BedrockProvider", () => {
         headers: new Headers(),
       });
 
-      const result = await provider.pollAsyncStatus(predictionId, params);
+      const result = await provider.pollAsyncStatus(id, params);
 
       expect(result.status).toBe("completed");
       expect(result.result?.response).toContain("s3://bucket/result/");
+      expect(result.metadata.id).toBe(id);
       expect(signMock).toHaveBeenCalledTimes(1);
     });
 
@@ -480,12 +480,11 @@ describe("BedrockProvider", () => {
         },
       } as unknown as ChatCompletionParameters;
 
-      const predictionId =
-        "arn:aws:bedrock:us-east-1:123456789012:async-invoke/test";
+      const id = "arn:aws:bedrock:us-east-1:123456789012:async-invoke/test";
 
       signMock.mockResolvedValueOnce(
         createSignedRequest(
-          `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(predictionId)}`,
+          `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(id)}`,
           {
             method: "GET",
             headers: new Headers(),
@@ -500,10 +499,11 @@ describe("BedrockProvider", () => {
         headers: new Headers(),
       });
 
-      const result = await provider.pollAsyncStatus(predictionId, params);
+      const result = await provider.pollAsyncStatus(id, params);
 
       expect(result.status).toBe("in_progress");
       expect(result.metadata.status).toBe("in_progress");
+      expect(result.metadata.id).toBe(id);
     });
 
     it("should return failed when async invocation fails", async () => {
@@ -518,12 +518,11 @@ describe("BedrockProvider", () => {
         },
       } as unknown as ChatCompletionParameters;
 
-      const predictionId =
-        "arn:aws:bedrock:us-east-1:123456789012:async-invoke/test";
+      const id = "arn:aws:bedrock:us-east-1:123456789012:async-invoke/test";
 
       signMock.mockResolvedValueOnce(
         createSignedRequest(
-          `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(predictionId)}`,
+          `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(id)}`,
           {
             method: "GET",
             headers: new Headers(),
@@ -538,11 +537,12 @@ describe("BedrockProvider", () => {
         headers: new Headers(),
       });
 
-      const result = await provider.pollAsyncStatus(predictionId, params);
+      const result = await provider.pollAsyncStatus(id, params);
 
       expect(result.status).toBe("failed");
       expect(result.error).toBe("Test error");
       expect(result.metadata.status).toBe("failed");
+      expect(result.metadata.id).toBe(id);
     });
   });
 });

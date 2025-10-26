@@ -92,7 +92,7 @@ export async function refreshAsyncMessages({
       logger.error("Failed to refresh async invocation", {
         error,
         provider: asyncInvocation.provider,
-        predictionId: asyncInvocation.predictionId,
+        id: asyncInvocation.id,
       });
     }
   }

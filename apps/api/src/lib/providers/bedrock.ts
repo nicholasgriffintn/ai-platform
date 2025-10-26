@@ -810,7 +810,7 @@ export class BedrockProvider extends BaseProvider {
     });
   }
   async pollAsyncStatus(
-    predictionId: string,
+    id: string,
     params: ChatCompletionParameters,
     userId?: number,
   ): Promise<PollingResult> {
@@ -830,7 +830,7 @@ export class BedrockProvider extends BaseProvider {
     const baseHeaders = await this.getHeaders(params);
     const { data, status } = await this.fetchAsyncInvokeStatus(
       awsClient,
-      predictionId,
+      id,
       params,
       region,
       baseHeaders,
@@ -858,7 +858,7 @@ export class BedrockProvider extends BaseProvider {
         result: enhanced,
         metadata: {
           provider: "bedrock",
-          predictionId,
+          id,
           status: "completed",
           pollIntervalMs: 6000,
           createdAt: Date.now(),
@@ -877,7 +877,7 @@ export class BedrockProvider extends BaseProvider {
         error: data.error || normalizedStatus,
         metadata: {
           provider: "bedrock",
-          predictionId,
+          id,
           status: "failed",
           pollIntervalMs: 6000,
           createdAt: Date.now(),
@@ -889,7 +889,7 @@ export class BedrockProvider extends BaseProvider {
       status: "in_progress",
       metadata: {
         provider: "bedrock",
-        predictionId,
+        id,
         status: "in_progress",
         pollIntervalMs: 6000,
         createdAt: Date.now(),

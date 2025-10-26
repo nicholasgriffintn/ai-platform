@@ -114,7 +114,7 @@ describe("ReplicateProvider", () => {
         },
       } as unknown as ChatCompletionParameters;
 
-      const predictionId = "test-prediction-id";
+      const id = "test-prediction-id";
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
@@ -124,16 +124,17 @@ describe("ReplicateProvider", () => {
         }),
       } as Response);
 
-      const result = await provider.pollAsyncStatus(predictionId, params);
+      const result = await provider.pollAsyncStatus(id, params);
 
       expect(result.status).toBe("completed");
       expect(result.result).toBe("Generated image URL");
       expect(result.metadata.status).toBe("completed");
+      expect(result.metadata.id).toBe(id);
       expect(fetch).toHaveBeenCalledWith(
-        `https://api.replicate.com/v1/predictions/${predictionId}`,
+        `https://api.replicate.com/v1/predictions/${id}`,
         expect.objectContaining({
           headers: expect.objectContaining({
-            Authorization: "Token test-replicate-key",
+            Authorization: "Token test-key",
           }),
         }),
       );
@@ -149,7 +150,7 @@ describe("ReplicateProvider", () => {
         },
       } as unknown as ChatCompletionParameters;
 
-      const predictionId = "test-prediction-id";
+      const id = "test-prediction-id";
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
@@ -159,11 +160,12 @@ describe("ReplicateProvider", () => {
         }),
       } as Response);
 
-      const result = await provider.pollAsyncStatus(predictionId, params);
+      const result = await provider.pollAsyncStatus(id, params);
 
       expect(result.status).toBe("failed");
       expect(result.error).toBe("Model execution failed");
       expect(result.metadata.status).toBe("failed");
+      expect(result.metadata.id).toBe(id);
     });
 
     it("should return in_progress status when prediction is still running", async () => {
@@ -176,7 +178,7 @@ describe("ReplicateProvider", () => {
         },
       } as unknown as ChatCompletionParameters;
 
-      const predictionId = "test-prediction-id";
+      const id = "test-prediction-id";
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
@@ -185,10 +187,11 @@ describe("ReplicateProvider", () => {
         }),
       } as Response);
 
-      const result = await provider.pollAsyncStatus(predictionId, params);
+      const result = await provider.pollAsyncStatus(id, params);
 
       expect(result.status).toBe("in_progress");
       expect(result.metadata.status).toBe("in_progress");
+      expect(result.metadata.id).toBe(id);
     });
 
     it("should throw error when API call fails", async () => {
@@ -201,7 +204,7 @@ describe("ReplicateProvider", () => {
         },
       } as unknown as ChatCompletionParameters;
 
-      const predictionId = "test-prediction-id";
+      const id = "test-prediction-id";
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: false,
@@ -209,9 +212,7 @@ describe("ReplicateProvider", () => {
         status: 500,
       } as Response);
 
-      await expect(
-        provider.pollAsyncStatus(predictionId, params),
-      ).rejects.toThrow(
+      await expect(provider.pollAsyncStatus(id, params)).rejects.toThrow(
         "Failed to poll Replicate prediction: Internal Server Error",
       );
     });

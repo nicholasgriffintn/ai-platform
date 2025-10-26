@@ -165,7 +165,7 @@ export const bedrockAsyncInvocationHandler: UnifiedAsyncInvocationHandler =
       logger.error("Failed to refresh Bedrock async invocation", {
         error,
         provider: metadata.provider,
-        predictionId: metadata.predictionId,
+        id: metadata.id,
       });
 
       return handleProgress(

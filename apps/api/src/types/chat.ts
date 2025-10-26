@@ -62,7 +62,7 @@ export type Attachment = {
 
 export interface UnifiedAsyncInvocation {
   provider: "bedrock" | "replicate" | string;
-  predictionId: string;
+  id: string;
   status: "in_progress" | "completed" | "failed";
   providerUrl?: string;
   pollIntervalMs: number;

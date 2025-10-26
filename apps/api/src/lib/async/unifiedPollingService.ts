@@ -1,11 +1,8 @@
 import type { UnifiedAsyncInvocation } from "~/types";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { ChatCompletionParameters } from "~/types";
-
-const logger = getLogger({ prefix: "lib/async/unifiedPollingService" });
 
 export interface PollingResult {
   status: "in_progress" | "completed" | "failed";
@@ -34,7 +31,7 @@ export class UnifiedPollingService {
       model: params.model || "unknown",
       operation: async () => {
         const result = await provider.pollAsyncStatus(
-          metadata.predictionId,
+          metadata.id,
           params,
           userId,
         );
@@ -68,13 +65,13 @@ export class UnifiedPollingService {
 
   static createUnifiedMetadata(
     provider: string,
-    predictionId: string,
+    id: string,
     initialResponse?: Record<string, any>,
     pollIntervalMs: number = 4000,
   ): UnifiedAsyncInvocation {
     return {
       provider,
-      predictionId,
+      id,
       status: "in_progress",
       pollIntervalMs,
       createdAt: Date.now(),

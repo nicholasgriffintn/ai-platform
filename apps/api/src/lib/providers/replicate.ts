@@ -170,7 +170,7 @@ export class ReplicateProvider extends BaseProvider {
   }
 
   async pollAsyncStatus(
-    predictionId: string,
+    id: string,
     params: ChatCompletionParameters,
     userId?: number,
   ): Promise<PollingResult> {
@@ -182,7 +182,7 @@ export class ReplicateProvider extends BaseProvider {
     };
 
     const response = await fetch(
-      `https://api.replicate.com/v1/predictions/${predictionId}`,
+      `https://api.replicate.com/v1/predictions/${id}`,
       { headers },
     );
 
@@ -206,7 +206,7 @@ export class ReplicateProvider extends BaseProvider {
         result: data.output,
         metadata: {
           provider: "replicate",
-          predictionId,
+          id,
           status: "completed",
           pollIntervalMs: 4000,
           createdAt: Date.now(),
@@ -220,7 +220,7 @@ export class ReplicateProvider extends BaseProvider {
         error: data.error || "Prediction failed",
         metadata: {
           provider: "replicate",
-          predictionId,
+          id,
           status: "failed",
           pollIntervalMs: 4000,
           createdAt: Date.now(),
@@ -232,7 +232,7 @@ export class ReplicateProvider extends BaseProvider {
       status: "in_progress",
       metadata: {
         provider: "replicate",
-        predictionId,
+        id,
         status: "in_progress",
         pollIntervalMs: 4000,
         createdAt: Date.now(),

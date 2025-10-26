@@ -106,7 +106,7 @@ export interface MessageData {
   };
   asyncInvocation?: {
     provider: string;
-    predictionId: string;
+    id: string;
     providerUrl?: string;
     pollIntervalMs: number;
     status: string;
