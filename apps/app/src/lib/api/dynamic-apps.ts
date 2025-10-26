@@ -476,7 +476,9 @@ export const fetchNote = async (id: string): Promise<Note> => {
   });
 
   if (!response.ok) {
-    const errData = (await response.json().catch(() => ({}))) as any;
+    const errData = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       errData?.message || `Failed to fetch note: ${response.statusText}`,
     );
@@ -505,7 +507,9 @@ export const createNote = async (params: {
   });
 
   if (!response.ok) {
-    const errData = (await response.json().catch(() => ({}))) as any;
+    const errData = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       errData?.message || `Failed to create note: ${response.statusText}`,
     );
@@ -537,7 +541,9 @@ export const updateNote = async (params: {
   });
 
   if (!response.ok) {
-    const errData = (await response.json().catch(() => ({}))) as any;
+    const errData = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       errData?.message || `Failed to update note: ${response.statusText}`,
     );
@@ -561,7 +567,9 @@ export const deleteNote = async (id: string): Promise<void> => {
   });
 
   if (!response.ok) {
-    const errData = (await response.json().catch(() => ({}))) as any;
+    const errData = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       errData?.message || `Failed to delete note: ${response.statusText}`,
     );
@@ -586,7 +594,9 @@ export const formatNoteAPI = async (
   });
 
   if (!response.ok) {
-    const errData = (await response.json().catch(() => ({}))) as any;
+    const errData = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       errData?.message || `Failed to format note: ${response.statusText}`,
     );
@@ -620,7 +630,9 @@ export const extractArticleContent = async (
   });
 
   if (!response.ok) {
-    const errData = (await response.json().catch(() => ({}))) as any;
+    const errData = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       errData?.message ||
         `Failed to extract article content: ${response.statusText}`,
@@ -647,7 +659,9 @@ export const prepareSessionForRerun = async (itemId: string): Promise<void> => {
   });
 
   if (!response.ok) {
-    const errData = (await response.json().catch(() => ({}))) as any;
+    const errData = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       errData?.message ||
         `Failed to prepare session for rerun: ${response.statusText}`,
@@ -703,7 +717,9 @@ export const generateNotesFromMedia = async (params: {
   });
 
   if (!response.ok) {
-    const errData = (await response.json().catch(() => ({}))) as any;
+    const errData = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     throw new Error(
       errData?.message || `Failed to generate notes: ${response.statusText}`,
     );

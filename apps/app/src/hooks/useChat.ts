@@ -97,7 +97,7 @@ export function useChat(completion_id: string | undefined) {
           return false;
         }
 
-        const asyncInvocation = (message.data as any)?.asyncInvocation;
+        const asyncInvocation = message.data?.asyncInvocation;
         return Boolean(asyncInvocation?.provider);
       });
 
@@ -107,7 +107,7 @@ export function useChat(completion_id: string | undefined) {
 
       const pollIntervals = pendingMessages
         .map((message) => {
-          const asyncInvocation = (message.data as any)?.asyncInvocation;
+          const asyncInvocation = message.data?.asyncInvocation;
           return asyncInvocation?.pollIntervalMs;
         })
         .filter(
@@ -116,10 +116,10 @@ export function useChat(completion_id: string | undefined) {
         );
 
       if (!pollIntervals.length) {
-        return 4000;
+        return 6000;
       }
 
-      return Math.max(2000, Math.min(...pollIntervals));
+      return Math.max(6000, Math.min(...pollIntervals));
     },
     refetchIntervalInBackground: true,
   });

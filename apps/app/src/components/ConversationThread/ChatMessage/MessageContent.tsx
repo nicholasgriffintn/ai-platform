@@ -282,7 +282,7 @@ export const MessageContent = memo(
         );
 
         if (thinkingBlock) {
-          thinkingContent = (thinkingBlock as any).thinking || "";
+          thinkingContent = thinkingBlock.thinking || "";
         }
       }
 
@@ -345,13 +345,13 @@ export const MessageContent = memo(
                             contentItem.artifact,
                         )
                         .map((contentItem) => {
-                          const artifact = (contentItem as any).artifact;
+                          const artifact = contentItem.artifact;
                           return {
-                            identifier: artifact.identifier,
-                            type: artifact.type,
-                            language: artifact.language,
-                            title: artifact.title,
-                            content: artifact.content,
+                            identifier: artifact?.identifier || "",
+                            type: artifact?.type || "",
+                            language: artifact?.language || "",
+                            title: artifact?.title || "",
+                            content: artifact?.content || "",
                           };
                         })
                     : [];
@@ -413,7 +413,7 @@ export const MessageContent = memo(
     const asyncInvocation = (message.data as any)?.asyncInvocation;
     const isPending = message.status === "in_progress" && asyncInvocation;
     const isFailed = message.status === "failed";
-    const errorMessage = (message.data as any)?.error;
+    const errorMessage = message.data?.error;
 
     return (
       <div className="space-y-3">

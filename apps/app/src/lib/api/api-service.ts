@@ -130,6 +130,7 @@ class ApiService {
       throw new Error(`Failed to get chat: ${response.statusText}`);
     }
 
+    // TODO: type this
     const conversation = (await response.json()) as any;
 
     if (!conversation.id) {
@@ -204,6 +205,7 @@ class ApiService {
       throw new Error(`Failed to generate title: ${response.statusText}`);
     }
 
+    // TODO: type this
     const data = (await response.json()) as any;
     return data.title;
   };
@@ -258,6 +260,7 @@ class ApiService {
     if (!response.ok) {
       let message = `Failed to export chat history: ${response.statusText}`;
       try {
+        // TODO: type this
         const data = (await response.json()) as any;
         if (
           data &&
@@ -377,6 +380,7 @@ class ApiService {
       ?.includes("text/event-stream");
 
     if (!isStreamingResponse) {
+      // TODO: type this
       const data = (await response.json()) as any;
 
       if (data.error) {
@@ -703,6 +707,7 @@ class ApiService {
     if (!response.ok) {
       throw new Error(`Failed to fetch models: ${response.statusText}`);
     }
+    // TODO: type this
     const responseData = (await response.json()) as any;
 
     return responseData.data;
@@ -723,6 +728,7 @@ class ApiService {
     if (!response.ok) {
       throw new Error(`Failed to fetch tools: ${response.statusText}`);
     }
+    // TODO: type this
     const responseData = (await response.json()) as any;
 
     return responseData;
@@ -913,10 +919,12 @@ class ApiService {
     });
 
     if (!response.ok) {
-      const errorData = await response
+      const errorData = (await response
         .json()
-        .catch(() => ({ error: response.statusText }));
-      const errorMessage = (errorData as any)?.error || response.statusText;
+        .catch(() => ({ error: response.statusText }))) as {
+        error?: string;
+      };
+      const errorMessage = errorData?.error || response.statusText;
       throw new Error(`Failed to create API key: ${errorMessage}`);
     }
     return response.json();

@@ -42,6 +42,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
       return;
     }
     try {
+      // TODO: type this
       const result = await generateNotesMutation.mutateAsync({
         url: mediaUrl,
         outputs: selectedOutputs as any,

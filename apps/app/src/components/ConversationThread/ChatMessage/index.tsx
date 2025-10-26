@@ -77,7 +77,7 @@ export const ChatMessage = ({
           ? message.content
           : message.content
               .filter((item) => item.type === "text")
-              .map((item) => (item as any).text)
+              .map((item) => item.text)
               .join("\n");
 
       copy(textContent);
