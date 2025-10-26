@@ -1,4 +1,4 @@
-import { BedrockProvider } from "~/lib/providers/bedrock";
+import { AIProviderFactory } from "~/lib/providers/factory";
 import { mergeAsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import type { ChatCompletionParameters, Message } from "~/types";
@@ -144,7 +144,7 @@ export const bedrockAsyncInvocationHandler: AsyncInvocationHandler = async (
   message,
   context,
 ) => {
-  const provider = new BedrockProvider();
+  const provider = AIProviderFactory.getProvider("bedrock");
 
   const params = buildBaseParams(message, context);
 

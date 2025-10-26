@@ -2,18 +2,24 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const getAsyncInvocationStatusMock = vi.fn();
 
-vi.mock("~/lib/providers/bedrock", () => ({
-  BedrockProvider: class {
-    getAsyncInvocationStatus = getAsyncInvocationStatusMock;
+vi.mock("~/lib/providers/factory", () => ({
+  AIProviderFactory: {
+    getProvider: vi.fn(),
   },
 }));
 
+import { AIProviderFactory } from "~/lib/providers/factory";
 import { refreshAsyncMessages } from "~/services/completions/refreshAsyncMessages";
+
+const mockGetProvider = vi.mocked(AIProviderFactory.getProvider);
 
 describe("refreshAsyncMessages", () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
     getAsyncInvocationStatusMock.mockReset();
+    mockGetProvider.mockReset();
+    mockGetProvider.mockReturnValue({
+      getAsyncInvocationStatus: getAsyncInvocationStatusMock,
+    } as any);
   });
 
   it("should update messages when async invocation completes", async () => {
