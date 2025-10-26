@@ -44,6 +44,10 @@ export class BedrockProvider extends BaseProvider {
     return "us-east-1";
   }
 
+  private getEmbeddingsBucket(params): string {
+    return params.env.EMBEDDINGS_OUTPUT_BUCKET || "polychat-embeddings";
+  }
+
   private parseAwsCredentials(apiKey: string): {
     accessKey: string;
     secretKey: string;
@@ -315,7 +319,7 @@ export class BedrockProvider extends BaseProvider {
         },
         outputDataConfig: {
           s3OutputDataConfig: {
-            s3Uri: `s3://${params.env.EMBEDDINGS_OUTPUT_BUCKET || "polychat-embeddings"}/${params.model}/${params.completion_id || Date.now()}`,
+            s3Uri: `s3://${this.getEmbeddingsBucket(params)}/${params.model}/${params.completion_id || Date.now()}`,
           },
         },
       };
@@ -351,8 +355,7 @@ export class BedrockProvider extends BaseProvider {
 
     if (isVideoType) {
       const prompt = await this.getInputPromptFromMessages(params);
-      const bucket =
-        params.env.EMBEDDINGS_OUTPUT_BUCKET || "polychat-embeddings";
+      const bucket = this.getEmbeddingsBucket(params);
       const sanitizedBucket = bucket.replace(/^s3:\/\//, "");
       const outputPrefix = `${params.model}/${params.completion_id || Date.now()}`;
       const s3Uri = `s3://${sanitizedBucket}/${outputPrefix}/`;
