@@ -7,7 +7,7 @@
   "scripts": {
     "build": "pnpm --filter @assistant/schemas build",
     "deploy": "pnpm typecheck && wrangler deploy src/index.ts --name=assistant",
-    "dev": "pnpm --filter @assistant/schemas build && wrangler dev src/index.ts --x-remote-bindings",
+    "dev": "pnpm --filter @assistant/schemas build && wrangler dev src/index.ts",
     "start": "wrangler dev src/index.ts",
     "test": "vitest",
     "coverage": "vitest run --coverage",
