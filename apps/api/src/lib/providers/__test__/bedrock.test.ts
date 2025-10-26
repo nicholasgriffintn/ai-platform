@@ -1,6 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { BedrockProvider } from "../bedrock";
+
+const ORIGINAL_FETCH = global.fetch;
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {
@@ -23,6 +25,11 @@ vi.mock("~/utils/parameters", () => ({
 }));
 
 describe("BedrockProvider", () => {
+  afterEach(() => {
+    global.fetch = ORIGINAL_FETCH;
+    vi.restoreAllMocks();
+  });
+
   describe("mapParameters", () => {
     it("should handle video generation in mapParameters", async () => {
       // @ts-ignore - getModelConfigByMatchingModel is not typed
@@ -95,6 +102,130 @@ describe("BedrockProvider", () => {
         // @ts-ignore - accessing private method for testing
         provider.parseAwsCredentials(invalidCredentials);
       }).toThrow("Invalid AWS credentials format");
+    });
+  });
+
+  describe("formatBedrockMessages", () => {
+    it("maps text and tool call content", async () => {
+      const provider = new BedrockProvider();
+      const params = {
+        messages: [
+          { role: "user", content: "Hello" },
+          {
+            role: "assistant",
+            content: [{ type: "text", text: "Working on it" }],
+            tool_calls: [
+              {
+                id: "call-1",
+                function: {
+                  name: "getWeather",
+                  arguments: "{\"city\":\"Paris\"}",
+                },
+              },
+            ],
+          },
+        ],
+        env: { EMBEDDINGS_OUTPUT_BUCKET_OWNER: "owner" },
+      };
+
+      // @ts-ignore - accessing private method for testing
+      const formatted = await provider.formatBedrockMessages(params);
+
+      expect(formatted).toEqual([
+        { role: "user", content: [{ text: { text: "Hello" } }] },
+        {
+          role: "assistant",
+          content: [
+            { text: { text: "Working on it" } },
+            {
+              toolUse: {
+                input: { city: "Paris" },
+                name: "getWeather",
+                toolUseId: "call-1",
+              },
+            },
+          ],
+        },
+      ]);
+    });
+
+    it("includes remote media and markdown documents", async () => {
+      const binary = Buffer.from("hello world");
+      const response = new Response(binary, {
+        headers: { "Content-Type": "image/png" },
+      });
+      global.fetch = vi.fn().mockResolvedValue(response as any);
+
+      const provider = new BedrockProvider();
+      const params = {
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: { url: "https://example.com/image.png" },
+              },
+              {
+                type: "markdown_document",
+                markdown_document: { markdown: "# Hello" },
+              },
+            ],
+          },
+        ],
+        env: { EMBEDDINGS_OUTPUT_BUCKET_OWNER: "owner" },
+      };
+
+      // @ts-ignore - accessing private method for testing
+      const formatted = await provider.formatBedrockMessages(params);
+
+      expect(global.fetch).toHaveBeenCalledWith("https://example.com/image.png");
+      expect(formatted).toHaveLength(1);
+      const content = formatted[0]?.content ?? [];
+      expect(content[0]).toEqual({
+        image: {
+          format: "png",
+          source: { bytes: binary.toString("base64") },
+        },
+      });
+      expect(content[1]).toEqual({
+        document: {
+          format: "markdown",
+          source: { bytes: Buffer.from("# Hello", "utf-8").toString("base64") },
+        },
+      });
+    });
+
+    it("maps tool results back to the user role", async () => {
+      const provider = new BedrockProvider();
+      const params = {
+        messages: [
+          {
+            role: "tool",
+            tool_call_id: "call-1",
+            content: "{\"temperature\":22}",
+          },
+        ],
+        env: { EMBEDDINGS_OUTPUT_BUCKET_OWNER: "owner" },
+      };
+
+      // @ts-ignore - accessing private method for testing
+      const formatted = await provider.formatBedrockMessages(params);
+
+      expect(formatted).toEqual([
+        {
+          role: "user",
+          content: [
+            {
+              toolResult: {
+                toolUseId: "call-1",
+                status: "success",
+                content: [{ text: { text: '{"temperature":22}' } }],
+              },
+            },
+          ],
+        },
+      ]);
     });
   });
 });
