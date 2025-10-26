@@ -282,6 +282,8 @@ describe("BedrockEmbeddingProvider", () => {
 
   describe("getMatches", () => {
     it("should successfully retrieve matches", async () => {
+      mockAwsClient.fetch.mockClear();
+
       const mockResponse = {
         retrievalResults: [
           {
@@ -300,6 +302,14 @@ describe("BedrockEmbeddingProvider", () => {
       });
 
       const result = await provider.getMatches("test query");
+      const [, request] = mockAwsClient.fetch.mock.calls[0];
+      expect(request).toMatchObject({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      expect(JSON.parse(request.body)).toEqual({
+        retrievalQuery: { text: "test query" },
+      });
 
       expect(result).toEqual({
         matches: [
@@ -318,7 +328,53 @@ describe("BedrockEmbeddingProvider", () => {
       });
     });
 
+    it("should include retrieval configuration when options are provided", async () => {
+      mockAwsClient.fetch.mockClear();
+
+      const mockResponse = {
+        retrievalResults: [
+          {
+            title: "Test Article",
+            content: { text: "Test content" },
+            location: { type: "document" },
+            score: 0.95,
+            metadata: { author: "Test Author" },
+          },
+        ],
+      };
+
+      mockAwsClient.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      });
+
+      const options = {
+        topK: 7,
+        type: "hybrid",
+        filter: { equals: { key: "type", value: { stringValue: "doc" } } },
+      } as const;
+
+      await provider.getMatches("test query", options);
+
+      const calls = mockAwsClient.fetch.mock.calls;
+      const [, request] = calls[calls.length - 1];
+      expect(JSON.parse(request.body)).toEqual({
+        retrievalQuery: { text: "test query" },
+        retrievalConfiguration: {
+          knowledgeBaseRetrievalConfiguration: {
+            vectorSearchConfiguration: {
+              numberOfResults: 7,
+              overrideSearchType: "HYBRID",
+              filter: options.filter,
+            },
+          },
+        },
+      });
+    });
+
     it("should throw error when API request fails", async () => {
+      mockAwsClient.fetch.mockClear();
+
       mockAwsClient.fetch.mockResolvedValue({
         ok: false,
         status: 500,
@@ -334,6 +390,8 @@ describe("BedrockEmbeddingProvider", () => {
 
   describe("searchSimilar", () => {
     it("should return formatted search results", async () => {
+      mockAwsClient.fetch.mockClear();
+
       const mockResponse = {
         retrievalResults: [
           {
@@ -368,7 +426,31 @@ describe("BedrockEmbeddingProvider", () => {
       ]);
     });
 
+    it("should forward options to getMatches", async () => {
+      const getMatchesSpy = vi
+        .spyOn(provider as any, "getMatches")
+        .mockResolvedValue({
+          matches: [
+            {
+              title: "t",
+              content: "c",
+              metadata: {},
+              score: 1,
+            },
+          ],
+          count: 1,
+        });
+
+      const options = { topK: 5 };
+
+      await provider.searchSimilar("test query", options);
+
+      expect(getMatchesSpy).toHaveBeenCalledWith("test query", options);
+    });
+
     it("should throw error when no matches found", async () => {
+      mockAwsClient.fetch.mockClear();
+
       mockAwsClient.fetch.mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ retrievalResults: [] }),

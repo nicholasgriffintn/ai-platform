@@ -209,18 +209,62 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
     };
   }
 
+  private buildVectorSearchConfiguration(options: RagOptions) {
+    const vectorSearchConfiguration: Record<string, unknown> = {};
+
+    if (
+      typeof options.topK === "number" &&
+      Number.isFinite(options.topK) &&
+      options.topK > 0
+    ) {
+      vectorSearchConfiguration.numberOfResults = Math.trunc(options.topK);
+    }
+
+    if (options.type && typeof options.type === "string") {
+      const overrideSearchType = options.type.trim().toUpperCase();
+
+      if (overrideSearchType.length > 0) {
+        vectorSearchConfiguration.overrideSearchType = overrideSearchType;
+      }
+    }
+
+    if (
+      options.filter &&
+      typeof options.filter === "object" &&
+      Object.keys(options.filter).length > 0
+    ) {
+      vectorSearchConfiguration.filter = options.filter;
+    }
+
+    return Object.keys(vectorSearchConfiguration).length
+      ? vectorSearchConfiguration
+      : null;
+  }
+
   async getMatches(
     queryVector: string,
-    _options: RagOptions = {},
+    options: RagOptions = {},
   ): Promise<EmbeddingQueryResult> {
-    // TODO: look at other config: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_Retrieve.html
     const url = `${this.agentRuntimeEndpoint}/knowledgebases/${this.knowledgeBaseId}/retrieve`;
 
-    const body = JSON.stringify({
+    const vectorSearchConfiguration =
+      this.buildVectorSearchConfiguration(options);
+
+    const payload: Record<string, unknown> = {
       retrievalQuery: {
         text: queryVector,
       },
-    });
+    };
+
+    if (vectorSearchConfiguration) {
+      payload.retrievalConfiguration = {
+        knowledgeBaseRetrievalConfiguration: {
+          vectorSearchConfiguration,
+        },
+      };
+    }
+
+    const body = JSON.stringify(payload);
 
     const aws = await this.getAwsClient();
     const response = await aws.fetch(url, {
@@ -257,8 +301,8 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
     };
   }
 
-  async searchSimilar(query: string, _options: RagOptions = {}) {
-    const matchesResponse = await this.getMatches(query);
+  async searchSimilar(query: string, options: RagOptions = {}) {
+    const matchesResponse = await this.getMatches(query, options);
 
     if (!matchesResponse.matches.length) {
       throw new AssistantError("No matches found", ErrorType.NOT_FOUND);
