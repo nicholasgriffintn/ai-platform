@@ -20,7 +20,4 @@ export type AsyncInvocationHandler = (
   context: AsyncRefreshContext,
 ) => Promise<AsyncRefreshResult>;
 
-export type AsyncInvocationHandlerMap = Record<
-  string,
-  AsyncInvocationHandler
->;
+export type AsyncInvocationHandlerMap = Record<string, AsyncInvocationHandler>;

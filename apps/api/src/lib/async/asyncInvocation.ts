@@ -35,8 +35,7 @@ export function createAsyncInvocationMetadata(
       : undefined) ||
     "in_progress";
 
-  merged.lastCheckedAt =
-    overrides.lastCheckedAt ?? base.lastCheckedAt ?? now;
+  merged.lastCheckedAt = overrides.lastCheckedAt ?? base.lastCheckedAt ?? now;
 
   if (merged.status === "completed") {
     merged.completedAt = overrides.completedAt ?? base.completedAt ?? now;

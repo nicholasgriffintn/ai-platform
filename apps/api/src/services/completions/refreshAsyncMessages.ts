@@ -87,7 +87,6 @@ export async function refreshAsyncMessages({
       const result = await handler(asyncInvocation, message, context);
       updatedMessages[index] = result.message;
       hasChanges = true;
-
     } catch (error) {
       logger.error("Failed to refresh async invocation", {
         error,

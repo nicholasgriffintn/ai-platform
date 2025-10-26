@@ -33,9 +33,8 @@ async function handleCompletion(
   formattedResult: any,
   raw: Record<string, any>,
 ): Promise<AsyncRefreshResult> {
-  const previous = (message.data as Record<string, any> | undefined)?.asyncInvocation as
-    | AsyncInvocationMetadata
-    | undefined;
+  const previous = (message.data as Record<string, any> | undefined)
+    ?.asyncInvocation as AsyncInvocationMetadata | undefined;
   const now = Date.now();
   const mergedInvocation = mergeAsyncInvocationMetadata(previous, {
     ...metadata,
@@ -59,7 +58,8 @@ async function handleCompletion(
     log_id: formattedResult.log_id ?? message.log_id,
     status: "completed",
     tool_calls: formattedResult.tool_calls ?? message.tool_calls,
-    usage: formattedResult.usage ?? formattedResult.usageMetadata ?? message.usage,
+    usage:
+      formattedResult.usage ?? formattedResult.usageMetadata ?? message.usage,
   };
 
   await context.conversationManager.update(context.conversationId, [
@@ -75,9 +75,8 @@ async function handleFailure(
   context: AsyncRefreshContext,
   raw: Record<string, any>,
 ): Promise<AsyncRefreshResult> {
-  const previous = (message.data as Record<string, any> | undefined)?.asyncInvocation as
-    | AsyncInvocationMetadata
-    | undefined;
+  const previous = (message.data as Record<string, any> | undefined)
+    ?.asyncInvocation as AsyncInvocationMetadata | undefined;
   const now = Date.now();
   const mergedInvocation = mergeAsyncInvocationMetadata(previous, {
     ...metadata,
@@ -115,9 +114,8 @@ async function handleProgress(
   context: AsyncRefreshContext,
   raw: Record<string, any>,
 ): Promise<AsyncRefreshResult> {
-  const previous = (message.data as Record<string, any> | undefined)?.asyncInvocation as
-    | AsyncInvocationMetadata
-    | undefined;
+  const previous = (message.data as Record<string, any> | undefined)
+    ?.asyncInvocation as AsyncInvocationMetadata | undefined;
   const mergedInvocation = mergeAsyncInvocationMetadata(previous, {
     ...metadata,
     status: "in_progress",
@@ -159,7 +157,13 @@ export const bedrockAsyncInvocationHandler: AsyncInvocationHandler = async (
     );
 
     if (result.status === "completed" && result.result) {
-      return handleCompletion(metadata, message, context, result.result, result.raw);
+      return handleCompletion(
+        metadata,
+        message,
+        context,
+        result.result,
+        result.raw,
+      );
     }
 
     if (result.status === "failed") {
@@ -174,6 +178,11 @@ export const bedrockAsyncInvocationHandler: AsyncInvocationHandler = async (
       invocationArn: metadata.invocationArn,
     });
 
-    return handleProgress(metadata, message, context, metadata.initialResponse || {});
+    return handleProgress(
+      metadata,
+      message,
+      context,
+      metadata.initialResponse || {},
+    );
   }
 };

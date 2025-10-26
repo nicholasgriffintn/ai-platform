@@ -29,7 +29,8 @@ describe("refreshAsyncMessages", () => {
       data: {
         asyncInvocation: {
           provider: "bedrock",
-          invocationArn: "arn:aws:bedrock:us-east-1:123456789012:async-invoke/xyz",
+          invocationArn:
+            "arn:aws:bedrock:us-east-1:123456789012:async-invoke/xyz",
         },
         attachments: [{ type: "text", url: "https://example.com" }],
       },
@@ -66,9 +67,9 @@ describe("refreshAsyncMessages", () => {
     expect(refreshedMessages[0].data?.attachments).toEqual([
       { type: "text", url: "https://example.com" },
     ]);
-    expect(
-      (refreshedMessages[0].data?.asyncInvocation as any)?.status,
-    ).toBe("completed");
+    expect((refreshedMessages[0].data?.asyncInvocation as any)?.status).toBe(
+      "completed",
+    );
   });
 
   it("should leave messages unchanged when no async invocation metadata is present", async () => {
