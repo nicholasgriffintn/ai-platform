@@ -16,6 +16,7 @@ import { BaseProvider } from "./base";
 import { formatBedrockMessages } from "./utils/bedrockContent";
 
 const logger = getLogger({ prefix: "lib/providers/bedrock" });
+const VIDEO_FILE_EXTENSIONS = [".mp4", ".mov", ".webm", ".mkv", ".avi"];
 type AsyncOperationStatus =
   | "IN_PROGRESS"
   | "SUCCESS"
@@ -50,6 +51,66 @@ export class BedrockProvider extends BaseProvider {
     }
 
     return { accessKey: parts[0], secretKey: parts[1] };
+  }
+
+  private parseS3Uri(uri?: string): { bucket: string; prefix: string } | null {
+    if (!uri || !uri.startsWith("s3://")) {
+      return null;
+    }
+
+    const remainder = uri.slice("s3://".length);
+    if (!remainder) {
+      return null;
+    }
+
+    const [bucket, ...keyParts] = remainder.split("/");
+    if (!bucket) {
+      return null;
+    }
+
+    const prefix = keyParts.join("/");
+    return { bucket, prefix };
+  }
+
+  private isLikelyVideoUrl(url: string): boolean {
+    const normalized = url.toLowerCase();
+    return /^https?:\/\//.test(url) &&
+      VIDEO_FILE_EXTENSIONS.some((ext) => normalized.includes(ext));
+  }
+
+  private findDirectVideoUrl(payload: any): string | undefined {
+    if (!payload) {
+      return undefined;
+    }
+
+    if (typeof payload === "string") {
+      const trimmed = payload.trim();
+      if (this.isLikelyVideoUrl(trimmed)) {
+        return trimmed;
+      }
+      return undefined;
+    }
+
+    if (Array.isArray(payload)) {
+      for (const item of payload) {
+        const result = this.findDirectVideoUrl(item);
+        if (result) {
+          return result;
+        }
+      }
+      return undefined;
+    }
+
+    if (typeof payload === "object") {
+      for (const value of Object.values(payload)) {
+        const result = this.findDirectVideoUrl(value);
+        if (result) {
+          return result;
+        }
+      }
+    }
+
+    return undefined;
   }
 
   protected validateParams(params: ChatCompletionParameters): void {
@@ -471,6 +532,223 @@ export class BedrockProvider extends BaseProvider {
     return { accessKey, secretKey };
   }
 
+  private async createS3Client(
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<AwsClient> {
+    const { accessKey, secretKey } = await this.getAwsCredentials(
+      params,
+      userId,
+    );
+
+    return new AwsClient({
+      accessKeyId: accessKey,
+      secretAccessKey: secretKey,
+      region: "us-east-1",
+      service: "s3",
+    });
+  }
+
+  private async findVideoKeyInS3WithClient(
+    client: AwsClient,
+    bucket: string,
+    prefix: string,
+  ): Promise<string | undefined> {
+    try {
+      const normalizedPrefix = prefix.replace(/^\/+/, "");
+      const searchParams = new URLSearchParams({ "list-type": "2" });
+
+      if (normalizedPrefix) {
+        searchParams.set("prefix", normalizedPrefix);
+      }
+
+      const listUrl = `https://${bucket}.s3.us-east-1.amazonaws.com/?${searchParams.toString()}`;
+      const signedRequest = await client.sign(listUrl, { method: "GET" });
+      const response = await fetch(signedRequest.url, {
+        method: "GET",
+        headers: signedRequest.headers,
+      });
+
+      if (!response.ok) {
+        logger.error("Failed to list video artifacts from S3", {
+          bucket,
+          prefix,
+          status: response.status,
+        });
+        return undefined;
+      }
+
+      const xml = await response.text();
+      const matches = [...xml.matchAll(/<Key>([^<]+)<\/Key>/g)].map((match) => match[1]);
+
+      if (!matches.length) {
+        return undefined;
+      }
+
+      return matches.find((key) =>
+        VIDEO_FILE_EXTENSIONS.some((ext) => key.toLowerCase().endsWith(ext)),
+      );
+    } catch (error) {
+      logger.error("Failed to locate video artifact in S3", {
+        error,
+        bucket,
+        prefix,
+      });
+      return undefined;
+    }
+  }
+
+  private async createPresignedS3UrlWithClient(
+    client: AwsClient,
+    bucket: string,
+    key: string,
+  ): Promise<string | undefined> {
+    try {
+      const encodedKey = encodeURIComponent(key).replace(/%2F/g, "/");
+      const objectUrl = `https://${bucket}.s3.us-east-1.amazonaws.com/${encodedKey}`;
+      const presignedRequest = await client.sign(objectUrl, {
+        method: "GET",
+        aws: { signQuery: true },
+      });
+
+      return presignedRequest.url;
+    } catch (error) {
+      logger.error("Failed to create presigned video URL", {
+        error,
+        bucket,
+        key,
+      });
+      return undefined;
+    }
+  }
+
+  private async extractVideoMetadata(
+    raw: Record<string, any>,
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<Record<string, any> | undefined> {
+    const directUrl = this.findDirectVideoUrl(raw);
+    if (directUrl) {
+      return { url: directUrl, source: "provider" };
+    }
+
+    const s3Config =
+      raw?.outputDataConfig?.s3OutputDataConfig ||
+      raw?.response?.outputDataConfig?.s3OutputDataConfig ||
+      raw?.output?.outputDataConfig?.s3OutputDataConfig;
+
+    if (!s3Config?.s3Uri) {
+      return undefined;
+    }
+
+    const parsed = this.parseS3Uri(s3Config.s3Uri);
+    if (!parsed) {
+      return undefined;
+    }
+
+    try {
+      const client = await this.createS3Client(params, userId);
+      const videoKey = await this.findVideoKeyInS3WithClient(
+        client,
+        parsed.bucket,
+        parsed.prefix,
+      );
+
+      if (!videoKey) {
+        return {
+          bucket: parsed.bucket,
+          prefix: parsed.prefix,
+          source: "s3",
+        };
+      }
+
+      const presignedUrl = await this.createPresignedS3UrlWithClient(
+        client,
+        parsed.bucket,
+        videoKey,
+      );
+
+      return {
+        url: presignedUrl,
+        bucket: parsed.bucket,
+        key: videoKey,
+        prefix: parsed.prefix,
+        source: "s3",
+      };
+    } catch (error) {
+      logger.error("Failed to resolve S3 video artifact", {
+        error,
+        bucket: parsed.bucket,
+        prefix: parsed.prefix,
+      });
+      return {
+        bucket: parsed.bucket,
+        prefix: parsed.prefix,
+        source: "s3",
+      };
+    }
+  }
+
+  private buildVideoResponseText(url?: string): string {
+    if (url) {
+      return `Your video is ready. [Download video](${url})`;
+    }
+
+    return "Your video is ready, but we couldn't generate a download link automatically.";
+  }
+
+  private async enhanceAsyncResult(
+    formatted: any,
+    raw: Record<string, any>,
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<any> {
+    try {
+      const modelConfig = await getModelConfigByMatchingModel(
+        params.model || "",
+      );
+      const types = modelConfig?.type || [];
+      const isVideoType =
+        types.includes("text-to-video") || types.includes("image-to-video");
+
+      if (!isVideoType) {
+        return formatted;
+      }
+
+      const videoMetadata = await this.extractVideoMetadata(
+        raw,
+        params,
+        userId,
+      );
+      const videoUrl = videoMetadata?.url || this.findDirectVideoUrl(formatted);
+      const responseText = this.buildVideoResponseText(videoUrl);
+
+      const mergedData: Record<string, any> = {
+        ...(formatted?.data || {}),
+      };
+
+      if (videoMetadata) {
+        mergedData.video = videoMetadata;
+      }
+
+      return {
+        ...formatted,
+        response: responseText,
+        data: mergedData,
+      };
+    } catch (error) {
+      logger.error("Failed to enhance Bedrock async result", {
+        error,
+        model: params.model,
+      });
+
+      return {
+        ...formatted,
+        response: this.buildVideoResponseText(undefined),
+      };
+    }
+  }
+
   private async makeBedrockRequest(
     endpoint: string,
     body: Record<string, any>,
@@ -798,9 +1076,15 @@ export class BedrockProvider extends BaseProvider {
       normalizedStatus === "COMPLETED"
     ) {
       const formatted = await this.formatResponse(mergedData, params);
+      const enhanced = await this.enhanceAsyncResult(
+        formatted,
+        mergedData,
+        params,
+        userId,
+      );
       return {
         status: "completed",
-        result: formatted,
+        result: enhanced,
         raw: mergedData,
       };
     }

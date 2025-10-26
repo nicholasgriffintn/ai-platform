@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import {
   type FormEvent,
   useCallback,
@@ -13,7 +12,6 @@ import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
 import { UsageLimitWarning } from "~/components/ConversationThread/UsageLimitWarning";
-import { CHATS_QUERY_KEY } from "~/constants";
 import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
@@ -33,7 +31,6 @@ export const ConversationThread = () => {
   const { currentConversationId, model, chatInput, setChatInput } =
     useChatStore();
   const { data: currentConversation } = useChat(currentConversationId);
-  const queryClient = useQueryClient();
   const {
     streamStarted,
     controller,
@@ -61,49 +58,6 @@ export const ConversationThread = () => {
 
   const chatInputRef = useRef<ChatInputHandle>(null);
 
-  useEffect(() => {
-    if (!currentConversationId) {
-      return;
-    }
-
-    const pendingMessages =
-      currentConversation?.messages?.filter((message) => {
-        if (message.status !== "in_progress") {
-          return false;
-        }
-
-        const asyncInvocation =
-          (message.data as any)?.asyncInvocation || undefined;
-        return Boolean(asyncInvocation?.provider);
-      }) || [];
-
-    if (!pendingMessages.length) {
-      return;
-    }
-
-    const intervalMs = Math.max(
-      2000,
-      Math.min(
-        ...pendingMessages.map((message) => {
-          const asyncInvocation =
-            (message.data as any)?.asyncInvocation || {};
-          return asyncInvocation.pollIntervalMs || 4000;
-        }),
-      ),
-    );
-
-    const interval = setInterval(() => {
-      queryClient.refetchQueries({
-        queryKey: [CHATS_QUERY_KEY, currentConversationId],
-      });
-    }, intervalMs);
-
-    return () => clearInterval(interval);
-  }, [
-    currentConversation?.messages,
-    currentConversationId,
-    queryClient,
-  ]);
 
   const handleArtifactOpen = useCallback(
     (

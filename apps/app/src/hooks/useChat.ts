@@ -85,6 +85,41 @@ export function useChat(completion_id: string | undefined) {
       }
     },
     enabled: !!completion_id,
+    refetchInterval: (data) => {
+      if (!data?.messages) {
+        return false;
+      }
+
+      const pendingMessages = data.messages.filter((message) => {
+        if (message.status !== "in_progress") {
+          return false;
+        }
+
+        const asyncInvocation = (message.data as any)?.asyncInvocation;
+        return Boolean(asyncInvocation?.provider);
+      });
+
+      if (!pendingMessages.length) {
+        return false;
+      }
+
+      const pollIntervals = pendingMessages
+        .map((message) => {
+          const asyncInvocation = (message.data as any)?.asyncInvocation;
+          return asyncInvocation?.pollIntervalMs;
+        })
+        .filter(
+          (value): value is number =>
+            typeof value === "number" && Number.isFinite(value),
+        );
+
+      if (!pollIntervals.length) {
+        return 4000;
+      }
+
+      return Math.max(2000, Math.min(...pollIntervals));
+    },
+    refetchIntervalInBackground: true,
   });
 }
 

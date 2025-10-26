@@ -58,14 +58,24 @@ async function handleBedrockAsyncInvocation(
   if (result.status === "completed" && result.result) {
     const formatted = result.result;
 
+    const previousAsyncInvocation =
+      (message.data as Record<string, any> | undefined)?.asyncInvocation;
+    const formattedAsyncInvocation =
+      (formatted.data as Record<string, any> | undefined)?.asyncInvocation;
+
+    const mergedAsyncInvocation = {
+      ...(previousAsyncInvocation || {}),
+      ...(formattedAsyncInvocation || {}),
+      ...metadata,
+      status: "completed" as const,
+      completedAt: now,
+      lastCheckedAt: now,
+    };
+
     const mergedData = {
+      ...(message.data || {}),
       ...(formatted.data || {}),
-      asyncInvocation: {
-        ...metadata,
-        status: "completed",
-        completedAt: now,
-        lastCheckedAt: now,
-      },
+      asyncInvocation: mergedAsyncInvocation,
     };
 
     const updatedMessage: Message = {

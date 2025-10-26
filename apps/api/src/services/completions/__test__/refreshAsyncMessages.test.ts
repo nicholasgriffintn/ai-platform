@@ -31,6 +31,7 @@ describe("refreshAsyncMessages", () => {
           provider: "bedrock",
           invocationArn: "arn:aws:bedrock:us-east-1:123456789012:async-invoke/xyz",
         },
+        attachments: [{ type: "text", url: "https://example.com" }],
       },
       content: "Generating...",
       role: "assistant",
@@ -40,7 +41,11 @@ describe("refreshAsyncMessages", () => {
       status: "completed",
       result: {
         response: "Completed",
-        data: {},
+        data: {
+          video: {
+            url: "https://assets.example.com/video.mp4",
+          },
+        },
       },
       raw: {},
     });
@@ -55,6 +60,12 @@ describe("refreshAsyncMessages", () => {
 
     expect(updateMock).toHaveBeenCalled();
     expect(refreshedMessages[0].status).toBe("completed");
+    expect(refreshedMessages[0].data?.video?.url).toBe(
+      "https://assets.example.com/video.mp4",
+    );
+    expect(refreshedMessages[0].data?.attachments).toEqual([
+      { type: "text", url: "https://example.com" },
+    ]);
   });
 
   it("should leave messages unchanged when no async invocation metadata is present", async () => {

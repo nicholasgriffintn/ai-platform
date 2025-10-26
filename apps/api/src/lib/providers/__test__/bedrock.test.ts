@@ -33,6 +33,9 @@ vi.mock("~/lib/providers/base", () => ({
     async getApiKey() {
       return "test-key";
     }
+    async formatResponse(data: any) {
+      return data;
+    }
   },
 }));
 
@@ -420,10 +423,19 @@ describe("BedrockProvider", () => {
       const invocationArn =
         "arn:aws:bedrock:us-east-1:123456789012:async-invoke/def";
 
-      signMock.mockResolvedValueOnce({
-        url: `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(invocationArn)}`,
-        headers: new Headers(),
-      });
+      signMock
+        .mockResolvedValueOnce({
+          url: `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(invocationArn)}`,
+          headers: new Headers(),
+        })
+        .mockResolvedValueOnce({
+          url: "https://bucket.s3.us-east-1.amazonaws.com/?list-type=2&prefix=result%2F",
+          headers: new Headers(),
+        })
+        .mockResolvedValueOnce({
+          url: "https://bucket.s3.us-east-1.amazonaws.com/result/video.mp4?signature=123",
+          headers: new Headers(),
+        });
 
       const pollData = {
         status: "SUCCEEDED",
@@ -434,16 +446,19 @@ describe("BedrockProvider", () => {
         },
       };
 
-      // @ts-ignore - overriding protected method for testing
-      provider.formatResponse = vi.fn().mockResolvedValue({
-        response: pollData,
-        data: pollData,
-      });
-
       fetchMock.mockResolvedValueOnce({
         ok: true,
         json: async () => pollData,
         text: async () => "",
+        headers: new Headers(),
+      });
+
+      const listXml = `<?xml version="1.0" encoding="UTF-8"?><ListBucketResult><Contents><Key>result/video.mp4</Key></Contents></ListBucketResult>`;
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        text: async () => listXml,
+        json: async () => ({}),
         headers: new Headers(),
       });
 
@@ -453,9 +468,15 @@ describe("BedrockProvider", () => {
       );
 
       expect(result.status).toBe("completed");
-      expect(result.result?.response).toEqual(
-        expect.objectContaining(pollData),
+      expect(result.result?.response).toContain("[Download video](https://bucket.s3.us-east-1.amazonaws.com/result/video.mp4?signature=123)");
+      expect(result.result?.data?.video).toEqual(
+        expect.objectContaining({
+          url: "https://bucket.s3.us-east-1.amazonaws.com/result/video.mp4?signature=123",
+          bucket: "bucket",
+          key: "result/video.mp4",
+        }),
       );
+      expect(signMock).toHaveBeenCalledTimes(3);
     });
 
     it("should return in_progress when async invocation is still running", async () => {
