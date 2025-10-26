@@ -1,6 +1,24 @@
-import { describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { BedrockProvider } from "../bedrock";
+
+const signMock = vi.fn();
+const fetchMock = vi.fn();
+
+vi.mock("aws4fetch", () => ({
+  AwsClient: vi.fn().mockImplementation(() => ({
+    sign: signMock,
+  })),
+}));
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {
@@ -17,10 +35,27 @@ vi.mock("~/lib/models", () => ({
   getModelConfigByMatchingModel: vi.fn(),
 }));
 
+vi.mock("~/lib/monitoring", () => ({
+  trackProviderMetrics: vi.fn(async ({ operation }) => operation()),
+}));
+
 vi.mock("~/utils/parameters", () => ({
   createCommonParameters: vi.fn(),
   getToolsForProvider: vi.fn(),
 }));
+
+beforeAll(() => {
+  vi.stubGlobal("fetch", fetchMock);
+});
+
+afterAll(() => {
+  vi.unstubAllGlobals();
+});
+
+beforeEach(() => {
+  fetchMock.mockReset();
+  signMock.mockReset();
+});
 
 describe("BedrockProvider", () => {
   describe("mapParameters", () => {
@@ -95,6 +130,56 @@ describe("BedrockProvider", () => {
         // @ts-ignore - accessing private method for testing
         provider.parseAwsCredentials(invalidCredentials);
       }).toThrow("Invalid AWS credentials format");
+    });
+  });
+
+  describe("getResponse", () => {
+    it("should use bedrockApiOperation for invoke requests", async () => {
+      const provider = new BedrockProvider();
+      // @ts-ignore - overriding protected method for testing
+      provider.mapParameters = vi.fn().mockResolvedValue({ body: true });
+      // @ts-ignore - overriding protected method for testing
+      provider.formatResponse = vi.fn().mockResolvedValue({ formatted: true });
+
+      const params = {
+        model: "test-model",
+        messages: [],
+        env: {
+          AI_GATEWAY_TOKEN: "token",
+          ACCOUNT_ID: "test-account",
+          BEDROCK_AWS_ACCESS_KEY: "access",
+          BEDROCK_AWS_SECRET_KEY: "secret",
+        },
+      };
+
+      fetchMock.mockResolvedValue({
+        ok: true,
+        json: async () => ({ result: "ok" }),
+        text: async () => "",
+        headers: new Headers(),
+      });
+
+      signMock.mockResolvedValue({
+        url: "https://bedrock-runtime.us-east-1.amazonaws.com/model/test-model/invoke",
+        headers: new Headers(),
+      });
+
+      // @ts-ignore - getModelConfigByMatchingModel is not typed
+      vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+        bedrockApiOperation: "invoke",
+      });
+
+      await provider.getResponse(params as any);
+
+      expect(signMock).toHaveBeenCalledWith(
+        "https://bedrock-runtime.us-east-1.amazonaws.com/model/test-model/invoke",
+        expect.objectContaining({ method: "POST" }),
+      );
+
+      const forwardedUrl = fetchMock.mock.calls[0][0] as URL;
+      expect(forwardedUrl.toString()).toBe(
+        `https://gateway.ai.cloudflare.com/v1/test-account/${gatewayId}/aws-bedrock/bedrock-runtime/us-east-1/model/test-model/invoke`,
+      );
     });
   });
 });
