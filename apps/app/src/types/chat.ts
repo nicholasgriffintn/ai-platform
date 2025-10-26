@@ -106,12 +106,27 @@ export interface MessageData {
   };
   asyncInvocation?: {
     provider: string;
-    invocationArn: string;
-    invocationUrl?: string;
+    id: string;
+    type?: string;
+    poll?: {
+      url?: string;
+      method?: string;
+      headers?: Record<string, string>;
+      body?: Record<string, any>;
+      query?: Record<string, string>;
+      intervalMs?: number;
+    };
     pollIntervalMs?: number;
     status?: string;
     lastCheckedAt?: number;
     completedAt?: number;
+    initialResponse?: Record<string, any>;
+    context?: Record<string, any>;
+    contentHints?: {
+      placeholder?: MessageContent[];
+      progress?: MessageContent[];
+      failure?: MessageContent[];
+    };
     [key: string]: any;
   };
   error?: string;

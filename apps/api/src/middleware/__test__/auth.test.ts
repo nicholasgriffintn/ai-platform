@@ -2,12 +2,7 @@ import type { Context, Next } from "hono";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AssistantError } from "~/utils/errors";
-import {
-  allowRestrictedPaths,
-  authMiddleware,
-  requireAuth,
-  webhookAuth,
-} from "../auth";
+import { allowRestrictedPaths, authMiddleware, requireAuth } from "../auth";
 
 const mockDatabase = {
   findUserIdByApiKey: vi.fn(),
@@ -68,7 +63,6 @@ function createMockContext(overrides: any = {}): Context {
     env: {
       CACHE: null,
       JWT_SECRET: "test-secret",
-      WEBHOOK_SECRET: "webhook-secret",
       ...overrides.env,
     },
     get: vi.fn(),
@@ -449,64 +443,6 @@ describe("Auth Middleware", () => {
       );
       await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
         "This endpoint requires authentication",
-      );
-    });
-  });
-
-  describe("webhookAuth", () => {
-    it("should authenticate with valid webhook secret", async () => {
-      const context = createMockContext();
-      // @ts-expect-error - mock implementation
-      context.req.query.mockImplementation((key: string) => {
-        if (key === "token") return "webhook-secret";
-        return null;
-      });
-
-      await webhookAuth(context, mockNext);
-
-      expect(mockNext).toHaveBeenCalled();
-    });
-
-    it("should throw error with invalid webhook secret", async () => {
-      const context = createMockContext();
-
-      // @ts-expect-error - mock implementation
-      context.req.query.mockImplementation((key: string) => {
-        if (key === "token") return "invalid-secret";
-        return null;
-      });
-
-      await expect(webhookAuth(context, mockNext)).rejects.toThrow(
-        AssistantError,
-      );
-      await expect(webhookAuth(context, mockNext)).rejects.toThrow(
-        "Unauthorized",
-      );
-    });
-
-    it("should throw error when webhook secret is missing from environment", async () => {
-      const context = createMockContext({
-        env: { WEBHOOK_SECRET: undefined },
-      });
-
-      await expect(webhookAuth(context, mockNext)).rejects.toThrow(
-        AssistantError,
-      );
-      await expect(webhookAuth(context, mockNext)).rejects.toThrow(
-        "Missing WEBHOOK_SECRET binding",
-      );
-    });
-
-    it("should throw error when no token provided", async () => {
-      const context = createMockContext();
-      // @ts-expect-error - mock implementation
-      context.req.query.mockReturnValue(null);
-
-      await expect(webhookAuth(context, mockNext)).rejects.toThrow(
-        AssistantError,
-      );
-      await expect(webhookAuth(context, mockNext)).rejects.toThrow(
-        "Unauthorized",
       );
     });
   });

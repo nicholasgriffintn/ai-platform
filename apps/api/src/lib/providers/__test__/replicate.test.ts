@@ -55,7 +55,7 @@ describe("ReplicateProvider", () => {
       const params = {
         model: "replicate-model",
         messages: [{ role: "user", content: "Hello" }],
-        env: { AI_GATEWAY_TOKEN: "test-token", WEBHOOK_SECRET: "secret" },
+        env: { AI_GATEWAY_TOKEN: "test-token" },
         completion_id: "test-completion-id",
       };
 
@@ -71,62 +71,27 @@ describe("ReplicateProvider", () => {
     it("should validate required parameters", async () => {
       const provider = new ReplicateProvider();
 
-      // Test missing completion_id
-      const paramsWithoutCompletionId = {
+      const paramsMissingKey = {
         model: "replicate-model",
         messages: [{ role: "user", content: "Hello" }],
-        env: { AI_GATEWAY_TOKEN: "test-token", WEBHOOK_SECRET: "secret" },
+        env: {},
       };
 
       expect(() => {
         // @ts-ignore - validateParams is protected
-        provider.validateParams(paramsWithoutCompletionId as any);
-      }).toThrow("Missing completion_id");
+        provider.validateParams(paramsMissingKey as any);
+      }).toThrow("Missing AI_GATEWAY_TOKEN");
 
-      // Test missing message content
       const paramsWithoutContent = {
         model: "replicate-model",
         messages: [{ role: "user", content: "" }],
-        env: { AI_GATEWAY_TOKEN: "test-token", WEBHOOK_SECRET: "secret" },
-        completion_id: "test-id",
+        env: { AI_GATEWAY_TOKEN: "test-token" },
       };
 
       expect(() => {
         // @ts-ignore - validateParams is protected
         provider.validateParams(paramsWithoutContent as any);
       }).toThrow("Missing last message content");
-    });
-
-    it("should not require completion_id if should_poll is true", async () => {
-      const provider = new ReplicateProvider();
-
-      const params = {
-        model: "replicate-model",
-        messages: [{ role: "user", content: "Hello" }],
-        env: { AI_GATEWAY_TOKEN: "test-token", WEBHOOK_SECRET: "secret" },
-        should_poll: true,
-      };
-
-      expect(() => {
-        // @ts-ignore - validateParams is protected
-        provider.validateParams(params as any);
-      }).not.toThrow();
-    });
-
-    it("should require completion_id if should_poll is false", async () => {
-      const provider = new ReplicateProvider();
-
-      const params = {
-        model: "replicate-model",
-        messages: [{ role: "user", content: "Hello" }],
-        env: { AI_GATEWAY_TOKEN: "test-token", WEBHOOK_SECRET: "secret" },
-        should_poll: false,
-      };
-
-      expect(() => {
-        // @ts-ignore - validateParams is protected
-        provider.validateParams(params as any);
-      }).toThrow("Missing completion_id");
     });
   });
 });

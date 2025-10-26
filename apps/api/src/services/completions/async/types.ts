@@ -9,8 +9,10 @@ export interface AsyncRefreshContext {
   user: IUser | null;
 }
 
+export type AsyncRefreshResultStatus = "completed" | "failed" | "in_progress";
+
 export type AsyncRefreshResult = {
-  status: "completed" | "failed" | "in_progress";
+  status: AsyncRefreshResultStatus;
   message: Message;
 };
 
@@ -19,5 +21,3 @@ export type AsyncInvocationHandler = (
   message: Message,
   context: AsyncRefreshContext,
 ) => Promise<AsyncRefreshResult>;
-
-export type AsyncInvocationHandlerMap = Record<string, AsyncInvocationHandler>;

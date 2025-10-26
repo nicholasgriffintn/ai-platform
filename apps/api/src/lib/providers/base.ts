@@ -1,5 +1,6 @@
 import { ResponseFormatter } from "~/lib/formatter";
 import { getModelConfigByMatchingModel } from "~/lib/models";
+import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { StorageService } from "~/lib/storage";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
@@ -31,10 +32,9 @@ export interface AIProvider {
     userId?: number,
   ): Promise<{ inputTokens: number }>;
   getAsyncInvocationStatus?(
-    invocationArn: string,
+    metadata: AsyncInvocationMetadata,
     params: ChatCompletionParameters,
     userId?: number,
-    initialResponse?: any,
   ): Promise<{
     status: "in_progress" | "completed" | "failed";
     result?: any;

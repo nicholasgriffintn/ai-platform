@@ -414,18 +414,24 @@ export const MessageContent = memo(
     const isPending = message.status === "in_progress" && asyncInvocation;
     const isFailed = message.status === "failed";
     const errorMessage = message.data?.error;
+    const progressHint =
+      asyncInvocation?.contentHints?.progress?.[0]?.text ??
+      asyncInvocation?.contentHints?.placeholder?.[0]?.text;
+    const failureHint = asyncInvocation?.contentHints?.failure?.[0]?.text;
 
     return (
       <div className="space-y-3">
         {isPending && (
           <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Video generation in progress...</span>
+            <span>{progressHint || "Content generation in progress..."}</span>
           </div>
         )}
         {isFailed && (
           <div className="text-sm text-red-500 dark:text-red-400">
-            {errorMessage || "Video generation failed. Please try again."}
+            {failureHint ||
+              errorMessage ||
+              "Generation failed. Please try again."}
           </div>
         )}
         {content}

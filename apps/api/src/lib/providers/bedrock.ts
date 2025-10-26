@@ -743,23 +743,35 @@ export class BedrockProvider extends BaseProvider {
           const encodedArn = encodeURIComponent(invocationArn);
           const invocationUrl = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/async-invoke/${encodedArn}`;
 
-          const asyncInvocationData = createAsyncInvocationMetadata({
-            provider: this.name,
-            type: "async_invoke" as const,
-            region,
-            invocationArn,
-            invocationUrl,
-            operation: operationPath,
-            pollIntervalMs: 6000,
-            initialResponse: initialData,
-          } as AsyncInvocationMetadata);
-
           const placeholderContent = [
             {
-              type: "text",
+              type: "text" as const,
               text: "Video generation in progress. We'll update this message once the results are ready.",
             },
           ];
+
+          const asyncInvocationData = createAsyncInvocationMetadata({
+            provider: this.name,
+            id: invocationArn,
+            type: "bedrock.asyncInvoke",
+            pollIntervalMs: 6000,
+            initialResponse: initialData,
+            context: {
+              region,
+              invocationArn,
+              invocationUrl,
+              operation: operationPath,
+            },
+            contentHints: {
+              placeholder: placeholderContent,
+              failure: [
+                {
+                  type: "text",
+                  text: "Video generation failed. Please try again.",
+                },
+              ],
+            },
+          });
 
           return {
             response: placeholderContent,
@@ -811,16 +823,21 @@ export class BedrockProvider extends BaseProvider {
   }
 
   async getAsyncInvocationStatus(
-    invocationArn: string,
+    metadata: AsyncInvocationMetadata,
     params: ChatCompletionParameters,
     userId?: number,
-    initialResponse?: Record<string, any>,
   ): Promise<{
     status: "in_progress" | "completed" | "failed";
     result?: any;
     raw: Record<string, any>;
   }> {
-    const region = this.getRegion();
+    const invocationArn = metadata.context?.invocationArn ?? metadata.id;
+    const initialResponse = metadata.initialResponse;
+
+    const region =
+      metadata.context?.region ??
+      params.env.BEDROCK_AWS_REGION ??
+      this.getRegion();
     const { accessKey, secretKey } = await this.getAwsCredentials(
       params,
       userId,

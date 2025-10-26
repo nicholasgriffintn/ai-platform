@@ -1,4 +1,3 @@
-import { API_PROD_HOST } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import { RepositoryManager } from "~/repositories";
@@ -104,9 +103,6 @@ export const handlePodcastTranscribe = async (
       modelConfig?.provider || "replicate",
     );
 
-    const basewebhook_url = app_url || `https://${API_PROD_HOST}`;
-    const webhook_url = `${basewebhook_url}/webhooks/replicate?completion_id=${request.podcastId}&token=${env.WEBHOOK_SECRET}`;
-
     const prompt = `${request.prompt} <title>${title}</title> <description>${description}</description>`;
 
     const transcriptionData = await provider.getResponse({
@@ -131,10 +127,10 @@ export const handlePodcastTranscribe = async (
       ],
       env,
       user,
-      webhook_url,
-      webhook_events: ["output", "completed"],
       should_poll: true,
     });
+
+    const isAsync = transcriptionData?.status === "in_progress";
 
     const appData = {
       title,
@@ -142,7 +138,7 @@ export const handlePodcastTranscribe = async (
       numberOfSpeakers: request.numberOfSpeakers,
       prompt: request.prompt,
       transcriptionData,
-      status: "complete",
+      status: isAsync ? "pending" : "complete",
       createdAt: new Date().toISOString(),
     };
 
@@ -156,7 +152,9 @@ export const handlePodcastTranscribe = async (
 
     return {
       status: "success",
-      content: `Podcast Transcribed: ${transcriptionData.id}`,
+      content: isAsync
+        ? `Podcast transcription started: ${transcriptionData.id}`
+        : `Podcast transcribed: ${transcriptionData.id}`,
       data: appData,
     };
   } catch (error) {

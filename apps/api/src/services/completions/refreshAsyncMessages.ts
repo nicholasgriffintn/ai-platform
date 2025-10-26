@@ -3,22 +3,14 @@ import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import type { IEnv, Message, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
-
-import { bedrockAsyncInvocationHandler } from "./async/bedrock";
-import type {
-  AsyncInvocationHandlerMap,
-  AsyncRefreshContext,
-} from "./async/types";
+import { handleAsyncInvocation } from "./async/handler";
+import type { AsyncRefreshContext } from "./async/types";
 
 const logger = getLogger({
   prefix: "services/completions/refreshAsyncMessages",
 });
 
 const ASYNC_STATUS_PENDING = "in_progress";
-
-const providerHandlers: AsyncInvocationHandlerMap = {
-  bedrock: bedrockAsyncInvocationHandler,
-};
 
 function createContext(
   conversationManager: ConversationManager,
@@ -78,20 +70,23 @@ export async function refreshAsyncMessages({
       continue;
     }
 
-    const handler = providerHandlers[asyncInvocation.provider];
-    if (!handler) {
-      continue;
-    }
-
     try {
-      const result = await handler(asyncInvocation, message, context);
-      updatedMessages[index] = result.message;
-      hasChanges = true;
+      const result = await handleAsyncInvocation(
+        asyncInvocation,
+        message,
+        context,
+      );
+
+      if (result.message !== message) {
+        updatedMessages[index] = result.message;
+        hasChanges = true;
+      }
     } catch (error) {
       logger.error("Failed to refresh async invocation", {
         error,
         provider: asyncInvocation.provider,
-        invocationArn: asyncInvocation.invocationArn,
+        id: asyncInvocation.id,
+        type: asyncInvocation.type,
       });
     }
   }

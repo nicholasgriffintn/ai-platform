@@ -60,15 +60,47 @@ export type Attachment = {
   markdown?: string;
 };
 
+export type AsyncInvocationStatus = "in_progress" | "completed" | "failed";
+
+export interface AsyncInvocationContentHints {
+  placeholder?: MessageContent[];
+  progress?: MessageContent[];
+  failure?: MessageContent[];
+}
+
+export interface AsyncInvocationPollConfig {
+  url?: string;
+  method?: string;
+  headers?: Record<string, string>;
+  body?: Record<string, any>;
+  query?: Record<string, string>;
+  intervalMs?: number;
+}
+
 export interface AsyncInvocationData {
   provider: string;
-  invocationArn: string;
-  invocationUrl?: string;
+  /**
+   * Provider-defined unique identifier for this async task. The client only needs to echo this back.
+   */
+  id: string;
+  /**
+   * Optional classification that helps the server determine the correct polling strategy.
+   */
+  type?: string;
+  poll?: AsyncInvocationPollConfig;
   pollIntervalMs?: number;
-  status?: string;
+  status?: AsyncInvocationStatus | string;
   lastCheckedAt?: number;
   completedAt?: number;
   initialResponse?: Record<string, any>;
+  /**
+   * Arbitrary provider context needed to resume polling (e.g. region, model version).
+   */
+  context?: Record<string, any>;
+  /**
+   * Optional UX hints so the UI can present nicer copy while polling or when failures happen.
+   */
+  contentHints?: AsyncInvocationContentHints;
   [key: string]: any;
 }
 
@@ -143,8 +175,6 @@ export interface IRequest {
   env: IEnv;
   request?: IBody;
   user?: IUser;
-  webhook_url?: string;
-  webhook_events?: string[];
   mode?: ChatMode;
   use_rag?: boolean;
   rag_options?: RagOptions;
@@ -192,7 +222,7 @@ interface AIControlParams {
 interface AIResponseParamsBase extends AIControlParams {
   // The platform the user requested with.
   platform?: Platform;
-  // The URL of the app, used with webhooks.
+  // The URL of the app.
   app_url?: string;
   // The system prompt to use for the response.
   system_prompt?: string;
@@ -204,10 +234,6 @@ interface AIResponseParamsBase extends AIControlParams {
   version?: string;
   // Whether to disable functions for the response.
   disable_functions?: boolean;
-  // The URL of the webhook from the request.
-  webhook_url?: string;
-  // The events to use for the webhook.
-  webhook_events?: string[];
   // The ID of the completion to use for the response.
   completion_id?: string;
   // The messages to use for the response.

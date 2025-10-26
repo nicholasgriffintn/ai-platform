@@ -26,7 +26,15 @@ describe("generateVideo", () => {
   });
 
   it("should generate video successfully", async () => {
-    const mockVideoData = { url: "https://example.com/video.mp4" };
+    const mockVideoData = {
+      status: "in_progress",
+      data: {
+        asyncInvocation: {
+          provider: "replicate",
+          id: "prediction-123",
+        },
+      },
+    };
     mockProvider.getResponse.mockResolvedValue(mockVideoData);
 
     const result = await generateVideo({
@@ -39,7 +47,7 @@ describe("generateVideo", () => {
 
     expect(result.status).toBe("success");
     expect(result.name).toBe("create_video");
-    expect(result.content).toBe("Video generated successfully");
+    expect(result.content).toBe("Video generation in progress");
     expect(result.data).toBe(mockVideoData);
     expect(mockProvider.getResponse).toHaveBeenCalledWith({
       completion_id: "completion-123",

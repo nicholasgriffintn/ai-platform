@@ -1,19 +1,8 @@
-import type { AsyncInvocationData } from "~/types";
+import type { AsyncInvocationData, AsyncInvocationStatus } from "~/types";
 
-export type AsyncMessageStatus = "in_progress" | "completed" | "failed";
+export type AsyncMessageStatus = AsyncInvocationStatus;
 
-export interface AsyncInvocationMetadata extends AsyncInvocationData {
-  provider: string;
-  type?: string;
-  operation?: string;
-  region?: string;
-  pollIntervalMs?: number;
-  status?: AsyncMessageStatus | string;
-  lastCheckedAt?: number;
-  completedAt?: number;
-  initialResponse?: Record<string, any>;
-  [key: string]: any;
-}
+export type AsyncInvocationMetadata = AsyncInvocationData;
 
 export const DEFAULT_ASYNC_POLL_INTERVAL_MS = 4000;
 
@@ -36,6 +25,13 @@ export function createAsyncInvocationMetadata(
     "in_progress";
 
   merged.lastCheckedAt = overrides.lastCheckedAt ?? base.lastCheckedAt ?? now;
+
+  const pollIntervalFromOverride =
+    overrides.pollIntervalMs ?? overrides.poll?.intervalMs;
+  const pollIntervalFromBase = base.pollIntervalMs ?? base.poll?.intervalMs;
+
+  merged.pollIntervalMs =
+    pollIntervalFromOverride ?? pollIntervalFromBase ?? merged.pollIntervalMs;
 
   if (merged.status === "completed") {
     merged.completedAt = overrides.completedAt ?? base.completedAt ?? now;
@@ -66,9 +62,11 @@ export function isAsyncInvocationPending(
 export function getAsyncPollInterval(
   metadata?: AsyncInvocationMetadata,
 ): number {
-  if (!metadata?.pollIntervalMs || metadata.pollIntervalMs < 1000) {
+  const interval = metadata?.pollIntervalMs ?? metadata?.poll?.intervalMs ?? 0;
+
+  if (!interval || interval < 1000) {
     return DEFAULT_ASYNC_POLL_INTERVAL_MS;
   }
 
-  return metadata.pollIntervalMs;
+  return interval;
 }

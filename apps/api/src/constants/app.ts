@@ -11,7 +11,6 @@ export const API_PROD_HOST = "api.polychat.app";
 export const gatewayId = "llm-assistant";
 
 export const ROUTES = {
-  WEBHOOKS: "/webhooks",
   CHAT: "/chat",
   APPS: "/apps",
   AUTH: "/auth",

@@ -68,10 +68,14 @@ export async function generateVideo({
       should_poll: true,
     });
 
+    const isAsync = videoData?.status === "in_progress";
+
     return {
       status: "success",
       name: "create_video",
-      content: "Video generated successfully",
+      content: isAsync
+        ? "Video generation in progress"
+        : "Video generated successfully",
       data: videoData,
     };
   } catch (error) {

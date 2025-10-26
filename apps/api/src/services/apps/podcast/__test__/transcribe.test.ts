@@ -31,7 +31,7 @@ vi.mock("~/lib/models", () => ({
 }));
 
 describe("handlePodcastTranscribe", () => {
-  const mockEnv = { DB: {}, WEBHOOK_SECRET: "secret" } as any;
+  const mockEnv = { DB: {} } as any;
   const mockUser = { id: "user-123", email: "test@example.com" } as any;
 
   beforeEach(async () => {
@@ -81,7 +81,16 @@ describe("handlePodcastTranscribe", () => {
       }),
     };
 
-    const mockTranscriptionData = { id: "transcription-123" };
+    const mockTranscriptionData = {
+      id: "transcription-123",
+      status: "in_progress",
+      data: {
+        asyncInvocation: {
+          provider: "replicate",
+          id: "transcription-123",
+        },
+      },
+    };
 
     mockRepositories.appData.getAppDataByUserAppAndItem
       .mockResolvedValueOnce([])
@@ -101,12 +110,12 @@ describe("handlePodcastTranscribe", () => {
     })) as IFunctionResponse;
 
     expect(result.status).toBe("success");
-    expect(result.content).toBe("Podcast Transcribed: transcription-123");
+    expect(result.content).toBe(
+      "Podcast transcription started: transcription-123",
+    );
     expect(mockProvider.getResponse).toHaveBeenCalledWith(
       expect.objectContaining({
         completion_id: "podcast-123",
-        webhook_url:
-          "https://example.com/webhooks/replicate?completion_id=podcast-123&token=secret",
         should_poll: true,
       }),
     );

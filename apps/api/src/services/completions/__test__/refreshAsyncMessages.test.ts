@@ -5,6 +5,7 @@ const getAsyncInvocationStatusMock = vi.fn();
 vi.mock("~/lib/providers/factory", () => ({
   AIProviderFactory: {
     getProvider: vi.fn(),
+    getProviders: vi.fn(() => ["bedrock", "replicate"]),
   },
 }));
 
@@ -12,6 +13,7 @@ import { AIProviderFactory } from "~/lib/providers/factory";
 import { refreshAsyncMessages } from "~/services/completions/refreshAsyncMessages";
 
 const mockGetProvider = vi.mocked(AIProviderFactory.getProvider);
+const mockGetProviders = vi.mocked(AIProviderFactory.getProviders);
 
 describe("refreshAsyncMessages", () => {
   beforeEach(() => {
@@ -20,6 +22,7 @@ describe("refreshAsyncMessages", () => {
     mockGetProvider.mockReturnValue({
       getAsyncInvocationStatus: getAsyncInvocationStatusMock,
     } as any);
+    mockGetProviders.mockReturnValue(["bedrock", "replicate"]);
   });
 
   it("should update messages when async invocation completes", async () => {
@@ -35,8 +38,8 @@ describe("refreshAsyncMessages", () => {
       data: {
         asyncInvocation: {
           provider: "bedrock",
-          invocationArn:
-            "arn:aws:bedrock:us-east-1:123456789012:async-invoke/xyz",
+          id: "arn:aws:bedrock:us-east-1:123456789012:async-invoke/xyz",
+          type: "bedrock.asyncInvoke",
         },
         attachments: [{ type: "text", url: "https://example.com" }],
       },
@@ -116,10 +119,12 @@ describe("refreshAsyncMessages", () => {
       data: {
         asyncInvocation: {
           provider: "unknown",
-          invocationArn: "arn:aws:bedrock:::async-invoke/abc",
+          id: "unknown-task",
         },
       },
     };
+
+    mockGetProviders.mockReturnValue(["bedrock", "replicate"]);
 
     const refreshedMessages = await refreshAsyncMessages({
       conversationManager,

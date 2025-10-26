@@ -28,13 +28,13 @@ export type IEnv = {
   HUGGINGFACE_TOKEN?: string;
   PERPLEXITY_API_KEY?: string;
   REPLICATE_API_TOKEN?: string;
-  WEBHOOK_SECRET?: string;
   ASSETS_BUCKET_ACCESS_KEY_ID: string;
   ASSETS_BUCKET_SECRET_ACCESS_KEY: string;
   MISTRAL_API_KEY?: string;
   OPENROUTER_API_KEY?: string;
   BEDROCK_AWS_ACCESS_KEY?: string;
   BEDROCK_AWS_SECRET_KEY?: string;
+  BEDROCK_AWS_REGION?: string;
   S3VECTORS_AWS_ACCESS_KEY?: string;
   S3VECTORS_AWS_SECRET_KEY?: string;
   AWS_REGION?: string;

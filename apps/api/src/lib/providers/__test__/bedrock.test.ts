@@ -9,6 +9,7 @@ import {
 } from "vitest";
 import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
+import { createAsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { BedrockProvider } from "../bedrock";
 import type { ChatCompletionParameters } from "~/types";
 import {
@@ -410,9 +411,17 @@ describe("BedrockProvider", () => {
       expect(result.data?.asyncInvocation).toEqual(
         expect.objectContaining({
           provider: "bedrock",
-          invocationArn,
-          type: "async_invoke",
+          id: invocationArn,
+          type: "bedrock.asyncInvoke",
           pollIntervalMs: 6000,
+          contentHints: expect.objectContaining({
+            placeholder: expect.any(Array),
+            failure: expect.any(Array),
+          }),
+          context: expect.objectContaining({
+            invocationArn,
+            region: "us-east-1",
+          }),
         }),
       );
     });
@@ -462,10 +471,15 @@ describe("BedrockProvider", () => {
         headers: new Headers(),
       });
 
-      const result = await provider.getAsyncInvocationStatus(
-        invocationArn,
-        params,
-      );
+      const metadata = createAsyncInvocationMetadata({
+        provider: "bedrock",
+        id: invocationArn,
+        context: {
+          invocationArn,
+        },
+      });
+
+      const result = await provider.getAsyncInvocationStatus(metadata, params);
 
       expect(result.status).toBe("completed");
       expect(result.result?.response).toContain("s3://bucket/result/");
@@ -508,10 +522,15 @@ describe("BedrockProvider", () => {
         headers: new Headers(),
       });
 
-      const result = await provider.getAsyncInvocationStatus(
-        invocationArn,
-        params,
-      );
+      const metadata = createAsyncInvocationMetadata({
+        provider: "bedrock",
+        id: invocationArn,
+        context: {
+          invocationArn,
+        },
+      });
+
+      const result = await provider.getAsyncInvocationStatus(metadata, params);
 
       expect(result.status).toBe("in_progress");
       expect(result.result).toBeUndefined();
@@ -553,10 +572,15 @@ describe("BedrockProvider", () => {
         headers: new Headers(),
       });
 
-      const result = await provider.getAsyncInvocationStatus(
-        invocationArn,
-        params,
-      );
+      const metadata = createAsyncInvocationMetadata({
+        provider: "bedrock",
+        id: invocationArn,
+        context: {
+          invocationArn,
+        },
+      });
+
+      const result = await provider.getAsyncInvocationStatus(metadata, params);
 
       expect(result.status).toBe("failed");
       expect(result.result).toBeUndefined();

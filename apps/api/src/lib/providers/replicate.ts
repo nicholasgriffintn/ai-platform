@@ -1,7 +1,10 @@
-import { API_PROD_HOST } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { StorageService } from "~/lib/storage";
+import {
+  createAsyncInvocationMetadata,
+  type AsyncInvocationMetadata,
+} from "~/lib/async/asyncInvocation";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import {
@@ -25,15 +28,11 @@ export class ReplicateProvider extends BaseProvider {
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
 
-    if (!params.env.AI_GATEWAY_TOKEN || !params.env.WEBHOOK_SECRET) {
+    if (!params.env.AI_GATEWAY_TOKEN) {
       throw new AssistantError(
-        "Missing AI_GATEWAY_TOKEN or WEBHOOK_SECRET",
+        "Missing AI_GATEWAY_TOKEN",
         ErrorType.CONFIGURATION_ERROR,
       );
-    }
-
-    if (!params.completion_id && !params.should_poll) {
-      throw new AssistantError("Missing completion_id", ErrorType.PARAMS_ERROR);
     }
 
     const lastMessage = params.messages[params.messages.length - 1];
@@ -61,48 +60,6 @@ export class ReplicateProvider extends BaseProvider {
       Prefer: "wait=30",
       "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
     };
-  }
-
-  private async pollForCompletion(
-    predictionId: string,
-    headers: Record<string, string>,
-    maxAttempts = 10,
-    delayMs = 20000,
-  ): Promise<any> {
-    let attempts = 0;
-
-    while (attempts < maxAttempts) {
-      const response = await fetch(
-        `https://api.replicate.com/v1/predictions/${predictionId}`,
-        {
-          headers,
-        },
-      );
-
-      const data = (await response.json()) as {
-        status: string;
-        error?: string;
-      };
-
-      if (data.status === "succeeded") {
-        return data;
-      }
-
-      if (data.status === "failed" || data.error) {
-        throw new AssistantError(
-          `Prediction failed: ${data.error || "Unknown error"}`,
-          ErrorType.PROVIDER_ERROR,
-        );
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-      attempts++;
-    }
-
-    throw new AssistantError(
-      "Polling timeout exceeded",
-      ErrorType.PROVIDER_ERROR,
-    );
   }
 
   async mapParameters(
@@ -151,26 +108,12 @@ export class ReplicateProvider extends BaseProvider {
     const endpoint = await this.getEndpoint();
     const headers = await this.getHeaders(params);
 
-    const base_webhook_url = params.app_url || `https://${API_PROD_HOST}`;
-    let webhook_url = `${base_webhook_url}/webhooks/replicate`;
-    if (params.completion_id) {
-      webhook_url += `?completion_id=${params.completion_id}`;
-    }
-    if (params.env.WEBHOOK_SECRET) {
-      webhook_url += `&token=${params.env.WEBHOOK_SECRET}`;
-    }
-
     const lastMessage = params.messages[params.messages.length - 1];
 
     const body: Record<string, any> = {
       version: params.version || params.model,
       input: lastMessage.content,
     };
-
-    if (!params.should_poll) {
-      body.webhook = webhook_url;
-      body.webhook_events_filter = ["output", "completed"];
-    }
 
     return trackProviderMetrics({
       provider: this.name,
@@ -185,11 +128,53 @@ export class ReplicateProvider extends BaseProvider {
           params.env,
         );
 
-        if (params.should_poll && initialResponse.status !== "succeeded") {
-          return await this.pollForCompletion(initialResponse.id, headers);
+        if (initialResponse.status === "succeeded") {
+          return await this.formatResponse(initialResponse, params);
         }
 
-        return await this.formatResponse(initialResponse, params);
+        if (!initialResponse.id) {
+          throw new AssistantError(
+            "Replicate async response did not include an id",
+            ErrorType.PROVIDER_ERROR,
+          );
+        }
+
+        const placeholderContent = [
+          {
+            type: "text" as const,
+            text: "Generation in progress. We'll update this message once the results are ready.",
+          },
+        ];
+
+        const asyncInvocationData = createAsyncInvocationMetadata({
+          provider: this.name,
+          id: initialResponse.id,
+          type: "replicate.prediction",
+          pollIntervalMs: 5000,
+          initialResponse,
+          context: {
+            version: params.version || params.model,
+          },
+          contentHints: {
+            placeholder: placeholderContent,
+            failure: [
+              {
+                type: "text",
+                text: "Generation failed. Please try again.",
+              },
+            ],
+          },
+        });
+
+        return {
+          response: placeholderContent,
+          status: "in_progress",
+          data: {
+            asyncInvocation: asyncInvocationData,
+            id: initialResponse.id,
+            status: initialResponse.status,
+          },
+        };
       },
       analyticsEngine: params.env?.ANALYTICS,
       settings: {
@@ -204,5 +189,66 @@ export class ReplicateProvider extends BaseProvider {
       userId,
       completion_id: params.completion_id,
     });
+  }
+
+  async getAsyncInvocationStatus(
+    metadata: AsyncInvocationMetadata,
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<{
+    status: "in_progress" | "completed" | "failed";
+    result?: any;
+    raw: Record<string, any>;
+  }> {
+    const apiKey = await this.getApiKey(params, userId);
+    const pollHeaders: Record<string, string> = {
+      "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
+      Authorization: `Token ${apiKey}`,
+      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+    };
+
+    const response = await fetch(
+      `https://api.replicate.com/v1/predictions/${metadata.id}`,
+      {
+        headers: pollHeaders,
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new AssistantError(
+        `Failed to poll Replicate prediction: ${response.status} - ${errorText}`,
+        ErrorType.PROVIDER_ERROR,
+        response.status,
+      );
+    }
+
+    const data = (await response.json()) as Record<string, any>;
+    const status = String(data.status || "").toLowerCase();
+
+    if (status === "succeeded") {
+      const formatted = await this.formatResponse(data, params);
+      return {
+        status: "completed",
+        result: formatted,
+        raw: data,
+      };
+    }
+
+    if (
+      status === "failed" ||
+      status === "canceled" ||
+      status === "cancelled"
+    ) {
+      return {
+        status: "failed",
+        raw: data,
+      };
+    }
+
+    return {
+      status: "in_progress",
+      raw: data,
+    };
   }
 }
