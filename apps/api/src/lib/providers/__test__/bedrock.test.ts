@@ -10,7 +10,10 @@ import {
 import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { BedrockProvider } from "../bedrock";
-import { createCommonParameters, getToolsForProvider } from "~/utils/parameters";
+import {
+  createCommonParameters,
+  getToolsForProvider,
+} from "~/utils/parameters";
 
 const signMock = vi.fn();
 const fetchMock = vi.fn();

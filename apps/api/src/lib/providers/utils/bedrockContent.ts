@@ -183,11 +183,7 @@ function resolveMediaSource(
   if (url.startsWith("data:")) {
     const parsed = parseDataUrl(url, mediaKind);
     return {
-      format: mapMediaTypeToFormat(
-        parsed.mediaType,
-        defaultFormat,
-        mediaKind,
-      ),
+      format: mapMediaTypeToFormat(parsed.mediaType, defaultFormat, mediaKind),
       source: { bytes: parsed.data },
     };
   }
