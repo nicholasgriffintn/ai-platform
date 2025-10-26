@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { BedrockProvider } from "../bedrock";
 
@@ -23,6 +23,10 @@ vi.mock("~/utils/parameters", () => ({
 }));
 
 describe("BedrockProvider", () => {
+  beforeEach(() => {
+    vi.mocked(getModelConfigByMatchingModel).mockReset();
+  });
+
   describe("mapParameters", () => {
     it("should handle video generation in mapParameters", async () => {
       // @ts-ignore - getModelConfigByMatchingModel is not typed
@@ -95,6 +99,54 @@ describe("BedrockProvider", () => {
         // @ts-ignore - accessing private method for testing
         provider.parseAwsCredentials(invalidCredentials);
       }).toThrow("Invalid AWS credentials format");
+    });
+  });
+
+  describe("getEndpoint", () => {
+    it("should use invoke endpoint for nova-canvas", async () => {
+      const actualModels = await vi.importActual<
+        typeof import("~/lib/models")
+      >("~/lib/models");
+
+      // @ts-ignore - getModelConfigByMatchingModel is not typed
+      vi.mocked(getModelConfigByMatchingModel).mockImplementation((model) =>
+        actualModels.getModelConfigByMatchingModel(model),
+      );
+
+      const provider = new BedrockProvider();
+
+      const endpoint = await (provider as any).getEndpoint({
+        model: "amazon.nova-canvas-v1:0",
+        stream: false,
+        env: { AI_GATEWAY_TOKEN: "test-token" },
+      });
+
+      expect(endpoint).toBe(
+        "https://bedrock-runtime.us-east-1.amazonaws.com/model/amazon.nova-canvas-v1:0/invoke",
+      );
+    });
+
+    it("should use invoke endpoint for nova-reel", async () => {
+      const actualModels = await vi.importActual<
+        typeof import("~/lib/models")
+      >("~/lib/models");
+
+      // @ts-ignore - getModelConfigByMatchingModel is not typed
+      vi.mocked(getModelConfigByMatchingModel).mockImplementation((model) =>
+        actualModels.getModelConfigByMatchingModel(model),
+      );
+
+      const provider = new BedrockProvider();
+
+      const endpoint = await (provider as any).getEndpoint({
+        model: "amazon.nova-reel-v1:0",
+        stream: false,
+        env: { AI_GATEWAY_TOKEN: "test-token" },
+      });
+
+      expect(endpoint).toBe(
+        "https://bedrock-runtime.us-east-1.amazonaws.com/model/amazon.nova-reel-v1:0/invoke",
+      );
     });
   });
 });
