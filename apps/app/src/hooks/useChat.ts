@@ -72,7 +72,9 @@ export function useChat(completion_id: string | undefined) {
       }
 
       try {
-        const remoteChat = await apiService.getChat(completion_id);
+        const remoteChat = await apiService.getChat(completion_id, {
+          refreshPending: true,
+        });
         return remoteChat || localChat;
       } catch (error) {
         console.error(
@@ -83,6 +85,43 @@ export function useChat(completion_id: string | undefined) {
       }
     },
     enabled: !!completion_id,
+    refetchInterval: (query) => {
+      const data = query.state.data as Conversation | null | undefined;
+
+      if (!data?.messages) {
+        return false;
+      }
+
+      const pendingMessages = data.messages.filter((message) => {
+        if (message.status !== "in_progress") {
+          return false;
+        }
+
+        const asyncInvocation = message.data?.asyncInvocation;
+        return Boolean(asyncInvocation?.provider);
+      });
+
+      if (!pendingMessages.length) {
+        return false;
+      }
+
+      const pollIntervals = pendingMessages
+        .map((message) => {
+          const asyncInvocation = message.data?.asyncInvocation;
+          return asyncInvocation?.pollIntervalMs;
+        })
+        .filter(
+          (value): value is number =>
+            typeof value === "number" && Number.isFinite(value),
+        );
+
+      if (!pollIntervals.length) {
+        return 6000;
+      }
+
+      return Math.max(6000, Math.min(...pollIntervals));
+    },
+    refetchIntervalInBackground: true,
   });
 }
 

@@ -62,7 +62,10 @@ class AuthService {
         return false;
       }
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as {
+        user: User;
+        userSettings: UserSettings;
+      };
       if (data?.user) {
         this.user = data.user;
         this.userSettings = data.userSettings;
@@ -100,7 +103,10 @@ class AuthService {
         return null;
       }
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as {
+        token: string;
+        expires_in: number;
+      };
       if (data?.token && data?.expires_in) {
         this.tokenExpiry = new Date(Date.now() + data.expires_in * 1000);
         this.scheduleTokenRefresh();

@@ -60,6 +60,23 @@ export type Attachment = {
   markdown?: string;
 };
 
+export interface AsyncInvocationData {
+  provider: string;
+  invocationArn: string;
+  invocationUrl?: string;
+  pollIntervalMs?: number;
+  status?: string;
+  lastCheckedAt?: number;
+  completedAt?: number;
+  initialResponse?: Record<string, any>;
+  [key: string]: any;
+}
+
+export interface MessageDataPayload extends Record<string, any> {
+  asyncInvocation?: AsyncInvocationData;
+  error?: string;
+}
+
 export interface Message {
   role: ChatRole;
   name?: string;
@@ -69,7 +86,7 @@ export interface Message {
   }[];
   content: string | MessageContent[];
   status?: string;
-  data?: Record<string, any>;
+  data?: MessageDataPayload | null;
   model?: string;
   log_id?: string;
   citations?: string[];
@@ -276,6 +293,7 @@ export interface CreateChatCompletionsResponse {
       data?: Record<string, any>;
       tool_calls?: Record<string, any>[];
       citations?: string[] | null;
+      status?: string;
     };
     finish_reason: string;
   }>;

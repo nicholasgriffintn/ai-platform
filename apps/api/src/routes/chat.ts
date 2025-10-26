@@ -254,12 +254,15 @@ app.get(
     };
     const userContext = context.get("user");
 
+    const refreshPending = context.req.query("refresh_pending") === "true";
+
     const data = await handleGetChatCompletion(
       {
         env: context.env as IEnv,
         user: userContext,
       },
       completion_id,
+      { refreshPending },
     );
 
     return context.json(data);

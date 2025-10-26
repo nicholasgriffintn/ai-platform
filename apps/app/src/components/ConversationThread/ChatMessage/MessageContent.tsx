@@ -1,4 +1,4 @@
-import { File, Volume2 } from "lucide-react";
+import { File, Loader2, Volume2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { memo, useMemo } from "react";
 
@@ -282,7 +282,7 @@ export const MessageContent = memo(
         );
 
         if (thinkingBlock) {
-          thinkingContent = (thinkingBlock as any).thinking || "";
+          thinkingContent = thinkingBlock.thinking || "";
         }
       }
 
@@ -345,13 +345,13 @@ export const MessageContent = memo(
                             contentItem.artifact,
                         )
                         .map((contentItem) => {
-                          const artifact = (contentItem as any).artifact;
+                          const artifact = contentItem.artifact;
                           return {
-                            identifier: artifact.identifier,
-                            type: artifact.type,
-                            language: artifact.language,
-                            title: artifact.title,
-                            content: artifact.content,
+                            identifier: artifact?.identifier || "",
+                            type: artifact?.type || "",
+                            language: artifact?.language || "",
+                            title: artifact?.title || "",
+                            content: artifact?.content || "",
                           };
                         })
                     : [];
@@ -410,6 +410,26 @@ export const MessageContent = memo(
       onArtifactOpen,
     ]);
 
-    return content;
+    const asyncInvocation = (message.data as any)?.asyncInvocation;
+    const isPending = message.status === "in_progress" && asyncInvocation;
+    const isFailed = message.status === "failed";
+    const errorMessage = message.data?.error;
+
+    return (
+      <div className="space-y-3">
+        {isPending && (
+          <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Video generation in progress...</span>
+          </div>
+        )}
+        {isFailed && (
+          <div className="text-sm text-red-500 dark:text-red-400">
+            {errorMessage || "Video generation failed. Please try again."}
+          </div>
+        )}
+        {content}
+      </div>
+    );
   },
 );

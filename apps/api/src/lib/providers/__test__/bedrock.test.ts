@@ -10,6 +10,7 @@ import {
 import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { BedrockProvider } from "../bedrock";
+import type { ChatCompletionParameters } from "~/types";
 import {
   createCommonParameters,
   getToolsForProvider,
@@ -17,6 +18,13 @@ import {
 
 const signMock = vi.fn();
 const fetchMock = vi.fn();
+
+const createSignedRequest = (url: string, init: RequestInit = {}) =>
+  new Request(url, {
+    method: init.method || "GET",
+    headers: init.headers,
+    body: init.body as BodyInit | null | undefined,
+  });
 
 vi.mock("aws4fetch", () => ({
   AwsClient: vi.fn().mockImplementation(() => ({
@@ -31,6 +39,9 @@ vi.mock("~/lib/providers/base", () => ({
     validateParams() {}
     async getApiKey() {
       return "test-key";
+    }
+    async formatResponse(data: any) {
+      return data;
     }
   },
 }));
@@ -347,14 +358,10 @@ describe("BedrockProvider", () => {
       );
     });
 
-    it("should poll async invoke operations", async () => {
-      vi.useFakeTimers();
+    it("should return async invocation metadata for async invoke operations", async () => {
       const provider = new BedrockProvider();
       // @ts-ignore - overriding protected method for testing
       provider.mapParameters = vi.fn().mockResolvedValue({ body: true });
-      const formatResponseMock = vi.fn().mockResolvedValue({ formatted: true });
-      // @ts-ignore - overriding protected method for testing
-      provider.formatResponse = formatResponseMock;
 
       const params = {
         model: "amazon.nova-reel-v1:1",
@@ -372,80 +379,187 @@ describe("BedrockProvider", () => {
         bedrockApiOperation: "async-invoke",
       });
 
-      const encodedArn =
-        "arn%3Aaws%3Abedrock%3Aus-east-1%3A123456789012%3Aasync-invoke%2Fabc";
+      signMock.mockResolvedValueOnce(
+        createSignedRequest(
+          "https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke",
+          {
+            method: "POST",
+            headers: new Headers(),
+            body: JSON.stringify({ body: true }),
+          },
+        ),
+      );
 
-      signMock
-        .mockResolvedValueOnce({
-          url: "https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke",
-          headers: new Headers(),
-        })
-        .mockResolvedValueOnce({
-          url: `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodedArn}`,
-          headers: new Headers(),
-        })
-        .mockResolvedValueOnce({
-          url: `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodedArn}`,
-          headers: new Headers(),
-        });
+      const invocationArn =
+        "arn:aws:bedrock:us-east-1:123456789012:async-invoke/abc";
 
-      fetchMock
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            invocationArn:
-              "arn:aws:bedrock:us-east-1:123456789012:async-invoke/abc",
-          }),
-          text: async () => "",
-          headers: new Headers(),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            status: "IN_PROGRESS",
-          }),
-          text: async () => "",
-          headers: new Headers(),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            status: "SUCCEEDED",
-            outputDataConfig: {
-              s3OutputDataConfig: {
-                s3Uri: "s3://bucket/path/",
-              },
-            },
-          }),
-          text: async () => "",
-          headers: new Headers({
-            "cf-aig-event-id": "event-123",
-            "cf-aig-log-id": "log-123",
-            "cf-aig-cache-status": "MISS",
-          }),
-        });
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          invocationArn,
+        }),
+        text: async () => "",
+        headers: new Headers(),
+      });
 
-      try {
-        const responsePromise = provider.getResponse(params as any);
-        await Promise.resolve();
-        await vi.advanceTimersByTimeAsync(2000);
-        const result = await responsePromise;
+      const result = await provider.getResponse(params as any);
 
-        expect(result).toEqual({ formatted: true });
-        expect(formatResponseMock).toHaveBeenCalledWith(
-          expect.objectContaining({
-            status: "SUCCEEDED",
-            invocationArn:
-              "arn:aws:bedrock:us-east-1:123456789012:async-invoke/abc",
-            eventId: "event-123",
-            log_id: "log-123",
-            cacheStatus: "MISS",
-          }),
-          expect.anything(),
-        );
-      } finally {
-        vi.useRealTimers();
-      }
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(result.status).toBe("in_progress");
+      expect(Array.isArray(result.response)).toBe(true);
+      expect(result.data?.asyncInvocation).toEqual(
+        expect.objectContaining({
+          provider: "bedrock",
+          invocationArn,
+          type: "async_invoke",
+          pollIntervalMs: 6000,
+        }),
+      );
+    });
+
+    it("should return completed status when async invocation succeeds", async () => {
+      const provider = new BedrockProvider();
+      // @ts-ignore - getModelConfigByMatchingModel is not typed
+      vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+        type: ["text-to-video"],
+      });
+      const params = {
+        model: "amazon.nova-reel-v1:1",
+        env: {
+          AI_GATEWAY_TOKEN: "token",
+          ACCOUNT_ID: "test-account",
+          BEDROCK_AWS_ACCESS_KEY: "access",
+          BEDROCK_AWS_SECRET_KEY: "secret",
+        },
+      } as unknown as ChatCompletionParameters;
+
+      const invocationArn =
+        "arn:aws:bedrock:us-east-1:123456789012:async-invoke/def";
+
+      signMock.mockResolvedValueOnce(
+        createSignedRequest(
+          `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(invocationArn)}`,
+          {
+            method: "GET",
+            headers: new Headers(),
+          },
+        ),
+      );
+
+      const pollData = {
+        status: "SUCCEEDED",
+        outputDataConfig: {
+          s3OutputDataConfig: {
+            s3Uri: "s3://bucket/result/",
+          },
+        },
+      };
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => pollData,
+        text: async () => "",
+        headers: new Headers(),
+      });
+
+      const result = await provider.getAsyncInvocationStatus(
+        invocationArn,
+        params,
+      );
+
+      expect(result.status).toBe("completed");
+      expect(result.result?.response).toContain("s3://bucket/result/");
+      expect(signMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("should return in_progress when async invocation is still running", async () => {
+      const provider = new BedrockProvider();
+      // @ts-ignore - getModelConfigByMatchingModel is not typed
+      vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+        type: ["text-to-video"],
+      });
+      const params = {
+        model: "amazon.nova-reel-v1:1",
+        env: {
+          AI_GATEWAY_TOKEN: "token",
+          ACCOUNT_ID: "test-account",
+          BEDROCK_AWS_ACCESS_KEY: "access",
+          BEDROCK_AWS_SECRET_KEY: "secret",
+        },
+      } as unknown as ChatCompletionParameters;
+
+      const invocationArn =
+        "arn:aws:bedrock:us-east-1:123456789012:async-invoke/ghi";
+
+      signMock.mockResolvedValueOnce(
+        createSignedRequest(
+          `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(invocationArn)}`,
+          {
+            method: "GET",
+            headers: new Headers(),
+          },
+        ),
+      );
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: "IN_PROGRESS" }),
+        text: async () => "",
+        headers: new Headers(),
+      });
+
+      const result = await provider.getAsyncInvocationStatus(
+        invocationArn,
+        params,
+      );
+
+      expect(result.status).toBe("in_progress");
+      expect(result.result).toBeUndefined();
+    });
+
+    it("should return failed when async invocation fails", async () => {
+      const provider = new BedrockProvider();
+      // @ts-ignore - getModelConfigByMatchingModel is not typed
+      vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+        type: ["text-to-video"],
+      });
+      const params = {
+        model: "amazon.nova-reel-v1:1",
+        env: {
+          AI_GATEWAY_TOKEN: "token",
+          ACCOUNT_ID: "test-account",
+          BEDROCK_AWS_ACCESS_KEY: "access",
+          BEDROCK_AWS_SECRET_KEY: "secret",
+        },
+      } as unknown as ChatCompletionParameters;
+
+      const invocationArn =
+        "arn:aws:bedrock:us-east-1:123456789012:async-invoke/jkl";
+
+      signMock.mockResolvedValueOnce(
+        createSignedRequest(
+          `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(invocationArn)}`,
+          {
+            method: "GET",
+            headers: new Headers(),
+          },
+        ),
+      );
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: "FAILED" }),
+        text: async () => "",
+        headers: new Headers(),
+      });
+
+      const result = await provider.getAsyncInvocationStatus(
+        invocationArn,
+        params,
+      );
+
+      expect(result.status).toBe("failed");
+      expect(result.result).toBeUndefined();
     });
   });
 });

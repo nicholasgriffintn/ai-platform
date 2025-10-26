@@ -30,6 +30,16 @@ export interface AIProvider {
     params: ChatCompletionParameters,
     userId?: number,
   ): Promise<{ inputTokens: number }>;
+  getAsyncInvocationStatus?(
+    invocationArn: string,
+    params: ChatCompletionParameters,
+    userId?: number,
+    initialResponse?: any,
+  ): Promise<{
+    status: "in_progress" | "completed" | "failed";
+    result?: any;
+    raw: Record<string, any>;
+  }>;
 }
 
 export abstract class BaseProvider implements AIProvider {

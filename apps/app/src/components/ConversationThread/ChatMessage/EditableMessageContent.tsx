@@ -25,7 +25,7 @@ export const EditableMessageContent = ({
     }
     return message.content
       .filter((item) => item.type === "text")
-      .map((item) => (item as any).text)
+      .map((item) => item.text)
       .join("\n");
   });
 
@@ -45,7 +45,7 @@ export const EditableMessageContent = ({
       content.trim() !==
         (typeof message.content === "string"
           ? message.content
-          : message.content.map((item) => (item as any).text).join("\n"))
+          : message.content.map((item) => item.text).join("\n"))
     ) {
       onSave(content.trim());
     } else {
