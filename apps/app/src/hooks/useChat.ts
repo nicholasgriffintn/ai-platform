@@ -85,7 +85,9 @@ export function useChat(completion_id: string | undefined) {
       }
     },
     enabled: !!completion_id,
-    refetchInterval: (data) => {
+    refetchInterval: (query) => {
+      const data = query.state.data as Conversation | null | undefined;
+
       if (!data?.messages) {
         return false;
       }

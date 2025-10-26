@@ -1,9 +1,14 @@
 import { AwsClient } from "aws4fetch";
 
 import { gatewayId } from "~/constants/app";
+import {
+  createAsyncInvocationMetadata,
+  type AsyncInvocationMetadata,
+} from "~/lib/async/asyncInvocation";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { StorageService } from "~/lib/storage";
+import { parseS3Uri, resolveS3Artifact } from "~/lib/storage/s3Artifacts";
 import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { createEventStreamParser } from "~/utils/awsEventStream";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -36,6 +41,10 @@ export class BedrockProvider extends BaseProvider {
     return "bedrock";
   }
 
+  private getRegion(params: ChatCompletionParameters): string {
+    return params.env.BEDROCK_AWS_REGION || "us-east-1";
+  }
+
   private parseAwsCredentials(apiKey: string): {
     accessKey: string;
     secretKey: string;
@@ -51,25 +60,6 @@ export class BedrockProvider extends BaseProvider {
     }
 
     return { accessKey: parts[0], secretKey: parts[1] };
-  }
-
-  private parseS3Uri(uri?: string): { bucket: string; prefix: string } | null {
-    if (!uri || !uri.startsWith("s3://")) {
-      return null;
-    }
-
-    const remainder = uri.slice("s3://".length);
-    if (!remainder) {
-      return null;
-    }
-
-    const [bucket, ...keyParts] = remainder.split("/");
-    if (!bucket) {
-      return null;
-    }
-
-    const prefix = keyParts.join("/");
-    return { bucket, prefix };
   }
 
   private isLikelyVideoUrl(url: string): boolean {
@@ -127,7 +117,7 @@ export class BedrockProvider extends BaseProvider {
   protected async getEndpoint(
     params: ChatCompletionParameters,
   ): Promise<string> {
-    const region = "us-east-1";
+    const region = this.getRegion(params);
     const modelConfig = await getModelConfigByMatchingModel(params.model || "");
     const operationPath = this.resolveOperationPath(params, modelConfig);
 
@@ -544,82 +534,9 @@ export class BedrockProvider extends BaseProvider {
     return new AwsClient({
       accessKeyId: accessKey,
       secretAccessKey: secretKey,
-      region: "us-east-1",
+      region: this.getRegion(params),
       service: "s3",
     });
-  }
-
-  private async findVideoKeyInS3WithClient(
-    client: AwsClient,
-    bucket: string,
-    prefix: string,
-  ): Promise<string | undefined> {
-    try {
-      const normalizedPrefix = prefix.replace(/^\/+/, "");
-      const searchParams = new URLSearchParams({ "list-type": "2" });
-
-      if (normalizedPrefix) {
-        searchParams.set("prefix", normalizedPrefix);
-      }
-
-      const listUrl = `https://${bucket}.s3.us-east-1.amazonaws.com/?${searchParams.toString()}`;
-      const signedRequest = await client.sign(listUrl, { method: "GET" });
-      const response = await fetch(signedRequest.url, {
-        method: "GET",
-        headers: signedRequest.headers,
-      });
-
-      if (!response.ok) {
-        logger.error("Failed to list video artifacts from S3", {
-          bucket,
-          prefix,
-          status: response.status,
-        });
-        return undefined;
-      }
-
-      const xml = await response.text();
-      const matches = [...xml.matchAll(/<Key>([^<]+)<\/Key>/g)].map((match) => match[1]);
-
-      if (!matches.length) {
-        return undefined;
-      }
-
-      return matches.find((key) =>
-        VIDEO_FILE_EXTENSIONS.some((ext) => key.toLowerCase().endsWith(ext)),
-      );
-    } catch (error) {
-      logger.error("Failed to locate video artifact in S3", {
-        error,
-        bucket,
-        prefix,
-      });
-      return undefined;
-    }
-  }
-
-  private async createPresignedS3UrlWithClient(
-    client: AwsClient,
-    bucket: string,
-    key: string,
-  ): Promise<string | undefined> {
-    try {
-      const encodedKey = encodeURIComponent(key).replace(/%2F/g, "/");
-      const objectUrl = `https://${bucket}.s3.us-east-1.amazonaws.com/${encodedKey}`;
-      const presignedRequest = await client.sign(objectUrl, {
-        method: "GET",
-        aws: { signQuery: true },
-      });
-
-      return presignedRequest.url;
-    } catch (error) {
-      logger.error("Failed to create presigned video URL", {
-        error,
-        bucket,
-        key,
-      });
-      return undefined;
-    }
   }
 
   private async extractVideoMetadata(
@@ -641,40 +558,32 @@ export class BedrockProvider extends BaseProvider {
       return undefined;
     }
 
-    const parsed = this.parseS3Uri(s3Config.s3Uri);
+    const parsed = parseS3Uri(s3Config.s3Uri);
     if (!parsed) {
       return undefined;
     }
 
+    const bucketOwner =
+      s3Config.bucketOwner || s3Config.bucket_owner || params.env.EMBEDDINGS_OUTPUT_BUCKET_OWNER;
+
     try {
       const client = await this.createS3Client(params, userId);
-      const videoKey = await this.findVideoKeyInS3WithClient(
+      const artifact = await resolveS3Artifact({
         client,
-        parsed.bucket,
-        parsed.prefix,
-      );
+        bucket: parsed.bucket,
+        prefix: parsed.prefix,
+        bucketOwner,
+        region: this.getRegion(params),
+        extensions: VIDEO_FILE_EXTENSIONS,
+      });
 
-      if (!videoKey) {
-        return {
-          bucket: parsed.bucket,
-          prefix: parsed.prefix,
-          source: "s3",
-        };
+      if (!artifact) {
+        return undefined;
       }
 
-      const presignedUrl = await this.createPresignedS3UrlWithClient(
-        client,
-        parsed.bucket,
-        videoKey,
-      );
-
-      return {
-        url: presignedUrl,
-        bucket: parsed.bucket,
-        key: videoKey,
-        prefix: parsed.prefix,
-        source: "s3",
-      };
+      return bucketOwner
+        ? { ...artifact, bucketOwner }
+        : artifact;
     } catch (error) {
       logger.error("Failed to resolve S3 video artifact", {
         error,
@@ -684,6 +593,7 @@ export class BedrockProvider extends BaseProvider {
       return {
         bucket: parsed.bucket,
         prefix: parsed.prefix,
+        bucketOwner,
         source: "s3",
       };
     }
@@ -760,7 +670,7 @@ export class BedrockProvider extends BaseProvider {
       params,
       userId,
     );
-    const region = "us-east-1";
+    const region = this.getRegion(params);
 
     const awsClient = new AwsClient({
       accessKeyId: accessKey,
@@ -808,7 +718,7 @@ export class BedrockProvider extends BaseProvider {
   ): Promise<{ inputTokens: number }> {
     this.validateParams(params);
 
-    const region = "us-east-1";
+    const region = this.getRegion(params);
     const endpoint = `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/count-tokens`;
     const body = {
       input: {
@@ -857,7 +767,7 @@ export class BedrockProvider extends BaseProvider {
   ): Promise<any> {
     this.validateParams(params);
 
-    const region = "us-east-1";
+    const region = this.getRegion(params);
     const modelConfig = await getModelConfigByMatchingModel(params.model || "");
     const operationPath = this.resolveOperationPath(params, modelConfig);
     const { awsUrl: bedrockUrl, cloudflarePath } = this.buildOperationPaths(
@@ -960,7 +870,7 @@ export class BedrockProvider extends BaseProvider {
           const encodedArn = encodeURIComponent(invocationArn);
           const invocationUrl = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/async-invoke/${encodedArn}`;
 
-          const asyncInvocationData = {
+          const asyncInvocationData = createAsyncInvocationMetadata({
             provider: this.name,
             type: "async_invoke" as const,
             region,
@@ -969,8 +879,7 @@ export class BedrockProvider extends BaseProvider {
             operation: operationPath,
             pollIntervalMs: 2000,
             initialResponse: initialData,
-            lastCheckedAt: Date.now(),
-          };
+          } as AsyncInvocationMetadata);
 
           const placeholderContent = [
             {
@@ -1038,7 +947,7 @@ export class BedrockProvider extends BaseProvider {
     result?: any;
     raw: Record<string, any>;
   }> {
-    const region = "us-east-1";
+    const region = this.getRegion(params);
     const { accessKey, secretKey } = await this.getAwsCredentials(
       params,
       userId,

@@ -172,6 +172,7 @@ export const handleCreateChatCompletions = async (req: {
           data: assistantMessage.data,
           tool_calls: assistantMessage.tool_calls,
           citations: assistantMessage.citations,
+          status: result.response.status || undefined,
         },
         finish_reason: assistantMessage.finish_reason,
       },

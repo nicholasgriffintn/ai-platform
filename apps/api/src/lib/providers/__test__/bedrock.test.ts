@@ -19,6 +19,13 @@ import {
 const signMock = vi.fn();
 const fetchMock = vi.fn();
 
+const createSignedRequest = (url: string, init: RequestInit = {}) =>
+  new Request(url, {
+    method: init.method || "GET",
+    headers: init.headers,
+    body: init.body as BodyInit | null | undefined,
+  });
+
 vi.mock("aws4fetch", () => ({
   AwsClient: vi.fn().mockImplementation(() => ({
     sign: signMock,
@@ -372,10 +379,16 @@ describe("BedrockProvider", () => {
         bedrockApiOperation: "async-invoke",
       });
 
-      signMock.mockResolvedValueOnce({
-        url: "https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke",
-        headers: new Headers(),
-      });
+      signMock.mockResolvedValueOnce(
+        createSignedRequest(
+          "https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke",
+          {
+            method: "POST",
+            headers: new Headers(),
+            body: JSON.stringify({ body: true }),
+          },
+        ),
+      );
 
       const invocationArn =
         "arn:aws:bedrock:us-east-1:123456789012:async-invoke/abc";
@@ -424,18 +437,33 @@ describe("BedrockProvider", () => {
         "arn:aws:bedrock:us-east-1:123456789012:async-invoke/def";
 
       signMock
-        .mockResolvedValueOnce({
-          url: `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(invocationArn)}`,
-          headers: new Headers(),
-        })
-        .mockResolvedValueOnce({
-          url: "https://bucket.s3.us-east-1.amazonaws.com/?list-type=2&prefix=result%2F",
-          headers: new Headers(),
-        })
-        .mockResolvedValueOnce({
-          url: "https://bucket.s3.us-east-1.amazonaws.com/result/video.mp4?signature=123",
-          headers: new Headers(),
-        });
+        .mockResolvedValueOnce(
+          createSignedRequest(
+            `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(invocationArn)}`,
+            {
+              method: "GET",
+              headers: new Headers(),
+            },
+          ),
+        )
+        .mockResolvedValueOnce(
+          createSignedRequest(
+            "https://bucket.s3.us-east-1.amazonaws.com/?list-type=2&prefix=result%2F",
+            {
+              method: "GET",
+              headers: new Headers(),
+            },
+          ),
+        )
+        .mockResolvedValueOnce(
+          createSignedRequest(
+            "https://bucket.s3.us-east-1.amazonaws.com/result/video.mp4?signature=123",
+            {
+              method: "GET",
+              headers: new Headers(),
+            },
+          ),
+        );
 
       const pollData = {
         status: "SUCCEEDED",
@@ -498,10 +526,15 @@ describe("BedrockProvider", () => {
       const invocationArn =
         "arn:aws:bedrock:us-east-1:123456789012:async-invoke/ghi";
 
-      signMock.mockResolvedValueOnce({
-        url: `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(invocationArn)}`,
-        headers: new Headers(),
-      });
+      signMock.mockResolvedValueOnce(
+        createSignedRequest(
+          `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(invocationArn)}`,
+          {
+            method: "GET",
+            headers: new Headers(),
+          },
+        ),
+      );
 
       fetchMock.mockResolvedValueOnce({
         ok: true,
@@ -538,10 +571,15 @@ describe("BedrockProvider", () => {
       const invocationArn =
         "arn:aws:bedrock:us-east-1:123456789012:async-invoke/jkl";
 
-      signMock.mockResolvedValueOnce({
-        url: `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(invocationArn)}`,
-        headers: new Headers(),
-      });
+      signMock.mockResolvedValueOnce(
+        createSignedRequest(
+          `https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke/${encodeURIComponent(invocationArn)}`,
+          {
+            method: "GET",
+            headers: new Headers(),
+          },
+        ),
+      );
 
       fetchMock.mockResolvedValueOnce({
         ok: true,

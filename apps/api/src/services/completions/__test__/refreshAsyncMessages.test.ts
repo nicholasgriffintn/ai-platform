@@ -66,6 +66,9 @@ describe("refreshAsyncMessages", () => {
     expect(refreshedMessages[0].data?.attachments).toEqual([
       { type: "text", url: "https://example.com" },
     ]);
+    expect(
+      (refreshedMessages[0].data?.asyncInvocation as any)?.status,
+    ).toBe("completed");
   });
 
   it("should leave messages unchanged when no async invocation metadata is present", async () => {
@@ -84,6 +87,36 @@ describe("refreshAsyncMessages", () => {
     const refreshedMessages = await refreshAsyncMessages({
       conversationManager,
       conversationId: "conversation-1",
+      env: {} as any,
+      user: { id: 1 } as any,
+      messages: [message as any],
+    });
+
+    expect(refreshedMessages[0]).toEqual(message);
+    expect(conversationManager.update).not.toHaveBeenCalled();
+  });
+
+  it("should skip polling for unsupported providers", async () => {
+    const conversationManager = {
+      update: vi.fn(),
+    } as any;
+
+    const message = {
+      id: "message-3",
+      status: "in_progress",
+      model: "model",
+      role: "assistant",
+      data: {
+        asyncInvocation: {
+          provider: "unknown",
+          invocationArn: "arn:aws:bedrock:::async-invoke/abc",
+        },
+      },
+    };
+
+    const refreshedMessages = await refreshAsyncMessages({
+      conversationManager,
+      conversationId: "conversation-2",
       env: {} as any,
       user: { id: 1 } as any,
       messages: [message as any],
