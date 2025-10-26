@@ -1,4 +1,5 @@
 import type { R2Bucket } from "@cloudflare/workers-types";
+
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export class StorageService {

@@ -412,7 +412,7 @@ describe("BedrockProvider", () => {
           provider: "bedrock",
           invocationArn,
           type: "async_invoke",
-          pollIntervalMs: 2000,
+          pollIntervalMs: 6000,
         }),
       );
     });
@@ -496,7 +496,9 @@ describe("BedrockProvider", () => {
       );
 
       expect(result.status).toBe("completed");
-      expect(result.result?.response).toContain("[Download video](https://bucket.s3.us-east-1.amazonaws.com/result/video.mp4?signature=123)");
+      expect(result.result?.response).toContain(
+        "[Download video](https://bucket.s3.us-east-1.amazonaws.com/result/video.mp4?signature=123)",
+      );
       expect(result.result?.data?.video).toEqual(
         expect.objectContaining({
           url: "https://bucket.s3.us-east-1.amazonaws.com/result/video.mp4?signature=123",

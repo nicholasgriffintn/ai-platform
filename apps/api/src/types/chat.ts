@@ -293,6 +293,7 @@ export interface CreateChatCompletionsResponse {
       data?: Record<string, any>;
       tool_calls?: Record<string, any>[];
       citations?: string[] | null;
+      status?: string;
     };
     finish_reason: string;
   }>;

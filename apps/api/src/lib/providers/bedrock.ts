@@ -19,9 +19,10 @@ import {
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
 import { formatBedrockMessages } from "./utils/bedrockContent";
+import { findDirectVideoUrl, VIDEO_FILE_EXTENSIONS } from "~/utils/video";
 
 const logger = getLogger({ prefix: "lib/providers/bedrock" });
-const VIDEO_FILE_EXTENSIONS = [".mp4", ".mov", ".webm", ".mkv", ".avi"];
+
 type AsyncOperationStatus =
   | "IN_PROGRESS"
   | "SUCCESS"
@@ -41,8 +42,8 @@ export class BedrockProvider extends BaseProvider {
     return "bedrock";
   }
 
-  private getRegion(params: ChatCompletionParameters): string {
-    return params.env.BEDROCK_AWS_REGION || "us-east-1";
+  private getRegion(): string {
+    return "us-east-1";
   }
 
   private parseAwsCredentials(apiKey: string): {
@@ -62,47 +63,6 @@ export class BedrockProvider extends BaseProvider {
     return { accessKey: parts[0], secretKey: parts[1] };
   }
 
-  private isLikelyVideoUrl(url: string): boolean {
-    const normalized = url.toLowerCase();
-    return /^https?:\/\//.test(url) &&
-      VIDEO_FILE_EXTENSIONS.some((ext) => normalized.includes(ext));
-  }
-
-  private findDirectVideoUrl(payload: any): string | undefined {
-    if (!payload) {
-      return undefined;
-    }
-
-    if (typeof payload === "string") {
-      const trimmed = payload.trim();
-      if (this.isLikelyVideoUrl(trimmed)) {
-        return trimmed;
-      }
-      return undefined;
-    }
-
-    if (Array.isArray(payload)) {
-      for (const item of payload) {
-        const result = this.findDirectVideoUrl(item);
-        if (result) {
-          return result;
-        }
-      }
-      return undefined;
-    }
-
-    if (typeof payload === "object") {
-      for (const value of Object.values(payload)) {
-        const result = this.findDirectVideoUrl(value);
-        if (result) {
-          return result;
-        }
-      }
-    }
-
-    return undefined;
-  }
-
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
 
@@ -117,7 +77,7 @@ export class BedrockProvider extends BaseProvider {
   protected async getEndpoint(
     params: ChatCompletionParameters,
   ): Promise<string> {
-    const region = this.getRegion(params);
+    const region = this.getRegion();
     const modelConfig = await getModelConfigByMatchingModel(params.model || "");
     const operationPath = this.resolveOperationPath(params, modelConfig);
 
@@ -534,7 +494,7 @@ export class BedrockProvider extends BaseProvider {
     return new AwsClient({
       accessKeyId: accessKey,
       secretAccessKey: secretKey,
-      region: this.getRegion(params),
+      region: this.getRegion(),
       service: "s3",
     });
   }
@@ -544,7 +504,7 @@ export class BedrockProvider extends BaseProvider {
     params: ChatCompletionParameters,
     userId?: number,
   ): Promise<Record<string, any> | undefined> {
-    const directUrl = this.findDirectVideoUrl(raw);
+    const directUrl = findDirectVideoUrl(raw);
     if (directUrl) {
       return { url: directUrl, source: "provider" };
     }
@@ -564,7 +524,9 @@ export class BedrockProvider extends BaseProvider {
     }
 
     const bucketOwner =
-      s3Config.bucketOwner || s3Config.bucket_owner || params.env.EMBEDDINGS_OUTPUT_BUCKET_OWNER;
+      s3Config.bucketOwner ||
+      s3Config.bucket_owner ||
+      params.env.EMBEDDINGS_OUTPUT_BUCKET_OWNER;
 
     try {
       const client = await this.createS3Client(params, userId);
@@ -573,7 +535,7 @@ export class BedrockProvider extends BaseProvider {
         bucket: parsed.bucket,
         prefix: parsed.prefix,
         bucketOwner,
-        region: this.getRegion(params),
+        region: this.getRegion(),
         extensions: VIDEO_FILE_EXTENSIONS,
       });
 
@@ -581,9 +543,7 @@ export class BedrockProvider extends BaseProvider {
         return undefined;
       }
 
-      return bucketOwner
-        ? { ...artifact, bucketOwner }
-        : artifact;
+      return bucketOwner ? { ...artifact, bucketOwner } : artifact;
     } catch (error) {
       logger.error("Failed to resolve S3 video artifact", {
         error,
@@ -630,7 +590,7 @@ export class BedrockProvider extends BaseProvider {
         params,
         userId,
       );
-      const videoUrl = videoMetadata?.url || this.findDirectVideoUrl(formatted);
+      const videoUrl = videoMetadata?.url || findDirectVideoUrl(formatted);
       const responseText = this.buildVideoResponseText(videoUrl);
 
       const mergedData: Record<string, any> = {
@@ -670,7 +630,7 @@ export class BedrockProvider extends BaseProvider {
       params,
       userId,
     );
-    const region = this.getRegion(params);
+    const region = this.getRegion();
 
     const awsClient = new AwsClient({
       accessKeyId: accessKey,
@@ -718,7 +678,7 @@ export class BedrockProvider extends BaseProvider {
   ): Promise<{ inputTokens: number }> {
     this.validateParams(params);
 
-    const region = this.getRegion(params);
+    const region = this.getRegion();
     const endpoint = `https://bedrock-runtime.${region}.amazonaws.com/model/${params.model}/count-tokens`;
     const body = {
       input: {
@@ -767,7 +727,7 @@ export class BedrockProvider extends BaseProvider {
   ): Promise<any> {
     this.validateParams(params);
 
-    const region = this.getRegion(params);
+    const region = this.getRegion();
     const modelConfig = await getModelConfigByMatchingModel(params.model || "");
     const operationPath = this.resolveOperationPath(params, modelConfig);
     const { awsUrl: bedrockUrl, cloudflarePath } = this.buildOperationPaths(
@@ -877,7 +837,7 @@ export class BedrockProvider extends BaseProvider {
             invocationArn,
             invocationUrl,
             operation: operationPath,
-            pollIntervalMs: 2000,
+            pollIntervalMs: 6000,
             initialResponse: initialData,
           } as AsyncInvocationMetadata);
 
@@ -947,7 +907,7 @@ export class BedrockProvider extends BaseProvider {
     result?: any;
     raw: Record<string, any>;
   }> {
-    const region = this.getRegion(params);
+    const region = this.getRegion();
     const { accessKey, secretKey } = await this.getAwsCredentials(
       params,
       userId,
