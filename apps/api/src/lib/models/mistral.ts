@@ -512,11 +512,11 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     requiresThinkingPrompt: true,
   }),
 
-  createModelConfig("mistral-nemo", PROVIDER, {
-    name: "Mistral Nemo",
-    matchingModel: "mistral-nemo",
+  createModelConfig("mistral-tiny", PROVIDER, {
+    name: "Mistral Tiny",
+    matchingModel: "mistral-tiny-latest",
     description:
-      "Trained jointly by Mistral AI and NVIDIA, it significantly outperforms existing models smaller or similar in size.",
+      "A projected ultra-lightweight open-weight model in the Mistral AI family, targeting the lower bound of LLM size/performance tradeoffs.",
     type: ["text"],
     knowledgeCutoffDate: "July 2024",
     releaseDate: "July 1, 2024",
