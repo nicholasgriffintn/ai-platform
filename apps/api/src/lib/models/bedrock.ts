@@ -101,6 +101,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     contextWindow: 1024,
     maxTokens: 1024,
     multimodal: true,
+    bedrockApiOperation: "invoke",
   }),
 
   createModelConfig("nova-reel", PROVIDER, {
@@ -113,6 +114,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     contextWindow: 512,
     maxTokens: 512,
     multimodal: true,
+    bedrockApiOperation: "invoke",
   }),
 
   createModelConfig("anthropic.claude-sonnet-4.5", PROVIDER, {
