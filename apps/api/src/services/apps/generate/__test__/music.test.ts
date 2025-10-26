@@ -56,7 +56,6 @@ describe("generateMusic", () => {
       ],
       env: mockEnv,
       user: mockUser,
-      should_poll: true,
     });
   });
 

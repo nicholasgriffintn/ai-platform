@@ -1,4 +1,4 @@
-import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
+import type { UnifiedAsyncInvocation } from "~/types";
 import type { ConversationManager } from "~/lib/conversationManager";
 import type { Message, IEnv, IUser } from "~/types";
 
@@ -14,10 +14,13 @@ export type AsyncRefreshResult = {
   message: Message;
 };
 
-export type AsyncInvocationHandler = (
-  metadata: AsyncInvocationMetadata,
+export type UnifiedAsyncInvocationHandler = (
+  metadata: UnifiedAsyncInvocation,
   message: Message,
   context: AsyncRefreshContext,
 ) => Promise<AsyncRefreshResult>;
 
-export type AsyncInvocationHandlerMap = Record<string, AsyncInvocationHandler>;
+export type UnifiedAsyncInvocationHandlerMap = Record<
+  string,
+  UnifiedAsyncInvocationHandler
+>;

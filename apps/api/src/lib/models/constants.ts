@@ -28,6 +28,7 @@ export const availableModelTypes = [
   "image-to-text",
   "image-to-image",
   "text-to-image",
+  "text-to-audio",
   "embedding",
   "reranking",
   "instruct",

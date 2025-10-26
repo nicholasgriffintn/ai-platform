@@ -104,9 +104,6 @@ export const handlePodcastTranscribe = async (
       modelConfig?.provider || "replicate",
     );
 
-    const basewebhook_url = app_url || `https://${API_PROD_HOST}`;
-    const webhook_url = `${basewebhook_url}/webhooks/replicate?completion_id=${request.podcastId}&token=${env.WEBHOOK_SECRET}`;
-
     const prompt = `${request.prompt} <title>${title}</title> <description>${description}</description>`;
 
     const transcriptionData = await provider.getResponse({
@@ -131,9 +128,6 @@ export const handlePodcastTranscribe = async (
       ],
       env,
       user,
-      webhook_url,
-      webhook_events: ["output", "completed"],
-      should_poll: true,
     });
 
     const appData = {

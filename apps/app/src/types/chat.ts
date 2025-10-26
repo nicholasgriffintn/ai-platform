@@ -106,13 +106,16 @@ export interface MessageData {
   };
   asyncInvocation?: {
     provider: string;
-    invocationArn: string;
-    invocationUrl?: string;
-    pollIntervalMs?: number;
-    status?: string;
-    lastCheckedAt?: number;
+    predictionId: string;
+    providerUrl?: string;
+    pollIntervalMs: number;
+    status: string;
+    createdAt: number;
     completedAt?: number;
-    [key: string]: any;
+    lastCheckedAt?: number;
+    initialResponse?: Record<string, any>;
+    error?: string;
+    result?: any;
   };
   error?: string;
 }

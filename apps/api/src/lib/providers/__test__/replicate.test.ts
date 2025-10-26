@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import {
   createCommonParameters,
@@ -6,6 +6,7 @@ import {
   shouldEnableStreaming,
 } from "~/utils/parameters";
 import { ReplicateProvider } from "../replicate";
+import { ChatCompletionParameters } from "../../../types";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {
@@ -55,7 +56,7 @@ describe("ReplicateProvider", () => {
       const params = {
         model: "replicate-model",
         messages: [{ role: "user", content: "Hello" }],
-        env: { AI_GATEWAY_TOKEN: "test-token", WEBHOOK_SECRET: "secret" },
+        env: { AI_GATEWAY_TOKEN: "test-token" },
         completion_id: "test-completion-id",
       };
 
@@ -75,7 +76,7 @@ describe("ReplicateProvider", () => {
       const paramsWithoutCompletionId = {
         model: "replicate-model",
         messages: [{ role: "user", content: "Hello" }],
-        env: { AI_GATEWAY_TOKEN: "test-token", WEBHOOK_SECRET: "secret" },
+        env: { AI_GATEWAY_TOKEN: "test-token" },
       };
 
       expect(() => {
@@ -87,7 +88,7 @@ describe("ReplicateProvider", () => {
       const paramsWithoutContent = {
         model: "replicate-model",
         messages: [{ role: "user", content: "" }],
-        env: { AI_GATEWAY_TOKEN: "test-token", WEBHOOK_SECRET: "secret" },
+        env: { AI_GATEWAY_TOKEN: "test-token" },
         completion_id: "test-id",
       };
 
@@ -96,37 +97,123 @@ describe("ReplicateProvider", () => {
         provider.validateParams(paramsWithoutContent as any);
       }).toThrow("Missing last message content");
     });
+  });
 
-    it("should not require completion_id if should_poll is true", async () => {
-      const provider = new ReplicateProvider();
-
-      const params = {
-        model: "replicate-model",
-        messages: [{ role: "user", content: "Hello" }],
-        env: { AI_GATEWAY_TOKEN: "test-token", WEBHOOK_SECRET: "secret" },
-        should_poll: true,
-      };
-
-      expect(() => {
-        // @ts-ignore - validateParams is protected
-        provider.validateParams(params as any);
-      }).not.toThrow();
+  describe("pollAsyncStatus", () => {
+    beforeEach(() => {
+      vi.mocked(fetch).mockClear();
     });
 
-    it("should require completion_id if should_poll is false", async () => {
+    it("should return completed status when prediction succeeds", async () => {
       const provider = new ReplicateProvider();
-
       const params = {
         model: "replicate-model",
-        messages: [{ role: "user", content: "Hello" }],
-        env: { AI_GATEWAY_TOKEN: "test-token", WEBHOOK_SECRET: "secret" },
-        should_poll: false,
-      };
+        env: {
+          AI_GATEWAY_TOKEN: "test-token",
+          REPLICATE_API_TOKEN: "test-replicate-key",
+        },
+      } as unknown as ChatCompletionParameters;
 
-      expect(() => {
-        // @ts-ignore - validateParams is protected
-        provider.validateParams(params as any);
-      }).toThrow("Missing completion_id");
+      const predictionId = "test-prediction-id";
+
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status: "succeeded",
+          output: "Generated image URL",
+        }),
+      } as Response);
+
+      const result = await provider.pollAsyncStatus(predictionId, params);
+
+      expect(result.status).toBe("completed");
+      expect(result.result).toBe("Generated image URL");
+      expect(result.metadata.status).toBe("completed");
+      expect(fetch).toHaveBeenCalledWith(
+        `https://api.replicate.com/v1/predictions/${predictionId}`,
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: "Token test-replicate-key",
+          }),
+        }),
+      );
+    });
+
+    it("should return failed status when prediction fails", async () => {
+      const provider = new ReplicateProvider();
+      const params = {
+        model: "replicate-model",
+        env: {
+          AI_GATEWAY_TOKEN: "test-token",
+          REPLICATE_API_TOKEN: "test-replicate-key",
+        },
+      } as unknown as ChatCompletionParameters;
+
+      const predictionId = "test-prediction-id";
+
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status: "failed",
+          error: "Model execution failed",
+        }),
+      } as Response);
+
+      const result = await provider.pollAsyncStatus(predictionId, params);
+
+      expect(result.status).toBe("failed");
+      expect(result.error).toBe("Model execution failed");
+      expect(result.metadata.status).toBe("failed");
+    });
+
+    it("should return in_progress status when prediction is still running", async () => {
+      const provider = new ReplicateProvider();
+      const params = {
+        model: "replicate-model",
+        env: {
+          AI_GATEWAY_TOKEN: "test-token",
+          REPLICATE_API_TOKEN: "test-replicate-key",
+        },
+      } as unknown as ChatCompletionParameters;
+
+      const predictionId = "test-prediction-id";
+
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status: "processing",
+        }),
+      } as Response);
+
+      const result = await provider.pollAsyncStatus(predictionId, params);
+
+      expect(result.status).toBe("in_progress");
+      expect(result.metadata.status).toBe("in_progress");
+    });
+
+    it("should throw error when API call fails", async () => {
+      const provider = new ReplicateProvider();
+      const params = {
+        model: "replicate-model",
+        env: {
+          AI_GATEWAY_TOKEN: "test-token",
+          REPLICATE_API_TOKEN: "test-replicate-key",
+        },
+      } as unknown as ChatCompletionParameters;
+
+      const predictionId = "test-prediction-id";
+
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        statusText: "Internal Server Error",
+        status: 500,
+      } as Response);
+
+      await expect(
+        provider.pollAsyncStatus(predictionId, params),
+      ).rejects.toThrow(
+        "Failed to poll Replicate prediction: Internal Server Error",
+      );
     });
   });
 });

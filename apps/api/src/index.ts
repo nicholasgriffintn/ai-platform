@@ -34,7 +34,6 @@ import stripe from "./routes/stripe";
 import tools from "./routes/tools";
 import uploads from "./routes/uploads";
 import user from "./routes/user";
-import webhooks from "./routes/webhooks";
 import memories from "./routes/memories";
 import { autoRegisterDynamicApps } from "./services/dynamic-apps/auto-register-apps";
 import { handleGetMetrics } from "./services/metrics/getMetrics";
@@ -289,7 +288,6 @@ app.get(
 
 app.route(ROUTES.AUTH, auth);
 app.route(ROUTES.CHAT, chat);
-app.route(ROUTES.WEBHOOKS, webhooks);
 app.route(ROUTES.APPS, apps);
 app.route(ROUTES.MODELS, models);
 app.route(ROUTES.TOOLS, tools);

@@ -1,11 +1,13 @@
-import { AIProviderFactory } from "~/lib/providers/factory";
-import { mergeAsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
-import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
-import type { ChatCompletionParameters, Message } from "~/types";
+import { UnifiedPollingService } from "~/lib/async/unifiedPollingService";
+import type {
+  ChatCompletionParameters,
+  Message,
+  UnifiedAsyncInvocation,
+} from "~/types";
 import { getLogger } from "~/utils/logger";
 
 import type {
-  AsyncInvocationHandler,
+  UnifiedAsyncInvocationHandler,
   AsyncRefreshContext,
   AsyncRefreshResult,
 } from "./types";
@@ -27,27 +29,25 @@ function buildBaseParams(
 }
 
 async function handleCompletion(
-  metadata: AsyncInvocationMetadata,
+  metadata: UnifiedAsyncInvocation,
   message: Message,
   context: AsyncRefreshContext,
   formattedResult: any,
   raw: Record<string, any>,
 ): Promise<AsyncRefreshResult> {
-  const previous = (message.data as Record<string, any> | undefined)
-    ?.asyncInvocation as AsyncInvocationMetadata | undefined;
   const now = Date.now();
-  const mergedInvocation = mergeAsyncInvocationMetadata(previous, {
+  const updatedMetadata: UnifiedAsyncInvocation = {
     ...metadata,
     status: "completed",
     completedAt: now,
     lastCheckedAt: now,
-    lastResult: raw,
-  });
+    result: formattedResult,
+  };
 
   const mergedData = {
     ...(message.data || {}),
     ...(formattedResult?.data || {}),
-    asyncInvocation: mergedInvocation,
+    asyncInvocation: updatedMetadata,
   };
 
   const updatedMessage: Message = {
@@ -70,20 +70,18 @@ async function handleCompletion(
 }
 
 async function handleFailure(
-  metadata: AsyncInvocationMetadata,
+  metadata: UnifiedAsyncInvocation,
   message: Message,
   context: AsyncRefreshContext,
   raw: Record<string, any>,
 ): Promise<AsyncRefreshResult> {
-  const previous = (message.data as Record<string, any> | undefined)
-    ?.asyncInvocation as AsyncInvocationMetadata | undefined;
   const now = Date.now();
-  const mergedInvocation = mergeAsyncInvocationMetadata(previous, {
+  const updatedMetadata: UnifiedAsyncInvocation = {
     ...metadata,
     status: "failed",
     lastCheckedAt: now,
-    lastResult: raw,
-  });
+    error: raw?.error || raw?.status || "FAILED",
+  };
 
   const updatedMessage: Message = {
     ...message,
@@ -96,7 +94,7 @@ async function handleFailure(
     status: "failed",
     data: {
       ...(message.data || {}),
-      asyncInvocation: mergedInvocation,
+      asyncInvocation: updatedMetadata,
       error: raw?.status || "FAILED",
     },
   } as Message;
@@ -109,25 +107,23 @@ async function handleFailure(
 }
 
 async function handleProgress(
-  metadata: AsyncInvocationMetadata,
+  metadata: UnifiedAsyncInvocation,
   message: Message,
   context: AsyncRefreshContext,
   raw: Record<string, any>,
 ): Promise<AsyncRefreshResult> {
-  const previous = (message.data as Record<string, any> | undefined)
-    ?.asyncInvocation as AsyncInvocationMetadata | undefined;
-  const mergedInvocation = mergeAsyncInvocationMetadata(previous, {
+  const now = Date.now();
+  const updatedMetadata: UnifiedAsyncInvocation = {
     ...metadata,
     status: "in_progress",
-    lastCheckedAt: Date.now(),
-    lastResult: raw,
-  });
+    lastCheckedAt: now,
+  };
 
   const inProgressMessage: Message = {
     ...message,
     data: {
       ...(message.data || {}),
-      asyncInvocation: mergedInvocation,
+      asyncInvocation: updatedMetadata,
     },
     status: "in_progress",
   } as Message;
@@ -139,50 +135,44 @@ async function handleProgress(
   return { status: "in_progress", message: inProgressMessage };
 }
 
-export const bedrockAsyncInvocationHandler: AsyncInvocationHandler = async (
-  metadata,
-  message,
-  context,
-) => {
-  const provider = AIProviderFactory.getProvider("bedrock");
+export const bedrockAsyncInvocationHandler: UnifiedAsyncInvocationHandler =
+  async (metadata, message, context) => {
+    const params = buildBaseParams(message, context);
 
-  const params = buildBaseParams(message, context);
+    try {
+      const result = await UnifiedPollingService.pollStatus(
+        metadata,
+        params,
+        context.user?.id,
+      );
 
-  try {
-    const result = await provider.getAsyncInvocationStatus(
-      metadata.invocationArn,
-      params,
-      context.user?.id,
-      metadata.initialResponse,
-    );
+      if (result.status === "completed" && result.result) {
+        return handleCompletion(
+          metadata,
+          message,
+          context,
+          result.result,
+          result.metadata,
+        );
+      }
 
-    if (result.status === "completed" && result.result) {
-      return handleCompletion(
+      if (result.status === "failed") {
+        return handleFailure(metadata, message, context, result.metadata);
+      }
+
+      return handleProgress(metadata, message, context, result.metadata);
+    } catch (error) {
+      logger.error("Failed to refresh Bedrock async invocation", {
+        error,
+        provider: metadata.provider,
+        predictionId: metadata.predictionId,
+      });
+
+      return handleProgress(
         metadata,
         message,
         context,
-        result.result,
-        result.raw,
+        metadata.initialResponse || {},
       );
     }
-
-    if (result.status === "failed") {
-      return handleFailure(metadata, message, context, result.raw);
-    }
-
-    return handleProgress(metadata, message, context, result.raw);
-  } catch (error) {
-    logger.error("Failed to refresh Bedrock async invocation", {
-      error,
-      provider: metadata.provider,
-      invocationArn: metadata.invocationArn,
-    });
-
-    return handleProgress(
-      metadata,
-      message,
-      context,
-      metadata.initialResponse || {},
-    );
-  }
-};
+  };

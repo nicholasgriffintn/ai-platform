@@ -13,6 +13,7 @@ import {
 } from "~/utils/parameters";
 import { detectStreaming } from "~/utils/streaming";
 import { fetchAIResponse } from "./fetch";
+import { PollingResult } from "../async/unifiedPollingService";
 
 const logger = getLogger({ prefix: "lib/providers/base" });
 
@@ -30,16 +31,11 @@ export interface AIProvider {
     params: ChatCompletionParameters,
     userId?: number,
   ): Promise<{ inputTokens: number }>;
-  getAsyncInvocationStatus?(
-    invocationArn: string,
+  pollAsyncStatus?(
+    predictionId: string,
     params: ChatCompletionParameters,
     userId?: number,
-    initialResponse?: any,
-  ): Promise<{
-    status: "in_progress" | "completed" | "failed";
-    result?: any;
-    raw: Record<string, any>;
-  }>;
+  ): Promise<PollingResult>;
 }
 
 export abstract class BaseProvider implements AIProvider {

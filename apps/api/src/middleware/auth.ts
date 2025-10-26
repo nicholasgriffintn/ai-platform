@@ -297,26 +297,3 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
 
   await next();
 }
-
-/**
- * Webhook authentication middleware
- * @param context - The context of the request
- * @param next - The next middleware function
- * @returns The next middleware function
- */
-export async function webhookAuth(context: Context, next: Next) {
-  if (!context.env.WEBHOOK_SECRET) {
-    throw new AssistantError(
-      "Missing WEBHOOK_SECRET binding",
-      ErrorType.CONFIGURATION_ERROR,
-    );
-  }
-
-  const tokenFromQuery = context.req.query("token");
-
-  if (tokenFromQuery !== context.env.WEBHOOK_SECRET) {
-    throw new AssistantError("Unauthorized", ErrorType.AUTHENTICATION_ERROR);
-  }
-
-  await next();
-}

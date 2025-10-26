@@ -105,9 +105,6 @@ describe("handlePodcastTranscribe", () => {
     expect(mockProvider.getResponse).toHaveBeenCalledWith(
       expect.objectContaining({
         completion_id: "podcast-123",
-        webhook_url:
-          "https://example.com/webhooks/replicate?completion_id=podcast-123&token=secret",
-        should_poll: true,
       }),
     );
   });

@@ -1,12 +1,11 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
-import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
-import type { IEnv, Message, IUser } from "~/types";
+import { UnifiedPollingService } from "~/lib/async/unifiedPollingService";
+import type { IEnv, Message, IUser, UnifiedAsyncInvocation } from "~/types";
 import { getLogger } from "~/utils/logger";
 
 import { bedrockAsyncInvocationHandler } from "./async/bedrock";
 import type {
-  AsyncInvocationHandlerMap,
+  UnifiedAsyncInvocationHandlerMap,
   AsyncRefreshContext,
 } from "./async/types";
 
@@ -16,8 +15,9 @@ const logger = getLogger({
 
 const ASYNC_STATUS_PENDING = "in_progress";
 
-const providerHandlers: AsyncInvocationHandlerMap = {
+const unifiedProviderHandlers: UnifiedAsyncInvocationHandlerMap = {
   bedrock: bedrockAsyncInvocationHandler,
+  replicate: bedrockAsyncInvocationHandler, // TODO: Create dedicated replicate handler
 };
 
 function createContext(
@@ -36,7 +36,7 @@ function createContext(
 
 function shouldPollMessage(
   message: Message,
-  metadata?: AsyncInvocationMetadata,
+  metadata?: UnifiedAsyncInvocation,
 ): boolean {
   if (!metadata?.provider) {
     return false;
@@ -46,7 +46,7 @@ function shouldPollMessage(
     return true;
   }
 
-  return isAsyncInvocationPending(metadata);
+  return metadata.status === "in_progress";
 }
 
 export async function refreshAsyncMessages({
@@ -72,13 +72,14 @@ export async function refreshAsyncMessages({
 
   for (const [index, message] of messages.entries()) {
     const asyncInvocation = (message.data as Record<string, any> | undefined)
-      ?.asyncInvocation as AsyncInvocationMetadata | undefined;
+      ?.asyncInvocation as UnifiedAsyncInvocation | undefined;
 
     if (!asyncInvocation || !shouldPollMessage(message, asyncInvocation)) {
       continue;
     }
 
-    const handler = providerHandlers[asyncInvocation.provider];
+    const handler = unifiedProviderHandlers[asyncInvocation.provider];
+
     if (!handler) {
       continue;
     }
@@ -91,7 +92,7 @@ export async function refreshAsyncMessages({
       logger.error("Failed to refresh async invocation", {
         error,
         provider: asyncInvocation.provider,
-        invocationArn: asyncInvocation.invocationArn,
+        predictionId: asyncInvocation.predictionId,
       });
     }
   }

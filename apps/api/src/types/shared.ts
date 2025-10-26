@@ -28,7 +28,6 @@ export type IEnv = {
   HUGGINGFACE_TOKEN?: string;
   PERPLEXITY_API_KEY?: string;
   REPLICATE_API_TOKEN?: string;
-  WEBHOOK_SECRET?: string;
   ASSETS_BUCKET_ACCESS_KEY_ID: string;
   ASSETS_BUCKET_SECRET_ACCESS_KEY: string;
   MISTRAL_API_KEY?: string;

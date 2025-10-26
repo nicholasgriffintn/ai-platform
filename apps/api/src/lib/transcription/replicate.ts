@@ -47,7 +47,6 @@ export class ReplicateTranscriptionProvider extends BaseTranscriptionProvider {
         ],
         env,
         user,
-        should_poll: true,
       });
 
       let text = "";

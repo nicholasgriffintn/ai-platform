@@ -24,6 +24,7 @@ export type ModelConfigItem = {
   costPer1kOutputTokens?: number;
   costPer1kReasoningTokens?: number;
   costPer1kSearches?: number;
+  costPerRun?: number;
   strengths?: Array<(typeof availableCapabilities)[number]>;
   contextComplexity?: ModelRanking;
   reliability?: ModelRanking;

@@ -2,13 +2,17 @@ import { AwsClient } from "aws4fetch";
 
 import { gatewayId } from "~/constants/app";
 import {
-  createAsyncInvocationMetadata,
-  type AsyncInvocationMetadata,
-} from "~/lib/async/asyncInvocation";
+  UnifiedPollingService,
+  type PollingResult,
+} from "~/lib/async/unifiedPollingService";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { StorageService } from "~/lib/storage";
-import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
+import type {
+  ChatCompletionParameters,
+  ModelConfigItem,
+  UnifiedAsyncInvocation,
+} from "~/types";
 import { createEventStreamParser } from "~/utils/awsEventStream";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -143,7 +147,7 @@ export class BedrockProvider extends BaseProvider {
     };
   }
 
-  private async fetchAsyncInvokeStatus(
+  protected async fetchAsyncInvokeStatus(
     awsClient: AwsClient,
     invocationArn: string,
     params: ChatCompletionParameters,
@@ -446,7 +450,7 @@ export class BedrockProvider extends BaseProvider {
     };
   }
 
-  private async getAwsCredentials(
+  protected async getAwsCredentials(
     params: ChatCompletionParameters,
     userId?: number,
   ): Promise<{ accessKey: string; secretKey: string }> {
@@ -483,7 +487,7 @@ export class BedrockProvider extends BaseProvider {
     return { accessKey, secretKey };
   }
 
-  private async enhanceAsyncResult(
+  protected async enhanceAsyncResult(
     formatted: any,
     raw: Record<string, any>,
     params: ChatCompletionParameters,
@@ -743,16 +747,12 @@ export class BedrockProvider extends BaseProvider {
           const encodedArn = encodeURIComponent(invocationArn);
           const invocationUrl = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/async-invoke/${encodedArn}`;
 
-          const asyncInvocationData = createAsyncInvocationMetadata({
-            provider: this.name,
-            type: "async_invoke" as const,
-            region,
+          const unifiedMetadata = UnifiedPollingService.createUnifiedMetadata(
+            this.name,
             invocationArn,
-            invocationUrl,
-            operation: operationPath,
-            pollIntervalMs: 6000,
-            initialResponse: initialData,
-          } as AsyncInvocationMetadata);
+            initialData,
+            6000,
+          );
 
           const placeholderContent = [
             {
@@ -765,7 +765,7 @@ export class BedrockProvider extends BaseProvider {
             response: placeholderContent,
             status: "in_progress",
             data: {
-              asyncInvocation: asyncInvocationData,
+              asyncInvocation: unifiedMetadata,
             },
           };
         }
@@ -809,23 +809,17 @@ export class BedrockProvider extends BaseProvider {
       completion_id: params.completion_id,
     });
   }
-
-  async getAsyncInvocationStatus(
-    invocationArn: string,
+  async pollAsyncStatus(
+    predictionId: string,
     params: ChatCompletionParameters,
     userId?: number,
-    initialResponse?: Record<string, any>,
-  ): Promise<{
-    status: "in_progress" | "completed" | "failed";
-    result?: any;
-    raw: Record<string, any>;
-  }> {
+  ): Promise<PollingResult> {
     const region = this.getRegion();
+
     const { accessKey, secretKey } = await this.getAwsCredentials(
       params,
       userId,
     );
-
     const awsClient = new AwsClient({
       accessKeyId: accessKey,
       secretAccessKey: secretKey,
@@ -836,17 +830,11 @@ export class BedrockProvider extends BaseProvider {
     const baseHeaders = await this.getHeaders(params);
     const { data, status } = await this.fetchAsyncInvokeStatus(
       awsClient,
-      invocationArn,
+      predictionId,
       params,
       region,
       baseHeaders,
     );
-
-    const mergedData = {
-      ...(initialResponse || {}),
-      ...data,
-      invocationArn,
-    };
 
     const normalizedStatus = (status || "IN_PROGRESS")
       .toString()
@@ -857,17 +845,24 @@ export class BedrockProvider extends BaseProvider {
       normalizedStatus === "SUCCESS" ||
       normalizedStatus === "COMPLETED"
     ) {
-      const formatted = await this.formatResponse(mergedData, params);
+      const formatted = await this.formatResponse(data, params);
       const enhanced = await this.enhanceAsyncResult(
         formatted,
-        mergedData,
+        data,
         params,
         userId,
       );
+
       return {
         status: "completed",
         result: enhanced,
-        raw: mergedData,
+        metadata: {
+          provider: "bedrock",
+          predictionId,
+          status: "completed",
+          pollIntervalMs: 6000,
+          createdAt: Date.now(),
+        },
       };
     }
 
@@ -879,13 +874,26 @@ export class BedrockProvider extends BaseProvider {
     ) {
       return {
         status: "failed",
-        raw: mergedData,
+        error: data.error || normalizedStatus,
+        metadata: {
+          provider: "bedrock",
+          predictionId,
+          status: "failed",
+          pollIntervalMs: 6000,
+          createdAt: Date.now(),
+        },
       };
     }
 
     return {
       status: "in_progress",
-      raw: mergedData,
+      metadata: {
+        provider: "bedrock",
+        predictionId,
+        status: "in_progress",
+        pollIntervalMs: 6000,
+        createdAt: Date.now(),
+      },
     };
   }
 }

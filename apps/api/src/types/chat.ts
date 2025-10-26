@@ -60,20 +60,22 @@ export type Attachment = {
   markdown?: string;
 };
 
-export interface AsyncInvocationData {
-  provider: string;
-  invocationArn: string;
-  invocationUrl?: string;
-  pollIntervalMs?: number;
-  status?: string;
-  lastCheckedAt?: number;
+export interface UnifiedAsyncInvocation {
+  provider: "bedrock" | "replicate" | string;
+  predictionId: string;
+  status: "in_progress" | "completed" | "failed";
+  providerUrl?: string;
+  pollIntervalMs: number;
+  createdAt: number;
   completedAt?: number;
+  lastCheckedAt?: number;
   initialResponse?: Record<string, any>;
-  [key: string]: any;
+  error?: string;
+  result?: any;
 }
 
 export interface MessageDataPayload extends Record<string, any> {
-  asyncInvocation?: AsyncInvocationData;
+  asyncInvocation?: UnifiedAsyncInvocation;
   error?: string;
 }
 
@@ -253,8 +255,6 @@ interface AIResponseParamsBase extends AIControlParams {
   options?: Record<string, any>;
   // The body of the request.
   body?: Record<string, any>;
-  // Whether to poll for the response, this is used with Replicate.
-  should_poll?: boolean;
   // Whether to enable thinking for the response.
   thinking?: {
     type: "enabled" | "disabled";
