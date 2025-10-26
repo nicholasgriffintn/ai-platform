@@ -58,7 +58,6 @@ export const ConversationThread = () => {
 
   const chatInputRef = useRef<ChatInputHandle>(null);
 
-
   const handleArtifactOpen = useCallback(
     (
       artifact: ArtifactProps,
