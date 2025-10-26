@@ -104,6 +104,17 @@ export interface MessageData {
     }>;
     webSearchQueries?: string[];
   };
+  asyncInvocation?: {
+    provider: string;
+    invocationArn: string;
+    invocationUrl?: string;
+    pollIntervalMs?: number;
+    status?: string;
+    lastCheckedAt?: number;
+    completedAt?: number;
+    [key: string]: any;
+  };
+  error?: string;
 }
 
 export interface Message {

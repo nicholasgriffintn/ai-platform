@@ -101,7 +101,10 @@ class ApiService {
     }
   };
 
-  getChat = async (completion_id: string): Promise<Conversation> => {
+  getChat = async (
+    completion_id: string,
+    options?: { refreshPending?: boolean },
+  ): Promise<Conversation> => {
     if (!completion_id) {
       throw new Error("No completion ID provided");
     }
@@ -113,7 +116,12 @@ class ApiService {
       console.error("Error getting chat:", error);
     }
 
-    const response = await fetchApi(`/chat/completions/${completion_id}`, {
+    const refreshPending = options?.refreshPending ?? true;
+    const url = refreshPending
+      ? `/chat/completions/${completion_id}?refresh_pending=true`
+      : `/chat/completions/${completion_id}`;
+
+    const response = await fetchApi(url, {
       method: "GET",
       headers,
     });

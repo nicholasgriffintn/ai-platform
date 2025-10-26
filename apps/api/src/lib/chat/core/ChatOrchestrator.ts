@@ -315,6 +315,7 @@ export class ChatOrchestrator {
       platform: platform || "api",
       usage: response.usage || response.usageMetadata,
       tool_calls: response.tool_calls || null,
+      status: response.status || undefined,
     });
 
     return {

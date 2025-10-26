@@ -72,7 +72,9 @@ export function useChat(completion_id: string | undefined) {
       }
 
       try {
-        const remoteChat = await apiService.getChat(completion_id);
+        const remoteChat = await apiService.getChat(completion_id, {
+          refreshPending: true,
+        });
         return remoteChat || localChat;
       } catch (error) {
         console.error(

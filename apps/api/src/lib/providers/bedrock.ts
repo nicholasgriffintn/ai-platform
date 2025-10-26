@@ -16,8 +16,15 @@ import { BaseProvider } from "./base";
 import { formatBedrockMessages } from "./utils/bedrockContent";
 
 const logger = getLogger({ prefix: "lib/providers/bedrock" });
-const ASYNC_POLL_INTERVAL_MS = 2000;
-const ASYNC_MAX_ATTEMPTS = 30;
+type AsyncOperationStatus =
+  | "IN_PROGRESS"
+  | "SUCCESS"
+  | "SUCCEEDED"
+  | "COMPLETED"
+  | "FAILED"
+  | "ERROR"
+  | "CANCELLED"
+  | "TIMED_OUT";
 
 export class BedrockProvider extends BaseProvider {
   name = "bedrock";
@@ -123,118 +130,88 @@ export class BedrockProvider extends BaseProvider {
     };
   }
 
-  private async pollAsyncInvoke(
+  private async fetchAsyncInvokeStatus(
     awsClient: AwsClient,
     invocationArn: string,
     params: ChatCompletionParameters,
     region: string,
     baseHeaders: Record<string, string>,
-  ): Promise<Record<string, any>> {
+  ): Promise<{
+    data: Record<string, any>;
+    status: AsyncOperationStatus | string | undefined;
+  }> {
     const encodedArn = encodeURIComponent(invocationArn);
     const pollAwsUrl = `https://bedrock-runtime.${region}.amazonaws.com/async-invoke/${encodedArn}`;
 
-    for (let attempt = 0; attempt < ASYNC_MAX_ATTEMPTS; attempt++) {
-      if (attempt > 0) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, ASYNC_POLL_INTERVAL_MS),
-        );
-      }
+    const pollHeaders = { ...baseHeaders };
+    delete pollHeaders["Content-Type"];
 
-      const pollHeaders = { ...baseHeaders };
-      delete pollHeaders["Content-Type"];
+    const pollRequest = await awsClient.sign(pollAwsUrl, {
+      method: "GET",
+      headers: pollHeaders,
+    });
 
-      const pollRequest = await awsClient.sign(pollAwsUrl, {
-        method: "GET",
-        headers: pollHeaders,
-      });
-
-      if (!pollRequest.url) {
-        throw new AssistantError(
-          "Failed to get presigned async poll request from Bedrock",
-          ErrorType.PROVIDER_ERROR,
-        );
-      }
-
-      const signedUrl = new URL(pollRequest.url);
-      signedUrl.host = "gateway.ai.cloudflare.com";
-      signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/async-invoke/${encodedArn}`;
-
-      const pollResponse = await fetch(signedUrl, {
-        method: "GET",
-        headers: pollRequest.headers,
-      });
-
-      if (!pollResponse.ok) {
-        const errorText = await pollResponse.text();
-        logger.error("Failed to poll async invocation from Bedrock", {
-          error: errorText.substring(0, 200),
-          invocationArn,
-        });
-        throw new AssistantError(
-          "Failed to poll async invocation from Bedrock",
-          ErrorType.PROVIDER_ERROR,
-        );
-      }
-
-      let pollData: Record<string, any>;
-      try {
-        pollData = (await pollResponse.json()) as Record<string, any>;
-      } catch (jsonError) {
-        const responseText = await pollResponse.text();
-        logger.error("Failed to parse async poll response from Bedrock", {
-          error: jsonError,
-          invocationArn,
-          responseText: responseText.substring(0, 200),
-        });
-        throw new AssistantError(
-          "Bedrock async poll returned invalid JSON response",
-          ErrorType.PROVIDER_ERROR,
-        );
-      }
-
-      const eventId = pollResponse.headers.get("cf-aig-event-id");
-      const logId = pollResponse.headers.get("cf-aig-log-id");
-      const cacheStatus = pollResponse.headers.get("cf-aig-cache-status");
-
-      if (eventId || logId || cacheStatus) {
-        pollData = {
-          ...pollData,
-          eventId,
-          log_id: logId,
-          cacheStatus,
-        };
-      }
-
-      const status =
-        pollData.status ||
-        pollData.invocationStatus ||
-        pollData.response?.status;
-
-      if (
-        status === "SUCCEEDED" ||
-        status === "SUCCESS" ||
-        status === "COMPLETED"
-      ) {
-        return pollData;
-      }
-
-      if (
-        status === "FAILED" ||
-        status === "ERROR" ||
-        status === "CANCELLED" ||
-        status === "TIMED_OUT"
-      ) {
-        throw new AssistantError(
-          `Bedrock async invocation failed with status ${status}`,
-          ErrorType.PROVIDER_ERROR,
-        );
-      }
+    if (!pollRequest.url) {
+      throw new AssistantError(
+        "Failed to get presigned async poll request from Bedrock",
+        ErrorType.PROVIDER_ERROR,
+      );
     }
 
-    throw new AssistantError(
-      "Timed out waiting for Bedrock async invocation to complete",
-      ErrorType.PROVIDER_ERROR,
-    );
+    const signedUrl = new URL(pollRequest.url);
+    signedUrl.host = "gateway.ai.cloudflare.com";
+    signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/async-invoke/${encodedArn}`;
+
+    const pollResponse = await fetch(signedUrl, {
+      method: "GET",
+      headers: pollRequest.headers,
+    });
+
+    if (!pollResponse.ok) {
+      const errorText = await pollResponse.text();
+      logger.error("Failed to poll async invocation from Bedrock", {
+        error: errorText.substring(0, 200),
+        invocationArn,
+      });
+      throw new AssistantError(
+        "Failed to poll async invocation from Bedrock",
+        ErrorType.PROVIDER_ERROR,
+      );
+    }
+
+    let pollData: Record<string, any>;
+    try {
+      pollData = (await pollResponse.json()) as Record<string, any>;
+    } catch (jsonError) {
+      const responseText = await pollResponse.text();
+      logger.error("Failed to parse async poll response from Bedrock", {
+        error: jsonError,
+        invocationArn,
+        responseText: responseText.substring(0, 200),
+      });
+      throw new AssistantError(
+        "Bedrock async poll returned invalid JSON response",
+        ErrorType.PROVIDER_ERROR,
+      );
+    }
+
+    const eventId = pollResponse.headers.get("cf-aig-event-id");
+    const logId = pollResponse.headers.get("cf-aig-log-id");
+    const cacheStatus = pollResponse.headers.get("cf-aig-cache-status");
+
+    if (eventId || logId || cacheStatus) {
+      pollData = {
+        ...pollData,
+        eventId,
+        log_id: logId,
+        cacheStatus,
+      };
+    }
+
+    const status =
+      pollData.status || pollData.invocationStatus || pollData.response?.status;
+
+    return { data: pollData, status };
   }
 
   async getMediaSourceFromMessages(
@@ -702,21 +679,35 @@ export class BedrockProvider extends BaseProvider {
             );
           }
 
-          const pollData = await this.pollAsyncInvoke(
-            awsClient,
-            invocationArn,
-            params,
-            region,
-            baseHeaders,
-          );
+          const encodedArn = encodeURIComponent(invocationArn);
+          const invocationUrl = `/v1/${params.env.ACCOUNT_ID}/${gatewayId}/aws-bedrock/bedrock-runtime/${region}/async-invoke/${encodedArn}`;
 
-          const mergedData = {
-            ...initialData,
-            ...pollData,
+          const asyncInvocationData = {
+            provider: this.name,
+            type: "async_invoke" as const,
+            region,
             invocationArn,
+            invocationUrl,
+            operation: operationPath,
+            pollIntervalMs: 2000,
+            initialResponse: initialData,
+            lastCheckedAt: Date.now(),
           };
 
-          return this.formatResponse(mergedData, params);
+          const placeholderContent = [
+            {
+              type: "text",
+              text: "Video generation in progress. We'll update this message once the results are ready.",
+            },
+          ];
+
+          return {
+            response: placeholderContent,
+            status: "in_progress",
+            data: {
+              asyncInvocation: asyncInvocationData,
+            },
+          };
         }
 
         let data: Record<string, any>;
@@ -757,5 +748,78 @@ export class BedrockProvider extends BaseProvider {
       userId,
       completion_id: params.completion_id,
     });
+  }
+
+  async getAsyncInvocationStatus(
+    invocationArn: string,
+    params: ChatCompletionParameters,
+    userId?: number,
+    initialResponse?: Record<string, any>,
+  ): Promise<{
+    status: "in_progress" | "completed" | "failed";
+    result?: any;
+    raw: Record<string, any>;
+  }> {
+    const region = "us-east-1";
+    const { accessKey, secretKey } = await this.getAwsCredentials(
+      params,
+      userId,
+    );
+
+    const awsClient = new AwsClient({
+      accessKeyId: accessKey,
+      secretAccessKey: secretKey,
+      region,
+      service: "bedrock",
+    });
+
+    const baseHeaders = await this.getHeaders(params);
+    const { data, status } = await this.fetchAsyncInvokeStatus(
+      awsClient,
+      invocationArn,
+      params,
+      region,
+      baseHeaders,
+    );
+
+    const mergedData = {
+      ...(initialResponse || {}),
+      ...data,
+      invocationArn,
+    };
+
+    const normalizedStatus = (status || "IN_PROGRESS")
+      .toString()
+      .toUpperCase() as AsyncOperationStatus;
+
+    if (
+      normalizedStatus === "SUCCEEDED" ||
+      normalizedStatus === "SUCCESS" ||
+      normalizedStatus === "COMPLETED"
+    ) {
+      const formatted = await this.formatResponse(mergedData, params);
+      return {
+        status: "completed",
+        result: formatted,
+        raw: mergedData,
+      };
+    }
+
+    if (
+      normalizedStatus === "FAILED" ||
+      normalizedStatus === "ERROR" ||
+      normalizedStatus === "CANCELLED" ||
+      normalizedStatus === "TIMED_OUT"
+    ) {
+      return {
+        status: "failed",
+        raw: mergedData,
+      };
+    }
+
+    return {
+      status: "in_progress",
+      raw: mergedData,
+    };
   }
 }
