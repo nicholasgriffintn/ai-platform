@@ -7,26 +7,25 @@ const {
   mockUploadAudioFromChat,
   mockStorageService,
   mockBucket,
-} =
-  vi.hoisted(() => {
-    const mockUploadImageFromChat = vi.fn();
-    const mockUploadAudioFromChat = vi.fn();
-    const mockStorageService = {
-      uploadObject: vi.fn().mockResolvedValue("test-key"),
-      getObject: vi.fn(),
-    };
-    const mockBucket = {
-      put: vi.fn().mockResolvedValue(undefined),
-      get: vi.fn(),
-    };
+} = vi.hoisted(() => {
+  const mockUploadImageFromChat = vi.fn();
+  const mockUploadAudioFromChat = vi.fn();
+  const mockStorageService = {
+    uploadObject: vi.fn().mockResolvedValue("test-key"),
+    getObject: vi.fn(),
+  };
+  const mockBucket = {
+    put: vi.fn().mockResolvedValue(undefined),
+    get: vi.fn(),
+  };
 
-    return {
-      mockUploadImageFromChat,
-      mockUploadAudioFromChat,
-      mockStorageService,
-      mockBucket,
-    };
-  });
+  return {
+    mockUploadImageFromChat,
+    mockUploadAudioFromChat,
+    mockStorageService,
+    mockBucket,
+  };
+});
 
 vi.mock("../storage", () => ({
   StorageService: vi.fn().mockImplementation(() => mockStorageService),
@@ -414,7 +413,9 @@ describe("ResponseFormatter", () => {
         mockBucket.put.mock.calls.length;
       expect(storageCalls).toBeGreaterThan(0);
       const responseUrl = (result.response as any)[0].image_url.url as string;
-      expect(responseUrl.startsWith(mockEnv.PUBLIC_ASSETS_URL || "")).toBe(true);
+      expect(responseUrl.startsWith(mockEnv.PUBLIC_ASSETS_URL || "")).toBe(
+        true,
+      );
       expect(result.data.assets[0].originalUrl).toBe(
         "https://replicate.delivery/example/output-0.png",
       );

@@ -590,8 +590,8 @@ export class ResponseFormatter {
       data?.response ??
       [];
 
-    const strings = ResponseFormatter.collectStringsFromOutput(output).map((value) =>
-      value.trim(),
+    const strings = ResponseFormatter.collectStringsFromOutput(output).map(
+      (value) => value.trim(),
     );
     const urlStrings = strings.filter((value) =>
       value.toLowerCase().startsWith("http"),
@@ -626,7 +626,8 @@ export class ResponseFormatter {
       }
 
       let persistedUrls = candidateUrls;
-      let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
+      let metadata: Array<{ key: string; url: string; originalUrl: string }> =
+        [];
 
       if (options.env?.ASSETS_BUCKET) {
         const uploads = await ResponseFormatter.persistRemoteAssets(
@@ -663,7 +664,8 @@ export class ResponseFormatter {
       }
 
       let persistedUrls = candidateUrls;
-      let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
+      let metadata: Array<{ key: string; url: string; originalUrl: string }> =
+        [];
 
       if (options.env?.ASSETS_BUCKET) {
         const uploads = await ResponseFormatter.persistRemoteAssets(
@@ -702,7 +704,8 @@ export class ResponseFormatter {
       }
 
       let persistedUrls = candidateUrls;
-      let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
+      let metadata: Array<{ key: string; url: string; originalUrl: string }> =
+        [];
 
       if (options.env?.ASSETS_BUCKET) {
         const uploads = await ResponseFormatter.persistRemoteAssets(
