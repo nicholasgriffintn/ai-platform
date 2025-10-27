@@ -6,7 +6,8 @@ const PROVIDER = "replicate";
 export const replicateModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("replicate-bytedance-sdxl-lightning-4step", PROVIDER, {
     name: "SDXL Lightning 4-Step",
-    matchingModel: "5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637",
+    matchingModel:
+      "5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637",
     description:
       "Bytedance's SDXL Lightning model tuned for ultra-fast 4-step diffusion image generation with high fidelity outputs.",
     type: ["text-to-image"],
@@ -20,13 +21,15 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
         {
           name: "prompt",
           type: "string",
-          description: "Positive text prompt describing the desired image content.",
+          description:
+            "Positive text prompt describing the desired image content.",
           required: true,
         },
         {
           name: "negative_prompt",
           type: "string",
-          description: "Text describing elements to avoid in the generated image.",
+          description:
+            "Text describing elements to avoid in the generated image.",
           default: "",
         },
         {
@@ -38,7 +41,8 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
         {
           name: "guidance_scale",
           type: "number",
-          description: "Classifier-free guidance scale controlling prompt adherence.",
+          description:
+            "Classifier-free guidance scale controlling prompt adherence.",
           default: 0,
         },
         {
@@ -58,7 +62,8 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
   }),
   createModelConfig("replicate-zeroscope-v2-xl", PROVIDER, {
     name: "Zeroscope V2 XL",
-    matchingModel: "9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
+    matchingModel:
+      "9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
     description:
       "Zeroscope V2 XL for text-to-video synthesis capable of generating short cinematic clips from prompts.",
     type: ["text-to-video"],
@@ -78,7 +83,8 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
         {
           name: "negative_prompt",
           type: "string",
-          description: "Elements or styles that should be removed from the generation.",
+          description:
+            "Elements or styles that should be removed from the generation.",
           default: "",
         },
         {
@@ -104,7 +110,8 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
   }),
   createModelConfig("replicate-zeroscope-v2-xl-latest", PROVIDER, {
     name: "Zeroscope V2 XL (Latest Version)",
-    matchingModel: "847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
+    matchingModel:
+      "847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
     description:
       "Updated release of Zeroscope V2 XL offering improved temporal consistency and camera motion controls.",
     type: ["text-to-video"],
@@ -124,7 +131,8 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
         {
           name: "negative_prompt",
           type: "string",
-          description: "Elements or styles that should be removed from the generation.",
+          description:
+            "Elements or styles that should be removed from the generation.",
           default: "",
         },
         {
@@ -149,8 +157,9 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
     },
   }),
   createModelConfig("replicate-musicgen", PROVIDER, {
-    name: "MusicGen", 
-    matchingModel: "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
+    name: "MusicGen",
+    matchingModel:
+      "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
     description:
       "Meta's MusicGen model for prompt-based music composition supporting conditioning on input audio clips.",
     type: ["text-to-audio"],
@@ -170,7 +179,8 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
         {
           name: "input_audio",
           type: ["file", "string"],
-          description: "Optional audio file URL or handle to condition the generation.",
+          description:
+            "Optional audio file URL or handle to condition the generation.",
         },
         {
           name: "duration",
@@ -208,7 +218,8 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
   }),
   createModelConfig("replicate-whisper-large-v3", PROVIDER, {
     name: "Whisper Large V3",
-    matchingModel: "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
+    matchingModel:
+      "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
     description:
       "OpenAI Whisper Large V3 deployed on Replicate for high quality multilingual speech-to-text transcription.",
     type: ["audio-to-text"],
@@ -240,7 +251,8 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
         {
           name: "transcript_output_format",
           type: "string",
-          description: "Preferred output format (segments_only, verbose_json, text).",
+          description:
+            "Preferred output format (segments_only, verbose_json, text).",
           default: "segments_only",
           enum: ["segments_only", "verbose_json", "text"],
         },
@@ -253,7 +265,8 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
         {
           name: "offset_seconds",
           type: "number",
-          description: "Skip transcription for the first N seconds of the clip.",
+          description:
+            "Skip transcription for the first N seconds of the clip.",
           default: 0,
         },
       ],
