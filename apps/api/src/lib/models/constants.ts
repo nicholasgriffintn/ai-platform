@@ -41,6 +41,9 @@ export const availableModelTypes = [
   "code-edits",
   "function-calling",
   "voice-activity-detection",
+  "ocr",
+  "video-to-video",
+  "audio-to-video",
 ] as const;
 
 export const defaultModel = "mistral-medium";
