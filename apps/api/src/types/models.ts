@@ -8,6 +8,29 @@ export interface ModelConfigInfo {
   displayName: string;
 }
 
+export type ReplicateInputFieldType =
+  | "string"
+  | "number"
+  | "integer"
+  | "boolean"
+  | "file"
+  | "array"
+  | "object";
+
+export interface ReplicateInputFieldDescriptor {
+  name: string;
+  type: ReplicateInputFieldType | ReplicateInputFieldType[];
+  description?: string;
+  default?: unknown;
+  enum?: Array<string | number>;
+  required?: boolean;
+}
+
+export interface ReplicateInputSchemaDescriptor {
+  fields: ReplicateInputFieldDescriptor[];
+  reference?: string;
+}
+
 export type ModelConfigItem = {
   matchingModel: string;
   name?: string;
@@ -24,6 +47,7 @@ export type ModelConfigItem = {
   costPer1kOutputTokens?: number;
   costPer1kReasoningTokens?: number;
   costPer1kSearches?: number;
+  costPerRun?: number;
   strengths?: Array<(typeof availableCapabilities)[number]>;
   contextComplexity?: ModelRanking;
   reliability?: ModelRanking;
@@ -58,6 +82,7 @@ export type ModelConfigItem = {
   bedrockStreamingApiOperation?: string;
   supportsPresencePenalty?: boolean;
   restrictsCombinedTopPAndTemperature?: boolean;
+  replicateInputSchema?: ReplicateInputSchemaDescriptor;
 };
 
 export type ModelConfig = {

@@ -16,8 +16,10 @@ export const availableCapabilities = [
   "general_knowledge",
   "image_generation",
   "agents",
-  "audio",
   "tool_use",
+  "video_generation",
+  "text-to-audio",
+  "ocr",
 ] as const;
 
 export const availableModelTypes = [
@@ -25,6 +27,8 @@ export const availableModelTypes = [
   "coding",
   "speech",
   "text-to-speech",
+  "text-to-audio",
+  "audio-to-text",
   "image-to-text",
   "image-to-image",
   "text-to-image",
