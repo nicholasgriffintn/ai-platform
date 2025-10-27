@@ -58,9 +58,158 @@ export class ResponseFormatter {
       huggingface: ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
       "github-models": ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
       "together-ai": ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
+      replicate: ResponseFormatter.formatReplicateResponse,
     };
 
     return formatters[provider] || ResponseFormatter.formatGenericResponse;
+  }
+
+  private static collectStringsFromOutput(output: unknown): string[] {
+    if (typeof output === "string") {
+      return [output];
+    }
+
+    if (Array.isArray(output)) {
+      return output.flatMap((item) =>
+        ResponseFormatter.collectStringsFromOutput(item),
+      );
+    }
+
+    if (output && typeof output === "object") {
+      return Object.values(output).flatMap((value) =>
+        ResponseFormatter.collectStringsFromOutput(value),
+      );
+    }
+
+    return [];
+  }
+
+  private static filterUrlsByExtension(
+    urls: string[],
+    extensions: string[],
+  ): string[] {
+    return urls.filter((url) => {
+      const normalized = url.split("?")[0].toLowerCase();
+      return extensions.some((extension) => normalized.endsWith(extension));
+    });
+  }
+
+  private static getExtensionFromUrl(url: string, fallback: string): string {
+    try {
+      const parsed = new URL(url);
+      const pathname = parsed.pathname.toLowerCase();
+      const match = pathname.match(/\.([a-z0-9]+)$/i);
+      if (match?.[1]) {
+        return match[1];
+      }
+    } catch (_error) {
+      const sanitized = url.split("?")[0];
+      const match = sanitized.match(/\.([a-z0-9]+)$/i);
+      if (match?.[1]) {
+        return match[1];
+      }
+    }
+
+    return fallback;
+  }
+
+  private static getContentTypeFromExtension(
+    extension: string,
+    fallback: string,
+  ): string {
+    const mapping: Record<string, string> = {
+      png: "image/png",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      webp: "image/webp",
+      gif: "image/gif",
+      mp4: "video/mp4",
+      webm: "video/webm",
+      mov: "video/quicktime",
+      wav: "audio/wav",
+      mp3: "audio/mpeg",
+      m4a: "audio/mp4",
+      ogg: "audio/ogg",
+      flac: "audio/flac",
+    };
+
+    return mapping[extension] || fallback;
+  }
+
+  private static buildAssetKey(
+    options: ResponseFormatOptions,
+    extension: string,
+  ): string {
+    const completion = options.completion_id || "completion";
+    const model = options.model || "model";
+    const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    return `generations/${completion}/${model}/${unique}.${extension}`;
+  }
+
+  private static async persistRemoteAssets(
+    assetUrls: string[],
+    options: ResponseFormatOptions,
+    fallback: { extension: string; contentType: string },
+  ): Promise<{
+    urls: string[];
+    metadata: Array<{ key: string; url: string; originalUrl: string }>;
+  }> {
+    if (!assetUrls.length) {
+      return { urls: [], metadata: [] };
+    }
+
+    const env = options.env;
+    if (!env?.ASSETS_BUCKET) {
+      throw new AssistantError(
+        "ASSETS_BUCKET is not set",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    const storageService = new StorageService(env.ASSETS_BUCKET);
+    const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+
+    const uploads = await Promise.all(
+      assetUrls.map(async (assetUrl) => {
+        const response = await fetch(assetUrl);
+        if (!response.ok) {
+          throw new AssistantError(
+            `Failed to fetch asset from ${assetUrl}`,
+            ErrorType.PROVIDER_ERROR,
+            response.status,
+          );
+        }
+
+        const buffer = await response.arrayBuffer();
+        const extension = ResponseFormatter.getExtensionFromUrl(
+          assetUrl,
+          fallback.extension,
+        );
+        const contentType = ResponseFormatter.getContentTypeFromExtension(
+          extension,
+          fallback.contentType,
+        );
+        const key = ResponseFormatter.buildAssetKey(options, extension);
+
+        await storageService.uploadObject(key, buffer, {
+          contentType,
+          contentLength: buffer.byteLength,
+        });
+
+        const persistedUrl = baseAssetsUrl ? `${baseAssetsUrl}/${key}` : key;
+
+        return {
+          key,
+          url: persistedUrl,
+          originalUrl: assetUrl,
+        };
+      }),
+    );
+
+    return {
+      urls: uploads.map((upload) => upload.url),
+      metadata: uploads,
+    };
   }
 
   private static async uploadImages(
@@ -425,6 +574,169 @@ export class ResponseFormatter {
 
     if (typeof data.message === "string") {
       return { ...data, response: data.message };
+    }
+
+    return { ...data, response: "" };
+  }
+
+  private static async formatReplicateResponse(
+    data: any,
+    options: ResponseFormatOptions = {},
+  ): Promise<any> {
+    const output =
+      data?.output ??
+      data?.prediction?.output ??
+      data?.data?.output ??
+      data?.response ??
+      [];
+
+    const strings = ResponseFormatter.collectStringsFromOutput(output).map((value) =>
+      value.trim(),
+    );
+    const urlStrings = strings.filter((value) =>
+      value.toLowerCase().startsWith("http"),
+    );
+    const textStrings = strings.filter(
+      (value) => !value.toLowerCase().startsWith("http") && value,
+    );
+
+    const types = new Set(options.type || []);
+    const isImageType =
+      types.has("text-to-image") || types.has("image-to-image");
+    const isVideoType =
+      types.has("text-to-video") || types.has("image-to-video");
+    const isAudioType =
+      types.has("text-to-audio") ||
+      types.has("audio-to-audio") ||
+      types.has("audio-generation");
+    const isTranscriptionType = types.has("audio-to-text");
+
+    if (isImageType) {
+      const imageUrls = ResponseFormatter.filterUrlsByExtension(urlStrings, [
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".webp",
+        ".gif",
+      ]);
+      const candidateUrls = imageUrls.length ? imageUrls : urlStrings;
+      if (!candidateUrls.length) {
+        const fallbackText = textStrings.join("\n").trim();
+        return { ...data, response: fallbackText };
+      }
+
+      let persistedUrls = candidateUrls;
+      let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
+
+      if (options.env?.ASSETS_BUCKET) {
+        const uploads = await ResponseFormatter.persistRemoteAssets(
+          candidateUrls,
+          options,
+          { extension: "png", contentType: "image/png" },
+        );
+        persistedUrls = uploads.urls;
+        metadata = uploads.metadata;
+      }
+
+      const responseContent = persistedUrls.map((url) => ({
+        type: "image_url" as const,
+        image_url: { url },
+      }));
+
+      const result: any = { ...data, response: responseContent };
+      if (metadata.length) {
+        result.data = { ...(data.data || {}), assets: metadata };
+      }
+      return result;
+    }
+
+    if (isVideoType) {
+      const videoUrls = ResponseFormatter.filterUrlsByExtension(urlStrings, [
+        ".mp4",
+        ".webm",
+        ".mov",
+      ]);
+      const candidateUrls = videoUrls.length ? videoUrls : urlStrings;
+      if (!candidateUrls.length) {
+        const fallbackText = textStrings.join("\n").trim();
+        return { ...data, response: fallbackText };
+      }
+
+      let persistedUrls = candidateUrls;
+      let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
+
+      if (options.env?.ASSETS_BUCKET) {
+        const uploads = await ResponseFormatter.persistRemoteAssets(
+          candidateUrls,
+          options,
+          { extension: "mp4", contentType: "video/mp4" },
+        );
+        persistedUrls = uploads.urls;
+        metadata = uploads.metadata;
+      }
+
+      const responseContent = persistedUrls.map((url) => ({
+        type: "video_url" as const,
+        video_url: { url },
+      }));
+
+      const result: any = { ...data, response: responseContent };
+      if (metadata.length) {
+        result.data = { ...(data.data || {}), assets: metadata };
+      }
+      return result;
+    }
+
+    if (isAudioType) {
+      const audioUrls = ResponseFormatter.filterUrlsByExtension(urlStrings, [
+        ".mp3",
+        ".wav",
+        ".ogg",
+        ".flac",
+        ".m4a",
+      ]);
+      const candidateUrls = audioUrls.length ? audioUrls : urlStrings;
+      if (!candidateUrls.length) {
+        const fallbackText = textStrings.join("\n").trim();
+        return { ...data, response: fallbackText };
+      }
+
+      let persistedUrls = candidateUrls;
+      let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
+
+      if (options.env?.ASSETS_BUCKET) {
+        const uploads = await ResponseFormatter.persistRemoteAssets(
+          candidateUrls,
+          options,
+          { extension: "mp3", contentType: "audio/mpeg" },
+        );
+        persistedUrls = uploads.urls;
+        metadata = uploads.metadata;
+      }
+
+      const responseContent = persistedUrls.map((url) => ({
+        type: "audio_url" as const,
+        audio_url: { url },
+      }));
+
+      const result: any = { ...data, response: responseContent };
+      if (metadata.length) {
+        result.data = { ...(data.data || {}), assets: metadata };
+      }
+      return result;
+    }
+
+    const textCandidate = textStrings.join("\n").trim();
+    if (isTranscriptionType || textCandidate) {
+      return { ...data, response: textCandidate };
+    }
+
+    if (urlStrings.length) {
+      const responseContent = urlStrings.map((url) => ({
+        type: "text" as const,
+        text: url,
+      }));
+      return { ...data, response: responseContent };
     }
 
     return { ...data, response: "" };
