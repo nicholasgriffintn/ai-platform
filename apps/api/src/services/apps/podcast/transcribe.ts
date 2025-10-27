@@ -1,5 +1,5 @@
 import { getModelConfigByModel } from "~/lib/models";
-import { validateReplicatePayload } from "~/lib/models/replicateValidation";
+import { validateReplicatePayload } from "~/lib/models/utils/replicateValidation";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";

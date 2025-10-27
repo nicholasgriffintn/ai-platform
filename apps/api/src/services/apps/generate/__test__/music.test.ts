@@ -7,7 +7,8 @@ const mockProvider = {
 };
 
 const mockModelConfig = {
-  matchingModel: "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
+  matchingModel:
+    "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
   provider: "replicate",
   name: "MusicGen",
   replicateInputSchema: {
@@ -64,8 +65,7 @@ describe("generateMusic", () => {
     expect(mockProvider.getResponse).toHaveBeenCalledWith({
       completion_id: "completion-123",
       app_url: "https://example.com",
-      model:
-        "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
+      model: "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
       messages: [
         {
           role: "user",

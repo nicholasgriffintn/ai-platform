@@ -6,7 +6,8 @@ const mockProvider = {
 };
 
 const mockModelConfig = {
-  matchingModel: "847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
+  matchingModel:
+    "847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
   provider: "replicate",
   name: "Zeroscope V2 XL",
   replicateInputSchema: {
@@ -74,8 +75,7 @@ describe("generateVideo", () => {
     expect(mockProvider.getResponse).toHaveBeenCalledWith({
       completion_id: "completion-123",
       app_url: "https://example.com",
-      model:
-        "847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
+      model: "847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
       messages: [
         {
           role: "user",

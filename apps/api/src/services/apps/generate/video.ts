@@ -1,6 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getModelConfigByModel } from "~/lib/models";
-import { validateReplicatePayload } from "~/lib/models/replicateValidation";
+import { validateReplicatePayload } from "~/lib/models/utils/replicateValidation";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IEnv, IUser } from "~/types";
