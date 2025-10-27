@@ -87,7 +87,7 @@ export async function generateMusic({
       messages: [
         {
           role: "user",
-          content: replicatePayload,
+          content: [{ ...replicatePayload, type: "text" }],
         },
       ],
       env: env,

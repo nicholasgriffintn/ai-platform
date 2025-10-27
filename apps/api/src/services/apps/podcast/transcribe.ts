@@ -136,7 +136,7 @@ export const handlePodcastTranscribe = async (
       messages: [
         {
           role: "user",
-          content: replicatePayload,
+          content: [{ ...replicatePayload, type: "text" }],
         },
       ],
       env,
