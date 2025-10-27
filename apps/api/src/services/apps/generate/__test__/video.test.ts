@@ -79,9 +79,7 @@ describe("generateVideo", () => {
       messages: [
         {
           role: "user",
-          content: {
-            prompt: "A cat playing with a ball",
-          },
+          content: [{ type: "text", prompt: "A cat playing with a ball" }],
         },
       ],
       env: mockEnv,
@@ -113,14 +111,17 @@ describe("generateVideo", () => {
         messages: [
           {
             role: "user",
-            content: {
-              prompt: "A cat playing with a ball",
-              negative_prompt: "blurry, low quality",
-              guidance_scale: 7.5,
-              duration: 10,
-              height: 512,
-              width: 512,
-            },
+            content: [
+              {
+                type: "text",
+                prompt: "A cat playing with a ball",
+                negative_prompt: "blurry, low quality",
+                guidance_scale: 7.5,
+                duration: 10,
+                height: 512,
+                width: 512,
+              },
+            ],
           },
         ],
       }),
@@ -166,9 +167,7 @@ describe("generateVideo", () => {
         messages: [
           {
             role: "user",
-            content: expect.objectContaining({
-              prompt: "sanitised prompt",
-            }),
+            content: [{ type: "text", prompt: "sanitised prompt" }],
           },
         ],
       }),

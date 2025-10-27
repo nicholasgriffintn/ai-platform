@@ -69,9 +69,7 @@ describe("generateMusic", () => {
       messages: [
         {
           role: "user",
-          content: {
-            prompt: "Upbeat electronic music",
-          },
+          content: [{ type: "text", prompt: "Upbeat electronic music" }],
         },
       ],
       env: mockEnv,
@@ -100,11 +98,14 @@ describe("generateMusic", () => {
         messages: [
           {
             role: "user",
-            content: {
-              prompt: "Upbeat electronic music",
-              input_audio: "base64audiodata",
-              duration: 30,
-            },
+            content: [
+              {
+                type: "text",
+                prompt: "Upbeat electronic music",
+                input_audio: "base64audiodata",
+                duration: 30,
+              },
+            ],
           },
         ],
       }),
@@ -150,9 +151,12 @@ describe("generateMusic", () => {
         messages: [
           {
             role: "user",
-            content: expect.objectContaining({
-              prompt: "sanitised prompt",
-            }),
+            content: [
+              {
+                prompt: "sanitised prompt",
+                type: "text",
+              },
+            ],
           },
         ],
       }),
