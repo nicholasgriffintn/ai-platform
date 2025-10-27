@@ -6,6 +6,19 @@ const mockProvider = {
   getResponse: vi.fn(),
 };
 
+const mockModelConfig = {
+  matchingModel: "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
+  provider: "replicate",
+  name: "MusicGen",
+  replicateInputSchema: {
+    fields: [
+      { name: "prompt", type: "string", required: true },
+      { name: "input_audio", type: ["file", "string"] },
+      { name: "duration", type: "number" },
+    ],
+  },
+};
+
 vi.mock("~/lib/providers/factory", () => ({
   AIProviderFactory: {
     getProvider: vi.fn(() => mockProvider),
@@ -16,6 +29,10 @@ vi.mock("~/lib/chat/utils", () => ({
   sanitiseInput: vi.fn(),
 }));
 
+vi.mock("~/lib/models", () => ({
+  getModelConfigByModel: vi.fn(async () => mockModelConfig),
+}));
+
 describe("generateMusic", () => {
   const mockEnv = {} as any;
   const mockUser = { id: "user-123", email: "test@example.com" } as any;
@@ -24,6 +41,8 @@ describe("generateMusic", () => {
     vi.clearAllMocks();
     const { sanitiseInput } = await import("~/lib/chat/utils");
     vi.mocked(sanitiseInput).mockImplementation((input) => input);
+    const { getModelConfigByModel } = await import("~/lib/models");
+    vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig as any);
   });
 
   it("should generate music successfully", async () => {
@@ -45,7 +64,8 @@ describe("generateMusic", () => {
     expect(mockProvider.getResponse).toHaveBeenCalledWith({
       completion_id: "completion-123",
       app_url: "https://example.com",
-      model: "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
+      model:
+        "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
       messages: [
         {
           role: "user",

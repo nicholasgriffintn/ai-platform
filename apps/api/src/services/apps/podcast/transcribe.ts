@@ -1,4 +1,5 @@
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByModel } from "~/lib/models";
+import { validateReplicatePayload } from "~/lib/models/replicateValidation";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
@@ -7,8 +8,7 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/apps/podcast/transcribe" });
 
-const REPLICATE_MODEL_VERSION =
-  "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f";
+const MODEL_KEY = "replicate-whisper-large-v3";
 
 export interface IPodcastTranscribeBody {
   podcastId: string;
@@ -96,33 +96,47 @@ export const handlePodcastTranscribe = async (
     const description = parsedUploadData.description;
     const audioUrl = parsedUploadData.audioUrl;
 
-    const modelConfig = await getModelConfigByMatchingModel(
-      REPLICATE_MODEL_VERSION,
-    );
+    const modelConfig = await getModelConfigByModel(MODEL_KEY);
+
+    if (!modelConfig) {
+      throw new AssistantError(
+        `Model configuration not found for ${MODEL_KEY}`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
     const provider = AIProviderFactory.getProvider(
-      modelConfig?.provider || "replicate",
+      modelConfig.provider || "replicate",
     );
 
     const prompt = `${request.prompt} <title>${title}</title> <description>${description}</description>`;
 
+    const replicatePayload = Object.fromEntries(
+      Object.entries({
+        file: audioUrl,
+        prompt,
+        language: "en",
+        num_speakers: request.numberOfSpeakers,
+        transcript_output_format: "segments_only",
+        group_segments: true,
+        translate: false,
+        offset_seconds: 0,
+      }).filter(([, value]) => value !== undefined && value !== null),
+    );
+
+    validateReplicatePayload({
+      payload: replicatePayload,
+      schema: modelConfig.replicateInputSchema,
+      modelName: modelConfig.name || MODEL_KEY,
+    });
+
     const transcriptionData = await provider.getResponse({
       completion_id: request.podcastId,
       app_url,
-      version: REPLICATE_MODEL_VERSION,
+      model: modelConfig.matchingModel,
       messages: [
         {
           role: "user",
-          content: {
-            // @ts-ignore - Replicate model requires this format
-            file: audioUrl,
-            prompt,
-            language: "en",
-            num_speakers: request.numberOfSpeakers,
-            transcript_output_format: "segments_only",
-            group_segments: true,
-            translate: false,
-            offset_seconds: 0,
-          },
+          content: replicatePayload,
         },
       ],
       env,
