@@ -1,11 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/models";
-import {
-  createCommonParameters,
-  getToolsForProvider,
-  shouldEnableStreaming,
-} from "~/utils/parameters";
-import { ReplicateProvider } from "../replicate";
+import { ReplicateProvider, buildReplicateInput } from "../replicate";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {
@@ -22,33 +17,23 @@ vi.mock("~/lib/models", () => ({
   getModelConfigByMatchingModel: vi.fn(),
 }));
 
-vi.mock("~/utils/parameters", () => ({
-  createCommonParameters: vi.fn(),
-  getToolsForProvider: vi.fn(),
-  shouldEnableStreaming: vi.fn(),
-}));
-
 vi.mock("~/lib/providers/factory", () => ({}));
 
 global.fetch = vi.fn();
 
 describe("ReplicateProvider", () => {
   describe("mapParameters", () => {
-    it("should create basic parameters in mapParameters", async () => {
-      // @ts-ignore - getModelConfigByMatchingModel is not typed
+    it("should construct input payload using schema defaults and prompt", async () => {
+      // @ts-ignore - mocked implementation
       vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-        name: "replicate-model",
-        type: ["text"],
+        matchingModel: "replicate-model",
+        replicateInputSchema: {
+          fields: [
+            { name: "prompt", type: "string", required: true },
+            { name: "num_outputs", type: "integer", default: 1 },
+          ],
+        },
       });
-
-      vi.mocked(createCommonParameters).mockReturnValue({
-        model: "replicate-model",
-        temperature: 0.7,
-        max_tokens: 1024,
-      });
-
-      vi.mocked(shouldEnableStreaming).mockReturnValue(false);
-      vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
 
       const provider = new ReplicateProvider();
 
@@ -61,9 +46,76 @@ describe("ReplicateProvider", () => {
 
       const result = await provider.mapParameters(params as any);
 
-      expect(result.model).toBe("replicate-model");
-      expect(result.temperature).toBe(0.7);
-      expect(result.max_tokens).toBe(1024);
+      expect(result).toEqual({
+        model: "replicate-model",
+        version: "replicate-model",
+        input: {
+          prompt: "Hello",
+          num_outputs: 1,
+        },
+      });
+    });
+
+    it("should include enumerated options from params", async () => {
+      // @ts-ignore - mocked implementation
+      vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+        matchingModel: "replicate-model",
+        replicateInputSchema: {
+          fields: [
+            { name: "prompt", type: "string", required: true },
+            {
+              name: "model_version",
+              type: "string",
+              enum: ["melody", "medium"],
+              default: "melody",
+            },
+          ],
+        },
+      });
+
+      const provider = new ReplicateProvider();
+      const params = {
+        model: "replicate-model",
+        messages: [{ role: "user", content: "Compose" }],
+        env: { AI_GATEWAY_TOKEN: "test-token" },
+        model_version: "medium",
+      };
+
+      const result = await provider.mapParameters(params as any);
+
+      expect(result).toEqual({
+        model: "replicate-model",
+        version: "replicate-model",
+        input: {
+          prompt: "Compose",
+          model_version: "medium",
+        },
+      });
+    });
+  });
+
+  describe("buildReplicateInput", () => {
+    it("should throw when enum value is invalid", () => {
+      const params: any = {
+        model: "replicate-model",
+        messages: [{ role: "user", content: "Prompt" }],
+        env: { AI_GATEWAY_TOKEN: "token" },
+        model_version: "invalid",
+      };
+
+      const config: any = {
+        matchingModel: "replicate-model",
+        replicateInputSchema: {
+          fields: [
+            { name: "prompt", type: "string", required: true },
+            { name: "model_version", type: "string", enum: ["melody"] },
+          ],
+        },
+      };
+
+      expect(() => buildReplicateInput(params, config)).toThrow(
+        'Invalid value "invalid" for field "model_version"',
+      );
     });
   });
 
