@@ -1,5 +1,8 @@
 import { sanitiseInput } from "~/lib/chat/utils";
+import { getModelConfigByModel } from "~/lib/models";
+import { validateReplicatePayload } from "~/lib/models/utils/replicateValidation";
 import { AIProviderFactory } from "~/lib/providers/factory";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IEnv, IUser } from "~/types";
 
 export interface VideoGenerationParams {
@@ -7,6 +10,7 @@ export interface VideoGenerationParams {
   negative_prompt?: string;
   guidance_scale?: number;
   video_length?: number;
+  duration?: number;
   height?: number;
   width?: number;
 }
@@ -18,8 +22,7 @@ export interface VideoResponse {
   data: any;
 }
 
-const REPLICATE_MODEL_VERSION =
-  "847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405";
+const MODEL_KEY = "replicate-zeroscope-v2-xl";
 
 export async function generateVideo({
   completion_id,
@@ -44,23 +47,54 @@ export async function generateVideo({
       };
     }
 
-    const sanitisedPrompt = sanitiseInput(args.prompt);
+    const sanitisedPrompt = sanitiseInput(args.prompt).trim();
+    if (!sanitisedPrompt) {
+      return {
+        status: "error",
+        name: "create_video",
+        content: "Missing prompt",
+        data: {},
+      };
+    }
 
-    const provider = AIProviderFactory.getProvider("replicate");
+    const modelConfig = await getModelConfigByModel(MODEL_KEY);
+
+    if (!modelConfig) {
+      throw new AssistantError(
+        `Model configuration not found for ${MODEL_KEY}`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    const replicatePayload = Object.fromEntries(
+      Object.entries({
+        prompt: sanitisedPrompt,
+        negative_prompt: args.negative_prompt,
+        guidance_scale: args.guidance_scale,
+        duration: args.video_length ?? args.duration,
+        height: args.height,
+        width: args.width,
+      }).filter(([, value]) => value !== undefined && value !== null),
+    );
+
+    validateReplicatePayload({
+      payload: replicatePayload,
+      schema: modelConfig.replicateInputSchema,
+      modelName: modelConfig.name || MODEL_KEY,
+    });
+
+    const provider = AIProviderFactory.getProvider(
+      modelConfig.provider || "replicate",
+    );
 
     const videoData = await provider.getResponse({
       completion_id,
       app_url,
-      model: REPLICATE_MODEL_VERSION,
+      model: modelConfig.matchingModel,
       messages: [
         {
           role: "user",
-          // @ts-ignore
-          content: {
-            ...args,
-            // @ts-ignore
-            prompt: sanitisedPrompt,
-          },
+          content: [{ ...replicatePayload, type: "text" }],
         },
       ],
       env: env,

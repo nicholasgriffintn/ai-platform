@@ -5,6 +5,23 @@ const mockProvider = {
   getResponse: vi.fn(),
 };
 
+const mockModelConfig = {
+  matchingModel:
+    "847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
+  provider: "replicate",
+  name: "Zeroscope V2 XL",
+  replicateInputSchema: {
+    fields: [
+      { name: "prompt", type: "string", required: true },
+      { name: "negative_prompt", type: "string" },
+      { name: "guidance_scale", type: "number" },
+      { name: "duration", type: "number" },
+      { name: "height", type: "integer" },
+      { name: "width", type: "integer" },
+    ],
+  },
+};
+
 vi.mock("~/lib/providers/factory", () => ({
   AIProviderFactory: {
     getProvider: vi.fn(() => mockProvider),
@@ -15,6 +32,10 @@ vi.mock("~/lib/chat/utils", () => ({
   sanitiseInput: vi.fn(),
 }));
 
+vi.mock("~/lib/models", () => ({
+  getModelConfigByModel: vi.fn(async () => mockModelConfig),
+}));
+
 describe("generateVideo", () => {
   const mockEnv = {} as any;
   const mockUser = { id: "user-123", email: "test@example.com" } as any;
@@ -23,6 +44,8 @@ describe("generateVideo", () => {
     vi.clearAllMocks();
     const { sanitiseInput } = await import("~/lib/chat/utils");
     vi.mocked(sanitiseInput).mockImplementation((input) => input);
+    const { getModelConfigByModel } = await import("~/lib/models");
+    vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig as any);
   });
 
   it("should generate video successfully", async () => {
@@ -56,9 +79,7 @@ describe("generateVideo", () => {
       messages: [
         {
           role: "user",
-          content: {
-            prompt: "A cat playing with a ball",
-          },
+          content: [{ type: "text", prompt: "A cat playing with a ball" }],
         },
       ],
       env: mockEnv,
@@ -90,14 +111,17 @@ describe("generateVideo", () => {
         messages: [
           {
             role: "user",
-            content: {
-              prompt: "A cat playing with a ball",
-              negative_prompt: "blurry, low quality",
-              guidance_scale: 7.5,
-              video_length: 10,
-              height: 512,
-              width: 512,
-            },
+            content: [
+              {
+                type: "text",
+                prompt: "A cat playing with a ball",
+                negative_prompt: "blurry, low quality",
+                guidance_scale: 7.5,
+                duration: 10,
+                height: 512,
+                width: 512,
+              },
+            ],
           },
         ],
       }),
@@ -143,9 +167,7 @@ describe("generateVideo", () => {
         messages: [
           {
             role: "user",
-            content: expect.objectContaining({
-              prompt: "sanitised prompt",
-            }),
+            content: [{ type: "text", prompt: "sanitised prompt" }],
           },
         ],
       }),

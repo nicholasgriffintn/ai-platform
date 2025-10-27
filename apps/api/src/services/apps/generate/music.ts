@@ -1,5 +1,8 @@
 import { sanitiseInput } from "~/lib/chat/utils";
+import { getModelConfigByModel } from "~/lib/models";
+import { validateReplicatePayload } from "~/lib/models/utils/replicateValidation";
 import { AIProviderFactory } from "~/lib/providers/factory";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IEnv, IUser } from "~/types";
 
 export interface MusicGenerationParams {
@@ -15,8 +18,7 @@ export interface MusicResponse {
   data: any;
 }
 
-const REPLICATE_MODEL_VERSION =
-  "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb";
+const MODEL_KEY = "replicate-musicgen";
 
 export async function generateMusic({
   completion_id,
@@ -41,23 +43,51 @@ export async function generateMusic({
       };
     }
 
-    const sanitisedPrompt = sanitiseInput(args.prompt);
+    const sanitisedPrompt = sanitiseInput(args.prompt).trim();
+    if (!sanitisedPrompt) {
+      return {
+        status: "error",
+        name: "create_music",
+        content: "Missing prompt",
+        data: {},
+      };
+    }
 
-    const provider = AIProviderFactory.getProvider("replicate");
+    const modelConfig = await getModelConfigByModel(MODEL_KEY);
+
+    if (!modelConfig) {
+      throw new AssistantError(
+        `Model configuration not found for ${MODEL_KEY}`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    const replicatePayload = Object.fromEntries(
+      Object.entries({
+        prompt: sanitisedPrompt,
+        input_audio: args.input_audio,
+        duration: args.duration,
+      }).filter(([, value]) => value !== undefined && value !== null),
+    );
+
+    validateReplicatePayload({
+      payload: replicatePayload,
+      schema: modelConfig.replicateInputSchema,
+      modelName: modelConfig.name || MODEL_KEY,
+    });
+
+    const provider = AIProviderFactory.getProvider(
+      modelConfig.provider || "replicate",
+    );
 
     const musicData = await provider.getResponse({
       completion_id,
       app_url,
-      model: REPLICATE_MODEL_VERSION,
+      model: modelConfig.matchingModel,
       messages: [
         {
           role: "user",
-          // @ts-ignore
-          content: {
-            ...args,
-            // @ts-ignore
-            prompt: sanitisedPrompt,
-          },
+          content: [{ ...replicatePayload, type: "text" }],
         },
       ],
       env: env,

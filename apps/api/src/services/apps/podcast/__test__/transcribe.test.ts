@@ -26,8 +26,31 @@ vi.mock("~/lib/providers/factory", () => ({
   },
 }));
 
+const mockModelConfig = {
+  provider: "replicate",
+  name: "Whisper Large V3",
+  matchingModel:
+    "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
+  replicateInputSchema: {
+    fields: [
+      { name: "file", type: ["file", "string"], required: true },
+      { name: "num_speakers", type: "integer" },
+      { name: "language", type: "string" },
+      {
+        name: "transcript_output_format",
+        type: "string",
+        enum: ["segments_only", "verbose_json", "text"],
+      },
+      { name: "group_segments", type: "boolean" },
+      { name: "translate", type: "boolean" },
+      { name: "offset_seconds", type: "number" },
+      { name: "prompt", type: "string" },
+    ],
+  },
+};
+
 vi.mock("~/lib/models", () => ({
-  getModelConfigByMatchingModel: vi.fn(),
+  getModelConfigByModel: vi.fn(async () => mockModelConfig),
 }));
 
 describe("handlePodcastTranscribe", () => {
@@ -36,13 +59,8 @@ describe("handlePodcastTranscribe", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const { getModelConfigByMatchingModel } = await import("~/lib/models");
-    vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-      provider: "replicate",
-      matchingModel:
-        "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
-      type: ["speech"],
-    });
+    const { getModelConfigByModel } = await import("~/lib/models");
+    vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig as any);
   });
 
   it("should return existing transcription when already processed", async () => {
@@ -116,6 +134,8 @@ describe("handlePodcastTranscribe", () => {
     expect(mockProvider.getResponse).toHaveBeenCalledWith(
       expect.objectContaining({
         completion_id: "podcast-123",
+        model:
+          "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
       }),
     );
   });

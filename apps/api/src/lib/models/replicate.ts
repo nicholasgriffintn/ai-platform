@@ -189,6 +189,12 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
           required: true,
         },
         {
+          name: "num_speakers",
+          type: "integer",
+          description:
+            "Number of distinct speakers expected in the transcription output.",
+        },
+        {
           name: "language",
           type: "string",
           description: "Language spoken in the audio clip (ISO 639-1 code).",
