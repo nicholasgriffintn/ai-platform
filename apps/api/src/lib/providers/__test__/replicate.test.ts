@@ -48,6 +48,7 @@ describe("ReplicateProvider", () => {
 
       expect(result).toEqual({
         model: "replicate-model",
+        version: "replicate-model",
         input: {
           prompt: "Hello",
           num_outputs: 1,
@@ -84,6 +85,7 @@ describe("ReplicateProvider", () => {
 
       expect(result).toEqual({
         model: "replicate-model",
+        version: "replicate-model",
         input: {
           prompt: "Compose",
           model_version: "medium",
