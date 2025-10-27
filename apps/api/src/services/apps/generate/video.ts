@@ -65,7 +65,6 @@ export async function generateVideo({
       ],
       env: env,
       user: user,
-      should_poll: true,
     });
 
     const isAsync = videoData?.status === "in_progress";

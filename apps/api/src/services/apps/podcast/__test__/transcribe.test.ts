@@ -116,7 +116,6 @@ describe("handlePodcastTranscribe", () => {
     expect(mockProvider.getResponse).toHaveBeenCalledWith(
       expect.objectContaining({
         completion_id: "podcast-123",
-        should_poll: true,
       }),
     );
   });

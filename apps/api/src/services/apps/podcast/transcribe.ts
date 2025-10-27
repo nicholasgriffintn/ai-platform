@@ -127,7 +127,6 @@ export const handlePodcastTranscribe = async (
       ],
       env,
       user,
-      should_poll: true,
     });
 
     const isAsync = transcriptionData?.status === "in_progress";
