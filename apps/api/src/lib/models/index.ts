@@ -34,6 +34,7 @@ import { ollamaModelConfig } from "./ollama";
 import { openaiModelConfig } from "./openai";
 import { openrouterModelConfig } from "./openrouter";
 import { perplexityModelConfig } from "./perplexity";
+import { replicateModelConfig } from "./replicate";
 import { requestyModelConfig } from "./requesty";
 import { togetherAiModelConfig } from "./together-ai";
 import { upstageModelConfig } from "./upstage";
@@ -83,6 +84,7 @@ const modelConfig: ModelConfig = {
   ...githubCopilotModelConfig,
   ...inceptionModelConfig,
   ...v0ModelConfig,
+  ...replicateModelConfig,
 };
 
 const MODEL_CACHE_TTL = 14400;
