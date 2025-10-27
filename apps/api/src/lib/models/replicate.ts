@@ -63,54 +63,6 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("replicate-zeroscope-v2-xl", PROVIDER, {
     name: "Zeroscope V2 XL",
     matchingModel:
-      "9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
-    description:
-      "Zeroscope V2 XL for text-to-video synthesis capable of generating short cinematic clips from prompts.",
-    type: ["text-to-video"],
-    strengths: ["creative", "video_generation"],
-    supportsStreaming: false,
-    supportsAttachments: false,
-    costPerRun: 0.06,
-    replicateInputSchema: {
-      reference: "https://replicate.com/anotherjesse/zeroscope-v2-xl",
-      fields: [
-        {
-          name: "prompt",
-          type: "string",
-          description: "Primary prompt describing the video scene to render.",
-          required: true,
-        },
-        {
-          name: "negative_prompt",
-          type: "string",
-          description:
-            "Elements or styles that should be removed from the generation.",
-          default: "",
-        },
-        {
-          name: "duration",
-          type: "number",
-          description: "Clip length in seconds.",
-          default: 8,
-        },
-        {
-          name: "width",
-          type: "integer",
-          description: "Frame width in pixels.",
-          default: 576,
-        },
-        {
-          name: "height",
-          type: "integer",
-          description: "Frame height in pixels.",
-          default: 320,
-        },
-      ],
-    },
-  }),
-  createModelConfig("replicate-zeroscope-v2-xl-latest", PROVIDER, {
-    name: "Zeroscope V2 XL (Latest Version)",
-    matchingModel:
       "847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
     description:
       "Updated release of Zeroscope V2 XL offering improved temporal consistency and camera motion controls.",
