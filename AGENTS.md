@@ -16,50 +16,59 @@ Polychat is a Cloudflare-first AI platform monorepo that unifies a multi-provide
 - `playwright.config.ts`, `vitest.config.ts`, `biome.json` – Global tooling configs.
 
 ## Build & Development Commands
-```sh
-pnpm install
-```
-```sh
-pnpm run dev
-pnpm run dev:api
-pnpm run dev:app
-pnpm run dev:metrics
-pnpm dev:mobile
-```
-```sh
-pnpm run lint
-pnpm run format
-pnpm run check
-pnpm run typecheck
-```
-```sh
-pnpm run test
-pnpm run coverage
-pnpm run test:e2e
-pnpm test:mobile
-```
-```sh
-pnpm run deploy
-pnpm run deploy:api
-pnpm run deploy:app
-pnpm run deploy:metrics
-```
-```sh
-cd apps/api && pnpm run db:generate
-cd apps/api && pnpm run db:migrate:local
-cd apps/api && pnpm run db:migrate:preview
-cd apps/api && pnpm run db:migrate:prod
-```
-```sh
-cd apps/api && pnpm --filter @assistant/schemas build && wrangler dev src/index.ts
-cd apps/app && pnpm --filter @assistant/schemas build && react-router dev
-cd apps/metrics && pnpm --filter @assistant/schemas build && vite
-```
+- **Initial setup (once per clone)**
+  ```sh
+  pnpm install
+  ```
+- **Daily development**
+  ```sh
+  pnpm run dev              # API + frontend together (default workflow)
+  pnpm run dev:api          # API worker only
+  pnpm run dev:app          # React router dev server
+  pnpm run dev:metrics      # Metrics dashboard
+  pnpm dev:mobile           # Build iOS simulator target (requires Xcode)
+  ```
+- **Quality gates (run before pushing/PR)**
+  ```sh
+  pnpm run lint
+  pnpm run typecheck
+  pnpm run test
+  ```
+  Use `pnpm run format` or `pnpm run check` to auto-fix Biome issues when necessary.
+- **Extended coverage / CI parity**
+  ```sh
+  pnpm run coverage         # Vitest coverage report
+  pnpm run test:e2e         # Playwright end-to-end suite (slow)
+  pnpm test:mobile          # XCTest for iOS client (very slow, only when touching native code)
+  ```
+- **Deployments (coordination required)**
+  ```sh
+  pnpm run deploy
+  pnpm run deploy:api
+  pnpm run deploy:app
+  pnpm run deploy:metrics
+  ```
+- **Database (API)**
+  ```sh
+  cd apps/api && pnpm run db:generate      # scaffold new migration
+  cd apps/api && pnpm run db:migrate:local # apply to local D1
+  cd apps/api && pnpm run db:migrate:preview
+  cd apps/api && pnpm run db:migrate:prod
+  ```
+- **Per-app schema refresh**
+  ```sh
+  cd apps/api && pnpm --filter @assistant/schemas build && wrangler dev src/index.ts
+  cd apps/app && pnpm --filter @assistant/schemas build && react-router dev
+  cd apps/metrics && pnpm --filter @assistant/schemas build && vite
+  ```
 
 ## Code Style & Conventions
-- TypeScript everywhere
-- Biome (`biome.json`) formats code with spaces and double quotes; linting invoked via `pnpm run lint/check`.
-- Vitest handles unit tests; Playwright covers E2E; and generates coverage reports.
+- TypeScript everywhere (`"type": "module"`) with shared configs in the workspace root; per-app `tsconfig*.json` extend these defaults.
+- Biome (`biome.json`) enforces double quotes and space indentation. `pnpm run lint`/`pnpm run check` delegate to Biome; formatters should never touch generated artifacts.
+- Testing is wired via `vitest.workspace.ts` and per-app `vitest.config.ts`; update app configs when changing environments.
+- Playwright lives at `playwright.config.ts` (root) with global setup/teardown scripts for API bootstrapping.
+- Frontend-specific runtime config (CSP, analytics, API endpoints) resides in `apps/app/src/constants.ts`.
+- Use standard GitHub Flow: short-lived branches, descriptive commit messages, and PR descriptions that state intent plus testing done. No commit or PR template is enforced.
 
 ## Architecture Notes
 ```mermaid
@@ -84,11 +93,21 @@ graph TD
 - Shared schema package keeps API contracts synchronized across all clients.
 
 ## Testing Strategy
-- Run workspace unit tests with `pnpm run test`; Vitest configs live per app (`apps/*/vitest.config.ts`) with coverage thresholds enforced via `pnpm run coverage`.
-- Frontend and metrics apps use `jsdom` environments plus Testing Library setups under `src/test`.
-- E2E suite (`pnpm run test:e2e`) uses Playwright; global setup migrates the local D1 database and boots the API worker before exercising `apps/app` flows.
-- Mobile CI/dev tests rely on `pnpm test:mobile`, which invokes `xcodebuild test`.
-- Database migrations should be applied locally via `pnpm run db:migrate:local` before running API tests that touch persistence.
+- **Before you submit**
+  - `pnpm run lint`
+  - `pnpm run typecheck`
+  - `pnpm run test`
+  - Call out any new migrations, schema builds, snapshot updates, or iOS artifacts in the PR description.
+- Unit tests run through `pnpm run test`; per-app configs live in `apps/*/vitest.config.ts` with coverage thresholds enforced by `pnpm run coverage`.
+- Frontend and metrics suites use `jsdom` plus Testing Library setup files located under `src/test`.
+- E2E workflow (`pnpm run test:e2e`) executes Playwright using root config and spins up the API via global setup; expect longer runtimes.
+- Native/mobile verification is via `pnpm test:mobile` (`xcodebuild test`). Required when modifying Swift/Objective-C or Capacitor integrations.
+- Database-affecting changes should be validated by applying migrations locally with `pnpm run db:migrate:local` before tests that touch persistence.
+- **CI expectations**
+  - `.github/workflows/test.yml` runs `pnpm check`, `pnpm --filter @assistant/schemas build`, `pnpm typecheck`, `pnpm test`, and `pnpm coverage` on every PR to `main`/`canary`/`*.x`.
+  - `.github/workflows/scan.yml` executes TruffleHog secret scanning on every PR.
+  - `.github/workflows/ios.yml` builds and tests the iOS app when files under `apps/mobile/ios` change.
+  - Coverage summaries are posted as part of the GitHub Action; maintain existing thresholds (70% global in Vitest configs).
 
 ## Security & Compliance
 - Secrets reside in `.dev.vars` (local) and Cloudflare `wrangler` bindings (`wrangler.jsonc`); never commit actual credentials.
@@ -96,17 +115,17 @@ graph TD
 - Usage throttling is governed by `USAGE_CONFIG`; conversation, memory, and function calls are validated via Zod schemas and provider caps.
 - Frontend sets an explicit CSP (`apps/app/src/constants.ts`) and injects CSRF tokens through the fetch wrapper; analytics toggles are feature-flagged.
 - Guardrails integrate with Llamaguard, AWS Bedrock guardrails, and custom monitoring hooks to log violations to Analytics Engine.
-- Dependency scanning, SBOM, and secret scanning practices are not defined.  
+- `.github/workflows/scan.yml` runs TruffleHog secret scanning on every PR; address any findings before merging. Dependency/SBOM tooling is not yet configured.
 - Repository is licensed under Apache-2.0 (`LICENSE`).
 
 ## Agent Guardrails
-- Never edit generated or vendored artifacts (`node_modules/`, `dist/`, `build/`, `coverage/`, `playwright-report/`, `test-results/`) except through build commands.
-- Avoid touching `pnpm-lock.yaml`, `wrangler.jsonc`, or Cloudflare binding blocks without human review; changes can break deployments and secrets.
-- Treat database migrations (`apps/api/migrations/`) as automated: generated with Drizzle, do not hand-edit.
-- `apps/mobile/ios` is Xcode-managed; restrict automated edits to documentation or clearly scoped Swift/Obj-C changes.
-- Preserve shared schema contract (`packages/schemas/src`) when updating endpoints; regenerate builds via `pnpm --filter @assistant/schemas build`.
-- Leave `.dev.vars` and other secret files untouched; never log or publish credentials.
-- Respect rate-limited external APIs—batch operations should consider provider quotas.
+- Never edit generated or vendored artifacts (`node_modules/`, `dist/`, `build/`, `coverage/`, `playwright-report/`, `test-results/`) except via their build scripts.
+- Avoid touching `pnpm-lock.yaml`, `wrangler.jsonc`, or Cloudflare binding blocks without maintainer approval; these files carry secrets and environment bindings.
+- Treat database migrations (`apps/api/migrations/`) as generated assets—create via Drizzle commands, avoid manual edits, and pair with schema/test updates.
+- `apps/mobile/ios` is Xcode-managed; safe edits include Swift/Objective-C source, localized strings, or documentation. Unsafe edits include manual `.xcodeproj` tweaks, provisioning changes, or derived data.
+- Preserve shared schema contract (`packages/schemas/src`); when editing, rebuild with `pnpm --filter @assistant/schemas build` and notify dependent app owners.
+- Leave `.dev.vars`, `.wrangler`, and other secret-bearing files untouched; never log, copy, or print credentials.
+- Respect rate-limited external APIs—batch requests and honor provider quotas to avoid account suspension.
 
 ## Extensibility Hooks
 - Extend routing or domain logic within `apps/api/src/services/**` and `apps/api/src/routes/**`; repositories centralize D1 access for reuse.
@@ -121,3 +140,8 @@ graph TD
 - [apps/app/README.md](apps/app/README.md)
 - [apps/metrics/README.md](apps/metrics/README.md)
 - [apps/mobile/ios/README.md](apps/mobile/ios/README.md)
+- [apps/api/AGENTS.md](apps/api/AGENTS.md)
+- [apps/app/AGENTS.md](apps/app/AGENTS.md)
+- [apps/metrics/AGENTS.md](apps/metrics/AGENTS.md)
+- [packages/schemas/AGENTS.md](packages/schemas/AGENTS.md)
+- [apps/mobile/ios/AGENTS.md](apps/mobile/ios/AGENTS.md)
