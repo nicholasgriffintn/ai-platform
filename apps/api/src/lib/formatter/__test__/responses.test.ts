@@ -2,21 +2,30 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv } from "~/types";
 
-const { mockUploadImageFromChat, mockUploadAudioFromChat, mockStorageService } =
-  vi.hoisted(() => {
-    const mockUploadImageFromChat = vi.fn();
-    const mockUploadAudioFromChat = vi.fn();
-    const mockStorageService = {
-      uploadObject: vi.fn().mockResolvedValue("test-key"),
-      getObject: vi.fn(),
-    };
+const {
+  mockUploadImageFromChat,
+  mockUploadAudioFromChat,
+  mockStorageService,
+  mockBucket,
+} = vi.hoisted(() => {
+  const mockUploadImageFromChat = vi.fn();
+  const mockUploadAudioFromChat = vi.fn();
+  const mockStorageService = {
+    uploadObject: vi.fn().mockResolvedValue("test-key"),
+    getObject: vi.fn(),
+  };
+  const mockBucket = {
+    put: vi.fn().mockResolvedValue(undefined),
+    get: vi.fn(),
+  };
 
-    return {
-      mockUploadImageFromChat,
-      mockUploadAudioFromChat,
-      mockStorageService,
-    };
-  });
+  return {
+    mockUploadImageFromChat,
+    mockUploadAudioFromChat,
+    mockStorageService,
+    mockBucket,
+  };
+});
 
 vi.mock("../storage", () => ({
   StorageService: vi.fn().mockImplementation(() => mockStorageService),
@@ -33,7 +42,7 @@ import { ResponseFormatter } from "../responses";
 
 describe("ResponseFormatter", () => {
   const mockEnv: IEnv = {
-    ASSETS_BUCKET: "test-bucket",
+    ASSETS_BUCKET: mockBucket as unknown as IEnv["ASSETS_BUCKET"],
     PUBLIC_ASSETS_URL: "https://assets.example.com",
   } as IEnv;
 
@@ -357,6 +366,90 @@ describe("ResponseFormatter", () => {
           "<think>\nFirst thought\n</think>\nSome text\n</think>\nFinal response",
         );
       });
+    });
+  });
+
+  describe("formatReplicateResponse", () => {
+    it("should format image outputs without persistence", async () => {
+      const data = {
+        output: ["https://replicate.delivery/example/output-0.png"],
+      };
+
+      const result = await ResponseFormatter.formatResponse(data, "replicate", {
+        type: ["text-to-image"],
+      });
+
+      expect(result.response).toEqual([
+        {
+          type: "image_url",
+          image_url: { url: "https://replicate.delivery/example/output-0.png" },
+        },
+      ]);
+      expect(mockStorageService.uploadObject).not.toHaveBeenCalled();
+    });
+
+    it("should persist image outputs when storage is configured", async () => {
+      const data = {
+        output: ["https://replicate.delivery/example/output-0.png"],
+      };
+
+      const mockFetch = vi.mocked(fetch);
+      mockFetch.mockResolvedValue({
+        ok: true,
+        arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(4)),
+      } as unknown as Response);
+
+      const result = await ResponseFormatter.formatResponse(data, "replicate", {
+        type: ["text-to-image"],
+        env: mockEnv,
+        model: "replicate-image",
+      });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://replicate.delivery/example/output-0.png",
+      );
+      const storageCalls =
+        mockStorageService.uploadObject.mock.calls.length +
+        mockBucket.put.mock.calls.length;
+      expect(storageCalls).toBeGreaterThan(0);
+      const responseUrl = (result.response as any)[0].image_url.url as string;
+      expect(responseUrl.startsWith(mockEnv.PUBLIC_ASSETS_URL || "")).toBe(
+        true,
+      );
+      expect(result.data.assets[0].originalUrl).toBe(
+        "https://replicate.delivery/example/output-0.png",
+      );
+    });
+
+    it("should format audio outputs", async () => {
+      const data = {
+        output: "https://replicate.delivery/example/output-0.mp3",
+      };
+
+      const result = await ResponseFormatter.formatResponse(data, "replicate", {
+        type: ["text-to-audio"],
+      });
+
+      expect(result.response).toEqual([
+        {
+          type: "audio_url",
+          audio_url: {
+            url: "https://replicate.delivery/example/output-0.mp3",
+          },
+        },
+      ]);
+    });
+
+    it("should format text outputs for transcription", async () => {
+      const data = {
+        output: { text: "Transcribed speech" },
+      };
+
+      const result = await ResponseFormatter.formatResponse(data, "replicate", {
+        type: ["audio-to-text"],
+      });
+
+      expect(result.response).toBe("Transcribed speech");
     });
   });
 
