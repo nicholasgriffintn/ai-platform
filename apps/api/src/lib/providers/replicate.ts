@@ -51,7 +51,9 @@ function extractPromptFromMessages(messages: Message[]): string {
 
     if (Array.isArray(content)) {
       const textParts = content
-        .filter((part) => part?.type === "text" && typeof part.text === "string")
+        .filter(
+          (part) => part?.type === "text" && typeof part.text === "string",
+        )
         .map((part) => part.text!.trim())
         .filter(Boolean);
 
@@ -135,10 +137,7 @@ function extractAssetFromMessage(message?: Message): string | undefined {
   return undefined;
 }
 
-function coerceValue(
-  value: unknown,
-  types: ReplicateFieldType[],
-): unknown {
+function coerceValue(value: unknown, types: ReplicateFieldType[]): unknown {
   if (value === undefined || value === null) {
     return value;
   }
@@ -152,8 +151,13 @@ function coerceValue(
     }
   }
 
-  if ((types.includes("number") || types.includes("integer")) && typeof value === "string") {
-    const parsed = types.includes("integer") ? parseInt(value, 10) : parseFloat(value);
+  if (
+    (types.includes("number") || types.includes("integer")) &&
+    typeof value === "string"
+  ) {
+    const parsed = types.includes("integer")
+      ? parseInt(value, 10)
+      : parseFloat(value);
     if (!Number.isNaN(parsed)) {
       return parsed;
     }
@@ -211,7 +215,9 @@ function buildFieldValue(
 ): unknown {
   const lastMessage = params.messages?.[params.messages.length - 1];
   const messageContent =
-    lastMessage && typeof lastMessage.content === "object" && !Array.isArray(lastMessage.content)
+    lastMessage &&
+    typeof lastMessage.content === "object" &&
+    !Array.isArray(lastMessage.content)
       ? (lastMessage.content as Record<string, any>)
       : undefined;
 
@@ -230,7 +236,10 @@ function buildFieldValue(
   let value = pickFromSources(field.name, candidateSources);
 
   if (value === undefined) {
-    if (types.includes("string") && field.name.toLowerCase().includes("prompt")) {
+    if (
+      types.includes("string") &&
+      field.name.toLowerCase().includes("prompt")
+    ) {
       const prompt = extractPromptFromMessages(params.messages || []);
       if (prompt) {
         value = prompt;
@@ -387,7 +396,8 @@ export class ReplicateProvider extends BaseProvider {
     const endpoint = await this.getEndpoint();
     const headers = await this.getHeaders(params);
     const body = await this.mapParameters(params);
-    const resolvedModel = (body?.model as string) || params.model || params.version || "unknown";
+    const resolvedModel =
+      (body?.model as string) || params.model || params.version || "unknown";
 
     return trackProviderMetrics({
       provider: this.name,
