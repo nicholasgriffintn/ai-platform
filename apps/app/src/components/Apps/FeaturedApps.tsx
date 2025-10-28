@@ -6,6 +6,15 @@ import { AppCard } from "./AppCard";
 
 const featuredAppsData: AppListItem[] = [
   {
+    id: "featured-replicate",
+    name: "Replicate Predictions",
+    description:
+      "Generate images, videos, audio, and more with state-of-the-art AI models",
+    icon: "sparkles",
+    category: "AI Generation",
+    href: "/apps/replicate",
+  },
+  {
     id: "featured-drawing",
     name: "Drawing",
     description:

@@ -47,6 +47,7 @@ import notes from "./notes";
 import podcasts from "./podcasts";
 import retrieval from "./retrieval";
 import shared from "./shared";
+import replicate from "./replicate";
 
 const app = new Hono();
 
@@ -121,6 +122,8 @@ app.route("/articles", articles);
 app.route("/notes", notes);
 
 app.route("/retrieval", retrieval);
+
+app.route("/replicate", replicate);
 
 app.post(
   "/content-extract",
