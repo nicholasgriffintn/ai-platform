@@ -87,9 +87,12 @@ export async function generateMusic({
       messages: [
         {
           role: "user",
-          content: [{ ...replicatePayload, type: "text" }],
+          content: replicatePayload.prompt as string,
         },
       ],
+      body: {
+        input: replicatePayload,
+      },
       env: env,
       user: user,
     });

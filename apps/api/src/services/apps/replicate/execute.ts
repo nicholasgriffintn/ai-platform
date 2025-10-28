@@ -66,11 +66,15 @@ export const executeReplicateModel = async (
       messages: [
         {
           role: "user",
-          content: [{ ...params.input, type: "text" }],
+          content: params.input.prompt,
         },
       ],
+      body: {
+        input: params.input,
+      },
       env,
       user,
+      store: false,
     });
 
     const isAsync = predictionData?.status === "in_progress";
