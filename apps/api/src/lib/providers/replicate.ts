@@ -380,7 +380,6 @@ export class ReplicateProvider extends BaseProvider {
     const { input } = buildReplicateInput(params, modelConfig);
 
     const payload: Record<string, any> = {
-      model: modelConfig.matchingModel,
       version: params.version || modelConfig.matchingModel,
       input,
     };
