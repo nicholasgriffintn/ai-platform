@@ -90,7 +90,7 @@ export const executeReplicateModel = async (
       createdAt: new Date().toISOString(),
     };
 
-    await repositories.appData.createAppDataWithItem(
+    const stored = await repositories.appData.createAppDataWithItem(
       user.id,
       "replicate",
       predictionId,
@@ -98,14 +98,21 @@ export const executeReplicateModel = async (
       appData,
     );
 
+    if (!stored?.id) {
+      throw new AssistantError(
+        "Failed to store prediction data",
+        ErrorType.STORAGE_ERROR,
+      );
+    }
+
     return {
       status: "success",
       content: isAsync
         ? `Prediction started: ${predictionId}`
         : `Prediction completed: ${predictionId}`,
       data: {
-        id: predictionId,
-        ...appData,
+        id: stored.id,
+        ...stored,
       },
     };
   } catch (error) {
