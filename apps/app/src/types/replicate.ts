@@ -29,8 +29,10 @@ export interface ReplicatePrediction {
   modelName?: string;
   input: Record<string, any>;
   created_at: string;
+  createdAt?: string;
   predictionData?: {
     output?: any;
+    response?: any;
   };
 }
 
