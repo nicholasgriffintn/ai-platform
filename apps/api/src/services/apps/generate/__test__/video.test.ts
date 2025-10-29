@@ -79,9 +79,14 @@ describe("generateVideo", () => {
       messages: [
         {
           role: "user",
-          content: [{ type: "text", prompt: "A cat playing with a ball" }],
+          content: "A cat playing with a ball",
         },
       ],
+      body: {
+        input: {
+          prompt: "A cat playing with a ball",
+        },
+      },
       env: mockEnv,
       user: mockUser,
     });
@@ -111,19 +116,19 @@ describe("generateVideo", () => {
         messages: [
           {
             role: "user",
-            content: [
-              {
-                type: "text",
-                prompt: "A cat playing with a ball",
-                negative_prompt: "blurry, low quality",
-                guidance_scale: 7.5,
-                duration: 10,
-                height: 512,
-                width: 512,
-              },
-            ],
+            content: "A cat playing with a ball",
           },
         ],
+        body: {
+          input: {
+            prompt: "A cat playing with a ball",
+            negative_prompt: "blurry, low quality",
+            guidance_scale: 7.5,
+            duration: 10,
+            height: 512,
+            width: 512,
+          },
+        },
       }),
     );
   });
@@ -167,9 +172,14 @@ describe("generateVideo", () => {
         messages: [
           {
             role: "user",
-            content: [{ type: "text", prompt: "sanitised prompt" }],
+            content: "sanitised prompt",
           },
         ],
+        body: {
+          input: {
+            prompt: "sanitised prompt",
+          },
+        },
       }),
     );
   });

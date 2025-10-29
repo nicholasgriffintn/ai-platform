@@ -69,9 +69,14 @@ describe("generateMusic", () => {
       messages: [
         {
           role: "user",
-          content: [{ type: "text", prompt: "Upbeat electronic music" }],
+          content: "Upbeat electronic music",
         },
       ],
+      body: {
+        input: {
+          prompt: "Upbeat electronic music",
+        },
+      },
       env: mockEnv,
       user: mockUser,
     });
@@ -98,16 +103,16 @@ describe("generateMusic", () => {
         messages: [
           {
             role: "user",
-            content: [
-              {
-                type: "text",
-                prompt: "Upbeat electronic music",
-                input_audio: "base64audiodata",
-                duration: 30,
-              },
-            ],
+            content: "Upbeat electronic music",
           },
         ],
+        body: {
+          input: {
+            prompt: "Upbeat electronic music",
+            input_audio: "base64audiodata",
+            duration: 30,
+          },
+        },
       }),
     );
   });
@@ -151,14 +156,14 @@ describe("generateMusic", () => {
         messages: [
           {
             role: "user",
-            content: [
-              {
-                prompt: "sanitised prompt",
-                type: "text",
-              },
-            ],
+            content: "sanitised prompt",
           },
         ],
+        body: {
+          input: {
+            prompt: "sanitised prompt",
+          },
+        },
       }),
     );
   });

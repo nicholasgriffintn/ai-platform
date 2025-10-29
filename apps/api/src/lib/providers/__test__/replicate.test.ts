@@ -47,7 +47,6 @@ describe("ReplicateProvider", () => {
       const result = await provider.mapParameters(params as any);
 
       expect(result).toEqual({
-        model: "replicate-model",
         version: "replicate-model",
         input: {
           prompt: "Hello",
@@ -84,7 +83,6 @@ describe("ReplicateProvider", () => {
       const result = await provider.mapParameters(params as any);
 
       expect(result).toEqual({
-        model: "replicate-model",
         version: "replicate-model",
         input: {
           prompt: "Compose",
@@ -286,7 +284,7 @@ describe("ReplicateProvider", () => {
 
       const provider = new ReplicateProvider();
       const params = {
-        model:
+        version:
           "42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b",
         messages: [{ role: "user", content: "Upscale this image" }],
         env: { AI_GATEWAY_TOKEN: "test-token" },
@@ -352,7 +350,7 @@ describe("ReplicateProvider", () => {
           fields: [
             { name: "image", type: ["file", "string"], required: true },
             {
-              name: "model",
+              name: "model_version",
               type: "string",
               default: "u2net",
               enum: ["u2net", "u2netp", "u2net_human_seg"],
@@ -376,7 +374,7 @@ describe("ReplicateProvider", () => {
 
       expect(result.input).toEqual({
         image: "https://example.com/portrait.jpg",
-        model: "u2net_human_seg",
+        model_version: "u2net",
         alpha_matting: true,
       });
     });
