@@ -10,7 +10,7 @@ import {
 } from "~/hooks/useChat";
 import { apiService } from "~/lib/api/api-service";
 import { useMemories } from "~/hooks/useMemory";
-import { Button } from "~/components/ui";
+import { Button, ConfirmationDialog } from "~/components/ui";
 import { MemoryList } from "~/components/MemoryList";
 import { CreateGroupModal } from "~/components/CreateGroupModal";
 import { MemoryGroups } from "~/components/MemoryGroups";
@@ -24,6 +24,11 @@ export function ProfileHistoryTab() {
 
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [confirmDeleteMemory, setConfirmDeleteMemory] = useState<string | null>(
+    null,
+  );
+  const [confirmDeleteLocal, setConfirmDeleteLocal] = useState(false);
+  const [confirmDeleteRemote, setConfirmDeleteRemote] = useState(false);
 
   const {
     memories,
@@ -36,11 +41,14 @@ export function ProfileHistoryTab() {
   } = useMemories(selectedGroup || undefined);
 
   const handleDeleteMemory = async (memoryId: string) => {
-    if (!confirm("Are you sure you want to delete this memory?")) {
-      return;
-    }
+    setConfirmDeleteMemory(memoryId);
+  };
 
-    deleteMemory(memoryId);
+  const confirmDeleteMemoryAction = () => {
+    if (confirmDeleteMemory) {
+      deleteMemory(confirmDeleteMemory);
+      setConfirmDeleteMemory(null);
+    }
   };
 
   const handleGroupCreated = () => {
@@ -72,14 +80,10 @@ export function ProfileHistoryTab() {
   };
 
   const handleDeleteAllLocalChats = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete all local conversations? This cannot be undone.",
-      )
-    ) {
-      return;
-    }
+    setConfirmDeleteLocal(true);
+  };
 
+  const confirmDeleteAllLocalChats = async () => {
     try {
       trackEvent({
         name: "delete_all_local_chats",
@@ -88,21 +92,18 @@ export function ProfileHistoryTab() {
         value: 1,
       });
       await deleteAllChats.mutateAsync();
+      setConfirmDeleteLocal(false);
     } catch (error) {
       console.error("Failed to delete all chats:", error);
-      alert("Failed to delete all conversations. Please try again.");
+      // Keep modal open on error
     }
   };
 
   const handleDeleteAllRemoteChats = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete all remote conversations? This cannot be undone.",
-      )
-    ) {
-      return;
-    }
+    setConfirmDeleteRemote(true);
+  };
 
+  const confirmDeleteAllRemoteChats = async () => {
     try {
       trackEvent({
         name: "delete_all_remote_chats",
@@ -111,9 +112,10 @@ export function ProfileHistoryTab() {
         value: 1,
       });
       await deleteAllRemoteChats.mutateAsync();
+      setConfirmDeleteRemote(false);
     } catch (error) {
       console.error("Failed to delete all remote chats:", error);
-      alert("Failed to delete all conversations. Please try again.");
+      // Keep modal open on error
     }
   };
 
@@ -253,12 +255,44 @@ export function ProfileHistoryTab() {
         </div>
       </div>
 
-      {showCreateGroup && (
-        <CreateGroupModal
-          onClose={() => setShowCreateGroup(false)}
-          onGroupCreated={handleGroupCreated}
-        />
-      )}
+      <CreateGroupModal
+        isOpen={showCreateGroup}
+        onClose={() => setShowCreateGroup(false)}
+        onGroupCreated={handleGroupCreated}
+      />
+
+      <ConfirmationDialog
+        open={confirmDeleteMemory !== null}
+        onOpenChange={(open) => !open && setConfirmDeleteMemory(null)}
+        title="Delete Memory"
+        description="Are you sure you want to delete this memory? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+        onConfirm={confirmDeleteMemoryAction}
+        isLoading={isDeletingMemory}
+      />
+
+      <ConfirmationDialog
+        open={confirmDeleteLocal}
+        onOpenChange={setConfirmDeleteLocal}
+        title="Delete All Local Conversations"
+        description="Are you sure you want to delete all local conversations? This action cannot be undone."
+        confirmText="Delete All Local"
+        variant="destructive"
+        onConfirm={confirmDeleteAllLocalChats}
+        isLoading={deleteAllChats.isPending}
+      />
+
+      <ConfirmationDialog
+        open={confirmDeleteRemote}
+        onOpenChange={setConfirmDeleteRemote}
+        title="Delete All Remote Conversations"
+        description="Are you sure you want to delete all remote conversations? This action cannot be undone. Note: The retention policies of our hosting partners may vary."
+        confirmText="Delete All Remote"
+        variant="destructive"
+        onConfirm={confirmDeleteAllRemoteChats}
+        isLoading={deleteAllRemoteChats.isPending}
+      />
     </div>
   );
 }

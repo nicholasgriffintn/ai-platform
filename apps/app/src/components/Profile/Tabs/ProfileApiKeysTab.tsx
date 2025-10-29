@@ -1,16 +1,20 @@
-import { Copy, Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import {
   Button,
+  ConfirmationDialog,
+  CopyButton,
   Dialog,
   DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
   FormInput,
+  HoverActions,
+  ListItem,
 } from "~/components/ui";
 import { Card } from "~/components/ui/Card";
 import { useApiKeys } from "~/hooks/useApiKeys";
@@ -28,15 +32,6 @@ function GeneratedApiKeyModal({
   apiKey: string;
   apiKeyName: string;
 }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(apiKey);
-    setCopied(true);
-    console.log("API Key copied to clipboard!");
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -48,19 +43,16 @@ function GeneratedApiKeyModal({
           Please copy your new API key. You won't be able to see it again!
         </p>
         <div className="space-y-4 mt-4">
-          <div className="bg-zinc-100 dark:bg-zinc-700 p-3 rounded-md flex items-center justify-between">
-            <code className="text-sm text-zinc-700 dark:text-zinc-200 break-all">
+          <div className="bg-zinc-100 dark:bg-zinc-700 p-3 rounded-md flex items-center justify-between gap-2">
+            <code className="text-sm text-zinc-700 dark:text-zinc-200 break-all flex-1">
               {apiKey}
             </code>
-            <Button
+            <CopyButton
+              value={apiKey}
               variant="icon"
-              size="sm"
-              onClick={handleCopy}
-              aria-label="Copy API Key"
-              title="Copy API Key"
-            >
-              <Copy className={`h-4 w-4 ${copied ? "text-green-500" : ""}`} />
-            </Button>
+              iconSize={16}
+              onCopy={() => console.log("API Key copied to clipboard!")}
+            />
           </div>
           <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">
             Store this key securely. It grants access to your account.
@@ -70,52 +62,6 @@ function GeneratedApiKeyModal({
               Done
             </Button>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function ConfirmDeleteModal({
-  isOpen,
-  onClose,
-  onConfirm,
-  apiKeyName,
-  isDeleting,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  apiKeyName: string;
-  isDeleting: boolean;
-}) {
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Confirm Deletion</DialogTitle>
-          <DialogClose onClick={onClose} />
-        </DialogHeader>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          {`Are you sure you want to delete the API key "${apiKeyName}"? This action cannot be undone.`}
-        </p>
-        <div className="flex justify-end space-x-3 mt-6">
-          <Button variant="secondary" onClick={onClose} disabled={isDeleting}>
-            Cancel
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={onConfirm}
-            disabled={isDeleting}
-          >
-            {isDeleting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...
-              </>
-            ) : (
-              "Delete Key"
-            )}
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -270,35 +216,35 @@ export function ProfileApiKeysTab() {
                 className="bg-transparent dark:bg-transparent py-6 px-0"
               />
             ) : (
-              <ul className="space-y-3">
+              <ul className="space-y-1">
                 {apiKeys.map((key) => (
-                  <li
+                  <ListItem
                     key={key.id}
-                    className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-md"
-                  >
-                    <div>
-                      <p className="font-medium text-zinc-800 dark:text-zinc-100">
-                        {key.name}
-                      </p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Created: {formatDate(key.created_at)}
-                      </p>
-                    </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDeleteClick(key.id, key.name)}
-                      disabled={isDeletingApiKey && keyToDelete?.id === key.id}
-                      aria-label={`Delete API key ${key.name}`}
-                      title={`Delete API key ${key.name}`}
-                    >
-                      {isDeletingApiKey && keyToDelete?.id === key.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </li>
+                    label={key.name}
+                    sublabel={`Created: ${formatDate(key.created_at)}`}
+                    actions={
+                      <HoverActions
+                        actions={[
+                          {
+                            id: "delete",
+                            icon:
+                              isDeletingApiKey && keyToDelete?.id === key.id ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Trash2 size={14} />
+                              ),
+                            label: `Delete API key ${key.name}`,
+                            onClick: (e) => {
+                              e.stopPropagation();
+                              handleDeleteClick(key.id, key.name);
+                            },
+                            disabled:
+                              isDeletingApiKey && keyToDelete?.id === key.id,
+                          },
+                        ]}
+                      />
+                    }
+                  />
                 ))}
               </ul>
             )}
@@ -314,15 +260,20 @@ export function ProfileApiKeysTab() {
           />
         )}
 
-        {keyToDelete && (
-          <ConfirmDeleteModal
-            isOpen={!!keyToDelete}
-            onClose={() => setKeyToDelete(null)}
-            onConfirm={handleConfirmDelete}
-            apiKeyName={keyToDelete.name}
-            isDeleting={isDeletingApiKey && keyToDelete?.id === keyToDelete.id}
-          />
-        )}
+        <ConfirmationDialog
+          open={!!keyToDelete}
+          onOpenChange={(open) => !open && setKeyToDelete(null)}
+          title="Delete API Key"
+          description={
+            keyToDelete
+              ? `Are you sure you want to delete the API key "${keyToDelete.name}"? This action cannot be undone.`
+              : ""
+          }
+          confirmText="Delete Key"
+          variant="destructive"
+          onConfirm={handleConfirmDelete}
+          isLoading={isDeletingApiKey}
+        />
       </div>
     </div>
   );

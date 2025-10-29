@@ -10,10 +10,11 @@ import {
   TvMinimalPlay,
   Zap,
 } from "lucide-react";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { toast } from "sonner";
 
 import { cn } from "~/lib/utils";
+import { ActionButtons, ConfirmationDialog } from "~/components/ui";
 
 interface NoteEditorToolbarProps {
   fontFamily: string;
@@ -68,6 +69,9 @@ export const NoteEditorToolbar = memo(function NoteEditorToolbar({
   tabCapture,
   onTabCaptureToggle,
 }: NoteEditorToolbarProps) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const handleCopy = () => {
     navigator.clipboard
       .writeText(text)
@@ -92,11 +96,23 @@ export const NoteEditorToolbar = memo(function NoteEditorToolbar({
 
   const handleDelete = () => {
     if (onDelete) {
-      if (window.confirm("Are you sure you want to delete this note?")) {
-        void onDelete();
-      }
+      setShowDeleteConfirm(true);
     } else {
       onClearText?.();
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (onDelete) {
+      setIsDeleting(true);
+      try {
+        await onDelete();
+        setShowDeleteConfirm(false);
+      } catch (error) {
+        toast.error("Failed to delete note");
+      } finally {
+        setIsDeleting(false);
+      }
     }
   };
 
@@ -148,132 +164,108 @@ export const NoteEditorToolbar = memo(function NoteEditorToolbar({
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-        <button
-          type="button"
-          onClick={onOpenMediaModal}
-          className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-          aria-label="Generate notes from media URL"
-          title="Generate notes from media URL"
-        >
-          <TvMinimalPlay size={16} />
-        </button>
-        <button
-          type="button"
-          disabled={!noteId}
-          onClick={onOpenFormatModal}
-          aria-disabled={!noteId}
-          className={cn(
-            "p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-offset-2",
-            !noteId && "opacity-50 cursor-not-allowed",
-          )}
-          aria-label="AI Assist"
-        >
-          <Zap size={16} />
-        </button>
-        <button
-          type="button"
-          onClick={onTranscriptionToggle}
-          aria-pressed={isTranscribing}
-          className={cn(
-            "p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-offset-2",
-            isTranscribing &&
-              (isSpeechDetected
-                ? "text-green-600 dark:text-green-400"
-                : transcriptionStatus === "active"
-                  ? "text-blue-600 dark:text-blue-400"
-                  : transcriptionStatus === "connecting"
-                    ? "text-yellow-600 dark:text-yellow-400 animate-pulse"
-                    : transcriptionStatus === "reconnecting"
-                      ? "text-orange-600 dark:text-orange-400 animate-pulse"
-                      : transcriptionStatus === "error"
-                        ? "text-red-600 dark:text-red-400"
-                        : ""),
-          )}
-          aria-label={
-            isTranscribing ? "Stop transcription" : "Start transcription"
-          }
-          title={
-            isTranscribing
-              ? isSpeechDetected
-                ? "Speech detected - click to stop"
-                : transcriptionStatus === "active"
-                  ? "Listening - click to stop"
-                  : transcriptionStatus === "connecting"
-                    ? "Connecting..."
-                    : transcriptionStatus === "reconnecting"
-                      ? "Reconnecting..."
-                      : transcriptionStatus === "error"
-                        ? "Connection error - click to retry"
-                        : "Stop transcription"
-              : "Start transcription"
-          }
-        >
-          <Mic size={16} className={isSpeechDetected ? "animate-pulse" : ""} />
-        </button>
-        <button
-          type="button"
-          onClick={onTabCaptureToggle}
-          aria-pressed={tabCapture.isCapturing}
-          className={cn(
-            "p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-offset-2",
-            tabCapture.isCapturing
-              ? "text-purple-600 dark:text-purple-400"
-              : "",
-          )}
-          aria-label={
-            tabCapture.isCapturing
-              ? "Stop tab audio transcription"
-              : "Start tab audio transcription"
-          }
-        >
-          {tabCapture.isCapturing ? (
-            <MonitorDot size={16} className="animate-pulse" />
-          ) : (
-            <MonitorStop size={16} />
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-          aria-label="Copy text"
-        >
-          <Copy size={16} />
-        </button>
-        <button
-          type="button"
-          onClick={handleDownload}
-          className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-          aria-label="Download note"
-        >
-          <Download size={16} />
-        </button>
-        <button
-          type="button"
-          onClick={handleDelete}
-          className={cn(
-            "p-1 rounded",
-            onDelete
-              ? "hover:bg-red-200 dark:hover:bg-red-800 hover:text-red-900 dark:hover:text-red-100"
-              : "hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100",
-          )}
-          aria-label={onDelete ? "Delete note" : "Clear note"}
-        >
-          <Trash2 size={16} />
-        </button>
-        <button
-          type="button"
-          onClick={onToggleFullBleed}
-          className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-          aria-label="Toggle full screen mode"
-          aria-pressed={isFullBleed}
-        >
-          {isFullBleed ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-        </button>
-        <span>
+        <ActionButtons
+          actions={[
+            {
+              id: "media",
+              icon: <TvMinimalPlay size={16} />,
+              label: "Generate notes from media URL",
+              onClick: onOpenMediaModal,
+            },
+            {
+              id: "ai-assist",
+              icon: <Zap size={16} />,
+              label: "AI Assist",
+              onClick: onOpenFormatModal,
+              disabled: !noteId,
+            },
+            {
+              id: "transcription",
+              icon: (
+                <Mic
+                  size={16}
+                  className={isSpeechDetected ? "animate-pulse" : ""}
+                />
+              ),
+              label: isTranscribing
+                ? "Stop transcription"
+                : "Start transcription",
+              onClick: onTranscriptionToggle,
+              variant: isTranscribing
+                ? isSpeechDetected
+                  ? "success"
+                  : transcriptionStatus === "active"
+                    ? "active"
+                    : transcriptionStatus === "error"
+                      ? "destructive"
+                      : "default"
+                : "default",
+              className: cn(
+                isTranscribing &&
+                  (transcriptionStatus === "connecting" ||
+                    transcriptionStatus === "reconnecting")
+                  ? "animate-pulse"
+                  : "",
+              ),
+            },
+            {
+              id: "tab-capture",
+              icon: tabCapture.isCapturing ? (
+                <MonitorDot size={16} className="animate-pulse" />
+              ) : (
+                <MonitorStop size={16} />
+              ),
+              label: tabCapture.isCapturing
+                ? "Stop tab audio transcription"
+                : "Start tab audio transcription",
+              onClick: onTabCaptureToggle,
+              variant: tabCapture.isCapturing ? "active" : "default",
+            },
+            {
+              id: "copy",
+              icon: <Copy size={16} />,
+              label: "Copy text",
+              onClick: handleCopy,
+            },
+            {
+              id: "download",
+              icon: <Download size={16} />,
+              label: "Download note",
+              onClick: handleDownload,
+            },
+            {
+              id: "delete",
+              icon: <Trash2 size={16} />,
+              label: onDelete ? "Delete note" : "Clear note",
+              onClick: handleDelete,
+              variant: onDelete ? "destructive" : "default",
+            },
+            {
+              id: "fullscreen",
+              icon: isFullBleed ? (
+                <Minimize2 size={16} />
+              ) : (
+                <Maximize2 size={16} />
+              ),
+              label: "Toggle full screen mode",
+              onClick: onToggleFullBleed || (() => {}),
+            },
+          ]}
+        />
+        <span className="ml-2">
           {wordCount} words, {charCount} characters
         </span>
       </div>
+      <ConfirmationDialog
+        open={showDeleteConfirm}
+        onOpenChange={(open) => setShowDeleteConfirm(open)}
+        onConfirm={confirmDelete}
+        title="Delete Note"
+        description="Are you sure you want to delete this note? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+        isLoading={isDeleting}
+      />
     </div>
   );
 });

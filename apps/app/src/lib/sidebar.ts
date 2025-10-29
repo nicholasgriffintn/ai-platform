@@ -1,6 +1,22 @@
-import type { Conversation } from "~/types";
+export interface CategorizedItems<T> {
+  today: T[];
+  yesterday: T[];
+  thisWeek: T[];
+  thisMonth: T[];
+  lastMonth: T[];
+  older: T[];
+}
 
-export const categorizeChatsByDate = (conversations: Conversation[] = []) => {
+/**
+ * Generic function to categorize items by date into common time periods
+ * @param items - Array of items to categorize
+ * @param getDate - Function to extract a Date from each item
+ * @returns Object with items categorized by time period
+ */
+export function categorizeItemsByDate<T>(
+  items: T[] = [],
+  getDate: (item: T) => Date,
+): CategorizedItems<T> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -20,42 +36,29 @@ export const categorizeChatsByDate = (conversations: Conversation[] = []) => {
   yesterday.setDate(yesterday.getDate() - 1);
 
   return {
-    today: conversations.filter((conversation) => {
-      const date = getConversationDate(conversation);
+    today: items.filter((item) => {
+      const date = getDate(item);
       return date >= today && date < tomorrow;
     }),
-    yesterday: conversations.filter((conversation) => {
-      const date = getConversationDate(conversation);
+    yesterday: items.filter((item) => {
+      const date = getDate(item);
       return date >= yesterday && date < today;
     }),
-    thisWeek: conversations.filter((conversation) => {
-      const date = getConversationDate(conversation);
+    thisWeek: items.filter((item) => {
+      const date = getDate(item);
       return date >= startOfWeek && date < yesterday;
     }),
-    thisMonth: conversations.filter((conversation) => {
-      const date = getConversationDate(conversation);
+    thisMonth: items.filter((item) => {
+      const date = getDate(item);
       return date >= startOfMonth && date < startOfWeek;
     }),
-    lastMonth: conversations.filter((conversation) => {
-      const date = getConversationDate(conversation);
+    lastMonth: items.filter((item) => {
+      const date = getDate(item);
       return date >= startOfLastMonth && date < startOfMonth;
     }),
-    older: conversations.filter((conversation) => {
-      const date = getConversationDate(conversation);
+    older: items.filter((item) => {
+      const date = getDate(item);
       return date < startOfLastMonth;
     }),
   };
-};
-
-const getConversationDate = (conversation: Conversation) => {
-  if (conversation.created_at) {
-    return new Date(conversation.created_at);
-  }
-  if (conversation.updated_at) {
-    return new Date(conversation.updated_at);
-  }
-  if (conversation.last_message_at) {
-    return new Date(conversation.last_message_at);
-  }
-  return new Date(0);
-};
+}

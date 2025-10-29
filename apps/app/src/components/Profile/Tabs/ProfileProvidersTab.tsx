@@ -4,8 +4,7 @@ import { useState } from "react";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
-import { Button } from "~/components/ui/Button";
-import { Card } from "~/components/ui/Card";
+import { HoverActions, ListItem } from "~/components/ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useUser } from "~/hooks/useUser";
 import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal";
@@ -98,50 +97,50 @@ export function ProfileProvidersTab() {
             className="bg-transparent dark:bg-transparent border-none py-10 px-0"
           />
         ) : (
-          Object.entries(providerSettings).map(([providerId, provider]) => (
-            <Card key={providerId} className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                    {(provider as ProviderSetting).name ||
-                      (provider as ProviderSetting).provider_id}
-                  </h3>
-                  {(provider as ProviderSetting).description && (
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                      {(provider as ProviderSetting).description}
-                    </p>
-                  )}
-                </div>
-                <Button
-                  variant={
-                    (provider as ProviderSetting).enabled
-                      ? "secondary"
-                      : "default"
-                  }
-                  size="sm"
-                  onClick={() =>
-                    handleEnableProvider(
-                      (provider as ProviderSetting).id,
-                      (provider as ProviderSetting).name ||
-                        (provider as ProviderSetting).provider_id,
-                    )
-                  }
-                  className="flex items-center gap-2"
-                  icon={
-                    (provider as ProviderSetting).enabled ? (
-                      <Power className="h-4 w-4" />
-                    ) : (
-                      <Plus className="h-4 w-4" />
-                    )
-                  }
-                >
-                  {(provider as ProviderSetting).enabled
-                    ? "Configure"
-                    : "Enable"}
-                </Button>
-              </div>
-            </Card>
-          ))
+          <ul className="space-y-1">
+            {Object.entries(providerSettings).map(([providerId, provider]) => (
+              <ListItem
+                key={providerId}
+                label={
+                  (provider as ProviderSetting).name ||
+                  (provider as ProviderSetting).provider_id
+                }
+                sublabel={(provider as ProviderSetting).description}
+                badge={
+                  (provider as ProviderSetting).enabled ? (
+                    <span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300">
+                      <Power className="h-3 w-3 mr-1" /> Enabled
+                    </span>
+                  ) : undefined
+                }
+                actions={
+                  <HoverActions
+                    actions={[
+                      {
+                        id: "configure",
+                        icon: (provider as ProviderSetting).enabled ? (
+                          <Power size={14} />
+                        ) : (
+                          <Plus size={14} />
+                        ),
+                        label: (provider as ProviderSetting).enabled
+                          ? "Configure"
+                          : "Enable",
+                        onClick: (e) => {
+                          e.stopPropagation();
+                          handleEnableProvider(
+                            (provider as ProviderSetting).id,
+                            (provider as ProviderSetting).name ||
+                              (provider as ProviderSetting).provider_id,
+                          );
+                        },
+                      },
+                    ]}
+                  />
+                }
+              />
+            ))}
+          </ul>
         )}
       </div>
 

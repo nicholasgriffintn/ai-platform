@@ -9,11 +9,18 @@ import {
   SquarePen,
   Trash2,
 } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "~/components/ui";
+import {
+  Button,
+  ConfirmationDialog,
+  HoverActions,
+  ListItem,
+  SidebarShell,
+} from "~/components/ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useChats, useDeleteChat, useUpdateChatTitle } from "~/hooks/useChat";
-import { categorizeChatsByDate } from "~/lib/sidebar";
+import { categorizeItemsByDate } from "~/lib/sidebar";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import type { Conversation } from "~/types/chat";
@@ -44,8 +51,14 @@ export const ChatSidebar = () => {
   const { data: conversations = [], isLoading } = useChats();
   const deleteChat = useDeleteChat();
   const updateTitle = useUpdateChatTitle();
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const categorizedChats = categorizeChatsByDate(conversations);
+  const categorizedChats = categorizeItemsByDate(conversations, (c) => {
+    if (c.created_at) return new Date(c.created_at);
+    if (c.updated_at) return new Date(c.updated_at);
+    if (c.last_message_at) return new Date(c.last_message_at);
+    return new Date(0);
+  });
 
   const handleNewChatClick = () => {
     clearCurrentConversation();
@@ -104,9 +117,11 @@ export const ChatSidebar = () => {
     e: React.MouseEvent,
   ) => {
     e.stopPropagation();
-    if (!window.confirm("Are you sure you want to delete this conversation?")) {
-      return;
-    }
+    setConfirmDelete(completion_id);
+  };
+
+  const confirmDeleteChat = async () => {
+    if (!confirmDelete) return;
 
     try {
       trackEvent({
@@ -116,13 +131,14 @@ export const ChatSidebar = () => {
         value: 1,
       });
 
-      await deleteChat.mutateAsync(completion_id);
-      if (currentConversationId === completion_id) {
+      await deleteChat.mutateAsync(confirmDelete);
+      if (currentConversationId === confirmDelete) {
         const firstConversation = conversations.find(
-          (c) => c.id !== completion_id,
+          (c) => c.id !== confirmDelete,
         );
         setCurrentConversationId(firstConversation?.id);
       }
+      setConfirmDelete(null);
     } catch (error) {
       console.error("Failed to delete chat:", error);
     }
@@ -156,243 +172,225 @@ export const ChatSidebar = () => {
         </h3>
         <ul className="space-y-1 mb-3">
           {conversationsList.map((conversation) => (
-            <li
-              data-conversation-id={conversation.id}
+            <ListItem
               key={conversation.id}
-              className={`group flex items-center relative p-2 rounded-lg cursor-pointer
-								${
-                  currentConversationId === conversation.id
-                    ? "bg-off-white-highlight text-black dark:bg-[#2D2D2D] dark:text-white"
-                    : "hover:bg-zinc-200 dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-300"
-                }
-							`}
-              onClick={() => handleConversationClick(conversation.id)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  handleConversationClick(conversation.id);
-                }
-              }}
-            >
-              <div className="md:w-full md:group-hover:w-[calc(100%-60px)] w-[calc(100%-60px)] overflow-hidden pr-1 transition-all duration-200 flex items-center">
-                {(conversation.isLocalOnly || localOnlyMode) && (
-                  <span className="mr-2 text-xs text-blue-500 dark:text-blue-400 inline-flex items-center flex-shrink-0">
-                    <CloudOff size={14} className="mr-1" />
-                    <span className="sr-only">Local only</span>
-                  </span>
-                )}
-                {conversation.parent_conversation_id && (
-                  <span
-                    className="mr-2 text-xs text-zinc-600 dark:text-zinc-400 inline-flex items-center flex-shrink-0 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100"
-                    title="Go to original conversation"
-                    aria-label="Go to original conversation"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleConversationClick(
-                        conversation.parent_conversation_id,
-                      );
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.stopPropagation();
+              data-id={conversation.id}
+              isActive={currentConversationId === conversation.id}
+              badge={
+                <>
+                  {(conversation.isLocalOnly || localOnlyMode) && (
+                    <span className="text-xs text-blue-500 dark:text-blue-400 inline-flex items-center">
+                      <CloudOff size={14} className="mr-1" />
+                      <span className="sr-only">Local only</span>
+                    </span>
+                  )}
+                  {conversation.parent_conversation_id && (
+                    <span
+                      className="text-xs text-zinc-600 dark:text-zinc-400 inline-flex items-center cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100"
+                      title="Go to original conversation"
+                      aria-label="Go to original conversation"
+                      onClick={(e) => {
+                        e?.stopPropagation();
                         handleConversationClick(
-                          conversation.parent_conversation_id!,
+                          conversation.parent_conversation_id,
                         );
-                      }
-                    }}
-                  >
-                    <GitBranch size={14} className="mr-1" />
-                  </span>
-                )}
-                <span className="whitespace-nowrap overflow-hidden text-ellipsis">
-                  {conversation.title || "New conversation"}
-                </span>
-              </div>
-              {conversation.id && (
-                <div className="absolute right-2 md:opacity-0 md:group-hover:opacity-100 opacity-100 transition-opacity duration-200 flex items-center space-x-1 bg-inherit">
-                  <Button
-                    type="button"
-                    variant="icon"
-                    title="Edit conversation title"
-                    aria-label="Edit conversation title"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditTitle(
-                        conversation.id || "",
-                        conversation.title || "",
-                      );
-                    }}
-                    icon={<Edit size={14} />}
-                    size="icon"
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.stopPropagation();
+                          handleConversationClick(
+                            conversation.parent_conversation_id!,
+                          );
+                        }
+                      }}
+                    >
+                      <GitBranch size={14} className="mr-1" />
+                    </span>
+                  )}
+                </>
+              }
+              label={conversation.title || "New conversation"}
+              onClick={() => handleConversationClick(conversation.id)}
+              actions={
+                conversation.id ? (
+                  <HoverActions
+                    actions={[
+                      {
+                        id: "edit",
+                        icon: <Edit size={14} />,
+                        label: "Edit conversation title",
+                        onClick: (e) => {
+                          e.stopPropagation();
+                          handleEditTitle(
+                            conversation.id || "",
+                            conversation.title || "",
+                          );
+                        },
+                      },
+                      {
+                        id: "delete",
+                        icon: <Trash2 size={14} />,
+                        label: "Delete",
+                        onClick: (e) => {
+                          e.stopPropagation();
+                          handleDeleteChat(conversation.id || "", e);
+                        },
+                      },
+                    ]}
                   />
-                  <Button
-                    type="button"
-                    variant="icon"
-                    onClick={(e) => handleDeleteChat(conversation.id || "", e)}
-                    icon={<Trash2 size={14} />}
-                    size="icon"
-                    title="Delete"
-                    aria-label="Delete conversation"
-                  />
-                </div>
-              )}
-            </li>
+                ) : undefined
+              }
+            />
           ))}
         </ul>
       </div>
     );
   };
 
+  const sidebarHeader = (
+    <div className="h-[53px]">
+      <div className="mx-2 my-2 flex items-center justify-between h-[37px]">
+        <Button
+          type="button"
+          variant="icon"
+          title={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
+          aria-label={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
+          icon={
+            sidebarVisible ? (
+              <PanelLeftClose size={20} />
+            ) : (
+              <PanelLeftOpen size={20} />
+            )
+          }
+          onClick={() => setSidebarVisible(!sidebarVisible)}
+        />
+
+        <div className="flex items-center gap-2">
+          {isAuthenticated && (
+            <Button
+              type="button"
+              variant={localOnlyMode ? "iconActive" : "icon"}
+              title={
+                localOnlyMode
+                  ? "Switch to cloud mode"
+                  : "Switch to local-only mode"
+              }
+              aria-label={
+                localOnlyMode
+                  ? "Switch to cloud mode"
+                  : "Switch to local-only mode"
+              }
+              icon={
+                localOnlyMode ? <CloudOff size={20} /> : <Cloud size={20} />
+              }
+              onClick={toggleLocalOnlyMode}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const sidebarFooter = (
+    <div className="p-2 bg-zinc-50 dark:bg-zinc-900">
+      <div className="flex justify-between items-center">
+        <div>
+          <UserMenuItem />
+        </div>
+        <div className="flex items-center gap-2">
+          <ChatThemeDropdown position="top" />
+          <MoreOptionsDropdown
+            position="top"
+            onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
+          />
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
-      {sidebarVisible && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/30 z-20"
-          onClick={() => setSidebarVisible(false)}
-          onKeyDown={(e) => e.key === "Enter" && setSidebarVisible(false)}
-        />
-      )}
-      <div
-        className={`fixed md:relative
-          z-50
-          h-full w-64
-          bg-off-white dark:bg-zinc-900
-          transition-transform duration-300 ease-in-out
-          border-r border-zinc-200 dark:border-zinc-800
-          ${sidebarVisible ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-0 md:border-0"}
-        `}
+      <SidebarShell
+        visible={sidebarVisible}
+        isMobile={isMobile}
+        onClose={() => setSidebarVisible(false)}
+        header={sidebarHeader}
+        footer={sidebarFooter}
       >
-        {sidebarVisible && (
-          <div className="flex flex-col h-full w-64 overflow-hidden">
-            <div className="sticky top-0 bg-off-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700 md:border-r z-10 w-full h-[53px]">
-              <div className="mx-2 my-2 flex items-center justify-between h-[37px]">
-                <Button
-                  type="button"
-                  variant="icon"
-                  title={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
-                  aria-label={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
-                  icon={
-                    sidebarVisible ? (
-                      <PanelLeftClose size={20} />
-                    ) : (
-                      <PanelLeftOpen size={20} />
-                    )
-                  }
-                  onClick={() => setSidebarVisible(!sidebarVisible)}
-                />
-
-                <div className="flex items-center gap-2">
-                  {isAuthenticated && (
-                    <Button
-                      type="button"
-                      variant={localOnlyMode ? "iconActive" : "icon"}
-                      title={
-                        localOnlyMode
-                          ? "Switch to cloud mode"
-                          : "Switch to local-only mode"
-                      }
-                      aria-label={
-                        localOnlyMode
-                          ? "Switch to cloud mode"
-                          : "Switch to local-only mode"
-                      }
-                      icon={
-                        localOnlyMode ? (
-                          <CloudOff size={20} />
-                        ) : (
-                          <Cloud size={20} />
-                        )
-                      }
-                      onClick={toggleLocalOnlyMode}
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {sidebarVisible && !isAuthenticationLoading && (
-              <div>
-                <ChatSidebarNotifications
-                  isAuthenticated={isAuthenticated}
-                  isPro={isPro}
-                  localOnlyMode={localOnlyMode}
-                />
-              </div>
-            )}
-
-            {isAuthenticationLoading ? (
-              <div className="flex items-center gap-2 p-2">
-                <Loader2
-                  size={20}
-                  className="animate-spin text-zinc-600 dark:text-zinc-400"
-                />
-              </div>
-            ) : (
-              <div
-                className={`overflow-y-auto ${conversations.length > 0 ? "h-[calc(100vh-9rem)]" : "h-[calc(100vh-5rem)]"}`}
-              >
-                <div className="p-2">
-                  <Button
-                    type="button"
-                    variant="primary"
-                    onClick={handleNewChatClick}
-                    className="w-full bg-zinc-900 hover:bg-black dark:bg-zinc-800 dark:hover:bg-zinc-700"
-                    icon={<SquarePen size={20} />}
-                  >
-                    New Chat
-                  </Button>
-                </div>
-                {isLoading ? (
-                  <div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
-                    Loading conversations...
-                  </div>
-                ) : conversations.length === 0 ? (
-                  <div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
-                    No conversations yet
-                  </div>
-                ) : (
-                  <div className="p-2">
-                    {renderConversationGroup("Today", categorizedChats.today)}
-                    {renderConversationGroup(
-                      "Yesterday",
-                      categorizedChats.yesterday,
-                    )}
-                    {renderConversationGroup(
-                      "This Week",
-                      categorizedChats.thisWeek,
-                    )}
-                    {renderConversationGroup(
-                      "This Month",
-                      categorizedChats.thisMonth,
-                    )}
-                    {renderConversationGroup(
-                      "Last Month",
-                      categorizedChats.lastMonth,
-                    )}
-                    {renderConversationGroup("Older", categorizedChats.older)}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="absolute bottom-0 left-0 right-0 p-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
-              <div className="flex justify-between items-center">
-                <div>
-                  <UserMenuItem />
-                </div>
-                <div className="flex items-center gap-2">
-                  <ChatThemeDropdown position="top" />
-                  <MoreOptionsDropdown
-                    position="top"
-                    onShowKeyboardShortcuts={() =>
-                      setShowKeyboardShortcuts(true)
-                    }
-                  />
-                </div>
-              </div>
-            </div>
+        {sidebarVisible && !isAuthenticationLoading && (
+          <div>
+            <ChatSidebarNotifications
+              isAuthenticated={isAuthenticated}
+              isPro={isPro}
+              localOnlyMode={localOnlyMode}
+            />
           </div>
         )}
-      </div>
+
+        {isAuthenticationLoading ? (
+          <div className="flex items-center gap-2 p-2">
+            <Loader2
+              size={20}
+              className="animate-spin text-zinc-600 dark:text-zinc-400"
+            />
+          </div>
+        ) : (
+          <div>
+            <div className="p-2">
+              <Button
+                type="button"
+                variant="primary"
+                onClick={handleNewChatClick}
+                className="w-full bg-zinc-900 hover:bg-black dark:bg-zinc-800 dark:hover:bg-zinc-700"
+                icon={<SquarePen size={20} />}
+              >
+                New Chat
+              </Button>
+            </div>
+            {isLoading ? (
+              <div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
+                Loading conversations...
+              </div>
+            ) : conversations.length === 0 ? (
+              <div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
+                No conversations yet
+              </div>
+            ) : (
+              <div className="p-2">
+                {renderConversationGroup("Today", categorizedChats.today)}
+                {renderConversationGroup(
+                  "Yesterday",
+                  categorizedChats.yesterday,
+                )}
+                {renderConversationGroup(
+                  "This Week",
+                  categorizedChats.thisWeek,
+                )}
+                {renderConversationGroup(
+                  "This Month",
+                  categorizedChats.thisMonth,
+                )}
+                {renderConversationGroup(
+                  "Last Month",
+                  categorizedChats.lastMonth,
+                )}
+                {renderConversationGroup("Older", categorizedChats.older)}
+              </div>
+            )}
+          </div>
+        )}
+      </SidebarShell>
+
+      <ConfirmationDialog
+        open={confirmDelete !== null}
+        onOpenChange={(open) => !open && setConfirmDelete(null)}
+        title="Delete Conversation"
+        description="Are you sure you want to delete this conversation? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+        onConfirm={confirmDeleteChat}
+        isLoading={deleteChat.isPending}
+      />
     </>
   );
 };

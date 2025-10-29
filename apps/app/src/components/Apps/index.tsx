@@ -1,7 +1,11 @@
+import { Sparkles } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { Button } from "~/components/ui";
+import { EmptyState } from "~/components/Core/EmptyState";
+import { Logo } from "~/components/Core/Logo";
+import { Button, SearchInput } from "~/components/ui";
+import { CardSkeleton } from "~/components/ui/skeletons";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import {
   useDynamicApp,
@@ -25,6 +29,7 @@ export const DynamicApps = () => {
 
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
   const [result, setResult] = useState<Record<string, any> | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const {
     data: apps = [],
@@ -41,9 +46,21 @@ export const DynamicApps = () => {
   const { mutateAsync: executeApp, isPending: isExecuting } =
     useExecuteDynamicApp();
 
+  const filteredApps = useMemo(() => {
+    if (!searchQuery.trim()) return apps;
+
+    const query = searchQuery.toLowerCase();
+    return apps.filter(
+      (app) =>
+        app.name.toLowerCase().includes(query) ||
+        app.description?.toLowerCase().includes(query) ||
+        app.category?.toLowerCase().includes(query),
+    );
+  }, [apps, searchQuery]);
+
   const groupedApps = useMemo(() => {
-    return groupAppsByCategory(apps);
-  }, [apps]);
+    return groupAppsByCategory(filteredApps);
+  }, [filteredApps]);
 
   const handleAppSelect = useCallback(
     (appId: string) => {
@@ -162,8 +179,19 @@ export const DynamicApps = () => {
 
   if (appsLoading || appLoading || isAuthenticationLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 dark:border-blue-400" />
+      <div className={cn("container mx-auto px-4 max-w-7xl")}>
+        <div className="mb-6">
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search apps..."
+            className="max-w-md"
+            disabled
+          />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <CardSkeleton count={6} showHeader showFooter />
+        </div>
       </div>
     );
   }
@@ -202,21 +230,57 @@ export const DynamicApps = () => {
 
   return (
     <div className={cn("container mx-auto px-4 max-w-7xl")}>
-      <FeaturedApps />
-
-      {groupedApps.map(([category, categoryApps]) =>
-        renderCategoryApps(category, categoryApps),
-      )}
-
-      {apps.length > 0 && groupedApps.length === 0 && (
-        <div className="text-center text-zinc-500 dark:text-zinc-400 py-10">
-          No apps available in your selected categories.
+      {apps.length > 0 && (
+        <div className="mb-6">
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search apps..."
+            className="max-w-md"
+          />
         </div>
       )}
-      {apps.length === 0 && !appsLoading && (
-        <div className="text-center text-zinc-500 dark:text-zinc-400 py-10">
-          No apps found.
-        </div>
+
+      {apps.length === 0 && !appsLoading ? (
+        <EmptyState
+          variant="welcome"
+          icon={<Logo variant="logo_control" />}
+          title="Welcome to Apps"
+          message="Discover powerful AI-powered applications to boost your productivity."
+          suggestions={[
+            {
+              label: "Article Research",
+              onClick: () => handleAppSelect("articles"),
+            },
+            {
+              label: "Podcast Generation",
+              onClick: () => handleAppSelect("podcasts"),
+            },
+            {
+              label: "Image Creation",
+              onClick: () => handleAppSelect("replicate"),
+            },
+          ]}
+        />
+      ) : filteredApps.length === 0 && searchQuery ? (
+        <EmptyState
+          icon={<Sparkles className="h-8 w-8 text-zinc-400" />}
+          title="No apps found"
+          message={`No apps matching "${searchQuery}"`}
+          action={
+            <Button onClick={() => setSearchQuery("")} variant="secondary">
+              Clear Search
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          <FeaturedApps />
+
+          {groupedApps.map(([category, categoryApps]) =>
+            renderCategoryApps(category, categoryApps),
+          )}
+        </>
       )}
     </div>
   );

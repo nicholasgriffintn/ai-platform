@@ -4,12 +4,7 @@ import { useEffect, useState } from "react";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { Button } from "~/components/ui/Button";
 import { Card } from "~/components/ui/Card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "~/components/ui/Dialog";
+import { ConfirmationDialog, HoverActions, ListItem } from "~/components/ui";
 import { Skeleton } from "~/components/ui/Skeleton";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { usePasskeys } from "~/hooks/usePasskeys";
@@ -140,70 +135,54 @@ export function ProfilePasskeysTab() {
                 (like fingerprint or face recognition) or your device PIN
                 instead of a password.
               </p>
-              {passkeys.map((passkey) => (
-                <Card key={`passkey-${passkey.id}`} className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <div className="flex items-center">
-                        <Fingerprint className="h-4 w-4 mr-2 text-zinc-500 dark:text-zinc-400" />
-                        <h3 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-                          {passkey.device_type} Passkey
-                        </h3>
-                      </div>
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                        Added {formatRelativeTime(passkey.created_at)}
-                        {passkey.backed_up && (
-                          <span className="ml-2 inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300">
-                            <Shield className="h-3 w-3 mr-1" /> Synced
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => openDeleteConfirmation(passkey.id)}
-                      disabled={isDeletingPasskey}
-                      icon={<Trash2 className="h-4 w-4" />}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+              <ul className="space-y-1">
+                {passkeys.map((passkey) => (
+                  <ListItem
+                    key={`passkey-${passkey.id}`}
+                    icon={<Fingerprint size={16} />}
+                    label={`${passkey.device_type} Passkey`}
+                    sublabel={`Added ${formatRelativeTime(passkey.created_at)}`}
+                    badge={
+                      passkey.backed_up ? (
+                        <span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300">
+                          <Shield className="h-3 w-3 mr-1" /> Synced
+                        </span>
+                      ) : undefined
+                    }
+                    actions={
+                      <HoverActions
+                        actions={[
+                          {
+                            id: "delete",
+                            icon: <Trash2 size={14} />,
+                            label: "Remove passkey",
+                            onClick: (e) => {
+                              e.stopPropagation();
+                              openDeleteConfirmation(passkey.id);
+                            },
+                            disabled: isDeletingPasskey,
+                          },
+                        ]}
+                      />
+                    }
+                  />
+                ))}
+              </ul>
             </>
           )}
         </div>
       )}
 
-      <Dialog open={isConfirmDeleteOpen} onOpenChange={setIsConfirmDeleteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Remove Passkey</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-zinc-500 dark:text-zinc-400">
-              Are you sure you want to remove this passkey? You won't be able to
-              use it to sign in anymore.
-            </p>
-          </div>
-          <div className="flex justify-end gap-3">
-            <Button
-              variant="secondary"
-              onClick={() => setIsConfirmDeleteOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeletePasskey}
-              disabled={isDeletingPasskey}
-            >
-              {isDeletingPasskey ? "Removing..." : "Remove Passkey"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ConfirmationDialog
+        open={isConfirmDeleteOpen}
+        onOpenChange={setIsConfirmDeleteOpen}
+        title="Remove Passkey"
+        description="Are you sure you want to remove this passkey? You won't be able to use it to sign in anymore."
+        confirmText="Remove Passkey"
+        variant="destructive"
+        onConfirm={handleDeletePasskey}
+        isLoading={isDeletingPasskey}
+      />
     </div>
   );
 }
