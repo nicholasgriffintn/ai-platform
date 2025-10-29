@@ -87,43 +87,47 @@ export function ReplicatePredictionDetail({
         </Card>
       )}
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
-          Input Parameters
-        </h2>
-        <div className="space-y-3">
-          {Object.entries(prediction.input || {}).map(([key, value]) => (
-            <div key={key} className="flex flex-col">
-              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                {key}:
-              </span>
-              <span className="text-sm text-zinc-600 dark:text-zinc-400 break-all font-mono bg-zinc-100 dark:bg-zinc-900 p-2 rounded">
-                {typeof value === "object"
-                  ? JSON.stringify(value, null, 2)
-                  : String(value)}
-              </span>
-            </div>
-          ))}
-        </div>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {prediction.status === "succeeded" &&
+          (prediction.output ||
+            prediction.predictionData?.output ||
+            prediction.predictionData?.response) && (
+            <Card className="p-6 lg:col-span-2 order-2 lg:order-1">
+              <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+                Output
+              </h2>
+              <OutputRenderer
+                output={
+                  prediction.output ||
+                  prediction.predictionData?.response ||
+                  prediction.predictionData?.output
+                }
+              />
+            </Card>
+          )}
 
-      {prediction.status === "succeeded" &&
-        (prediction.output ||
-          prediction.predictionData?.output ||
-          prediction.predictionData?.response) && (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
-              Output
-            </h2>
-            <OutputRenderer
-              output={
-                prediction.output ||
-                prediction.predictionData?.response ||
-                prediction.predictionData?.output
-              }
-            />
-          </Card>
-        )}
+        <Card
+          className={`p-6 order-1 lg:order-2 ${prediction.status === "succeeded" && (prediction.output || prediction.predictionData?.output || prediction.predictionData?.response) ? "" : "lg:col-span-3"}`}
+        >
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+            Input Parameters
+          </h2>
+          <div className="space-y-3">
+            {Object.entries(prediction.input || {}).map(([key, value]) => (
+              <div key={key} className="flex flex-col">
+                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  {key}:
+                </span>
+                <span className="text-sm text-zinc-600 dark:text-zinc-400 break-all font-mono bg-zinc-100 dark:bg-zinc-900 p-2 rounded">
+                  {typeof value === "object"
+                    ? JSON.stringify(value, null, 2)
+                    : String(value)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }
