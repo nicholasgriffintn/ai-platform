@@ -81,6 +81,13 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
           required: true,
         },
         {
+          name: "negative_prompt",
+          type: "string",
+          description:
+            "Text describing elements to avoid in the generated image.",
+          default: "",
+        },
+        {
           name: "video_length",
           type: "number",
           description:
@@ -104,12 +111,6 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
           type: "number",
           description: "Number of denoising steps",
           default: 50,
-        },
-        {
-          name: "fps",
-          type: "number",
-          description: "Frames per second of the output video",
-          default: 24,
         },
         {
           name: "seed",
@@ -206,6 +207,25 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
           description:
             "If `True`, the EnCodec tokens will be decoded with MultiBand Diffusion. Only works with non-stereo models.",
           default: false,
+        },
+        {
+          name: "normalization_strategy",
+          type: "string",
+          description: "Strategy for normalizing audio.",
+          default: "loudness",
+          enum: ["loudness", "clip", "peak", "rms"],
+        },
+        {
+          name: "classifier_free_guidance",
+          type: "number",
+          description:
+            "Increases the influence of inputs on the output. Higher values produce lower-varience outputs that adhere more closely to inputs.",
+          default: 3,
+        },
+        {
+          name: "seed",
+          type: "integer",
+          description: "Random seed for reproducibility.",
         },
       ],
     },

@@ -24,5 +24,15 @@ export default [
   route("/apps/drawing", "pages/apps/drawing/index.tsx"),
   route("/apps/drawing/new", "pages/apps/drawing/new.tsx"),
   route("/apps/drawing/:id", "pages/apps/drawing/[id].tsx"),
+  route("/apps/replicate", "pages/apps/replicate/index.tsx"),
+  route(
+    "/apps/replicate/predictions",
+    "pages/apps/replicate/predictions/index.tsx",
+  ),
+  route(
+    "/apps/replicate/predictions/:id",
+    "pages/apps/replicate/predictions/[id].tsx",
+  ),
+  route("/apps/replicate/:id", "pages/apps/replicate/[id].tsx"),
   route("*?", "pages/catchall.tsx"),
 ] satisfies RouteConfig;

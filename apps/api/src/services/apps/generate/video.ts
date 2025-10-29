@@ -94,9 +94,12 @@ export async function generateVideo({
       messages: [
         {
           role: "user",
-          content: [{ ...replicatePayload, type: "text" }],
+          content: replicatePayload.prompt as string,
         },
       ],
+      body: {
+        input: replicatePayload,
+      },
       env: env,
       user: user,
     });
