@@ -108,12 +108,20 @@ export function ReplicatePredictionDetail({
       </Card>
 
       {prediction.status === "succeeded" &&
-        prediction.predictionData?.output && (
+        (prediction.output ||
+          prediction.predictionData?.output ||
+          prediction.predictionData?.response) && (
           <Card className="p-6">
             <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
               Output
             </h2>
-            <OutputRenderer output={prediction.predictionData.output} />
+            <OutputRenderer
+              output={
+                prediction.output ||
+                prediction.predictionData?.response ||
+                prediction.predictionData?.output
+              }
+            />
           </Card>
         )}
     </div>
@@ -128,9 +136,27 @@ function OutputRenderer({ output }: OutputRendererProps) {
   if (Array.isArray(output)) {
     return (
       <div className="space-y-4">
-        {output.map((item, index) => (
-          <OutputItem key={index} item={item} />
-        ))}
+        {output.map((item, index) => {
+          if (item && typeof item === "object" && "type" in item) {
+            if (item.type === "text") {
+              return (
+                <div key={index} className="prose dark:prose-invert max-w-none">
+                  {item.text}
+                </div>
+              );
+            }
+            if (item.type === "image_url" && item.image_url?.url) {
+              return <OutputItem key={index} item={item.image_url.url} />;
+            }
+            if (item.type === "audio_url" && item.audio_url?.url) {
+              return <OutputItem key={index} item={item.audio_url.url} />;
+            }
+            if (item.type === "video_url" && item.video_url?.url) {
+              return <OutputItem key={index} item={item.video_url.url} />;
+            }
+          }
+          return <OutputItem key={index} item={item} />;
+        })}
       </div>
     );
   }
