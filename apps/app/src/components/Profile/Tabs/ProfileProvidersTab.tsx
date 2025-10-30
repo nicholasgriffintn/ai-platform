@@ -97,10 +97,11 @@ export function ProfileProvidersTab() {
             className="bg-transparent dark:bg-transparent border-none py-10 px-0"
           />
         ) : (
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {Object.entries(providerSettings).map(([providerId, provider]) => (
               <ListItem
                 key={providerId}
+                className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750"
                 label={
                   (provider as ProviderSetting).name ||
                   (provider as ProviderSetting).provider_id
@@ -115,6 +116,7 @@ export function ProfileProvidersTab() {
                 }
                 actions={
                   <HoverActions
+                    alwaysVisible
                     actions={[
                       {
                         id: "configure",

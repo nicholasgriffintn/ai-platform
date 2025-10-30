@@ -216,14 +216,16 @@ export function ProfileApiKeysTab() {
                 className="bg-transparent dark:bg-transparent py-6 px-0"
               />
             ) : (
-              <ul className="space-y-1">
+              <ul className="space-y-2">
                 {apiKeys.map((key) => (
                   <ListItem
                     key={key.id}
                     label={key.name}
+                    className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750"
                     sublabel={`Created: ${formatDate(key.created_at)}`}
                     actions={
                       <HoverActions
+                        alwaysVisible
                         actions={[
                           {
                             id: "delete",
