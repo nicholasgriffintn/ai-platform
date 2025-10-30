@@ -298,6 +298,7 @@ export class MessageFormatter {
       case "groq":
       case "ollama":
       case "github-models":
+      case "parallel":
         return [
           {
             role: "system",

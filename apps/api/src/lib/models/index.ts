@@ -33,6 +33,7 @@ import { morphModelConfig } from "./morph";
 import { ollamaModelConfig } from "./ollama";
 import { openaiModelConfig } from "./openai";
 import { openrouterModelConfig } from "./openrouter";
+import { parallelModelConfig } from "./parallel";
 import { perplexityModelConfig } from "./perplexity";
 import { replicateModelConfig } from "./replicate";
 import { requestyModelConfig } from "./requesty";
@@ -70,6 +71,7 @@ const modelConfig: ModelConfig = {
   ...groqModelConfig,
   ...huggingfaceModelConfig,
   ...openrouterModelConfig,
+  ...parallelModelConfig,
   ...perplexityModelConfig,
   ...requestyModelConfig,
   ...workersAiModelConfig,

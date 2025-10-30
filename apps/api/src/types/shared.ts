@@ -32,6 +32,7 @@ export type IEnv = {
   ASSETS_BUCKET_SECRET_ACCESS_KEY: string;
   MISTRAL_API_KEY?: string;
   OPENROUTER_API_KEY?: string;
+  PARALLEL_API_KEY?: string;
   BEDROCK_AWS_ACCESS_KEY?: string;
   BEDROCK_AWS_SECRET_KEY?: string;
   BEDROCK_AWS_REGION?: string;

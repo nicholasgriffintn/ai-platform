@@ -22,6 +22,7 @@ import { MorphProvider } from "./provider/morph";
 import { OllamaProvider } from "./provider/ollama";
 import { OpenAIProvider } from "./provider/openai";
 import { OpenRouterProvider } from "./provider/openrouter";
+import { ParallelProvider } from "./provider/parallel";
 import { PerplexityProvider } from "./provider/perplexity";
 import { PollyProvider } from "./provider/polly";
 import { ReplicateProvider } from "./provider/replicate";
@@ -81,6 +82,7 @@ export class AIProviderFactory {
     { key: "inference", provider: new InferenceProvider() },
     { key: "inception", provider: new InceptionProvider() },
     { key: "v0", provider: new V0Provider() },
+    { key: "parallel", provider: new ParallelProvider() },
   ];
 
   /**
