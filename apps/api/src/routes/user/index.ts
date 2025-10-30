@@ -8,7 +8,6 @@ import {
   updateUserSettingsSchema,
   userModelsResponseSchema,
   providersResponseSchema,
-  providerSettingsSchema,
 } from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
@@ -256,7 +255,6 @@ app.get(
       },
     },
   }),
-  zValidator("json", providerSettingsSchema),
   async (c: Context) => {
     const user = c.get("user");
 
