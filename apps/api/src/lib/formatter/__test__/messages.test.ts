@@ -284,6 +284,53 @@ describe("MessageFormatter", () => {
       );
       expect(result[0].content).not.toContain("Data:");
     });
+
+    it("should skip tool message without tool_call_id for non-anthropic providers", () => {
+      const messages: Message[] = [
+        {
+          role: "user",
+          content: "Hello",
+        },
+        {
+          role: "tool",
+          content: "This function requires a premium subscription",
+          name: "web_search",
+          // Missing tool_call_id
+        },
+        {
+          role: "assistant",
+          content: "",
+        },
+      ];
+
+      const result = MessageFormatter.formatMessages(messages, {
+        provider: "deepseek",
+      });
+
+      expect(result).toHaveLength(2);
+      expect(result[0].role).toBe("user");
+      expect(result[1].role).toBe("assistant");
+    });
+
+    it("should still process tool message without tool_call_id for anthropic provider", () => {
+      const messages: Message[] = [
+        {
+          role: "tool",
+          content: "Response content",
+          name: "test_tool",
+          tool_call_arguments: '{"param": "value"}',
+          // Missing tool_call_id
+        },
+      ];
+
+      const result = MessageFormatter.formatMessages(messages, {
+        provider: "anthropic",
+      });
+
+      expect(result).toHaveLength(2);
+      expect(result[0].role).toBe("assistant");
+      expect(result[1].role).toBe("user");
+    });
   });
 
   describe("content type handling", () => {

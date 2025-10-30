@@ -87,6 +87,10 @@ export class MessageFormatter {
       const content = MessageFormatter.formatContent(message.content, provider);
 
       if (message.role === "tool") {
+        if (!message.tool_call_id && provider !== "anthropic") {
+          continue;
+        }
+
         let stringifiedData = "";
         if (message.data) {
           try {
@@ -132,11 +136,16 @@ export class MessageFormatter {
           continue;
         }
 
-        formattedMessages.push({
+        const toolMessage: Message = {
           role: "tool",
-          tool_call_id: message.tool_call_id,
           content: toolResultContent,
-        });
+        };
+
+        if (message.tool_call_id) {
+          toolMessage.tool_call_id = message.tool_call_id;
+        }
+
+        formattedMessages.push(toolMessage);
         continue;
       }
 
