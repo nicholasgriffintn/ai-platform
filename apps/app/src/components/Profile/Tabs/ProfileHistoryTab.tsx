@@ -95,7 +95,6 @@ export function ProfileHistoryTab() {
       setConfirmDeleteLocal(false);
     } catch (error) {
       console.error("Failed to delete all chats:", error);
-      // Keep modal open on error
     }
   };
 
@@ -115,7 +114,6 @@ export function ProfileHistoryTab() {
       setConfirmDeleteRemote(false);
     } catch (error) {
       console.error("Failed to delete all remote chats:", error);
-      // Keep modal open on error
     }
   };
 

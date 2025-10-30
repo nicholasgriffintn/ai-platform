@@ -22,13 +22,11 @@ const defaultSettings: ChatSettings = {
 };
 
 export interface ChatStore {
-  // Conversation management
   currentConversationId: string | undefined;
   setCurrentConversationId: (id: string | undefined) => void;
   startNewConversation: (id?: string) => void;
   clearCurrentConversation: () => void;
 
-  // Authentication state
   hasApiKey: boolean;
   setHasApiKey: (hasApiKey: boolean) => void;
   isAuthenticated: boolean;
@@ -38,7 +36,6 @@ export interface ChatStore {
   isPro: boolean;
   setIsPro: (isPro: boolean) => void;
 
-  // Chat mode and settings
   localOnlyMode: boolean;
   setLocalOnlyMode: (localOnly: boolean) => void;
   chatMode: ChatMode;
@@ -56,14 +53,12 @@ export interface ChatStore {
   chatInput: string;
   setChatInput: (query: string) => void;
 
-  // Initialization
   initializeStore: (completionId?: string) => Promise<void>;
 }
 
 export const useChatStore = create<ChatStore>()(
   persist(
     (set, get) => ({
-      // Conversation management
       currentConversationId: undefined,
       setCurrentConversationId: (id) => set({ currentConversationId: id }),
       startNewConversation: (id?: string) => {
@@ -72,7 +67,6 @@ export const useChatStore = create<ChatStore>()(
       },
       clearCurrentConversation: () => set({ currentConversationId: undefined }),
 
-      // Authentication state
       hasApiKey: false,
       setHasApiKey: (hasApiKey) => set({ hasApiKey }),
       isAuthenticated: false,
@@ -83,7 +77,6 @@ export const useChatStore = create<ChatStore>()(
       isPro: false,
       setIsPro: (isPro) => set({ isPro }),
 
-      // Chat mode and settings
       localOnlyMode: false,
       setLocalOnlyMode: (localOnly) => set({ localOnlyMode: localOnly }),
       chatMode: "remote" as ChatMode,
@@ -101,7 +94,6 @@ export const useChatStore = create<ChatStore>()(
       showSearch: false,
       setShowSearch: (showSearch) => set({ showSearch }),
 
-      // Initialization
       initializeStore: async (completionId?: string) => {
         const apiKey = await apiKeyService.getApiKey();
         set({ hasApiKey: !!apiKey });

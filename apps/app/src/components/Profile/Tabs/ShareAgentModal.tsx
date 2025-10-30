@@ -42,7 +42,6 @@ export function ShareAgentModal({
   const [shareCategory, setShareCategory] = useState("");
   const [shareTagsInput, setShareTagsInput] = useState("");
 
-  // Reset and populate form when modal opens
   React.useEffect(() => {
     if (open && agent) {
       setShareName(agent.name || "");

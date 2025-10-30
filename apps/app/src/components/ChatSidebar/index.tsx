@@ -248,7 +248,7 @@ export const ChatSidebar = () => {
   };
 
   const sidebarHeader = (
-    <div className="h-[53px]">
+    <div className="h-[44px]">
       <div className="mx-2 my-2 flex items-center justify-between h-[37px]">
         <Button
           type="button"

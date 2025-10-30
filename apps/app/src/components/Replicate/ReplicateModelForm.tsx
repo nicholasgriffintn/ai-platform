@@ -15,7 +15,6 @@ export function ReplicateModelForm({
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Initialize form with default values
   useEffect(() => {
     const initialData: Record<string, any> = {};
     model.inputSchema.fields.forEach((field) => {

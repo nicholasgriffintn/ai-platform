@@ -43,7 +43,6 @@ export function ReplicateModelDetail({ modelId }: ReplicateModelDetailProps) {
         input: data,
       });
 
-      // Navigate to the prediction detail page
       navigate(`/apps/replicate/predictions/${result.id}`);
     } catch (error) {
       console.error("Failed to execute model:", error);

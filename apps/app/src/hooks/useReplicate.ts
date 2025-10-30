@@ -43,7 +43,6 @@ export function useReplicatePrediction(predictionId: string | null) {
       const data = query.state.data as ReplicatePrediction | undefined;
       if (!data) return false;
 
-      // Poll every 5 seconds if processing
       return data.status === "processing" ? 5000 : false;
     },
   });
@@ -56,7 +55,6 @@ export function useExecuteReplicateModel() {
     mutationFn: (request: ExecuteReplicateRequest) =>
       executeReplicateModel(request),
     onSuccess: () => {
-      // Invalidate predictions list to refetch
       queryClient.invalidateQueries({
         queryKey: [REPLICATE_QUERY_KEY, "predictions"],
       });

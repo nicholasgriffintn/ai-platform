@@ -11,10 +11,8 @@ export const PRIVACY_EFFECTIVE_DATE = "March 30, 2025";
 export const TRIAL_DURATION = 90;
 export const CHATS_QUERY_KEY = "chats";
 
-// Development Features
 export const SHOW_DEV_TOOLS = IS_DEVELOPMENT;
 
-// API Configuration
 export const API_BASE_URL = IS_PRODUCTION
   ? "https://api.polychat.app"
   : "http://localhost:8787";
@@ -22,7 +20,6 @@ export const WS_API_URL = IS_PRODUCTION
   ? "wss://api.polychat.app"
   : "ws://localhost:8787";
 
-// Analytics Configuration
 export const POSTHOG_CONFIG = {
   apiKey: import.meta.env.VITE_PUBLIC_POSTHOG_KEY || "disabled",
   apiHost: import.meta.env.VITE_PUBLIC_POSTHOG_HOST || "eu.i.posthog.com",
@@ -30,7 +27,6 @@ export const POSTHOG_CONFIG = {
   disabled: !import.meta.env.VITE_PUBLIC_POSTHOG_KEY,
 };
 
-// Beacon Analytics Configuration
 export const BEACON_CONFIG = {
   enabled: import.meta.env.VITE_ENABLE_BEACON === "true" || false,
   endpoint: import.meta.env.VITE_BEACON_ENDPOINT || "",
@@ -38,7 +34,6 @@ export const BEACON_CONFIG = {
   debug: import.meta.env.VITE_BEACON_DEBUG === "true" || false,
 };
 
-// Captcha Configuration
 export const CAPTCHA_SITE_KEY = import.meta.env.VITE_CAPTCHA_SITE_KEY || "";
 export const ENABLE_CAPTCHA_IN_DEV = false;
 
@@ -101,7 +96,6 @@ export function generateCSP(): string {
     .join("; ");
 }
 
-// Helper functions for environment-based configuration
 export const getAnalyticsConfig = () => POSTHOG_CONFIG;
 export const getBeaconConfig = () => BEACON_CONFIG;
 export const shouldShowDevTools = () => SHOW_DEV_TOOLS;

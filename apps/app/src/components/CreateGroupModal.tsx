@@ -33,7 +33,6 @@ export function CreateGroupModal({
 
     onGroupCreated();
 
-    // Reset form
     setTitle("");
     setDescription("");
     setCategory("");

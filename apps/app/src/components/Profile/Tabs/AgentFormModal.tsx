@@ -28,7 +28,7 @@ interface AgentFormModalProps {
   isSubmitting: boolean;
   apiModels: Record<string, any>;
   groupedAgents: any;
-  agent?: any; // When editing
+  agent?: any;
 }
 
 export function AgentFormModal({
@@ -42,7 +42,6 @@ export function AgentFormModal({
 }: AgentFormModalProps) {
   const form = useAgentForm();
 
-  // Load agent data when editing
   React.useEffect(() => {
     if (agent && open) {
       form.loadAgentData(agent, apiModels);

@@ -240,7 +240,6 @@ export const ConversationThread = () => {
 
   const handleToolInteraction = useCallback(
     (toolName: string, action: "useAsPrompt", data: Record<string, any>) => {
-      // Track tool interaction
       trackFeatureUsage("tool_interaction", {
         tool_name: toolName,
         action: action,

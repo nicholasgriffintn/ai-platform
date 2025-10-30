@@ -58,8 +58,7 @@ export function ShareButton({
 
   const handleUnshare = useCallback(
     async (id: string) => {
-      // Apps don't currently support unsharing, so this is a no-op
-      // In the future, implement this when the API supports it
+      // TODO: Apps don't currently support unsharing, so this is a no-op
       trackFeatureUsage("share_removed", {
         content_type: "app",
         content_id: id,

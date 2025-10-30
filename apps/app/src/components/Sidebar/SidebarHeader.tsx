@@ -8,19 +8,13 @@ interface SidebarHeaderProps {
   onToggleLocalOnlyMode?: () => void;
 }
 
-// This component ONLY renders the header section's JSX
 export function SidebarHeader({
   showCloudButton = true,
   onToggleLocalOnlyMode,
 }: SidebarHeaderProps) {
   const { sidebarVisible, setSidebarVisible } = useUIStore();
-  const {
-    isAuthenticated,
-    localOnlyMode,
-    setLocalOnlyMode, // Needed for fallback toggle
-  } = useChatStore();
+  const { isAuthenticated, localOnlyMode, setLocalOnlyMode } = useChatStore();
 
-  // Use passed handler or fallback to internal toggle
   const toggleLocalOnlyModeHandler = onToggleLocalOnlyMode
     ? onToggleLocalOnlyMode
     : () => {
@@ -32,8 +26,7 @@ export function SidebarHeader({
       };
 
   return (
-    // Copied directly from ChatSidebar's header structure
-    <div className="sticky top-0 bg-off-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700 md:border-r z-10 w-full h-[53px]">
+    <div className="sticky top-0 bg-off-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700 md:border-r z-10 w-full h-[44px]">
       <div className="mx-2 my-2 flex items-center justify-between h-[37px]">
         <Button
           type="button"

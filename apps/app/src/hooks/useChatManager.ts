@@ -26,7 +26,6 @@ export function useChatManager() {
 
   const { currentConversationId, startNewConversation, model } = useChatStore();
 
-  // Initialize sub-hooks
   const { webLLMService } = useWebLLMInitialization(apiModels);
   const { updateConversation } = useConversationStorage();
   const { addMessageToConversation, updateAssistantMessage } =
@@ -43,7 +42,6 @@ export function useChatManager() {
     abortStream,
   } = useStreamingResponse(webLLMService);
 
-  // Generate conversation title helper
   const generateConversationTitle = useCallback(
     async (
       conversationId: string,
@@ -81,7 +79,6 @@ export function useChatManager() {
     [generateTitleMutation, updateConversation],
   );
 
-  // Wrap generateResponse to include title generation
   const generateResponseWithTitle = useCallback(
     async (messages: Message[], conversationId: string) => {
       const result = await generateResponse(messages, conversationId);
@@ -114,7 +111,6 @@ export function useChatManager() {
     [generateResponse, model, assistantReasoningRef, generateConversationTitle],
   );
 
-  // Initialize conversation actions hook with wrapped functions
   const {
     editingMessageId,
     isBranching,
@@ -128,7 +124,6 @@ export function useChatManager() {
     generateConversationTitle,
   );
 
-  // Main sendMessage function
   const sendMessage = useCallback(
     async (
       input: string,

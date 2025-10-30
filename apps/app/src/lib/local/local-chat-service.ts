@@ -28,7 +28,6 @@ class LocalChatService {
         );
       }
     } else {
-      // Pre-initialize the database connection
       this.dbPromise = getDatabase();
     }
   }

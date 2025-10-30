@@ -29,7 +29,6 @@ class ApiService {
   private uploadService: UploadService;
 
   private constructor() {
-    // Initialize all domain services
     this.chatService = new ChatService(getHeaders);
     this.agentService = new AgentService(getHeaders);
     this.userService = new UserService(getHeaders);
@@ -134,7 +133,6 @@ class ApiService {
       chatSettings,
       signal,
       (text, reasoning, toolResponses, done) => {
-        // Handle usage limits from streaming response
         onProgress(text, reasoning, toolResponses, done);
       },
       onStateChange,
@@ -145,7 +143,6 @@ class ApiService {
       selectedTools,
     );
 
-    // Format message content for reasoning extraction
     if (typeof assistantMessage.content === "string") {
       const { content: formattedContent, reasoning: extractedReasoning } =
         this.formatMessageContent(assistantMessage.content);

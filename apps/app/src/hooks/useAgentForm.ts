@@ -193,7 +193,6 @@ export function useAgentForm() {
   }, [useServers, servers, useFewShotExamples, fewShotExamples]);
 
   return {
-    // State
     isEditMode,
     currentAgentId,
     name,
@@ -211,7 +210,7 @@ export function useAgentForm() {
     teamRole,
     isTeamAgent,
     activeTab,
-    // Setters
+
     setName,
     setDescription,
     setAvatarUrl,
@@ -227,7 +226,7 @@ export function useAgentForm() {
     setTeamRole,
     setIsTeamAgent,
     setActiveTab,
-    // Functions
+
     resetForm,
     loadAgentData,
     getFormData,

@@ -35,7 +35,6 @@ export function ProfileAgentsTab() {
     categories,
   } = useSharedAgents();
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAgent, setEditingAgent] = useState<any>(null);
   const [agentToDelete, setAgentToDelete] = useState<{
