@@ -18,13 +18,7 @@ export class GoogleStudioProvider extends BaseProvider {
 
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
-
-    if (!params.env.AI_GATEWAY_TOKEN) {
-      throw new AssistantError(
-        "Missing AI_GATEWAY_TOKEN",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
+    this.validateAiGatewayToken(params);
   }
 
   protected async getEndpoint(

@@ -13,7 +13,12 @@ import {
   shouldEnableStreaming,
 } from "~/utils/parameters";
 import { detectStreaming } from "~/utils/streaming";
-import { fetchAIResponse } from "./fetch";
+import { fetchAIResponse } from "../lib/fetch";
+import {
+  validateAiGatewayToken,
+  buildAiGatewayHeaders,
+  buildMetricsSettings,
+} from "../utils/helpers";
 
 const logger = getLogger({ prefix: "lib/providers/base" });
 
@@ -166,6 +171,42 @@ export abstract class BaseProvider implements AIProvider {
   }
 
   /**
+   * Validates that AI_GATEWAY_TOKEN is present
+   * Helper method for providers using Cloudflare AI Gateway
+   * @param params - The parameters of the request
+   * @throws AssistantError if AI_GATEWAY_TOKEN is missing
+   */
+  protected validateAiGatewayToken(params: ChatCompletionParameters): void {
+    validateAiGatewayToken(params);
+  }
+
+  /**
+   * Builds standard AI Gateway headers with authorization
+   * Helper method for providers using Cloudflare AI Gateway
+   * @param params - The parameters of the request
+   * @param apiKey - The provider API key
+   * @returns Headers object with AI Gateway configuration
+   */
+  protected buildAiGatewayHeaders(
+    params: ChatCompletionParameters,
+    apiKey: string,
+  ): Record<string, string> {
+    return buildAiGatewayHeaders(params, apiKey);
+  }
+
+  /**
+   * Builds metrics settings object from parameters
+   * Helper method for consistent analytics tracking
+   * @param params - The parameters of the request
+   * @returns Settings object for metrics tracking
+   */
+  protected buildMetricsSettings(
+    params: ChatCompletionParameters,
+  ): Record<string, any> {
+    return buildMetricsSettings(params);
+  }
+
+  /**
    * Gets the endpoint for the API call
    * @param params - The parameters of the request
    * @returns The endpoint
@@ -283,16 +324,7 @@ export abstract class BaseProvider implements AIProvider {
         return await this.formatResponse(data, params);
       },
       analyticsEngine: params.env?.ANALYTICS,
-      settings: {
-        temperature: params.temperature,
-        max_tokens: params.max_tokens,
-        top_p: params.top_p,
-        top_k: params.top_k,
-        seed: params.seed,
-        repetition_penalty: params.repetition_penalty,
-        frequency_penalty: params.frequency_penalty,
-        presence_penalty: params.presence_penalty,
-      },
+      settings: this.buildMetricsSettings(params),
       userId,
       completion_id: params.completion_id,
     });

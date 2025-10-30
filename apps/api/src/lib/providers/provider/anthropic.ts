@@ -28,13 +28,7 @@ export class AnthropicProvider extends BaseProvider {
 
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
-
-    if (!params.env.AI_GATEWAY_TOKEN) {
-      throw new AssistantError(
-        "Missing AI_GATEWAY_TOKEN",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
+    this.validateAiGatewayToken(params);
   }
 
   protected async getEndpoint(): Promise<string> {
@@ -45,14 +39,13 @@ export class AnthropicProvider extends BaseProvider {
     params: ChatCompletionParameters,
   ): Promise<Record<string, string>> {
     const apiKey = await this.getApiKey(params, params.user?.id);
+    const baseHeaders = this.buildAiGatewayHeaders(params, apiKey);
 
     return {
-      "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
+      ...baseHeaders,
       "x-api-key": apiKey,
       "anthropic-version": "2023-06-01",
       "anthropic-beta": "code-execution-2025-05-22",
-      "Content-Type": "application/json",
-      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
     };
   }
 

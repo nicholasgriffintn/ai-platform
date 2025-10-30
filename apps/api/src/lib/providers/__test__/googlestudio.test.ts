@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { getEffectiveMaxTokens } from "~/utils/parameters";
-import { GoogleStudioProvider } from "../googlestudio";
+import { GoogleStudioProvider } from "../provider/googlestudio";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {

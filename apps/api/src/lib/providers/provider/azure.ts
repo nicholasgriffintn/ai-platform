@@ -1,6 +1,6 @@
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
-import { fetchAIResponse } from "~/lib/providers/fetch";
+import { fetchAIResponse } from "~/lib/providers/lib/fetch";
 import { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -20,12 +20,7 @@ export class AzureOpenAIProvider extends BaseProvider {
 
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
-    if (!params.env.AI_GATEWAY_TOKEN) {
-      throw new AssistantError(
-        "Missing AI_GATEWAY_TOKEN",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
+    this.validateAiGatewayToken(params);
   }
 
   protected parseAzureCredentials(apiKey: string): {

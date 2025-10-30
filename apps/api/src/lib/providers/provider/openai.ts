@@ -31,13 +31,7 @@ export class OpenAIProvider extends BaseProvider {
 
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
-
-    if (!params.env.AI_GATEWAY_TOKEN) {
-      throw new AssistantError(
-        "Missing AI_GATEWAY_TOKEN",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
+    this.validateAiGatewayToken(params);
   }
 
   private isImageGeneration(params: ChatCompletionParameters): boolean {
@@ -64,19 +58,13 @@ export class OpenAIProvider extends BaseProvider {
     params: ChatCompletionParameters,
   ): Promise<Record<string, string>> {
     const apiKey = await this.getApiKey(params, params.user?.id);
-
     const endpoint = await this.getEndpoint(params);
-
     const isImageEdits = endpoint.includes("images/edits");
 
-    const headers: Record<string, string> = {
-      "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-      Authorization: `Bearer ${apiKey}`,
-      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-    };
+    const headers = this.buildAiGatewayHeaders(params, apiKey);
 
-    if (!isImageEdits) {
-      headers["Content-Type"] = "application/json";
+    if (isImageEdits) {
+      delete headers["Content-Type"];
     }
 
     return headers;

@@ -6,7 +6,7 @@ import {
   getToolsForProvider,
   shouldEnableStreaming,
 } from "~/utils/parameters";
-import { AnthropicProvider } from "../anthropic";
+import { AnthropicProvider } from "../provider/anthropic";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {

@@ -1,7 +1,5 @@
 import type { ChatCompletionParameters } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseProvider } from "./base";
-import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
 export class MistralProvider extends BaseProvider {
   name = "mistral";
@@ -14,13 +12,7 @@ export class MistralProvider extends BaseProvider {
 
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
-
-    if (!params.env.MISTRAL_API_KEY || !params.env.AI_GATEWAY_TOKEN) {
-      throw new AssistantError(
-        "Missing AI_GATEWAY_TOKEN",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
+    this.validateAiGatewayToken(params);
   }
 
   protected async getEndpoint(
@@ -37,12 +29,6 @@ export class MistralProvider extends BaseProvider {
     params: ChatCompletionParameters,
   ): Promise<Record<string, string>> {
     const apiKey = await this.getApiKey(params, params.user?.id);
-
-    return {
-      "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-    };
+    return this.buildAiGatewayHeaders(params, apiKey);
   }
 }

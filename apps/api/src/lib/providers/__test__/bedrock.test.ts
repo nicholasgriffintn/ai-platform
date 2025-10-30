@@ -10,7 +10,7 @@ import {
 import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { createAsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
-import { BedrockProvider } from "../bedrock";
+import { BedrockProvider } from "../provider/bedrock";
 import type { ChatCompletionParameters } from "~/types";
 import {
   createCommonParameters,

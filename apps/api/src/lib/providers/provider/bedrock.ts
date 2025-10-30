@@ -17,7 +17,7 @@ import {
   getToolsForProvider,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
-import { formatBedrockMessages } from "./utils/bedrockContent";
+import { formatBedrockMessages } from "../utils/bedrockContent";
 
 const logger = getLogger({ prefix: "lib/providers/bedrock" });
 
@@ -67,13 +67,7 @@ export class BedrockProvider extends BaseProvider {
 
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
-
-    if (!params.env.AI_GATEWAY_TOKEN) {
-      throw new AssistantError(
-        "Missing AI_GATEWAY_TOKEN",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
+    this.validateAiGatewayToken(params);
   }
 
   protected async getEndpoint(

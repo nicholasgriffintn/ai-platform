@@ -9,7 +9,7 @@ import type { ChatCompletionParameters, Message } from "~/types";
 import type { ModelConfigItem, ReplicateInputFieldDescriptor } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseProvider } from "./base";
-import { fetchAIResponse } from "./fetch";
+import { fetchAIResponse } from "../lib/fetch";
 import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
 type ReplicateFieldType =
@@ -329,13 +329,7 @@ export class ReplicateProvider extends BaseProvider {
 
   protected validateParams(params: ChatCompletionParameters): void {
     super.validateParams(params);
-
-    if (!params.env.AI_GATEWAY_TOKEN) {
-      throw new AssistantError(
-        "Missing AI_GATEWAY_TOKEN",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
+    this.validateAiGatewayToken(params);
 
     const lastMessage = params.messages[params.messages.length - 1];
     if (!lastMessage.content) {

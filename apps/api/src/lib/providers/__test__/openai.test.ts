@@ -5,7 +5,7 @@ import {
   getToolsForProvider,
   shouldEnableStreaming,
 } from "~/utils/parameters";
-import { OpenAIProvider } from "../openai";
+import { OpenAIProvider } from "../provider/openai";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {

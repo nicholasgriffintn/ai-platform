@@ -5,7 +5,7 @@ import {
   getToolsForProvider,
   shouldEnableStreaming,
 } from "~/utils/parameters";
-import { OllamaProvider } from "../ollama";
+import { OllamaProvider } from "../provider/ollama";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {

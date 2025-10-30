@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { createCommonParameters } from "~/utils/parameters";
-import { WorkersProvider } from "../workers";
+import { WorkersProvider } from "../provider/workers";
 
 vi.mock("~/lib/providers/base", () => ({
   BaseProvider: class MockBaseProvider {
