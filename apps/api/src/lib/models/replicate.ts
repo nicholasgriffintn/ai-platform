@@ -324,7 +324,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
           type: ["file", "string"],
           description:
             "Image to use with Flux Redux. This is used together with the text prompt to guide the generation towards the composition of the image_prompt. Must be jpeg, png, gif, or webp.",
-          required: true,
+          required: false,
         },
         {
           name: "aspect_ratio",
