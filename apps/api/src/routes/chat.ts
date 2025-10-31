@@ -3,11 +3,14 @@ import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
 import {
   chatCompletionResponseSchema,
+  editCompletionResponseSchema,
   checkChatCompletionJsonSchema,
   checkChatCompletionParamsSchema,
   countTokensJsonSchema,
   countTokensResponseSchema,
   createChatCompletionsJsonSchema,
+  nextEditRequestSchema,
+  applyEditRequestSchema,
   deleteChatCompletionParamsSchema,
   fillInMiddleRequestSchema,
   fillInMiddleResponseSchema,
@@ -35,6 +38,8 @@ import { handleChatCompletionFeedbackSubmission } from "~/services/completions/c
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { handleCreateFimCompletions } from "~/services/completions/createFimCompletions";
+import { handleCreateNextEditCompletions } from "~/services/completions/createNextEditCompletions";
+import { handleCreateApplyEditCompletions } from "~/services/completions/createApplyEditCompletions";
 import { handleCountTokens } from "~/services/completions/countTokens";
 import {
   handleGetChatMessageById,
@@ -181,6 +186,114 @@ app.post(
     >;
 
     const result = await handleCreateFimCompletions({
+      env: context.env as IEnv,
+      user: context.get("user") as IUser | undefined,
+      ...body,
+    });
+
+    if (body.stream) {
+      return context.body(result as ReadableStream, 200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
+    }
+
+    return context.json(result);
+  },
+);
+
+app.post(
+  "/edit/completions",
+  validateCaptcha,
+  describeRoute({
+    tags: ["chat"],
+    summary: "Create next edit completion",
+    description:
+      "Produces the next edit suggestion for a file using Mercury's code edit model.",
+    responses: {
+      200: {
+        description: "Edit suggestion response",
+        content: {
+          "application/json": {
+            schema: resolver(editCompletionResponseSchema),
+          },
+          "text/event-stream": {
+            schema: resolver(z.string()),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("json", nextEditRequestSchema),
+  async (context: Context) => {
+    const body = context.req.valid("json" as never) as z.infer<
+      typeof nextEditRequestSchema
+    >;
+
+    const result = await handleCreateNextEditCompletions({
+      env: context.env as IEnv,
+      user: context.get("user") as IUser | undefined,
+      ...body,
+    });
+
+    if (body.stream) {
+      return context.body(result as ReadableStream, 200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
+    }
+
+    return context.json(result);
+  },
+);
+
+app.post(
+  "/apply/completions",
+  validateCaptcha,
+  describeRoute({
+    tags: ["chat"],
+    summary: "Apply edit completion",
+    description:
+      "Applies an edit snippet to existing code using Mercury's apply edit capability.",
+    responses: {
+      200: {
+        description: "Edit application response",
+        content: {
+          "application/json": {
+            schema: resolver(editCompletionResponseSchema),
+          },
+          "text/event-stream": {
+            schema: resolver(z.string()),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("json", applyEditRequestSchema),
+  async (context: Context) => {
+    const body = context.req.valid("json" as never) as z.infer<
+      typeof applyEditRequestSchema
+    >;
+
+    const result = await handleCreateApplyEditCompletions({
       env: context.env as IEnv,
       user: context.get("user") as IUser | undefined,
       ...body,

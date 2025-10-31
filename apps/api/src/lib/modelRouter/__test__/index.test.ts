@@ -12,6 +12,7 @@ const mockModels = vi.hoisted(() => ({
   getIncludedInRouterModelsForUser: vi.fn(),
   filterModelsForUserAccess: vi.fn(),
   getModelConfig: vi.fn(),
+  getModels: vi.fn(),
   defaultModel: "claude-3-5-sonnet-20241022",
 }));
 
@@ -80,6 +81,8 @@ describe("ModelRouter", () => {
     mockMonitoring.trackModelRoutingMetrics.mockImplementation(
       async (fn) => await fn(),
     );
+
+    mockModels.getModels.mockReturnValue({});
   });
 
   describe("selectModel", () => {
@@ -261,6 +264,57 @@ describe("ModelRouter", () => {
       );
 
       expect(result).toEqual(["claude-3-5-sonnet-20241022"]);
+    });
+  });
+
+  describe("edit model selection", () => {
+    it("selectNextEditModel returns highest scoring supported model", () => {
+      mockModels.getModels.mockReturnValue({
+        "mercury-coder": {
+          ...mockModelConfig,
+          provider: "inception",
+          supportsNextEdit: true,
+          speed: 5,
+          reliability: 5,
+          contextComplexity: 4,
+        },
+        "other-model": {
+          ...mockModelConfig,
+          provider: "other",
+          supportsNextEdit: true,
+          speed: 2,
+          reliability: 3,
+          contextComplexity: 3,
+        },
+      });
+
+      const model = ModelRouter.selectNextEditModel();
+      expect(model).toBe("mercury-coder");
+    });
+
+    it("selectApplyEditModel filters by provider when provided", () => {
+      mockModels.getModels.mockReturnValue({
+        "mercury-coder": {
+          ...mockModelConfig,
+          provider: "inception",
+          supportsApplyEdit: true,
+          speed: 3,
+          reliability: 5,
+        },
+        "other-model": {
+          ...mockModelConfig,
+          provider: "other",
+          supportsApplyEdit: true,
+          speed: 1,
+          reliability: 5,
+        },
+      });
+
+      const model = ModelRouter.selectApplyEditModel({
+        preferredProvider: "inception",
+      });
+
+      expect(model).toBe("mercury-coder");
     });
   });
 

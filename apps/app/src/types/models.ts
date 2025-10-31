@@ -29,6 +29,8 @@ export interface ModelConfigItem {
   supportsCodeExecution?: boolean;
   supportsAudio?: boolean;
   supportsFim?: boolean;
+  supportsNextEdit?: boolean;
+  supportsApplyEdit?: boolean;
   supportsImageEdits?: boolean;
 }
 

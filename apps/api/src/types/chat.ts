@@ -258,6 +258,8 @@ interface AIResponseParamsBase extends AIControlParams {
   use_rag?: boolean;
   // Whether the request is a Fill-in-the-Middle generation.
   fim_mode?: boolean;
+  // The Mercury edit operation requested.
+  edit_operation?: "next" | "apply";
   // The options for RAG for the response.
   rag_options?: RagOptions;
   // How the system prompt should be formed.

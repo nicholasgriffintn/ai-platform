@@ -12,6 +12,8 @@ import { add_reasoning_step } from "./reasoning";
 import { capture_screenshot } from "./screenshot";
 import { create_speech } from "./speech";
 import { fill_in_middle_completion } from "./fill_in_middle";
+import { next_edit_completion } from "./next_edit";
+import { apply_edit_completion } from "./apply_edit";
 import {
   delegateToTeamMember,
   delegateToTeamMemberByRole,
@@ -31,6 +33,8 @@ export const availableFunctions: IFunction[] = [
   create_music,
   create_image,
   fill_in_middle_completion,
+  next_edit_completion,
+  apply_edit_completion,
   web_search,
   extract_content,
   capture_screenshot,

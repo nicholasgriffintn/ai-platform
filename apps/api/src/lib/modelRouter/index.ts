@@ -102,6 +102,61 @@ export class ModelRouter {
     return scored[0].key;
   }
 
+  static selectNextEditModel(options?: { preferredProvider?: string }): string {
+    return ModelRouter.selectEditModel("supportsNextEdit", options);
+  }
+
+  static selectApplyEditModel(options?: {
+    preferredProvider?: string;
+  }): string {
+    return ModelRouter.selectEditModel("supportsApplyEdit", options);
+  }
+
+  private static selectEditModel(
+    capability: "supportsNextEdit" | "supportsApplyEdit",
+    options?: { preferredProvider?: string },
+  ): string {
+    const models = getModels({ shouldUseCache: false });
+    const editModels = Object.entries(models).filter(([_, config]) =>
+      capability === "supportsNextEdit"
+        ? config.supportsNextEdit
+        : config.supportsApplyEdit,
+    );
+
+    if (editModels.length === 0) {
+      throw new AssistantError(
+        `No models available with capability ${capability}`,
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const filtered = options?.preferredProvider
+      ? editModels.filter(
+          ([, config]) => config.provider === options.preferredProvider,
+        )
+      : editModels;
+
+    if (filtered.length === 0) {
+      throw new AssistantError(
+        `No models for provider ${options?.preferredProvider} support ${capability}`,
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const scored = filtered
+      .map(([key, config]) => {
+        const speed = config.speed ?? 3;
+        const reliability = config.reliability ?? 3;
+        const complexity = config.contextComplexity ?? 3;
+
+        const score = speed * 10 + reliability * 5 + (5 - complexity) * 2;
+        return { key, score };
+      })
+      .sort((a, b) => b.score - a.score);
+
+    return scored[0].key;
+  }
+
   private static async scoreModel(
     requirements: PromptRequirements,
     model: string,

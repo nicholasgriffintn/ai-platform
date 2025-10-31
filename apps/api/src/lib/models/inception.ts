@@ -31,6 +31,8 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
     speed: 4,
     isFeatured: true,
     includedInRouter: true,
+    supportsNextEdit: true,
+    supportsApplyEdit: true,
     supportsFim: true,
     supportsArtifacts: true,
   }),

@@ -65,6 +65,8 @@ export type ModelConfigItem = {
   supportsSearchGrounding?: boolean;
   supportsCodeExecution?: boolean;
   supportsFim?: boolean;
+  supportsNextEdit?: boolean;
+  supportsApplyEdit?: boolean;
   supportsImageEdits?: boolean;
   timeout?: number;
   supportsAudio?: boolean;

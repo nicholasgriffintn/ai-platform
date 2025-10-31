@@ -17,6 +17,14 @@ export class InceptionProvider extends BaseProvider {
   protected async getEndpoint(
     params: ChatCompletionParameters,
   ): Promise<string> {
+    if (params.edit_operation === "next") {
+      return "https://api.inceptionlabs.ai/v1/edit/completions";
+    }
+
+    if (params.edit_operation === "apply") {
+      return "https://api.inceptionlabs.ai/v1/apply/completions";
+    }
+
     if (params.fim_mode || typeof params.suffix !== "undefined") {
       return "https://api.inceptionlabs.ai/v1/fim/completions";
     }
@@ -25,6 +33,62 @@ export class InceptionProvider extends BaseProvider {
   }
 
   async mapParameters(params: ChatCompletionParameters) {
+    if (params.edit_operation) {
+      const serializeContent = (content: any): string => {
+        if (typeof content === "string") {
+          return content;
+        }
+
+        if (Array.isArray(content)) {
+          return content
+            .map((part) => {
+              if (typeof part === "string") {
+                return part;
+              }
+
+              if (typeof part === "object" && part !== null) {
+                if (typeof part.text === "string") {
+                  return part.text;
+                }
+
+                if (part.markdown_document?.markdown) {
+                  return part.markdown_document.markdown;
+                }
+
+                if (typeof part.content === "string") {
+                  return part.content;
+                }
+              }
+
+              return "";
+            })
+            .filter((segment) => segment && segment.length > 0)
+            .join("\n");
+        }
+
+        return "";
+      };
+
+      const messages = params.messages?.map((message) => ({
+        role: message.role,
+        content: serializeContent(message.content),
+      }));
+
+      const editParams = {
+        model: params.model,
+        messages,
+        temperature: params.temperature,
+        top_p: params.top_p,
+        stream: params.stream,
+      };
+
+      return Object.fromEntries(
+        Object.entries(editParams).filter(
+          ([, value]) => value !== undefined && value !== null,
+        ),
+      );
+    }
+
     if (params.fim_mode || typeof params.suffix !== "undefined") {
       const fimParams = {
         model: params.model,
