@@ -7,7 +7,7 @@ import type { ChatMode, ChatSettings } from "~/types";
 const defaultSettings: ChatSettings = {
   temperature: 0.7,
   top_p: 0.8,
-  max_tokens: 1024,
+  max_tokens: 1024 * 8,
   presence_penalty: 0,
   frequency_penalty: 0,
   use_rag: false,
