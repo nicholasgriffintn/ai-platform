@@ -350,6 +350,22 @@ export class ResponseFormatter {
     }
 
     const message = data.choices?.[0]?.message;
+    const textCompletion = data.choices?.[0]?.text;
+
+    if (!message && typeof textCompletion === "string") {
+      const processedTextCompletion = !options.is_streaming
+        ? preprocessQwQResponse(
+            textCompletion,
+            options.model || data.model || "",
+          )
+        : textCompletion;
+
+      return {
+        ...data,
+        response: processedTextCompletion,
+      };
+    }
+
     const textContent = message?.content || "";
 
     const processedTextContent = !options.is_streaming

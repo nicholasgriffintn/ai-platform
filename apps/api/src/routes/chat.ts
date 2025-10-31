@@ -9,6 +9,8 @@ import {
   countTokensResponseSchema,
   createChatCompletionsJsonSchema,
   deleteChatCompletionParamsSchema,
+  fillInMiddleRequestSchema,
+  fillInMiddleResponseSchema,
   generateChatCompletionTitleJsonSchema,
   generateChatCompletionTitleParamsSchema,
   getChatCompletionMessagesResponseSchema,
@@ -32,6 +34,7 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
+import { handleCreateFimCompletions } from "~/services/completions/createFimCompletions";
 import { handleCountTokens } from "~/services/completions/countTokens";
 import {
   handleGetChatMessageById,
@@ -51,6 +54,7 @@ import type {
   ChatRole,
   IEnv,
   IFeedbackBody,
+  IUser,
   Message,
 } from "~/types";
 
@@ -129,6 +133,68 @@ app.post(
     }
 
     return context.json(response);
+  },
+);
+
+app.post(
+  "/fim/completions",
+  validateCaptcha,
+  describeRoute({
+    tags: ["chat"],
+    summary: "Create fill-in-the-middle completion",
+    description:
+      "Generates code completions by filling the gap between a prefix and suffix using supported FIM models.",
+    responses: {
+      200: {
+        description: "Fill-in-the-middle completion response",
+        content: {
+          "application/json": {
+            schema: resolver(fillInMiddleResponseSchema),
+          },
+          "text/event-stream": {
+            schema: resolver(z.string()),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+      401: {
+        description: "Authentication error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("json", fillInMiddleRequestSchema),
+  async (context: Context) => {
+    const body = context.req.valid("json" as never) as z.infer<
+      typeof fillInMiddleRequestSchema
+    >;
+
+    const result = await handleCreateFimCompletions({
+      env: context.env as IEnv,
+      user: context.get("user") as IUser | undefined,
+      ...body,
+    });
+
+    if (body.stream) {
+      return context.body(result as ReadableStream, 200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
+    }
+
+    return context.json(result);
   },
 );
 

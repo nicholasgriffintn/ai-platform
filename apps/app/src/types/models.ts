@@ -28,6 +28,7 @@ export interface ModelConfigItem {
   supportsSearchGrounding?: boolean;
   supportsCodeExecution?: boolean;
   supportsAudio?: boolean;
+  supportsFim?: boolean;
   supportsImageEdits?: boolean;
 }
 

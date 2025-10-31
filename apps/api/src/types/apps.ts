@@ -39,6 +39,7 @@ export interface IFunction {
         default?: any;
         minimum?: number;
         maximum?: number;
+        multipleOf?: number;
         enum?: string[];
         properties?: {
           [key: string]: {

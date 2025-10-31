@@ -4,6 +4,7 @@ export * from "./apps";
 export * from "./audio";
 export * from "./auth";
 export * from "./chat";
+export * from "./fim";
 export * from "./magicLink";
 export * from "./models";
 export * from "./memories";

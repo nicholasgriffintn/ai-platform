@@ -185,6 +185,8 @@ interface AIControlParams {
   temperature?: number;
   // Controls the maximum number of tokens in the response.
   max_tokens?: number;
+  // Controls the minimum number of tokens in the response.
+  min_tokens?: number;
   // Adjusts the creativity of the AI's responses by controlling how many possible words it considers. Lower values make outputs more predictable; higher values allow for more varied and creative responses.
   top_p?: number;
   // Limits the AI to choose from the top 'k' most probable words. Lower values make responses more focused; higher values introduce more variety and potential surprises.
@@ -240,6 +242,10 @@ interface AIResponseParamsBase extends AIControlParams {
   messages?: Message[];
   // The message to use for the response.
   message?: string;
+  // The prefix text used for FIM requests.
+  prompt?: string;
+  // The suffix text used for FIM requests.
+  suffix?: string;
   // The model to use for the response.
   model?: string;
   // The mode to use for the response.
@@ -250,6 +256,8 @@ interface AIResponseParamsBase extends AIControlParams {
   response_format?: Record<string, any>;
   // Whether to enable RAG for the response.
   use_rag?: boolean;
+  // Whether the request is a Fill-in-the-Middle generation.
+  fim_mode?: boolean;
   // The options for RAG for the response.
   rag_options?: RagOptions;
   // How the system prompt should be formed.

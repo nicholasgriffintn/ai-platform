@@ -3,6 +3,7 @@ import {
   defaultModel,
   getIncludedInRouterModelsForUser,
   getModelConfig,
+  getModels,
 } from "~/lib/models";
 import { trackModelRoutingMetrics } from "~/lib/monitoring";
 import type {
@@ -13,6 +14,7 @@ import type {
   PromptRequirements,
 } from "~/types";
 import { getLogger } from "~/utils/logger";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 const logger = getLogger({ prefix: "lib/modelRouter" });
 
@@ -57,6 +59,48 @@ export class ModelRouter {
 
   private static readonly COMPARISON_SCORE_THRESHOLD = 3.0;
   private static readonly MAX_COMPARISON_MODELS = 2;
+
+  static selectFimModel(options?: { preferredProvider?: string }): string {
+    const models = getModels({ shouldUseCache: false });
+    const fimModels = Object.entries(models).filter(
+      ([, config]) => config.supportsFim,
+    );
+
+    if (fimModels.length === 0) {
+      throw new AssistantError(
+        "No FIM-capable models available",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const filteredModels =
+      options?.preferredProvider != null
+        ? fimModels.filter(
+            ([, config]) => config.provider === options.preferredProvider,
+          )
+        : fimModels;
+
+    if (filteredModels.length === 0) {
+      throw new AssistantError(
+        `No FIM-capable models available for provider ${options.preferredProvider}`,
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const scored = filteredModels
+      .map(([key, config]) => {
+        const speed = config.speed ?? 3;
+        const reliability = config.reliability ?? 3;
+        const complexity = config.contextComplexity ?? 3;
+
+        const score = speed * 10 + reliability * 5 + (5 - complexity) * 2;
+
+        return { key, score };
+      })
+      .sort((a, b) => b.score - a.score);
+
+    return scored[0].key;
+  }
 
   private static async scoreModel(
     requirements: PromptRequirements,

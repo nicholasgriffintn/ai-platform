@@ -67,6 +67,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     reliability: 4,
     speed: 4,
     includedInRouter: true,
+    supportsFim: true,
     supportsArtifacts: true,
   }),
 
@@ -133,6 +134,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     speed: 3,
     isFeatured: true,
     includedInRouter: true,
+    supportsFim: true,
     supportsArtifacts: true,
   }),
 
@@ -286,6 +288,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     speed: 3,
     isFeatured: true,
     includedInRouter: true,
+    supportsFim: true,
     supportsArtifacts: true,
   }),
 
@@ -317,6 +320,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     isFeatured: true,
     includedInRouter: true,
     supportsArtifacts: true,
+    supportsFim: true,
   }),
 
   createModelConfig("open-mixtral-8x7b", PROVIDER, {
@@ -473,6 +477,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     speed: 4,
     includedInRouter: false,
     supportsArtifacts: true,
+    supportsFim: true,
   }),
 
   createModelConfig("magistral-medium", PROVIDER, {
