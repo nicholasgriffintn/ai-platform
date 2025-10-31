@@ -3,10 +3,13 @@ import { getModelConfigByMatchingModel } from "~/lib/models";
 import { createCommonParameters } from "~/utils/parameters";
 import { WorkersProvider } from "../provider/workers";
 
-vi.mock("~/lib/providers/base", () => ({
+vi.mock("~/lib/providers/provider/base", () => ({
   BaseProvider: class MockBaseProvider {
     name = "mock";
     supportsStreaming = true;
+    validateAiGatewayToken() {
+      return true;
+    }
     validateParams(params: any) {
       if (!params.model && !params.version) {
         throw new Error("Missing model or version");

@@ -7,10 +7,13 @@ import {
 } from "~/utils/parameters";
 import { OllamaProvider } from "../provider/ollama";
 
-vi.mock("~/lib/providers/base", () => ({
+vi.mock("~/lib/providers/provider/base", () => ({
   BaseProvider: class MockBaseProvider {
     name = "mock";
     supportsStreaming = true;
+    validateAiGatewayToken() {
+      return true;
+    }
     validateParams() {}
     async getApiKey() {
       return "test-key";

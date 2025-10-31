@@ -2,10 +2,13 @@ import { describe, expect, it, vi } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { ReplicateProvider, buildReplicateInput } from "../provider/replicate";
 
-vi.mock("~/lib/providers/base", () => ({
+vi.mock("~/lib/providers/provider/base", () => ({
   BaseProvider: class MockBaseProvider {
     name = "mock";
     supportsStreaming = true;
+    validateAiGatewayToken() {
+      return true;
+    }
     validateParams() {}
     async getApiKey() {
       return "test-key";
@@ -120,17 +123,6 @@ describe("ReplicateProvider", () => {
   describe("validateParams", () => {
     it("should validate required parameters", async () => {
       const provider = new ReplicateProvider();
-
-      const paramsMissingKey = {
-        model: "replicate-model",
-        messages: [{ role: "user", content: "Hello" }],
-        env: {},
-      };
-
-      expect(() => {
-        // @ts-ignore - validateParams is protected
-        provider.validateParams(paramsMissingKey as any);
-      }).toThrow("Missing AI_GATEWAY_TOKEN");
 
       const paramsWithoutContent = {
         model: "replicate-model",

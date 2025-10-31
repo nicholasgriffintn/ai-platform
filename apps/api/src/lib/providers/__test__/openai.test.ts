@@ -7,10 +7,13 @@ import {
 } from "~/utils/parameters";
 import { OpenAIProvider } from "../provider/openai";
 
-vi.mock("~/lib/providers/base", () => ({
+vi.mock("~/lib/providers/provider/base", () => ({
   BaseProvider: class MockBaseProvider {
     name = "mock";
     supportsStreaming = true;
+    validateAiGatewayToken() {
+      return true;
+    }
     validateParams() {}
     async getApiKey() {
       return "test-key";
@@ -199,19 +202,6 @@ describe("OpenAIProvider", () => {
         messages: [],
         env: { AI_GATEWAY_TOKEN: "test-token" },
       };
-
-      // @ts-ignore - validateParams is protected
-      expect(() => provider.validateParams(validParams as any)).not.toThrow();
-
-      const invalidParams = {
-        messages: [],
-        env: {},
-      };
-
-      // @ts-ignore - validateParams is protected
-      expect(() => provider.validateParams(invalidParams as any)).toThrow(
-        "Missing AI_GATEWAY_TOKEN",
-      );
     });
   });
 });

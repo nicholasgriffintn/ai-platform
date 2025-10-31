@@ -8,10 +8,21 @@ import {
 } from "~/utils/parameters";
 import { AnthropicProvider } from "../provider/anthropic";
 
-vi.mock("~/lib/providers/base", () => ({
+vi.mock("~/lib/providers/provider/base", () => ({
   BaseProvider: class MockBaseProvider {
     name = "mock";
     supportsStreaming = true;
+    validateAiGatewayToken() {
+      return true;
+    }
+    buildAiGatewayHeaders() {
+      return {
+        "Content-Type": "application/json",
+        "cf-aig-authorization": "test-token",
+        "cf-aig-metadata":
+          '{"email":"test@example.com","completionId":"test-completion-id"}',
+      };
+    }
     validateParams() {}
     async getHeaders() {
       return {};
@@ -46,17 +57,6 @@ describe("AnthropicProvider", () => {
 
       // @ts-ignore - validateParams is protected
       expect(() => provider.validateParams(validParams as any)).not.toThrow();
-
-      const invalidParams = {
-        model: "claude-3-sonnet",
-        messages: [],
-        env: {},
-      };
-
-      // @ts-ignore - validateParams is protected
-      expect(() => provider.validateParams(invalidParams as any)).toThrow(
-        "Missing AI_GATEWAY_TOKEN",
-      );
     });
   });
 

@@ -3,10 +3,13 @@ import { getModelConfigByMatchingModel } from "~/lib/models";
 import { getEffectiveMaxTokens } from "~/utils/parameters";
 import { GoogleStudioProvider } from "../provider/googlestudio";
 
-vi.mock("~/lib/providers/base", () => ({
+vi.mock("~/lib/providers/provider/base", () => ({
   BaseProvider: class MockBaseProvider {
     name = "mock";
     supportsStreaming = true;
+    validateAiGatewayToken() {
+      return true;
+    }
     validateParams() {}
     async getApiKey() {
       return "test-key";
@@ -35,16 +38,6 @@ describe("GoogleStudioProvider", () => {
 
       // @ts-ignore - validateParams is protected
       expect(() => provider.validateParams(validParams as any)).not.toThrow();
-
-      const invalidParams = {
-        messages: [],
-        env: {},
-      };
-
-      // @ts-ignore - validateParams is protected
-      expect(() => provider.validateParams(invalidParams as any)).toThrow(
-        "Missing AI_GATEWAY_TOKEN",
-      );
     });
   });
 

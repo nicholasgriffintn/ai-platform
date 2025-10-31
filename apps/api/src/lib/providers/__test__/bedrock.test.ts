@@ -33,10 +33,13 @@ vi.mock("aws4fetch", () => ({
   })),
 }));
 
-vi.mock("~/lib/providers/base", () => ({
+vi.mock("~/lib/providers/provider/base", () => ({
   BaseProvider: class MockBaseProvider {
     name = "mock";
     supportsStreaming = true;
+    validateAiGatewayToken() {
+      return true;
+    }
     validateParams() {}
     async getApiKey() {
       return "test-key";
