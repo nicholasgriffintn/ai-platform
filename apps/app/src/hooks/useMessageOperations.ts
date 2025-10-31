@@ -98,14 +98,19 @@ export function useMessageOperations() {
         }
 
         const messages = [...oldData.messages];
-        const lastMessageIndex = messages.length - 1;
-        const hasAssistantLastMessage =
-          lastMessageIndex >= 0 &&
-          messages[lastMessageIndex].role === "assistant";
+        const lastAssistantIndex = (() => {
+          for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i].role === "assistant") {
+              return i;
+            }
+          }
+          return -1;
+        })();
+        const hasAssistantMessage = lastAssistantIndex >= 0;
 
         let updatedMessages;
 
-        if (!hasAssistantLastMessage) {
+        if (!hasAssistantMessage) {
           const newAssistantMessage = normalizeMessage({
             role: "assistant",
             content,
@@ -124,25 +129,27 @@ export function useMessageOperations() {
 
           updatedMessages = [...messages, newAssistantMessage];
         } else {
-          const lastMessage = messages[lastMessageIndex];
+          const lastAssistantMessage = messages[lastAssistantIndex];
 
           const updatedMessage = normalizeMessage({
-            ...lastMessage,
+            ...lastAssistantMessage,
             ...(messageData || {}),
             role: "assistant",
             content,
-            created: messageData?.created || lastMessage.created || now,
-            timestamp: messageData?.timestamp || lastMessage.timestamp || now,
+            created:
+              messageData?.created || lastAssistantMessage.created || now,
+            timestamp:
+              messageData?.timestamp || lastAssistantMessage.timestamp || now,
             model: messageData?.model || currentModel,
             reasoning: reasoning
               ? {
                   collapsed: true,
                   content: reasoning,
                 }
-              : lastMessage.reasoning,
+              : lastAssistantMessage.reasoning,
           });
 
-          messages[lastMessageIndex] = updatedMessage;
+          messages[lastAssistantIndex] = updatedMessage;
           updatedMessages = [...messages];
         }
 
