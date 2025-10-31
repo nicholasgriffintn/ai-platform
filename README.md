@@ -24,11 +24,10 @@ Here are some example chats that you can try out:
 - [Multi-model responses](https://polychat.app/s/3690158a-33b4-47bf-b831-97834299d71b)
 - [Saved memories (RAG)](https://polychat.app/s/1e9a8f6e-e6dc-40a7-b24f-53fb8f4c6766)
 - [Retrieved memories (RAG)](https://polychat.app/s/93552889-b3ec-445c-b72b-8d05f5b6117f)
-- [Image generation](https://polychat.app/s/fa89a9da-12e0-4308-8ce8-093c4c309de2)
 - [Multi Step Tool Calls](https://polychat.app/s/9265e7d7-35e5-438e-b76c-576d12c2f770)
 - [Multi Step MCP Calls](https://polychat.app/s/b8e6450f-3a26-4ec8-9c7a-07efd85f88e3)
 - [Agent to agent delegation](https://polychat.app/s/d325a0e8-f2ef-4bf4-8425-a7d614f1d399)
-- [Image Generation](https://polychat.app/s/f4b8f515-d825-4f18-ae01-1310012b1e48)
+- [Image Generation](https://polychat.app/s/f413fa60-6343-4591-93ff-9314b43e40cb)
 
 ## Project Structure
 
