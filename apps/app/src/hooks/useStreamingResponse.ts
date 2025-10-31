@@ -12,7 +12,13 @@ import { useMessageOperations } from "./useMessageOperations";
  * Hook for managing streaming responses and abort control.
  * Handles both local WebLLM and remote API streaming.
  */
-export function useStreamingResponse(webLLMService: any) {
+export function useStreamingResponse(
+  webLLMService: any,
+  onTitleGeneration?: (
+    conversationId: string,
+    messages: Message[],
+  ) => Promise<void>,
+) {
   const { stopLoading } = useLoadingActions();
   const { updateLoading } = useLoadingActions();
   const {
@@ -217,6 +223,17 @@ export function useStreamingResponse(webLLMService: any) {
 
       try {
         const response = await generateResponse(messages, conversationId);
+
+        if (
+          response.status === "success" &&
+          messages.length <= 1 &&
+          onTitleGeneration
+        ) {
+          onTitleGeneration(conversationId, messages).catch((err) =>
+            console.error("Background title generation failed:", err),
+          );
+        }
+
         return response;
       } catch (error) {
         if (controller.signal.aborted) {
@@ -250,7 +267,14 @@ export function useStreamingResponse(webLLMService: any) {
         setController(new AbortController());
       }
     },
-    [generateResponse, controller, stopLoading, model, setModel],
+    [
+      generateResponse,
+      controller,
+      stopLoading,
+      model,
+      setModel,
+      onTitleGeneration,
+    ],
   );
 
   const abortStream = useCallback(() => {

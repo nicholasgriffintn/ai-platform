@@ -31,17 +31,6 @@ export function useChatManager() {
   const { addMessageToConversation, updateAssistantMessage } =
     useMessageOperations();
 
-  const {
-    streamStarted,
-    setStreamStarted,
-    controller,
-    assistantResponseRef,
-    assistantReasoningRef,
-    streamResponse,
-    generateResponse,
-    abortStream,
-  } = useStreamingResponse(webLLMService);
-
   const generateConversationTitle = useCallback(
     async (
       conversationId: string,
@@ -79,37 +68,40 @@ export function useChatManager() {
     [generateTitleMutation, updateConversation],
   );
 
-  const generateResponseWithTitle = useCallback(
-    async (messages: Message[], conversationId: string) => {
-      const result = await generateResponse(messages, conversationId);
+  const handleTitleGeneration = useCallback(
+    async (conversationId: string, messages: Message[]) => {
+      const conversation = queryClient.getQueryData<Conversation>([
+        CHATS_QUERY_KEY,
+        conversationId,
+      ]);
 
-      if (result.status === "success" && messages.length <= 1) {
-        setTimeout(() => {
-          const assistantMessage = normalizeMessage({
-            id: crypto.randomUUID(),
-            created: Date.now(),
-            model: model === null ? undefined : model,
-            role: "assistant",
-            content: result.response,
-            reasoning: assistantReasoningRef.current
-              ? { collapsed: true, content: assistantReasoningRef.current }
-              : undefined,
-          });
+      if (conversation?.messages) {
+        const lastAssistantMessage = conversation.messages
+          .slice()
+          .reverse()
+          .find((msg) => msg.role === "assistant");
 
-          generateConversationTitle(
+        if (lastAssistantMessage) {
+          await generateConversationTitle(
             conversationId,
             messages,
-            assistantMessage,
-          ).catch((err) =>
-            console.error("Background title generation failed:", err),
+            lastAssistantMessage,
           );
-        }, 0);
+        }
       }
-
-      return result;
     },
-    [generateResponse, model, assistantReasoningRef, generateConversationTitle],
+    [queryClient, generateConversationTitle],
   );
+
+  const {
+    streamStarted,
+    setStreamStarted,
+    controller,
+    assistantResponseRef,
+    assistantReasoningRef,
+    streamResponse,
+    abortStream,
+  } = useStreamingResponse(webLLMService, handleTitleGeneration);
 
   const {
     editingMessageId,
@@ -119,10 +111,7 @@ export function useChatManager() {
     startEditingMessage,
     stopEditingMessage,
     branchConversation,
-  } = useConversationActions(
-    generateResponseWithTitle,
-    generateConversationTitle,
-  );
+  } = useConversationActions(streamResponse, generateConversationTitle);
 
   const sendMessage = useCallback(
     async (
