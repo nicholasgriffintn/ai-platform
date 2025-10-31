@@ -236,10 +236,7 @@ function buildFieldValue(
   let value = pickFromSources(field.name, candidateSources);
 
   if (value === undefined) {
-    if (
-      types.includes("string") &&
-      field.name.toLowerCase().includes("prompt")
-    ) {
+    if (types.includes("string") && field.name.toLowerCase() === "prompt") {
       const prompt = extractPromptFromMessages(params.messages || []);
       if (prompt) {
         value = prompt;
