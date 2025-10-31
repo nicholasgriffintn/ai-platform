@@ -15,11 +15,9 @@ import { MemoryManager } from "~/lib/memory";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import {
   type ChatMode,
-  type ContentType,
   type IEnv,
   type IUser,
   type IUserSettings,
-  type MessageContent,
   type ParsedSSEData,
   type Platform,
   StreamState,
@@ -680,24 +678,15 @@ export async function createStreamWithPostProcessing(
               annotations: annotationsData,
             });
 
+            const contentForStorage =
+              typeof assistantMessage.content === "string" ||
+              Array.isArray(assistantMessage.content)
+                ? assistantMessage.content
+                : "";
+
             await conversationManager.add(completion_id, {
               role: "assistant",
-              content:
-                assistantMessage.thinking || assistantMessage.signature
-                  ? ([
-                      assistantMessage.thinking
-                        ? {
-                            type: "thinking" as ContentType,
-                            thinking: assistantMessage.thinking,
-                            signature: assistantMessage.signature || "",
-                          }
-                        : null,
-                      {
-                        type: "text" as ContentType,
-                        text: assistantMessage.content,
-                      },
-                    ].filter(Boolean) as MessageContent[])
-                  : assistantMessage.content,
+              content: contentForStorage,
               citations: assistantMessage.citations,
               log_id: assistantMessage.log_id,
               mode: assistantMessage.mode as ChatMode,
