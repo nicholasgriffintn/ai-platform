@@ -10,6 +10,13 @@ Check out my write up on this project [here](https://nicholasgriffin.dev/blog/bu
 
 ![A screenshot of a chat in the frontend application](./docs/images/chat.png)
 
+## Quick Links
+
+- **[API Documentation](./apps/api/docs/README.md)** - Complete API reference and guides
+- **[Example Chats](#example-chats)** - See what's possible
+- **[Getting Started](#setup-and-installation)** - Set up your own instance
+- **[Features](#features)** - What's included
+
 ## Example Chats
 
 Here are some example chats that you can try out:
@@ -29,69 +36,39 @@ Here are some example chats that you can try out:
 - [Agent to agent delegation](https://polychat.app/s/d325a0e8-f2ef-4bf4-8425-a7d614f1d399)
 - [Image Generation](https://polychat.app/s/f413fa60-6343-4591-93ff-9314b43e40cb)
 
-## Project Structure
+## What's Included
 
-This project is organized as a monorepo with multiple applications:
+This monorepo contains:
 
-- **app** - Web (PWA) frontend application built with React, TailwindCSS, and React Router
-- **api** - Backend API built with Cloudflare Workers that interfaces with AI models and manages user data
-- **metrics** - Analytics and monitoring application to track usage and performance
+- **[API](./apps/api)** - OpenAI-compatible API with 40+ models ([docs](./apps/api/docs/README.md))
+- **[Web App](./apps/app)** - React-based PWA frontend
+- **[Metrics Dashboard](./apps/metrics)** - Usage analytics and monitoring
+- **[Mobile App](./apps/mobile/ios)** - iOS application ([TestFlight](https://testflight.apple.com/join/52xrwxRP))
 
 ## Features
 
-> [!NOTE]
-> I'm also working on a mobile application for this for fun, iOS only. If you're interested, you can [try it out here](https://testflight.apple.com/join/52xrwxRP).
+### Core API Features
 
-- API structure designed to match the OpenAI API for easy integration with various SDKs and applications.
-- Multiple provider and model support
-  - Anthropic
-  - Bedrock
-  - DeepSeek
-  - OpenAI
-  - Google AI Studio
-  - Grok
-  - Groq
-  - Hugging Face
-  - Mistral
-  - OpenRouter
-  - Perplexity
-  - Replicate
-  - Cloudflare AI
-  - Ollama
-  - Github Models
-  - Together AI
-  - Fireworks AI
-  - Certesia
-  - ElevenLabs
-  - Hyperbolic
-  - V0
-  - And many more (you can see the full list [here](https://github.com/nicholasgriffintn/assistant/blob/main/apps/api/src/lib/providers/index.ts))
-- [An AI assisted podcasting app](https://nicholasgriffin.dev/blog/launching-an-automated-podcasting-app)
-- [Drawing to painting and guessing the drawing app](https://nicholasgriffin.dev/blog/anyone-can-draw)
-- Llamaguard Guardrails Support
-- [Bedrock Guardrails Support](https://nicholasgriffin.dev/blog/protecting-content-with-aws-bedrock-guardrails)
-- [Benchmarking](https://nicholasgriffin.dev/blog/building-a-tool-to-benchmark-ai)
-- [RAG with Vectorize](https://nicholasgriffin.dev/blog/adding-rag-to-my-ai-assistant)
-- [Automated model routing](https://nicholasgriffin.dev/blog/building-a-first-party-prompt-router)
-- [Bedrock Knowledge Bases](https://nicholasgriffin.dev/blog/trying-out-bedrock-knowledge-bases)
-- Prompt Coaching
-- Monitoring with Cloudflare Analytics Engine
-- Media uploading to Cloudflare R2
-- [Conversation to Markdown for models that don't support native PDF or other document uploads](https://nicholasgriffin.dev/blog/using-markdown-conversion-to-add-documents-to-ai-chat-context)
-- Multiple authentication methods:
-  - GitHub OAuth
-  - Magic Link
-  - Passkeys
-  - Session-based authentication
-  - JWT authentication
-- A frontend application built with React and TailwindCSS
-  - Uses the API app for authentication and AI requests
-  - Retrieves and displays conversations and makes it easy to create new ones
-  - Has the option to store conversations locally in IndexedDB or in LocalStorage (if IndexedDB is not supported)
-  - Set chat titles and delete chats
-  - Configure settings and models
-  - [Web LLM](https://github.com/mlc-ai/web-llm) support for completely offline usage
-- The API is deployed as a Cloudflare Worker and the frontend is deployed with Cloudflare Assets
+- **[Chat Completions](./apps/api/docs/features/chat-completions.md)** - OpenAI-compatible chat with streaming, tools, and multi-turn conversations
+- **[40+ AI Models](./apps/api/docs/features/models.md)** - Anthropic, OpenAI, Google, Mistral, Meta, and [many more](https://github.com/nicholasgriffintn/assistant/blob/main/apps/api/src/lib/providers/index.ts)
+- **[Code Generation](./apps/api/docs/features/code-generation.md)** - FIM completions, edit suggestions, and code application
+- **[AI Agents](./apps/api/docs/features/agents.md)** - Custom agents with MCP server integrations
+- **[RAG & Memories](./apps/api/docs/features/memories.md)** - Vector-based context retrieval with Cloudflare Vectorize
+- **[Guardrails](./apps/api/docs/features/guardrails.md)** - Content safety with Llamaguard and Bedrock
+- **[Multiple Auth Methods](./apps/api/docs/features/authentication.md)** - OAuth, magic links, passkeys, JWT, API keys
+
+### Additional Features
+
+- **[Automated Model Routing](https://nicholasgriffin.dev/blog/building-a-first-party-prompt-router)** - Smart model selection
+- **[AI Podcasting](https://nicholasgriffin.dev/blog/launching-an-automated-podcasting-app)** - Generate podcasts with AI
+- **[Drawing Apps](https://nicholasgriffin.dev/blog/anyone-can-draw)** - AI-powered creative tools
+- **[Benchmarking](https://nicholasgriffin.dev/blog/building-a-tool-to-benchmark-ai)** - Model performance testing
+- **Web Search Integration** - Internet-grounded responses
+- **Media Uploads** - Images, documents via Cloudflare R2
+- **Tool Calling** - Multi-step function execution
+- **Web LLM Support** - Offline mode for web app
+
+**[See all features →](./apps/api/docs/README.md)**
 
 ## Usage Limits
 
@@ -153,59 +130,32 @@ npm run deploy:metrics
 
 ## API Documentation
 
-### Authentication Flow
+The complete API documentation is available in [apps/api/docs](./apps/api/docs/README.md):
 
-1. User initiates login by visiting: `https://api.polychat.app/auth/github`
-2. User is redirected to GitHub to authorize the application
-3. After authorization, GitHub redirects back to `https://api.polychat.app/auth/github/callback`
-4. The API creates or updates the user record and generates a session
-5. User is redirected back to the specified `redirect_uri` with a session cookie set
-6. The application can choose to use the session cookie or generate a JWT token
+- **[Getting Started](./apps/api/docs/README.md)** - Quick start guide
+- **[Authentication](./apps/api/docs/features/authentication.md)** - All auth methods
+- **[Chat Completions](./apps/api/docs/features/chat-completions.md)** - Core chat API
+- **[Models](./apps/api/docs/features/models.md)** - Available models and capabilities
+- **[Code Generation](./apps/api/docs/features/code-generation.md)** - FIM and code editing
+- **[Agents](./apps/api/docs/features/agents.md)** - Custom AI agents
+- **[Memories](./apps/api/docs/features/memories.md)** - RAG and context
+- **[Guardrails](./apps/api/docs/features/guardrails.md)** - Content safety
 
-### Using the Authentication
+### Quick Example
 
-The authentication system uses HTTP cookies for session management. When a user successfully authenticates, a `session` cookie is set with the session ID.
-
-For API requests, the session ID can be included in one of these ways:
-
-1. Automatically via the session cookie (for browser-based requests)
-2. As a Bearer token in the Authorization header:
-   ```
-   Authorization: Bearer your_session_id
-   ```
-
-### User Information
-
-To get information about the authenticated user, make a GET request to `/auth/me`. This endpoint will use the session cookie or Authorization header to identify the user.
-
-### Generating a JWT Token
-
-To generate a JWT token for the authenticated user, make a POST request to `/auth/token`. This endpoint will use the session cookie or Authorization header to identify the user.
-
-The JWT token will be returned in the response body and can then be used to make API requests to the other endpoints.
-
-### Logging Out
-
-To log out, make a POST request to `/auth/logout`. This will invalidate the session and clear the session cookie. 
-
-## AI Model Integration
-
-The application supports multiple AI providers through a unified API interface. To use a specific provider:
-
-1. Configure the API keys in your environment variables
-2. Select the provider and model in the frontend settings or specify them in API requests
-
-Example API request:
-```json
-POST /chat/completions
-{
-  "model": "gpt-4",
-  "messages": [
-    {"role": "system", "content": "You are a helpful assistant."},
-    {"role": "user", "content": "Hello world!"}
-  ]
-}
+```bash
+curl https://api.polychat.app/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-3-5-sonnet-20241022",
+    "messages": [
+      {"role": "user", "content": "Hello!"}
+    ]
+  }'
 ```
+
+**[View full API reference →](./apps/api/docs/README.md)**
 
 ## Database Management
 

@@ -1,79 +1,138 @@
-# API Backend
+# API
 
-The backend API for the Personal Assistant project, built with Cloudflare Workers and designed to interface with various AI providers.
+OpenAI-compatible API with 40+ models, built on Cloudflare Workers.
 
-## Features
+## Overview
 
-- OpenAI-compatible API endpoints
-- Support for multiple AI providers:
-  - Anthropic, Bedrock, OpenAI, Google AI, Mistral, and many more
-- Authentication system with multiple methods:
-  - GitHub OAuth
-  - Session-based auth
-  - JWT tokens
-  - API key authentication
-- Guardrails for content safety (Llamaguard, Bedrock)
-- RAG capabilities with Cloudflare Vectorize
-- Automated model routing
-- Media uploads to Cloudflare R2
-- Multi-step conversations
-- Agents with setting configuration and configurable MCP servers
+The API provides a unified interface to multiple AI providers, following OpenAI's API conventions while extending functionality with agents, RAG, guardrails, and specialized code generation endpoints.
 
-## Setup
+**Base URL:** `https://api.polychat.app/v1`
 
-1. Install dependencies
+## Documentation
+
+**[Complete API Documentation](./docs/README.md)**
+
+### Quick Links
+
+- **[Getting Started](./docs/README.md)** - API overview and quickstart
+- **[Authentication](./docs/features/authentication.md)** - OAuth, API keys, JWT, magic links, passkeys
+- **[Chat Completions](./docs/features/chat-completions.md)** - Core chat API with streaming and tools
+- **[Code Generation](./docs/features/code-generation.md)** - FIM, edit, and apply endpoints
+- **[Models](./docs/features/models.md)** - Browse 40+ available models
+- **[Agents](./docs/features/agents.md)** - Custom AI agents with MCP servers
+- **[Memories](./docs/features/memories.md)** - RAG with vector embeddings
+- **[Guardrails](./docs/features/guardrails.md)** - Content safety and moderation
+- **[Live API Reference](https://api.polychat.app)** - OpenAPI documentation
+
+## Key Features
+
+- **OpenAI-Compatible** - Drop-in replacement for OpenAI API
+- **40+ AI Models** - Anthropic, OpenAI, Google, Mistral, Meta, and more
+- **Code Specialized** - FIM completions, edit suggestions, code application
+- **AI Agents** - Custom agents with MCP server integrations
+- **RAG & Memories** - Vector-based context with Cloudflare Vectorize
+- **Content Safety** - Llamaguard and AWS Bedrock Guardrails
+- **Flexible Auth** - OAuth, API keys, JWT, magic links, passkeys
+- **Real-time** - Streaming responses and WebSocket support
+
+## Quick Start
+
+### 1. Install Dependencies
+
 ```bash
 pnpm install
 ```
 
-2. Configure environment variables
-```bash
-# Copy example env file
-cp .dev.vars.example .dev.vars
+### 2. Configure Environment
 
-# Copy example wrangler config
+```bash
+# Copy example files
+cp .dev.vars.example .dev.vars
 cp wrangler.jsonc.example wrangler.jsonc
+
+# Edit .dev.vars with your API keys
 ```
 
-3. Update the configuration files with your API keys and settings
+### 3. Run Development Server
 
-4. Start the development server
 ```bash
 pnpm run dev
 ```
 
+API will be available at `http://localhost:8787`
+
+### 4. Make Your First Request
+
+```bash
+curl http://localhost:8787/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-3-5-sonnet-20241022",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
+
+## Development
+
+### Commands
+
+```bash
+pnpm run dev              # Start dev server
+pnpm run deploy           # Deploy to Cloudflare
+pnpm run test             # Run tests
+pnpm run db:migrate:local # Run database migrations
+```
+
+### Database
+
+This API uses Cloudflare D1 with Drizzle ORM:
+
+```bash
+# Generate migrations
+pnpm run db:generate
+
+# Apply migrations locally
+pnpm run db:migrate:local
+
+# Apply to production
+pnpm run db:migrate:prod
+```
+
 ## Deployment
 
-This API is designed to be deployed as a Cloudflare Worker:
+Deploy to Cloudflare Workers:
 
 ```bash
 pnpm run deploy
 ```
 
-## Testing
+The API runs on Cloudflare's global network with:
+- D1 for database
+- Vectorize for embeddings
+- R2 for media storage
+- Analytics Engine for metrics
 
-```bash
-pnpm run test
-```
+## Architecture
 
-## API Documentation
+- **Framework:** Hono (lightweight HTTP framework)
+- **Database:** D1 + Drizzle ORM
+- **Validation:** Zod schemas
+- **OpenAPI:** Auto-generated docs via hono-openapi
+- **Auth:** Multiple providers (OAuth, JWT, API keys, WebAuthn)
+- **Storage:** R2 for media, Vectorize for embeddings
 
-### Authentication
+**[Read more →](./AGENTS.md)**
 
-The API supports multiple authentication methods:
+## Contributing
 
-1. GitHub OAuth
-2. Session-based authentication
-3. JWT tokens
-4. API key authentication
+This project uses:
+- TypeScript for type safety
+- Biome for linting/formatting
+- Vitest for testing
+- Conventional commits
 
-#### GitHub OAuth Flow:
+See [AGENTS.md](./AGENTS.md) for development guidelines.
 
-1. Redirect users to `/auth/github`
-2. After authorization, users are redirected to the callback URL
-3. A session cookie is set
-4. Users can then generate JWT tokens or use the session cookie
+## License
 
-### Further Documentation
-
-You can find the full [API Documentation here](https://api.polychat.app) which includes the endpoints, parameters, and responses for the API.
+See repository license.
