@@ -19,6 +19,7 @@ export const create_video: IFunction = {
   name: "create_video",
   description:
     "Produces video content from descriptive prompts. Use when users request animations, visual sequences, or dynamic visual content.",
+  type: "premium",
   parameters: {
     type: "object",
     properties: {
@@ -70,7 +71,6 @@ export const create_video: IFunction = {
     },
     required: ["prompt"],
   },
-  type: "premium",
   costPerCall: 1,
   function: async (
     completion_id: string,

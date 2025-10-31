@@ -28,6 +28,7 @@ export interface IFunction {
   description: string;
   strict?: boolean;
   type: "normal" | "premium";
+  isDefault?: boolean;
   costPerCall: number;
   parameters: {
     type: "object";

@@ -38,7 +38,9 @@ app.get(
     },
   }),
   async (context: Context) => {
-    const tools = getAvailableTools();
+    const user = context.get("user");
+    const isPro = user?.plan_id === "pro";
+    const tools = getAvailableTools(isPro);
     return context.json({
       success: true,
       message: "Tools fetched successfully",

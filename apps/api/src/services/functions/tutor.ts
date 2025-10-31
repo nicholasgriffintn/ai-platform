@@ -6,6 +6,7 @@ export const tutor: IFunction = {
   name: "tutor",
   description:
     "Provides structured, interactive learning experiences on requested topics. Use when users express a desire to learn about a subject or develop skills. Creates personalized learning paths with explanations, examples, exercises, and adaptive feedback based on user responses.",
+  isDefault: true,
   parameters: {
     type: "object",
     properties: {
@@ -21,7 +22,7 @@ export const tutor: IFunction = {
     },
     required: ["topic"],
   },
-  type: "normal",
+  type: "premium",
   costPerCall: 0,
   function: async (
     completion_id: string,

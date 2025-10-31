@@ -21,10 +21,19 @@ export const ToolSelector = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { data: toolsData, isLoading } = useTools();
-  const { selectedTools, toggleTool, resetToDefaults, defaultTools } =
-    useToolsStore();
+  const {
+    selectedTools,
+    toggleTool,
+    resetToDefaults,
+    defaultTools,
+    setDefaultTools,
+  } = useToolsStore();
 
   const tools = toolsData?.data || [];
+
+  if (tools.length > 0 && defaultTools.length === 0) {
+    setDefaultTools(tools);
+  }
 
   return (
     <>

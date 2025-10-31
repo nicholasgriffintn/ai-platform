@@ -7,6 +7,7 @@ export const web_search: IFunction = {
   description:
     "Performs a web search to find current information on any topic. Use for retrieving recent news, facts, or information beyond your knowledge cutoff.",
   type: "premium",
+  isDefault: true,
   costPerCall: 1,
   parameters: {
     type: "object",
