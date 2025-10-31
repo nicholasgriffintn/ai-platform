@@ -115,6 +115,10 @@ export class StreamingFormatter {
       };
     }
 
+    if (data.choices?.[0]?.delta?.reasoning_content !== undefined) {
+      return data.choices[0].delta.reasoning_content || "";
+    }
+
     return null;
   }
 

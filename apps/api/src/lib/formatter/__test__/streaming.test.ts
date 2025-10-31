@@ -233,6 +233,26 @@ describe("StreamingFormatter", () => {
       expect(result).toBeNull();
     });
 
+    it("should extract reasoning content from DeepSeek format", () => {
+      const data = {
+        choices: [{ delta: { reasoning_content: "First, the user..." } }],
+      };
+
+      const result = StreamingFormatter.extractThinkingFromChunk(data);
+
+      expect(result).toBe("First, the user...");
+    });
+
+    it("should handle null reasoning_content in DeepSeek format", () => {
+      const data = {
+        choices: [{ delta: { reasoning_content: null } }],
+      };
+
+      const result = StreamingFormatter.extractThinkingFromChunk(data);
+
+      expect(result).toBe("");
+    });
+
     it("should return null for unrecognized formats", () => {
       const data = { unknown: "field" };
 
