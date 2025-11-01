@@ -24,7 +24,7 @@ export const ChatSettings = ({
   isDisabled = false,
   supportsToolCalls = false,
 }: ChatSettingsProps) => {
-  const { isPro, chatSettings, setChatSettings } = useChatStore();
+  const { chatSettings, setChatSettings } = useChatStore();
   const [showSettings, setShowSettings] = useState(false);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
   const responseSelectRef = useRef<HTMLSelectElement>(null);
@@ -122,7 +122,7 @@ export const ChatSettings = ({
         aria-label="Open chat settings"
       />
 
-      {isPro && supportsToolCalls && <ToolSelector isDisabled={isDisabled} />}
+      {supportsToolCalls && <ToolSelector isDisabled={isDisabled} />}
 
       <Dialog open={showSettings} onOpenChange={setShowSettings} width="640px">
         <DialogContent>
