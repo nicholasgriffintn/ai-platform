@@ -255,6 +255,7 @@ export function UserSettingsForm({
           >
             <option value="llamaguard">LlamaGuard</option>
             <option value="bedrock">Bedrock</option>
+            <option value="mistral">Mistral</option>
           </FormSelect>
         </div>
         {formData.guardrails_provider === "bedrock" && (

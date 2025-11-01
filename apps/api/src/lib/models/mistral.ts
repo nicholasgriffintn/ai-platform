@@ -585,4 +585,11 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     description: "An embedding model for code content",
     type: ["embedding"],
   }),
+
+  createModelConfig("mistral-moderation-latest", PROVIDER, {
+    name: "Mistral Moderation",
+    matchingModel: "mistral-moderation-latest",
+    description: "A moderation model for content filtering",
+    type: ["guardrails"],
+  }),
 ]);

@@ -86,6 +86,7 @@ Provide your safety assessment for ONLY THE LAST ${role} in the above conversati
       const violations = isValid ? [] : [response.response];
 
       return {
+        provider: "llamaguard",
         isValid,
         violations,
         rawResponse: response.response,

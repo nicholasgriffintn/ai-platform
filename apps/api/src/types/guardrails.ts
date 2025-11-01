@@ -20,6 +20,7 @@ export interface GuardrailConfig {
 }
 
 export interface GuardrailResult {
+  provider: string;
   isValid: boolean;
   violations: string[];
   rawResponse?: any;

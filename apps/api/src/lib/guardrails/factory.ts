@@ -5,6 +5,7 @@ import {
   BedrockGuardrailsProvider,
 } from "./bedrock";
 import { type LlamaGuardConfig, LlamaGuardProvider } from "./llamaguard";
+import { type MistralGuardConfig, MistralGuardProvider } from "./mistral";
 
 // biome-ignore lint/complexity/noStaticOnlyClass: I prefer this pattern
 export class GuardrailsProviderFactory {
@@ -30,6 +31,14 @@ export class GuardrailsProviderFactory {
           );
         }
         return new LlamaGuardProvider(config as LlamaGuardConfig);
+      case "mistral":
+        if (!("ai" in config)) {
+          throw new AssistantError(
+            "Invalid config for Mistral provider",
+            ErrorType.PARAMS_ERROR,
+          );
+        }
+        return new MistralGuardProvider(config as MistralGuardConfig);
       default:
         throw new AssistantError(
           `Unsupported guardrails provider: ${type}`,

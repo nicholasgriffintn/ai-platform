@@ -40,6 +40,12 @@ export class Guardrails {
         },
         user,
       );
+    } else if (userSettings?.guardrails_provider === "mistral") {
+      this.provider = GuardrailsProviderFactory.getProvider("mistral", {
+        ai: env.AI,
+        env,
+        user,
+      });
     } else {
       this.provider = GuardrailsProviderFactory.getProvider("llamaguard", {
         ai: env.AI,
@@ -55,7 +61,7 @@ export class Guardrails {
     completionId?: string,
   ): Promise<GuardrailResult> {
     if (!this.userSettings?.guardrails_enabled) {
-      return { isValid: true, violations: [] };
+      return { provider: "none", isValid: true, violations: [] };
     }
     const result = await this.provider.validateContent(message, "INPUT");
     if (!result?.isValid && result?.violations?.length > 0) {
@@ -79,7 +85,7 @@ export class Guardrails {
     completionId?: string,
   ): Promise<GuardrailResult> {
     if (!this.userSettings?.guardrails_enabled) {
-      return { isValid: true, violations: [] };
+      return { provider: "none", isValid: true, violations: [] };
     }
     const result = await this.provider.validateContent(response, "OUTPUT");
     if (!result?.isValid && result?.violations?.length > 0) {

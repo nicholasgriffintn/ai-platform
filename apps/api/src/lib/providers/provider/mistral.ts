@@ -25,6 +25,10 @@ export class MistralProvider extends BaseProvider {
       return "v1/embeddings";
     }
 
+    if (params.model === "mistral-moderation-latest") {
+      return "v1/moderations";
+    }
+
     if (params.model === "mistral-ocr-latest") {
       return "v1/ocr";
     }
@@ -37,7 +41,10 @@ export class MistralProvider extends BaseProvider {
   }
 
   async mapParameters(params: ChatCompletionParameters) {
-    if (params.model === "mistral-embed") {
+    if (
+      params.model === "mistral-embed" ||
+      params.model === "mistral-moderation-latest"
+    ) {
       return {
         model: params.model,
         input: params.body.input,

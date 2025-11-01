@@ -171,6 +171,7 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
       }
 
       return {
+        provider: "bedrock",
         isValid: data.action === "NONE",
         violations,
         rawResponse: data,
