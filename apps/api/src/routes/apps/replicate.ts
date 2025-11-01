@@ -28,7 +28,7 @@ const executeReplicateSchema = z.object({
 app.get(
   "/models",
   describeRoute({
-    tags: ["apps", "replicate"],
+    tags: ["apps"],
     description: "List all available Replicate models",
     responses: {
       200: {
@@ -58,7 +58,7 @@ app.get(
 app.get(
   "/predictions",
   describeRoute({
-    tags: ["apps", "replicate"],
+    tags: ["apps"],
     description: "List user's Replicate predictions",
     responses: {
       200: {
@@ -111,7 +111,7 @@ app.get(
 app.get(
   "/predictions/:id",
   describeRoute({
-    tags: ["apps", "replicate"],
+    tags: ["apps"],
     description: "Get Replicate prediction details",
     responses: {
       200: {
@@ -166,7 +166,7 @@ app.get(
 app.post(
   "/execute",
   describeRoute({
-    tags: ["apps", "replicate"],
+    tags: ["apps"],
     description: "Execute a Replicate model",
     responses: {
       200: {

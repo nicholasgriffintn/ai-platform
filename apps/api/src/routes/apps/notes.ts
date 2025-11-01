@@ -38,7 +38,7 @@ app.use("/*", (c, next) => {
 app.get(
   "/",
   describeRoute({
-    tags: ["apps", "notes"],
+    tags: ["apps"],
     description: "List user's notes",
     responses: {
       200: {
@@ -95,7 +95,7 @@ app.get(
 app.get(
   "/:id",
   describeRoute({
-    tags: ["apps", "notes"],
+    tags: ["apps"],
     description: "Get note details",
     responses: {
       200: {
@@ -163,7 +163,7 @@ app.get(
 app.post(
   "/",
   describeRoute({
-    tags: ["apps", "notes"],
+    tags: ["apps"],
     description: "Create a new note",
     requestBody: {
       content: {
@@ -248,7 +248,7 @@ app.post(
 app.put(
   "/:id",
   describeRoute({
-    tags: ["apps", "notes"],
+    tags: ["apps"],
     description: "Update an existing note",
     parameters: [
       { name: "id", in: "path", required: true, schema: { type: "string" } },
@@ -348,7 +348,7 @@ app.put(
 app.delete(
   "/:id",
   describeRoute({
-    tags: ["apps", "notes"],
+    tags: ["apps"],
     description: "Delete a note",
     responses: {
       200: {
@@ -415,7 +415,7 @@ app.delete(
 app.post(
   "/:id/format",
   describeRoute({
-    tags: ["apps", "notes"],
+    tags: ["apps"],
     description: "Format an existing note via AI",
     parameters: [
       { name: "id", in: "path", required: true, schema: { type: "string" } },
@@ -508,7 +508,7 @@ app.post(
 app.post(
   "/generate-from-media",
   describeRoute({
-    tags: ["apps", "notes"],
+    tags: ["apps"],
     description:
       "Generate note content by transcribing an audio/video URL and producing selected outputs.",
     requestBody: {

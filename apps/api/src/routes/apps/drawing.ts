@@ -28,7 +28,7 @@ app.use("/*", (c, next) => {
 app.get(
   "/",
   describeRoute({
-    tags: ["apps", "drawing"],
+    tags: ["apps"],
     description: "List user's drawings",
     responses: {
       200: {
@@ -105,7 +105,7 @@ app.get(
 app.get(
   "/:id",
   describeRoute({
-    tags: ["apps", "drawing"],
+    tags: ["apps"],
     description: "Get drawing details",
     responses: {
       200: {
@@ -180,7 +180,7 @@ app.get(
 app.post(
   "/",
   describeRoute({
-    tags: ["apps", "drawing"],
+    tags: ["apps"],
     description: "Generate an image from a drawing",
     responses: {
       200: {
@@ -256,7 +256,7 @@ app.post(
 app.post(
   "/guess",
   describeRoute({
-    tags: ["apps", "drawing"],
+    tags: ["apps"],
     description: "Guess a drawing from an image",
     responses: {
       200: {

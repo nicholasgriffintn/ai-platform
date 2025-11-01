@@ -40,7 +40,7 @@ app.use("/*", (c, next) => {
 app.get(
   "/",
   describeRoute({
-    tags: ["apps", "articles"],
+    tags: ["apps"],
     description: "List user's article reports",
     responses: {
       200: {
@@ -116,7 +116,7 @@ app.get(
 app.get(
   "/sources",
   describeRoute({
-    tags: ["apps", "articles"],
+    tags: ["apps"],
     description: "Fetch multiple source articles by their IDs",
     parameters: [
       {
@@ -232,7 +232,7 @@ app.get(
 app.get(
   "/:id",
   describeRoute({
-    tags: ["apps", "articles"],
+    tags: ["apps"],
     description: "Get details of a specific article report",
     responses: {
       200: {
@@ -326,7 +326,7 @@ app.get(
 app.post(
   "/analyse",
   describeRoute({
-    tags: ["apps", "articles"],
+    tags: ["apps"],
     description: "Analyse an article and save it for a session",
     responses: {
       200: {
@@ -431,7 +431,7 @@ app.post(
 app.post(
   "/summarise",
   describeRoute({
-    tags: ["apps", "articles"],
+    tags: ["apps"],
     description: "Summarise an article and save it for a session",
     responses: {
       200: {
@@ -536,7 +536,7 @@ app.post(
 app.post(
   "/generate-report",
   describeRoute({
-    tags: ["apps", "articles"],
+    tags: ["apps"],
     description:
       "Generates a comparison report from saved articles for a specific session (itemId)",
     responses: {
@@ -649,7 +649,7 @@ app.post(
 app.post(
   "/prepare-rerun/:itemId",
   describeRoute({
-    tags: ["apps", "articles"],
+    tags: ["apps"],
     description:
       "Prepare a session for rerun by cleaning up existing analyses and summaries",
     parameters: [
@@ -759,7 +759,7 @@ app.post(
 app.post(
   "/extract-content",
   describeRoute({
-    tags: ["apps", "articles"],
+    tags: ["apps"],
     description: "Extract content from URLs for article analysis",
     responses: {
       200: {

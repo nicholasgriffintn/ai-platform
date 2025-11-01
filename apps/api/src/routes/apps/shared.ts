@@ -26,7 +26,7 @@ app.use("/*", (c, next) => {
 app.post(
   "/",
   describeRoute({
-    tags: ["apps", "shared"],
+    tags: ["apps"],
     description: "Generate a share ID for an app item",
     requestBody: {
       description: "Item to share",
@@ -147,7 +147,7 @@ app.post(
 app.get(
   "/:share_id",
   describeRoute({
-    tags: ["apps", "shared"],
+    tags: ["apps"],
     description: "Get a shared app item by its share ID",
     parameters: [
       {

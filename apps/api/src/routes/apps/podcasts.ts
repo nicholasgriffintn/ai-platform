@@ -38,7 +38,7 @@ app.use("/*", (c, next) => {
 app.get(
   "/",
   describeRoute({
-    tags: ["apps", "podcasts"],
+    tags: ["apps"],
     description: "List user's podcasts",
     responses: {
       200: {
@@ -107,7 +107,7 @@ app.get(
 app.get(
   "/:id",
   describeRoute({
-    tags: ["apps", "podcasts"],
+    tags: ["apps"],
     description: "Get podcast details",
     responses: {
       200: {
@@ -178,7 +178,7 @@ app.get(
 app.post(
   "/upload",
   describeRoute({
-    tags: ["apps", "podcasts"],
+    tags: ["apps"],
     description: "Upload a podcast",
     responses: {
       200: {
@@ -272,7 +272,7 @@ app.post(
 app.post(
   "/transcribe",
   describeRoute({
-    tags: ["apps", "podcasts"],
+    tags: ["apps"],
     description: "Transcribe a podcast",
     responses: {
       200: {
@@ -334,7 +334,7 @@ app.post(
 app.post(
   "/summarise",
   describeRoute({
-    tags: ["apps", "podcasts"],
+    tags: ["apps"],
     description: "Summarise a podcast",
     responses: {
       200: {
@@ -392,7 +392,7 @@ app.post(
 app.post(
   "/generate-image",
   describeRoute({
-    tags: ["apps", "podcasts"],
+    tags: ["apps"],
     description: "Generate an image for a podcast",
     responses: {
       200: {
