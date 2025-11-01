@@ -1,5 +1,6 @@
 import type { IEnv, IUser, SearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { DuckDuckGoProvider } from "./duckduckgo";
 import { ParallelSearchProvider } from "./parallel";
 import { SerperProvider } from "./serper";
 import { TavilyProvider } from "./tavily";
@@ -32,6 +33,8 @@ export class SearchProviderFactory {
           );
         }
         return new ParallelSearchProvider(env, user);
+      case "duckduckgo":
+        return new DuckDuckGoProvider();
       default:
         throw new AssistantError(`Unknown search provider: ${providerName}`);
     }

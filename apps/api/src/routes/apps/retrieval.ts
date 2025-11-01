@@ -394,19 +394,6 @@ app.post(
       );
     }
 
-    const planCheck = checkPlanRequirement(user, "pro");
-    if (!planCheck.isValid) {
-      return context.json(
-        {
-          response: {
-            status: "error",
-            message: planCheck.message,
-          },
-        },
-        401,
-      );
-    }
-
     const response = await performDeepWebSearch(
       context.env as IEnv,
       user,

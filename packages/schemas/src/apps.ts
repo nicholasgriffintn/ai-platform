@@ -194,6 +194,7 @@ export const speechGenerationSchema = z.object({
 });
 
 export const deepWebSearchSchema = z.object({
+  searchProvider: z.string().optional(),
   query: z.string(),
   options: z
     .object({

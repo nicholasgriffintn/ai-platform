@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { IEnv } from "~/types";
 import { AssistantError } from "~/utils/errors";
 import { SearchProviderFactory } from "../factory";
+import { DuckDuckGoProvider } from "../duckduckgo";
 import { ParallelSearchProvider } from "../parallel";
 import { SerperProvider } from "../serper";
 import { TavilyProvider } from "../tavily";
@@ -31,6 +32,11 @@ describe("SearchProviderFactory", () => {
         id: 1,
       } as any);
       expect(provider).toBeInstanceOf(ParallelSearchProvider);
+    });
+
+    it("should create DuckDuckGoProvider when provider is duckduckgo", () => {
+      const provider = SearchProviderFactory.getProvider("duckduckgo", mockEnv);
+      expect(provider).toBeInstanceOf(DuckDuckGoProvider);
     });
 
     it("should throw error when serper provider is requested but API key is missing", () => {

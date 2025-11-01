@@ -137,12 +137,14 @@ describe("performDeepWebSearch", () => {
           title: "Search Result 1",
           url: "https://example.com/1",
           content: "Content from first result",
+          excerpts: [],
           score: 0.95,
         },
         {
           title: "Search Result 2",
           url: "https://example.com/2",
           content: "Content from second result",
+          excerpts: [],
           score: 0.87,
         },
       ],
@@ -151,7 +153,7 @@ describe("performDeepWebSearch", () => {
 
     expect(handleWebSearch).toHaveBeenCalledWith({
       query: "artificial intelligence trends",
-      provider: "tavily",
+      provider: undefined,
       options: {
         search_depth: "advanced",
         include_answer: true,
@@ -375,6 +377,7 @@ describe("performDeepWebSearch", () => {
         title: "Custom Result",
         url: "https://custom.com",
         content: "Custom content",
+        excerpts: [],
         score: 0.99,
       },
     ]);

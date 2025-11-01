@@ -519,10 +519,13 @@ export const getAuxiliarySearchProvider = async (
   const isProUser = user?.plan_id === "pro";
 
   if (!isProUser) {
-    throw new AssistantError(
-      "Web search is only available for Pro users right now.",
-      ErrorType.AUTHORISATION_ERROR,
-    );
+    if (requestedProvider && requestedProvider !== "duckduckgo") {
+      throw new AssistantError(
+        "Requested provider requires a Pro plan",
+        ErrorType.AUTHORISATION_ERROR,
+      );
+    }
+    return "duckduckgo";
   }
 
   const providerToUse = requestedProvider ?? "tavily";

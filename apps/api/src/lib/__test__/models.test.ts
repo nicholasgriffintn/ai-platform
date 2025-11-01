@@ -519,12 +519,18 @@ describe("Models", () => {
   describe("getAuxiliarySearchProvider", () => {
     const proUser = { ...mockUser, plan_id: "pro" } as IUser;
 
-    it("should throw when user is not on pro plan", async () => {
-      await expect(
-        getAuxiliarySearchProvider(mockEnv as any, mockUser),
-      ).rejects.toThrow(
-        "Web search is only available for Pro users right now.",
+    it("should default to duckduckgo when user is not on pro plan", async () => {
+      const provider = await getAuxiliarySearchProvider(
+        mockEnv as any,
+        mockUser,
       );
+      expect(provider).toBe("duckduckgo");
+    });
+
+    it("should throw for non-pro users requesting other providers", async () => {
+      await expect(
+        getAuxiliarySearchProvider(mockEnv as any, mockUser, "tavily"),
+      ).rejects.toThrow("Requested provider requires a Pro plan");
     });
 
     it("should default to parallel when enabled and no provider specified", async () => {

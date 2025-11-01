@@ -7,7 +7,7 @@ import {
 } from "~/lib/prompts";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import { handleWebSearch } from "~/services/search/web";
-import type { IEnv, IUser, SearchOptions } from "~/types";
+import type { IEnv, IUser, SearchOptions, SearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
@@ -15,6 +15,7 @@ export interface DeepWebSearchParams {
   query: string;
   options: SearchOptions;
   completion_id?: string;
+  searchProvider?: SearchProviderName;
 }
 
 // TODO: At the moment, this is all one shot. We should make multiple API calls on the frontend so the user isn't waiting too long for the response.
@@ -25,7 +26,12 @@ export async function performDeepWebSearch(
   body?: DeepWebSearchParams,
   conversationManager?: ConversationManager,
 ) {
-  const { query: rawQuery, options, completion_id } = body || {};
+  const {
+    query: rawQuery,
+    options,
+    completion_id,
+    searchProvider,
+  } = body || {};
 
   const query = sanitiseInput(rawQuery);
 
@@ -43,6 +49,7 @@ export async function performDeepWebSearch(
   const [webSearchResults, similarQuestionsResponse] = await Promise.all([
     // TODO: Maybe we need to scrape to get the full content or force include raw content?
     handleWebSearch({
+      provider: searchProvider,
       query: query,
       options: {
         search_depth: options.search_depth,
@@ -95,12 +102,16 @@ export async function performDeepWebSearch(
     })(),
   ]);
 
-  const sources = webSearchResults.data.results.map((result: any) => {
+  const searchResults = Array.isArray(webSearchResults.data?.results)
+    ? webSearchResults.data.results
+    : [];
+
+  const sources = searchResults.map((result: any) => {
     return {
       title: result.title,
       url: result.url,
       content: result.content,
-      excerpts: result.excerpts,
+      excerpts: result.excerpts || [],
       score: result.score,
     };
   });

@@ -112,6 +112,29 @@ describe("Web Search Service", () => {
       );
     });
 
+    it("should support duckduckgo provider for free users", async () => {
+      const freeUserRequest = {
+        ...mockRequest,
+        user: { id: 456, plan_id: "free" } as any,
+      };
+      mockSanitiseInput.mockReturnValue("free query");
+      mockGetAuxiliarySearchProvider.mockResolvedValueOnce("duckduckgo");
+      mockSearch.search.mockResolvedValue({ results: [] });
+
+      await handleWebSearch(freeUserRequest);
+
+      expect(mockGetAuxiliarySearchProvider).toHaveBeenCalledWith(
+        {},
+        freeUserRequest.user,
+        undefined,
+      );
+      expect(mockSearchGetInstance).toHaveBeenCalledWith(
+        {},
+        "duckduckgo",
+        freeUserRequest.user,
+      );
+    });
+
     it("should pass search options", async () => {
       const mockSearchResponse = { results: [] };
       const searchOptions = { limit: 5 };
