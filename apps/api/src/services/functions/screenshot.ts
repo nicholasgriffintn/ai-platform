@@ -86,7 +86,7 @@ export const capture_screenshot: IFunction = {
     required: ["url"],
   },
   type: "normal",
-  costPerCall: 1,
+  costPerCall: 0.5,
   function: async (
     _completion_id: string,
     args: any,

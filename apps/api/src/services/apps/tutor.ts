@@ -46,7 +46,6 @@ export async function completeTutorRequest(
     // TODO: Maybe we need to scrape to get the full content or force include raw content?
     handleWebSearch({
       query,
-      provider: "tavily",
       options: {
         search_depth: options.search_depth,
         include_answer: options.include_answer,

@@ -4,6 +4,9 @@ export interface AppSchema {
   description: string;
   icon?: string;
   category?: string;
+  costPerCall?: number;
+  isDefault?: boolean;
+  type?: "normal" | "premium";
   formSchema: {
     steps: Array<{
       id: string;
@@ -48,4 +51,7 @@ export interface AppListItem {
   icon?: string;
   category?: string;
   href?: string;
+  costPerCall?: number;
+  isDefault?: boolean;
+  type?: "normal" | "premium";
 }

@@ -247,19 +247,6 @@ dynamicApps.post(
       );
     }
 
-    const planCheck = checkPlanRequirement(user, "pro");
-    if (!planCheck.isValid) {
-      return c.json(
-        {
-          response: {
-            status: "error",
-            message: planCheck.message,
-          },
-        },
-        401,
-      );
-    }
-
     const formData = await c.req.json();
 
     try {

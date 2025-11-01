@@ -37,12 +37,24 @@ export const getDynamicApps = async (): Promise<
   Array<Omit<AppSchema, "formSchema" | "responseSchema">>
 > => {
   return Array.from(dynamicApps.values()).map(
-    ({ id, name, description, icon, category }) => ({
+    ({
       id,
       name,
       description,
       icon,
       category,
+      costPerCall,
+      isDefault,
+      type,
+    }) => ({
+      id,
+      name,
+      description,
+      icon,
+      category,
+      costPerCall,
+      isDefault,
+      type,
     }),
   );
 };

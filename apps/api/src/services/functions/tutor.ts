@@ -22,8 +22,8 @@ export const tutor: IFunction = {
     },
     required: ["topic"],
   },
-  type: "premium",
-  costPerCall: 0,
+  type: "normal",
+  costPerCall: 1,
   function: async (
     completion_id: string,
     args: any,

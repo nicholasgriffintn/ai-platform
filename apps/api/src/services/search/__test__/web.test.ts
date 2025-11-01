@@ -14,6 +14,10 @@ vi.mock("~/lib/chat/utils", () => ({
   sanitiseInput: vi.fn(),
 }));
 
+vi.mock("~/lib/models", () => ({
+  getAuxiliarySearchProvider: vi.fn(),
+}));
+
 vi.mock("~/lib/search", () => ({
   Search: {
     getInstance: vi.fn(),
@@ -24,12 +28,19 @@ describe("Web Search Service", () => {
   let mockSanitiseInput: MockedFunction<any>;
   let mockSearchGetInstance: MockedFunction<any>;
   let mockSearch: { search: MockedFunction<any> };
+  let mockGetAuxiliarySearchProvider: MockedFunction<any>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
 
     const chatUtils = await import("~/lib/chat/utils");
     mockSanitiseInput = vi.mocked(chatUtils.sanitiseInput);
+
+    const models = await import("~/lib/models");
+    mockGetAuxiliarySearchProvider = vi.mocked(
+      models.getAuxiliarySearchProvider,
+    );
+    mockGetAuxiliarySearchProvider.mockResolvedValue("tavily");
 
     const searchLib = await import("~/lib/search");
     mockSearchGetInstance = vi.mocked(searchLib.Search.getInstance);
@@ -44,7 +55,7 @@ describe("Web Search Service", () => {
     const mockRequest = {
       env: {} as any,
       query: "test query",
-      user: { id: 123 } as any,
+      user: { id: 123, plan_id: "pro" } as any,
     };
 
     it("should perform successful web search", async () => {
@@ -58,6 +69,11 @@ describe("Web Search Service", () => {
       const result = await handleWebSearch(mockRequest);
 
       expect(mockSanitiseInput).toHaveBeenCalledWith("test query");
+      expect(mockGetAuxiliarySearchProvider).toHaveBeenCalledWith(
+        {},
+        mockRequest.user,
+        undefined,
+      );
       expect(mockSearchGetInstance).toHaveBeenCalledWith({}, "tavily");
       expect(mockSearch.search).toHaveBeenCalledWith("test query", undefined);
       expect(result).toEqual({
@@ -75,10 +91,16 @@ describe("Web Search Service", () => {
       };
 
       mockSanitiseInput.mockReturnValue("test query");
+      mockGetAuxiliarySearchProvider.mockResolvedValueOnce("serper");
       mockSearch.search.mockResolvedValue(mockSearchResponse);
 
       await handleWebSearch(requestWithProvider);
 
+      expect(mockGetAuxiliarySearchProvider).toHaveBeenCalledWith(
+        {},
+        mockRequest.user,
+        "serper",
+      );
       expect(mockSearchGetInstance).toHaveBeenCalledWith({}, "serper");
     });
 
@@ -96,6 +118,11 @@ describe("Web Search Service", () => {
       // @ts-expect-error - mock implementation
       await handleWebSearch(requestWithOptions);
 
+      expect(mockGetAuxiliarySearchProvider).toHaveBeenCalledWith(
+        {},
+        mockRequest.user,
+        undefined,
+      );
       expect(mockSearch.search).toHaveBeenCalledWith(
         "test query",
         searchOptions,
@@ -110,6 +137,7 @@ describe("Web Search Service", () => {
         type: ErrorType.PARAMS_ERROR,
         name: "AssistantError",
       });
+      expect(mockGetAuxiliarySearchProvider).not.toHaveBeenCalled();
     });
 
     it("should throw error for null query", async () => {
@@ -120,6 +148,7 @@ describe("Web Search Service", () => {
         type: ErrorType.PARAMS_ERROR,
         name: "AssistantError",
       });
+      expect(mockGetAuxiliarySearchProvider).not.toHaveBeenCalled();
     });
 
     it("should throw error for query too long", async () => {
@@ -133,6 +162,17 @@ describe("Web Search Service", () => {
         type: ErrorType.PARAMS_ERROR,
         name: "AssistantError",
       });
+    });
+
+    it("should throw error when user plan does not allow search", async () => {
+      const planError = new AssistantError(
+        "Web search is only available for Pro users right now.",
+        ErrorType.AUTHORISATION_ERROR,
+      );
+      mockSanitiseInput.mockReturnValue("test query");
+      mockGetAuxiliarySearchProvider.mockRejectedValue(planError);
+
+      await expect(handleWebSearch(mockRequest)).rejects.toBe(planError);
     });
 
     it("should throw error when search returns no response", async () => {

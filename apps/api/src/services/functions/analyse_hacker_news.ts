@@ -30,7 +30,7 @@ export const analyse_hacker_news: IFunction = {
     required: ["count"],
   },
   type: "normal",
-  costPerCall: 1,
+  costPerCall: 0.2,
   function: async (
     _completion_id: string,
     args: any,

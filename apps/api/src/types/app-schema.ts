@@ -55,6 +55,9 @@ export interface AppSchema {
   category?: string;
   formSchema: FormSchema;
   responseSchema: ResponseSchema;
+  costPerCall: number;
+  isDefault: boolean;
+  type: "normal" | "premium";
 }
 
 export const formFieldSchema = z.object({

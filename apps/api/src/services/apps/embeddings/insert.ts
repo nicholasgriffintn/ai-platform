@@ -25,6 +25,7 @@ export interface IInsertEmbeddingRequest extends IRequest {
   };
 }
 
+// TODO: This still stores in the DB if the vector insertion fails
 export const insertEmbedding = async (
   req: IInsertEmbeddingRequest,
 ): Promise<any> => {

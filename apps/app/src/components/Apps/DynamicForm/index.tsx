@@ -230,6 +230,18 @@ export const DynamicForm = ({
               <p className={cn("text-zinc-600 dark:text-zinc-300")}>
                 {app.description}
               </p>
+              {app.costPerCall !== undefined && (
+                <p
+                  className={cn(
+                    "text-sm text-zinc-500 dark:text-zinc-400 mt-1",
+                  )}
+                >
+                  Cost per run:{" "}
+                  {app.costPerCall === 0
+                    ? "Free"
+                    : `${app.costPerCall} ${app.costPerCall === 1 ? "request" : "requests"}`}
+                </p>
+              )}
             </div>
           </div>
 

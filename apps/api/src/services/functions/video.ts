@@ -71,7 +71,7 @@ export const create_video: IFunction = {
     },
     required: ["prompt"],
   },
-  costPerCall: 1,
+  costPerCall: 2,
   function: async (
     completion_id: string,
     args: VideoGenerationParams,

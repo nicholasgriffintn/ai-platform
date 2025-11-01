@@ -22,7 +22,7 @@ export const autoRegisterDynamicApps = (): void => {
 };
 
 const registerFunctionAsDynamicApp = (func: IFunction): void => {
-  const { name, description, parameters } = func;
+  const { name, description, parameters, type, isDefault, costPerCall } = func;
 
   const appSchema: AppSchema = {
     id: name,
@@ -30,6 +30,9 @@ const registerFunctionAsDynamicApp = (func: IFunction): void => {
     description: description || `Execute the ${name} function`,
     icon: getFunctionIcon(name),
     category: "Functions",
+    type,
+    isDefault: isDefault || false,
+    costPerCall,
     formSchema: {
       steps: [
         {

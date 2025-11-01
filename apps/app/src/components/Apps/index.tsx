@@ -23,7 +23,7 @@ import { ResponseRenderer } from "./ResponseRenderer";
 import { groupAppsByCategory } from "./utils";
 
 export const DynamicApps = () => {
-  const { isAuthenticationLoading } = useChatStore();
+  const { isAuthenticationLoading, isPro } = useChatStore();
   const { trackEvent } = useTrackEvent();
   const navigate = useNavigate();
 
@@ -64,6 +64,12 @@ export const DynamicApps = () => {
 
   const handleAppSelect = useCallback(
     (appId: string) => {
+      const app = apps.find((a) => a.id === appId);
+
+      if (app && app.type === "premium" && !isPro) {
+        return;
+      }
+
       setSelectedAppId(appId);
       setResult(null);
 
@@ -74,7 +80,7 @@ export const DynamicApps = () => {
         value: appId,
       });
     },
-    [trackEvent],
+    [trackEvent, apps, isPro],
   );
 
   const handleFormSubmit = useCallback(
@@ -262,23 +268,27 @@ export const DynamicApps = () => {
             },
           ]}
         />
-      ) : filteredApps.length === 0 && searchQuery ? (
-        <EmptyState
-          icon={<Sparkles className="h-8 w-8 text-zinc-400" />}
-          title="No apps found"
-          message={`No apps matching "${searchQuery}"`}
-          action={
-            <Button onClick={() => setSearchQuery("")} variant="secondary">
-              Clear Search
-            </Button>
-          }
-        />
       ) : (
         <>
-          <FeaturedApps />
+          <FeaturedApps searchQuery={searchQuery} />
 
-          {groupedApps.map(([category, categoryApps]) =>
-            renderCategoryApps(category, categoryApps),
+          {filteredApps.length === 0 &&
+          searchQuery &&
+          groupedApps.length === 0 ? (
+            <EmptyState
+              icon={<Sparkles className="h-8 w-8 text-zinc-400" />}
+              title="No apps found"
+              message={`No apps matching "${searchQuery}"`}
+              action={
+                <Button onClick={() => setSearchQuery("")} variant="secondary">
+                  Clear Search
+                </Button>
+              }
+            />
+          ) : (
+            groupedApps.map(([category, categoryApps]) =>
+              renderCategoryApps(category, categoryApps),
+            )
           )}
         </>
       )}

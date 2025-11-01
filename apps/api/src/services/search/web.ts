@@ -1,4 +1,5 @@
 import { sanitiseInput } from "~/lib/chat/utils";
+import { getAuxiliarySearchProvider } from "~/lib/models";
 import { Search } from "~/lib/search";
 import type { IEnv, IFunctionResponse, IUser, SearchOptions } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -14,7 +15,7 @@ type WebSearchRequest = {
 export const handleWebSearch = async (
   req: WebSearchRequest,
 ): Promise<IFunctionResponse> => {
-  const { query: rawQuery, env, provider = "tavily", options } = req;
+  const { query: rawQuery, env, provider, options, user } = req;
 
   const query = sanitiseInput(rawQuery);
 
@@ -26,7 +27,8 @@ export const handleWebSearch = async (
     throw new AssistantError("Query is too long", ErrorType.PARAMS_ERROR);
   }
 
-  const search = Search.getInstance(env, provider);
+  const providerToUse = await getAuxiliarySearchProvider(env, user, provider);
+  const search = Search.getInstance(env, providerToUse);
   const response = await search.search(query, options);
 
   if (!response) {

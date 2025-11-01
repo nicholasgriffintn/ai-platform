@@ -27,7 +27,7 @@ export const create_note: IFunction = {
     required: ["title", "content"],
   },
   type: "normal",
-  costPerCall: 1,
+  costPerCall: 0,
   function: async (
     _completion_id: string,
     args: any,

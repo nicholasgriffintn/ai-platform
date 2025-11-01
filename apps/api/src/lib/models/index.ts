@@ -6,6 +6,7 @@ import type {
   IUserSettings,
   ModelConfig,
   ModelConfigItem,
+  SearchProviderName,
 } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { anthropicModelConfig } from "./anthropic";
@@ -43,6 +44,7 @@ import { v0ModelConfig } from "./v0";
 import { vercelModelConfig } from "./vercel";
 import { workersAiModelConfig } from "./workersai";
 import { xaiModelConfig } from "./xai";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 const logger = getLogger({ prefix: "lib/models" });
 
@@ -507,6 +509,27 @@ export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
   const provider = modelConfig.provider;
 
   return { model: modelToUse, provider };
+};
+
+export const getAuxiliarySearchProvider = async (
+  _env: IEnv,
+  user?: IUser,
+  requestedProvider?: SearchProviderName,
+): Promise<SearchProviderName> => {
+  const isProUser = user?.plan_id === "pro";
+
+  if (!isProUser) {
+    throw new AssistantError(
+      "Web search is only available for Pro users right now.",
+      ErrorType.AUTHORISATION_ERROR,
+    );
+  }
+
+  if (requestedProvider) {
+    return requestedProvider;
+  }
+
+  return "tavily";
 };
 
 export const getAuxiliarySpeechModel = async (
