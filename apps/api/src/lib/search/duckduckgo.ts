@@ -13,7 +13,7 @@ export class DuckDuckGoProvider implements SearchProvider {
     query: string,
     _options?: SearchOptions,
   ): Promise<SearchResult> {
-    const url = new URL("https://api.https://duckduckgo.com/");
+    const url = new URL("https://api.duckduckgo.com/");
     url.searchParams.set("q", query);
     url.searchParams.set("format", "json");
     url.searchParams.set("no_html", "1");
