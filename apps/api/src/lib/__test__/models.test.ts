@@ -8,6 +8,7 @@ import {
   getAuxiliaryGuardrailsModel,
   getAuxiliaryModel,
   getAuxiliaryModelForRetrieval,
+  getAuxiliarySearchProvider,
   getFeaturedModels,
   getFreeModels,
   getIncludedInRouterModels,
@@ -512,6 +513,77 @@ describe("Models", () => {
 
       expect(result.model).toBe("meta-llama/llama-guard-4-12b");
       expect(result.provider).toBe("groq");
+    });
+  });
+
+  describe("getAuxiliarySearchProvider", () => {
+    const proUser = { ...mockUser, plan_id: "pro" } as IUser;
+
+    it("should throw when user is not on pro plan", async () => {
+      await expect(
+        getAuxiliarySearchProvider(mockEnv as any, mockUser),
+      ).rejects.toThrow(
+        "Web search is only available for Pro users right now.",
+      );
+    });
+
+    it("should default to parallel when enabled and no provider specified", async () => {
+      mockDatabase.getUserProviderSettings.mockResolvedValueOnce([
+        { provider_id: "parallel", enabled: true },
+      ]);
+
+      const provider = await getAuxiliarySearchProvider(
+        mockEnv as any,
+        proUser,
+      );
+      expect(provider).toBe("parallel");
+    });
+
+    it("should fall back to tavily when parallel not enabled", async () => {
+      mockDatabase.getUserProviderSettings.mockResolvedValueOnce([
+        { provider_id: "parallel", enabled: false },
+      ]);
+
+      const provider = await getAuxiliarySearchProvider(
+        mockEnv as any,
+        proUser,
+      );
+      expect(provider).toBe("tavily");
+    });
+
+    it("should return requested serper provider", async () => {
+      const provider = await getAuxiliarySearchProvider(
+        mockEnv as any,
+        proUser,
+        "serper",
+      );
+      expect(provider).toBe("serper");
+    });
+
+    it("should throw when parallel requested but not enabled", async () => {
+      mockDatabase.getUserProviderSettings.mockResolvedValueOnce([
+        { provider_id: "parallel", enabled: false },
+      ]);
+
+      await expect(
+        getAuxiliarySearchProvider(mockEnv as any, proUser, "parallel"),
+      ).rejects.toThrow(
+        "Parallel search provider is not enabled for this account",
+      );
+    });
+
+    it("should return parallel when provider enabled", async () => {
+      mockDatabase.getUserProviderSettings.mockResolvedValueOnce([
+        { provider_id: "parallel", enabled: true },
+      ]);
+
+      const provider = await getAuxiliarySearchProvider(
+        mockEnv as any,
+        proUser,
+        "parallel",
+      );
+
+      expect(provider).toBe("parallel");
     });
   });
 

@@ -1,14 +1,20 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliarySearchProvider } from "~/lib/models";
 import { Search } from "~/lib/search";
-import type { IEnv, IFunctionResponse, IUser, SearchOptions } from "~/types";
+import type {
+  IEnv,
+  IFunctionResponse,
+  IUser,
+  SearchOptions,
+  SearchProviderName,
+} from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 type WebSearchRequest = {
   env: IEnv;
   query: string;
   user?: IUser;
-  provider?: "serper" | "tavily";
+  provider?: SearchProviderName;
   options?: SearchOptions;
 };
 
@@ -28,7 +34,7 @@ export const handleWebSearch = async (
   }
 
   const providerToUse = await getAuxiliarySearchProvider(env, user, provider);
-  const search = Search.getInstance(env, providerToUse);
+  const search = Search.getInstance(env, providerToUse, user);
   const response = await search.search(query, options);
 
   if (!response) {

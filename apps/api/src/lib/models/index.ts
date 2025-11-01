@@ -512,7 +512,7 @@ export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
 };
 
 export const getAuxiliarySearchProvider = async (
-  _env: IEnv,
+  env: IEnv,
   user?: IUser,
   requestedProvider?: SearchProviderName,
 ): Promise<SearchProviderName> => {
@@ -525,11 +525,53 @@ export const getAuxiliarySearchProvider = async (
     );
   }
 
-  if (requestedProvider) {
-    return requestedProvider;
+  const providerToUse = requestedProvider ?? "tavily";
+
+  const shouldCheckParallel =
+    providerToUse === "parallel" || providerToUse === "tavily";
+
+  if (!shouldCheckParallel) {
+    return providerToUse;
   }
 
-  return "tavily";
+  if (!user?.id) {
+    if (providerToUse === "parallel") {
+      throw new AssistantError(
+        "Parallel search requires an authenticated user",
+        ErrorType.AUTHORISATION_ERROR,
+      );
+    }
+    return providerToUse;
+  }
+
+  const database = Database.getInstance(env);
+
+  const providerSettings = await withCache(
+    env,
+    "user-provider-settings",
+    [user.id.toString()],
+    () => database.getUserProviderSettings(user.id),
+  );
+
+  const hasParallel = Array.isArray(providerSettings)
+    ? providerSettings.some((setting: any) => {
+        const isEnabled = Boolean(setting?.enabled);
+        return setting?.provider_id === "parallel" && isEnabled;
+      })
+    : false;
+
+  if (hasParallel && providerToUse !== "parallel") {
+    return "parallel";
+  }
+
+  if (providerToUse === "parallel" && !hasParallel) {
+    throw new AssistantError(
+      "Parallel search provider is not enabled for this account",
+      ErrorType.AUTHORISATION_ERROR,
+    );
+  }
+
+  return providerToUse;
 };
 
 export const getAuxiliarySpeechModel = async (

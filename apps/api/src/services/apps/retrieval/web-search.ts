@@ -44,7 +44,6 @@ export async function performDeepWebSearch(
     // TODO: Maybe we need to scrape to get the full content or force include raw content?
     handleWebSearch({
       query: query,
-      provider: "tavily",
       options: {
         search_depth: options.search_depth,
         include_answer: options.include_answer,
@@ -101,6 +100,7 @@ export async function performDeepWebSearch(
       title: result.title,
       url: result.url,
       content: result.content,
+      excerpts: result.excerpts,
       score: result.score,
     };
   });

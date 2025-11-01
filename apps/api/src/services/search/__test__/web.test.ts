@@ -74,7 +74,11 @@ describe("Web Search Service", () => {
         mockRequest.user,
         undefined,
       );
-      expect(mockSearchGetInstance).toHaveBeenCalledWith({}, "tavily");
+      expect(mockSearchGetInstance).toHaveBeenCalledWith(
+        {},
+        "tavily",
+        mockRequest.user,
+      );
       expect(mockSearch.search).toHaveBeenCalledWith("test query", undefined);
       expect(result).toEqual({
         status: "success",
@@ -101,7 +105,11 @@ describe("Web Search Service", () => {
         mockRequest.user,
         "serper",
       );
-      expect(mockSearchGetInstance).toHaveBeenCalledWith({}, "serper");
+      expect(mockSearchGetInstance).toHaveBeenCalledWith(
+        {},
+        "serper",
+        mockRequest.user,
+      );
     });
 
     it("should pass search options", async () => {

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { IEnv } from "~/types";
 import { AssistantError } from "~/utils/errors";
 import { SearchProviderFactory } from "../factory";
+import { ParallelSearchProvider } from "../parallel";
 import { SerperProvider } from "../serper";
 import { TavilyProvider } from "../tavily";
 
@@ -9,6 +10,9 @@ describe("SearchProviderFactory", () => {
   const mockEnv: IEnv = {
     SERPER_API_KEY: "test-serper-key",
     TAVILY_API_KEY: "test-tavily-key",
+    PARALLEL_API_KEY: "test-parallel-key",
+    AI_GATEWAY_TOKEN: "test-gateway-token",
+    ACCOUNT_ID: "test-account-id",
   } as IEnv;
 
   describe("getProvider", () => {
@@ -20,6 +24,13 @@ describe("SearchProviderFactory", () => {
     it("should create TavilyProvider when provider is tavily", () => {
       const provider = SearchProviderFactory.getProvider("tavily", mockEnv);
       expect(provider).toBeInstanceOf(TavilyProvider);
+    });
+
+    it("should create ParallelSearchProvider when provider is parallel", () => {
+      const provider = SearchProviderFactory.getProvider("parallel", mockEnv, {
+        id: 1,
+      } as any);
+      expect(provider).toBeInstanceOf(ParallelSearchProvider);
     });
 
     it("should throw error when serper provider is requested but API key is missing", () => {
@@ -48,6 +59,20 @@ describe("SearchProviderFactory", () => {
       expect(() =>
         SearchProviderFactory.getProvider("tavily", envWithoutTavily),
       ).toThrow("TAVILY_API_KEY is not set");
+    });
+
+    it("should throw error when parallel provider requested but AI gateway token missing", () => {
+      const envWithoutGateway = {
+        ...mockEnv,
+        AI_GATEWAY_TOKEN: undefined,
+      } as IEnv;
+
+      expect(() =>
+        SearchProviderFactory.getProvider("parallel", envWithoutGateway),
+      ).toThrow(expect.any(AssistantError));
+      expect(() =>
+        SearchProviderFactory.getProvider("parallel", envWithoutGateway),
+      ).toThrow("AI_GATEWAY_TOKEN is not set");
     });
 
     it("should throw error for unknown provider", () => {

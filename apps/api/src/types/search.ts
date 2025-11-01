@@ -1,6 +1,7 @@
-export type SearchProviderName = "serper" | "tavily";
+export type SearchProviderName = "serper" | "tavily" | "parallel";
 
 export interface SerperSearchResult {
+  provider: "serper";
   searchParameters: Record<string, string>;
   knowledgeGraph: {
     title: string;
@@ -36,6 +37,7 @@ export interface SerperSearchResult {
 }
 
 export interface TavilySearchResult {
+  provider: "tavily";
   results: Array<{
     title: string;
     content: string;
@@ -48,6 +50,16 @@ export interface TavilySearchResult {
   }>;
 }
 
+export interface ParallelSearchResult {
+  provider: "parallel";
+  search_id?: string;
+  results: Array<{
+    title?: string;
+    url?: string;
+    excerpts?: string[];
+  }>;
+}
+
 export interface SearchResultError {
   status: "error";
   error: string;
@@ -56,6 +68,7 @@ export interface SearchResultError {
 export type SearchResult =
   | SerperSearchResult
   | TavilySearchResult
+  | ParallelSearchResult
   | SearchResultError;
 
 export interface SearchProvider {
@@ -78,4 +91,8 @@ export interface SearchOptions {
   autocorrect?: boolean;
   num?: number;
   page?: number;
+  parallel_objective?: string;
+  parallel_search_queries?: string[];
+  parallel_processor?: string;
+  parallel_max_chars_per_result?: number;
 }

@@ -42,6 +42,9 @@ export class TavilyProvider implements SearchProvider {
     }
 
     const data = (await response.json()) as TavilySearchResult;
-    return data;
+    return {
+      ...data,
+      provider: "tavily",
+    };
   }
 }

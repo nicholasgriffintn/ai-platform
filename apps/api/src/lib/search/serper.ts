@@ -61,6 +61,9 @@ export class SerperProvider implements SearchProvider {
     }
 
     const data = (await response.json()) as SerperSearchResult;
-    return data;
+    return {
+      ...data,
+      provider: "serper",
+    };
   }
 }

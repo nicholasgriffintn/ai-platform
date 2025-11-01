@@ -47,6 +47,7 @@ describe("Search", () => {
       expect(SearchProviderFactory.getProvider).toHaveBeenCalledWith(
         "serper",
         mockEnv,
+        undefined,
       );
     });
 
@@ -56,6 +57,18 @@ describe("Search", () => {
       expect(SearchProviderFactory.getProvider).toHaveBeenCalledWith(
         "tavily",
         mockEnv,
+        undefined,
+      );
+    });
+
+    it("should forward user to provider factory when supplied", () => {
+      const user = { id: 42 } as any;
+      Search.getInstance(mockEnv, "serper", user);
+
+      expect(SearchProviderFactory.getProvider).toHaveBeenCalledWith(
+        "serper",
+        mockEnv,
+        user,
       );
     });
   });
