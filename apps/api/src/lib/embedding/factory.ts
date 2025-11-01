@@ -9,6 +9,10 @@ import {
   type MarengoEmbeddingProviderConfig,
 } from "./marengo";
 import {
+  MistralEmbeddingProvider,
+  type MistralEmbeddingProviderConfig,
+} from "./mistral";
+import {
   S3VectorsEmbeddingProvider,
   type S3VectorsEmbeddingProviderConfig,
 } from "./s3vectors";
@@ -25,6 +29,7 @@ export class EmbeddingProviderFactory {
       | VectorizeEmbeddingProviderConfig
       | BedrockEmbeddingProviderConfig
       | MarengoEmbeddingProviderConfig
+      | MistralEmbeddingProviderConfig
       | S3VectorsEmbeddingProviderConfig,
     env: IEnv,
     user?: IUser,
@@ -58,6 +63,14 @@ export class EmbeddingProviderFactory {
           );
         }
         return new MarengoEmbeddingProvider(config, env, user);
+      case "mistral":
+        if (!("vector_db" in config)) {
+          throw new AssistantError(
+            "Invalid config for Mistral provider",
+            ErrorType.CONFIGURATION_ERROR,
+          );
+        }
+        return new MistralEmbeddingProvider(config, env, user);
       case "s3vectors":
         if (!("bucketName" in config)) {
           throw new AssistantError(

@@ -3,9 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { BedrockEmbeddingProvider } from "../bedrock";
 import { EmbeddingProviderFactory } from "../factory";
+import { MistralEmbeddingProvider } from "../mistral";
 import { VectorizeEmbeddingProvider } from "../vectorize";
 
 vi.mock("../bedrock");
+vi.mock("../mistral");
 vi.mock("../vectorize");
 
 describe("EmbeddingProviderFactory", () => {
@@ -74,6 +76,26 @@ describe("EmbeddingProviderFactory", () => {
 
       expect(VectorizeEmbeddingProvider).toHaveBeenCalledWith(config);
       expect(provider).toBeInstanceOf(VectorizeEmbeddingProvider);
+    });
+
+    it("should create MistralEmbeddingProvider for mistral type", () => {
+      const config = {
+        vector_db: mockEnv.VECTOR_DB,
+      };
+
+      const provider = EmbeddingProviderFactory.getProvider(
+        "mistral",
+        config,
+        mockEnv,
+        mockUser,
+      );
+
+      expect(MistralEmbeddingProvider).toHaveBeenCalledWith(
+        config,
+        mockEnv,
+        mockUser,
+      );
+      expect(provider).toBeInstanceOf(MistralEmbeddingProvider);
     });
 
     it("should create BedrockEmbeddingProvider without user", () => {
@@ -191,6 +213,26 @@ describe("EmbeddingProviderFactory", () => {
       try {
         EmbeddingProviderFactory.getProvider(
           "vectorize",
+          invalidConfig,
+          mockEnv,
+          mockUser,
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(AssistantError);
+        expect((error as AssistantError).type).toBe(
+          ErrorType.CONFIGURATION_ERROR,
+        );
+      }
+    });
+
+    it("should throw error with correct error type for invalid mistral config", () => {
+      const invalidConfig = {
+        ai: mockEnv.AI,
+      } as any;
+
+      try {
+        EmbeddingProviderFactory.getProvider(
+          "mistral",
           invalidConfig,
           mockEnv,
           mockUser,

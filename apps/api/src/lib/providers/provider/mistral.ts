@@ -18,6 +18,13 @@ export class MistralProvider extends BaseProvider {
   protected async getEndpoint(
     params: ChatCompletionParameters,
   ): Promise<string> {
+    if (
+      params.model === "mistral-embed" ||
+      params.model === "codestral-embed"
+    ) {
+      return "v1/embeddings";
+    }
+
     if (params.model === "mistral-ocr-latest") {
       return "v1/ocr";
     }
@@ -30,6 +37,22 @@ export class MistralProvider extends BaseProvider {
   }
 
   async mapParameters(params: ChatCompletionParameters) {
+    if (params.model === "mistral-embed") {
+      return {
+        model: params.model,
+        input: params.body.input,
+      };
+    }
+
+    if (params.model === "codestral-embed") {
+      return {
+        model: params.model,
+        input: params.body.input,
+        output_dimension: 1536,
+        output_dtype: "binary",
+      };
+    }
+
     if (params.fim_mode || typeof params.suffix !== "undefined") {
       const fimParams = {
         model: params.model,

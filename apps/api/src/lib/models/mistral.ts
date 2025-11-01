@@ -571,4 +571,18 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     type: ["text", "speech"],
     supportsAudio: true,
   }),
+
+  createModelConfig("mistral-embed", PROVIDER, {
+    name: "Mistral Embed",
+    matchingModel: "mistral-embed",
+    description: "An embedding model for text content",
+    type: ["embedding"],
+  }),
+
+  createModelConfig("codestral-embed", PROVIDER, {
+    name: "Codestral Embed",
+    matchingModel: "codestral-embed",
+    description: "An embedding model for code content",
+    type: ["embedding"],
+  }),
 ]);

@@ -59,6 +59,16 @@ export class Embedding {
         knowledgeBaseId: userSettings.bedrock_knowledge_base_id,
         region: this.env.AWS_REGION || "us-east-1",
       });
+    } else if (userSettings?.embedding_provider === "mistral") {
+      this.provider = EmbeddingProviderFactory.getProvider(
+        "mistral",
+        {
+          vector_db: this.env.VECTOR_DB,
+        },
+        this.env,
+        this.user,
+      );
+      logger.debug("Using Mistral embedding provider");
     } else if (userSettings?.embedding_provider === "marengo") {
       this.provider = EmbeddingProviderFactory.getProvider(
         "marengo",

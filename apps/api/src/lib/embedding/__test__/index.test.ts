@@ -114,6 +114,24 @@ describe("Embedding", () => {
       );
     });
 
+    it("should create mistral provider when specified in user settings", () => {
+      const mistralSettings = {
+        embedding_provider: "mistral",
+      } as IUserSettings;
+
+      Embedding.getInstance(mockEnv, mockUser, mistralSettings);
+
+      expect(EmbeddingProviderFactory.getProvider).toHaveBeenCalledWith(
+        "mistral",
+        {
+          vector_db: mockEnv.VECTOR_DB,
+        },
+        mockEnv,
+        mockUser,
+      );
+      expect(Database.getInstance).not.toHaveBeenCalled();
+    });
+
     it("should throw error for bedrock without required credentials", () => {
       const incompleteBedrockSettings = {
         embedding_provider: "bedrock",

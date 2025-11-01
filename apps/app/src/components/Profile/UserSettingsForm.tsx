@@ -325,6 +325,7 @@ export function UserSettingsForm({
           >
             <option value="vectorize">Vectorize</option>
             <option value="bedrock">Bedrock</option>
+            <option value="mistral">Mistral</option>
             <option value="s3vectors">S3 Vectors</option>
           </FormSelect>
         </div>
