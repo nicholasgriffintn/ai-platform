@@ -43,7 +43,7 @@ dynamicApps.get(
     summary: "List all available dynamic apps",
     description:
       "Returns a list of all registered dynamic apps with their basic information",
-    tags: ["Dynamic Apps"],
+    tags: ["dynamic-apps"],
     responses: {
       200: {
         description: "List of dynamic apps",
@@ -71,7 +71,7 @@ dynamicApps.get(
   "/responses",
   describeRoute({
     summary: "List stored dynamic-app responses for user",
-    tags: ["Dynamic Apps"],
+    tags: ["dynamic-apps"],
     responses: {
       200: {
         description: "Array of responses",
@@ -110,7 +110,7 @@ dynamicApps.get(
   describeRoute({
     summary: "Get dynamic app schema",
     description: "Returns the complete schema for a specific dynamic app",
-    tags: ["Dynamic Apps"],
+    tags: ["dynamic-apps"],
     parameters: [
       {
         name: "id",
@@ -171,7 +171,7 @@ dynamicApps.post(
   describeRoute({
     summary: "Execute dynamic app",
     description: "Executes a dynamic app with the provided form data",
-    tags: ["Dynamic Apps"],
+    tags: ["dynamic-apps"],
     parameters: [
       {
         name: "id",
@@ -304,7 +304,7 @@ dynamicApps.get(
     summary: "Get stored dynamic-app response",
     description:
       "Retrieve a stored dynamic-app response by its `id` (response_id)",
-    tags: ["Dynamic Apps"],
+    tags: ["dynamic-apps"],
     parameters: [
       {
         name: "responseId",

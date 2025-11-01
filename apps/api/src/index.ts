@@ -153,6 +153,7 @@ app.get(
 app.get(
   "/status",
   describeRoute({
+    tags: ["system"],
     description: "Check if the API is running with optional health information",
     responses: {
       200: {
@@ -265,6 +266,7 @@ app.get(
 app.get(
   "/metrics",
   describeRoute({
+    tags: ["system"],
     description: "Get metrics from Analytics Engine",
     responses: {
       200: {

@@ -20,7 +20,7 @@ app.use("/*", (c, next) => {
 app.post(
   "/session/:type",
   describeRoute({
-    tags: ["realtime", "session"],
+    tags: ["realtime"],
     summary: "Create a new realtime session",
     responses: {
       200: {
