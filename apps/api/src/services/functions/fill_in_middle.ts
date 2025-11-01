@@ -23,7 +23,7 @@ export const fill_in_middle_completion: IFunction = {
   name: "fill_in_middle_completion",
   description:
     "Generate a fill-in-the-middle completion for code or text by providing the prefix (prompt) and optional suffix. Works across all FIM-capable models.",
-  type: "normal",
+  type: "premium",
   costPerCall: 0,
   parameters: {
     type: "object",

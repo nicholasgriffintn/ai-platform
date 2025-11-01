@@ -24,7 +24,7 @@ export const v0_code_generation: IFunction = {
     },
     required: ["prompt"],
   },
-  type: "normal",
+  type: "premium",
   costPerCall: 0,
   function: async (
     _completion_id: string,

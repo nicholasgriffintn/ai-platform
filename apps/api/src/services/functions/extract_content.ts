@@ -39,7 +39,7 @@ export const extract_content: IFunction = {
     },
     required: ["urls"],
   },
-  type: "normal",
+  type: "premium",
   costPerCall: 0.5,
   function: async (
     completion_id: string,

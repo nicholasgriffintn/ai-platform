@@ -5,7 +5,7 @@ export const apply_edit_completion: IFunction = {
   name: "apply_edit_completion",
   description:
     "Apply a code snippet update using Mercury Coder's apply-edit capability.",
-  type: "normal",
+  type: "premium",
   costPerCall: 0,
   parameters: {
     type: "object",

@@ -16,7 +16,7 @@ export const get_note: IFunction = {
     },
     required: ["query"],
   },
-  type: "normal",
+  type: "premium",
   costPerCall: 0,
   function: async (
     _completion_id: string,

@@ -5,7 +5,7 @@ export const next_edit_completion: IFunction = {
   name: "next_edit_completion",
   description:
     "Request the next code edit suggestion from Mercury Coder using contextual project snippets.",
-  type: "normal",
+  type: "premium",
   costPerCall: 0,
   parameters: {
     type: "object",
