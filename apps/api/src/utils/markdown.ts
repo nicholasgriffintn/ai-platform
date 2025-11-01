@@ -1,4 +1,15 @@
 /**
+ * Template literal tag for markdown strings
+ * @param strings Template strings
+ * @param values Template values
+ * @returns Processed markdown string
+ */
+export const md = (strings: TemplateStringsArray, ...values: string[]) =>
+  String.raw({ raw: strings }, ...values)
+    .replace(/\r?\n/g, "\n")
+    .trim();
+
+/**
  * Markdown to HTML converter
  * @param markdown Markdown text to convert
  * @returns HTML representation of the markdown

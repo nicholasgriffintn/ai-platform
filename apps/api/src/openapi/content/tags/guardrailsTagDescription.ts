@@ -1,4 +1,6 @@
-# Guardrails
+import { md } from "~/utils/markdown.js";
+
+export const guardrailsTagDescription = md`# Guardrails
 
 Content safety and moderation using Llamaguard and AWS Bedrock Guardrails.
 
@@ -16,64 +18,21 @@ Guardrails protect your application by validating content for safety violations.
 3. **Response** - Returns validation status and any violations found
 4. **Monitoring** - Violations are tracked in Analytics Engine
 
-## Endpoint
-
-### Check Conversation
-
-```http
-POST /v1/chat/completions/{completion_id}/check
-```
-
-Check a conversation for guardrails violations.
-
-**Request:**
-```json
-{
-  "role": "user"
-}
-```
-
-**Parameters:**
-- `role` (optional) - Which messages to check: `"user"`, `"assistant"`, or `"tool"`
-
-**Response:**
-```json
-{
-  "response": {
-    "status": "safe",
-    "flagged": false
-  }
-}
-```
-
-Or if violations are found:
-
-```json
-{
-  "response": {
-    "status": "unsafe",
-    "flagged": true,
-    "category": "S10",
-    "reasons": ["Hate speech detected"]
-  }
-}
-```
-
 ## Configuration
 
 ### User Settings
 
 Guardrails are configured per-user via settings:
 
-- `guardrails_enabled` (boolean) - Enable/disable guardrails
-- `guardrails_provider` (string) - `"llamaguard"` or `"bedrock"`
+- \`guardrails_enabled\` (boolean) - Enable/disable guardrails
+- \`guardrails_provider\` (string) - \`"llamaguard"\` or \`"bedrock"\`
 
 ### Bedrock Settings
 
 If using Bedrock, also configure:
 
-- `bedrock_guardrail_id` (string) - Your Bedrock guardrail ID
-- `bedrock_guardrail_version` (string) - Version (default: "1")
+- \`bedrock_guardrail_id\` (string) - Your Bedrock guardrail ID
+- \`bedrock_guardrail_version\` (string) - Version (default: "1")
 
 ## Providers
 
@@ -106,7 +65,7 @@ Meta's Llama Guard model for content moderation.
 | S13 | Elections |
 
 **Response:**
-- Returns `"safe"` or `"unsafe"`
+- Returns \`"safe"\` or \`"unsafe"\`
 - If unsafe, includes violated category codes
 
 ### AWS Bedrock Guardrails
@@ -124,9 +83,9 @@ Amazon's enterprise guardrails service.
 1. AWS account with Bedrock access
 2. Created guardrail in AWS Bedrock
 3. AWS credentials configured in environment:
-   - `BEDROCK_AWS_ACCESS_KEY`
-   - `BEDROCK_AWS_SECRET_KEY`
-   - `AWS_REGION` (default: "us-east-1")
+   - \`BEDROCK_AWS_ACCESS_KEY\`
+   - \`BEDROCK_AWS_SECRET_KEY\`
+   - \`AWS_REGION\` (default: "us-east-1")
 
 **Response Structure:**
 - Topic policy violations
@@ -139,37 +98,37 @@ Amazon's enterprise guardrails service.
 
 Validates user messages before processing:
 
-```typescript
+\`\`\`typescript
 const result = await guardrails.validateInput(message, userId, completionId);
 
 if (!result.isValid) {
   // Handle violation
   console.log(result.violations);
 }
-```
+\`\`\`
 
 ### Output Validation
 
 Validates model responses before returning:
 
-```typescript
+\`\`\`typescript
 const result = await guardrails.validateOutput(response, userId, completionId);
 
 if (!result.isValid) {
   // Handle violation
   console.log(result.violations);
 }
-```
+\`\`\`
 
 ### Validation Result
 
-```typescript
+\`\`\`typescript
 {
   isValid: boolean;
   violations: string[];
   rawResponse?: string;
 }
-```
+\`\`\`
 
 ## Integration
 
@@ -183,7 +142,7 @@ The system validates:
 
 Results are included in the response:
 
-```json
+\`\`\`json
 {
   "id": "cmpl_abc123",
   "choices": [...],
@@ -193,11 +152,11 @@ Results are included in the response:
     }
   }
 }
-```
+\`\`\`
 
 Or if violations occur:
 
-```json
+\`\`\`json
 {
   "post_processing": {
     "guardrails": {
@@ -207,13 +166,13 @@ Or if violations occur:
     }
   }
 }
-```
+\`\`\`
 
 ## Monitoring
 
 Violations are automatically tracked to Cloudflare Analytics Engine with:
 
-- Violation type (`input_violation` or `output_violation`)
+- Violation type (\`input_violation\` or \`output_violation\`)
 - User ID
 - Completion ID
 - Violation details
@@ -222,7 +181,7 @@ Violations are automatically tracked to Cloudflare Analytics Engine with:
 
 - **No custom policies** - Cannot define custom word filters or regex patterns
 - **No per-request configuration** - Settings are user-level only
-- **No dedicated endpoint** - Only `/v1/chat/completions/{id}/check` exists
+- **No dedicated endpoint** - Only \`/v1/chat/completions/{id}/check\` exists
 - **No bypass rules** - Cannot configure exemptions
 - **No action types** - Only returns validation status (no redaction, warnings, etc.)
 - **No stats endpoint** - No aggregated violation statistics API
@@ -231,14 +190,14 @@ Violations are automatically tracked to Cloudflare Analytics Engine with:
 
 ### Check a Conversation
 
-```bash
-curl -X POST https://api.polychat.app/v1/chat/completions/cmpl_abc123/check \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
+\`\`\`bash
+curl -X POST https://api.polychat.app/v1/chat/completions/cmpl_abc123/check \\
+  -H "Authorization: Bearer YOUR_TOKEN" \\
+  -H "Content-Type: application/json" \\
   -d '{
     "role": "user"
   }'
-```
+\`\`\`
 
 ### Enable Guardrails (User Settings)
 
@@ -250,9 +209,4 @@ Guardrails must be enabled via user settings. There's no per-request parameter t
 2. **Choose Provider** - Llamaguard for speed/cost, Bedrock for accuracy
 3. **Monitor Violations** - Track violations in analytics
 4. **Handle Failures** - Implement fallbacks if guardrail validation fails
-5. **Test Thoroughly** - Test with various content types before deployment
-
-## Related Features
-
-- [Chat Completions](./chat-completions.md) - Automatic guardrails integration
-- [Authentication](./authentication.md) - User settings for guardrails configuration
+5. **Test Thoroughly** - Test with various content types before deployment`;

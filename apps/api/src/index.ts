@@ -44,6 +44,8 @@ import {
   handleAIServiceError,
 } from "./utils/errors";
 import { LogLevel, getLogger } from "./utils/logger";
+import { tagDescriptions } from "./openapi/documentation";
+import { apiInfoDescription } from "./openapi/content/apiDescription";
 
 const app = new Hono<{
   Bindings: IEnv;
@@ -114,9 +116,12 @@ app.get(
       info: {
         title: "Polychat API",
         version: "0.0.1",
-        description:
-          "An AI assistant that combines multiple AI models alongside purpose built tools and applications.",
+        description: apiInfoDescription,
       },
+      tags: Object.entries(tagDescriptions).map(([name, description]) => ({
+        name,
+        description,
+      })),
       components: {
         securitySchemes: {
           bearerAuth: {

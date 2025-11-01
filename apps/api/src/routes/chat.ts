@@ -145,7 +145,7 @@ app.post(
   "/fim/completions",
   validateCaptcha,
   describeRoute({
-    tags: ["chat"],
+    tags: ["chat", "code"],
     summary: "Create fill-in-the-middle completion",
     description:
       "Generates code completions by filling the gap between a prefix and suffix using supported FIM models.",
@@ -207,7 +207,7 @@ app.post(
   "/edit/completions",
   validateCaptcha,
   describeRoute({
-    tags: ["chat"],
+    tags: ["chat", "code"],
     summary: "Create next edit completion",
     description:
       "Produces the next edit suggestion for a file using Mercury's code edit model.",
@@ -261,7 +261,7 @@ app.post(
   "/apply/completions",
   validateCaptcha,
   describeRoute({
-    tags: ["chat"],
+    tags: ["chat", "code"],
     summary: "Apply edit completion",
     description:
       "Applies an edit snippet to existing code using Mercury's apply edit capability.",
@@ -832,7 +832,7 @@ app.delete(
 app.post(
   "/completions/:completion_id/check",
   describeRoute({
-    tags: ["chat"],
+    tags: ["chat", "guardrails"],
     description: "Check a chat against guardrails",
     responses: {
       200: {

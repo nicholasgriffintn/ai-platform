@@ -12,7 +12,7 @@ Check out my write up on this project [here](https://nicholasgriffin.dev/blog/bu
 
 ## Quick Links
 
-- **[API Documentation](./apps/api/docs/README.md)** - Complete API reference and guides
+- **API Documentation** - Live OpenAPI schema at [api.polychat.app/openapi](https://api.polychat.app/openapi) (source: `apps/api/src/openapi/documentation.ts`)
 - **[Example Chats](#example-chats)** - See what's possible
 - **[Getting Started](#setup-and-installation)** - Set up your own instance
 - **[Features](#features)** - What's included
@@ -40,7 +40,7 @@ Here are some example chats that you can try out:
 
 This monorepo contains:
 
-- **[API](./apps/api)** - OpenAI-compatible API with 40+ models ([docs](./apps/api/docs/README.md))
+- **[API](./apps/api)** - OpenAI-compatible API with 40+ models (served via [OpenAPI](https://api.polychat.app/openapi))
 - **[Web App](./apps/app)** - React-based PWA frontend
 - **[Metrics Dashboard](./apps/metrics)** - Usage analytics and monitoring
 - **[Mobile App](./apps/mobile/ios)** - iOS application ([TestFlight](https://testflight.apple.com/join/52xrwxRP))
@@ -49,13 +49,13 @@ This monorepo contains:
 
 ### Core API Features
 
-- **[Chat Completions](./apps/api/docs/features/chat-completions.md)** - OpenAI-compatible chat with streaming, tools, and multi-turn conversations
-- **[40+ AI Models](./apps/api/docs/features/models.md)** - Anthropic, OpenAI, Google, Mistral, Meta, and [many more](https://github.com/nicholasgriffintn/assistant/blob/main/apps/api/src/lib/providers/index.ts)
-- **[Code Generation](./apps/api/docs/features/code-generation.md)** - FIM completions, edit suggestions, and code application
-- **[AI Agents](./apps/api/docs/features/agents.md)** - Custom agents with MCP server integrations
-- **[RAG & Memories](./apps/api/docs/features/memories.md)** - Vector-based context retrieval with Cloudflare Vectorize
-- **[Guardrails](./apps/api/docs/features/guardrails.md)** - Content safety with Llamaguard and Bedrock
-- **[Multiple Auth Methods](./apps/api/docs/features/authentication.md)** - OAuth, magic links, passkeys, JWT, API keys
+- **Chat Completions** - OpenAI-compatible chat with streaming, tools, and multi-turn conversations (tag: `chat`)
+- **40+ AI Models** - Anthropic, OpenAI, Google, Mistral, Meta, and [many more](https://github.com/nicholasgriffintn/assistant/blob/main/apps/api/src/lib/providers/index.ts) (tag: `models`)
+- **Code Generation** - FIM completions, edit suggestions, and code application (tag: `code`)
+- **AI Agents** - Custom agents with MCP server integrations (tag: `agents`)
+- **RAG & Memories** - Vector-based context retrieval with Cloudflare Vectorize (tag: `memories`)
+- **Guardrails** - Content safety with Llamaguard and Bedrock (tag: `guardrails`)
+- **Multiple Auth Methods** - OAuth, magic links, passkeys, JWT, API keys (tag: `auth`)
 
 ### Additional Features
 
@@ -68,7 +68,7 @@ This monorepo contains:
 - **Tool Calling** - Multi-step function execution
 - **Web LLM Support** - Offline mode for web app
 
-**[See all features →](./apps/api/docs/README.md)**
+**See all features in the OpenAPI reference → [api.polychat.app/openapi](https://api.polychat.app/openapi)**
 
 ## Usage Limits
 
@@ -130,16 +130,7 @@ npm run deploy:metrics
 
 ## API Documentation
 
-The complete API documentation is available in [apps/api/docs](./apps/api/docs/README.md):
-
-- **[Getting Started](./apps/api/docs/README.md)** - Quick start guide
-- **[Authentication](./apps/api/docs/features/authentication.md)** - All auth methods
-- **[Chat Completions](./apps/api/docs/features/chat-completions.md)** - Core chat API
-- **[Models](./apps/api/docs/features/models.md)** - Available models and capabilities
-- **[Code Generation](./apps/api/docs/features/code-generation.md)** - FIM and code editing
-- **[Agents](./apps/api/docs/features/agents.md)** - Custom AI agents
-- **[Memories](./apps/api/docs/features/memories.md)** - RAG and context
-- **[Guardrails](./apps/api/docs/features/guardrails.md)** - Content safety
+The complete API documentation lives in the OpenAPI schema defined in `apps/api/src/openapi/documentation.ts` and served at [api.polychat.app](https://api.polychat.app).
 
 ### Quick Example
 
@@ -155,7 +146,7 @@ curl https://api.polychat.app/v1/chat/completions \
   }'
 ```
 
-**[View full API reference →](./apps/api/docs/README.md)**
+**View full API reference → [api.polychat.app](https://api.polychat.app)**
 
 ## Database Management
 
