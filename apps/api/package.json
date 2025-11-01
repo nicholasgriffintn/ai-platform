@@ -52,7 +52,7 @@
     "drizzle-kit": "^0.31.0",
     "typescript": "5.9.3",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "3.2.4",
+    "vitest": "4.0.6",
     "wrangler": "4.45.3"
   }
 }

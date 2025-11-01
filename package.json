@@ -27,8 +27,8 @@
     "@biomejs/biome": "2.2.7",
     "@playwright/test": "^1.52.0",
     "@types/node": "24.9.2",
-    "@vitest/coverage-v8": "^3.2.4",
-    "vitest": "3.2.4"
+    "@vitest/coverage-v8": "^4.0.0",
+    "vitest": "4.0.6"
   },
   "packageManager": "pnpm@10.20.0"
 }
