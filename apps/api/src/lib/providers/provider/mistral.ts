@@ -55,7 +55,7 @@ export class MistralProvider extends BaseProvider {
       return {
         model: params.model,
         input: params.body.input,
-        output_dimension: 1536,
+        output_dimension: 1024,
         output_dtype: "binary",
       };
     }
