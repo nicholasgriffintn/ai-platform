@@ -7,7 +7,7 @@ import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { Button, Card } from "~/components/ui";
 import { useFetchPodcasts } from "~/hooks/usePodcasts";
 import { cn } from "~/lib/utils";
@@ -29,7 +29,7 @@ export default function PodcastsPage() {
 
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       className="max-w-7xl mx-auto"
       headerContent={
         <div className="flex justify-between items-center">

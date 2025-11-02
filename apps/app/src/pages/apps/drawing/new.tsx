@@ -9,7 +9,7 @@ import { LINE_WIDTHS } from "~/components/Apps/Drawings/constants";
 import { BackLink } from "~/components/Core/BackLink";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { Button, Card } from "~/components/ui";
 import { useGenerateDrawing, useGuessDrawing } from "~/hooks/useDrawings";
 
@@ -197,7 +197,7 @@ export default function NewDrawingPage() {
 
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       className="max-w-7xl mx-auto"
       headerContent={
         <PageHeader>

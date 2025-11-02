@@ -4,7 +4,7 @@ import { BackLink } from "~/components/Core/BackLink";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { ReplicatePredictions } from "~/components/Replicate/ReplicatePredictions";
 
 export function meta() {
@@ -17,7 +17,7 @@ export function meta() {
 const ReplicatePredictionsRoute: FC = () => {
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       className="max-w-6xl mx-auto"
       headerContent={
         <PageHeader>

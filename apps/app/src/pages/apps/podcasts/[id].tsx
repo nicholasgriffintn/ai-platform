@@ -7,7 +7,7 @@ import { BackLink } from "~/components/Core/BackLink";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { ShareButton } from "~/components/ui/ShareButton";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { Button } from "~/components/ui";
 import { useFetchPodcast } from "~/hooks/usePodcasts";
 import { cn } from "~/lib/utils";
@@ -26,7 +26,7 @@ export default function PodcastDetailPage() {
   if (isLoading) {
     return (
       <PageShell
-        sidebarContent={<StandardSidebarContent />}
+        sidebarContent={<AppsSidebarContent />}
         className="max-w-4xl mx-auto"
       >
         <div className="flex justify-center items-center h-64">
@@ -39,7 +39,7 @@ export default function PodcastDetailPage() {
   if (error || !podcast) {
     return (
       <PageShell
-        sidebarContent={<StandardSidebarContent />}
+        sidebarContent={<AppsSidebarContent />}
         className="max-w-4xl mx-auto"
       >
         <div className="flex flex-col justify-center items-center h-64 space-y-4">
@@ -105,7 +105,7 @@ export default function PodcastDetailPage() {
 
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       className="max-w-7xl mx-auto"
       headerContent={
         <div className="flex justify-between items-center mb-6">

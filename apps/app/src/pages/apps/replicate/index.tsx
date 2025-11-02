@@ -4,7 +4,7 @@ import { BackLink } from "~/components/Core/BackLink";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { ReplicateModels } from "~/components/Replicate/ReplicateModels";
 
 export function meta() {
@@ -21,7 +21,7 @@ export function meta() {
 const ReplicateModelsRoute: FC = () => {
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       className="max-w-7xl mx-auto"
       headerContent={
         <PageHeader>

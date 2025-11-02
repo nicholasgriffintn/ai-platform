@@ -11,7 +11,7 @@ import { BackLink } from "~/components/Core/BackLink";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { useProcessPodcast, useUploadPodcast } from "~/hooks/usePodcasts";
 import type { PodcastFormData } from "~/types/podcast";
 
@@ -324,7 +324,7 @@ export default function NewPodcastPage() {
 
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       className="max-w-7xl mx-auto"
       headerContent={
         <PageHeader>

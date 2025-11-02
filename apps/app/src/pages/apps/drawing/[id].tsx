@@ -5,7 +5,7 @@ import { BackLink } from "~/components/Core/BackLink";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { ShareButton } from "~/components/ui/ShareButton";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { Button } from "~/components/ui";
 import { useFetchDrawing } from "~/hooks/useDrawings";
 import { DrawingView } from "../../../components/Apps/Drawings/View";
@@ -24,7 +24,7 @@ export default function DrawingDetailPage() {
   if (isLoading) {
     return (
       <PageShell
-        sidebarContent={<StandardSidebarContent />}
+        sidebarContent={<AppsSidebarContent />}
         className="max-w-7xl mx-auto"
       >
         <div className="flex justify-center items-center h-64">
@@ -37,7 +37,7 @@ export default function DrawingDetailPage() {
   if (error || !drawing) {
     return (
       <PageShell
-        sidebarContent={<StandardSidebarContent />}
+        sidebarContent={<AppsSidebarContent />}
         className="max-w-7xl mx-auto"
       >
         <div className="flex flex-col justify-center items-center h-64 space-y-4">
@@ -57,7 +57,7 @@ export default function DrawingDetailPage() {
 
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       className="max-w-7xl mx-auto"
       headerContent={
         <div className="flex justify-between items-center">

@@ -7,7 +7,7 @@ import { BackLink } from "~/components/Core/BackLink";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { Button, Input, Textarea } from "~/components/ui";
 import {
   useAnalyseArticle,
@@ -203,7 +203,7 @@ export default function NewArticleAnalysisPage() {
   if (!itemId) {
     return (
       <PageShell
-        sidebarContent={<StandardSidebarContent />}
+        sidebarContent={<AppsSidebarContent />}
         className="max-w-4xl flex justify-center items-center min-h-[200px]"
       >
         <Loader2 size={32} className="animate-spin" />
@@ -213,7 +213,7 @@ export default function NewArticleAnalysisPage() {
 
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       className="max-w-7xl mx-auto"
       headerContent={
         <div className={cn("flex justify-between items-center mb-8")}>

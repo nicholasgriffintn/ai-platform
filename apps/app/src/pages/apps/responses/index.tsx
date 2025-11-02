@@ -7,11 +7,11 @@ import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 import { Card } from "~/components/ui";
 import { useDynamicAppResponses, useDynamicApps } from "~/hooks/useDynamicApps";
 import { formatRelativeTime } from "~/lib/dates";
 import { cn } from "~/lib/utils";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 
 export function meta() {
   return [
@@ -31,7 +31,7 @@ export default function DynamicAppResponsesPage() {
 
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       className="max-w-7xl mx-auto"
       headerContent={
         <PageHeader>

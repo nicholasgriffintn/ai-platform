@@ -41,7 +41,7 @@ export const AppCard = ({
         getCardGradient(app.icon),
       )}
     >
-      {isPremium && (
+      {!isPro && isPremium && (
         <div className="absolute top-3 right-3 z-10">
           <div
             className={cn(
@@ -57,7 +57,9 @@ export const AppCard = ({
         </div>
       )}
 
-      <div className={cn("flex flex-col h-full", isPremium && "pr-10")}>
+      <div
+        className={cn("flex flex-col h-full", !isPro && isPremium && "pr-10")}
+      >
         <div className="flex flex-col space-y-2 md:flex-row md:items-start md:space-y-0 md:space-x-4 mb-3">
           <div
             className={cn(

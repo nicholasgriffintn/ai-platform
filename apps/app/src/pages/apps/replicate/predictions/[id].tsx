@@ -4,7 +4,7 @@ import { useParams } from "react-router";
 import { BackLink } from "~/components/Core/BackLink";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { ReplicatePredictionDetail } from "~/components/Replicate/ReplicatePredictionDetail";
 
 export function meta() {
@@ -19,7 +19,7 @@ const ReplicatePredictionDetailRoute: FC = () => {
 
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       className="max-w-4xl mx-auto"
       headerContent={
         <PageHeader>

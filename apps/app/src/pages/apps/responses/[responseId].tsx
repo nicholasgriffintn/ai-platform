@@ -9,6 +9,7 @@ import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageStatus } from "~/components/Core/PageStatus";
 import { useDynamicApp, useDynamicAppResponse } from "~/hooks/useDynamicApps";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 
 export function meta({ params }: { params: { responseId: string } }) {
   return [
@@ -59,6 +60,7 @@ export default function DynamicAppResponsePage() {
   if (isLoading) {
     return (
       <PageShell
+        sidebarContent={<AppsSidebarContent />}
         className="flex h-screen w-full items-center justify-center bg-off-white dark:bg-zinc-900"
         displayNavBar={false}
       >
@@ -75,6 +77,7 @@ export default function DynamicAppResponsePage() {
   if (error || !parsedData) {
     return (
       <PageShell
+        sidebarContent={<AppsSidebarContent />}
         title="Response Not Available"
         className="bg-off-white dark:bg-zinc-900"
         displayNavBar={false}
@@ -86,6 +89,7 @@ export default function DynamicAppResponsePage() {
 
   return (
     <PageShell
+      sidebarContent={<AppsSidebarContent />}
       title={
         appSchema ? `${appSchema.name} - Response` : "Dynamic App Response"
       }

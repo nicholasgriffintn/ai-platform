@@ -2,7 +2,7 @@ import type { FC } from "react";
 
 import { DynamicApps } from "~/components/Apps";
 import { PageShell } from "~/components/Core/PageShell";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 
 export function meta() {
   return [
@@ -13,7 +13,10 @@ export function meta() {
 
 const DynamicAppsRoute: FC = () => {
   return (
-    <PageShell sidebarContent={<StandardSidebarContent />} isBeta={true}>
+    <PageShell
+      sidebarContent={<AppsSidebarContent isHome={true} />}
+      isBeta={true}
+    >
       <DynamicApps />
     </PageShell>
   );

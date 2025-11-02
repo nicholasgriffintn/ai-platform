@@ -9,7 +9,7 @@ import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { ShareButton } from "~/components/ui/ShareButton";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { useFetchArticleReport } from "~/hooks/useArticles";
 
 export function meta({ params }: { params: { id?: string } }) {
@@ -29,10 +29,7 @@ export default function ArticleReportDetailPage() {
 
   if (isLoading) {
     return (
-      <PageShell
-        sidebarContent={<StandardSidebarContent />}
-        className="max-w-4xl"
-      >
+      <PageShell sidebarContent={<AppsSidebarContent />} className="max-w-4xl">
         <div className="flex justify-center items-center min-h-[400px]">
           <div className="flex flex-col items-center">
             <Loader2 size={48} className="animate-spin text-blue-500 mb-4" />
@@ -48,7 +45,7 @@ export default function ArticleReportDetailPage() {
   if (error) {
     return (
       <PageShell
-        sidebarContent={<StandardSidebarContent />}
+        sidebarContent={<AppsSidebarContent />}
         className="max-w-4xl"
         headerContent={
           <PageHeader>
@@ -88,7 +85,7 @@ export default function ArticleReportDetailPage() {
   if (!report) {
     return (
       <PageShell
-        sidebarContent={<StandardSidebarContent />}
+        sidebarContent={<AppsSidebarContent />}
         className="max-w-4xl"
         headerContent={
           <PageHeader>
@@ -108,7 +105,7 @@ export default function ArticleReportDetailPage() {
 
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       className="max-w-7xl mx-auto"
       headerContent={
         <div className="flex justify-between items-center">

@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { NoteEditor } from "~/components/Apps/Notes/NoteEditor";
 import { PageShell } from "~/components/Core/PageShell";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { useDeleteNote, useFetchNote, useUpdateNote } from "~/hooks/useNotes";
 import { cn } from "~/lib/utils";
 
@@ -54,7 +54,7 @@ export default function NoteDetailPage() {
   if (isLoading) {
     return (
       <PageShell
-        sidebarContent={<StandardSidebarContent />}
+        sidebarContent={<AppsSidebarContent />}
         className="max-w-4xl mx-auto"
       >
         <div className="flex justify-center items-center h-64">Loading...</div>
@@ -64,7 +64,7 @@ export default function NoteDetailPage() {
   if (error || !note) {
     return (
       <PageShell
-        sidebarContent={<StandardSidebarContent />}
+        sidebarContent={<AppsSidebarContent />}
         className="max-w-4xl mx-auto"
       >
         <div className="flex justify-center items-center h-64">
@@ -78,7 +78,7 @@ export default function NoteDetailPage() {
 
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       fullBleed={isFullBleed}
       bgClassName={
         themeMode === "sepia"

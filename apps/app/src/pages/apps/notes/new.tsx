@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 
 import { NoteEditor } from "~/components/Apps/Notes/NoteEditor";
 import { PageShell } from "~/components/Core/PageShell";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { useCreateNote, useUpdateNote } from "~/hooks/useNotes";
 import { cn } from "~/lib/utils";
 
@@ -54,7 +54,7 @@ export default function NewNotePage() {
 
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       fullBleed={isFullBleed}
       bgClassName={
         themeMode === "sepia"

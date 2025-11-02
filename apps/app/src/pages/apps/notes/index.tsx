@@ -8,7 +8,7 @@ import { Logo } from "~/components/Core/Logo";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
-import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
+import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { Button, Card, SearchInput } from "~/components/ui";
 import { CardSkeleton } from "~/components/ui/skeletons";
 import { useFetchNotes } from "~/hooks/useNotes";
@@ -43,7 +43,7 @@ export default function NotesPage() {
 
   return (
     <PageShell
-      sidebarContent={<StandardSidebarContent />}
+      sidebarContent={<AppsSidebarContent />}
       className="max-w-7xl mx-auto"
       headerContent={
         <div className="flex justify-between items-center">
