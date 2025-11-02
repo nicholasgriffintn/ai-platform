@@ -1,204 +1,204 @@
 import { processChatRequest } from "~/lib/chat/core";
 import { formatAssistantMessage } from "~/lib/chat/responses";
 import type {
-  AnonymousUser,
-  ChatCompletionParameters,
-  CreateChatCompletionsResponse,
-  IEnv,
-  IUser,
+	AnonymousUser,
+	ChatCompletionParameters,
+	CreateChatCompletionsResponse,
+	IEnv,
+	IUser,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({
-  prefix: "services/completions/createChatCompletions",
+	prefix: "services/completions/createChatCompletions",
 });
 
 export const handleCreateChatCompletions = async (req: {
-  env: IEnv;
-  request: ChatCompletionParameters;
-  user?: IUser;
-  anonymousUser?: AnonymousUser;
-  app_url?: string;
+	env: IEnv;
+	request: ChatCompletionParameters;
+	user?: IUser;
+	anonymousUser?: AnonymousUser;
+	app_url?: string;
 }): Promise<CreateChatCompletionsResponse | Response> => {
-  const { env, request, user, anonymousUser, app_url } = req;
-  const isStreaming = !!request.stream;
+	const { env, request, user, anonymousUser, app_url } = req;
+	const isStreaming = !!request.stream;
 
-  if (!request.messages?.length) {
-    throw new AssistantError(
-      "Missing required parameter: messages",
-      ErrorType.PARAMS_ERROR,
-    );
-  }
+	if (!request.messages?.length) {
+		throw new AssistantError(
+			"Missing required parameter: messages",
+			ErrorType.PARAMS_ERROR,
+		);
+	}
 
-  const completionIdWithFallback =
-    request.completion_id || `chat_${Date.now()}`;
+	const completionIdWithFallback =
+		request.completion_id || `chat_${Date.now()}`;
 
-  const result = await processChatRequest({
-    platform: request.platform,
-    app_url,
-    system_prompt: request.system_prompt,
-    env,
-    user,
-    anonymousUser,
-    disable_functions: request.disable_functions,
-    completion_id: completionIdWithFallback,
-    messages: request.messages,
-    model: request.model,
-    mode: request.mode,
-    should_think: request.should_think,
-    response_format: request.response_format,
-    use_rag: request.use_rag,
-    rag_options: request.rag_options,
-    response_mode: request.response_mode,
-    budget_constraint: request.budget_constraint,
-    location: request.location || undefined,
-    lang: request.lang,
-    temperature: request.temperature,
-    max_tokens: request.max_tokens,
-    top_p: request.top_p,
-    top_k: request.top_k,
-    seed: request.seed,
-    repetition_penalty: request.repetition_penalty,
-    frequency_penalty: request.frequency_penalty,
-    presence_penalty: request.presence_penalty,
-    n: request.n,
-    stream: isStreaming,
-    stop: request.stop,
-    logit_bias: request.logit_bias,
-    metadata: request.metadata,
-    reasoning_effort: request.reasoning_effort,
-    store: request.store,
-    tools: request.tools,
-    enabled_tools: request.enabled_tools,
-    parallel_tool_calls: request.parallel_tool_calls,
-    tool_choice: request.tool_choice,
-    use_multi_model: request.use_multi_model,
-    current_step: request.current_step,
-    max_steps: request.max_steps,
-    current_agent_id: request.current_agent_id,
-    delegation_stack: request.delegation_stack,
-    max_delegation_depth: request.max_delegation_depth,
-  });
+	const result = await processChatRequest({
+		platform: request.platform,
+		app_url,
+		system_prompt: request.system_prompt,
+		env,
+		user,
+		anonymousUser,
+		disable_functions: request.disable_functions,
+		completion_id: completionIdWithFallback,
+		messages: request.messages,
+		model: request.model,
+		mode: request.mode,
+		should_think: request.should_think,
+		response_format: request.response_format,
+		use_rag: request.use_rag,
+		rag_options: request.rag_options,
+		response_mode: request.response_mode,
+		budget_constraint: request.budget_constraint,
+		location: request.location || undefined,
+		lang: request.lang,
+		temperature: request.temperature,
+		max_tokens: request.max_tokens,
+		top_p: request.top_p,
+		top_k: request.top_k,
+		seed: request.seed,
+		repetition_penalty: request.repetition_penalty,
+		frequency_penalty: request.frequency_penalty,
+		presence_penalty: request.presence_penalty,
+		n: request.n,
+		stream: isStreaming,
+		stop: request.stop,
+		logit_bias: request.logit_bias,
+		metadata: request.metadata,
+		reasoning_effort: request.reasoning_effort,
+		store: request.store,
+		tools: request.tools,
+		enabled_tools: request.enabled_tools,
+		parallel_tool_calls: request.parallel_tool_calls,
+		tool_choice: request.tool_choice,
+		use_multi_model: request.use_multi_model,
+		current_step: request.current_step,
+		max_steps: request.max_steps,
+		current_agent_id: request.current_agent_id,
+		delegation_stack: request.delegation_stack,
+		max_delegation_depth: request.max_delegation_depth,
+	});
 
-  if ("validation" in result) {
-    const assistantMessage = formatAssistantMessage({
-      content: result.error,
-      model: result.selectedModel,
-      guardrails: {
-        passed: false,
-        error: result.error,
-      },
-      log_id: env.AI.aiGatewayLogId,
-      finish_reason: "content_filter",
-    });
+	if ("validation" in result) {
+		const assistantMessage = formatAssistantMessage({
+			content: result.error,
+			model: result.selectedModel,
+			guardrails: {
+				passed: false,
+				error: result.error,
+			},
+			log_id: env.AI.aiGatewayLogId,
+			finish_reason: "content_filter",
+		});
 
-    return {
-      id: env.AI.aiGatewayLogId || completionIdWithFallback,
-      log_id: env.AI.aiGatewayLogId,
-      object: "chat.completion",
-      created: Date.now(),
-      model: result.selectedModel,
-      choices: [
-        {
-          index: 0,
-          message: {
-            role: "assistant",
-            content: assistantMessage.content,
-          },
-          finish_reason: assistantMessage.finish_reason,
-        },
-      ],
-      usage: assistantMessage.usage,
-      post_processing: {
-        guardrails: assistantMessage.guardrails,
-      },
-    };
-  }
+		return {
+			id: env.AI.aiGatewayLogId || completionIdWithFallback,
+			log_id: env.AI.aiGatewayLogId,
+			object: "chat.completion",
+			created: Date.now(),
+			model: result.selectedModel,
+			choices: [
+				{
+					index: 0,
+					message: {
+						role: "assistant",
+						content: assistantMessage.content,
+					},
+					finish_reason: assistantMessage.finish_reason,
+				},
+			],
+			usage: assistantMessage.usage,
+			post_processing: {
+				guardrails: assistantMessage.guardrails,
+			},
+		};
+	}
 
-  if (isStreaming && "stream" in result) {
-    return new Response(result.stream, {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
-      },
-    });
-  }
+	if (isStreaming && "stream" in result) {
+		return new Response(result.stream, {
+			headers: {
+				"Content-Type": "text/event-stream",
+				"Cache-Control": "no-cache",
+				Connection: "keep-alive",
+			},
+		});
+	}
 
-  if (!("response" in result)) {
-    logger.error("Unexpected result shape from processChatRequest:", result);
-    throw new AssistantError(
-      "Unexpected error processing chat request: Missing response.",
-      ErrorType.EXTERNAL_API_ERROR,
-    );
-  }
+	if (!("response" in result)) {
+		logger.error("Unexpected result shape from processChatRequest:", result);
+		throw new AssistantError(
+			"Unexpected error processing chat request: Missing response.",
+			ErrorType.EXTERNAL_API_ERROR,
+		);
+	}
 
-  if (!result.response) {
-    throw new AssistantError(
-      "No response generated by the model",
-      ErrorType.EXTERNAL_API_ERROR,
-    );
-  }
+	if (!result.response) {
+		throw new AssistantError(
+			"No response generated by the model",
+			ErrorType.EXTERNAL_API_ERROR,
+		);
+	}
 
-  const assistantMessage = formatAssistantMessage({
-    content: result.response.response,
-    citations: result.response.citations || [],
-    tool_calls: result.response.tool_calls || [],
-    data: result.response.data || null,
-    usage: result.response.usage || result.response.usageMetadata,
-    log_id: env.AI.aiGatewayLogId,
-    model:
-      result.selectedModel ||
-      (result.selectedModels ? result.selectedModels.join(", ") : ""),
-    selected_models: result.selectedModels,
-    finish_reason: result.response.tool_calls?.length ? "tool_calls" : "stop",
-    refusal: result.response?.refusal ?? null,
-    annotations: result.response?.annotations ?? null,
-  });
+	const assistantMessage = formatAssistantMessage({
+		content: result.response.response,
+		citations: result.response.citations || [],
+		tool_calls: result.response.tool_calls || [],
+		data: result.response.data || null,
+		usage: result.response.usage || result.response.usageMetadata,
+		log_id: env.AI.aiGatewayLogId,
+		model:
+			result.selectedModel ||
+			(result.selectedModels ? result.selectedModels.join(", ") : ""),
+		selected_models: result.selectedModels,
+		finish_reason: result.response.tool_calls?.length ? "tool_calls" : "stop",
+		refusal: result.response?.refusal ?? null,
+		annotations: result.response?.annotations ?? null,
+	});
 
-  return {
-    id: env.AI.aiGatewayLogId || completionIdWithFallback,
-    log_id: env.AI.aiGatewayLogId,
-    object: "chat.completion",
-    created: Date.now(),
-    model: assistantMessage.model,
-    choices: [
-      {
-        index: 0,
-        message: {
-          role: "assistant",
-          content: assistantMessage.content,
-          data: assistantMessage.data,
-          tool_calls: assistantMessage.tool_calls,
-          citations: assistantMessage.citations,
-          status: result.response.status || undefined,
-        },
-        finish_reason: assistantMessage.finish_reason,
-      },
-      ...("toolResponses" in result && result.toolResponses
-        ? result.toolResponses.map((toolResponse, index) => ({
-            index: index + 1,
-            message: {
-              id: toolResponse.id,
-              log_id: env.AI.aiGatewayLogId,
-              role: toolResponse.role,
-              name: toolResponse.name,
-              content: Array.isArray(toolResponse.content)
-                ? toolResponse.content.map((c) => c.text || "").join("\n")
-                : toolResponse.content,
-              citations: toolResponse.citations || null,
-              data: toolResponse.data || null,
-              status: toolResponse.status || "unknown",
-              timestamp: toolResponse.timestamp,
-            },
-            finish_reason: "tool_result",
-          }))
-        : []),
-    ],
-    usage: assistantMessage.usage,
-    post_processing: {
-      guardrails: assistantMessage.guardrails,
-    },
-  };
+	return {
+		id: env.AI.aiGatewayLogId || completionIdWithFallback,
+		log_id: env.AI.aiGatewayLogId,
+		object: "chat.completion",
+		created: Date.now(),
+		model: assistantMessage.model,
+		choices: [
+			{
+				index: 0,
+				message: {
+					role: "assistant",
+					content: assistantMessage.content,
+					data: assistantMessage.data,
+					tool_calls: assistantMessage.tool_calls,
+					citations: assistantMessage.citations,
+					status: result.response.status || undefined,
+				},
+				finish_reason: assistantMessage.finish_reason,
+			},
+			...("toolResponses" in result && result.toolResponses
+				? result.toolResponses.map((toolResponse, index) => ({
+						index: index + 1,
+						message: {
+							id: toolResponse.id,
+							log_id: env.AI.aiGatewayLogId,
+							role: toolResponse.role,
+							name: toolResponse.name,
+							content: Array.isArray(toolResponse.content)
+								? toolResponse.content.map((c) => c.text || "").join("\n")
+								: toolResponse.content,
+							citations: toolResponse.citations || null,
+							data: toolResponse.data || null,
+							status: toolResponse.status || "unknown",
+							timestamp: toolResponse.timestamp,
+						},
+						finish_reason: "tool_result",
+					}))
+				: []),
+		],
+		usage: assistantMessage.usage,
+		post_processing: {
+			guardrails: assistantMessage.guardrails,
+		},
+	};
 };

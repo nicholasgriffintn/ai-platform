@@ -13,176 +13,176 @@ import { PageHeader } from "../../Core/PageHeader";
 import { PageTitle } from "../../Core/PageTitle";
 
 export function ProfilePasskeysTab() {
-  const { trackEvent } = useTrackEvent();
+	const { trackEvent } = useTrackEvent();
 
-  const {
-    passkeys,
-    fetchPasskeys,
-    isLoadingPasskeys,
-    registerPasskey,
-    isRegisteringPasskey,
-    deletePasskey,
-    isDeletingPasskey,
-    isPasskeySupported,
-  } = usePasskeys();
+	const {
+		passkeys,
+		fetchPasskeys,
+		isLoadingPasskeys,
+		registerPasskey,
+		isRegisteringPasskey,
+		deletePasskey,
+		isDeletingPasskey,
+		isPasskeySupported,
+	} = usePasskeys();
 
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
-  const [selectedPasskeyId, setSelectedPasskeyId] = useState<number | null>(
-    null,
-  );
+	const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+	const [selectedPasskeyId, setSelectedPasskeyId] = useState<number | null>(
+		null,
+	);
 
-  const passkeySupported = isPasskeySupported();
+	const passkeySupported = isPasskeySupported();
 
-  useEffect(() => {
-    void fetchPasskeys();
-  }, [fetchPasskeys]);
+	useEffect(() => {
+		void fetchPasskeys();
+	}, [fetchPasskeys]);
 
-  const handleAddPasskey = () => {
-    trackEvent({
-      name: "add_passkey",
-      category: "profile",
-      label: "add_passkey",
-      value: 1,
-    });
-    registerPasskey();
-  };
+	const handleAddPasskey = () => {
+		trackEvent({
+			name: "add_passkey",
+			category: "profile",
+			label: "add_passkey",
+			value: 1,
+		});
+		registerPasskey();
+	};
 
-  const openDeleteConfirmation = (passkeyId: number) => {
-    setSelectedPasskeyId(passkeyId);
-    setIsConfirmDeleteOpen(true);
-  };
+	const openDeleteConfirmation = (passkeyId: number) => {
+		setSelectedPasskeyId(passkeyId);
+		setIsConfirmDeleteOpen(true);
+	};
 
-  const handleDeletePasskey = () => {
-    if (selectedPasskeyId !== null) {
-      deletePasskey(selectedPasskeyId);
-      setIsConfirmDeleteOpen(false);
-    }
-  };
+	const handleDeletePasskey = () => {
+		if (selectedPasskeyId !== null) {
+			deletePasskey(selectedPasskeyId);
+			setIsConfirmDeleteOpen(false);
+		}
+	};
 
-  return (
-    <div>
-      <PageHeader
-        actions={
-          passkeySupported
-            ? [
-                {
-                  label: isRegisteringPasskey ? "Adding..." : "Add Passkey",
-                  onClick: handleAddPasskey,
-                  disabled: isRegisteringPasskey,
-                  icon: <KeyRound className="h-4 w-4 mr-2" />,
-                },
-              ]
-            : []
-        }
-      >
-        <PageTitle title="Passkeys" />
-      </PageHeader>
+	return (
+		<div>
+			<PageHeader
+				actions={
+					passkeySupported
+						? [
+								{
+									label: isRegisteringPasskey ? "Adding..." : "Add Passkey",
+									onClick: handleAddPasskey,
+									disabled: isRegisteringPasskey,
+									icon: <KeyRound className="h-4 w-4 mr-2" />,
+								},
+							]
+						: []
+				}
+			>
+				<PageTitle title="Passkeys" />
+			</PageHeader>
 
-      {!passkeySupported ? (
-        <Card className="p-6 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
-          <div className="flex">
-            <Shield className="h-5 w-5 text-amber-600 dark:text-amber-400 mr-3 flex-shrink-0" />
-            <div>
-              <h3 className="text-amber-800 dark:text-amber-300 font-medium">
-                Passkeys not supported
-              </h3>
-              <p className="text-amber-700 dark:text-amber-400 text-sm mt-1">
-                Your browser doesn't support passkeys. Try using a newer browser
-                like Chrome, Safari, or Edge.
-              </p>
-            </div>
-          </div>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {isLoadingPasskeys ? (
-            <div className="space-y-4">
-              {[1, 2].map((num) => (
-                <Card key={`skeleton-${num}`} className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div className="space-y-2">
-                      <Skeleton className="h-5 w-32" />
-                      <Skeleton className="h-4 w-48" />
-                    </div>
-                    <Skeleton className="h-8 w-20" />
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : passkeys.length === 0 ? (
-            <EmptyState
-              icon={
-                <Fingerprint className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
-              }
-              title="No passkeys added"
-              message="Add a passkey to sign in to your account without a password. Passkeys use biometrics or device PIN for secure authentication."
-              action={
-                <Button
-                  variant="primary"
-                  onClick={handleAddPasskey}
-                  disabled={isRegisteringPasskey}
-                  icon={<KeyRound className="h-4 w-4 mr-2" />}
-                >
-                  {isRegisteringPasskey ? "Adding..." : "Add Passkey"}
-                </Button>
-              }
-              className="bg-transparent dark:bg-transparent p-6"
-            />
-          ) : (
-            <>
-              <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
-                Passkeys allow you to sign in to your account using biometrics
-                (like fingerprint or face recognition) or your device PIN
-                instead of a password.
-              </p>
-              <ul className="space-y-1">
-                {passkeys.map((passkey) => (
-                  <ListItem
-                    key={`passkey-${passkey.id}`}
-                    icon={<Fingerprint size={16} />}
-                    label={`${passkey.device_type} Passkey`}
-                    sublabel={`Added ${formatRelativeTime(passkey.created_at)}`}
-                    badge={
-                      passkey.backed_up ? (
-                        <span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300">
-                          <Shield className="h-3 w-3 mr-1" /> Synced
-                        </span>
-                      ) : undefined
-                    }
-                    actions={
-                      <HoverActions
-                        actions={[
-                          {
-                            id: "delete",
-                            icon: <Trash2 size={14} />,
-                            label: "Remove passkey",
-                            onClick: (e) => {
-                              e.stopPropagation();
-                              openDeleteConfirmation(passkey.id);
-                            },
-                            disabled: isDeletingPasskey,
-                          },
-                        ]}
-                      />
-                    }
-                  />
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
-      )}
+			{!passkeySupported ? (
+				<Card className="p-6 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+					<div className="flex">
+						<Shield className="h-5 w-5 text-amber-600 dark:text-amber-400 mr-3 flex-shrink-0" />
+						<div>
+							<h3 className="text-amber-800 dark:text-amber-300 font-medium">
+								Passkeys not supported
+							</h3>
+							<p className="text-amber-700 dark:text-amber-400 text-sm mt-1">
+								Your browser doesn't support passkeys. Try using a newer browser
+								like Chrome, Safari, or Edge.
+							</p>
+						</div>
+					</div>
+				</Card>
+			) : (
+				<div className="space-y-4">
+					{isLoadingPasskeys ? (
+						<div className="space-y-4">
+							{[1, 2].map((num) => (
+								<Card key={`skeleton-${num}`} className="p-4">
+									<div className="flex justify-between items-center">
+										<div className="space-y-2">
+											<Skeleton className="h-5 w-32" />
+											<Skeleton className="h-4 w-48" />
+										</div>
+										<Skeleton className="h-8 w-20" />
+									</div>
+								</Card>
+							))}
+						</div>
+					) : passkeys.length === 0 ? (
+						<EmptyState
+							icon={
+								<Fingerprint className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
+							}
+							title="No passkeys added"
+							message="Add a passkey to sign in to your account without a password. Passkeys use biometrics or device PIN for secure authentication."
+							action={
+								<Button
+									variant="primary"
+									onClick={handleAddPasskey}
+									disabled={isRegisteringPasskey}
+									icon={<KeyRound className="h-4 w-4 mr-2" />}
+								>
+									{isRegisteringPasskey ? "Adding..." : "Add Passkey"}
+								</Button>
+							}
+							className="bg-transparent dark:bg-transparent p-6"
+						/>
+					) : (
+						<>
+							<p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
+								Passkeys allow you to sign in to your account using biometrics
+								(like fingerprint or face recognition) or your device PIN
+								instead of a password.
+							</p>
+							<ul className="space-y-1">
+								{passkeys.map((passkey) => (
+									<ListItem
+										key={`passkey-${passkey.id}`}
+										icon={<Fingerprint size={16} />}
+										label={`${passkey.device_type} Passkey`}
+										sublabel={`Added ${formatRelativeTime(passkey.created_at)}`}
+										badge={
+											passkey.backed_up ? (
+												<span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300">
+													<Shield className="h-3 w-3 mr-1" /> Synced
+												</span>
+											) : undefined
+										}
+										actions={
+											<HoverActions
+												actions={[
+													{
+														id: "delete",
+														icon: <Trash2 size={14} />,
+														label: "Remove passkey",
+														onClick: (e) => {
+															e.stopPropagation();
+															openDeleteConfirmation(passkey.id);
+														},
+														disabled: isDeletingPasskey,
+													},
+												]}
+											/>
+										}
+									/>
+								))}
+							</ul>
+						</>
+					)}
+				</div>
+			)}
 
-      <ConfirmationDialog
-        open={isConfirmDeleteOpen}
-        onOpenChange={setIsConfirmDeleteOpen}
-        title="Remove Passkey"
-        description="Are you sure you want to remove this passkey? You won't be able to use it to sign in anymore."
-        confirmText="Remove Passkey"
-        variant="destructive"
-        onConfirm={handleDeletePasskey}
-        isLoading={isDeletingPasskey}
-      />
-    </div>
-  );
+			<ConfirmationDialog
+				open={isConfirmDeleteOpen}
+				onOpenChange={setIsConfirmDeleteOpen}
+				title="Remove Passkey"
+				description="Are you sure you want to remove this passkey? You won't be able to use it to sign in anymore."
+				confirmText="Remove Passkey"
+				variant="destructive"
+				onConfirm={handleDeletePasskey}
+				isLoading={isDeletingPasskey}
+			/>
+		</div>
+	);
 }

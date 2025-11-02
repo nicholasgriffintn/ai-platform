@@ -22,11 +22,13 @@ tests/e2e/
 ## Page Object Model
 
 Each page object extends `BasePage` and encapsulates:
+
 - Page-specific locators
 - Actions that can be performed on the page
 - Page-specific assertions
 
 Example usage:
+
 ```typescript
 const homePage = new HomePage(page);
 await homePage.navigate();
@@ -36,6 +38,7 @@ await homePage.sendMessage("Hello");
 ## Test Helpers
 
 The `TestHelpers` class provides utilities for:
+
 - Creating page objects
 - Mocking API responses
 - Managing localStorage/sessionStorage

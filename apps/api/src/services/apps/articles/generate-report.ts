@@ -1,6 +1,6 @@
 import {
-  getAuxiliaryModelForRetrieval,
-  getModelConfigByMatchingModel,
+	getAuxiliaryModelForRetrieval,
+	getModelConfigByMatchingModel,
 } from "~/lib/models";
 import { generateArticleReportPrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/lib/providers/factory";
@@ -14,153 +14,153 @@ import { verifyQuotes } from "~/utils/verify";
 const logger = getLogger({ prefix: "services/apps/articles/generate-report" });
 
 export interface Params {
-  itemId: string;
+	itemId: string;
 }
 
 export interface GenerateReportSuccessResponse {
-  status: "success";
-  message?: string;
-  appDataId?: string;
-  itemId?: string;
+	status: "success";
+	message?: string;
+	appDataId?: string;
+	itemId?: string;
 }
 
 export async function generateArticlesReport({
-  completion_id,
-  app_url,
-  env,
-  args,
-  user,
+	completion_id,
+	app_url,
+	env,
+	args,
+	user,
 }: {
-  completion_id: string;
-  app_url: string | undefined;
-  env: IEnv;
-  args: Params;
-  user: IUser;
+	completion_id: string;
+	app_url: string | undefined;
+	env: IEnv;
+	args: Params;
+	user: IUser;
 }): Promise<GenerateReportSuccessResponse> {
-  if (!user.id) {
-    throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
-  }
-  if (!args.itemId) {
-    throw new AssistantError("Item ID is required", ErrorType.PARAMS_ERROR);
-  }
+	if (!user.id) {
+		throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
+	}
+	if (!args.itemId) {
+		throw new AssistantError("Item ID is required", ErrorType.PARAMS_ERROR);
+	}
 
-  try {
-    const appDataRepo = new AppDataRepository(env);
+	try {
+		const appDataRepo = new AppDataRepository(env);
 
-    const relatedItems = await appDataRepo.getAppDataByUserAppAndItem(
-      user.id,
-      "articles",
-      args.itemId,
-    );
+		const relatedItems = await appDataRepo.getAppDataByUserAppAndItem(
+			user.id,
+			"articles",
+			args.itemId,
+		);
 
-    const analysisItems = relatedItems.filter(
-      (item) => item.item_type === "analysis",
-    );
+		const analysisItems = relatedItems.filter(
+			(item) => item.item_type === "analysis",
+		);
 
-    if (analysisItems.length === 0) {
-      throw new AssistantError(
-        `No analysis data found for itemId: ${args.itemId}`,
-        ErrorType.NOT_FOUND,
-      );
-    }
+		if (analysisItems.length === 0) {
+			throw new AssistantError(
+				`No analysis data found for itemId: ${args.itemId}`,
+				ErrorType.NOT_FOUND,
+			);
+		}
 
-    const combinedArticles = analysisItems
-      .map((item) => {
-        let parsed;
-        try {
-          parsed = JSON.parse(item.data || "{}");
-        } catch (e) {
-          logger.error("Failed to parse article data", { error: e });
-          parsed = {};
-        }
-        return parsed.originalArticle;
-      })
-      .filter((content): content is string => !!content)
-      .join("\n\n---\n\n");
+		const combinedArticles = analysisItems
+			.map((item) => {
+				let parsed;
+				try {
+					parsed = JSON.parse(item.data || "{}");
+				} catch (e) {
+					logger.error("Failed to parse article data", { error: e });
+					parsed = {};
+				}
+				return parsed.originalArticle;
+			})
+			.filter((content): content is string => !!content)
+			.join("\n\n---\n\n");
 
-    if (!combinedArticles || combinedArticles.trim().length === 0) {
-      throw new AssistantError(
-        "Could not extract article content from saved analysis data.",
-        ErrorType.INTERNAL_ERROR,
-      );
-    }
+		if (!combinedArticles || combinedArticles.trim().length === 0) {
+			throw new AssistantError(
+				"Could not extract article content from saved analysis data.",
+				ErrorType.INTERNAL_ERROR,
+			);
+		}
 
-    const { model: modelToUse, provider: providerToUse } =
-      await getAuxiliaryModelForRetrieval(env, user);
-    const modelConfig = await getModelConfigByMatchingModel(modelToUse);
-    const provider = AIProviderFactory.getProvider(providerToUse);
+		const { model: modelToUse, provider: providerToUse } =
+			await getAuxiliaryModelForRetrieval(env, user);
+		const modelConfig = await getModelConfigByMatchingModel(modelToUse);
+		const provider = AIProviderFactory.getProvider(providerToUse);
 
-    const reportGenData = await provider.getResponse({
-      completion_id,
-      app_url,
-      model: modelToUse,
-      messages: [
-        {
-          role: "user",
-          content: generateArticleReportPrompt(combinedArticles, {
-            modelId: modelToUse,
-            modelConfig,
-          }),
-        },
-      ],
-      env: env,
-      user,
-    });
+		const reportGenData = await provider.getResponse({
+			completion_id,
+			app_url,
+			model: modelToUse,
+			messages: [
+				{
+					role: "user",
+					content: generateArticleReportPrompt(combinedArticles, {
+						modelId: modelToUse,
+						modelConfig,
+					}),
+				},
+			],
+			env: env,
+			user,
+		});
 
-    const reportGenDataContent =
-      reportGenData.content || reportGenData.response;
+		const reportGenDataContent =
+			reportGenData.content || reportGenData.response;
 
-    if (!reportGenDataContent) {
-      throw new AssistantError(
-        "Report content was empty",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
+		if (!reportGenDataContent) {
+			throw new AssistantError(
+				"Report content was empty",
+				ErrorType.PARAMS_ERROR,
+			);
+		}
 
-    const quotes = extractQuotes(reportGenDataContent);
-    const verifiedQuotes = verifyQuotes(combinedArticles, quotes);
+		const quotes = extractQuotes(reportGenDataContent);
+		const verifiedQuotes = verifyQuotes(combinedArticles, quotes);
 
-    const reportResult = {
-      content: reportGenDataContent,
-      model: modelToUse,
-      id: reportGenData.id,
-      citations: reportGenData.citations,
-      log_id: reportGenData.log_id,
-      verifiedQuotes: verifiedQuotes,
-    };
+		const reportResult = {
+			content: reportGenDataContent,
+			model: modelToUse,
+			id: reportGenData.id,
+			citations: reportGenData.citations,
+			log_id: reportGenData.log_id,
+			verifiedQuotes: verifiedQuotes,
+		};
 
-    const reportAppData = {
-      sourceItemIds: analysisItems.map((item) => item.id),
-      report: reportResult,
-      title: `Report for Analysis Session ${args.itemId} (${analysisItems.length} articles)`,
-    };
+		const reportAppData = {
+			sourceItemIds: analysisItems.map((item) => item.id),
+			report: reportResult,
+			title: `Report for Analysis Session ${args.itemId} (${analysisItems.length} articles)`,
+		};
 
-    const savedReport = await appDataRepo.createAppDataWithItem(
-      user.id,
-      "articles",
-      args.itemId,
-      "report",
-      reportAppData,
-    );
+		const savedReport = await appDataRepo.createAppDataWithItem(
+			user.id,
+			"articles",
+			args.itemId,
+			"report",
+			reportAppData,
+		);
 
-    return {
-      status: "success",
-      message: "Article report generated and saved.",
-      appDataId: savedReport.id,
-      itemId: args.itemId,
-    };
-  } catch (error) {
-    logger.error("Error generating article report:", {
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
-    if (error instanceof AssistantError) {
-      throw error;
-    }
-    throw new AssistantError(
-      "Failed to generate report",
-      ErrorType.UNKNOWN_ERROR,
-      undefined,
-      error,
-    );
-  }
+		return {
+			status: "success",
+			message: "Article report generated and saved.",
+			appDataId: savedReport.id,
+			itemId: args.itemId,
+		};
+	} catch (error) {
+		logger.error("Error generating article report:", {
+			error_message: error instanceof Error ? error.message : "Unknown error",
+		});
+		if (error instanceof AssistantError) {
+			throw error;
+		}
+		throw new AssistantError(
+			"Failed to generate report",
+			ErrorType.UNKNOWN_ERROR,
+			undefined,
+			error,
+		);
+	}
 }

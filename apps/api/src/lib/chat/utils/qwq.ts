@@ -10,21 +10,21 @@
  * @returns The preprocessed content with <think> tag if needed
  */
 export function preprocessQwQResponse(content: string, model?: string): string {
-  if (!model || !content) {
-    return content;
-  }
+	if (!model || !content) {
+		return content;
+	}
 
-  const isQwQModel = model.toLowerCase().includes("qwq");
-  if (!isQwQModel) {
-    return content;
-  }
+	const isQwQModel = model.toLowerCase().includes("qwq");
+	if (!isQwQModel) {
+		return content;
+	}
 
-  const hasClosingThink = content.includes("</think>");
-  const startsWithThink = content.trim().startsWith("<think>");
+	const hasClosingThink = content.includes("</think>");
+	const startsWithThink = content.trim().startsWith("<think>");
 
-  if (hasClosingThink && !startsWithThink) {
-    return `<think>\n${content}`;
-  }
+	if (hasClosingThink && !startsWithThink) {
+		return `<think>\n${content}`;
+	}
 
-  return content;
+	return content;
 }

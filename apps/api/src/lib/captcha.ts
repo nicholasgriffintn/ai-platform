@@ -3,54 +3,54 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "lib/captcha" });
 
 export interface CaptchaVerificationResponse {
-  success: boolean;
-  challenge_ts?: string;
-  hostname?: string;
-  "error-codes"?: string[];
+	success: boolean;
+	challenge_ts?: string;
+	hostname?: string;
+	"error-codes"?: string[];
 }
 
 export async function verifyCaptchaToken(
-  token: string,
-  secret: string,
-  sitekey: string,
+	token: string,
+	secret: string,
+	sitekey: string,
 ): Promise<{ verified: boolean; error?: string }> {
-  try {
-    const response = await fetch("https://hcaptcha.com/siteverify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        secret,
-        response: token,
-        sitekey,
-      }),
-    });
+	try {
+		const response = await fetch("https://hcaptcha.com/siteverify", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
+			body: new URLSearchParams({
+				secret,
+				response: token,
+				sitekey,
+			}),
+		});
 
-    if (!response.ok) {
-      return {
-        verified: false,
-        error: `HTTP error ${response.status}: ${response.statusText}`,
-      };
-    }
+		if (!response.ok) {
+			return {
+				verified: false,
+				error: `HTTP error ${response.status}: ${response.statusText}`,
+			};
+		}
 
-    const data = (await response.json()) as CaptchaVerificationResponse;
+		const data = (await response.json()) as CaptchaVerificationResponse;
 
-    if (!data.success) {
-      return {
-        verified: false,
-        error: data["error-codes"]?.join(", ") || "Unknown verification error",
-      };
-    }
+		if (!data.success) {
+			return {
+				verified: false,
+				error: data["error-codes"]?.join(", ") || "Unknown verification error",
+			};
+		}
 
-    return { verified: true };
-  } catch (error) {
-    logger.error("Error verifying captcha:", {
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
-    return {
-      verified: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
-  }
+		return { verified: true };
+	} catch (error) {
+		logger.error("Error verifying captcha:", {
+			error_message: error instanceof Error ? error.message : "Unknown error",
+		});
+		return {
+			verified: false,
+			error: error instanceof Error ? error.message : "Unknown error",
+		};
+	}
 }

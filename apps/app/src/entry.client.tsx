@@ -10,21 +10,21 @@ import "./styles/index.css";
 const analyticsConfig = getAnalyticsConfig();
 
 hydrateRoot(
-  document,
-  <StrictMode>
-    {analyticsConfig.disabled ? (
-      <HydratedRouter />
-    ) : (
-      <PostHogProvider
-        apiKey={analyticsConfig.apiKey}
-        options={{
-          api_host: analyticsConfig.apiHost,
-          capture_exceptions: true,
-          debug: analyticsConfig.debug,
-        }}
-      >
-        <HydratedRouter />
-      </PostHogProvider>
-    )}
-  </StrictMode>,
+	document,
+	<StrictMode>
+		{analyticsConfig.disabled ? (
+			<HydratedRouter />
+		) : (
+			<PostHogProvider
+				apiKey={analyticsConfig.apiKey}
+				options={{
+					api_host: analyticsConfig.apiHost,
+					capture_exceptions: true,
+					debug: analyticsConfig.debug,
+				}}
+			>
+				<HydratedRouter />
+			</PostHogProvider>
+		)}
+	</StrictMode>,
 );

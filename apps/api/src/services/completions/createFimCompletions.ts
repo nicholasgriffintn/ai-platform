@@ -5,71 +5,71 @@ import type { IEnv, IUser, ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface HandleCreateFimCompletionsRequest {
-  env: IEnv;
-  model?: string;
-  prompt: string;
-  suffix?: string;
-  max_tokens?: number;
-  min_tokens?: number;
-  temperature?: number;
-  top_p?: number;
-  stream?: boolean;
-  stop?: string[];
-  user?: IUser;
+	env: IEnv;
+	model?: string;
+	prompt: string;
+	suffix?: string;
+	max_tokens?: number;
+	min_tokens?: number;
+	temperature?: number;
+	top_p?: number;
+	stream?: boolean;
+	stop?: string[];
+	user?: IUser;
 }
 
 export const handleCreateFimCompletions = async ({
-  env,
-  model,
-  prompt,
-  suffix,
-  max_tokens,
-  min_tokens,
-  temperature,
-  top_p,
-  stream,
-  stop,
-  user,
+	env,
+	model,
+	prompt,
+	suffix,
+	max_tokens,
+	min_tokens,
+	temperature,
+	top_p,
+	stream,
+	stop,
+	user,
 }: HandleCreateFimCompletionsRequest) => {
-  const selectedModel = model ?? ModelRouter.selectFimModel();
+	const selectedModel = model ?? ModelRouter.selectFimModel();
 
-  const modelConfig =
-    (await getModelConfig(selectedModel, env)) ||
-    (await getModelConfigByMatchingModel(selectedModel, env));
+	const modelConfig =
+		(await getModelConfig(selectedModel, env)) ||
+		(await getModelConfigByMatchingModel(selectedModel, env));
 
-  if (!modelConfig) {
-    throw new AssistantError(
-      `Model ${selectedModel} not found`,
-      ErrorType.PARAMS_ERROR,
-    );
-  }
+	if (!modelConfig) {
+		throw new AssistantError(
+			`Model ${selectedModel} not found`,
+			ErrorType.PARAMS_ERROR,
+		);
+	}
 
-  if (!modelConfig.supportsFim) {
-    throw new AssistantError(
-      `Model ${selectedModel} does not support Fill-in-the-Middle completions`,
-      ErrorType.PARAMS_ERROR,
-    );
-  }
+	if (!modelConfig.supportsFim) {
+		throw new AssistantError(
+			`Model ${selectedModel} does not support Fill-in-the-Middle completions`,
+			ErrorType.PARAMS_ERROR,
+		);
+	}
 
-  const provider = AIProviderFactory.getProvider(modelConfig.provider);
+	const provider = AIProviderFactory.getProvider(modelConfig.provider);
 
-  const fimRequest: ChatCompletionParameters = {
-    env,
-    user,
-    model: modelConfig.matchingModel,
-    message: prompt,
-    prompt,
-    suffix,
-    fim_mode: true,
-    max_tokens,
-    min_tokens,
-    temperature,
-    top_p,
-    stream,
-    stop,
-  };
+	const fimRequest: ChatCompletionParameters = {
+		env,
+		user,
+		model: modelConfig.matchingModel,
+		message: prompt,
+		prompt,
+		suffix,
+		fim_mode: true,
+		max_tokens,
+		min_tokens,
+		temperature,
+		top_p,
+		stream,
+		stop,
+	};
 
-  const response = await provider.getResponse(fimRequest);
+	const response = await provider.getResponse(fimRequest);
 
-  return response;
+	return response;
 };

@@ -5,21 +5,21 @@ import { PageShell } from "~/components/Core/PageShell";
 import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 
 export function meta() {
-  return [
-    { title: "Apps - Polychat" },
-    { name: "description", content: "Apps for Polychat" },
-  ];
+	return [
+		{ title: "Apps - Polychat" },
+		{ name: "description", content: "Apps for Polychat" },
+	];
 }
 
 const DynamicAppsRoute: FC = () => {
-  return (
-    <PageShell
-      sidebarContent={<AppsSidebarContent isHome={true} />}
-      isBeta={true}
-    >
-      <DynamicApps />
-    </PageShell>
-  );
+	return (
+		<PageShell
+			sidebarContent={<AppsSidebarContent isHome={true} />}
+			isBeta={true}
+		>
+			<DynamicApps />
+		</PageShell>
+	);
 };
 
 export default DynamicAppsRoute;

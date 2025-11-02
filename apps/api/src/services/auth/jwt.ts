@@ -9,11 +9,11 @@ import { getUserById } from "./user";
 const logger = getLogger({ prefix: "services/auth/jwt" });
 
 type JwtData = {
-  header: {
-    typ: string;
-    alg: string;
-  };
-  payload: { [key: string]: any };
+	header: {
+		typ: string;
+		alg: string;
+	};
+	payload: { [key: string]: any };
 };
 
 const DEFAULT_EXPIRATION = 60 * 15; // 15 minutes in seconds
@@ -26,31 +26,31 @@ const DEFAULT_EXPIRATION = 60 * 15; // 15 minutes in seconds
  * @returns The generated JWT token
  */
 export async function generateJwtToken(
-  user: User,
-  secret: string,
-  expiresIn: number = DEFAULT_EXPIRATION,
+	user: User,
+	secret: string,
+	expiresIn: number = DEFAULT_EXPIRATION,
 ): Promise<string> {
-  try {
-    const payload = {
-      sub: user.id.toString(),
-      email: user.email,
-      name: user.name,
-      iss: "assistant",
-      aud: "assistant",
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + expiresIn,
-    };
+	try {
+		const payload = {
+			sub: user.id.toString(),
+			email: user.email,
+			name: user.name,
+			iss: "assistant",
+			aud: "assistant",
+			iat: Math.floor(Date.now() / 1000),
+			exp: Math.floor(Date.now() / 1000) + expiresIn,
+		};
 
-    return jwt.sign(payload, secret, {
-      algorithm: "HS256",
-    });
-  } catch (error) {
-    logger.error("Error generating JWT token:", { error });
-    throw new AssistantError(
-      "Failed to generate authentication token",
-      ErrorType.UNKNOWN_ERROR,
-    );
-  }
+		return jwt.sign(payload, secret, {
+			algorithm: "HS256",
+		});
+	} catch (error) {
+		logger.error("Error generating JWT token:", { error });
+		throw new AssistantError(
+			"Failed to generate authentication token",
+			ErrorType.UNKNOWN_ERROR,
+		);
+	}
 }
 
 /**
@@ -60,27 +60,27 @@ export async function generateJwtToken(
  * @returns The decoded JWT payload
  */
 export async function verifyJwtToken(
-  token: string,
-  secret: string,
+	token: string,
+	secret: string,
 ): Promise<JwtData> {
-  try {
-    const decoded = await jwt.verify(token, secret, {
-      algorithm: "HS256",
-    });
-    if (!decoded) {
-      throw new AssistantError(
-        "Invalid or expired authentication token",
-        ErrorType.AUTHENTICATION_ERROR,
-      );
-    }
-    return decoded as JwtData;
-  } catch (error) {
-    logger.error("Error verifying JWT token:", { error });
-    throw new AssistantError(
-      "Invalid or expired authentication token",
-      ErrorType.AUTHENTICATION_ERROR,
-    );
-  }
+	try {
+		const decoded = await jwt.verify(token, secret, {
+			algorithm: "HS256",
+		});
+		if (!decoded) {
+			throw new AssistantError(
+				"Invalid or expired authentication token",
+				ErrorType.AUTHENTICATION_ERROR,
+			);
+		}
+		return decoded as JwtData;
+	} catch (error) {
+		logger.error("Error verifying JWT token:", { error });
+		throw new AssistantError(
+			"Invalid or expired authentication token",
+			ErrorType.AUTHENTICATION_ERROR,
+		);
+	}
 }
 
 /**
@@ -91,25 +91,25 @@ export async function verifyJwtToken(
  * @returns The user or null if the token is invalid or expired
  */
 export async function getUserByJwtToken(
-  env: IEnv,
-  token: string,
-  secret: string,
+	env: IEnv,
+	token: string,
+	secret: string,
 ): Promise<User | null> {
-  try {
-    const decoded = await verifyJwtToken(token, secret);
-    const userId = Number.parseInt(decoded.payload.sub, 10);
+	try {
+		const decoded = await verifyJwtToken(token, secret);
+		const userId = Number.parseInt(decoded.payload.sub, 10);
 
-    const database = Database.getInstance(env);
-    return await getUserById(database, userId);
-  } catch (error) {
-    if (error instanceof AssistantError) {
-      throw error;
-    }
+		const database = Database.getInstance(env);
+		return await getUserById(database, userId);
+	} catch (error) {
+		if (error instanceof AssistantError) {
+			throw error;
+		}
 
-    logger.error("Error getting user by JWT token:", { error });
-    throw new AssistantError(
-      "Failed to retrieve user from token",
-      ErrorType.UNKNOWN_ERROR,
-    );
-  }
+		logger.error("Error getting user by JWT token:", { error });
+		throw new AssistantError(
+			"Failed to retrieve user from token",
+			ErrorType.UNKNOWN_ERROR,
+		);
+	}
 }

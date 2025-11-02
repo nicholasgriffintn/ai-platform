@@ -1,7 +1,9 @@
 # Schemas Overview
+
 Shared Zod schemas and type exports consumed by the API, frontend, and metrics apps.
 
 ## Directory Highlights
+
 - `src/*.ts` – Zod schemas grouped by domain (chat, models, tools, auth, etc.).
 - `src/index.ts` – Barrel exporting all schema modules.
 - `dist/` – Generated build artefacts (CJS, ESM, DTS) produced by `tsup`.
@@ -9,6 +11,7 @@ Shared Zod schemas and type exports consumed by the API, frontend, and metrics a
 - `package.json` – Exposes workspace entrypoints (`import`/`require`/`types`).
 
 ## Commands
+
 - **Build**
   ```sh
   pnpm --filter @assistant/schemas build
@@ -25,6 +28,7 @@ Shared Zod schemas and type exports consumed by the API, frontend, and metrics a
   ```
 
 ## Contribution Notes
+
 - Keep schemas backward compatible when possible; flag breaking changes in PR descriptions and coordinate with consumers.
 - After editing schemas, rebuild (`pnpm --filter @assistant/schemas build`) before running dependent app tests or dev servers.
 - Maintain parity with API validation: ensure schemas match `@assistant/schemas` imports used server-side.

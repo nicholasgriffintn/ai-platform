@@ -4,7 +4,7 @@ import { getLogger } from "~/utils/logger";
 const encoder = new TextEncoder();
 
 const logger = getLogger({
-  prefix: "CHAT:EMITTER",
+	prefix: "CHAT:EMITTER",
 });
 
 /**
@@ -14,17 +14,17 @@ const logger = getLogger({
  * @returns The formatted SSE event data string
  */
 export function createEventData(
-  type: string,
-  payload: SSEEventPayload = {},
+	type: string,
+	payload: SSEEventPayload = {},
 ): string {
-  let data;
-  try {
-    data = JSON.stringify({ ...payload, type });
-  } catch (error) {
-    logger.error("Error creating event data", { error, type, payload });
-    throw error;
-  }
-  return `data: ${data}\n\n`;
+	let data;
+	try {
+		data = JSON.stringify({ ...payload, type });
+	} catch (error) {
+		logger.error("Error creating event data", { error, type, payload });
+		throw error;
+	}
+	return `data: ${data}\n\n`;
 }
 
 /**
@@ -33,7 +33,7 @@ export function createEventData(
  * @returns The encoded Uint8Array
  */
 export function encodeEventData(data: string): Uint8Array {
-  return encoder.encode(data);
+	return encoder.encode(data);
 }
 
 /**
@@ -41,8 +41,8 @@ export function encodeEventData(data: string): Uint8Array {
  * @param controller - The stream controller
  */
 export function emitDoneEvent(controller: TransformStreamDefaultController) {
-  const doneEvent = encodeEventData("data: [DONE]\n\n");
-  controller.enqueue(doneEvent);
+	const doneEvent = encodeEventData("data: [DONE]\n\n");
+	controller.enqueue(doneEvent);
 }
 
 /**
@@ -52,11 +52,11 @@ export function emitDoneEvent(controller: TransformStreamDefaultController) {
  * @param payload - The payload of the event
  */
 export function emitEvent(
-  controller: TransformStreamDefaultController,
-  type: string,
-  payload: SSEEventPayload = {},
+	controller: TransformStreamDefaultController,
+	type: string,
+	payload: SSEEventPayload = {},
 ) {
-  const eventData = createEventData(type, payload);
-  const encodedEvent = encodeEventData(eventData);
-  controller.enqueue(encodedEvent);
+	const eventData = createEventData(type, payload);
+	const encodedEvent = encodeEventData(eventData);
+	controller.enqueue(encodedEvent);
 }

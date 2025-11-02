@@ -2,20 +2,20 @@ import type { ChatCompletionParameters } from "~/types";
 import { BaseProvider } from "./base";
 
 export class HuggingFaceProvider extends BaseProvider {
-  name = "huggingface";
-  supportsStreaming = true;
-  isOpenAiCompatible = false;
+	name = "huggingface";
+	supportsStreaming = true;
+	isOpenAiCompatible = false;
 
-  protected getProviderKeyName(): string {
-    return "HUGGINGFACE_TOKEN";
-  }
+	protected getProviderKeyName(): string {
+		return "HUGGINGFACE_TOKEN";
+	}
 
-  protected validateParams(params: ChatCompletionParameters): void {
-    super.validateParams(params);
-    this.validateAiGatewayToken(params);
-  }
+	protected validateParams(params: ChatCompletionParameters): void {
+		super.validateParams(params);
+		this.validateAiGatewayToken(params);
+	}
 
-  /*
+	/*
 		TODO: Need to support requesting later
 
 		{
@@ -24,16 +24,16 @@ export class HuggingFaceProvider extends BaseProvider {
 		}
 	*/
 
-  protected async getEndpoint(
-    params: ChatCompletionParameters,
-  ): Promise<string> {
-    return `${params.model}/v1/chat/completions`;
-  }
+	protected async getEndpoint(
+		params: ChatCompletionParameters,
+	): Promise<string> {
+		return `${params.model}/v1/chat/completions`;
+	}
 
-  protected async getHeaders(
-    params: ChatCompletionParameters,
-  ): Promise<Record<string, string>> {
-    const apiKey = await this.getApiKey(params, params.user?.id);
-    return this.buildAiGatewayHeaders(params, apiKey);
-  }
+	protected async getHeaders(
+		params: ChatCompletionParameters,
+	): Promise<Record<string, string>> {
+		const apiKey = await this.getApiKey(params, params.user?.id);
+		return this.buildAiGatewayHeaders(params, apiKey);
+	}
 }

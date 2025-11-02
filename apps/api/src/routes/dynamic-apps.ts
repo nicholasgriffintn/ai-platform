@@ -2,22 +2,22 @@ import { type Context, Hono } from "hono";
 import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
 import {
-  appDataSchema,
-  appInfoSchema,
-  dynamicAppsResponseSchema,
-  listDynamicAppResponsesQuerySchema,
-  errorResponseSchema,
+	appDataSchema,
+	appInfoSchema,
+	dynamicAppsResponseSchema,
+	listDynamicAppResponsesQuerySchema,
+	errorResponseSchema,
 } from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { checkPlanRequirement } from "~/services/user/userOperations";
 import {
-  executeDynamicApp,
-  getDynamicAppById,
-  getDynamicApps,
-  listDynamicAppResponsesForUser,
-  getDynamicAppResponseById,
+	executeDynamicApp,
+	getDynamicAppById,
+	getDynamicApps,
+	listDynamicAppResponsesForUser,
+	getDynamicAppResponseById,
 } from "~/services/dynamic-apps";
 import { getFeaturedApps } from "~/services/dynamic-apps/config";
 import { appSchema } from "~/types/app-schema";
@@ -36,341 +36,341 @@ const routeLogger = createRouteLogger("dynamic-apps");
 dynamicApps.use("*", requireAuth);
 
 dynamicApps.use("*", (c, next) => {
-  routeLogger.info(`Processing dynamic-apps route: ${c.req.path}`);
-  return next();
+	routeLogger.info(`Processing dynamic-apps route: ${c.req.path}`);
+	return next();
 });
 
 dynamicApps.get(
-  "/",
-  describeRoute({
-    summary: "List all available dynamic apps",
-    description:
-      "Returns a list of all registered dynamic apps with their basic information",
-    tags: ["dynamic-apps"],
-    responses: {
-      200: {
-        description: "Dynamic apps and featured listings",
-        content: {
-          "application/json": {
-            schema: resolver(dynamicAppsResponseSchema),
-          },
-        },
-      },
-      401: {
-        description: "Authentication required",
-        content: {
-          "application/json": { schema: resolver(errorResponseSchema) },
-        },
-      },
-    },
-  }),
-  async (c) => {
-    const apps = await getDynamicApps();
-    const featuredApps = getFeaturedApps();
+	"/",
+	describeRoute({
+		summary: "List all available dynamic apps",
+		description:
+			"Returns a list of all registered dynamic apps with their basic information",
+		tags: ["dynamic-apps"],
+		responses: {
+			200: {
+				description: "Dynamic apps and featured listings",
+				content: {
+					"application/json": {
+						schema: resolver(dynamicAppsResponseSchema),
+					},
+				},
+			},
+			401: {
+				description: "Authentication required",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+		},
+	}),
+	async (c) => {
+		const apps = await getDynamicApps();
+		const featuredApps = getFeaturedApps();
 
-    const mergedApps = new Map<string, any>();
+		const mergedApps = new Map<string, any>();
 
-    for (const app of apps) {
-      mergedApps.set(app.id, {
-        ...app,
-        featured: app.featured ?? false,
-        kind: app.kind ?? "dynamic",
-      });
-    }
+		for (const app of apps) {
+			mergedApps.set(app.id, {
+				...app,
+				featured: app.featured ?? false,
+				kind: app.kind ?? "dynamic",
+			});
+		}
 
-    for (const featuredApp of featuredApps) {
-      const existing = mergedApps.get(featuredApp.id);
-      mergedApps.set(featuredApp.id, {
-        ...existing,
-        ...featuredApp,
-        featured: true,
-        kind:
-          featuredApp.kind ??
-          existing?.kind ??
-          (featuredApp.href ? "frontend" : "dynamic"),
-      });
-    }
+		for (const featuredApp of featuredApps) {
+			const existing = mergedApps.get(featuredApp.id);
+			mergedApps.set(featuredApp.id, {
+				...existing,
+				...featuredApp,
+				featured: true,
+				kind:
+					featuredApp.kind ??
+					existing?.kind ??
+					(featuredApp.href ? "frontend" : "dynamic"),
+			});
+		}
 
-    return c.json({
-      apps: Array.from(mergedApps.values()),
-    });
-  },
+		return c.json({
+			apps: Array.from(mergedApps.values()),
+		});
+	},
 );
 
 dynamicApps.get(
-  "/responses",
-  describeRoute({
-    summary: "List stored dynamic-app responses for user",
-    tags: ["dynamic-apps"],
-    responses: {
-      200: {
-        description: "Array of responses",
-        content: {
-          "application/json": {
-            schema: resolver(z.array(appDataSchema)),
-          },
-        },
-      },
-      401: {
-        description: "Authentication required",
-        content: {
-          "application/json": { schema: resolver(errorResponseSchema) },
-        },
-      },
-    },
-  }),
-  zValidator("query", listDynamicAppResponsesQuerySchema),
-  async (c: Context) => {
-    const user = c.get("user") as IUser;
-    const { appId } = c.req.valid("query" as never) as {
-      appId?: string;
-    };
+	"/responses",
+	describeRoute({
+		summary: "List stored dynamic-app responses for user",
+		tags: ["dynamic-apps"],
+		responses: {
+			200: {
+				description: "Array of responses",
+				content: {
+					"application/json": {
+						schema: resolver(z.array(appDataSchema)),
+					},
+				},
+			},
+			401: {
+				description: "Authentication required",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+		},
+	}),
+	zValidator("query", listDynamicAppResponsesQuerySchema),
+	async (c: Context) => {
+		const user = c.get("user") as IUser;
+		const { appId } = c.req.valid("query" as never) as {
+			appId?: string;
+		};
 
-    const list = await listDynamicAppResponsesForUser(
-      c.env as IEnv,
-      user.id,
-      appId,
-    );
-    return c.json(list);
-  },
+		const list = await listDynamicAppResponsesForUser(
+			c.env as IEnv,
+			user.id,
+			appId,
+		);
+		return c.json(list);
+	},
 );
 
 dynamicApps.get(
-  "/:id",
-  describeRoute({
-    summary: "Get dynamic app schema",
-    description: "Returns the complete schema for a specific dynamic app",
-    tags: ["dynamic-apps"],
-    parameters: [
-      {
-        name: "id",
-        in: "path",
-        required: true,
-        schema: { type: "string" },
-      },
-    ],
-    responses: {
-      200: {
-        description: "Dynamic app schema",
-        content: {
-          "application/json": {
-            schema: resolver(appSchema),
-          },
-        },
-      },
-      400: {
-        description: "Bad request",
-        content: {
-          "application/json": { schema: resolver(errorResponseSchema) },
-        },
-      },
-      401: {
-        description: "Authentication required",
-        content: {
-          "application/json": { schema: resolver(errorResponseSchema) },
-        },
-      },
-      404: {
-        description: "App not found",
-        content: {
-          "application/json": { schema: resolver(errorResponseSchema) },
-        },
-      },
-    },
-  }),
-  async (c: Context) => {
-    const _user = c.get("user") as IUser | undefined;
+	"/:id",
+	describeRoute({
+		summary: "Get dynamic app schema",
+		description: "Returns the complete schema for a specific dynamic app",
+		tags: ["dynamic-apps"],
+		parameters: [
+			{
+				name: "id",
+				in: "path",
+				required: true,
+				schema: { type: "string" },
+			},
+		],
+		responses: {
+			200: {
+				description: "Dynamic app schema",
+				content: {
+					"application/json": {
+						schema: resolver(appSchema),
+					},
+				},
+			},
+			400: {
+				description: "Bad request",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+			401: {
+				description: "Authentication required",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+			404: {
+				description: "App not found",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+		},
+	}),
+	async (c: Context) => {
+		const _user = c.get("user") as IUser | undefined;
 
-    const id = c.req.param("id");
-    if (!id) {
-      return c.json({ error: "App ID is required" }, 400);
-    }
+		const id = c.req.param("id");
+		if (!id) {
+			return c.json({ error: "App ID is required" }, 400);
+		}
 
-    const app = await getDynamicAppById(id);
+		const app = await getDynamicAppById(id);
 
-    if (!app) {
-      return c.json({ error: "App not found" }, 404);
-    }
+		if (!app) {
+			return c.json({ error: "App not found" }, 404);
+		}
 
-    return c.json(app);
-  },
+		return c.json(app);
+	},
 );
 
 dynamicApps.post(
-  "/:id/execute",
-  describeRoute({
-    summary: "Execute dynamic app",
-    description: "Executes a dynamic app with the provided form data",
-    tags: ["dynamic-apps"],
-    parameters: [
-      {
-        name: "id",
-        in: "path",
-        required: true,
-        schema: { type: "string" },
-      },
-    ],
-    requestBody: {
-      description: "Form data for the app",
-      content: {
-        "application/json": {
-          schema: {
-            type: "object",
-            properties: {},
-            required: [],
-          },
-        },
-      },
-    },
-    responses: {
-      200: {
-        description: "App execution result",
-        content: {
-          "application/json": {
-            schema: resolver(z.string()),
-          },
-        },
-      },
-      400: {
-        description: "Invalid form data",
-        content: {
-          "application/json": { schema: resolver(errorResponseSchema) },
-        },
-      },
-      401: {
-        description: "Authentication required",
-        content: {
-          "application/json": { schema: resolver(errorResponseSchema) },
-        },
-      },
-      404: {
-        description: "App not found",
-        content: {
-          "application/json": { schema: resolver(errorResponseSchema) },
-        },
-      },
-      500: {
-        description: "Server error",
-        content: {
-          "application/json": { schema: resolver(errorResponseSchema) },
-        },
-      },
-    },
-  }),
-  async (c: Context) => {
-    const id = c.req.param("id");
-    if (!id) {
-      return c.json({ error: "App ID is required" }, 400);
-    }
+	"/:id/execute",
+	describeRoute({
+		summary: "Execute dynamic app",
+		description: "Executes a dynamic app with the provided form data",
+		tags: ["dynamic-apps"],
+		parameters: [
+			{
+				name: "id",
+				in: "path",
+				required: true,
+				schema: { type: "string" },
+			},
+		],
+		requestBody: {
+			description: "Form data for the app",
+			content: {
+				"application/json": {
+					schema: {
+						type: "object",
+						properties: {},
+						required: [],
+					},
+				},
+			},
+		},
+		responses: {
+			200: {
+				description: "App execution result",
+				content: {
+					"application/json": {
+						schema: resolver(z.string()),
+					},
+				},
+			},
+			400: {
+				description: "Invalid form data",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+			401: {
+				description: "Authentication required",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+			404: {
+				description: "App not found",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+			500: {
+				description: "Server error",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+		},
+	}),
+	async (c: Context) => {
+		const id = c.req.param("id");
+		if (!id) {
+			return c.json({ error: "App ID is required" }, 400);
+		}
 
-    const user = c.get("user");
+		const user = c.get("user");
 
-    if (!user?.id) {
-      return c.json(
-        {
-          response: {
-            status: "error",
-            message: "User not authenticated",
-          },
-        },
-        401,
-      );
-    }
+		if (!user?.id) {
+			return c.json(
+				{
+					response: {
+						status: "error",
+						message: "User not authenticated",
+					},
+				},
+				401,
+			);
+		}
 
-    const formData = await c.req.json();
+		const formData = await c.req.json();
 
-    try {
-      const app = await getDynamicAppById(id);
+		try {
+			const app = await getDynamicAppById(id);
 
-      if (!app) {
-        return c.json({ error: "App not found" }, 404);
-      }
+			if (!app) {
+				return c.json({ error: "App not found" }, 404);
+			}
 
-      const url = new URL(c.req.url);
-      const host = url.host;
+			const url = new URL(c.req.url);
+			const host = url.host;
 
-      const req: IRequest = {
-        app_url: `https://${host}`,
-        env: c.env,
-        request: {
-          completion_id: generateId(),
-          input: "dynamic-app-execution",
-          date: new Date().toISOString(),
-          platform: "dynamic-apps",
-        },
-        user,
-      };
+			const req: IRequest = {
+				app_url: `https://${host}`,
+				env: c.env,
+				request: {
+					completion_id: generateId(),
+					input: "dynamic-app-execution",
+					date: new Date().toISOString(),
+					platform: "dynamic-apps",
+				},
+				user,
+			};
 
-      const result = await executeDynamicApp(id, formData, req);
-      return c.json(result);
-    } catch (error) {
-      logger.error(`Error executing app ${id}:`, { error });
-      return c.json(
-        {
-          error: "Failed to execute app",
-          message: error instanceof Error ? error.message : "Unknown error",
-        },
-        500,
-      );
-    }
-  },
+			const result = await executeDynamicApp(id, formData, req);
+			return c.json(result);
+		} catch (error) {
+			logger.error(`Error executing app ${id}:`, { error });
+			return c.json(
+				{
+					error: "Failed to execute app",
+					message: error instanceof Error ? error.message : "Unknown error",
+				},
+				500,
+			);
+		}
+	},
 );
 
 dynamicApps.get(
-  "/responses/:responseId",
-  describeRoute({
-    summary: "Get stored dynamic-app response",
-    description:
-      "Retrieve a stored dynamic-app response by its `id` (response_id)",
-    tags: ["dynamic-apps"],
-    parameters: [
-      {
-        name: "responseId",
-        in: "path",
-        required: true,
-        schema: { type: "string" },
-      },
-    ],
-    responses: {
-      200: {
-        description: "Stored dynamic-app response",
-        content: {
-          "application/json": {
-            schema: resolver(z.object({ response: z.any() })),
-          },
-        },
-      },
-      400: {
-        description: "Bad request",
-        content: {
-          "application/json": { schema: resolver(errorResponseSchema) },
-        },
-      },
-      401: {
-        description: "Authentication required",
-        content: {
-          "application/json": { schema: resolver(errorResponseSchema) },
-        },
-      },
-      404: {
-        description: "Response not found",
-        content: {
-          "application/json": { schema: resolver(errorResponseSchema) },
-        },
-      },
-    },
-  }),
-  async (c: Context) => {
-    const responseId = c.req.param("responseId");
-    if (!responseId) {
-      return c.json({ error: "responseId is required" }, 400);
-    }
-    const data = await getDynamicAppResponseById(c.env as IEnv, responseId);
-    if (!data) {
-      return c.json({ error: "Response not found" }, 404);
-    }
-    return c.json({ response: data });
-  },
+	"/responses/:responseId",
+	describeRoute({
+		summary: "Get stored dynamic-app response",
+		description:
+			"Retrieve a stored dynamic-app response by its `id` (response_id)",
+		tags: ["dynamic-apps"],
+		parameters: [
+			{
+				name: "responseId",
+				in: "path",
+				required: true,
+				schema: { type: "string" },
+			},
+		],
+		responses: {
+			200: {
+				description: "Stored dynamic-app response",
+				content: {
+					"application/json": {
+						schema: resolver(z.object({ response: z.any() })),
+					},
+				},
+			},
+			400: {
+				description: "Bad request",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+			401: {
+				description: "Authentication required",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+			404: {
+				description: "Response not found",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+		},
+	}),
+	async (c: Context) => {
+		const responseId = c.req.param("responseId");
+		if (!responseId) {
+			return c.json({ error: "responseId is required" }, 400);
+		}
+		const data = await getDynamicAppResponseById(c.env as IEnv, responseId);
+		if (!data) {
+			return c.json({ error: "Response not found" }, 404);
+		}
+		return c.json({ response: data });
+	},
 );
 
 export default dynamicApps;

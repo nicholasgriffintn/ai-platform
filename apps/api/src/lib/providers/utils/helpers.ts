@@ -8,12 +8,12 @@ import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
  * @throws AssistantError if AI_GATEWAY_TOKEN is missing
  */
 export function validateAiGatewayToken(params: ChatCompletionParameters): void {
-  if (!params.env.AI_GATEWAY_TOKEN) {
-    throw new AssistantError(
-      "Missing AI_GATEWAY_TOKEN",
-      ErrorType.CONFIGURATION_ERROR,
-    );
-  }
+	if (!params.env.AI_GATEWAY_TOKEN) {
+		throw new AssistantError(
+			"Missing AI_GATEWAY_TOKEN",
+			ErrorType.CONFIGURATION_ERROR,
+		);
+	}
 }
 
 /**
@@ -23,15 +23,15 @@ export function validateAiGatewayToken(params: ChatCompletionParameters): void {
  * @returns Headers object with AI Gateway configuration
  */
 export function buildAiGatewayHeaders(
-  params: ChatCompletionParameters,
-  apiKey: string,
+	params: ChatCompletionParameters,
+	apiKey: string,
 ): Record<string, string> {
-  return {
-    "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-    Authorization: `Bearer ${apiKey}`,
-    "Content-Type": "application/json",
-    "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-  };
+	return {
+		"cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
+		Authorization: `Bearer ${apiKey}`,
+		"Content-Type": "application/json",
+		"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+	};
 }
 
 /**
@@ -40,18 +40,18 @@ export function buildAiGatewayHeaders(
  * @returns Settings object for analytics
  */
 export function buildMetricsSettings(
-  params: ChatCompletionParameters,
+	params: ChatCompletionParameters,
 ): Record<string, any> {
-  return {
-    temperature: params.temperature,
-    max_tokens: params.max_tokens,
-    top_p: params.top_p,
-    top_k: params.top_k,
-    seed: params.seed,
-    repetition_penalty: params.repetition_penalty,
-    frequency_penalty: params.frequency_penalty,
-    presence_penalty: params.presence_penalty,
-  };
+	return {
+		temperature: params.temperature,
+		max_tokens: params.max_tokens,
+		top_p: params.top_p,
+		top_k: params.top_k,
+		seed: params.seed,
+		repetition_penalty: params.repetition_penalty,
+		frequency_penalty: params.frequency_penalty,
+		presence_penalty: params.presence_penalty,
+	};
 }
 
 /**
@@ -64,18 +64,18 @@ export function buildMetricsSettings(
  * @throws AssistantError if parsing fails
  */
 export function parseDelimitedCredentials(
-  credentialString: string,
-  delimiter = "::@@::",
-  expectedParts: number,
-  errorMessage = "Invalid credentials format",
+	credentialString: string,
+	delimiter = "::@@::",
+	expectedParts: number,
+	errorMessage = "Invalid credentials format",
 ): string[] {
-  const parts = credentialString.split(delimiter);
+	const parts = credentialString.split(delimiter);
 
-  if (parts.length !== expectedParts) {
-    throw new AssistantError(errorMessage, ErrorType.CONFIGURATION_ERROR);
-  }
+	if (parts.length !== expectedParts) {
+		throw new AssistantError(errorMessage, ErrorType.CONFIGURATION_ERROR);
+	}
 
-  return parts;
+	return parts;
 }
 
 /**
@@ -86,23 +86,23 @@ export function parseDelimitedCredentials(
  * @throws AssistantError if parsing fails
  */
 export async function safeParseJSON<T = any>(
-  response: Response,
-  context: string,
+	response: Response,
+	context: string,
 ): Promise<T> {
-  try {
-    return (await response.json()) as T;
-  } catch (jsonError) {
-    const responseText = await response.text().catch(() => "[unable to read]");
-    throw new AssistantError(
-      `${context} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
-      ErrorType.PROVIDER_ERROR,
-      500,
-      {
-        responsePreview: responseText.substring(0, 200),
-        originalError: jsonError,
-      },
-    );
-  }
+	try {
+		return (await response.json()) as T;
+	} catch (jsonError) {
+		const responseText = await response.text().catch(() => "[unable to read]");
+		throw new AssistantError(
+			`${context} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
+			ErrorType.PROVIDER_ERROR,
+			500,
+			{
+				responsePreview: responseText.substring(0, 200),
+				originalError: jsonError,
+			},
+		);
+	}
 }
 
 /**
@@ -111,28 +111,28 @@ export async function safeParseJSON<T = any>(
  * @returns Normalized status
  */
 export function normalizeAsyncStatus(
-  status: string | undefined,
+	status: string | undefined,
 ): "in_progress" | "completed" | "failed" {
-  if (!status) return "in_progress";
+	if (!status) return "in_progress";
 
-  const normalized = status.toString().toUpperCase();
+	const normalized = status.toString().toUpperCase();
 
-  if (
-    normalized === "SUCCEEDED" ||
-    normalized === "SUCCESS" ||
-    normalized === "COMPLETED"
-  ) {
-    return "completed";
-  }
+	if (
+		normalized === "SUCCEEDED" ||
+		normalized === "SUCCESS" ||
+		normalized === "COMPLETED"
+	) {
+		return "completed";
+	}
 
-  if (
-    normalized === "FAILED" ||
-    normalized === "ERROR" ||
-    normalized === "CANCELLED" ||
-    normalized === "TIMED_OUT"
-  ) {
-    return "failed";
-  }
+	if (
+		normalized === "FAILED" ||
+		normalized === "ERROR" ||
+		normalized === "CANCELLED" ||
+		normalized === "TIMED_OUT"
+	) {
+		return "failed";
+	}
 
-  return "in_progress";
+	return "in_progress";
 }

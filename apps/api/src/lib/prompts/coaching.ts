@@ -1,33 +1,33 @@
 export function returnCoachingPrompt({
-  prompt,
-  promptType = "general",
+	prompt,
+	promptType = "general",
 }: {
-  prompt: string;
-  promptType?: string;
+	prompt: string;
+	promptType?: string;
 }): string {
-  const basePrompt =
-    "You are an AI assistant specialized in helping users create effective prompts for various AI tasks.";
+	const basePrompt =
+		"You are an AI assistant specialized in helping users create effective prompts for various AI tasks.";
 
-  const typeSpecificGuidance = {
-    creative: `Focus on enhancing creativity, emotional resonance, and vivid details in creative prompts. 
+	const typeSpecificGuidance = {
+		creative: `Focus on enhancing creativity, emotional resonance, and vivid details in creative prompts. 
                Consider elements like character development, plot structure, sensory details, and emotional tone.`,
 
-    technical: `Emphasize precision, technical accuracy, and step-by-step structure for technical prompts.
+		technical: `Emphasize precision, technical accuracy, and step-by-step structure for technical prompts.
                 Consider elements like technical specifications, platform constraints, programming language patterns, 
                 and complete technical context.`,
 
-    instructional: `Prioritize clear sequence, completeness of steps, and unambiguous language for instructional prompts.
+		instructional: `Prioritize clear sequence, completeness of steps, and unambiguous language for instructional prompts.
                     Consider elements like prerequisites, tools needed, expected outcomes, potential challenges, and 
                     verification steps.`,
 
-    analytical: `Focus on logical structure, comprehensive coverage of factors, and clear evaluation criteria.
+		analytical: `Focus on logical structure, comprehensive coverage of factors, and clear evaluation criteria.
                  Consider elements like data requirements, analytical frameworks, key metrics, and expected output format.`,
 
-    general:
-      "Balance clarity, conciseness, and completeness for general purpose prompts.",
-  };
+		general:
+			"Balance clarity, conciseness, and completeness for general purpose prompts.",
+	};
 
-  return `${basePrompt}
+	return `${basePrompt}
 ${typeSpecificGuidance[promptType]}
 
 Rewrite the user's prompt to make it clear, concise, effective, and easily understood by an AI model.

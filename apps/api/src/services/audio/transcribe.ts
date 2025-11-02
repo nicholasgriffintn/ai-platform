@@ -7,58 +7,58 @@ import { Database } from "~/lib/database";
 export type TranscriptionProvider = "workers" | "mistral" | "replicate";
 
 type TranscribeRequest = {
-  env: IEnv;
-  audio: File | Blob | string;
-  user: IUser;
-  provider?: TranscriptionProvider;
-  timestamps?: boolean;
+	env: IEnv;
+	audio: File | Blob | string;
+	user: IUser;
+	provider?: TranscriptionProvider;
+	timestamps?: boolean;
 };
 
 export const handleTranscribe = async (
-  req: TranscribeRequest,
+	req: TranscribeRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-  const { audio, env, user, provider, timestamps = false } = req;
+	const { audio, env, user, provider, timestamps = false } = req;
 
-  if (!audio) {
-    throw new AssistantError("Missing audio", ErrorType.PARAMS_ERROR);
-  }
+	if (!audio) {
+		throw new AssistantError("Missing audio", ErrorType.PARAMS_ERROR);
+	}
 
-  try {
-    let selectedProvider = provider;
+	try {
+		let selectedProvider = provider;
 
-    if (!selectedProvider) {
-      const database = Database.getInstance(env);
-      const userSettings = await database.getUserSettings(user?.id);
+		if (!selectedProvider) {
+			const database = Database.getInstance(env);
+			const userSettings = await database.getUserSettings(user?.id);
 
-      const speechModel = await getAuxiliarySpeechModel(env, userSettings);
-      selectedProvider =
-        speechModel.transcriptionProvider as TranscriptionProvider;
-    }
+			const speechModel = await getAuxiliarySpeechModel(env, userSettings);
+			selectedProvider =
+				speechModel.transcriptionProvider as TranscriptionProvider;
+		}
 
-    const transcriptionProvider =
-      TranscriptionProviderFactory.getProvider(selectedProvider);
+		const transcriptionProvider =
+			TranscriptionProviderFactory.getProvider(selectedProvider);
 
-    const result = await transcriptionProvider.transcribe({
-      env,
-      audio,
-      user,
-      provider: selectedProvider,
-      timestamps,
-    });
+		const result = await transcriptionProvider.transcribe({
+			env,
+			audio,
+			user,
+			provider: selectedProvider,
+			timestamps,
+		});
 
-    return {
-      status: "success",
-      content: result.text,
-      data: result.data,
-    };
-  } catch (error) {
-    if (error instanceof AssistantError) {
-      throw error;
-    }
+		return {
+			status: "success",
+			content: result.text,
+			data: result.data,
+		};
+	} catch (error) {
+		if (error instanceof AssistantError) {
+			throw error;
+		}
 
-    throw new AssistantError(
-      `Transcription failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      ErrorType.EXTERNAL_API_ERROR,
-    );
-  }
+		throw new AssistantError(
+			`Transcription failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+			ErrorType.EXTERNAL_API_ERROR,
+		);
+	}
 };

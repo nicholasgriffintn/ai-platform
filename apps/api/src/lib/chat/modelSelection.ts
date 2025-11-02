@@ -14,34 +14,34 @@ import type { Attachment } from "~/types";
  * @returns The selected models
  */
 export async function selectModels(
-  env: any,
-  lastMessageText: string,
-  attachments: Attachment[],
-  budgetConstraint: number | undefined,
-  user: any,
-  completionId: string,
-  requestedModel?: string,
-  use_multi_model?: boolean,
+	env: any,
+	lastMessageText: string,
+	attachments: Attachment[],
+	budgetConstraint: number | undefined,
+	user: any,
+	completionId: string,
+	requestedModel?: string,
+	use_multi_model?: boolean,
 ): Promise<string[]> {
-  if (use_multi_model && !requestedModel) {
-    return ModelRouter.selectMultipleModels(
-      env,
-      lastMessageText,
-      attachments,
-      budgetConstraint,
-      user,
-      completionId,
-    );
-  }
-  const model =
-    requestedModel ||
-    (await ModelRouter.selectModel(
-      env,
-      lastMessageText,
-      attachments,
-      budgetConstraint,
-      user,
-      completionId,
-    ));
-  return [model];
+	if (use_multi_model && !requestedModel) {
+		return ModelRouter.selectMultipleModels(
+			env,
+			lastMessageText,
+			attachments,
+			budgetConstraint,
+			user,
+			completionId,
+		);
+	}
+	const model =
+		requestedModel ||
+		(await ModelRouter.selectModel(
+			env,
+			lastMessageText,
+			attachments,
+			budgetConstraint,
+			user,
+			completionId,
+		));
+	return [model];
 }

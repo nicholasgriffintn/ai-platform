@@ -1,52 +1,52 @@
 import { type ResponseDisplay, ResponseDisplayType } from "~/types/functions";
 
 export const formatFunctionName = (name: string): string => {
-  return name
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+	return name
+		.split("_")
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(" ");
 };
 
 export const getFunctionIcon = (name: string): string => {
-  if (name.includes("weather")) return "cloud";
-  if (name.includes("search")) return "search";
-  if (name.includes("image") || name.includes("screenshot")) return "image";
-  if (name.includes("speech")) return "speech";
-  if (name.includes("video")) return "video";
-  if (name.includes("music")) return "music";
-  if (name.includes("note")) return "file-text";
-  if (name.includes("extract") || name.includes("content")) return "file-text";
-  if (name.includes("create")) return "plus-circle";
-  if (name.includes("get")) return "folder-open";
-  if (name.startsWith("mcp_")) return "file-text";
-  if (name.startsWith("analyse_")) return "file-text";
-  return "app";
+	if (name.includes("weather")) return "cloud";
+	if (name.includes("search")) return "search";
+	if (name.includes("image") || name.includes("screenshot")) return "image";
+	if (name.includes("speech")) return "speech";
+	if (name.includes("video")) return "video";
+	if (name.includes("music")) return "music";
+	if (name.includes("note")) return "file-text";
+	if (name.includes("extract") || name.includes("content")) return "file-text";
+	if (name.includes("create")) return "plus-circle";
+	if (name.includes("get")) return "folder-open";
+	if (name.startsWith("mcp_")) return "file-text";
+	if (name.startsWith("analyse_")) return "file-text";
+	return "app";
 };
 
 export const getFunctionResponseType = (name: string): ResponseDisplayType => {
-  if (name.includes("search")) return ResponseDisplayType.CUSTOM;
-  if (name.includes("weather")) return ResponseDisplayType.TEMPLATE;
-  if (name.includes("image") || name.includes("screenshot"))
-    return ResponseDisplayType.TEMPLATE;
-  if (name.includes("video")) return ResponseDisplayType.TEMPLATE;
-  if (name.includes("extract")) return ResponseDisplayType.TEXT;
-  if (name.includes("speech")) return ResponseDisplayType.TEXT;
-  if (name.includes("prompt_coach")) return ResponseDisplayType.TEMPLATE;
-  if (name.startsWith("mcp_")) return ResponseDisplayType.JSON;
-  if (name.startsWith("analyse_")) return ResponseDisplayType.TEMPLATE;
-  return ResponseDisplayType.CUSTOM;
+	if (name.includes("search")) return ResponseDisplayType.CUSTOM;
+	if (name.includes("weather")) return ResponseDisplayType.TEMPLATE;
+	if (name.includes("image") || name.includes("screenshot"))
+		return ResponseDisplayType.TEMPLATE;
+	if (name.includes("video")) return ResponseDisplayType.TEMPLATE;
+	if (name.includes("extract")) return ResponseDisplayType.TEXT;
+	if (name.includes("speech")) return ResponseDisplayType.TEXT;
+	if (name.includes("prompt_coach")) return ResponseDisplayType.TEMPLATE;
+	if (name.startsWith("mcp_")) return ResponseDisplayType.JSON;
+	if (name.startsWith("analyse_")) return ResponseDisplayType.TEMPLATE;
+	return ResponseDisplayType.CUSTOM;
 };
 
 export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
-  const display: ResponseDisplay = {
-    fields: [
-      { key: "status", label: "Status" },
-      { key: "content", label: "Content" },
-    ],
-  };
+	const display: ResponseDisplay = {
+		fields: [
+			{ key: "status", label: "Status" },
+			{ key: "content", label: "Content" },
+		],
+	};
 
-  if (name.startsWith("analyse_")) {
-    display.template = `
+	if (name.startsWith("analyse_")) {
+		display.template = `
       <div class="analysis-container prose dark:prose-invert">
         <h2>Analysis</h2>
         <div class="analysis-content">
@@ -73,8 +73,8 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         {{/if}}
       </div>
     `;
-  } else if (name.includes("weather")) {
-    display.template = `
+	} else if (name.includes("weather")) {
+		display.template = `
       <div class="weather-response">
         <h2>Weather Information</h2>
         <p>{{content}}</p>
@@ -93,8 +93,8 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         {{/if}}
       </div>
     `;
-  } else if (name.includes("image") || name.includes("screenshot")) {
-    display.template = `
+	} else if (name.includes("image") || name.includes("screenshot")) {
+		display.template = `
       <div class="image-response">
         <h2>Generated Image</h2>
         <p>{{content}}</p>
@@ -105,15 +105,15 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         {{/if}}
       </div>
     `;
-  } else if (name.includes("speech")) {
-    display.template = `
+	} else if (name.includes("speech")) {
+		display.template = `
       <div class="speech-response">
         <h2>Generated Speech</h2>
         <p>{{content}}</p>
       </div>
     `;
-  } else if (name.includes("prompt_coach")) {
-    display.template = `
+	} else if (name.includes("prompt_coach")) {
+		display.template = `
       <div class="prompt-coach-response prose dark:prose-invert">
         <h2>Prompt Coach</h2>
         {{#if data.analysis}}
@@ -158,6 +158,6 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         {{/if}}
       </div>
     `;
-  }
-  return display;
+	}
+	return display;
 };

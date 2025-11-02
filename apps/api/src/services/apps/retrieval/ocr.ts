@@ -9,24 +9,24 @@ import { generateId } from "~/utils/id";
 const logger = getLogger({ prefix: "services/apps/retrieval/ocr" });
 
 export interface OcrParams {
-  model?: string;
-  document: {
-    type: "document_url";
-    document_url: string;
-    document_name: string;
-  };
-  id?: string;
-  pages?: number[];
-  include_image_base64?: boolean;
-  image_limit?: number;
-  image_min_size?: number;
-  output_format?: "json" | "html" | "markdown";
+	model?: string;
+	document: {
+		type: "document_url";
+		document_url: string;
+		document_name: string;
+	};
+	id?: string;
+	pages?: number[];
+	include_image_base64?: boolean;
+	image_limit?: number;
+	image_min_size?: number;
+	output_format?: "json" | "html" | "markdown";
 }
 
 export interface OcrResult {
-  status: "success" | "error";
-  error?: string;
-  data?: any;
+	status: "success" | "error";
+	error?: string;
+	data?: any;
 }
 
 /**
@@ -36,100 +36,100 @@ export interface OcrResult {
  * @returns OCR result with extracted text
  */
 export const performOcr = async (
-  params: OcrParams,
-  req: IRequest,
+	params: OcrParams,
+	req: IRequest,
 ): Promise<OcrResult> => {
-  try {
-    if (!req.env.MISTRAL_API_KEY) {
-      throw new AssistantError(
-        "Mistral API key not configured",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
+	try {
+		if (!req.env.MISTRAL_API_KEY) {
+			throw new AssistantError(
+				"Mistral API key not configured",
+				ErrorType.PARAMS_ERROR,
+			);
+		}
 
-    if (!params.document) {
-      throw new AssistantError("Document is required", ErrorType.PARAMS_ERROR);
-    }
+		if (!params.document) {
+			throw new AssistantError("Document is required", ErrorType.PARAMS_ERROR);
+		}
 
-    const baseAssetsUrl = req.env.PUBLIC_ASSETS_URL || "";
+		const baseAssetsUrl = req.env.PUBLIC_ASSETS_URL || "";
 
-    const requestId = params.id || generateId();
+		const requestId = params.id || generateId();
 
-    const provider = AIProviderFactory.getProvider("mistral");
+		const provider = AIProviderFactory.getProvider("mistral");
 
-    const response = await provider.getResponse({
-      env: req.env,
-      completion_id: requestId,
-      model: params.model || "mistral-ocr-latest",
-      body: {
-        document: params.document,
-        model: params.model || "mistral-ocr-latest",
-        id: requestId,
-        pages: params.pages,
-        include_image_base64: params.include_image_base64 ?? true,
-        image_limit: params.image_limit,
-        image_min_size: params.image_min_size,
-      },
-      store: false,
-      user: req.user,
-    });
+		const response = await provider.getResponse({
+			env: req.env,
+			completion_id: requestId,
+			model: params.model || "mistral-ocr-latest",
+			body: {
+				document: params.document,
+				model: params.model || "mistral-ocr-latest",
+				id: requestId,
+				pages: params.pages,
+				include_image_base64: params.include_image_base64 ?? true,
+				image_limit: params.image_limit,
+				image_min_size: params.image_min_size,
+			},
+			store: false,
+			user: req.user,
+		});
 
-    logger.debug("Received OCR response with pages:", response.pages?.length);
+		logger.debug("Received OCR response with pages:", response.pages?.length);
 
-    const storageService = new StorageService(req.env.ASSETS_BUCKET);
+		const storageService = new StorageService(req.env.ASSETS_BUCKET);
 
-    if (params.output_format === "json") {
-      const jsonUrl = await storageService.uploadObject(
-        `ocr/${requestId}/output.json`,
-        JSON.stringify(response),
-        {
-          contentType: "application/json",
-          contentLength: JSON.stringify(response).length,
-        },
-      );
+		if (params.output_format === "json") {
+			const jsonUrl = await storageService.uploadObject(
+				`ocr/${requestId}/output.json`,
+				JSON.stringify(response),
+				{
+					contentType: "application/json",
+					contentLength: JSON.stringify(response).length,
+				},
+			);
 
-      return {
-        status: "success",
-        data: {
-          url: `${baseAssetsUrl}/${jsonUrl}`,
-          key: jsonUrl,
-        },
-      };
-    }
+			return {
+				status: "success",
+				data: {
+					url: `${baseAssetsUrl}/${jsonUrl}`,
+					key: jsonUrl,
+				},
+			};
+		}
 
-    const imagesFromPages = response.pages.flatMap(
-      (page: any) => page.images || [],
-    );
-    const imageMap: Record<string, string> = {};
-    if (imagesFromPages && Array.isArray(imagesFromPages)) {
-      for (const image of imagesFromPages) {
-        if (image.id && image.image_base64) {
-          imageMap[image.id] = image.image_base64;
-        }
-      }
-    }
+		const imagesFromPages = response.pages.flatMap(
+			(page: any) => page.images || [],
+		);
+		const imageMap: Record<string, string> = {};
+		if (imagesFromPages && Array.isArray(imagesFromPages)) {
+			for (const image of imagesFromPages) {
+				if (image.id && image.image_base64) {
+					imageMap[image.id] = image.image_base64;
+				}
+			}
+		}
 
-    let allMarkdown = "";
-    for (let i = 0; i < response.pages.length; i++) {
-      const page = response.pages[i];
-      let pageContent = page.markdown || page.text || "";
+		let allMarkdown = "";
+		for (let i = 0; i < response.pages.length; i++) {
+			const page = response.pages[i];
+			let pageContent = page.markdown || page.text || "";
 
-      for (const [imageId, imageBase64] of Object.entries(imageMap)) {
-        // Find all markdown image references with this image ID
-        const imagePattern = new RegExp(`!\\[(.*?)\\]\\(${imageId}\\)`, "g");
-        pageContent = pageContent.replace(
-          imagePattern,
-          `![${imageId}](${imageBase64})`,
-        );
-      }
+			for (const [imageId, imageBase64] of Object.entries(imageMap)) {
+				// Find all markdown image references with this image ID
+				const imagePattern = new RegExp(`!\\[(.*?)\\]\\(${imageId}\\)`, "g");
+				pageContent = pageContent.replace(
+					imagePattern,
+					`![${imageId}](${imageBase64})`,
+				);
+			}
 
-      allMarkdown += `${pageContent}\n\n`;
-    }
+			allMarkdown += `${pageContent}\n\n`;
+		}
 
-    if (params.output_format === "html") {
-      const htmlContent = convertMarkdownToHtml(allMarkdown);
+		if (params.output_format === "html") {
+			const htmlContent = convertMarkdownToHtml(allMarkdown);
 
-      response.html = `<!DOCTYPE html>
+			response.html = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -160,53 +160,53 @@ ${htmlContent}
 </body>
 </html>`;
 
-      const htmlUrl = await storageService.uploadObject(
-        `ocr/${requestId}/output.html`,
-        response.html,
-        {
-          contentType: "text/html",
-          contentLength: response.html.length,
-        },
-      );
+			const htmlUrl = await storageService.uploadObject(
+				`ocr/${requestId}/output.html`,
+				response.html,
+				{
+					contentType: "text/html",
+					contentLength: response.html.length,
+				},
+			);
 
-      return {
-        status: "success",
-        data: {
-          url: `${baseAssetsUrl}/${htmlUrl}`,
-          key: htmlUrl,
-        },
-      };
-    }
+			return {
+				status: "success",
+				data: {
+					url: `${baseAssetsUrl}/${htmlUrl}`,
+					key: htmlUrl,
+				},
+			};
+		}
 
-    const markdownUrl = await storageService.uploadObject(
-      `ocr/${requestId}/output.md`,
-      allMarkdown,
-      {
-        contentType: "text/markdown",
-        contentLength: allMarkdown.length,
-      },
-    );
+		const markdownUrl = await storageService.uploadObject(
+			`ocr/${requestId}/output.md`,
+			allMarkdown,
+			{
+				contentType: "text/markdown",
+				contentLength: allMarkdown.length,
+			},
+		);
 
-    return {
-      status: "success",
-      data: {
-        url: `${baseAssetsUrl}/${markdownUrl}`,
-        key: markdownUrl,
-      },
-    };
-  } catch (error) {
-    logger.error("OCR error:", { error });
+		return {
+			status: "success",
+			data: {
+				url: `${baseAssetsUrl}/${markdownUrl}`,
+				key: markdownUrl,
+			},
+		};
+	} catch (error) {
+		logger.error("OCR error:", { error });
 
-    if (error instanceof AssistantError) {
-      return {
-        status: "error",
-        error: error.message,
-      };
-    }
+		if (error instanceof AssistantError) {
+			return {
+				status: "error",
+				error: error.message,
+			};
+		}
 
-    return {
-      status: "error",
-      error: "Failed to perform OCR on the image",
-    };
-  }
+		return {
+			status: "error",
+			error: "Failed to perform OCR on the image",
+		};
+	}
 };

@@ -5,10 +5,10 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "lib/documentConverter" });
 
 interface ToMarkdownResult {
-  name: string;
-  mimeType: string;
-  tokens: number;
-  data: string;
+	name: string;
+	mimeType: string;
+	tokens: number;
+	data: string;
 }
 
 /**
@@ -19,61 +19,61 @@ interface ToMarkdownResult {
  * @returns The markdown content or error
  */
 export async function convertToMarkdownViaCloudflare(
-  env: IEnv,
-  documentUrl: string,
-  documentName?: string,
+	env: IEnv,
+	documentUrl: string,
+	documentName?: string,
 ): Promise<{ result?: string; error?: string }> {
-  if (!env.AI) {
-    return {
-      error: "Cloudflare AI binding not available",
-    };
-  }
+	if (!env.AI) {
+		return {
+			error: "Cloudflare AI binding not available",
+		};
+	}
 
-  try {
-    const fileResponse = await fetch(documentUrl);
+	try {
+		const fileResponse = await fetch(documentUrl);
 
-    if (!fileResponse.ok) {
-      throw new AssistantError(
-        `Failed to download document: ${fileResponse.statusText}`,
-        ErrorType.EXTERNAL_API_ERROR,
-        fileResponse.status,
-      );
-    }
+		if (!fileResponse.ok) {
+			throw new AssistantError(
+				`Failed to download document: ${fileResponse.statusText}`,
+				ErrorType.EXTERNAL_API_ERROR,
+				fileResponse.status,
+			);
+		}
 
-    const fileBlob = await fileResponse.blob();
-    const name = documentName || "document";
+		const fileBlob = await fileResponse.blob();
+		const name = documentName || "document";
 
-    try {
-      // @ts-ignore
-      const result = (await env.AI.toMarkdown([
-        {
-          name,
-          blob: fileBlob,
-        },
-      ])) as unknown as ToMarkdownResult[];
+		try {
+			// @ts-ignore
+			const result = (await env.AI.toMarkdown([
+				{
+					name,
+					blob: fileBlob,
+				},
+			])) as unknown as ToMarkdownResult[];
 
-      if (!Array.isArray(result) || result.length === 0) {
-        return {
-          error: "Invalid response from Cloudflare toMarkdown API",
-        };
-      }
+			if (!Array.isArray(result) || result.length === 0) {
+				return {
+					error: "Invalid response from Cloudflare toMarkdown API",
+				};
+			}
 
-      return { result: result[0].data };
-    } catch (aiError) {
-      throw new AssistantError(
-        `Cloudflare toMarkdown API error: ${aiError instanceof Error ? aiError.message : String(aiError)}`,
-        ErrorType.EXTERNAL_API_ERROR,
-        500,
-      );
-    }
-  } catch (error) {
-    logger.error("Error converting document to markdown:", { error });
+			return { result: result[0].data };
+		} catch (aiError) {
+			throw new AssistantError(
+				`Cloudflare toMarkdown API error: ${aiError instanceof Error ? aiError.message : String(aiError)}`,
+				ErrorType.EXTERNAL_API_ERROR,
+				500,
+			);
+		}
+	} catch (error) {
+		logger.error("Error converting document to markdown:", { error });
 
-    return {
-      error:
-        error instanceof Error
-          ? error.message
-          : "Unknown error during conversion",
-    };
-  }
+		return {
+			error:
+				error instanceof Error
+					? error.message
+					: "Unknown error during conversion",
+		};
+	}
 }

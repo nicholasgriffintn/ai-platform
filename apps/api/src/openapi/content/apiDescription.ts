@@ -1,6 +1,7 @@
 import { md } from "~/utils/markdown.js";
 
-export const apiInfoDescription = md`# API Documentation
+export const apiInfoDescription = md`
+# API Documentation
 
 Welcome to the AI Platform API documentation. This API provides a unified interface to multiple AI models and providers, following OpenAI-compatible conventions while extending functionality with additional features.
 
@@ -17,27 +18,35 @@ The API is built on Cloudflare Workers and provides:
 ## Core Features
 
 ### Chat Completions
+
 Create conversational AI experiences with support for streaming, multi-turn conversations, and tool calling.
 
 ### Code Generation
+
 Specialized endpoints for code completion, editing, and application:
+
 - Fill-in-the-middle (FIM) completions
 - Next edit suggestions
 - Apply code snippets
 
 ### Models & Capabilities
+
 Browse and discover models based on capabilities like vision, function calling, and streaming.
 
 ### Agents
+
 Create AI agents with custom configurations, tools, and MCP server integrations.
 
 ### Authentication
+
 Secure your API access with GitHub OAuth, magic links, passkeys, JWT tokens, or API keys.
 
 ### Memories & RAG
+
 Store and retrieve context using vector embeddings for enhanced conversations.
 
 ### Guardrails
+
 Built-in content safety with Llamaguard and AWS Bedrock Guardrails.
 
 ## Getting Started
@@ -49,9 +58,9 @@ Built-in content safety with Llamaguard and AWS Bedrock Guardrails.
 
 ## API Base URL
 
-\`\`\`
+~~~
 https://api.polychat.app/v1
-\`\`\`
+~~~
 
 ## Support & Community
 
@@ -69,4 +78,5 @@ The hosted version at polychat.app has the following limits:
 
 Pro tokens scale based on model cost, allowing ~22 expensive model messages or ~200 cheaper model messages.
 
-Self-hosted deployments can configure custom limits in \`apps/api/src/constants/app.ts\`.`;
+Self-hosted deployments can configure custom limits in \`apps/api/src/constants/app.ts\`.
+`;

@@ -7,66 +7,66 @@ export type AsyncInvocationMetadata = AsyncInvocationData;
 export const DEFAULT_ASYNC_POLL_INTERVAL_MS = 4000;
 
 export function createAsyncInvocationMetadata(
-  base: AsyncInvocationMetadata,
-  overrides: Partial<AsyncInvocationMetadata> = {},
+	base: AsyncInvocationMetadata,
+	overrides: Partial<AsyncInvocationMetadata> = {},
 ): AsyncInvocationMetadata {
-  const now = Date.now();
+	const now = Date.now();
 
-  const merged: AsyncInvocationMetadata = {
-    ...base,
-    ...overrides,
-  };
+	const merged: AsyncInvocationMetadata = {
+		...base,
+		...overrides,
+	};
 
-  merged.status =
-    (overrides.status as AsyncMessageStatus | undefined) ||
-    (typeof base.status === "string"
-      ? (base.status as AsyncMessageStatus)
-      : undefined) ||
-    "in_progress";
+	merged.status =
+		(overrides.status as AsyncMessageStatus | undefined) ||
+		(typeof base.status === "string"
+			? (base.status as AsyncMessageStatus)
+			: undefined) ||
+		"in_progress";
 
-  merged.lastCheckedAt = overrides.lastCheckedAt ?? base.lastCheckedAt ?? now;
+	merged.lastCheckedAt = overrides.lastCheckedAt ?? base.lastCheckedAt ?? now;
 
-  const pollIntervalFromOverride =
-    overrides.pollIntervalMs ?? overrides.poll?.intervalMs;
-  const pollIntervalFromBase = base.pollIntervalMs ?? base.poll?.intervalMs;
+	const pollIntervalFromOverride =
+		overrides.pollIntervalMs ?? overrides.poll?.intervalMs;
+	const pollIntervalFromBase = base.pollIntervalMs ?? base.poll?.intervalMs;
 
-  merged.pollIntervalMs =
-    pollIntervalFromOverride ?? pollIntervalFromBase ?? merged.pollIntervalMs;
+	merged.pollIntervalMs =
+		pollIntervalFromOverride ?? pollIntervalFromBase ?? merged.pollIntervalMs;
 
-  if (merged.status === "completed") {
-    merged.completedAt = overrides.completedAt ?? base.completedAt ?? now;
-  }
+	if (merged.status === "completed") {
+		merged.completedAt = overrides.completedAt ?? base.completedAt ?? now;
+	}
 
-  return merged;
+	return merged;
 }
 
 export function mergeAsyncInvocationMetadata(
-  previous: AsyncInvocationMetadata | undefined,
-  updates: Partial<AsyncInvocationMetadata>,
+	previous: AsyncInvocationMetadata | undefined,
+	updates: Partial<AsyncInvocationMetadata>,
 ): AsyncInvocationMetadata {
-  if (!previous) {
-    return createAsyncInvocationMetadata(updates as AsyncInvocationMetadata);
-  }
+	if (!previous) {
+		return createAsyncInvocationMetadata(updates as AsyncInvocationMetadata);
+	}
 
-  return createAsyncInvocationMetadata(previous, {
-    ...updates,
-  });
+	return createAsyncInvocationMetadata(previous, {
+		...updates,
+	});
 }
 
 export function isAsyncInvocationPending(
-  metadata?: AsyncInvocationMetadata,
+	metadata?: AsyncInvocationMetadata,
 ): boolean {
-  return metadata?.status === "in_progress";
+	return metadata?.status === "in_progress";
 }
 
 export function getAsyncPollInterval(
-  metadata?: AsyncInvocationMetadata,
+	metadata?: AsyncInvocationMetadata,
 ): number {
-  const interval = metadata?.pollIntervalMs ?? metadata?.poll?.intervalMs ?? 0;
+	const interval = metadata?.pollIntervalMs ?? metadata?.poll?.intervalMs ?? 0;
 
-  if (!interval || interval < 1000) {
-    return DEFAULT_ASYNC_POLL_INTERVAL_MS;
-  }
+	if (!interval || interval < 1000) {
+		return DEFAULT_ASYNC_POLL_INTERVAL_MS;
+	}
 
-  return interval;
+	return interval;
 }

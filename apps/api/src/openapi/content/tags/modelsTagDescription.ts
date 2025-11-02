@@ -1,6 +1,7 @@
 import { md } from "~/utils/markdown.js";
 
-export const modelsTagDescription = md`# Models & Capabilities
+export const modelsTagDescription = md`
+# Models & Capabilities
 
 Discover and filter AI models based on their capabilities, pricing, and features.
 
@@ -22,16 +23,16 @@ Each model has different capabilities, pricing, and performance characteristics.
 
 ### Core Capabilities
 
-| Capability | Description |
-|-----------|-------------|
-| \`chat\` | Text-based conversation |
-| \`streaming\` | Real-time response streaming |
-| \`function_calling\` | Tool and function calling |
-| \`vision\` | Image understanding |
-| \`fim\` | Fill-in-the-middle code completion |
-| \`embeddings\` | Vector embeddings generation |
-| \`audio\` | Audio processing |
-| \`video\` | Video understanding |
+| Capability         | Description                        |
+| ------------------ | ---------------------------------- |
+| \`chat\`             | Text-based conversation            |
+| \`streaming\`        | Real-time response streaming       |
+| \`function_calling\` | Tool and function calling          |
+| \`vision\`           | Image understanding                |
+| \`fim\`              | Fill-in-the-middle code completion |
+| \`embeddings\`       | Vector embeddings generation       |
+| \`audio\`            | Audio processing                   |
+| \`video\`            | Video understanding                |
 
 ### Advanced Features
 
@@ -49,26 +50,31 @@ Some models support additional features:
 ### By Use Case
 
 **General Chat:**
+
 - \`claude-3-5-sonnet-20241022\` - Balanced performance
 - \`gpt-4o\` - OpenAI flagship
 - \`gemini-2.0-flash-exp\` - Fast and capable
 
 **Code Generation:**
+
 - \`claude-3-5-sonnet-20241022\` - Best overall
 - \`mistral-codestral-latest\` - FIM optimized
 - \`deepseek-coder\` - Cost-effective
 
 **Vision Tasks:**
+
 - \`claude-3-5-sonnet-20241022\` - Best vision understanding
 - \`gpt-4o\` - Strong vision support
 - \`gemini-2.0-flash-exp\` - Fast vision processing
 
 **Cost-Optimized:**
+
 - \`claude-3-5-haiku-20241022\` - Fast and cheap
 - \`gpt-4o-mini\` - Budget-friendly
 - \`gemini-2.0-flash-exp\` - Free tier available
 
 **Long Context:**
+
 - \`claude-3-5-sonnet-20241022\` - 200K tokens
 - \`gemini-1.5-pro-latest\` - 2M tokens
 - \`gpt-4-turbo\` - 128K tokens
@@ -112,12 +118,12 @@ The API includes intelligent model routing to automatically select the best mode
 
 Use \`auto\` as the model ID to enable automatic routing:
 
-\`\`\`json
+~~~json
 {
   "model": "auto",
   "messages": [...]
 }
-\`\`\`
+~~~
 
 ## Best Practices
 
@@ -131,19 +137,20 @@ Use \`auto\` as the model ID to enable automatic routing:
 
 ### Find Vision Models
 
-\`\`\`bash
+~~~bash
 curl https://api.polychat.app/v1/models/by-capability/vision
-\`\`\`
+~~~
 
 ### Get Cheapest Chat Model
 
-\`\`\`bash
+~~~bash
 # List all models and filter by pricing
 curl https://api.polychat.app/v1/models | jq '.data | sort_by(.pricing.input) | .[0]'
-\`\`\`
+~~~
 
 ### Compare Model Context Windows
 
-\`\`\`bash
+~~~bash
 curl https://api.polychat.app/v1/models | jq '.data | map({id, context_window}) | sort_by(.context_window) | reverse'
-\`\`\``;
+~~~
+`;

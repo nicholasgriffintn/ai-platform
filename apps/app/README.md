@@ -14,6 +14,7 @@ This is the web and mobile frontend for the Personal Assistant project, built wi
 ## Setup
 
 1. Install dependencies
+
 ```bash
 pnpm install
 ```
@@ -21,11 +22,13 @@ pnpm install
 2. Configure environment variables (if needed)
 
 3. Start the development server
+
 ```bash
 pnpm run dev
 ```
 
 4. Build for production
+
 ```bash
 pnpm run build
 ```
@@ -42,4 +45,4 @@ pnpm run deploy
 
 ```bash
 pnpm run test
-``` 
+```

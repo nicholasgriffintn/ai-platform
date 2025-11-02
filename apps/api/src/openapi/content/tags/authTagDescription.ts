@@ -1,6 +1,7 @@
 import { md } from "~/utils/markdown.js";
 
-export const authTagDescription = md`# Authentication
+export const authTagDescription = md`
+# Authentication
 
 Secure API access with multiple authentication methods including OAuth, magic links, passkeys, JWT tokens, and API keys.
 
@@ -16,9 +17,9 @@ The API supports five authentication methods:
 
 ## Using Bearer Tokens
 
-\`\`\`http
+~~~http
 Authorization: Bearer <token_or_api_key>
-\`\`\`
+~~~
 
 For JWT tokens or API keys.
 
@@ -57,4 +58,5 @@ Authentication endpoints have specific rate limits:
 - **Token Generation**: 20 per hour per user
 - **API Key Creation**: 10 per day per user
 
-Exceeded limits return \`429 Too Many Requests\`.`;
+Exceeded limits return \`429 Too Many Requests\`.
+`;

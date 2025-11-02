@@ -3,10 +3,10 @@ import { getLogger } from "./logger";
 const errorLogger = getLogger({ prefix: "ERROR_HANDLER" });
 
 export interface ErrorLogContext {
-  userId?: string | number;
-  path?: string;
-  operation?: string;
-  [key: string]: any;
+	userId?: string | number;
+	path?: string;
+	operation?: string;
+	[key: string]: any;
 }
 
 /**
@@ -17,16 +17,16 @@ export interface ErrorLogContext {
  * @param context Additional context information about the error
  */
 export function logError(
-  message: string,
-  error: unknown,
-  context: ErrorLogContext = {},
+	message: string,
+	error: unknown,
+	context: ErrorLogContext = {},
 ): void {
-  const errorDetails = {
-    message: error instanceof Error ? error.message : String(error),
-    stack: error instanceof Error ? error.stack : undefined,
-    name: error instanceof Error ? error.name : typeof error,
-    ...context,
-  };
+	const errorDetails = {
+		message: error instanceof Error ? error.message : String(error),
+		stack: error instanceof Error ? error.stack : undefined,
+		name: error instanceof Error ? error.name : typeof error,
+		...context,
+	};
 
-  errorLogger.error(message, errorDetails);
+	errorLogger.error(message, errorDetails);
 }

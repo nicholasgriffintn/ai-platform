@@ -1,13 +1,13 @@
 import { KVCache } from "~/lib/cache";
 import { Database } from "~/lib/database";
 import type {
-  IEnv,
-  IUser,
-  IUserSettings,
-  ModelConfig,
-  ModelConfigItem,
-  ResearchProviderName,
-  SearchProviderName,
+	IEnv,
+	IUser,
+	IUserSettings,
+	ModelConfig,
+	ModelConfigItem,
+	ResearchProviderName,
+	SearchProviderName,
 } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { anthropicModelConfig } from "./anthropic";
@@ -15,9 +15,9 @@ import { azureModelConfig } from "./azure";
 import { bedrockModelConfig } from "./bedrock";
 import { chutesModelConfig } from "./chutes";
 import {
-  type availableCapabilities,
-  type availableModelTypes,
-  defaultModel,
+	type availableCapabilities,
+	type availableModelTypes,
+	defaultModel,
 } from "./constants";
 import { deepinfraModelConfig } from "./deepinfra";
 import { deepseekModelConfig } from "./deepseek";
@@ -55,41 +55,41 @@ let cachedFeaturedModels: typeof modelConfig | null = null;
 let cachedRouterModels: typeof modelConfig | null = null;
 
 export interface ModelsOptions {
-  shouldUseCache?: boolean;
-  excludeTypes?: Array<(typeof availableModelTypes)[number]>;
+	shouldUseCache?: boolean;
+	excludeTypes?: Array<(typeof availableModelTypes)[number]>;
 }
 
 const modelConfig: ModelConfig = {
-  ...openaiModelConfig,
-  ...anthropicModelConfig,
-  ...mistralModelConfig,
-  ...morphModelConfig,
-  ...ollamaModelConfig,
-  ...bedrockModelConfig,
-  ...deepinfraModelConfig,
-  ...deepseekModelConfig,
-  ...azureModelConfig,
-  ...githubModelsConfig,
-  ...xaiModelConfig,
-  ...groqModelConfig,
-  ...huggingfaceModelConfig,
-  ...openrouterModelConfig,
-  ...parallelModelConfig,
-  ...perplexityModelConfig,
-  ...requestyModelConfig,
-  ...workersAiModelConfig,
-  ...togetherAiModelConfig,
-  ...googleAiStudioModelConfig,
-  ...fireworksModelConfig,
-  ...hyperbolicModelConfig,
-  ...inferenceModelConfig,
-  ...chutesModelConfig,
-  ...vercelModelConfig,
-  ...upstageModelConfig,
-  ...githubCopilotModelConfig,
-  ...inceptionModelConfig,
-  ...v0ModelConfig,
-  ...replicateModelConfig,
+	...openaiModelConfig,
+	...anthropicModelConfig,
+	...mistralModelConfig,
+	...morphModelConfig,
+	...ollamaModelConfig,
+	...bedrockModelConfig,
+	...deepinfraModelConfig,
+	...deepseekModelConfig,
+	...azureModelConfig,
+	...githubModelsConfig,
+	...xaiModelConfig,
+	...groqModelConfig,
+	...huggingfaceModelConfig,
+	...openrouterModelConfig,
+	...parallelModelConfig,
+	...perplexityModelConfig,
+	...requestyModelConfig,
+	...workersAiModelConfig,
+	...togetherAiModelConfig,
+	...googleAiStudioModelConfig,
+	...fireworksModelConfig,
+	...hyperbolicModelConfig,
+	...inferenceModelConfig,
+	...chutesModelConfig,
+	...vercelModelConfig,
+	...upstageModelConfig,
+	...githubCopilotModelConfig,
+	...inceptionModelConfig,
+	...v0ModelConfig,
+	...replicateModelConfig,
 };
 
 const MODEL_CACHE_TTL = 14400;
@@ -97,349 +97,349 @@ const USER_MODEL_CACHE_TTL = 3600;
 let modelCache: KVCache | null = null;
 
 function getModelCache(env: IEnv): KVCache | null {
-  if (!env.CACHE) return null;
+	if (!env.CACHE) return null;
 
-  if (!modelCache) {
-    modelCache = new KVCache(env.CACHE, MODEL_CACHE_TTL);
-  }
-  return modelCache;
+	if (!modelCache) {
+		modelCache = new KVCache(env.CACHE, MODEL_CACHE_TTL);
+	}
+	return modelCache;
 }
 
 function getUserModelCache(env: IEnv): KVCache | null {
-  if (!env.CACHE) return null;
+	if (!env.CACHE) return null;
 
-  return new KVCache(env.CACHE, USER_MODEL_CACHE_TTL);
+	return new KVCache(env.CACHE, USER_MODEL_CACHE_TTL);
 }
 
 /**
  * Generic caching helper that handles cache read/write operations
  */
 async function withCache<T>(
-  env: IEnv | undefined,
-  cacheKeyPrefix: string,
-  cacheKeyParts: string[],
-  computeFn: () => T | Promise<T>,
+	env: IEnv | undefined,
+	cacheKeyPrefix: string,
+	cacheKeyParts: string[],
+	computeFn: () => T | Promise<T>,
 ): Promise<T> {
-  if (!env?.CACHE) {
-    return computeFn();
-  }
+	if (!env?.CACHE) {
+		return computeFn();
+	}
 
-  const cache = getModelCache(env);
-  if (!cache) {
-    return computeFn();
-  }
+	const cache = getModelCache(env);
+	if (!cache) {
+		return computeFn();
+	}
 
-  const cacheKey = KVCache.createKey(cacheKeyPrefix, ...cacheKeyParts);
+	const cacheKey = KVCache.createKey(cacheKeyPrefix, ...cacheKeyParts);
 
-  const cached = await cache.get<T>(cacheKey);
-  if (cached !== null) {
-    return cached;
-  }
+	const cached = await cache.get<T>(cacheKey);
+	if (cached !== null) {
+		return cached;
+	}
 
-  const result = await computeFn();
+	const result = await computeFn();
 
-  if (result !== null && result !== undefined) {
-    cache.set(cacheKey, result).catch(() => {});
-  }
+	if (result !== null && result !== undefined) {
+		cache.set(cacheKey, result).catch(() => {});
+	}
 
-  return result;
+	return result;
 }
 
 export async function getModelConfig(model?: string, env?: IEnv) {
-  const key = model || defaultModel;
+	const key = model || defaultModel;
 
-  return withCache(
-    env,
-    "model-config",
-    [key],
-    () => (model && modelConfig[model]) || modelConfig[defaultModel],
-  );
+	return withCache(
+		env,
+		"model-config",
+		[key],
+		() => (model && modelConfig[model]) || modelConfig[defaultModel],
+	);
 }
 
 export async function getModelConfigByModel(model: string, env?: IEnv) {
-  return withCache(
-    env,
-    "model-by-model",
-    [model],
-    () => model && modelConfig[model as keyof typeof modelConfig],
-  );
+	return withCache(
+		env,
+		"model-by-model",
+		[model],
+		() => model && modelConfig[model as keyof typeof modelConfig],
+	);
 }
 
 export async function getMatchingModel(
-  model: string = defaultModel,
-  env?: IEnv,
+	model: string = defaultModel,
+	env?: IEnv,
 ) {
-  return withCache(env, "matching-model", [model], async () => {
-    const config = await getModelConfig(model, env);
-    return config?.matchingModel;
-  });
+	return withCache(env, "matching-model", [model], async () => {
+		const config = await getModelConfig(model, env);
+		return config?.matchingModel;
+	});
 }
 
 export async function getModelConfigByMatchingModel(
-  matchingModel: string,
-  env?: IEnv,
+	matchingModel: string,
+	env?: IEnv,
 ) {
-  return withCache(env, "model-by-matching", [matchingModel], () => {
-    for (const model in modelConfig) {
-      if (
-        modelConfig[model as keyof typeof modelConfig].matchingModel ===
-        matchingModel
-      ) {
-        return modelConfig[model as keyof typeof modelConfig];
-      }
-    }
-    return null;
-  });
+	return withCache(env, "model-by-matching", [matchingModel], () => {
+		for (const model in modelConfig) {
+			if (
+				modelConfig[model as keyof typeof modelConfig].matchingModel ===
+				matchingModel
+			) {
+				return modelConfig[model as keyof typeof modelConfig];
+			}
+		}
+		return null;
+	});
 }
 
 export function getModels(
-  options: ModelsOptions = {
-    shouldUseCache: true,
-    excludeTypes: [],
-  },
+	options: ModelsOptions = {
+		shouldUseCache: true,
+		excludeTypes: [],
+	},
 ) {
-  if (cachedModels && options.shouldUseCache) {
-    return cachedModels;
-  }
+	if (cachedModels && options.shouldUseCache) {
+		return cachedModels;
+	}
 
-  cachedModels = Object.entries(modelConfig).reduce((acc, [key, model]) => {
-    if (
-      !model.beta &&
-      !options.excludeTypes?.some((excluded) => model.type.includes(excluded))
-    ) {
-      acc[key] = model;
-    }
-    return acc;
-  }, {});
+	cachedModels = Object.entries(modelConfig).reduce((acc, [key, model]) => {
+		if (
+			!model.beta &&
+			!options.excludeTypes?.some((excluded) => model.type.includes(excluded))
+		) {
+			acc[key] = model;
+		}
+		return acc;
+	}, {});
 
-  return cachedModels;
+	return cachedModels;
 }
 
 export function getFreeModels(
-  options: ModelsOptions = {
-    shouldUseCache: true,
-  },
+	options: ModelsOptions = {
+		shouldUseCache: true,
+	},
 ) {
-  if (cachedFreeModels && options.shouldUseCache) {
-    return cachedFreeModels;
-  }
+	if (cachedFreeModels && options.shouldUseCache) {
+		return cachedFreeModels;
+	}
 
-  cachedFreeModels = Object.entries(modelConfig).reduce(
-    (acc, [key, model]) => {
-      if (model.isFree) {
-        acc[key] = model;
-      }
-      return acc;
-    },
-    {} as typeof modelConfig,
-  );
+	cachedFreeModels = Object.entries(modelConfig).reduce(
+		(acc, [key, model]) => {
+			if (model.isFree) {
+				acc[key] = model;
+			}
+			return acc;
+		},
+		{} as typeof modelConfig,
+	);
 
-  return cachedFreeModels;
+	return cachedFreeModels;
 }
 
 export function getFeaturedModels(
-  options: ModelsOptions = {
-    shouldUseCache: true,
-  },
+	options: ModelsOptions = {
+		shouldUseCache: true,
+	},
 ) {
-  if (cachedFeaturedModels && options.shouldUseCache) {
-    return cachedFeaturedModels;
-  }
+	if (cachedFeaturedModels && options.shouldUseCache) {
+		return cachedFeaturedModels;
+	}
 
-  cachedFeaturedModels = Object.entries(modelConfig).reduce(
-    (acc, [key, model]) => {
-      if (model.isFeatured) {
-        acc[key] = model;
-      }
-      return acc;
-    },
-    {} as typeof modelConfig,
-  );
+	cachedFeaturedModels = Object.entries(modelConfig).reduce(
+		(acc, [key, model]) => {
+			if (model.isFeatured) {
+				acc[key] = model;
+			}
+			return acc;
+		},
+		{} as typeof modelConfig,
+	);
 
-  return cachedFeaturedModels;
+	return cachedFeaturedModels;
 }
 
 export function getIncludedInRouterModels(
-  options: ModelsOptions = {
-    shouldUseCache: true,
-  },
+	options: ModelsOptions = {
+		shouldUseCache: true,
+	},
 ) {
-  if (cachedRouterModels && options.shouldUseCache) {
-    return cachedRouterModels;
-  }
+	if (cachedRouterModels && options.shouldUseCache) {
+		return cachedRouterModels;
+	}
 
-  cachedRouterModels = Object.entries(modelConfig).reduce(
-    (acc, [key, model]) => {
-      if (model.includedInRouter) {
-        acc[key] = model;
-      }
-      return acc;
-    },
-    {} as typeof modelConfig,
-  );
+	cachedRouterModels = Object.entries(modelConfig).reduce(
+		(acc, [key, model]) => {
+			if (model.includedInRouter) {
+				acc[key] = model;
+			}
+			return acc;
+		},
+		{} as typeof modelConfig,
+	);
 
-  return cachedRouterModels;
+	return cachedRouterModels;
 }
 
 export function getIncludedInRouterFreeModels(
-  options: ModelsOptions = {
-    shouldUseCache: true,
-  },
+	options: ModelsOptions = {
+		shouldUseCache: true,
+	},
 ) {
-  return Object.entries(getIncludedInRouterModels(options)).reduce(
-    (acc, [key, model]) => {
-      if (model.isFree) {
-        acc[key] = model;
-      }
-      return acc;
-    },
-    {} as typeof modelConfig,
-  );
+	return Object.entries(getIncludedInRouterModels(options)).reduce(
+		(acc, [key, model]) => {
+			if (model.isFree) {
+				acc[key] = model;
+			}
+			return acc;
+		},
+		{} as typeof modelConfig,
+	);
 }
 
 export async function getIncludedInRouterModelsForUser(
-  env: IEnv,
-  userId?: number,
-  options: ModelsOptions = {
-    shouldUseCache: true,
-  },
+	env: IEnv,
+	userId?: number,
+	options: ModelsOptions = {
+		shouldUseCache: true,
+	},
 ): Promise<Record<string, ModelConfigItem>> {
-  if (!userId) {
-    const freeModels = getIncludedInRouterFreeModels(options);
-    return await filterModelsForUserAccess(freeModels, env, userId, options);
-  }
+	if (!userId) {
+		const freeModels = getIncludedInRouterFreeModels(options);
+		return await filterModelsForUserAccess(freeModels, env, userId, options);
+	}
 
-  const database = Database.getInstance(env);
-  const user = await database.getUserById(userId);
-  const isPro = user?.plan_id === "pro";
+	const database = Database.getInstance(env);
+	const user = await database.getUserById(userId);
+	const isPro = user?.plan_id === "pro";
 
-  if (!isPro) {
-    const freeModels = getIncludedInRouterFreeModels(options);
-    return await filterModelsForUserAccess(freeModels, env, userId, options);
-  }
+	if (!isPro) {
+		const freeModels = getIncludedInRouterFreeModels(options);
+		return await filterModelsForUserAccess(freeModels, env, userId, options);
+	}
 
-  const allRouterModels = getIncludedInRouterModels(options);
-  return await filterModelsForUserAccess(allRouterModels, env, userId, options);
+	const allRouterModels = getIncludedInRouterModels(options);
+	return await filterModelsForUserAccess(allRouterModels, env, userId, options);
 }
 
 export function getModelsByCapability(capability: string) {
-  return Object.entries(modelConfig).reduce(
-    (acc, [key, model]) => {
-      if (
-        model.strengths?.includes(
-          capability as (typeof availableCapabilities)[number],
-        )
-      ) {
-        acc[key] = model;
-      }
-      return acc;
-    },
-    {} as typeof modelConfig,
-  );
+	return Object.entries(modelConfig).reduce(
+		(acc, [key, model]) => {
+			if (
+				model.strengths?.includes(
+					capability as (typeof availableCapabilities)[number],
+				)
+			) {
+				acc[key] = model;
+			}
+			return acc;
+		},
+		{} as typeof modelConfig,
+	);
 }
 
 export function getModelsByType(type: string) {
-  return Object.entries(modelConfig).reduce(
-    (acc, [key, model]) => {
-      if (model.type?.includes(type as (typeof availableModelTypes)[number])) {
-        acc[key] = model;
-      }
-      return acc;
-    },
-    {} as typeof modelConfig,
-  );
+	return Object.entries(modelConfig).reduce(
+		(acc, [key, model]) => {
+			if (model.type?.includes(type as (typeof availableModelTypes)[number])) {
+				acc[key] = model;
+			}
+			return acc;
+		},
+		{} as typeof modelConfig,
+	);
 }
 
 export async function filterModelsForUserAccess(
-  allModels: Record<string, ModelConfigItem>,
-  env: IEnv,
-  userId?: number,
-  options: ModelsOptions = { shouldUseCache: true },
+	allModels: Record<string, ModelConfigItem>,
+	env: IEnv,
+	userId?: number,
+	options: ModelsOptions = { shouldUseCache: true },
 ): Promise<Record<string, ModelConfigItem>> {
-  const cache = getUserModelCache(env);
-  const cacheKey = KVCache.createKey(
-    "user-models",
-    userId?.toString() || "anonymous",
-  );
+	const cache = getUserModelCache(env);
+	const cacheKey = KVCache.createKey(
+		"user-models",
+		userId?.toString() || "anonymous",
+	);
 
-  if (cache && options.shouldUseCache) {
-    const cached = await cache.get<Record<string, ModelConfigItem>>(cacheKey);
-    if (cached) {
-      return cached;
-    }
-  }
+	if (cache && options.shouldUseCache) {
+		const cached = await cache.get<Record<string, ModelConfigItem>>(cacheKey);
+		if (cached) {
+			return cached;
+		}
+	}
 
-  const allFreeModels = getFreeModels();
-  const alwaysEnabledProvidersEnvVar = env.ALWAYS_ENABLED_PROVIDERS;
-  const alwaysEnabledProviders = new Set(
-    alwaysEnabledProvidersEnvVar?.split(",") || [],
-  );
+	const allFreeModels = getFreeModels();
+	const alwaysEnabledProvidersEnvVar = env.ALWAYS_ENABLED_PROVIDERS;
+	const alwaysEnabledProviders = new Set(
+		alwaysEnabledProvidersEnvVar?.split(",") || [],
+	);
 
-  const freeModels: Record<string, ModelConfigItem> = {};
-  for (const modelId in allFreeModels) {
-    const model = allFreeModels[modelId];
-    if (alwaysEnabledProviders.has(model.provider)) {
-      freeModels[modelId] = model;
-    }
-  }
-  const freeModelIds = new Set(Object.keys(freeModels));
+	const freeModels: Record<string, ModelConfigItem> = {};
+	for (const modelId in allFreeModels) {
+		const model = allFreeModels[modelId];
+		if (alwaysEnabledProviders.has(model.provider)) {
+			freeModels[modelId] = model;
+		}
+	}
+	const freeModelIds = new Set(Object.keys(freeModels));
 
-  const filteredModels: Record<string, ModelConfigItem> = {};
+	const filteredModels: Record<string, ModelConfigItem> = {};
 
-  if (!userId) {
-    for (const modelId in allModels) {
-      if (
-        freeModelIds.has(modelId) ||
-        alwaysEnabledProviders.has(allModels[modelId].provider)
-      ) {
-        filteredModels[modelId] = allModels[modelId];
-      }
-    }
+	if (!userId) {
+		for (const modelId in allModels) {
+			if (
+				freeModelIds.has(modelId) ||
+				alwaysEnabledProviders.has(allModels[modelId].provider)
+			) {
+				filteredModels[modelId] = allModels[modelId];
+			}
+		}
 
-    if (cache && options.shouldUseCache) {
-      cache.set(cacheKey, filteredModels).catch(() => {});
-    }
+		if (cache && options.shouldUseCache) {
+			cache.set(cacheKey, filteredModels).catch(() => {});
+		}
 
-    return filteredModels;
-  }
+		return filteredModels;
+	}
 
-  try {
-    const database = Database.getInstance(env);
+	try {
+		const database = Database.getInstance(env);
 
-    const userProviderSettings = await withCache(
-      env,
-      "user-provider-settings",
-      [userId.toString()],
-      () => database.getUserProviderSettings(userId),
-    );
+		const userProviderSettings = await withCache(
+			env,
+			"user-provider-settings",
+			[userId.toString()],
+			() => database.getUserProviderSettings(userId),
+		);
 
-    const enabledProviders = new Map(
-      userProviderSettings
-        .filter((p) => p.enabled)
-        .map((p) => [p.provider_id, true]),
-    );
+		const enabledProviders = new Map(
+			userProviderSettings
+				.filter((p) => p.enabled)
+				.map((p) => [p.provider_id, true]),
+		);
 
-    for (const modelId in allModels) {
-      const model = allModels[modelId];
-      const isFree = freeModelIds.has(modelId);
-      const isEnabled =
-        alwaysEnabledProviders.has(model.provider) ||
-        enabledProviders.has(model.provider);
+		for (const modelId in allModels) {
+			const model = allModels[modelId];
+			const isFree = freeModelIds.has(modelId);
+			const isEnabled =
+				alwaysEnabledProviders.has(model.provider) ||
+				enabledProviders.has(model.provider);
 
-      if (isFree || isEnabled) {
-        filteredModels[modelId] = model;
-      }
-    }
+			if (isFree || isEnabled) {
+				filteredModels[modelId] = model;
+			}
+		}
 
-    if (cache) {
-      cache.set(cacheKey, filteredModels).catch(() => {});
-    }
+		if (cache) {
+			cache.set(cacheKey, filteredModels).catch(() => {});
+		}
 
-    return filteredModels;
-  } catch (error) {
-    logger.error(`Error during model filtering for user ${userId}`, { error });
-    return freeModels;
-  }
+		return filteredModels;
+	} catch (error) {
+		logger.error(`Error during model filtering for user ${userId}`, { error });
+		return freeModels;
+	}
 }
 
 /**
@@ -450,190 +450,190 @@ export async function filterModelsForUserAccess(
  * @returns Object containing model ID and provider
  */
 export async function getAuxiliaryModel(
-  env: IEnv,
-  user?: IUser,
+	env: IEnv,
+	user?: IUser,
 ): Promise<{ model: string; provider: string }> {
-  let modelToUse = "gemma-3-12b-it";
+	let modelToUse = "gemma-3-12b-it";
 
-  const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
+	const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
 
-  const hasGroqModel = Object.keys(availableModels).some(
-    (model) => availableModels[model].provider === "groq",
-  );
+	const hasGroqModel = Object.keys(availableModels).some(
+		(model) => availableModels[model].provider === "groq",
+	);
 
-  if (hasGroqModel) {
-    modelToUse = "llama-3.3-70b-versatile";
-    return { model: modelToUse, provider: "groq" };
-  }
+	if (hasGroqModel) {
+		modelToUse = "llama-3.3-70b-versatile";
+		return { model: modelToUse, provider: "groq" };
+	}
 
-  const modelConfig = await getModelConfig(modelToUse, env);
+	const modelConfig = await getModelConfig(modelToUse, env);
 
-  return { model: modelConfig.matchingModel, provider: modelConfig.provider };
+	return { model: modelConfig.matchingModel, provider: modelConfig.provider };
 }
 
 export const getAuxiliaryModelForRetrieval = async (
-  env: IEnv,
-  user?: IUser,
+	env: IEnv,
+	user?: IUser,
 ) => {
-  let modelToUse = "gemma-3-12b-it";
+	let modelToUse = "gemma-3-12b-it";
 
-  const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
+	const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
 
-  const hasPerplexityModel = Object.keys(availableModels).some(
-    (model) => availableModels[model].provider === "perplexity-ai",
-  );
+	const hasPerplexityModel = Object.keys(availableModels).some(
+		(model) => availableModels[model].provider === "perplexity-ai",
+	);
 
-  if (hasPerplexityModel) {
-    modelToUse = "sonar";
-  }
+	if (hasPerplexityModel) {
+		modelToUse = "sonar";
+	}
 
-  const modelConfig = await getModelConfig(modelToUse, env);
+	const modelConfig = await getModelConfig(modelToUse, env);
 
-  return { model: modelConfig.matchingModel, provider: modelConfig.provider };
+	return { model: modelConfig.matchingModel, provider: modelConfig.provider };
 };
 
 export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
-  let modelToUse = "@cf/meta/llama-guard-3-8b";
+	let modelToUse = "@cf/meta/llama-guard-3-8b";
 
-  const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
+	const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
 
-  const hasGroqModel = Object.keys(availableModels).some(
-    (model) => availableModels[model].provider === "groq",
-  );
+	const hasGroqModel = Object.keys(availableModels).some(
+		(model) => availableModels[model].provider === "groq",
+	);
 
-  if (hasGroqModel) {
-    modelToUse = "meta-llama/llama-guard-4-12b";
-    return { model: modelToUse, provider: "groq" };
-  }
+	if (hasGroqModel) {
+		modelToUse = "meta-llama/llama-guard-4-12b";
+		return { model: modelToUse, provider: "groq" };
+	}
 
-  const modelConfig = await getModelConfig(modelToUse, env);
-  const provider = modelConfig.provider;
+	const modelConfig = await getModelConfig(modelToUse, env);
+	const provider = modelConfig.provider;
 
-  return { model: modelToUse, provider };
+	return { model: modelToUse, provider };
 };
 
 export const getAuxiliarySearchProvider = async (
-  env: IEnv,
-  user?: IUser,
-  requestedProvider?: SearchProviderName,
+	env: IEnv,
+	user?: IUser,
+	requestedProvider?: SearchProviderName,
 ): Promise<SearchProviderName> => {
-  const isProUser = user?.plan_id === "pro";
+	const isProUser = user?.plan_id === "pro";
 
-  if (!isProUser) {
-    if (requestedProvider && requestedProvider !== "duckduckgo") {
-      throw new AssistantError(
-        "Requested provider requires a Pro plan",
-        ErrorType.AUTHORISATION_ERROR,
-      );
-    }
-    return "duckduckgo";
-  }
+	if (!isProUser) {
+		if (requestedProvider && requestedProvider !== "duckduckgo") {
+			throw new AssistantError(
+				"Requested provider requires a Pro plan",
+				ErrorType.AUTHORISATION_ERROR,
+			);
+		}
+		return "duckduckgo";
+	}
 
-  if (requestedProvider) {
-    return requestedProvider;
-  }
+	if (requestedProvider) {
+		return requestedProvider;
+	}
 
-  if (user?.id) {
-    const database = Database.getInstance(env);
-    const userSettings = await withCache(
-      env,
-      "user-settings",
-      [user.id.toString()],
-      () => database.getUserSettings(user.id),
-    );
+	if (user?.id) {
+		const database = Database.getInstance(env);
+		const userSettings = await withCache(
+			env,
+			"user-settings",
+			[user.id.toString()],
+			() => database.getUserSettings(user.id),
+		);
 
-    const userPreferredProvider = userSettings?.search_provider as
-      | SearchProviderName
-      | undefined;
+		const userPreferredProvider = userSettings?.search_provider as
+			| SearchProviderName
+			| undefined;
 
-    if (userPreferredProvider) {
-      return userPreferredProvider;
-    }
-  }
+		if (userPreferredProvider) {
+			return userPreferredProvider;
+		}
+	}
 
-  return "tavily";
+	return "tavily";
 };
 
 export const getAuxiliaryResearchProvider = async (
-  env: IEnv,
-  user?: IUser,
-  requestedProvider?: ResearchProviderName,
+	env: IEnv,
+	user?: IUser,
+	requestedProvider?: ResearchProviderName,
 ): Promise<ResearchProviderName> => {
-  const providerToUse = requestedProvider ?? "parallel";
+	const providerToUse = requestedProvider ?? "parallel";
 
-  if (providerToUse !== "parallel") {
-    throw new AssistantError(
-      `Unsupported research provider: ${providerToUse}`,
-      ErrorType.PARAMS_ERROR,
-    );
-  }
+	if (providerToUse !== "parallel") {
+		throw new AssistantError(
+			`Unsupported research provider: ${providerToUse}`,
+			ErrorType.PARAMS_ERROR,
+		);
+	}
 
-  const isProUser = user?.plan_id === "pro";
+	const isProUser = user?.plan_id === "pro";
 
-  if (!isProUser) {
-    throw new AssistantError(
-      "Research tasks require a Pro plan",
-      ErrorType.AUTHORISATION_ERROR,
-    );
-  }
+	if (!isProUser) {
+		throw new AssistantError(
+			"Research tasks require a Pro plan",
+			ErrorType.AUTHORISATION_ERROR,
+		);
+	}
 
-  if (!user?.id) {
-    throw new AssistantError(
-      "Research tasks require an authenticated user",
-      ErrorType.AUTHORISATION_ERROR,
-    );
-  }
+	if (!user?.id) {
+		throw new AssistantError(
+			"Research tasks require an authenticated user",
+			ErrorType.AUTHORISATION_ERROR,
+		);
+	}
 
-  const database = Database.getInstance(env);
+	const database = Database.getInstance(env);
 
-  const providerSettings = await withCache(
-    env,
-    "user-provider-settings",
-    [user.id.toString()],
-    () => database.getUserProviderSettings(user.id),
-  );
+	const providerSettings = await withCache(
+		env,
+		"user-provider-settings",
+		[user.id.toString()],
+		() => database.getUserProviderSettings(user.id),
+	);
 
-  const hasParallel = Array.isArray(providerSettings)
-    ? providerSettings.some((setting: any) => {
-        const isEnabled = Boolean(setting?.enabled);
-        return setting?.provider_id === "parallel" && isEnabled;
-      })
-    : false;
+	const hasParallel = Array.isArray(providerSettings)
+		? providerSettings.some((setting: any) => {
+				const isEnabled = Boolean(setting?.enabled);
+				return setting?.provider_id === "parallel" && isEnabled;
+			})
+		: false;
 
-  if (!hasParallel) {
-    throw new AssistantError(
-      "Parallel research provider is not enabled for this account",
-      ErrorType.AUTHORISATION_ERROR,
-    );
-  }
+	if (!hasParallel) {
+		throw new AssistantError(
+			"Parallel research provider is not enabled for this account",
+			ErrorType.AUTHORISATION_ERROR,
+		);
+	}
 
-  return "parallel";
+	return "parallel";
 };
 
 export const getAuxiliarySpeechModel = async (
-  env: IEnv,
-  userSettings?: IUserSettings,
+	env: IEnv,
+	userSettings?: IUserSettings,
 ): Promise<{
-  model: string;
-  provider: string;
-  transcriptionProvider: string;
+	model: string;
+	provider: string;
+	transcriptionProvider: string;
 }> => {
-  const transcriptionProvider =
-    userSettings?.transcription_provider || "workers";
-  const transcriptionModel = userSettings?.transcription_model || "whisper";
+	const transcriptionProvider =
+		userSettings?.transcription_provider || "workers";
+	const transcriptionModel = userSettings?.transcription_model || "whisper";
 
-  const modelConfig = await getModelConfig(transcriptionModel, env);
+	const modelConfig = await getModelConfig(transcriptionModel, env);
 
-  return {
-    model: modelConfig.matchingModel,
-    provider: modelConfig.provider,
-    transcriptionProvider,
-  };
+	return {
+		model: modelConfig.matchingModel,
+		provider: modelConfig.provider,
+		transcriptionProvider,
+	};
 };
 
 export {
-  availableCapabilities,
-  availableModelTypes,
-  defaultModel,
-  defaultProvider,
+	availableCapabilities,
+	availableModelTypes,
+	defaultModel,
+	defaultProvider,
 } from "./constants";

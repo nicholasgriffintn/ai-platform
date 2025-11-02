@@ -8,160 +8,160 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
 interface ImageFromDrawingResponse extends IFunctionResponse {
-  completion_id?: string;
+	completion_id?: string;
 }
 
 export async function generateImageFromDrawing({
-  env,
-  request,
-  user,
-  conversationManager,
-  existingDrawingId,
+	env,
+	request,
+	user,
+	conversationManager,
+	existingDrawingId,
 }: {
-  env: IEnv;
-  request: {
-    drawing?: Blob;
-    drawingId?: string;
-  };
-  user: IUser;
-  conversationManager?: ConversationManager;
-  existingDrawingId?: string;
+	env: IEnv;
+	request: {
+		drawing?: Blob;
+		drawingId?: string;
+	};
+	user: IUser;
+	conversationManager?: ConversationManager;
+	existingDrawingId?: string;
 }): Promise<ImageFromDrawingResponse> {
-  if (!request.drawing) {
-    throw new AssistantError("Missing drawing", ErrorType.PARAMS_ERROR);
-  }
+	if (!request.drawing) {
+		throw new AssistantError("Missing drawing", ErrorType.PARAMS_ERROR);
+	}
 
-  const arrayBuffer = await request.drawing.arrayBuffer();
-  const length = arrayBuffer.byteLength;
+	const arrayBuffer = await request.drawing.arrayBuffer();
+	const length = arrayBuffer.byteLength;
 
-  const drawingId = request.drawingId || existingDrawingId || generateId();
-  const drawingImageKey = `drawings/${drawingId}/image.png`;
+	const drawingId = request.drawingId || existingDrawingId || generateId();
+	const drawingImageKey = `drawings/${drawingId}/image.png`;
 
-  let _drawingUrl = "";
-  try {
-    const storageService = new StorageService(env.ASSETS_BUCKET);
-    _drawingUrl = await storageService.uploadObject(
-      drawingImageKey,
-      arrayBuffer,
-      {
-        contentType: "image/png",
-        contentLength: length,
-      },
-    );
-  } catch (_error) {
-    throw new AssistantError("Error uploading drawing");
-  }
+	let _drawingUrl = "";
+	try {
+		const storageService = new StorageService(env.ASSETS_BUCKET);
+		_drawingUrl = await storageService.uploadObject(
+			drawingImageKey,
+			arrayBuffer,
+			{
+				contentType: "image/png",
+				contentLength: length,
+			},
+		);
+	} catch (_error) {
+		throw new AssistantError("Error uploading drawing");
+	}
 
-  const descriptionRequest = await env.AI.run(
-    "@cf/llava-hf/llava-1.5-7b-hf",
-    {
-      prompt: drawingDescriptionPrompt(),
-      image: [...new Uint8Array(arrayBuffer)],
-    },
-    {
-      gateway: {
-        id: gatewayId,
-        skipCache: false,
-        cacheTtl: 3360,
-        metadata: {
-          email: user?.email,
-        },
-      },
-    },
-  );
+	const descriptionRequest = await env.AI.run(
+		"@cf/llava-hf/llava-1.5-7b-hf",
+		{
+			prompt: drawingDescriptionPrompt(),
+			image: [...new Uint8Array(arrayBuffer)],
+		},
+		{
+			gateway: {
+				id: gatewayId,
+				skipCache: false,
+				cacheTtl: 3360,
+				metadata: {
+					email: user?.email,
+				},
+			},
+		},
+	);
 
-  const painting = await env.AI.run(
-    "@cf/runwayml/stable-diffusion-v1-5-img2img",
-    {
-      prompt:
-        descriptionRequest?.description ||
-        "Convert this drawing into a painting.",
-      image: [...new Uint8Array(arrayBuffer)],
-      guidance: 8,
-      strength: 0.85,
-      // @ts-ignore
-      num_inference_steps: 50,
-    },
-    {
-      gateway: {
-        id: gatewayId,
-        skipCache: false,
-        cacheTtl: 3360,
-        metadata: {
-          email: user?.email,
-        },
-      },
-    },
-  );
+	const painting = await env.AI.run(
+		"@cf/runwayml/stable-diffusion-v1-5-img2img",
+		{
+			prompt:
+				descriptionRequest?.description ||
+				"Convert this drawing into a painting.",
+			image: [...new Uint8Array(arrayBuffer)],
+			guidance: 8,
+			strength: 0.85,
+			// @ts-ignore
+			num_inference_steps: 50,
+		},
+		{
+			gateway: {
+				id: gatewayId,
+				skipCache: false,
+				cacheTtl: 3360,
+				metadata: {
+					email: user?.email,
+				},
+			},
+		},
+	);
 
-  // @ts-expect-error
-  const paintingArrayBuffer = await new Response(painting).arrayBuffer();
-  const paintingLength = paintingArrayBuffer.byteLength;
+	// @ts-expect-error
+	const paintingArrayBuffer = await new Response(painting).arrayBuffer();
+	const paintingLength = paintingArrayBuffer.byteLength;
 
-  const paintingImageKey = `drawings/${drawingId}/painting.png`;
-  try {
-    const storageService = new StorageService(env.ASSETS_BUCKET);
-    await storageService.uploadObject(paintingImageKey, paintingArrayBuffer, {
-      contentType: "image/png",
-      contentLength: paintingLength,
-    });
-  } catch (_error) {
-    throw new AssistantError("Error uploading painting");
-  }
+	const paintingImageKey = `drawings/${drawingId}/painting.png`;
+	try {
+		const storageService = new StorageService(env.ASSETS_BUCKET);
+		await storageService.uploadObject(paintingImageKey, paintingArrayBuffer, {
+			contentType: "image/png",
+			contentLength: paintingLength,
+		});
+	} catch (_error) {
+		throw new AssistantError("Error uploading painting");
+	}
 
-  let conversationResponse: any = { status: "success" };
-  const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+	let conversationResponse: any = { status: "success" };
+	const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
 
-  if (conversationManager) {
-    await conversationManager.add(drawingId, {
-      role: "user",
-      content: `Generate a drawing with this prompt: ${descriptionRequest?.description}`,
-      app: "drawings",
-    });
+	if (conversationManager) {
+		await conversationManager.add(drawingId, {
+			role: "user",
+			content: `Generate a drawing with this prompt: ${descriptionRequest?.description}`,
+			app: "drawings",
+		});
 
-    const message = {
-      role: "assistant" as ChatRole,
-      name: "drawing_generate",
-      content: descriptionRequest?.description,
-      data: {
-        drawingUrl: `${baseAssetsUrl}/${drawingImageKey}`,
-        drawingKey: drawingImageKey,
-        paintingUrl: `${baseAssetsUrl}/${paintingImageKey}`,
-        paintingKey: paintingImageKey,
-      },
-    };
-    conversationResponse = await conversationManager.add(drawingId, message);
-  }
+		const message = {
+			role: "assistant" as ChatRole,
+			name: "drawing_generate",
+			content: descriptionRequest?.description,
+			data: {
+				drawingUrl: `${baseAssetsUrl}/${drawingImageKey}`,
+				drawingKey: drawingImageKey,
+				paintingUrl: `${baseAssetsUrl}/${paintingImageKey}`,
+				paintingKey: paintingImageKey,
+			},
+		};
+		conversationResponse = await conversationManager.add(drawingId, message);
+	}
 
-  const repo = RepositoryManager.getInstance(env).appData;
+	const repo = RepositoryManager.getInstance(env).appData;
 
-  const appDataResponse = await repo.createAppDataWithItem(
-    user.id,
-    "drawings",
-    drawingId,
-    "drawing",
-    {
-      description: descriptionRequest?.description || "Untitled drawing",
-      drawingUrl: `${baseAssetsUrl}/${drawingImageKey}`,
-      paintingUrl: `${baseAssetsUrl}/${paintingImageKey}`,
-      drawingKey: drawingImageKey,
-      paintingKey: paintingImageKey,
-    },
-  );
+	const appDataResponse = await repo.createAppDataWithItem(
+		user.id,
+		"drawings",
+		drawingId,
+		"drawing",
+		{
+			description: descriptionRequest?.description || "Untitled drawing",
+			drawingUrl: `${baseAssetsUrl}/${drawingImageKey}`,
+			paintingUrl: `${baseAssetsUrl}/${paintingImageKey}`,
+			drawingKey: drawingImageKey,
+			paintingKey: paintingImageKey,
+		},
+	);
 
-  const appDataId = appDataResponse.id;
+	const appDataId = appDataResponse.id;
 
-  return {
-    ...conversationResponse,
-    app_data_id: appDataId,
-    completion_id: drawingId,
-    status: "success",
-    data: {
-      drawingUrl: `${baseAssetsUrl}/${drawingImageKey}`,
-      drawingKey: drawingImageKey,
-      paintingUrl: `${baseAssetsUrl}/${paintingImageKey}`,
-      paintingKey: paintingImageKey,
-      description: descriptionRequest?.description || "Untitled drawing",
-    },
-  };
+	return {
+		...conversationResponse,
+		app_data_id: appDataId,
+		completion_id: drawingId,
+		status: "success",
+		data: {
+			drawingUrl: `${baseAssetsUrl}/${drawingImageKey}`,
+			drawingKey: drawingImageKey,
+			paintingUrl: `${baseAssetsUrl}/${paintingImageKey}`,
+			paintingKey: paintingImageKey,
+			description: descriptionRequest?.description || "Untitled drawing",
+		},
+	};
 }

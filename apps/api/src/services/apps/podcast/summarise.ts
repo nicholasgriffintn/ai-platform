@@ -7,192 +7,192 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "services/apps/podcast/summarise" });
 
 function generateFullTranscription(
-  transcription: {
-    segments: { speaker: any; text: any }[];
-  },
-  speakers: {
-    [name: string]: string;
-  },
+	transcription: {
+		segments: { speaker: any; text: any }[];
+	},
+	speakers: {
+		[name: string]: string;
+	},
 ) {
-  if (!transcription?.segments || !speakers) {
-    return "";
-  }
+	if (!transcription?.segments || !speakers) {
+		return "";
+	}
 
-  const fullTranscription = transcription.segments
-    .map((segment: any) => {
-      const speaker = speakers[segment.speaker];
-      return `${speaker}: ${segment.text}`;
-    })
-    .join("\n");
+	const fullTranscription = transcription.segments
+		.map((segment: any) => {
+			const speaker = speakers[segment.speaker];
+			return `${speaker}: ${segment.text}`;
+		})
+		.join("\n");
 
-  return fullTranscription;
+	return fullTranscription;
 }
 
 export interface IPodcastSummariseBody {
-  podcastId: string;
-  speakers: { [name: string]: string };
+	podcastId: string;
+	speakers: { [name: string]: string };
 }
 
 type SummariseRequest = {
-  env: IEnv;
-  request: IPodcastSummariseBody;
-  user: IUser;
-  app_url?: string;
+	env: IEnv;
+	request: IPodcastSummariseBody;
+	user: IUser;
+	app_url?: string;
 };
 
 export const handlePodcastSummarise = async (
-  req: SummariseRequest,
+	req: SummariseRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-  const { request, env, user } = req;
+	const { request, env, user } = req;
 
-  if (!request.podcastId || !request.speakers) {
-    throw new AssistantError(
-      "Missing podcast id or speakers",
-      ErrorType.PARAMS_ERROR,
-    );
-  }
+	if (!request.podcastId || !request.speakers) {
+		throw new AssistantError(
+			"Missing podcast id or speakers",
+			ErrorType.PARAMS_ERROR,
+		);
+	}
 
-  if (!env.DB) {
-    throw new AssistantError("Missing database", ErrorType.PARAMS_ERROR);
-  }
+	if (!env.DB) {
+		throw new AssistantError("Missing database", ErrorType.PARAMS_ERROR);
+	}
 
-  try {
-    if (!user?.id) {
-      throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
-    }
+	try {
+		if (!user?.id) {
+			throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
+		}
 
-    const repositories = RepositoryManager.getInstance(env);
+		const repositories = RepositoryManager.getInstance(env);
 
-    const existingSummaries =
-      await repositories.appData.getAppDataByUserAppAndItem(
-        user.id,
-        "podcasts",
-        request.podcastId,
-        "summary",
-      );
+		const existingSummaries =
+			await repositories.appData.getAppDataByUserAppAndItem(
+				user.id,
+				"podcasts",
+				request.podcastId,
+				"summary",
+			);
 
-    if (existingSummaries.length > 0) {
-      let summaryData;
-      try {
-        summaryData = JSON.parse(existingSummaries[0].data);
-      } catch (e) {
-        logger.error("Failed to parse summary data", { error: e });
-        summaryData = {};
-      }
-      return {
-        status: "success",
-        content: summaryData.summary,
-        data: {
-          summary: summaryData.summary,
-          speakers: summaryData.speakers,
-        },
-      };
-    }
+		if (existingSummaries.length > 0) {
+			let summaryData;
+			try {
+				summaryData = JSON.parse(existingSummaries[0].data);
+			} catch (e) {
+				logger.error("Failed to parse summary data", { error: e });
+				summaryData = {};
+			}
+			return {
+				status: "success",
+				content: summaryData.summary,
+				data: {
+					summary: summaryData.summary,
+					speakers: summaryData.speakers,
+				},
+			};
+		}
 
-    const transcriptionData =
-      await repositories.appData.getAppDataByUserAppAndItem(
-        user.id,
-        "podcasts",
-        request.podcastId,
-        "transcribe",
-      );
+		const transcriptionData =
+			await repositories.appData.getAppDataByUserAppAndItem(
+				user.id,
+				"podcasts",
+				request.podcastId,
+				"transcribe",
+			);
 
-    if (transcriptionData.length === 0) {
-      throw new AssistantError(
-        "Transcription not found. Please transcribe podcast first",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
+		if (transcriptionData.length === 0) {
+			throw new AssistantError(
+				"Transcription not found. Please transcribe podcast first",
+				ErrorType.PARAMS_ERROR,
+			);
+		}
 
-    let parsedTranscriptionData;
-    try {
-      parsedTranscriptionData = JSON.parse(transcriptionData[0].data);
-    } catch (e) {
-      logger.error("Failed to parse transcription data", { error: e });
-      parsedTranscriptionData = {};
-    }
-    const title = parsedTranscriptionData.title;
-    const description = parsedTranscriptionData.description;
-    const transcription = parsedTranscriptionData.transcriptionData.output;
+		let parsedTranscriptionData;
+		try {
+			parsedTranscriptionData = JSON.parse(transcriptionData[0].data);
+		} catch (e) {
+			logger.error("Failed to parse transcription data", { error: e });
+			parsedTranscriptionData = {};
+		}
+		const title = parsedTranscriptionData.title;
+		const description = parsedTranscriptionData.description;
+		const transcription = parsedTranscriptionData.transcriptionData.output;
 
-    const fullTranscription = generateFullTranscription(
-      transcription,
-      request.speakers,
-    );
+		const fullTranscription = generateFullTranscription(
+			transcription,
+			request.speakers,
+		);
 
-    if (!fullTranscription) {
-      const appData = {
-        summary: description,
-        title,
-        description,
-        speakers: request.speakers,
-        status: "complete",
-        createdAt: new Date().toISOString(),
-      };
+		if (!fullTranscription) {
+			const appData = {
+				summary: description,
+				title,
+				description,
+				speakers: request.speakers,
+				status: "complete",
+				createdAt: new Date().toISOString(),
+			};
 
-      await repositories.appData.createAppDataWithItem(
-        user.id,
-        "podcasts",
-        request.podcastId,
-        "summary",
-        appData,
-      );
+			await repositories.appData.createAppDataWithItem(
+				user.id,
+				"podcasts",
+				request.podcastId,
+				"summary",
+				appData,
+			);
 
-      return {
-        status: "success",
-        content: "No transcription found",
-        data: appData,
-      };
-    }
+			return {
+				status: "success",
+				content: "No transcription found",
+				data: appData,
+			};
+		}
 
-    const data = await env.AI.run(
-      "@cf/facebook/bart-large-cnn",
-      {
-        input_text: fullTranscription,
-        max_length: 52,
-      },
-      {
-        gateway: {
-          id: gatewayId,
-          skipCache: false,
-          cacheTtl: 3360,
-          metadata: {
-            email: user?.email,
-          },
-        },
-      },
-    );
+		const data = await env.AI.run(
+			"@cf/facebook/bart-large-cnn",
+			{
+				input_text: fullTranscription,
+				max_length: 52,
+			},
+			{
+				gateway: {
+					id: gatewayId,
+					skipCache: false,
+					cacheTtl: 3360,
+					metadata: {
+						email: user?.email,
+					},
+				},
+			},
+		);
 
-    if (!data.summary) {
-      throw new AssistantError("No response from the model");
-    }
+		if (!data.summary) {
+			throw new AssistantError("No response from the model");
+		}
 
-    const appData = {
-      summary: data.summary,
-      title,
-      description,
-      speakers: request.speakers,
-      status: "complete",
-      createdAt: new Date().toISOString(),
-    };
+		const appData = {
+			summary: data.summary,
+			title,
+			description,
+			speakers: request.speakers,
+			status: "complete",
+			createdAt: new Date().toISOString(),
+		};
 
-    await repositories.appData.createAppDataWithItem(
-      user.id,
-      "podcasts",
-      request.podcastId,
-      "summary",
-      appData,
-    );
+		await repositories.appData.createAppDataWithItem(
+			user.id,
+			"podcasts",
+			request.podcastId,
+			"summary",
+			appData,
+		);
 
-    return {
-      status: "success",
-      content: data.summary,
-      data: appData,
-    };
-  } catch (error) {
-    logger.error("Failed to summarize podcast:", {
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
-    throw new AssistantError("Failed to summarize podcast");
-  }
+		return {
+			status: "success",
+			content: data.summary,
+			data: appData,
+		};
+	} catch (error) {
+		logger.error("Failed to summarize podcast:", {
+			error_message: error instanceof Error ? error.message : "Unknown error",
+		});
+		throw new AssistantError("Failed to summarize podcast");
+	}
 };

@@ -9,123 +9,123 @@ import { BaseRepository } from "./BaseRepository";
 import { generateId } from "~/utils/id";
 
 export class UserSettingsRepository extends BaseRepository {
-  private static readonly CREDENTIALS_DELIMITER = "::@@::";
+	private static readonly CREDENTIALS_DELIMITER = "::@@::";
 
-  private async getServerEncryptionKey() {
-    if (!this.env.PRIVATE_KEY) {
-      throw new AssistantError(
-        "Server key not configured",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
+	private async getServerEncryptionKey() {
+		if (!this.env.PRIVATE_KEY) {
+			throw new AssistantError(
+				"Server key not configured",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
 
-    return await crypto.subtle.importKey(
-      "raw",
-      decodeBase64(this.env.PRIVATE_KEY),
-      { name: "AES-GCM" },
-      false,
-      ["encrypt", "decrypt"],
-    );
-  }
+		return await crypto.subtle.importKey(
+			"raw",
+			decodeBase64(this.env.PRIVATE_KEY),
+			{ name: "AES-GCM" },
+			false,
+			["encrypt", "decrypt"],
+		);
+	}
 
-  private async encryptWithServerKey(data: JsonWebKey): Promise<{
-    iv: string;
-    data: string;
-  }> {
-    try {
-      const key = await this.getServerEncryptionKey();
-      const iv = crypto.getRandomValues(new Uint8Array(12));
-      const encryptedData = await crypto.subtle.encrypt(
-        { name: "AES-GCM", iv },
-        key,
-        new TextEncoder().encode(JSON.stringify(data)),
-      );
+	private async encryptWithServerKey(data: JsonWebKey): Promise<{
+		iv: string;
+		data: string;
+	}> {
+		try {
+			const key = await this.getServerEncryptionKey();
+			const iv = crypto.getRandomValues(new Uint8Array(12));
+			const encryptedData = await crypto.subtle.encrypt(
+				{ name: "AES-GCM", iv },
+				key,
+				new TextEncoder().encode(JSON.stringify(data)),
+			);
 
-      return {
-        iv: bufferToBase64(iv),
-        data: bufferToBase64(new Uint8Array(encryptedData)),
-      };
-    } catch (_error) {
-      throw new AssistantError(
-        "Failed to encrypt data",
-        ErrorType.UNKNOWN_ERROR,
-      );
-    }
-  }
+			return {
+				iv: bufferToBase64(iv),
+				data: bufferToBase64(new Uint8Array(encryptedData)),
+			};
+		} catch (_error) {
+			throw new AssistantError(
+				"Failed to encrypt data",
+				ErrorType.UNKNOWN_ERROR,
+			);
+		}
+	}
 
-  private async decryptWithServerKey(encryptedData: string): Promise<string> {
-    try {
-      const key = await this.getServerEncryptionKey();
-      let parsedEncryptedData;
-      try {
-        parsedEncryptedData = JSON.parse(encryptedData);
-      } catch (_e) {
-        throw new AssistantError(
-          "Failed to parse encrypted data",
-          ErrorType.INTERNAL_ERROR,
-        );
-      }
-      const { iv, data } = parsedEncryptedData;
+	private async decryptWithServerKey(encryptedData: string): Promise<string> {
+		try {
+			const key = await this.getServerEncryptionKey();
+			let parsedEncryptedData;
+			try {
+				parsedEncryptedData = JSON.parse(encryptedData);
+			} catch (_e) {
+				throw new AssistantError(
+					"Failed to parse encrypted data",
+					ErrorType.INTERNAL_ERROR,
+				);
+			}
+			const { iv, data } = parsedEncryptedData;
 
-      const decryptedData = await crypto.subtle.decrypt(
-        { name: "AES-GCM", iv: decodeBase64(iv) },
-        key,
-        decodeBase64(data),
-      );
+			const decryptedData = await crypto.subtle.decrypt(
+				{ name: "AES-GCM", iv: decodeBase64(iv) },
+				key,
+				decodeBase64(data),
+			);
 
-      return new TextDecoder().decode(decryptedData);
-    } catch (_error) {
-      throw new AssistantError(
-        "Failed to decrypt data",
-        ErrorType.UNKNOWN_ERROR,
-      );
-    }
-  }
+			return new TextDecoder().decode(decryptedData);
+		} catch (_error) {
+			throw new AssistantError(
+				"Failed to decrypt data",
+				ErrorType.UNKNOWN_ERROR,
+			);
+		}
+	}
 
-  public async createUserSettings(userId: number): Promise<void> {
-    try {
-      const keyPair = await crypto.subtle.generateKey(
-        {
-          name: "RSA-OAEP",
-          modulusLength: 3072,
-          publicExponent: new Uint8Array([1, 0, 1]),
-          hash: "SHA-256",
-        },
-        true,
-        ["encrypt", "decrypt"],
-      );
+	public async createUserSettings(userId: number): Promise<void> {
+		try {
+			const keyPair = await crypto.subtle.generateKey(
+				{
+					name: "RSA-OAEP",
+					modulusLength: 3072,
+					publicExponent: new Uint8Array([1, 0, 1]),
+					hash: "SHA-256",
+				},
+				true,
+				["encrypt", "decrypt"],
+			);
 
-      const privateKey = await crypto.subtle.exportKey(
-        "jwk",
-        keyPair.privateKey,
-      );
-      const encryptedPrivateKey = await this.encryptWithServerKey(privateKey);
-      const encryptedPrivateKeyString = JSON.stringify(encryptedPrivateKey);
+			const privateKey = await crypto.subtle.exportKey(
+				"jwk",
+				keyPair.privateKey,
+			);
+			const encryptedPrivateKey = await this.encryptWithServerKey(privateKey);
+			const encryptedPrivateKeyString = JSON.stringify(encryptedPrivateKey);
 
-      const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
-      const publicKeyString = JSON.stringify(publicKey);
+			const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+			const publicKeyString = JSON.stringify(publicKey);
 
-      const userSettingsId = generateId();
+			const userSettingsId = generateId();
 
-      await this.executeRun(
-        `INSERT INTO user_settings (id, user_id, public_key, private_key)
+			await this.executeRun(
+				`INSERT INTO user_settings (id, user_id, public_key, private_key)
          VALUES (?, ?, ?, ?)`,
-        [userSettingsId, userId, publicKeyString, encryptedPrivateKeyString],
-      );
-    } catch (_error) {
-      throw new AssistantError(
-        "Failed to create user settings",
-        ErrorType.UNKNOWN_ERROR,
-      );
-    }
-  }
+				[userSettingsId, userId, publicKeyString, encryptedPrivateKeyString],
+			);
+		} catch (_error) {
+			throw new AssistantError(
+				"Failed to create user settings",
+				ErrorType.UNKNOWN_ERROR,
+			);
+		}
+	}
 
-  public async updateUserSettings(
-    userId: number,
-    settings: Record<string, unknown>,
-  ): Promise<void> {
-    await this.executeRun(
-      `UPDATE user_settings
+	public async updateUserSettings(
+		userId: number,
+		settings: Record<string, unknown>,
+	): Promise<void> {
+		await this.executeRun(
+			`UPDATE user_settings
        SET 
          nickname = ?,
          job_role = ?,
@@ -149,358 +149,358 @@ export class UserSettingsRepository extends BaseRepository {
          search_provider = ?,
          updated_at = datetime('now')
        WHERE user_id = ?`,
-      [
-        settings.nickname,
-        settings.job_role,
-        settings.traits,
-        settings.preferences,
-        settings.tracking_enabled !== undefined
-          ? settings.tracking_enabled
-            ? 1
-            : 0
-          : null,
-        settings.guardrails_enabled !== undefined
-          ? settings.guardrails_enabled
-            ? 1
-            : 0
-          : null,
-        settings.guardrails_provider,
-        settings.bedrock_guardrail_id,
-        settings.bedrock_guardrail_version,
-        settings.embedding_provider,
-        settings.bedrock_knowledge_base_id,
-        settings.bedrock_knowledge_base_custom_data_source_id,
-        settings.s3vectors_bucket_name,
-        settings.s3vectors_index_name,
-        settings.s3vectors_region,
-        settings.memories_save_enabled !== undefined
-          ? settings.memories_save_enabled
-            ? 1
-            : 0
-          : null,
-        settings.memories_chat_history_enabled !== undefined
-          ? settings.memories_chat_history_enabled
-            ? 1
-            : 0
-          : null,
-        settings.transcription_provider,
-        settings.transcription_model,
-        settings.search_provider,
-        userId,
-      ],
-    );
-  }
+			[
+				settings.nickname,
+				settings.job_role,
+				settings.traits,
+				settings.preferences,
+				settings.tracking_enabled !== undefined
+					? settings.tracking_enabled
+						? 1
+						: 0
+					: null,
+				settings.guardrails_enabled !== undefined
+					? settings.guardrails_enabled
+						? 1
+						: 0
+					: null,
+				settings.guardrails_provider,
+				settings.bedrock_guardrail_id,
+				settings.bedrock_guardrail_version,
+				settings.embedding_provider,
+				settings.bedrock_knowledge_base_id,
+				settings.bedrock_knowledge_base_custom_data_source_id,
+				settings.s3vectors_bucket_name,
+				settings.s3vectors_index_name,
+				settings.s3vectors_region,
+				settings.memories_save_enabled !== undefined
+					? settings.memories_save_enabled
+						? 1
+						: 0
+					: null,
+				settings.memories_chat_history_enabled !== undefined
+					? settings.memories_chat_history_enabled
+						? 1
+						: 0
+					: null,
+				settings.transcription_provider,
+				settings.transcription_model,
+				settings.search_provider,
+				userId,
+			],
+		);
+	}
 
-  public async getUserSettings(userId: number): Promise<IUserSettings | null> {
-    const columns = [
-      "id",
-      "nickname",
-      "job_role",
-      "traits",
-      "preferences",
-      "tracking_enabled",
-      "guardrails_enabled",
-      "guardrails_provider",
-      "bedrock_guardrail_id",
-      "bedrock_guardrail_version",
-      "embedding_provider",
-      "bedrock_knowledge_base_id",
-      "bedrock_knowledge_base_custom_data_source_id",
-      "s3vectors_bucket_name",
-      "s3vectors_index_name",
-      "s3vectors_region",
-      "memories_save_enabled",
-      "memories_chat_history_enabled",
-      "transcription_provider",
-      "transcription_model",
-      "search_provider",
-    ];
-    const result = await this.runQuery<any>(
-      `SELECT ${columns.join(", ")} FROM user_settings WHERE user_id = ?`,
-      [userId],
-      true,
-    );
+	public async getUserSettings(userId: number): Promise<IUserSettings | null> {
+		const columns = [
+			"id",
+			"nickname",
+			"job_role",
+			"traits",
+			"preferences",
+			"tracking_enabled",
+			"guardrails_enabled",
+			"guardrails_provider",
+			"bedrock_guardrail_id",
+			"bedrock_guardrail_version",
+			"embedding_provider",
+			"bedrock_knowledge_base_id",
+			"bedrock_knowledge_base_custom_data_source_id",
+			"s3vectors_bucket_name",
+			"s3vectors_index_name",
+			"s3vectors_region",
+			"memories_save_enabled",
+			"memories_chat_history_enabled",
+			"transcription_provider",
+			"transcription_model",
+			"search_provider",
+		];
+		const result = await this.runQuery<any>(
+			`SELECT ${columns.join(", ")} FROM user_settings WHERE user_id = ?`,
+			[userId],
+			true,
+		);
 
-    if (!result) {
-      return null;
-    }
+		if (!result) {
+			return null;
+		}
 
-    return {
-      ...result,
-      tracking_enabled: Boolean(result.tracking_enabled),
-      guardrails_enabled: Boolean(result.guardrails_enabled),
-      memories_save_enabled: Boolean(result.memories_save_enabled),
-      memories_chat_history_enabled: Boolean(
-        result.memories_chat_history_enabled,
-      ),
-    } as IUserSettings;
-  }
+		return {
+			...result,
+			tracking_enabled: Boolean(result.tracking_enabled),
+			guardrails_enabled: Boolean(result.guardrails_enabled),
+			memories_save_enabled: Boolean(result.memories_save_enabled),
+			memories_chat_history_enabled: Boolean(
+				result.memories_chat_history_enabled,
+			),
+		} as IUserSettings;
+	}
 
-  public async getUserEnabledModels(
-    userId: number,
-  ): Promise<Record<string, unknown>[]> {
-    const userModels = (await this.runQuery<{
-      model_id: string;
-      enabled: number;
-    }>("SELECT id, model_id, enabled FROM model_settings WHERE user_id = ?", [
-      userId,
-    ])) as { model_id: string; enabled: number }[];
+	public async getUserEnabledModels(
+		userId: number,
+	): Promise<Record<string, unknown>[]> {
+		const userModels = (await this.runQuery<{
+			model_id: string;
+			enabled: number;
+		}>("SELECT id, model_id, enabled FROM model_settings WHERE user_id = ?", [
+			userId,
+		])) as { model_id: string; enabled: number }[];
 
-    const userModelMap = new Map(
-      userModels.map((model) => [model.model_id, model.enabled === 1]),
-    );
+		const userModelMap = new Map(
+			userModels.map((model) => [model.model_id, model.enabled === 1]),
+		);
 
-    const models = getModels();
+		const models = getModels();
 
-    return Object.values(models).reduce(
-      (enabledModels, model) => {
-        const isModelEnabled = userModelMap.has(model.matchingModel)
-          ? userModelMap.get(model.matchingModel)
-          : model.isFeatured;
+		return Object.values(models).reduce(
+			(enabledModels, model) => {
+				const isModelEnabled = userModelMap.has(model.matchingModel)
+					? userModelMap.get(model.matchingModel)
+					: model.isFeatured;
 
-        if (isModelEnabled) {
-          enabledModels.push({
-            ...model,
-            enabled: true,
-          });
-        }
+				if (isModelEnabled) {
+					enabledModels.push({
+						...model,
+						enabled: true,
+					});
+				}
 
-        return enabledModels;
-      },
-      [] as Record<string, unknown>[],
-    );
-  }
+				return enabledModels;
+			},
+			[] as Record<string, unknown>[],
+		);
+	}
 
-  public async storeProviderApiKey(
-    userId: number,
-    providerId: string,
-    apiKey: string,
-    secretKey?: string,
-  ): Promise<void> {
-    if (!this.env.DB) {
-      throw new AssistantError(
-        "Database is not configured",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
+	public async storeProviderApiKey(
+		userId: number,
+		providerId: string,
+		apiKey: string,
+		secretKey?: string,
+	): Promise<void> {
+		if (!this.env.DB) {
+			throw new AssistantError(
+				"Database is not configured",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
 
-    if (!userId || !providerId || !apiKey) {
-      throw new AssistantError(
-        "Missing required parameters",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
+		if (!userId || !providerId || !apiKey) {
+			throw new AssistantError(
+				"Missing required parameters",
+				ErrorType.PARAMS_ERROR,
+			);
+		}
 
-    try {
-      const existingProviderSettings = await this.runQuery<{ id: string }>(
-        "SELECT id FROM provider_settings WHERE user_id = ? AND id = ?",
-        [userId, providerId],
-        true,
-      );
+		try {
+			const existingProviderSettings = await this.runQuery<{ id: string }>(
+				"SELECT id FROM provider_settings WHERE user_id = ? AND id = ?",
+				[userId, providerId],
+				true,
+			);
 
-      if (!existingProviderSettings) {
-        throw new AssistantError(
-          "Provider settings not found",
-          ErrorType.PARAMS_ERROR,
-        );
-      }
+			if (!existingProviderSettings) {
+				throw new AssistantError(
+					"Provider settings not found",
+					ErrorType.PARAMS_ERROR,
+				);
+			}
 
-      const result = await this.runQuery<{ public_key: string }>(
-        "SELECT public_key FROM user_settings WHERE user_id = ?",
-        [userId],
-        true,
-      );
+			const result = await this.runQuery<{ public_key: string }>(
+				"SELECT public_key FROM user_settings WHERE user_id = ?",
+				[userId],
+				true,
+			);
 
-      if (!result?.public_key) {
-        throw new AssistantError(
-          "User settings not found",
-          ErrorType.NOT_FOUND,
-        );
-      }
+			if (!result?.public_key) {
+				throw new AssistantError(
+					"User settings not found",
+					ErrorType.NOT_FOUND,
+				);
+			}
 
-      let publicKeyJwk;
-      try {
-        publicKeyJwk = JSON.parse(result.public_key);
-      } catch (_e) {
-        throw new AssistantError(
-          "Failed to parse public key",
-          ErrorType.INTERNAL_ERROR,
-        );
-      }
+			let publicKeyJwk;
+			try {
+				publicKeyJwk = JSON.parse(result.public_key);
+			} catch (_e) {
+				throw new AssistantError(
+					"Failed to parse public key",
+					ErrorType.INTERNAL_ERROR,
+				);
+			}
 
-      const publicKey = await crypto.subtle.importKey(
-        "jwk",
-        publicKeyJwk,
-        {
-          name: "RSA-OAEP",
-          hash: "SHA-256",
-        },
-        false,
-        ["encrypt"],
-      );
+			const publicKey = await crypto.subtle.importKey(
+				"jwk",
+				publicKeyJwk,
+				{
+					name: "RSA-OAEP",
+					hash: "SHA-256",
+				},
+				false,
+				["encrypt"],
+			);
 
-      const keyToEncrypt = secretKey
-        ? `${apiKey}${UserSettingsRepository.CREDENTIALS_DELIMITER}${secretKey}`
-        : apiKey;
+			const keyToEncrypt = secretKey
+				? `${apiKey}${UserSettingsRepository.CREDENTIALS_DELIMITER}${secretKey}`
+				: apiKey;
 
-      const encryptedData = await crypto.subtle.encrypt(
-        {
-          name: "RSA-OAEP",
-          label: new TextEncoder().encode("provider-api-key"),
-        },
-        publicKey,
-        new TextEncoder().encode(keyToEncrypt),
-      );
+			const encryptedData = await crypto.subtle.encrypt(
+				{
+					name: "RSA-OAEP",
+					label: new TextEncoder().encode("provider-api-key"),
+				},
+				publicKey,
+				new TextEncoder().encode(keyToEncrypt),
+			);
 
-      const encryptedApiKey = bufferToBase64(new Uint8Array(encryptedData));
+			const encryptedApiKey = bufferToBase64(new Uint8Array(encryptedData));
 
-      await this.executeRun(
-        "UPDATE provider_settings SET api_key = ?, enabled = 1 WHERE user_id = ? AND id = ?",
-        [encryptedApiKey, userId, existingProviderSettings.id],
-      );
-    } catch (error) {
-      if (error instanceof AssistantError) {
-        throw error;
-      }
-      throw new AssistantError(
-        "Failed to store provider API key",
-        ErrorType.UNKNOWN_ERROR,
-      );
-    }
-  }
+			await this.executeRun(
+				"UPDATE provider_settings SET api_key = ?, enabled = 1 WHERE user_id = ? AND id = ?",
+				[encryptedApiKey, userId, existingProviderSettings.id],
+			);
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
+			}
+			throw new AssistantError(
+				"Failed to store provider API key",
+				ErrorType.UNKNOWN_ERROR,
+			);
+		}
+	}
 
-  public async getProviderApiKey(
-    userId: number,
-    providerId: string,
-  ): Promise<string | null> {
-    if (!this.env.DB) {
-      throw new AssistantError(
-        "Database is not configured",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
+	public async getProviderApiKey(
+		userId: number,
+		providerId: string,
+	): Promise<string | null> {
+		if (!this.env.DB) {
+			throw new AssistantError(
+				"Database is not configured",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
 
-    if (!userId || !providerId) {
-      throw new AssistantError(
-        "Missing required parameters",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
+		if (!userId || !providerId) {
+			throw new AssistantError(
+				"Missing required parameters",
+				ErrorType.PARAMS_ERROR,
+			);
+		}
 
-    try {
-      const userSettings = await this.runQuery<{ private_key: string }>(
-        "SELECT private_key FROM user_settings WHERE user_id = ?",
-        [userId],
-        true,
-      );
+		try {
+			const userSettings = await this.runQuery<{ private_key: string }>(
+				"SELECT private_key FROM user_settings WHERE user_id = ?",
+				[userId],
+				true,
+			);
 
-      if (!userSettings?.private_key) {
-        throw new AssistantError(
-          "User settings not found",
-          ErrorType.NOT_FOUND,
-        );
-      }
+			if (!userSettings?.private_key) {
+				throw new AssistantError(
+					"User settings not found",
+					ErrorType.NOT_FOUND,
+				);
+			}
 
-      const decryptedPrivateKeyString = await this.decryptWithServerKey(
-        userSettings.private_key,
-      );
-      let privateKeyJwk;
-      try {
-        privateKeyJwk = JSON.parse(decryptedPrivateKeyString);
-      } catch (_e) {
-        throw new AssistantError(
-          "Failed to parse private key",
-          ErrorType.INTERNAL_ERROR,
-        );
-      }
+			const decryptedPrivateKeyString = await this.decryptWithServerKey(
+				userSettings.private_key,
+			);
+			let privateKeyJwk;
+			try {
+				privateKeyJwk = JSON.parse(decryptedPrivateKeyString);
+			} catch (_e) {
+				throw new AssistantError(
+					"Failed to parse private key",
+					ErrorType.INTERNAL_ERROR,
+				);
+			}
 
-      const privateKey = await crypto.subtle.importKey(
-        "jwk",
-        privateKeyJwk,
-        {
-          name: "RSA-OAEP",
-          hash: "SHA-256",
-        },
-        true,
-        ["decrypt"],
-      );
+			const privateKey = await crypto.subtle.importKey(
+				"jwk",
+				privateKeyJwk,
+				{
+					name: "RSA-OAEP",
+					hash: "SHA-256",
+				},
+				true,
+				["decrypt"],
+			);
 
-      const result = await this.runQuery<{ api_key: string }>(
-        "SELECT api_key FROM provider_settings WHERE user_id = ? AND provider_id = ?",
-        [userId, providerId],
-        true,
-      );
+			const result = await this.runQuery<{ api_key: string }>(
+				"SELECT api_key FROM provider_settings WHERE user_id = ? AND provider_id = ?",
+				[userId, providerId],
+				true,
+			);
 
-      if (!result?.api_key) {
-        return null;
-      }
+			if (!result?.api_key) {
+				return null;
+			}
 
-      const decryptedApiKey = await crypto.subtle.decrypt(
-        {
-          name: "RSA-OAEP",
-          label: new TextEncoder().encode("provider-api-key"),
-        },
-        privateKey,
-        decodeBase64(result.api_key),
-      );
+			const decryptedApiKey = await crypto.subtle.decrypt(
+				{
+					name: "RSA-OAEP",
+					label: new TextEncoder().encode("provider-api-key"),
+				},
+				privateKey,
+				decodeBase64(result.api_key),
+			);
 
-      return new TextDecoder().decode(decryptedApiKey);
-    } catch (error) {
-      if (error instanceof AssistantError) {
-        throw error;
-      }
-      throw new AssistantError(
-        "Failed to retrieve provider API key",
-        ErrorType.UNKNOWN_ERROR,
-      );
-    }
-  }
+			return new TextDecoder().decode(decryptedApiKey);
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
+			}
+			throw new AssistantError(
+				"Failed to retrieve provider API key",
+				ErrorType.UNKNOWN_ERROR,
+			);
+		}
+	}
 
-  public async createUserProviderSettings(userId: number): Promise<void> {
-    const providers = AIProviderFactory.getConfigurableProviders();
-    const alwaysEnabledProviders = this.env.ALWAYS_ENABLED_PROVIDERS || "";
-    const defaultProviders = alwaysEnabledProviders?.split(",") || [];
+	public async createUserProviderSettings(userId: number): Promise<void> {
+		const providers = AIProviderFactory.getConfigurableProviders();
+		const alwaysEnabledProviders = this.env.ALWAYS_ENABLED_PROVIDERS || "";
+		const defaultProviders = alwaysEnabledProviders?.split(",") || [];
 
-    await Promise.all(
-      providers.map(async (provider) => {
-        const existingSettings = await this.runQuery<{ id: string }>(
-          "SELECT id FROM provider_settings WHERE user_id = ? AND provider_id = ?",
-          [userId, provider],
-          true,
-        );
+		await Promise.all(
+			providers.map(async (provider) => {
+				const existingSettings = await this.runQuery<{ id: string }>(
+					"SELECT id FROM provider_settings WHERE user_id = ? AND provider_id = ?",
+					[userId, provider],
+					true,
+				);
 
-        if (existingSettings) {
-          return;
-        }
+				if (existingSettings) {
+					return;
+				}
 
-        const providerSettingsId = generateId();
+				const providerSettingsId = generateId();
 
-        const isEnabled = defaultProviders.includes(provider);
+				const isEnabled = defaultProviders.includes(provider);
 
-        await this.executeRun(
-          "INSERT INTO provider_settings (id, user_id, provider_id, enabled) VALUES (?, ?, ?, ?)",
-          [providerSettingsId, userId, provider, isEnabled ? 1 : 0],
-        );
-      }),
-    );
-  }
+				await this.executeRun(
+					"INSERT INTO provider_settings (id, user_id, provider_id, enabled) VALUES (?, ?, ?, ?)",
+					[providerSettingsId, userId, provider, isEnabled ? 1 : 0],
+				);
+			}),
+		);
+	}
 
-  public async getUserProviderSettings(
-    userId: number,
-  ): Promise<Record<string, unknown>[]> {
-    const result = await this.runQuery<{
-      id: string;
-      provider_id: string;
-      enabled: number;
-    }>(
-      "SELECT id, provider_id, enabled FROM provider_settings WHERE user_id = ?",
-      [userId],
-    );
+	public async getUserProviderSettings(
+		userId: number,
+	): Promise<Record<string, unknown>[]> {
+		const result = await this.runQuery<{
+			id: string;
+			provider_id: string;
+			enabled: number;
+		}>(
+			"SELECT id, provider_id, enabled FROM provider_settings WHERE user_id = ?",
+			[userId],
+		);
 
-    return result.map((provider) => ({
-      id: provider.id,
-      provider_id: provider.provider_id,
-      enabled: provider.enabled === 1,
-    }));
-  }
+		return result.map((provider) => ({
+			id: provider.id,
+			provider_id: provider.provider_id,
+			enabled: provider.enabled === 1,
+		}));
+	}
 }

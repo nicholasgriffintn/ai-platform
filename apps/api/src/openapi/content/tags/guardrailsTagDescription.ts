@@ -1,6 +1,7 @@
 import { md } from "~/utils/markdown.js";
 
-export const guardrailsTagDescription = md`# Guardrails
+export const guardrailsTagDescription = md`
+# Guardrails
 
 Content safety and moderation using Llamaguard and AWS Bedrock Guardrails.
 
@@ -41,6 +42,7 @@ If using Bedrock, also configure:
 Meta's Llama Guard model for content moderation.
 
 **Features:**
+
 - Free to use
 - Runs on Cloudflare Workers AI
 - Fast response (~200-500ms)
@@ -48,23 +50,24 @@ Meta's Llama Guard model for content moderation.
 
 **Categories:**
 
-| Code | Category |
-|------|----------|
-| S1 | Violent Crimes |
-| S2 | Non-Violent Crimes |
-| S3 | Sex Crimes |
-| S4 | Child Exploitation |
-| S5 | Defamation |
-| S6 | Specialized Advice |
-| S7 | Privacy |
-| S8 | Intellectual Property |
-| S9 | Indiscriminate Weapons |
-| S10 | Hate |
-| S11 | Self-Harm |
-| S12 | Sexual Content |
-| S13 | Elections |
+| Code | Category               |
+| ---- | ---------------------- |
+| S1   | Violent Crimes         |
+| S2   | Non-Violent Crimes     |
+| S3   | Sex Crimes             |
+| S4   | Child Exploitation     |
+| S5   | Defamation             |
+| S6   | Specialized Advice     |
+| S7   | Privacy                |
+| S8   | Intellectual Property  |
+| S9   | Indiscriminate Weapons |
+| S10  | Hate                   |
+| S11  | Self-Harm              |
+| S12  | Sexual Content         |
+| S13  | Elections              |
 
 **Response:**
+
 - Returns \`"safe"\` or \`"unsafe"\`
 - If unsafe, includes violated category codes
 
@@ -73,6 +76,7 @@ Meta's Llama Guard model for content moderation.
 Amazon's enterprise guardrails service.
 
 **Features:**
+
 - Enterprise-grade filtering
 - PII detection
 - Custom content policies
@@ -80,6 +84,7 @@ Amazon's enterprise guardrails service.
 - Requires AWS credentials and guardrail configuration
 
 **Setup Required:**
+
 1. AWS account with Bedrock access
 2. Created guardrail in AWS Bedrock
 3. AWS credentials configured in environment:
@@ -88,6 +93,7 @@ Amazon's enterprise guardrails service.
    - \`AWS_REGION\` (default: "us-east-1")
 
 **Response Structure:**
+
 - Topic policy violations
 - Content filter violations
 - PII entity detections
@@ -98,37 +104,37 @@ Amazon's enterprise guardrails service.
 
 Validates user messages before processing:
 
-\`\`\`typescript
+~~~typescript
 const result = await guardrails.validateInput(message, userId, completionId);
 
 if (!result.isValid) {
-  // Handle violation
-  console.log(result.violations);
+	// Handle violation
+	console.log(result.violations);
 }
-\`\`\`
+~~~
 
 ### Output Validation
 
 Validates model responses before returning:
 
-\`\`\`typescript
+~~~typescript
 const result = await guardrails.validateOutput(response, userId, completionId);
 
 if (!result.isValid) {
-  // Handle violation
-  console.log(result.violations);
+	// Handle violation
+	console.log(result.violations);
 }
-\`\`\`
+~~~
 
 ### Validation Result
 
-\`\`\`typescript
+~~~typescript
 {
   isValid: boolean;
   violations: string[];
   rawResponse?: string;
 }
-\`\`\`
+~~~
 
 ## Integration
 
@@ -137,12 +143,13 @@ if (!result.isValid) {
 Guardrails are automatically applied during chat completions if enabled in user settings.
 
 The system validates:
+
 - User input messages (before processing)
 - Model output (after generation)
 
 Results are included in the response:
 
-\`\`\`json
+~~~json
 {
   "id": "cmpl_abc123",
   "choices": [...],
@@ -152,21 +159,21 @@ Results are included in the response:
     }
   }
 }
-\`\`\`
+~~~
 
 Or if violations occur:
 
-\`\`\`json
+~~~json
 {
-  "post_processing": {
-    "guardrails": {
-      "passed": false,
-      "error": "Content policy violation",
-      "violations": ["S10: Hate"]
-    }
-  }
+	"post_processing": {
+		"guardrails": {
+			"passed": false,
+			"error": "Content policy violation",
+			"violations": ["S10: Hate"]
+		}
+	}
 }
-\`\`\`
+~~~
 
 ## Monitoring
 
@@ -190,14 +197,14 @@ Violations are automatically tracked to Cloudflare Analytics Engine with:
 
 ### Check a Conversation
 
-\`\`\`bash
+~~~bash
 curl -X POST https://api.polychat.app/v1/chat/completions/cmpl_abc123/check \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
     "role": "user"
   }'
-\`\`\`
+~~~
 
 ### Enable Guardrails (User Settings)
 
@@ -209,4 +216,5 @@ Guardrails must be enabled via user settings. There's no per-request parameter t
 2. **Choose Provider** - Llamaguard for speed/cost, Bedrock for accuracy
 3. **Monitor Violations** - Track violations in analytics
 4. **Handle Failures** - Implement fallbacks if guardrail validation fails
-5. **Test Thoroughly** - Test with various content types before deployment`;
+5. **Test Thoroughly** - Test with various content types before deployment
+`;

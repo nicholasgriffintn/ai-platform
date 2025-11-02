@@ -1,6 +1,7 @@
 import { md } from "~/utils/markdown.js";
 
-export const codeTagDescription = md`# Code Generation
+export const codeTagDescription = md`
+# Code Generation
 
 Specialized endpoints for code completion, editing, and application using models optimized for coding tasks.
 
@@ -26,6 +27,7 @@ Complete code at a specific position using context before and after the cursor.
 ### Supported Models
 
 Models with FIM support (check via Models API):
+
 - \`mistral-codestral-latest\` (Mistral)
 - \`mistral-codestral-mamba-latest\` (Mistral)
 - \`mercury-coder\` (Mercury)
@@ -45,6 +47,7 @@ Get suggestions for the next code edit based on the current file and instruction
 ### Supported Models
 
 Optimized for:
+
 - \`mercury-coder\` (Mercury)
 
 ## Apply
@@ -78,73 +81,81 @@ Apply code snippets or patches to existing code.
 
 ### IDE Autocomplete
 
-\`\`\`javascript
+~~~javascript
 async function getCompletion(beforeCursor, afterCursor) {
-  const response = await fetch('https://api.polychat.app/v1/chat/fim/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer YOUR_TOKEN'
-    },
-    body: JSON.stringify({
-      model: 'mistral-codestral-latest',
-      prompt: beforeCursor,
-      suffix: afterCursor,
-      max_tokens: 50,
-      temperature: 0.3,
-      stream: false
-    })
-  });
+	const response = await fetch(
+		"https://api.polychat.app/v1/chat/fim/completions",
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: "Bearer YOUR_TOKEN",
+			},
+			body: JSON.stringify({
+				model: "mistral-codestral-latest",
+				prompt: beforeCursor,
+				suffix: afterCursor,
+				max_tokens: 50,
+				temperature: 0.3,
+				stream: false,
+			}),
+		},
+	);
 
-  const data = await response.json();
-  return data.choices[0].text;
+	const data = await response.json();
+	return data.choices[0].text;
 }
-\`\`\`
+~~~
 
 ### Code Refactoring
 
-\`\`\`javascript
+~~~javascript
 async function suggestRefactoring(code, instruction) {
-  const prompt = \`<|fim_prefix|>\${code}<|fim_suffix|>\\n\\n<|fim_instruction|>\${instruction}<|fim_instruction|>\`;
+	const prompt = \`<|fim_prefix|>\${code}<|fim_suffix|>\\n\\n<|fim_instruction|>\${instruction}<|fim_instruction|>\`;
 
-  const response = await fetch('https://api.polychat.app/v1/chat/edit/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer YOUR_TOKEN'
-    },
-    body: JSON.stringify({
-      model: 'mercury-coder',
-      messages: [{ role: 'user', content: prompt }],
-      stream: true
-    })
-  });
+	const response = await fetch(
+		"https://api.polychat.app/v1/chat/edit/completions",
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: "Bearer YOUR_TOKEN",
+			},
+			body: JSON.stringify({
+				model: "mercury-coder",
+				messages: [{ role: "user", content: prompt }],
+				stream: true,
+			}),
+		},
+	);
 
-  // Handle streaming response
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
+	// Handle streaming response
+	const reader = response.body.getReader();
+	const decoder = new TextDecoder();
 
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
+	while (true) {
+		const { value, done } = await reader.read();
+		if (done) break;
 
-    const chunk = decoder.decode(value);
-    const lines = chunk.split('\\n').filter(line => line.startsWith('data: '));
+		const chunk = decoder.decode(value);
+		const lines = chunk
+			.split("\\n")
+			.filter((line) => line.startsWith("data: "));
 
-    for (const line of lines) {
-      if (line === 'data: [DONE]') break;
-      const json = JSON.parse(line.slice(6));
-      console.log(json.choices[0].delta?.content || '');
-    }
-  }
+		for (const line of lines) {
+			if (line === "data: [DONE]") break;
+			const json = JSON.parse(line.slice(6));
+			console.log(json.choices[0].delta?.content || "");
+		}
+	}
 }
-\`\`\`
+~~~
 
 ## Examples
 
 ### FIM Completion
 
-\`\`\`bash
+~~~bash
 curl https://api.polychat.app/v1/chat/fim/completions \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
@@ -155,11 +166,11 @@ curl https://api.polychat.app/v1/chat/fim/completions \\
     "max_tokens": 100,
     "temperature": 0.3
   }'
-\`\`\`
+~~~
 
 ### Next Edit
 
-\`\`\`bash
+~~~bash
 curl https://api.polychat.app/v1/chat/edit/completions \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type": application/json" \\
@@ -172,11 +183,11 @@ curl https://api.polychat.app/v1/chat/edit/completions \\
       }
     ]
   }'
-\`\`\`
+~~~
 
 ### Apply Edit
 
-\`\`\`bash
+~~~bash
 curl https://api.polychat.app/v1/chat/apply/completions \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type": application/json" \\
@@ -189,4 +200,5 @@ curl https://api.polychat.app/v1/chat/apply/completions \\
       }
     ]
   }'
-\`\`\``;
+~~~
+`;

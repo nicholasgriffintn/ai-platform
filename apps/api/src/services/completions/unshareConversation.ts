@@ -4,31 +4,31 @@ import type { IEnv, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface UnshareConversationRequest {
-  env: IEnv;
-  user: User;
+	env: IEnv;
+	user: User;
 }
 
 export async function handleUnshareConversation(
-  { env, user }: UnshareConversationRequest,
-  completion_id: string,
+	{ env, user }: UnshareConversationRequest,
+	completion_id: string,
 ): Promise<{ success: boolean }> {
-  if (!user || !user.id) {
-    throw new AssistantError(
-      "Authentication required",
-      ErrorType.AUTHENTICATION_ERROR,
-    );
-  }
+	if (!user || !user.id) {
+		throw new AssistantError(
+			"Authentication required",
+			ErrorType.AUTHENTICATION_ERROR,
+		);
+	}
 
-  const database = Database.getInstance(env);
+	const database = Database.getInstance(env);
 
-  const conversationManager = ConversationManager.getInstance({
-    database,
-    user,
-  });
+	const conversationManager = ConversationManager.getInstance({
+		database,
+		user,
+	});
 
-  await conversationManager.unshareConversation(completion_id);
+	await conversationManager.unshareConversation(completion_id);
 
-  return {
-    success: true,
-  };
+	return {
+		success: true,
+	};
 }

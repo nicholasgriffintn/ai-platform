@@ -6,105 +6,105 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger();
 
 export interface IPodcastListRequest {
-  env: IEnv;
-  user: IUser;
+	env: IEnv;
+	user: IUser;
 }
 
 export interface IPodcast {
-  id: string;
-  title: string;
-  description?: string;
-  createdAt: string;
-  imageUrl?: string;
-  audioUrl?: string;
-  duration?: number;
-  transcript?: string;
-  summary?: string;
-  status: "processing" | "transcribing" | "summarizing" | "complete";
+	id: string;
+	title: string;
+	description?: string;
+	createdAt: string;
+	imageUrl?: string;
+	audioUrl?: string;
+	duration?: number;
+	transcript?: string;
+	summary?: string;
+	status: "processing" | "transcribing" | "summarizing" | "complete";
 }
 
 interface PodcastItem {
-  id: string;
-  items?: {
-    upload?: Array<{ data: Record<string, any> }>;
-    transcribe?: Array<{ data: Record<string, any> }>;
-    summary?: Array<{ data: Record<string, any> }>;
-    image?: Array<{ data: Record<string, any> }>;
-  };
+	id: string;
+	items?: {
+		upload?: Array<{ data: Record<string, any> }>;
+		transcribe?: Array<{ data: Record<string, any> }>;
+		summary?: Array<{ data: Record<string, any> }>;
+		image?: Array<{ data: Record<string, any> }>;
+	};
 }
 
 export const handlePodcastList = async (
-  req: IPodcastListRequest,
+	req: IPodcastListRequest,
 ): Promise<IPodcast[]> => {
-  const { env, user } = req;
+	const { env, user } = req;
 
-  if (!user?.id) {
-    throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
-  }
+	if (!user?.id) {
+		throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
+	}
 
-  const repositories = RepositoryManager.getInstance(env);
+	const repositories = RepositoryManager.getInstance(env);
 
-  const appDataList = await repositories.appData.getAppDataByUserAndApp(
-    user.id,
-    "podcasts",
-  );
+	const appDataList = await repositories.appData.getAppDataByUserAndApp(
+		user.id,
+		"podcasts",
+	);
 
-  if (!appDataList || appDataList.length === 0) {
-    return [];
-  }
+	if (!appDataList || appDataList.length === 0) {
+		return [];
+	}
 
-  const podcastMap = new Map<string, PodcastItem>();
+	const podcastMap = new Map<string, PodcastItem>();
 
-  for (const appData of appDataList) {
-    if (!appData.item_id) continue;
+	for (const appData of appDataList) {
+		if (!appData.item_id) continue;
 
-    const itemId = appData.item_id;
-    const itemType = appData.item_type || "unknown";
-    let data;
-    try {
-      data = JSON.parse(appData.data);
-    } catch (e) {
-      logger.error("Failed to parse podcast data", { error: e });
-      data = {};
-    }
+		const itemId = appData.item_id;
+		const itemType = appData.item_type || "unknown";
+		let data;
+		try {
+			data = JSON.parse(appData.data);
+		} catch (e) {
+			logger.error("Failed to parse podcast data", { error: e });
+			data = {};
+		}
 
-    if (!podcastMap.has(itemId)) {
-      podcastMap.set(itemId, { id: itemId, items: {} });
-    }
+		if (!podcastMap.has(itemId)) {
+			podcastMap.set(itemId, { id: itemId, items: {} });
+		}
 
-    const podcast = podcastMap.get(itemId)!;
-    if (!podcast.items) podcast.items = {};
-    if (!podcast.items[itemType]) podcast.items[itemType] = [];
+		const podcast = podcastMap.get(itemId)!;
+		if (!podcast.items) podcast.items = {};
+		if (!podcast.items[itemType]) podcast.items[itemType] = [];
 
-    podcast.items[itemType]!.push({ data });
-  }
+		podcast.items[itemType]!.push({ data });
+	}
 
-  const podcasts = Array.from(podcastMap.values()).map((podcast) => {
-    const uploads = podcast.items?.upload || [];
-    const transcriptions = podcast.items?.transcribe || [];
-    const summaries = podcast.items?.summary || [];
-    const images = podcast.items?.image || [];
+	const podcasts = Array.from(podcastMap.values()).map((podcast) => {
+		const uploads = podcast.items?.upload || [];
+		const transcriptions = podcast.items?.transcribe || [];
+		const summaries = podcast.items?.summary || [];
+		const images = podcast.items?.image || [];
 
-    let status = "processing" as IPodcast["status"];
-    if (images.length > 0) {
-      status = "complete";
-    } else if (summaries.length > 0) {
-      status = "summarizing";
-    } else if (transcriptions.length > 0) {
-      status = "transcribing";
-    }
+		let status = "processing" as IPodcast["status"];
+		if (images.length > 0) {
+			status = "complete";
+		} else if (summaries.length > 0) {
+			status = "summarizing";
+		} else if (transcriptions.length > 0) {
+			status = "transcribing";
+		}
 
-    const uploadData = uploads[0]?.data || {};
+		const uploadData = uploads[0]?.data || {};
 
-    return {
-      id: podcast.id,
-      title: uploadData.title || "Untitled Podcast",
-      createdAt: uploadData.createdAt || new Date().toISOString(),
-      imageUrl: images[0]?.data?.imageUrl,
-      duration: uploadData.duration,
-      status,
-    };
-  });
+		return {
+			id: podcast.id,
+			title: uploadData.title || "Untitled Podcast",
+			createdAt: uploadData.createdAt || new Date().toISOString(),
+			imageUrl: images[0]?.data?.imageUrl,
+			duration: uploadData.duration,
+			status,
+		};
+	});
 
-  return podcasts;
+	return podcasts;
 };

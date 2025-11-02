@@ -1,0 +1,5 @@
+build/*
+dist/*
+.wrangler/*
+coverage/*
+.react-router/*

@@ -5,364 +5,364 @@ import { generateId } from "~/utils/id";
  * Handles specific streaming event types and partial content
  */
 export class StreamingFormatter {
-  /**
-   * Extract text content from a streaming chunk of data
-   * @param data - The data to extract content from
-   * @param currentEventType - The current event type
-   * @returns The extracted content
-   */
-  static extractContentFromChunk(data: any, currentEventType = "") {
-    // OpenAI-like streaming streaming format
-    if (data.choices?.[0]?.delta?.content !== undefined) {
-      return data.choices[0].delta.content || "";
-    }
+	/**
+	 * Extract text content from a streaming chunk of data
+	 * @param data - The data to extract content from
+	 * @param currentEventType - The current event type
+	 * @returns The extracted content
+	 */
+	static extractContentFromChunk(data: any, currentEventType = "") {
+		// OpenAI-like streaming streaming format
+		if (data.choices?.[0]?.delta?.content !== undefined) {
+			return data.choices[0].delta.content || "";
+		}
 
-    // Regular OpenAI-like message format
-    if (data.choices?.[0]?.message?.content) {
-      return data.choices[0].message.content;
-    }
+		// Regular OpenAI-like message format
+		if (data.choices?.[0]?.message?.content) {
+			return data.choices[0].message.content;
+		}
 
-    // Google-style content format
-    if (data.candidates?.[0]?.content?.parts) {
-      const parts = data.candidates[0].content.parts;
-      let textResponse = "";
+		// Google-style content format
+		if (data.candidates?.[0]?.content?.parts) {
+			const parts = data.candidates[0].content.parts;
+			let textResponse = "";
 
-      parts.forEach((part: any, index: number) => {
-        if (part.text) {
-          textResponse += (textResponse ? "\n" : "") + part.text;
-        } else if (part.executableCode) {
-          const code = part.executableCode;
-          const language = code.language?.toLowerCase() || "code";
-          textResponse += `\n\n<artifact identifier="executable-code-${index}" type="application/code" language="${language}" title="Executable ${language} Code">${code.code}</artifact>`;
-        } else if (part.codeExecutionResult) {
-          const result = part.codeExecutionResult;
-          if (result.output) {
-            textResponse += `\n\n${result.output}\n\n`;
-          }
-        }
-      });
+			parts.forEach((part: any, index: number) => {
+				if (part.text) {
+					textResponse += (textResponse ? "\n" : "") + part.text;
+				} else if (part.executableCode) {
+					const code = part.executableCode;
+					const language = code.language?.toLowerCase() || "code";
+					textResponse += `\n\n<artifact identifier="executable-code-${index}" type="application/code" language="${language}" title="Executable ${language} Code">${code.code}</artifact>`;
+				} else if (part.codeExecutionResult) {
+					const result = part.codeExecutionResult;
+					if (result.output) {
+						textResponse += `\n\n${result.output}\n\n`;
+					}
+				}
+			});
 
-      return textResponse;
-    }
+			return textResponse;
+		}
 
-    // Anthropic like text_delta format
-    if (data.delta?.type === "text_delta" && data.delta.text) {
-      return data.delta.text;
-    }
+		// Anthropic like text_delta format
+		if (data.delta?.type === "text_delta" && data.delta.text) {
+			return data.delta.text;
+		}
 
-    // Anthropic like text_delta format in content_block_delta
-    if (
-      currentEventType === "content_block_delta" &&
-      data.delta?.type === "text_delta"
-    ) {
-      return data.delta.text || "";
-    }
+		// Anthropic like text_delta format in content_block_delta
+		if (
+			currentEventType === "content_block_delta" &&
+			data.delta?.type === "text_delta"
+		) {
+			return data.delta.text || "";
+		}
 
-    // Array of content blocks Anthropic-like streaming
-    if (Array.isArray(data.message?.content)) {
-      return data.message.content
-        .filter((block: any) => block.type === "text" && block.text)
-        .map((block: any) => block.text)
-        .join("");
-    }
+		// Array of content blocks Anthropic-like streaming
+		if (Array.isArray(data.message?.content)) {
+			return data.message.content
+				.filter((block: any) => block.type === "text" && block.text)
+				.map((block: any) => block.text)
+				.join("");
+		}
 
-    // Direct content provided
-    if (typeof data.content === "string") {
-      return data.content;
-    }
-    if (data.response !== undefined) {
-      return data.response;
-    }
+		// Direct content provided
+		if (typeof data.content === "string") {
+			return data.content;
+		}
+		if (data.response !== undefined) {
+			return data.response;
+		}
 
-    // Ollama-like format
-    if (data.message?.content) {
-      return data.message.content;
-    }
+		// Ollama-like format
+		if (data.message?.content) {
+			return data.message.content;
+		}
 
-    // Direct text field provided
-    if (data.text) {
-      return data.text;
-    }
+		// Direct text field provided
+		if (data.text) {
+			return data.text;
+		}
 
-    // empty string for unrecognized formats
-    return "";
-  }
+		// empty string for unrecognized formats
+		return "";
+	}
 
-  /**
-   * Extract thinking content from a streaming chunk of data
-   * @param data - The data to extract thinking from
-   * @param currentEventType - The current event type
-   * @returns The extracted thinking
-   */
-  static extractThinkingFromChunk(data: any, currentEventType = "") {
-    if (
-      currentEventType === "content_block_delta" &&
-      data.delta?.type === "thinking_delta" &&
-      data.delta.thinking
-    ) {
-      return data.delta.thinking || "";
-    }
+	/**
+	 * Extract thinking content from a streaming chunk of data
+	 * @param data - The data to extract thinking from
+	 * @param currentEventType - The current event type
+	 * @returns The extracted thinking
+	 */
+	static extractThinkingFromChunk(data: any, currentEventType = "") {
+		if (
+			currentEventType === "content_block_delta" &&
+			data.delta?.type === "thinking_delta" &&
+			data.delta.thinking
+		) {
+			return data.delta.thinking || "";
+		}
 
-    if (
-      currentEventType === "content_block_delta" &&
-      data.delta?.type === "signature_delta" &&
-      data.delta.signature
-    ) {
-      return {
-        type: "signature",
-        signature: data.delta.signature,
-      };
-    }
+		if (
+			currentEventType === "content_block_delta" &&
+			data.delta?.type === "signature_delta" &&
+			data.delta.signature
+		) {
+			return {
+				type: "signature",
+				signature: data.delta.signature,
+			};
+		}
 
-    if (data.choices?.[0]?.delta?.reasoning_content !== undefined) {
-      return data.choices[0].delta.reasoning_content || "";
-    }
+		if (data.choices?.[0]?.delta?.reasoning_content !== undefined) {
+			return data.choices[0].delta.reasoning_content || "";
+		}
 
-    return null;
-  }
+		return null;
+	}
 
-  /**
-   * Detect if a chunk contains a tool call initialization or update
-   * @param data - The data to extract tool call from
-   * @param currentEventType - The current event type
-   * @returns The extracted tool call
-   */
-  static extractToolCall(data: any, currentEventType = "") {
-    // OpenAI-like tool calls
-    if (data.choices?.[0]?.delta?.tool_calls) {
-      return {
-        format: "openai",
-        toolCalls: data.choices[0].delta.tool_calls,
-      };
-    }
+	/**
+	 * Detect if a chunk contains a tool call initialization or update
+	 * @param data - The data to extract tool call from
+	 * @param currentEventType - The current event type
+	 * @returns The extracted tool call
+	 */
+	static extractToolCall(data: any, currentEventType = "") {
+		// OpenAI-like tool calls
+		if (data.choices?.[0]?.delta?.tool_calls) {
+			return {
+				format: "openai",
+				toolCalls: data.choices[0].delta.tool_calls,
+			};
+		}
 
-    // Google-style functionCall format
-    if (data.candidates?.[0]?.content?.parts) {
-      const parts = data.candidates[0].content.parts;
-      const toolCalls = parts
-        .filter((part: any) => part.functionCall)
-        .map((part: any) => ({
-          id: `call_${generateId()}`,
-          type: "function",
-          function: {
-            name: part.functionCall.name,
-            arguments: JSON.stringify(part.functionCall.args || {}),
-          },
-        }));
+		// Google-style functionCall format
+		if (data.candidates?.[0]?.content?.parts) {
+			const parts = data.candidates[0].content.parts;
+			const toolCalls = parts
+				.filter((part: any) => part.functionCall)
+				.map((part: any) => ({
+					id: `call_${generateId()}`,
+					type: "function",
+					function: {
+						name: part.functionCall.name,
+						arguments: JSON.stringify(part.functionCall.args || {}),
+					},
+				}));
 
-      if (toolCalls.length > 0) {
-        return {
-          format: "direct",
-          toolCalls: toolCalls,
-        };
-      }
-    }
+			if (toolCalls.length > 0) {
+				return {
+					format: "direct",
+					toolCalls: toolCalls,
+				};
+			}
+		}
 
-    // Anthropic-like tool_use blocks
-    if (
-      currentEventType === "content_block_start" &&
-      data.content_block?.type === "tool_use"
-    ) {
-      return {
-        format: "anthropic",
-        id: data.content_block.id,
-        name: data.content_block.name,
-        index: data.index,
-      };
-    }
+		// Anthropic-like tool_use blocks
+		if (
+			currentEventType === "content_block_start" &&
+			data.content_block?.type === "tool_use"
+		) {
+			return {
+				format: "anthropic",
+				id: data.content_block.id,
+				name: data.content_block.name,
+				index: data.index,
+			};
+		}
 
-    // Anthropic-like tool input updates
-    if (
-      currentEventType === "content_block_delta" &&
-      data.delta?.type === "input_json_delta" &&
-      data.index !== undefined
-    ) {
-      return {
-        format: "anthropic_delta",
-        index: data.index,
-        partial_json: data.delta.partial_json || "",
-      };
-    }
+		// Anthropic-like tool input updates
+		if (
+			currentEventType === "content_block_delta" &&
+			data.delta?.type === "input_json_delta" &&
+			data.index !== undefined
+		) {
+			return {
+				format: "anthropic_delta",
+				index: data.index,
+				partial_json: data.delta.partial_json || "",
+			};
+		}
 
-    // Bedrock Nova style tool use start
-    // Example: { contentBlockIndex: 1, start: { toolUse: { name, toolUseId } } }
-    if (data.start?.toolUse && data.contentBlockIndex !== undefined) {
-      return {
-        format: "nova",
-        id: data.start.toolUse.toolUseId,
-        name: data.start.toolUse.name,
-        index: data.contentBlockIndex,
-      };
-    }
+		// Bedrock Nova style tool use start
+		// Example: { contentBlockIndex: 1, start: { toolUse: { name, toolUseId } } }
+		if (data.start?.toolUse && data.contentBlockIndex !== undefined) {
+			return {
+				format: "nova",
+				id: data.start.toolUse.toolUseId,
+				name: data.start.toolUse.name,
+				index: data.contentBlockIndex,
+			};
+		}
 
-    // Bedrock Nova style tool input delta
-    // Example: { contentBlockIndex: 1, delta: { toolUse: { input: "{...}" } } }
-    if (data.delta?.toolUse?.input && data.contentBlockIndex !== undefined) {
-      return {
-        format: "nova_delta",
-        index: data.contentBlockIndex,
-        partial_json: data.delta.toolUse.input || "",
-      };
-    }
+		// Bedrock Nova style tool input delta
+		// Example: { contentBlockIndex: 1, delta: { toolUse: { input: "{...}" } } }
+		if (data.delta?.toolUse?.input && data.contentBlockIndex !== undefined) {
+			return {
+				format: "nova_delta",
+				index: data.contentBlockIndex,
+				partial_json: data.delta.toolUse.input || "",
+			};
+		}
 
-    // Other direct tool_calls formats
-    if (data.tool_calls) {
-      return {
-        format: "direct",
-        toolCalls: data.tool_calls,
-      };
-    }
+		// Other direct tool_calls formats
+		if (data.tool_calls) {
+			return {
+				format: "direct",
+				toolCalls: data.tool_calls,
+			};
+		}
 
-    return null;
-  }
+		return null;
+	}
 
-  /**
-   * Checks if a streaming chunk indicates completion
-   * @param data - The data to check for completion
-   * @returns Whether the chunk indicates completion
-   */
-  static isCompletionIndicated(data: any): boolean {
-    // OpenAI format
-    const openaiFinishReason =
-      data.choices?.[0]?.finish_reason?.toLowerCase() ||
-      data.choices?.[0]?.finishReason?.toLowerCase();
+	/**
+	 * Checks if a streaming chunk indicates completion
+	 * @param data - The data to check for completion
+	 * @returns Whether the chunk indicates completion
+	 */
+	static isCompletionIndicated(data: any): boolean {
+		// OpenAI format
+		const openaiFinishReason =
+			data.choices?.[0]?.finish_reason?.toLowerCase() ||
+			data.choices?.[0]?.finishReason?.toLowerCase();
 
-    if (openaiFinishReason === "stop" || openaiFinishReason === "length") {
-      return true;
-    }
+		if (openaiFinishReason === "stop" || openaiFinishReason === "length") {
+			return true;
+		}
 
-    // Google format
-    const googleFinishReason =
-      data.candidates?.[0]?.finishReason?.toLowerCase();
-    if (googleFinishReason === "stop" || googleFinishReason === "length") {
-      return true;
-    }
+		// Google format
+		const googleFinishReason =
+			data.candidates?.[0]?.finishReason?.toLowerCase();
+		if (googleFinishReason === "stop" || googleFinishReason === "length") {
+			return true;
+		}
 
-    // Bedrock format
-    const bedrockFinishReason = data.stopReason;
-    if (bedrockFinishReason === "stop" || bedrockFinishReason === "length") {
-      return true;
-    }
+		// Bedrock format
+		const bedrockFinishReason = data.stopReason;
+		if (bedrockFinishReason === "stop" || bedrockFinishReason === "length") {
+			return true;
+		}
 
-    return false;
-  }
+		return false;
+	}
 
-  /**
-   * Extract usage information from a response
-   * @param data - The data to extract usage from
-   * @returns The extracted usage
-   */
-  static extractUsageData(data: any): any {
-    if (data.usage) {
-      return data.usage;
-    }
+	/**
+	 * Extract usage information from a response
+	 * @param data - The data to extract usage from
+	 * @returns The extracted usage
+	 */
+	static extractUsageData(data: any): any {
+		if (data.usage) {
+			return data.usage;
+		}
 
-    if (data.usageMetadata) {
-      return data.usageMetadata;
-    }
+		if (data.usageMetadata) {
+			return data.usageMetadata;
+		}
 
-    return null;
-  }
+		return null;
+	}
 
-  /**
-   * Extract citations from a response
-   * @param data - The data to extract citations from
-   * @returns The extracted citations
-   */
-  static extractCitations(data: any): any[] {
-    if (Array.isArray(data.citations)) {
-      return data.citations;
-    }
+	/**
+	 * Extract citations from a response
+	 * @param data - The data to extract citations from
+	 * @returns The extracted citations
+	 */
+	static extractCitations(data: any): any[] {
+		if (Array.isArray(data.citations)) {
+			return data.citations;
+		}
 
-    // Google's search grounding format
-    if (data.candidates?.[0]?.groundingMetadata) {
-      const searchGrounding = data.candidates[0].groundingMetadata;
-      return [
-        {
-          searchGrounding: {
-            ...searchGrounding,
-            searchEntryPoint: {
-              ...searchGrounding.searchEntryPoint,
-              renderedContent: undefined,
-            },
-            groundingSupports: {},
-          },
-        },
-      ];
-    }
+		// Google's search grounding format
+		if (data.candidates?.[0]?.groundingMetadata) {
+			const searchGrounding = data.candidates[0].groundingMetadata;
+			return [
+				{
+					searchGrounding: {
+						...searchGrounding,
+						searchEntryPoint: {
+							...searchGrounding.searchEntryPoint,
+							renderedContent: undefined,
+						},
+						groundingSupports: {},
+					},
+				},
+			];
+		}
 
-    return [];
-  }
+		return [];
+	}
 
-  /**
-   * Extract structured data from a response (for Google search grounding, etc.)
-   * @param data - The data to extract structured data from
-   * @returns The extracted data
-   */
-  static extractStructuredData(data: any): any {
-    // Google's search grounding format
-    if (data.candidates?.[0]?.groundingMetadata) {
-      const searchGrounding = data.candidates[0].groundingMetadata;
-      return {
-        searchGrounding: {
-          ...searchGrounding,
-          searchEntryPoint: {
-            ...searchGrounding.searchEntryPoint,
-            renderedContent: undefined,
-          },
-          groundingSupports: {},
-        },
-      };
-    }
+	/**
+	 * Extract structured data from a response (for Google search grounding, etc.)
+	 * @param data - The data to extract structured data from
+	 * @returns The extracted data
+	 */
+	static extractStructuredData(data: any): any {
+		// Google's search grounding format
+		if (data.candidates?.[0]?.groundingMetadata) {
+			const searchGrounding = data.candidates[0].groundingMetadata;
+			return {
+				searchGrounding: {
+					...searchGrounding,
+					searchEntryPoint: {
+						...searchGrounding.searchEntryPoint,
+						renderedContent: undefined,
+					},
+					groundingSupports: {},
+				},
+			};
+		}
 
-    return null;
-  }
+		return null;
+	}
 
-  /**
-   * Extract refusal information from a streaming chunk (OpenAI-like)
-   * Returns null when not present
-   */
-  static extractRefusalFromChunk(data: any): string | null {
-    // OpenAI streaming delta
-    const deltaRefusal = data?.choices?.[0]?.delta?.refusal;
-    if (typeof deltaRefusal === "string") {
-      return deltaRefusal;
-    }
+	/**
+	 * Extract refusal information from a streaming chunk (OpenAI-like)
+	 * Returns null when not present
+	 */
+	static extractRefusalFromChunk(data: any): string | null {
+		// OpenAI streaming delta
+		const deltaRefusal = data?.choices?.[0]?.delta?.refusal;
+		if (typeof deltaRefusal === "string") {
+			return deltaRefusal;
+		}
 
-    // OpenAI non-delta message form in stream
-    const messageRefusal = data?.choices?.[0]?.message?.refusal;
-    if (typeof messageRefusal === "string") {
-      return messageRefusal;
-    }
+		// OpenAI non-delta message form in stream
+		const messageRefusal = data?.choices?.[0]?.message?.refusal;
+		if (typeof messageRefusal === "string") {
+			return messageRefusal;
+		}
 
-    // Direct refusal field
-    if (typeof data?.refusal === "string") {
-      return data.refusal;
-    }
+		// Direct refusal field
+		if (typeof data?.refusal === "string") {
+			return data.refusal;
+		}
 
-    return null;
-  }
+		return null;
+	}
 
-  /**
-   * Extract annotations information from a streaming chunk
-   * Returns null when not present
-   */
-  static extractAnnotationsFromChunk(data: any): unknown {
-    // OpenAI streaming delta
-    if (data?.choices?.[0]?.delta?.annotations !== undefined) {
-      return data.choices[0].delta.annotations;
-    }
+	/**
+	 * Extract annotations information from a streaming chunk
+	 * Returns null when not present
+	 */
+	static extractAnnotationsFromChunk(data: any): unknown {
+		// OpenAI streaming delta
+		if (data?.choices?.[0]?.delta?.annotations !== undefined) {
+			return data.choices[0].delta.annotations;
+		}
 
-    // OpenAI non-delta message form
-    if (data?.choices?.[0]?.message?.annotations !== undefined) {
-      return data.choices[0].message.annotations;
-    }
+		// OpenAI non-delta message form
+		if (data?.choices?.[0]?.message?.annotations !== undefined) {
+			return data.choices[0].message.annotations;
+		}
 
-    // Direct field
-    if (data?.annotations !== undefined) {
-      return data.annotations;
-    }
+		// Direct field
+		if (data?.annotations !== undefined) {
+			return data.annotations;
+		}
 
-    return null;
-  }
+		return null;
+	}
 }

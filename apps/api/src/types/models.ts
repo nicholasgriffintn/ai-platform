@@ -3,105 +3,105 @@ import type { availableCapabilities, availableModelTypes } from "~/lib/models";
 export type ModelRanking = 1 | 2 | 3 | 4 | 5;
 
 export interface ModelConfigInfo {
-  model: string;
-  provider: string;
-  displayName: string;
+	model: string;
+	provider: string;
+	displayName: string;
 }
 
 export type ReplicateInputFieldType =
-  | "string"
-  | "number"
-  | "integer"
-  | "boolean"
-  | "file"
-  | "array"
-  | "object";
+	| "string"
+	| "number"
+	| "integer"
+	| "boolean"
+	| "file"
+	| "array"
+	| "object";
 
 export interface ReplicateInputFieldDescriptor {
-  name: string;
-  type: ReplicateInputFieldType | ReplicateInputFieldType[];
-  description?: string;
-  default?: unknown;
-  enum?: Array<string | number>;
-  required?: boolean;
+	name: string;
+	type: ReplicateInputFieldType | ReplicateInputFieldType[];
+	description?: string;
+	default?: unknown;
+	enum?: Array<string | number>;
+	required?: boolean;
 }
 
 export interface ReplicateInputSchemaDescriptor {
-  fields: ReplicateInputFieldDescriptor[];
-  reference?: string;
+	fields: ReplicateInputFieldDescriptor[];
+	reference?: string;
 }
 
 export type ModelConfigItem = {
-  matchingModel: string;
-  name?: string;
-  description?: string;
-  provider: string;
-  type: Array<(typeof availableModelTypes)[number]>;
-  isBeta?: boolean;
-  supportsToolCalls?: boolean;
-  isFree?: boolean;
-  card?: string;
-  contextWindow?: number;
-  maxTokens?: number;
-  costPer1kInputTokens?: number;
-  costPer1kOutputTokens?: number;
-  costPer1kReasoningTokens?: number;
-  costPer1kSearches?: number;
-  costPerRun?: number;
-  strengths?: Array<(typeof availableCapabilities)[number]>;
-  contextComplexity?: ModelRanking;
-  reliability?: ModelRanking;
-  speed?: ModelRanking;
-  multimodal?: boolean;
-  supportsReasoning?: boolean;
-  requiresThinkingPrompt?: boolean;
-  includedInRouter?: boolean;
-  isFeatured?: boolean;
-  supportsResponseFormat?: boolean;
-  supportsArtifacts?: boolean;
-  supportsStreaming?: boolean;
-  supportsDocuments?: boolean;
-  beta?: boolean;
-  supportsSearchGrounding?: boolean;
-  supportsCodeExecution?: boolean;
-  supportsFim?: boolean;
-  supportsNextEdit?: boolean;
-  supportsApplyEdit?: boolean;
-  supportsImageEdits?: boolean;
-  timeout?: number;
-  supportsAudio?: boolean;
-  knowledgeCutoffDate?: string;
-  releaseDate?: string;
-  lastUpdated?: string;
-  modalities?: {
-    input: string[];
-    output: string[];
-  };
-  supportsAttachments?: boolean;
-  supportsTemperature?: boolean;
-  supportsTopP?: boolean;
-  supportsTokenCounting?: boolean;
-  bedrockApiOperation?: string;
-  bedrockStreamingApiOperation?: string;
-  supportsPresencePenalty?: boolean;
-  restrictsCombinedTopPAndTemperature?: boolean;
-  replicateInputSchema?: ReplicateInputSchemaDescriptor;
+	matchingModel: string;
+	name?: string;
+	description?: string;
+	provider: string;
+	type: Array<(typeof availableModelTypes)[number]>;
+	isBeta?: boolean;
+	supportsToolCalls?: boolean;
+	isFree?: boolean;
+	card?: string;
+	contextWindow?: number;
+	maxTokens?: number;
+	costPer1kInputTokens?: number;
+	costPer1kOutputTokens?: number;
+	costPer1kReasoningTokens?: number;
+	costPer1kSearches?: number;
+	costPerRun?: number;
+	strengths?: Array<(typeof availableCapabilities)[number]>;
+	contextComplexity?: ModelRanking;
+	reliability?: ModelRanking;
+	speed?: ModelRanking;
+	multimodal?: boolean;
+	supportsReasoning?: boolean;
+	requiresThinkingPrompt?: boolean;
+	includedInRouter?: boolean;
+	isFeatured?: boolean;
+	supportsResponseFormat?: boolean;
+	supportsArtifacts?: boolean;
+	supportsStreaming?: boolean;
+	supportsDocuments?: boolean;
+	beta?: boolean;
+	supportsSearchGrounding?: boolean;
+	supportsCodeExecution?: boolean;
+	supportsFim?: boolean;
+	supportsNextEdit?: boolean;
+	supportsApplyEdit?: boolean;
+	supportsImageEdits?: boolean;
+	timeout?: number;
+	supportsAudio?: boolean;
+	knowledgeCutoffDate?: string;
+	releaseDate?: string;
+	lastUpdated?: string;
+	modalities?: {
+		input: string[];
+		output: string[];
+	};
+	supportsAttachments?: boolean;
+	supportsTemperature?: boolean;
+	supportsTopP?: boolean;
+	supportsTokenCounting?: boolean;
+	bedrockApiOperation?: string;
+	bedrockStreamingApiOperation?: string;
+	supportsPresencePenalty?: boolean;
+	restrictsCombinedTopPAndTemperature?: boolean;
+	replicateInputSchema?: ReplicateInputSchemaDescriptor;
 };
 
 export type ModelConfig = {
-  [key: string]: ModelConfigItem;
+	[key: string]: ModelConfigItem;
 };
 
 export interface PromptRequirements {
-  expectedComplexity: ModelRanking;
-  requiredCapabilities: Array<(typeof availableCapabilities)[number]>;
-  criticalCapabilities?: Array<(typeof availableCapabilities)[number]>;
-  estimatedInputTokens: number;
-  estimatedOutputTokens: number;
-  hasImages: boolean;
-  hasDocuments?: boolean;
-  needsFunctions: boolean;
-  budget_constraint?: number;
-  benefitsFromMultipleModels?: boolean;
-  modelComparisonReason?: string;
+	expectedComplexity: ModelRanking;
+	requiredCapabilities: Array<(typeof availableCapabilities)[number]>;
+	criticalCapabilities?: Array<(typeof availableCapabilities)[number]>;
+	estimatedInputTokens: number;
+	estimatedOutputTokens: number;
+	hasImages: boolean;
+	hasDocuments?: boolean;
+	needsFunctions: boolean;
+	budget_constraint?: number;
+	benefitsFromMultipleModels?: boolean;
+	modelComparisonReason?: string;
 }

@@ -1,6 +1,7 @@
 import { md } from "~/utils/markdown.js";
 
-export const chatTagDescription = md`# Chat Completions
+export const chatTagDescription = md`
+# Chat Completions
 
 OpenAI-compatible chat API with support for streaming, tools, multi-turn conversations, and conversation management.
 
@@ -20,32 +21,32 @@ The chat completions API provides:
 
 By default, the chat completions endpoint returns the full response once processing is complete and uses the following format:
 
-\`\`\`json
+~~~json
 {
-  "model": "gpt-4o-2024-08-06",
-  "messages": [
-    { "role": "user", "content": "Hello, world!" }
-  ]
+	"model": "gpt-4o-2024-08-06",
+	"messages": [{ "role": "user", "content": "Hello, world!" }]
 }
-\`\`\`
+~~~
 
 ## Streaming Responses
 
 You can enable streaming to receive responses as Server-Sent Events:
 
-\`\`\`json
+~~~json
 {
   "model": "claude-3-5-sonnet-20241022",
   "messages": [...],
   "stream": true
 }
-\`\`\`
+~~~
 
 Response format:
-\`\`\`
+
+~~~
 data: {"id":"cmpl_abc123","object":"chat.completion.chunk","choices":[{"delta":{"content":"The"},"index":0}]}
 
 data: {"id":"cmpl_abc123","object":"chat.completion.chunk","choices":[{"delta":{"content":" capital"},"index":0}]}
 
 data: [DONE]
-\`\`\``;
+~~~
+`;

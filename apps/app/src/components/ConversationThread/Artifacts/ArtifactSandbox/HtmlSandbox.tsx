@@ -37,56 +37,56 @@ const HTML_SANDBOX_TEMPLATE = `
 `;
 
 export function HtmlSandbox({
-  code,
-  css,
-  setPreviewError,
-  iframeKey,
+	code,
+	css,
+	setPreviewError,
+	iframeKey,
 }: {
-  code: ArtifactProps;
-  css?: ArtifactProps;
-  setPreviewError: (error: string | null) => void;
-  iframeKey: number;
+	code: ArtifactProps;
+	css?: ArtifactProps;
+	setPreviewError: (error: string | null) => void;
+	iframeKey: number;
 }) {
-  const [documentContent, setDocumentContent] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+	const [documentContent, setDocumentContent] = useState<string | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    let isMounted = true;
-    setIsLoading(true);
+	useEffect(() => {
+		let isMounted = true;
+		setIsLoading(true);
 
-    const prepareDocument = async () => {
-      let doc = HTML_SANDBOX_TEMPLATE;
+		const prepareDocument = async () => {
+			let doc = HTML_SANDBOX_TEMPLATE;
 
-      if (css) {
-        doc = doc.replace("<CSS_CODE_PLACEHOLDER>", css.content);
-      } else {
-        doc = doc.replace("<CSS_CODE_PLACEHOLDER>", "");
-      }
+			if (css) {
+				doc = doc.replace("<CSS_CODE_PLACEHOLDER>", css.content);
+			} else {
+				doc = doc.replace("<CSS_CODE_PLACEHOLDER>", "");
+			}
 
-      doc = doc.replace("<CONTENT_PLACEHOLDER>", code.content);
+			doc = doc.replace("<CONTENT_PLACEHOLDER>", code.content);
 
-      if (isMounted) {
-        setDocumentContent(doc);
-        setIsLoading(false);
-      }
-    };
+			if (isMounted) {
+				setDocumentContent(doc);
+				setIsLoading(false);
+			}
+		};
 
-    prepareDocument();
+		prepareDocument();
 
-    return () => {
-      isMounted = false;
-    };
-  }, [code, css]);
+		return () => {
+			isMounted = false;
+		};
+	}, [code, css]);
 
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
+	if (isLoading) {
+		return <LoadingIndicator />;
+	}
 
-  return (
-    <SandboxIframe
-      documentContent={documentContent}
-      iframeKey={iframeKey}
-      setPreviewError={setPreviewError}
-    />
-  );
+	return (
+		<SandboxIframe
+			documentContent={documentContent}
+			iframeKey={iframeKey}
+			setPreviewError={setPreviewError}
+		/>
+	);
 }

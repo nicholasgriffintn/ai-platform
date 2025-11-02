@@ -13,384 +13,384 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
 
 export class ChatOrchestrator {
-  private validator: ValidationPipeline;
-  private preparer: RequestPreparer;
+	private validator: ValidationPipeline;
+	private preparer: RequestPreparer;
 
-  constructor(env: any) {
-    this.validator = new ValidationPipeline();
-    this.preparer = new RequestPreparer(env);
-  }
+	constructor(env: any) {
+		this.validator = new ValidationPipeline();
+		this.preparer = new RequestPreparer(env);
+	}
 
-  async process(options: CoreChatOptions) {
-    try {
-      const validationResult = await this.validator.validate(options);
+	async process(options: CoreChatOptions) {
+		try {
+			const validationResult = await this.validator.validate(options);
 
-      if (!validationResult?.validation?.isValid) {
-        logger.warn("Validation failed", {
-          error: validationResult.validation.error,
-          type: validationResult.validation.validationType,
-          completion_id: options.completion_id,
-        });
+			if (!validationResult?.validation?.isValid) {
+				logger.warn("Validation failed", {
+					error: validationResult.validation.error,
+					type: validationResult.validation.validationType,
+					completion_id: options.completion_id,
+				});
 
-        return {
-          selectedModel:
-            validationResult.context.modelConfig?.matchingModel || "unknown",
-          validation: validationResult.validation.validationType || "input",
-          error: validationResult.validation.error,
-          violations: validationResult.validation.violations,
-          rawViolations: validationResult.validation.rawViolations,
-        };
-      }
+				return {
+					selectedModel:
+						validationResult.context.modelConfig?.matchingModel || "unknown",
+					validation: validationResult.validation.validationType || "input",
+					error: validationResult.validation.error,
+					violations: validationResult.validation.violations,
+					rawViolations: validationResult.validation.rawViolations,
+				};
+			}
 
-      const prepared = await this.preparer.prepare(
-        options,
-        validationResult.context,
-      );
+			const prepared = await this.preparer.prepare(
+				options,
+				validationResult.context,
+			);
 
-      return this.executeRequest(options, prepared);
-    } catch (error: any) {
-      logger.error("Error in chat orchestration", {
-        error,
-        completion_id: options.completion_id,
-        model: options.model,
-      });
+			return this.executeRequest(options, prepared);
+		} catch (error: any) {
+			logger.error("Error in chat orchestration", {
+				error,
+				completion_id: options.completion_id,
+				model: options.model,
+			});
 
-      if (error instanceof AssistantError) {
-        throw error;
-      }
+			if (error instanceof AssistantError) {
+				throw error;
+			}
 
-      const errorType = this.determineErrorType(error);
-      const errorMessage = this.getErrorMessage(error, errorType);
-      const statusCode = error.status || error.statusCode || 500;
+			const errorType = this.determineErrorType(error);
+			const errorMessage = this.getErrorMessage(error, errorType);
+			const statusCode = error.status || error.statusCode || 500;
 
-      throw new AssistantError(errorMessage, errorType, statusCode);
-    }
-  }
+			throw new AssistantError(errorMessage, errorType, statusCode);
+		}
+	}
 
-  private async executeRequest(options: CoreChatOptions, prepared: any) {
-    const {
-      platform = "api",
-      stream = false,
-      disable_functions,
-      should_think,
-      response_format,
-      lang,
-      temperature,
-      max_tokens,
-      top_p,
-      top_k,
-      seed,
-      repetition_penalty,
-      frequency_penalty,
-      presence_penalty,
-      n,
-      stop,
-      logit_bias,
-      metadata,
-      reasoning_effort,
-      store = true,
-      tools,
-      parallel_tool_calls,
-      tool_choice,
-      enabled_tools = [],
-      current_step,
-      max_steps,
-    } = options;
+	private async executeRequest(options: CoreChatOptions, prepared: any) {
+		const {
+			platform = "api",
+			stream = false,
+			disable_functions,
+			should_think,
+			response_format,
+			lang,
+			temperature,
+			max_tokens,
+			top_p,
+			top_k,
+			seed,
+			repetition_penalty,
+			frequency_penalty,
+			presence_penalty,
+			n,
+			stop,
+			logit_bias,
+			metadata,
+			reasoning_effort,
+			store = true,
+			tools,
+			parallel_tool_calls,
+			tool_choice,
+			enabled_tools = [],
+			current_step,
+			max_steps,
+		} = options;
 
-    const {
-      modelConfigs,
-      primaryModel,
-      primaryProvider,
-      conversationManager,
-      messages,
-      systemPrompt,
-      messageWithContext,
-      userSettings,
-      currentMode,
-    } = prepared;
+		const {
+			modelConfigs,
+			primaryModel,
+			primaryProvider,
+			conversationManager,
+			messages,
+			systemPrompt,
+			messageWithContext,
+			userSettings,
+			currentMode,
+		} = prepared;
 
-    await conversationManager.checkUsageLimits(primaryModel);
+		await conversationManager.checkUsageLimits(primaryModel);
 
-    if (modelConfigs.length > 1 && stream) {
-      const transformedStream = createMultiModelStream(
-        {
-          app_url: options.app_url,
-          system_prompt: systemPrompt,
-          env: options.env,
-          user: options.user?.id ? options.user : undefined,
-          disable_functions,
-          completion_id: options.completion_id,
-          messages,
-          message: messageWithContext,
-          models: modelConfigs,
-          mode: currentMode,
-          should_think,
-          response_format,
-          lang,
-          temperature,
-          max_tokens,
-          top_p,
-          top_k,
-          seed,
-          repetition_penalty,
-          frequency_penalty,
-          presence_penalty,
-          stop,
-          logit_bias,
-          metadata,
-          reasoning_effort,
-          store,
-          enabled_tools,
-          tools,
-          parallel_tool_calls,
-          tool_choice,
-          current_step,
-          max_steps,
-          current_agent_id: options.current_agent_id,
-          delegation_stack: options.delegation_stack,
-          max_delegation_depth: options.max_delegation_depth,
-        },
-        {
-          env: options.env,
-          completion_id: options.completion_id!,
-          model: primaryModel,
-          provider: primaryProvider,
-          platform: platform || "api",
-          user: options.user,
-          userSettings,
-          app_url: options.app_url,
-          mode: currentMode,
-          tools,
-          enabled_tools,
-        },
-        conversationManager,
-      );
+		if (modelConfigs.length > 1 && stream) {
+			const transformedStream = createMultiModelStream(
+				{
+					app_url: options.app_url,
+					system_prompt: systemPrompt,
+					env: options.env,
+					user: options.user?.id ? options.user : undefined,
+					disable_functions,
+					completion_id: options.completion_id,
+					messages,
+					message: messageWithContext,
+					models: modelConfigs,
+					mode: currentMode,
+					should_think,
+					response_format,
+					lang,
+					temperature,
+					max_tokens,
+					top_p,
+					top_k,
+					seed,
+					repetition_penalty,
+					frequency_penalty,
+					presence_penalty,
+					stop,
+					logit_bias,
+					metadata,
+					reasoning_effort,
+					store,
+					enabled_tools,
+					tools,
+					parallel_tool_calls,
+					tool_choice,
+					current_step,
+					max_steps,
+					current_agent_id: options.current_agent_id,
+					delegation_stack: options.delegation_stack,
+					max_delegation_depth: options.max_delegation_depth,
+				},
+				{
+					env: options.env,
+					completion_id: options.completion_id!,
+					model: primaryModel,
+					provider: primaryProvider,
+					platform: platform || "api",
+					user: options.user,
+					userSettings,
+					app_url: options.app_url,
+					mode: currentMode,
+					tools,
+					enabled_tools,
+				},
+				conversationManager,
+			);
 
-      return {
-        stream: transformedStream,
-        selectedModel: primaryModel,
-        selectedModels: modelConfigs.map((m) => m.model),
-        completion_id: options.completion_id,
-      };
-    }
+			return {
+				stream: transformedStream,
+				selectedModel: primaryModel,
+				selectedModels: modelConfigs.map((m) => m.model),
+				completion_id: options.completion_id,
+			};
+		}
 
-    const params = {
-      app_url: options.app_url,
-      system_prompt: systemPrompt,
-      env: options.env,
-      user: options.user?.id ? options.user : undefined,
-      disable_functions,
-      completion_id: options.completion_id,
-      messages,
-      message: messageWithContext,
-      model: primaryModel,
-      mode: currentMode,
-      should_think,
-      response_format,
-      lang,
-      temperature,
-      max_tokens,
-      top_p,
-      top_k,
-      seed,
-      repetition_penalty,
-      frequency_penalty,
-      presence_penalty,
-      n,
-      stream,
-      stop,
-      logit_bias,
-      metadata,
-      reasoning_effort,
-      store,
-      enabled_tools,
-      tools,
-      parallel_tool_calls,
-      tool_choice,
-      current_step,
-      max_steps,
-      provider: primaryProvider,
-    };
+		const params = {
+			app_url: options.app_url,
+			system_prompt: systemPrompt,
+			env: options.env,
+			user: options.user?.id ? options.user : undefined,
+			disable_functions,
+			completion_id: options.completion_id,
+			messages,
+			message: messageWithContext,
+			model: primaryModel,
+			mode: currentMode,
+			should_think,
+			response_format,
+			lang,
+			temperature,
+			max_tokens,
+			top_p,
+			top_k,
+			seed,
+			repetition_penalty,
+			frequency_penalty,
+			presence_penalty,
+			n,
+			stream,
+			stop,
+			logit_bias,
+			metadata,
+			reasoning_effort,
+			store,
+			enabled_tools,
+			tools,
+			parallel_tool_calls,
+			tool_choice,
+			current_step,
+			max_steps,
+			provider: primaryProvider,
+		};
 
-    const response = await getAIResponse(params);
+		const response = await getAIResponse(params);
 
-    if (response instanceof ReadableStream) {
-      const transformedStream = await createStreamWithPostProcessing(
-        response,
-        {
-          env: options.env,
-          completion_id: options.completion_id!,
-          model: primaryModel,
-          provider: primaryProvider,
-          platform: platform || "api",
-          user: options.user,
-          userSettings,
-          app_url: options.app_url,
-          mode: currentMode,
-          max_steps: options.max_steps,
-          current_step: options.current_step,
-          tools,
-          enabled_tools,
-          current_agent_id: options.current_agent_id,
-          delegation_stack: options.delegation_stack,
-          max_delegation_depth: options.max_delegation_depth,
-        },
-        conversationManager,
-      );
+		if (response instanceof ReadableStream) {
+			const transformedStream = await createStreamWithPostProcessing(
+				response,
+				{
+					env: options.env,
+					completion_id: options.completion_id!,
+					model: primaryModel,
+					provider: primaryProvider,
+					platform: platform || "api",
+					user: options.user,
+					userSettings,
+					app_url: options.app_url,
+					mode: currentMode,
+					max_steps: options.max_steps,
+					current_step: options.current_step,
+					tools,
+					enabled_tools,
+					current_agent_id: options.current_agent_id,
+					delegation_stack: options.delegation_stack,
+					max_delegation_depth: options.max_delegation_depth,
+				},
+				conversationManager,
+			);
 
-      return {
-        stream: transformedStream,
-        selectedModel: primaryModel,
-        completion_id: options.completion_id,
-      };
-    }
+			return {
+				stream: transformedStream,
+				selectedModel: primaryModel,
+				completion_id: options.completion_id,
+			};
+		}
 
-    if (!response.response && !response.tool_calls) {
-      throw new AssistantError(
-        "No response generated by the model",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
+		if (!response.response && !response.tool_calls) {
+			throw new AssistantError(
+				"No response generated by the model",
+				ErrorType.PARAMS_ERROR,
+			);
+		}
 
-    if (response.response) {
-      const guardrails = new Guardrails(
-        options.env,
-        options.user,
-        userSettings,
-      );
-      const outputValidation = await guardrails.validateOutput(
-        response.response,
-        options.user?.id,
-        options.completion_id,
-      );
+		if (response.response) {
+			const guardrails = new Guardrails(
+				options.env,
+				options.user,
+				userSettings,
+			);
+			const outputValidation = await guardrails.validateOutput(
+				response.response,
+				options.user?.id,
+				options.completion_id,
+			);
 
-      if (!outputValidation?.isValid) {
-        return {
-          selectedModel: primaryModel,
-          validation: "output",
-          error:
-            outputValidation.rawResponse?.blockedResponse ||
-            "Response did not pass safety checks",
-          violations: outputValidation.violations,
-          rawViolations: outputValidation.rawResponse,
-        };
-      }
-    }
+			if (!outputValidation?.isValid) {
+				return {
+					selectedModel: primaryModel,
+					validation: "output",
+					error:
+						outputValidation.rawResponse?.blockedResponse ||
+						"Response did not pass safety checks",
+					violations: outputValidation.violations,
+					rawViolations: outputValidation.rawResponse,
+				};
+			}
+		}
 
-    const toolResponses: Message[] = [];
-    if (response.tool_calls?.length > 0) {
-      const toolResults = await handleToolCalls(
-        options.completion_id!,
-        response,
-        conversationManager,
-        {
-          env: options.env,
-          request: {
-            completion_id: options.completion_id!,
-            input: messageWithContext,
-            model: primaryModel,
-            date: new Date().toISOString().split("T")[0]!,
-            current_agent_id: options.current_agent_id,
-            delegation_stack: options.delegation_stack,
-            max_delegation_depth: options.max_delegation_depth,
-          },
-          app_url: options.app_url,
-          user: options.user?.id ? options.user : undefined,
-        },
-      );
+		const toolResponses: Message[] = [];
+		if (response.tool_calls?.length > 0) {
+			const toolResults = await handleToolCalls(
+				options.completion_id!,
+				response,
+				conversationManager,
+				{
+					env: options.env,
+					request: {
+						completion_id: options.completion_id!,
+						input: messageWithContext,
+						model: primaryModel,
+						date: new Date().toISOString().split("T")[0]!,
+						current_agent_id: options.current_agent_id,
+						delegation_stack: options.delegation_stack,
+						max_delegation_depth: options.max_delegation_depth,
+					},
+					app_url: options.app_url,
+					user: options.user?.id ? options.user : undefined,
+				},
+			);
 
-      toolResponses.push(...toolResults);
-    }
+			toolResponses.push(...toolResults);
+		}
 
-    await conversationManager.add(options.completion_id!, {
-      role: "assistant",
-      content: response.response,
-      citations: response.citations || null,
-      data: response.data || null,
-      log_id: options.env.AI.aiGatewayLogId || response.log_id,
-      mode: currentMode,
-      id: generateId(),
-      timestamp: Date.now(),
-      model: primaryModel,
-      platform: platform || "api",
-      usage: response.usage || response.usageMetadata,
-      tool_calls: response.tool_calls || null,
-      status: response.status || undefined,
-    });
+		await conversationManager.add(options.completion_id!, {
+			role: "assistant",
+			content: response.response,
+			citations: response.citations || null,
+			data: response.data || null,
+			log_id: options.env.AI.aiGatewayLogId || response.log_id,
+			mode: currentMode,
+			id: generateId(),
+			timestamp: Date.now(),
+			model: primaryModel,
+			platform: platform || "api",
+			usage: response.usage || response.usageMetadata,
+			tool_calls: response.tool_calls || null,
+			status: response.status || undefined,
+		});
 
-    return {
-      response,
-      toolResponses,
-      selectedModel: primaryModel,
-      selectedModels:
-        modelConfigs.length > 1 ? modelConfigs.map((m) => m.model) : undefined,
-      completion_id: options.completion_id,
-    };
-  }
+		return {
+			response,
+			toolResponses,
+			selectedModel: primaryModel,
+			selectedModels:
+				modelConfigs.length > 1 ? modelConfigs.map((m) => m.model) : undefined,
+			completion_id: options.completion_id,
+		};
+	}
 
-  private determineErrorType(error: any): ErrorType {
-    if (
-      error.name === "TimeoutError" ||
-      error.name === "AbortError" ||
-      error.code === "ECONNRESET" ||
-      error.code === "ECONNABORTED" ||
-      error.code === "ETIMEDOUT" ||
-      error.code === "ENOTFOUND" ||
-      error.code === "ECONNREFUSED" ||
-      error.code === "ENETUNREACH"
-    ) {
-      return ErrorType.NETWORK_ERROR;
-    }
+	private determineErrorType(error: any): ErrorType {
+		if (
+			error.name === "TimeoutError" ||
+			error.name === "AbortError" ||
+			error.code === "ECONNRESET" ||
+			error.code === "ECONNABORTED" ||
+			error.code === "ETIMEDOUT" ||
+			error.code === "ENOTFOUND" ||
+			error.code === "ECONNREFUSED" ||
+			error.code === "ENETUNREACH"
+		) {
+			return ErrorType.NETWORK_ERROR;
+		}
 
-    if (
-      error.status === 429 ||
-      error.code === "RATE_LIMIT_EXCEEDED" ||
-      error.name === "RateLimitError"
-    ) {
-      return ErrorType.RATE_LIMIT_ERROR;
-    }
+		if (
+			error.status === 429 ||
+			error.code === "RATE_LIMIT_EXCEEDED" ||
+			error.name === "RateLimitError"
+		) {
+			return ErrorType.RATE_LIMIT_ERROR;
+		}
 
-    if (
-      error.status === 401 ||
-      error.status === 403 ||
-      error.code === "UNAUTHORIZED" ||
-      error.code === "FORBIDDEN" ||
-      error.name === "AuthenticationError"
-    ) {
-      return ErrorType.AUTHENTICATION_ERROR;
-    }
+		if (
+			error.status === 401 ||
+			error.status === 403 ||
+			error.code === "UNAUTHORIZED" ||
+			error.code === "FORBIDDEN" ||
+			error.name === "AuthenticationError"
+		) {
+			return ErrorType.AUTHENTICATION_ERROR;
+		}
 
-    if (
-      error.status >= 500 ||
-      error.code === "MODEL_ERROR" ||
-      error.code === "INVALID_PARAMETER" ||
-      error.code === "TOKEN_LIMIT_EXCEEDED" ||
-      error.code === "CONTEXT_LENGTH_EXCEEDED" ||
-      error.name === "ModelError" ||
-      error.name === "ProviderError"
-    ) {
-      return ErrorType.PROVIDER_ERROR;
-    }
+		if (
+			error.status >= 500 ||
+			error.code === "MODEL_ERROR" ||
+			error.code === "INVALID_PARAMETER" ||
+			error.code === "TOKEN_LIMIT_EXCEEDED" ||
+			error.code === "CONTEXT_LENGTH_EXCEEDED" ||
+			error.name === "ModelError" ||
+			error.name === "ProviderError"
+		) {
+			return ErrorType.PROVIDER_ERROR;
+		}
 
-    if (error.status >= 400 && error.status < 500) {
-      return ErrorType.PARAMS_ERROR;
-    }
+		if (error.status >= 400 && error.status < 500) {
+			return ErrorType.PARAMS_ERROR;
+		}
 
-    return ErrorType.UNKNOWN_ERROR;
-  }
+		return ErrorType.UNKNOWN_ERROR;
+	}
 
-  private getErrorMessage(error: any, errorType: ErrorType): string {
-    switch (errorType) {
-      case ErrorType.NETWORK_ERROR:
-        return "Connection error or timeout while communicating with AI provider";
-      case ErrorType.RATE_LIMIT_ERROR:
-        return "Rate limit exceeded. Please try again later.";
-      case ErrorType.AUTHENTICATION_ERROR:
-        return "Authentication error with AI provider";
-      case ErrorType.PROVIDER_ERROR:
-        return error.message || "Error with model parameters or provider";
-      default:
-        return "An unexpected error occurred";
-    }
-  }
+	private getErrorMessage(error: any, errorType: ErrorType): string {
+		switch (errorType) {
+			case ErrorType.NETWORK_ERROR:
+				return "Connection error or timeout while communicating with AI provider";
+			case ErrorType.RATE_LIMIT_ERROR:
+				return "Rate limit exceeded. Please try again later.";
+			case ErrorType.AUTHENTICATION_ERROR:
+				return "Authentication error with AI provider";
+			case ErrorType.PROVIDER_ERROR:
+				return error.message || "Error with model parameters or provider";
+			default:
+				return "An unexpected error occurred";
+		}
+	}
 }

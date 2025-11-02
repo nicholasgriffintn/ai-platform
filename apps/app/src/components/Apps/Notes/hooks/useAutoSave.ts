@@ -4,83 +4,83 @@ import { toast } from "sonner";
 import { splitTitleAndContent } from "~/lib/text-utils";
 
 interface UseAutoSaveOptions {
-  text: string;
-  onSave: (
-    title: string,
-    content: string,
-    metadata?: Record<string, any>,
-  ) => Promise<string>;
-  tabInfo?: any;
-  metadata: Record<string, any>;
-  delay?: number;
+	text: string;
+	onSave: (
+		title: string,
+		content: string,
+		metadata?: Record<string, any>,
+	) => Promise<string>;
+	tabInfo?: any;
+	metadata: Record<string, any>;
+	delay?: number;
 }
 
 export function useAutoSave({
-  text,
-  onSave,
-  tabInfo,
-  metadata,
-  delay = 1000,
+	text,
+	onSave,
+	tabInfo,
+	metadata,
+	delay = 1000,
 }: UseAutoSaveOptions) {
-  const [lastSavedText, setLastSavedText] = useState<string>(text);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-  const textRef = useRef(text);
-  const lastSavedRef = useRef(lastSavedText);
-  const isSavingRef = useRef(false);
+	const [lastSavedText, setLastSavedText] = useState<string>(text);
+	const [isSaving, setIsSaving] = useState<boolean>(false);
+	const textRef = useRef(text);
+	const lastSavedRef = useRef(lastSavedText);
+	const isSavingRef = useRef(false);
 
-  useEffect(() => {
-    textRef.current = text;
-  }, [text]);
+	useEffect(() => {
+		textRef.current = text;
+	}, [text]);
 
-  useEffect(() => {
-    lastSavedRef.current = lastSavedText;
-  }, [lastSavedText]);
+	useEffect(() => {
+		lastSavedRef.current = lastSavedText;
+	}, [lastSavedText]);
 
-  useEffect(() => {
-    isSavingRef.current = isSaving;
-  }, [isSaving]);
+	useEffect(() => {
+		isSavingRef.current = isSaving;
+	}, [isSaving]);
 
-  const saveNote = useCallback(
-    async (textToSave: string) => {
-      if (isSavingRef.current) return;
+	const saveNote = useCallback(
+		async (textToSave: string) => {
+			if (isSavingRef.current) return;
 
-      setIsSaving(true);
-      try {
-        const [title, content] = splitTitleAndContent(textToSave);
-        const tabMetadata = tabInfo ? { tabSource: tabInfo } : {};
-        const finalMetadata = { ...metadata, ...tabMetadata };
-        await onSave(title, content, finalMetadata);
-        setLastSavedText(textToSave);
-      } catch {
-        toast.error("Failed to save note");
-      } finally {
-        setIsSaving(false);
-      }
-    },
-    [onSave, tabInfo, metadata],
-  );
+			setIsSaving(true);
+			try {
+				const [title, content] = splitTitleAndContent(textToSave);
+				const tabMetadata = tabInfo ? { tabSource: tabInfo } : {};
+				const finalMetadata = { ...metadata, ...tabMetadata };
+				await onSave(title, content, finalMetadata);
+				setLastSavedText(textToSave);
+			} catch {
+				toast.error("Failed to save note");
+			} finally {
+				setIsSaving(false);
+			}
+		},
+		[onSave, tabInfo, metadata],
+	);
 
-  const forceSave = useCallback(() => {
-    if (textRef.current !== lastSavedRef.current && !isSavingRef.current) {
-      return saveNote(textRef.current);
-    }
-  }, [saveNote]);
+	const forceSave = useCallback(() => {
+		if (textRef.current !== lastSavedRef.current && !isSavingRef.current) {
+			return saveNote(textRef.current);
+		}
+	}, [saveNote]);
 
-  useEffect(() => {
-    if (text === lastSavedText) return;
+	useEffect(() => {
+		if (text === lastSavedText) return;
 
-    const timeout = setTimeout(() => {
-      if (!isSavingRef.current) {
-        saveNote(text);
-      }
-    }, delay);
+		const timeout = setTimeout(() => {
+			if (!isSavingRef.current) {
+				saveNote(text);
+			}
+		}, delay);
 
-    return () => clearTimeout(timeout);
-  }, [text, lastSavedText, delay]);
+		return () => clearTimeout(timeout);
+	}, [text, lastSavedText, delay]);
 
-  return {
-    isSaving,
-    lastSavedText,
-    forceSave,
-  };
+	return {
+		isSaving,
+		lastSavedText,
+		forceSave,
+	};
 }

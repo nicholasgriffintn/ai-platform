@@ -3,155 +3,155 @@ import type { IFunction } from "~/types";
 import type { AppSchema } from "~/types/app-schema";
 import { FieldType } from "~/types/app-schema";
 import {
-  formatFunctionName,
-  getFunctionIcon,
-  getFunctionResponseDisplay,
-  getFunctionResponseType,
+	formatFunctionName,
+	getFunctionIcon,
+	getFunctionResponseDisplay,
+	getFunctionResponseType,
 } from "~/utils/functions";
 import { getLogger } from "~/utils/logger";
 import { registerDynamicApp } from "./index";
 import { getFunctionMetadata } from "./config";
 
 const logger = getLogger({
-  prefix: "services/dynamic-apps/auto-register-apps",
+	prefix: "services/dynamic-apps/auto-register-apps",
 });
 
 export const autoRegisterDynamicApps = (): void => {
-  for (const func of availableFunctions) {
-    registerFunctionAsDynamicApp(func);
-  }
+	for (const func of availableFunctions) {
+		registerFunctionAsDynamicApp(func);
+	}
 };
 
 const registerFunctionAsDynamicApp = (func: IFunction): void => {
-  const { name, description, parameters, type, isDefault, costPerCall } = func;
+	const { name, description, parameters, type, isDefault, costPerCall } = func;
 
-  const metadata = getFunctionMetadata(name);
+	const metadata = getFunctionMetadata(name);
 
-  const appSchema: AppSchema = {
-    id: name,
-    name: formatFunctionName(name),
-    description: description || `Execute the ${name} function`,
-    icon: metadata?.icon || getFunctionIcon(name),
-    category: metadata?.category || "Other",
-    theme: metadata?.theme,
-    tags: metadata?.tags,
-    featured: metadata?.featured,
-    type,
-    isDefault: isDefault || false,
-    costPerCall,
-    kind: "dynamic",
-    formSchema: {
-      steps: [
-        {
-          id: "parameters",
-          title: "Function Parameters",
-          description: `Provide the parameters for the ${formatFunctionName(name)} function`,
-          fields: generateFieldsFromParameters(parameters),
-        },
-      ],
-    },
-    responseSchema: {
-      type: getFunctionResponseType(name),
-      display: getFunctionResponseDisplay(name),
-    },
-  };
+	const appSchema: AppSchema = {
+		id: name,
+		name: formatFunctionName(name),
+		description: description || `Execute the ${name} function`,
+		icon: metadata?.icon || getFunctionIcon(name),
+		category: metadata?.category || "Other",
+		theme: metadata?.theme,
+		tags: metadata?.tags,
+		featured: metadata?.featured,
+		type,
+		isDefault: isDefault || false,
+		costPerCall,
+		kind: "dynamic",
+		formSchema: {
+			steps: [
+				{
+					id: "parameters",
+					title: "Function Parameters",
+					description: `Provide the parameters for the ${formatFunctionName(name)} function`,
+					fields: generateFieldsFromParameters(parameters),
+				},
+			],
+		},
+		responseSchema: {
+			type: getFunctionResponseType(name),
+			display: getFunctionResponseDisplay(name),
+		},
+	};
 
-  try {
-    registerDynamicApp(appSchema);
-  } catch (error) {
-    logger.error(`Failed to register dynamic app for function ${name}:`, {
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
+	try {
+		registerDynamicApp(appSchema);
+	} catch (error) {
+		logger.error(`Failed to register dynamic app for function ${name}:`, {
+			error_message: error instanceof Error ? error.message : "Unknown error",
+		});
+	}
 };
 
 const generateFieldsFromParameters = (
-  parameters: any,
+	parameters: any,
 ): AppSchema["formSchema"]["steps"][0]["fields"] => {
-  const fields: AppSchema["formSchema"]["steps"][0]["fields"] = [];
+	const fields: AppSchema["formSchema"]["steps"][0]["fields"] = [];
 
-  if (!parameters || !parameters.properties) {
-    return fields;
-  }
+	if (!parameters || !parameters.properties) {
+		return fields;
+	}
 
-  const { properties, required = [] } = parameters;
+	const { properties, required = [] } = parameters;
 
-  for (const [key, value] of Object.entries(properties) as [string, any][]) {
-    const isRequired = required.includes(key);
+	for (const [key, value] of Object.entries(properties) as [string, any][]) {
+		const isRequired = required.includes(key);
 
-    const fieldType = mapJsonSchemaTypeToFieldType(value.type, value.enum);
+		const fieldType = mapJsonSchemaTypeToFieldType(value.type, value.enum);
 
-    const field = {
-      id: key,
-      type: fieldType,
-      label: value.title || key,
-      description: value.description,
-      placeholder: `Enter ${key}`,
-      required: isRequired,
-      validation: generateValidationFromSchema(value, fieldType),
-    };
+		const field = {
+			id: key,
+			type: fieldType,
+			label: value.title || key,
+			description: value.description,
+			placeholder: `Enter ${key}`,
+			required: isRequired,
+			validation: generateValidationFromSchema(value, fieldType),
+		};
 
-    fields.push(field);
-  }
+		fields.push(field);
+	}
 
-  return fields;
+	return fields;
 };
 
 const mapJsonSchemaTypeToFieldType = (
-  type: string,
-  hasEnum?: any[],
+	type: string,
+	hasEnum?: any[],
 ): FieldType => {
-  if (hasEnum) {
-    return FieldType.SELECT;
-  }
+	if (hasEnum) {
+		return FieldType.SELECT;
+	}
 
-  switch (type) {
-    case "string":
-      return FieldType.TEXT;
-    case "number":
-    case "integer":
-      return FieldType.NUMBER;
-    case "boolean":
-      return FieldType.CHECKBOX;
-    case "array":
-      return FieldType.MULTISELECT;
-    default:
-      return FieldType.TEXTAREA;
-  }
+	switch (type) {
+		case "string":
+			return FieldType.TEXT;
+		case "number":
+		case "integer":
+			return FieldType.NUMBER;
+		case "boolean":
+			return FieldType.CHECKBOX;
+		case "array":
+			return FieldType.MULTISELECT;
+		default:
+			return FieldType.TEXTAREA;
+	}
 };
 
 const generateValidationFromSchema = (
-  schema: any,
-  _fieldType: FieldType,
+	schema: any,
+	_fieldType: FieldType,
 ): any => {
-  const validation: any = {};
+	const validation: any = {};
 
-  if (schema.enum) {
-    validation.options = schema.enum.map((value: any) => ({
-      label: value.toString(),
-      value: value.toString(),
-    }));
-  }
+	if (schema.enum) {
+		validation.options = schema.enum.map((value: any) => ({
+			label: value.toString(),
+			value: value.toString(),
+		}));
+	}
 
-  if (schema.minimum !== undefined) {
-    validation.min = schema.minimum;
-  }
+	if (schema.minimum !== undefined) {
+		validation.min = schema.minimum;
+	}
 
-  if (schema.maximum !== undefined) {
-    validation.max = schema.maximum;
-  }
+	if (schema.maximum !== undefined) {
+		validation.max = schema.maximum;
+	}
 
-  if (schema.minLength !== undefined) {
-    validation.minLength = schema.minLength;
-  }
+	if (schema.minLength !== undefined) {
+		validation.minLength = schema.minLength;
+	}
 
-  if (schema.maxLength !== undefined) {
-    validation.maxLength = schema.maxLength;
-  }
+	if (schema.maxLength !== undefined) {
+		validation.maxLength = schema.maxLength;
+	}
 
-  if (schema.pattern) {
-    validation.pattern = schema.pattern;
-  }
+	if (schema.pattern) {
+		validation.pattern = schema.pattern;
+	}
 
-  return Object.keys(validation).length > 0 ? validation : undefined;
+	return Object.keys(validation).length > 0 ? validation : undefined;
 };

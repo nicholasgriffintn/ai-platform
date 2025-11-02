@@ -1,6 +1,7 @@
 import { md } from "~/utils/markdown.js";
 
-export const memoriesTagDescription = md`# Memories & RAG
+export const memoriesTagDescription = md`
+# Memories & RAG
 
 Store and organize memories using vector embeddings. Memories are automatically extracted from conversations for PRO users and can be organized into groups.
 
@@ -75,7 +76,7 @@ When you send a message:
 
 The chat API supports general RAG via the \`use_rag\` and \`rag_options\` parameters:
 
-\`\`\`json
+~~~json
 {
   "model": "claude-3-5-sonnet-20241022",
   "messages": [...],
@@ -88,7 +89,7 @@ The chat API supports general RAG via the \`use_rag\` and \`rag_options\` parame
     "namespace": "my_namespace"
   }
 }
-\`\`\`
+~~~
 
 **Note:** This is for generic RAG, not user memories. User memories use a fixed namespace format: \`memory_user_{userId}\` and are automatically included for PRO users.
 
@@ -120,14 +121,14 @@ The chat API supports general RAG via the \`use_rag\` and \`rag_options\` parame
 
 ### Check Your Memories
 
-\`\`\`bash
+~~~bash
 curl https://api.polychat.app/v1/memories \\
   -H "Authorization: Bearer YOUR_TOKEN"
-\`\`\`
+~~~
 
 ### Organize Memories into Groups
 
-\`\`\`bash
+~~~bash
 # Create a group
 curl https://api.polychat.app/v1/memories/groups \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
@@ -145,11 +146,12 @@ curl https://api.polychat.app/v1/memories/groups/grp_xyz789/memories \\
   -d '{
     "memory_ids": ["mem_abc123", "mem_def456"]
   }'
-\`\`\`
+~~~
 
 ### Delete a Memory
 
-\`\`\`bash
+~~~bash
 curl -X DELETE https://api.polychat.app/v1/memories/mem_abc123 \\
   -H "Authorization: Bearer YOUR_TOKEN"
-\`\`\``;
+~~~
+`;

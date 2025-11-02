@@ -7,48 +7,48 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "middleware/rateLimit" });
 
 export async function rateLimit(context: Context, next: Next) {
-  if (!context.env.FREE_RATE_LIMITER || !context.env.PRO_RATE_LIMITER) {
-    throw new AssistantError(
-      "Rate limiter not configured",
-      ErrorType.CONFIGURATION_ERROR,
-    );
-  }
+	if (!context.env.FREE_RATE_LIMITER || !context.env.PRO_RATE_LIMITER) {
+		throw new AssistantError(
+			"Rate limiter not configured",
+			ErrorType.CONFIGURATION_ERROR,
+		);
+	}
 
-  const url = context.req.url;
-  const pathname = new URL(url).pathname;
+	const url = context.req.url;
+	const pathname = new URL(url).pathname;
 
-  const user = context.get("user");
-  const userId: string = user?.id;
+	const user = context.get("user");
+	const userId: string = user?.id;
 
-  const key = user?.id
-    ? `authenticated-${userId}-${pathname}`
-    : `unauthenticated-${userId}-${pathname}`;
+	const key = user?.id
+		? `authenticated-${userId}-${pathname}`
+		: `unauthenticated-${userId}-${pathname}`;
 
-  const rateLimiter = user?.id
-    ? context.env.PRO_RATE_LIMITER
-    : context.env.FREE_RATE_LIMITER;
+	const rateLimiter = user?.id
+		? context.env.PRO_RATE_LIMITER
+		: context.env.FREE_RATE_LIMITER;
 
-  const result = await rateLimiter.limit({
-    key,
-  });
+	const result = await rateLimiter.limit({
+		key,
+	});
 
-  if (!result.success) {
-    const errorMessage = user?.id
-      ? "Rate limit exceeded: 100 requests per minute"
-      : "Rate limit exceeded: 10 requests per minute. Please authenticate for higher limits.";
+	if (!result.success) {
+		const errorMessage = user?.id
+			? "Rate limit exceeded: 100 requests per minute"
+			: "Rate limit exceeded: 10 requests per minute. Please authenticate for higher limits.";
 
-    logger.warn("Rate limit exceeded", {
-      userId,
-      pathname,
-      key,
-      isAuthenticated: !!user?.id,
-    });
+		logger.warn("Rate limit exceeded", {
+			userId,
+			pathname,
+			key,
+			isAuthenticated: !!user?.id,
+		});
 
-    throw new AssistantError(errorMessage, ErrorType.RATE_LIMIT_ERROR);
-  }
+		throw new AssistantError(errorMessage, ErrorType.RATE_LIMIT_ERROR);
+	}
 
-  const routeName = pathname.split("/").pop() || "unknown";
-  trackUsageMetric(userId, routeName, context.env.ANALYTICS);
+	const routeName = pathname.split("/").pop() || "unknown";
+	trackUsageMetric(userId, routeName, context.env.ANALYTICS);
 
-  return next();
+	return next();
 }

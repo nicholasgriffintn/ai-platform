@@ -9,160 +9,160 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "services/apps/podcast/generate-image" });
 
 export interface IPodcastGenerateImageBody {
-  podcastId: string;
+	podcastId: string;
 }
 
 type GenerateImageRequest = {
-  env: IEnv;
-  request: IPodcastGenerateImageBody;
-  user: IUser;
-  app_url?: string;
+	env: IEnv;
+	request: IPodcastGenerateImageBody;
+	user: IUser;
+	app_url?: string;
 };
 
 export const handlePodcastGenerateImage = async (
-  req: GenerateImageRequest,
+	req: GenerateImageRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-  const { request, env, user } = req;
+	const { request, env, user } = req;
 
-  if (!request.podcastId) {
-    throw new AssistantError("Missing podcast id", ErrorType.PARAMS_ERROR);
-  }
+	if (!request.podcastId) {
+		throw new AssistantError("Missing podcast id", ErrorType.PARAMS_ERROR);
+	}
 
-  try {
-    if (!user?.id) {
-      throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
-    }
+	try {
+		if (!user?.id) {
+			throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
+		}
 
-    const repositories = RepositoryManager.getInstance(env);
+		const repositories = RepositoryManager.getInstance(env);
 
-    const existingImages =
-      await repositories.appData.getAppDataByUserAppAndItem(
-        user.id,
-        "podcasts",
-        request.podcastId,
-        "image",
-      );
+		const existingImages =
+			await repositories.appData.getAppDataByUserAppAndItem(
+				user.id,
+				"podcasts",
+				request.podcastId,
+				"image",
+			);
 
-    if (existingImages.length > 0) {
-      let imageData;
-      try {
-        imageData = JSON.parse(existingImages[0].data);
-      } catch (e) {
-        logger.error("Failed to parse image data", { error: e });
-        imageData = {};
-      }
-      return {
-        status: "success",
-        content: `Podcast Featured Image: [${imageData.imageId}](${imageData.imageUrl})`,
-        data: {
-          imageUrl: imageData.imageUrl,
-          imageKey: imageData.imageKey,
-        },
-      };
-    }
+		if (existingImages.length > 0) {
+			let imageData;
+			try {
+				imageData = JSON.parse(existingImages[0].data);
+			} catch (e) {
+				logger.error("Failed to parse image data", { error: e });
+				imageData = {};
+			}
+			return {
+				status: "success",
+				content: `Podcast Featured Image: [${imageData.imageId}](${imageData.imageUrl})`,
+				data: {
+					imageUrl: imageData.imageUrl,
+					imageKey: imageData.imageKey,
+				},
+			};
+		}
 
-    const summaryData = await repositories.appData.getAppDataByUserAppAndItem(
-      user.id,
-      "podcasts",
-      request.podcastId,
-      "summary",
-    );
+		const summaryData = await repositories.appData.getAppDataByUserAppAndItem(
+			user.id,
+			"podcasts",
+			request.podcastId,
+			"summary",
+		);
 
-    if (summaryData.length === 0) {
-      throw new AssistantError(
-        "Podcast summary not found. Please summarize podcast first",
-      );
-    }
+		if (summaryData.length === 0) {
+			throw new AssistantError(
+				"Podcast summary not found. Please summarize podcast first",
+			);
+		}
 
-    let parsedSummaryData;
-    try {
-      parsedSummaryData = JSON.parse(summaryData[0].data);
-    } catch (e) {
-      logger.error("Failed to parse summary data", { error: e });
-      parsedSummaryData = {};
-    }
+		let parsedSummaryData;
+		try {
+			parsedSummaryData = JSON.parse(summaryData[0].data);
+		} catch (e) {
+			logger.error("Failed to parse summary data", { error: e });
+			parsedSummaryData = {};
+		}
 
-    const summaryContent =
-      parsedSummaryData.summary || parsedSummaryData.description;
-    const summary = `I need a featured image for my latest podcast episode, this is the summary: ${summaryContent}`;
+		const summaryContent =
+			parsedSummaryData.summary || parsedSummaryData.description;
+		const summary = `I need a featured image for my latest podcast episode, this is the summary: ${summaryContent}`;
 
-    const data = await env.AI.run(
-      "@cf/bytedance/stable-diffusion-xl-lightning",
-      {
-        prompt: summary,
-      },
-      {
-        gateway: {
-          id: gatewayId,
-          skipCache: false,
-          cacheTtl: 3360,
-          metadata: {
-            email: user?.email,
-          },
-        },
-      },
-    );
+		const data = await env.AI.run(
+			"@cf/bytedance/stable-diffusion-xl-lightning",
+			{
+				prompt: summary,
+			},
+			{
+				gateway: {
+					id: gatewayId,
+					skipCache: false,
+					cacheTtl: 3360,
+					metadata: {
+						email: user?.email,
+					},
+				},
+			},
+		);
 
-    if (!data) {
-      throw new AssistantError("Image not generated");
-    }
+		if (!data) {
+			throw new AssistantError("Image not generated");
+		}
 
-    const imageId = generateId();
-    const imageKey = `podcasts/${imageId}/featured.png`;
+		const imageId = generateId();
+		const imageKey = `podcasts/${imageId}/featured.png`;
 
-    const reader = data.getReader();
-    const chunks = [];
-    let done = false;
-    while (!done) {
-      const result = await reader.read();
-      done = result.done;
-      if (result.value) {
-        chunks.push(result.value);
-      }
-    }
-    const arrayBuffer = new Uint8Array(
-      chunks.reduce(
-        (acc: number[], chunk) => acc.concat(Array.from(chunk)),
-        [] as number[],
-      ),
-    ).buffer;
-    const length = arrayBuffer.byteLength;
+		const reader = data.getReader();
+		const chunks = [];
+		let done = false;
+		while (!done) {
+			const result = await reader.read();
+			done = result.done;
+			if (result.value) {
+				chunks.push(result.value);
+			}
+		}
+		const arrayBuffer = new Uint8Array(
+			chunks.reduce(
+				(acc: number[], chunk) => acc.concat(Array.from(chunk)),
+				[] as number[],
+			),
+		).buffer;
+		const length = arrayBuffer.byteLength;
 
-    const storageService = new StorageService(env.ASSETS_BUCKET);
-    await storageService.uploadObject(imageKey, arrayBuffer, {
-      contentType: "image/png",
-      contentLength: length,
-    });
+		const storageService = new StorageService(env.ASSETS_BUCKET);
+		await storageService.uploadObject(imageKey, arrayBuffer, {
+			contentType: "image/png",
+			contentLength: length,
+		});
 
-    const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
-    const imageUrl = `${baseAssetsUrl}/${imageKey}`;
+		const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+		const imageUrl = `${baseAssetsUrl}/${imageKey}`;
 
-    const appData = {
-      imageId,
-      imageKey,
-      imageUrl,
-      summary: summaryContent,
-      status: "complete",
-      createdAt: new Date().toISOString(),
-    };
+		const appData = {
+			imageId,
+			imageKey,
+			imageUrl,
+			summary: summaryContent,
+			status: "complete",
+			createdAt: new Date().toISOString(),
+		};
 
-    await repositories.appData.createAppDataWithItem(
-      user.id,
-      "podcasts",
-      request.podcastId,
-      "image",
-      appData,
-    );
+		await repositories.appData.createAppDataWithItem(
+			user.id,
+			"podcasts",
+			request.podcastId,
+			"image",
+			appData,
+		);
 
-    return {
-      status: "success",
-      content: `Podcast Featured Image Uploaded: [${imageId}](${imageUrl})`,
-      data: appData,
-    };
-  } catch (error) {
-    logger.error("Failed to generate podcast image:", {
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
-    throw new AssistantError("Failed to generate podcast image");
-  }
+		return {
+			status: "success",
+			content: `Podcast Featured Image Uploaded: [${imageId}](${imageUrl})`,
+			data: appData,
+		};
+	} catch (error) {
+		logger.error("Failed to generate podcast image:", {
+			error_message: error instanceof Error ? error.message : "Unknown error",
+		});
+		throw new AssistantError("Failed to generate podcast image");
+	}
 };

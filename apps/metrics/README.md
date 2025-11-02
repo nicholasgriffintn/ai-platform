@@ -13,16 +13,19 @@ The monitoring and analytics dashboard for the Personal Assistant project, built
 ## Setup
 
 1. Install dependencies
+
 ```bash
 pnpm install
 ```
 
 2. Start the development server
+
 ```bash
 pnpm run dev
 ```
 
 3. Build for production
+
 ```bash
 pnpm run build
 ```
@@ -49,4 +52,4 @@ The metrics dashboard is available at [metrics.polychat.app](https://metrics.pol
 
 ## Integration with API
 
-The metrics app integrates with the API backend, which logs events to Cloudflare Analytics Engine. These logs are then visualized in the metrics dashboard. 
+The metrics app integrates with the API backend, which logs events to Cloudflare Analytics Engine. These logs are then visualized in the metrics dashboard.

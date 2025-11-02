@@ -1,64 +1,64 @@
 import type { PromptModelMetadata } from "./sections/metadata";
 
 export interface PromptCapabilities {
-  supportsToolCalls: boolean;
-  supportsArtifacts: boolean;
-  supportsReasoning: boolean;
-  requiresThinkingPrompt: boolean;
+	supportsToolCalls: boolean;
+	supportsArtifacts: boolean;
+	supportsReasoning: boolean;
+	requiresThinkingPrompt: boolean;
 }
 
 interface ResolvePromptCapabilityArgs {
-  supportsToolCalls?: boolean;
-  supportsArtifacts?: boolean;
-  supportsReasoning?: boolean;
-  requiresThinkingPrompt?: boolean;
-  modelMetadata?: PromptModelMetadata;
+	supportsToolCalls?: boolean;
+	supportsArtifacts?: boolean;
+	supportsReasoning?: boolean;
+	requiresThinkingPrompt?: boolean;
+	modelMetadata?: PromptModelMetadata;
 }
 
 export function resolvePromptCapabilities({
-  supportsToolCalls,
-  supportsArtifacts,
-  supportsReasoning,
-  requiresThinkingPrompt,
-  modelMetadata,
+	supportsToolCalls,
+	supportsArtifacts,
+	supportsReasoning,
+	requiresThinkingPrompt,
+	modelMetadata,
 }: ResolvePromptCapabilityArgs): PromptCapabilities {
-  const metadata = modelMetadata?.modelConfig;
+	const metadata = modelMetadata?.modelConfig;
 
-  return {
-    supportsToolCalls:
-      supportsToolCalls ?? metadata?.supportsToolCalls ?? false,
-    supportsArtifacts:
-      supportsArtifacts ?? metadata?.supportsArtifacts ?? false,
-    supportsReasoning:
-      supportsReasoning ?? metadata?.supportsReasoning ?? false,
-    requiresThinkingPrompt:
-      requiresThinkingPrompt ?? metadata?.requiresThinkingPrompt ?? false,
-  };
+	return {
+		supportsToolCalls:
+			supportsToolCalls ?? metadata?.supportsToolCalls ?? false,
+		supportsArtifacts:
+			supportsArtifacts ?? metadata?.supportsArtifacts ?? false,
+		supportsReasoning:
+			supportsReasoning ?? metadata?.supportsReasoning ?? false,
+		requiresThinkingPrompt:
+			requiresThinkingPrompt ?? metadata?.requiresThinkingPrompt ?? false,
+	};
 }
 
 export function getResponseStyle(
-  response_mode = "normal",
-  supportsReasoning = false,
-  requiresThinkingPrompt = false,
-  supportsToolCalls = false,
-  supportsArtifacts = false,
-  isAgent = false,
-  memoriesEnabled = false,
-  userTraits?: string,
-  userPreferences?: string,
-  isCoding = false,
-  instructionVariant: "full" | "compact" = "full",
+	response_mode = "normal",
+	supportsReasoning = false,
+	requiresThinkingPrompt = false,
+	supportsToolCalls = false,
+	supportsArtifacts = false,
+	isAgent = false,
+	memoriesEnabled = false,
+	userTraits?: string,
+	userPreferences?: string,
+	isCoding = false,
+	instructionVariant: "full" | "compact" = "full",
 ): {
-  traits: string;
-  preferences: string;
-  problemBreakdownInstructions: string;
-  answerFormatInstructions: string;
+	traits: string;
+	preferences: string;
+	problemBreakdownInstructions: string;
+	answerFormatInstructions: string;
 } {
-  const DEFAULT_TRAITS =
-    userTraits ||
-    "direct, intellectually curious, balanced in verbosity (concise for simple questions, thorough for complex ones), systematic in reasoning for complex problems";
+	const DEFAULT_TRAITS =
+		userTraits ||
+		"direct, intellectually curious, balanced in verbosity (concise for simple questions, thorough for complex ones), systematic in reasoning for complex problems";
 
-  const FULL_DEFAULT_PREFERENCES = `- Answer directly without unnecessary filler.
+	const FULL_DEFAULT_PREFERENCES = `- Answer directly without unnecessary filler.
   - Provide a brief overview of your approach so the user can follow along.
   - Match response length to question complexity—concise for simple questions, thorough for complex ones.
   - Offer to elaborate when the user asks; avoid over-explaining upfront.
@@ -68,304 +68,304 @@ export function getResponseStyle(
   - If a tool fails: retry once if safe; otherwise summarise the failure briefly and offer an alternative.
   - Write your response in the same language as the task posed by the user.`;
 
-  const COMPACT_DEFAULT_PREFERENCES = `- Provide clear, direct answers without filler.
+	const COMPACT_DEFAULT_PREFERENCES = `- Provide clear, direct answers without filler.
   - Ask for missing details only when essential; multiple follow-ups are fine when safety or accuracy demands it.
   - Match explanation depth to the task's complexity.
   - Keep chat in Markdown; put substantial code/data in fenced blocks or a single artifact per message.
   - If a tool fails: retry once if safe, otherwise summarise and suggest an alternative.
   - Reply in the same language the user used.`;
 
-  const DEFAULT_PREFERENCES =
-    userPreferences ||
-    (instructionVariant === "compact"
-      ? COMPACT_DEFAULT_PREFERENCES
-      : FULL_DEFAULT_PREFERENCES);
+	const DEFAULT_PREFERENCES =
+		userPreferences ||
+		(instructionVariant === "compact"
+			? COMPACT_DEFAULT_PREFERENCES
+			: FULL_DEFAULT_PREFERENCES);
 
-  if (instructionVariant === "compact") {
-    const compactProblemBreakdownInstructions = (() => {
-      switch (response_mode) {
-        case "concise":
-          return "Capture only the key checks or steps before you answer.";
-        case "formal":
-          return "Outline the essential steps with precise terminology.";
-        case "explanatory":
-          return "Highlight the main stages you'll cover before the final answer.";
-        default:
-          return "Sketch the steps that matter so your answer stays focused.";
-      }
-    })();
+	if (instructionVariant === "compact") {
+		const compactProblemBreakdownInstructions = (() => {
+			switch (response_mode) {
+				case "concise":
+					return "Capture only the key checks or steps before you answer.";
+				case "formal":
+					return "Outline the essential steps with precise terminology.";
+				case "explanatory":
+					return "Highlight the main stages you'll cover before the final answer.";
+				default:
+					return "Sketch the steps that matter so your answer stays focused.";
+			}
+		})();
 
-    const compactAnswerFormatInstructions = (() => {
-      const deliverable = isCoding ? "code" : "answer";
-      switch (response_mode) {
-        case "concise":
-          return `Provide the ${deliverable} with only the context the user needs to act.`;
-        case "formal":
-          return `Present the ${deliverable} with clear structure and precise language.`;
-        case "explanatory":
-          return `Deliver the ${deliverable} and briefly walk through the reasoning or workflow.`;
-        default:
-          return `Share the ${deliverable} and call out the key insight or next step for the user.`;
-      }
-    })();
+		const compactAnswerFormatInstructions = (() => {
+			const deliverable = isCoding ? "code" : "answer";
+			switch (response_mode) {
+				case "concise":
+					return `Provide the ${deliverable} with only the context the user needs to act.`;
+				case "formal":
+					return `Present the ${deliverable} with clear structure and precise language.`;
+				case "explanatory":
+					return `Deliver the ${deliverable} and briefly walk through the reasoning or workflow.`;
+				default:
+					return `Share the ${deliverable} and call out the key insight or next step for the user.`;
+			}
+		})();
 
-    if (isAgent) {
-      let agentPreferences = DEFAULT_PREFERENCES;
-      const agentGuidelines: string[] = [];
+		if (isAgent) {
+			let agentPreferences = DEFAULT_PREFERENCES;
+			const agentGuidelines: string[] = [];
 
-      if (supportsToolCalls) {
-        agentGuidelines.push(
-          "Only narrate tool usage when it helps the user act on the result.",
-        );
-      }
+			if (supportsToolCalls) {
+				agentGuidelines.push(
+					"Only narrate tool usage when it helps the user act on the result.",
+				);
+			}
 
-      if (supportsArtifacts) {
-        agentGuidelines.push(
-          "Put reusable deliverables in artifacts and summarise them in one sentence.",
-        );
-      }
+			if (supportsArtifacts) {
+				agentGuidelines.push(
+					"Put reusable deliverables in artifacts and summarise them in one sentence.",
+				);
+			}
 
-      agentGuidelines.push(
-        "Flag uncertainty or blocking gaps early so the user can redirect you.",
-      );
+			agentGuidelines.push(
+				"Flag uncertainty or blocking gaps early so the user can redirect you.",
+			);
 
-      if (agentGuidelines.length > 0) {
-        agentPreferences += `\n- Also keep in mind:\n${agentGuidelines
-          .map((line) => `  - ${line}`)
-          .join("\n")}`;
-      }
+			if (agentGuidelines.length > 0) {
+				agentPreferences += `\n- Also keep in mind:\n${agentGuidelines
+					.map((line) => `  - ${line}`)
+					.join("\n")}`;
+			}
 
-      if (memoriesEnabled) {
-        agentPreferences += `\n- Ask before storing long-term memories and refuse to keep sensitive personal data.`;
-      } else {
-        agentPreferences += `\n- If asked to remember something, explain that memories are currently disabled for this user.`;
-      }
+			if (memoriesEnabled) {
+				agentPreferences += `\n- Ask before storing long-term memories and refuse to keep sensitive personal data.`;
+			} else {
+				agentPreferences += `\n- If asked to remember something, explain that memories are currently disabled for this user.`;
+			}
 
-      return {
-        traits: DEFAULT_TRAITS,
-        preferences: agentPreferences,
-        problemBreakdownInstructions: compactProblemBreakdownInstructions,
-        answerFormatInstructions: compactAnswerFormatInstructions,
-      };
-    }
+			return {
+				traits: DEFAULT_TRAITS,
+				preferences: agentPreferences,
+				problemBreakdownInstructions: compactProblemBreakdownInstructions,
+				answerFormatInstructions: compactAnswerFormatInstructions,
+			};
+		}
 
-    const additionalGuidelines: string[] = [];
+		const additionalGuidelines: string[] = [];
 
-    if (!supportsReasoning || requiresThinkingPrompt) {
-      additionalGuidelines.push(
-        "Before answering, outline the essential steps you will take and share them briefly with the user.",
-      );
-      if (isCoding) {
-        additionalGuidelines.push(
-          "Call out critical components and edge cases in that summary before presenting code.",
-        );
-      }
-    }
+		if (!supportsReasoning || requiresThinkingPrompt) {
+			additionalGuidelines.push(
+				"Before answering, outline the essential steps you will take and share them briefly with the user.",
+			);
+			if (isCoding) {
+				additionalGuidelines.push(
+					"Call out critical components and edge cases in that summary before presenting code.",
+				);
+			}
+		}
 
-    if (supportsToolCalls) {
-      additionalGuidelines.push(
-        "Use tools only when they add value; summarise outcomes when it helps the user act.",
-      );
-    }
+		if (supportsToolCalls) {
+			additionalGuidelines.push(
+				"Use tools only when they add value; summarise outcomes when it helps the user act.",
+			);
+		}
 
-    if (supportsArtifacts) {
-      additionalGuidelines.push(
-        "Store long-form or reusable deliverables in artifacts and provide a one-line description in chat.",
-      );
-    }
+		if (supportsArtifacts) {
+			additionalGuidelines.push(
+				"Store long-form or reusable deliverables in artifacts and provide a one-line description in chat.",
+			);
+		}
 
-    additionalGuidelines.push(
-      "Flag uncertainty or missing information instead of guessing.",
-    );
-    additionalGuidelines.push(
-      "Scale your explanation to the complexity of the request.",
-    );
+		additionalGuidelines.push(
+			"Flag uncertainty or missing information instead of guessing.",
+		);
+		additionalGuidelines.push(
+			"Scale your explanation to the complexity of the request.",
+		);
 
-    let preferences = DEFAULT_PREFERENCES;
+		let preferences = DEFAULT_PREFERENCES;
 
-    if (additionalGuidelines.length > 0) {
-      preferences += `\n- Also follow:\n${additionalGuidelines
-        .map((line) => `  - ${line}`)
-        .join("\n")}`;
-    }
+		if (additionalGuidelines.length > 0) {
+			preferences += `\n- Also follow:\n${additionalGuidelines
+				.map((line) => `  - ${line}`)
+				.join("\n")}`;
+		}
 
-    if (isCoding) {
-      preferences += `\n- Present runnable code in fenced blocks or a single artifact and call out assumptions or edge cases.`;
-    } else {
-      preferences += `\n- Keep chat in Markdown prose; add short code snippets only when they clarify the explanation.`;
-    }
+		if (isCoding) {
+			preferences += `\n- Present runnable code in fenced blocks or a single artifact and call out assumptions or edge cases.`;
+		} else {
+			preferences += `\n- Keep chat in Markdown prose; add short code snippets only when they clarify the explanation.`;
+		}
 
-    if (memoriesEnabled) {
-      preferences += `\n- Only store memories after explicit user consent.\n- Do not store short-lived logistics (meetings, links, one-off codes) unless the user explicitly asks.\n- Never retain passwords, credentials, financial IDs, or medical details.`;
-    } else {
-      preferences += `\n- If the user asks you to remember something, explain that memories are disabled and suggest alternatives.`;
-    }
+		if (memoriesEnabled) {
+			preferences += `\n- Only store memories after explicit user consent.\n- Do not store short-lived logistics (meetings, links, one-off codes) unless the user explicitly asks.\n- Never retain passwords, credentials, financial IDs, or medical details.`;
+		} else {
+			preferences += `\n- If the user asks you to remember something, explain that memories are disabled and suggest alternatives.`;
+		}
 
-    return {
-      traits: DEFAULT_TRAITS,
-      preferences,
-      problemBreakdownInstructions: compactProblemBreakdownInstructions,
-      answerFormatInstructions: compactAnswerFormatInstructions,
-    };
-  }
+		return {
+			traits: DEFAULT_TRAITS,
+			preferences,
+			problemBreakdownInstructions: compactProblemBreakdownInstructions,
+			answerFormatInstructions: compactAnswerFormatInstructions,
+		};
+	}
 
-  if (isAgent) {
-    let agentPreferences = DEFAULT_PREFERENCES;
-    agentPreferences += `\n- Prioritise built-in knowledge and retrieval before browsing external sources unless the user requests otherwise.`;
-    if (supportsToolCalls) {
-      agentPreferences += `\n- Narrate tool usage only when it helps the user act on the results.`;
-    }
-    if (memoriesEnabled) {
-      agentPreferences += `\n- Only store memories after explicit user consent.\n- Do not store short-lived logistics (meetings, links, one-off codes) unless the user explicitly asks.\n- Never retain passwords, credentials, financial IDs, or medical details.`;
-    } else {
-      agentPreferences += `\n- If the user asks you to remember something, explain that memories are disabled and suggest alternatives.`;
-    }
+	if (isAgent) {
+		let agentPreferences = DEFAULT_PREFERENCES;
+		agentPreferences += `\n- Prioritise built-in knowledge and retrieval before browsing external sources unless the user requests otherwise.`;
+		if (supportsToolCalls) {
+			agentPreferences += `\n- Narrate tool usage only when it helps the user act on the results.`;
+		}
+		if (memoriesEnabled) {
+			agentPreferences += `\n- Only store memories after explicit user consent.\n- Do not store short-lived logistics (meetings, links, one-off codes) unless the user explicitly asks.\n- Never retain passwords, credentials, financial IDs, or medical details.`;
+		} else {
+			agentPreferences += `\n- If the user asks you to remember something, explain that memories are disabled and suggest alternatives.`;
+		}
 
-    return {
-      traits: DEFAULT_TRAITS,
-      preferences: agentPreferences,
-      problemBreakdownInstructions:
-        "Outline the key steps in your plan so the user understands how you will proceed before executing.",
-      answerFormatInstructions: `Deliver the ${isCoding ? "solution" : "answer"} with a concise summary of outcomes and recommended next actions.`,
-    };
-  }
+		return {
+			traits: DEFAULT_TRAITS,
+			preferences: agentPreferences,
+			problemBreakdownInstructions:
+				"Outline the key steps in your plan so the user understands how you will proceed before executing.",
+			answerFormatInstructions: `Deliver the ${isCoding ? "solution" : "answer"} with a concise summary of outcomes and recommended next actions.`,
+		};
+	}
 
-  let PREFERENCES_WITH_INSTRUCTIONS = `${DEFAULT_PREFERENCES}
+	let PREFERENCES_WITH_INSTRUCTIONS = `${DEFAULT_PREFERENCES}
   - Please also follow these instructions:\n`;
 
-  let step = 1;
-  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Read and understand questions carefully.\n`;
-  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If the question is unclear or lacks necessary information, ask for clarification.\n`;
+	let step = 1;
+	PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Read and understand questions carefully.\n`;
+	PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If the question is unclear or lacks necessary information, ask for clarification.\n`;
 
-  if (!supportsReasoning || requiresThinkingPrompt) {
-    PREFERENCES_WITH_INSTRUCTIONS += `${step}. Analyse the question and context thoroughly before answering, and outline the essential steps you will take.\n`;
-    if (isCoding) {
-      PREFERENCES_WITH_INSTRUCTIONS += `${step}.1 Break down the problem into smaller components.\n`;
-      PREFERENCES_WITH_INSTRUCTIONS += `${step}.2 List any assumptions you're making about the problem.\n`;
-      PREFERENCES_WITH_INSTRUCTIONS += `${step}.3 Plan your approach to solving the problem or generating the code.\n`;
-      PREFERENCES_WITH_INSTRUCTIONS += `${step}.4 Write pseudocode for your solution.\n`;
-      PREFERENCES_WITH_INSTRUCTIONS += `${step}.5 Consider potential edge cases or limitations of your solution.\n`;
-      PREFERENCES_WITH_INSTRUCTIONS += `${step}.6 If generating code, write it out and then analyse it for correctness, efficiency, and adherence to best practices.\n`;
-      PREFERENCES_WITH_INSTRUCTIONS += `${step}.7 Validate your solution with tests where practical and consider complexity and performance trade-offs.\n`;
-    }
+	if (!supportsReasoning || requiresThinkingPrompt) {
+		PREFERENCES_WITH_INSTRUCTIONS += `${step}. Analyse the question and context thoroughly before answering, and outline the essential steps you will take.\n`;
+		if (isCoding) {
+			PREFERENCES_WITH_INSTRUCTIONS += `${step}.1 Break down the problem into smaller components.\n`;
+			PREFERENCES_WITH_INSTRUCTIONS += `${step}.2 List any assumptions you're making about the problem.\n`;
+			PREFERENCES_WITH_INSTRUCTIONS += `${step}.3 Plan your approach to solving the problem or generating the code.\n`;
+			PREFERENCES_WITH_INSTRUCTIONS += `${step}.4 Write pseudocode for your solution.\n`;
+			PREFERENCES_WITH_INSTRUCTIONS += `${step}.5 Consider potential edge cases or limitations of your solution.\n`;
+			PREFERENCES_WITH_INSTRUCTIONS += `${step}.6 If generating code, write it out and then analyse it for correctness, efficiency, and adherence to best practices.\n`;
+			PREFERENCES_WITH_INSTRUCTIONS += `${step}.7 Validate your solution with tests where practical and consider complexity and performance trade-offs.\n`;
+		}
 
-    if (supportsToolCalls) {
-      const subBase = isCoding ? `${step}.8` : `${step}.1`;
-      PREFERENCES_WITH_INSTRUCTIONS += `${subBase} Determine whether the query can be resolved directly or if a tool is required. Prefer the lightest option (internal knowledge → retrieval → browsing → code execution).\n`;
-      PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.1 When using a tool, include a short outcome summary only if it helps the user.\n`;
-      PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.2 Stop calling tools once you have enough information to answer confidently.\n`;
-    }
+		if (supportsToolCalls) {
+			const subBase = isCoding ? `${step}.8` : `${step}.1`;
+			PREFERENCES_WITH_INSTRUCTIONS += `${subBase} Determine whether the query can be resolved directly or if a tool is required. Prefer the lightest option (internal knowledge → retrieval → browsing → code execution).\n`;
+			PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.1 When using a tool, include a short outcome summary only if it helps the user.\n`;
+			PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.2 Stop calling tools once you have enough information to answer confidently.\n`;
+		}
 
-    if (supportsArtifacts) {
-      let artifactSub;
-      if (isCoding && supportsToolCalls) {
-        artifactSub = `${step}.9`;
-      } else if (isCoding) {
-        artifactSub = `${step}.8`;
-      } else {
-        artifactSub = `${step}.2`;
-      }
-      PREFERENCES_WITH_INSTRUCTIONS += `${artifactSub} Use an artifact for long-form, reusable, or executable deliverables and provide a one-line summary in the chat.\n`;
-    }
+		if (supportsArtifacts) {
+			let artifactSub;
+			if (isCoding && supportsToolCalls) {
+				artifactSub = `${step}.9`;
+			} else if (isCoding) {
+				artifactSub = `${step}.8`;
+			} else {
+				artifactSub = `${step}.2`;
+			}
+			PREFERENCES_WITH_INSTRUCTIONS += `${artifactSub} Use an artifact for long-form, reusable, or executable deliverables and provide a one-line summary in the chat.\n`;
+		}
 
-    let finalSub;
-    if (isCoding && supportsToolCalls && supportsArtifacts) {
-      finalSub = `${step}.10`;
-    } else if (isCoding && (supportsToolCalls || supportsArtifacts)) {
-      finalSub = `${step}.${supportsToolCalls && supportsArtifacts ? 10 : 9}`;
-    } else if (isCoding) {
-      finalSub = `${step}.8`;
-    } else {
-      finalSub = `${step}.${supportsToolCalls && supportsArtifacts ? 3 : supportsToolCalls || supportsArtifacts ? 2 : 1}`;
-    }
-    PREFERENCES_WITH_INSTRUCTIONS += `${finalSub} Keep any pre-answer summary concise and omit sensitive personal details.\n`;
-    step++;
-  }
+		let finalSub;
+		if (isCoding && supportsToolCalls && supportsArtifacts) {
+			finalSub = `${step}.10`;
+		} else if (isCoding && (supportsToolCalls || supportsArtifacts)) {
+			finalSub = `${step}.${supportsToolCalls && supportsArtifacts ? 10 : 9}`;
+		} else if (isCoding) {
+			finalSub = `${step}.8`;
+		} else {
+			finalSub = `${step}.${supportsToolCalls && supportsArtifacts ? 3 : supportsToolCalls || supportsArtifacts ? 2 : 1}`;
+		}
+		PREFERENCES_WITH_INSTRUCTIONS += `${finalSub} Keep any pre-answer summary concise and omit sensitive personal details.\n`;
+		step++;
+	}
 
-  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If you're unsure or don't have the information to answer, say "I don't know" or offer to find more information safely.\n`;
+	PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If you're unsure or don't have the information to answer, say "I don't know" or offer to find more information safely.\n`;
 
-  if (isCoding) {
-    PREFERENCES_WITH_INSTRUCTIONS += `${step}. When coding, present runnable code in fenced blocks or artifacts and call out assumptions or edge cases.\n`;
-    for (let sub = 1; sub <= 5; sub++) {
-      switch (sub) {
-        case 1:
-          PREFERENCES_WITH_INSTRUCTIONS += `${step}.1. Ensure the code adheres to best practices and conventions for the specified programming language.\n`;
-          break;
-        case 2:
-          PREFERENCES_WITH_INSTRUCTIONS += `${step}.2. Write clean, efficient, and well-documented code.\n`;
-          break;
-        case 3:
-          PREFERENCES_WITH_INSTRUCTIONS += `${step}.3. Include comments to explain complex logic or non-obvious implementations.\n`;
-          break;
-        case 4:
-          PREFERENCES_WITH_INSTRUCTIONS += `${step}.4. If the task requires multiple functions or classes, structure the code logically and use appropriate naming conventions.\n`;
-          break;
-        case 5:
-          PREFERENCES_WITH_INSTRUCTIONS += `${step}.5. For substantial code solutions, consider using an artifact tag instead.\n`;
-          break;
-      }
-    }
-    step++;
-  } else {
-    PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Keep chat responses in Markdown prose; add short code snippets only when they clarify the explanation.\n`;
-  }
+	if (isCoding) {
+		PREFERENCES_WITH_INSTRUCTIONS += `${step}. When coding, present runnable code in fenced blocks or artifacts and call out assumptions or edge cases.\n`;
+		for (let sub = 1; sub <= 5; sub++) {
+			switch (sub) {
+				case 1:
+					PREFERENCES_WITH_INSTRUCTIONS += `${step}.1. Ensure the code adheres to best practices and conventions for the specified programming language.\n`;
+					break;
+				case 2:
+					PREFERENCES_WITH_INSTRUCTIONS += `${step}.2. Write clean, efficient, and well-documented code.\n`;
+					break;
+				case 3:
+					PREFERENCES_WITH_INSTRUCTIONS += `${step}.3. Include comments to explain complex logic or non-obvious implementations.\n`;
+					break;
+				case 4:
+					PREFERENCES_WITH_INSTRUCTIONS += `${step}.4. If the task requires multiple functions or classes, structure the code logically and use appropriate naming conventions.\n`;
+					break;
+				case 5:
+					PREFERENCES_WITH_INSTRUCTIONS += `${step}.5. For substantial code solutions, consider using an artifact tag instead.\n`;
+					break;
+			}
+		}
+		step++;
+	} else {
+		PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Keep chat responses in Markdown prose; add short code snippets only when they clarify the explanation.\n`;
+	}
 
-  if (supportsArtifacts) {
-    PREFERENCES_WITH_INSTRUCTIONS += getArtifactInstructions(
-      supportsArtifacts,
-      false,
-      step,
-      "full",
-    );
-    step += 1;
-  }
+	if (supportsArtifacts) {
+		PREFERENCES_WITH_INSTRUCTIONS += getArtifactInstructions(
+			supportsArtifacts,
+			false,
+			step,
+			"full",
+		);
+		step += 1;
+	}
 
-  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Include 'Key steps' for complex tasks.\n`;
-  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. When referencing external information, cite reliable sources or note when evidence is limited.\n`;
-  PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Engage thoughtfully with the user's ideas while respecting privacy and platform policies.`;
+	PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Include 'Key steps' for complex tasks.\n`;
+	PREFERENCES_WITH_INSTRUCTIONS += `${step++}. When referencing external information, cite reliable sources or note when evidence is limited.\n`;
+	PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Engage thoughtfully with the user's ideas while respecting privacy and platform policies.`;
 
-  if (memoriesEnabled) {
-    PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. Only store memories after explicit user consent.\n`;
-    PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Do not store short-lived logistics (meetings, links, one-off codes) unless the user explicitly asks.\n`;
-    PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Never retain passwords, credentials, financial IDs, or medical details.\n`;
-  } else {
-    PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. If the user asks you to remember something, explain that memories are disabled and suggest they capture the detail another way.\n`;
-  }
+	if (memoriesEnabled) {
+		PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. Only store memories after explicit user consent.\n`;
+		PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Do not store short-lived logistics (meetings, links, one-off codes) unless the user explicitly asks.\n`;
+		PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Never retain passwords, credentials, financial IDs, or medical details.\n`;
+	} else {
+		PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. If the user asks you to remember something, explain that memories are disabled and suggest they capture the detail another way.\n`;
+	}
 
-  switch (response_mode) {
-    case "concise":
-      return {
-        traits: DEFAULT_TRAITS,
-        preferences: PREFERENCES_WITH_INSTRUCTIONS,
-        problemBreakdownInstructions:
-          "Keep your problem breakdown brief, focusing only on the most critical aspects of the problem.",
-        answerFormatInstructions: `Provide your ${isCoding ? "code" : "answer"} with minimal explanation, focusing on the answer itself.`,
-      };
-    case "explanatory":
-      return {
-        traits: DEFAULT_TRAITS,
-        preferences: PREFERENCES_WITH_INSTRUCTIONS,
-        problemBreakdownInstructions:
-          "Provide a thorough problem breakdown with detailed explanations of your thought process and approach.",
-        answerFormatInstructions: `Explain your ${isCoding ? "code" : "answer"} in detail, including the reasoning behind your implementation choices and how each part works.`,
-      };
-    case "formal":
-      return {
-        traits: DEFAULT_TRAITS,
-        preferences: PREFERENCES_WITH_INSTRUCTIONS,
-        problemBreakdownInstructions:
-          "Structure your problem breakdown formally, using proper technical terminology and a methodical approach.",
-        answerFormatInstructions: `Present your ${isCoding ? "code" : "answer"} in a formal, structured manner with appropriate technical terminology and documentation.`,
-      };
-    default:
-      return {
-        traits: DEFAULT_TRAITS,
-        preferences: PREFERENCES_WITH_INSTRUCTIONS,
-        problemBreakdownInstructions:
-          "Provide a balanced problem breakdown that covers the important aspects without being overly verbose.",
-        answerFormatInstructions: `Balance your ${isCoding ? "code" : "answer"} with explanation, providing enough context to understand the solution without overwhelming detail.`,
-      };
-  }
+	switch (response_mode) {
+		case "concise":
+			return {
+				traits: DEFAULT_TRAITS,
+				preferences: PREFERENCES_WITH_INSTRUCTIONS,
+				problemBreakdownInstructions:
+					"Keep your problem breakdown brief, focusing only on the most critical aspects of the problem.",
+				answerFormatInstructions: `Provide your ${isCoding ? "code" : "answer"} with minimal explanation, focusing on the answer itself.`,
+			};
+		case "explanatory":
+			return {
+				traits: DEFAULT_TRAITS,
+				preferences: PREFERENCES_WITH_INSTRUCTIONS,
+				problemBreakdownInstructions:
+					"Provide a thorough problem breakdown with detailed explanations of your thought process and approach.",
+				answerFormatInstructions: `Explain your ${isCoding ? "code" : "answer"} in detail, including the reasoning behind your implementation choices and how each part works.`,
+			};
+		case "formal":
+			return {
+				traits: DEFAULT_TRAITS,
+				preferences: PREFERENCES_WITH_INSTRUCTIONS,
+				problemBreakdownInstructions:
+					"Structure your problem breakdown formally, using proper technical terminology and a methodical approach.",
+				answerFormatInstructions: `Present your ${isCoding ? "code" : "answer"} in a formal, structured manner with appropriate technical terminology and documentation.`,
+			};
+		default:
+			return {
+				traits: DEFAULT_TRAITS,
+				preferences: PREFERENCES_WITH_INSTRUCTIONS,
+				problemBreakdownInstructions:
+					"Provide a balanced problem breakdown that covers the important aspects without being overly verbose.",
+				answerFormatInstructions: `Balance your ${isCoding ? "code" : "answer"} with explanation, providing enough context to understand the solution without overwhelming detail.`,
+			};
+	}
 }
 
 /**
@@ -375,52 +375,52 @@ export function getResponseStyle(
  * @returns Example string or empty string if artifacts not supported
  */
 export function getArtifactExample(
-  supportsArtifacts = false,
-  forCode = false,
-  variant: "full" | "compact" = "full",
+	supportsArtifacts = false,
+	forCode = false,
+	variant: "full" | "compact" = "full",
 ): string {
-  if (!supportsArtifacts) {
-    return "";
-  }
+	if (!supportsArtifacts) {
+		return "";
+	}
 
-  const guidance = [
-    "Use artifacts for deliverables the user may reuse or download later.",
-    "Reference each artifact in your main response so the user understands what it contains.",
-    "Reuse an existing artifact identifier when updating earlier work; choose a new one for fresh deliverables.",
-    "Tailor each artifact to the user's request—never copy the example artifact verbatim.",
-  ];
+	const guidance = [
+		"Use artifacts for deliverables the user may reuse or download later.",
+		"Reference each artifact in your main response so the user understands what it contains.",
+		"Reuse an existing artifact identifier when updating earlier work; choose a new one for fresh deliverables.",
+		"Tailor each artifact to the user's request—never copy the example artifact verbatim.",
+	];
 
-  if (variant === "compact") {
-    const compactExample = forCode
-      ? `<artifact identifier="solution-snippet" type="application/code" language="{{programming_language}}">
+	if (variant === "compact") {
+		const compactExample = forCode
+			? `<artifact identifier="solution-snippet" type="application/code" language="{{programming_language}}">
 // Final implementation
 </artifact>`
-      : `<artifact identifier="deliverable" type="text/markdown">
+			: `<artifact identifier="deliverable" type="text/markdown">
 Provide the full deliverable here.
 </artifact>`;
 
-    return `<artifact_hint>
+		return `<artifact_hint>
 ${guidance.map((line) => `  - ${line}`).join("\n")}
 </artifact_hint>
   <example_artifact>
   ${compactExample}
 </example_artifact>`;
-  }
+	}
 
-  const sampleArtifact = forCode
-    ? `<artifact identifier="solution-snippet" type="application/code" language="{{programming_language}}">
+	const sampleArtifact = forCode
+		? `<artifact identifier="solution-snippet" type="application/code" language="{{programming_language}}">
 // Main implementation
 function example() {
   // ...
 }
 </artifact>`
-    : `<artifact identifier="deliverable" type="text/markdown">
+		: `<artifact identifier="deliverable" type="text/markdown">
 # Outline
 - Key point 1
 - Key point 2
 </artifact>`;
 
-  return `<artifact_hint>
+	return `<artifact_hint>
 ${guidance.map((line) => `  - ${line}`).join("\n")}
 </artifact_hint>
 <artifact_example>
@@ -429,8 +429,8 @@ ${guidance.map((line) => `  - ${line}`).join("\n")}
 }
 
 function getArtifactTypeInstructions(forCode = false): string {
-  if (forCode) {
-    return `- Code: "application/vnd.code" or "application/code"
+	if (forCode) {
+		return `- Code: "application/vnd.code" or "application/code"
           - Use for code snippets or scripts in any programming language.
           - Include the language name as the value of the \`language\` attribute (e.g., \`language="python"\`).
           - Do not use triple backticks when putting code in an artifact.
@@ -459,9 +459,9 @@ function getArtifactTypeInstructions(forCode = false): string {
           - NO OTHER LIBRARIES (e.g. zod, hookform) ARE INSTALLED OR ABLE TO BE IMPORTED.
           - Images from the web are not allowed, but you can use placeholder images by specifying the width and height like so \`<img src="/api/placeholder/400/320" alt="placeholder" />\`
           - If you are unable to follow the above requirements for any reason, use "application/vnd.code" type for the artifact instead, which will not attempt to render the component.`;
-  }
+	}
 
-  return `- "text/markdown" for documentation
+	return `- "text/markdown" for documentation
       - "text/html" for web content
       - "image/svg+xml" for diagrams
       - "application/mermaid" for flowcharts
@@ -476,21 +476,21 @@ function getArtifactTypeInstructions(forCode = false): string {
  * @returns Instructions string or empty string if artifacts not supported
  */
 export function getArtifactInstructions(
-  supportsArtifacts = false,
-  forCode = false,
-  startIndex = 1,
-  variant: "full" | "compact" = "full",
+	supportsArtifacts = false,
+	forCode = false,
+	startIndex = 1,
+	variant: "full" | "compact" = "full",
 ): string {
-  if (!supportsArtifacts) return "";
+	if (!supportsArtifacts) return "";
 
-  if (variant === "compact") {
-    return `${startIndex}. When using artifacts, keep them lightweight:
+	if (variant === "compact") {
+		return `${startIndex}. When using artifacts, keep them lightweight:
    - Reserve artifacts for deliverables the user may reuse or download.
    - Summarise each artifact in your response so the user knows what's inside.
    - Reuse identifiers when updating earlier work to keep context linked.`;
-  }
+	}
 
-  const baseInstructions = `${startIndex}. When creating artifacts:
+	const baseInstructions = `${startIndex}. When creating artifacts:
    a. Use artifacts for substantial, self-contained content (>15 lines) 
       that users might modify or reuse
    b. You can also use artifacts for content intended for eventual use
@@ -509,12 +509,12 @@ export function getArtifactInstructions(
    g. If a user asks the assistant to "draw an SVG" or "make a website", the
       assistant should create the code for that and place it within an artifact.`;
 
-  return baseInstructions;
+	return baseInstructions;
 }
 
 /**
  * Return an empty prompt string
  */
 export function emptyPrompt(): string {
-  return "";
+	return "";
 }

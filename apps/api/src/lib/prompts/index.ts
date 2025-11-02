@@ -6,93 +6,93 @@ import { getTextToImageSystemPrompt } from "./image";
 import { returnStandardPrompt } from "./standard";
 import { emptyPrompt } from "./utils";
 import {
-  buildAssistantMetadataSection,
-  type PromptModelMetadata,
+	buildAssistantMetadataSection,
+	type PromptModelMetadata,
 } from "./sections/metadata";
 
 export async function getSystemPrompt(
-  request: IBody,
-  model: string,
-  user?: IUser,
-  userSettings?: IUserSettings,
+	request: IBody,
+	model: string,
+	user?: IUser,
+	userSettings?: IUserSettings,
 ): Promise<string> {
-  const modelConfig = await getModelConfigByMatchingModel(model);
-  const supportsToolCalls = modelConfig?.supportsToolCalls || false;
-  const supportsArtifacts = modelConfig?.supportsArtifacts || false;
-  const supportsReasoning = modelConfig?.supportsReasoning || false;
-  const requiresThinkingPrompt = modelConfig?.requiresThinkingPrompt || false;
+	const modelConfig = await getModelConfigByMatchingModel(model);
+	const supportsToolCalls = modelConfig?.supportsToolCalls || false;
+	const supportsArtifacts = modelConfig?.supportsArtifacts || false;
+	const supportsReasoning = modelConfig?.supportsReasoning || false;
+	const requiresThinkingPrompt = modelConfig?.requiresThinkingPrompt || false;
 
-  let prompt: string;
+	let prompt: string;
 
-  if (!modelConfig) {
-    prompt = await returnStandardPrompt(
-      request,
-      user,
-      userSettings,
-      supportsToolCalls,
-      supportsArtifacts,
-      supportsReasoning,
-      requiresThinkingPrompt,
-      { modelId: model },
-    );
-  } else {
-    const isTextModel = modelConfig.type.includes("text");
+	if (!modelConfig) {
+		prompt = await returnStandardPrompt(
+			request,
+			user,
+			userSettings,
+			supportsToolCalls,
+			supportsArtifacts,
+			supportsReasoning,
+			requiresThinkingPrompt,
+			{ modelId: model },
+		);
+	} else {
+		const isTextModel = modelConfig.type.includes("text");
 
-    const isCodingModel = modelConfig.type.includes("coding");
-    if (isCodingModel && !isTextModel) {
-      prompt = returnCodingPrompt(
-        request,
-        userSettings,
-        supportsToolCalls,
-        supportsArtifacts,
-        supportsReasoning,
-        requiresThinkingPrompt,
-        { modelId: model, modelConfig },
-      );
-    } else {
-      const isTextToImageModel = modelConfig.type.includes("text-to-image");
-      if (isTextToImageModel) {
-        prompt = getTextToImageSystemPrompt(request.image_style);
-      } else if (!isTextModel) {
-        prompt = emptyPrompt();
-      } else {
-        prompt = await returnStandardPrompt(
-          request,
-          user,
-          userSettings,
-          supportsToolCalls,
-          supportsArtifacts,
-          supportsReasoning,
-          requiresThinkingPrompt,
-          { modelId: model, modelConfig },
-        );
-      }
-    }
-  }
+		const isCodingModel = modelConfig.type.includes("coding");
+		if (isCodingModel && !isTextModel) {
+			prompt = returnCodingPrompt(
+				request,
+				userSettings,
+				supportsToolCalls,
+				supportsArtifacts,
+				supportsReasoning,
+				requiresThinkingPrompt,
+				{ modelId: model, modelConfig },
+			);
+		} else {
+			const isTextToImageModel = modelConfig.type.includes("text-to-image");
+			if (isTextToImageModel) {
+				prompt = getTextToImageSystemPrompt(request.image_style);
+			} else if (!isTextModel) {
+				prompt = emptyPrompt();
+			} else {
+				prompt = await returnStandardPrompt(
+					request,
+					user,
+					userSettings,
+					supportsToolCalls,
+					supportsArtifacts,
+					supportsReasoning,
+					requiresThinkingPrompt,
+					{ modelId: model, modelConfig },
+				);
+			}
+		}
+	}
 
-  return trimTemplateWhitespace(prompt);
+	return trimTemplateWhitespace(prompt);
 }
 
 function buildArticlePromptMetadata(
-  metadata: PromptModelMetadata | undefined,
-  mode: ChatMode,
+	metadata: PromptModelMetadata | undefined,
+	mode: ChatMode,
 ): string {
-  return buildAssistantMetadataSection({
-    request: {
-      mode,
-      response_mode: "explanatory",
-    },
-    modelId: metadata?.modelId,
-    modelConfig: metadata?.modelConfig,
-  });
+	return buildAssistantMetadataSection({
+		request: {
+			mode,
+			response_mode: "explanatory",
+		},
+		modelId: metadata?.modelId,
+		modelConfig: metadata?.modelConfig,
+	});
 }
 
 export function analyseArticlePrompt(
-  article: string,
-  metadata?: PromptModelMetadata,
+	article: string,
+	metadata?: PromptModelMetadata,
 ): string {
-  const metadataSection = buildArticlePromptMetadata(metadata, "normal");
-  return `<s> [INST] ${metadataSection}Your task is provide a comprehensive analysis that identifies any potential bias, political leanings, and the tone of the content, evaluating the presence of bias and political alignment in the article provided.
+	const metadataSection = buildArticlePromptMetadata(metadata, "normal");
+	return `<s> [INST] ${metadataSection}Your task is provide a comprehensive analysis that identifies any potential bias, political leanings, and the tone of the content, evaluating the presence of bias and political alignment in the article provided.
 
 Use the content provided under the heading "Article" and only that content to conduct your analysis. Do not embellish or add detail beyond the source material. The term "Article" is a placeholder for the actual content and should not be included in your output.
 
@@ -120,11 +120,11 @@ Analysis: </s>`;
 }
 
 export function summariseArticlePrompt(
-  article: string,
-  metadata?: PromptModelMetadata,
+	article: string,
+	metadata?: PromptModelMetadata,
 ): string {
-  const metadataSection = buildArticlePromptMetadata(metadata, "normal");
-  return `<s> [INST] ${metadataSection}Your task is to provide a professional summary of the article provided.
+	const metadataSection = buildArticlePromptMetadata(metadata, "normal");
+	return `<s> [INST] ${metadataSection}Your task is to provide a professional summary of the article provided.
 
 Use the content provided under the heading "Article" and only that content to conduct your analysis. Do not embellish or add detail beyond the source material. The term "Article" is a placeholder for the actual content and should not be included in your output.
 
@@ -153,11 +153,11 @@ Summary: </s>`;
 }
 
 export function generateArticleReportPrompt(
-  articles: string,
-  metadata?: PromptModelMetadata,
+	articles: string,
+	metadata?: PromptModelMetadata,
 ): string {
-  const metadataSection = buildArticlePromptMetadata(metadata, "normal");
-  return `<s> [INST] ${metadataSection}You have been given an article to summarize as a professional researcher. Your task is to provide a report that summarises a collection of article summaries.
+	const metadataSection = buildArticlePromptMetadata(metadata, "normal");
+	return `<s> [INST] ${metadataSection}You have been given an article to summarize as a professional researcher. Your task is to provide a report that summarises a collection of article summaries.
 
 Use the content provided under the heading "Article Summaries" and only that content to conduct your analysis. Do not embellish or add detail beyond the source material. The term "Article Summaries" is a placeholder for the actual content and should not be included in your output.
 
@@ -188,13 +188,13 @@ Summary: </s>`;
 }
 
 export function webSearchSimilarQuestionsSystemPrompt(): string {
-  return `You are a helpful assistant that generates related follow-up questions based on the user's initial query. Identify 3 valuable, related topics and formulate concise questions (maximum 20 words each). Ensure each question includes all specific references (people, places, events, concepts) so they can function independently. For example, if discussing "climate change," don't use "this environmental issue" in follow-ups—explicitly mention "climate change." Your follow-up questions must match the language of the original query.
+	return `You are a helpful assistant that generates related follow-up questions based on the user's initial query. Identify 3 valuable, related topics and formulate concise questions (maximum 20 words each). Ensure each question includes all specific references (people, places, events, concepts) so they can function independently. For example, if discussing "climate change," don't use "this environmental issue" in follow-ups—explicitly mention "climate change." Your follow-up questions must match the language of the original query.
 
 	Please provide these 3 related questions as a JSON array of 3 strings. Do NOT repeat the original question.`;
 }
 
 export function webSearchAnswerSystemPrompt(contexts: string): string {
-  return `Given the user's question and some context, please provide a concise and accurate answer based on the context provided.
+	return `Given the user's question and some context, please provide a concise and accurate answer based on the context provided.
 	
 	You will be given a set of related contexts to the question, each of which will start with a citation reference like [[citation:x]], where x is a number.
 
@@ -214,11 +214,11 @@ export function webSearchAnswerSystemPrompt(contexts: string): string {
 }
 
 export function extractContentsystem_prompt(): string {
-  return "You are a helpful assistant that summarizes web content. Focus on providing accurate, relevant information while maintaining proper citation of sources.";
+	return "You are a helpful assistant that summarizes web content. Focus on providing accurate, relevant information while maintaining proper citation of sources.";
 }
 
 export function drawingDescriptionPrompt(): string {
-  return `You are an advanced image analysis AI capable of providing accurate and concise descriptions of visual content. Your task is to describe the given image in a single, informative sentence.
+	return `You are an advanced image analysis AI capable of providing accurate and concise descriptions of visual content. Your task is to describe the given image in a single, informative sentence.
 
 Instructions:
 1. Carefully analyze the image content.
@@ -234,7 +234,7 @@ Example output structure:
 }
 
 export function guessDrawingPrompt(usedGuesses: Set<string>): string {
-  return `You will be provided with a description of an image. Your task is to guess what the image depicts using only one word. Follow these steps:
+	return `You will be provided with a description of an image. Your task is to guess what the image depicts using only one word. Follow these steps:
 
 1. Carefully review the image provided.
 
@@ -250,7 +250,7 @@ Your response should contain only one word, which represents your best guess for
 }
 
 export function tutorSystemPrompt(sources: string, level: string): string {
-  return `You are a profession personal tutor who is an expert at explaining various topics.
+	return `You are a profession personal tutor who is an expert at explaining various topics.
 	
 Given a topic and contextual information about what to teach, please educate the user about the topic at a ${level} level.
 

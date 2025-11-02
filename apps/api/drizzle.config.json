@@ -1,5 +1,5 @@
 {
-  "dialect": "sqlite",
-  "out": "migrations",
-  "schema": "src/lib/database/schema.ts"
+	"dialect": "sqlite",
+	"out": "migrations",
+	"schema": "src/lib/database/schema.ts"
 }

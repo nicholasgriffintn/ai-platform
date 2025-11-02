@@ -1,43 +1,43 @@
 {
-  "name": "@assistant/schemas",
-  "license": "Apache-2.0",
-  "version": "0.0.1",
-  "private": false,
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
-  },
-  "files": [
-    "dist",
-    "src"
-  ],
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit",
-    "format": "pnpm prettier --write .",
-    "format:check": "pnpm prettier --check .",
-    "lint": "pnpm oxlint",
-    "check": "pnpm lint && pnpm format:check"
-  },
-  "dependencies": {
-    "zod": "4.1.12"
-  },
-  "devDependencies": {
-    "@prettier/plugin-oxc": "^0.0.4",
-    "@types/node": "24.9.2",
-    "oxlint": "^1.25.0",
-    "prettier": "^3.6.2",
-    "tsup": "^8.5.0",
-    "typescript": "5.9.3"
-  },
-  "peerDependencies": {
-    "zod": "4.1.12"
-  }
+	"name": "@assistant/schemas",
+	"license": "Apache-2.0",
+	"version": "0.0.1",
+	"private": false,
+	"main": "dist/index.js",
+	"module": "dist/index.mjs",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist",
+		"src"
+	],
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"typecheck": "tsc --noEmit",
+		"format": "pnpm prettier --write .",
+		"format:check": "pnpm prettier --check .",
+		"lint": "pnpm oxlint",
+		"check": "pnpm lint && pnpm format:check"
+	},
+	"dependencies": {
+		"zod": "4.1.12"
+	},
+	"devDependencies": {
+		"@prettier/plugin-oxc": "^0.0.4",
+		"@types/node": "24.9.2",
+		"oxlint": "^1.25.0",
+		"prettier": "^3.6.2",
+		"tsup": "^8.5.0",
+		"typescript": "5.9.3"
+	},
+	"peerDependencies": {
+		"zod": "4.1.12"
+	}
 }

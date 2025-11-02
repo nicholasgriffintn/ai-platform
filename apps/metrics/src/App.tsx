@@ -6,20 +6,20 @@ import { Analytics } from "./components/analytics";
 import { MetricsHome } from "./routes/index";
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 2,
-    },
-  },
+	defaultOptions: {
+		queries: {
+			staleTime: 1000 * 60 * 5, // 5 minutes
+			retry: 2,
+		},
+	},
 });
 
 export function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Analytics />
-      <MetricsHome />
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
-  );
+	return (
+		<QueryClientProvider client={queryClient}>
+			<Analytics />
+			<MetricsHome />
+			<ReactQueryDevtools initialIsOpen={false} />
+		</QueryClientProvider>
+	);
 }

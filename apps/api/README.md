@@ -107,6 +107,7 @@ pnpm run deploy
 ```
 
 The API runs on Cloudflare's global network with:
+
 - D1 for database
 - Vectorize for embeddings
 - R2 for media storage
@@ -126,6 +127,7 @@ The API runs on Cloudflare's global network with:
 ## Contributing
 
 This project uses:
+
 - TypeScript for type safety
 - Biome for linting/formatting
 - Vitest for testing

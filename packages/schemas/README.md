@@ -13,7 +13,7 @@ pnpm install
 ## Usage
 
 ```typescript
-import { messageSchema, apiResponseSchema } from '@assistant/schemas';
+import { messageSchema, apiResponseSchema } from "@assistant/schemas";
 
 // Use for validation
 const result = messageSchema.parse(data);

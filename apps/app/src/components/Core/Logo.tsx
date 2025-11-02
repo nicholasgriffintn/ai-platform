@@ -8,46 +8,46 @@ export const tropicalParrot = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="
 export const abstractParrot = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" aria-labelledby="title" role="img"><title id="title" class="sr-only">Polychat Parrot Logo</title><polygon fill="#673AB7" stroke="#333" stroke-width="1.5" points="50,100 70,60 110,50 140,70 150,100 120,130 80,130"></polygon><polygon fill="#FF9800" stroke="#333" stroke-width="1.5" points="140,70 170,60 160,90 150,100"></polygon><polygon fill="#9C27B0" stroke="#333" stroke-width="1.5" points="80,45 95,25 110,45"></polygon><polygon fill="#4A148C" stroke="#333" stroke-width="1.5" points="80,90 60,110 70,120 90,110"></polygon><polygon fill="#7B1FA2" stroke="#333" stroke-width="1.5" points="50,100 30,90 25,110 40,115"></polygon><circle cx="100" cy="70" r="4" fill="#333"></circle><polygon fill="#E1BEE7" stroke="#333" stroke-width="1" points="90,80 100,90 110,80"></polygon><polygon fill="#CE93D8" stroke="#333" stroke-width="1" points="90,100 100,120 110,100"></polygon><line x1="120" y1="90" x2="130" y2="100" stroke="#333" stroke-width="1.5"></line><line x1="120" y1="100" x2="130" y2="90" stroke="#333" stroke-width="1.5"></line><polygon fill="#512DA8" stroke="#333" stroke-width="1.5" points="100,130 95,150 105,150"></polygon><polygon fill="#4527A0" stroke="#333" stroke-width="1.5" points="95,150 85,155 105,155 115,155 105,150"></polygon></svg>`;
 
 export type LogoVariant =
-  | "logo_control"
-  | "logo_minimalist"
-  | "logo_tropical"
-  | "logo_abstract";
+	| "logo_control"
+	| "logo_minimalist"
+	| "logo_tropical"
+	| "logo_abstract";
 
 export interface LogoProps {
-  variant?: LogoVariant;
-  className?: string;
+	variant?: LogoVariant;
+	className?: string;
 }
 
 export function Logo({ variant = "logo_control", className = "" }: LogoProps) {
-  const { getVariant } = useExperiments();
-  const [experimentVariant, setExperimentVariant] =
-    useState<LogoVariant>(variant);
+	const { getVariant } = useExperiments();
+	const [experimentVariant, setExperimentVariant] =
+		useState<LogoVariant>(variant);
 
-  useEffect(() => {
-    getVariant("logo").then((result) => {
-      if (result) setExperimentVariant(result.variant_id as LogoVariant);
-    });
-  }, [getVariant]);
+	useEffect(() => {
+		getVariant("logo").then((result) => {
+			if (result) setExperimentVariant(result.variant_id as LogoVariant);
+		});
+	}, [getVariant]);
 
-  const logoSvg = (() => {
-    switch (experimentVariant) {
-      case "logo_minimalist":
-        return minimalistParrot;
-      case "logo_tropical":
-        return tropicalParrot;
-      case "logo_abstract":
-        return abstractParrot;
-      default:
-        return defaultParrot;
-    }
-  })();
+	const logoSvg = (() => {
+		switch (experimentVariant) {
+			case "logo_minimalist":
+				return minimalistParrot;
+			case "logo_tropical":
+				return tropicalParrot;
+			case "logo_abstract":
+				return abstractParrot;
+			default:
+				return defaultParrot;
+		}
+	})();
 
-  return (
-    <div
-      className={className}
-      dangerouslySetInnerHTML={{ __html: logoSvg }}
-      role="img"
-      aria-label="Polychat Logo"
-    />
-  );
+	return (
+		<div
+			className={className}
+			dangerouslySetInnerHTML={{ __html: logoSvg }}
+			role="img"
+			aria-label="Polychat Logo"
+		/>
+	);
 }

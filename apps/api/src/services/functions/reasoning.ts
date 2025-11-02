@@ -8,46 +8,46 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "services/functions/reasoning" });
 
 export const add_reasoning_step: IFunction = {
-  name: "add_reasoning_step",
-  description:
-    "Adds a step to the reasoning process, allowing the AI to document its thought process and decide whether to continue with additional tool calls or provide a final answer. Use this to analyze previous tool results and determine next actions.",
-  parameters: {
-    type: "object",
-    properties: {
-      title: {
-        type: "string",
-        description: "The title of the reasoning step",
-      },
-      content: {
-        type: "string",
-        description:
-          "The content of the reasoning step. Explain your understanding of the current state, what you've learned from previous tool calls, and what you plan to do next.",
-      },
-      nextStep: {
-        type: "string",
-        enum: ["continue", "finalAnswer"],
-        description:
-          "Whether to continue with another tool call or provide the final answer",
-      },
-    },
-    required: ["title", "content", "nextStep"],
-  },
-  type: "normal",
-  costPerCall: 0,
-  function: async (
-    _completion_id: string,
-    args: {
-      title: string;
-      content: string;
-      nextStep: "continue" | "finalAnswer";
-    },
-    req: IRequest,
-  ) => {
-    try {
-      const sanitisedTitle = sanitiseInput(args.title);
-      const sanitisedContent = sanitiseInput(args.content);
+	name: "add_reasoning_step",
+	description:
+		"Adds a step to the reasoning process, allowing the AI to document its thought process and decide whether to continue with additional tool calls or provide a final answer. Use this to analyze previous tool results and determine next actions.",
+	parameters: {
+		type: "object",
+		properties: {
+			title: {
+				type: "string",
+				description: "The title of the reasoning step",
+			},
+			content: {
+				type: "string",
+				description:
+					"The content of the reasoning step. Explain your understanding of the current state, what you've learned from previous tool calls, and what you plan to do next.",
+			},
+			nextStep: {
+				type: "string",
+				enum: ["continue", "finalAnswer"],
+				description:
+					"Whether to continue with another tool call or provide the final answer",
+			},
+		},
+		required: ["title", "content", "nextStep"],
+	},
+	type: "normal",
+	costPerCall: 0,
+	function: async (
+		_completion_id: string,
+		args: {
+			title: string;
+			content: string;
+			nextStep: "continue" | "finalAnswer";
+		},
+		req: IRequest,
+	) => {
+		try {
+			const sanitisedTitle = sanitiseInput(args.title);
+			const sanitisedContent = sanitiseInput(args.content);
 
-      const reasoningPrompt = `
+			const reasoningPrompt = `
 You are evaluating a reasoning step in a multi-step task. Review the information and decide if the proposed next action is appropriate.
 
 # Current reasoning step
@@ -67,96 +67,96 @@ Respond with:
 <confidence>high OR medium OR low</confidence>
 `;
 
-      const { model: modelToUse, provider: providerToUse } =
-        await getAuxiliaryModel(req.env, req.user);
-      const provider = AIProviderFactory.getProvider(providerToUse);
+			const { model: modelToUse, provider: providerToUse } =
+				await getAuxiliaryModel(req.env, req.user);
+			const provider = AIProviderFactory.getProvider(providerToUse);
 
-      const aiResponse = await provider.getResponse({
-        model: modelToUse,
-        messages: [
-          {
-            role: "user",
-            content: reasoningPrompt,
-          },
-        ],
-        temperature: 0.3,
-        max_tokens: 500,
-        stream: false,
-        store: false,
-        env: req.env,
-        user: req.user,
-      });
+			const aiResponse = await provider.getResponse({
+				model: modelToUse,
+				messages: [
+					{
+						role: "user",
+						content: reasoningPrompt,
+					},
+				],
+				temperature: 0.3,
+				max_tokens: 500,
+				stream: false,
+				store: false,
+				env: req.env,
+				user: req.user,
+			});
 
-      if (!aiResponse.response) {
-        throw new AssistantError(
-          "AI reasoning evaluation failed",
-          ErrorType.PROVIDER_ERROR,
-        );
-      }
+			if (!aiResponse.response) {
+				throw new AssistantError(
+					"AI reasoning evaluation failed",
+					ErrorType.PROVIDER_ERROR,
+				);
+			}
 
-      const response = aiResponse.response;
+			const response = aiResponse.response;
 
-      const evaluationMatch = /<evaluation>(.*?)<\/evaluation>/s.exec(response);
-      const enhancedContentMatch =
-        /<enhanced_content>(.*?)<\/enhanced_content>/s.exec(response);
-      const nextStepMatch = /<nextStep>(.*?)<\/nextStep>/s.exec(response);
-      const confidenceMatch = /<confidence>(.*?)<\/confidence>/s.exec(response);
+			const evaluationMatch = /<evaluation>(.*?)<\/evaluation>/s.exec(response);
+			const enhancedContentMatch =
+				/<enhanced_content>(.*?)<\/enhanced_content>/s.exec(response);
+			const nextStepMatch = /<nextStep>(.*?)<\/nextStep>/s.exec(response);
+			const confidenceMatch = /<confidence>(.*?)<\/confidence>/s.exec(response);
 
-      const evaluation = evaluationMatch ? evaluationMatch[1].trim() : "";
-      const enhancedContent = enhancedContentMatch
-        ? enhancedContentMatch[1].trim()
-        : args.content;
-      const nextStep = nextStepMatch ? nextStepMatch[1].trim() : args.nextStep;
-      const confidence = confidenceMatch ? confidenceMatch[1].trim() : "medium";
+			const evaluation = evaluationMatch ? evaluationMatch[1].trim() : "";
+			const enhancedContent = enhancedContentMatch
+				? enhancedContentMatch[1].trim()
+				: args.content;
+			const nextStep = nextStepMatch ? nextStepMatch[1].trim() : args.nextStep;
+			const confidence = confidenceMatch ? confidenceMatch[1].trim() : "medium";
 
-      const validatedNextStep = ["continue", "finalAnswer"].includes(nextStep)
-        ? nextStep
-        : args.nextStep;
+			const validatedNextStep = ["continue", "finalAnswer"].includes(nextStep)
+				? nextStep
+				: args.nextStep;
 
-      const formattedContent = `## ${args.title} ${confidence === "high" ? "✓" : ""}
+			const formattedContent = `## ${args.title} ${confidence === "high" ? "✓" : ""}
 
 ${enhancedContent}
 
 ${evaluation ? `**Evaluation**: ${evaluation}\n\n` : ""}**Next action**: ${
-        validatedNextStep === "finalAnswer"
-          ? "Provide final answer to the user"
-          : "Continue with additional tool calls"
-      }`;
+				validatedNextStep === "finalAnswer"
+					? "Provide final answer to the user"
+					: "Continue with additional tool calls"
+			}`;
 
-      return {
-        status: "success",
-        name: "add_reasoning_step",
-        content: formattedContent,
-        data: {
-          title: sanitisedTitle,
-          content: sanitisedContent,
-          enhancedContent: enhancedContent,
-          nextStep: validatedNextStep,
-          evaluation,
-          confidence,
-          reasoning_enhanced: true,
-        },
-      };
-    } catch (error) {
-      logger.error("Error in reasoning step:", {
-        error_message: error instanceof Error ? error.message : "Unknown error",
-      });
+			return {
+				status: "success",
+				name: "add_reasoning_step",
+				content: formattedContent,
+				data: {
+					title: sanitisedTitle,
+					content: sanitisedContent,
+					enhancedContent: enhancedContent,
+					nextStep: validatedNextStep,
+					evaluation,
+					confidence,
+					reasoning_enhanced: true,
+				},
+			};
+		} catch (error) {
+			logger.error("Error in reasoning step:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
 
-      return {
-        status: "success",
-        name: "add_reasoning_step",
-        content: `## ${args.title}\n\n${args.content}\n\n**Next action**: ${
-          args.nextStep === "finalAnswer"
-            ? "Provide final answer to the user"
-            : "Continue with additional tool calls"
-        }`,
-        data: {
-          title: args.title,
-          content: args.content,
-          nextStep: args.nextStep,
-          reasoning_enhanced: false,
-        },
-      };
-    }
-  },
+			return {
+				status: "success",
+				name: "add_reasoning_step",
+				content: `## ${args.title}\n\n${args.content}\n\n**Next action**: ${
+					args.nextStep === "finalAnswer"
+						? "Provide final answer to the user"
+						: "Continue with additional tool calls"
+				}`,
+				data: {
+					title: args.title,
+					content: args.content,
+					nextStep: args.nextStep,
+					reasoning_enhanced: false,
+				},
+			};
+		}
+	},
 };

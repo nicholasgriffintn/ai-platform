@@ -2,12 +2,12 @@ import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { SharedAgentRepository } from "~/repositories/SharedAgentRepository";
 import type {
-  SharedAgentWithAuthor,
-  SharedAgent,
-  SharedAgentFilters,
-  CreateSharedAgentParams,
-  AgentInstall,
-  AgentRating,
+	SharedAgentWithAuthor,
+	SharedAgent,
+	SharedAgentFilters,
+	CreateSharedAgentParams,
+	AgentInstall,
+	AgentRating,
 } from "~/repositories/SharedAgentRepository";
 import type { Agent } from "~/lib/database/schema";
 
@@ -20,11 +20,11 @@ const logger = getLogger({ prefix: "services/agents/shared" });
  * @returns Array of shared agents with author info
  */
 export const getSharedAgents = async (
-  env: IEnv,
-  filters: SharedAgentFilters = {},
+	env: IEnv,
+	filters: SharedAgentFilters = {},
 ): Promise<SharedAgentWithAuthor[]> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.getSharedAgents(filters);
+	const repo = new SharedAgentRepository(env);
+	return repo.getSharedAgents(filters);
 };
 
 /**
@@ -34,11 +34,11 @@ export const getSharedAgents = async (
  * @returns Array of featured agents
  */
 export const getFeaturedAgents = async (
-  env: IEnv,
-  limit = 10,
+	env: IEnv,
+	limit = 10,
 ): Promise<SharedAgentWithAuthor[]> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.getFeaturedAgents(limit);
+	const repo = new SharedAgentRepository(env);
+	return repo.getFeaturedAgents(limit);
 };
 
 /**
@@ -48,11 +48,11 @@ export const getFeaturedAgents = async (
  * @returns The shared agent with author info or null
  */
 export const getSharedAgentById = async (
-  env: IEnv,
-  id: string,
+	env: IEnv,
+	id: string,
 ): Promise<SharedAgentWithAuthor | null> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.getSharedAgentById(id);
+	const repo = new SharedAgentRepository(env);
+	return repo.getSharedAgentById(id);
 };
 
 /**
@@ -62,11 +62,11 @@ export const getSharedAgentById = async (
  * @returns The shared agent or null
  */
 export const getSharedAgentByAgentId = async (
-  env: IEnv,
-  agentId: string,
+	env: IEnv,
+	agentId: string,
 ): Promise<SharedAgent | null> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.getSharedAgentByAgentId(agentId);
+	const repo = new SharedAgentRepository(env);
+	return repo.getSharedAgentByAgentId(agentId);
 };
 
 /**
@@ -76,11 +76,11 @@ export const getSharedAgentByAgentId = async (
  * @returns Array of all shared agents with author info
  */
 export const getAllSharedAgentsForAdmin = async (
-  env: IEnv,
-  filters: SharedAgentFilters = {},
+	env: IEnv,
+	filters: SharedAgentFilters = {},
 ): Promise<SharedAgentWithAuthor[]> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.getAllSharedAgentsForAdmin(filters);
+	const repo = new SharedAgentRepository(env);
+	return repo.getAllSharedAgentsForAdmin(filters);
 };
 
 /**
@@ -91,12 +91,12 @@ export const getAllSharedAgentsForAdmin = async (
  * @returns The installed agent and install record
  */
 export const installSharedAgent = async (
-  env: IEnv,
-  userId: number,
-  sharedAgentId: string,
+	env: IEnv,
+	userId: number,
+	sharedAgentId: string,
 ): Promise<{ agent: Agent; install: AgentInstall }> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.installAgent(userId, sharedAgentId);
+	const repo = new SharedAgentRepository(env);
+	return repo.installAgent(userId, sharedAgentId);
 };
 
 /**
@@ -106,12 +106,12 @@ export const installSharedAgent = async (
  * @param agentId The agent ID
  */
 export const uninstallSharedAgent = async (
-  env: IEnv,
-  userId: number,
-  agentId: string,
+	env: IEnv,
+	userId: number,
+	agentId: string,
 ): Promise<void> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.uninstallAgent(userId, agentId);
+	const repo = new SharedAgentRepository(env);
+	return repo.uninstallAgent(userId, agentId);
 };
 
 /**
@@ -124,14 +124,14 @@ export const uninstallSharedAgent = async (
  * @returns The rating record
  */
 export const rateSharedAgent = async (
-  env: IEnv,
-  userId: number,
-  sharedAgentId: string,
-  rating: number,
-  review?: string,
+	env: IEnv,
+	userId: number,
+	sharedAgentId: string,
+	rating: number,
+	review?: string,
 ): Promise<AgentRating> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.rateAgent(userId, sharedAgentId, rating, review);
+	const repo = new SharedAgentRepository(env);
+	return repo.rateAgent(userId, sharedAgentId, rating, review);
 };
 
 /**
@@ -142,12 +142,12 @@ export const rateSharedAgent = async (
  * @returns Array of ratings with author info
  */
 export const getSharedAgentRatings = async (
-  env: IEnv,
-  sharedAgentId: string,
-  limit = 10,
+	env: IEnv,
+	sharedAgentId: string,
+	limit = 10,
 ): Promise<(AgentRating & { author_name: string })[]> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.getAgentRatings(sharedAgentId, limit);
+	const repo = new SharedAgentRepository(env);
+	return repo.getAgentRatings(sharedAgentId, limit);
 };
 
 /**
@@ -158,18 +158,18 @@ export const getSharedAgentRatings = async (
  * @param updates The updates to apply
  */
 export const updateSharedAgent = async (
-  env: IEnv,
-  userId: number,
-  sharedAgentId: string,
-  updates: Partial<
-    Pick<
-      SharedAgent,
-      "name" | "description" | "avatar_url" | "category" | "tags"
-    >
-  >,
+	env: IEnv,
+	userId: number,
+	sharedAgentId: string,
+	updates: Partial<
+		Pick<
+			SharedAgent,
+			"name" | "description" | "avatar_url" | "category" | "tags"
+		>
+	>,
 ): Promise<void> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.updateSharedAgent(userId, sharedAgentId, updates);
+	const repo = new SharedAgentRepository(env);
+	return repo.updateSharedAgent(userId, sharedAgentId, updates);
 };
 
 /**
@@ -179,12 +179,12 @@ export const updateSharedAgent = async (
  * @param sharedAgentId The shared agent ID
  */
 export const deleteSharedAgent = async (
-  env: IEnv,
-  userId: number,
-  sharedAgentId: string,
+	env: IEnv,
+	userId: number,
+	sharedAgentId: string,
 ): Promise<void> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.deleteSharedAgent(userId, sharedAgentId);
+	const repo = new SharedAgentRepository(env);
+	return repo.deleteSharedAgent(userId, sharedAgentId);
 };
 
 /**
@@ -194,12 +194,12 @@ export const deleteSharedAgent = async (
  * @param featured Whether the agent should be featured
  */
 export const setFeaturedStatus = async (
-  env: IEnv,
-  sharedAgentId: string,
-  featured: boolean,
+	env: IEnv,
+	sharedAgentId: string,
+	featured: boolean,
 ): Promise<void> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.setFeatured(sharedAgentId, featured);
+	const repo = new SharedAgentRepository(env);
+	return repo.setFeatured(sharedAgentId, featured);
 };
 
 /**
@@ -209,12 +209,12 @@ export const setFeaturedStatus = async (
  * @param isPublic Whether the agent should be public
  */
 export const moderateSharedAgent = async (
-  env: IEnv,
-  sharedAgentId: string,
-  isPublic: boolean,
+	env: IEnv,
+	sharedAgentId: string,
+	isPublic: boolean,
 ): Promise<void> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.moderateAgent(sharedAgentId, isPublic);
+	const repo = new SharedAgentRepository(env);
+	return repo.moderateAgent(sharedAgentId, isPublic);
 };
 
 /**
@@ -223,10 +223,10 @@ export const moderateSharedAgent = async (
  * @returns Array of category names
  */
 export const getSharedAgentCategories = async (
-  env: IEnv,
+	env: IEnv,
 ): Promise<string[]> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.getCategories();
+	const repo = new SharedAgentRepository(env);
+	return repo.getCategories();
 };
 
 /**
@@ -236,11 +236,11 @@ export const getSharedAgentCategories = async (
  * @returns Array of popular tag names
  */
 export const getSharedAgentPopularTags = async (
-  env: IEnv,
-  limit = 20,
+	env: IEnv,
+	limit = 20,
 ): Promise<string[]> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.getPopularTags(limit);
+	const repo = new SharedAgentRepository(env);
+	return repo.getPopularTags(limit);
 };
 
 /**
@@ -251,10 +251,10 @@ export const getSharedAgentPopularTags = async (
  * @returns The shared agent
  */
 export const shareAgent = async (
-  env: IEnv,
-  userId: number,
-  params: CreateSharedAgentParams,
+	env: IEnv,
+	userId: number,
+	params: CreateSharedAgentParams,
 ): Promise<SharedAgent> => {
-  const repo = new SharedAgentRepository(env);
-  return repo.shareAgent(userId, params);
+	const repo = new SharedAgentRepository(env);
+	return repo.shareAgent(userId, params);
 };
