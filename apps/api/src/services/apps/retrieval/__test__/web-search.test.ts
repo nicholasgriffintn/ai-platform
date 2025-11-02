@@ -31,6 +31,23 @@ vi.mock("~/services/search/web", () => ({
   handleWebSearch: vi.fn(() =>
     Promise.resolve({
       data: {
+        provider: "tavily",
+        result: {
+          results: [
+            {
+              title: "Search Result 1",
+              url: "https://example.com/1",
+              content: "Content from first result",
+              score: 0.95,
+            },
+            {
+              title: "Search Result 2",
+              url: "https://example.com/2",
+              content: "Content from second result",
+              score: 0.87,
+            },
+          ],
+        },
         results: [
           {
             title: "Search Result 1",
@@ -45,6 +62,7 @@ vi.mock("~/services/search/web", () => ({
             score: 0.87,
           },
         ],
+        warning: undefined,
       },
     }),
   ),
@@ -148,6 +166,8 @@ describe("performDeepWebSearch", () => {
           score: 0.87,
         },
       ],
+      provider: "tavily",
+      providerWarning: undefined,
       completion_id: "completion-123-tutor",
     });
 

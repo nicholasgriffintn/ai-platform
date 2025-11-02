@@ -53,6 +53,17 @@ describe("tutor service", () => {
     it("should complete tutor request successfully", async () => {
       const mockWebSearchResults = {
         data: {
+          provider: "tavily",
+          result: {
+            results: [
+              {
+                title: "Test Result",
+                url: "https://example.com",
+                content: "Test content",
+                score: 0.9,
+              },
+            ],
+          },
           results: [
             {
               title: "Test Result",
@@ -61,6 +72,7 @@ describe("tutor service", () => {
               score: 0.9,
             },
           ],
+          warning: undefined,
         },
       };
 
@@ -103,9 +115,12 @@ describe("tutor service", () => {
             title: "Test Result",
             url: "https://example.com",
             content: "Test content",
+            excerpts: [],
             score: 0.9,
           },
         ],
+        provider: "tavily",
+        providerWarning: undefined,
         completion_id: "test-completion-id-tutor",
       });
     });
@@ -138,6 +153,17 @@ describe("tutor service", () => {
     it("should handle different difficulty levels", async () => {
       const mockWebSearchResults = {
         data: {
+          provider: "tavily",
+          result: {
+            results: [
+              {
+                title: "Advanced ML",
+                url: "https://example.com",
+                content: "Advanced content",
+                score: 0.8,
+              },
+            ],
+          },
           results: [
             {
               title: "Advanced ML",
@@ -146,6 +172,7 @@ describe("tutor service", () => {
               score: 0.8,
             },
           ],
+          warning: undefined,
         },
       };
 
@@ -184,7 +211,6 @@ describe("tutor service", () => {
       expect(result.answer).toBe("Advanced explanation...");
       expect(handleWebSearch).toHaveBeenCalledWith({
         query: "I want to learn about neural networks",
-        provider: "tavily",
         options: {
           search_depth: "advanced",
           include_answer: true,

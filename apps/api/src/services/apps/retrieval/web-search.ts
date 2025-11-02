@@ -102,9 +102,15 @@ export async function performDeepWebSearch(
     })(),
   ]);
 
-  const searchResults = Array.isArray(webSearchResults.data?.results)
-    ? webSearchResults.data.results
-    : [];
+  const searchData = webSearchResults.data || {};
+  const rawSearchResult = searchData.result;
+  const searchResults = Array.isArray(searchData.results)
+    ? searchData.results
+    : Array.isArray((rawSearchResult as any)?.results)
+      ? (rawSearchResult as any).results
+      : [];
+  const providerUsed = searchData.provider as SearchProviderName | undefined;
+  const providerWarning = searchData.warning as string | undefined;
 
   const sources = searchResults.map((result: any) => {
     return {
@@ -115,6 +121,8 @@ export async function performDeepWebSearch(
       score: result.score,
     };
   });
+  const similarQuestions =
+    (similarQuestionsResponse as any)?.response?.questions ?? [];
 
   const completion_id_with_fallback = completion_id || generateId();
   const new_completion_id = `${completion_id_with_fallback}-tutor`;
@@ -169,6 +177,8 @@ export async function performDeepWebSearch(
       data: {
         answer: answerResponse.response,
         sources,
+        provider: providerUsed,
+        providerWarning,
         name: "web_search",
         formattedName: "Web Search",
         responseType: "custom",
@@ -186,8 +196,10 @@ export async function performDeepWebSearch(
 
   return {
     answer: answerResponse.response,
-    similarQuestions: similarQuestionsResponse.response.questions,
+    similarQuestions,
     sources,
+    provider: providerUsed,
+    providerWarning,
     completion_id: new_completion_id,
   };
 }

@@ -37,6 +37,8 @@ describe("Tool Response Utilities", () => {
       const toolName = "web_search";
       const content = "Search results for: AI";
       const data = {
+        provider: "duckduckgo",
+        providerWarning: "Results may be limited",
         results: [
           {
             title: "AI News",
@@ -54,6 +56,8 @@ describe("Tool Response Utilities", () => {
       expect(result.data.formattedName).toBe("Web Search");
       expect(result.data.responseDisplay).toBeDefined();
       expect(result.data.results).toEqual(data.results);
+      expect(result.data.provider).toBe("duckduckgo");
+      expect(result.data.providerWarning).toBe("Results may be limited");
     });
   });
 

@@ -58,14 +58,22 @@ export async function completeTutorRequest(
     }),
   ]);
 
-  const sources = webSearchResults.data.results.map((result: any) => {
+  const searchData = webSearchResults.data || {};
+  const searchResults = Array.isArray(searchData.results)
+    ? searchData.results
+    : [];
+  const sources = searchResults.map((result: any) => {
     return {
       title: result.title,
       url: result.url,
       content: result.content,
+      excerpts: result.excerpts || [],
       score: result.score,
     };
   });
+
+  const providerUsed = searchData.provider;
+  const providerWarning = searchData.warning;
 
   const parsedSources = sources
     .map((source: any, index: number) => {
@@ -125,6 +133,8 @@ export async function completeTutorRequest(
       data: {
         answer: answerResponse.response,
         sources,
+        provider: providerUsed,
+        providerWarning,
         name: "tutor",
         formattedName: "Tutor",
         responseType: "custom",
@@ -144,6 +154,8 @@ export async function completeTutorRequest(
   return {
     answer: answerResponse.response,
     sources,
+    provider: providerUsed,
+    providerWarning,
     completion_id: new_completion_id,
   };
 }

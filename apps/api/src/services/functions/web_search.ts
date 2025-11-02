@@ -67,6 +67,8 @@ export const web_search: IFunction = {
       answer,
       sources,
       similarQuestions,
+      provider,
+      providerWarning,
       completion_id: web_search_completion_id,
     } = await performDeepWebSearch(
       req.env,
@@ -87,6 +89,8 @@ export const web_search: IFunction = {
         answer,
         sources,
         similarQuestions,
+        provider,
+        providerWarning,
         completion_id: web_search_completion_id,
       },
     };

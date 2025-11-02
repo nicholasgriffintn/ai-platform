@@ -17,7 +17,17 @@ export function TutorView({
     return <p className="text-red-500">No tutor data available</p>;
   }
 
-  const { answer, sources, completion_id } = data;
+  const { answer, sources, completion_id, provider, providerWarning } = data;
+
+  const providerLabels: Record<string, string> = {
+    duckduckgo: "DuckDuckGo",
+    tavily: "Tavily",
+    serper: "Serper",
+    parallel: "Parallel",
+  };
+
+  const providerLabel =
+    (provider && providerLabels[provider]) || provider || "Unknown provider";
 
   const getDomain = (url: string) => {
     try {
@@ -97,20 +107,37 @@ export function TutorView({
         </div>
       </div>
 
-      {completion_id && !embedded && (
-        <div className="mt-8">
-          <button
-            type="button"
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-            onClick={() => {
-              window.open(`/?completion_id=${completion_id}`, "_blank");
-            }}
-            aria-label="Continue the conversation in a new window"
-          >
-            Continue the conversation
-          </button>
+      <div className="mt-8 space-y-4">
+        {completion_id && !embedded && (
+          <div>
+            <button
+              type="button"
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+              onClick={() => {
+                window.open(`/?completion_id=${completion_id}`, "_blank");
+              }}
+              aria-label="Continue the conversation in a new window"
+            >
+              Continue the conversation
+            </button>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3 text-sm">
+          <div className="inline-flex items-center gap-2 bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full w-fit">
+            <span className="font-medium tracking-wide uppercase text-xs">
+              Provider
+            </span>
+            <span>{providerLabel}</span>
+          </div>
+
+          {providerWarning && (
+            <div className="rounded-md border border-yellow-400/60 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-200 px-4 py-3">
+              {providerWarning}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

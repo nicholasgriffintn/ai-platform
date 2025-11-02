@@ -83,7 +83,12 @@ describe("Web Search Service", () => {
       expect(result).toEqual({
         status: "success",
         content: "Search completed",
-        data: mockSearchResponse,
+        data: {
+          provider: "tavily",
+          result: mockSearchResponse,
+          results: mockSearchResponse.results,
+          warning: undefined,
+        },
       });
     });
 
@@ -98,7 +103,7 @@ describe("Web Search Service", () => {
       mockGetAuxiliarySearchProvider.mockResolvedValueOnce("serper");
       mockSearch.search.mockResolvedValue(mockSearchResponse);
 
-      await handleWebSearch(requestWithProvider);
+      const result = await handleWebSearch(requestWithProvider);
 
       expect(mockGetAuxiliarySearchProvider).toHaveBeenCalledWith(
         {},
@@ -110,6 +115,13 @@ describe("Web Search Service", () => {
         "serper",
         mockRequest.user,
       );
+
+      expect(result.data).toEqual({
+        provider: "serper",
+        result: mockSearchResponse,
+        results: mockSearchResponse.results,
+        warning: undefined,
+      });
     });
 
     it("should support duckduckgo provider for free users", async () => {
@@ -121,7 +133,7 @@ describe("Web Search Service", () => {
       mockGetAuxiliarySearchProvider.mockResolvedValueOnce("duckduckgo");
       mockSearch.search.mockResolvedValue({ results: [] });
 
-      await handleWebSearch(freeUserRequest);
+      const result = await handleWebSearch(freeUserRequest);
 
       expect(mockGetAuxiliarySearchProvider).toHaveBeenCalledWith(
         {},
@@ -133,6 +145,8 @@ describe("Web Search Service", () => {
         "duckduckgo",
         freeUserRequest.user,
       );
+      expect(result.data.provider).toBe("duckduckgo");
+      expect(result.data.warning).toContain("Upgrade to a Pro plan");
     });
 
     it("should pass search options", async () => {

@@ -41,9 +41,23 @@ export const handleWebSearch = async (
     throw new AssistantError("No response from the web search service");
   }
 
+  const resultsArray = Array.isArray((response as any)?.results)
+    ? (response as any).results
+    : [];
+
+  const warning =
+    providerToUse === "duckduckgo"
+      ? "Results may be limited when using DuckDuckGo. Upgrade to a Pro plan for richer web search results."
+      : undefined;
+
   return {
     status: "success",
     content: "Search completed",
-    data: response,
+    data: {
+      provider: providerToUse,
+      result: response,
+      results: resultsArray,
+      warning,
+    },
   };
 };
