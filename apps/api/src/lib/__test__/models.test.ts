@@ -44,6 +44,7 @@ vi.mock("~/lib/database", () => ({
     getInstance: vi.fn().mockReturnValue({
       getUserById: vi.fn(),
       getUserProviderSettings: vi.fn(),
+      getUserSettings: vi.fn(),
     }),
   },
 }));
@@ -110,6 +111,7 @@ describe("Models", () => {
     mockCache.get.mockResolvedValue(null);
     mockCache.set.mockResolvedValue(true);
     mockDatabase.getUserProviderSettings.mockResolvedValue([]);
+    mockDatabase.getUserSettings.mockResolvedValue(null);
   });
 
   describe("getModelConfig", () => {
@@ -533,10 +535,10 @@ describe("Models", () => {
       ).rejects.toThrow("Requested provider requires a Pro plan");
     });
 
-    it("should default to parallel when enabled and no provider specified", async () => {
-      mockDatabase.getUserProviderSettings.mockResolvedValueOnce([
-        { provider_id: "parallel", enabled: true },
-      ]);
+    it("should return user preferred provider when set in user settings", async () => {
+      mockDatabase.getUserSettings.mockResolvedValueOnce({
+        search_provider: "parallel",
+      });
 
       const provider = await getAuxiliarySearchProvider(
         mockEnv as any,
@@ -545,10 +547,8 @@ describe("Models", () => {
       expect(provider).toBe("parallel");
     });
 
-    it("should fall back to tavily when parallel not enabled", async () => {
-      mockDatabase.getUserProviderSettings.mockResolvedValueOnce([
-        { provider_id: "parallel", enabled: false },
-      ]);
+    it("should fall back to tavily when no user preference exists", async () => {
+      mockDatabase.getUserSettings.mockResolvedValueOnce(null);
 
       const provider = await getAuxiliarySearchProvider(
         mockEnv as any,
@@ -564,25 +564,10 @@ describe("Models", () => {
         "serper",
       );
       expect(provider).toBe("serper");
+      expect(mockDatabase.getUserSettings).not.toHaveBeenCalled();
     });
 
-    it("should throw when parallel requested but not enabled", async () => {
-      mockDatabase.getUserProviderSettings.mockResolvedValueOnce([
-        { provider_id: "parallel", enabled: false },
-      ]);
-
-      await expect(
-        getAuxiliarySearchProvider(mockEnv as any, proUser, "parallel"),
-      ).rejects.toThrow(
-        "Parallel search provider is not enabled for this account",
-      );
-    });
-
-    it("should return parallel when provider enabled", async () => {
-      mockDatabase.getUserProviderSettings.mockResolvedValueOnce([
-        { provider_id: "parallel", enabled: true },
-      ]);
-
+    it("should return requested provider without querying user settings", async () => {
       const provider = await getAuxiliarySearchProvider(
         mockEnv as any,
         proUser,
@@ -590,6 +575,7 @@ describe("Models", () => {
       );
 
       expect(provider).toBe("parallel");
+      expect(mockDatabase.getUserSettings).not.toHaveBeenCalled();
     });
   });
 

@@ -1,4 +1,3 @@
 {
-  "editor.defaultFormatter": "biomejs.biome",
-  "traycer.enableAutoAnalysis": false
+  "editor.defaultFormatter": "biomejs.biome"
 }

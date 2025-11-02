@@ -25,6 +25,7 @@ export const updateUserSettingsSchema = z.object({
   memories_chat_history_enabled: z.boolean().optional(),
   transcription_provider: z.string().optional(),
   transcription_model: z.string().optional(),
+  search_provider: z.string().optional(),
 });
 
 export const userModelsResponseSchema = z.object({

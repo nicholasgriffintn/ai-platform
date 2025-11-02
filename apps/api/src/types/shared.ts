@@ -26,7 +26,6 @@ export type IEnv = {
   AI_GATEWAY_TOKEN?: string;
   GROK_API_KEY?: string;
   HUGGINGFACE_TOKEN?: string;
-  PERPLEXITY_API_KEY?: string;
   REPLICATE_API_TOKEN?: string;
   ASSETS_BUCKET_ACCESS_KEY_ID: string;
   ASSETS_BUCKET_SECRET_ACCESS_KEY: string;
@@ -50,6 +49,7 @@ export type IEnv = {
   POLLY_SECRET_ACCESS_KEY?: string;
   DEEPSEEK_API_KEY?: string;
   TAVILY_API_KEY?: string;
+  PERPLEXITY_API_KEY?: string;
   BROWSER_RENDERING_API_KEY?: string;
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;

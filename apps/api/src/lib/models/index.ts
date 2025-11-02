@@ -529,53 +529,29 @@ export const getAuxiliarySearchProvider = async (
     return "duckduckgo";
   }
 
-  const providerToUse = requestedProvider ?? "tavily";
-
-  const shouldCheckParallel =
-    providerToUse === "parallel" || providerToUse === "tavily";
-
-  if (!shouldCheckParallel) {
-    return providerToUse;
+  if (requestedProvider) {
+    return requestedProvider;
   }
 
-  if (!user?.id) {
-    if (providerToUse === "parallel") {
-      throw new AssistantError(
-        "Parallel search requires an authenticated user",
-        ErrorType.AUTHORISATION_ERROR,
-      );
-    }
-    return providerToUse;
-  }
-
-  const database = Database.getInstance(env);
-
-  const providerSettings = await withCache(
-    env,
-    "user-provider-settings",
-    [user.id.toString()],
-    () => database.getUserProviderSettings(user.id),
-  );
-
-  const hasParallel = Array.isArray(providerSettings)
-    ? providerSettings.some((setting: any) => {
-        const isEnabled = Boolean(setting?.enabled);
-        return setting?.provider_id === "parallel" && isEnabled;
-      })
-    : false;
-
-  if (hasParallel && providerToUse !== "parallel") {
-    return "parallel";
-  }
-
-  if (providerToUse === "parallel" && !hasParallel) {
-    throw new AssistantError(
-      "Parallel search provider is not enabled for this account",
-      ErrorType.AUTHORISATION_ERROR,
+  if (user?.id) {
+    const database = Database.getInstance(env);
+    const userSettings = await withCache(
+      env,
+      "user-settings",
+      [user.id.toString()],
+      () => database.getUserSettings(user.id),
     );
+
+    const userPreferredProvider = userSettings?.search_provider as
+      | SearchProviderName
+      | undefined;
+
+    if (userPreferredProvider) {
+      return userPreferredProvider;
+    }
   }
 
-  return providerToUse;
+  return "tavily";
 };
 
 export const getAuxiliaryResearchProvider = async (

@@ -1,0 +1,1 @@
+ALTER TABLE `user_settings` ADD `search_provider` text;
