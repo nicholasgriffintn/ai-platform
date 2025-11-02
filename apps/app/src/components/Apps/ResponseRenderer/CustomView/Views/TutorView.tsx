@@ -58,7 +58,7 @@ export function TutorView({
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 min-w-[150px] border border-gray-700 rounded-md p-3 hover:bg-gray-800 transition-colors"
+              className="no-underline flex-1 min-w-[150px] border border-gray-700 rounded-md p-3 hover:bg-gray-800 transition-colors"
               aria-label={`View source: ${source.title}`}
             >
               <div className="flex items-center mb-2">

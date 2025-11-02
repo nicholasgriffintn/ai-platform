@@ -50,7 +50,7 @@ export const CitationList = ({
               target="_blank"
               rel="noopener noreferrer"
               className={`
-                block
+                block no-underline
                 ${hoveredIndex === index ? "transform scale-125" : ""}
                 transition-all duration-200 ease-in-out
               `}
