@@ -519,6 +519,7 @@ export const getAuxiliarySearchProvider = async (
 ): Promise<SearchProviderName> => {
   const isProUser = user?.plan_id === "pro";
 
+  // Non-pro users can only use DuckDuckGo
   if (!isProUser) {
     if (requestedProvider && requestedProvider !== "duckduckgo") {
       throw new AssistantError(
@@ -529,7 +530,12 @@ export const getAuxiliarySearchProvider = async (
     return "duckduckgo";
   }
 
-  let userPreferredProvider: SearchProviderName | undefined;
+  // If a specific provider was requested, use it
+  if (requestedProvider) {
+    return requestedProvider;
+  }
+
+  // Check user's configured search provider preference
   if (user?.id) {
     const database = Database.getInstance(env);
     const userSettings = await withCache(
@@ -538,58 +544,18 @@ export const getAuxiliarySearchProvider = async (
       [user.id.toString()],
       () => database.getUserSettings(user.id),
     );
-    userPreferredProvider = userSettings?.search_provider as
+
+    const userPreferredProvider = userSettings?.search_provider as
       | SearchProviderName
       | undefined;
-  }
 
-  const providerToUse = requestedProvider ?? userPreferredProvider ?? "tavily";
-
-  const shouldCheckParallel =
-    providerToUse === "parallel" || providerToUse === "tavily";
-
-  if (!shouldCheckParallel) {
-    return providerToUse;
-  }
-
-  if (!user?.id) {
-    if (providerToUse === "parallel") {
-      throw new AssistantError(
-        "Parallel search requires an authenticated user",
-        ErrorType.AUTHORISATION_ERROR,
-      );
+    if (userPreferredProvider) {
+      return userPreferredProvider;
     }
-    return providerToUse;
   }
 
-  const database = Database.getInstance(env);
-
-  const providerSettings = await withCache(
-    env,
-    "user-provider-settings",
-    [user.id.toString()],
-    () => database.getUserProviderSettings(user.id),
-  );
-
-  const hasParallel = Array.isArray(providerSettings)
-    ? providerSettings.some((setting: any) => {
-        const isEnabled = Boolean(setting?.enabled);
-        return setting?.provider_id === "parallel" && isEnabled;
-      })
-    : false;
-
-  if (hasParallel && providerToUse !== "parallel") {
-    return "parallel";
-  }
-
-  if (providerToUse === "parallel" && !hasParallel) {
-    throw new AssistantError(
-      "Parallel search provider is not enabled for this account",
-      ErrorType.AUTHORISATION_ERROR,
-    );
-  }
-
-  return providerToUse;
+  // Default to Tavily for pro users
+  return "tavily";
 };
 
 export const getAuxiliaryResearchProvider = async (
