@@ -6,6 +6,7 @@ import type {
   IUserSettings,
   ModelConfig,
   ModelConfigItem,
+  ResearchProviderName,
   SearchProviderName,
 } from "~/types";
 import { getLogger } from "~/utils/logger";
@@ -575,6 +576,62 @@ export const getAuxiliarySearchProvider = async (
   }
 
   return providerToUse;
+};
+
+export const getAuxiliaryResearchProvider = async (
+  env: IEnv,
+  user?: IUser,
+  requestedProvider?: ResearchProviderName,
+): Promise<ResearchProviderName> => {
+  const providerToUse = requestedProvider ?? "parallel";
+
+  if (providerToUse !== "parallel") {
+    throw new AssistantError(
+      `Unsupported research provider: ${providerToUse}`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+
+  const isProUser = user?.plan_id === "pro";
+
+  if (!isProUser) {
+    throw new AssistantError(
+      "Research tasks require a Pro plan",
+      ErrorType.AUTHORISATION_ERROR,
+    );
+  }
+
+  if (!user?.id) {
+    throw new AssistantError(
+      "Research tasks require an authenticated user",
+      ErrorType.AUTHORISATION_ERROR,
+    );
+  }
+
+  const database = Database.getInstance(env);
+
+  const providerSettings = await withCache(
+    env,
+    "user-provider-settings",
+    [user.id.toString()],
+    () => database.getUserProviderSettings(user.id),
+  );
+
+  const hasParallel = Array.isArray(providerSettings)
+    ? providerSettings.some((setting: any) => {
+        const isEnabled = Boolean(setting?.enabled);
+        return setting?.provider_id === "parallel" && isEnabled;
+      })
+    : false;
+
+  if (!hasParallel) {
+    throw new AssistantError(
+      "Parallel research provider is not enabled for this account",
+      ErrorType.AUTHORISATION_ERROR,
+    );
+  }
+
+  return "parallel";
 };
 
 export const getAuxiliarySpeechModel = async (

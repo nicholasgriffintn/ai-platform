@@ -7,6 +7,7 @@ export * from "./embeddings";
 export * from "./guardrails";
 export * from "./metrics";
 export * from "./models";
+export * from "./research";
 export * from "./search";
 export * from "./shared";
 export * from "./streaming";

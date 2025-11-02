@@ -108,7 +108,7 @@ export const executeDynamicApp = async (
   try {
     if (app.category === "Functions") {
       const functionName = app.id;
-      const functionResult = await handleFunctions({
+      let functionResult = await handleFunctions({
         completion_id: req.request?.completion_id || "dynamic-app-execution",
         app_url: req.app_url,
         functionName,
@@ -119,11 +119,47 @@ export const executeDynamicApp = async (
 
       let response_id: string | undefined;
       if (user?.id) {
-        const saved = await createDynamicAppResponse(env, user.id, id, {
-          formData,
-          result: functionResult,
-        });
+        const resultData = (functionResult?.data ?? {}) as Record<string, any>;
+        const runId =
+          (resultData?.run?.run_id as string | undefined) ??
+          (resultData?.asyncInvocation?.id as string | undefined);
+
+        const saved = await createDynamicAppResponse(
+          env,
+          user.id,
+          id,
+          {
+            formData,
+            result: functionResult,
+          },
+          runId,
+        );
         response_id = saved.id;
+
+        const asyncInvocation = resultData?.asyncInvocation;
+        if (asyncInvocation) {
+          const augmentedResult = {
+            ...functionResult,
+            data: {
+              ...resultData,
+              asyncInvocation: {
+                ...asyncInvocation,
+                context: {
+                  ...(asyncInvocation.context ?? {}),
+                  responseId: saved.id,
+                },
+              },
+            },
+          };
+
+          functionResult = augmentedResult;
+
+          const repo = new DynamicAppResponseRepository(env);
+          await repo.updateResponseData(saved.id, {
+            formData,
+            result: augmentedResult,
+          });
+        }
       }
 
       return {
@@ -351,9 +387,10 @@ export const createDynamicAppResponse = async (
   userId: number,
   appId: string,
   payload: Record<string, any>,
+  itemId?: string,
 ): Promise<AppData> => {
   const repo = new DynamicAppResponseRepository(env);
-  return repo.createResponse(userId, appId, payload);
+  return repo.createResponse(userId, appId, payload, itemId);
 };
 
 /**

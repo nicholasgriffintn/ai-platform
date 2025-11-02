@@ -3,6 +3,7 @@ import { JsonView } from "../JsonView";
 import { AddReasoningStepView } from "./Views/AddReasoningStepView";
 import { TutorView } from "./Views/TutorView";
 import { WebSearchView } from "./Views/WebSearchView";
+import { ResearchView } from "./Views/ResearchView";
 
 export function CustomView({
   messageContent,
@@ -29,6 +30,10 @@ export function CustomView({
         onToolInteraction={onToolInteraction}
       />
     );
+  }
+
+  if (data.name === "research") {
+    return <ResearchView data={customData} embedded={embedded} />;
   }
 
   if (data.name === "tutor") {

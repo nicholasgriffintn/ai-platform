@@ -266,6 +266,7 @@ dynamicApps.post(
           completion_id: crypto.randomUUID(),
           input: "dynamic-app-execution",
           date: new Date().toISOString(),
+          platform: "dynamic-apps",
         },
         user,
       };

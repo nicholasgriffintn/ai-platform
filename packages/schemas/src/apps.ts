@@ -206,6 +206,38 @@ export const deepWebSearchSchema = z.object({
     .optional(),
 });
 
+export const deepResearchSchema = z.object({
+  provider: z.string().optional(),
+  input: z.union([z.string(), z.record(z.string(), z.unknown())]),
+  wait_for_completion: z.boolean().optional(),
+  options: z
+    .object({
+      processor: z.string().optional(),
+      enable_events: z.boolean().optional(),
+      metadata: z.record(z.string(), z.unknown()).optional(),
+      task_spec: z
+        .object({
+          input_schema: z.any().optional(),
+          output_schema: z
+            .object({
+              type: z.enum(["json", "text", "auto"]),
+              json_schema: z.any().optional(),
+              description: z.string().optional(),
+            })
+            .optional(),
+        })
+        .optional(),
+      polling: z
+        .object({
+          interval_ms: z.number().int().positive().optional(),
+          max_attempts: z.number().int().positive().optional(),
+          timeout_seconds: z.number().int().positive().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+});
+
 export const tutorSchema = z.object({
   topic: z.string(),
   level: z

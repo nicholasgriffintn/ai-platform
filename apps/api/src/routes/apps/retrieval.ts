@@ -9,13 +9,14 @@ import {
   weatherQuerySchema,
   weatherResponseSchema,
   deepWebSearchSchema,
+  deepResearchSchema,
   tutorSchema,
 } from "@assistant/schemas";
 import z from "zod/v4";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import type { IEnv, IUser } from "~/types";
+import type { IEnv, IUser, ResearchProviderName } from "~/types";
 import { checkPlanRequirement } from "~/services/user/userOperations";
 import {
   analyseHackerNewsStories,
@@ -39,6 +40,11 @@ import {
   type TutorRequestParams,
   completeTutorRequest,
 } from "~/services/apps/tutor";
+import {
+  getResearchTaskStatus,
+  handleResearchTask,
+  startResearchTask,
+} from "~/services/research/task";
 
 const app = new Hono();
 
@@ -60,6 +66,8 @@ const hackerNewsQuerySchema = z.object({
     .optional()
     .transform((s) => s || "normal"),
 });
+
+type DeepResearchBody = z.infer<typeof deepResearchSchema>;
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing apps route: ${c.req.path}`);
@@ -402,6 +410,144 @@ app.post(
 
     return context.json({
       response,
+    });
+  },
+);
+
+app.post(
+  "/research",
+  describeRoute({
+    tags: ["apps"],
+    description:
+      "Execute a deep research task powered by Parallel Tasks via Cloudflare AI Gateway",
+    responses: {
+      200: {
+        description: "Research task result",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request or validation error",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("json", deepResearchSchema),
+  async (context: Context) => {
+    const body = context.req.valid("json" as never) as DeepResearchBody;
+    const user = context.get("user");
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    const handle = await startResearchTask({
+      env: context.env as IEnv,
+      user,
+      input: body.input,
+      provider: body.provider as ResearchProviderName | undefined,
+      options: body.options,
+    });
+
+    const pollInterval =
+      body.options?.polling?.interval_ms &&
+      body.options?.polling?.interval_ms >= 500
+        ? body.options.polling.interval_ms
+        : 5000;
+
+    return context.json({
+      response: {
+        status: "success",
+        content: "Research task started",
+        data: {
+          provider: handle.provider,
+          run: handle.run,
+          poll: {
+            interval_ms: pollInterval,
+            timeout_seconds: body.options?.polling?.timeout_seconds ?? 5,
+          },
+        },
+      },
+    });
+  },
+);
+
+app.get(
+  "/research/:runId",
+  describeRoute({
+    tags: ["apps"],
+    description:
+      "Fetch the status/result for a previously started research task",
+    responses: {
+      200: {
+        description: "Research task status",
+        content: {
+          "application/json": {
+            schema: resolver(apiResponseSchema),
+          },
+        },
+      },
+      400: {
+        description: "Bad request",
+        content: {
+          "application/json": {
+            schema: resolver(errorResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  async (context: Context) => {
+    const runId = context.req.param("runId");
+    const providerParam = context.req.query("provider") as
+      | ResearchProviderName
+      | undefined;
+    const user = context.get("user");
+
+    if (!user?.id) {
+      return context.json(
+        {
+          response: {
+            status: "error",
+            message: "User not authenticated",
+          },
+        },
+        401,
+      );
+    }
+
+    if (!runId) {
+      throw new AssistantError("Missing runId", ErrorType.PARAMS_ERROR);
+    }
+
+    const result = await getResearchTaskStatus({
+      env: context.env as IEnv,
+      user,
+      runId,
+      provider: providerParam,
+    });
+
+    return context.json({
+      response: {
+        status: "success",
+        content: "Research status retrieved",
+        data: result,
+      },
     });
   },
 );

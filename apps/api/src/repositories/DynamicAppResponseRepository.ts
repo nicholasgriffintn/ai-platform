@@ -13,11 +13,12 @@ export class DynamicAppResponseRepository {
     userId: number,
     appId: string,
     payload: Record<string, any>,
+    itemId?: string,
   ): Promise<AppData> {
     return this.repo.createAppDataWithItem(
       userId,
       appId,
-      crypto.randomUUID(),
+      itemId ?? crypto.randomUUID(),
       "dynamic_app_response",
       payload,
     );
@@ -25,6 +26,10 @@ export class DynamicAppResponseRepository {
 
   async getResponseById(responseId: string): Promise<AppData | null> {
     return this.repo.getAppDataById(responseId);
+  }
+
+  async getResponseByItemId(itemId: string): Promise<AppData | null> {
+    return this.repo.getAppDataByItemId(itemId);
   }
 
   async listResponsesForUser(
@@ -40,5 +45,12 @@ export class DynamicAppResponseRepository {
     }
 
     return data.filter((d) => d.item_type === "dynamic_app_response");
+  }
+
+  async updateResponseData(
+    responseId: string,
+    payload: Record<string, any>,
+  ): Promise<void> {
+    await this.repo.updateAppData(responseId, payload);
   }
 }

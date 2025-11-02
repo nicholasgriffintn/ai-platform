@@ -2,11 +2,15 @@ import { type JSX, useState } from "react";
 
 interface JsonViewProps {
   data: Record<string, any>;
+  expandedByDefault?: boolean;
 }
 
-export const JsonView = ({ data }: JsonViewProps) => {
+export const JsonView = ({
+  data,
+  expandedByDefault = false,
+}: JsonViewProps) => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    root: true,
+    root: expandedByDefault,
   });
 
   const toggleExpand = (path: string) => {

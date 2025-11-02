@@ -9,6 +9,7 @@ import type {
 import { formatMessageContent } from "../messages";
 import { AgentService } from "./services/agent-service";
 import { ChatService } from "./services/chat-service";
+import { ResearchService } from "./services/research-service";
 import { SubscriptionService } from "./services/subscription-service";
 import { UploadService } from "./services/upload-service";
 import { UserService } from "./services/user-service";
@@ -27,6 +28,7 @@ class ApiService {
   private userService: UserService;
   private subscriptionService: SubscriptionService;
   private uploadService: UploadService;
+  private researchService: ResearchService;
 
   private constructor() {
     this.chatService = new ChatService(getHeaders);
@@ -34,6 +36,7 @@ class ApiService {
     this.userService = new UserService(getHeaders);
     this.subscriptionService = new SubscriptionService();
     this.uploadService = new UploadService(getHeaders);
+    this.researchService = new ResearchService(getHeaders);
   }
 
   public static getInstance(): ApiService {
@@ -361,6 +364,12 @@ class ApiService {
 
   reactivateSubscription = (): Promise<any> => {
     return this.subscriptionService.reactivateSubscription();
+  };
+
+  // ===== Research Methods =====
+
+  fetchResearchStatus = (runId: string, provider?: string) => {
+    return this.researchService.fetchStatus(runId, provider);
   };
 
   // ===== Upload Methods =====
