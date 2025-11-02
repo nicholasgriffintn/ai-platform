@@ -544,8 +544,7 @@ export const getAuxiliarySearchProvider = async (
       | undefined;
   }
 
-  const providerToUse =
-    requestedProvider ?? userPreferredProvider ?? "tavily";
+  const providerToUse = requestedProvider ?? userPreferredProvider ?? "tavily";
 
   const shouldCheckParallel =
     providerToUse === "parallel" || providerToUse === "tavily";
