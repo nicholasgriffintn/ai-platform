@@ -33,8 +33,10 @@ describe("id", () => {
       const result = generateId();
 
       expect(Math.random).toHaveBeenCalled();
-      expect(result).toHaveLength(8);
-      expect(result).toMatch(/^[a-z0-9]+$/);
+      expect(result).toHaveLength(36);
+      expect(result).toMatch(
+        /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/,
+      );
     });
 
     it("should fallback to Math.random when crypto.randomUUID is not a function", () => {
@@ -44,8 +46,10 @@ describe("id", () => {
       const result = generateId();
 
       expect(Math.random).toHaveBeenCalled();
-      expect(result).toHaveLength(8);
-      expect(result).toMatch(/^[a-z0-9]+$/);
+      expect(result).toHaveLength(36);
+      expect(result).toMatch(
+        /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/,
+      );
     });
 
     it("should generate different IDs on subsequent calls with Math.random fallback", () => {
@@ -58,10 +62,14 @@ describe("id", () => {
       const result2 = generateId();
 
       expect(result1).not.toBe(result2);
-      expect(result1).toHaveLength(8);
-      expect(result2).toHaveLength(8);
-      expect(result1).toMatch(/^[a-z0-9]+$/);
-      expect(result2).toMatch(/^[a-z0-9]+$/);
+      expect(result1).toHaveLength(36);
+      expect(result2).toHaveLength(36);
+      expect(result1).toMatch(
+        /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/,
+      );
+      expect(result2).toMatch(
+        /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/,
+      );
     });
 
     it("should generate IDs with correct length when using Math.random fallback", () => {
@@ -70,9 +78,10 @@ describe("id", () => {
 
       const result = generateId();
 
-      expect(result.length).toBeGreaterThan(0);
-      expect(result.length).toBeLessThanOrEqual(8);
-      expect(result).toMatch(/^[a-z0-9]+$/);
+      expect(result).toHaveLength(36);
+      expect(result).toMatch(
+        /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/,
+      );
     });
 
     it("should generate valid UUID format when crypto.randomUUID is available", () => {
