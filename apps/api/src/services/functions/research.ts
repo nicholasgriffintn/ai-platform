@@ -79,7 +79,7 @@ export const research: IFunction = {
   name: "research",
   description:
     "Executes deep web research via Parallel Tasks. Ideal for market analysis, due diligence, and multi-source synthesis.",
-  type: "normal",
+  type: "premium",
   costPerCall: 3,
   parameters: {
     type: "object",
