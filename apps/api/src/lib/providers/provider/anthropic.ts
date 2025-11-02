@@ -12,7 +12,6 @@ import {
 	shouldEnableStreaming,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
-import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
 const logger = getLogger({ prefix: "lib/providers/anthropic" });
 
