@@ -46,6 +46,7 @@ export function UserSettingsForm({
       userSettings?.memories_chat_history_enabled || false,
     transcription_provider: userSettings?.transcription_provider || "workers",
     transcription_model: userSettings?.transcription_model || "whisper-1",
+    search_provider: userSettings?.search_provider || "",
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -553,6 +554,57 @@ export function UserSettingsForm({
               </option>
             ))}
           </FormSelect>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
+          Web Search
+        </h3>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label
+            htmlFor="search_provider"
+            className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+          >
+            Search Provider
+          </label>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            Choose the default search provider for web search requests. Pro users
+            can select from premium providers like Tavily, Serper, or Perplexity.
+          </p>
+          <FormSelect
+            id="search_provider"
+            name="search_provider"
+            value={formData.search_provider}
+            onChange={(e) => {
+              setFormData({
+                ...formData,
+                search_provider: e.target.value,
+              });
+
+              trackEvent({
+                name: "search_provider_changed",
+                category: EventCategory.UI_INTERACTION,
+                properties: {
+                  provider: e.target.value,
+                },
+              });
+            }}
+          >
+            <option value="">Default (Tavily for Pro, DuckDuckGo for Free)</option>
+            <option value="duckduckgo">DuckDuckGo</option>
+            <option value="tavily">Tavily</option>
+            <option value="serper">Serper</option>
+            <option value="perplexity">Perplexity</option>
+            <option value="parallel">Parallel Search</option>
+          </FormSelect>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
+            Note: Premium providers (Tavily, Serper, Perplexity, Parallel) require a Pro plan.
+            You may also need to configure API keys in the providers section.
+          </p>
         </div>
       </div>
 
