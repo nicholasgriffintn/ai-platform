@@ -519,7 +519,6 @@ export const getAuxiliarySearchProvider = async (
 ): Promise<SearchProviderName> => {
   const isProUser = user?.plan_id === "pro";
 
-  // Non-pro users can only use DuckDuckGo
   if (!isProUser) {
     if (requestedProvider && requestedProvider !== "duckduckgo") {
       throw new AssistantError(
@@ -530,12 +529,10 @@ export const getAuxiliarySearchProvider = async (
     return "duckduckgo";
   }
 
-  // If a specific provider was requested, use it
   if (requestedProvider) {
     return requestedProvider;
   }
 
-  // Check user's configured search provider preference
   if (user?.id) {
     const database = Database.getInstance(env);
     const userSettings = await withCache(
@@ -554,7 +551,6 @@ export const getAuxiliarySearchProvider = async (
     }
   }
 
-  // Default to Tavily for pro users
   return "tavily";
 };
 
