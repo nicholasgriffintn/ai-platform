@@ -96,7 +96,7 @@ describe("SerperProvider", () => {
         }),
       });
 
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual({ ...mockResponse, provider: "serper" });
     });
 
     it("should perform search with custom options", async () => {

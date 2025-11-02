@@ -76,7 +76,7 @@ describe("TavilyProvider", () => {
         }),
       });
 
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual({ ...mockResponse, provider: "tavily" });
     });
 
     it("should perform search with custom options", async () => {
@@ -127,7 +127,7 @@ describe("TavilyProvider", () => {
         }),
       });
 
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual({ ...mockResponse, provider: "tavily" });
     });
 
     it("should return error result when API request fails", async () => {
@@ -211,7 +211,7 @@ describe("TavilyProvider", () => {
 
       const result = await provider.performWebSearch("empty query");
 
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual({ ...mockResponse, provider: "tavily" });
     });
   });
 });
