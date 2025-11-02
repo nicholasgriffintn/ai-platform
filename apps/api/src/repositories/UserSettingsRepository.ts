@@ -146,6 +146,7 @@ export class UserSettingsRepository extends BaseRepository {
          memories_chat_history_enabled = ?,
          transcription_provider = ?,
          transcription_model = ?,
+         search_provider = ?,
          updated_at = datetime('now')
        WHERE user_id = ?`,
       [
@@ -184,6 +185,7 @@ export class UserSettingsRepository extends BaseRepository {
           : null,
         settings.transcription_provider,
         settings.transcription_model,
+        settings.search_provider,
         userId,
       ],
     );
@@ -211,6 +213,7 @@ export class UserSettingsRepository extends BaseRepository {
       "memories_chat_history_enabled",
       "transcription_provider",
       "transcription_model",
+      "search_provider",
     ];
     const result = await this.runQuery<any>(
       `SELECT ${columns.join(", ")} FROM user_settings WHERE user_id = ?`,
