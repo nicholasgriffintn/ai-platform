@@ -10,6 +10,7 @@ import {
 } from "~/utils/functions";
 import { getLogger } from "~/utils/logger";
 import { registerDynamicApp } from "./index";
+import { getFunctionMetadata } from "./config";
 
 const logger = getLogger({
   prefix: "services/dynamic-apps/auto-register-apps",
@@ -24,12 +25,17 @@ export const autoRegisterDynamicApps = (): void => {
 const registerFunctionAsDynamicApp = (func: IFunction): void => {
   const { name, description, parameters, type, isDefault, costPerCall } = func;
 
+  const metadata = getFunctionMetadata(name);
+
   const appSchema: AppSchema = {
     id: name,
     name: formatFunctionName(name),
     description: description || `Execute the ${name} function`,
-    icon: getFunctionIcon(name),
-    category: "Functions",
+    icon: metadata?.icon || getFunctionIcon(name),
+    category: metadata?.category || "Other",
+    theme: metadata?.theme,
+    tags: metadata?.tags,
+    featured: metadata?.featured,
     type,
     isDefault: isDefault || false,
     costPerCall,

@@ -47,12 +47,26 @@ export interface ResponseSchema {
   display: ResponseDisplay;
 }
 
+export type AppTheme =
+  | "violet"
+  | "indigo"
+  | "pink"
+  | "rose"
+  | "cyan"
+  | "emerald"
+  | "amber"
+  | "sky"
+  | "slate";
+
 export interface AppSchema {
   id: string;
   name: string;
   description: string;
   icon?: string;
   category?: string;
+  theme?: AppTheme;
+  tags?: string[];
+  featured?: boolean;
   formSchema: FormSchema;
   responseSchema: ResponseSchema;
   costPerCall: number;
@@ -118,6 +132,21 @@ export const appSchema = z.object({
   description: z.string(),
   icon: z.string().optional(),
   category: z.string().optional(),
+  theme: z
+    .enum([
+      "violet",
+      "indigo",
+      "pink",
+      "rose",
+      "cyan",
+      "emerald",
+      "amber",
+      "sky",
+      "slate",
+    ])
+    .optional(),
+  tags: z.array(z.string()).optional(),
+  featured: z.boolean().optional(),
   formSchema: formSchema,
   responseSchema: responseSchema,
 });

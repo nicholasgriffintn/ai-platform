@@ -13,14 +13,17 @@ import { SidebarHeader } from "./SidebarHeader";
 export function AppsSidebarContent({ isHome = false }) {
   const { sidebarVisible, isMobile, setSidebarVisible } = useUIStore();
   const navigate = useNavigate();
-  const { data: apps = [] } = useDynamicApps();
+  const { data: appsData } = useDynamicApps();
+  const apps = appsData?.apps ?? [];
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const categories = useMemo(() => {
     const grouped = groupAppsByCategory(apps);
     const apiCategories = grouped.map(([category]) => category);
-    return ["Featured", ...apiCategories];
-  }, [apps]);
+    const featuredCategory =
+      (appsData?.featuredApps?.length ?? 0) > 0 ? ["Featured"] : [];
+    return [...featuredCategory, ...apiCategories];
+  }, [apps, appsData?.featuredApps?.length]);
 
   const handleCategoryClick = useCallback(
     (category: string) => {

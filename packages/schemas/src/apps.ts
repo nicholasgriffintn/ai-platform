@@ -279,9 +279,34 @@ export const appInfoSchema = z.object({
   description: z.string(),
   icon: z.string().optional(),
   category: z.string().optional(),
+  theme: z
+    .enum([
+      "violet",
+      "indigo",
+      "pink",
+      "rose",
+      "cyan",
+      "emerald",
+      "amber",
+      "sky",
+      "slate",
+    ])
+    .optional(),
+  tags: z.array(z.string()).optional(),
+  featured: z.boolean().optional(),
+  costPerCall: z.number().optional(),
+  isDefault: z.boolean().optional(),
+  type: z.enum(["normal", "premium"]).optional(),
+  href: z.string().optional(),
+  kind: z.enum(["dynamic", "frontend"]).optional(),
 });
 
 export const appInfoArraySchema = z.array(appInfoSchema);
+
+export const dynamicAppsResponseSchema = z.object({
+  apps: appInfoArraySchema,
+  featuredApps: appInfoArraySchema,
+});
 
 export const dynamicAppIdParamSchema = z.object({ id: z.string() });
 

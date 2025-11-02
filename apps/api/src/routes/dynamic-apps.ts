@@ -4,6 +4,7 @@ import z from "zod/v4";
 import {
   appDataSchema,
   appInfoSchema,
+  dynamicAppsResponseSchema,
   listDynamicAppResponsesQuerySchema,
   errorResponseSchema,
 } from "@assistant/schemas";
@@ -18,6 +19,7 @@ import {
   listDynamicAppResponsesForUser,
   getDynamicAppResponseById,
 } from "~/services/dynamic-apps";
+import { getFeaturedApps } from "~/services/dynamic-apps/config";
 import { appSchema } from "~/types/app-schema";
 import type { IRequest } from "~/types/chat";
 import type { IEnv } from "~/types/shared";
@@ -47,10 +49,10 @@ dynamicApps.get(
     tags: ["dynamic-apps"],
     responses: {
       200: {
-        description: "List of dynamic apps",
+        description: "Dynamic apps and featured listings",
         content: {
           "application/json": {
-            schema: resolver(z.array(appInfoSchema)),
+            schema: resolver(dynamicAppsResponseSchema),
           },
         },
       },
@@ -64,7 +66,11 @@ dynamicApps.get(
   }),
   async (c) => {
     const apps = await getDynamicApps();
-    return c.json(apps);
+    const featuredApps = getFeaturedApps();
+    return c.json({
+      apps,
+      featuredApps,
+    });
   },
 );
 

@@ -3,18 +3,25 @@ import { Card } from "~/components/ui";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { AppListItem } from "~/types/apps";
-import { getCardGradient, getCategoryColor, getIcon } from "./utils";
+import {
+  getBadgeClass,
+  getCardGradient,
+  getIcon,
+  getIconContainerClass,
+} from "./utils";
 
 interface AppCardProps {
   app: AppListItem;
   onSelect: () => void;
   isWrappedInGroup?: boolean;
+  displayCategory?: boolean;
 }
 
 export const AppCard = ({
   app,
   onSelect,
   isWrappedInGroup = false,
+  displayCategory = true,
 }: AppCardProps) => {
   const { isPro } = useChatStore();
   const isPremium = app.type === "premium";
@@ -38,7 +45,7 @@ export const AppCard = ({
         "focus:outline-none focus:ring-2 focus:ring-blue-500/40",
         "bg-transparent",
         "bg-gradient-to-br",
-        getCardGradient(app.icon),
+        getCardGradient(app.theme),
       )}
     >
       {!isPro && isPremium && (
@@ -63,21 +70,22 @@ export const AppCard = ({
         <div className="flex flex-col space-y-2 md:flex-row md:items-start md:space-y-0 md:space-x-4 mb-3">
           <div
             className={cn(
-              "p-3 rounded-lg bg-off-white dark:bg-zinc-700 shadow-sm flex-shrink-0",
+              "p-3 rounded-lg shadow-sm flex-shrink-0",
+              getIconContainerClass(app.theme),
             )}
           >
-            {getIcon(app.icon)}
+            {getIcon(app.icon, app.theme)}
           </div>
           <div className="flex flex-col items-start flex-grow min-w-0">
             <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100 group-hover:underline">
               {app.name}
             </h3>
 
-            {app.category && (
+            {displayCategory && app.category && (
               <span
                 className={cn(
                   "inline-block px-3 py-1 text-xs rounded-full mt-1 no-underline",
-                  getCategoryColor(app.category),
+                  getBadgeClass(app.theme),
                 )}
               >
                 {app.category}

@@ -26,8 +26,8 @@ export function meta() {
 export default function DynamicAppResponsesPage() {
   const { data: responses, isLoading, error } = useDynamicAppResponses();
 
-  const { data: apps } = useDynamicApps();
-  const appMap = new Map(apps?.map((a) => [a.id, a]) ?? []);
+  const { data: appsData } = useDynamicApps();
+  const appMap = new Map((appsData?.apps ?? []).map((a) => [a.id, a] as const));
 
   return (
     <PageShell
@@ -60,7 +60,7 @@ export default function DynamicAppResponsesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {responses!.map((resp) => {
             const app = appMap.get(resp.app_id);
-            const icon = app ? getIcon(app.icon) : null;
+            const icon = app ? getIcon(app.icon, app.theme) : null;
             return (
               <Link
                 key={resp.id}

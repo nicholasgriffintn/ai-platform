@@ -3,13 +3,14 @@ import { useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
-import { getIcon } from "~/components/Apps/utils";
+import { getIcon, getIconContainerClass } from "~/components/Apps/utils";
 import { BackLink } from "~/components/Core/BackLink";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageStatus } from "~/components/Core/PageStatus";
 import { useDynamicApp, useDynamicAppResponse } from "~/hooks/useDynamicApps";
 import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
+import { cn } from "~/lib/utils";
 
 export function meta({ params }: { params: { responseId: string } }) {
   return [
@@ -104,8 +105,13 @@ export default function DynamicAppResponsePage() {
       <div className="container mx-auto px-4 max-w-4xl py-4 space-y-8">
         {appSchema && (
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-off-white dark:bg-zinc-700 shadow-sm">
-              {getIcon(appSchema.icon)}
+            <div
+              className={cn(
+                "p-3 rounded-lg shadow-sm",
+                getIconContainerClass(appSchema.theme),
+              )}
+            >
+              {getIcon(appSchema.icon, appSchema.theme)}
             </div>
             <div>
               <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">

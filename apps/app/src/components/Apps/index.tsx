@@ -32,10 +32,13 @@ export const DynamicApps = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const {
-    data: apps = [],
+    data: appsData,
     isLoading: appsLoading,
     error: appsError,
   } = useDynamicApps();
+
+  const apps = appsData?.apps ?? [];
+  const featuredApps = appsData?.featuredApps ?? [];
 
   const {
     data: selectedApp,
@@ -133,7 +136,7 @@ export const DynamicApps = () => {
 
   const renderCategoryApps = useCallback(
     (category: string, categoryApps: any[]) => (
-      <div key={category} className="space-y-6">
+      <div key={category} className="space-y-6 mb-6">
         <h2
           data-category={category}
           className={cn(
@@ -148,7 +151,11 @@ export const DynamicApps = () => {
               key={app.id}
               className="transform transition-transform hover:scale-[1.02] h-[200px]"
             >
-              <AppCard app={app} onSelect={() => handleAppSelect(app.id)} />
+              <AppCard
+                displayCategory={false}
+                app={app}
+                onSelect={() => handleAppSelect(app.id)}
+              />
             </div>
           ))}
         </div>
@@ -271,7 +278,15 @@ export const DynamicApps = () => {
         />
       ) : (
         <>
-          <FeaturedApps searchQuery={searchQuery} />
+          <FeaturedApps
+            searchQuery={searchQuery}
+            apps={featuredApps}
+            onSelect={(app) => {
+              if (app.kind === "dynamic") {
+                handleAppSelect(app.id);
+              }
+            }}
+          />
 
           {filteredApps.length === 0 &&
           searchQuery &&

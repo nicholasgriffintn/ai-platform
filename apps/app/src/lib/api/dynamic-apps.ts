@@ -1,5 +1,5 @@
 import type { AppDataItem } from "~/components/Apps/ContentRenderers";
-import type { AppListItem, AppSchema } from "~/types/apps";
+import type { AppSchema, DynamicAppsResponse } from "~/types/apps";
 import type {
   AnalyseArticleParams,
   AnalyseArticleResponse,
@@ -25,7 +25,7 @@ import type {
 import { apiService } from "./api-service";
 import { fetchApi } from "./fetch-wrapper";
 
-export const fetchDynamicApps = async (): Promise<AppListItem[]> => {
+export const fetchDynamicApps = async (): Promise<DynamicAppsResponse> => {
   try {
     let headers = {};
     try {
@@ -43,7 +43,7 @@ export const fetchDynamicApps = async (): Promise<AppListItem[]> => {
       throw new Error(`Failed to fetch dynamic apps: ${response.statusText}`);
     }
 
-    return await response.json();
+    return (await response.json()) as DynamicAppsResponse;
   } catch (error) {
     console.error("Error fetching dynamic apps:", error);
     throw error;

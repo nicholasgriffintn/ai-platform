@@ -34,7 +34,7 @@ export const registerDynamicApp = (app: AppSchema): AppSchema => {
  * @returns Array of all registered apps (basic info only)
  */
 export const getDynamicApps = async (): Promise<
-  Array<Omit<AppSchema, "formSchema" | "responseSchema">>
+  Array<Omit<AppSchema, "formSchema" | "responseSchema"> & { kind: "dynamic" }>
 > => {
   return Array.from(dynamicApps.values()).map(
     ({
@@ -43,6 +43,9 @@ export const getDynamicApps = async (): Promise<
       description,
       icon,
       category,
+      theme,
+      tags,
+      featured,
       costPerCall,
       isDefault,
       type,
@@ -52,9 +55,13 @@ export const getDynamicApps = async (): Promise<
       description,
       icon,
       category,
+      theme,
+      tags,
+      featured,
       costPerCall,
       isDefault,
       type,
+      kind: "dynamic" as const,
     }),
   );
 };

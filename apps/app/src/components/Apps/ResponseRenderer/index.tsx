@@ -1,7 +1,7 @@
 import { Button } from "~/components/ui";
 import { cn } from "~/lib/utils";
 import type { AppSchema } from "~/types/apps";
-import { getCardGradient, getIcon } from "../utils";
+import { getCardGradient, getIcon, getIconContainerClass } from "../utils";
 import { CustomView } from "./CustomView";
 import { JsonView } from "./JsonView";
 import { TableView } from "./TableView";
@@ -114,7 +114,7 @@ export const ResponseRenderer = ({
           className={cn(
             "border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-off-white dark:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600",
             "bg-gradient-to-br",
-            getCardGradient(app.icon),
+            getCardGradient(app.theme),
             "mb-6",
           )}
         >
@@ -122,10 +122,11 @@ export const ResponseRenderer = ({
             <div className="flex items-center space-x-4 mb-4">
               <div
                 className={cn(
-                  "p-3 rounded-lg bg-off-white dark:bg-zinc-700 shadow-sm",
+                  "p-3 rounded-lg shadow-sm",
+                  getIconContainerClass(app.theme),
                 )}
               >
-                {getIcon(app.icon)}
+                {getIcon(app.icon, app.theme)}
               </div>
               <div>
                 <h1
