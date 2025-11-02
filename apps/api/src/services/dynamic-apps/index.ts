@@ -25,7 +25,10 @@ export const registerDynamicApp = (app: AppSchema): AppSchema => {
     );
   }
 
-  dynamicApps.set(app.id, app);
+  dynamicApps.set(app.id, {
+    ...app,
+    kind: "dynamic",
+  });
   return app;
 };
 
@@ -113,7 +116,7 @@ export const executeDynamicApp = async (
   });
 
   try {
-    if (app.category === "Functions") {
+    if (app.kind === "dynamic") {
       const functionName = app.id;
       let functionResult = await handleFunctions({
         completion_id: req.request?.completion_id || "dynamic-app-execution",

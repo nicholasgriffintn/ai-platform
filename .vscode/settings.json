@@ -1,4 +1,7 @@
 {
   "editor.defaultFormatter": "biomejs.biome",
-  "traycer.enableAutoAnalysis": false
+  "traycer.enableAutoAnalysis": false,
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  }
 }

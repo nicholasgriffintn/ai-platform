@@ -8,6 +8,7 @@ import type {
   SearchResult,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { gatewayId } from "../../constants/app";
 
 export class PerplexityProvider implements SearchProvider {
   private env: IEnv;
@@ -77,7 +78,6 @@ export class PerplexityProvider implements SearchProvider {
       max_tokens_per_page: 1024,
     };
 
-    // Add optional parameters if provided
     if (options?.country) {
       requestBody.country = options.country;
     }
@@ -86,7 +86,9 @@ export class PerplexityProvider implements SearchProvider {
       requestBody.search_language_filter = [options.language];
     }
 
-    const response = await fetch("https://api.perplexity.ai/search", {
+    const endpoint = `https://gateway.ai.cloudflare.com/v1/${this.env.ACCOUNT_ID}/${gatewayId}/perplexity-ai/search`;
+
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -103,16 +105,9 @@ export class PerplexityProvider implements SearchProvider {
       };
     }
 
-    const data = (await response.json()) as {
-      results: Array<{
-        title: string;
-        url: string;
-        snippet: string;
-        date?: string;
-        last_updated?: string;
-      }>;
-      id?: string;
-    };
+    // TODO: Perplexity doesn't return answers, should it?
+
+    const data = (await response.json()) as PerplexitySearchResult;
 
     const result: PerplexitySearchResult = {
       provider: "perplexity",

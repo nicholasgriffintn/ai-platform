@@ -72,6 +72,7 @@ export interface AppSchema {
   costPerCall: number;
   isDefault: boolean;
   type: "normal" | "premium";
+  kind: "frontend" | "dynamic";
 }
 
 export const formFieldSchema = z.object({

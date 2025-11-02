@@ -39,6 +39,7 @@ const registerFunctionAsDynamicApp = (func: IFunction): void => {
     type,
     isDefault: isDefault || false,
     costPerCall,
+    kind: "dynamic",
     formSchema: {
       steps: [
         {
