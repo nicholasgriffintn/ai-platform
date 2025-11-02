@@ -1,6 +1,7 @@
 import type { IEnv } from "~/types";
 import type { AppData } from "./AppDataRepository";
 import { AppDataRepository } from "./AppDataRepository";
+import { generateId } from "~/utils/id";
 
 export class DynamicAppResponseRepository {
   private repo: AppDataRepository;
@@ -18,7 +19,7 @@ export class DynamicAppResponseRepository {
     return this.repo.createAppDataWithItem(
       userId,
       appId,
-      itemId ?? crypto.randomUUID(),
+      itemId ?? generateId(),
       "dynamic_app_response",
       payload,
     );

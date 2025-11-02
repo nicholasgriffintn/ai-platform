@@ -2,6 +2,7 @@ import type { AnonymousUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseRepository } from "./BaseRepository";
+import { generateId } from "~/utils/id";
 
 const logger = getLogger({ prefix: "repositories/AnonymousUserRepository" });
 
@@ -45,7 +46,7 @@ export class AnonymousUserRepository extends BaseRepository {
     userAgent?: string,
     id?: string,
   ): Promise<AnonymousUser | null> {
-    const userId = id || crypto.randomUUID();
+    const userId = id || generateId();
     const now = new Date().toISOString();
     const hashedIp = await this.hashIpAddress(ipAddress);
 

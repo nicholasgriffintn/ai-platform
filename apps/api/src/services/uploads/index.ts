@@ -3,6 +3,7 @@ import { StorageService } from "~/lib/storage";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { generateId } from "~/utils/id";
 
 const logger = getLogger({ prefix: "services/uploads" });
 
@@ -152,7 +153,7 @@ export async function handleFileUpload(
   const mimeExtension = (file.type.split("/")[1] || "").toLowerCase();
   const fileExtension =
     fileType === "code" ? inferredExtension || mimeExtension : mimeExtension;
-  const key = `uploads/${userId}/${fileType}s/${crypto.randomUUID()}.${fileExtension}`;
+  const key = `uploads/${userId}/${fileType}s/${generateId()}.${fileExtension}`;
 
   let arrayBuffer: ArrayBuffer;
   try {

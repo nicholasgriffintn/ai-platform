@@ -2,6 +2,7 @@ import { Database } from "~/lib/database";
 import type { IUserSettings, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { generateId } from "~/utils/id";
 
 const logger = getLogger({ prefix: "services/auth/user" });
 
@@ -270,7 +271,7 @@ export async function createSession(
   expiresInDays = 7,
 ): Promise<string> {
   try {
-    const sessionId = crypto.randomUUID();
+    const sessionId = generateId();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 

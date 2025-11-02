@@ -1,11 +1,12 @@
 import { decodeBase64 } from "hono/utils/encode";
 
-import { filterModelsForUserAccess, getModels } from "~/lib/models";
+import { getModels } from "~/lib/models";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IUserSettings } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseRepository } from "./BaseRepository";
+import { generateId } from "~/utils/id";
 
 export class UserSettingsRepository extends BaseRepository {
   private static readonly CREDENTIALS_DELIMITER = "::@@::";
@@ -104,7 +105,7 @@ export class UserSettingsRepository extends BaseRepository {
       const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
       const publicKeyString = JSON.stringify(publicKey);
 
-      const userSettingsId = crypto.randomUUID();
+      const userSettingsId = generateId();
 
       await this.executeRun(
         `INSERT INTO user_settings (id, user_id, public_key, private_key)
@@ -469,7 +470,7 @@ export class UserSettingsRepository extends BaseRepository {
           return;
         }
 
-        const providerSettingsId = crypto.randomUUID();
+        const providerSettingsId = generateId();
 
         const isEnabled = defaultProviders.includes(provider);
 

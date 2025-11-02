@@ -5,6 +5,7 @@ import { Database } from "~/lib/database";
 import type { IEnv, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { generateId } from "~/utils/id";
 
 const logger = getLogger({ prefix: "services/auth/magicLink" });
 
@@ -39,7 +40,7 @@ async function generateMagicLinkToken(
 
   const token = await jwt.sign(payload, jwtSecret, { algorithm: "HS256" });
 
-  const nonce = crypto.randomUUID();
+  const nonce = generateId();
 
   return { token, nonce };
 }

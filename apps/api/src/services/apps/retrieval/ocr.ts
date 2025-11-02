@@ -4,6 +4,7 @@ import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { convertMarkdownToHtml } from "~/utils/markdown";
+import { generateId } from "~/utils/id";
 
 const logger = getLogger({ prefix: "services/apps/retrieval/ocr" });
 
@@ -52,7 +53,7 @@ export const performOcr = async (
 
     const baseAssetsUrl = req.env.PUBLIC_ASSETS_URL || "";
 
-    const requestId = params.id || crypto.randomUUID();
+    const requestId = params.id || generateId();
 
     const provider = AIProviderFactory.getProvider("mistral");
 

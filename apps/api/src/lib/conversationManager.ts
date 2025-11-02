@@ -653,7 +653,7 @@ export class ConversationManager {
    * @returns The unique ID for sharing a conversation
    */
   generateShareId(): string {
-    return crypto.randomUUID();
+    return generateId();
   }
 
   /**

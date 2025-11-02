@@ -2,6 +2,7 @@ import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { BaseRepository } from "./BaseRepository";
+import { generateId } from "~/utils/id";
 
 const logger = getLogger({ prefix: "repositories/ApiKeyRepository" });
 
@@ -114,7 +115,7 @@ export class ApiKeyRepository extends BaseRepository {
     const publicKey = await this.getUserPublicKey(userId);
     const encryptedKey = await this.encryptApiKey(plaintextKey, publicKey);
 
-    const apiKeyId = crypto.randomUUID();
+    const apiKeyId = generateId();
     const keyName = name || `API Key ${new Date().toISOString()}`;
 
     try {

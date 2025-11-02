@@ -23,6 +23,7 @@ import type { IRequest } from "~/types/chat";
 import type { IEnv } from "~/types/shared";
 import { getLogger } from "~/utils/logger";
 import type { IUser } from "../types";
+import { generateId } from "~/utils/id";
 
 const logger = getLogger({ prefix: "routes/dynamic-apps" });
 
@@ -263,7 +264,7 @@ dynamicApps.post(
         app_url: `https://${host}`,
         env: c.env,
         request: {
-          completion_id: crypto.randomUUID(),
+          completion_id: generateId(),
           input: "dynamic-app-execution",
           date: new Date().toISOString(),
           platform: "dynamic-apps",
