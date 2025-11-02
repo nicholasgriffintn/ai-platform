@@ -529,7 +529,6 @@ export const getAuxiliarySearchProvider = async (
     return "duckduckgo";
   }
 
-  // Get user's preferred search provider from settings if available
   let userPreferredProvider: SearchProviderName | undefined;
   if (user?.id) {
     const database = Database.getInstance(env);
