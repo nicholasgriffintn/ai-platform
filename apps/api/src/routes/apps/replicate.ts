@@ -8,8 +8,72 @@ import { executeReplicateModel } from "~/services/apps/replicate/execute";
 import { listReplicatePredictions } from "~/services/apps/replicate/list";
 import { getReplicatePredictionDetails } from "~/services/apps/replicate/get-details";
 import { replicateModelConfig } from "~/lib/models/replicate";
+import type { AppTheme } from "~/types/app-schema";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError } from "~/utils/errors";
+
+const typeMetadata: Record<
+  string,
+  {
+    category: string;
+    icon: string;
+    theme: AppTheme;
+  }
+> = {
+  "text-to-image": {
+    category: "Image Generation",
+    icon: "image",
+    theme: "pink",
+  },
+  "image-to-image": {
+    category: "Image Editing",
+    icon: "sparkles",
+    theme: "violet",
+  },
+  "text-to-video": {
+    category: "Video Generation",
+    icon: "video",
+    theme: "rose",
+  },
+  "text-to-audio": {
+    category: "Audio Generation",
+    icon: "music",
+    theme: "indigo",
+  },
+  "audio-to-text": {
+    category: "Transcription",
+    icon: "mic",
+    theme: "emerald",
+  },
+};
+
+const replicateModelMetadata: Record<
+  string,
+  Partial<{
+    category: string;
+    icon: string;
+    theme: AppTheme;
+    tags: string[];
+    featured: boolean;
+  }>
+> = {
+  "replicate-bytedance-sdxl-lightning-4step": {
+    featured: true,
+    tags: ["lightning", "fast", "sdxl"],
+  },
+  "replicate-tencent-hunyuan-video": {
+    featured: true,
+    tags: ["video"],
+  },
+  "replicate-stable-audio": {
+    featured: true,
+    tags: ["audio", "composition"],
+  },
+};
+
+const DEFAULT_CATEGORY = "Creative Tools";
+const DEFAULT_ICON = "sparkles";
+const DEFAULT_THEME: AppTheme = "slate";
 
 const app = new Hono();
 
@@ -42,14 +106,42 @@ app.get(
     },
   }),
   async (context: Context) => {
-    const models = Object.entries(replicateModelConfig).map(([id, model]) => ({
-      id,
-      name: model.name,
-      description: model.description,
-      type: model.type,
-      costPerRun: model.costPerRun,
-      inputSchema: model.replicateInputSchema,
-    }));
+    const models = Object.entries(replicateModelConfig).map(([id, model]) => {
+      const metadata = replicateModelMetadata[id] || {};
+      const primaryType = model.type?.[0];
+      const typeDefaults = primaryType ? typeMetadata[primaryType] : undefined;
+
+      const category =
+        metadata.category ||
+        typeDefaults?.category ||
+        (primaryType ? primaryType.replace(/-/g, " ") : DEFAULT_CATEGORY);
+      const icon = metadata.icon || typeDefaults?.icon || DEFAULT_ICON;
+      const theme = metadata.theme || typeDefaults?.theme || DEFAULT_THEME;
+      const tags = Array.from(
+        new Set([
+          ...(model.type ?? []),
+          ...(model.strengths ?? []),
+          ...(metadata.tags ?? []),
+        ]),
+      );
+
+      return {
+        id,
+        name: model.name,
+        description: model.description,
+        type: model.type,
+        costPerRun: model.costPerRun,
+        inputSchema: model.replicateInputSchema,
+        reference: model.replicateInputSchema?.reference,
+        category,
+        icon,
+        theme,
+        tags,
+        featured: metadata.featured ?? false,
+        href: `/apps/replicate/${id}`,
+        kind: "frontend" as const,
+      };
+    });
 
     return context.json({ models });
   },

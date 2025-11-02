@@ -7,6 +7,8 @@ export interface ReplicateInputField {
   enum?: any[];
 }
 
+import type { AppKind, AppTheme } from "./apps";
+
 export interface ReplicateModel {
   id: string;
   name: string;
@@ -17,6 +19,13 @@ export interface ReplicateModel {
     fields: ReplicateInputField[];
   };
   reference?: string;
+  category?: string;
+  icon?: string;
+  theme?: AppTheme;
+  tags?: string[];
+  featured?: boolean;
+  href?: string;
+  kind?: AppKind;
 }
 
 export interface ReplicatePrediction {

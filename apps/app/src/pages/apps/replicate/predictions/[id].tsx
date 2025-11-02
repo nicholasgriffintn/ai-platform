@@ -20,7 +20,7 @@ const ReplicatePredictionDetailRoute: FC = () => {
   return (
     <PageShell
       sidebarContent={<AppsSidebarContent />}
-      className="max-w-4xl mx-auto"
+      className="max-w-6xl mx-auto"
       headerContent={
         <PageHeader>
           <BackLink

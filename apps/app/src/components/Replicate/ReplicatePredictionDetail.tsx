@@ -207,7 +207,7 @@ function OutputItem({ item }: OutputItemProps) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 inline-block text-blue-600 dark:text-blue-400 hover:underline text-sm"
+          className="mt-2 inline-block text-blue-600 dark:text-blue-400 no-underline hover:underline text-sm"
         >
           Open in new tab →
         </a>
@@ -226,7 +226,7 @@ function OutputItem({ item }: OutputItemProps) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 inline-block text-blue-600 dark:text-blue-400 hover:underline text-sm"
+          className="mt-2 inline-block text-blue-600 dark:text-blue-400 no-underline hover:underline text-sm"
         >
           Open in new tab →
         </a>
@@ -245,7 +245,7 @@ function OutputItem({ item }: OutputItemProps) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 inline-block text-blue-600 dark:text-blue-400 hover:underline text-sm"
+          className="mt-2 inline-block text-blue-600 dark:text-blue-400 no-underline hover:underline text-sm"
         >
           Open in new tab →
         </a>
