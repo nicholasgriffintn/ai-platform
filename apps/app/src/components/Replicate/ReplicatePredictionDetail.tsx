@@ -258,7 +258,7 @@ function OutputItem({ item }: OutputItemProps) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-blue-600 dark:text-blue-400 hover:underline break-all"
+      className="text-blue-600 dark:text-blue-400 no-underline hover:underline break-all"
     >
       {url}
     </a>

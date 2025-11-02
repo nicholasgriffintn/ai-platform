@@ -406,7 +406,7 @@ export function NoteMetadata({
                     href={metadata.tabSource.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 dark:text-blue-400 hover:underline ml-1"
+                    className="text-blue-600 dark:text-blue-400 no-underline hover:underline ml-1"
                   >
                     {metadata.tabSource.url}
                   </a>

@@ -79,7 +79,7 @@ export function ReplicateModelDetail({ modelId }: ReplicateModelDetailProps) {
                 href={model.reference}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-blue-600 dark:text-blue-400 no-underline hover:underline"
               >
                 View documentation
               </a>

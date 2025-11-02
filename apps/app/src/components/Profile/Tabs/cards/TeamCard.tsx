@@ -80,7 +80,7 @@ export function TeamCard({
           <button
             type="button"
             onClick={() => toggleDescription(agent.id)}
-            className="ml-2 text-blue-600 dark:text-blue-400 hover:underline text-xs"
+            className="ml-2 text-blue-600 dark:text-blue-400 no-underline hover:underline text-xs"
           >
             {isExpanded ? "Show less" : "Show more"}
           </button>
