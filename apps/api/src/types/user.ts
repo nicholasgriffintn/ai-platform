@@ -49,6 +49,7 @@ export interface IUserSettings {
   memories_chat_history_enabled: boolean;
   transcription_provider: string;
   transcription_model: string;
+  search_provider: string | null;
 }
 
 export interface UserSettings {

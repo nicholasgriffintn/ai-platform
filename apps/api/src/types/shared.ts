@@ -50,6 +50,7 @@ export type IEnv = {
   POLLY_SECRET_ACCESS_KEY?: string;
   DEEPSEEK_API_KEY?: string;
   TAVILY_API_KEY?: string;
+  PERPLEXITY_API_KEY?: string;
   BROWSER_RENDERING_API_KEY?: string;
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;

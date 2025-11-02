@@ -529,7 +529,23 @@ export const getAuxiliarySearchProvider = async (
     return "duckduckgo";
   }
 
-  const providerToUse = requestedProvider ?? "tavily";
+  // Get user's preferred search provider from settings if available
+  let userPreferredProvider: SearchProviderName | undefined;
+  if (user?.id) {
+    const database = Database.getInstance(env);
+    const userSettings = await withCache(
+      env,
+      "user-settings",
+      [user.id.toString()],
+      () => database.getUserSettings(user.id),
+    );
+    userPreferredProvider = userSettings?.search_provider as
+      | SearchProviderName
+      | undefined;
+  }
+
+  const providerToUse =
+    requestedProvider ?? userPreferredProvider ?? "tavily";
 
   const shouldCheckParallel =
     providerToUse === "parallel" || providerToUse === "tavily";

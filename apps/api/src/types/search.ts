@@ -2,7 +2,8 @@ export type SearchProviderName =
   | "serper"
   | "tavily"
   | "parallel"
-  | "duckduckgo";
+  | "duckduckgo"
+  | "perplexity";
 
 export interface SerperSearchResult {
   provider: "serper";
@@ -77,6 +78,18 @@ export interface DuckDuckGoSearchResult {
   raw?: Record<string, unknown>;
 }
 
+export interface PerplexitySearchResult {
+  provider: "perplexity";
+  results: Array<{
+    title: string;
+    url: string;
+    snippet: string;
+    date?: string;
+    last_updated?: string;
+  }>;
+  id?: string;
+}
+
 export interface SearchResultError {
   status: "error";
   error: string;
@@ -87,6 +100,7 @@ export type SearchResult =
   | TavilySearchResult
   | ParallelSearchResult
   | DuckDuckGoSearchResult
+  | PerplexitySearchResult
   | SearchResultError;
 
 export interface SearchProvider {
