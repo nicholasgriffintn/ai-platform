@@ -1,25 +1,34 @@
 import {
+  AppWindow,
   Binary,
   BookOpen,
   BrainCircuit,
   Braces,
   Camera,
   Clapperboard,
+  Cloud,
   CloudSun,
   Code2,
+  File,
   FileSearch,
+  FileText,
+  FolderOpen,
   GraduationCap,
   Image as ImageIcon,
+  Mail,
+  MessageSquare,
   Mic,
   Music,
   NotebookPen,
   Pencil,
+  PlusCircle,
   Search,
   Settings,
   Sparkles,
   UserCog,
   Users,
   UsersRound,
+  Video,
   Wand2,
   Newspaper,
 } from "lucide-react";
@@ -117,31 +126,63 @@ const THEME_STYLES: Record<ThemeKey, ThemeStyle> = {
   },
 };
 
-const DEFAULT_THEME: ThemeKey = "slate";
+const DEFAULT_THEME: ThemeKey = "default";
 
 const ICON_MAP: Record<string, LucideIcon> = {
+  app: AppWindow,
+  "apply-edit-completion": Wand2,
+  "add-reasoning-step": BrainCircuit,
+  binary: Binary,
+  "book-open": BookOpen,
   "brain-circuit": BrainCircuit,
+  braces: Braces,
+  camera: Camera,
+  capture: Camera,
+  "capture-screenshot": Camera,
+  "chat-bubble": MessageSquare,
+  clapperboard: Clapperboard,
+  cloud: Cloud,
+  "cloud-sun": CloudSun,
+  "code-2": Code2,
+  "delegate-to-team-member": Users,
+  "delegate-to-team-member-by-role": UserCog,
+  document: FileText,
+  file: File,
+  "file-search": FileSearch,
+  "file-text": FileText,
+  "folder-open": FolderOpen,
+  "graduation-cap": GraduationCap,
+  image: ImageIcon,
+  mail: Mail,
+  mic: Mic,
+  music: Music,
+  newspaper: Newspaper,
+  note: NotebookPen,
+  "notebook-pen": NotebookPen,
+  "next-edit-completion": Code2,
+  pencil: Pencil,
+  "plus-circle": PlusCircle,
+  "prompt-coach": Sparkles,
+  research: BookOpen,
+  search: Search,
+  sparkles: Sparkles,
+  speech: Mic,
+  tutor: GraduationCap,
   users: Users,
   "user-cog": UserCog,
   "users-round": UsersRound,
-  "file-search": FileSearch,
-  newspaper: Newspaper,
-  search: Search,
-  "book-open": BookOpen,
-  "cloud-sun": CloudSun,
-  camera: Camera,
-  image: ImageIcon,
-  clapperboard: Clapperboard,
-  music: Music,
-  mic: Mic,
-  braces: Braces,
-  "code-2": Code2,
+  video: Video,
   "wand-2": Wand2,
-  binary: Binary,
-  sparkles: Sparkles,
-  "graduation-cap": GraduationCap,
-  pencil: Pencil,
-  "notebook-pen": NotebookPen,
+  "web-search": Search,
+  "fill-in-middle-completion": Braces,
+  "create-image": ImageIcon,
+  "create-video": Video,
+  "create-music": Music,
+  "create-speech": Mic,
+  create: Sparkles,
+  "extract-content": FileSearch,
+  "get-team-members": UsersRound,
+  "get-weather": Cloud,
 };
 
 const normaliseIconName = (value?: string): string | undefined => {
@@ -189,11 +230,15 @@ export const sortAppsByName = (apps: AppListItem[]): AppListItem[] => {
 export const groupAppsByCategory = (
   apps: AppListItem[],
 ): [string, AppListItem[]][] => {
-  const sorted = sortAppsByName(apps);
+  const featuredApps = sortAppsByName(apps.filter((app) => app.featured));
+  const nonFeaturedApps = apps.filter((app) => !app.featured);
+
+  const featuredGroup: [string, AppListItem[]][] =
+    featuredApps.length > 0 ? [["Featured", featuredApps]] : [];
 
   const grouped: Record<string, AppListItem[]> = {};
 
-  for (const app of sorted) {
+  for (const app of nonFeaturedApps) {
     const category = app.category || "Other";
     if (!grouped[category]) {
       grouped[category] = [];
@@ -211,14 +256,21 @@ export const groupAppsByCategory = (
     Other: 999,
   };
 
-  return Object.entries(grouped).sort((a, b) => {
-    const priorityA = categoryPriority[a[0]] || 500;
-    const priorityB = categoryPriority[b[0]] || 500;
+  const sortedCategoryEntries = Object.entries(grouped)
+    .map<[string, AppListItem[]]>(([category, categoryApps]) => [
+      category,
+      sortAppsByName(categoryApps),
+    ])
+    .sort((a, b) => {
+      const priorityA = categoryPriority[a[0]] || 500;
+      const priorityB = categoryPriority[b[0]] || 500;
 
-    if (priorityA !== priorityB) {
-      return priorityA - priorityB;
-    }
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
 
-    return a[0].localeCompare(b[0]);
-  });
+      return a[0].localeCompare(b[0]);
+    });
+
+  return [...featuredGroup, ...sortedCategoryEntries];
 };

@@ -78,5 +78,4 @@ export interface AppListItem {
 
 export interface DynamicAppsResponse {
   apps: AppListItem[];
-  featuredApps: AppListItem[];
 }

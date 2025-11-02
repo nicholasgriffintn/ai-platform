@@ -305,7 +305,6 @@ export const appInfoArraySchema = z.array(appInfoSchema);
 
 export const dynamicAppsResponseSchema = z.object({
   apps: appInfoArraySchema,
-  featuredApps: appInfoArraySchema,
 });
 
 export const dynamicAppIdParamSchema = z.object({ id: z.string() });

@@ -18,9 +18,9 @@ import { BackLink } from "../Core/BackLink";
 import { PageHeader } from "../Core/PageHeader";
 import { AppCard } from "./AppCard";
 import { DynamicForm } from "./DynamicForm";
-import { FeaturedApps } from "./FeaturedApps";
 import { ResponseRenderer } from "./ResponseRenderer";
 import { groupAppsByCategory } from "./utils";
+import type { AppListItem } from "~/types/apps";
 
 export const DynamicApps = () => {
   const { isAuthenticationLoading, isPro } = useChatStore();
@@ -38,7 +38,6 @@ export const DynamicApps = () => {
   } = useDynamicApps();
 
   const apps = appsData?.apps ?? [];
-  const featuredApps = appsData?.featuredApps ?? [];
 
   const {
     data: selectedApp,
@@ -53,12 +52,17 @@ export const DynamicApps = () => {
     if (!searchQuery.trim()) return apps;
 
     const query = searchQuery.toLowerCase();
-    return apps.filter(
-      (app) =>
-        app.name.toLowerCase().includes(query) ||
-        app.description?.toLowerCase().includes(query) ||
-        app.category?.toLowerCase().includes(query),
-    );
+    return apps.filter((app) => {
+      const matchesName = app.name.toLowerCase().includes(query);
+      const matchesDescription = app.description?.toLowerCase().includes(query);
+      const matchesCategory = app.category?.toLowerCase().includes(query);
+      const matchesTags = app.tags?.some((tag) =>
+        tag.toLowerCase().includes(query),
+      );
+      return (
+        matchesName || matchesDescription || matchesCategory || matchesTags
+      );
+    });
   }, [apps, searchQuery]);
 
   const groupedApps = useMemo(() => {
@@ -66,24 +70,41 @@ export const DynamicApps = () => {
   }, [filteredApps]);
 
   const handleAppSelect = useCallback(
-    (appId: string) => {
-      const app = apps.find((a) => a.id === appId);
-
-      if (app && app.type === "premium" && !isPro) {
+    (app: AppListItem) => {
+      if (app.type === "premium" && !isPro) {
         return;
       }
-
-      setSelectedAppId(appId);
-      setResult(null);
 
       trackEvent({
         name: "app_select",
         category: "apps",
         label: "app_select",
-        value: appId,
+        value: app.id,
       });
+
+      if (app.kind === "frontend") {
+        setSelectedAppId(null);
+        setResult(null);
+        if (app.href) {
+          navigate(app.href);
+        }
+        return;
+      }
+
+      setSelectedAppId(app.id);
+      setResult(null);
     },
-    [trackEvent, apps, isPro],
+    [trackEvent, isPro, navigate],
+  );
+
+  const handleAppSelectById = useCallback(
+    (appId: string) => {
+      const app = apps.find((item) => item.id === appId);
+      if (app) {
+        handleAppSelect(app);
+      }
+    },
+    [apps, handleAppSelect],
   );
 
   const handleFormSubmit = useCallback(
@@ -135,7 +156,7 @@ export const DynamicApps = () => {
   }, [trackEvent]);
 
   const renderCategoryApps = useCallback(
-    (category: string, categoryApps: any[]) => (
+    (category: string, categoryApps: AppListItem[]) => (
       <div key={category} className="space-y-6 mb-6">
         <h2
           data-category={category}
@@ -151,11 +172,7 @@ export const DynamicApps = () => {
               key={app.id}
               className="transform transition-transform hover:scale-[1.02] h-[200px]"
             >
-              <AppCard
-                displayCategory={false}
-                app={app}
-                onSelect={() => handleAppSelect(app.id)}
-              />
+              <AppCard app={app} onSelect={() => handleAppSelect(app)} />
             </div>
           ))}
         </div>
@@ -264,49 +281,35 @@ export const DynamicApps = () => {
           suggestions={[
             {
               label: "Article Research",
-              onClick: () => handleAppSelect("articles"),
+              onClick: () => handleAppSelectById("articles"),
             },
             {
               label: "Podcast Generation",
-              onClick: () => handleAppSelect("podcasts"),
+              onClick: () => handleAppSelectById("podcasts"),
             },
             {
               label: "Image Creation",
-              onClick: () => handleAppSelect("replicate"),
+              onClick: () => handleAppSelectById("replicate"),
             },
           ]}
         />
+      ) : filteredApps.length === 0 &&
+        searchQuery &&
+        groupedApps.length === 0 ? (
+        <EmptyState
+          icon={<Sparkles className="h-8 w-8 text-zinc-400" />}
+          title="No apps found"
+          message={`No apps matching "${searchQuery}"`}
+          action={
+            <Button onClick={() => setSearchQuery("")} variant="secondary">
+              Clear Search
+            </Button>
+          }
+        />
       ) : (
-        <>
-          <FeaturedApps
-            searchQuery={searchQuery}
-            apps={featuredApps}
-            onSelect={(app) => {
-              if (app.kind === "dynamic") {
-                handleAppSelect(app.id);
-              }
-            }}
-          />
-
-          {filteredApps.length === 0 &&
-          searchQuery &&
-          groupedApps.length === 0 ? (
-            <EmptyState
-              icon={<Sparkles className="h-8 w-8 text-zinc-400" />}
-              title="No apps found"
-              message={`No apps matching "${searchQuery}"`}
-              action={
-                <Button onClick={() => setSearchQuery("")} variant="secondary">
-                  Clear Search
-                </Button>
-              }
-            />
-          ) : (
-            groupedApps.map(([category, categoryApps]) =>
-              renderCategoryApps(category, categoryApps),
-            )
-          )}
-        </>
+        groupedApps.map(([category, categoryApps]) =>
+          renderCategoryApps(category, categoryApps),
+        )
       )}
     </div>
   );

@@ -19,11 +19,8 @@ export function AppsSidebarContent({ isHome = false }) {
 
   const categories = useMemo(() => {
     const grouped = groupAppsByCategory(apps);
-    const apiCategories = grouped.map(([category]) => category);
-    const featuredCategory =
-      (appsData?.featuredApps?.length ?? 0) > 0 ? ["Featured"] : [];
-    return [...featuredCategory, ...apiCategories];
-  }, [apps, appsData?.featuredApps?.length]);
+    return grouped.map(([category]) => category);
+  }, [apps]);
 
   const handleCategoryClick = useCallback(
     (category: string) => {

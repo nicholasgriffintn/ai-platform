@@ -108,6 +108,8 @@ function ModelCard({ model }: ModelCardProps) {
       model.type[0]
         ?.replace(/-/g, " ")
         .replace(/\b\w/g, (l) => l.toUpperCase()) || "AI",
+    kind: "frontend",
+    href: `/apps/replicate/${model.id}`,
   };
 
   return (

@@ -14,14 +14,12 @@ interface AppCardProps {
   app: AppListItem;
   onSelect: () => void;
   isWrappedInGroup?: boolean;
-  displayCategory?: boolean;
 }
 
 export const AppCard = ({
   app,
   onSelect,
   isWrappedInGroup = false,
-  displayCategory = true,
 }: AppCardProps) => {
   const { isPro } = useChatStore();
   const isPremium = app.type === "premium";
@@ -32,7 +30,7 @@ export const AppCard = ({
       tabIndex={isDisabled ? -1 : 0}
       onClick={isDisabled ? undefined : onSelect}
       onKeyDown={(e) => !isDisabled && e.key === "Enter" && onSelect()}
-      aria-label={`Select ${app.name} app${isPremium ? " (Premium)" : ""}`}
+      aria-label={`Open ${app.name}${isPremium ? " (Premium)" : ""}`}
       aria-disabled={isDisabled}
       className={cn(
         "p-5 shadow-none relative",
@@ -80,11 +78,10 @@ export const AppCard = ({
             <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100 group-hover:underline">
               {app.name}
             </h3>
-
-            {displayCategory && app.category && (
+            {app.category && (
               <span
                 className={cn(
-                  "inline-block px-3 py-1 text-xs rounded-full mt-1 no-underline",
+                  "inline-flex items-center px-3 py-1 text-xs rounded-full mt-1 no-underline",
                   getBadgeClass(app.theme),
                 )}
               >

@@ -67,9 +67,32 @@ dynamicApps.get(
   async (c) => {
     const apps = await getDynamicApps();
     const featuredApps = getFeaturedApps();
+
+    const mergedApps = new Map<string, any>();
+
+    for (const app of apps) {
+      mergedApps.set(app.id, {
+        ...app,
+        featured: app.featured ?? false,
+        kind: app.kind ?? "dynamic",
+      });
+    }
+
+    for (const featuredApp of featuredApps) {
+      const existing = mergedApps.get(featuredApp.id);
+      mergedApps.set(featuredApp.id, {
+        ...existing,
+        ...featuredApp,
+        featured: true,
+        kind:
+          featuredApp.kind ??
+          existing?.kind ??
+          (featuredApp.href ? "frontend" : "dynamic"),
+      });
+    }
+
     return c.json({
-      apps,
-      featuredApps,
+      apps: Array.from(mergedApps.values()),
     });
   },
 );
