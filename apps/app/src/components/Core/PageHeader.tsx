@@ -21,7 +21,6 @@ export function PageHeader({
         <div className="flex items-center gap-2">
           {actions.map((action, index) => (
             <Button
-              // biome-ignore lint/suspicious/noArrayIndexKey: CBA
               key={index}
               onClick={action.onClick}
               variant={action.variant || "primary"}

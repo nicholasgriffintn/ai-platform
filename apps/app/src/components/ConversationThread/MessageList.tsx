@@ -151,7 +151,6 @@ export const MessageList = ({
         {!isSharedView && isLoadingConversation ? (
           <div className="py-4 space-y-4">
             {[...Array(3)].map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: It's a key for the skeleton
               <MessageSkeleton key={`skeleton-item-${i}`} />
             ))}
           </div>

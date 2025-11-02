@@ -58,7 +58,6 @@ export function PodcastView({ podcast }: { podcast: Podcast }) {
             <h3 className="text-lg font-semibold mb-3 text-zinc-800 dark:text-zinc-200">
               Listen
             </h3>
-            {/* biome-ignore lint/a11y/useMediaCaption: This is uploaded by the user */}
             <audio controls className="w-full" src={podcast.audioUrl}>
               Your browser does not support the audio element.
             </audio>

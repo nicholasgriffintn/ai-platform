@@ -15,7 +15,6 @@ interface MessageFormatOptions {
  * @param options - The options for formatting
  * @returns The formatted messages
  */
-// biome-ignore lint/complexity/noStaticOnlyClass: Static utility class
 export class MessageFormatter {
   static ensureAssistantAfterTool(messages: Message[]): Message[] {
     if (

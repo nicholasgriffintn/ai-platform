@@ -25,7 +25,6 @@ interface ModelScore {
   normalizedScore: number;
 }
 
-// biome-ignore lint/complexity/noStaticOnlyClass: i want to use this class as a static class
 export class ModelRouter {
   private static readonly WEIGHTS = {
     COMPLEXITY_MATCH: 2,

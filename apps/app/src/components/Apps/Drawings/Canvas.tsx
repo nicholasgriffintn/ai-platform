@@ -25,7 +25,6 @@ export function Canvas({
   const lastX = useRef(0);
   const lastY = useRef(0);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     console.log("drawingData", drawingData);
     if (!drawingData || !canvasRef?.current) return;
@@ -124,7 +123,6 @@ export function Canvas({
     }
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const canvas = canvasRef?.current;
     if (!canvas) return;

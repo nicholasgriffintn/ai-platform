@@ -45,7 +45,6 @@ export function Logo({ variant = "logo_control", className = "" }: LogoProps) {
   return (
     <div
       className={className}
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: it's hard coded
       dangerouslySetInnerHTML={{ __html: logoSvg }}
       role="img"
       aria-label="Polychat Logo"

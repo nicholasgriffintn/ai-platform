@@ -12,7 +12,6 @@ interface ResponseFormatOptions {
   is_streaming?: boolean;
 }
 
-// biome-ignore lint/complexity/noStaticOnlyClass: CBA
 export class ResponseFormatter {
   /**
    * Formats responses from any provider

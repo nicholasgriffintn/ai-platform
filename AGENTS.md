@@ -13,7 +13,7 @@ Polychat is a Cloudflare-first AI platform monorepo that unifies a multi-provide
 - `playwright-report/`, `test-results/`, `coverage/` – Generated test artifacts.
 - `README.md`, `LICENSE` – Root documentation and licensing.
 - `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `vitest.workspace.ts` – Workspace configuration.
-- `playwright.config.ts`, `vitest.config.ts`, `biome.json` – Global tooling configs.
+- `playwright.config.ts`, `vitest.config.ts` – Global tooling configs.
 
 ## Build & Development Commands
 - **Initial setup (once per clone)**
@@ -64,7 +64,7 @@ Polychat is a Cloudflare-first AI platform monorepo that unifies a multi-provide
 
 ## Code Style & Conventions
 - TypeScript everywhere (`"type": "module"`) with shared configs in the workspace root; per-app `tsconfig*.json` extend these defaults.
-- Biome (`biome.json`) enforces double quotes and space indentation. `pnpm run lint`/`pnpm run check` delegate to Biome; formatters should never touch generated artifacts.
+- Prettier and OxLint  enforces standards, delegate to these for formatting and linting (`pnpm run format`, `pnpm run lint`).
 - Testing is wired via `vitest.workspace.ts` and per-app `vitest.config.ts`; update app configs when changing environments.
 - Playwright lives at `playwright.config.ts` (root) with global setup/teardown scripts for API bootstrapping.
 - Frontend-specific runtime config (CSP, analytics, API endpoints) resides in `apps/app/src/constants.ts`.

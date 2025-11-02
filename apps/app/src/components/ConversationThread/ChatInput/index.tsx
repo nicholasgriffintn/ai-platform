@@ -82,7 +82,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       },
     }));
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: This is a side effect that should only run when the input changes
     useEffect(() => {
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
@@ -551,7 +550,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                           <div
                             className="p-2 text-zinc-600 dark:text-zinc-400"
                             aria-live="polite"
-                            // biome-ignore lint/a11y/useSemanticElements: I don't want to use output
                             role="status"
                           >
                             <div

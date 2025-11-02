@@ -8,7 +8,6 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/modelRouter/promptAnalyser" });
 
-// biome-ignore lint/complexity/noStaticOnlyClass: I don't care
 export class PromptAnalyzer {
   private static readonly FILTERS = {
     coding: new KeywordFilter(KeywordFilter.getAllCodingKeywords()),

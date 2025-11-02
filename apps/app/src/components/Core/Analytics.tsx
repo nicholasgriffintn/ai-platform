@@ -87,7 +87,6 @@ export function Analytics({
   batchSize?: number;
   batchTimeout?: number;
 }) {
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
   useEffect(() => {
     if (!isEnabled) {
       return;
@@ -128,7 +127,6 @@ export function Analytics({
     return () => {};
   }, [isEnabled]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
   useEffect(() => {
     if (!isEnabled) {
       return;

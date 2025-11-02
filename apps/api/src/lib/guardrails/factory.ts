@@ -7,7 +7,6 @@ import {
 import { type LlamaGuardConfig, LlamaGuardProvider } from "./llamaguard";
 import { type MistralGuardConfig, MistralGuardProvider } from "./mistral";
 
-// biome-ignore lint/complexity/noStaticOnlyClass: I prefer this pattern
 export class GuardrailsProviderFactory {
   static getProvider(
     type: string,

@@ -123,7 +123,6 @@ export default function SharedConversationPage() {
     }, 300);
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: prevent memory leak
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isPanelVisible) {

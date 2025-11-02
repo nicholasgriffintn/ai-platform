@@ -512,7 +512,6 @@ export function useTranscription({
     }
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     return () => {
       stopTranscription(false);

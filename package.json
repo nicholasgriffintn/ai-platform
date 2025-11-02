@@ -24,7 +24,6 @@
     "test:mobile": "cd apps/mobile/ios && xcodebuild test -scheme Polychat -destination 'platform=iOS Simulator,name=iPhone 15'"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.7",
     "@playwright/test": "^1.52.0",
     "@types/node": "24.9.2",
     "@vitest/coverage-v8": "^3.2.4",

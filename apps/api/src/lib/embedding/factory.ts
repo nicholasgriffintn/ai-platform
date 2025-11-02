@@ -21,7 +21,6 @@ import {
   type VectorizeEmbeddingProviderConfig,
 } from "./vectorize";
 
-// biome-ignore lint/complexity/noStaticOnlyClass: I prefer this pattern
 export class EmbeddingProviderFactory {
   static getProvider(
     type: string,

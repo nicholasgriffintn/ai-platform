@@ -64,7 +64,6 @@ export const MessageInfo = ({ message, buttonClassName }: MessageInfoProps) => {
                   Prompt Details: {(() => {
                     const details = message.usage.promptTokensDetails;
                     return details.map((detail, i) => (
-                      // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                       <span key={i}>
                         {detail.modality}: {detail.tokenCount}
                         {i < details.length - 1 ? ", " : ""}
@@ -78,7 +77,6 @@ export const MessageInfo = ({ message, buttonClassName }: MessageInfoProps) => {
                   Completion Details: {(() => {
                     const details = message.usage.candidatesTokensDetails;
                     return details.map((detail, i) => (
-                      // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                       <span key={i}>
                         {detail.modality}: {detail.tokenCount}
                         {i < details.length - 1 ? ", " : ""}

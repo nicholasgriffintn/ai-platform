@@ -56,7 +56,6 @@ export const SearchGroundingSection = ({
               </span>
               {searchGrounding.webSearchQueries?.map((query, index) => (
                 <div
-                  // biome-ignore lint/suspicious/noArrayIndexKey: There's no ID provided
                   key={`query-${index}`}
                   className="text-xs bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-full text-zinc-700 dark:text-zinc-300"
                 >

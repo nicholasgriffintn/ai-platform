@@ -21,16 +21,19 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "format": "pnpm biome format --write ./src",
-    "lint": "pnpm biome lint ./src",
-    "check": "pnpm biome check ./src"
+    "format": "pnpm prettier --write .",
+    "format:check": "pnpm prettier --check .",
+    "lint": "pnpm oxlint",
+    "check": "pnpm lint && pnpm format:check"
   },
   "dependencies": {
     "zod": "4.1.12"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.7",
+    "@prettier/plugin-oxc": "^0.0.4",
     "@types/node": "24.9.2",
+    "oxlint": "^1.25.0",
+    "prettier": "^3.6.2",
     "tsup": "^8.5.0",
     "typescript": "5.9.3"
   },

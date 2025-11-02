@@ -43,7 +43,6 @@ const VerifyMagicLink = () => {
     },
   });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Only run on load
   useEffect(() => {
     if (token && nonce) {
       verify({ token, nonce });

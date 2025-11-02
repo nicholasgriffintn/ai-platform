@@ -39,7 +39,6 @@ export interface ProviderConfig {
   aliases?: string[];
 }
 
-// biome-ignore lint/complexity/noStaticOnlyClass: CBA
 export class AIProviderFactory {
   private static providerConfigs: ProviderConfig[] = [
     { key: "anthropic", provider: new AnthropicProvider() },

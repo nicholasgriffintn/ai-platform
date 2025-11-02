@@ -68,7 +68,6 @@ export default function NewDrawingPage() {
     saveToHistory();
   }, [saveToHistory]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Only need to run once
   useCallback(() => {
     initializeCanvas();
   }, []);

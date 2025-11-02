@@ -143,7 +143,6 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
     [trackEvent, showChallenging],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
   useEffect(() => {
     refreshQuestions(false);
   }, [showChallenging]);

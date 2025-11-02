@@ -75,7 +75,6 @@ export const JsonView = ({
           {isExpanded && (
             <div className="pl-4 border-l border-gray-300 dark:border-zinc-600 ml-2">
               {value.map((item, index) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: It works.
                 <div key={`${path}-${index}`} className="my-1">
                   <span className="text-gray-500 dark:text-zinc-400">
                     {index}:{" "}

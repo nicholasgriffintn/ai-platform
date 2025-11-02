@@ -76,7 +76,6 @@ export function TranscriptViewer({
       <div className="space-y-3">
         {transcript.segments.map((segment, index) => (
           <div
-            // biome-ignore lint/suspicious/noArrayIndexKey: There's no better key for this
             key={index}
             className={`p-3 rounded-lg border ${speakerColors[segment.speaker] || "bg-gray-100 dark:bg-gray-900 border-gray-300 dark:border-gray-700"}`}
           >

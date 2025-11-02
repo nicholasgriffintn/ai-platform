@@ -51,7 +51,6 @@ export const ModelOption = ({
     <div
       onClick={disabled ? undefined : onClick}
       onKeyDown={handleKeyDown}
-      // biome-ignore lint/a11y/useSemanticElements: This is a fancy UI
       role="option"
       aria-selected={isSelected}
       id={`model-${model.matchingModel}`}

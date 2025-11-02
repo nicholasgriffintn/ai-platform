@@ -14,7 +14,6 @@ export const LoadingSpinner = ({
   return (
     <div
       className={`flex flex-col items-center justify-center gap-2 ${className}`}
-      // biome-ignore lint/a11y/useSemanticElements: <I don't want to use output>
       role="status"
       aria-live="polite"
     >

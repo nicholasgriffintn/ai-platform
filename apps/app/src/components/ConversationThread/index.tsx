@@ -99,7 +99,6 @@ export const ConversationThread = () => {
     }, 300);
   }, [currentArtifact, currentConversationId, trackFeatureUsage]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: This is intentional
   useEffect(() => {
     if (isPanelVisible) {
       handlePanelClose();

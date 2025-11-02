@@ -20,7 +20,6 @@ export const TextView = ({ data }: TextViewProps) => {
   return (
     <div className="prose dark:prose-invert max-w-none">
       {lines.map((line, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: It works.
         <p key={index} className={line.trim() === "" ? "h-4" : ""}>
           {line}
         </p>

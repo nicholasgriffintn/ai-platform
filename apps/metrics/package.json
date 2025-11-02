@@ -8,9 +8,10 @@
     "build": "pnpm --filter @assistant/schemas build && tsc -b && vite build",
     "preview": "vite preview",
     "watch": "vite build --watch",
-    "format": "pnpm biome format --write ./src",
-    "lint": "pnpm biome lint ./src",
-    "check": "pnpm biome check ./src",
+    "format": "pnpm prettier --write .",
+    "format:check": "pnpm prettier --check .",
+    "lint": "pnpm oxlint",
+    "check": "pnpm lint && pnpm format:check",
     "wrangler:dev": "pnpm run build && wrangler dev --remote",
     "deploy": "pnpm run build && wrangler deploy --minify",
     "test": "vitest run"
@@ -32,8 +33,8 @@
     "tailwindcss": "4.1.16"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.7",
     "@cloudflare/workers-types": "4.20251014.0",
+    "@prettier/plugin-oxc": "^0.0.4",
     "@tailwindcss/typography": "0.5.19",
     "@tailwindcss/vite": "4.1.16",
     "@testing-library/jest-dom": "6.9.1",
@@ -43,6 +44,8 @@
     "@vitejs/plugin-react": "5.1.0",
     "globals": "16.5.0",
     "jsdom": "27.1.0",
+    "oxlint": "^1.25.0",
+    "prettier": "^3.6.2",
     "rollup-plugin-visualizer": "6.0.5",
     "terser": "5.44.0",
     "typescript": "~5.9.0",

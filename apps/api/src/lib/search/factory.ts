@@ -6,7 +6,6 @@ import { PerplexityProvider } from "./perplexity";
 import { SerperProvider } from "./serper";
 import { TavilyProvider } from "./tavily";
 
-// biome-ignore lint/complexity/noStaticOnlyClass: I prefer this pattern
 export class SearchProviderFactory {
   static getProvider(
     providerName: SearchProviderName,

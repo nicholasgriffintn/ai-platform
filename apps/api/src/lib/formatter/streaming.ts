@@ -4,7 +4,6 @@ import { generateId } from "~/utils/id";
  * Formats streaming responses
  * Handles specific streaming event types and partial content
  */
-// biome-ignore lint/complexity/noStaticOnlyClass: Utility class with static methods
 export class StreamingFormatter {
   /**
    * Extract text content from a streaming chunk of data

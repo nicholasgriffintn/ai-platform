@@ -21,7 +21,6 @@ export default function Home() {
   const { initializeStore, showSearch, setShowSearch, setChatInput } =
     useChatStore();
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: We only want to initialize the store when the component mounts
   useEffect(() => {
     const init = async () => {
       const searchParams = new URLSearchParams(window.location.search);
