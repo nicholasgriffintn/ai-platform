@@ -60,12 +60,18 @@ export function ProfileSidebar({
         />
       )}
       <div
-        className={`fixed md:relative z-50 h-full w-64 bg-off-white dark:bg-zinc-900 transition-transform duration-300 ease-in-out border-r border-zinc-200 dark:border-zinc-800 ${sidebarVisible ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-0 md:border-0"}`}
+        className={`fixed md:relative z-50 h-full w-64 bg-off-white dark:bg-zinc-900 transition-transform duration-300 ease-in-out border-r border-zinc-200 dark:border-zinc-800 ${
+          sidebarVisible
+            ? "translate-x-0"
+            : "-translate-x-full md:translate-x-0 md:w-0 md:border-0"
+        }`}
       >
         {sidebarVisible && (
-          <div className="flex flex-col h-full w-64 overflow-hidden">
-            <SidebarHeader showCloudButton={false} />
-            <nav className="flex-1 overflow-y-auto p-2 pb-[50px]">
+          <div className="flex flex-col h-full w-64">
+            <div className="sticky top-0 bg-off-white dark:bg-zinc-900 border-b border-r border-zinc-200 dark:border-zinc-700 z-10 w-full">
+              <SidebarHeader showCloudButton={false} />
+            </div>
+            <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 pb-[50px]">
               <ul className="space-y-1">
                 <li>
                   <Link
@@ -87,7 +93,7 @@ export function ProfileSidebar({
                     <button
                       type="button"
                       onClick={() => onSelectItem(item.id)}
-                      className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ease-in-out
+                      className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ease-in-out cursor-pointer
                         ${
                           activeItemId === item.id
                             ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
@@ -120,7 +126,9 @@ export function ProfileSidebar({
                 )}
               </ul>
             </nav>
-            <SidebarFooter />
+            <div className="sticky bottom-0 border-t border-r border-zinc-200 dark:border-zinc-800 bg-off-white dark:bg-zinc-900 overflow-visible">
+              <SidebarFooter />
+            </div>
           </div>
         )}
       </div>

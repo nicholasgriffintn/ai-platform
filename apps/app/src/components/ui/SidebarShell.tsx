@@ -55,22 +55,19 @@ export function SidebarShell({
         )}
       >
         {visible && (
-          <div
-            className={cn(
-              "flex flex-col h-full w-64 overflow-hidden",
-              contentClassName,
-            )}
-          >
+          <div className={cn("flex flex-col h-full w-64", contentClassName)}>
             {header && (
-              <div className="sticky top-0 bg-off-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700 z-10 w-full">
+              <div className="sticky top-0 bg-off-white dark:bg-zinc-900 border-b border-r border-zinc-200 dark:border-zinc-700 z-10 w-full">
                 {header}
               </div>
             )}
 
-            <div className="flex-1 overflow-y-auto">{children}</div>
+            <div className="flex-1 overflow-y-auto overflow-x-hidden">
+              {children}
+            </div>
 
             {footer && (
-              <div className="sticky bottom-0 border-t border-zinc-200 dark:border-zinc-800 bg-off-white dark:bg-zinc-900">
+              <div className="sticky bottom-0 border-t border-r border-zinc-200 dark:border-zinc-800 bg-off-white dark:bg-zinc-900 overflow-visible">
                 {footer}
               </div>
             )}

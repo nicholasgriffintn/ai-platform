@@ -7,8 +7,8 @@ export function SidebarFooter() {
   const { setShowKeyboardShortcuts } = useUIStore();
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 p-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
-      <div className="flex justify-between items-center">
+    <div className="bg-zinc-50 dark:bg-zinc-900">
+      <div className="m-2 flex justify-between items-center">
         <div>
           <UserMenuItem />
         </div>

@@ -26,8 +26,8 @@ export function SidebarHeader({
       };
 
   return (
-    <div className="sticky top-0 bg-off-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700 md:border-r z-10 w-full h-[44px]">
-      <div className="mx-2 my-2 flex items-center justify-between h-[37px]">
+    <div className="sticky top-0 bg-off-white dark:bg-zinc-900 z-10 w-full">
+      <div className="m-2 flex items-center justify-between">
         <Button
           type="button"
           variant="icon"
