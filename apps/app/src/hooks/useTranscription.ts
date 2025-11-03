@@ -266,6 +266,22 @@ export function useTranscription({
 				pc.addTrack(track, stream);
 			}
 
+			const transceivers = pc.getTransceivers();
+			const audioTransceiver = transceivers.find(
+				(t) => t.receiver.track.kind === "audio",
+			);
+
+			if (audioTransceiver) {
+				const codecs = RTCRtpSender.getCapabilities("audio")?.codecs || [];
+				const opusCodec = codecs.find(
+					(c) => c.mimeType === "audio/opus" && c.clockRate === 48000,
+				);
+
+				if (opusCodec) {
+					audioTransceiver.setCodecPreferences([opusCodec]);
+				}
+			}
+
 			pc.oniceconnectionstatechange = () => {
 				switch (pc.iceConnectionState) {
 					case "connected":
