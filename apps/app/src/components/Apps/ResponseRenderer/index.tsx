@@ -91,7 +91,7 @@ export const ResponseRenderer = ({
 				return (
 					<TemplateView
 						template={display?.template}
-						data={{ data: responseData }}
+						data={responseData}
 					/>
 				);
 

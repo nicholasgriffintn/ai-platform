@@ -9,10 +9,15 @@ interface TemplateViewProps {
 
 const getNestedValue = (obj: Record<string, any>, path: string): any => {
 	const keys = path.split(".");
-	return keys.reduce(
-		(o, key) => (o && o[key] !== undefined ? o[key] : undefined),
-		obj,
-	);
+	let startIndex = 0;
+	const base = obj;
+	if (keys[0] === "data" && (obj.data === undefined || obj.data === obj)) {
+		startIndex = 1;
+	}
+
+	return keys
+		.slice(startIndex)
+		.reduce((o, key) => (o && o[key] !== undefined ? o[key] : undefined), base);
 };
 
 const variableRegex = /\{\{([^}]+)\}\}/g;
