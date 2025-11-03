@@ -2,7 +2,7 @@ import {
 	type SpeechGenerationParams,
 	type SpeechResponse,
 	generateSpeech,
-} from "~/services/apps/generate/speech";
+} from "~/services/generate/speech";
 import type { IFunction, IRequest } from "~/types";
 
 export const create_speech: IFunction = {

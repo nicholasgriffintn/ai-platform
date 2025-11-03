@@ -2,7 +2,7 @@ import {
 	type MusicGenerationParams,
 	type MusicResponse,
 	generateMusic,
-} from "~/services/apps/generate/music";
+} from "~/services/generate/music";
 import type { IFunction, IRequest } from "~/types";
 
 const DEFAULT_DURATION = 8;

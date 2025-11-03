@@ -3,7 +3,7 @@ import {
 	type ImageGenerationParams,
 	type ImageResponse,
 	generateImage,
-} from "~/services/apps/generate/image";
+} from "~/services/generate/image";
 import type { IFunction, IRequest } from "~/types";
 
 export const create_image: IFunction = {

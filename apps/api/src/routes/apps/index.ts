@@ -14,7 +14,6 @@ import type { IEnv, IUser } from "~/types";
 import articles from "./articles";
 import drawing from "./drawing";
 import embeddings from "./embeddings";
-import generate from "./generate";
 import notes from "./notes";
 import podcasts from "./podcasts";
 import retrieval from "./retrieval";
@@ -33,8 +32,6 @@ app.use("/*", (c, next) => {
 app.use("/*", requireAuth);
 
 app.route("/embeddings", embeddings);
-
-app.route("/generate", generate);
 
 app.route("/drawing", drawing);
 
