@@ -71,7 +71,7 @@ export function ReplicateModelDetail({ modelId }: ReplicateModelDetailProps) {
 				</div>
 
 				<div className="text-sm text-zinc-600 dark:text-zinc-400">
-					Cost: ${model.costPerRun.toFixed(4)} per run
+					Cost: ${model.costPerRun} per run
 					{model.reference && (
 						<>
 							{" • "}

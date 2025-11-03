@@ -14,7 +14,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["creative", "image_generation"],
 		supportsStreaming: false,
 		supportsAttachments: false,
-		costPerRun: 0.003,
+		costPerRun: 0.0016,
 		replicateInputSchema: {
 			reference: "https://replicate.com/bytedance/sdxl-lightning-4step",
 			fields: [
@@ -70,7 +70,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["creative", "video_generation"],
 		supportsStreaming: false,
 		supportsAttachments: false,
-		costPerRun: 0.06,
+		costPerRun: 1.25,
 		replicateInputSchema: {
 			reference: "https://replicate.com/tencent/hunyuan-video",
 			fields: [
@@ -130,7 +130,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["creative", "audio", "text-to-audio"],
 		supportsStreaming: false,
 		supportsAttachments: true,
-		costPerRun: 0.1,
+		costPerRun: 0.080,
 		replicateInputSchema: {
 			reference: "https://replicate.com/meta/musicgen",
 			fields: [
@@ -240,7 +240,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["ocr", "audio", "analysis"],
 		supportsStreaming: false,
 		supportsAttachments: true,
-		costPerRun: 0.18,
+		costPerRun: 0.0058,
 		replicateInputSchema: {
 			reference: "https://replicate.com/thomasmol/whisper-diarization",
 			fields: [
@@ -380,7 +380,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["creative", "image_generation"],
 		supportsStreaming: false,
 		supportsAttachments: true,
-		costPerRun: 0.0049,
+		costPerRun: 0.0055,
 		modalities: {
 			input: ["text", "image"],
 			output: ["image"],
@@ -442,7 +442,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["image_generation", "analysis"],
 		supportsStreaming: false,
 		supportsAttachments: true,
-		costPerRun: 0.005,
+		costPerRun: 0.002,
 		modalities: {
 			input: ["image"],
 			output: ["image"],
@@ -480,7 +480,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["image_generation", "analysis"],
 		supportsStreaming: false,
 		supportsAttachments: true,
-		costPerRun: 0.001,
+		costPerRun: 0.018,
 		modalities: {
 			input: ["image"],
 			output: ["image"],
@@ -526,7 +526,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["ocr", "audio", "analysis"],
 		supportsStreaming: false,
 		supportsAttachments: true,
-		costPerRun: 0.022,
+		costPerRun: 0.026,
 		modalities: {
 			input: ["audio"],
 			output: ["text"],
@@ -623,7 +623,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["creative", "audio", "text-to-audio"],
 		supportsStreaming: false,
 		supportsAttachments: false,
-		costPerRun: 0.15,
+		costPerRun: 0.20,
 		modalities: {
 			input: ["text"],
 			output: ["audio"],
