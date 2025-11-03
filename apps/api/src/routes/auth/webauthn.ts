@@ -90,7 +90,7 @@ app.post(
 			rpID(c),
 		);
 
-		return ResponseFactory.success(c,options);
+		return ResponseFactory.success(c, options);
 	},
 );
 
@@ -147,7 +147,7 @@ app.post(
 			rpID(c),
 		);
 
-		return ResponseFactory.success(c,{ verified });
+		return ResponseFactory.success(c, { verified });
 	},
 );
 
@@ -184,7 +184,7 @@ app.post(
 			rpID(c),
 		);
 
-		return ResponseFactory.success(c,options);
+		return ResponseFactory.success(c, options);
 	},
 );
 
@@ -240,7 +240,7 @@ app.post(
 			); // 7 days
 		}
 
-		return ResponseFactory.success(c,{ verified, user });
+		return ResponseFactory.success(c, { verified, user });
 	},
 );
 
@@ -299,7 +299,7 @@ app.get(
 			backed_up: Boolean(passkey.backed_up),
 		}));
 
-		return ResponseFactory.success(c,formattedPasskeys);
+		return ResponseFactory.success(c, formattedPasskeys);
 	},
 );
 
@@ -375,7 +375,7 @@ app.delete(
 			);
 		}
 
-		return ResponseFactory.success(c,{ success });
+		return ResponseFactory.success(c, { success });
 	},
 );
 

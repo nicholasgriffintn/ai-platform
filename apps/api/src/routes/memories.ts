@@ -175,7 +175,11 @@ app.post(
 			return ResponseFactory.success(context, result);
 		} catch (error) {
 			routeLogger.error("Failed to add memories to group", { error });
-			return ResponseFactory.error(context, "Failed to add memories to group", 500);
+			return ResponseFactory.error(
+				context,
+				"Failed to add memories to group",
+				500,
+			);
 		}
 	},
 );

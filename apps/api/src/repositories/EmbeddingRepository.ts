@@ -10,13 +10,9 @@ export class EmbeddingRepository extends BaseRepository {
 			conditions.type = type;
 		}
 
-		const { query, values } = this.buildSelectQuery(
-			"embedding",
-			conditions,
-			{
-				columns: ["id", "metadata", "type", "title", "content"],
-			},
-		);
+		const { query, values } = this.buildSelectQuery("embedding", conditions, {
+			columns: ["id", "metadata", "type", "title", "content"],
+		});
 
 		return this.runQuery<Record<string, unknown>>(query, values, true);
 	}

@@ -53,10 +53,8 @@ export class SharedAgentRepository extends BaseRepository {
 			);
 		}
 
-		const {
-			query: existingSharedQuery,
-			values: existingSharedValues,
-		} = this.buildSelectQuery("shared_agents", { agent_id: params.agentId });
+		const { query: existingSharedQuery, values: existingSharedValues } =
+			this.buildSelectQuery("shared_agents", { agent_id: params.agentId });
 		const existingShared = await this.runQuery<SharedAgent>(
 			existingSharedQuery,
 			existingSharedValues,

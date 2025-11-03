@@ -161,7 +161,9 @@ export class AppDataRepository extends BaseRepository {
 	 * @returns The app data
 	 */
 	public async getAppDataByItemId(id: string): Promise<AppData | null> {
-		const { query, values } = this.buildSelectQuery("app_data", { item_id: id });
+		const { query, values } = this.buildSelectQuery("app_data", {
+			item_id: id,
+		});
 		return this.runQuery<AppData>(query, values, true);
 	}
 

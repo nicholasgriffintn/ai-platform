@@ -41,9 +41,9 @@ describe("QueryBuilder", () => {
 
 		it("rejects dangerous table identifiers", () => {
 			const builder = new QueryBuilder();
-			expect(() => builder.select().from("user; DROP TABLE users")).toThrowError(
-				"Invalid identifier",
-			);
+			expect(() =>
+				builder.select().from("user; DROP TABLE users"),
+			).toThrowError("Invalid identifier");
 		});
 
 		it("rejects unsafe WHERE clauses", () => {

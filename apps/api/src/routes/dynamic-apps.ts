@@ -90,7 +90,7 @@ dynamicApps.get(
 			});
 		}
 
-		return ResponseFactory.success(c,{
+		return ResponseFactory.success(c, {
 			apps: Array.from(mergedApps.values()),
 		});
 	},
@@ -130,7 +130,7 @@ dynamicApps.get(
 			user.id,
 			appId,
 		);
-		return ResponseFactory.success(c,list);
+		return ResponseFactory.success(c, list);
 	},
 );
 
@@ -182,16 +182,16 @@ dynamicApps.get(
 
 		const id = c.req.param("id");
 		if (!id) {
-			return ResponseFactory.success(c,{ error: "App ID is required" }, 400);
+			return ResponseFactory.success(c, { error: "App ID is required" }, 400);
 		}
 
 		const app = await getDynamicAppById(id);
 
 		if (!app) {
-			return ResponseFactory.success(c,{ error: "App not found" }, 404);
+			return ResponseFactory.success(c, { error: "App not found" }, 404);
 		}
 
-		return ResponseFactory.success(c,app);
+		return ResponseFactory.success(c, app);
 	},
 );
 
@@ -259,13 +259,14 @@ dynamicApps.post(
 	async (c: Context) => {
 		const id = c.req.param("id");
 		if (!id) {
-			return ResponseFactory.success(c,{ error: "App ID is required" }, 400);
+			return ResponseFactory.success(c, { error: "App ID is required" }, 400);
 		}
 
 		const user = c.get("user");
 
 		if (!user?.id) {
-			return ResponseFactory.success(c,
+			return ResponseFactory.success(
+				c,
 				{
 					response: {
 						status: "error",
@@ -282,7 +283,7 @@ dynamicApps.post(
 			const app = await getDynamicAppById(id);
 
 			if (!app) {
-				return ResponseFactory.success(c,{ error: "App not found" }, 404);
+				return ResponseFactory.success(c, { error: "App not found" }, 404);
 			}
 
 			const url = new URL(c.req.url);
@@ -301,10 +302,11 @@ dynamicApps.post(
 			};
 
 			const result = await executeDynamicApp(id, formData, req);
-			return ResponseFactory.success(c,result);
+			return ResponseFactory.success(c, result);
 		} catch (error) {
 			logger.error(`Error executing app ${id}:`, { error });
-			return ResponseFactory.success(c,
+			return ResponseFactory.success(
+				c,
 				{
 					error: "Failed to execute app",
 					message: error instanceof Error ? error.message : "Unknown error",
@@ -362,13 +364,17 @@ dynamicApps.get(
 	async (c: Context) => {
 		const responseId = c.req.param("responseId");
 		if (!responseId) {
-			return ResponseFactory.success(c,{ error: "responseId is required" }, 400);
+			return ResponseFactory.success(
+				c,
+				{ error: "responseId is required" },
+				400,
+			);
 		}
 		const data = await getDynamicAppResponseById(c.env as IEnv, responseId);
 		if (!data) {
-			return ResponseFactory.success(c,{ error: "Response not found" }, 404);
+			return ResponseFactory.success(c, { error: "Response not found" }, 404);
 		}
-		return ResponseFactory.success(c,{ response: data });
+		return ResponseFactory.success(c, { response: data });
 	},
 );
 

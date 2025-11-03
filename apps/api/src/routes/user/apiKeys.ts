@@ -55,7 +55,7 @@ app.get(
 
 		try {
 			const keys = await getUserApiKeys(serviceContext, user.id);
-			return ResponseFactory.success(c,keys);
+			return ResponseFactory.success(c, keys);
 		} catch (error) {
 			logger.error("Error fetching API keys:", { error });
 			if (error instanceof AssistantError) {
@@ -106,7 +106,11 @@ app.post(
 				name,
 			);
 
-			return ResponseFactory.success(c,{ apiKey: plaintextKey, ...metadata }, 201);
+			return ResponseFactory.success(
+				c,
+				{ apiKey: plaintextKey, ...metadata },
+				201,
+			);
 		} catch (error) {
 			logger.error("Error creating API key:", { error });
 			if (error instanceof AssistantError) {
@@ -153,7 +157,11 @@ app.delete(
 
 		try {
 			await deleteUserApiKey(serviceContext, keyId, user.id);
-			return ResponseFactory.success(c,{ message: "API key deleted successfully" }, 200);
+			return ResponseFactory.success(
+				c,
+				{ message: "API key deleted successfully" },
+				200,
+			);
 		} catch (error) {
 			logger.error("Error deleting API key:", { error });
 			if (error instanceof AssistantError) {

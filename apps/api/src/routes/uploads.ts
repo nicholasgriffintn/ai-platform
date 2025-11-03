@@ -96,7 +96,7 @@ app.post(
 		const userId = user?.id;
 
 		const response = await handleFileUpload(env, userId, formData);
-		return ResponseFactory.success(context,response);
+		return ResponseFactory.success(context, response);
 	},
 );
 

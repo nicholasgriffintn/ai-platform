@@ -25,26 +25,20 @@ export class WebAuthnRepository extends BaseRepository {
 					await this.executeRun(deleteExisting.query, deleteExisting.values);
 				}
 
-				const insert = this.buildInsertQuery(
-					"webauthn_challenge",
-					{
-						user_id: userId,
-						challenge,
-						expires_at: expiresAt.toISOString(),
-					},
-				);
+				const insert = this.buildInsertQuery("webauthn_challenge", {
+					user_id: userId,
+					challenge,
+					expires_at: expiresAt.toISOString(),
+				});
 
 				if (insert) {
 					await this.executeRun(insert.query, insert.values);
 				}
 			} else {
-				const insert = this.buildInsertQuery(
-					"webauthn_challenge",
-					{
-						challenge,
-						expires_at: expiresAt.toISOString(),
-					},
-				);
+				const insert = this.buildInsertQuery("webauthn_challenge", {
+					challenge,
+					expires_at: expiresAt.toISOString(),
+				});
 
 				if (insert) {
 					await this.executeRun(insert.query, insert.values);

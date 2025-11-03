@@ -189,11 +189,7 @@ export class MemoryRepository extends BaseRepository {
 			{ group_id: groupId },
 			{ columns: ["COUNT(*) as count"] },
 		);
-		const result = await this.runQuery<{ count: number }>(
-			query,
-			values,
-			true,
-		);
+		const result = await this.runQuery<{ count: number }>(query, values, true);
 		return result?.count || 0;
 	}
 

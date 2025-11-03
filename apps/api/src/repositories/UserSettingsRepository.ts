@@ -107,15 +107,12 @@ export class UserSettingsRepository extends BaseRepository {
 
 			const userSettingsId = generateId();
 
-			const insert = this.buildInsertQuery(
-				"user_settings",
-				{
-					id: userSettingsId,
-					user_id: userId,
-					public_key: publicKeyString,
-					private_key: encryptedPrivateKeyString,
-				},
-			);
+			const insert = this.buildInsertQuery("user_settings", {
+				id: userSettingsId,
+				user_id: userId,
+				public_key: publicKeyString,
+				private_key: encryptedPrivateKeyString,
+			});
 
 			if (!insert) {
 				throw new AssistantError(
@@ -539,15 +536,12 @@ export class UserSettingsRepository extends BaseRepository {
 
 				const isEnabled = defaultProviders.includes(provider);
 
-				const insert = this.buildInsertQuery(
-					"provider_settings",
-					{
-						id: providerSettingsId,
-						user_id: userId,
-						provider_id: provider,
-						enabled: isEnabled ? 1 : 0,
-					},
-				);
+				const insert = this.buildInsertQuery("provider_settings", {
+					id: providerSettingsId,
+					user_id: userId,
+					provider_id: provider,
+					enabled: isEnabled ? 1 : 0,
+				});
 
 				if (insert) {
 					await this.executeRun(insert.query, insert.values);

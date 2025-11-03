@@ -97,7 +97,7 @@ app.post(
 			prompt: userPrompt,
 		});
 
-		return ResponseFactory.success(context,result);
+		return ResponseFactory.success(context, result);
 	},
 );
 

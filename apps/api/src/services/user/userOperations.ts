@@ -126,4 +126,3 @@ export async function syncUserProviders(
 		message: "Providers synced successfully",
 	};
 }
-

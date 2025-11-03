@@ -51,7 +51,11 @@ export class AgentRepository extends BaseRepository {
 			);
 		}
 
-		const created = await this.runQuery<Agent>(insert.query, insert.values, true);
+		const created = await this.runQuery<Agent>(
+			insert.query,
+			insert.values,
+			true,
+		);
 
 		if (!created) {
 			throw new AssistantError(
@@ -118,7 +122,11 @@ export class AgentRepository extends BaseRepository {
 			{
 				jsonFields: ["servers", "few_shot_examples"],
 				transformer: (field, value) => {
-					if (field === "temperature" && value !== undefined && value !== null) {
+					if (
+						field === "temperature" &&
+						value !== undefined &&
+						value !== null
+					) {
 						return value.toString();
 					}
 					if (field === "is_team_agent" && typeof value === "boolean") {

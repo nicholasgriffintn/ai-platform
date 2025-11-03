@@ -171,10 +171,9 @@ export class MessageRepository extends BaseRepository {
 	}
 
 	public async deleteMessage(messageId: string): Promise<void> {
-		const { query, values } = this.buildDeleteQuery(
-			"message",
-			{ id: messageId },
-		);
+		const { query, values } = this.buildDeleteQuery("message", {
+			id: messageId,
+		});
 		if (!query) {
 			return;
 		}

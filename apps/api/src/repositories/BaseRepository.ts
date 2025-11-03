@@ -164,9 +164,7 @@ export abstract class BaseRepository {
 		} = {},
 	): { query: string; values: unknown[] } {
 		const builder = new QueryBuilder().select(
-			options.columns && options.columns.length > 0
-				? options.columns
-				: ["*"],
+			options.columns && options.columns.length > 0 ? options.columns : ["*"],
 		);
 
 		builder.from(table);

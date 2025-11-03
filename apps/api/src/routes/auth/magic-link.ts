@@ -58,7 +58,7 @@ app.post(
 			const link = `${baseUrl}/auth/verify-magic-link?token=${token}&nonce=${nonce}`;
 			await sendMagicLinkEmail(c.env, email, link);
 		}
-		return ResponseFactory.success(c,{ success: true });
+		return ResponseFactory.success(c, { success: true });
 	},
 );
 
@@ -110,7 +110,7 @@ app.post(
 			`session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`,
 		); // 7 days
 
-		return ResponseFactory.success(c,{ success: true });
+		return ResponseFactory.success(c, { success: true });
 	},
 );
 

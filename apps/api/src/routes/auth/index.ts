@@ -168,7 +168,11 @@ app.get(
 		if (!user) {
 			const anonymousUser = c.get("anonymousUser") as AnonymousUser | undefined;
 			if (anonymousUser) {
-				return ResponseFactory.success(c, { user: null, userSettings: null, anon: anonymousUser });
+				return ResponseFactory.success(c, {
+					user: null,
+					userSettings: null,
+					anon: anonymousUser,
+				});
 			}
 			return ResponseFactory.success(c, { user: null, userSettings: null });
 		}

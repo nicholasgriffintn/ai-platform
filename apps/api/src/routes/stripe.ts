@@ -75,7 +75,7 @@ app.post(
 			success_url,
 			cancel_url,
 		);
-		return ResponseFactory.success(c,session);
+		return ResponseFactory.success(c, session);
 	},
 );
 
@@ -114,7 +114,7 @@ app.get(
 		}
 
 		const status = await getSubscriptionStatus(c.env, user);
-		return ResponseFactory.success(c,status);
+		return ResponseFactory.success(c, status);
 	},
 );
 
@@ -155,7 +155,7 @@ app.post(
 		}
 
 		const result = await cancelSubscription(c.env, user);
-		return ResponseFactory.success(c,result);
+		return ResponseFactory.success(c, result);
 	},
 );
 
@@ -195,7 +195,7 @@ app.post(
 			);
 		}
 		const result = await reactivateSubscription(c.env, user);
-		return ResponseFactory.success(c,result);
+		return ResponseFactory.success(c, result);
 	},
 );
 

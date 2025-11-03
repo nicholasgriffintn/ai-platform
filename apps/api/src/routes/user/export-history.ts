@@ -42,7 +42,8 @@ app.get(
 	async (c: Context) => {
 		const user = c.get("user") as User | undefined;
 		if (!user?.id) {
-			return ResponseFactory.success(c,
+			return ResponseFactory.success(
+				c,
 				{ error: "Authentication required", type: "AUTHENTICATION_ERROR" },
 				401,
 			);
@@ -69,7 +70,8 @@ app.get(
 				},
 			});
 		} catch (error: any) {
-			return ResponseFactory.success(c,
+			return ResponseFactory.success(
+				c,
 				{
 					error: error?.message || "Failed to export chat history",
 					type: "UNKNOWN_ERROR",

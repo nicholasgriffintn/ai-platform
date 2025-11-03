@@ -1,6 +1,12 @@
 repos:
   - repo: local
     hooks:
+      - id: prettier
+        name: prettier
+        entry: pnpm format
+        language: system
+        types_or: [javascript, jsx, ts, tsx, json, yaml, markdown, css, scss]
+        pass_filenames: false
       - id: typescript-check
         name: typescript-check
         entry: pnpm typecheck

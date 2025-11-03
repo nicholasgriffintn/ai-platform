@@ -64,7 +64,10 @@ export class ConversationRepository extends BaseRepository {
 		pageNumber: number;
 		pageSize: number;
 	}> {
-		const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
+		const { limit: safeLimit, offset } = PaginationHelper.calculate(
+			page,
+			limit,
+		);
 
 		const countQuery = includeArchived
 			? "SELECT COUNT(*) as total FROM conversation WHERE user_id = ?"

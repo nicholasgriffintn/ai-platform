@@ -355,9 +355,7 @@ export class QueryBuilder {
 		const [base, alias] = trimmed.split(/\s+AS\s+/i).map((part) => part.trim());
 		let sanitizedBase = base;
 
-		const functionMatch = base.match(
-			/^([A-Za-z_][A-Za-z0-9_$]*)\((.*)\)$/,
-		);
+		const functionMatch = base.match(/^([A-Za-z_][A-Za-z0-9_$]*)\((.*)\)$/);
 
 		if (functionMatch) {
 			const [, fnName, arg] = functionMatch;
@@ -444,7 +442,9 @@ export class QueryBuilder {
 		}
 
 		if (/[;]|--|\/\*/.test(trimmed)) {
-			throw new Error("Invalid WHERE condition: contains disallowed characters");
+			throw new Error(
+				"Invalid WHERE condition: contains disallowed characters",
+			);
 		}
 
 		return trimmed;

@@ -69,7 +69,7 @@ app.post(
 			user,
 		});
 
-		return ResponseFactory.success(context,{
+		return ResponseFactory.success(context, {
 			response,
 		});
 	},
@@ -114,7 +114,7 @@ app.post(
 			user,
 		});
 
-		return ResponseFactory.success(context,{
+		return ResponseFactory.success(context, {
 			response,
 		});
 	},
