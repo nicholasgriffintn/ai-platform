@@ -3,6 +3,7 @@ import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
 import { apiResponseSchema } from "@assistant/schemas";
 
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { executeReplicateModel } from "~/services/apps/replicate/execute";
 import { listReplicatePredictions } from "~/services/apps/replicate/list";
@@ -179,10 +180,11 @@ app.get(
 		}
 
 		try {
-			const predictions = await listReplicatePredictions(
-				user.id,
-				context.env as IEnv,
-			);
+			const serviceContext = getServiceContext(context);
+			const predictions = await listReplicatePredictions({
+				context: serviceContext,
+				userId: user.id,
+			});
 
 			return context.json({
 				predictions,
@@ -233,11 +235,12 @@ app.get(
 		}
 
 		try {
-			const prediction = await getReplicatePredictionDetails(
+			const serviceContext = getServiceContext(context);
+			const prediction = await getReplicatePredictionDetails({
+				context: serviceContext,
 				predictionId,
-				user.id,
-				context.env as IEnv,
-			);
+				userId: user.id,
+			});
 
 			return context.json({
 				prediction,
@@ -291,8 +294,9 @@ app.post(
 		}
 
 		try {
+			const serviceContext = getServiceContext(context);
 			const result = await executeReplicateModel({
-				env: context.env as IEnv,
+				context: serviceContext,
 				params: body,
 				user,
 			});

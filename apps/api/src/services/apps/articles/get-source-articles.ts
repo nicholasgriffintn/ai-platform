@@ -1,7 +1,8 @@
 import {
-	type AppData,
-	AppDataRepository,
-} from "~/repositories/AppDataRepository";
+	createServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
+import { type AppData } from "~/repositories/AppDataRepository";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -15,19 +16,14 @@ export interface GetSourceArticlesSuccessResponse {
 	articles: AppData[];
 }
 
-/**
- * Gets multiple source articles by their IDs.
- * @param env - The environment variables
- * @param ids - The IDs of the articles
- * @param userId - The ID of the user
- * @returns The source articles
- */
 export async function getSourceArticles({
+	context,
 	env,
 	ids,
 	userId,
 }: {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	ids: string[];
 	userId: number;
 }): Promise<GetSourceArticlesSuccessResponse> {
@@ -45,7 +41,24 @@ export async function getSourceArticles({
 	}
 
 	try {
-		const appDataRepo = new AppDataRepository(env);
+		const serviceContext =
+			context ??
+			(env
+				? createServiceContext({
+						env,
+						user: null,
+					})
+				: null);
+
+		if (!serviceContext) {
+			throw new AssistantError(
+				"Service context is required",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+
+		serviceContext.ensureDatabase();
+		const appDataRepo = serviceContext.repositories.appData;
 		const articles: AppData[] = [];
 
 		const articlePromises = ids.map(async (id) => {

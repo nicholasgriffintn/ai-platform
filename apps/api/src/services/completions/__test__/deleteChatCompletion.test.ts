@@ -2,10 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleDeleteChatCompletion } from "../deleteChatCompletion";
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn(),
-	},
+vi.mock("~/lib/context/serviceContext", () => ({
+	resolveServiceContext: vi.fn(),
 }));
 
 vi.mock("~/lib/conversationManager", () => ({
@@ -28,25 +26,31 @@ const mockRequest = {
 	user: mockUser,
 };
 
+let mockServiceContext: any;
+let resolveServiceContext: any;
+
 describe("handleDeleteChatCompletion", () => {
-	let mockDatabase: any;
 	let mockConversationManager: any;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		const { Database } = await import("~/lib/database");
+		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
-
-		mockDatabase = {
-			getUserSettings: vi.fn(),
-		};
 
 		mockConversationManager = {
 			updateConversation: vi.fn(),
 		};
 
-		vi.mocked(Database.getInstance).mockReturnValue(mockDatabase);
+		mockServiceContext = {
+			env: mockEnv,
+			user: mockUser,
+			ensureDatabase: vi.fn(),
+			database: {} as any,
+			repositories: {} as any,
+		};
+
+		vi.mocked(resolveServiceContext).mockReturnValue(mockServiceContext);
 		vi.mocked(ConversationManager.getInstance).mockReturnValue(
 			mockConversationManager,
 		);
@@ -68,15 +72,19 @@ describe("handleDeleteChatCompletion", () => {
 			).rejects.toThrow("User ID is required to delete a conversation");
 		});
 
-		it("should throw error for missing database connection", async () => {
+		it("should surface errors from service context creation", async () => {
 			const requestWithoutDB = {
 				env: {},
 				user: mockUser,
 			} as any;
 
+			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
+				throw new Error("Database not configured");
+			});
+
 			await expect(() =>
 				handleDeleteChatCompletion(requestWithoutDB, "completion-123"),
-			).rejects.toThrow("Missing database connection");
+			).rejects.toThrow("Database not configured");
 		});
 	});
 
@@ -134,9 +142,8 @@ describe("handleDeleteChatCompletion", () => {
 			).rejects.toThrow("Conversation not found");
 		});
 
-		it("should handle database connection errors", async () => {
-			const { Database } = await import("~/lib/database");
-			vi.mocked(Database.getInstance).mockImplementation(() => {
+		it("should handle service context errors", async () => {
+			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
 				throw new Error("Database connection failed");
 			});
 

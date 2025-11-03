@@ -7,6 +7,7 @@ import {
 	errorResponseSchema,
 } from "@assistant/schemas";
 
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { getSharedItem, shareItem } from "~/services/apps/shared";
 import type { IEnv, IUser } from "~/types";
@@ -111,10 +112,11 @@ app.post(
 			const body = await c.req.json();
 			const { app_id } = body;
 
+			const serviceContext = getServiceContext(c);
 			const { shareId } = await shareItem({
 				userId: user.id,
 				id: app_id,
-				env: c.env,
+				context: serviceContext,
 			});
 
 			return c.json({
@@ -210,8 +212,9 @@ app.get(
 		}
 
 		try {
+			const serviceContext = getServiceContext(c);
 			const sharedItem = await getSharedItem({
-				env: c.env,
+				context: serviceContext,
 				shareId: share_id,
 			});
 

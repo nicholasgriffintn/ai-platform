@@ -10,10 +10,8 @@ import {
 
 import { handleCheckChatCompletion } from "../checkChatCompletion";
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn(),
-	},
+vi.mock("~/lib/context/serviceContext", () => ({
+	resolveServiceContext: vi.fn(),
 }));
 
 vi.mock("~/lib/conversationManager", () => ({
@@ -40,6 +38,9 @@ const mockRequest = {
 	user: mockUser,
 } as any;
 
+let mockServiceContext: any;
+let resolveServiceContext: any;
+
 describe("handleCheckChatCompletion", () => {
 	let mockDatabase: any;
 	let mockConversationManager: any;
@@ -48,7 +49,7 @@ describe("handleCheckChatCompletion", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		const { Database } = await import("~/lib/database");
+		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
 		const { Guardrails } = await import("~/lib/guardrails");
 
@@ -65,7 +66,15 @@ describe("handleCheckChatCompletion", () => {
 			validateOutput: vi.fn(),
 		};
 
-		vi.mocked(Database.getInstance).mockReturnValue(mockDatabase);
+		mockServiceContext = {
+			env: mockEnv,
+			user: mockUser,
+			ensureDatabase: vi.fn(),
+			database: mockDatabase,
+			repositories: {} as any,
+		};
+
+		vi.mocked(resolveServiceContext).mockReturnValue(mockServiceContext);
 		vi.mocked(ConversationManager.getInstance).mockReturnValue(
 			mockConversationManager,
 		);
@@ -103,15 +112,19 @@ describe("handleCheckChatCompletion", () => {
 			).rejects.toThrow("Authentication required");
 		});
 
-		it("should throw error for missing database connection", async () => {
+		it("should surface errors from service context creation", async () => {
 			const requestWithoutDB = {
 				env: {},
 				user: mockUser,
 			} as any;
 
+			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
+				throw new Error("Database not configured");
+			});
+
 			await expect(() =>
 				handleCheckChatCompletion(requestWithoutDB, "completion-123", "user"),
-			).rejects.toThrow("Missing DB binding");
+			).rejects.toThrow("Database not configured");
 		});
 
 		it("should throw error for missing completion_id", async () => {

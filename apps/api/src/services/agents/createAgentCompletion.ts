@@ -1,6 +1,10 @@
 import { MCPClientManager } from "agents/mcp/client";
 
 import { formatToolCalls } from "~/lib/chat/tools";
+import {
+	createServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import { getModelConfig } from "~/lib/models";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { registerMCPClient } from "~/services/functions/mcp";
@@ -10,7 +14,6 @@ import {
 	delegateToTeamMemberByRole,
 	getTeamMembers,
 } from "~/services/functions/teamDelegation";
-import { AgentRepository } from "~/repositories/AgentRepository";
 import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -26,18 +29,29 @@ export interface AgentCompletionParams {
 
 export async function createAgentCompletion({
 	env,
+	context,
 	body,
 	agentId,
 	user,
 	anonymousUser,
 }: {
 	env: IEnv;
+	context?: ServiceContext;
 	body: ChatCompletionParameters;
 	agentId: string;
 	user: IUser | undefined;
 	anonymousUser: any;
 }) {
-	const agent = await getValidatedAgent(env, agentId, user?.id || undefined);
+	const serviceContext =
+		context ??
+		createServiceContext({
+			env,
+			user,
+		});
+
+	serviceContext.ensureDatabase();
+
+	const agent = await getValidatedAgent(serviceContext, agentId, user?.id);
 
 	const mcpFunctions = await setupMCPFunctions(agent);
 
@@ -110,7 +124,7 @@ export async function createAgentCompletion({
 	};
 
 	const response = await handleCreateChatCompletions({
-		env,
+		env: serviceContext.env,
 		request: requestParams,
 		user,
 		anonymousUser,
@@ -231,8 +245,12 @@ function setupTeamDelegationTools(agent: any) {
 	];
 }
 
-async function getValidatedAgent(env: IEnv, agentId: string, userId?: number) {
-	const repo = new AgentRepository(env);
+async function getValidatedAgent(
+	context: ServiceContext,
+	agentId: string,
+	userId?: number,
+) {
+	const repo = context.repositories.agents;
 	const agent = await repo.getAgentById(agentId);
 
 	if (!agent) {

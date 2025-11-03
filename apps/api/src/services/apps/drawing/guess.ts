@@ -1,6 +1,9 @@
 import { gatewayId } from "~/constants/app";
 import { guessDrawingPrompt } from "~/lib/prompts";
-import { RepositoryManager } from "~/repositories";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -12,11 +15,13 @@ interface ImageFromDrawingResponse extends IFunctionResponse {
 const userGuessesCache = new Map<string, Set<string>>();
 
 export async function guessDrawingFromImage({
+	context,
 	env,
 	request,
 	user,
 }: {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	request: {
 		drawing?: Blob;
 	};
@@ -31,7 +36,11 @@ export async function guessDrawingFromImage({
 	const userId = user.id.toString();
 	const userGuesses = userGuessesCache.get(userId) || new Set<string>();
 
-	const guessRequest = await env.AI.run(
+	const serviceContext = resolveServiceContext({ context, env, user });
+	serviceContext.ensureDatabase();
+	const runtimeEnv = serviceContext.env as IEnv;
+
+	const guessRequest = await runtimeEnv.AI.run(
 		"@cf/llava-hf/llava-1.5-7b-hf",
 		{
 			prompt: guessDrawingPrompt(userGuesses),
@@ -59,7 +68,7 @@ export async function guessDrawingFromImage({
 
 	const guessId = generateId();
 
-	const repo = RepositoryManager.getInstance(env).appData;
+	const repo = serviceContext.repositories.appData;
 	await repo.createAppDataWithItem(user.id, "drawings", guessId, "guess", {
 		guess,
 		timestamp: new Date().toISOString(),

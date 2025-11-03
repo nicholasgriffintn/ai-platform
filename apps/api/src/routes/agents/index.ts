@@ -8,6 +8,7 @@ import {
 	apiResponseSchema,
 } from "@assistant/schemas";
 
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -60,7 +61,8 @@ app.get(
 			});
 		}
 
-		const agents = await getUserAgents(ctx.env, user.id);
+		const serviceContext = getServiceContext(ctx);
+		const agents = await getUserAgents(serviceContext);
 
 		return ctx.json({
 			status: "success",
@@ -104,7 +106,8 @@ app.post(
 			);
 		}
 
-		const agent = await createAgent(ctx.env, user, {
+		const serviceContext = getServiceContext(ctx);
+		const agent = await createAgent(serviceContext, {
 			name: body.name,
 			description: body.description ?? "",
 			avatar_url: body.avatar_url ?? null,
@@ -157,7 +160,8 @@ app.get(
 			);
 		}
 
-		const agents = await getUserTeamAgents(ctx.env, user.id);
+		const serviceContext = getServiceContext(ctx);
+		const agents = await getUserTeamAgents(serviceContext);
 
 		return ctx.json({
 			status: "success",
@@ -199,7 +203,8 @@ app.get(
 			);
 		}
 
-		const agents = await getAgentsByTeam(ctx.env, teamId, user.id);
+		const serviceContext = getServiceContext(ctx);
+		const agents = await getAgentsByTeam(serviceContext, teamId);
 
 		return ctx.json({
 			status: "success",
@@ -242,7 +247,8 @@ app.get(
 			);
 		}
 
-		const agent = await getAgentById(ctx.env, agentId, user.id);
+		const serviceContext = getServiceContext(ctx);
+		const agent = await getAgentById(serviceContext, agentId);
 
 		return ctx.json({
 			status: "success",
@@ -283,7 +289,8 @@ app.get(
 			);
 		}
 
-		const serverDetails = await getAgentServers(ctx.env, agentId, user.id);
+		const serviceContext = getServiceContext(ctx);
+		const serverDetails = await getAgentServers(serviceContext, agentId);
 
 		return ctx.json({
 			status: "success",
@@ -328,7 +335,8 @@ app.put(
 			);
 		}
 
-		const agent = await updateAgent(ctx.env, agentId, user.id, body);
+		const serviceContext = getServiceContext(ctx);
+		const agent = await updateAgent(serviceContext, agentId, body);
 
 		return ctx.json({
 			status: "success",
@@ -369,7 +377,8 @@ app.delete(
 			);
 		}
 
-		await deleteAgent(ctx.env, agentId, user.id);
+		const serviceContext = getServiceContext(ctx);
+		await deleteAgent(serviceContext, agentId);
 
 		return ctx.json({
 			status: "success",
@@ -413,8 +422,11 @@ app.post(
 
 		const body = ctx.req.valid("json" as never) as ChatCompletionParameters;
 
+		const serviceContext = getServiceContext(ctx);
+
 		const response = await createAgentCompletion({
 			env: ctx.env,
+			context: serviceContext,
 			body,
 			agentId,
 			user,

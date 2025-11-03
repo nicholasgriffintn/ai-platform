@@ -56,6 +56,15 @@ vi.mock("~/lib/models", () => ({
 describe("handlePodcastTranscribe", () => {
 	const mockEnv = { DB: {} } as any;
 	const mockUser = { id: "user-123", email: "test@example.com" } as any;
+	const mockContext = {
+		env: mockEnv,
+		user: mockUser,
+		repositories: mockRepositories,
+		ensureDatabase: vi.fn(),
+		requireUser: vi.fn(() => mockUser),
+		database: {} as any,
+		requestId: undefined,
+	} as any;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -75,7 +84,7 @@ describe("handlePodcastTranscribe", () => {
 		]);
 
 		const result = (await handlePodcastTranscribe({
-			env: mockEnv,
+			context: mockContext,
 			request: {
 				podcastId: "podcast-123",
 				numberOfSpeakers: 2,
@@ -117,7 +126,7 @@ describe("handlePodcastTranscribe", () => {
 		mockProvider.getResponse.mockResolvedValue(mockTranscriptionData);
 
 		const result = (await handlePodcastTranscribe({
-			env: mockEnv,
+			context: mockContext,
 			request: {
 				podcastId: "podcast-123",
 				numberOfSpeakers: 2,
@@ -143,7 +152,7 @@ describe("handlePodcastTranscribe", () => {
 	it("should throw error for missing required parameters", async () => {
 		await expect(
 			handlePodcastTranscribe({
-				env: mockEnv,
+				context: mockContext,
 				request: {
 					podcastId: "",
 					numberOfSpeakers: 2,
@@ -157,7 +166,7 @@ describe("handlePodcastTranscribe", () => {
 	it("should throw error for missing user ID", async () => {
 		await expect(
 			handlePodcastTranscribe({
-				env: mockEnv,
+				context: mockContext,
 				request: {
 					podcastId: "podcast-123",
 					numberOfSpeakers: 2,
@@ -175,7 +184,7 @@ describe("handlePodcastTranscribe", () => {
 
 		await expect(
 			handlePodcastTranscribe({
-				env: mockEnv,
+				context: mockContext,
 				request: {
 					podcastId: "podcast-123",
 					numberOfSpeakers: 2,

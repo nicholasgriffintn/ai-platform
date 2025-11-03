@@ -1,3 +1,4 @@
+import type { ServiceContext } from "../lib/context/serviceContext";
 import type { IEnv, RequireAtLeastOne } from "./shared";
 import type { IUser } from "./user";
 
@@ -178,6 +179,7 @@ export interface IRequest {
 	mode?: ChatMode;
 	use_rag?: boolean;
 	rag_options?: RagOptions;
+	context?: ServiceContext;
 }
 
 interface AIControlParams {

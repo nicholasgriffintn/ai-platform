@@ -1,17 +1,27 @@
-import { RepositoryManager } from "~/repositories";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-export const getReplicatePredictionDetails = async (
-	predictionId: string,
-	userId: number,
-	env: IEnv,
-) => {
-	const repositories = RepositoryManager.getInstance(env);
+export const getReplicatePredictionDetails = async ({
+	context,
+	env,
+	predictionId,
+	userId,
+}: {
+	context?: ServiceContext;
+	env?: IEnv;
+	predictionId: string;
+	userId: number;
+}) => {
+	const serviceContext = resolveServiceContext({ context, env });
 
-	const prediction = await repositories.appData.getAppDataById(predictionId);
+	const prediction =
+		await serviceContext.repositories.appData.getAppDataById(predictionId);
 
 	if (!prediction) {
 		throw new AssistantError("Prediction not found", ErrorType.NOT_FOUND);
@@ -38,7 +48,7 @@ export const getReplicatePredictionDetails = async (
 					asyncInvocation,
 					{
 						model: asyncInvocation.context?.version || "",
-						env,
+						env: serviceContext.env,
 						messages: [],
 						completion_id: predictionId,
 					},
@@ -50,12 +60,18 @@ export const getReplicatePredictionDetails = async (
 					data.predictionData = result.result;
 					data.output = result.result.response;
 
-					await repositories.appData.updateAppData(predictionId, data);
+					await serviceContext.repositories.appData.updateAppData(
+						predictionId,
+						data,
+					);
 				} else if (result.status === "failed") {
 					data.status = "failed";
 					data.error = result.raw?.error || "Generation failed";
 
-					await repositories.appData.updateAppData(predictionId, data);
+					await serviceContext.repositories.appData.updateAppData(
+						predictionId,
+						data,
+					);
 				}
 			}
 		} catch (error) {

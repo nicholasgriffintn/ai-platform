@@ -1,14 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { RepositoryManager } from "~/repositories";
 import { AssistantError } from "~/utils/errors";
 import { listDrawings } from "../list";
-
-vi.mock("~/repositories", () => ({
-	RepositoryManager: {
-		getInstance: vi.fn(),
-	},
-}));
 
 vi.mock("~/utils/logger", () => ({
 	getLogger: () => ({
@@ -25,11 +18,21 @@ const mockEnv = {
 	API_KEY: "test-key",
 } as any;
 
-describe("listDrawings", () => {
-	beforeEach(() => {
-		vi.mocked(RepositoryManager.getInstance).mockReturnValue({
+const createContext = () =>
+	({
+		ensureDatabase: vi.fn(),
+		repositories: {
 			appData: mockAppDataRepo,
-		} as any);
+		},
+		env: mockEnv,
+	}) as any;
+
+describe("listDrawings", () => {
+	let mockContext: any;
+
+	beforeEach(() => {
+		mockAppDataRepo.getAppDataByUserAndApp.mockReset();
+		mockContext = createContext();
 	});
 
 	afterEach(() => {
@@ -39,14 +42,14 @@ describe("listDrawings", () => {
 	it("should throw AssistantError when userId is missing", async () => {
 		await expect(
 			listDrawings({
-				env: mockEnv,
+				context: mockContext,
 				userId: 0,
 			}),
 		).rejects.toThrow(expect.any(AssistantError));
 
 		await expect(
 			listDrawings({
-				env: mockEnv,
+				context: mockContext,
 				userId: 0,
 			}),
 		).rejects.toThrow("User ID is required");
@@ -84,9 +87,11 @@ describe("listDrawings", () => {
 		mockAppDataRepo.getAppDataByUserAndApp.mockResolvedValue(mockDrawings);
 
 		const result = await listDrawings({
-			env: mockEnv,
+			context: mockContext,
 			userId: 123,
 		});
+
+		expect(mockContext.ensureDatabase).toHaveBeenCalled();
 
 		expect(mockAppDataRepo.getAppDataByUserAndApp).toHaveBeenCalledWith(
 			123,
@@ -128,7 +133,7 @@ describe("listDrawings", () => {
 		mockAppDataRepo.getAppDataByUserAndApp.mockResolvedValue(mockDrawings);
 
 		const result = await listDrawings({
-			env: mockEnv,
+			context: mockContext,
 			userId: 123,
 		});
 
@@ -148,7 +153,7 @@ describe("listDrawings", () => {
 		mockAppDataRepo.getAppDataByUserAndApp.mockResolvedValue([]);
 
 		const result = await listDrawings({
-			env: mockEnv,
+			context: mockContext,
 			userId: 123,
 		});
 
@@ -162,7 +167,7 @@ describe("listDrawings", () => {
 
 		await expect(
 			listDrawings({
-				env: mockEnv,
+				context: mockContext,
 				userId: 123,
 			}),
 		).rejects.toThrow("Database error");
@@ -172,7 +177,7 @@ describe("listDrawings", () => {
 		mockAppDataRepo.getAppDataByUserAndApp.mockResolvedValue([]);
 
 		await listDrawings({
-			env: mockEnv,
+			context: mockContext,
 			userId: 456,
 		});
 
@@ -197,7 +202,7 @@ describe("listDrawings", () => {
 		mockAppDataRepo.getAppDataByUserAndApp.mockResolvedValue(mockDrawings);
 
 		const result = await listDrawings({
-			env: mockEnv,
+			context: mockContext,
 			userId: 123,
 		});
 

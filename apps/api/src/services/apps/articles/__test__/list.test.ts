@@ -8,7 +8,7 @@ vi.mock("~/repositories/AppDataRepository");
 
 describe("listArticles", () => {
 	let mockAppDataRepo: any;
-	const mockEnv = {} as any;
+	const mockEnv = { DB: {} } as any;
 
 	beforeEach(() => {
 		mockAppDataRepo = {

@@ -1,7 +1,8 @@
 import {
-	type AppData,
-	AppDataRepository,
-} from "~/repositories/AppDataRepository";
+	createServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
+import { type AppData } from "~/repositories/AppDataRepository";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -13,19 +14,14 @@ export interface GetDetailsSuccessResponse {
 	article: AppData;
 }
 
-/**
- * Gets the details of a specific article app data entry by its primary ID.
- * @param env - The environment variables
- * @param id - The ID of the article
- * @param userId - The ID of the user
- * @returns The article details
- */
 export async function getArticleDetails({
+	context,
 	env,
 	id,
 	userId,
 }: {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	id: string;
 	userId: number;
 }): Promise<GetDetailsSuccessResponse> {
@@ -40,7 +36,24 @@ export async function getArticleDetails({
 	}
 
 	try {
-		const appDataRepo = new AppDataRepository(env);
+		const serviceContext =
+			context ??
+			(env
+				? createServiceContext({
+						env,
+						user: null,
+					})
+				: null);
+
+		if (!serviceContext) {
+			throw new AssistantError(
+				"Service context is required",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+
+		serviceContext.ensureDatabase();
+		const appDataRepo = serviceContext.repositories.appData;
 		const article = await appDataRepo.getAppDataById(id);
 
 		if (!article) {

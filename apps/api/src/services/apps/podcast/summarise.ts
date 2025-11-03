@@ -1,5 +1,8 @@
 import { gatewayId } from "~/constants/app";
-import { RepositoryManager } from "~/repositories";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -34,7 +37,8 @@ export interface IPodcastSummariseBody {
 }
 
 type SummariseRequest = {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	request: IPodcastSummariseBody;
 	user: IUser;
 	app_url?: string;
@@ -43,7 +47,7 @@ type SummariseRequest = {
 export const handlePodcastSummarise = async (
 	req: SummariseRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-	const { request, env, user } = req;
+	const { request, context, env, user } = req;
 
 	if (!request.podcastId || !request.speakers) {
 		throw new AssistantError(
@@ -52,16 +56,15 @@ export const handlePodcastSummarise = async (
 		);
 	}
 
-	if (!env.DB) {
-		throw new AssistantError("Missing database", ErrorType.PARAMS_ERROR);
-	}
-
 	try {
 		if (!user?.id) {
 			throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
 		}
 
-		const repositories = RepositoryManager.getInstance(env);
+		const serviceContext = resolveServiceContext({ context, env, user });
+		serviceContext.ensureDatabase();
+		const repositories = serviceContext.repositories;
+		const runtimeEnv = serviceContext.env as IEnv;
 
 		const existingSummaries =
 			await repositories.appData.getAppDataByUserAppAndItem(
@@ -145,7 +148,7 @@ export const handlePodcastSummarise = async (
 			};
 		}
 
-		const data = await env.AI.run(
+		const data = await runtimeEnv.AI.run(
 			"@cf/facebook/bart-large-cnn",
 			{
 				input_text: fullTranscription,

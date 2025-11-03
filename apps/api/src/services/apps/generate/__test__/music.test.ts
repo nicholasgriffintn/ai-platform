@@ -35,7 +35,7 @@ vi.mock("~/lib/models", () => ({
 }));
 
 describe("generateMusic", () => {
-	const mockEnv = {} as any;
+	const mockEnv = { DB: {} } as any;
 	const mockUser = { id: "user-123", email: "test@example.com" } as any;
 
 	beforeEach(async () => {

@@ -1,62 +1,77 @@
-import { AgentRepository } from "~/repositories/AgentRepository";
-import type { IEnv, IUser } from "~/types";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-export async function getUserAgents(env: IEnv, userId: number) {
-	const repo = new AgentRepository(env);
-	return await repo.getAgentsByUser(userId);
+export async function getUserAgents(context: ServiceContext, userId?: number) {
+	context.ensureDatabase();
+	const id = userId ?? context.requireUser().id;
+	return context.repositories.agents.getAgentsByUser(id);
 }
 
-export async function getUserTeamAgents(env: IEnv, userId: number) {
-	const repo = new AgentRepository(env);
-	return await repo.getTeamAgents(userId);
+export async function getUserTeamAgents(
+	context: ServiceContext,
+	userId?: number,
+) {
+	context.ensureDatabase();
+	const id = userId ?? context.requireUser().id;
+	return context.repositories.agents.getTeamAgents(id);
 }
 
 export async function getAgentsByTeam(
-	env: IEnv,
+	context: ServiceContext,
 	teamId: string,
-	userId: number,
+	userId?: number,
 ) {
-	const repo = new AgentRepository(env);
-	return await repo.getAgentsByTeamAndUser(teamId, userId);
+	context.ensureDatabase();
+	const id = userId ?? context.requireUser().id;
+	return context.repositories.agents.getAgentsByTeamAndUser(teamId, id);
 }
 
-export async function getAgentById(env: IEnv, agentId: string, userId: number) {
-	const repo = new AgentRepository(env);
-	const agent = await repo.getAgentById(agentId);
+export async function getAgentById(
+	context: ServiceContext,
+	agentId: string,
+	userId?: number,
+) {
+	context.ensureDatabase();
+	const id = userId ?? context.requireUser().id;
+	const agent = await context.repositories.agents.getAgentById(agentId);
 
 	if (!agent) {
 		throw new AssistantError("Agent not found", ErrorType.NOT_FOUND);
 	}
 
-	if (agent.user_id !== userId) {
+	if (agent.user_id !== id) {
 		throw new AssistantError("Forbidden", ErrorType.AUTHENTICATION_ERROR);
 	}
 
 	return agent;
 }
 
+interface CreateAgentParams {
+	name: string;
+	description: string;
+	avatar_url?: string | null;
+	servers?: any[];
+	model: string;
+	temperature: number;
+	max_steps: number;
+	system_prompt: string;
+	few_shot_examples?: any[];
+	team_id?: string;
+	team_role?: string;
+	is_team_agent?: boolean;
+}
+
 export async function createAgent(
-	env: IEnv,
-	user: IUser,
-	params: {
-		name: string;
-		description: string;
-		avatar_url?: string | null;
-		servers?: any[];
-		model: string;
-		temperature: number;
-		max_steps: number;
-		system_prompt: string;
-		few_shot_examples?: any[];
-		team_id?: string;
-		team_role?: string;
-		is_team_agent?: boolean;
-	},
+	context: ServiceContext,
+	params: CreateAgentParams,
+	user?: IUser,
 ) {
-	const repo = new AgentRepository(env);
-	return await repo.createAgent(
-		user.id,
+	context.ensureDatabase();
+	const currentUser = user ?? context.requireUser();
+
+	return context.repositories.agents.createAgent(
+		currentUser.id,
 		params.name,
 		params.description,
 		params.avatar_url || null,
@@ -72,38 +87,47 @@ export async function createAgent(
 	);
 }
 
-export async function updateAgent(
-	env: IEnv,
-	agentId: string,
-	userId: number,
-	updates: {
-		name?: string;
-		description?: string;
-		avatar_url?: string | null;
-		servers?: any[];
-		model?: string;
-		temperature?: number;
-		max_steps?: number;
-		system_prompt?: string;
-		few_shot_examples?: any[];
-		team_id?: string;
-		team_role?: string;
-		is_team_agent?: boolean;
-	},
-) {
-	const agent = await getAgentById(env, agentId, userId);
+interface UpdateAgentParams {
+	name?: string;
+	description?: string;
+	avatar_url?: string | null;
+	servers?: any[];
+	model?: string;
+	temperature?: number;
+	max_steps?: number;
+	system_prompt?: string;
+	few_shot_examples?: any[];
+	team_id?: string;
+	team_role?: string;
+	is_team_agent?: boolean;
+}
 
-	const repo = new AgentRepository(env);
-	await repo.updateAgent(agentId, updates);
+export async function updateAgent(
+	context: ServiceContext,
+	agentId: string,
+	updates: UpdateAgentParams,
+	userId?: number,
+) {
+	context.ensureDatabase();
+	const id = userId ?? context.requireUser().id;
+
+	const agent = await getAgentById(context, agentId, id);
+
+	await context.repositories.agents.updateAgent(agentId, updates);
 
 	return agent;
 }
 
-export async function deleteAgent(env: IEnv, agentId: string, userId: number) {
-	const agent = await getAgentById(env, agentId, userId);
+export async function deleteAgent(
+	context: ServiceContext,
+	agentId: string,
+	userId?: number,
+) {
+	context.ensureDatabase();
+	const id = userId ?? context.requireUser().id;
 
-	const repo = new AgentRepository(env);
-	await repo.deleteAgent(agentId);
+	await getAgentById(context, agentId, id);
+	await context.repositories.agents.deleteAgent(agentId);
 
 	return { success: true };
 }

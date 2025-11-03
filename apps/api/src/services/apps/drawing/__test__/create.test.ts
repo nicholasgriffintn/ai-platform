@@ -1,14 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { StorageService } from "~/lib/storage";
-import { RepositoryManager } from "~/repositories";
+import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError } from "~/utils/errors";
 import { generateImageFromDrawing } from "../create";
 
-vi.mock("~/repositories", () => ({
-	RepositoryManager: {
-		getInstance: vi.fn(),
-	},
+vi.mock("~/lib/context/serviceContext", () => ({
+	resolveServiceContext: vi.fn(),
 }));
 
 vi.mock("~/lib/storage", () => ({
@@ -29,6 +27,7 @@ vi.mock("~/lib/prompts", () => ({
 
 const mockAppDataRepo = {
 	createAppDataWithItem: vi.fn(),
+	getAppDataById: vi.fn(),
 };
 
 const mockStorageService = {
@@ -48,6 +47,7 @@ const mockUser = {
 } as any;
 
 const mockEnv = {
+	DB: {},
 	AI: {
 		run: vi.fn(),
 	},
@@ -58,14 +58,30 @@ const mockEnv = {
 } as any;
 
 describe("generateImageFromDrawing", () => {
-	beforeEach(() => {
-		vi.mocked(RepositoryManager.getInstance).mockReturnValue({
-			appData: mockAppDataRepo,
-		} as any);
+	let mockContext: any;
 
+	beforeEach(() => {
 		vi.mocked(StorageService).mockImplementation(
 			() => mockStorageService as any,
 		);
+		mockContext = {
+			ensureDatabase: vi.fn(),
+			repositories: {
+				appData: mockAppDataRepo,
+			},
+			env: mockEnv,
+		};
+		mockAppDataRepo.createAppDataWithItem.mockReset();
+		mockAppDataRepo.getAppDataById.mockReset();
+		mockEnv.AI.run.mockReset();
+		mockStorageService.uploadObject.mockReset();
+		mockAppDataRepo.getAppDataById.mockResolvedValue({
+			id: "app-data-123",
+			data: JSON.stringify({}),
+			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString(),
+		});
+		vi.mocked(resolveServiceContext).mockReturnValue(mockContext);
 	});
 
 	afterEach(() => {
@@ -127,12 +143,28 @@ describe("generateImageFromDrawing", () => {
 		mockAppDataRepo.createAppDataWithItem.mockResolvedValue({
 			id: "app-data-123",
 		});
+		mockAppDataRepo.getAppDataById.mockResolvedValue({
+			id: "app-data-123",
+			data: JSON.stringify({
+				description: "A beautiful landscape with mountains",
+				drawingUrl:
+					"https://assets.example.com/drawings/test-drawing-id/image.png",
+				paintingUrl:
+					"https://assets.example.com/drawings/test-drawing-id/painting.png",
+				drawingKey: "drawings/test-drawing-id/image.png",
+				paintingKey: "drawings/test-drawing-id/painting.png",
+			}),
+			created_at: "2023-01-01T00:00:00Z",
+			updated_at: "2023-01-01T01:00:00Z",
+		});
 
 		const result = await generateImageFromDrawing({
 			env: mockEnv,
 			request: { drawing: mockDrawing },
 			user: mockUser,
 		});
+
+		expect(mockContext.ensureDatabase).toHaveBeenCalled();
 
 		expect(mockEnv.AI.run).toHaveBeenCalledTimes(2);
 		expect(mockEnv.AI.run).toHaveBeenNthCalledWith(
@@ -562,6 +594,13 @@ describe("generateImageFromDrawing", () => {
 		});
 
 		const envWithoutAssets = { ...mockEnv, PUBLIC_ASSETS_URL: undefined };
+		const contextWithoutAssets = {
+			...mockContext,
+			env: envWithoutAssets,
+		};
+		vi.mocked(resolveServiceContext).mockReturnValueOnce(
+			contextWithoutAssets as any,
+		);
 
 		const result = await generateImageFromDrawing({
 			env: envWithoutAssets,

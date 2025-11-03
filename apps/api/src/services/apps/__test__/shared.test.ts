@@ -18,7 +18,7 @@ vi.mock("~/utils/id", () => ({
 }));
 
 describe("shared services", () => {
-	const mockEnv = {} as any;
+	const mockEnv = { DB: {} } as any;
 
 	beforeEach(() => {
 		vi.clearAllMocks();

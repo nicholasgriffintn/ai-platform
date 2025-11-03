@@ -13,6 +13,7 @@ import {
 	successResponseSchema,
 } from "@assistant/schemas";
 
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { checkPlanRequirement } from "~/services/user/userOperations";
 import {
@@ -78,7 +79,11 @@ app.get(
 		}
 
 		try {
-			const notes = await listNotes({ env: c.env as IEnv, userId: user.id });
+			const serviceContext = getServiceContext(c);
+			const notes = await listNotes({
+				context: serviceContext,
+				userId: user.id,
+			});
 			return c.json({ notes });
 		} catch (error) {
 			if (error instanceof AssistantError) {
@@ -142,8 +147,9 @@ app.get(
 		}
 
 		try {
+			const serviceContext = getServiceContext(c);
 			const note = await getNote({
-				env: c.env as IEnv,
+				context: serviceContext,
 				userId: user.id,
 				noteId: id,
 			});
@@ -228,7 +234,13 @@ app.post(
 			content: string;
 		};
 		try {
-			const note = await createNote({ env: c.env as IEnv, user, data: body });
+			const serviceContext = getServiceContext(c);
+			const note = await createNote({
+				context: serviceContext,
+				env: c.env as IEnv,
+				user,
+				data: body,
+			});
 			return c.json({ note });
 		} catch (error) {
 			if (error instanceof AssistantError) {
@@ -323,9 +335,11 @@ app.put(
 		}
 
 		try {
+			const serviceContext = getServiceContext(c);
 			const note = await updateNote({
+				context: serviceContext,
 				env: c.env as IEnv,
-				userId: user.id,
+				user,
 				noteId: id,
 				data: body,
 			});
@@ -395,7 +409,13 @@ app.delete(
 		}
 
 		try {
-			await deleteNote({ env: c.env as IEnv, userId: user.id, noteId: id });
+			const serviceContext = getServiceContext(c);
+			await deleteNote({
+				context: serviceContext,
+				env: c.env as IEnv,
+				user,
+				noteId: id,
+			});
 			return c.json({ success: true, message: "Note deleted" });
 		} catch (error) {
 			if (error instanceof AssistantError) {
@@ -485,7 +505,9 @@ app.post(
 		}
 
 		try {
+			const serviceContext = getServiceContext(c);
 			const result = await formatNote({
+				context: serviceContext,
 				env: c.env as IEnv,
 				user,
 				noteId: id,

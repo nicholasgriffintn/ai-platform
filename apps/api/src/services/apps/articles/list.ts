@@ -1,7 +1,8 @@
 import {
-	type AppData,
-	AppDataRepository,
-} from "~/repositories/AppDataRepository";
+	createServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
+import { type AppData } from "~/repositories/AppDataRepository";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -27,17 +28,13 @@ interface SessionItemGroup {
 	items: AppData[];
 }
 
-/**
- * Lists summaries of all article analysis sessions for a user.
- * @param env - The environment variables
- * @param userId - The ID of the user
- * @returns The list of article session summaries
- */
 export async function listArticles({
+	context,
 	env,
 	userId,
 }: {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	userId: number;
 }): Promise<ListSuccessResponse> {
 	if (!userId) {
@@ -45,7 +42,24 @@ export async function listArticles({
 	}
 
 	try {
-		const appDataRepo = new AppDataRepository(env);
+		const serviceContext =
+			context ??
+			(env
+				? createServiceContext({
+						env,
+						user: null,
+					})
+				: null);
+
+		if (!serviceContext) {
+			throw new AssistantError(
+				"Service context is required",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+
+		serviceContext.ensureDatabase();
+		const appDataRepo = serviceContext.repositories.appData;
 		const allArticleData = await appDataRepo.getAppDataByUserAndApp(
 			userId,
 			"articles",

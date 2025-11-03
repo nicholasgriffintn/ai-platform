@@ -27,6 +27,15 @@ describe("handlePodcastSummarise", () => {
 		AI: mockAI,
 	} as any;
 	const mockUser = { id: "user-123", email: "test@example.com" } as any;
+	const mockContext = {
+		env: mockEnv,
+		user: mockUser,
+		repositories: mockRepositories,
+		ensureDatabase: vi.fn(),
+		requireUser: vi.fn(() => mockUser),
+		database: {} as any,
+		requestId: undefined,
+	} as any;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -45,7 +54,7 @@ describe("handlePodcastSummarise", () => {
 		]);
 
 		const result = (await handlePodcastSummarise({
-			env: mockEnv,
+			context: mockContext,
 			request: {
 				podcastId: "podcast-123",
 				speakers: { A: "Speaker 1", B: "Speaker 2" },
@@ -87,7 +96,7 @@ describe("handlePodcastSummarise", () => {
 		});
 
 		const result = (await handlePodcastSummarise({
-			env: mockEnv,
+			context: mockContext,
 			request: {
 				podcastId: "podcast-123",
 				speakers: { A: "Speaker 1", B: "Speaker 2" },

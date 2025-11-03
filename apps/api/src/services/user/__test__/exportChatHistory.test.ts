@@ -56,7 +56,10 @@ describe("handleExportChatHistory", () => {
 			},
 		);
 
-		const rows = await handleExportChatHistory(baseEnv, user);
+		const rows = await handleExportChatHistory({
+			env: baseEnv,
+			user: user,
+		});
 		expect(rows).toEqual([]);
 	});
 
@@ -118,7 +121,10 @@ describe("handleExportChatHistory", () => {
 			},
 		);
 
-		const rows = await handleExportChatHistory(baseEnv, user);
+		const rows = await handleExportChatHistory({
+			env: baseEnv,
+			user: user,
+		});
 		expect(rows.length).toBe(3);
 		const ids = rows.map((r) => r.message_id);
 		expect(ids).toContain("m1");
@@ -161,7 +167,7 @@ describe("handleExportChatHistory", () => {
 			},
 		);
 
-		const rows = await handleExportChatHistory(baseEnv, user);
+		const rows = await handleExportChatHistory({ env: baseEnv, user });
 		expect(rows.length).toBe(2);
 		expect(getConversationMessages).toHaveBeenCalledTimes(2);
 	});

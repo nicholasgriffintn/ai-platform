@@ -34,6 +34,7 @@ import {
 import { allowRestrictedPaths } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
@@ -383,9 +384,12 @@ app.delete(
 	async (context: Context) => {
 		const userContext = context.get("user");
 
+		const serviceContext = getServiceContext(context);
+
 		const response = await handleDeleteAllChatCompletions({
 			env: context.env as IEnv,
 			user: userContext,
+			context: serviceContext,
 		});
 
 		return context.json(response);
@@ -435,10 +439,13 @@ app.get(
 
 		const refreshPending = context.req.query("refresh_pending") === "true";
 
+		const serviceContext = getServiceContext(context);
+
 		const data = await handleGetChatCompletion(
 			{
 				env: context.env as IEnv,
 				user: userContext,
+				context: serviceContext,
 			},
 			completion_id,
 			{ refreshPending },
@@ -493,9 +500,10 @@ app.get(
 
 		const anonymousUser = context.get("anonymousUser");
 
+		const serviceContext = getServiceContext(context);
+
 		const { messages, conversation_id } = await handleGetChatMessages(
-			context.env,
-			userContext,
+			serviceContext,
 			anonymousUser,
 			completion_id,
 			limit,
@@ -547,9 +555,10 @@ app.get(
 		const user = context.get("user");
 		const anonymousUser = context.get("anonymousUser");
 
+		const serviceContext = getServiceContext(context);
+
 		const { message, conversation_id } = await handleGetChatMessageById(
-			context.env,
-			user,
+			serviceContext,
 			anonymousUser,
 			message_id,
 		);
@@ -614,10 +623,13 @@ app.get(
 		const page = Number.parseInt(context.req.query("page") || "1", 10);
 		const includeArchived = context.req.query("include_archived") === "true";
 
+		const serviceContext = getServiceContext(context);
+
 		const response = await handleListChatCompletions(
 			{
 				env: context.env as IEnv,
 				user: userContext,
+				context: serviceContext,
 			},
 			{
 				limit,
@@ -682,9 +694,12 @@ app.post(
 		};
 		const userContext = context.get("user");
 
+		const serviceContext = getServiceContext(context);
+
 		const requestObj = {
 			env: context.env as IEnv,
 			user: userContext,
+			context: serviceContext,
 		};
 
 		const response = await handleGenerateChatCompletionTitle(
@@ -755,9 +770,12 @@ app.put(
 		const updates = context.req.valid("json" as never);
 		const userContext = context.get("user");
 
+		const serviceContext = getServiceContext(context);
+
 		const requestObj = {
 			env: context.env as IEnv,
 			user: userContext,
+			context: serviceContext,
 		};
 
 		const response = await handleUpdateChatCompletion(
@@ -815,9 +833,12 @@ app.delete(
 		};
 		const userContext = context.get("user");
 
+		const serviceContext = getServiceContext(context);
+
 		const requestObj = {
 			env: context.env as IEnv,
 			user: userContext,
+			context: serviceContext,
 		};
 
 		const response = await handleDeleteChatCompletion(
@@ -1008,10 +1029,13 @@ app.post(
 		};
 		const userContext = context.get("user");
 
+		const serviceContext = getServiceContext(context);
+
 		const result = await handleShareConversation(
 			{
 				env: context.env as IEnv,
 				user: userContext,
+				context: serviceContext,
 			},
 			completion_id,
 		);
@@ -1064,10 +1088,13 @@ app.delete(
 		};
 		const userContext = context.get("user");
 
+		const serviceContext = getServiceContext(context);
+
 		const result = await handleUnshareConversation(
 			{
 				env: context.env as IEnv,
 				user: userContext,
+				context: serviceContext,
 			},
 			completion_id,
 		);
@@ -1130,9 +1157,12 @@ app.get(
 		const limit = Number.parseInt(context.req.query("limit") || "50", 10);
 		const after = context.req.query("after");
 
+		const serviceContext = getServiceContext(context);
+
 		const result = await handleGetSharedConversation(
 			{
 				env: context.env as IEnv,
+				context: serviceContext,
 			},
 			share_id,
 			limit,

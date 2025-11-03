@@ -82,6 +82,7 @@ export const create_video: IFunction = {
 			completion_id,
 			app_url,
 			env: req.env,
+			context: req.context,
 			args,
 			user: req.user,
 		});

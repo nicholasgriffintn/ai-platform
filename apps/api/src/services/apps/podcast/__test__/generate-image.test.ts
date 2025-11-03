@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { IFunctionResponse } from "~/types";
 import { AssistantError } from "~/utils/errors";
 import { handlePodcastGenerateImage } from "../generate-image";
@@ -18,12 +19,6 @@ const mockAI = {
 	run: vi.fn(),
 };
 
-vi.mock("~/repositories", () => ({
-	RepositoryManager: {
-		getInstance: vi.fn(() => mockRepositories),
-	},
-}));
-
 vi.mock("~/lib/storage", () => ({
 	StorageService: vi.fn(() => mockStorageService),
 }));
@@ -39,6 +34,17 @@ describe("handlePodcastGenerateImage", () => {
 		PUBLIC_ASSETS_URL: "https://assets.example.com",
 	} as any;
 	const mockUser = { id: "user-123", email: "test@example.com" } as any;
+	const createMockContext = (overrides: Partial<ServiceContext> = {}) =>
+		({
+			env: mockEnv,
+			user: mockUser,
+			repositories: mockRepositories as any,
+			ensureDatabase: vi.fn(),
+			requireUser: vi.fn(() => mockUser),
+			database: {} as any,
+			requestId: undefined,
+			...overrides,
+		}) satisfies ServiceContext;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -60,7 +66,7 @@ describe("handlePodcastGenerateImage", () => {
 		]);
 
 		const result = (await handlePodcastGenerateImage({
-			env: mockEnv,
+			context: createMockContext(),
 			request: { podcastId: "podcast-123" },
 			user: mockUser,
 		})) as IFunctionResponse;
@@ -102,7 +108,7 @@ describe("handlePodcastGenerateImage", () => {
 		mockAI.run.mockResolvedValue(mockImageStream);
 
 		const result = (await handlePodcastGenerateImage({
-			env: mockEnv,
+			context: createMockContext(),
 			request: { podcastId: "podcast-123" },
 			user: mockUser,
 		})) as IFunctionResponse;
@@ -136,7 +142,7 @@ describe("handlePodcastGenerateImage", () => {
 	it("should throw error for missing podcast ID", async () => {
 		await expect(
 			handlePodcastGenerateImage({
-				env: mockEnv,
+				context: createMockContext(),
 				request: { podcastId: "" },
 				user: mockUser,
 			}),
@@ -146,7 +152,7 @@ describe("handlePodcastGenerateImage", () => {
 	it("should throw error for missing user ID", async () => {
 		await expect(
 			handlePodcastGenerateImage({
-				env: mockEnv,
+				context: createMockContext({ user: {} as any }),
 				request: { podcastId: "podcast-123" },
 				user: {} as any,
 			}),

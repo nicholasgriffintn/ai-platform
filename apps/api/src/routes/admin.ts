@@ -15,6 +15,7 @@ import {
 	getAllSharedAgentsForAdmin,
 } from "~/services/admin/sharedAgents";
 import type { IEnv } from "~/types";
+import { getServiceContext } from "~/lib/context/serviceContext";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("admin");
@@ -52,12 +53,15 @@ app.put(
 
 		const currentUser = ctx.get("user");
 
-		const result = await setAgentFeaturedStatus(
-			ctx.env,
-			id,
+		const serviceContext = getServiceContext(ctx);
+
+		const result = await setAgentFeaturedStatus({
+			context: serviceContext,
+			env: ctx.env,
+			agentId: id,
 			featured,
-			currentUser,
-		);
+			moderator: currentUser,
+		});
 
 		if (!result.success) {
 			return ctx.json(
@@ -134,13 +138,16 @@ app.put(
 
 		const currentUser = ctx.get("user");
 
-		const result = await moderateAgent(
-			ctx.env,
-			id,
-			is_public,
+		const serviceContext = getServiceContext(ctx);
+
+		const result = await moderateAgent({
+			context: serviceContext,
+			env: ctx.env,
+			agentId: id,
+			isPublic: is_public,
 			reason,
-			currentUser,
-		);
+			moderator: currentUser,
+		});
 
 		if (!result.success) {
 			return ctx.json(

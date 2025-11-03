@@ -1,4 +1,7 @@
-import { RepositoryManager } from "~/repositories";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -16,17 +19,21 @@ export interface Drawing {
 }
 
 export async function listDrawings({
+	context,
 	env,
 	userId,
 }: {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	userId: number;
 }): Promise<Drawing[]> {
 	if (!userId) {
 		throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
 	}
 
-	const repo = RepositoryManager.getInstance(env).appData;
+	const serviceContext = resolveServiceContext({ context, env });
+	serviceContext.ensureDatabase();
+	const repo = serviceContext.repositories.appData;
 	const list = await repo.getAppDataByUserAndApp(userId, "drawings");
 
 	return list.map((entry) => {

@@ -1,21 +1,26 @@
 import { ConversationManager } from "~/lib/conversationManager";
-import { Database } from "~/lib/database";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, Message } from "~/types";
 
 interface GetSharedConversationRequest {
 	env: IEnv;
+	context?: ServiceContext;
 }
 
 export async function handleGetSharedConversation(
-	{ env }: GetSharedConversationRequest,
+	{ env, context }: GetSharedConversationRequest,
 	share_id: string,
 	limit = 50,
 	after?: string,
 ): Promise<{ messages: Message[]; share_id: string }> {
-	const database = Database.getInstance(env);
+	const serviceContext = resolveServiceContext({ context, env });
+	serviceContext.ensureDatabase();
 
 	const conversationManager = ConversationManager.getInstance({
-		database,
+		database: serviceContext.database,
 	});
 
 	const messages = await conversationManager.getPublicConversation(

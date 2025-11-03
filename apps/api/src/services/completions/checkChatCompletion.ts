@@ -1,5 +1,5 @@
 import { ConversationManager } from "~/lib/conversationManager";
-import { Database } from "~/lib/database";
+import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { Guardrails } from "~/lib/guardrails";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -12,19 +12,12 @@ export const handleCheckChatCompletion = async (
 	content: string;
 	data: any;
 }> => {
-	const { env, user } = req;
+	const { env, user, context } = req;
 
 	if (!user?.id) {
 		throw new AssistantError(
 			"Authentication required",
 			ErrorType.AUTHENTICATION_ERROR,
-		);
-	}
-
-	if (!env.DB) {
-		throw new AssistantError(
-			"Missing DB binding",
-			ErrorType.CONFIGURATION_ERROR,
 		);
 	}
 
@@ -35,17 +28,18 @@ export const handleCheckChatCompletion = async (
 		);
 	}
 
-	const database = Database.getInstance(env);
+	const serviceContext = resolveServiceContext({ context, env, user });
+	serviceContext.ensureDatabase();
 
 	const conversationManager = ConversationManager.getInstance({
-		database,
+		database: serviceContext.database,
 		user,
 	});
 
 	let messages;
 	try {
 		messages = await conversationManager.get(completion_id);
-	} catch (_error) {
+	} catch {
 		throw new AssistantError(
 			"Conversation not found or you don't have access to it",
 			ErrorType.NOT_FOUND,
@@ -65,8 +59,8 @@ export const handleCheckChatCompletion = async (
 
 	const roleToCheck = role || "user";
 
-	const userSettings = await database.getUserSettings(user?.id);
-	const guardrails = new Guardrails(env, user, userSettings);
+	const userSettings = await serviceContext.database.getUserSettings(user?.id);
+	const guardrails = new Guardrails(serviceContext.env, user, userSettings);
 	const validation =
 		roleToCheck === "user"
 			? await guardrails.validateInput(

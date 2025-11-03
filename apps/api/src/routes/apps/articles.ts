@@ -12,6 +12,7 @@ import {
 	errorResponseSchema,
 } from "@assistant/schemas";
 
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { checkPlanRequirement } from "~/services/user/userOperations";
 import { analyseArticle } from "~/services/apps/articles/analyse";
@@ -24,7 +25,7 @@ import {
 	cleanupArticleSession,
 } from "~/services/apps/articles/summarise";
 import { extractContent } from "~/services/apps/retrieval/content-extract";
-import type { IEnv, IUser } from "~/types";
+import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
@@ -90,9 +91,10 @@ app.get(
 		}
 
 		try {
+			const serviceContext = getServiceContext(context);
 			const response = await listArticles({
-				env: context.env as IEnv,
-				userId: user?.id,
+				context: serviceContext,
+				userId: user.id,
 			});
 
 			return context.json({ articles: response.sessions });
@@ -205,10 +207,11 @@ app.get(
 		);
 
 		try {
+			const serviceContext = getServiceContext(context);
 			const response = await getSourceArticles({
-				env: context.env as IEnv,
+				context: serviceContext,
 				ids: validIds,
-				userId: user?.id,
+				userId: user.id,
 			});
 
 			return context.json({ status: "success", articles: response.articles });
@@ -299,10 +302,11 @@ app.get(
 		}
 
 		try {
+			const serviceContext = getServiceContext(context);
 			const response = await getArticleDetails({
-				env: context.env as IEnv,
+				context: serviceContext,
 				id: id ?? "",
-				userId: user?.id,
+				userId: user.id,
 			});
 
 			return context.json({ article: response.article });
@@ -399,9 +403,10 @@ app.post(
 			const newUrl = new URL(context.req.url);
 			const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
+			const serviceContext = getServiceContext(context);
 			const response = await analyseArticle({
 				completion_id,
-				env: context.env as IEnv,
+				context: serviceContext,
 				args: { article: body.article, itemId: body.itemId },
 				app_url,
 				user,
@@ -504,9 +509,10 @@ app.post(
 			const newUrl = new URL(context.req.url);
 			const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
+			const serviceContext = getServiceContext(context);
 			const response = await summariseArticle({
 				completion_id,
-				env: context.env as IEnv,
+				context: serviceContext,
 				args: { article: body.article, itemId: body.itemId },
 				app_url,
 				user,
@@ -617,9 +623,10 @@ app.post(
 			const newUrl = new URL(context.req.url);
 			const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
+			const serviceContext = getServiceContext(context);
 			const response = await generateArticlesReport({
 				completion_id,
-				env: context.env as IEnv,
+				context: serviceContext,
 				args: { itemId: body.itemId },
 				app_url,
 				user,
@@ -730,7 +737,8 @@ app.post(
 
 		try {
 			// Delete existing analyses and summaries for this session
-			await cleanupArticleSession(context.env as IEnv, user.id, itemId);
+			const serviceContext = getServiceContext(context);
+			await cleanupArticleSession(serviceContext, user.id, itemId);
 
 			return context.json({
 				status: "success",
@@ -841,7 +849,7 @@ app.post(
 					include_images: body.include_images || false,
 				},
 				{
-					env: context.env as IEnv,
+					env: context.env,
 					user,
 				},
 			);

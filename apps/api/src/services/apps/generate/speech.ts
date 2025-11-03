@@ -1,6 +1,11 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { AIProviderFactory } from "~/lib/providers/factory";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export interface SpeechGenerationParams {
 	prompt: string;
@@ -18,12 +23,14 @@ export async function generateSpeech({
 	completion_id,
 	app_url,
 	env,
+	context,
 	args,
 	user,
 }: {
 	completion_id: string;
 	app_url: string | undefined;
-	env: IEnv;
+	env?: IEnv;
+	context?: ServiceContext;
 	args: SpeechGenerationParams;
 	user: IUser;
 }): Promise<SpeechResponse> {
@@ -37,6 +44,10 @@ export async function generateSpeech({
 	}
 
 	try {
+		const serviceContext = resolveServiceContext({ context, env, user });
+		const runtimeEnv = serviceContext.env;
+		const runtimeUser = serviceContext.user ?? user;
+
 		const provider = AIProviderFactory.getProvider("workers-ai");
 
 		const sanitisedPrompt = sanitiseInput(args.prompt);
@@ -58,8 +69,8 @@ export async function generateSpeech({
 				},
 			],
 			lang: args.lang || "en",
-			env: env,
-			user: user,
+			env: runtimeEnv,
+			user: runtimeUser,
 		});
 
 		return {

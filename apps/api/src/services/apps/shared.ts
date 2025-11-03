@@ -1,4 +1,7 @@
-import { AppDataRepository } from "~/repositories/AppDataRepository";
+import {
+	createServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -9,7 +12,8 @@ const logger = getLogger({ prefix: "services/apps/shared" });
 export interface ShareItemParams {
 	userId: number;
 	id: string;
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 }
 
 export interface SharedItem {
@@ -24,21 +28,33 @@ export interface SharedItem {
 	updatedAt: string;
 }
 
-/**
- * Shares an app item by generating a share ID
- * @param params - The share item parameters
- * @returns The share ID
- */
 export async function shareItem(
 	params: ShareItemParams,
 ): Promise<{ shareId: string }> {
-	const { userId, id, env } = params;
+	const { userId, id, context, env } = params;
 
 	if (!userId) {
 		throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
 	}
 
-	const appDataRepo = new AppDataRepository(env);
+	const serviceContext =
+		context ??
+		(env
+			? createServiceContext({
+					env,
+					user: null,
+				})
+			: null);
+
+	if (!serviceContext) {
+		throw new AssistantError(
+			"Service context is required",
+			ErrorType.CONFIGURATION_ERROR,
+		);
+	}
+
+	serviceContext.ensureDatabase();
+	const appDataRepo = serviceContext.repositories.appData;
 
 	const appData = await appDataRepo.getAppDataByItemId(id);
 
@@ -58,24 +74,37 @@ export async function shareItem(
 	return { shareId };
 }
 
-/**
- * Gets a shared app item by its share ID
- * @param env - The environment variables
- * @param shareId - The share ID
- * @returns The shared item
- */
 export async function getSharedItem({
+	context,
 	env,
 	shareId,
 }: {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	shareId: string;
 }): Promise<SharedItem> {
 	if (!shareId) {
 		throw new AssistantError("Share ID is required", ErrorType.PARAMS_ERROR);
 	}
 
-	const appDataRepo = new AppDataRepository(env);
+	const serviceContext =
+		context ??
+		(env
+			? createServiceContext({
+					env,
+					user: null,
+				})
+			: null);
+
+	if (!serviceContext) {
+		throw new AssistantError(
+			"Service context is required",
+			ErrorType.CONFIGURATION_ERROR,
+		);
+	}
+
+	serviceContext.ensureDatabase();
+	const appDataRepo = serviceContext.repositories.appData;
 	const appData = await appDataRepo.getAppDataByShareId(shareId);
 
 	if (!appData) {

@@ -2,10 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleGenerateChatCompletionTitle } from "../generateChatCompletionTitle";
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn(),
-	},
+vi.mock("~/lib/context/serviceContext", () => ({
+	resolveServiceContext: vi.fn(),
 }));
 
 vi.mock("~/lib/conversationManager", () => ({
@@ -43,8 +41,10 @@ const mockRequest = {
 	user: mockUser,
 };
 
+let mockServiceContext: any;
+let resolveServiceContext: any;
+
 describe("handleGenerateChatCompletionTitle", () => {
-	let mockDatabase: any;
 	let mockConversationManager: any;
 	let mockGetAuxiliaryModel: any;
 	let mockAIProviderFactory: any;
@@ -53,15 +53,11 @@ describe("handleGenerateChatCompletionTitle", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		const { Database } = await import("~/lib/database");
+		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
 		const { getAuxiliaryModel } = await import("~/lib/models");
 		const { AIProviderFactory } = await import("~/lib/providers/factory");
 		const { sanitiseMessages } = await import("~/lib/chat/utils");
-
-		mockDatabase = {
-			getUserSettings: vi.fn(),
-		};
 
 		mockConversationManager = {
 			get: vi.fn(),
@@ -72,7 +68,15 @@ describe("handleGenerateChatCompletionTitle", () => {
 		mockAIProviderFactory = vi.mocked(AIProviderFactory);
 		mockSanitiseMessages = vi.mocked(sanitiseMessages);
 
-		vi.mocked(Database.getInstance).mockReturnValue(mockDatabase);
+		mockServiceContext = {
+			env: mockEnv,
+			user: mockUser,
+			ensureDatabase: vi.fn(),
+			database: { getUserSettings: vi.fn() },
+			repositories: {} as any,
+		};
+
+		vi.mocked(resolveServiceContext).mockReturnValue(mockServiceContext);
 		vi.mocked(ConversationManager.getInstance).mockReturnValue(
 			mockConversationManager,
 		);
@@ -100,6 +104,14 @@ describe("handleGenerateChatCompletionTitle", () => {
 				user: mockUser,
 			} as any;
 
+			vi.mocked(resolveServiceContext).mockImplementationOnce(() => ({
+				env: { DB: "test-db" },
+				user: mockUser,
+				ensureDatabase: vi.fn(),
+				database: { getUserSettings: vi.fn() },
+				repositories: {} as any,
+			}));
+
 			await expect(() =>
 				handleGenerateChatCompletionTitle(requestWithoutAI, "completion-123"),
 			).rejects.toThrow("AI binding is not available");
@@ -111,9 +123,13 @@ describe("handleGenerateChatCompletionTitle", () => {
 				user: mockUser,
 			} as any;
 
+			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
+				throw new Error("Database not configured");
+			});
+
 			await expect(() =>
 				handleGenerateChatCompletionTitle(requestWithoutDB, "completion-123"),
-			).rejects.toThrow("Missing DB binding");
+			).rejects.toThrow("Database not configured");
 		});
 
 		it("should throw error for missing user", async () => {
@@ -267,9 +283,8 @@ describe("handleGenerateChatCompletionTitle", () => {
 			).rejects.toThrow("AI provider failed");
 		});
 
-		it("should handle database connection errors", async () => {
-			const { Database } = await import("~/lib/database");
-			vi.mocked(Database.getInstance).mockImplementation(() => {
+		it("should handle service context errors", async () => {
+			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
 				throw new Error("Database connection failed");
 			});
 

@@ -2,6 +2,10 @@ import { sanitiseInput } from "~/lib/chat/utils";
 import { getModelConfigByModel } from "~/lib/models";
 import { validateReplicatePayload } from "~/lib/models/utils/replicateValidation";
 import { AIProviderFactory } from "~/lib/providers/factory";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IEnv, IUser } from "~/types";
 
@@ -24,16 +28,22 @@ export async function generateMusic({
 	completion_id,
 	app_url,
 	env,
+	context,
 	args,
 	user,
 }: {
 	completion_id: string;
 	app_url: string | undefined;
-	env: IEnv;
+	env?: IEnv;
+	context?: ServiceContext;
 	args: MusicGenerationParams;
 	user: IUser;
 }): Promise<MusicResponse> {
 	try {
+		const serviceContext = resolveServiceContext({ context, env, user });
+		const runtimeEnv = serviceContext.env;
+		const runtimeUser = serviceContext.user ?? user;
+
 		if (!args.prompt) {
 			return {
 				status: "error",
@@ -93,8 +103,8 @@ export async function generateMusic({
 			body: {
 				input: replicatePayload,
 			},
-			env: env,
-			user: user,
+			env: runtimeEnv,
+			user: runtimeUser,
 		});
 
 		return {

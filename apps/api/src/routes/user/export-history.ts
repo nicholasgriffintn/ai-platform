@@ -2,6 +2,7 @@ import { type Context, Hono } from "hono";
 import { describeRoute, resolver } from "hono-openapi";
 import { errorResponseSchema } from "@assistant/schemas";
 
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
 import type { User } from "~/types";
 import { handleExportChatHistory } from "~/services/user/exportChatHistory";
@@ -47,7 +48,13 @@ app.get(
 		}
 
 		try {
-			const json = await handleExportChatHistory(c.env, user);
+			const serviceContext = getServiceContext(c);
+
+			const json = await handleExportChatHistory({
+				context: serviceContext,
+				env: c.env,
+				user: user,
+			});
 
 			const ts = new Date().toISOString().replace(/[:.]/g, "-");
 			const filename = `chat-history-${ts}.json`;

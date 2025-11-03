@@ -1,14 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { RepositoryManager } from "~/repositories";
 import { AssistantError } from "~/utils/errors";
 import { getDrawingDetails } from "../get-details";
-
-vi.mock("~/repositories", () => ({
-	RepositoryManager: {
-		getInstance: vi.fn(),
-	},
-}));
 
 vi.mock("~/utils/logger", () => ({
 	getLogger: () => ({
@@ -21,15 +14,26 @@ const mockAppDataRepo = {
 };
 
 const mockEnv = {
+	DB: {},
 	DATABASE_URL: "test-url",
 	API_KEY: "test-key",
 } as any;
 
-describe("getDrawingDetails", () => {
-	beforeEach(() => {
-		vi.mocked(RepositoryManager.getInstance).mockReturnValue({
+const createContext = () =>
+	({
+		ensureDatabase: vi.fn(),
+		repositories: {
 			appData: mockAppDataRepo,
-		} as any);
+		},
+		env: mockEnv,
+	}) as any;
+
+describe("getDrawingDetails", () => {
+	let mockContext: any;
+
+	beforeEach(() => {
+		mockAppDataRepo.getAppDataById.mockReset();
+		mockContext = createContext();
 	});
 
 	afterEach(() => {
@@ -39,7 +43,7 @@ describe("getDrawingDetails", () => {
 	it("should throw AssistantError when userId is missing", async () => {
 		await expect(
 			getDrawingDetails({
-				env: mockEnv,
+				context: mockContext,
 				userId: 0,
 				drawingId: "drawing-1",
 			}),
@@ -47,7 +51,7 @@ describe("getDrawingDetails", () => {
 
 		await expect(
 			getDrawingDetails({
-				env: mockEnv,
+				context: mockContext,
 				userId: 0,
 				drawingId: "drawing-1",
 			}),
@@ -57,7 +61,7 @@ describe("getDrawingDetails", () => {
 	it("should throw AssistantError when drawingId is missing", async () => {
 		await expect(
 			getDrawingDetails({
-				env: mockEnv,
+				context: mockContext,
 				userId: 123,
 				drawingId: "",
 			}),
@@ -65,7 +69,7 @@ describe("getDrawingDetails", () => {
 
 		await expect(
 			getDrawingDetails({
-				env: mockEnv,
+				context: mockContext,
 				userId: 123,
 				drawingId: "",
 			}),
@@ -90,10 +94,12 @@ describe("getDrawingDetails", () => {
 		mockAppDataRepo.getAppDataById.mockResolvedValue(mockDrawing);
 
 		const result = await getDrawingDetails({
-			env: mockEnv,
+			context: mockContext,
 			userId: 123,
 			drawingId: "drawing-1",
 		});
+
+		expect(mockContext.ensureDatabase).toHaveBeenCalled();
 
 		expect(mockAppDataRepo.getAppDataById).toHaveBeenCalledWith("drawing-1");
 		expect(result).toEqual({
@@ -112,7 +118,7 @@ describe("getDrawingDetails", () => {
 
 		await expect(
 			getDrawingDetails({
-				env: mockEnv,
+				context: mockContext,
 				userId: 123,
 				drawingId: "non-existent",
 			}),
@@ -120,7 +126,7 @@ describe("getDrawingDetails", () => {
 
 		await expect(
 			getDrawingDetails({
-				env: mockEnv,
+				context: mockContext,
 				userId: 123,
 				drawingId: "non-existent",
 			}),
@@ -143,7 +149,7 @@ describe("getDrawingDetails", () => {
 
 		await expect(
 			getDrawingDetails({
-				env: mockEnv,
+				context: mockContext,
 				userId: 123,
 				drawingId: "drawing-1",
 			}),
@@ -151,7 +157,7 @@ describe("getDrawingDetails", () => {
 
 		await expect(
 			getDrawingDetails({
-				env: mockEnv,
+				context: mockContext,
 				userId: 123,
 				drawingId: "drawing-1",
 			}),
@@ -174,7 +180,7 @@ describe("getDrawingDetails", () => {
 
 		await expect(
 			getDrawingDetails({
-				env: mockEnv,
+				context: mockContext,
 				userId: 123,
 				drawingId: "entry-1",
 			}),
@@ -182,7 +188,7 @@ describe("getDrawingDetails", () => {
 
 		await expect(
 			getDrawingDetails({
-				env: mockEnv,
+				context: mockContext,
 				userId: 123,
 				drawingId: "entry-1",
 			}),
@@ -202,7 +208,7 @@ describe("getDrawingDetails", () => {
 		mockAppDataRepo.getAppDataById.mockResolvedValue(mockDrawing);
 
 		const result = await getDrawingDetails({
-			env: mockEnv,
+			context: mockContext,
 			userId: 123,
 			drawingId: "drawing-1",
 		});
@@ -231,7 +237,7 @@ describe("getDrawingDetails", () => {
 		mockAppDataRepo.getAppDataById.mockResolvedValue(mockDrawing);
 
 		const result = await getDrawingDetails({
-			env: mockEnv,
+			context: mockContext,
 			userId: 123,
 			drawingId: "drawing-1",
 		});
@@ -254,7 +260,7 @@ describe("getDrawingDetails", () => {
 
 		await expect(
 			getDrawingDetails({
-				env: mockEnv,
+				context: mockContext,
 				userId: 123,
 				drawingId: "drawing-1",
 			}),

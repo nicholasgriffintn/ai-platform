@@ -1,7 +1,10 @@
 import { getModelConfigByModel } from "~/lib/models";
 import { validateReplicatePayload } from "~/lib/models/utils/replicateValidation";
 import { AIProviderFactory } from "~/lib/providers/factory";
-import { RepositoryManager } from "~/repositories";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -15,7 +18,8 @@ export interface ExecuteReplicateModelParams {
 }
 
 export interface ExecuteReplicateModelRequest {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	params: ExecuteReplicateModelParams;
 	user: IUser;
 	app_url?: string;
@@ -24,7 +28,7 @@ export interface ExecuteReplicateModelRequest {
 export const executeReplicateModel = async (
 	req: ExecuteReplicateModelRequest,
 ) => {
-	const { params, env, user, app_url } = req;
+	const { params, context, env, user, app_url } = req;
 
 	if (!params.modelId || !params.input) {
 		throw new AssistantError(
@@ -36,6 +40,8 @@ export const executeReplicateModel = async (
 	if (!user?.id) {
 		throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
 	}
+
+	const serviceContext = resolveServiceContext({ context, env, user });
 
 	try {
 		const modelConfig = await getModelConfigByModel(params.modelId);
@@ -72,14 +78,12 @@ export const executeReplicateModel = async (
 			body: {
 				input: params.input,
 			},
-			env,
+			env: serviceContext.env,
 			user,
 			store: false,
 		});
 
 		const isAsync = predictionData?.status === "in_progress";
-
-		const repositories = RepositoryManager.getInstance(env);
 
 		const appData = {
 			modelId: params.modelId,
@@ -90,13 +94,14 @@ export const executeReplicateModel = async (
 			createdAt: new Date().toISOString(),
 		};
 
-		const stored = await repositories.appData.createAppDataWithItem(
-			user.id,
-			"replicate",
-			predictionId,
-			"prediction",
-			appData,
-		);
+		const stored =
+			await serviceContext.repositories.appData.createAppDataWithItem(
+				user.id,
+				"replicate",
+				predictionId,
+				"prediction",
+				appData,
+			);
 
 		if (!stored?.id) {
 			throw new AssistantError(

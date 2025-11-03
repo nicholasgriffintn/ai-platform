@@ -1,28 +1,31 @@
-import { ApiKeyRepository } from "~/repositories/ApiKeyRepository";
-import { IEnv } from "~/types";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { ApiKeyMetadata } from "~/repositories/ApiKeyRepository";
 
 export async function getUserApiKeys(
-	env: IEnv,
-	userId: number,
-): Promise<any[]> {
-	const apiKeyRepo = new ApiKeyRepository(env);
-	return await apiKeyRepo.getUserApiKeys(userId);
+	context: ServiceContext,
+	userId?: number,
+): Promise<ApiKeyMetadata[]> {
+	context.ensureDatabase();
+	const id = userId ?? context.requireUser().id;
+	return context.repositories.apiKeys.getUserApiKeys(id);
 }
 
 export async function createUserApiKey(
-	env: IEnv,
-	userId: number,
+	context: ServiceContext,
 	name: string,
-): Promise<{ plaintextKey: string; metadata: any }> {
-	const apiKeyRepo = new ApiKeyRepository(env);
-	return await apiKeyRepo.createApiKey(userId, name);
+	userId?: number,
+): Promise<{ plaintextKey: string; metadata: ApiKeyMetadata }> {
+	context.ensureDatabase();
+	const id = userId ?? context.requireUser().id;
+	return context.repositories.apiKeys.createApiKey(id, name);
 }
 
 export async function deleteUserApiKey(
-	env: IEnv,
-	userId: number,
+	context: ServiceContext,
 	keyId: string,
+	userId?: number,
 ): Promise<void> {
-	const apiKeyRepo = new ApiKeyRepository(env);
-	await apiKeyRepo.deleteApiKey(userId, keyId);
+	context.ensureDatabase();
+	const id = userId ?? context.requireUser().id;
+	await context.repositories.apiKeys.deleteApiKey(id, keyId);
 }

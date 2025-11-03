@@ -1,7 +1,9 @@
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
-import { SharedAgentRepository } from "~/repositories/SharedAgentRepository";
-import { UserRepository } from "~/repositories/UserRepository";
 import {
 	sendAgentFeaturedNotification,
 	sendAgentModerationNotification,
@@ -26,16 +28,26 @@ export interface ModeratedAgentResult {
 	error?: string;
 }
 
-export async function setAgentFeaturedStatus(
-	env: IEnv,
-	agentId: string,
-	featured: boolean,
-	moderator?: IUser,
-): Promise<FeaturedAgentResult> {
-	const repo = new SharedAgentRepository(env);
+export async function setAgentFeaturedStatus({
+	context,
+	env,
+	agentId,
+	featured,
+	moderator,
+}: {
+	context?: ServiceContext;
+	env?: IEnv;
+	agentId: string;
+	featured: boolean;
+	moderator?: IUser;
+}): Promise<FeaturedAgentResult> {
+	const serviceContext = resolveServiceContext({ context, env });
 
 	try {
-		const sharedAgent = await repo.getSharedAgentById(agentId);
+		const sharedAgent =
+			await serviceContext.repositories.sharedAgents.getSharedAgentById(
+				agentId,
+			);
 		if (!sharedAgent) {
 			return {
 				success: false,
@@ -43,15 +55,19 @@ export async function setAgentFeaturedStatus(
 			};
 		}
 
-		await repo.setFeatured(agentId, featured);
+		await serviceContext.repositories.sharedAgents.setFeatured(
+			agentId,
+			featured,
+		);
 
 		if (featured) {
-			const userRepo = new UserRepository(env);
-			const agentOwner = await userRepo.getUserById(sharedAgent.user_id);
+			const agentOwner = await serviceContext.repositories.users.getUserById(
+				sharedAgent.user_id,
+			);
 
 			if (agentOwner?.email) {
 				await sendAgentFeaturedNotification(
-					env,
+					serviceContext.env,
 					agentOwner.email,
 					agentOwner.name || "User",
 					{
@@ -85,17 +101,28 @@ export async function setAgentFeaturedStatus(
 	}
 }
 
-export async function moderateAgent(
-	env: IEnv,
-	agentId: string,
-	isPublic: boolean,
-	reason?: string,
-	moderator?: IUser,
-): Promise<ModeratedAgentResult> {
-	const repo = new SharedAgentRepository(env);
+export async function moderateAgent({
+	context,
+	env,
+	agentId,
+	isPublic,
+	reason,
+	moderator,
+}: {
+	context?: ServiceContext;
+	env?: IEnv;
+	agentId: string;
+	isPublic: boolean;
+	reason?: string;
+	moderator?: IUser;
+}): Promise<ModeratedAgentResult> {
+	const serviceContext = resolveServiceContext({ context, env });
 
 	try {
-		const sharedAgent = await repo.getSharedAgentById(agentId);
+		const sharedAgent =
+			await serviceContext.repositories.sharedAgents.getSharedAgentById(
+				agentId,
+			);
 		if (!sharedAgent) {
 			return {
 				success: false,
@@ -103,14 +130,18 @@ export async function moderateAgent(
 			};
 		}
 
-		await repo.moderateAgent(agentId, isPublic);
+		await serviceContext.repositories.sharedAgents.moderateAgent(
+			agentId,
+			isPublic,
+		);
 
-		const userRepo = new UserRepository(env);
-		const agentOwner = await userRepo.getUserById(sharedAgent.user_id);
+		const agentOwner = await serviceContext.repositories.users.getUserById(
+			sharedAgent.user_id,
+		);
 
 		if (agentOwner?.email) {
 			await sendAgentModerationNotification(
-				env,
+				serviceContext.env,
 				agentOwner.email,
 				agentOwner.name || "User",
 				{
@@ -143,10 +174,17 @@ export async function moderateAgent(
 	}
 }
 
-export async function getAllSharedAgentsForAdmin(
-	env: IEnv,
-): Promise<Record<string, unknown>[]> {
-	const repo = new SharedAgentRepository(env);
-	const agents = await repo.getAllSharedAgentsForAdmin({});
+export async function getAllSharedAgentsForAdmin({
+	context,
+	env,
+}: {
+	context?: ServiceContext;
+	env?: IEnv;
+}): Promise<Record<string, unknown>[]> {
+	const serviceContext = resolveServiceContext({ context, env });
+	const agents =
+		await serviceContext.repositories.sharedAgents.getAllSharedAgentsForAdmin(
+			{},
+		);
 	return agents as unknown as Record<string, unknown>[];
 }

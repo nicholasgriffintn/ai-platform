@@ -1,5 +1,8 @@
 import { TeamDelegation } from "~/lib/agents/team/TeamDelegation";
-import { AgentRepository } from "~/repositories/AgentRepository";
+import {
+	resolveServiceContext,
+	createServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IFunction, IFunctionResponse, IRequest, Message } from "~/types";
 import { getLogger } from "~/utils/logger";
 
@@ -37,7 +40,13 @@ export const delegateToTeamMember: IFunction = {
 		req: IRequest,
 	): Promise<IFunctionResponse> => {
 		try {
-			const agentRepository = new AgentRepository(req.env);
+			const serviceContext = resolveServiceContext({
+				context: req.context,
+				env: req.env,
+				user: req.user ?? null,
+			});
+			serviceContext.ensureDatabase();
+			const agentRepository = serviceContext.repositories.agents;
 
 			const currentAgentId = req.request.current_agent_id;
 
@@ -182,7 +191,13 @@ export const delegateToTeamMemberByRole: IFunction = {
 		req: IRequest,
 	): Promise<IFunctionResponse> => {
 		try {
-			const agentRepository = new AgentRepository(req.env);
+			const serviceContext = resolveServiceContext({
+				context: req.context,
+				env: req.env,
+				user: req.user ?? null,
+			});
+			serviceContext.ensureDatabase();
+			const agentRepository = serviceContext.repositories.agents;
 			const currentAgentId = req.request.current_agent_id;
 
 			if (!currentAgentId) {
@@ -265,7 +280,12 @@ export const getTeamMembers: IFunction = {
 		req: IRequest,
 	): Promise<IFunctionResponse> => {
 		try {
-			const agentRepository = new AgentRepository(req.env);
+			const serviceContext = createServiceContext({
+				env: req.env,
+				user: req.user ?? null,
+			});
+			serviceContext.ensureDatabase();
+			const agentRepository = serviceContext.repositories.agents;
 			const currentAgentId = req.request.current_agent_id;
 
 			if (!currentAgentId) {

@@ -1,7 +1,10 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/models";
 import { AIProviderFactory } from "~/lib/providers/factory";
-import { RepositoryManager } from "~/repositories";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -19,17 +22,21 @@ export interface Note {
 }
 
 export async function listNotes({
+	context,
 	env,
 	userId,
 }: {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	userId: number;
 }): Promise<Note[]> {
 	if (!userId) {
 		throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
 	}
 
-	const repo = RepositoryManager.getInstance(env).appData;
+	const serviceContext = resolveServiceContext({ context, env });
+	serviceContext.ensureDatabase();
+	const repo = serviceContext.repositories.appData;
 	const list = await repo.getAppDataByUserAndApp(userId, "notes");
 
 	return list.map((entry) => {
@@ -52,11 +59,13 @@ export async function listNotes({
 }
 
 export async function getNote({
+	context,
 	env,
 	userId,
 	noteId,
 }: {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	userId: number;
 	noteId: string;
 }): Promise<Note> {
@@ -67,7 +76,9 @@ export async function getNote({
 		);
 	}
 
-	const repo = RepositoryManager.getInstance(env).appData;
+	const serviceContext = resolveServiceContext({ context, env });
+	serviceContext.ensureDatabase();
+	const repo = serviceContext.repositories.appData;
 	const entry = await repo.getAppDataById(noteId);
 
 	if (!entry || entry.user_id !== userId || entry.app_id !== "notes") {
@@ -93,25 +104,30 @@ export async function getNote({
 }
 
 export async function createNote({
+	context,
 	env,
 	user,
 	data,
 }: {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	user: IUser;
 	data: { title: string; content: string; metadata?: Record<string, any> };
 }): Promise<Note> {
 	if (!user?.id) {
 		throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
 	}
-	const repo = RepositoryManager.getInstance(env).appData;
+	const serviceContext = resolveServiceContext({ context, env, user });
+	serviceContext.ensureDatabase();
+	const runtimeEnv = serviceContext.env as IEnv;
+	const repo = serviceContext.repositories.appData;
 	const noteId = generateId();
 
 	const sanitisedTitle = sanitiseInput(data.title);
 	const sanitisedContent = sanitiseInput(data.content);
 
 	const generatedMetadata = await generateNoteMetadata(
-		env,
+		runtimeEnv,
 		user,
 		sanitisedTitle,
 		sanitisedContent,
@@ -152,33 +168,42 @@ export async function createNote({
 }
 
 export async function updateNote({
+	context,
 	env,
-	userId,
+	user,
 	noteId,
 	data,
 }: {
-	env: IEnv;
-	userId: number;
+	context?: ServiceContext;
+	env?: IEnv;
+	user: IUser;
 	noteId: string;
 	data: { title: string; content: string; metadata?: Record<string, any> };
 }): Promise<Note> {
-	if (!userId || !noteId) {
+	if (!user?.id || !noteId) {
 		throw new AssistantError(
 			"Note ID and user ID are required",
 			ErrorType.PARAMS_ERROR,
 		);
 	}
 
-	const repo = RepositoryManager.getInstance(env).appData;
+	const serviceContext = resolveServiceContext({ context, env, user });
+	serviceContext.ensureDatabase();
+	const runtimeEnv = serviceContext.env as IEnv;
+	const repo = serviceContext.repositories.appData;
 	const existing = await repo.getAppDataById(noteId);
 
-	if (!existing || existing.user_id !== userId || existing.app_id !== "notes") {
+	if (
+		!existing ||
+		existing.user_id !== user.id ||
+		existing.app_id !== "notes"
+	) {
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
 	}
 
 	const generatedMetadata = await generateNoteMetadata(
-		env,
-		{ id: userId } as IUser,
+		runtimeEnv,
+		user,
 		data.title,
 		data.content,
 		data.metadata,
@@ -209,25 +234,33 @@ export async function updateNote({
 }
 
 export async function deleteNote({
+	context,
 	env,
-	userId,
+	user,
 	noteId,
 }: {
-	env: IEnv;
-	userId: number;
+	context?: ServiceContext;
+	env?: IEnv;
+	user: IUser;
 	noteId: string;
 }): Promise<void> {
-	if (!userId || !noteId) {
+	if (!user?.id || !noteId) {
 		throw new AssistantError(
 			"Note ID and user ID are required",
 			ErrorType.PARAMS_ERROR,
 		);
 	}
 
-	const repo = RepositoryManager.getInstance(env).appData;
+	const serviceContext = resolveServiceContext({ context, env, user });
+	serviceContext.ensureDatabase();
+	const repo = serviceContext.repositories.appData;
 	const existing = await repo.getAppDataById(noteId);
 
-	if (!existing || existing.user_id !== userId || existing.app_id !== "notes") {
+	if (
+		!existing ||
+		existing.user_id !== user.id ||
+		existing.app_id !== "notes"
+	) {
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
 	}
 
@@ -235,17 +268,27 @@ export async function deleteNote({
 }
 
 export async function formatNote({
+	context,
 	env,
 	user,
 	noteId,
 	prompt,
 }: {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	user: IUser;
 	noteId: string;
 	prompt?: string;
 }): Promise<{ content: string }> {
-	const note = await getNote({ env, userId: user.id, noteId });
+	const serviceContext = resolveServiceContext({ context, env, user });
+	serviceContext.ensureDatabase();
+	const runtimeEnv = serviceContext.env as IEnv;
+
+	const note = await getNote({
+		context: serviceContext,
+		userId: user.id,
+		noteId,
+	});
 
 	const promptText = `Transform and enhance my notes using these guidelines:
 
@@ -289,7 +332,7 @@ ${note.content}`;
 
 	try {
 		const { model: modelToUse, provider: providerToUse } =
-			await getAuxiliaryModel(env, user);
+			await getAuxiliaryModel(runtimeEnv, user);
 		const provider = AIProviderFactory.getProvider(providerToUse);
 
 		const messages = [
@@ -310,7 +353,7 @@ ${note.content}`;
 		const aiResult = await provider.getResponse(
 			{
 				model: modelToUse,
-				env,
+				env: runtimeEnv,
 				user,
 				messages,
 				temperature: 0.7,

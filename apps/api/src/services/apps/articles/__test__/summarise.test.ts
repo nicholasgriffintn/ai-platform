@@ -63,7 +63,7 @@ vi.mock("~/utils/verify", () => ({
 }));
 
 describe("summariseArticle", () => {
-	const mockEnv = {} as any;
+	const mockEnv = { DB: {} } as any;
 	const mockParams = {
 		completion_id: "test-completion",
 		app_url: "https://example.com",

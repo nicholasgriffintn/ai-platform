@@ -1,4 +1,7 @@
-import { RepositoryManager } from "~/repositories";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -7,7 +10,8 @@ import type { IPodcast } from "./list";
 const logger = getLogger();
 
 export interface IPodcastDetailRequest {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	podcastId: string;
 	user: IUser;
 }
@@ -25,13 +29,15 @@ interface PodcastItem {
 export const handlePodcastDetail = async (
 	req: IPodcastDetailRequest,
 ): Promise<IPodcast> => {
-	const { env, podcastId, user } = req;
+	const { env, context, podcastId, user } = req;
 
 	if (!user?.id) {
 		throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
 	}
 
-	const repositories = RepositoryManager.getInstance(env);
+	const serviceContext = resolveServiceContext({ context, env, user });
+	serviceContext.ensureDatabase();
+	const repositories = serviceContext.repositories;
 
 	const appDataItems = await repositories.appData.getAppDataByUserAppAndItem(
 		user.id,

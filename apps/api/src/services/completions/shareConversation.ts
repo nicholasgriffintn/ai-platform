@@ -1,15 +1,19 @@
 import { ConversationManager } from "~/lib/conversationManager";
-import { Database } from "~/lib/database";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface ShareConversationRequest {
 	env: IEnv;
 	user: User;
+	context?: ServiceContext;
 }
 
 export async function handleShareConversation(
-	{ env, user }: ShareConversationRequest,
+	{ env, user, context }: ShareConversationRequest,
 	completion_id: string,
 ): Promise<{ share_id: string }> {
 	if (!user || !user.id) {
@@ -19,10 +23,11 @@ export async function handleShareConversation(
 		);
 	}
 
-	const database = Database.getInstance(env);
+	const serviceContext = resolveServiceContext({ context, env, user });
+	serviceContext.ensureDatabase();
 
 	const conversationManager = ConversationManager.getInstance({
-		database,
+		database: serviceContext.database,
 		user,
 	});
 

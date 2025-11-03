@@ -1,28 +1,15 @@
 import { MemoryManager } from "~/lib/memory";
-import { MemoryRepository } from "~/repositories/MemoryRepository";
-import type { IEnv, User } from "~/types";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export const handleDeleteMemory = async (
-	env: IEnv,
-	user: User,
+	context: ServiceContext,
 	memoryId: string,
 ): Promise<Record<string, unknown>> => {
-	if (!user?.id) {
-		throw new AssistantError(
-			"User ID is required to delete a memory",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
-	}
+	context.ensureDatabase();
+	const user = context.requireUser();
 
-	if (!env.DB) {
-		throw new AssistantError(
-			"Missing database connection",
-			ErrorType.CONFIGURATION_ERROR,
-		);
-	}
-
-	const memoryManager = MemoryManager.getInstance(env, user);
+	const memoryManager = MemoryManager.getInstance(context.env, user);
 
 	const deleted = await memoryManager.deleteMemory(memoryId);
 

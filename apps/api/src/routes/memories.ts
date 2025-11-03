@@ -9,7 +9,7 @@ import {
 	memoryOperationResponseSchema,
 } from "@assistant/schemas";
 
-import type { IEnv, IRequest } from "~/types";
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleCreateMemoryGroup } from "~/services/memories/createGroup";
 import { handleListMemories } from "~/services/memories/listMemories";
@@ -55,11 +55,9 @@ app.get(
 				return context.json({ error: "User not authenticated" }, 401);
 			}
 
-			const result = await handleListMemories(
-				context.env as IEnv,
-				userContext,
-				groupId,
-			);
+			const serviceContext = getServiceContext(context);
+
+			const result = await handleListMemories(serviceContext, groupId);
 
 			return context.json(result);
 		} catch (error) {
@@ -110,9 +108,10 @@ app.post(
 				return context.json({ error: "User not authenticated" }, 401);
 			}
 
+			const serviceContext = getServiceContext(context);
+
 			const result = await handleCreateMemoryGroup(
-				context.env as IEnv,
-				userContext,
+				serviceContext,
 				title,
 				description,
 				category,
@@ -164,9 +163,10 @@ app.post(
 				return context.json({ error: "User not authenticated" }, 401);
 			}
 
+			const serviceContext = getServiceContext(context);
+
 			const result = await handleAddMemoriesToGroup(
-				context.env as IEnv,
-				userContext,
+				serviceContext,
 				groupId,
 				memory_ids,
 			);
@@ -213,11 +213,9 @@ app.delete(
 				return context.json({ error: "User not authenticated" }, 401);
 			}
 
-			const result = await handleDeleteMemory(
-				context.env as IEnv,
-				userContext,
-				memoryId,
-			);
+			const serviceContext = getServiceContext(context);
+
+			const result = await handleDeleteMemory(serviceContext, memoryId);
 
 			return context.json(result);
 		} catch (error) {
@@ -261,11 +259,9 @@ app.delete(
 				return context.json({ error: "User not authenticated" }, 401);
 			}
 
-			const result = await handleDeleteGroup(
-				context.env as IEnv,
-				userContext,
-				groupId,
-			);
+			const serviceContext = getServiceContext(context);
+
+			const result = await handleDeleteGroup(serviceContext, groupId);
 
 			return context.json(result);
 		} catch (error) {

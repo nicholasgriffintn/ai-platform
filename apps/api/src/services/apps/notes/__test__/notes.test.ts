@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError } from "~/utils/errors";
 import {
 	createNote,
@@ -17,10 +18,8 @@ const mockRepo = {
 	deleteAppData: vi.fn(),
 };
 
-vi.mock("~/repositories", () => ({
-	RepositoryManager: {
-		getInstance: vi.fn(() => ({ appData: mockRepo })),
-	},
+vi.mock("~/lib/context/serviceContext", () => ({
+	resolveServiceContext: vi.fn(),
 }));
 
 vi.mock("~/utils/id", () => ({
@@ -52,8 +51,23 @@ describe("notes service", () => {
 		plan_id: null,
 	};
 
+	let mockContext: any;
+
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockContext = {
+			ensureDatabase: vi.fn(),
+			repositories: {
+				appData: mockRepo,
+			},
+			env: mockEnv,
+		};
+		mockRepo.getAppDataByUserAndApp.mockReset();
+		mockRepo.getAppDataById.mockReset();
+		mockRepo.createAppDataWithItem.mockReset();
+		mockRepo.updateAppData.mockReset();
+		mockRepo.deleteAppData.mockReset();
+		vi.mocked(resolveServiceContext).mockReturnValue(mockContext);
 	});
 
 	describe("listNotes", () => {
@@ -76,6 +90,7 @@ describe("notes service", () => {
 			mockRepo.getAppDataByUserAndApp.mockResolvedValue(mockNoteData);
 
 			const result = await listNotes({ env: mockEnv, userId: 123 });
+			expect(mockContext.ensureDatabase).toHaveBeenCalled();
 
 			expect(result).toHaveLength(2);
 			expect(result[0]).toEqual({
@@ -239,8 +254,9 @@ describe("notes service", () => {
 				.mockResolvedValueOnce(mockUpdatedNote);
 
 			const result = await updateNote({
+				context: mockContext,
 				env: mockEnv,
-				userId: 123,
+				user: mockUser,
 				noteId: "note-1",
 				data: { title: "Updated Note", content: "Updated content" },
 			});
@@ -254,8 +270,9 @@ describe("notes service", () => {
 
 			await expect(
 				updateNote({
+					context: mockContext,
 					env: mockEnv,
-					userId: 123,
+					user: mockUser,
 					noteId: "non-existent",
 					data: { title: "Test", content: "Test" },
 				}),
@@ -273,7 +290,12 @@ describe("notes service", () => {
 
 			mockRepo.getAppDataById.mockResolvedValue(mockExistingNote);
 
-			await deleteNote({ env: mockEnv, userId: 123, noteId: "note-1" });
+			await deleteNote({
+				context: mockContext,
+				env: mockEnv,
+				user: mockUser,
+				noteId: "note-1",
+			});
 
 			expect(mockRepo.deleteAppData).toHaveBeenCalledWith("note-1");
 		});
@@ -282,7 +304,12 @@ describe("notes service", () => {
 			mockRepo.getAppDataById.mockResolvedValue(null);
 
 			await expect(
-				deleteNote({ env: mockEnv, userId: 123, noteId: "non-existent" }),
+				deleteNote({
+					context: mockContext,
+					env: mockEnv,
+					user: mockUser,
+					noteId: "non-existent",
+				}),
 			).rejects.toThrow(expect.any(AssistantError));
 		});
 	});

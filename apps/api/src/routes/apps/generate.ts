@@ -9,6 +9,7 @@ import {
 	errorResponseSchema,
 } from "@assistant/schemas";
 
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { checkPlanRequirement } from "~/services/user/userOperations";
 import {
@@ -99,9 +100,12 @@ app.post(
 			);
 		}
 
+		const serviceContext = getServiceContext(context);
+
 		const response = await generateImage({
 			completion_id,
 			env: context.env as IEnv,
+			context: serviceContext,
 			args: body,
 			app_url,
 			user,
@@ -171,9 +175,12 @@ app.post(
 			);
 		}
 
+		const serviceContext = getServiceContext(context);
+
 		const response = await generateVideo({
 			completion_id,
 			env: context.env as IEnv,
+			context: serviceContext,
 			args: body,
 			app_url,
 			user,
@@ -244,9 +251,12 @@ app.post(
 			);
 		}
 
+		const serviceContext = getServiceContext(context);
+
 		const response = await generateMusic({
 			completion_id,
 			env: context.env as IEnv,
+			context: serviceContext,
 			args: body,
 			app_url,
 			user,
@@ -317,9 +327,12 @@ app.post(
 			);
 		}
 
+		const serviceContext = getServiceContext(context);
+
 		const response = await generateSpeech({
 			completion_id,
 			env: context.env as IEnv,
+			context: serviceContext,
 			args: body,
 			app_url,
 			user,

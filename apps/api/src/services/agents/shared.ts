@@ -1,6 +1,4 @@
-import type { IEnv } from "~/types";
-import { getLogger } from "~/utils/logger";
-import { SharedAgentRepository } from "~/repositories/SharedAgentRepository";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
 	SharedAgentWithAuthor,
 	SharedAgent,
@@ -11,155 +9,88 @@ import type {
 } from "~/repositories/SharedAgentRepository";
 import type { Agent } from "~/lib/database/schema";
 
-const logger = getLogger({ prefix: "services/agents/shared" });
-
-/**
- * Get shared agents with filters
- * @param env The environment
- * @param filters The filters to apply
- * @returns Array of shared agents with author info
- */
-export const getSharedAgents = async (
-	env: IEnv,
-	filters: SharedAgentFilters = {},
-): Promise<SharedAgentWithAuthor[]> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.getSharedAgents(filters);
+const ensureDb = (context: ServiceContext) => {
+	context.ensureDatabase();
+	return context.repositories.sharedAgents;
 };
 
-/**
- * Get featured agents
- * @param env The environment
- * @param limit The number of agents to return
- * @returns Array of featured agents
- */
+export const getSharedAgents = async (
+	context: ServiceContext,
+	filters: SharedAgentFilters = {},
+): Promise<SharedAgentWithAuthor[]> => {
+	return ensureDb(context).getSharedAgents(filters);
+};
+
 export const getFeaturedAgents = async (
-	env: IEnv,
+	context: ServiceContext,
 	limit = 10,
 ): Promise<SharedAgentWithAuthor[]> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.getFeaturedAgents(limit);
+	return ensureDb(context).getFeaturedAgents(limit);
 };
 
-/**
- * Get a shared agent by ID
- * @param env The environment
- * @param id The shared agent ID
- * @returns The shared agent with author info or null
- */
 export const getSharedAgentById = async (
-	env: IEnv,
+	context: ServiceContext,
 	id: string,
 ): Promise<SharedAgentWithAuthor | null> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.getSharedAgentById(id);
+	return ensureDb(context).getSharedAgentById(id);
 };
 
-/**
- * Get a shared agent by agent ID
- * @param env The environment
- * @param agentId The agent ID
- * @returns The shared agent or null
- */
 export const getSharedAgentByAgentId = async (
-	env: IEnv,
+	context: ServiceContext,
 	agentId: string,
 ): Promise<SharedAgent | null> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.getSharedAgentByAgentId(agentId);
+	return ensureDb(context).getSharedAgentByAgentId(agentId);
 };
 
-/**
- * Get all shared agents for admin (including non-public)
- * @param env The environment
- * @param filters The filters to apply
- * @returns Array of all shared agents with author info
- */
 export const getAllSharedAgentsForAdmin = async (
-	env: IEnv,
+	context: ServiceContext,
 	filters: SharedAgentFilters = {},
 ): Promise<SharedAgentWithAuthor[]> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.getAllSharedAgentsForAdmin(filters);
+	return ensureDb(context).getAllSharedAgentsForAdmin(filters);
 };
 
-/**
- * Install a shared agent
- * @param env The environment
- * @param userId The user ID
- * @param sharedAgentId The shared agent ID
- * @returns The installed agent and install record
- */
 export const installSharedAgent = async (
-	env: IEnv,
-	userId: number,
+	context: ServiceContext,
 	sharedAgentId: string,
+	userId?: number,
 ): Promise<{ agent: Agent; install: AgentInstall }> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.installAgent(userId, sharedAgentId);
+	const repo = ensureDb(context);
+	const id = userId ?? context.requireUser().id;
+	return repo.installAgent(id, sharedAgentId);
 };
 
-/**
- * Uninstall a shared agent
- * @param env The environment
- * @param userId The user ID
- * @param agentId The agent ID
- */
 export const uninstallSharedAgent = async (
-	env: IEnv,
-	userId: number,
+	context: ServiceContext,
 	agentId: string,
+	userId?: number,
 ): Promise<void> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.uninstallAgent(userId, agentId);
+	const repo = ensureDb(context);
+	const id = userId ?? context.requireUser().id;
+	await repo.uninstallAgent(id, agentId);
 };
 
-/**
- * Rate a shared agent
- * @param env The environment
- * @param userId The user ID
- * @param sharedAgentId The shared agent ID
- * @param rating The rating (1-5)
- * @param review Optional review text
- * @returns The rating record
- */
 export const rateSharedAgent = async (
-	env: IEnv,
-	userId: number,
+	context: ServiceContext,
 	sharedAgentId: string,
 	rating: number,
 	review?: string,
+	userId?: number,
 ): Promise<AgentRating> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.rateAgent(userId, sharedAgentId, rating, review);
+	const repo = ensureDb(context);
+	const id = userId ?? context.requireUser().id;
+	return repo.rateAgent(id, sharedAgentId, rating, review);
 };
 
-/**
- * Get ratings for a shared agent
- * @param env The environment
- * @param sharedAgentId The shared agent ID
- * @param limit The number of ratings to return
- * @returns Array of ratings with author info
- */
 export const getSharedAgentRatings = async (
-	env: IEnv,
+	context: ServiceContext,
 	sharedAgentId: string,
 	limit = 10,
 ): Promise<(AgentRating & { author_name: string })[]> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.getAgentRatings(sharedAgentId, limit);
+	return ensureDb(context).getAgentRatings(sharedAgentId, limit);
 };
 
-/**
- * Update a shared agent
- * @param env The environment
- * @param userId The user ID
- * @param sharedAgentId The shared agent ID
- * @param updates The updates to apply
- */
 export const updateSharedAgent = async (
-	env: IEnv,
-	userId: number,
+	context: ServiceContext,
 	sharedAgentId: string,
 	updates: Partial<
 		Pick<
@@ -167,94 +98,58 @@ export const updateSharedAgent = async (
 			"name" | "description" | "avatar_url" | "category" | "tags"
 		>
 	>,
+	userId?: number,
 ): Promise<void> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.updateSharedAgent(userId, sharedAgentId, updates);
+	const repo = ensureDb(context);
+	const id = userId ?? context.requireUser().id;
+	await repo.updateSharedAgent(id, sharedAgentId, updates);
 };
 
-/**
- * Delete a shared agent
- * @param env The environment
- * @param userId The user ID
- * @param sharedAgentId The shared agent ID
- */
 export const deleteSharedAgent = async (
-	env: IEnv,
-	userId: number,
+	context: ServiceContext,
 	sharedAgentId: string,
+	userId?: number,
 ): Promise<void> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.deleteSharedAgent(userId, sharedAgentId);
+	const repo = ensureDb(context);
+	const id = userId ?? context.requireUser().id;
+	await repo.deleteSharedAgent(id, sharedAgentId);
 };
 
-/**
- * Set featured status for a shared agent
- * @param env The environment
- * @param sharedAgentId The shared agent ID
- * @param featured Whether the agent should be featured
- */
 export const setFeaturedStatus = async (
-	env: IEnv,
+	context: ServiceContext,
 	sharedAgentId: string,
 	featured: boolean,
 ): Promise<void> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.setFeatured(sharedAgentId, featured);
+	await ensureDb(context).setFeatured(sharedAgentId, featured);
 };
 
-/**
- * Moderate a shared agent (approve/reject)
- * @param env The environment
- * @param sharedAgentId The shared agent ID
- * @param isPublic Whether the agent should be public
- */
 export const moderateSharedAgent = async (
-	env: IEnv,
+	context: ServiceContext,
 	sharedAgentId: string,
 	isPublic: boolean,
 ): Promise<void> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.moderateAgent(sharedAgentId, isPublic);
+	await ensureDb(context).moderateAgent(sharedAgentId, isPublic);
 };
 
-/**
- * Get available categories
- * @param env The environment
- * @returns Array of category names
- */
 export const getSharedAgentCategories = async (
-	env: IEnv,
+	context: ServiceContext,
 ): Promise<string[]> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.getCategories();
+	return ensureDb(context).getCategories();
 };
 
-/**
- * Get popular tags
- * @param env The environment
- * @param limit The number of tags to return
- * @returns Array of popular tag names
- */
 export const getSharedAgentPopularTags = async (
-	env: IEnv,
+	context: ServiceContext,
 	limit = 20,
 ): Promise<string[]> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.getPopularTags(limit);
+	return ensureDb(context).getPopularTags(limit);
 };
 
-/**
- * Share an agent
- * @param env The environment
- * @param userId The user ID
- * @param params The parameters for sharing
- * @returns The shared agent
- */
 export const shareAgent = async (
-	env: IEnv,
-	userId: number,
+	context: ServiceContext,
 	params: CreateSharedAgentParams,
+	userId?: number,
 ): Promise<SharedAgent> => {
-	const repo = new SharedAgentRepository(env);
-	return repo.shareAgent(userId, params);
+	const repo = ensureDb(context);
+	const id = userId ?? context.requireUser().id;
+	return repo.shareAgent(id, params);
 };

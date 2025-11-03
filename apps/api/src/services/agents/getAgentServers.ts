@@ -1,18 +1,18 @@
 import { MCPClientManager } from "agents/mcp/client";
 
-import { AgentRepository } from "~/repositories/AgentRepository";
-import type { IEnv } from "~/types";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/agents/servers" });
 
 export async function getAgentServers(
-	env: IEnv,
+	context: ServiceContext,
 	agentId: string,
-	userId: number,
+	userId?: number,
 ) {
-	const agent = await getValidatedAgent(env, agentId, userId);
+	context.ensureDatabase();
+	const agent = await getValidatedAgent(context, agentId, userId);
 
 	if (!agent.servers) {
 		return [];
@@ -77,15 +77,19 @@ export async function getAgentServers(
 	return serverDetails;
 }
 
-async function getValidatedAgent(env: IEnv, agentId: string, userId: number) {
-	const repo = new AgentRepository(env);
-	const agent = await repo.getAgentById(agentId);
+async function getValidatedAgent(
+	context: ServiceContext,
+	agentId: string,
+	userId?: number,
+) {
+	const id = userId ?? context.requireUser().id;
+	const agent = await context.repositories.agents.getAgentById(agentId);
 
 	if (!agent) {
 		throw new AssistantError("Agent not found", ErrorType.NOT_FOUND);
 	}
 
-	if (agent.user_id !== userId) {
+	if (agent.user_id !== id) {
 		throw new AssistantError("Forbidden", ErrorType.AUTHENTICATION_ERROR);
 	}
 

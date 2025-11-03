@@ -16,8 +16,17 @@ vi.mock("~/repositories", () => ({
 }));
 
 describe("handlePodcastList", () => {
-	const mockEnv = {} as any;
+	const mockEnv = { DB: {} } as any;
 	const mockUser = { id: "user-123", email: "test@example.com" } as any;
+	const mockContext = {
+		env: mockEnv,
+		user: mockUser,
+		repositories: mockRepositories,
+		ensureDatabase: vi.fn(),
+		requireUser: vi.fn(() => mockUser),
+		database: {} as any,
+		requestId: undefined,
+	} as any;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -27,7 +36,7 @@ describe("handlePodcastList", () => {
 		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue([]);
 
 		const result = await handlePodcastList({
-			env: mockEnv,
+			context: mockContext,
 			user: mockUser,
 		});
 
@@ -55,7 +64,7 @@ describe("handlePodcastList", () => {
 		);
 
 		const result = await handlePodcastList({
-			env: mockEnv,
+			context: mockContext,
 			user: mockUser,
 		});
 
@@ -94,7 +103,7 @@ describe("handlePodcastList", () => {
 		);
 
 		const result = await handlePodcastList({
-			env: mockEnv,
+			context: mockContext,
 			user: mockUser,
 		});
 
@@ -129,7 +138,7 @@ describe("handlePodcastList", () => {
 		);
 
 		const result = await handlePodcastList({
-			env: mockEnv,
+			context: mockContext,
 			user: mockUser,
 		});
 
@@ -171,7 +180,7 @@ describe("handlePodcastList", () => {
 		);
 
 		const result = await handlePodcastList({
-			env: mockEnv,
+			context: mockContext,
 			user: mockUser,
 		});
 
@@ -205,7 +214,7 @@ describe("handlePodcastList", () => {
 		);
 
 		const result = await handlePodcastList({
-			env: mockEnv,
+			context: mockContext,
 			user: mockUser,
 		});
 
@@ -230,7 +239,7 @@ describe("handlePodcastList", () => {
 		);
 
 		const result = await handlePodcastList({
-			env: mockEnv,
+			context: mockContext,
 			user: mockUser,
 		});
 
@@ -251,7 +260,7 @@ describe("handlePodcastList", () => {
 		);
 
 		const result = await handlePodcastList({
-			env: mockEnv,
+			context: mockContext,
 			user: mockUser,
 		});
 
@@ -283,7 +292,7 @@ describe("handlePodcastList", () => {
 		);
 
 		const result = await handlePodcastList({
-			env: mockEnv,
+			context: mockContext,
 			user: mockUser,
 		});
 

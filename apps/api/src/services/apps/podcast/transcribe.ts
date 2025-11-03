@@ -1,7 +1,10 @@
 import { getModelConfigByModel } from "~/lib/models";
 import { validateReplicatePayload } from "~/lib/models/utils/replicateValidation";
 import { AIProviderFactory } from "~/lib/providers/factory";
-import { RepositoryManager } from "~/repositories";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -17,7 +20,8 @@ export interface IPodcastTranscribeBody {
 }
 
 interface TranscribeRequest {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	request: IPodcastTranscribeBody;
 	user: IUser;
 	app_url?: string;
@@ -26,7 +30,7 @@ interface TranscribeRequest {
 export const handlePodcastTranscribe = async (
 	req: TranscribeRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-	const { request, env, user, app_url } = req;
+	const { request, context, env, user, app_url } = req;
 
 	if (!request.podcastId || !request.prompt || !request.numberOfSpeakers) {
 		throw new AssistantError(
@@ -36,15 +40,14 @@ export const handlePodcastTranscribe = async (
 	}
 
 	try {
-		if (!env.DB) {
-			throw new AssistantError("Missing database", ErrorType.PARAMS_ERROR);
-		}
-
 		if (!user?.id) {
 			throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
 		}
 
-		const repositories = RepositoryManager.getInstance(env);
+		const serviceContext = resolveServiceContext({ context, env, user });
+		serviceContext.ensureDatabase();
+		const repositories = serviceContext.repositories;
+		const runtimeEnv = serviceContext.env as IEnv;
 
 		const existingTranscriptions =
 			await repositories.appData.getAppDataByUserAppAndItem(
@@ -139,7 +142,7 @@ export const handlePodcastTranscribe = async (
 					content: [{ ...replicatePayload, type: "text" }],
 				},
 			],
-			env,
+			env: runtimeEnv,
 			user,
 		});
 

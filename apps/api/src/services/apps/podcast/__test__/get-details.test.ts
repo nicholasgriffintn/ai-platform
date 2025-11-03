@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError } from "~/utils/errors";
 import { handlePodcastDetail } from "../get-details";
 
@@ -9,15 +10,20 @@ const mockRepositories = {
 	},
 };
 
-vi.mock("~/repositories", () => ({
-	RepositoryManager: {
-		getInstance: vi.fn(() => mockRepositories),
-	},
-}));
-
 describe("handlePodcastDetail", () => {
-	const mockEnv = {} as any;
+	const mockEnv = { DB: {} } as any;
 	const mockUser = { id: "user-123", email: "test@example.com" } as any;
+	const createMockContext = (overrides: Partial<ServiceContext> = {}) =>
+		({
+			env: mockEnv,
+			user: mockUser,
+			repositories: mockRepositories as any,
+			ensureDatabase: vi.fn(),
+			requireUser: vi.fn(() => mockUser),
+			database: {} as any,
+			requestId: undefined,
+			...overrides,
+		}) satisfies ServiceContext;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -62,7 +68,7 @@ describe("handlePodcastDetail", () => {
 		);
 
 		const result = await handlePodcastDetail({
-			env: mockEnv,
+			context: createMockContext(),
 			podcastId: "podcast-123",
 			user: mockUser,
 		});
@@ -98,7 +104,7 @@ describe("handlePodcastDetail", () => {
 		);
 
 		const result = await handlePodcastDetail({
-			env: mockEnv,
+			context: createMockContext(),
 			podcastId: "podcast-123",
 			user: mockUser,
 		});
@@ -132,7 +138,7 @@ describe("handlePodcastDetail", () => {
 		);
 
 		const result = await handlePodcastDetail({
-			env: mockEnv,
+			context: createMockContext(),
 			podcastId: "podcast-123",
 			user: mockUser,
 		});
@@ -170,7 +176,7 @@ describe("handlePodcastDetail", () => {
 		);
 
 		const result = await handlePodcastDetail({
-			env: mockEnv,
+			context: createMockContext(),
 			podcastId: "podcast-123",
 			user: mockUser,
 		});
@@ -195,7 +201,7 @@ describe("handlePodcastDetail", () => {
 		);
 
 		const result = await handlePodcastDetail({
-			env: mockEnv,
+			context: createMockContext(),
 			podcastId: "podcast-123",
 			user: mockUser,
 		});
@@ -216,7 +222,7 @@ describe("handlePodcastDetail", () => {
 		);
 
 		const result = await handlePodcastDetail({
-			env: mockEnv,
+			context: createMockContext(),
 			podcastId: "podcast-123",
 			user: mockUser,
 		});
@@ -228,7 +234,7 @@ describe("handlePodcastDetail", () => {
 	it("should throw error for missing user ID", async () => {
 		await expect(
 			handlePodcastDetail({
-				env: mockEnv,
+				context: createMockContext(),
 				podcastId: "podcast-123",
 				user: {} as any,
 			}),
@@ -240,7 +246,7 @@ describe("handlePodcastDetail", () => {
 
 		await expect(
 			handlePodcastDetail({
-				env: mockEnv,
+				context: createMockContext(),
 				podcastId: "non-existent",
 				user: mockUser,
 			}),
@@ -263,7 +269,7 @@ describe("handlePodcastDetail", () => {
 		);
 
 		const result = await handlePodcastDetail({
-			env: mockEnv,
+			context: createMockContext(),
 			podcastId: "podcast-123",
 			user: mockUser,
 		});

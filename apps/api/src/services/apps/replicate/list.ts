@@ -1,15 +1,27 @@
-import { RepositoryManager } from "~/repositories";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import type { IEnv } from "~/types";
 
-export const listReplicatePredictions = async (userId: number, env: IEnv) => {
-	const repositories = RepositoryManager.getInstance(env);
+export const listReplicatePredictions = async ({
+	context,
+	env,
+	userId,
+}: {
+	context?: ServiceContext;
+	env?: IEnv;
+	userId: number;
+}) => {
+	const serviceContext = resolveServiceContext({ context, env });
 
-	const predictions = await repositories.appData.getAppDataByUserAndApp(
-		userId,
-		"replicate",
-	);
+	const predictions =
+		await serviceContext.repositories.appData.getAppDataByUserAndApp(
+			userId,
+			"replicate",
+		);
 
 	const results = await Promise.all(
 		predictions.map(async (prediction) => {
@@ -30,7 +42,7 @@ export const listReplicatePredictions = async (userId: number, env: IEnv) => {
 							asyncInvocation,
 							{
 								model: asyncInvocation.context?.version || "",
-								env,
+								env: serviceContext.env,
 								messages: [],
 								completion_id: prediction.item_id || prediction.id,
 							},
@@ -42,7 +54,7 @@ export const listReplicatePredictions = async (userId: number, env: IEnv) => {
 							data.predictionData = result.result;
 							data.output = result.result.response;
 
-							await repositories.appData.updateAppData(
+							await serviceContext.repositories.appData.updateAppData(
 								prediction.item_id || prediction.id,
 								data,
 							);
@@ -50,7 +62,7 @@ export const listReplicatePredictions = async (userId: number, env: IEnv) => {
 							data.status = "failed";
 							data.error = result.raw?.error || "Generation failed";
 
-							await repositories.appData.updateAppData(
+							await serviceContext.repositories.appData.updateAppData(
 								prediction.item_id || prediction.id,
 								data,
 							);

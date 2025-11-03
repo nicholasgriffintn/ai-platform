@@ -9,6 +9,7 @@ import {
 	apiResponseSchema,
 } from "@assistant/schemas";
 
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { checkPlanRequirement } from "~/services/user/userOperations";
 import { handlePodcastGenerateImage } from "~/services/apps/podcast/generate-image";
@@ -23,7 +24,6 @@ import {
 	handlePodcastTranscribe,
 } from "~/services/apps/podcast/transcribe";
 import { handlePodcastUpload } from "~/services/apps/podcast/upload";
-import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
@@ -80,8 +80,9 @@ app.get(
 		}
 
 		try {
+			const serviceContext = getServiceContext(context);
 			const podcasts = await handlePodcastList({
-				env: context.env as IEnv,
+				context: serviceContext,
 				user,
 			});
 
@@ -150,8 +151,9 @@ app.get(
 		}
 
 		try {
+			const serviceContext = getServiceContext(context);
 			const podcast = await handlePodcastDetail({
-				env: context.env as IEnv,
+				context: serviceContext,
 				podcastId: id,
 				user,
 			});
@@ -233,8 +235,10 @@ app.post(
 				);
 			}
 
+			const serviceContext = getServiceContext(context);
+
 			const response = await handlePodcastUpload({
-				env: context.env as IEnv,
+				context: serviceContext,
 				request: {
 					audio,
 					audioUrl,
@@ -317,9 +321,10 @@ app.post(
 
 		const newUrl = new URL(context.req.url);
 		const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
+		const serviceContext = getServiceContext(context);
 
 		const response = await handlePodcastTranscribe({
-			env: context.env as IEnv,
+			context: serviceContext,
 			request: body,
 			user,
 			app_url,
@@ -377,8 +382,9 @@ app.post(
 			);
 		}
 
+		const serviceContext = getServiceContext(context);
 		const response = await handlePodcastSummarise({
-			env: context.env as IEnv,
+			context: serviceContext,
 			request: body,
 			user,
 		});
@@ -438,8 +444,9 @@ app.post(
 			);
 		}
 
+		const serviceContext = getServiceContext(context);
 		const response = await handlePodcastGenerateImage({
-			env: context.env as IEnv,
+			context: serviceContext,
 			request: body,
 			user,
 		});

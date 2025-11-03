@@ -1,14 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { RepositoryManager } from "~/repositories";
+import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { guessDrawingFromImage } from "../guess";
 
-vi.mock("~/repositories", () => ({
-	RepositoryManager: {
-		getInstance: vi.fn(),
-	},
+vi.mock("~/lib/context/serviceContext", () => ({
+	resolveServiceContext: vi.fn(),
 }));
 
 vi.mock("~/utils/id", () => ({
@@ -47,10 +45,19 @@ const mockEnv = {
 } as any;
 
 describe("guessDrawingFromImage", () => {
+	let mockContext: any;
+
 	beforeEach(() => {
-		vi.mocked(RepositoryManager.getInstance).mockReturnValue({
-			appData: mockAppDataRepo,
-		} as any);
+		mockContext = {
+			ensureDatabase: vi.fn(),
+			repositories: {
+				appData: mockAppDataRepo,
+			},
+			env: mockEnv,
+		};
+		mockAppDataRepo.createAppDataWithItem.mockReset();
+		mockEnv.AI.run.mockReset();
+		vi.mocked(resolveServiceContext).mockReturnValue(mockContext);
 	});
 
 	afterEach(() => {
@@ -94,6 +101,8 @@ describe("guessDrawingFromImage", () => {
 			request: { drawing: mockDrawing },
 			user: mockUser,
 		});
+
+		expect(mockContext.ensureDatabase).toHaveBeenCalled();
 
 		expect(mockEnv.AI.run).toHaveBeenCalledWith(
 			"@cf/llava-hf/llava-1.5-7b-hf",

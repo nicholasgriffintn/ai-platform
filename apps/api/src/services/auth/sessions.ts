@@ -1,42 +1,57 @@
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import { generateJwtToken } from "~/services/auth/jwt";
 import { deleteSession } from "~/services/auth/user";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { SessionRepository } from "~/repositories/SessionRepository";
 
 export interface SessionWithJwt {
 	jwt_token: string | null;
 	jwt_expires_at: string | null;
 }
 
-export async function handleLogout(
-	env: IEnv,
-	sessionId: string | null,
-): Promise<{ success: boolean }> {
+export async function handleLogout({
+	context,
+	env,
+	sessionId,
+}: {
+	context?: ServiceContext;
+	env?: IEnv;
+	sessionId: string | null;
+}): Promise<{ success: boolean }> {
 	if (sessionId) {
-		const sessionRepo = new SessionRepository(env);
-		await sessionRepo.deleteSession(sessionId);
+		const serviceContext = resolveServiceContext({ context, env });
+		await serviceContext.repositories.sessions.deleteSession(sessionId);
 	}
 
 	return { success: true };
 }
 
-export async function generateUserToken(
-	env: IEnv,
-	user: IUser,
-	sessionId?: string | null,
-): Promise<{ token: string; expires_in: number }> {
-	if (!env.JWT_SECRET) {
+export async function generateUserToken({
+	context,
+	env,
+	user,
+	sessionId,
+}: {
+	context?: ServiceContext;
+	env?: IEnv;
+	user: IUser;
+	sessionId?: string | null;
+}): Promise<{ token: string; expires_in: number }> {
+	const serviceContext = resolveServiceContext({ context, env, user });
+
+	if (!serviceContext.env.JWT_SECRET) {
 		throw new AssistantError(
 			"JWT authentication not configured",
 			ErrorType.CONFIGURATION_ERROR,
 		);
 	}
 
-	const sessionRepo = new SessionRepository(env);
-
 	if (sessionId) {
-		const sessionData = await sessionRepo.getSessionWithJwt(sessionId);
+		const sessionData =
+			await serviceContext.repositories.sessions.getSessionWithJwt(sessionId);
 
 		if (sessionData?.jwt_token && sessionData?.jwt_expires_at) {
 			const jwtExpiresAt = new Date(sessionData.jwt_expires_at);
@@ -57,10 +72,18 @@ export async function generateUserToken(
 		}
 
 		const expiresIn = 60 * 15; // 15 minutes in seconds
-		const token = await generateJwtToken(user, env.JWT_SECRET, expiresIn);
+		const token = await generateJwtToken(
+			user,
+			serviceContext.env.JWT_SECRET,
+			expiresIn,
+		);
 		const jwtExpiresAt = new Date(Date.now() + expiresIn * 1000);
 
-		await sessionRepo.updateSessionJwt(sessionId, token, jwtExpiresAt);
+		await serviceContext.repositories.sessions.updateSessionJwt(
+			sessionId,
+			token,
+			jwtExpiresAt,
+		);
 
 		return {
 			token,
@@ -68,7 +91,11 @@ export async function generateUserToken(
 		};
 	} else {
 		const expiresIn = 60 * 15; // 15 minutes in seconds
-		const token = await generateJwtToken(user, env.JWT_SECRET, expiresIn);
+		const token = await generateJwtToken(
+			user,
+			serviceContext.env.JWT_SECRET,
+			expiresIn,
+		);
 
 		return {
 			token,

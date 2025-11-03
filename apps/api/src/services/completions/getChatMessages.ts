@@ -1,16 +1,17 @@
 import { ConversationManager } from "~/lib/conversationManager";
-import { Database } from "~/lib/database";
-import type { AnonymousUser, User } from "~/types";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { AnonymousUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export const handleGetChatMessages = async (
-	env: any,
-	user: User | null,
+	context: ServiceContext,
 	anonymousUser: AnonymousUser | null,
 	completion_id: string,
 	limit?: number,
 	after?: string,
 ): Promise<{ messages: any[]; conversation_id: string }> => {
+	const user = context.user ?? null;
+
 	if (!user?.id) {
 		throw new AssistantError(
 			"User ID is required to get messages",
@@ -18,17 +19,10 @@ export const handleGetChatMessages = async (
 		);
 	}
 
-	if (!env.DB) {
-		throw new AssistantError(
-			"Missing database connection",
-			ErrorType.CONFIGURATION_ERROR,
-		);
-	}
-
-	const database = Database.getInstance(env);
+	context.ensureDatabase();
 
 	const conversationManager = ConversationManager.getInstance({
-		database,
+		database: context.database,
 		user,
 		anonymousUser,
 	});
@@ -47,11 +41,12 @@ export const handleGetChatMessages = async (
 };
 
 export const handleGetChatMessageById = async (
-	env: any,
-	user: User | null,
+	context: ServiceContext,
 	anonymousUser: AnonymousUser | null,
 	message_id: string,
 ): Promise<{ message: any; conversation_id: string }> => {
+	const user = context.user ?? null;
+
 	if (!user?.id) {
 		throw new AssistantError(
 			"User ID is required to get a message",
@@ -59,17 +54,10 @@ export const handleGetChatMessageById = async (
 		);
 	}
 
-	if (!env.DB) {
-		throw new AssistantError(
-			"Missing database connection",
-			ErrorType.CONFIGURATION_ERROR,
-		);
-	}
-
-	const database = Database.getInstance(env);
+	context.ensureDatabase();
 
 	const conversationManager = ConversationManager.getInstance({
-		database,
+		database: context.database,
 		user,
 		anonymousUser,
 	});

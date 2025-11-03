@@ -1,4 +1,7 @@
-import { RepositoryManager } from "~/repositories";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -7,11 +10,13 @@ import type { Drawing } from "./list";
 const logger = getLogger();
 
 export async function getDrawingDetails({
+	context,
 	env,
 	userId,
 	drawingId,
 }: {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	userId: number;
 	drawingId: string;
 }): Promise<Drawing> {
@@ -22,7 +27,9 @@ export async function getDrawingDetails({
 		);
 	}
 
-	const repo = RepositoryManager.getInstance(env).appData;
+	const serviceContext = resolveServiceContext({ context, env });
+	serviceContext.ensureDatabase();
+	const repo = serviceContext.repositories.appData;
 	const entry = await repo.getAppDataById(drawingId);
 
 	if (!entry || entry.user_id !== userId || entry.app_id !== "drawings") {

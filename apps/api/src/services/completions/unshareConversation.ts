@@ -1,15 +1,19 @@
 import { ConversationManager } from "~/lib/conversationManager";
-import { Database } from "~/lib/database";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface UnshareConversationRequest {
 	env: IEnv;
 	user: User;
+	context?: ServiceContext;
 }
 
 export async function handleUnshareConversation(
-	{ env, user }: UnshareConversationRequest,
+	{ env, user, context }: UnshareConversationRequest,
 	completion_id: string,
 ): Promise<{ success: boolean }> {
 	if (!user || !user.id) {
@@ -18,11 +22,11 @@ export async function handleUnshareConversation(
 			ErrorType.AUTHENTICATION_ERROR,
 		);
 	}
-
-	const database = Database.getInstance(env);
+	const serviceContext = resolveServiceContext({ context, env, user });
+	serviceContext.ensureDatabase();
 
 	const conversationManager = ConversationManager.getInstance({
-		database,
+		database: serviceContext.database,
 		user,
 	});
 

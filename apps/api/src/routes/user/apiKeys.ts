@@ -7,6 +7,7 @@ import {
 	deleteApiKeyParamsSchema,
 } from "@assistant/schemas";
 
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
 import {
 	createUserApiKey,
@@ -49,10 +50,10 @@ app.get(
 	}),
 	async (c: Context) => {
 		const user = c.get("user");
-		const userId = user.id;
+		const serviceContext = getServiceContext(c);
 
 		try {
-			const keys = await getUserApiKeys(c.env, userId);
+			const keys = await getUserApiKeys(serviceContext, user.id);
 			return c.json(keys);
 		} catch (error) {
 			logger.error("Error fetching API keys:", { error });
@@ -95,14 +96,12 @@ app.post(
 	zValidator("json", createApiKeySchema),
 	async (c: Context) => {
 		const user = c.get("user");
-		const userId = user.id;
-		const db = c.env.DB;
 		const { name } = c.req.valid("json" as never) as { name: string };
+		const serviceContext = getServiceContext(c);
 
 		try {
 			const { plaintextKey, metadata } = await createUserApiKey(
-				c.env,
-				userId,
+				serviceContext,
 				name,
 			);
 
@@ -148,12 +147,11 @@ app.delete(
 	zValidator("param", deleteApiKeyParamsSchema),
 	async (c: Context) => {
 		const user = c.get("user");
-		const userId = user.id;
-		const db = c.env.DB;
 		const { keyId } = c.req.valid("param" as never) as { keyId: string };
+		const serviceContext = getServiceContext(c);
 
 		try {
-			await deleteUserApiKey(c.env, userId, keyId);
+			await deleteUserApiKey(serviceContext, keyId, user.id);
 			return c.json({ message: "API key deleted successfully" }, 200);
 		} catch (error) {
 			logger.error("Error deleting API key:", { error });

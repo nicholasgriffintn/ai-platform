@@ -10,6 +10,7 @@ import {
 	providersResponseSchema,
 } from "@assistant/schemas";
 
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
@@ -101,7 +102,8 @@ app.put(
 			);
 		}
 
-		const result = await updateUserSettings(c.env, user.id, settings);
+		const serviceContext = getServiceContext(c);
+		const result = await updateUserSettings(serviceContext, settings, user.id);
 
 		return c.json(result);
 	},
@@ -143,7 +145,8 @@ app.get(
 			);
 		}
 
-		const models = await getUserEnabledModels(c.env, user.id);
+		const serviceContext = getServiceContext(c);
+		const models = await getUserEnabledModels(serviceContext, user.id);
 
 		return c.json({
 			success: true,
@@ -218,12 +221,13 @@ app.post(
 			);
 		}
 
+		const serviceContext = getServiceContext(c);
 		const result = await storeProviderApiKey(
-			c.env,
-			user.id,
+			serviceContext,
 			providerId,
 			apiKey,
 			secretKey,
+			user.id,
 		);
 
 		return c.json(result);
@@ -265,7 +269,8 @@ app.get(
 			);
 		}
 
-		const providers = await getUserProviderSettings(c.env, user.id);
+		const serviceContext = getServiceContext(c);
+		const providers = await getUserProviderSettings(serviceContext, user.id);
 
 		return c.json({
 			success: true,
@@ -309,7 +314,8 @@ app.post(
 			);
 		}
 
-		const result = await syncUserProviders(c.env, user.id);
+		const serviceContext = getServiceContext(c);
+		const result = await syncUserProviders(serviceContext, user.id);
 
 		return c.json(result);
 	},

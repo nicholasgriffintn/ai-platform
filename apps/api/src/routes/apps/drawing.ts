@@ -7,6 +7,7 @@ import {
 	errorResponseSchema,
 } from "@assistant/schemas";
 
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { checkPlanRequirement } from "~/services/user/userOperations";
 import { generateImageFromDrawing } from "~/services/apps/drawing/create";
@@ -78,8 +79,9 @@ app.get(
 		}
 
 		try {
+			const serviceContext = getServiceContext(c);
 			const drawings = await listDrawings({
-				env: c.env as IEnv,
+				context: serviceContext,
 				userId: user.id,
 			});
 
@@ -152,8 +154,9 @@ app.get(
 		}
 
 		try {
+			const serviceContext = getServiceContext(c);
 			const drawing = await getDrawingDetails({
-				env: c.env as IEnv,
+				context: serviceContext,
 				userId: user.id,
 				drawingId: id,
 			});
@@ -223,7 +226,9 @@ app.post(
 		}
 
 		try {
+			const serviceContext = getServiceContext(c);
 			const response = await generateImageFromDrawing({
+				context: serviceContext,
 				env: c.env as IEnv,
 				request: body,
 				user,
@@ -296,7 +301,9 @@ app.post(
 		}
 
 		try {
+			const serviceContext = getServiceContext(c);
 			const response = await guessDrawingFromImage({
+				context: serviceContext,
 				env: c.env as IEnv,
 				request: body,
 				user,

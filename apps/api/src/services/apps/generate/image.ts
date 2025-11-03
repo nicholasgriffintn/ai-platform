@@ -4,7 +4,12 @@ import {
 	type imagePrompts,
 } from "~/lib/prompts/image";
 import { AIProviderFactory } from "~/lib/providers/factory";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
+import { ErrorType } from "~/utils/errors";
 
 export interface ImageGenerationParams {
 	prompt: string;
@@ -23,12 +28,14 @@ export async function generateImage({
 	completion_id,
 	app_url,
 	env,
+	context,
 	args,
 	user,
 }: {
 	completion_id: string;
 	app_url: string | undefined;
-	env: IEnv;
+	env?: IEnv;
+	context?: ServiceContext;
 	args: ImageGenerationParams;
 	user: IUser;
 }): Promise<ImageResponse> {
@@ -42,6 +49,10 @@ export async function generateImage({
 	}
 
 	try {
+		const serviceContext = resolveServiceContext({ context, env, user });
+		const runtimeEnv = serviceContext.env;
+		const runtimeUser = serviceContext.user ?? user;
+
 		const provider = AIProviderFactory.getProvider("workers-ai");
 
 		const sanitisedPrompt = sanitiseInput(args.prompt);
@@ -74,8 +85,8 @@ export async function generateImage({
 					],
 				},
 			],
-			env: env,
-			user: user,
+			env: runtimeEnv,
+			user: runtimeUser,
 		});
 
 		return {

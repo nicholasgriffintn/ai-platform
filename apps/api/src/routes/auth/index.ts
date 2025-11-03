@@ -10,6 +10,7 @@ import {
 } from "@assistant/schemas";
 
 import { Database } from "~/lib/database";
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { getUserSettings } from "~/services/auth/user";
@@ -118,7 +119,11 @@ app.get(
 	async (c: Context) => {
 		const { code } = c.req.valid("query" as never) as { code: string };
 
-		const { user, sessionId } = await handleGitHubOAuthCallback(c.env, code);
+		const serviceContext = getServiceContext(c);
+		const { user, sessionId } = await handleGitHubOAuthCallback({
+			context: serviceContext,
+			code,
+		});
 
 		c.header("Set-Cookie", createSessionCookie(sessionId));
 
@@ -212,7 +217,11 @@ app.post(
 		const cookies = c.req.header("Cookie") || "";
 		const sessionId = extractSessionIdFromCookies(cookies);
 
-		await handleLogout(c.env, sessionId);
+		const serviceContext = getServiceContext(c);
+		await handleLogout({
+			context: serviceContext,
+			sessionId,
+		});
 
 		c.header("Set-Cookie", createLogoutCookie());
 
@@ -268,11 +277,12 @@ app.get(
 		const cookies = c.req.header("Cookie") || "";
 		const sessionId = extractSessionIdFromCookies(cookies);
 
-		const { token, expires_in } = await generateUserToken(
-			c.env,
+		const serviceContext = getServiceContext(c);
+		const { token, expires_in } = await generateUserToken({
+			context: serviceContext,
 			user,
 			sessionId,
-		);
+		});
 
 		return c.json({
 			token,

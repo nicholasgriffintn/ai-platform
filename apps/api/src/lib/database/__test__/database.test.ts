@@ -9,8 +9,6 @@ describe("Database", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 
-		(Database as any).instance = undefined;
-
 		mockEnv = {
 			DB: {
 				prepare: vi.fn().mockReturnValue({
@@ -38,57 +36,36 @@ describe("Database", () => {
 		});
 	});
 
-	describe("singleton behavior", () => {
-		it("should return the same instance when called multiple times", () => {
+	describe("instance creation", () => {
+		it("should return a new instance when called multiple times", () => {
 			const instance1 = Database.getInstance(mockEnv);
 			const instance2 = Database.getInstance(mockEnv);
 
-			expect(instance1).toBe(instance2);
+			expect(instance1).not.toBe(instance2);
 			expect(instance1).toBeInstanceOf(Database);
+			expect(instance2).toBeInstanceOf(Database);
 		});
 
-		it("should ignore different env parameters after first initialization", () => {
-			const env1 = { ...mockEnv, extraProp: "value1" };
-			const env2 = { ...mockEnv, extraProp: "value2" };
-
-			const instance1 = Database.getInstance(env1);
-			const instance2 = Database.getInstance(env2);
-
-			expect(instance1).toBe(instance2);
-			expect((instance1 as any).env.extraProp).toBe("value1");
-		});
-
-		it("should maintain singleton across different call patterns", () => {
-			const instance1 = Database.getInstance(mockEnv);
-
-			// Simulate multiple service calls
-			const instance2 = Database.getInstance(mockEnv);
-			const instance3 = Database.getInstance({ ...mockEnv });
-
-			expect(instance1).toBe(instance2);
-			expect(instance2).toBe(instance3);
-		});
-
-		it("should share the same repositories instance", () => {
+		it("should keep repositories scoped to the instance", () => {
 			const instance1 = Database.getInstance(mockEnv);
 			const instance2 = Database.getInstance(mockEnv);
 
-			expect((instance1 as any).repositories).toBe(
+			expect((instance1 as any).repositories).not.toBe(
 				(instance2 as any).repositories,
 			);
 		});
 	});
 
 	describe("environment handling", () => {
-		it("should use the first environment provided", () => {
-			const env1 = { ...mockEnv, testValue: "first" };
-			const env2 = { ...mockEnv, testValue: "second" };
+		it("should use the provided environment for each instance", () => {
+			const env1 = { ...mockEnv, extraProp: "value1" };
+			const env2 = { ...mockEnv, extraProp: "value2" };
 
 			const instance1 = Database.getInstance(env1);
 			const instance2 = Database.getInstance(env2);
 
-			expect((instance1 as any).env.testValue).toBe("first");
-			expect((instance2 as any).env.testValue).toBe("first");
+			expect((instance1 as any).env.extraProp).toBe("value1");
+			expect((instance2 as any).env.extraProp).toBe("value2");
 		});
 
 		it("should throw error if first env is invalid", () => {
@@ -96,18 +73,6 @@ describe("Database", () => {
 			expect(() => Database.getInstance({})).toThrow(AssistantError);
 			// @ts-ignore - this is a test
 			expect(() => Database.getInstance({})).toThrow("Database not configured");
-		});
-
-		it("should not create new instance even if subsequent env is invalid", () => {
-			const validEnv = mockEnv;
-			const invalidEnv = {};
-
-			const instance1 = Database.getInstance(validEnv);
-			// @ts-ignore - this is a test
-			const instance2 = Database.getInstance(invalidEnv);
-
-			expect(instance1).toBe(instance2);
-			expect(instance1).toBeInstanceOf(Database);
 		});
 	});
 

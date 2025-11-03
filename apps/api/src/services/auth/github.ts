@@ -1,10 +1,12 @@
 import { Octokit } from "@octokit/rest";
 
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { UserRepository } from "~/repositories/UserRepository";
-import { SessionRepository } from "~/repositories/SessionRepository";
 
 export interface GitHubUser {
 	id: number;
@@ -19,11 +21,21 @@ export interface GitHubUser {
 	site?: string;
 }
 
-export async function handleGitHubOAuthCallback(
-	env: IEnv,
-	code: string,
-): Promise<{ user: GitHubUser; sessionId: string }> {
-	if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) {
+export async function handleGitHubOAuthCallback({
+	context,
+	env,
+	code,
+}: {
+	context?: ServiceContext;
+	env?: IEnv;
+	code: string;
+}): Promise<{ user: GitHubUser; sessionId: string }> {
+	const serviceContext = resolveServiceContext({ context, env });
+
+	if (
+		!serviceContext.env.GITHUB_CLIENT_ID ||
+		!serviceContext.env.GITHUB_CLIENT_SECRET
+	) {
 		throw new AssistantError(
 			"Missing GitHub OAuth configuration",
 			ErrorType.CONFIGURATION_ERROR,
@@ -39,8 +51,8 @@ export async function handleGitHubOAuthCallback(
 				Accept: "application/json",
 			},
 			body: JSON.stringify({
-				client_id: env.GITHUB_CLIENT_ID,
-				client_secret: env.GITHUB_CLIENT_SECRET,
+				client_id: serviceContext.env.GITHUB_CLIENT_ID,
+				client_secret: serviceContext.env.GITHUB_CLIENT_SECRET,
 				code,
 			}),
 		},
@@ -65,26 +77,30 @@ export async function handleGitHubOAuthCallback(
 
 	const { githubUser, primaryEmail } = await getGitHubUserData(accessToken);
 
-	const userRepo = new UserRepository(env);
-	const user = await userRepo.createOrUpdateGithubUser({
-		githubId: githubUser.id.toString(),
-		username: githubUser.login,
-		email: primaryEmail,
-		name: githubUser.name || undefined,
-		avatar_url: githubUser.avatar_url,
-		company: githubUser.company || undefined,
-		location: githubUser.location || undefined,
-		bio: githubUser.bio || undefined,
-		twitter_username: githubUser.twitter_username || undefined,
-		site: githubUser.site || undefined,
-	});
+	const user = await serviceContext.repositories.users.createOrUpdateGithubUser(
+		{
+			githubId: githubUser.id.toString(),
+			username: githubUser.login,
+			email: primaryEmail,
+			name: githubUser.name || undefined,
+			avatar_url: githubUser.avatar_url,
+			company: githubUser.company || undefined,
+			location: githubUser.location || undefined,
+			bio: githubUser.bio || undefined,
+			twitter_username: githubUser.twitter_username || undefined,
+			site: githubUser.site || undefined,
+		},
+	);
 
 	const sessionId = generateId();
 	const expiresAt = new Date();
 	expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
-	const sessionRepo = new SessionRepository(env);
-	await sessionRepo.createSession(sessionId, user.id, expiresAt);
+	await serviceContext.repositories.sessions.createSession(
+		sessionId,
+		user.id,
+		expiresAt,
+	);
 
 	return {
 		user: {

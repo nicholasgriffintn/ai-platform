@@ -1,5 +1,7 @@
-import { ConversationRepository } from "~/repositories/ConversationRepository";
-import { MessageRepository } from "~/repositories/MessageRepository";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, User } from "~/types";
 
 export interface ExportRow {
@@ -13,12 +15,16 @@ export interface ExportRow {
 	message_model: string | null;
 }
 
-export async function handleExportChatHistory(
-	env: IEnv,
-	user: User,
-): Promise<ExportRow[]> {
-	const conversationRepo = new ConversationRepository(env);
-	const messageRepo = new MessageRepository(env);
+export async function handleExportChatHistory({
+	context,
+	env,
+	user,
+}: {
+	context?: ServiceContext;
+	env?: IEnv;
+	user: User;
+}): Promise<ExportRow[]> {
+	const serviceContext = resolveServiceContext({ context, env, user });
 
 	const rows: ExportRow[] = [];
 
@@ -28,7 +34,7 @@ export async function handleExportChatHistory(
 
 	do {
 		const { conversations, totalPages: tp } =
-			await conversationRepo.getUserConversations(
+			await serviceContext.repositories.conversations.getUserConversations(
 				user.id,
 				pageSize,
 				page,
@@ -47,11 +53,12 @@ export async function handleExportChatHistory(
 			const maxIterations = 10000;
 
 			while (true) {
-				const messages = await messageRepo.getConversationMessages(
-					conversationId,
-					messagePageSize,
-					after,
-				);
+				const messages =
+					await serviceContext.repositories.messages.getConversationMessages(
+						conversationId,
+						messagePageSize,
+						after,
+					);
 				if (!messages.length) break;
 
 				const endCursor = String(messages[messages.length - 1].id);

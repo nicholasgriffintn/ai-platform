@@ -2,7 +2,10 @@ import { gatewayId } from "~/constants/app";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { drawingDescriptionPrompt } from "~/lib/prompts";
 import { StorageService } from "~/lib/storage";
-import { RepositoryManager } from "~/repositories";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -12,13 +15,15 @@ interface ImageFromDrawingResponse extends IFunctionResponse {
 }
 
 export async function generateImageFromDrawing({
+	context,
 	env,
 	request,
 	user,
 	conversationManager,
 	existingDrawingId,
 }: {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	request: {
 		drawing?: Blob;
 		drawingId?: string;
@@ -31,6 +36,10 @@ export async function generateImageFromDrawing({
 		throw new AssistantError("Missing drawing", ErrorType.PARAMS_ERROR);
 	}
 
+	const serviceContext = resolveServiceContext({ context, env, user });
+	serviceContext.ensureDatabase();
+	const runtimeEnv = serviceContext.env as IEnv;
+
 	const arrayBuffer = await request.drawing.arrayBuffer();
 	const length = arrayBuffer.byteLength;
 
@@ -39,7 +48,7 @@ export async function generateImageFromDrawing({
 
 	let _drawingUrl = "";
 	try {
-		const storageService = new StorageService(env.ASSETS_BUCKET);
+		const storageService = new StorageService(runtimeEnv.ASSETS_BUCKET);
 		_drawingUrl = await storageService.uploadObject(
 			drawingImageKey,
 			arrayBuffer,
@@ -52,7 +61,7 @@ export async function generateImageFromDrawing({
 		throw new AssistantError("Error uploading drawing");
 	}
 
-	const descriptionRequest = await env.AI.run(
+	const descriptionRequest = await runtimeEnv.AI.run(
 		"@cf/llava-hf/llava-1.5-7b-hf",
 		{
 			prompt: drawingDescriptionPrompt(),
@@ -70,7 +79,7 @@ export async function generateImageFromDrawing({
 		},
 	);
 
-	const painting = await env.AI.run(
+	const painting = await runtimeEnv.AI.run(
 		"@cf/runwayml/stable-diffusion-v1-5-img2img",
 		{
 			prompt:
@@ -100,7 +109,7 @@ export async function generateImageFromDrawing({
 
 	const paintingImageKey = `drawings/${drawingId}/painting.png`;
 	try {
-		const storageService = new StorageService(env.ASSETS_BUCKET);
+		const storageService = new StorageService(runtimeEnv.ASSETS_BUCKET);
 		await storageService.uploadObject(paintingImageKey, paintingArrayBuffer, {
 			contentType: "image/png",
 			contentLength: paintingLength,
@@ -110,7 +119,7 @@ export async function generateImageFromDrawing({
 	}
 
 	let conversationResponse: any = { status: "success" };
-	const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+	const baseAssetsUrl = runtimeEnv.PUBLIC_ASSETS_URL || "";
 
 	if (conversationManager) {
 		await conversationManager.add(drawingId, {
@@ -133,7 +142,7 @@ export async function generateImageFromDrawing({
 		conversationResponse = await conversationManager.add(drawingId, message);
 	}
 
-	const repo = RepositoryManager.getInstance(env).appData;
+	const repo = serviceContext.repositories.appData;
 
 	const appDataResponse = await repo.createAppDataWithItem(
 		user.id,

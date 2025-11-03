@@ -89,7 +89,7 @@ describe("Team Delegation Integration", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 
-		mockEnv = { AI: { aiGatewayLogId: "test-log-id" } };
+		mockEnv = { DB: {}, AI: { aiGatewayLogId: "test-log-id" } };
 		mockUser = { id: "user-123" };
 		orchestrator = new ChatOrchestrator(mockEnv);
 

@@ -3,7 +3,6 @@ import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import z from "zod/v4";
 import {
 	appDataSchema,
-	appInfoSchema,
 	dynamicAppsResponseSchema,
 	listDynamicAppResponsesQuerySchema,
 	errorResponseSchema,
@@ -11,7 +10,6 @@ import {
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { checkPlanRequirement } from "~/services/user/userOperations";
 import {
 	executeDynamicApp,
 	getDynamicAppById,

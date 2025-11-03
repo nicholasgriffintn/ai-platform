@@ -1,6 +1,6 @@
 import { sanitiseMessages } from "~/lib/chat/utils";
 import { ConversationManager } from "~/lib/conversationManager";
-import { Database } from "~/lib/database";
+import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModel } from "~/lib/models";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import type { IRequest, Message } from "~/types";
@@ -12,18 +12,13 @@ export const handleGenerateChatCompletionTitle = async (
 	messages?: Message[],
 	store?: boolean,
 ): Promise<{ title: string }> => {
-	const { env, user } = req;
+	const { env, user, context } = req;
+	const serviceContext = resolveServiceContext({ context, env, user });
+	const runtimeEnv = serviceContext.env;
 
-	if (!env.AI) {
+	if (!runtimeEnv.AI) {
 		throw new AssistantError(
 			"AI binding is not available",
-			ErrorType.CONFIGURATION_ERROR,
-		);
-	}
-
-	if (!env.DB) {
-		throw new AssistantError(
-			"Missing DB binding",
 			ErrorType.CONFIGURATION_ERROR,
 		);
 	}
@@ -35,17 +30,16 @@ export const handleGenerateChatCompletionTitle = async (
 		);
 	}
 
-	const database = Database.getInstance(env);
-
+	serviceContext.ensureDatabase();
 	const conversationManager = ConversationManager.getInstance({
-		database,
+		database: serviceContext.database,
 		user,
 		store,
 	});
 
 	try {
 		await conversationManager.get(completion_id);
-	} catch (_error) {
+	} catch {
 		throw new AssistantError(
 			"Conversation not found or you don't have access to it",
 			ErrorType.NOT_FOUND,
@@ -86,10 +80,10 @@ export const handleGenerateChatCompletionTitle = async (
   `;
 
 	const { model: modelToUse, provider: providerToUse } =
-		await getAuxiliaryModel(env, user);
+		await getAuxiliaryModel(runtimeEnv, user);
 	const provider = AIProviderFactory.getProvider(providerToUse);
 	const response: any = await provider.getResponse({
-		env: env!,
+		env: runtimeEnv!,
 		model: modelToUse,
 		messages: [{ role: "user", content: prompt }],
 		user: user,

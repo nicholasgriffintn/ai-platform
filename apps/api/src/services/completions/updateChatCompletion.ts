@@ -1,5 +1,5 @@
 import { ConversationManager } from "~/lib/conversationManager";
-import { Database } from "~/lib/database";
+import { resolveServiceContext } from "~/lib/context/serviceContext";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -13,7 +13,7 @@ export const handleUpdateChatCompletion = async (
 	completion_id: string,
 	updates: ChatCompletionUpdateParams,
 ): Promise<Record<string, unknown>> => {
-	const { env, user } = req;
+	const { env, user, context } = req;
 
 	if (!user?.id) {
 		throw new AssistantError(
@@ -22,17 +22,11 @@ export const handleUpdateChatCompletion = async (
 		);
 	}
 
-	if (!env.DB) {
-		throw new AssistantError(
-			"Missing database connection",
-			ErrorType.CONFIGURATION_ERROR,
-		);
-	}
-
-	const database = Database.getInstance(env);
+	const serviceContext = resolveServiceContext({ context, env, user });
+	serviceContext.ensureDatabase();
 
 	const conversationManager = ConversationManager.getInstance({
-		database,
+		database: serviceContext.database,
 		user,
 	});
 

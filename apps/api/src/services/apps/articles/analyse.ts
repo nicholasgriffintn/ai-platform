@@ -5,7 +5,10 @@ import {
 } from "~/lib/models";
 import { analyseArticlePrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/lib/providers/factory";
-import { AppDataRepository } from "~/repositories/AppDataRepository";
+import {
+	createServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
@@ -30,13 +33,15 @@ export interface AnalyseSuccessResponse {
 export async function analyseArticle({
 	completion_id,
 	app_url,
+	context,
 	env,
 	args,
 	user,
 }: {
 	completion_id: string;
 	app_url: string | undefined;
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	args: Params;
 	user: IUser;
 }): Promise<AnalyseSuccessResponse> {
@@ -54,10 +59,26 @@ export async function analyseArticle({
 	}
 
 	try {
+		const serviceContext =
+			context ??
+			(env
+				? createServiceContext({
+						env,
+						user,
+					})
+				: null);
+
+		if (!serviceContext) {
+			throw new AssistantError(
+				"Service context is required",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+
 		const sanitisedArticle = sanitiseInput(args.article);
 
 		const { model: modelToUse, provider: providerToUse } =
-			await getAuxiliaryModelForRetrieval(env, user);
+			await getAuxiliaryModelForRetrieval(serviceContext.env, user);
 		const modelConfig = await getModelConfigByMatchingModel(modelToUse);
 		const provider = AIProviderFactory.getProvider(providerToUse);
 		const analysisData = await provider.getResponse({
@@ -73,7 +94,7 @@ export async function analyseArticle({
 					}),
 				},
 			],
-			env: env,
+			env: serviceContext.env,
 			user,
 		});
 
@@ -98,7 +119,8 @@ export async function analyseArticle({
 			verifiedQuotes,
 		};
 
-		const appDataRepo = new AppDataRepository(env);
+		serviceContext.ensureDatabase();
+		const appDataRepo = serviceContext.repositories.appData;
 		const appData = {
 			originalArticle: args.article,
 			analysis: analysisResult,

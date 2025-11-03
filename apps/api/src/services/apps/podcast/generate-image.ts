@@ -1,6 +1,9 @@
 import { gatewayId } from "~/constants/app";
 import { StorageService } from "~/lib/storage";
-import { RepositoryManager } from "~/repositories";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -13,7 +16,8 @@ export interface IPodcastGenerateImageBody {
 }
 
 type GenerateImageRequest = {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	request: IPodcastGenerateImageBody;
 	user: IUser;
 	app_url?: string;
@@ -22,7 +26,7 @@ type GenerateImageRequest = {
 export const handlePodcastGenerateImage = async (
 	req: GenerateImageRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-	const { request, env, user } = req;
+	const { request, context, env, user } = req;
 
 	if (!request.podcastId) {
 		throw new AssistantError("Missing podcast id", ErrorType.PARAMS_ERROR);
@@ -33,7 +37,10 @@ export const handlePodcastGenerateImage = async (
 			throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
 		}
 
-		const repositories = RepositoryManager.getInstance(env);
+		const serviceContext = resolveServiceContext({ context, env, user });
+		serviceContext.ensureDatabase();
+		const repositories = serviceContext.repositories;
+		const runtimeEnv = serviceContext.env as IEnv;
 
 		const existingImages =
 			await repositories.appData.getAppDataByUserAppAndItem(
@@ -86,7 +93,7 @@ export const handlePodcastGenerateImage = async (
 			parsedSummaryData.summary || parsedSummaryData.description;
 		const summary = `I need a featured image for my latest podcast episode, this is the summary: ${summaryContent}`;
 
-		const data = await env.AI.run(
+		const data = await runtimeEnv.AI.run(
 			"@cf/bytedance/stable-diffusion-xl-lightning",
 			{
 				prompt: summary,
@@ -128,13 +135,13 @@ export const handlePodcastGenerateImage = async (
 		).buffer;
 		const length = arrayBuffer.byteLength;
 
-		const storageService = new StorageService(env.ASSETS_BUCKET);
+		const storageService = new StorageService(runtimeEnv.ASSETS_BUCKET);
 		await storageService.uploadObject(imageKey, arrayBuffer, {
 			contentType: "image/png",
 			contentLength: length,
 		});
 
-		const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+		const baseAssetsUrl = runtimeEnv.PUBLIC_ASSETS_URL || "";
 		const imageUrl = `${baseAssetsUrl}/${imageKey}`;
 
 		const appData = {

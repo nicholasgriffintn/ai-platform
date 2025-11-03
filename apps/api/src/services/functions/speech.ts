@@ -37,6 +37,7 @@ export const create_speech: IFunction = {
 			completion_id,
 			app_url,
 			env: req.env,
+			context: req.context,
 			args,
 			user: req.user,
 		});

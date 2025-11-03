@@ -1,15 +1,15 @@
 import { KVCache } from "~/lib/cache";
-import type { IEnv, IUser } from "~/types";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 
 const logger = getLogger({ prefix: "services/user/operations" });
 
 let userCache: KVCache | null = null;
 
 function getUserCache(env: any): KVCache | null {
-	if (!env.CACHE) return null;
+	if (!env?.CACHE) return null;
 
 	if (!userCache) {
 		userCache = new KVCache(env.CACHE);
@@ -17,21 +17,27 @@ function getUserCache(env: any): KVCache | null {
 	return userCache;
 }
 
-export async function updateUserSettings(
-	env: IEnv,
-	userId: number,
-	settings: any,
-): Promise<{ success: boolean; message: string }> {
-	const settingsRepo = new UserSettingsRepository(env);
-	await settingsRepo.updateUserSettings(userId, settings);
+const ensureRepo = (context: ServiceContext) => {
+	context.ensureDatabase();
+	return context.repositories.userSettings;
+};
 
-	const cache = getUserCache(env);
+export async function updateUserSettings(
+	context: ServiceContext,
+	settings: any,
+	userId?: number,
+): Promise<{ success: boolean; message: string }> {
+	const repo = ensureRepo(context);
+	const id = userId ?? context.requireUser().id;
+	await repo.updateUserSettings(id, settings);
+
+	const cache = getUserCache(context.env);
 	if (cache) {
 		try {
-			await cache.clearUserModelCache(userId.toString());
+			await cache.clearUserModelCache(id.toString());
 		} catch (error) {
 			logger.error("Failed to clear user model cache after settings update", {
-				userId,
+				userId: id,
 				error,
 			});
 		}
@@ -44,33 +50,35 @@ export async function updateUserSettings(
 }
 
 export async function getUserEnabledModels(
-	env: IEnv,
-	userId: number,
+	context: ServiceContext,
+	userId?: number,
 ): Promise<string[]> {
-	const settingsRepo = new UserSettingsRepository(env);
-	const models = await settingsRepo.getUserEnabledModels(userId);
+	const repo = ensureRepo(context);
+	const id = userId ?? context.requireUser().id;
+	const models = await repo.getUserEnabledModels(id);
 	return models.map((model: any) => model.model_id || model);
 }
 
 export async function storeProviderApiKey(
-	env: IEnv,
-	userId: number,
+	context: ServiceContext,
 	providerId: string,
 	apiKey: string,
 	secretKey?: string,
+	userId?: number,
 ): Promise<{ success: boolean; message: string }> {
-	const settingsRepo = new UserSettingsRepository(env);
-	await settingsRepo.storeProviderApiKey(userId, providerId, apiKey, secretKey);
+	const repo = ensureRepo(context);
+	const id = userId ?? context.requireUser().id;
+	await repo.storeProviderApiKey(id, providerId, apiKey, secretKey);
 
-	const cache = getUserCache(env);
+	const cache = getUserCache(context.env);
 	if (cache) {
 		try {
-			await cache.clearUserModelCache(userId.toString());
+			await cache.clearUserModelCache(id.toString());
 		} catch (error) {
 			logger.error(
 				"Failed to clear user caches after provider API key update",
 				{
-					userId,
+					userId: id,
 					providerId,
 					error,
 				},
@@ -85,27 +93,29 @@ export async function storeProviderApiKey(
 }
 
 export async function getUserProviderSettings(
-	env: IEnv,
-	userId: number,
+	context: ServiceContext,
+	userId?: number,
 ): Promise<any[]> {
-	const settingsRepo = new UserSettingsRepository(env);
-	return await settingsRepo.getUserProviderSettings(userId);
+	const repo = ensureRepo(context);
+	const id = userId ?? context.requireUser().id;
+	return repo.getUserProviderSettings(id);
 }
 
 export async function syncUserProviders(
-	env: IEnv,
-	userId: number,
+	context: ServiceContext,
+	userId?: number,
 ): Promise<{ success: boolean; message: string }> {
-	const settingsRepo = new UserSettingsRepository(env);
-	await settingsRepo.createUserProviderSettings(userId);
+	const repo = ensureRepo(context);
+	const id = userId ?? context.requireUser().id;
+	await repo.createUserProviderSettings(id);
 
-	const cache = getUserCache(env);
+	const cache = getUserCache(context.env);
 	if (cache) {
 		try {
-			await cache.clearUserModelCache(userId.toString());
+			await cache.clearUserModelCache(id.toString());
 		} catch (error) {
 			logger.error("Failed to clear user caches after provider sync", {
-				userId,
+				userId: id,
 				error,
 			});
 		}

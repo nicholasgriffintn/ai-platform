@@ -5,7 +5,10 @@ import {
 } from "~/lib/models";
 import { summariseArticlePrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/lib/providers/factory";
-import { AppDataRepository } from "~/repositories/AppDataRepository";
+import {
+	createServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
@@ -30,13 +33,15 @@ export interface SummariseSuccessResponse {
 export async function summariseArticle({
 	completion_id,
 	app_url,
+	context,
 	env,
 	args,
 	user,
 }: {
 	completion_id: string;
 	app_url: string | undefined;
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	args: Params;
 	user: IUser;
 }): Promise<SummariseSuccessResponse> {
@@ -56,8 +61,24 @@ export async function summariseArticle({
 	const sanitisedArticle = sanitiseInput(args.article);
 
 	try {
+		const serviceContext =
+			context ??
+			(env
+				? createServiceContext({
+						env,
+						user,
+					})
+				: null);
+
+		if (!serviceContext) {
+			throw new AssistantError(
+				"Service context is required",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+
 		const { model: modelToUse, provider: providerToUse } =
-			await getAuxiliaryModelForRetrieval(env, user);
+			await getAuxiliaryModelForRetrieval(serviceContext.env, user);
 		const modelConfig = await getModelConfigByMatchingModel(modelToUse);
 		const provider = AIProviderFactory.getProvider(providerToUse);
 
@@ -74,7 +95,7 @@ export async function summariseArticle({
 					}),
 				},
 			],
-			env: env,
+			env: serviceContext.env,
 			user,
 		});
 
@@ -100,7 +121,8 @@ export async function summariseArticle({
 			verifiedQuotes,
 		};
 
-		const appDataRepo = new AppDataRepository(env);
+		serviceContext.ensureDatabase();
+		const appDataRepo = serviceContext.repositories.appData;
 		const appData = {
 			originalArticle: args.article,
 			summary: summaryResult,
@@ -141,20 +163,14 @@ export async function summariseArticle({
 	}
 }
 
-/**
- * Clean up existing article analyses and summaries for a session
- * @param env The environment
- * @param userId The user ID
- * @param itemId The article item ID
- */
 export const cleanupArticleSession = async (
-	env: IEnv,
+	context: ServiceContext,
 	userId: number,
 	itemId: string,
 ): Promise<void> => {
-	const appDataRepo = new AppDataRepository(env);
+	context.ensureDatabase();
+	const appDataRepo = context.repositories.appData;
 
-	// Clean up existing analyses and summaries
 	await appDataRepo.deleteAppDataByUserAppAndItem(
 		userId,
 		"articles",

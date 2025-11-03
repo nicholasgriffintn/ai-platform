@@ -1,12 +1,16 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { StorageService } from "~/lib/storage";
-import { RepositoryManager } from "~/repositories";
+import {
+	resolveServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
 export type UploadRequest = {
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	request: {
 		audio?: File;
 		audioUrl?: string;
@@ -23,15 +27,18 @@ interface IPodcastUploadResponse extends IFunctionResponse {
 export const handlePodcastUpload = async (
 	req: UploadRequest,
 ): Promise<IPodcastUploadResponse> => {
-	const { env, request, user } = req;
+	const { env, context, request, user } = req;
 
 	if (!user?.id) {
 		throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
 	}
 
+	const serviceContext = resolveServiceContext({ context, env, user });
+	serviceContext.ensureDatabase();
+	const runtimeEnv = serviceContext.env as IEnv;
+	const repositories = serviceContext.repositories;
 	const podcastId = generateId();
-	const repositories = RepositoryManager.getInstance(env);
-	const storageService = new StorageService(env.ASSETS_BUCKET);
+	const storageService = new StorageService(runtimeEnv.ASSETS_BUCKET);
 
 	const sanitisedTitle = sanitiseInput(request.title);
 	const sanitisedDescription = sanitiseInput(request.description);
@@ -39,7 +46,7 @@ export const handlePodcastUpload = async (
 	if (!request.audioUrl) {
 		const podcastAudioKey = `podcasts/${podcastId}/recording.mp3`;
 
-		const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+		const baseAssetsUrl = runtimeEnv.PUBLIC_ASSETS_URL || "";
 		const audioUrl = `${baseAssetsUrl}/${podcastAudioKey}`;
 
 		if (!request.audio) {

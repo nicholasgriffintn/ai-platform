@@ -4,14 +4,19 @@ import {
 } from "~/lib/models";
 import { generateArticleReportPrompt } from "~/lib/prompts";
 import { AIProviderFactory } from "~/lib/providers/factory";
-import { AppDataRepository } from "~/repositories/AppDataRepository";
+import {
+	createServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
 import { getLogger } from "~/utils/logger";
 import { verifyQuotes } from "~/utils/verify";
 
-const logger = getLogger({ prefix: "services/apps/articles/generate-report" });
+const logger = getLogger({
+	prefix: "services/apps/articles/generate-report",
+});
 
 export interface Params {
 	itemId: string;
@@ -27,13 +32,15 @@ export interface GenerateReportSuccessResponse {
 export async function generateArticlesReport({
 	completion_id,
 	app_url,
+	context,
 	env,
 	args,
 	user,
 }: {
 	completion_id: string;
 	app_url: string | undefined;
-	env: IEnv;
+	context?: ServiceContext;
+	env?: IEnv;
 	args: Params;
 	user: IUser;
 }): Promise<GenerateReportSuccessResponse> {
@@ -45,7 +52,24 @@ export async function generateArticlesReport({
 	}
 
 	try {
-		const appDataRepo = new AppDataRepository(env);
+		const serviceContext =
+			context ??
+			(env
+				? createServiceContext({
+						env,
+						user,
+					})
+				: null);
+
+		if (!serviceContext) {
+			throw new AssistantError(
+				"Service context is required",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+
+		serviceContext.ensureDatabase();
+		const appDataRepo = serviceContext.repositories.appData;
 
 		const relatedItems = await appDataRepo.getAppDataByUserAppAndItem(
 			user.id,
@@ -86,7 +110,7 @@ export async function generateArticlesReport({
 		}
 
 		const { model: modelToUse, provider: providerToUse } =
-			await getAuxiliaryModelForRetrieval(env, user);
+			await getAuxiliaryModelForRetrieval(serviceContext.env, user);
 		const modelConfig = await getModelConfigByMatchingModel(modelToUse);
 		const provider = AIProviderFactory.getProvider(providerToUse);
 
@@ -103,7 +127,7 @@ export async function generateArticlesReport({
 					}),
 				},
 			],
-			env: env,
+			env: serviceContext.env,
 			user,
 		});
 

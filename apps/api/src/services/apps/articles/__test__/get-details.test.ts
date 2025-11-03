@@ -13,7 +13,7 @@ vi.mock("~/utils/logger", () => ({
 
 describe("getArticleDetails", () => {
 	let mockAppDataRepo: any;
-	const mockEnv = {} as any;
+	const mockEnv = { DB: {} } as any;
 
 	beforeEach(() => {
 		mockAppDataRepo = {

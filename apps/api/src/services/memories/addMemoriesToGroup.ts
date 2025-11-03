@@ -1,28 +1,15 @@
-import { MemoryRepository } from "~/repositories/MemoryRepository";
-import type { IEnv, User } from "~/types";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export const handleAddMemoriesToGroup = async (
-	env: IEnv,
-	user: User,
+	context: ServiceContext,
 	groupId: string,
 	memoryIds: string[],
 ): Promise<Record<string, unknown>> => {
-	if (!user?.id) {
-		throw new AssistantError(
-			"User ID is required to add memories to group",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
-	}
+	context.ensureDatabase();
+	const user = context.requireUser();
 
-	if (!env.DB) {
-		throw new AssistantError(
-			"Missing database connection",
-			ErrorType.CONFIGURATION_ERROR,
-		);
-	}
-
-	const repository = new MemoryRepository(env);
+	const repository = context.repositories.memories;
 
 	const group = await repository.getMemoryGroupById(groupId);
 	if (!group || group.user_id !== user.id) {
