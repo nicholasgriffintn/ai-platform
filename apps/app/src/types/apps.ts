@@ -7,7 +7,8 @@ export type AppTheme =
 	| "emerald"
 	| "amber"
 	| "sky"
-	| "slate";
+	| "slate"
+	| "blue";
 
 export type AppKind = "dynamic" | "frontend";
 

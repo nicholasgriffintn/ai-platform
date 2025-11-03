@@ -60,6 +60,18 @@ export class MistralProvider extends BaseProvider {
 			};
 		}
 
+		if (params.model === "mistral-ocr-latest") {
+			return {
+				model: params.model,
+				document: params.body.document,
+				id: params.body.id,
+				pages: params.body.pages,
+				include_image_base64: params.body.include_image_base64,
+				image_limit: params.body.image_limit,
+				image_min_size: params.body.image_min_size,
+			};
+		}
+
 		if (params.fim_mode || typeof params.suffix !== "undefined") {
 			const fimParams = {
 				model: params.model,

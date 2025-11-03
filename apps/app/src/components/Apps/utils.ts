@@ -116,6 +116,14 @@ const THEME_STYLES: Record<ThemeKey, ThemeStyle> = {
 			"from-slate-50 to-white dark:from-slate-800/20 dark:to-zinc-800",
 		iconContainerClass: "bg-slate-100/70 dark:bg-slate-800/30",
 	},
+	blue: {
+		iconColor: "text-blue-500 dark:text-blue-400",
+		badgeClass:
+			"bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200",
+		gradientClass:
+			"from-blue-50 to-white dark:from-blue-900/10 dark:to-zinc-800",
+		iconContainerClass: "bg-blue-100/70 dark:bg-blue-900/20",
+	},
 	default: {
 		iconColor: "text-zinc-600 dark:text-zinc-300",
 		badgeClass:
@@ -183,6 +191,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
 	"extract-content": FileSearch,
 	"get-team-members": UsersRound,
 	"get-weather": Cloud,
+	"document-text": FileText,
 };
 
 const normaliseIconName = (value?: string): string | undefined => {

@@ -48,6 +48,10 @@ export interface IFunction {
 						enum?: string[];
 					};
 				};
+				items?: {
+					type: string;
+					description?: string;
+				};
 			};
 		};
 		required?: string[];

@@ -126,7 +126,7 @@ export const TemplateView = memo(({ template, data }: TemplateViewProps) => {
 		} catch (error) {
 			console.error("Error rendering template:", error);
 			return `
-        <div class="p-4 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-md border border-red-300 dark:border-red-800">
+        <div data-responsetype="template" class="p-4 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-md border border-red-300 dark:border-red-800">
           <h3 class="font-semibold">Error rendering template</h3>
           <p>${error instanceof Error ? error.message : "Unknown error"}</p>
         </div>
@@ -150,7 +150,10 @@ export const TemplateView = memo(({ template, data }: TemplateViewProps) => {
 
 	if (!template) {
 		return (
-			<div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
+			<div
+				data-responsetype="template"
+				className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800"
+			>
 				No response is available.
 			</div>
 		);
@@ -158,6 +161,7 @@ export const TemplateView = memo(({ template, data }: TemplateViewProps) => {
 
 	return (
 		<div
+			data-responsetype="template"
 			className="custom-template text-zinc-900 dark:text-zinc-100"
 			ref={containerRef}
 		/>

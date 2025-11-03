@@ -56,7 +56,8 @@ export type AppTheme =
 	| "emerald"
 	| "amber"
 	| "sky"
-	| "slate";
+	| "slate"
+	| "blue";
 
 export interface AppSchema {
 	id: string;

@@ -4,6 +4,17 @@ import { createModelConfig, createModelConfigObject } from "./utils";
 const PROVIDER = "mistral";
 
 export const mistralModelConfig: ModelConfig = createModelConfigObject([
+	createModelConfig("mistral-ocr-latest", PROVIDER, {
+		name: "Mistral OCR",
+		matchingModel: "mistral-ocr-latest",
+		description:
+			"A document OCR (Optical Character Recognition) processor that works with PDFs and images.",
+		type: ["ocr"],
+		modalities: {
+			input: ["document", "image"],
+			output: ["text"],
+		},
+	}),
 	createModelConfig("magistral-small", PROVIDER, {
 		name: "Magistral Small",
 		matchingModel: "magistral-small",

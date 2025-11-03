@@ -9,7 +9,10 @@ export const TextView = ({ data }: TextViewProps) => {
 
 	if (!content) {
 		return (
-			<div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
+			<div
+				data-responsetype="text"
+				className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800"
+			>
 				No content available.
 			</div>
 		);
@@ -18,7 +21,10 @@ export const TextView = ({ data }: TextViewProps) => {
 	const lines = content.split("\n");
 
 	return (
-		<div className="prose dark:prose-invert max-w-none">
+		<div
+			data-responsetype="text"
+			className="prose dark:prose-invert max-w-none"
+		>
 			{lines.map((line, index) => (
 				<p key={index} className={line.trim() === "" ? "h-4" : ""}>
 					{line}

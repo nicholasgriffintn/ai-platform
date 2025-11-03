@@ -134,7 +134,10 @@ export const JsonView = ({
 	};
 
 	return (
-		<div className="mt-1 overflow-x-auto text-xs rounded bg-off-white-highlight/50 p-2 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+		<div
+			data-responsetype="json"
+			className="mt-1 overflow-x-auto text-xs rounded bg-off-white-highlight/50 p-2 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700"
+		>
 			{renderValue(data, "root")}
 		</div>
 	);

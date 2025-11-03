@@ -6,7 +6,8 @@ type DynamicAppCategory =
 	| "Content Generation"
 	| "Code Assistance"
 	| "Productivity & Coaching"
-	| "Data & Utilities";
+	| "Data & Utilities"
+	| "OCR";
 
 export type AppKind = "dynamic" | "frontend";
 
@@ -151,6 +152,12 @@ export const FUNCTION_APP_METADATA: Record<string, DynamicAppMetadata> = {
 		icon: "graduation-cap",
 		theme: "emerald",
 		tags: ["learning", "guidance"],
+	},
+	extract_text_from_document: {
+		category: "OCR",
+		icon: "document-text",
+		theme: "blue",
+		tags: ["document", "extraction"],
 	},
 };
 

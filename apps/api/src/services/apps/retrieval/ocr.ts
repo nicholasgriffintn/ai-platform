@@ -91,6 +91,7 @@ export const performOcr = async (
 			return {
 				status: "success",
 				data: {
+					model: response?.data?.model ?? params.model,
 					url: `${baseAssetsUrl}/${jsonUrl}`,
 					key: jsonUrl,
 				},
@@ -172,6 +173,7 @@ ${htmlContent}
 			return {
 				status: "success",
 				data: {
+					model: response?.data?.model ?? params.model,
 					url: `${baseAssetsUrl}/${htmlUrl}`,
 					key: htmlUrl,
 				},
@@ -190,6 +192,7 @@ ${htmlContent}
 		return {
 			status: "success",
 			data: {
+				model: response?.data?.model ?? params.model,
 				url: `${baseAssetsUrl}/${markdownUrl}`,
 				key: markdownUrl,
 			},

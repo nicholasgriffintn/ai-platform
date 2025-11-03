@@ -25,6 +25,7 @@ import { create_video } from "./video";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
 import { research } from "./research";
+import { extract_text_from_document } from "./ocr";
 
 const logger = getLogger({ prefix: "services/functions" });
 
@@ -39,6 +40,7 @@ export const availableFunctions: IFunction[] = [
 	web_search,
 	research,
 	extract_content,
+	extract_text_from_document,
 	capture_screenshot,
 	create_speech,
 	tutor,

@@ -13,14 +13,20 @@ export const TableView = ({ data }: TableViewProps) => {
 
 	if (!headers || !rows || headers.length === 0) {
 		return (
-			<div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
+			<div
+				data-responsetype="table"
+				className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800"
+			>
 				There's no data available.
 			</div>
 		);
 	}
 
 	return (
-		<div className="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-md">
+		<div
+			data-responsetype="table"
+			className="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-md"
+		>
 			<table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
 				<thead className="bg-zinc-50 dark:bg-zinc-800">
 					<tr>
