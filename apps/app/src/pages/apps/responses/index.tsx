@@ -65,7 +65,8 @@ export default function DynamicAppResponsesPage() {
 							<Link
 								key={resp.id}
 								to={`/apps/responses/${resp.id}`}
-								className="block focus:outline-none focus:ring-2 focus:ring-blue-500/40 rounded-xl"
+								style={{ textDecoration: "none" }}
+								className="block focus:outline-none focus:ring-2 focus:ring-blue-500/40 rounded-xl group"
 							>
 								<Card
 									className={cn(
@@ -75,7 +76,7 @@ export default function DynamicAppResponsesPage() {
 								>
 									<div className="flex items-center gap-2">
 										{icon && <span className="text-2xl">{icon}</span>}
-										<span className="font-medium">
+										<span className="font-medium group-hover:underline">
 											{app ? app.name : resp.app_id}
 										</span>
 									</div>
