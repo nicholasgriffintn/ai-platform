@@ -64,7 +64,7 @@ export default function NewNotePage() {
 			className={cn(
 				isFullBleed
 					? "flex flex-col w-full h-full"
-					: "max-w-4xl mx-auto flex flex-col h-[calc(100vh-8rem)]",
+					: "max-w-4xl mx-auto flex flex-col h-full",
 			)}
 			headerContent={<h1 className="sr-only">New Note</h1>}
 		>

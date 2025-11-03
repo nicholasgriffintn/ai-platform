@@ -88,7 +88,7 @@ export default function NoteDetailPage() {
 			className={cn(
 				isFullBleed
 					? "flex flex-col w-full h-full"
-					: "max-w-4xl mx-auto flex flex-col h-[calc(100vh-8rem)]",
+					: "max-w-4xl mx-auto flex flex-col h-full",
 			)}
 			headerContent={<h1 className="sr-only">Edit Note</h1>}
 		>
