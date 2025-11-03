@@ -20,7 +20,7 @@ const ReplicateModelDetailRoute: FC = () => {
 	return (
 		<PageShell
 			sidebarContent={<AppsSidebarContent />}
-			className="max-w-4xl mx-auto"
+			className="max-w-7xl mx-auto"
 			headerContent={
 				<PageHeader>
 					<BackLink to="/apps/replicate" label="Back to Models" />
