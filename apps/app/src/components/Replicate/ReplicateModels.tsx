@@ -128,6 +128,7 @@ export function ReplicateModels() {
 				{allTypes.length > 0 && (
 					<div className="flex flex-wrap gap-2">
 						<button
+							type="button"
 							onClick={() => setSelectedType(null)}
 							className={cn(
 								"px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
@@ -140,6 +141,7 @@ export function ReplicateModels() {
 						</button>
 						{allTypes.map((type) => (
 							<button
+								type="button"
 								key={type}
 								onClick={() => setSelectedType(type)}
 								className={cn(

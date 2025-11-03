@@ -14,6 +14,7 @@ import {
 } from "~/hooks/useDynamicApps";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
+import { PageTitle } from "../Core/PageTitle";
 import { BackLink } from "../Core/BackLink";
 import { PageHeader } from "../Core/PageHeader";
 import { AppCard } from "./AppCard";
@@ -155,6 +156,10 @@ export const DynamicApps = () => {
 		setResult(null);
 	}, [trackEvent]);
 
+	const handlePreviousResponses = useCallback(() => {
+		navigate("/apps/responses");
+	}, [navigate]);
+
 	const renderCategoryApps = useCallback(
 		(category: string, categoryApps: AppListItem[]) => (
 			<div key={category} className="space-y-6 mb-6">
@@ -211,14 +216,19 @@ export const DynamicApps = () => {
 	if (appsLoading || appLoading || isAuthenticationLoading) {
 		return (
 			<div className={cn("container mx-auto px-4 max-w-7xl")}>
-				<div className="mb-6">
+				<PageHeader>
+					<PageTitle title="Apps" />
+				</PageHeader>
+				<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
 					<SearchInput
 						value={searchQuery}
 						onChange={setSearchQuery}
 						placeholder="Search apps..."
-						className="max-w-md"
-						disabled
+						className="w-full md:max-w-md"
 					/>
+					<Button variant="secondary" onClick={handlePreviousResponses}>
+						Previous responses
+					</Button>
 				</div>
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 					<CardSkeleton count={6} showHeader showFooter />
@@ -230,7 +240,10 @@ export const DynamicApps = () => {
 	if (error) {
 		return (
 			<div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
-				<h3 className="font-semibold mb-2">Failed to load apps</h3>
+				<PageHeader>
+					<PageTitle title="Apps" />
+				</PageHeader>
+				<h2 className="font-semibold mb-2">Failed to load apps</h2>
 				<p>
 					{error instanceof Error ? error.message : "Unknown error occurred"}
 				</p>
@@ -261,14 +274,21 @@ export const DynamicApps = () => {
 
 	return (
 		<div className={cn("container mx-auto px-4 max-w-7xl")}>
+			<PageHeader>
+				<PageTitle title="Apps" />
+			</PageHeader>
+				
 			{apps.length > 0 && (
-				<div className="mb-6">
+				<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
 					<SearchInput
 						value={searchQuery}
 						onChange={setSearchQuery}
 						placeholder="Search apps..."
-						className="max-w-md"
+						className="w-full md:max-w-md"
 					/>
+					<Button variant="secondary" onClick={handlePreviousResponses}>
+						Previous responses
+					</Button>
 				</div>
 			)}
 
