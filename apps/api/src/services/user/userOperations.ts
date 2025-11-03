@@ -127,27 +127,3 @@ export async function syncUserProviders(
 	};
 }
 
-export function validatePlanRequirement(
-	user: IUser,
-	requiredPlan: string,
-): void {
-	if (user.plan_id !== requiredPlan) {
-		throw new AssistantError(
-			`User is not on ${requiredPlan} plan`,
-			ErrorType.AUTHORISATION_ERROR,
-		);
-	}
-}
-
-export function checkPlanRequirement(
-	user: IUser,
-	requiredPlan: string,
-): { isValid: boolean; message: string } {
-	if (user.plan_id !== requiredPlan) {
-		return {
-			isValid: false,
-			message: `User is not on ${requiredPlan} plan`,
-		};
-	}
-	return { isValid: true, message: "" };
-}

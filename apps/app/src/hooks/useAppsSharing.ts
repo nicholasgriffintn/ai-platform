@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 
 import { API_BASE_URL } from "~/constants";
+import { returnFetchedData } from "src/lib/api/fetch-wrapper";
 
 type ShareItemParams = {
 	app_id: string;
@@ -26,7 +27,7 @@ export function useShareItem() {
 				credentials: "include",
 			});
 
-			const data = (await response.json()) as ShareItemResponse;
+			const data = await returnFetchedData<ShareItemResponse>(response);
 
 			if (!response.ok) {
 				throw new Error(data.message || "Failed to share item");
@@ -64,11 +65,11 @@ export async function getSharedItem({
 	const response = await fetch(`${API_BASE_URL}/apps/shared/${share_id}`);
 
 	if (!response.ok) {
-		const errorData = (await response.json()) as GetSharedItemResponse;
+		const errorData = await returnFetchedData<GetSharedItemResponse>(response);
 		throw new Error(errorData.message || "Failed to fetch shared item");
 	}
 
-	const data = (await response.json()) as GetSharedItemResponse;
+	const data = await returnFetchedData<GetSharedItemResponse>(response);
 
 	if (data.status === "error" || !data.item) {
 		throw new Error(data.message || "Failed to fetch shared item");

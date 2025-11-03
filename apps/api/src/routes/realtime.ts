@@ -6,6 +6,7 @@ import {
 } from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import type { IEnv } from "~/types";
 import { AIProviderFactory } from "../lib/providers/factory";
 
@@ -52,15 +53,15 @@ app.post(
 		];
 
 		if (!availableModels.includes(model)) {
-			return c.json({ error: "Invalid model specified" }, 400);
+			return ResponseFactory.success(c,{ error: "Invalid model specified" }, 400);
 		}
 
 		if (!user?.id) {
-			return c.json({ error: "Unauthorized" }, 401);
+			return ResponseFactory.success(c,{ error: "Unauthorized" }, 401);
 		}
 
 		if (type !== "transcription") {
-			return c.json({ error: "Invalid session type" }, 400);
+			return ResponseFactory.success(c,{ error: "Invalid session type" }, 400);
 		}
 
 		const body: Record<string, any> = {};
@@ -82,10 +83,10 @@ app.post(
 		const session = await provider.createRealtimeSession(env, user, type, body);
 
 		if (!session) {
-			return c.json({ error: "Failed to create realtime session" }, 500);
+			return ResponseFactory.success(c,{ error: "Failed to create realtime session" }, 500);
 		}
 
-		return c.json(session);
+		return ResponseFactory.success(c,session);
 	},
 );
 

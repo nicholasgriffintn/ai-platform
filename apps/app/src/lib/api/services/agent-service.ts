@@ -1,4 +1,4 @@
-import { fetchApi } from "../fetch-wrapper";
+import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 
 export class AgentService {
 	constructor(private getHeaders: () => Promise<Record<string, string>>) {}
@@ -18,9 +18,9 @@ export class AgentService {
 			throw new Error(`Failed to list agents: ${response.statusText}`);
 		}
 
-		const responseData = (await response.json()) as { data: any[] };
+		const responseData = await returnFetchedData<any>(response);
 
-		return responseData.data || [];
+		return responseData || [];
 	}
 
 	async listSharedAgents({
@@ -78,9 +78,9 @@ export class AgentService {
 			throw new Error(`Failed to list shared agents: ${response.statusText}`);
 		}
 
-		const responseData = (await response.json()) as { data: any[] };
+		const responseData = await returnFetchedData<any>(response);
 
-		return responseData.data || [];
+		return responseData || [];
 	}
 
 	async listFeaturedSharedAgents(limit = 10): Promise<any[]> {
@@ -95,9 +95,9 @@ export class AgentService {
 			throw new Error(`Failed to list featured agents: ${response.statusText}`);
 		}
 
-		const responseData = (await response.json()) as { data: any[] };
+		const responseData = await returnFetchedData<any>(response);
 
-		return responseData.data || [];
+		return responseData || [];
 	}
 
 	async installSharedAgent(agentId: string): Promise<any> {
@@ -109,9 +109,9 @@ export class AgentService {
 			throw new Error(`Failed to install shared agent: ${response.statusText}`);
 		}
 
-		const responseData = (await response.json()) as { data: any[] };
+		const responseData = await returnFetchedData<any>(response);
 
-		return responseData.data || [];
+		return responseData || [];
 	}
 
 	async shareAgent(
@@ -139,9 +139,9 @@ export class AgentService {
 			throw new Error(`Failed to share agent: ${response.statusText}`);
 		}
 
-		const responseData = (await response.json()) as { data: any[] };
+		const responseData = await returnFetchedData<any>(response);
 
-		return responseData.data || [];
+		return responseData || [];
 	}
 
 	async rateSharedAgent(
@@ -159,9 +159,9 @@ export class AgentService {
 			throw new Error(`Failed to rate shared agent: ${response.statusText}`);
 		}
 
-		const responseData = (await response.json()) as { data: any[] };
+		const responseData = await returnFetchedData<any>(response);
 
-		return responseData.data || [];
+		return responseData || [];
 	}
 
 	async getAgentRatings(agentId: string, limit = 10): Promise<any[]> {
@@ -176,9 +176,9 @@ export class AgentService {
 			throw new Error(`Failed to get agent ratings: ${response.statusText}`);
 		}
 
-		const responseData = (await response.json()) as { data: any[] };
+		const responseData = await returnFetchedData<any>(response);
 
-		return responseData.data || [];
+		return responseData || [];
 	}
 
 	async getSharedCategories(): Promise<string[]> {
@@ -192,9 +192,9 @@ export class AgentService {
 			);
 		}
 
-		const responseData = (await response.json()) as { data: any[] };
+		const responseData = await returnFetchedData<any>(response);
 
-		return responseData.data || [];
+		return responseData || [];
 	}
 
 	async getSharedTags(): Promise<string[]> {
@@ -206,9 +206,9 @@ export class AgentService {
 			);
 		}
 
-		const responseData = (await response.json()) as { data: any[] };
+		const responseData = await returnFetchedData<any>(response);
 
-		return responseData.data || [];
+		return responseData || [];
 	}
 
 	async createAgent(
@@ -258,8 +258,9 @@ export class AgentService {
 			throw new Error(`Failed to create agent: ${response.statusText}`);
 		}
 
-		const responseData = (await response.json()) as { data: any };
-		return responseData.data;
+		const responseData = await returnFetchedData<any>(response);
+
+		return responseData || [];
 	}
 
 	async updateAgent(
@@ -307,8 +308,9 @@ export class AgentService {
 			throw new Error(`Failed to update agent: ${response.statusText}`);
 		}
 
-		const responseData = (await response.json()) as { data: any };
-		return responseData.data;
+		const responseData = await returnFetchedData<any>(response);
+
+		return responseData || [];
 	}
 
 	async deleteAgent(agentId: string): Promise<void> {
@@ -329,7 +331,8 @@ export class AgentService {
 			throw new Error(`Failed to delete agent: ${response.statusText}`);
 		}
 
-		const responseData = (await response.json()) as { data: any };
-		return responseData.data;
+		const responseData = await returnFetchedData<any>(response);
+
+		return responseData || [];
 	}
 }

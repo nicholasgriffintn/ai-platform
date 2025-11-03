@@ -35,6 +35,7 @@ import uploads from "./routes/uploads";
 import user from "./routes/user";
 import memories from "./routes/memories";
 import { serviceContextMiddleware } from "./lib/context/serviceContext";
+import { ResponseFactory } from "./lib/http/ResponseFactory";
 import { autoRegisterDynamicApps } from "./services/dynamic-apps/auto-register-apps";
 import { handleGetMetrics } from "./services/metrics/getMetrics";
 import type { IEnv } from "./types";
@@ -291,7 +292,7 @@ app.get(
 			status: query.status,
 		});
 
-		return context.json({ metrics: metricsResponse });
+		return ResponseFactory.success(context, { metrics: metricsResponse });
 	},
 );
 

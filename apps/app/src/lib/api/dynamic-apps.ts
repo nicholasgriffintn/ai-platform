@@ -23,7 +23,7 @@ import type {
 	UploadResponse,
 } from "~/types/podcast";
 import { apiService } from "./api-service";
-import { fetchApi } from "./fetch-wrapper";
+import { fetchApi, returnFetchedData } from "./fetch-wrapper";
 
 export const fetchDynamicApps = async (): Promise<DynamicAppsResponse> => {
 	try {
@@ -43,7 +43,7 @@ export const fetchDynamicApps = async (): Promise<DynamicAppsResponse> => {
 			throw new Error(`Failed to fetch dynamic apps: ${response.statusText}`);
 		}
 
-		return (await response.json()) as DynamicAppsResponse;
+		return await returnFetchedData<DynamicAppsResponse>(response);
 	} catch (error) {
 		console.error("Error fetching dynamic apps:", error);
 		throw error;
@@ -68,7 +68,8 @@ export const fetchDynamicAppById = async (id: string): Promise<AppSchema> => {
 			throw new Error(`Failed to fetch dynamic app: ${response.statusText}`);
 		}
 
-		return await response.json();
+		const data = await returnFetchedData<AppSchema>(response);
+		return data;
 	} catch (error) {
 		console.error(`Error fetching dynamic app ${id}:`, error);
 		throw error;
@@ -97,7 +98,7 @@ export const fetchDynamicAppResponseById = async (
 			);
 		}
 
-		const data = (await response.json()) as { response: AppDataItem };
+		const data = await returnFetchedData<{ response: AppDataItem }>(response);
 		return data.response;
 	} catch (error) {
 		console.error(`Error fetching dynamic app response ${responseId}:`, error);
@@ -131,7 +132,7 @@ export const fetchDynamicAppResponses = async (
 			);
 		}
 
-		return (await response.json()) as AppDataItem[];
+		return await returnFetchedData<AppDataItem[]>(response);
 	} catch (error) {
 		console.error("Error fetching dynamic app responses:", error);
 		throw error;
@@ -160,7 +161,8 @@ export const executeDynamicApp = async (
 			throw new Error(`Failed to execute dynamic app: ${response.statusText}`);
 		}
 
-		return await response.json();
+		const data = await returnFetchedData<Record<string, any>>(response);
+		return data;
 	} catch (error) {
 		console.error(`Error executing dynamic app ${id}:`, error);
 		throw error;
@@ -184,7 +186,7 @@ export const fetchPodcasts = async (): Promise<Podcast[]> => {
 		throw new Error(`Failed to fetch podcasts: ${response.statusText}`);
 	}
 
-	const data = (await response.json()) as PodcastsResponse;
+	const data = await returnFetchedData<PodcastsResponse>(response);
 	return data.podcasts || [];
 };
 
@@ -205,7 +207,7 @@ export const fetchPodcast = async (id: string): Promise<Podcast> => {
 		throw new Error(`Failed to fetch podcast: ${response.statusText}`);
 	}
 
-	const data = (await response.json()) as PodcastResponse;
+	const data = await returnFetchedData<PodcastResponse>(response);
 	return data.podcast;
 };
 
@@ -243,7 +245,7 @@ export const uploadPodcast = async (
 		throw new Error(`Failed to upload podcast: ${response.statusText}`);
 	}
 
-	return response.json() as Promise<UploadResponse>;
+	return await returnFetchedData<UploadResponse>(response);
 };
 
 export const processPodcast = async (params: ProcessPodcastParams) => {
@@ -280,7 +282,7 @@ export const processPodcast = async (params: ProcessPodcastParams) => {
 		throw new Error(`Failed to process podcast: ${response.statusText}`);
 	}
 
-	return response.json();
+	return await returnFetchedData<Record<string, any>>(response);
 };
 
 export const fetchArticles = async (): Promise<ArticlesResponse> => {
@@ -295,15 +297,14 @@ export const fetchArticles = async (): Promise<ArticlesResponse> => {
 		method: "GET",
 		headers,
 	});
+
 	if (!response.ok) {
-		const errorData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
 			errorData?.message || `Failed to fetch articles: ${response.statusText}`,
 		);
 	}
-	return response.json() as Promise<ArticlesResponse>;
+	return await returnFetchedData<ArticlesResponse>(response);
 };
 
 export const fetchArticle = async (id: string): Promise<ArticleResponse> => {
@@ -319,15 +320,13 @@ export const fetchArticle = async (id: string): Promise<ArticleResponse> => {
 		headers,
 	});
 	if (!response.ok) {
-		const errorData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
 			errorData?.message ||
 				`Failed to fetch article report: ${response.statusText}`,
 		);
 	}
-	return response.json() as Promise<ArticleResponse>;
+	return await returnFetchedData<ArticleResponse>(response);
 };
 
 export const analyseArticle = async (
@@ -346,14 +345,12 @@ export const analyseArticle = async (
 		headers,
 	});
 	if (!response.ok) {
-		const errorData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
 			errorData?.message || `Failed to analyse article: ${response.statusText}`,
 		);
 	}
-	return response.json() as Promise<AnalyseArticleResponse>;
+	return await returnFetchedData<AnalyseArticleResponse>(response);
 };
 
 export const summariseArticle = async (
@@ -372,15 +369,13 @@ export const summariseArticle = async (
 		headers,
 	});
 	if (!response.ok) {
-		const errorData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
 			errorData?.message ||
 				`Failed to summarise article: ${response.statusText}`,
 		);
 	}
-	return response.json() as Promise<SummariseArticleResponse>;
+	return await returnFetchedData<SummariseArticleResponse>(response);
 };
 
 export const generateReport = async (
@@ -399,14 +394,12 @@ export const generateReport = async (
 		headers,
 	});
 	if (!response.ok) {
-		const errorData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
 			errorData?.message || `Failed to generate report: ${response.statusText}`,
 		);
 	}
-	return response.json() as Promise<GenerateReportResponse>;
+	return await returnFetchedData<GenerateReportResponse>(response);
 };
 
 export const fetchSourceArticlesByIds = async (
@@ -430,15 +423,13 @@ export const fetchSourceArticlesByIds = async (
 	});
 
 	if (!response.ok) {
-		const errorData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
 			errorData?.message ||
 				`Failed to fetch source articles: ${response.statusText}`,
 		);
 	}
-	return response.json() as Promise<FetchMultipleArticlesResponse>;
+	return await returnFetchedData<FetchMultipleArticlesResponse>(response);
 };
 
 export const fetchNotes = async (): Promise<Note[]> => {
@@ -458,7 +449,7 @@ export const fetchNotes = async (): Promise<Note[]> => {
 		throw new Error(`Failed to fetch notes: ${response.statusText}`);
 	}
 
-	const data = (await response.json()) as { notes: Note[] };
+	const data = await returnFetchedData<{ notes: Note[] }>(response);
 	return data.notes;
 };
 
@@ -476,15 +467,13 @@ export const fetchNote = async (id: string): Promise<Note> => {
 	});
 
 	if (!response.ok) {
-		const errData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
-			errData?.message || `Failed to fetch note: ${response.statusText}`,
+			errorData?.message || `Failed to fetch note: ${response.statusText}`,
 		);
 	}
 
-	const data = (await response.json()) as { note: Note };
+	const data = await returnFetchedData<{ note: Note }>(response);
 	return data.note;
 };
 
@@ -507,15 +496,13 @@ export const createNote = async (params: {
 	});
 
 	if (!response.ok) {
-		const errData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
-			errData?.message || `Failed to create note: ${response.statusText}`,
+			errorData?.message || `Failed to create note: ${response.statusText}`,
 		);
 	}
 
-	const data = (await response.json()) as { note: Note };
+	const data = await returnFetchedData<{ note: Note }>(response);
 	return data.note;
 };
 
@@ -541,15 +528,13 @@ export const updateNote = async (params: {
 	});
 
 	if (!response.ok) {
-		const errData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
-			errData?.message || `Failed to update note: ${response.statusText}`,
+			errorData?.message || `Failed to update note: ${response.statusText}`,
 		);
 	}
 
-	const data = (await response.json()) as { note: Note };
+	const data = await returnFetchedData<{ note: Note }>(response);
 	return data.note;
 };
 
@@ -567,11 +552,9 @@ export const deleteNote = async (id: string): Promise<void> => {
 	});
 
 	if (!response.ok) {
-		const errData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
-			errData?.message || `Failed to delete note: ${response.statusText}`,
+			errorData?.message || `Failed to delete note: ${response.statusText}`,
 		);
 	}
 };
@@ -594,15 +577,13 @@ export const formatNoteAPI = async (
 	});
 
 	if (!response.ok) {
-		const errData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
-			errData?.message || `Failed to format note: ${response.statusText}`,
+			errorData?.message || `Failed to format note: ${response.statusText}`,
 		);
 	}
 
-	const data = (await response.json().catch(() => ({}))) as { content: string };
+	const data = await returnFetchedData<{ content: string }>(response);
 	return data.content;
 };
 
@@ -630,16 +611,14 @@ export const extractArticleContent = async (
 	});
 
 	if (!response.ok) {
-		const errData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
-			errData?.message ||
+			errorData?.message ||
 				`Failed to extract article content: ${response.statusText}`,
 		);
 	}
 
-	return response.json() as Promise<ExtractArticleContentResponse>;
+	return await returnFetchedData<ExtractArticleContentResponse>(response);
 };
 
 export const prepareSessionForRerun = async (itemId: string): Promise<void> => {
@@ -659,11 +638,9 @@ export const prepareSessionForRerun = async (itemId: string): Promise<void> => {
 	});
 
 	if (!response.ok) {
-		const errData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
-			errData?.message ||
+			errorData?.message ||
 				`Failed to prepare session for rerun: ${response.statusText}`,
 		);
 	}
@@ -717,13 +694,11 @@ export const generateNotesFromMedia = async (params: {
 	});
 
 	if (!response.ok) {
-		const errData = (await response.json().catch(() => ({}))) as {
-			message?: string;
-		};
+		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
-			errData?.message || `Failed to generate notes: ${response.statusText}`,
+			errorData?.message || `Failed to generate notes: ${response.statusText}`,
 		);
 	}
 
-	return (await response.json()) as { content: string };
+	return await returnFetchedData<{ content: string }>(response);
 };

@@ -13,8 +13,9 @@ import {
 } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { checkPlanRequirement } from "~/services/user/userOperations";
+import { requirePlan } from "~/middleware/requirePlan";
 import { analyseArticle } from "~/services/apps/articles/analyse";
 import { generateArticlesReport } from "~/services/apps/articles/generate-report";
 import { getArticleDetails } from "~/services/apps/articles/get-details";
@@ -62,33 +63,9 @@ app.get(
 			},
 		},
 	}),
+	requirePlan("pro"),
 	async (context: Context) => {
-		const user = context.get("user") as IUser | undefined;
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
+		const user = context.get("user") as IUser;
 
 		try {
 			const serviceContext = getServiceContext(context);
@@ -97,7 +74,7 @@ app.get(
 				userId: user.id,
 			});
 
-			return context.json({ articles: response.sessions });
+			return ResponseFactory.success(context, { articles: response.sessions });
 		} catch (error) {
 			routeLogger.error("Error listing articles:", { error });
 
@@ -164,42 +141,14 @@ app.get(
 			},
 		},
 	}),
+	requirePlan("pro"),
 	async (context: Context) => {
-		const user = context.get("user") as IUser | undefined;
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
+		const user = context.get("user") as IUser;
 		const url = new URL(context.req.url);
 		const ids = url.searchParams.getAll("ids[]");
 
 		if (!ids.length) {
-			return context.json(
-				{ status: "error", message: "No article IDs provided" },
-				400,
-			);
+			return ResponseFactory.error(context, "No article IDs provided", 400);
 		}
 
 		const validIds = ids.filter(
@@ -214,7 +163,7 @@ app.get(
 				userId: user.id,
 			});
 
-			return context.json({ status: "success", articles: response.articles });
+			return ResponseFactory.success(context, { articles: response.articles });
 		} catch (error) {
 			routeLogger.error("Error fetching source articles:", { error, ids });
 
@@ -272,34 +221,10 @@ app.get(
 			},
 		},
 	}),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const id = context.req.param("id");
-		const user = context.get("user") as IUser | undefined;
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
+		const user = context.get("user") as IUser;
 
 		try {
 			const serviceContext = getServiceContext(context);
@@ -309,7 +234,7 @@ app.get(
 				userId: user.id,
 			});
 
-			return context.json({ article: response.article });
+			return ResponseFactory.success(context, { article: response.article });
 		} catch (error) {
 			routeLogger.error("Error getting article details:", { error, id });
 
@@ -367,36 +292,12 @@ app.post(
 		},
 	}),
 	zValidator("json", articleAnalyzeSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as z.infer<
 			typeof articleAnalyzeSchema
 		>;
-		const user = context.get("user") as IUser | undefined;
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
+		const user = context.get("user") as IUser;
 
 		try {
 			const completion_id = generateId();
@@ -412,7 +313,7 @@ app.post(
 				user,
 			});
 
-			return context.json(response);
+			return ResponseFactory.success(context, response);
 		} catch (error) {
 			routeLogger.error("Error analysing article:", {
 				error,
@@ -473,36 +374,12 @@ app.post(
 		},
 	}),
 	zValidator("json", articleSummariseSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as z.infer<
 			typeof articleSummariseSchema
 		>;
-		const user = context.get("user") as IUser | undefined;
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
+		const user = context.get("user") as IUser;
 
 		try {
 			const completion_id = generateId();
@@ -518,7 +395,7 @@ app.post(
 				user,
 			});
 
-			return context.json(response);
+			return ResponseFactory.success(context, response);
 		} catch (error) {
 			routeLogger.error("Error summarising article:", {
 				error,
@@ -587,36 +464,12 @@ app.post(
 		},
 	}),
 	zValidator("json", generateArticlesReportSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as z.infer<
 			typeof generateArticlesReportSchema
 		>;
-		const user = context.get("user") as IUser | undefined;
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
+		const user = context.get("user") as IUser;
 
 		try {
 			const completion_id = generateId();
@@ -632,7 +485,7 @@ app.post(
 				user,
 			});
 
-			return context.json(response);
+			return ResponseFactory.success(context, response);
 		} catch (error) {
 			routeLogger.error("Error generating report:", {
 				error,
@@ -700,39 +553,13 @@ app.post(
 			},
 		},
 	}),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const itemId = context.req.param("itemId");
-		const user = context.get("user") as IUser | undefined;
-
-		if (!user?.id) {
-			return context.json(
-				{
-					status: "error",
-					message: "User not authenticated",
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					status: "error",
-					message: planCheck.message,
-				},
-				401,
-			);
-		}
+		const user = context.get("user") as IUser;
 
 		if (!itemId) {
-			return context.json(
-				{
-					status: "error",
-					message: "Item ID is required",
-				},
-				400,
-			);
+			return ResponseFactory.error(context, "Item ID is required", 400);
 		}
 
 		try {
@@ -740,10 +567,7 @@ app.post(
 			const serviceContext = getServiceContext(context);
 			await cleanupArticleSession(serviceContext, user.id, itemId);
 
-			return context.json({
-				status: "success",
-				message: "Session prepared for rerun",
-			});
+			return ResponseFactory.message(context, "Session prepared for rerun");
 		} catch (error) {
 			routeLogger.error("Error preparing session for rerun:", {
 				error,
@@ -810,36 +634,12 @@ app.post(
 		},
 	}),
 	zValidator("json", contentExtractSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as z.infer<
 			typeof contentExtractSchema
 		>;
-		const user = context.get("user") as IUser | undefined;
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
+		const user = context.get("user") as IUser;
 
 		try {
 			const extractResult = await extractContent(
@@ -855,13 +655,7 @@ app.post(
 			);
 
 			if (extractResult.status === "error") {
-				return context.json(
-					{
-						status: "error",
-						message: extractResult.error || "Failed to extract content",
-					},
-					400,
-				);
+				return ResponseFactory.error(context, "Failed to extract content", 400);
 			}
 
 			const content =
@@ -871,12 +665,9 @@ app.post(
 
 			const failedUrls = extractResult.data?.extracted.failed_results || [];
 
-			return context.json({
-				status: "success",
-				data: {
-					content,
-					failedUrls,
-				},
+			return ResponseFactory.success(context, {
+				content,
+				failedUrls,
 			});
 		} catch (error) {
 			routeLogger.error("Error extracting content from URL:", {

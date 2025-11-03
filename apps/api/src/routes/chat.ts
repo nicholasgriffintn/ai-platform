@@ -35,6 +35,7 @@ import { allowRestrictedPaths } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { getServiceContext } from "~/lib/context/serviceContext";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
@@ -138,7 +139,7 @@ app.post(
 			return response;
 		}
 
-		return context.json(response);
+		return ResponseFactory.success(context, response);
 	},
 );
 
@@ -200,7 +201,7 @@ app.post(
 			});
 		}
 
-		return context.json(result);
+		return ResponseFactory.success(context, result);
 	},
 );
 
@@ -254,7 +255,7 @@ app.post(
 			});
 		}
 
-		return context.json(result);
+		return ResponseFactory.success(context, result);
 	},
 );
 
@@ -308,7 +309,7 @@ app.post(
 			});
 		}
 
-		return context.json(result);
+		return ResponseFactory.success(context, result);
 	},
 );
 
@@ -365,7 +366,7 @@ app.post(
 			body,
 		);
 
-		return context.json(response);
+		return ResponseFactory.success(context, response);
 	},
 );
 
@@ -392,7 +393,7 @@ app.delete(
 			context: serviceContext,
 		});
 
-		return context.json(response);
+		return ResponseFactory.success(context, response);
 	},
 );
 
@@ -451,7 +452,7 @@ app.get(
 			{ refreshPending },
 		);
 
-		return context.json(data);
+		return ResponseFactory.success(context, data);
 	},
 );
 
@@ -510,7 +511,7 @@ app.get(
 			after,
 		);
 
-		return context.json({
+		return ResponseFactory.success(context, {
 			messages,
 			conversation_id,
 		});
@@ -563,7 +564,7 @@ app.get(
 			message_id,
 		);
 
-		return context.json({
+		return ResponseFactory.success(context, {
 			...message,
 			conversation_id,
 		});
@@ -638,7 +639,7 @@ app.get(
 			},
 		);
 
-		return context.json(response);
+		return ResponseFactory.success(context, response);
 	},
 );
 
@@ -709,7 +710,7 @@ app.post(
 			store,
 		);
 
-		return context.json(response);
+		return ResponseFactory.success(context, response);
 	},
 );
 
@@ -784,7 +785,7 @@ app.put(
 			updates,
 		);
 
-		return context.json(response);
+		return ResponseFactory.success(context, response);
 	},
 );
 
@@ -846,7 +847,7 @@ app.delete(
 			completion_id,
 		);
 
-		return context.json(response);
+		return ResponseFactory.success(context, response);
 	},
 );
 
@@ -913,7 +914,7 @@ app.post(
 			role,
 		);
 
-		return context.json({
+		return ResponseFactory.success(context, {
 			response,
 		});
 	},
@@ -977,7 +978,7 @@ app.post(
 
 		const response = await handleChatCompletionFeedbackSubmission(requestObj);
 
-		return context.json({
+		return ResponseFactory.success(context, {
 			response,
 		});
 	},
@@ -1040,7 +1041,7 @@ app.post(
 			completion_id,
 		);
 
-		return context.json(result);
+		return ResponseFactory.success(context, result);
 	},
 );
 
@@ -1099,7 +1100,7 @@ app.delete(
 			completion_id,
 		);
 
-		return context.json(result);
+		return ResponseFactory.success(context, result);
 	},
 );
 
@@ -1169,7 +1170,7 @@ app.get(
 			after,
 		);
 
-		return context.json(result);
+		return ResponseFactory.success(context, result);
 	},
 );
 

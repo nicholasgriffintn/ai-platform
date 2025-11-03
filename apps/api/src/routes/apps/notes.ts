@@ -14,8 +14,9 @@ import {
 } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { checkPlanRequirement } from "~/services/user/userOperations";
+import { requirePlan } from "~/middleware/requirePlan";
 import {
 	createNote,
 	deleteNote,
@@ -50,33 +51,9 @@ app.get(
 			},
 		},
 	}),
+	requirePlan("pro"),
 	async (c: Context) => {
 		const user = c.get("user") as IUser;
-
-		if (!user?.id) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
 
 		try {
 			const serviceContext = getServiceContext(c);
@@ -84,7 +61,7 @@ app.get(
 				context: serviceContext,
 				userId: user.id,
 			});
-			return c.json({ notes });
+			return ResponseFactory.success(c, { notes });
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -117,34 +94,10 @@ app.get(
 			},
 		},
 	}),
+	requirePlan("pro"),
 	async (c: Context) => {
 		const id = c.req.param("id");
 		const user = c.get("user") as IUser;
-
-		if (!user?.id) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
 
 		try {
 			const serviceContext = getServiceContext(c);
@@ -153,7 +106,7 @@ app.get(
 				userId: user.id,
 				noteId: id,
 			});
-			return c.json({ note });
+			return ResponseFactory.success(c, { note });
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -201,38 +154,14 @@ app.post(
 		},
 	}),
 	zValidator("json", noteCreateSchema),
+	requirePlan("pro"),
 	async (c: Context) => {
 		const user = c.get("user") as IUser;
-
-		if (!user?.id) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
 		const body = c.req.valid("json" as never) as {
 			title: string;
 			content: string;
 		};
+
 		try {
 			const serviceContext = getServiceContext(c);
 			const note = await createNote({
@@ -241,7 +170,7 @@ app.post(
 				user,
 				data: body,
 			});
-			return c.json({ note });
+			return ResponseFactory.success(c, { note });
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -301,6 +230,7 @@ app.put(
 		},
 	}),
 	zValidator("json", noteUpdateSchema),
+	requirePlan("pro"),
 	async (c: Context) => {
 		const id = c.req.param("id");
 		const body = c.req.valid("json" as never) as {
@@ -308,31 +238,6 @@ app.put(
 			content: string;
 		};
 		const user = c.get("user") as IUser;
-
-		if (!user?.id) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
 
 		try {
 			const serviceContext = getServiceContext(c);
@@ -343,7 +248,7 @@ app.put(
 				noteId: id,
 				data: body,
 			});
-			return c.json({ note });
+			return ResponseFactory.success(c, { note });
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -379,34 +284,10 @@ app.delete(
 			},
 		},
 	}),
+	requirePlan("pro"),
 	async (c: Context) => {
 		const id = c.req.param("id");
 		const user = c.get("user") as IUser;
-
-		if (!user?.id) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
 
 		try {
 			const serviceContext = getServiceContext(c);
@@ -416,7 +297,7 @@ app.delete(
 				user,
 				noteId: id,
 			});
-			return c.json({ success: true, message: "Note deleted" });
+			return ResponseFactory.message(c, "Note deleted");
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -474,35 +355,11 @@ app.post(
 		},
 	}),
 	zValidator("json", noteFormatSchema),
+	requirePlan("pro"),
 	async (c: Context) => {
 		const id = c.req.param("id");
 		const { prompt } = c.req.valid("json" as never) as { prompt?: string };
 		const user = c.get("user") as IUser;
-
-		if (!user?.id) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
 
 		try {
 			const serviceContext = getServiceContext(c);
@@ -567,34 +424,10 @@ app.post(
 		},
 	}),
 	zValidator("json", generateNotesFromMediaSchema),
+	requirePlan("pro"),
 	async (c: Context) => {
 		const body = c.req.valid("json" as never) as any;
 		const user = c.get("user") as IUser;
-
-		if (!user?.id) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
 
 		try {
 			const result = await generateNotesFromMedia({
@@ -608,7 +441,7 @@ app.post(
 				useVideoAnalysis: body.useVideoAnalysis,
 				enableVideoSearch: body.enableVideoSearch,
 			});
-			return c.json({ content: result.content });
+			return ResponseFactory.success(c, { content: result.content });
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;

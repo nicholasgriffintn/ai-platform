@@ -16,6 +16,7 @@ import {
 
 import { APP_NAME, LOCAL_HOST, PROD_HOST } from "~/constants/app";
 import { Database } from "~/lib/database";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { requireAuth } from "~/middleware/auth";
 import { createSession } from "~/services/auth/user";
 import {
@@ -89,7 +90,7 @@ app.post(
 			rpID(c),
 		);
 
-		return c.json(options);
+		return ResponseFactory.success(c,options);
 	},
 );
 
@@ -146,7 +147,7 @@ app.post(
 			rpID(c),
 		);
 
-		return c.json({ verified });
+		return ResponseFactory.success(c,{ verified });
 	},
 );
 
@@ -183,7 +184,7 @@ app.post(
 			rpID(c),
 		);
 
-		return c.json(options);
+		return ResponseFactory.success(c,options);
 	},
 );
 
@@ -239,7 +240,7 @@ app.post(
 			); // 7 days
 		}
 
-		return c.json({ verified, user });
+		return ResponseFactory.success(c,{ verified, user });
 	},
 );
 
@@ -298,7 +299,7 @@ app.get(
 			backed_up: Boolean(passkey.backed_up),
 		}));
 
-		return c.json(formattedPasskeys);
+		return ResponseFactory.success(c,formattedPasskeys);
 	},
 );
 
@@ -374,7 +375,7 @@ app.delete(
 			);
 		}
 
-		return c.json({ success });
+		return ResponseFactory.success(c,{ success });
 	},
 );
 

@@ -13,6 +13,7 @@ import {
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
 	deleteSharedAgent,

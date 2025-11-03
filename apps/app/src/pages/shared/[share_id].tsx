@@ -13,6 +13,7 @@ import { PageStatus } from "~/components/Core/PageStatus";
 import { API_BASE_URL } from "~/constants";
 import type { Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
+import { returnFetchedData } from "src/lib/api/fetch-wrapper";
 
 export function meta({ params }: { params: { share_id: string } }) {
 	return [
@@ -82,10 +83,10 @@ export default function SharedConversationPage() {
 					return;
 				}
 
-				const data = (await response.json()) as {
+				const data = await returnFetchedData<{
 					messages: Message[];
 					share_id: string;
-				};
+				}>(response);
 				setMessages(data.messages);
 				setIsLoading(false);
 			} catch (err) {

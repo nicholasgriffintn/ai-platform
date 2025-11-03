@@ -1,5 +1,5 @@
 import type { Memory, MemoryGroup } from "~/types/chat";
-import { fetchApi } from "./fetch-wrapper";
+import { fetchApi, returnFetchedData } from "./fetch-wrapper";
 
 interface ListMemoriesResponse {
 	memories: Memory[];
@@ -52,7 +52,7 @@ class MemoryService {
 				throw new Error("Failed to fetch memories");
 			}
 
-			return await response.json();
+			return await returnFetchedData<ListMemoriesResponse>(response);
 		} catch (error) {
 			console.error("Error listing memories:", error);
 			throw error;
@@ -69,13 +69,11 @@ class MemoryService {
 			});
 
 			if (!response.ok) {
-				const errorData = (await response.json().catch(() => ({}))) as {
-					error?: string;
-				};
+				const errorData = await returnFetchedData<{ error?: string }>(response);
 				throw new Error(errorData.error || "Failed to create group");
 			}
 
-			return await response.json();
+			return await returnFetchedData<CreateGroupResponse>(response);
 		} catch (error) {
 			console.error("Error creating memory group:", error);
 			throw error;
@@ -89,13 +87,11 @@ class MemoryService {
 			});
 
 			if (!response.ok) {
-				const errorData = (await response.json().catch(() => ({}))) as {
-					error?: string;
-				};
+				const errorData = await returnFetchedData<{ error?: string }>(response);
 				throw new Error(errorData.error || "Failed to delete memory");
 			}
 
-			return await response.json();
+			return await returnFetchedData<DeleteMemoryResponse>(response);
 		} catch (error) {
 			console.error("Error deleting memory:", error);
 			throw error;
@@ -113,13 +109,13 @@ class MemoryService {
 			});
 
 			if (!response.ok) {
-				const errorData = (await response.json().catch(() => ({}))) as {
-					error?: string;
-				};
+				const errorData = await returnFetchedData<{ error?: string }>(response);
 				throw new Error(errorData.error || "Failed to add memories to group");
 			}
 
-			return await response.json();
+			return await returnFetchedData<{ success: boolean; added_count: number }>(
+				response,
+			);
 		} catch (error) {
 			console.error("Error adding memories to group:", error);
 			throw error;
@@ -133,13 +129,11 @@ class MemoryService {
 			});
 
 			if (!response.ok) {
-				const errorData = (await response.json().catch(() => ({}))) as {
-					error?: string;
-				};
+				const errorData = await returnFetchedData<{ error?: string }>(response);
 				throw new Error(errorData.error || "Failed to delete group");
 			}
 
-			return await response.json();
+			return await returnFetchedData<DeleteGroupResponse>(response);
 		} catch (error) {
 			console.error("Error deleting group:", error);
 			throw error;

@@ -4,6 +4,7 @@ import { errorResponseSchema, uploadResponseSchema } from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { handleFileUpload } from "~/services/uploads";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IEnv } from "../types";
@@ -95,7 +96,7 @@ app.post(
 		const userId = user?.id;
 
 		const response = await handleFileUpload(env, userId, formData);
-		return context.json(response);
+		return ResponseFactory.success(context,response);
 	},
 );
 

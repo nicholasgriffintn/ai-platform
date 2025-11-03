@@ -11,7 +11,8 @@ import {
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { checkPlanRequirement } from "~/services/user/userOperations";
+import { requirePlan } from "~/middleware/requirePlan";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	type ImageGenerationParams,
 	generateImage,
@@ -66,40 +67,13 @@ app.post(
 		},
 	}),
 	zValidator("json", imageGenerationSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as ImageGenerationParams;
-
 		const completion_id = generateId();
-
 		const newUrl = new URL(context.req.url);
 		const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
 		const serviceContext = getServiceContext(context);
 
 		const response = await generateImage({
@@ -118,9 +92,7 @@ app.post(
 			);
 		}
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 
@@ -141,40 +113,13 @@ app.post(
 		},
 	}),
 	zValidator("json", videoGenerationSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as VideoGenerationParams;
-
 		const completion_id = generateId();
-
 		const newUrl = new URL(context.req.url);
 		const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
 		const serviceContext = getServiceContext(context);
 
 		const response = await generateVideo({
@@ -193,9 +138,7 @@ app.post(
 			);
 		}
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 
@@ -216,41 +159,13 @@ app.post(
 		},
 	}),
 	zValidator("json", musicGenerationSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as MusicGenerationParams;
-
 		const completion_id = generateId();
-
 		const newUrl = new URL(context.req.url);
 		const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
-
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
 		const serviceContext = getServiceContext(context);
 
 		const response = await generateMusic({
@@ -269,9 +184,7 @@ app.post(
 			);
 		}
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 
@@ -292,41 +205,13 @@ app.post(
 		},
 	}),
 	zValidator("json", speechGenerationSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as SpeechGenerationParams;
-
 		const completion_id = generateId();
-
 		const newUrl = new URL(context.req.url);
 		const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
-
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
 		const serviceContext = getServiceContext(context);
 
 		const response = await generateSpeech({
@@ -345,9 +230,7 @@ app.post(
 			);
 		}
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 

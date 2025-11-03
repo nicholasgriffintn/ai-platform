@@ -8,6 +8,7 @@ import {
 } from "@assistant/schemas";
 
 import { Database } from "~/lib/database";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { requestMagicLink, verifyMagicLink } from "~/services/auth/magicLink";
 import { createSession } from "~/services/auth/user";
 import { sendMagicLinkEmail } from "~/services/notifications";
@@ -57,7 +58,7 @@ app.post(
 			const link = `${baseUrl}/auth/verify-magic-link?token=${token}&nonce=${nonce}`;
 			await sendMagicLinkEmail(c.env, email, link);
 		}
-		return c.json({ success: true });
+		return ResponseFactory.success(c,{ success: true });
 	},
 );
 
@@ -109,7 +110,7 @@ app.post(
 			`session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`,
 		); // 7 days
 
-		return c.json({ success: true });
+		return ResponseFactory.success(c,{ success: true });
 	},
 );
 

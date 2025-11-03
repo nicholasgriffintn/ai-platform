@@ -1,5 +1,5 @@
 import type { ModelConfig } from "~/types";
-import { fetchApi } from "../fetch-wrapper";
+import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 
 export class UserService {
 	constructor(private getHeaders: () => Promise<Record<string, string>>) {}
@@ -20,7 +20,7 @@ export class UserService {
 		if (!response.ok) {
 			let message = `Failed to export chat history: ${response.statusText}`;
 			try {
-				const data = (await response.json()) as any;
+				const data = await returnFetchedData<any>(response);
 				if (
 					data &&
 					typeof data === "object" &&
@@ -52,7 +52,9 @@ export class UserService {
 		if (!response.ok) {
 			throw new Error(`Failed to fetch models: ${response.statusText}`);
 		}
-		const responseData = (await response.json()) as any;
+		const responseData = await returnFetchedData<any>(response);
+
+		console.log("Fetched models:", responseData);
 
 		return responseData.data;
 	}
@@ -72,7 +74,7 @@ export class UserService {
 		if (!response.ok) {
 			throw new Error(`Failed to fetch tools: ${response.statusText}`);
 		}
-		const responseData = (await response.json()) as any;
+		const responseData = await returnFetchedData<any>(response);
 
 		return responseData;
 	}
@@ -127,7 +129,7 @@ export class UserService {
 			);
 		}
 
-		return response.json();
+		return await returnFetchedData<any>(response);
 	}
 
 	async syncProviders(): Promise<void> {
@@ -166,7 +168,7 @@ export class UserService {
 		if (!response.ok) {
 			throw new Error(`Failed to get API keys: ${response.statusText}`);
 		}
-		return response.json();
+		return await returnFetchedData<any>(response);
 	}
 
 	async createApiKey(name?: string): Promise<{
@@ -197,7 +199,7 @@ export class UserService {
 			const errorMessage = errorData?.error || response.statusText;
 			throw new Error(`Failed to create API key: ${errorMessage}`);
 		}
-		return response.json();
+		return await returnFetchedData<any>(response);
 	}
 
 	async deleteApiKey(keyId: string): Promise<void> {

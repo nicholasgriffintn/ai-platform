@@ -91,3 +91,18 @@ export async function fetchApi(
 
 	return response;
 }
+
+export async function returnFetchedData<T>(response: Response): Promise<T> {
+	try {
+		const data: T = await response.json();
+
+		const responseData =
+			data && typeof data === "object" && data !== null && "data" in data
+				? (data as { data: T })["data"]
+				: data;
+
+		return responseData;
+	} catch (error) {
+		throw new Error("Failed to parse response JSON");
+	}
+}

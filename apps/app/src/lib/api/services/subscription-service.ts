@@ -1,14 +1,14 @@
-import { fetchApi } from "../fetch-wrapper";
+import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 
 export class SubscriptionService {
 	async getSubscription(): Promise<any | null> {
 		const response = await fetchApi("/stripe/subscription");
 		if (response.status === 404) return null;
 		if (!response.ok) {
-			const err = (await response.json()) as { error?: string };
+			const err = await returnFetchedData<{ error?: string }>(response);
 			throw new Error(err.error || "Failed to fetch subscription");
 		}
-		return response.json();
+		return await returnFetchedData<any>(response);
 	}
 
 	async createCheckoutSession(
@@ -20,7 +20,9 @@ export class SubscriptionService {
 			method: "POST",
 			body: { plan_id: planId, success_url: successUrl, cancel_url: cancelUrl },
 		});
-		const data = (await response.json()) as { url: string; error?: string };
+		const data = await returnFetchedData<{ url: string; error?: string }>(
+			response,
+		);
 		if (!response.ok) {
 			throw new Error(data.error || "Checkout session creation failed");
 		}
@@ -31,7 +33,7 @@ export class SubscriptionService {
 		const response = await fetchApi("/stripe/subscription/cancel", {
 			method: "POST",
 		});
-		const data = (await response.json()) as { error?: string };
+		const data = await returnFetchedData<{ error?: string }>(response);
 		if (!response.ok) {
 			throw new Error(data.error || "Failed to cancel subscription");
 		}
@@ -47,10 +49,10 @@ export class SubscriptionService {
 		});
 
 		if (!response.ok) {
-			const error = (await response.json()) as { message?: string };
+			const error = await returnFetchedData<{ message?: string }>(response);
 			throw new Error(error.message || "Failed to reactivate subscription");
 		}
 
-		return response.json();
+		return await returnFetchedData<any>(response);
 	}
 }

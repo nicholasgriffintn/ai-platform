@@ -8,6 +8,7 @@ import {
 } from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { getPlanDetails, listPlans } from "~/services/plans";
 import type { IEnv } from "~/types";
 
@@ -35,7 +36,7 @@ app.get(
 	}),
 	async (c: Context) => {
 		const plans = await listPlans(c.env as IEnv);
-		return c.json({ success: true, data: plans });
+		return ResponseFactory.success(c,{ success: true, data: plans });
 	},
 );
 
@@ -63,7 +64,7 @@ app.get(
 	async (c: Context) => {
 		const { id } = c.req.valid("param" as never) as { id: string };
 		const plan = await getPlanDetails(c.env as IEnv, id);
-		return c.json({ success: true, data: plan });
+		return ResponseFactory.success(c,{ success: true, data: plan });
 	},
 );
 

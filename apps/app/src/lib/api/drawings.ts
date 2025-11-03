@@ -6,7 +6,7 @@ import type {
 	GuessResponse,
 } from "~/types/drawing";
 import { apiService } from "./api-service";
-import { fetchApi } from "./fetch-wrapper";
+import { fetchApi, returnFetchedData } from "./fetch-wrapper";
 
 export const fetchDrawings = async (): Promise<Drawing[]> => {
 	let headers = {};
@@ -25,7 +25,7 @@ export const fetchDrawings = async (): Promise<Drawing[]> => {
 		throw new Error(`Failed to fetch drawings: ${response.statusText}`);
 	}
 
-	const data = (await response.json()) as DrawingsResponse;
+	const data = await returnFetchedData<DrawingsResponse>(response);
 	return data.drawings || [];
 };
 
@@ -46,7 +46,7 @@ export const fetchDrawing = async (id: string): Promise<Drawing> => {
 		throw new Error(`Failed to fetch drawing: ${response.statusText}`);
 	}
 
-	const data = (await response.json()) as DrawingResponse;
+	const data = await returnFetchedData<DrawingResponse>(response);
 	return data.drawing;
 };
 
@@ -83,7 +83,8 @@ export const generateImageFromDrawing = async ({
 		throw new Error(`Failed to generate image: ${response.statusText}`);
 	}
 
-	return response.json();
+	const data = await returnFetchedData<GenerateImageResponse>(response);
+	return data;
 };
 
 export const guessDrawingFromImage = async ({
@@ -113,5 +114,5 @@ export const guessDrawingFromImage = async ({
 		throw new Error(`Failed to guess drawing: ${response.statusText}`);
 	}
 
-	return response.json() as Promise<GuessResponse>;
+	return await returnFetchedData<GuessResponse>(response);
 };

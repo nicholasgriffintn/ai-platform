@@ -12,6 +12,7 @@ import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	getUserAgents,
 	getUserTeamAgents,

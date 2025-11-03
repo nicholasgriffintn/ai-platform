@@ -3,6 +3,7 @@ import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
 import { errorResponseSchema, checkoutSchema } from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	cancelSubscription,
 	createCheckoutSession,
@@ -74,7 +75,7 @@ app.post(
 			success_url,
 			cancel_url,
 		);
-		return c.json(session);
+		return ResponseFactory.success(c,session);
 	},
 );
 
@@ -113,7 +114,7 @@ app.get(
 		}
 
 		const status = await getSubscriptionStatus(c.env, user);
-		return c.json(status);
+		return ResponseFactory.success(c,status);
 	},
 );
 
@@ -154,7 +155,7 @@ app.post(
 		}
 
 		const result = await cancelSubscription(c.env, user);
-		return c.json(result);
+		return ResponseFactory.success(c,result);
 	},
 );
 
@@ -194,7 +195,7 @@ app.post(
 			);
 		}
 		const result = await reactivateSubscription(c.env, user);
-		return c.json(result);
+		return ResponseFactory.success(c,result);
 	},
 );
 

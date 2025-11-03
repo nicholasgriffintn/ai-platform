@@ -1,3 +1,4 @@
+import { PaginationHelper } from "~/lib/database/PaginationHelper";
 import { BaseRepository } from "./BaseRepository";
 
 export class ConversationRepository extends BaseRepository {
@@ -67,7 +68,7 @@ export class ConversationRepository extends BaseRepository {
 		pageNumber: number;
 		pageSize: number;
 	}> {
-		const offset = (page - 1) * limit;
+		const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
 
 		const countQuery = includeArchived
 			? "SELECT COUNT(*) as total FROM conversation WHERE user_id = ?"
@@ -80,11 +81,11 @@ export class ConversationRepository extends BaseRepository {
 		)) as { total: number } | null;
 
 		const total = countResult?.total || 0;
-		const totalPages = Math.ceil(total / limit);
+		const totalPages = Math.ceil(total / safeLimit);
 
 		const listQuery = includeArchived
 			? `
-        SELECT c.*, 
+        SELECT c.*,
         (SELECT GROUP_CONCAT(m.id) FROM message m WHERE m.conversation_id = c.id) as messages
         FROM conversation c
         WHERE c.user_id = ?
@@ -92,7 +93,7 @@ export class ConversationRepository extends BaseRepository {
         LIMIT ? OFFSET ?
       `
 			: `
-        SELECT c.*, 
+        SELECT c.*,
         (SELECT GROUP_CONCAT(m.id) FROM message m WHERE m.conversation_id = c.id) as messages
         FROM conversation c
         WHERE c.user_id = ? AND c.is_archived = 0
@@ -102,14 +103,14 @@ export class ConversationRepository extends BaseRepository {
 
 		const conversations = (await this.runQuery<Record<string, unknown>>(
 			listQuery,
-			[userId, limit, offset],
+			[userId, safeLimit, offset],
 		)) as Record<string, unknown>[];
 
 		return {
 			conversations,
 			totalPages,
 			pageNumber: page,
-			pageSize: limit,
+			pageSize: safeLimit,
 		};
 	}
 

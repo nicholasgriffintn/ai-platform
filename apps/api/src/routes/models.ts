@@ -11,6 +11,7 @@ import {
 } from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	getModelDetails,
 	listCapabilities,
@@ -59,7 +60,7 @@ app.get(
 	async (context: Context) => {
 		const userId = context.get("user")?.id;
 		const models = await listModels(context.env, userId);
-		return context.json({
+		return ResponseFactory.success(context, {
 			success: true,
 			message: "Models fetched successfully",
 			data: models,
@@ -94,7 +95,7 @@ app.get(
 	}),
 	async (context: Context) => {
 		const caps = listCapabilities();
-		return context.json({
+		return ResponseFactory.success(context, {
 			success: true,
 			message: "Capabilities fetched successfully",
 			data: caps,
@@ -155,7 +156,7 @@ app.get(
 			capability,
 			userId,
 		);
-		return context.json({
+		return ResponseFactory.success(context, {
 			success: true,
 			message: "Models fetched successfully",
 			data: models,
@@ -190,7 +191,7 @@ app.get(
 	}),
 	async (context: Context) => {
 		const types = listModelTypes();
-		return context.json({
+		return ResponseFactory.success(context, {
 			success: true,
 			message: "Model types fetched successfully",
 			data: types,
@@ -245,7 +246,7 @@ app.get(
 		const { type } = context.req.valid("param" as never) as { type: string };
 		const userId = context.get("user")?.id;
 		const models = await listModelsByType(context.env as IEnv, type, userId);
-		return context.json({
+		return ResponseFactory.success(context, {
 			success: true,
 			message: "Models fetched successfully",
 			data: models,
@@ -310,17 +311,15 @@ app.get(
 		const userId = context.get("user")?.id;
 		try {
 			const model = await getModelDetails(context.env as IEnv, id, userId);
-			return context.json({
+			return ResponseFactory.success(context, {
 				success: true,
 				message: "Model fetched successfully",
 				data: model,
 			});
 		} catch (_error) {
-			return context.json(
-				{
-					success: false,
-					message: "Model not found or user does not have access",
-				},
+			return ResponseFactory.error(
+				context,
+				"Model not found or user does not have access",
 				404,
 			);
 		}

@@ -4,6 +4,7 @@ import { errorResponseSchema } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import type { User } from "~/types";
 import { handleExportChatHistory } from "~/services/user/exportChatHistory";
 
@@ -41,7 +42,7 @@ app.get(
 	async (c: Context) => {
 		const user = c.get("user") as User | undefined;
 		if (!user?.id) {
-			return c.json(
+			return ResponseFactory.success(c,
 				{ error: "Authentication required", type: "AUTHENTICATION_ERROR" },
 				401,
 			);
@@ -68,7 +69,7 @@ app.get(
 				},
 			});
 		} catch (error: any) {
-			return c.json(
+			return ResponseFactory.success(c,
 				{
 					error: error?.message || "Failed to export chat history",
 					type: "UNKNOWN_ERROR",

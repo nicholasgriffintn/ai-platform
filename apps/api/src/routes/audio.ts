@@ -10,6 +10,7 @@ import {
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { handleTextToSpeech } from "~/services/audio/speech";
 import { handleTranscribe } from "~/services/audio/transcribe";
 import type { IEnv } from "~/types";
@@ -68,7 +69,7 @@ app.post(
 			user,
 		});
 
-		return context.json({
+		return ResponseFactory.success(context,{
 			response,
 		});
 	},
@@ -113,7 +114,7 @@ app.post(
 			user,
 		});
 
-		return context.json({
+		return ResponseFactory.success(context,{
 			response,
 		});
 	},

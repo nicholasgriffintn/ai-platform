@@ -9,6 +9,7 @@ import {
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { getSharedItem, shareItem } from "~/services/apps/shared";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError } from "~/utils/errors";
@@ -99,13 +100,7 @@ app.post(
 		const user = c.get("user") as IUser;
 
 		if (!user?.id) {
-			return c.json(
-				{
-					status: "error",
-					message: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(c, "Unauthorized", 401);
 		}
 
 		try {
@@ -119,29 +114,17 @@ app.post(
 				context: serviceContext,
 			});
 
-			return c.json({
-				status: "success",
-				share_id: shareId,
-			});
+			return ResponseFactory.success(c, { share_id: shareId });
 		} catch (error) {
 			routeLogger.error("Error sharing item:", {
 				error_message: error instanceof Error ? error.message : "Unknown error",
 			});
 
 			if (error instanceof AssistantError) {
-				return c.json({
-					status: "error",
-					message: error.message,
-				});
+				return ResponseFactory.error(c, error.message);
 			}
 
-			return c.json(
-				{
-					status: "error",
-					message: "Failed to share item",
-				},
-				500,
-			);
+			return ResponseFactory.error(c, "Failed to share item", 500);
 		}
 	},
 );
@@ -202,13 +185,7 @@ app.get(
 		routeLogger.info(`Fetching shared item with ID: ${share_id}`);
 
 		if (!share_id) {
-			return c.json(
-				{
-					status: "error",
-					message: "Share ID is required",
-				},
-				400,
-			);
+			return ResponseFactory.error(c, "Share ID is required", 400);
 		}
 
 		try {
@@ -218,8 +195,7 @@ app.get(
 				shareId: share_id,
 			});
 
-			return c.json({
-				status: "success",
+			return ResponseFactory.success(c, {
 				item: {
 					id: sharedItem.id,
 					app_id: sharedItem.appId,
@@ -237,19 +213,10 @@ app.get(
 			});
 
 			if (error instanceof AssistantError) {
-				return c.json({
-					status: "error",
-					message: error.message,
-				});
+				return ResponseFactory.error(c, error.message);
 			}
 
-			return c.json(
-				{
-					status: "error",
-					message: "Failed to retrieve shared item",
-				},
-				500,
-			);
+			return ResponseFactory.error(c, "Failed to retrieve shared item", 500);
 		}
 	},
 );

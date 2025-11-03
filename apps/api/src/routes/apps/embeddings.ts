@@ -9,7 +9,8 @@ import {
 } from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { checkPlanRequirement } from "~/services/user/userOperations";
+import { requirePlan } from "~/middleware/requirePlan";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	type IDeleteEmbeddingRequest,
 	deleteEmbedding,
@@ -56,36 +57,12 @@ app.post(
 		},
 	}),
 	zValidator("json", insertEmbeddingSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid(
 			"json" as never,
 		) as IInsertEmbeddingRequest["request"];
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
 
 		const response = await insertEmbedding({
 			request: body,
@@ -100,9 +77,7 @@ app.post(
 			);
 		}
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 
@@ -131,35 +106,10 @@ app.get(
 		},
 	}),
 	zValidator("query", queryEmbeddingsSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const query = context.req.valid("query" as never);
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
 		const response = await queryEmbeddings({
 			env: context.env as IEnv,
 			request: { query },
@@ -173,9 +123,7 @@ app.get(
 			);
 		}
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 
@@ -204,37 +152,12 @@ app.post(
 		},
 	}),
 	zValidator("json", deleteEmbeddingSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid(
 			"json" as never,
 		) as IDeleteEmbeddingRequest["request"];
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
 		const response = await deleteEmbedding({
 			env: context.env as IEnv,
 			request: body,
@@ -248,9 +171,7 @@ app.post(
 			);
 		}
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 

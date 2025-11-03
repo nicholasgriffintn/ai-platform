@@ -7,8 +7,9 @@ import type {
 	PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { authService } from "~/lib/api/auth-service";
-import { fetchApi } from "~/lib/api/fetch-wrapper";
+import { fetchApi, returnFetchedData } from "~/lib/api/fetch-wrapper";
 import { AUTH_QUERY_KEYS } from "./useAuth";
 
 interface Passkey {
@@ -152,7 +153,7 @@ export const usePasskeys = () => {
 				throw new Error("Failed to fetch passkeys");
 			}
 
-			return response.json();
+			return returnFetchedData<Passkey[]>(response);
 		},
 		enabled: false,
 	});
@@ -167,7 +168,7 @@ export const usePasskeys = () => {
 				throw new Error("Failed to delete passkey");
 			}
 
-			const result = (await response.json()) as DeleteResponse;
+			const result = await returnFetchedData<DeleteResponse>(response);
 
 			if (result.success) {
 				void passkeysQuery.refetch();

@@ -1,4 +1,4 @@
-import { fetchApi } from "../fetch-wrapper";
+import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 import type { ResearchStatus } from "~/types/research";
 
 export class ResearchService {
@@ -31,7 +31,7 @@ export class ResearchService {
 			);
 		}
 
-		const payload = (await response.json()) as Record<string, any>;
+		const payload = await returnFetchedData<Record<string, any>>(response);
 		const result =
 			payload?.response?.data ?? payload?.response ?? payload?.data ?? payload;
 

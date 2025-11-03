@@ -10,8 +10,9 @@ import {
 } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { checkPlanRequirement } from "~/services/user/userOperations";
+import { requirePlan } from "~/middleware/requirePlan";
 import { handlePodcastGenerateImage } from "~/services/apps/podcast/generate-image";
 import { handlePodcastDetail } from "~/services/apps/podcast/get-details";
 import { handlePodcastList } from "~/services/apps/podcast/list";
@@ -51,33 +52,9 @@ app.get(
 			},
 		},
 	}),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
 
 		try {
 			const serviceContext = getServiceContext(context);
@@ -86,9 +63,7 @@ app.get(
 				user,
 			});
 
-			return context.json({
-				podcasts,
-			});
+			return ResponseFactory.success(context, { podcasts });
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -121,34 +96,10 @@ app.get(
 			},
 		},
 	}),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const id = context.req.param("id");
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
 
 		try {
 			const serviceContext = getServiceContext(context);
@@ -158,9 +109,7 @@ app.get(
 				user,
 			});
 
-			return context.json({
-				podcast,
-			});
+			return ResponseFactory.success(context, { podcast });
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -193,6 +142,7 @@ app.post(
 			},
 		},
 	}),
+	requirePlan("pro"),
 	async (context: Context) => {
 		try {
 			const formData = await context.req.formData();
@@ -209,32 +159,6 @@ app.post(
 			}
 
 			const user = context.get("user");
-
-			if (!user?.id) {
-				return context.json(
-					{
-						response: {
-							status: "error",
-							message: "User not authenticated",
-						},
-					},
-					401,
-				);
-			}
-
-			const planCheck = checkPlanRequirement(user, "pro");
-			if (!planCheck.isValid) {
-				return context.json(
-					{
-						response: {
-							status: "error",
-							message: planCheck.message,
-						},
-					},
-					401,
-				);
-			}
-
 			const serviceContext = getServiceContext(context);
 
 			const response = await handlePodcastUpload({
@@ -255,7 +179,7 @@ app.post(
 				);
 			}
 
-			return context.json({
+			return ResponseFactory.success(context, {
 				response,
 			});
 		} catch (error) {
@@ -290,35 +214,10 @@ app.post(
 		},
 	}),
 	zValidator("json", podcastTranscribeSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as IPodcastTranscribeBody;
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
 		const newUrl = new URL(context.req.url);
 		const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 		const serviceContext = getServiceContext(context);
@@ -330,9 +229,7 @@ app.post(
 			app_url,
 		});
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 
@@ -353,34 +250,10 @@ app.post(
 		},
 	}),
 	zValidator("json", podcastSummarizeSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as IPodcastSummariseBody;
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
 
 		const serviceContext = getServiceContext(context);
 		const response = await handlePodcastSummarise({
@@ -389,9 +262,7 @@ app.post(
 			user,
 		});
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 
@@ -412,38 +283,13 @@ app.post(
 		},
 	}),
 	zValidator("json", podcastGenerateImageSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as {
 			podcastId: string;
 			prompt?: string;
 		};
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
 		const serviceContext = getServiceContext(context);
 		const response = await handlePodcastGenerateImage({
 			context: serviceContext,
@@ -451,9 +297,7 @@ app.post(
 			user,
 		});
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 

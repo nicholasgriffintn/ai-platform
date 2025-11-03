@@ -5,6 +5,7 @@ import { apiResponseSchema } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { executeReplicateModel } from "~/services/apps/replicate/execute";
 import { listReplicatePredictions } from "~/services/apps/replicate/list";
 import { getReplicatePredictionDetails } from "~/services/apps/replicate/get-details";
@@ -144,7 +145,7 @@ app.get(
 			};
 		});
 
-		return context.json({ models });
+		return ResponseFactory.success(context, { models });
 	},
 );
 
@@ -168,15 +169,7 @@ app.get(
 		const user = context.get("user") as IUser;
 
 		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
+			return ResponseFactory.error(context, "User not authenticated", 401);
 		}
 
 		try {
@@ -186,9 +179,7 @@ app.get(
 				userId: user.id,
 			});
 
-			return context.json({
-				predictions,
-			});
+			return ResponseFactory.success(context, { predictions });
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -223,15 +214,7 @@ app.get(
 		const predictionId = context.req.param("id");
 
 		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
+			return ResponseFactory.error(context, "User not authenticated", 401);
 		}
 
 		try {
@@ -242,9 +225,7 @@ app.get(
 				userId: user.id,
 			});
 
-			return context.json({
-				prediction,
-			});
+			return ResponseFactory.success(context, { prediction });
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -282,15 +263,7 @@ app.post(
 		>;
 
 		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
+			return ResponseFactory.error(context, "User not authenticated", 401);
 		}
 
 		try {
@@ -301,9 +274,7 @@ app.post(
 				user,
 			});
 
-			return context.json({
-				response: result,
-			});
+			return ResponseFactory.success(context, { response: result });
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;

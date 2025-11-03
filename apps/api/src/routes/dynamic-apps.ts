@@ -10,6 +10,7 @@ import {
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	executeDynamicApp,
 	getDynamicAppById,
@@ -89,7 +90,7 @@ dynamicApps.get(
 			});
 		}
 
-		return c.json({
+		return ResponseFactory.success(c,{
 			apps: Array.from(mergedApps.values()),
 		});
 	},
@@ -129,7 +130,7 @@ dynamicApps.get(
 			user.id,
 			appId,
 		);
-		return c.json(list);
+		return ResponseFactory.success(c,list);
 	},
 );
 
@@ -181,16 +182,16 @@ dynamicApps.get(
 
 		const id = c.req.param("id");
 		if (!id) {
-			return c.json({ error: "App ID is required" }, 400);
+			return ResponseFactory.success(c,{ error: "App ID is required" }, 400);
 		}
 
 		const app = await getDynamicAppById(id);
 
 		if (!app) {
-			return c.json({ error: "App not found" }, 404);
+			return ResponseFactory.success(c,{ error: "App not found" }, 404);
 		}
 
-		return c.json(app);
+		return ResponseFactory.success(c,app);
 	},
 );
 
@@ -258,13 +259,13 @@ dynamicApps.post(
 	async (c: Context) => {
 		const id = c.req.param("id");
 		if (!id) {
-			return c.json({ error: "App ID is required" }, 400);
+			return ResponseFactory.success(c,{ error: "App ID is required" }, 400);
 		}
 
 		const user = c.get("user");
 
 		if (!user?.id) {
-			return c.json(
+			return ResponseFactory.success(c,
 				{
 					response: {
 						status: "error",
@@ -281,7 +282,7 @@ dynamicApps.post(
 			const app = await getDynamicAppById(id);
 
 			if (!app) {
-				return c.json({ error: "App not found" }, 404);
+				return ResponseFactory.success(c,{ error: "App not found" }, 404);
 			}
 
 			const url = new URL(c.req.url);
@@ -300,10 +301,10 @@ dynamicApps.post(
 			};
 
 			const result = await executeDynamicApp(id, formData, req);
-			return c.json(result);
+			return ResponseFactory.success(c,result);
 		} catch (error) {
 			logger.error(`Error executing app ${id}:`, { error });
-			return c.json(
+			return ResponseFactory.success(c,
 				{
 					error: "Failed to execute app",
 					message: error instanceof Error ? error.message : "Unknown error",
@@ -361,13 +362,13 @@ dynamicApps.get(
 	async (c: Context) => {
 		const responseId = c.req.param("responseId");
 		if (!responseId) {
-			return c.json({ error: "responseId is required" }, 400);
+			return ResponseFactory.success(c,{ error: "responseId is required" }, 400);
 		}
 		const data = await getDynamicAppResponseById(c.env as IEnv, responseId);
 		if (!data) {
-			return c.json({ error: "Response not found" }, 404);
+			return ResponseFactory.success(c,{ error: "Response not found" }, 404);
 		}
-		return c.json({ response: data });
+		return ResponseFactory.success(c,{ response: data });
 	},
 );
 

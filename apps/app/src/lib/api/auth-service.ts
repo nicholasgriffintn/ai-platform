@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "~/constants";
 import { apiKeyService } from "~/lib/api/api-key";
 import type { User, UserSettings } from "~/types";
-import { fetchApi } from "./fetch-wrapper";
+import { fetchApi, returnFetchedData } from "./fetch-wrapper";
 
 interface MagicLinkSuccessResponse {
 	success: boolean;
@@ -62,10 +62,10 @@ class AuthService {
 				return false;
 			}
 
-			const data = (await response.json()) as {
+			const data = await returnFetchedData<{
 				user: User;
 				userSettings: UserSettings;
-			};
+			}>(response);
 			if (data?.user) {
 				this.user = data.user;
 				this.userSettings = data.userSettings;
@@ -103,10 +103,10 @@ class AuthService {
 				return null;
 			}
 
-			const data = (await response.json()) as {
+			const data = await returnFetchedData<{
 				token: string;
 				expires_in: number;
-			};
+			}>(response);
 			if (data?.token && data?.expires_in) {
 				this.tokenExpiry = new Date(Date.now() + data.expires_in * 1000);
 				this.scheduleTokenRefresh();
@@ -217,7 +217,7 @@ class AuthService {
 				};
 			}
 
-			const data = (await response.json()) as MagicLinkSuccessResponse;
+			const data = await returnFetchedData<MagicLinkSuccessResponse>(response);
 			return { success: data.success };
 		} catch (error: any) {
 			console.error("Error requesting magic link:", error);
@@ -238,10 +238,10 @@ class AuthService {
 				body: JSON.stringify({ token, nonce }),
 			});
 
-			const data = (await response.json()) as {
+			const data = await returnFetchedData<{
 				success: boolean;
 				error?: string;
-			};
+			}>(response);
 
 			if (!response.ok) {
 				return {

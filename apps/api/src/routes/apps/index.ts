@@ -8,6 +8,7 @@ import {
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { handlePromptCoachSuggestion } from "~/services/apps/prompt-coach";
 import type { IEnv, IUser } from "~/types";
 import articles from "./articles";
@@ -96,7 +97,7 @@ app.post(
 			prompt: userPrompt,
 		});
 
-		return context.json(result);
+		return ResponseFactory.success(context,result);
 	},
 );
 

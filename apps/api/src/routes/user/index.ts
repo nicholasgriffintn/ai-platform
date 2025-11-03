@@ -13,6 +13,7 @@ import {
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	updateUserSettings,
 	getUserEnabledModels,
@@ -105,7 +106,7 @@ app.put(
 		const serviceContext = getServiceContext(c);
 		const result = await updateUserSettings(serviceContext, settings, user.id);
 
-		return c.json(result);
+		return ResponseFactory.success(c, result);
 	},
 );
 
@@ -148,7 +149,7 @@ app.get(
 		const serviceContext = getServiceContext(c);
 		const models = await getUserEnabledModels(serviceContext, user.id);
 
-		return c.json({
+		return ResponseFactory.success(c, {
 			success: true,
 			models,
 		});
@@ -230,7 +231,7 @@ app.post(
 			user.id,
 		);
 
-		return c.json(result);
+		return ResponseFactory.success(c, result);
 	},
 );
 
@@ -272,7 +273,7 @@ app.get(
 		const serviceContext = getServiceContext(c);
 		const providers = await getUserProviderSettings(serviceContext, user.id);
 
-		return c.json({
+		return ResponseFactory.success(c, {
 			success: true,
 			providers,
 		});
@@ -317,7 +318,7 @@ app.post(
 		const serviceContext = getServiceContext(c);
 		const result = await syncUserProviders(serviceContext, user.id);
 
-		return c.json(result);
+		return ResponseFactory.success(c, result);
 	},
 );
 

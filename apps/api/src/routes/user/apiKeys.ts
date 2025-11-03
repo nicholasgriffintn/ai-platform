@@ -9,6 +9,7 @@ import {
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	createUserApiKey,
 	deleteUserApiKey,
@@ -54,7 +55,7 @@ app.get(
 
 		try {
 			const keys = await getUserApiKeys(serviceContext, user.id);
-			return c.json(keys);
+			return ResponseFactory.success(c,keys);
 		} catch (error) {
 			logger.error("Error fetching API keys:", { error });
 			if (error instanceof AssistantError) {
@@ -105,7 +106,7 @@ app.post(
 				name,
 			);
 
-			return c.json({ apiKey: plaintextKey, ...metadata }, 201);
+			return ResponseFactory.success(c,{ apiKey: plaintextKey, ...metadata }, 201);
 		} catch (error) {
 			logger.error("Error creating API key:", { error });
 			if (error instanceof AssistantError) {
@@ -152,7 +153,7 @@ app.delete(
 
 		try {
 			await deleteUserApiKey(serviceContext, keyId, user.id);
-			return c.json({ message: "API key deleted successfully" }, 200);
+			return ResponseFactory.success(c,{ message: "API key deleted successfully" }, 200);
 		} catch (error) {
 			logger.error("Error deleting API key:", { error });
 			if (error instanceof AssistantError) {

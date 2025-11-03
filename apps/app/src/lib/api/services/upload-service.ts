@@ -1,4 +1,4 @@
-import { fetchApi } from "../fetch-wrapper";
+import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 
 export class UploadService {
 	constructor(private getHeaders: () => Promise<Record<string, string>>) {}
@@ -24,7 +24,7 @@ export class UploadService {
 			throw new Error(`Failed to transcribe audio: ${response.statusText}`);
 		}
 
-		return await response.json();
+		return await returnFetchedData<any>(response);
 	}
 
 	async uploadFile(
@@ -71,6 +71,6 @@ export class UploadService {
 			throw new Error(`Failed to upload file: ${errorMessage}`);
 		}
 
-		return await response.json();
+		return await returnFetchedData<any>(response);
 	}
 }

@@ -11,6 +11,7 @@ import {
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { handleCreateMemoryGroup } from "~/services/memories/createGroup";
 import { handleListMemories } from "~/services/memories/listMemories";
 import { handleAddMemoriesToGroup } from "~/services/memories/addMemoriesToGroup";
@@ -52,17 +53,17 @@ app.get(
 			const groupId = context.req.query("group_id");
 
 			if (!userContext) {
-				return context.json({ error: "User not authenticated" }, 401);
+				return ResponseFactory.error(context, "User not authenticated", 401);
 			}
 
 			const serviceContext = getServiceContext(context);
 
 			const result = await handleListMemories(serviceContext, groupId);
 
-			return context.json(result);
+			return ResponseFactory.success(context, result);
 		} catch (error) {
 			routeLogger.error("Failed to list memories", { error });
-			return context.json({ error: "Failed to retrieve memories" }, 500);
+			return ResponseFactory.error(context, "Failed to retrieve memories", 500);
 		}
 	},
 );
@@ -105,7 +106,7 @@ app.post(
 			};
 
 			if (!userContext) {
-				return context.json({ error: "User not authenticated" }, 401);
+				return ResponseFactory.error(context, "User not authenticated", 401);
 			}
 
 			const serviceContext = getServiceContext(context);
@@ -117,10 +118,10 @@ app.post(
 				category,
 			);
 
-			return context.json(result, 201);
+			return ResponseFactory.success(context, result, 201);
 		} catch (error) {
 			routeLogger.error("Failed to create memory group", { error });
-			return context.json({ error: "Failed to create group" }, 500);
+			return ResponseFactory.error(context, "Failed to create group", 500);
 		}
 	},
 );
@@ -160,7 +161,7 @@ app.post(
 			};
 
 			if (!userContext) {
-				return context.json({ error: "User not authenticated" }, 401);
+				return ResponseFactory.error(context, "User not authenticated", 401);
 			}
 
 			const serviceContext = getServiceContext(context);
@@ -171,10 +172,10 @@ app.post(
 				memory_ids,
 			);
 
-			return context.json(result);
+			return ResponseFactory.success(context, result);
 		} catch (error) {
 			routeLogger.error("Failed to add memories to group", { error });
-			return context.json({ error: "Failed to add memories to group" }, 500);
+			return ResponseFactory.error(context, "Failed to add memories to group", 500);
 		}
 	},
 );
@@ -210,17 +211,17 @@ app.delete(
 			const memoryId = context.req.param("memory_id");
 
 			if (!userContext) {
-				return context.json({ error: "User not authenticated" }, 401);
+				return ResponseFactory.error(context, "User not authenticated", 401);
 			}
 
 			const serviceContext = getServiceContext(context);
 
 			const result = await handleDeleteMemory(serviceContext, memoryId);
 
-			return context.json(result);
+			return ResponseFactory.success(context, result);
 		} catch (error) {
 			routeLogger.error("Failed to delete memory", { error });
-			return context.json({ error: "Failed to delete memory" }, 500);
+			return ResponseFactory.error(context, "Failed to delete memory", 500);
 		}
 	},
 );
@@ -256,17 +257,17 @@ app.delete(
 			const groupId = context.req.param("group_id");
 
 			if (!userContext) {
-				return context.json({ error: "User not authenticated" }, 401);
+				return ResponseFactory.error(context, "User not authenticated", 401);
 			}
 
 			const serviceContext = getServiceContext(context);
 
 			const result = await handleDeleteGroup(serviceContext, groupId);
 
-			return context.json(result);
+			return ResponseFactory.success(context, result);
 		} catch (error) {
 			routeLogger.error("Failed to delete group", { error });
-			return context.json({ error: "Failed to delete group" }, 500);
+			return ResponseFactory.error(context, "Failed to delete group", 500);
 		}
 	},
 );

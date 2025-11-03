@@ -1,6 +1,6 @@
 import type { ChatMode, ChatSettings, Conversation, Message } from "~/types";
 import { normalizeMessage } from "../../messages";
-import { fetchApi } from "../fetch-wrapper";
+import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 
 export class ChatService {
 	constructor(private getHeaders: () => Promise<Record<string, string>>) {}
@@ -23,7 +23,7 @@ export class ChatService {
 				throw new Error(`Failed to list chats: ${response.statusText}`);
 			}
 
-			const data = (await response.json()) as {
+			const data = await returnFetchedData<{
 				conversations: {
 					id: string;
 					title: string;
@@ -32,7 +32,7 @@ export class ChatService {
 					parent_conversation_id?: string;
 					parent_message_id?: string;
 				}[];
-			};
+			}>(response);
 
 			if (!data.conversations || !Array.isArray(data.conversations)) {
 				console.error(
@@ -90,7 +90,7 @@ export class ChatService {
 			throw new Error(`Failed to get chat: ${response.statusText}`);
 		}
 
-		const conversation = (await response.json()) as any;
+		const conversation = await returnFetchedData<any>(response);
 
 		if (!conversation.id) {
 			return {
@@ -157,7 +157,7 @@ export class ChatService {
 			throw new Error(`Failed to generate title: ${response.statusText}`);
 		}
 
-		const data = (await response.json()) as any;
+		const data = await returnFetchedData<any>(response);
 		return data.title;
 	}
 
@@ -263,7 +263,7 @@ export class ChatService {
 			throw new Error(`Failed to share conversation: ${response.statusText}`);
 		}
 
-		return response.json();
+		return await returnFetchedData<{ share_id: string }>(response);
 	}
 
 	async unshareConversation(completion_id: string): Promise<void> {
@@ -448,7 +448,7 @@ export class ChatService {
 			?.includes("text/event-stream");
 
 		if (!isStreamingResponse) {
-			const data = (await response.json()) as any;
+			const data = await returnFetchedData<any>(response);
 
 			if (data.error) {
 				throw new Error(data.error.message || "Unknown error");

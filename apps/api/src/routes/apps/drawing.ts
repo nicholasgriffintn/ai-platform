@@ -9,7 +9,8 @@ import {
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { checkPlanRequirement } from "~/services/user/userOperations";
+import { requirePlan } from "~/middleware/requirePlan";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { generateImageFromDrawing } from "~/services/apps/drawing/create";
 import { getDrawingDetails } from "~/services/apps/drawing/get-details";
 import { guessDrawingFromImage } from "~/services/apps/drawing/guess";
@@ -50,33 +51,9 @@ app.get(
 			},
 		},
 	}),
+	requirePlan("pro"),
 	async (c: Context) => {
 		const user = c.get("user") as IUser;
-
-		if (!user?.id) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return c.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
 
 		try {
 			const serviceContext = getServiceContext(c);
@@ -85,10 +62,7 @@ app.get(
 				userId: user.id,
 			});
 
-			return c.json({
-				status: "success",
-				drawings,
-			});
+			return ResponseFactory.success(c, { drawings });
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -128,30 +102,10 @@ app.get(
 			},
 		},
 	}),
+	requirePlan("pro"),
 	async (c: Context) => {
 		const id = c.req.param("id");
 		const user = c.get("user") as IUser;
-
-		if (!user?.id) {
-			return c.json(
-				{
-					status: "error",
-					message: "User not authenticated",
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return c.json(
-				{
-					status: "error",
-					message: planCheck.message,
-				},
-				401,
-			);
-		}
 
 		try {
 			const serviceContext = getServiceContext(c);
@@ -161,10 +115,7 @@ app.get(
 				drawingId: id,
 			});
 
-			return c.json({
-				status: "success",
-				drawing,
-			});
+			return ResponseFactory.success(c, { drawing });
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -197,33 +148,13 @@ app.post(
 		},
 	}),
 	zValidator("form", drawingSchema),
+	requirePlan("pro"),
 	async (c: Context) => {
 		const body = c.req.valid("form" as never) as {
 			drawing: File;
 			drawingId?: string;
 		};
 		const user = c.get("user") as IUser;
-
-		if (!user?.id) {
-			return c.json(
-				{
-					status: "error",
-					message: "User not authenticated",
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return c.json(
-				{
-					status: "error",
-					message: planCheck.message,
-				},
-				401,
-			);
-		}
 
 		try {
 			const serviceContext = getServiceContext(c);
@@ -242,7 +173,7 @@ app.post(
 				);
 			}
 
-			return c.json(response);
+			return ResponseFactory.success(c, response);
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -275,30 +206,10 @@ app.post(
 		},
 	}),
 	zValidator("form", guessDrawingSchema),
+	requirePlan("pro"),
 	async (c: Context) => {
 		const body = c.req.valid("form" as never);
 		const user = c.get("user") as IUser;
-
-		if (!user?.id) {
-			return c.json(
-				{
-					status: "error",
-					message: "User not authenticated",
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return c.json(
-				{
-					status: "error",
-					message: planCheck.message,
-				},
-				401,
-			);
-		}
 
 		try {
 			const serviceContext = getServiceContext(c);
@@ -316,7 +227,7 @@ app.post(
 				);
 			}
 
-			return c.json(response);
+			return ResponseFactory.success(c, response);
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;

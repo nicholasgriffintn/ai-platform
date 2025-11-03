@@ -15,9 +15,10 @@ import {
 import z from "zod/v4";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { requirePlan } from "~/middleware/requirePlan";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IEnv, IUser, ResearchProviderName } from "~/types";
-import { checkPlanRequirement } from "~/services/user/userOperations";
 import {
 	analyseHackerNewsStories,
 	retrieveHackerNewsTopStories,
@@ -118,10 +119,9 @@ app.get(
 			user: context.get("user") as IUser,
 		});
 
-		return context.json({
-			status: "success",
-			message: "Stories retrieved successfully",
-			data: {
+		return ResponseFactory.success(
+			context,
+			{
 				analysis: {
 					content: analysis.content || analysis.response,
 					log_id: analysis.log_id,
@@ -131,7 +131,8 @@ app.get(
 				},
 				stories,
 			},
-		});
+			200,
+		);
 	},
 );
 
@@ -142,43 +143,16 @@ app.post(
 		description: "Extract content from a set of URLs",
 	}),
 	zValidator("json", contentExtractSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as ContentExtractParams;
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
 		const response = await extractContent(body, {
 			env: context.env as IEnv,
 			user,
 		});
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 
@@ -189,43 +163,15 @@ app.post(
 		description: "Capture a screenshot of a webpage",
 	}),
 	zValidator("json", captureScreenshotSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
 		const body = context.req.valid("json" as never) as CaptureScreenshotParams;
-
 		const response = await captureScreenshot(body, {
 			env: context.env as IEnv,
 		});
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 
@@ -274,41 +220,16 @@ app.post(
 		},
 	}),
 	zValidator("json", ocrSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as OcrParams;
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
 		const result = await performOcr(body, {
 			env: context.env as IEnv,
 			user,
 		});
 
-		return context.json(result);
+		return ResponseFactory.success(context, result);
 	},
 );
 
@@ -357,7 +278,7 @@ app.get(
 			longitude,
 			latitude,
 		});
-		return context.json({ response });
+		return ResponseFactory.success(context, { response });
 	},
 );
 
@@ -391,15 +312,7 @@ app.post(
 		const user = context.get("user");
 
 		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
+			return ResponseFactory.error(context, "User not authenticated", 401);
 		}
 
 		const response = await performDeepWebSearch(
@@ -408,9 +321,7 @@ app.post(
 			body,
 		);
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 
@@ -445,15 +356,7 @@ app.post(
 		const user = context.get("user");
 
 		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
+			return ResponseFactory.error(context, "User not authenticated", 401);
 		}
 
 		const handle = await startResearchTask({
@@ -470,20 +373,18 @@ app.post(
 				? body.options.polling.interval_ms
 				: 5000;
 
-		return context.json({
-			response: {
-				status: "success",
-				content: "Research task started",
-				data: {
-					provider: handle.provider,
-					run: handle.run,
-					poll: {
-						interval_ms: pollInterval,
-						timeout_seconds: body.options?.polling?.timeout_seconds ?? 5,
-					},
+		return ResponseFactory.success(
+			context,
+			{
+				provider: handle.provider,
+				run: handle.run,
+				poll: {
+					interval_ms: pollInterval,
+					timeout_seconds: body.options?.polling?.timeout_seconds ?? 5,
 				},
 			},
-		});
+			200,
+		);
 	},
 );
 
@@ -520,15 +421,7 @@ app.get(
 		const user = context.get("user");
 
 		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
+			return ResponseFactory.error(context, "User not authenticated", 401);
 		}
 
 		if (!runId) {
@@ -542,13 +435,7 @@ app.get(
 			provider: providerParam,
 		});
 
-		return context.json({
-			response: {
-				status: "success",
-				content: "Research status retrieved",
-				data: result,
-			},
-		});
+		return ResponseFactory.success(context, result, 200);
 	},
 );
 
@@ -577,44 +464,17 @@ app.post(
 		},
 	}),
 	zValidator("json", tutorSchema),
+	requirePlan("pro"),
 	async (context: Context) => {
 		const body = context.req.valid("json" as never) as TutorRequestParams;
 		const user = context.get("user");
-
-		if (!user?.id) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: "User not authenticated",
-					},
-				},
-				401,
-			);
-		}
-
-		const planCheck = checkPlanRequirement(user, "pro");
-		if (!planCheck.isValid) {
-			return context.json(
-				{
-					response: {
-						status: "error",
-						message: planCheck.message,
-					},
-				},
-				401,
-			);
-		}
-
 		const response = await completeTutorRequest(
 			context.env as IEnv,
 			user,
 			body,
 		);
 
-		return context.json({
-			response,
-		});
+		return ResponseFactory.success(context, { response });
 	},
 );
 

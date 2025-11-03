@@ -13,6 +13,7 @@ import { Database } from "~/lib/database";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { getUserSettings } from "~/services/auth/user";
 import {
 	handleGitHubOAuthCallback,
@@ -167,20 +168,20 @@ app.get(
 		if (!user) {
 			const anonymousUser = c.get("anonymousUser") as AnonymousUser | undefined;
 			if (anonymousUser) {
-				return c.json({ user: null, userSettings: null, anon: anonymousUser });
+				return ResponseFactory.success(c, { user: null, userSettings: null, anon: anonymousUser });
 			}
-			return c.json({ user: null, userSettings: null });
+			return ResponseFactory.success(c, { user: null, userSettings: null });
 		}
 
 		try {
 			const database = Database.getInstance(c.env);
 			const userSettings = await getUserSettings(database, user.id);
-			return c.json({ user, userSettings });
+			return ResponseFactory.success(c, { user, userSettings });
 		} catch (error) {
 			logger.error(`Error fetching user settings for user ${user.id}:`, {
 				error,
 			});
-			return c.json({ user, userSettings: null });
+			return ResponseFactory.success(c, { user, userSettings: null });
 		}
 	},
 );
@@ -225,7 +226,7 @@ app.post(
 
 		c.header("Set-Cookie", createLogoutCookie());
 
-		return c.json({
+		return ResponseFactory.success(c, {
 			success: true,
 		});
 	},
@@ -284,7 +285,7 @@ app.get(
 			sessionId,
 		});
 
-		return c.json({
+		return ResponseFactory.success(c, {
 			token,
 			expires_in: expires_in,
 			token_type: "Bearer",

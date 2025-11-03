@@ -4,7 +4,7 @@ import type {
 	ExecuteReplicateRequest,
 } from "~/types/replicate";
 import { apiService } from "./api-service";
-import { fetchApi } from "./fetch-wrapper";
+import { fetchApi, returnFetchedData } from "./fetch-wrapper";
 
 export const fetchReplicateModels = async (): Promise<ReplicateModel[]> => {
 	try {
@@ -26,7 +26,9 @@ export const fetchReplicateModels = async (): Promise<ReplicateModel[]> => {
 			);
 		}
 
-		const data: any = await response.json();
+		const data = await returnFetchedData<{
+			models: ReplicateModel[];
+		}>(response);
 		return data.models || [];
 	} catch (error) {
 		console.error("Error fetching Replicate models:", error);
@@ -50,14 +52,16 @@ export const executeReplicateModel = async (
 		});
 
 		if (!response.ok) {
-			const errorData: any = await response.json().catch(() => ({}));
+			const errorData = await returnFetchedData<{ error?: string }>(response);
 			throw new Error(
 				errorData?.error ||
 					`Failed to execute Replicate model: ${response.statusText}`,
 			);
 		}
 
-		const data: any = await response.json();
+		const data = await returnFetchedData<{
+			response: { data: ReplicatePrediction };
+		}>(response);
 		return data.response.data;
 	} catch (error) {
 		console.error("Error executing Replicate model:", error);
@@ -85,7 +89,9 @@ export const fetchReplicatePredictions = async (): Promise<
 			throw new Error(`Failed to fetch predictions: ${response.statusText}`);
 		}
 
-		const data: any = await response.json();
+		const data = await returnFetchedData<{
+			predictions: ReplicatePrediction[];
+		}>(response);
 		return data.predictions || [];
 	} catch (error) {
 		console.error("Error fetching predictions:", error);
@@ -116,7 +122,9 @@ export const fetchReplicatePrediction = async (
 			throw new Error(`Failed to fetch prediction: ${response.statusText}`);
 		}
 
-		const data: any = await response.json();
+		const data = await returnFetchedData<{
+			prediction: ReplicatePrediction;
+		}>(response);
 		return data.prediction;
 	} catch (error) {
 		console.error(`Error fetching prediction ${predictionId}:`, error);

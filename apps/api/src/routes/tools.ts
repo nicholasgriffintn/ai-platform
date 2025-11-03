@@ -3,6 +3,7 @@ import { describeRoute, resolver } from "hono-openapi";
 import { errorResponseSchema, toolsResponseSchema } from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { getAvailableTools } from "~/services/tools/toolsOperations";
 
 const app = new Hono();
@@ -41,7 +42,7 @@ app.get(
 		const user = context.get("user");
 		const isPro = user?.plan_id === "pro";
 		const tools = getAvailableTools(isPro);
-		return context.json({
+		return ResponseFactory.success(context, {
 			success: true,
 			message: "Tools fetched successfully",
 			data: tools,
