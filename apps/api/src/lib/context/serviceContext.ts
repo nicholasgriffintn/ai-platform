@@ -28,8 +28,8 @@ export const createServiceContext = ({
 	requestId,
 }: ServiceContextOptions): ServiceContext => {
 	let _database: Database | null = null;
-  let _repositories: RepositoryManager | null = null;
-  
+	let _repositories: RepositoryManager | null = null;
+
 	const ensureDatabase = (): D1Database => {
 		if (!env.DB) {
 			throw new AssistantError(
@@ -56,14 +56,14 @@ export const createServiceContext = ({
 		env,
 		user,
 		requestId,
-    get database() {
-      if (!_database) _database = new Database(env);
-      return _database;
-    },
-    get repositories() {
-      if (!_repositories) _repositories = new RepositoryManager(env);
-      return _repositories;
-    },
+		get database() {
+			if (!_database) _database = new Database(env);
+			return _database;
+		},
+		get repositories() {
+			if (!_repositories) _repositories = new RepositoryManager(env);
+			return _repositories;
+		},
 		requireUser,
 		ensureDatabase,
 	};

@@ -13,9 +13,7 @@ export function meta() {
 
 const DynamicAppsRoute: FC = () => {
 	return (
-		<PageShell
-			sidebarContent={<AppsSidebarContent isHome={true} />}
-		>
+		<PageShell sidebarContent={<AppsSidebarContent isHome={true} />}>
 			<DynamicApps />
 		</PageShell>
 	);

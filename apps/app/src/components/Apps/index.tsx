@@ -277,7 +277,7 @@ export const DynamicApps = () => {
 			<PageHeader>
 				<PageTitle title="Apps" />
 			</PageHeader>
-				
+
 			{apps.length > 0 && (
 				<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
 					<SearchInput

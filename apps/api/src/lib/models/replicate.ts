@@ -130,7 +130,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["creative", "audio", "text-to-audio"],
 		supportsStreaming: false,
 		supportsAttachments: true,
-		costPerRun: 0.080,
+		costPerRun: 0.08,
 		replicateInputSchema: {
 			reference: "https://replicate.com/meta/musicgen",
 			fields: [
@@ -623,7 +623,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["creative", "audio", "text-to-audio"],
 		supportsStreaming: false,
 		supportsAttachments: false,
-		costPerRun: 0.20,
+		costPerRun: 0.2,
 		modalities: {
 			input: ["text"],
 			output: ["audio"],
