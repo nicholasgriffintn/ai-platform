@@ -18,21 +18,37 @@ export class WebAuthnRepository extends BaseRepository {
 
 		try {
 			if (userId) {
-				await this.executeRun(
-					"DELETE FROM webauthn_challenge WHERE user_id = ?",
-					[userId],
+				const deleteExisting = this.buildDeleteQuery("webauthn_challenge", {
+					user_id: userId,
+				});
+				if (deleteExisting.query) {
+					await this.executeRun(deleteExisting.query, deleteExisting.values);
+				}
+
+				const insert = this.buildInsertQuery(
+					"webauthn_challenge",
+					{
+						user_id: userId,
+						challenge,
+						expires_at: expiresAt.toISOString(),
+					},
 				);
-				await this.executeRun(
-					`INSERT INTO webauthn_challenge (user_id, challenge, expires_at)
-           VALUES (?, ?, ?)`,
-					[userId, challenge, expiresAt.toISOString()],
-				);
+
+				if (insert) {
+					await this.executeRun(insert.query, insert.values);
+				}
 			} else {
-				await this.executeRun(
-					`INSERT INTO webauthn_challenge (challenge, expires_at)
-           VALUES (?, ?)`,
-					[challenge, expiresAt.toISOString()],
+				const insert = this.buildInsertQuery(
+					"webauthn_challenge",
+					{
+						challenge,
+						expires_at: expiresAt.toISOString(),
+					},
 				);
+
+				if (insert) {
+					await this.executeRun(insert.query, insert.values);
+				}
 			}
 		} catch (error) {
 			logger.error("Error in createChallenge:", { error });
@@ -76,15 +92,16 @@ export class WebAuthnRepository extends BaseRepository {
 		challenge: string,
 		userId?: number,
 	): Promise<void> {
-		const query = userId
-			? `DELETE FROM webauthn_challenge
-         WHERE user_id = ? AND challenge = ?`
-			: `DELETE FROM webauthn_challenge
-         WHERE challenge = ?`;
+		const conditions: Record<string, unknown> = { challenge };
+		if (userId) {
+			conditions.user_id = userId;
+		}
 
-		const params = userId ? [userId, challenge] : [challenge];
-
-		await this.executeRun(query, params);
+		const { query, values } = this.buildDeleteQuery(
+			"webauthn_challenge",
+			conditions,
+		);
+		await this.executeRun(query, values);
 	}
 
 	public async createPasskey(
@@ -99,26 +116,25 @@ export class WebAuthnRepository extends BaseRepository {
 		try {
 			const publicKeyBase64 = encodeBase64Url(publicKey);
 
-			await this.executeRun(
-				`INSERT INTO passkey (
-          user_id, 
-          credential_id, 
-          public_key, 
-          counter, 
-          device_type, 
-          backed_up, 
-          transports
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-				[
-					userId,
-					credentialId,
-					publicKeyBase64,
+			const insert = this.buildInsertQuery(
+				"passkey",
+				{
+					user_id: userId,
+					credential_id: credentialId,
+					public_key: publicKeyBase64,
 					counter,
-					deviceType,
-					backedUp ? 1 : 0,
-					transports ? JSON.stringify(transports) : null,
-				],
+					device_type: deviceType,
+					backed_up: backedUp ? 1 : 0,
+					transports: transports ?? null,
+				},
+				{ jsonFields: ["transports"] },
 			);
+
+			if (!insert) {
+				return;
+			}
+
+			await this.executeRun(insert.query, insert.values);
 		} catch (error) {
 			logger.error("Error creating passkey:", { error });
 			throw error;
@@ -128,10 +144,10 @@ export class WebAuthnRepository extends BaseRepository {
 	public async getPasskeysByUserId(
 		userId: number,
 	): Promise<Record<string, unknown>[]> {
-		return this.runQuery<Record<string, unknown>>(
-			"SELECT * FROM passkey WHERE user_id = ?",
-			[userId],
-		);
+		const { query, values } = this.buildSelectQuery("passkey", {
+			user_id: userId,
+		});
+		return this.runQuery<Record<string, unknown>>(query, values);
 	}
 
 	public async getPasskeyByCredentialId(
@@ -151,10 +167,24 @@ export class WebAuthnRepository extends BaseRepository {
 		credentialId: string,
 		counter: number,
 	): Promise<void> {
-		await this.executeRun(
-			"UPDATE passkey SET counter = ? WHERE credential_id = ?",
-			[counter, credentialId],
+		const update = this.buildUpdateQuery(
+			"passkey",
+			{ counter },
+			["counter"],
+			"credential_id = ?",
+			[credentialId],
 		);
+
+		if (!update) {
+			return;
+		}
+
+		const queryWithTimestamp = update.query.replace(
+			"updated_at = datetime('now')",
+			"updated_at = CURRENT_TIMESTAMP",
+		);
+
+		await this.executeRun(queryWithTimestamp, update.values);
 	}
 
 	public async deletePasskey(
@@ -162,10 +192,11 @@ export class WebAuthnRepository extends BaseRepository {
 		userId: number,
 	): Promise<boolean> {
 		try {
-			const result = await this.executeRun(
-				"DELETE FROM passkey WHERE id = ? AND user_id = ?",
-				[passkeyId, userId],
-			);
+			const { query, values } = this.buildDeleteQuery("passkey", {
+				id: passkeyId,
+				user_id: userId,
+			});
+			const result = await this.executeRun(query, values);
 
 			return result?.success && result?.meta?.changes > 0;
 		} catch (error) {

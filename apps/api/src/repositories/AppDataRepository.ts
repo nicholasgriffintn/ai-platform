@@ -1,4 +1,5 @@
 import { KVCache } from "~/lib/cache";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IEnv } from "~/types";
 import { generateId } from "~/utils/id";
 import { BaseRepository } from "./BaseRepository";
@@ -41,21 +42,40 @@ export class AppDataRepository extends BaseRepository {
 	): Promise<AppData> {
 		const id = generateId();
 
-		await this.executeRun(
-			"INSERT INTO app_data (id, user_id, app_id, data) VALUES (?, ?, ?, ?)",
-			[id, userId, appId, JSON.stringify(data)],
+		const insert = this.buildInsertQuery(
+			"app_data",
+			{
+				id,
+				user_id: userId,
+				app_id: appId,
+				data,
+			},
+			{ jsonFields: ["data"], returning: "*" },
+		);
+
+		if (!insert) {
+			throw new AssistantError(
+				"Failed to build app data insert query",
+				ErrorType.INTERNAL_ERROR,
+			);
+		}
+
+		const created = await this.runQuery<AppData>(
+			insert.query,
+			insert.values,
+			true,
 		);
 
 		await this.invalidateUserAppCache(userId, appId);
 
-		return {
-			id,
-			user_id: userId,
-			app_id: appId,
-			data: JSON.stringify(data),
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-		};
+		if (!created) {
+			throw new AssistantError(
+				"Failed to create app data",
+				ErrorType.INTERNAL_ERROR,
+			);
+		}
+
+		return created;
 	}
 
 	/**
@@ -76,21 +96,40 @@ export class AppDataRepository extends BaseRepository {
 	): Promise<AppData> {
 		const id = generateId();
 
-		await this.executeRun(
-			"INSERT INTO app_data (id, user_id, app_id, item_id, item_type, data) VALUES (?, ?, ?, ?, ?, ?)",
-			[id, userId, appId, itemId, itemType, JSON.stringify(data)],
+		const insert = this.buildInsertQuery(
+			"app_data",
+			{
+				id,
+				user_id: userId,
+				app_id: appId,
+				item_id: itemId,
+				item_type: itemType,
+				data,
+			},
+			{ jsonFields: ["data"], returning: "*" },
 		);
 
-		return {
-			id,
-			user_id: userId,
-			app_id: appId,
-			item_id: itemId,
-			item_type: itemType,
-			data: JSON.stringify(data),
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-		};
+		if (!insert) {
+			throw new AssistantError(
+				"Failed to build app data insert query",
+				ErrorType.INTERNAL_ERROR,
+			);
+		}
+
+		const created = await this.runQuery<AppData>(
+			insert.query,
+			insert.values,
+			true,
+		);
+
+		if (!created) {
+			throw new AssistantError(
+				"Failed to create app data",
+				ErrorType.INTERNAL_ERROR,
+			);
+		}
+
+		return created;
 	}
 
 	/**
@@ -104,21 +143,16 @@ export class AppDataRepository extends BaseRepository {
 		if (this.cache) {
 			return this.cache.cacheQuery(
 				cacheKey,
-				() =>
-					this.runQuery<AppData>(
-						"SELECT * FROM app_data WHERE id = ?",
-						[id],
-						true,
-					),
+				() => {
+					const { query, values } = this.buildSelectQuery("app_data", { id });
+					return this.runQuery<AppData>(query, values, true);
+				},
 				{ ttl: APP_DATA_CACHE_TTL },
 			);
 		}
 
-		return this.runQuery<AppData>(
-			"SELECT * FROM app_data WHERE id = ?",
-			[id],
-			true,
-		);
+		const { query, values } = this.buildSelectQuery("app_data", { id });
+		return this.runQuery<AppData>(query, values, true);
 	}
 
 	/**
@@ -127,11 +161,8 @@ export class AppDataRepository extends BaseRepository {
 	 * @returns The app data
 	 */
 	public async getAppDataByItemId(id: string): Promise<AppData | null> {
-		return this.runQuery<AppData>(
-			"SELECT * FROM app_data WHERE item_id = ?",
-			[id],
-			true,
-		);
+		const { query, values } = this.buildSelectQuery("app_data", { item_id: id });
+		return this.runQuery<AppData>(query, values, true);
 	}
 
 	/**
@@ -153,19 +184,24 @@ export class AppDataRepository extends BaseRepository {
 		if (this.cache) {
 			return this.cache.cacheQuery(
 				cacheKey,
-				() =>
-					this.runQuery<AppData>(
-						"SELECT * FROM app_data WHERE user_id = ? AND app_id = ? ORDER BY created_at DESC",
-						[userId, appId],
-					),
+				() => {
+					const { query, values } = this.buildSelectQuery(
+						"app_data",
+						{ user_id: userId, app_id: appId },
+						{ orderBy: "created_at DESC" },
+					);
+					return this.runQuery<AppData>(query, values);
+				},
 				{ ttl: Math.min(APP_DATA_CACHE_TTL, 900) },
 			);
 		}
 
-		return this.runQuery<AppData>(
-			"SELECT * FROM app_data WHERE user_id = ? AND app_id = ? ORDER BY created_at DESC",
-			[userId, appId],
+		const { query, values } = this.buildSelectQuery(
+			"app_data",
+			{ user_id: userId, app_id: appId },
+			{ orderBy: "created_at DESC" },
 		);
+		return this.runQuery<AppData>(query, values);
 	}
 
 	/**
@@ -182,17 +218,17 @@ export class AppDataRepository extends BaseRepository {
 		itemId: string,
 		itemType?: string,
 	): Promise<AppData[]> {
-		if (itemType) {
-			return this.runQuery<AppData>(
-				"SELECT * FROM app_data WHERE user_id = ? AND app_id = ? AND item_id = ? AND item_type = ? ORDER BY created_at DESC",
-				[userId, appId, itemId, itemType],
-			);
-		}
-
-		return this.runQuery<AppData>(
-			"SELECT * FROM app_data WHERE user_id = ? AND app_id = ? AND item_id = ? ORDER BY created_at DESC",
-			[userId, appId, itemId],
+		const { query, values } = this.buildSelectQuery(
+			"app_data",
+			{
+				user_id: userId,
+				app_id: appId,
+				item_id: itemId,
+				item_type: itemType,
+			},
+			{ orderBy: "created_at DESC" },
 		);
+		return this.runQuery<AppData>(query, values);
 	}
 
 	/**
@@ -201,10 +237,12 @@ export class AppDataRepository extends BaseRepository {
 	 * @returns The app data
 	 */
 	public async getAppDataByUser(userId: number): Promise<AppData[]> {
-		return this.runQuery<AppData>(
-			"SELECT * FROM app_data WHERE user_id = ? ORDER BY created_at DESC",
-			[userId],
+		const { query, values } = this.buildSelectQuery(
+			"app_data",
+			{ user_id: userId },
+			{ orderBy: "created_at DESC" },
 		);
+		return this.runQuery<AppData>(query, values);
 	}
 
 	/**
@@ -218,10 +256,25 @@ export class AppDataRepository extends BaseRepository {
 	): Promise<void> {
 		const currentData = await this.getAppDataById(id);
 
-		await this.executeRun(
-			"UPDATE app_data SET data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-			[JSON.stringify(data), id],
+		const result = this.buildUpdateQuery(
+			"app_data",
+			{ data },
+			["data"],
+			"id = ?",
+			[id],
+			{ jsonFields: ["data"] },
 		);
+
+		if (!result) {
+			return;
+		}
+
+		const queryWithTimestamp = result.query.replace(
+			"updated_at = datetime('now')",
+			"updated_at = CURRENT_TIMESTAMP",
+		);
+
+		await this.executeRun(queryWithTimestamp, result.values);
 
 		if (this.cache) {
 			const itemCacheKey = KVCache.createKey("app-data", id);
@@ -241,7 +294,8 @@ export class AppDataRepository extends BaseRepository {
 	 * @param id - The ID of the app data
 	 */
 	public async deleteAppData(id: string): Promise<void> {
-		await this.executeRun("DELETE FROM app_data WHERE id = ?", [id]);
+		const { query, values } = this.buildDeleteQuery("app_data", { id });
+		await this.executeRun(query, values);
 	}
 
 	/**
@@ -253,10 +307,11 @@ export class AppDataRepository extends BaseRepository {
 		userId: number,
 		appId: string,
 	): Promise<void> {
-		await this.executeRun(
-			"DELETE FROM app_data WHERE user_id = ? AND app_id = ?",
-			[userId, appId],
-		);
+		const { query, values } = this.buildDeleteQuery("app_data", {
+			user_id: userId,
+			app_id: appId,
+		});
+		await this.executeRun(query, values);
 	}
 
 	/**
@@ -273,18 +328,13 @@ export class AppDataRepository extends BaseRepository {
 		itemId: string,
 		itemType?: string,
 	): Promise<void> {
-		if (itemType) {
-			await this.executeRun(
-				"DELETE FROM app_data WHERE user_id = ? AND app_id = ? AND item_id = ? AND item_type = ?",
-				[userId, appId, itemId, itemType],
-			);
-			return;
-		}
-
-		await this.executeRun(
-			"DELETE FROM app_data WHERE user_id = ? AND app_id = ? AND item_id = ?",
-			[userId, appId, itemId],
-		);
+		const { query, values } = this.buildDeleteQuery("app_data", {
+			user_id: userId,
+			app_id: appId,
+			item_id: itemId,
+			item_type: itemType,
+		});
+		await this.executeRun(query, values);
 	}
 
 	/**
@@ -296,10 +346,24 @@ export class AppDataRepository extends BaseRepository {
 		id: string,
 		shareId: string,
 	): Promise<void> {
-		await this.executeRun(
-			"UPDATE app_data SET share_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-			[shareId, id],
+		const result = this.buildUpdateQuery(
+			"app_data",
+			{ share_id: shareId },
+			["share_id"],
+			"id = ?",
+			[id],
 		);
+
+		if (!result) {
+			return;
+		}
+
+		const queryWithTimestamp = result.query.replace(
+			"updated_at = datetime('now')",
+			"updated_at = CURRENT_TIMESTAMP",
+		);
+
+		await this.executeRun(queryWithTimestamp, result.values);
 	}
 
 	/**
@@ -308,11 +372,10 @@ export class AppDataRepository extends BaseRepository {
 	 * @returns The app data
 	 */
 	public async getAppDataByShareId(shareId: string): Promise<AppData | null> {
-		return this.runQuery<AppData>(
-			"SELECT * FROM app_data WHERE share_id = ?",
-			[shareId],
-			true,
-		);
+		const { query, values } = this.buildSelectQuery("app_data", {
+			share_id: shareId,
+		});
+		return this.runQuery<AppData>(query, values, true);
 	}
 
 	/**

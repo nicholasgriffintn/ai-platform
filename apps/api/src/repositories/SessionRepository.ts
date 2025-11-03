@@ -2,11 +2,10 @@ import { BaseRepository } from "./BaseRepository";
 
 export class SessionRepository extends BaseRepository {
 	public async deleteSession(sessionId: string): Promise<void> {
-		await this.executeRun(
-			`DELETE FROM session
-       WHERE id = ?`,
-			[sessionId],
-		);
+		const { query, values } = this.buildDeleteQuery("session", {
+			id: sessionId,
+		});
+		await this.executeRun(query, values);
 	}
 
 	public async getSessionWithJwt(sessionId: string): Promise<{
@@ -51,16 +50,18 @@ export class SessionRepository extends BaseRepository {
 		jwtToken?: string,
 		jwtExpiresAt?: Date,
 	): Promise<void> {
-		await this.executeRun(
-			`INSERT INTO session (id, user_id, expires_at, jwt_token, jwt_expires_at)
-       VALUES (?, ?, ?, ?, ?)`,
-			[
-				sessionId,
-				userId,
-				expiresAt.toISOString(),
-				jwtToken || null,
-				jwtExpiresAt?.toISOString() || null,
-			],
-		);
+		const insert = this.buildInsertQuery("session", {
+			id: sessionId,
+			user_id: userId,
+			expires_at: expiresAt.toISOString(),
+			jwt_token: jwtToken ?? null,
+			jwt_expires_at: jwtExpiresAt?.toISOString() ?? null,
+		});
+
+		if (!insert) {
+			return;
+		}
+
+		await this.executeRun(insert.query, insert.values);
 	}
 }

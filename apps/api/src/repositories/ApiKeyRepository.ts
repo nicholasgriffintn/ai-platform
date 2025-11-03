@@ -14,9 +14,14 @@ export interface ApiKeyMetadata {
 
 export class ApiKeyRepository extends BaseRepository {
 	private async getUserPublicKey(userId: number): Promise<CryptoKey> {
+		const { query, values } = this.buildSelectQuery(
+			"user_settings",
+			{ user_id: userId },
+			{ columns: ["public_key"] },
+		);
 		const result = await this.runQuery<{ public_key: string }>(
-			"SELECT public_key FROM user_settings WHERE user_id = ?",
-			[userId],
+			query,
+			values,
 			true,
 		);
 
@@ -119,16 +124,42 @@ export class ApiKeyRepository extends BaseRepository {
 		const keyName = name || `API Key ${new Date().toISOString()}`;
 
 		try {
-			await this.executeRun(
-				`INSERT INTO user_api_keys (id, user_id, name, api_key, hashed_key, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
-				[apiKeyId, userId, keyName, encryptedKey, hashedKey],
+			const insert = this.buildInsertQuery(
+				"user_api_keys",
+				{
+					id: apiKeyId,
+					user_id: userId,
+					name: keyName,
+					api_key: encryptedKey,
+					hashed_key: hashedKey,
+				},
+				{ returning: "id, name, created_at" },
 			);
 
+			if (!insert) {
+				throw new AssistantError(
+					"Failed to build API key insert query",
+					ErrorType.INTERNAL_ERROR,
+				);
+			}
+
+			const metadataRow = await this.runQuery<ApiKeyMetadata>(
+				insert.query,
+				insert.values,
+				true,
+			);
+
+			if (!metadataRow) {
+				throw new AssistantError(
+					"Failed to create API key in database",
+					ErrorType.INTERNAL_ERROR,
+				);
+			}
+
 			const metadata: ApiKeyMetadata = {
-				id: apiKeyId,
-				name: keyName,
-				created_at: new Date().toISOString(),
+				id: metadataRow.id,
+				name: metadataRow.name,
+				created_at: metadataRow.created_at,
 			};
 
 			return { plaintextKey, metadata };
@@ -158,14 +189,20 @@ export class ApiKeyRepository extends BaseRepository {
 		}
 
 		try {
+			const { query, values } = this.buildSelectQuery(
+				"user_api_keys",
+				{ user_id: userId },
+				{
+					columns: ["id", "name", "created_at"],
+					orderBy: "created_at DESC",
+				},
+			);
+
 			const results = await this.runQuery<{
 				id: string;
 				name: string;
 				created_at: string;
-			}>(
-				"SELECT id, name, created_at FROM user_api_keys WHERE user_id = ? ORDER BY created_at DESC",
-				[userId],
-			);
+			}>(query, values);
 			return results;
 		} catch (error) {
 			logger.error("Error retrieving API keys:", { error });
@@ -185,10 +222,12 @@ export class ApiKeyRepository extends BaseRepository {
 		}
 
 		try {
-			const result = await this.executeRun(
-				"DELETE FROM user_api_keys WHERE id = ? AND user_id = ?",
-				[apiKeyId, userId],
-			);
+			const { query, values } = this.buildDeleteQuery("user_api_keys", {
+				id: apiKeyId,
+				user_id: userId,
+			});
+
+			const result = await this.executeRun(query, values);
 
 			if (!result) {
 				throw new AssistantError("API key not found", ErrorType.NOT_FOUND);

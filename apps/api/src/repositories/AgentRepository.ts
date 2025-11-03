@@ -1,4 +1,5 @@
 import type { Agent } from "~/lib/database/schema";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { BaseRepository } from "./BaseRepository";
 
@@ -19,66 +20,61 @@ export class AgentRepository extends BaseRepository {
 		isTeamAgent?: boolean,
 	): Promise<Agent> {
 		const id = generateId();
-		const serversJson = servers ? JSON.stringify(servers) : null;
-		const fewShotExamplesJson = fewShotExamples
-			? JSON.stringify(fewShotExamples)
-			: null;
-
-		await this.executeRun(
-			"INSERT INTO agents (id, user_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples, team_id, team_role, is_team_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-			[
-				id ?? null,
-				userId ?? null,
-				name ?? null,
-				description ?? null,
-				avatarUrl ?? null,
-				serversJson ?? null,
-				model ?? null,
-				temperature !== undefined && temperature !== null
-					? temperature.toString()
-					: null,
-				maxSteps !== undefined && maxSteps !== null ? maxSteps : null,
-				systemPrompt ?? null,
-				fewShotExamplesJson ?? null,
-				teamId ?? null,
-				teamRole ?? null,
-				isTeamAgent ? 1 : 0,
-			],
+		const insert = this.buildInsertQuery(
+			"agents",
+			{
+				id,
+				user_id: userId,
+				name,
+				description,
+				avatar_url: avatarUrl ?? null,
+				servers: servers ?? null,
+				model: model ?? null,
+				temperature:
+					temperature !== undefined && temperature !== null
+						? temperature.toString()
+						: null,
+				max_steps: maxSteps ?? null,
+				system_prompt: systemPrompt ?? null,
+				few_shot_examples: fewShotExamples ?? null,
+				team_id: teamId ?? null,
+				team_role: teamRole ?? null,
+				is_team_agent: isTeamAgent ? 1 : 0,
+			},
+			{ jsonFields: ["servers", "few_shot_examples"], returning: "*" },
 		);
-		const now = new Date().toISOString();
-		return {
-			id,
-			user_id: userId,
-			name,
-			description,
-			avatar_url: avatarUrl,
-			servers: serversJson,
-			model,
-			temperature: temperature?.toString(),
-			max_steps: maxSteps,
-			system_prompt: systemPrompt,
-			few_shot_examples: fewShotExamplesJson,
-			team_id: teamId,
-			team_role: teamRole,
-			is_team_agent: isTeamAgent ?? false,
-			created_at: now,
-			updated_at: now,
-		};
+
+		if (!insert) {
+			throw new AssistantError(
+				"Failed to build agent insert query",
+				ErrorType.INTERNAL_ERROR,
+			);
+		}
+
+		const created = await this.runQuery<Agent>(insert.query, insert.values, true);
+
+		if (!created) {
+			throw new AssistantError(
+				"Failed to insert agent",
+				ErrorType.INTERNAL_ERROR,
+			);
+		}
+
+		return created;
 	}
 
 	public async getAgentsByUser(userId: number): Promise<Agent[]> {
-		return this.runQuery<Agent>(
-			"SELECT * FROM agents WHERE user_id = ? ORDER BY created_at DESC",
-			[userId],
+		const { query, values } = this.buildSelectQuery(
+			"agents",
+			{ user_id: userId },
+			{ orderBy: "created_at DESC" },
 		);
+		return this.runQuery<Agent>(query, values);
 	}
 
 	public async getAgentById(agentId: string): Promise<Agent | null> {
-		return this.runQuery<Agent>(
-			"SELECT * FROM agents WHERE id = ?",
-			[agentId],
-			true,
-		);
+		const { query, values } = this.buildSelectQuery("agents", { id: agentId });
+		return this.runQuery<Agent>(query, values, true);
 	}
 
 	public async updateAgent(
@@ -98,66 +94,59 @@ export class AgentRepository extends BaseRepository {
 			is_team_agent: boolean;
 		}>,
 	): Promise<void> {
-		const sets: string[] = [];
-		const params: any[] = [];
+		const allowedFields = [
+			"name",
+			"description",
+			"avatar_url",
+			"servers",
+			"model",
+			"temperature",
+			"max_steps",
+			"system_prompt",
+			"few_shot_examples",
+			"team_id",
+			"team_role",
+			"is_team_agent",
+		];
 
-		if (data.name !== undefined) {
-			sets.push("name = ?");
-			params.push(data.name);
-		}
-		if (data.description !== undefined) {
-			sets.push("description = ?");
-			params.push(data.description);
-		}
-		if (data.avatar_url !== undefined) {
-			sets.push("avatar_url = ?");
-			params.push(data.avatar_url);
-		}
-		if (data.servers !== undefined) {
-			sets.push("servers = ?");
-			params.push(JSON.stringify(data.servers));
-		}
-		if (data.model !== undefined) {
-			sets.push("model = ?");
-			params.push(data.model);
-		}
-		if (data.temperature !== undefined) {
-			sets.push("temperature = ?");
-			params.push(data.temperature.toString());
-		}
-		if (data.max_steps !== undefined) {
-			sets.push("max_steps = ?");
-			params.push(data.max_steps);
-		}
-		if (data.system_prompt !== undefined) {
-			sets.push("system_prompt = ?");
-			params.push(data.system_prompt);
-		}
-		if (data.few_shot_examples !== undefined) {
-			sets.push("few_shot_examples = ?");
-			params.push(JSON.stringify(data.few_shot_examples));
-		}
-		if (data.team_id !== undefined) {
-			sets.push("team_id = ?");
-			params.push(data.team_id);
-		}
-		if (data.team_role !== undefined) {
-			sets.push("team_role = ?");
-			params.push(data.team_role);
-		}
-		if (data.is_team_agent !== undefined) {
-			sets.push("is_team_agent = ?");
-			params.push(data.is_team_agent ? 1 : 0);
+		const result = this.buildUpdateQuery(
+			"agents",
+			data,
+			allowedFields,
+			"id = ?",
+			[agentId],
+			{
+				jsonFields: ["servers", "few_shot_examples"],
+				transformer: (field, value) => {
+					if (field === "temperature" && value !== undefined && value !== null) {
+						return value.toString();
+					}
+					if (field === "is_team_agent" && typeof value === "boolean") {
+						return value ? 1 : 0;
+					}
+					return value;
+				},
+			},
+		);
+
+		if (!result) {
+			return;
 		}
 
-		if (sets.length === 0) return;
-		params.push(agentId);
-		const sql = `UPDATE agents SET ${sets.join(", ")}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
-		await this.executeRun(sql, params);
+		const queryWithTimestamp = result.query.replace(
+			"updated_at = datetime('now')",
+			"updated_at = CURRENT_TIMESTAMP",
+		);
+
+		await this.executeRun(queryWithTimestamp, result.values);
 	}
 
 	public async deleteAgent(agentId: string): Promise<void> {
-		await this.executeRun("DELETE FROM agents WHERE id = ?", [agentId]);
+		const { query, values } = this.buildDeleteQuery("agents", { id: agentId });
+		if (!query) {
+			return;
+		}
+		await this.executeRun(query, values);
 	}
 
 	public async createTeamAgent(
@@ -192,26 +181,32 @@ export class AgentRepository extends BaseRepository {
 	}
 
 	public async getTeamAgents(userId: number): Promise<Agent[]> {
-		return this.runQuery<Agent>(
-			"SELECT * FROM agents WHERE user_id = ? AND is_team_agent = 1 ORDER BY created_at DESC",
-			[userId],
+		const { query, values } = this.buildSelectQuery(
+			"agents",
+			{ user_id: userId, is_team_agent: 1 },
+			{ orderBy: "created_at DESC" },
 		);
+		return this.runQuery<Agent>(query, values);
 	}
 
 	public async getAgentsByTeam(teamId: string): Promise<Agent[]> {
-		return this.runQuery<Agent>(
-			"SELECT * FROM agents WHERE team_id = ? ORDER BY created_at DESC",
-			[teamId],
+		const { query, values } = this.buildSelectQuery(
+			"agents",
+			{ team_id: teamId },
+			{ orderBy: "created_at DESC" },
 		);
+		return this.runQuery<Agent>(query, values);
 	}
 
 	public async getAgentsByTeamAndUser(
 		teamId: string,
 		userId: number,
 	): Promise<Agent[]> {
-		return this.runQuery<Agent>(
-			"SELECT * FROM agents WHERE team_id = ? AND user_id = ? ORDER BY created_at DESC",
-			[teamId, userId],
+		const { query, values } = this.buildSelectQuery(
+			"agents",
+			{ team_id: teamId, user_id: userId },
+			{ orderBy: "created_at DESC" },
 		);
+		return this.runQuery<Agent>(query, values);
 	}
 }

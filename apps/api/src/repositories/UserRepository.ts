@@ -29,45 +29,33 @@ export class UserRepository extends BaseRepository {
 	}
 
 	public async getUserById(userId: number): Promise<User | null> {
-		const result = this.runQuery<User>(
-			"SELECT * FROM user WHERE id = ?",
-			[userId],
-			true,
-		);
-		return result;
+		const { query, values } = this.buildSelectQuery("user", { id: userId });
+		return this.runQuery<User>(query, values, true);
 	}
 
 	public async getUserByEmail(email: string): Promise<User | null> {
-		const result = this.runQuery<User>(
-			"SELECT * FROM user WHERE email = ?",
-			[email],
-			true,
-		);
-		return result;
+		const { query, values } = this.buildSelectQuery("user", { email });
+		return this.runQuery<User>(query, values, true);
 	}
 
 	public async updateUser(
 		userId: number,
 		userData: Record<string, unknown>,
 	): Promise<void> {
-		const fieldsToUpdate = Object.keys(userData).filter(
-			(key) =>
-				key !== "id" && userData[key as keyof typeof userData] !== undefined,
-		);
+		const fieldsToUpdate = Object.keys(userData).filter((key) => key !== "id");
 
-		if (fieldsToUpdate.length === 0) {
+		const result = this.buildUpdateQuery(
+			"user",
+			userData,
+			fieldsToUpdate,
+			"id = ?",
+			[userId],
+		);
+		if (!result) {
 			return;
 		}
 
-		const setClause = fieldsToUpdate.map((key) => `${key} = ?`).join(", ");
-		const values = fieldsToUpdate.map(
-			(key) => userData[key as keyof typeof userData],
-		);
-
-		const query = `UPDATE user SET ${setClause}, updated_at = datetime('now') WHERE id = ?`;
-		const finalValues = [...values, userId];
-
-		await this.executeRun(query, finalValues);
+		await this.executeRun(result.query, result.values);
 	}
 
 	public async createUser(
@@ -151,12 +139,10 @@ export class UserRepository extends BaseRepository {
 	public async getUserByStripeCustomerId(
 		customerId: string,
 	): Promise<User | null> {
-		const result = this.runQuery<User>(
-			"SELECT * FROM user WHERE stripe_customer_id = ?",
-			[customerId],
-			true,
-		);
-		return result;
+		const { query, values } = this.buildSelectQuery("user", {
+			stripe_customer_id: customerId,
+		});
+		return this.runQuery<User>(query, values, true);
 	}
 
 	public async createOrUpdateGithubUser(userData: {

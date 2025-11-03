@@ -107,11 +107,24 @@ export class UserSettingsRepository extends BaseRepository {
 
 			const userSettingsId = generateId();
 
-			await this.executeRun(
-				`INSERT INTO user_settings (id, user_id, public_key, private_key)
-         VALUES (?, ?, ?, ?)`,
-				[userSettingsId, userId, publicKeyString, encryptedPrivateKeyString],
+			const insert = this.buildInsertQuery(
+				"user_settings",
+				{
+					id: userSettingsId,
+					user_id: userId,
+					public_key: publicKeyString,
+					private_key: encryptedPrivateKeyString,
+				},
 			);
+
+			if (!insert) {
+				throw new AssistantError(
+					"Failed to create user settings",
+					ErrorType.UNKNOWN_ERROR,
+				);
+			}
+
+			await this.executeRun(insert.query, insert.values);
 		} catch (_error) {
 			throw new AssistantError(
 				"Failed to create user settings",
@@ -124,71 +137,70 @@ export class UserSettingsRepository extends BaseRepository {
 		userId: number,
 		settings: Record<string, unknown>,
 	): Promise<void> {
-		await this.executeRun(
-			`UPDATE user_settings
-       SET 
-         nickname = ?,
-         job_role = ?,
-         traits = ?,
-         preferences = ?,
-         tracking_enabled = ?,
-         guardrails_enabled = ?,
-         guardrails_provider = ?,
-         bedrock_guardrail_id = ?,
-         bedrock_guardrail_version = ?,
-         embedding_provider = ?,
-         bedrock_knowledge_base_id = ?,
-         bedrock_knowledge_base_custom_data_source_id = ?,
-         s3vectors_bucket_name = ?,
-         s3vectors_index_name = ?,
-         s3vectors_region = ?,
-         memories_save_enabled = ?,
-         memories_chat_history_enabled = ?,
-         transcription_provider = ?,
-         transcription_model = ?,
-         search_provider = ?,
-         updated_at = datetime('now')
-       WHERE user_id = ?`,
-			[
-				settings.nickname,
-				settings.job_role,
-				settings.traits,
-				settings.preferences,
+		const updates: Record<string, unknown> = {
+			nickname: settings.nickname ?? null,
+			job_role: settings.job_role ?? null,
+			traits: settings.traits ?? null,
+			preferences: settings.preferences ?? null,
+			tracking_enabled:
 				settings.tracking_enabled !== undefined
 					? settings.tracking_enabled
 						? 1
 						: 0
 					: null,
+			guardrails_enabled:
 				settings.guardrails_enabled !== undefined
 					? settings.guardrails_enabled
 						? 1
 						: 0
 					: null,
-				settings.guardrails_provider,
-				settings.bedrock_guardrail_id,
-				settings.bedrock_guardrail_version,
-				settings.embedding_provider,
-				settings.bedrock_knowledge_base_id,
-				settings.bedrock_knowledge_base_custom_data_source_id,
-				settings.s3vectors_bucket_name,
-				settings.s3vectors_index_name,
-				settings.s3vectors_region,
+			guardrails_provider: settings.guardrails_provider ?? null,
+			bedrock_guardrail_id: settings.bedrock_guardrail_id ?? null,
+			bedrock_guardrail_version: settings.bedrock_guardrail_version ?? null,
+			embedding_provider: settings.embedding_provider ?? null,
+			bedrock_knowledge_base_id: settings.bedrock_knowledge_base_id ?? null,
+			bedrock_knowledge_base_custom_data_source_id:
+				settings.bedrock_knowledge_base_custom_data_source_id ?? null,
+			s3vectors_bucket_name: settings.s3vectors_bucket_name ?? null,
+			s3vectors_index_name: settings.s3vectors_index_name ?? null,
+			s3vectors_region: settings.s3vectors_region ?? null,
+			memories_save_enabled:
 				settings.memories_save_enabled !== undefined
 					? settings.memories_save_enabled
 						? 1
 						: 0
 					: null,
+			memories_chat_history_enabled:
 				settings.memories_chat_history_enabled !== undefined
 					? settings.memories_chat_history_enabled
 						? 1
 						: 0
 					: null,
-				settings.transcription_provider,
-				settings.transcription_model,
-				settings.search_provider,
-				userId,
-			],
+			transcription_provider: settings.transcription_provider ?? null,
+			transcription_model: settings.transcription_model ?? null,
+			search_provider: settings.search_provider ?? null,
+		};
+
+		const allowedFields = Object.keys(updates);
+
+		const result = this.buildUpdateQuery(
+			"user_settings",
+			updates,
+			allowedFields,
+			"user_id = ?",
+			[userId],
 		);
+
+		if (!result) {
+			return;
+		}
+
+		const queryWithTimestamp = result.query.replace(
+			"updated_at = datetime('now')",
+			"updated_at = CURRENT_TIMESTAMP",
+		);
+
+		await this.executeRun(queryWithTimestamp, result.values);
 	}
 
 	public async getUserSettings(userId: number): Promise<IUserSettings | null> {
@@ -215,11 +227,12 @@ export class UserSettingsRepository extends BaseRepository {
 			"transcription_model",
 			"search_provider",
 		];
-		const result = await this.runQuery<any>(
-			`SELECT ${columns.join(", ")} FROM user_settings WHERE user_id = ?`,
-			[userId],
-			true,
+		const { query, values } = this.buildSelectQuery(
+			"user_settings",
+			{ user_id: userId },
+			{ columns },
 		);
+		const result = await this.runQuery<any>(query, values, true);
 
 		if (!result) {
 			return null;
@@ -239,12 +252,15 @@ export class UserSettingsRepository extends BaseRepository {
 	public async getUserEnabledModels(
 		userId: number,
 	): Promise<Record<string, unknown>[]> {
+		const { query, values } = this.buildSelectQuery(
+			"model_settings",
+			{ user_id: userId },
+			{ columns: ["id", "model_id", "enabled"] },
+		);
 		const userModels = (await this.runQuery<{
 			model_id: string;
 			enabled: number;
-		}>("SELECT id, model_id, enabled FROM model_settings WHERE user_id = ?", [
-			userId,
-		])) as { model_id: string; enabled: number }[];
+		}>(query, values)) as { model_id: string; enabled: number }[];
 
 		const userModelMap = new Map(
 			userModels.map((model) => [model.model_id, model.enabled === 1]),
@@ -292,9 +308,15 @@ export class UserSettingsRepository extends BaseRepository {
 		}
 
 		try {
+			const { query: providerQuery, values: providerValues } =
+				this.buildSelectQuery(
+					"provider_settings",
+					{ user_id: userId, id: providerId },
+					{ columns: ["id"] },
+				);
 			const existingProviderSettings = await this.runQuery<{ id: string }>(
-				"SELECT id FROM provider_settings WHERE user_id = ? AND id = ?",
-				[userId, providerId],
+				providerQuery,
+				providerValues,
 				true,
 			);
 
@@ -305,9 +327,15 @@ export class UserSettingsRepository extends BaseRepository {
 				);
 			}
 
+			const { query: publicKeyQuery, values: publicKeyValues } =
+				this.buildSelectQuery(
+					"user_settings",
+					{ user_id: userId },
+					{ columns: ["public_key"] },
+				);
 			const result = await this.runQuery<{ public_key: string }>(
-				"SELECT public_key FROM user_settings WHERE user_id = ?",
-				[userId],
+				publicKeyQuery,
+				publicKeyValues,
 				true,
 			);
 
@@ -354,10 +382,27 @@ export class UserSettingsRepository extends BaseRepository {
 
 			const encryptedApiKey = bufferToBase64(new Uint8Array(encryptedData));
 
-			await this.executeRun(
-				"UPDATE provider_settings SET api_key = ?, enabled = 1 WHERE user_id = ? AND id = ?",
-				[encryptedApiKey, userId, existingProviderSettings.id],
+			const update = this.buildUpdateQuery(
+				"provider_settings",
+				{
+					api_key: encryptedApiKey,
+					enabled: 1,
+				},
+				["api_key", "enabled"],
+				"user_id = ? AND id = ?",
+				[userId, existingProviderSettings.id],
 			);
+
+			if (!update) {
+				return;
+			}
+
+			const queryWithTimestamp = update.query.replace(
+				"updated_at = datetime('now')",
+				"updated_at = CURRENT_TIMESTAMP",
+			);
+
+			await this.executeRun(queryWithTimestamp, update.values);
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -388,9 +433,15 @@ export class UserSettingsRepository extends BaseRepository {
 		}
 
 		try {
+			const { query: settingsQuery, values: settingsValues } =
+				this.buildSelectQuery(
+					"user_settings",
+					{ user_id: userId },
+					{ columns: ["private_key"] },
+				);
 			const userSettings = await this.runQuery<{ private_key: string }>(
-				"SELECT private_key FROM user_settings WHERE user_id = ?",
-				[userId],
+				settingsQuery,
+				settingsValues,
 				true,
 			);
 
@@ -425,9 +476,15 @@ export class UserSettingsRepository extends BaseRepository {
 				["decrypt"],
 			);
 
+			const { query: providerQuery, values: providerValues } =
+				this.buildSelectQuery(
+					"provider_settings",
+					{ user_id: userId, provider_id: providerId },
+					{ columns: ["api_key"] },
+				);
 			const result = await this.runQuery<{ api_key: string }>(
-				"SELECT api_key FROM provider_settings WHERE user_id = ? AND provider_id = ?",
-				[userId, providerId],
+				providerQuery,
+				providerValues,
 				true,
 			);
 
@@ -463,9 +520,14 @@ export class UserSettingsRepository extends BaseRepository {
 
 		await Promise.all(
 			providers.map(async (provider) => {
+				const { query, values } = this.buildSelectQuery(
+					"provider_settings",
+					{ user_id: userId, provider_id: provider },
+					{ columns: ["id"] },
+				);
 				const existingSettings = await this.runQuery<{ id: string }>(
-					"SELECT id FROM provider_settings WHERE user_id = ? AND provider_id = ?",
-					[userId, provider],
+					query,
+					values,
 					true,
 				);
 
@@ -477,10 +539,19 @@ export class UserSettingsRepository extends BaseRepository {
 
 				const isEnabled = defaultProviders.includes(provider);
 
-				await this.executeRun(
-					"INSERT INTO provider_settings (id, user_id, provider_id, enabled) VALUES (?, ?, ?, ?)",
-					[providerSettingsId, userId, provider, isEnabled ? 1 : 0],
+				const insert = this.buildInsertQuery(
+					"provider_settings",
+					{
+						id: providerSettingsId,
+						user_id: userId,
+						provider_id: provider,
+						enabled: isEnabled ? 1 : 0,
+					},
 				);
+
+				if (insert) {
+					await this.executeRun(insert.query, insert.values);
+				}
 			}),
 		);
 	}
@@ -488,14 +559,17 @@ export class UserSettingsRepository extends BaseRepository {
 	public async getUserProviderSettings(
 		userId: number,
 	): Promise<Record<string, unknown>[]> {
+		const { query, values } = this.buildSelectQuery(
+			"provider_settings",
+			{ user_id: userId },
+			{ columns: ["id", "provider_id", "enabled"] },
+		);
+
 		const result = await this.runQuery<{
 			id: string;
 			provider_id: string;
 			enabled: number;
-		}>(
-			"SELECT id, provider_id, enabled FROM provider_settings WHERE user_id = ?",
-			[userId],
-		);
+		}>(query, values);
 
 		return result.map((provider) => ({
 			id: provider.id,

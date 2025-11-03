@@ -147,48 +147,48 @@ export class MessageRepository extends BaseRepository {
 			"parts",
 		];
 
-		const setClause = allowedFields
-			.filter((field) => updates[field] !== undefined)
-			.map((field) => {
-				if (
-					field === "tool_calls" ||
-					field === "citations" ||
-					field === "data"
-				) {
-					updates[field] = JSON.stringify(updates[field]);
-				} else if (field === "content" && typeof updates[field] === "object") {
-					updates[field] = JSON.stringify(updates[field]);
-				}
-				return `${field} = ?`;
-			})
-			.join(", ");
-
-		if (!setClause.length) {
+		const result = this.buildUpdateQuery(
+			"message",
+			updates,
+			allowedFields,
+			"id = ?",
+			[messageId],
+			{
+				jsonFields: ["tool_calls", "citations", "data", "usage"],
+				transformer: (field, value) => {
+					if (field === "content" && typeof value === "object") {
+						return JSON.stringify(value);
+					}
+					return value;
+				},
+			},
+		);
+		if (!result) {
 			return;
 		}
 
-		const values = allowedFields
-			.filter((field) => updates[field] !== undefined)
-			.map((field) => updates[field]);
-
-		values.push(messageId);
-
-		await this.executeRun(
-			`UPDATE message 
-       SET ${setClause}, updated_at = datetime('now')
-       WHERE id = ?`,
-			values,
-		);
+		await this.executeRun(result.query, result.values);
 	}
 
 	public async deleteMessage(messageId: string): Promise<void> {
-		await this.executeRun("DELETE FROM message WHERE id = ?", [messageId]);
+		const { query, values } = this.buildDeleteQuery(
+			"message",
+			{ id: messageId },
+		);
+		if (!query) {
+			return;
+		}
+		await this.executeRun(query, values);
 	}
 
 	public async deleteAllMessages(conversationId: string): Promise<void> {
-		await this.executeRun("DELETE FROM message WHERE conversation_id = ?", [
-			conversationId,
-		]);
+		const { query, values } = this.buildDeleteQuery("message", {
+			conversation_id: conversationId,
+		});
+		if (!query) {
+			return;
+		}
+		await this.executeRun(query, values);
 	}
 
 	public async getChildMessages(

@@ -40,11 +40,11 @@ export class SharedAgentRepository extends BaseRepository {
 		userId: number,
 		params: CreateSharedAgentParams,
 	): Promise<SharedAgent> {
-		const agent = await this.runQuery<Agent>(
-			"SELECT * FROM agents WHERE id = ? AND user_id = ?",
-			[params.agentId, userId],
-			true,
+		const { query: agentQuery, values: agentValues } = this.buildSelectQuery(
+			"agents",
+			{ id: params.agentId, user_id: userId },
 		);
+		const agent = await this.runQuery<Agent>(agentQuery, agentValues, true);
 
 		if (!agent) {
 			throw new AssistantError(
@@ -53,9 +53,13 @@ export class SharedAgentRepository extends BaseRepository {
 			);
 		}
 
+		const {
+			query: existingSharedQuery,
+			values: existingSharedValues,
+		} = this.buildSelectQuery("shared_agents", { agent_id: params.agentId });
 		const existingShared = await this.runQuery<SharedAgent>(
-			"SELECT * FROM shared_agents WHERE agent_id = ?",
-			[params.agentId],
+			existingSharedQuery,
+			existingSharedValues,
 			true,
 		);
 
@@ -522,11 +526,11 @@ export class SharedAgentRepository extends BaseRepository {
 			>
 		>,
 	): Promise<void> {
-		const sharedAgent = await this.runQuery<SharedAgent>(
-			"SELECT * FROM shared_agents WHERE id = ? AND user_id = ?",
-			[sharedAgentId, userId],
-			true,
-		);
+		const { query, values } = this.buildSelectQuery("shared_agents", {
+			id: sharedAgentId,
+			user_id: userId,
+		});
+		const sharedAgent = await this.runQuery<SharedAgent>(query, values, true);
 
 		if (!sharedAgent) {
 			throw new AssistantError(
@@ -535,46 +539,43 @@ export class SharedAgentRepository extends BaseRepository {
 			);
 		}
 
-		const sets: string[] = [];
-		const params: any[] = [];
+		const allowedFields = [
+			"name",
+			"description",
+			"avatar_url",
+			"category",
+			"tags",
+		] as const;
 
-		if (updates.name !== undefined) {
-			sets.push("name = ?");
-			params.push(updates.name);
+		const result = this.buildUpdateQuery(
+			"shared_agents",
+			updates,
+			[...allowedFields],
+			"id = ?",
+			[sharedAgentId],
+			{
+				jsonFields: ["tags"],
+			},
+		);
+		if (!result) {
+			return;
 		}
-		if (updates.description !== undefined) {
-			sets.push("description = ?");
-			params.push(updates.description);
-		}
-		if (updates.avatar_url !== undefined) {
-			sets.push("avatar_url = ?");
-			params.push(updates.avatar_url);
-		}
-		if (updates.category !== undefined) {
-			sets.push("category = ?");
-			params.push(updates.category);
-		}
-		if (updates.tags !== undefined) {
-			sets.push("tags = ?");
-			params.push(JSON.stringify(updates.tags));
-		}
-
-		if (sets.length === 0) return;
-
-		params.push(sharedAgentId);
-		const sql = `UPDATE shared_agents SET ${sets.join(", ")}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
-		await this.executeRun(sql, params);
+		const queryWithTimestamp = result.query.replace(
+			"updated_at = datetime('now')",
+			"updated_at = CURRENT_TIMESTAMP",
+		);
+		await this.executeRun(queryWithTimestamp, result.values);
 	}
 
 	public async deleteSharedAgent(
 		userId: number,
 		sharedAgentId: string,
 	): Promise<void> {
-		const sharedAgent = await this.runQuery<SharedAgent>(
-			"SELECT * FROM shared_agents WHERE id = ? AND user_id = ?",
-			[sharedAgentId, userId],
-			true,
-		);
+		const { query, values } = this.buildSelectQuery("shared_agents", {
+			id: sharedAgentId,
+			user_id: userId,
+		});
+		const sharedAgent = await this.runQuery<SharedAgent>(query, values, true);
 
 		if (!sharedAgent) {
 			throw new AssistantError(
@@ -583,17 +584,26 @@ export class SharedAgentRepository extends BaseRepository {
 			);
 		}
 
-		await this.executeRun(
-			"DELETE FROM agent_ratings WHERE shared_agent_id = ?",
-			[sharedAgentId],
-		);
-		await this.executeRun(
-			"DELETE FROM agent_installs WHERE shared_agent_id = ?",
-			[sharedAgentId],
-		);
-		await this.executeRun("DELETE FROM shared_agents WHERE id = ?", [
-			sharedAgentId,
-		]);
+		const deleteRatings = this.buildDeleteQuery("agent_ratings", {
+			shared_agent_id: sharedAgentId,
+		});
+		if (deleteRatings.query) {
+			await this.executeRun(deleteRatings.query, deleteRatings.values);
+		}
+
+		const deleteInstalls = this.buildDeleteQuery("agent_installs", {
+			shared_agent_id: sharedAgentId,
+		});
+		if (deleteInstalls.query) {
+			await this.executeRun(deleteInstalls.query, deleteInstalls.values);
+		}
+
+		const deleteSharedAgent = this.buildDeleteQuery("shared_agents", {
+			id: sharedAgentId,
+		});
+		if (deleteSharedAgent.query) {
+			await this.executeRun(deleteSharedAgent.query, deleteSharedAgent.values);
+		}
 	}
 
 	public async setFeatured(

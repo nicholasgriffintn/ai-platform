@@ -19,10 +19,17 @@ export class MagicLinkNonceRepository extends BaseRepository {
 		expiresAt: Date,
 	): Promise<void> {
 		const expiresTimestamp = Math.floor(expiresAt.getTime() / 1000);
-		await this.executeRun(
-			"INSERT INTO magic_link_nonce (nonce, user_id, expires_at) VALUES (?, ?, ?)",
-			[nonce, userId, expiresTimestamp],
-		);
+		const insert = this.buildInsertQuery("magic_link_nonce", {
+			nonce,
+			user_id: userId,
+			expires_at: expiresTimestamp,
+		});
+
+		if (!insert) {
+			return;
+		}
+
+		await this.executeRun(insert.query, insert.values);
 	}
 
 	/**
@@ -50,9 +57,10 @@ export class MagicLinkNonceRepository extends BaseRepository {
 	 * @param nonce - The nonce value
 	 */
 	public async deleteNonce(nonce: string): Promise<void> {
-		await this.executeRun("DELETE FROM magic_link_nonce WHERE nonce = ?", [
+		const { query, values } = this.buildDeleteQuery("magic_link_nonce", {
 			nonce,
-		]);
+		});
+		await this.executeRun(query, values);
 	}
 
 	/**

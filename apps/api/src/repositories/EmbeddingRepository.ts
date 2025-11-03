@@ -5,26 +5,32 @@ export class EmbeddingRepository extends BaseRepository {
 		id: string,
 		type?: string,
 	): Promise<Record<string, unknown> | null> {
-		const query = type
-			? "SELECT id, metadata, type, title, content FROM embedding WHERE id = ?1 AND type = ?2"
-			: "SELECT id, metadata, type, title, content FROM embedding WHERE id = ?1";
+		const conditions: Record<string, unknown> = { id };
+		if (type) {
+			conditions.type = type;
+		}
 
-		const params = type ? [id, type] : [id];
+		const { query, values } = this.buildSelectQuery(
+			"embedding",
+			conditions,
+			{
+				columns: ["id", "metadata", "type", "title", "content"],
+			},
+		);
 
-		const result = this.runQuery<Record<string, unknown>>(query, params, true);
-		return result;
+		return this.runQuery<Record<string, unknown>>(query, values, true);
 	}
 
 	public async getEmbeddingIdByType(
 		id: string,
 		type: string,
 	): Promise<Record<string, unknown> | null> {
-		const result = this.runQuery<Record<string, unknown>>(
-			"SELECT id FROM embedding WHERE id = ?1 AND type = ?2",
-			[id, type],
-			true,
+		const { query, values } = this.buildSelectQuery(
+			"embedding",
+			{ id, type },
+			{ columns: ["id"] },
 		);
-		return result;
+		return this.runQuery<Record<string, unknown>>(query, values, true);
 	}
 
 	public async insertEmbedding(
@@ -34,13 +40,27 @@ export class EmbeddingRepository extends BaseRepository {
 		content: string,
 		type: string,
 	): Promise<void> {
-		await this.executeRun(
-			"INSERT INTO embedding (id, metadata, title, content, type) VALUES (?1, ?2, ?3, ?4, ?5)",
-			[id, JSON.stringify(metadata), title, content, type],
+		const insert = this.buildInsertQuery(
+			"embedding",
+			{
+				id,
+				metadata,
+				title,
+				content,
+				type,
+			},
+			{ jsonFields: ["metadata"] },
 		);
+
+		if (!insert) {
+			return;
+		}
+
+		await this.executeRun(insert.query, insert.values);
 	}
 
 	public async deleteEmbedding(id: string): Promise<void> {
-		await this.executeRun("DELETE FROM embedding WHERE id = ?1", [id]);
+		const { query, values } = this.buildDeleteQuery("embedding", { id });
+		await this.executeRun(query, values);
 	}
 }

@@ -38,23 +38,19 @@ export class ConversationRepository extends BaseRepository {
 	public async getConversation(
 		conversationId: string,
 	): Promise<Record<string, unknown> | null> {
-		const result = this.runQuery<Record<string, unknown>>(
-			"SELECT * FROM conversation WHERE id = ?",
-			[conversationId],
-			true,
-		);
-		return result;
+		const { query, values } = this.buildSelectQuery("conversation", {
+			id: conversationId,
+		});
+		return this.runQuery<Record<string, unknown>>(query, values, true);
 	}
 
 	public async getConversationByShareId(
 		shareId: string,
 	): Promise<Record<string, unknown> | null> {
-		const result = this.runQuery<Record<string, unknown>>(
-			"SELECT * FROM conversation WHERE share_id = ?",
-			[shareId],
-			true,
-		);
-		return result;
+		const { query, values } = this.buildSelectQuery("conversation", {
+			share_id: shareId,
+		});
+		return this.runQuery<Record<string, unknown>>(query, values, true);
 	}
 
 	public async getUserConversations(
@@ -128,37 +124,40 @@ export class ConversationRepository extends BaseRepository {
 			"share_id",
 		];
 
-		const setClause = allowedFields
-			.filter((field) => updates[field] !== undefined)
-			.map((field) => `${field} = ?`)
-			.join(", ");
+		const result = this.buildUpdateQuery(
+			"conversation",
+			updates,
+			allowedFields,
+			"id = ?",
+			[conversationId],
+		);
 
-		if (!setClause.length) {
+		if (!result) {
 			return null;
 		}
 
-		const values = allowedFields
-			.filter((field) => updates[field] !== undefined)
-			.map((field) => updates[field]);
-
-		values.push(conversationId);
-
-		return this.executeRun(
-			`UPDATE conversation 
-       SET ${setClause}, updated_at = datetime('now')
-       WHERE id = ?`,
-			values,
-		);
+		return this.executeRun(result.query, result.values);
 	}
 
 	public async deleteConversation(conversationId: string): Promise<void> {
-		await this.executeRun("DELETE FROM message WHERE conversation_id = ?", [
-			conversationId,
-		]);
+		const deleteMessages = this.buildDeleteQuery("message", {
+			conversation_id: conversationId,
+		});
 
-		await this.executeRun("DELETE FROM conversation WHERE id = ?", [
-			conversationId,
-		]);
+		if (deleteMessages.query) {
+			await this.executeRun(deleteMessages.query, deleteMessages.values);
+		}
+
+		const deleteConversation = this.buildDeleteQuery("conversation", {
+			id: conversationId,
+		});
+
+		if (deleteConversation.query) {
+			await this.executeRun(
+				deleteConversation.query,
+				deleteConversation.values,
+			);
+		}
 	}
 
 	public async updateConversationAfterMessage(
