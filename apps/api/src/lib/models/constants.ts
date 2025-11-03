@@ -20,6 +20,7 @@ export const availableCapabilities = [
 	"video_generation",
 	"text-to-audio",
 	"ocr",
+	"video",
 ] as const;
 
 export const availableModelTypes = [

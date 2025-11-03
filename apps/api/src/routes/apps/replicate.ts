@@ -63,7 +63,11 @@ const replicateModelMetadata: Record<
 		featured: true,
 		tags: ["lightning", "fast", "sdxl"],
 	},
-	"replicate-tencent-hunyuan-video": {
+	"replicate-sora-2": {
+		featured: true,
+		tags: ["video"],
+	},
+	"replicate-veo-3-1": {
 		featured: true,
 		tags: ["video"],
 	},
