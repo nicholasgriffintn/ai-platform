@@ -244,7 +244,6 @@ export default function NewArticleAnalysisPage() {
 					</Button>
 				</div>
 			}
-			isBeta={true}
 		>
 			<div className="max-w-3xl mx-auto">
 				{processingError && (

@@ -29,7 +29,6 @@ const ReplicatePredictionDetailRoute: FC = () => {
 					/>
 				</PageHeader>
 			}
-			isBeta={true}
 		>
 			<ReplicatePredictionDetail predictionId={id || ""} />
 		</PageShell>

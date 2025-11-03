@@ -121,7 +121,6 @@ export default function PodcastDetailPage() {
 					{id && <ShareButton appId={id} />}
 				</div>
 			}
-			isBeta={true}
 		>
 			<PodcastView podcast={podcast} />
 		</PageShell>

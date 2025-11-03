@@ -26,7 +26,6 @@ const ReplicateModelDetailRoute: FC = () => {
 					<BackLink to="/apps/replicate" label="Back to Models" />
 				</PageHeader>
 			}
-			isBeta={true}
 		>
 			<ReplicateModelDetail modelId={id || ""} />
 		</PageShell>

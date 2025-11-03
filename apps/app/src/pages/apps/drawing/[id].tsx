@@ -70,7 +70,6 @@ export default function DrawingDetailPage() {
 					{id && <ShareButton appId={id} />}
 				</div>
 			}
-			isBeta={true}
 		>
 			<DrawingView drawing={drawing} />
 		</PageShell>

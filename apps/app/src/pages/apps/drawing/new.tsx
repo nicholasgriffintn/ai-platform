@@ -204,7 +204,6 @@ export default function NewDrawingPage() {
 					<h1 className="text-2xl font-bold">Create New Drawing</h1>
 				</PageHeader>
 			}
-			isBeta={true}
 		>
 			<div className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
 				<p>Draw any shape, object, or scene in the canvas below.</p>

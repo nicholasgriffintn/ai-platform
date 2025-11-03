@@ -332,7 +332,6 @@ export default function NewPodcastPage() {
 					<PageTitle title="Upload New Podcast" />
 				</PageHeader>
 			}
-			isBeta={true}
 		>
 			<div className="max-w-3xl mx-auto">
 				<ProgressStepper currentStep={currentStep} />

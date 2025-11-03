@@ -39,7 +39,6 @@ export default function DynamicAppResponsesPage() {
 					<PageTitle title="Saved Dynamic App Responses" />
 				</PageHeader>
 			}
-			isBeta={true}
 		>
 			{isLoading ? (
 				<div className="flex justify-center items-center min-h-[400px]">

@@ -91,7 +91,6 @@ export default function NoteDetailPage() {
 					: "max-w-4xl mx-auto flex flex-col h-[calc(100vh-8rem)]",
 			)}
 			headerContent={<h1 className="sr-only">Edit Note</h1>}
-			isBeta={true}
 		>
 			<NoteEditor
 				noteId={id!}

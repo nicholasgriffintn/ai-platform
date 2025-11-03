@@ -48,7 +48,6 @@ export default function ArticlesReportsListPage() {
 					<PageTitle title="Article Reports" />
 				</PageHeader>
 			}
-			isBeta={true}
 		>
 			{isLoading ? (
 				<div className={cn("flex justify-center items-center min-h-[400px]")}>

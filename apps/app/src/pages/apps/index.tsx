@@ -15,7 +15,6 @@ const DynamicAppsRoute: FC = () => {
 	return (
 		<PageShell
 			sidebarContent={<AppsSidebarContent isHome={true} />}
-			isBeta={true}
 		>
 			<DynamicApps />
 		</PageShell>

@@ -95,7 +95,6 @@ export default function DynamicAppResponsePage() {
 				appSchema ? `${appSchema.name} - Response` : "Dynamic App Response"
 			}
 			className="bg-off-white dark:bg-zinc-900"
-			isBeta={true}
 			headerContent={
 				<PageHeader>
 					<BackLink to="/apps" label="Back to Apps" />

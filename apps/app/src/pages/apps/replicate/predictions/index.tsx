@@ -25,7 +25,6 @@ const ReplicatePredictionsRoute: FC = () => {
 					<PageTitle title="My Predictions" />
 				</PageHeader>
 			}
-			isBeta={true}
 		>
 			<ReplicatePredictions />
 		</PageShell>

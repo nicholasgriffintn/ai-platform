@@ -29,7 +29,6 @@ const ReplicateModelsRoute: FC = () => {
 					<PageTitle title="Replicate Models" />
 				</PageHeader>
 			}
-			isBeta={true}
 		>
 			<ReplicateModels />
 		</PageShell>

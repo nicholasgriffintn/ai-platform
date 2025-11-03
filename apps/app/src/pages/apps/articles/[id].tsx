@@ -116,7 +116,6 @@ export default function ArticleReportDetailPage() {
 					{id && <ShareButton appId={id} />}
 				</div>
 			}
-			isBeta={true}
 		>
 			<ArticleView report={report} sourceIds={sourceIds} />
 		</PageShell>

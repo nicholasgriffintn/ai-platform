@@ -46,7 +46,6 @@ export default function PodcastsPage() {
 					</Button>
 				</div>
 			}
-			isBeta={true}
 		>
 			{isLoading ? (
 				<div className="flex justify-center items-center min-h-[400px]">
