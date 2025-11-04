@@ -6,7 +6,11 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "services/tasks" });
 
 export interface TaskDefinition {
-	task_type: "memory_synthesis";
+	task_type:
+		| "memory_synthesis"
+		| "user_automation"
+		| "cleanup"
+		| "analytics";
 	user_id?: number;
 	task_data: Record<string, any>;
 	schedule_type?: "immediate" | "scheduled" | "recurring" | "event_triggered";
