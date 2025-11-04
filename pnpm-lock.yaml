@@ -37,7 +37,7 @@ importers:
         version: 22.0.1
       '@scalar/hono-api-reference':
         specifier: ^0.9.0
-        version: 0.9.22(hono@4.10.4)
+        version: 0.9.23(hono@4.10.4)
       '@simplewebauthn/server':
         specifier: ^13.1.1
         version: 13.1.2
@@ -692,8 +692,8 @@ packages:
   '@cloudflare/workers-types@4.20251014.0':
     resolution: {integrity: sha512-tEW98J/kOa0TdylIUOrLKRdwkUw0rvvYVlo+Ce0mqRH3c8kSoxLzUH9gfCvwLe0M89z1RkzFovSKAW2Nwtyn3w==}
 
-  '@coinbase/cdp-sdk@1.38.4':
-    resolution: {integrity: sha512-xVvfluaGt0NxNmjElP3C1yI6KnsGwihabdXj+qNtjjsSmd/Ha2V3gAiCyNrrYOqIORn4mpC2jgu2fUFEDaMpaw==}
+  '@coinbase/cdp-sdk@1.38.5':
+    resolution: {integrity: sha512-j8mvx1wMox/q2SjB7C09HtdRXVOpGpfkP7nG4+OjdowPj8pmQ03rigzycd86L8mawl6TUPXdm41YSQVmtc8SzQ==}
 
   '@coinbase/wallet-sdk@3.9.3':
     resolution: {integrity: sha512-N/A2DRIf0Y3PHc1XAMvbBUu4zisna6qAdqABMZwBMNEfWrXpAwx16pZGkYCLGE+Rvv1edbcB2LYDRnACNcmCiw==}
@@ -2726,22 +2726,22 @@ packages:
     resolution: {integrity: sha512-6ORQfwtEJYpalCeVO21L4XXGSdbEMfyp2hEv6cP82afKXSwvse6d3sdelgaPWUxHIsFRkWvHDdzh8IyyKHZKxw==}
     engines: {node: '>=16'}
 
-  '@scalar/core@0.3.20':
-    resolution: {integrity: sha512-bIlrePx41pSvjDcaJPa9YVVhbSm0N9SKQm2Fzl489S0bUVToyXIQtMFVR4i+BmXGjOcATm/66ELW4vdXRjHoRA==}
+  '@scalar/core@0.3.21':
+    resolution: {integrity: sha512-jwBWUHxxPf30V+ddrSyiDPXYPrC2Z2/Tch8mNPphhd3gi1Dr4Bgd6aMFVIEqlzdOInfTR0pbignifPnQL4GTeA==}
     engines: {node: '>=20'}
 
-  '@scalar/hono-api-reference@0.9.22':
-    resolution: {integrity: sha512-utIz4F6YZj3QU/9HK4P1wIcHY8ceMbL7w+VahFbnmZbE3Gy+haaaHfhZOs2nAfdx1cKOhkm11/inZTtw8+I2bw==}
+  '@scalar/hono-api-reference@0.9.23':
+    resolution: {integrity: sha512-Vi7ypOwJO7x1+lVFmh4z6ljqxMThGUWhCA3Z4eBenS8sv/eSYmucI/on1AjItqt2yYBNTZcAxhN8GsCeECR5FA==}
     engines: {node: '>=20'}
     peerDependencies:
-      hono: ^4.0.0
+      hono: ^4.10.3
 
-  '@scalar/openapi-types@0.5.0':
-    resolution: {integrity: sha512-HJBcLa+/mPP+3TCcQngj/iW5UqynRosOQdEETXjmdy6Ngw8wBjwIcT6C86J5jufJ6sI8++HYnt+e7pAvp5FO6A==}
+  '@scalar/openapi-types@0.5.1':
+    resolution: {integrity: sha512-8g7s9lPolyDFtijyh3Ob459tpezPuZbkXoFgJwBTHjPZ7ap+TvOJTvLk56CFwxVBVz2BxCzWJqxYyy3FUdeLoA==}
     engines: {node: '>=20'}
 
-  '@scalar/types@0.3.2':
-    resolution: {integrity: sha512-+X10CCvG57nAqYbTGteiSzRFQcMYm7DLfCRMeEfiWQ9Bq2ladat17XsMSvkvwcfpOSlsoepWf3P5dErERUSOQQ==}
+  '@scalar/types@0.4.0':
+    resolution: {integrity: sha512-vOD1GZez7kPdVA+UQit05QE9dbALfevhK9kqRTsqcPX7FvvZ9eQWSNl1GKmKtmRiAZGThv2agM5AvHRxkH2JSw==}
     engines: {node: '>=20'}
 
   '@scure/base@1.1.9':
@@ -7691,7 +7691,7 @@ snapshots:
 
   '@base-org/account@2.4.0(@types/react@19.2.2)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react@19.2.0)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.0))(utf-8-validate@5.0.10)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.1.12)':
     dependencies:
-      '@coinbase/cdp-sdk': 1.38.4(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      '@coinbase/cdp-sdk': 1.38.5(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@noble/hashes': 1.4.0
       clsx: 1.2.1
       eventemitter3: 5.0.1
@@ -7744,7 +7744,7 @@ snapshots:
 
   '@cloudflare/workers-types@4.20251014.0': {}
 
-  '@coinbase/cdp-sdk@1.38.4(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
+  '@coinbase/cdp-sdk@1.38.5(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
     dependencies:
       '@solana-program/system': 0.8.1(@solana/kit@3.0.3(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)))
       '@solana-program/token': 0.6.0(@solana/kit@3.0.3(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)))
@@ -9828,22 +9828,22 @@ snapshots:
   '@safe-global/safe-gateway-typescript-sdk@3.23.1':
     optional: true
 
-  '@scalar/core@0.3.20':
+  '@scalar/core@0.3.21':
     dependencies:
-      '@scalar/types': 0.3.2
+      '@scalar/types': 0.4.0
 
-  '@scalar/hono-api-reference@0.9.22(hono@4.10.4)':
+  '@scalar/hono-api-reference@0.9.23(hono@4.10.4)':
     dependencies:
-      '@scalar/core': 0.3.20
+      '@scalar/core': 0.3.21
       hono: 4.10.4
 
-  '@scalar/openapi-types@0.5.0':
+  '@scalar/openapi-types@0.5.1':
     dependencies:
       zod: 4.1.11
 
-  '@scalar/types@0.3.2':
+  '@scalar/types@0.4.0':
     dependencies:
-      '@scalar/openapi-types': 0.5.0
+      '@scalar/openapi-types': 0.5.1
       nanoid: 5.1.5
       type-fest: 5.0.0
       zod: 4.1.11
