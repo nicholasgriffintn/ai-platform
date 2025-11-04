@@ -1,5 +1,7 @@
 import { BaseRepository } from "./BaseRepository";
 import type { Task, TaskExecution } from "~/lib/database/schema";
+import { safeParseJson } from "~/utils/json";
+
 import { generateId } from "~/utils/id";
 
 export interface CreateTaskParams {
@@ -60,7 +62,13 @@ export class TaskRepository extends BaseRepository {
 
 	public async getTaskById(taskId: string): Promise<Task | null> {
 		const { query, values } = this.buildSelectQuery("tasks", { id: taskId });
-		return this.runQuery<Task>(query, values, true);
+		const result = await this.runQuery<Task>(query, values, true);
+		if (!result) return null;
+		return {
+			...result,
+			task_data: result.task_data ? safeParseJson(result.task_data) : null,
+			metadata: result.metadata ? safeParseJson(result.metadata) : null,
+		};
 	}
 
 	public async getTasksByUserId(userId: number, limit = 50): Promise<Task[]> {
@@ -70,7 +78,18 @@ export class TaskRepository extends BaseRepository {
 			{ orderBy: "created_at DESC", limit },
 		);
 		const result = await this.runQuery<Task>(query, values);
-		return result || [];
+
+		if (!result) {
+			return [];
+		}
+
+		return Array.isArray(result)
+			? result.map((task) => ({
+					...task,
+					task_data: task.task_data ? safeParseJson(task.task_data) : null,
+					metadata: task.metadata ? safeParseJson(task.metadata) : null,
+				}))
+			: [];
 	}
 
 	public async getPendingTasks(limit = 10): Promise<Task[]> {
