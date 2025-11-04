@@ -37,6 +37,12 @@ export class TaskExecutor {
 			try {
 				const result = await handler.handle(message, this.env);
 
+				if (result.status === "error") {
+					throw new Error(
+						result.message || "Unknown error during task execution",
+					);
+				}
+
 				const executionTime = Date.now() - startTime;
 
 				await this.recordExecutionSuccess(executionId, executionTime, result);

@@ -16,9 +16,9 @@ interface CategorizedMemories {
 export class MemorySynthesisHandler implements TaskHandler {
 	public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
 		try {
-			const { user_id, namespace = "global" } = message.task_data;
+			const { namespace = "global" } = message.task_data;
 
-			if (!user_id) {
+			if (!message.user_id) {
 				return {
 					status: "error",
 					message: "user_id is required for memory synthesis",
@@ -28,7 +28,9 @@ export class MemorySynthesisHandler implements TaskHandler {
 			const memoryRepository = new MemoryRepository(env);
 			const memorySynthesisRepository = new MemorySynthesisRepository(env);
 
-			const memories = await memoryRepository.getMemoriesByUserId(user_id);
+			const memories = await memoryRepository.getMemoriesByUserId(
+				message.user_id,
+			);
 
 			const activeMemories = memories.filter(
 				(m) =>
@@ -46,7 +48,10 @@ export class MemorySynthesisHandler implements TaskHandler {
 			}
 
 			const existingSynthesis =
-				await memorySynthesisRepository.getActiveSynthesis(user_id, namespace);
+				await memorySynthesisRepository.getActiveSynthesis(
+					message.user_id,
+					namespace,
+				);
 
 			const categorized = this.categorizeMemories(activeMemories);
 
@@ -57,7 +62,7 @@ export class MemorySynthesisHandler implements TaskHandler {
 			);
 
 			const synthesisRecord = await memorySynthesisRepository.createSynthesis({
-				user_id,
+				user_id: message.user_id,
 				namespace,
 				synthesis_text: synthesis,
 				memory_ids: activeMemories.map((m) => m.id),
@@ -77,7 +82,7 @@ export class MemorySynthesisHandler implements TaskHandler {
 			}
 
 			logger.info(
-				`Memory synthesis completed for user ${user_id}, synthesized ${activeMemories.length} memories`,
+				`Memory synthesis completed for user ${message.user_id}, synthesized ${activeMemories.length} memories`,
 			);
 
 			return {
