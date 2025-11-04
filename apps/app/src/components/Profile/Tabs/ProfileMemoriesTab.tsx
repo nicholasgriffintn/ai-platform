@@ -85,7 +85,9 @@ export function ProfileMemoriesTab() {
 		null,
 	);
 
-	const { triggerSynthesis, isTriggeringSynthesis } = useTasks();
+	const { triggerSynthesis, isTriggeringSynthesis } = useTasks({
+		shouldRefetch: false,
+	});
 	const { synthesis, isLoadingSynthesis, history, isLoadingHistory } =
 		useMemorySynthesis();
 	const {

@@ -35,7 +35,7 @@ interface GetMemorySynthesisResponse {
 	synthesis?: MemorySynthesis;
 }
 
-export function useTasks() {
+export function useTasks({ shouldRefetch = true }) {
 	const queryClient = useQueryClient();
 
 	const { data: tasksData, isLoading: isLoadingTasks } =
@@ -43,7 +43,7 @@ export function useTasks() {
 			queryKey: TASK_QUERY_KEYS.tasks,
 			queryFn: () => taskService.listTasks(),
 			staleTime: 1000 * 10, // 10 seconds
-			refetchInterval: 1000 * 30, // 30 seconds
+			refetchInterval: shouldRefetch ? 1000 * 30 : undefined, // 30 seconds
 		});
 
 	const triggerSynthesisMutation = useMutation<

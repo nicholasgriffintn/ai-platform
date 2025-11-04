@@ -46,7 +46,9 @@ function TaskItem({ task }: { task: Task }) {
 }
 
 export function ProfileTasksTab() {
-	const { tasks, isLoadingTasks } = useTasks();
+	const { tasks, isLoadingTasks } = useTasks({
+		shouldRefetch: true,
+	});
 
 	return (
 		<div>
