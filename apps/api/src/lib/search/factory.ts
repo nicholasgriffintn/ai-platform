@@ -5,6 +5,7 @@ import { ParallelSearchProvider } from "./parallel";
 import { PerplexityProvider } from "./perplexity";
 import { SerperProvider } from "./serper";
 import { TavilyProvider } from "./tavily";
+import { ExaSearchProvider } from "./exa";
 
 export class SearchProviderFactory {
 	static getProvider(
@@ -37,6 +38,8 @@ export class SearchProviderFactory {
 				return new ParallelSearchProvider(env, user);
 			case "duckduckgo":
 				return new DuckDuckGoProvider();
+			case "exa":
+				return new ExaSearchProvider(env, user);
 			default:
 				throw new AssistantError(`Unknown search provider: ${providerName}`);
 		}

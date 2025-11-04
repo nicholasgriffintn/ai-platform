@@ -1,16 +1,16 @@
-import { gatewayId } from "~/constants/app";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
 	IEnv,
 	IUser,
-	ParallelSearchResult,
+	ExaAnswerResult,
+	ExaSearchResult,
 	SearchOptions,
 	SearchProvider,
 	SearchResult,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-export class ParallelSearchProvider implements SearchProvider {
+export class ExaSearchProvider implements SearchProvider {
 	private env: IEnv;
 	private user?: IUser;
 	private apiKey?: string;
@@ -34,7 +34,7 @@ export class ParallelSearchProvider implements SearchProvider {
 			try {
 				const userApiKey = await this.userSettingsRepo.getProviderApiKey(
 					this.user.id,
-					"parallel",
+					"exa",
 				);
 				if (userApiKey) {
 					this.apiKey = userApiKey;
@@ -56,7 +56,7 @@ export class ParallelSearchProvider implements SearchProvider {
 		const envKey = this.env.PARALLEL_API_KEY;
 		if (!envKey) {
 			throw new AssistantError(
-				"PARALLEL_API_KEY is not set",
+				"EXA_API_KEY is not set",
 				ErrorType.CONFIGURATION_ERROR,
 			);
 		}
@@ -69,27 +69,28 @@ export class ParallelSearchProvider implements SearchProvider {
 		query: string,
 		options?: SearchOptions,
 	): Promise<SearchResult> {
-		if (!this.env.AI_GATEWAY_TOKEN) {
-			throw new AssistantError(
-				"AI_GATEWAY_TOKEN is not set",
-				ErrorType.CONFIGURATION_ERROR,
-			);
-		}
-
 		const apiKey = await this.resolveApiKey();
-		const providedQueries = options?.parallel_search_queries;
-		const searchQueries =
-			providedQueries && providedQueries.length > 0 ? providedQueries : [query];
-		const objective = options?.system_prompt || query;
-		const payload = {
-			objective,
-			search_queries: searchQueries,
-			processor: options?.parallel_processor || "base",
-			max_results: options?.max_results ?? 10,
-			max_chars_per_result: options?.parallel_max_chars_per_result ?? 6000,
-		};
 
-		const endpoint = `https://gateway.ai.cloudflare.com/v1/${this.env.ACCOUNT_ID}/${gatewayId}/parallel/v1beta/search`;
+		const payload = options?.include_answer
+			? {
+					query,
+					userLocation: options?.country,
+					text: options?.include_raw_content ? true : false,
+					systemPrompt: options?.system_prompt || "",
+				}
+			: {
+					query,
+					type: "auto",
+					userLocation: options?.country,
+					numResults: options?.max_results || 5,
+					contents: {
+						text: options?.include_raw_content ? true : false,
+					},
+				};
+
+		const endpoint = options.include_answer
+			? `https://api.exa.ai/answer`
+			: `https://api.exa.ai/search`;
 
 		try {
 			const response = await fetch(endpoint, {
@@ -97,12 +98,6 @@ export class ParallelSearchProvider implements SearchProvider {
 				headers: {
 					"Content-Type": "application/json",
 					"x-api-key": apiKey,
-					"cf-aig-authorization": this.env.AI_GATEWAY_TOKEN,
-					"cf-aig-metadata": JSON.stringify({
-						userId: this.user?.id,
-						email: this.user?.email,
-						provider: "parallel",
-					}),
 				},
 				body: JSON.stringify(payload),
 			});
@@ -115,10 +110,20 @@ export class ParallelSearchProvider implements SearchProvider {
 				};
 			}
 
-			const data = (await response.json()) as ParallelSearchResult;
+			const data = (await response.json()) as ExaSearchResult | ExaAnswerResult;
+			console.log(JSON.stringify(data, null, 2));
+
+			if ("citations" in data) {
+				return {
+					provider: "exa",
+					results: data.citations || [],
+					...data,
+				};
+			}
+
 			return {
-				provider: "parallel",
-				...data,
+				provider: "exa",
+				results: data.results || [],
 			};
 		} catch (error) {
 			return {

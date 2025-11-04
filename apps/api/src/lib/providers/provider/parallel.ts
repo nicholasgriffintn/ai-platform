@@ -2,11 +2,6 @@ import type { ChatCompletionParameters } from "~/types";
 import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 import { BaseProvider } from "./base";
 
-// TODO: Add other implementations?:
-// https://docs.parallel.ai/task-api/task-quickstart
-// https://docs.parallel.ai/findall-api/findall-quickstart
-// https://docs.parallel.ai/search/search-quickstart
-
 export class ParallelProvider extends BaseProvider {
 	name = "parallel";
 	supportsStreaming = true;

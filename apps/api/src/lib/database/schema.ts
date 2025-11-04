@@ -252,7 +252,7 @@ export const userSettings = sqliteTable(
 		}).default("workers"),
 		transcription_model: text().default("whisper"),
 		search_provider: text({
-			enum: ["duckduckgo", "tavily", "serper", "parallel", "perplexity"],
+			enum: ["duckduckgo", "tavily", "serper", "parallel", "perplexity", "exa"],
 		}),
 		tracking_enabled: integer({ mode: "boolean" }).default(true),
 		public_key: text(),

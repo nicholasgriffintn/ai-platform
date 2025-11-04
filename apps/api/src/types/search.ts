@@ -3,7 +3,8 @@ export type SearchProviderName =
 	| "tavily"
 	| "parallel"
 	| "duckduckgo"
-	| "perplexity";
+	| "perplexity"
+	| "exa";
 
 export interface SerperSearchResult {
 	provider: "serper";
@@ -90,6 +91,35 @@ export interface PerplexitySearchResult {
 	id?: string;
 }
 
+export interface ExaSearchResult {
+	provider: "exa";
+	results: Array<{
+		id: string;
+		title: string;
+		url: string;
+		snippet: string;
+		image?: string;
+		score?: number;
+		favicon?: string;
+		publishedDate?: string;
+	}>;
+}
+
+export interface ExaAnswerResult {
+	provider: "exa";
+	citations: Array<{
+		id: string;
+		title: string;
+		url: string;
+		snippet: string;
+		image?: string;
+		score?: number;
+		favicon?: string;
+		publishedDate?: string;
+	}>;
+	answer: string;
+}
+
 export interface SearchResultError {
 	status: "error";
 	error: string;
@@ -101,6 +131,8 @@ export type SearchResult =
 	| ParallelSearchResult
 	| DuckDuckGoSearchResult
 	| PerplexitySearchResult
+	| ExaSearchResult
+	| ExaAnswerResult
 	| SearchResultError;
 
 export interface SearchProvider {
@@ -123,7 +155,7 @@ export interface SearchOptions {
 	autocorrect?: boolean;
 	num?: number;
 	page?: number;
-	parallel_objective?: string;
+	system_prompt?: string;
 	parallel_search_queries?: string[];
 	parallel_processor?: string;
 	parallel_max_chars_per_result?: number;

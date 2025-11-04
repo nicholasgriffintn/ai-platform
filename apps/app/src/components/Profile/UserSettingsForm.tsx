@@ -602,10 +602,11 @@ export function UserSettingsForm({
 						<option value="tavily">Tavily</option>
 						<option value="serper">Serper</option>
 						<option value="perplexity">Perplexity</option>
-						<option value="parallel">Parallel Search</option>
+						<option value="parallel">Parallel</option>
+						<option value="exa">Exa</option>
 					</FormSelect>
 					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
-						Note: Premium providers (Tavily, Serper, Perplexity, Parallel)
+						Note: Premium providers (Tavily, Serper, Perplexity, Parallel, Exa)
 						require a Pro plan. You may also need to configure API keys in the
 						providers section.
 					</p>

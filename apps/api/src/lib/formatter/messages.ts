@@ -307,13 +307,6 @@ export class MessageFormatter {
 			case "ollama":
 			case "github-models":
 			case "parallel":
-				return [
-					{
-						role: "system",
-						content: system_prompt,
-					},
-					...messages,
-				] as Message[];
 			case "exa":
 				return [
 					{

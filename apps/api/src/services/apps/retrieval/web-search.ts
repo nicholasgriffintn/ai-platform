@@ -106,9 +106,10 @@ export async function performDeepWebSearch(
 	const rawSearchResult = searchData.result;
 	const searchResults = Array.isArray(searchData.results)
 		? searchData.results
-		: Array.isArray((rawSearchResult as any)?.results)
-			? (rawSearchResult as any).results
+		: Array.isArray(rawSearchResult?.results)
+			? rawSearchResult.results
 			: [];
+	const searchAnswer = rawSearchResult?.answer as string | undefined;
 	const providerUsed = searchData.provider as SearchProviderName | undefined;
 	const providerWarning = searchData.warning as string | undefined;
 
@@ -116,20 +117,29 @@ export async function performDeepWebSearch(
 		return {
 			title: result.title,
 			url: result.url,
-			content: result.content,
+			content:
+				result.content ||
+				result.snippet ||
+				result.excerpt ||
+				result.description ||
+				result.summary ||
+				result.title,
 			excerpts: result.excerpts || [],
 			score: result.score,
+			image: result.imageUrl || result.image || undefined,
+			favicon: result.favicon || undefined,
+			publishedDate:
+				result.publishedDate || result.date || result.last_updated || undefined,
 		};
 	});
-	const similarQuestions =
-		(similarQuestionsResponse as any)?.response?.questions ?? [];
+	const similarQuestions = similarQuestionsResponse?.response?.questions ?? [];
 
 	const completion_id_with_fallback = completion_id || generateId();
 	const new_completion_id = `${completion_id_with_fallback}-tutor`;
 
 	const answerContexts = sources
 		.map((source: any, index: number) => {
-			return `[[citation:${index}]] ${source.content}`;
+			return `${searchAnswer ? `[[answer]] ${searchAnswer}` : ""}[[citation:${index}]] ${source.content}`;
 		})
 		.join("\n\n");
 	const systemPrompt = webSearchAnswerSystemPrompt(answerContexts);
