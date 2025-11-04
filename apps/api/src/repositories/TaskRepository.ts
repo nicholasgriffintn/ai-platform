@@ -86,10 +86,14 @@ export class TaskRepository extends BaseRepository {
 		taskId: string,
 		params: UpdateTaskParams,
 	): Promise<Task | null> {
+		const fieldsToUpdate = Object.keys(params);
+
 		const update = this.buildUpdateQuery(
 			"tasks",
-			{ id: taskId },
-			params as Record<string, any>,
+			params as Record<string, unknown>,
+			fieldsToUpdate,
+			"id = ?",
+			[taskId],
 			{ returning: "*" },
 		);
 
@@ -146,16 +150,22 @@ export class TaskRepository extends BaseRepository {
 	): Promise<TaskExecution | null> {
 		const now = new Date().toISOString();
 
+		const updates = {
+			status,
+			completed_at: now,
+			execution_time_ms: executionTimeMs ?? null,
+			error_message: errorMessage ?? null,
+			result_data: resultData ? JSON.stringify(resultData) : null,
+		};
+
+		const fieldsToUpdate = Object.keys(updates);
+
 		const update = this.buildUpdateQuery(
 			"task_executions",
-			{ id: executionId },
-			{
-				status,
-				completed_at: now,
-				execution_time_ms: executionTimeMs ?? null,
-				error_message: errorMessage ?? null,
-				result_data: resultData ? JSON.stringify(resultData) : null,
-			},
+			updates as Record<string, unknown>,
+			fieldsToUpdate,
+			"id = ?",
+			[executionId],
 			{ jsonFields: ["result_data"], returning: "*" },
 		);
 

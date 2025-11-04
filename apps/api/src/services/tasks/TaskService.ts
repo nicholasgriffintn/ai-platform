@@ -1,7 +1,9 @@
 import type { IEnv } from "~/types";
 import type { TaskRepository } from "~/repositories/TaskRepository";
 import type { Task } from "~/lib/database/schema";
-import { logger } from "~/lib/log";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "services/tasks" });
 
 export interface TaskDefinition {
 	task_type: "memory_synthesis" | "user_automation" | "cleanup" | "analytics";

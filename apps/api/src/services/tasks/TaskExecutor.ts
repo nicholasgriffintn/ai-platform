@@ -2,8 +2,10 @@ import type { IEnv } from "~/types";
 import type { TaskMessage } from "./TaskService";
 import type { TaskHandler, TaskResult } from "./TaskHandler";
 import { TaskRepository } from "~/repositories/TaskRepository";
-import { logger } from "~/lib/log";
+import { getLogger } from "~/utils/logger";
 import { generateId } from "~/utils/id";
+
+const logger = getLogger({ prefix: "services/tasks/executor" });
 
 /**
  * TaskExecutor manages task execution lifecycle

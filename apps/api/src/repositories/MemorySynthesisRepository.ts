@@ -97,13 +97,19 @@ export class MemorySynthesisRepository extends BaseRepository {
 		oldSynthesisId: string,
 		newSynthesisId: string,
 	): Promise<boolean> {
+		const updates = {
+			is_active: false,
+			superseded_by: newSynthesisId,
+		};
+
+		const fieldsToUpdate = Object.keys(updates);
+
 		const update = this.buildUpdateQuery(
 			"memory_syntheses",
-			{ id: oldSynthesisId },
-			{
-				is_active: false,
-				superseded_by: newSynthesisId,
-			},
+			updates as Record<string, unknown>,
+			fieldsToUpdate,
+			"id = ?",
+			[oldSynthesisId],
 		);
 
 		if (!update) {

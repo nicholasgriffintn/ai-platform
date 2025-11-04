@@ -3,9 +3,11 @@ import type { TaskMessage } from "../TaskService";
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import { MemoryRepository } from "~/repositories/MemoryRepository";
 import { MemorySynthesisRepository } from "~/repositories/MemorySynthesisRepository";
-import { logger } from "~/lib/log";
-import { AIProviderFactory } from "~/lib/providers";
-import { getAuxiliaryModel } from "~/lib/models/aux";
+import { getLogger } from "~/utils/logger";
+import { AIProviderFactory } from "~/lib/providers/factory";
+import { getAuxiliaryModel } from "~/lib/models";
+
+const logger = getLogger({ prefix: "services/tasks/memory-synthesis" });
 
 interface CategorizedMemories {
 	[category: string]: Array<{ id: string; text: string; category: string }>;
@@ -33,10 +35,11 @@ export class MemorySynthesisHandler implements TaskHandler {
 			const memories = await memoryRepository.getMemoriesByUserId(user_id);
 
 			// Filter by namespace and active status
+			// Note: SQLite stores booleans as integers (0/1), so we need to check both
 			const activeMemories = memories.filter(
 				(m) =>
 					(m.namespace === namespace || !m.namespace) &&
-					(m.is_active === true || m.is_active === 1 || m.is_active === null),
+					(m.is_active === true || (m.is_active as any) === 1 || m.is_active === null),
 			);
 
 			if (activeMemories.length === 0) {
@@ -165,7 +168,8 @@ Format as a structured document with clear sections.`;
 			const auxiliaryModel = await getAuxiliaryModel(env);
 
 			const response = await provider.getResponse({
-				model: auxiliaryModel,
+				env,
+				model: auxiliaryModel.model,
 				messages: [{ role: "user", content: prompt }],
 				max_tokens: 2000,
 			});

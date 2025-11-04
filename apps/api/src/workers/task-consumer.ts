@@ -3,7 +3,9 @@ import type { TaskMessage } from "~/services/tasks/TaskService";
 import type { TaskHandler } from "~/services/tasks/TaskHandler";
 import { TaskExecutor } from "~/services/tasks/TaskExecutor";
 import { MemorySynthesisHandler } from "~/services/tasks/handlers/MemorySynthesisHandler";
-import { logger } from "~/lib/log";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "workers/task-consumer" });
 
 /**
  * Task Consumer Worker
