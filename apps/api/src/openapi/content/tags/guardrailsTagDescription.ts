@@ -109,7 +109,6 @@ const result = await guardrails.validateInput(message, userId, completionId);
 
 if (!result.isValid) {
 	// Handle violation
-	console.log(result.violations);
 }
 ~~~
 
@@ -122,7 +121,6 @@ const result = await guardrails.validateOutput(response, userId, completionId);
 
 if (!result.isValid) {
 	// Handle violation
-	console.log(result.violations);
 }
 ~~~
 

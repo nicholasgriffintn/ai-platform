@@ -111,7 +111,6 @@ export class ExaSearchProvider implements SearchProvider {
 			}
 
 			const data = (await response.json()) as ExaSearchResult | ExaAnswerResult;
-			console.log(JSON.stringify(data, null, 2));
 
 			if ("citations" in data) {
 				return {

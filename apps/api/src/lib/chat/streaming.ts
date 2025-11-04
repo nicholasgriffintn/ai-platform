@@ -848,7 +848,7 @@ export async function createStreamWithPostProcessing(
 										controller.enqueue(value);
 									}
 								} catch (error: any) {
-									console.log("Next stream error:", {
+									console.error("Next stream error:", {
 										error_message:
 											error instanceof Error ? error.message : "Unknown error",
 									});

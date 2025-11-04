@@ -145,7 +145,6 @@ async function suggestRefactoring(code, instruction) {
 		for (const line of lines) {
 			if (line === "data: [DONE]") break;
 			const json = JSON.parse(line.slice(6));
-			console.log(json.choices[0].delta?.content || "");
 		}
 	}
 }
