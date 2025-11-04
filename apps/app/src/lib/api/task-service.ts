@@ -88,7 +88,9 @@ class TaskService {
 
 			if (!response.ok) {
 				const errorData = await returnFetchedData<{ error?: string }>(response);
-				throw new Error(errorData.error || "Failed to trigger memory synthesis");
+				throw new Error(
+					errorData.error || "Failed to trigger memory synthesis",
+				);
 			}
 
 			return await returnFetchedData<CreateTaskResponse>(response);
@@ -136,9 +138,7 @@ class TaskService {
 				throw new Error("Failed to fetch synthesis history");
 			}
 
-			return await returnFetchedData<MemorySynthesisHistoryResponse>(
-				response,
-			);
+			return await returnFetchedData<MemorySynthesisHistoryResponse>(response);
 		} catch (error) {
 			console.error("Error fetching synthesis history:", error);
 			throw error;

@@ -1,11 +1,6 @@
 import { z } from "zod";
 
-export const TaskType = z.enum([
-	"memory_synthesis",
-	"user_automation",
-	"cleanup",
-	"analytics",
-]);
+export const TaskType = z.enum(["memory_synthesis"]);
 
 export const TaskStatus = z.enum([
 	"pending",

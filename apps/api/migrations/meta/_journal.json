@@ -253,6 +253,13 @@
       "when": 1762286479213,
       "tag": "0035_cuddly_wildside",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "6",
+      "when": 1762293620550,
+      "tag": "0036_green_juggernaut",
+      "breakpoints": true
     }
   ]
 }

@@ -762,6 +762,9 @@ export const taskExecutions = sqliteTable(
 		created_at: text()
 			.default(sql`(CURRENT_TIMESTAMP)`)
 			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 	},
 	(table) => ({
 		taskIdIdx: index("task_executions_task_id_idx").on(table.task_id),

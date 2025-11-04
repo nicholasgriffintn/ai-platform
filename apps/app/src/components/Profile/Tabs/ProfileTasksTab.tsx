@@ -1,10 +1,6 @@
 import {
 	Loader2,
 	Play,
-	CheckCircle2,
-	XCircle,
-	Clock,
-	AlertCircle,
 	Sparkles,
 	History,
 	ChevronDown,
@@ -20,36 +16,10 @@ import { Card } from "~/components/ui/Card";
 import { useTasks, useMemorySynthesis } from "~/hooks/useTasks";
 import { PageHeader } from "../../Core/PageHeader";
 import { PageTitle } from "../../Core/PageTitle";
-
-function getStatusIcon(status: string): React.ReactNode {
-	switch (status) {
-		case "completed":
-			return <CheckCircle2 size={16} className="text-green-600" />;
-		case "running":
-			return <Loader2 size={16} className="text-blue-600 animate-spin" />;
-		case "failed":
-			return <XCircle size={16} className="text-red-600" />;
-		case "pending":
-		case "queued":
-			return <Clock size={16} className="text-yellow-600" />;
-		case "cancelled":
-			return <AlertCircle size={16} className="text-gray-600" />;
-		default:
-			return <Clock size={16} />;
-	}
-}
+import { formatDate } from "~/lib/dates";
+import { getStatusIcon } from "~/components/ui/Status/icons";
 
 function TaskItem({ task }: { task: Task }) {
-	const formatDate = (dateString?: string): string => {
-		if (!dateString) return "N/A";
-		try {
-			const date = new Date(dateString);
-			return date.toLocaleString();
-		} catch (_e) {
-			return "Invalid Date";
-		}
-	};
-
 	const getTaskLabel = (task: Task): string => {
 		switch (task.task_type) {
 			case "memory_synthesis":
@@ -93,15 +63,6 @@ function SynthesisCard({
 }) {
 	const [isExpanded, setIsExpanded] = useState(!isHistory);
 
-	const formatDate = (dateString: string): string => {
-		try {
-			const date = new Date(dateString);
-			return date.toLocaleString();
-		} catch (_e) {
-			return "Invalid Date";
-		}
-	};
-
 	return (
 		<div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 bg-white dark:bg-zinc-800">
 			<div className="flex items-start justify-between">
@@ -109,7 +70,9 @@ function SynthesisCard({
 					<div className="flex items-center gap-2 mb-2">
 						<Sparkles size={16} className="text-purple-600" />
 						<span className="font-semibold text-zinc-900 dark:text-zinc-100">
-							{isHistory ? `Version ${synthesis.synthesis_version}` : "Active Memory Synthesis"}
+							{isHistory
+								? `Version ${synthesis.synthesis_version}`
+								: "Active Memory Synthesis"}
 						</span>
 						{!synthesis.is_active && (
 							<span className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -179,7 +142,6 @@ export function ProfileTasksTab() {
 			</PageHeader>
 
 			<div className="space-y-8">
-				{/* Trigger Memory Synthesis */}
 				<Card>
 					<div className="px-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
 						<h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
@@ -214,7 +176,6 @@ export function ProfileTasksTab() {
 					</div>
 				</Card>
 
-				{/* Active Synthesis */}
 				{synthesis && (
 					<Card>
 						<div className="px-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
@@ -237,7 +198,6 @@ export function ProfileTasksTab() {
 					</Card>
 				)}
 
-				{/* Recent Tasks */}
 				<Card>
 					<div className="px-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
 						<h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
@@ -270,7 +230,6 @@ export function ProfileTasksTab() {
 					</div>
 				</Card>
 
-				{/* Synthesis History */}
 				{history.length > 0 && (
 					<Card>
 						<div className="px-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">

@@ -11,7 +11,10 @@ import type {
 export const TASK_QUERY_KEYS = {
 	tasks: ["tasks"],
 	task: (taskId: string) => ["tasks", taskId],
-	synthesis: (namespace?: string) => ["memory-synthesis", namespace ?? "global"],
+	synthesis: (namespace?: string) => [
+		"memory-synthesis",
+		namespace ?? "global",
+	],
 	synthesisHistory: (namespace?: string) => [
 		"memory-synthesis-history",
 		namespace ?? "global",
@@ -35,16 +38,14 @@ interface GetMemorySynthesisResponse {
 export function useTasks() {
 	const queryClient = useQueryClient();
 
-	// Fetch all tasks
 	const { data: tasksData, isLoading: isLoadingTasks } =
 		useQuery<ListTasksResponse>({
 			queryKey: TASK_QUERY_KEYS.tasks,
 			queryFn: () => taskService.listTasks(),
-			staleTime: 1000 * 10, // 10 seconds - tasks change frequently
-			refetchInterval: 1000 * 30, // Auto-refetch every 30 seconds for status updates
+			staleTime: 1000 * 10, // 10 seconds
+			refetchInterval: 1000 * 30, // 30 seconds
 		});
 
-	// Trigger memory synthesis mutation
 	const triggerSynthesisMutation = useMutation<
 		CreateTaskResponse,
 		Error,
@@ -54,12 +55,10 @@ export function useTasks() {
 			return await taskService.triggerMemorySynthesis(data);
 		},
 		onSuccess: () => {
-			// Invalidate tasks to show the new synthesis task
 			queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.tasks });
 		},
 	});
 
-	// Cancel task mutation
 	const cancelTaskMutation = useMutation<{ success: boolean }, Error, string>({
 		mutationFn: async (taskId: string) => {
 			return await taskService.cancelTask(taskId);
@@ -85,7 +84,6 @@ export function useTasks() {
 export function useMemorySynthesis(namespace = "global") {
 	const queryClient = useQueryClient();
 
-	// Fetch active synthesis
 	const { data: synthesisData, isLoading: isLoadingSynthesis } =
 		useQuery<GetMemorySynthesisResponse>({
 			queryKey: TASK_QUERY_KEYS.synthesis(namespace),
@@ -93,7 +91,6 @@ export function useMemorySynthesis(namespace = "global") {
 			staleTime: 1000 * 60 * 5, // 5 minutes
 		});
 
-	// Fetch synthesis history
 	const { data: historyData, isLoading: isLoadingHistory } =
 		useQuery<MemorySynthesisHistoryResponse>({
 			queryKey: TASK_QUERY_KEYS.synthesisHistory(namespace),

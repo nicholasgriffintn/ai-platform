@@ -1,0 +1,1 @@
+ALTER TABLE `task_executions` ADD `updated_at` text DEFAULT (CURRENT_TIMESTAMP);
