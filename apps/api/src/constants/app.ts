@@ -18,6 +18,7 @@ export const ROUTES = {
 	AUDIO: "/audio",
 	DYNAMIC_APPS: "/dynamic-apps",
 	SEARCH: "/search",
+	TASKS: "/tasks",
 	TOOLS: "/tools",
 	UPLOADS: "/uploads",
 	USER: "/user",

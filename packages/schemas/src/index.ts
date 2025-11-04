@@ -15,6 +15,7 @@ export * from "./search";
 export * from "./shared-agents";
 export * from "./shared";
 export * from "./stripe";
+export * from "./tasks";
 export * from "./tools";
 export * from "./uploads";
 export * from "./user";

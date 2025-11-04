@@ -3,6 +3,7 @@ import type {
 	AnalyticsEngineDataset,
 	D1Database,
 	KVNamespace,
+	Queue,
 	Vectorize,
 } from "@cloudflare/workers-types";
 
@@ -20,6 +21,7 @@ export type IEnv = {
 	VECTOR_DB: Vectorize;
 	DB: D1Database;
 	CACHE: KVNamespace;
+	TASK_QUEUE?: Queue;
 	ASSETS_BUCKET: any;
 	ACCOUNT_ID: string;
 	ANTHROPIC_API_KEY?: string;

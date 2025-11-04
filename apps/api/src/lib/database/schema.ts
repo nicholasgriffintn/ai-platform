@@ -612,6 +612,10 @@ export const memories = sqliteTable(
 		conversation_id: text(),
 		metadata: text(),
 		vector_id: text(),
+		namespace: text().default("global"),
+		importance_score: integer().default(5),
+		last_accessed: text(),
+		is_active: integer({ mode: "boolean" }).default(true),
 		created_at: text()
 			.default(sql`(CURRENT_TIMESTAMP)`)
 			.notNull(),
@@ -626,6 +630,8 @@ export const memories = sqliteTable(
 			table.conversation_id,
 		),
 		vectorIdIdx: index("memories_vector_id_idx").on(table.vector_id),
+		namespaceIdx: index("memories_namespace_idx").on(table.namespace),
+		isActiveIdx: index("memories_is_active_idx").on(table.is_active),
 	}),
 );
 
@@ -686,3 +692,104 @@ export const memoryGroupMembers = sqliteTable(
 );
 
 export type MemoryGroupMember = typeof memoryGroupMembers.$inferSelect;
+
+export const tasks = sqliteTable(
+	"tasks",
+	{
+		id: text().primaryKey(),
+		task_type: text({
+			enum: ["memory_synthesis", "user_automation", "cleanup", "analytics"],
+		}).notNull(),
+		status: text({
+			enum: ["pending", "queued", "running", "completed", "failed", "cancelled"],
+		})
+			.notNull()
+			.default("pending"),
+		priority: integer().default(5),
+		user_id: integer().references(() => user.id),
+		task_data: text(),
+		schedule_type: text({
+			enum: ["immediate", "scheduled", "recurring", "event_triggered"],
+		}).default("immediate"),
+		scheduled_at: text(),
+		cron_expression: text(),
+		created_by: text({ enum: ["system", "user"] }).notNull(),
+		attempts: integer().default(0),
+		max_attempts: integer().default(3),
+		last_attempted_at: text(),
+		completed_at: text(),
+		error_message: text(),
+		metadata: text(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		userIdIdx: index("tasks_user_id_idx").on(table.user_id),
+		statusIdx: index("tasks_status_idx").on(table.status),
+		taskTypeIdx: index("tasks_task_type_idx").on(table.task_type),
+		scheduledAtIdx: index("tasks_scheduled_at_idx").on(table.scheduled_at),
+	}),
+);
+
+export type Task = typeof tasks.$inferSelect;
+
+export const taskExecutions = sqliteTable(
+	"task_executions",
+	{
+		id: text().primaryKey(),
+		task_id: text()
+			.notNull()
+			.references(() => tasks.id),
+		status: text({
+			enum: ["running", "completed", "failed"],
+		}).notNull(),
+		started_at: text().notNull(),
+		completed_at: text(),
+		execution_time_ms: integer(),
+		error_message: text(),
+		result_data: text(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+	},
+	(table) => ({
+		taskIdIdx: index("task_executions_task_id_idx").on(table.task_id),
+	}),
+);
+
+export type TaskExecution = typeof taskExecutions.$inferSelect;
+
+export const memorySyntheses = sqliteTable(
+	"memory_syntheses",
+	{
+		id: text().primaryKey(),
+		user_id: integer()
+			.notNull()
+			.references(() => user.id),
+		synthesis_text: text().notNull(),
+		synthesis_version: integer().default(1),
+		memory_ids: text(),
+		memory_count: integer().default(0),
+		tokens_used: integer(),
+		namespace: text().default("global"),
+		is_active: integer({ mode: "boolean" }).default(true),
+		superseded_by: text(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		userIdIdx: index("memory_syntheses_user_id_idx").on(table.user_id),
+		namespaceIdx: index("memory_syntheses_namespace_idx").on(table.namespace),
+		isActiveIdx: index("memory_syntheses_is_active_idx").on(table.is_active),
+	}),
+);
+
+export type MemorySynthesis = typeof memorySyntheses.$inferSelect;
