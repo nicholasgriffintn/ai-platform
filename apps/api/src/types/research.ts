@@ -1,4 +1,4 @@
-export type ResearchProviderName = "parallel";
+export type ResearchProviderName = "parallel" | "exa";
 
 export interface ParallelTaskCitation {
 	title?: string | null;
@@ -47,16 +47,54 @@ export interface ParallelResearchResult {
 	warnings?: string[] | null;
 }
 
+export interface ExaCitation {
+	title?: string | null;
+	url?: string | null;
+	author?: string | null;
+	publishedDate?: string | null;
+	text?: string | null;
+	highlights?: string[];
+}
+
+export interface ExaTaskRun {
+	research_id: string;
+	status: string;
+	model?: string;
+	created_at?: string;
+	completed_at?: string;
+	error?: string | null;
+	warnings?: string[] | null;
+}
+
+export interface ExaTaskOutput {
+	content?: unknown;
+	markdown?: string;
+	citations?: ExaCitation[];
+	usage?: {
+		searches?: number;
+		pagesRead?: number;
+		reasoningTokens?: number;
+	};
+}
+
+export interface ExaResearchResult {
+	provider: "exa";
+	run: ExaTaskRun;
+	output?: ExaTaskOutput;
+	poll?: ResearchPollMetadata;
+	warnings?: string[] | null;
+}
+
 export interface ResearchResultError {
 	status: "error";
 	error: string;
 }
 
-export type ResearchResult = ParallelResearchResult | ResearchResultError;
+export type ResearchResult = ParallelResearchResult | ExaResearchResult | ResearchResultError;
 
 export interface ResearchTaskHandle {
 	provider: ResearchProviderName;
-	run: ParallelTaskRun;
+	run: ParallelTaskRun | ExaTaskRun;
 }
 
 export interface ParallelTaskSchema {
@@ -76,10 +114,21 @@ export interface ResearchPollingOptions {
 	timeout_seconds?: number;
 }
 
+export interface ExaTaskSpec {
+	output_schema?: Record<string, unknown>;
+}
+
 export interface ResearchOptions {
+	// Parallel-specific options
 	processor?: string;
 	task_spec?: ParallelTaskSpec;
 	enable_events?: boolean;
+
+	// Exa-specific options
+	model?: string; // exa-research or exa-research-pro
+	exa_spec?: ExaTaskSpec;
+
+	// Common options
 	metadata?: Record<string, unknown>;
 	polling?: ResearchPollingOptions;
 }
@@ -91,7 +140,7 @@ export interface ResearchProvider {
 	): Promise<ResearchTaskHandle | ResearchResultError>;
 	fetchResearchRun(
 		runId: string,
-	): Promise<ParallelTaskRun | ResearchResultError>;
+	): Promise<ParallelTaskRun | ExaTaskRun | ResearchResultError>;
 	fetchResearchResult(
 		runId: string,
 		options?: ResearchOptions,

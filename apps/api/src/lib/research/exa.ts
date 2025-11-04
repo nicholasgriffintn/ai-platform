@@ -1,12 +1,9 @@
-import { gatewayId } from "~/constants/app";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
 	IEnv,
 	IUser,
-	ParallelTaskOutput,
-	ParallelTaskRun,
-	ParallelTaskSchema,
-	ParallelTaskSpec,
+	ExaTaskRun,
+	ExaTaskOutput,
 	ResearchOptions,
 	ResearchProvider,
 	ResearchResult,
@@ -15,23 +12,40 @@ import type {
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-type ParallelResultPayload = {
-	run: ParallelTaskRun;
-	output: ParallelTaskOutput;
+type ExaResultPayload = {
+	researchId: string;
+	status: string;
+	model?: string;
+	instructions?: string;
+	createdAt?: string;
+	completedAt?: string;
+	output?: unknown;
+	outputSchema?: Record<string, unknown>;
+	citations?: Array<{
+		title?: string;
+		url?: string;
+		author?: string;
+		publishedDate?: string;
+		text?: string;
+		highlights?: string[];
+	}>;
+	usage?: {
+		searches?: number;
+		pagesRead?: number;
+		reasoningTokens?: number;
+	};
+	error?: string;
 };
 
 const FAILURE_STATUSES = new Set(["failed", "cancelled", "errored", "stopped"]);
 
 const isResearchResultError = (
-	value: ParallelTaskRun | ResearchResultError,
+	value: ExaTaskRun | ResearchResultError,
 ): value is ResearchResultError => {
-	return (
-		value?.status === "error" &&
-		!Object.prototype.hasOwnProperty.call(value, "is_active")
-	);
+	return value?.status === "error" && !("research_id" in value);
 };
 
-export class ParallelResearchProvider implements ResearchProvider {
+export class ExaResearchProvider implements ResearchProvider {
 	private env: IEnv;
 	private user?: IUser;
 	private apiKey?: string;
@@ -55,7 +69,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 			try {
 				const userApiKey = await this.userSettingsRepo.getProviderApiKey(
 					this.user.id,
-					"parallel",
+					"exa",
 				);
 				if (userApiKey) {
 					this.apiKey = userApiKey;
@@ -74,10 +88,10 @@ export class ParallelResearchProvider implements ResearchProvider {
 			}
 		}
 
-		const envKey = this.env.PARALLEL_API_KEY;
+		const envKey = this.env.EXA_API_KEY;
 		if (!envKey) {
 			throw new AssistantError(
-				"PARALLEL_API_KEY is not set",
+				"EXA_API_KEY is not set",
 				ErrorType.CONFIGURATION_ERROR,
 			);
 		}
@@ -86,75 +100,18 @@ export class ParallelResearchProvider implements ResearchProvider {
 		return envKey;
 	}
 
-	private getAiGatewayEndpoint(path = ""): string {
-		return `https://gateway.ai.cloudflare.com/v1/${this.env.ACCOUNT_ID}/${gatewayId}/parallel/v1/tasks/runs${path}`;
-	}
-
-	private getParallelEndpoint(path = ""): string {
-		return `https://api.parallel.ai/v1/tasks/runs${path}`;
+	private getExaEndpoint(path = ""): string {
+		return `https://api.exa.ai/research/v1${path}`;
 	}
 
 	private async getHeaders(): Promise<Record<string, string>> {
 		const apiKey = await this.resolveApiKey();
-		if (!this.env.AI_GATEWAY_TOKEN) {
-			throw new AssistantError(
-				"AI_GATEWAY_TOKEN is not set",
-				ErrorType.CONFIGURATION_ERROR,
-			);
-		}
 
 		return {
 			"Content-Type": "application/json",
 			Accept: "application/json",
 			"x-api-key": apiKey,
-			"cf-aig-authorization": this.env.AI_GATEWAY_TOKEN,
-			"cf-aig-metadata": JSON.stringify({
-				userId: this.user?.id,
-				email: this.user?.email,
-				provider: "parallel",
-				feature: "research",
-			}),
 		};
-	}
-
-	private normaliseSchema(schema?: ParallelTaskSchema) {
-		if (!schema) {
-			return undefined;
-		}
-
-		const normalised: ParallelTaskSchema = {
-			type: schema.type,
-		};
-
-		if (schema.json_schema !== undefined) {
-			normalised.json_schema = schema.json_schema;
-		}
-
-		if (schema.description !== undefined) {
-			normalised.description = schema.description;
-		}
-
-		return normalised;
-	}
-
-	private normaliseTaskSpec(taskSpec?: ParallelTaskSpec) {
-		if (!taskSpec) {
-			return undefined;
-		}
-
-		const normalised: ParallelTaskSpec = {};
-
-		const inputSchema = this.normaliseSchema(taskSpec.input_schema);
-		if (inputSchema) {
-			normalised.input_schema = inputSchema;
-		}
-
-		const outputSchema = this.normaliseSchema(taskSpec.output_schema);
-		if (outputSchema) {
-			normalised.output_schema = outputSchema;
-		}
-
-		return Object.keys(normalised).length > 0 ? normalised : undefined;
 	}
 
 	private sleep(ms: number) {
@@ -167,25 +124,16 @@ export class ParallelResearchProvider implements ResearchProvider {
 	): Promise<ResearchTaskHandle | ResearchResultError> {
 		const headers = await this.getHeaders();
 		const payload: Record<string, unknown> = {
-			input,
-			processor: options?.processor ?? "ultra",
+			instructions: typeof input === "string" ? input : JSON.stringify(input),
+			model: options?.model ?? "exa-research",
 		};
 
-		const taskSpec = this.normaliseTaskSpec(options?.task_spec);
-		if (taskSpec) {
-			payload.task_spec = taskSpec;
-		}
-
-		if (options?.enable_events !== undefined) {
-			payload.enable_events = options.enable_events;
-		}
-
-		if (options?.metadata) {
-			payload.metadata = options.metadata;
+		if (options?.exa_spec?.output_schema) {
+			payload.outputSchema = options.exa_spec.output_schema;
 		}
 
 		try {
-			const endpoint = this.getAiGatewayEndpoint();
+			const endpoint = this.getExaEndpoint();
 			const response = await fetch(endpoint, {
 				method: "POST",
 				headers,
@@ -196,20 +144,27 @@ export class ParallelResearchProvider implements ResearchProvider {
 				const errorText = await response.text();
 				return {
 					status: "error",
-					error: `Error creating research task: ${errorText}`,
+					error: `Error creating Exa research task: ${errorText}`,
 				};
 			}
 
-			const run = (await response.json()) as ParallelTaskRun;
-			if (!run?.run_id) {
+			const result = (await response.json()) as ExaResultPayload;
+			if (!result?.researchId) {
 				return {
 					status: "error",
-					error: "Parallel research task creation failed: missing run_id",
+					error: "Exa research task creation failed: missing researchId",
 				};
 			}
 
+			const run: ExaTaskRun = {
+				research_id: result.researchId,
+				status: result.status || "pending",
+				model: result.model,
+				created_at: result.createdAt,
+			};
+
 			return {
-				provider: "parallel",
+				provider: "exa",
 				run,
 			};
 		} catch (error) {
@@ -217,19 +172,19 @@ export class ParallelResearchProvider implements ResearchProvider {
 				status: "error",
 				error:
 					error instanceof Error
-						? `Error creating research task: ${error.message}`
-						: "Error creating research task",
+						? `Error creating Exa research task: ${error.message}`
+						: "Error creating Exa research task",
 			};
 		}
 	}
 
 	async fetchResearchRun(
 		runId: string,
-	): Promise<ParallelTaskRun | ResearchResultError> {
+	): Promise<ExaTaskRun | ResearchResultError> {
 		const headers = await this.getHeaders();
 
 		try {
-			const endpoint = this.getParallelEndpoint(`/${runId}`);
+			const endpoint = this.getExaEndpoint(`/${runId}`);
 			const response = await fetch(endpoint, {
 				method: "GET",
 				headers,
@@ -238,31 +193,40 @@ export class ParallelResearchProvider implements ResearchProvider {
 			if (!response.ok) {
 				const errorText = await response.text();
 				console.error(
-					"ParallelResearchProvider: Error fetching research run:",
+					"ExaResearchProvider: Error fetching research run:",
 					errorText,
 				);
 				return {
 					status: "error",
-					error: `Failed to fetch research run: ${errorText}`,
+					error: `Failed to fetch Exa research run: ${errorText}`,
 				};
 			}
 
-			const run = (await response.json()) as ParallelTaskRun;
+			const result = (await response.json()) as ExaResultPayload;
+			const run: ExaTaskRun = {
+				research_id: result.researchId,
+				status: result.status,
+				model: result.model,
+				created_at: result.createdAt,
+				completed_at: result.completedAt,
+				error: result.error,
+			};
+
 			return run;
 		} catch (error) {
 			return {
 				status: "error",
 				error:
 					error instanceof Error
-						? `Error fetching research run: ${error.message}`
-						: "Error fetching research run",
+						? `Error fetching Exa research run: ${error.message}`
+						: "Error fetching Exa research run",
 			};
 		}
 	}
 
 	async fetchResearchResult(
 		runId: string,
-		options?: ResearchOptions,
+		_options?: ResearchOptions,
 	): Promise<ResearchResult> {
 		const runStatus = await this.fetchResearchRun(runId);
 
@@ -276,27 +240,20 @@ export class ParallelResearchProvider implements ResearchProvider {
 			return {
 				status: "error",
 				error:
-					runStatus.error ||
-					`Parallel task ${normalizedStatus} for run ${runId}`,
+					runStatus.error || `Exa task ${normalizedStatus} for run ${runId}`,
 			};
 		}
 
 		if (normalizedStatus !== "completed") {
 			return {
-				provider: "parallel",
+				provider: "exa",
 				run: runStatus,
 				warnings: runStatus.warnings ?? null,
 			};
 		}
 
 		const headers = await this.getHeaders();
-		const timeoutSeconds = Math.max(
-			1,
-			Math.min(60, options?.polling?.timeout_seconds ?? 5),
-		);
-		const endpoint = this.getParallelEndpoint(
-			`/${runId}/result?timeout=${timeoutSeconds}`,
-		);
+		const endpoint = this.getExaEndpoint(`/${runId}`);
 
 		try {
 			const response = await fetch(endpoint, {
@@ -305,27 +262,43 @@ export class ParallelResearchProvider implements ResearchProvider {
 			});
 
 			if (response.ok) {
-				const data = (await response.json()) as ParallelResultPayload;
+				const data = (await response.json()) as ExaResultPayload;
+
+				const run: ExaTaskRun = {
+					research_id: data.researchId,
+					status: data.status,
+					model: data.model,
+					created_at: data.createdAt,
+					completed_at: data.completedAt,
+					error: data.error,
+				};
+
+				const output: ExaTaskOutput = {
+					content: data.output,
+					citations: data.citations,
+					usage: data.usage,
+				};
+
 				return {
-					provider: "parallel",
-					run: data.run,
-					output: data.output,
-					warnings: data.run?.warnings ?? null,
+					provider: "exa",
+					run,
+					output,
+					warnings: null,
 				};
 			}
 
 			const errorText = await response.text();
 			return {
 				status: "error",
-				error: `Failed to fetch research result: ${errorText}`,
+				error: `Failed to fetch Exa research result: ${errorText}`,
 			};
 		} catch (error) {
 			return {
 				status: "error",
 				error:
 					error instanceof Error
-						? `Error fetching research result: ${error.message}`
-						: "Error fetching research result",
+						? `Error fetching Exa research result: ${error.message}`
+						: "Error fetching Exa research result",
 			};
 		}
 	}
@@ -351,9 +324,9 @@ export class ParallelResearchProvider implements ResearchProvider {
 
 			if (result.output) {
 				return {
-					provider: "parallel" as const,
-					run: result.run as ParallelTaskRun,
-					output: result.output as ParallelTaskOutput,
+					provider: "exa" as const,
+					run: result.run as ExaTaskRun,
+					output: result.output,
 					warnings: result.warnings ?? result.run?.warnings ?? null,
 					poll: {
 						attempts: attempt,
@@ -367,12 +340,11 @@ export class ParallelResearchProvider implements ResearchProvider {
 				};
 			}
 
-			const runStatus = result.run as ParallelTaskRun;
+			const runStatus = result.run as ExaTaskRun;
 
 			if (FAILURE_STATUSES.has(runStatus.status)) {
 				const errorMessage =
-					runStatus.error ||
-					`Parallel research task ${runStatus.status.toLowerCase()}`;
+					runStatus.error || `Exa research task ${runStatus.status}`;
 				return {
 					status: "error",
 					error: errorMessage,
@@ -380,9 +352,9 @@ export class ParallelResearchProvider implements ResearchProvider {
 			}
 
 			if (runStatus.status === "completed") {
-				// Should not happen without output, but guard anyway.
+				// Should not happen without output, but guard anyway
 				return {
-					provider: "parallel" as const,
+					provider: "exa" as const,
 					run: runStatus,
 					warnings: runStatus.warnings ?? null,
 				};
@@ -395,7 +367,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 
 		return {
 			status: "error",
-			error: `Timed out waiting for research result after ${maxAttempts} attempts.`,
+			error: `Timed out waiting for Exa research result after ${maxAttempts} attempts.`,
 		};
 	}
 
@@ -408,7 +380,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 			return creation;
 		}
 
-		const run = creation.run as ParallelTaskRun;
-		return this.pollForResult(run.run_id, options);
+		const run = creation.run as ExaTaskRun;
+		return this.pollForResult(run.research_id, options);
 	}
 }
