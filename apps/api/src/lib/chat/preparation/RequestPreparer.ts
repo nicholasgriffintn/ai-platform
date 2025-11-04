@@ -2,7 +2,6 @@ import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
 import { Embedding } from "~/lib/embedding";
 import { MemoryManager } from "~/lib/memory";
-import { MemorySynthesisRepository } from "~/repositories/MemorySynthesisRepository";
 import { getModelConfig } from "~/lib/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type {
@@ -361,10 +360,7 @@ export class RequestPreparer {
 			try {
 				let memoryContext = "";
 
-				const memorySynthesisRepository = new MemorySynthesisRepository(
-					this.env,
-				);
-				const synthesis = await memorySynthesisRepository.getActiveSynthesis(
+				const synthesis = await this.database.getActiveMemorySynthesis(
 					user.id,
 					"global",
 				);
