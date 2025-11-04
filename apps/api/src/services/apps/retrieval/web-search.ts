@@ -132,7 +132,28 @@ export async function performDeepWebSearch(
 				result.publishedDate || result.date || result.last_updated || undefined,
 		};
 	});
-	const similarQuestions = similarQuestionsResponse?.response?.questions ?? [];
+
+	const hasSimarQuestions =
+		similarQuestionsResponse?.response &&
+		Array.isArray(similarQuestionsResponse.response.questions);
+	const isContentAnStringifiedArray =
+		typeof similarQuestionsResponse?.response === "string" &&
+		similarQuestionsResponse.response.trim().startsWith("[") &&
+		similarQuestionsResponse.response.trim().endsWith("]");
+	let similarQuestions: string[] = [];
+
+	if (hasSimarQuestions) {
+		similarQuestions = similarQuestionsResponse.response.questions;
+	} else if (isContentAnStringifiedArray) {
+		try {
+			const parsed = JSON.parse(similarQuestionsResponse.response) as string[];
+			if (Array.isArray(parsed)) {
+				similarQuestions = parsed;
+			}
+		} catch (e) {
+			// Ignore parsing errors
+		}
+	}
 
 	const completion_id_with_fallback = completion_id || generateId();
 	const new_completion_id = `${completion_id_with_fallback}-tutor`;
@@ -192,6 +213,7 @@ export async function performDeepWebSearch(
 				name: "web_search",
 				formattedName: "Web Search",
 				responseType: "custom",
+				similarQuestions,
 			},
 			name: "web_search",
 			timestamp: Date.now(),
