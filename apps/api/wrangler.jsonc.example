@@ -2,28 +2,33 @@
 	"name": "assistant",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-05-05",
-  "compatibility_flags": [
-    "nodejs_compat",
+	"compatibility_flags": [
+		"nodejs_compat",
 		"nodejs_compat_populate_process_env"
-  ],
+	],
 	"workers_dev": false,
 	"dev": {
 		"port": 8787
 	},
-	"route": {
-		"pattern": "<YOUR_DOMAIN>/*",
-		"zone_name": "<YOUR_DOMAIN>"
-	},
+	"env": {
+    "dev": {
+      "triggers": {
+        "crons": [
+          "0 * * * *"
+        ]
+      }
+    }
+  },
 	"vars": {
-		"ACCOUNT_ID": "<ACCOUNT_ID>",
-		"APP_BASE_URL": "<APP_BASE_URL>",
-		"SES_EMAIL_FROM": "<SES_EMAIL_FROM>",
-		"PUBLIC_ASSETS_URL": "<PUBLIC_ASSETS_URL>",
-		"PUBLIC_ASSETS_BUCKET": "<PUBLIC_ASSETS_BUCKET>",
+		"ACCOUNT_ID": "REPLACE_ME",
+		"APP_BASE_URL": "REPLACE_ME",
+		"SES_EMAIL_FROM": "REPLACE_ME",
+		"PUBLIC_ASSETS_URL": "REPLACE_ME",
+		"PUBLIC_ASSETS_BUCKET": "assistant-assets",
 		"REQUIRE_CAPTCHA_SECRET_KEY": "false",
-		"HCAPTCHA_SITE_KEY": "<HCAPTCHA_SITE_KEY>",
 		"ALWAYS_ENABLED_PROVIDERS": "workers-ai,mistral,deepseek,google-ai-studio",
-		"LOG_LEVEL": "warn"
+		"LOG_LEVEL": "warn",
+		"ENV": "production"
 	},
 	"ai": {
 		"binding": "AI",
@@ -32,74 +37,82 @@
 	"vectorize": [
 		{
 			"binding": "VECTOR_DB",
-			"index_name": "<INDEX_NAME>",
+			"index_name": "polychat",
 			"remote": true
 		}
 	],
 	"observability": {
 		"enabled": true,
 		"head_sampling_rate": 0.1,
-    "logs": {
-      "enabled": true,
-      "invocation_logs": false
-    }
+		"logs": {
+			"enabled": true,
+			"invocation_logs": false
+		}
 	},
 	"analytics_engine_datasets": [
 		{
 			"binding": "ANALYTICS",
-			"dataset": "<DATASET>"
+			"dataset": "assistant_analytics"
 		}
 	],
 	"r2_buckets": [
 		{
 			"binding": "ASSETS_BUCKET",
-			"bucket_name": "<BUCKET_NAME>",
-			"preview_bucket_name": "<PREVIEW_BUCKET_NAME>",
+			"bucket_name": "assistant-assets",
+			"preview_bucket_name": "assistant-assets",
 			"remote": true
 		}
 	],
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "<DATABASE_NAME>",
-			"database_id": "<DATABASE_ID>",
-			"preview_database_id": "<PREVIEW_DATABASE_ID>"
+			"database_name": "personal-assistant",
+			"database_id": "REPLACE_ME",
+			"preview_database_id": "REPLACE_ME"
+		},
+		{
+			"binding": "PREVIEW_DB",
+			"database_name": "personal-assistant-preview",
+			"database_id": "REPLACE_ME"
 		}
 	],
 	"kv_namespaces": [
 		{
 			"binding": "CACHE",
-			"id": "<CACHE_ID>",
-			"preview_id": "<PREVIEW_CACHE_ID>"
+			"id": "REPLACE_ME",
+			"preview_id": "REPLACE_ME"
 		}
 	],
 	"queues": {
 		"producers": [{ "binding": "TASK_QUEUE", "queue": "polychat-task-queue" }],
-		"consumers": [{ "queue": "polychat-task-queue", "max_batch_size": 10, "dead_letter_queue": "polychat-task-queue-dlq", }],
+		"consumers": [
+			{
+				"queue": "polychat-task-queue",
+				"max_batch_size": 10,
+				"dead_letter_queue": "polychat-task-queue-dlq"
+			}
+		]
 	},
-	"triggers": {
-    "crons": ["0 2 * * *"]  // Run at 2 AM daily
-  },
-  "unsafe": {
-    "bindings": [
-      {
-        "name": "RATE_LIMITER",
-        "type": "ratelimit",
-        "namespace_id": "1001",
-        "simple": {
-          "limit": 10,
-          "period": 60
-        }
-      },
-      {
-        "name": "PRO_RATE_LIMITER",
-        "type": "ratelimit",
-        "namespace_id": "1002",
-        "simple": {
-          "limit": 100,
-          "period": 60
-        }
-      }
-    ]
-  }
+	"unsafe": {
+		"bindings": [
+			{
+				"name": "FREE_RATE_LIMITER",
+				"type": "ratelimit",
+				"namespace_id": "1001",
+				"simple": {
+					"limit": 60,
+					"period": 60
+				}
+			},
+			{
+				"name": "PRO_RATE_LIMITER",
+				"type": "ratelimit",
+				"namespace_id": "1002",
+				"simple": {
+					"limit": 120,
+					"period": 60
+				}
+			}
+		]
+	}
 }
