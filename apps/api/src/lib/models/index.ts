@@ -563,7 +563,7 @@ export const getAuxiliaryResearchProvider = async (
 ): Promise<ResearchProviderName> => {
 	const providerToUse = requestedProvider ?? "parallel";
 
-	if (providerToUse !== "parallel") {
+	if (providerToUse !== "parallel" && providerToUse !== "exa") {
 		throw new AssistantError(
 			`Unsupported research provider: ${providerToUse}`,
 			ErrorType.PARAMS_ERROR,
@@ -595,21 +595,21 @@ export const getAuxiliaryResearchProvider = async (
 		() => database.getUserProviderSettings(user.id),
 	);
 
-	const hasParallel = Array.isArray(providerSettings)
+	const hasProvider = Array.isArray(providerSettings)
 		? providerSettings.some((setting: any) => {
 				const isEnabled = Boolean(setting?.enabled);
-				return setting?.provider_id === "parallel" && isEnabled;
+				return setting?.provider_id === providerToUse && isEnabled;
 			})
 		: false;
 
-	if (!hasParallel) {
+	if (!hasProvider) {
 		throw new AssistantError(
-			"Parallel research provider is not enabled for this account",
+			`${providerToUse} research provider is not enabled for this account`,
 			ErrorType.AUTHORISATION_ERROR,
 		);
 	}
 
-	return "parallel";
+	return providerToUse;
 };
 
 export const getAuxiliarySpeechModel = async (

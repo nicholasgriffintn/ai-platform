@@ -78,7 +78,7 @@ function buildTaskSpec(args: any): ParallelTaskSpec | undefined {
 export const research: IFunction = {
 	name: "research",
 	description:
-		"Executes deep web research via Parallel Tasks. Ideal for market analysis, due diligence, and multi-source synthesis.",
+		"Executes deep web research using the configured provider. Ideal for market analysis, due diligence, and multi-source synthesis.",
 	type: "premium",
 	costPerCall: 3,
 	parameters: {
@@ -97,18 +97,24 @@ export const research: IFunction = {
 			provider: {
 				type: "string",
 				description:
-					"Optional research provider identifier. Defaults to 'parallel'.",
-				enum: ["parallel"],
+					"Optional research provider identifier. Defaults to 'parallel'. Use 'exa' for Exa Research.",
+				enum: ["parallel", "exa"],
 			},
 			processor: {
 				type: "string",
 				description:
-					"Parallel processor to use (e.g. 'ultra', 'pro', 'core', 'base'). Defaults to ultra.",
+					"Parallel processor to use (e.g. 'ultra', 'pro', 'core', 'base'). Only applies to the Parallel provider. Defaults to ultra.",
+			},
+			model: {
+				type: "string",
+				description:
+					"Exa model to use (e.g. 'exa-research', 'exa-research-pro'). Only applies to the Exa provider. Defaults to 'exa-research'.",
+				enum: ["exa-research", "exa-research-pro"],
 			},
 			output_mode: {
 				type: "string",
 				description:
-					"Convenience helper for output schema. Supports 'auto' or 'text'. Ignored when task_spec_json is provided.",
+					"Convenience helper for output schema. Supports 'auto' or 'text'. Ignored when task_spec_json or output_schema_json is provided. Only applies to Parallel provider.",
 				enum: ["auto", "text"],
 			},
 			output_description: {
@@ -119,7 +125,12 @@ export const research: IFunction = {
 			task_spec_json: {
 				type: "string",
 				description:
-					"Full Task API task_spec payload as JSON. Overrides output_mode/output_description when provided.",
+					"Full Task API task_spec payload as JSON. Only applies to Parallel provider. Overrides output_mode/output_description when provided.",
+			},
+			output_schema_json: {
+				type: "string",
+				description:
+					"JSON Schema defining the structure of the research output. Only applies to Exa provider. Must be valid JSON.",
 			},
 			enable_events: {
 				type: "boolean",
@@ -166,8 +177,10 @@ export const research: IFunction = {
 			structured_input,
 			provider,
 			processor,
+			model,
 			enable_events,
 			metadata,
+			output_schema_json,
 		} = args || {};
 
 		const payload =
@@ -188,26 +201,51 @@ export const research: IFunction = {
 
 		const options: ResearchOptions = {};
 
+		// Parallel-specific options
 		if (typeof processor === "string" && processor.trim().length > 0) {
 			options.processor = processor;
 		}
 
-		const polling = coercePollingOptions(args);
-		if (polling) {
-			options.polling = polling;
+		const taskSpec = buildTaskSpec(args);
+		if (taskSpec) {
+			options.task_spec = taskSpec;
 		}
 
 		if (typeof enable_events === "boolean") {
 			options.enable_events = enable_events;
 		}
 
-		if (metadata && typeof metadata === "object") {
-			options.metadata = metadata as Record<string, unknown>;
+		// Exa-specific options
+		if (typeof model === "string" && model.trim().length > 0) {
+			options.model = model;
 		}
 
-		const taskSpec = buildTaskSpec(args);
-		if (taskSpec) {
-			options.task_spec = taskSpec;
+		if (typeof output_schema_json === "string") {
+			try {
+				const parsed = JSON.parse(output_schema_json);
+				options.exa_spec = {
+					output_schema: parsed,
+				};
+			} catch (error) {
+				throw new AssistantError(
+					"output_schema_json must be valid JSON",
+					ErrorType.PARAMS_ERROR,
+					400,
+					{
+						original: error instanceof Error ? error.message : String(error),
+					},
+				);
+			}
+		}
+
+		// Common options
+		const polling = coercePollingOptions(args);
+		if (polling) {
+			options.polling = polling;
+		}
+
+		if (metadata && typeof metadata === "object") {
+			options.metadata = metadata as Record<string, unknown>;
 		}
 
 		const providerName =
@@ -256,6 +294,14 @@ export const research: IFunction = {
 				? options.polling.interval_ms
 				: 5000;
 
+		// Get the correct ID field based on provider
+		const runId =
+			"run_id" in handle.run
+				? handle.run.run_id
+				: "research_id" in handle.run
+					? handle.run.research_id
+					: "";
+
 		return {
 			name: "research",
 			status: "in_progress",
@@ -267,12 +313,12 @@ export const research: IFunction = {
 				completion_id,
 				asyncInvocation: {
 					provider: handle.provider,
-					id: handle.run.run_id,
+					id: runId,
 					type: "research",
 					status: "in_progress",
 					pollIntervalMs: pollInterval,
 					poll: {
-						url: `/apps/retrieval/research/${handle.run.run_id}`,
+						url: `/apps/retrieval/research/${runId}`,
 						method: "GET",
 					},
 					context: {

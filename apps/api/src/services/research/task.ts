@@ -7,9 +7,11 @@ import type {
 	IUser,
 	ParallelResearchResult,
 	ParallelTaskRun,
+	ExaTaskRun,
 	ResearchOptions,
 	ResearchProviderName,
 	ResearchTaskHandle,
+	ResearchResult,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
@@ -114,7 +116,7 @@ export const startResearchTask = async (
 
 export const getResearchTaskStatus = async (
 	req: ResearchTaskStatusRequest,
-): Promise<ParallelResearchResult> => {
+): Promise<ResearchResult> => {
 	const { env, runId, user, provider, options } = req;
 
 	const { provider: providerToUse, research } = await getResearchInstance(
@@ -142,9 +144,9 @@ export const getResearchTaskStatus = async (
 
 	const extractStoredResult = (
 		payload: Record<string, any> | undefined,
-	): ParallelResearchResult | undefined => {
+	): ResearchResult | undefined => {
 		const data = payload?.result?.data ?? {};
-		const run = data?.run as ParallelTaskRun | undefined;
+		const run = data?.run;
 		const providerValue =
 			data?.provider ?? payload?.result?.provider ?? providerToUse;
 
@@ -152,13 +154,27 @@ export const getResearchTaskStatus = async (
 			return undefined;
 		}
 
-		return {
-			provider: providerValue,
-			run,
-			output: data?.output,
-			warnings: data?.warnings ?? null,
-			poll: data?.poll,
-		};
+		if (providerValue === "parallel") {
+			return {
+				provider: "parallel",
+				run: run as ParallelTaskRun,
+				output: data?.output,
+				warnings: data?.warnings ?? null,
+				poll: data?.poll,
+			};
+		}
+
+		if (providerValue === "exa") {
+			return {
+				provider: "exa",
+				run: run as ExaTaskRun,
+				output: data?.output,
+				warnings: data?.warnings ?? null,
+				poll: data?.poll,
+			};
+		}
+
+		return undefined;
 	};
 
 	let storedPayload = existingResponse
@@ -168,6 +184,7 @@ export const getResearchTaskStatus = async (
 
 	if (
 		storedResult &&
+		!("status" in storedResult) &&
 		storedResult.run?.status === "completed" &&
 		storedResult.output !== undefined
 	) {
@@ -180,7 +197,7 @@ export const getResearchTaskStatus = async (
 		existingResponse?.user_id === (user?.id ?? existingResponse?.user_id);
 
 	const persistResult = async (
-		merged: ParallelResearchResult,
+		merged: ParallelResearchResult | ResearchResult,
 		statusLabel: string,
 		extra?: Record<string, any>,
 	) => {
@@ -188,20 +205,28 @@ export const getResearchTaskStatus = async (
 			return;
 		}
 
+		if ("status" in merged && merged.status === "error") {
+			return;
+		}
+
+		const result = merged as
+			| ParallelResearchResult
+			| Extract<ResearchResult, { provider: "parallel" | "exa" }>;
+
 		const basePayload = storedPayload ?? {};
 		const baseResult = (basePayload.result ?? {}) as Record<string, any>;
 		const baseData = (baseResult.data ?? {}) as Record<string, any>;
 
 		const nextData: Record<string, any> = {
 			...baseData,
-			provider: merged.provider,
-			run: merged.run,
-			warnings: merged.warnings ?? null,
-			poll: merged.poll ?? baseData.poll,
+			provider: result.provider,
+			run: result.run,
+			warnings: result.warnings ?? null,
+			poll: result.poll ?? baseData.poll,
 		};
 
-		if (merged.output !== undefined) {
-			nextData.output = merged.output;
+		if (result.output !== undefined) {
+			nextData.output = result.output;
 		} else if (baseData.output !== undefined) {
 			nextData.output = baseData.output;
 		}
@@ -241,39 +266,51 @@ export const getResearchTaskStatus = async (
 		const now = new Date().toISOString();
 		const errorMessage = result.error;
 
-		const errorRun: ParallelResearchResult["run"] = {
-			run_id: runId,
+		if (providerToUse === "parallel") {
+			const errorRun: ParallelTaskRun = {
+				run_id: runId,
+				status: "errored",
+				is_active: false,
+				processor: options?.processor ?? "unknown",
+				metadata: null,
+				created_at: now,
+				modified_at: now,
+				warnings: [errorMessage],
+				error: errorMessage,
+				taskgroup_id: null,
+			};
+
+			const errorResult: ParallelResearchResult = {
+				provider: "parallel",
+				run: errorRun,
+				warnings: [errorMessage],
+			};
+
+			await persistResult(errorResult, "error", { error: errorMessage });
+			return errorResult;
+		}
+
+		const errorRun: ExaTaskRun = {
+			research_id: runId,
 			status: "errored",
-			is_active: false,
-			processor: options?.processor ?? "unknown",
-			metadata: null,
 			created_at: now,
-			modified_at: now,
-			warnings: [errorMessage],
 			error: errorMessage,
-			taskgroup_id: null,
+			warnings: [errorMessage],
 		};
 
-		const errorResult: ParallelResearchResult = {
-			provider: providerToUse,
+		const errorResult: ResearchResult = {
+			provider: "exa",
 			run: errorRun,
 			warnings: [errorMessage],
 		};
 
 		await persistResult(errorResult, "error", { error: errorMessage });
-
 		return errorResult;
 	}
 
 	await persistResult(result, result.run.status ?? "running");
 
-	return {
-		provider: providerToUse,
-		run: result.run,
-		output: result.output,
-		warnings: result.warnings,
-		poll: result.poll,
-	};
+	return result;
 };
 
 export const handleResearchTask = async (
