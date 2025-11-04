@@ -126,7 +126,7 @@ class TaskService {
 	): Promise<MemorySynthesisHistoryResponse> {
 		try {
 			const response = await fetchApi(
-				`/tasks/memory/synthesis/history?namespace=${namespace}&limit=${limit}`,
+				`/tasks/memory/syntheses?namespace=${namespace}&limit=${limit}`,
 				{
 					method: "GET",
 				},
