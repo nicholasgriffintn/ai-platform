@@ -141,6 +141,8 @@ ${memoriesText}
 
 ${existing ? `\nPrevious synthesis:\n${existing.synthesis_text}\n` : ""}
 
+Today's date is ${new Date().toISOString().split("T")[0]}.
+
 Create a clear, factual synthesis that:
 1. Groups related information
 2. Resolves any conflicts (prefer recent information)
