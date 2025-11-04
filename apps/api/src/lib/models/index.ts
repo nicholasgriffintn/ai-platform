@@ -19,6 +19,7 @@ import {
 	type availableModelTypes,
 	defaultModel,
 } from "./constants";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { deepinfraModelConfig } from "./deepinfra";
 import { deepseekModelConfig } from "./deepseek";
 import { fireworksModelConfig } from "./fireworks";
@@ -45,7 +46,7 @@ import { v0ModelConfig } from "./v0";
 import { vercelModelConfig } from "./vercel";
 import { workersAiModelConfig } from "./workersai";
 import { xaiModelConfig } from "./xai";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { exaModelConfig } from "./exa";
 
 const logger = getLogger({ prefix: "lib/models" });
 
@@ -90,6 +91,7 @@ const modelConfig: ModelConfig = {
 	...inceptionModelConfig,
 	...v0ModelConfig,
 	...replicateModelConfig,
+	...exaModelConfig,
 };
 
 const MODEL_CACHE_TTL = 14400;

@@ -314,6 +314,14 @@ export class MessageFormatter {
 					},
 					...messages,
 				] as Message[];
+			case "exa":
+				return [
+					{
+						role: "system",
+						content: system_prompt,
+					},
+					...messages,
+				] as Message[];
 			default:
 				return [
 					{

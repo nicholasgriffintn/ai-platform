@@ -32,6 +32,7 @@ import { UpstageProvider } from "./provider/upstage";
 import { V0Provider } from "./provider/v0";
 import { VercelGatewayProvider } from "./provider/vercel";
 import { WorkersProvider } from "./provider/workers";
+import { ExaProvider } from "./provider/exa";
 
 export interface ProviderConfig {
 	key: string;
@@ -82,6 +83,7 @@ export class AIProviderFactory {
 		{ key: "inception", provider: new InceptionProvider() },
 		{ key: "v0", provider: new V0Provider() },
 		{ key: "parallel", provider: new ParallelProvider() },
+		{ key: "exa", provider: new ExaProvider() },
 	];
 
 	/**

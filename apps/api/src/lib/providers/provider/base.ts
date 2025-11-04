@@ -304,6 +304,7 @@ export abstract class BaseProvider implements AIProvider {
 					assetsUrl,
 				);
 				const endpoint = await this.getEndpoint(params);
+
 				const data = await fetchAIResponse(
 					this.isOpenAiCompatible,
 					this.name,
