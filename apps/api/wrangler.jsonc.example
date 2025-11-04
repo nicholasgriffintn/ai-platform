@@ -74,9 +74,9 @@
 		}
 	],
 	"queues": {
-    "producers": [{ "binding": "TASK_QUEUE", "queue": "task-queue" }],
-    "consumers": [{ "queue": "task-queue", "max_batch_size": 10 }]
-  },
+		"producers": [{ "binding": "TASK_QUEUE", "queue": "polychat-task-queue" }],
+		"consumers": [{ "queue": "polychat-task-queue", "max_batch_size": 10, "dead_letter_queue": "polychat-task-queue-dlq", }],
+	},
 	"triggers": {
     "crons": ["0 2 * * *"]  // Run at 2 AM daily
   },
