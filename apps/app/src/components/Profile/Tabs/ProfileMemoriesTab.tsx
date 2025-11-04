@@ -166,7 +166,7 @@ export function ProfileMemoriesTab() {
 			<div className="space-y-8">
 				<Card>
 					<div className="px-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
-						<div className="flex items-center justify-between mb-6">
+						<div className="flex items-center justify-between">
 							<div>
 								<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
 									Memory Management
