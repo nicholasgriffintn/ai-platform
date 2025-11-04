@@ -27,6 +27,10 @@ export const CitationList = ({
 		: citations.slice(0, maxDisplayed);
 	const hasMoreCitations = citations.length > maxDisplayed;
 
+	if (displayedCitations.length === 0) {
+		return null;
+	}
+
 	return (
 		<div className="flex items-center mb-2 mt-2">
 			<div className="text-sm text-zinc-500 dark:text-zinc-400 mr-2">

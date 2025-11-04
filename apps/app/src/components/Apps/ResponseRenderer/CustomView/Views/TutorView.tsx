@@ -46,59 +46,74 @@ export function TutorView({
 	return (
 		<div className="max-w-full overflow-x-hidden">
 			<div className="mb-6">
-				<div className="flex items-center text-sm mb-2 text-zinc-600 dark:text-zinc-300">
-					<ArrowRight className="h-5 w-5 mr-2" aria-hidden="true" />
-					<span>{sources?.length || 0} sources</span>
-				</div>
+				{sources && sources.length > 0 && (
+					<div className="flex items-center text-sm mb-2 text-zinc-600 dark:text-zinc-300">
+						<ArrowRight className="h-5 w-5 mr-2" aria-hidden="true" />
+						<span>{sources?.length || 0} sources</span>
+					</div>
+				)}
 
-				<div id="source-list" className="flex flex-wrap gap-2 mb-4">
-					{displayedSources?.map((source: any) => (
-						<a
-							key={`source-card-${source.url}`}
-							href={source.url}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="no-underline flex-1 min-w-[150px] border border-gray-700 rounded-md p-3 hover:bg-gray-800 transition-colors"
-							aria-label={`View source: ${source.title}`}
-						>
-							<div className="flex items-center mb-2">
-								<Favicon url={source.url} />
-								<div className="text-xs text-zinc-600 dark:text-zinc-300 truncate">
-									{getDomain(source.url)}
+				{displayedSources?.length > 0 && (
+					<div id="source-list" className="flex flex-wrap gap-2 mb-4">
+						{displayedSources?.map((source: any) => (
+							<a
+								key={`source-card-${source.url}`}
+								href={source.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="no-underline flex-1 min-w-[150px] border border-gray-700 rounded-md p-3 hover:bg-gray-800 transition-colors"
+								aria-label={`View source: ${source.title}`}
+							>
+								<div className="flex items-center mb-2">
+									<Favicon url={source.url} />
+									<div className="text-xs text-zinc-600 dark:text-zinc-300 truncate">
+										{getDomain(source.url)}
+									</div>
 								</div>
-							</div>
-							<p className="text-sm font-medium line-clamp-2 text-zinc-600 dark:text-zinc-300">
-								{source.title}
-							</p>
-						</a>
-					))}
+								<p className="text-sm font-medium line-clamp-2 text-zinc-600 dark:text-zinc-300">
+									{source.title}
+								</p>
+							</a>
+						))}
 
-					{!showAllSources && sources?.length > 3 && (
-						<button
-							type="button"
-							onClick={handleToggleSources}
-							className="flex items-center justify-center min-w-[100px] p-3 border border-gray-700 rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
-							aria-expanded={showAllSources}
-							aria-controls="source-list"
-						>
-							<span className="text-zinc-600 dark:text-zinc-300">
-								+{sources.length - 3} sources
-							</span>
-						</button>
-					)}
+						{!showAllSources && sources?.length > 3 && (
+							<button
+								type="button"
+								onClick={handleToggleSources}
+								className="flex items-center justify-center min-w-[100px] p-3 border border-gray-700 rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
+								aria-expanded={showAllSources}
+								aria-controls="source-list"
+							>
+								<span className="text-zinc-600 dark:text-zinc-300">
+									+{sources.length - 3} sources
+								</span>
+							</button>
+						)}
 
-					{showAllSources && sources?.length > 3 && (
-						<button
-							type="button"
-							onClick={handleToggleSources}
-							className="flex items-center justify-center min-w-[100px] p-3 border border-gray-700 rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
-						>
-							<span className="text-zinc-600 dark:text-zinc-300">
-								Show less
+						{showAllSources && sources?.length > 3 && (
+							<button
+								type="button"
+								onClick={handleToggleSources}
+								className="flex items-center justify-center min-w-[100px] p-3 border border-gray-700 rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
+							>
+								<span className="text-zinc-600 dark:text-zinc-300">
+									Show less
+								</span>
+							</button>
+						)}
+					</div>
+				)}
+
+				{providerLabel && (
+					<div className="mt-2">
+						<div className="inline-flex items-center gap-2 bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full w-fit">
+							<span className="font-medium tracking-wide uppercase text-xs">
+								Provider
 							</span>
-						</button>
-					)}
-				</div>
+							<span className="font-medium text-xs">{providerLabel}</span>
+						</div>
+					</div>
+				)}
 			</div>
 
 			<div className="mb-6 text-zinc-600 dark:text-zinc-300">
@@ -107,37 +122,26 @@ export function TutorView({
 				</div>
 			</div>
 
-			<div className="mt-8 space-y-4">
-				{completion_id && !embedded && (
-					<div>
-						<button
-							type="button"
-							className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-							onClick={() => {
-								window.open(`/?completion_id=${completion_id}`, "_blank");
-							}}
-							aria-label="Continue the conversation in a new window"
-						>
-							Continue the conversation
-						</button>
-					</div>
-				)}
-
-				<div className="flex flex-col gap-3 text-sm">
-					<div className="inline-flex items-center gap-2 bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full w-fit">
-						<span className="font-medium tracking-wide uppercase text-xs">
-							Provider
-						</span>
-						<span>{providerLabel}</span>
-					</div>
-
-					{providerWarning && (
-						<div className="rounded-md border border-yellow-400/60 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-200 px-4 py-3">
-							{providerWarning}
-						</div>
-					)}
+			{completion_id && !embedded && (
+				<div className="mt-6">
+					<button
+						type="button"
+						className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+						onClick={() => {
+							window.open(`/?completion_id=${completion_id}`, "_blank");
+						}}
+						aria-label="Continue the conversation in a new window"
+					>
+						Continue the conversation
+					</button>
 				</div>
-			</div>
+			)}
+
+			{providerWarning && (
+				<div className="mt-6 rounded-md border border-yellow-400/60 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-200 px-4 py-3">
+					{providerWarning}
+				</div>
+			)}
 		</div>
 	);
 }
