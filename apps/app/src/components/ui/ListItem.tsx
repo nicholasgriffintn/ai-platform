@@ -38,10 +38,11 @@ export function ListItem({
 		<div
 			data-id={dataId}
 			className={cn(
-				"group flex items-center relative p-2 rounded-lg cursor-pointer transition-colors",
+				"group flex items-center relative p-2 rounded-lg transition-colors",
 				isActive
 					? "bg-off-white-highlight text-black dark:bg-[#2D2D2D] dark:text-white"
 					: "hover:bg-zinc-200 dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-300",
+				onClick ? "cursor-pointer" : "cursor-default",
 				className,
 			)}
 			onClick={onClick}
