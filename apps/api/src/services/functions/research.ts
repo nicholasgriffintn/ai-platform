@@ -78,7 +78,7 @@ function buildTaskSpec(args: any): ParallelTaskSpec | undefined {
 export const research: IFunction = {
 	name: "research",
 	description:
-		"Executes deep web research via Parallel Tasks or Exa Research. Ideal for market analysis, due diligence, and multi-source synthesis.",
+		"Executes deep web research using the configured provider. Ideal for market analysis, due diligence, and multi-source synthesis.",
 	type: "premium",
 	costPerCall: 3,
 	parameters: {
@@ -103,12 +103,12 @@ export const research: IFunction = {
 			processor: {
 				type: "string",
 				description:
-					"Parallel processor to use (e.g. 'ultra', 'pro', 'core', 'base'). Only applies to Parallel provider. Defaults to ultra.",
+					"Parallel processor to use (e.g. 'ultra', 'pro', 'core', 'base'). Only applies to the Parallel provider. Defaults to ultra.",
 			},
 			model: {
 				type: "string",
 				description:
-					"Exa model to use (e.g. 'exa-research', 'exa-research-pro'). Only applies to Exa provider. Defaults to 'exa-research'.",
+					"Exa model to use (e.g. 'exa-research', 'exa-research-pro'). Only applies to the Exa provider. Defaults to 'exa-research'.",
 				enum: ["exa-research", "exa-research-pro"],
 			},
 			output_mode: {

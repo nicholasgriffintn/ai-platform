@@ -90,7 +90,10 @@ export interface ResearchResultError {
 	error: string;
 }
 
-export type ResearchResult = ParallelResearchResult | ExaResearchResult | ResearchResultError;
+export type ResearchResult =
+	| ParallelResearchResult
+	| ExaResearchResult
+	| ResearchResultError;
 
 export interface ResearchTaskHandle {
 	provider: ResearchProviderName;
@@ -119,16 +122,13 @@ export interface ExaTaskSpec {
 }
 
 export interface ResearchOptions {
-	// Parallel-specific options
 	processor?: string;
 	task_spec?: ParallelTaskSpec;
 	enable_events?: boolean;
 
-	// Exa-specific options
-	model?: string; // exa-research or exa-research-pro
+	model?: string;
 	exa_spec?: ExaTaskSpec;
 
-	// Common options
 	metadata?: Record<string, unknown>;
 	polling?: ResearchPollingOptions;
 }

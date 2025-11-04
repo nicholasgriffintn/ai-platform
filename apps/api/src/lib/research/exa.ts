@@ -352,7 +352,6 @@ export class ExaResearchProvider implements ResearchProvider {
 			}
 
 			if (runStatus.status === "completed") {
-				// Should not happen without output, but guard anyway
 				return {
 					provider: "exa" as const,
 					run: runStatus,

@@ -205,13 +205,13 @@ export const getResearchTaskStatus = async (
 			return;
 		}
 
-		// Don't persist error results
 		if ("status" in merged && merged.status === "error") {
 			return;
 		}
 
-		// At this point, merged is either ParallelResearchResult or ExaResearchResult
-		const result = merged as ParallelResearchResult | Extract<ResearchResult, { provider: "parallel" | "exa" }>;
+		const result = merged as
+			| ParallelResearchResult
+			| Extract<ResearchResult, { provider: "parallel" | "exa" }>;
 
 		const basePayload = storedPayload ?? {};
 		const baseResult = (basePayload.result ?? {}) as Record<string, any>;
@@ -290,7 +290,6 @@ export const getResearchTaskStatus = async (
 			return errorResult;
 		}
 
-		// Exa provider
 		const errorRun: ExaTaskRun = {
 			research_id: runId,
 			status: "errored",
