@@ -28,8 +28,11 @@ export function useChatManager() {
 
 	const { webLLMService } = useWebLLMInitialization(apiModels);
 	const { updateConversation } = useConversationStorage();
-	const { addMessageToConversation, updateAssistantMessage } =
-		useMessageOperations();
+	const {
+		addMessageToConversation,
+		addAssistantMessage,
+		updateAssistantMessage,
+	} = useMessageOperations();
 
 	const generateConversationTitle = useCallback(
 		async (
@@ -271,6 +274,7 @@ export function useChatManager() {
 		sendMessage,
 		streamResponse,
 		abortStream,
+		addAssistantMessage,
 		updateAssistantMessage,
 		retryMessage,
 		updateUserMessage,

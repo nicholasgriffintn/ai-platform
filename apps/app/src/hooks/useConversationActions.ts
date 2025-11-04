@@ -39,7 +39,8 @@ export function useConversationActions(
 	} = useChatStore();
 
 	const { updateConversation } = useConversationStorage();
-	const { updateAssistantMessage } = useMessageOperations();
+	const { addAssistantMessage, updateAssistantMessage } =
+		useMessageOperations();
 
 	const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
 	const [isBranching, setIsBranching] = useState(false);
@@ -214,6 +215,8 @@ export function useConversationActions(
 					let lastReasoning = "";
 
 					setCurrentConversationId(newConversationId);
+
+					await addAssistantMessage(newConversationId, "");
 
 					await apiService.streamChatCompletions(
 						newConversationId,

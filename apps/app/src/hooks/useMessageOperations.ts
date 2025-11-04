@@ -48,6 +48,37 @@ export function useMessageOperations() {
 		[updateConversation],
 	);
 
+	const addAssistantMessage = useCallback(
+		async (
+			conversationId: string,
+			content: Message["content"],
+			reasoning?: string,
+			messageData?: Partial<Message>,
+		) => {
+			const now = Date.now();
+			const currentModel = model === null ? undefined : model;
+
+			const assistantMessage = normalizeMessage({
+				role: "assistant",
+				content,
+				id: messageData?.id || crypto.randomUUID(),
+				created: messageData?.created || now,
+				timestamp: messageData?.timestamp || now,
+				model: messageData?.model || currentModel,
+				reasoning: reasoning
+					? {
+							collapsed: true,
+							content: reasoning,
+						}
+					: undefined,
+				...messageData,
+			});
+
+			await addMessageToConversation(conversationId, assistantMessage);
+		},
+		[model, addMessageToConversation],
+	);
+
 	const updateAssistantMessage = useCallback(
 		async (
 			conversationId: string,
@@ -106,56 +137,34 @@ export function useMessageOperations() {
 					}
 					return -1;
 				})();
-				const hasAssistantMessage = lastAssistantIndex >= 0;
 
-				let updatedMessages;
-
-				if (!hasAssistantMessage) {
-					const newAssistantMessage = normalizeMessage({
-						role: "assistant",
-						content,
-						id: messageData?.id || crypto.randomUUID(),
-						created: messageData?.created || now,
-						timestamp: messageData?.timestamp || now,
-						model: messageData?.model || currentModel,
-						reasoning: reasoning
-							? {
-									collapsed: true,
-									content: reasoning,
-								}
-							: undefined,
-						...messageData,
-					});
-
-					updatedMessages = [...messages, newAssistantMessage];
-				} else {
-					const lastAssistantMessage = messages[lastAssistantIndex];
-
-					const updatedMessage = normalizeMessage({
-						...lastAssistantMessage,
-						...(messageData || {}),
-						role: "assistant",
-						content,
-						created:
-							messageData?.created || lastAssistantMessage.created || now,
-						timestamp:
-							messageData?.timestamp || lastAssistantMessage.timestamp || now,
-						model: messageData?.model || currentModel,
-						reasoning: reasoning
-							? {
-									collapsed: true,
-									content: reasoning,
-								}
-							: lastAssistantMessage.reasoning,
-					});
-
-					messages[lastAssistantIndex] = updatedMessage;
-					updatedMessages = [...messages];
+				if (lastAssistantIndex === -1) {
+					throw new Error("No assistant message found to update");
 				}
+
+				const lastAssistantMessage = messages[lastAssistantIndex];
+				const updatedMessage = normalizeMessage({
+					...lastAssistantMessage,
+					...(messageData || {}),
+					role: "assistant",
+					content,
+					created: messageData?.created || lastAssistantMessage.created || now,
+					timestamp:
+						messageData?.timestamp || lastAssistantMessage.timestamp || now,
+					model: messageData?.model || currentModel,
+					reasoning: reasoning
+						? {
+								collapsed: true,
+								content: reasoning,
+							}
+						: lastAssistantMessage.reasoning,
+				});
+
+				messages[lastAssistantIndex] = updatedMessage;
 
 				return {
 					...oldData,
-					messages: updatedMessages,
+					messages: [...messages],
 					updated_at: nowISOString,
 					last_message_at: nowISOString,
 					created_at: oldData.created_at || nowISOString,
@@ -167,6 +176,7 @@ export function useMessageOperations() {
 
 	return {
 		addMessageToConversation,
+		addAssistantMessage,
 		updateAssistantMessage,
 	};
 }

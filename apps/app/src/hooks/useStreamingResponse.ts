@@ -38,8 +38,11 @@ export function useStreamingResponse(
 	const assistantResponseRef = useRef<string>("");
 	const assistantReasoningRef = useRef<string>("");
 
-	const { addMessageToConversation, updateAssistantMessage } =
-		useMessageOperations();
+	const {
+		addMessageToConversation,
+		addAssistantMessage,
+		updateAssistantMessage,
+	} = useMessageOperations();
 
 	const generateResponse = useCallback(
 		async (
@@ -52,7 +55,7 @@ export function useStreamingResponse(
 			const isLocal = chatMode === "local";
 			let response = "";
 
-			await updateAssistantMessage(conversationId, "");
+			await addAssistantMessage(conversationId, "");
 
 			const handleMessageUpdate = (
 				content: Message["content"],
