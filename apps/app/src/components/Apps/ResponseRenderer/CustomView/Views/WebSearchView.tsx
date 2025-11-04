@@ -40,7 +40,7 @@ export function WebSearchView({
 	};
 
 	const providerLabel =
-		(provider && providerLabels[provider]) || provider || "Unknown provider";
+		(provider && providerLabels[provider]) || provider || null;
 
 	const getDomain = (url: string) => {
 		try {
@@ -178,12 +178,14 @@ export function WebSearchView({
 				)}
 
 				<div className="flex flex-col gap-3 text-sm">
-					<div className="inline-flex items-center gap-2 bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full w-fit">
-						<span className="font-medium tracking-wide uppercase text-xs">
-							Provider
-						</span>
-						<span className="font-medium text-xs">{providerLabel}</span>
-					</div>
+					{providerLabel && (
+						<div className="inline-flex items-center gap-2 bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full w-fit">
+							<span className="font-medium tracking-wide uppercase text-xs">
+								Provider
+							</span>
+							<span className="font-medium text-xs">{providerLabel}</span>
+						</div>
+					)}
 
 					{providerWarning && (
 						<div className="rounded-md border border-yellow-400/60 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-200 px-4 py-3">
