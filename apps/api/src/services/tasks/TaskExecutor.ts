@@ -7,9 +7,6 @@ import { generateId } from "~/utils/id";
 
 const logger = getLogger({ prefix: "services/tasks/executor" });
 
-/**
- * TaskExecutor manages task execution lifecycle
- */
 export class TaskExecutor {
 	private env: IEnv;
 	private handlers: Map<string, TaskHandler>;
@@ -21,43 +18,29 @@ export class TaskExecutor {
 		this.taskRepository = new TaskRepository(env);
 	}
 
-	/**
-	 * Execute a task
-	 */
 	public async execute(message: TaskMessage): Promise<void> {
 		const startTime = Date.now();
 
 		try {
-			// Get the handler for this task type
 			const handler = this.handlers.get(message.task_type);
 			if (!handler) {
 				throw new Error(`Unknown task type: ${message.task_type}`);
 			}
 
-			// Update task status to running
 			await this.taskRepository.updateTask(message.taskId, {
 				status: "running",
 				last_attempted_at: new Date().toISOString(),
 			});
 
-			// Create execution record
 			const executionId = await this.recordExecutionStart(message.taskId);
 
 			try {
-				// Execute the task
 				const result = await handler.handle(message, this.env);
 
-				// Calculate execution time
 				const executionTime = Date.now() - startTime;
 
-				// Record successful execution
-				await this.recordExecutionSuccess(
-					executionId,
-					executionTime,
-					result,
-				);
+				await this.recordExecutionSuccess(executionId, executionTime, result);
 
-				// Update task as completed
 				await this.taskRepository.updateTask(message.taskId, {
 					status: "completed",
 					completed_at: new Date().toISOString(),
@@ -67,23 +50,19 @@ export class TaskExecutor {
 					`Task ${message.taskId} completed successfully in ${executionTime}ms`,
 				);
 			} catch (error) {
-				// Calculate execution time
 				const executionTime = Date.now() - startTime;
 
-				// Record failed execution
 				await this.recordExecutionFailure(
 					executionId,
 					executionTime,
 					error as Error,
 				);
 
-				// Increment attempt counter
 				const task = await this.taskRepository.getTaskById(message.taskId);
 				if (task) {
 					const newAttempts = (task.attempts || 0) + 1;
 
 					if (newAttempts >= (task.max_attempts || 3)) {
-						// Max attempts reached, mark as failed
 						await this.taskRepository.updateTask(message.taskId, {
 							status: "failed",
 							attempts: newAttempts,
@@ -93,7 +72,6 @@ export class TaskExecutor {
 							`Task ${message.taskId} failed after ${newAttempts} attempts`,
 						);
 					} else {
-						// Update attempt count, will be retried
 						await this.taskRepository.updateTask(message.taskId, {
 							status: "queued",
 							attempts: newAttempts,
@@ -113,9 +91,6 @@ export class TaskExecutor {
 		}
 	}
 
-	/**
-	 * Record the start of a task execution
-	 */
 	private async recordExecutionStart(taskId: string): Promise<string> {
 		const execution = await this.taskRepository.createTaskExecution(
 			taskId,
@@ -124,9 +99,6 @@ export class TaskExecutor {
 		return execution?.id || generateId();
 	}
 
-	/**
-	 * Record a successful task execution
-	 */
 	private async recordExecutionSuccess(
 		executionId: string,
 		executionTimeMs: number,
@@ -141,9 +113,6 @@ export class TaskExecutor {
 		);
 	}
 
-	/**
-	 * Record a failed task execution
-	 */
 	private async recordExecutionFailure(
 		executionId: string,
 		executionTimeMs: number,
@@ -158,9 +127,6 @@ export class TaskExecutor {
 		);
 	}
 
-	/**
-	 * Handle a task failure
-	 */
 	public async handleFailure(
 		message: TaskMessage,
 		error: Error,

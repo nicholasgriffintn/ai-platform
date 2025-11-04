@@ -701,7 +701,14 @@ export const tasks = sqliteTable(
 			enum: ["memory_synthesis", "user_automation", "cleanup", "analytics"],
 		}).notNull(),
 		status: text({
-			enum: ["pending", "queued", "running", "completed", "failed", "cancelled"],
+			enum: [
+				"pending",
+				"queued",
+				"running",
+				"completed",
+				"failed",
+				"cancelled",
+			],
 		})
 			.notNull()
 			.default("pending"),

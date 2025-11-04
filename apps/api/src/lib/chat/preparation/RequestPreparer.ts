@@ -361,21 +361,18 @@ export class RequestPreparer {
 			try {
 				let memoryContext = "";
 
-				// 1. Get memory synthesis (consolidated summary)
 				const memorySynthesisRepository = new MemorySynthesisRepository(
 					this.env,
 				);
-				const synthesis =
-					await memorySynthesisRepository.getActiveSynthesis(
-						user.id,
-						"global",
-					);
+				const synthesis = await memorySynthesisRepository.getActiveSynthesis(
+					user.id,
+					"global",
+				);
 
 				if (synthesis) {
 					memoryContext += `\n\n# Memory Summary\nThe following is a consolidated summary of your long-term memories about this user:\n<memory_synthesis>\n${synthesis.synthesis_text}\n</memory_synthesis>`;
 				}
 
-				// 2. Get relevant individual memories (recent/specific)
 				const memoryManager = MemoryManager.getInstance(this.env, user);
 				const recentMemories = await memoryManager.retrieveMemories(
 					finalMessage,

@@ -15,7 +15,13 @@ export interface CreateTaskParams {
 }
 
 export interface UpdateTaskParams {
-	status?: "pending" | "queued" | "running" | "completed" | "failed" | "cancelled";
+	status?:
+		| "pending"
+		| "queued"
+		| "running"
+		| "completed"
+		| "failed"
+		| "cancelled";
 	attempts?: number;
 	last_attempted_at?: string;
 	completed_at?: string;
@@ -57,10 +63,7 @@ export class TaskRepository extends BaseRepository {
 		return this.runQuery<Task>(query, values, true);
 	}
 
-	public async getTasksByUserId(
-		userId: number,
-		limit = 50,
-	): Promise<Task[]> {
+	public async getTasksByUserId(userId: number, limit = 50): Promise<Task[]> {
 		const { query, values } = this.buildSelectQuery(
 			"tasks",
 			{ user_id: userId },

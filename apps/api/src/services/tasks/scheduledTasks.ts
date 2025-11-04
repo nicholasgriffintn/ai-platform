@@ -5,14 +5,10 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/tasks/scheduled" });
 
-/**
- * Schedule daily memory synthesis for all users with memories enabled
- */
 export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
 	try {
 		const repositories = RepositoryManager.getInstance(env);
 
-		// Get all users with memories enabled
 		const result = await env.DB.prepare(
 			`SELECT DISTINCT u.id
        FROM user u
@@ -32,7 +28,6 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
 
 		for (const user of users) {
 			try {
-				// Check if user has new memories since last synthesis
 				const lastSynthesis =
 					await repositories.memorySyntheses.getActiveSynthesis(
 						user.id,
@@ -46,7 +41,6 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
 						"global",
 					);
 
-				// Only synthesize if there are 5+ new memories
 				if (newMemoryCount >= 5) {
 					await taskService.enqueueTask({
 						task_type: "memory_synthesis",
@@ -58,7 +52,10 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
 					scheduledCount++;
 				}
 			} catch (error) {
-				logger.error(`Failed to schedule synthesis for user ${user.id}:`, error);
+				logger.error(
+					`Failed to schedule synthesis for user ${user.id}:`,
+					error,
+				);
 			}
 		}
 
@@ -70,26 +67,3 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
 		throw error;
 	}
 }
-
-/**
- * Cron handler for scheduled tasks
- * Add this to wrangler.jsonc:
- *
- * "triggers": {
- *   "crons": ["0 2 * * *"]  // Run at 2 AM daily
- * }
- */
-export default {
-	async scheduled(
-		event: ScheduledEvent,
-		env: IEnv,
-		ctx: ExecutionContext,
-	): Promise<void> {
-		logger.info(`Scheduled task triggered: ${event.cron}`);
-
-		// Daily synthesis at 2 AM
-		if (event.cron === "0 2 * * *") {
-			await scheduleDailySynthesis(env);
-		}
-	},
-};

@@ -6,7 +6,7 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "services/tasks" });
 
 export interface TaskDefinition {
-	task_type: "memory_synthesis" | "user_automation" | "cleanup" | "analytics";
+	task_type: "memory_synthesis";
 	user_id?: number;
 	task_data: Record<string, any>;
 	schedule_type?: "immediate" | "scheduled" | "recurring" | "event_triggered";
@@ -33,12 +33,8 @@ export class TaskService {
 		this.taskRepository = taskRepository;
 	}
 
-	/**
-	 * Enqueue a task to be processed by the task consumer
-	 */
 	public async enqueueTask(taskDef: TaskDefinition): Promise<string> {
 		try {
-			// 1. Create task record in D1
 			const task = await this.taskRepository.createTask({
 				task_type: taskDef.task_type,
 				user_id: taskDef.user_id,
@@ -55,10 +51,8 @@ export class TaskService {
 				throw new Error("Failed to create task record");
 			}
 
-			// 2. Update task status to queued
 			await this.taskRepository.updateTask(task.id, { status: "queued" });
 
-			// 3. Send to Cloudflare Queue
 			const message: TaskMessage = {
 				taskId: task.id,
 				task_type: taskDef.task_type,
@@ -67,7 +61,6 @@ export class TaskService {
 				priority: taskDef.priority ?? 5,
 			};
 
-			// Check if TASK_QUEUE is available
 			if (!this.env.TASK_QUEUE) {
 				logger.warn(
 					"TASK_QUEUE binding not available, task will remain in queued status",
@@ -86,9 +79,6 @@ export class TaskService {
 		}
 	}
 
-	/**
-	 * Schedule a recurring task using cron expression
-	 */
 	public async scheduleRecurringTask(
 		taskDef: TaskDefinition,
 		cronExpression: string,
@@ -108,27 +98,20 @@ export class TaskService {
 			throw new Error("Failed to create recurring task");
 		}
 
-		logger.info(`Recurring task ${task.id} scheduled with cron: ${cronExpression}`);
+		logger.info(
+			`Recurring task ${task.id} scheduled with cron: ${cronExpression}`,
+		);
 		return task.id;
 	}
 
-	/**
-	 * Get task by ID
-	 */
 	public async getTask(taskId: string): Promise<Task | null> {
 		return this.taskRepository.getTaskById(taskId);
 	}
 
-	/**
-	 * Get tasks for a user
-	 */
 	public async getUserTasks(userId: number, limit = 50): Promise<Task[]> {
 		return this.taskRepository.getTasksByUserId(userId, limit);
 	}
 
-	/**
-	 * Cancel a task
-	 */
 	public async cancelTask(taskId: string): Promise<boolean> {
 		const task = await this.taskRepository.getTaskById(taskId);
 		if (!task) {

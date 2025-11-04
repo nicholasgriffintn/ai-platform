@@ -73,6 +73,13 @@
 			"preview_id": "<PREVIEW_CACHE_ID>"
 		}
 	],
+	"queues": {
+    "producers": [{ "binding": "TASK_QUEUE", "queue": "task-queue" }],
+    "consumers": [{ "queue": "task-queue", "max_batch_size": 10 }]
+  },
+	"triggers": {
+    "crons": ["0 2 * * *"]  // Run at 2 AM daily
+  },
   "unsafe": {
     "bindings": [
       {

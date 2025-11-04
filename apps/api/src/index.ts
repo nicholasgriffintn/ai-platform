@@ -48,6 +48,11 @@ import {
 import { LogLevel, getLogger } from "./utils/logger";
 import { tagDescriptions } from "./openapi/documentation";
 import { apiInfoDescription } from "./openapi/content/apiDescription";
+import { scheduleDailySynthesis } from "./services/tasks/scheduledTasks";
+import { TaskHandler } from "./services/tasks/TaskHandler";
+import { MemorySynthesisHandler } from "./services/tasks/handlers/MemorySynthesisHandler";
+import { TaskExecutor } from "./services/tasks/TaskExecutor";
+import { TaskMessage } from "./services/tasks/TaskService";
 
 const app = new Hono<{
 	Bindings: IEnv;
@@ -335,5 +340,71 @@ export default {
 		}
 
 		return app.fetch(request, env, ctx);
+	},
+	async scheduled(
+		event: ScheduledEvent,
+		env: IEnv,
+		ctx: ExecutionContext,
+	): Promise<void> {
+		const logLevel = LogLevel[env.LOG_LEVEL?.toUpperCase()] ?? LogLevel.INFO;
+		const logger = getLogger({ prefix: "api-scheduler", level: logLevel });
+
+		logger.info(`Scheduled task triggered: ${event.cron}`);
+
+		// TODO: Work out how to do this better, not sure this is really the best way
+		// Daily synthesis at 2 AM
+		if (event.cron === "0 2 * * *") {
+			await scheduleDailySynthesis(env);
+		}
+	},
+	async queue(
+		batch: MessageBatch<TaskMessage>,
+		env: IEnv,
+		ctx: ExecutionContext,
+	): Promise<void> {
+		const logLevel = LogLevel[env.LOG_LEVEL?.toUpperCase()] ?? LogLevel.INFO;
+		const logger = getLogger({ prefix: "api-consumer", level: logLevel });
+
+		logger.info(`Processing batch of ${batch.messages.length} tasks`);
+
+		// TODO: There is probably a better way to do this too.
+
+		const handlers = new Map<string, TaskHandler>([
+			["memory_synthesis", new MemorySynthesisHandler()],
+		]);
+
+		const taskExecutor = new TaskExecutor(env, handlers);
+
+		for (const message of batch.messages) {
+			try {
+				logger.info(
+					`Processing task ${message.body.taskId} of type ${message.body.task_type}`,
+				);
+
+				await taskExecutor.execute(message.body);
+
+				message.ack();
+
+				logger.info(`Task ${message.body.taskId} acknowledged`);
+			} catch (error) {
+				logger.error(`Error processing task ${message.body.taskId}:`, error);
+
+				if (message.attempts < 3) {
+					logger.info(
+						`Retrying task ${message.body.taskId}, attempt ${message.attempts + 1}/3`,
+					);
+					message.retry();
+				} else {
+					logger.error(
+						`Task ${message.body.taskId} failed after 3 attempts, moving to DLQ`,
+					);
+
+					await taskExecutor.handleFailure(message.body, error as Error);
+					message.ack();
+				}
+			}
+		}
+
+		logger.info(`Batch processing completed`);
 	},
 };

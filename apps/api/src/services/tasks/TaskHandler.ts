@@ -7,12 +7,6 @@ export interface TaskResult {
 	data?: Record<string, any>;
 }
 
-/**
- * Base interface for all task handlers
- */
 export interface TaskHandler {
-	/**
-	 * Handle the task execution
-	 */
 	handle(message: TaskMessage, env: IEnv): Promise<TaskResult>;
 }

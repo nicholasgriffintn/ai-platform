@@ -1,14 +1,7 @@
 import { z } from "zod";
 
-// Task types
-export const TaskType = z.enum([
-	"memory_synthesis",
-	"user_automation",
-	"cleanup",
-	"analytics",
-]);
+export const TaskType = z.enum(["memory_synthesis"]);
 
-// Task status
 export const TaskStatus = z.enum([
 	"pending",
 	"queued",
@@ -18,7 +11,6 @@ export const TaskStatus = z.enum([
 	"cancelled",
 ]);
 
-// Schedule types
 export const ScheduleType = z.enum([
 	"immediate",
 	"scheduled",
@@ -26,10 +18,8 @@ export const ScheduleType = z.enum([
 	"event_triggered",
 ]);
 
-// Task execution status
 export const TaskExecutionStatus = z.enum(["running", "completed", "failed"]);
 
-// Task schema
 export const Task = z.object({
 	id: z.string(),
 	task_type: TaskType,
@@ -51,7 +41,6 @@ export const Task = z.object({
 	updated_at: z.string().optional(),
 });
 
-// Task execution schema
 export const TaskExecution = z.object({
 	id: z.string(),
 	task_id: z.string(),
@@ -64,7 +53,6 @@ export const TaskExecution = z.object({
 	created_at: z.string(),
 });
 
-// Memory synthesis schema
 export const MemorySynthesis = z.object({
 	id: z.string(),
 	user_id: z.number(),
@@ -80,7 +68,6 @@ export const MemorySynthesis = z.object({
 	updated_at: z.string().optional(),
 });
 
-// Create task request
 export const CreateTaskRequest = z.object({
 	task_type: TaskType,
 	task_data: z.record(z.string(), z.any()),
@@ -90,33 +77,27 @@ export const CreateTaskRequest = z.object({
 	metadata: z.record(z.string(), z.any()).optional(),
 });
 
-// Create task response
 export const CreateTaskResponse = z.object({
 	task_id: z.string(),
 	status: TaskStatus,
 	message: z.string().optional(),
 });
 
-// Get task response
 export const GetTaskResponse = Task;
 
-// List tasks response
 export const ListTasksResponse = z.object({
 	tasks: z.array(Task),
 	total: z.number(),
 });
 
-// Get memory synthesis response
 export const GetMemorySynthesisResponse = z.object({
 	synthesis: MemorySynthesis.optional(),
 });
 
-// Trigger memory synthesis request
 export const TriggerMemorySynthesisRequest = z.object({
 	namespace: z.string().optional(),
 });
 
-// Type exports
 export type TaskType = z.infer<typeof TaskType>;
 export type TaskStatus = z.infer<typeof TaskStatus>;
 export type ScheduleType = z.infer<typeof ScheduleType>;
