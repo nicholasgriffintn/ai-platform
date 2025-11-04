@@ -2,6 +2,7 @@ import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
 import { Embedding } from "~/lib/embedding";
 import { MemoryManager } from "~/lib/memory";
+import { MemorySynthesisRepository } from "~/repositories/MemorySynthesisRepository";
 import { getModelConfig } from "~/lib/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type {
@@ -358,6 +359,23 @@ export class RequestPreparer {
 
 		if (isProUser && memoriesEnabled && finalMessage) {
 			try {
+				let memoryContext = "";
+
+				// 1. Get memory synthesis (consolidated summary)
+				const memorySynthesisRepository = new MemorySynthesisRepository(
+					this.env,
+				);
+				const synthesis =
+					await memorySynthesisRepository.getActiveSynthesis(
+						user.id,
+						"global",
+					);
+
+				if (synthesis) {
+					memoryContext += `\n\n# Memory Summary\nThe following is a consolidated summary of your long-term memories about this user:\n<memory_synthesis>\n${synthesis.synthesis_text}\n</memory_synthesis>`;
+				}
+
+				// 2. Get relevant individual memories (recent/specific)
 				const memoryManager = MemoryManager.getInstance(this.env, user);
 				const recentMemories = await memoryManager.retrieveMemories(
 					finalMessage,
@@ -368,13 +386,15 @@ export class RequestPreparer {
 				);
 
 				if (recentMemories.length > 0) {
-					const memoryBlock = `\n\nYou have access to the following long-term memories:\n<user_memories>\n${recentMemories
+					memoryContext += `\n\n# Recently Relevant Memories\nThe following specific memories are most relevant to this conversation:\n<recent_memories>\n${recentMemories
 						.map((m) => `- ${m.text}`)
-						.join("\n")}\n</user_memories>`;
+						.join("\n")}\n</recent_memories>`;
+				}
 
+				if (memoryContext) {
 					return systemPrompt
-						? `${systemPrompt}\n\n${memoryBlock}`
-						: memoryBlock;
+						? `${systemPrompt}\n${memoryContext}`
+						: memoryContext;
 				}
 			} catch (error) {
 				logger.warn("Failed to retrieve memories", { error, userId: user?.id });
