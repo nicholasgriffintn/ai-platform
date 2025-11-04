@@ -22,6 +22,7 @@ export type IEnv = {
 	DB: D1Database;
 	CACHE: KVNamespace;
 	TASK_QUEUE?: Queue;
+	MEMORY_SYNTHESIS_ENABLED?: string;
 	ASSETS_BUCKET: any;
 	ACCOUNT_ID: string;
 	ANTHROPIC_API_KEY?: string;

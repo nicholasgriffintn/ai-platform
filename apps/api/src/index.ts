@@ -53,6 +53,7 @@ import { TaskHandler } from "./services/tasks/TaskHandler";
 import { MemorySynthesisHandler } from "./services/tasks/handlers/MemorySynthesisHandler";
 import { TaskExecutor } from "./services/tasks/TaskExecutor";
 import { TaskMessage } from "./services/tasks/TaskService";
+import { SCHEDULES } from "./constants/schedules";
 
 const app = new Hono<{
 	Bindings: IEnv;
@@ -351,10 +352,23 @@ export default {
 
 		logger.info(`Scheduled task triggered: ${event.cron}`);
 
-		// TODO: Work out how to do this better, not sure this is really the best way
-		// Daily synthesis at 2 AM
-		if (event.cron === "0 2 * * *") {
-			await scheduleDailySynthesis(env);
+		switch (event.cron) {
+			case SCHEDULES.MEMORIES_SYNTHESIS:
+				const isMemorySynthesisEnabled =
+					env.MEMORY_SYNTHESIS_ENABLED === "true";
+				if (!isMemorySynthesisEnabled) {
+					logger.info(
+						`Memory synthesis is disabled (MEMORY_SYNTHESIS_ENABLED=${env.MEMORY_SYNTHESIS_ENABLED})`,
+					);
+					return;
+				}
+
+				logger.info(`Starting daily memory synthesis task`);
+				await scheduleDailySynthesis(env);
+				logger.info(`Daily memory synthesis task completed`);
+				break;
+			default:
+				logger.warn(`No handler for scheduled task: ${event.cron}`);
 		}
 	},
 	async queue(

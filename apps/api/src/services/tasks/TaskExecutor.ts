@@ -22,6 +22,16 @@ export class TaskExecutor {
 		const startTime = Date.now();
 
 		try {
+			const isEnabledEnvVar = `${message.task_type
+				.toUpperCase()
+				.replace(/ /g, "_")}_ENABLED`;
+			if (this.env[isEnabledEnvVar] !== "true") {
+				logger.info(
+					`Task type ${message.task_type} is disabled via environment variable`,
+				);
+				return;
+			}
+
 			const handler = this.handlers.get(message.task_type);
 			if (!handler) {
 				throw new Error(`Unknown task type: ${message.task_type}`);
