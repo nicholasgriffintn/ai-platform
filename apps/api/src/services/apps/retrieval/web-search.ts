@@ -213,7 +213,6 @@ export async function performDeepWebSearch(
 				name: "web_search",
 				formattedName: "Web Search",
 				responseType: "custom",
-				similarQuestions,
 			},
 			name: "web_search",
 			timestamp: Date.now(),
