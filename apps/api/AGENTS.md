@@ -50,10 +50,15 @@ Cloudflare Worker backend serving OpenAI-compatible endpoints, provider routing,
 ## Implementation Patterns
 
 ### Route Handler Pattern
+
 ```typescript
 // src/routes/example.ts
 import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
-import { exampleRequestSchema, exampleResponseSchema, errorResponseSchema } from "@assistant/schemas";
+import {
+	exampleRequestSchema,
+	exampleResponseSchema,
+	errorResponseSchema,
+} from "@assistant/schemas";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { handleExampleService } from "~/services/example/exampleService";
@@ -61,51 +66,58 @@ import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import type { Context } from "hono";
 
 app.post(
-  "/example",
-  validateCaptcha, // Add if user-facing endpoint
-  describeRoute({
-    tags: ["example"],
-    summary: "Brief description for API docs",
-    description: "Detailed description of what this endpoint does",
-    responses: {
-      200: {
-        description: "Success response",
-        content: { "application/json": { schema: resolver(exampleResponseSchema) } }
-      },
-      400: {
-        description: "Bad request or validation error",
-        content: { "application/json": { schema: resolver(errorResponseSchema) } }
-      },
-      401: {
-        description: "Authentication error",
-        content: { "application/json": { schema: resolver(errorResponseSchema) } }
-      },
-    },
-  }),
-  zValidator("json", exampleRequestSchema),
-  async (context: Context) => {
-    const body = context.req.valid("json");
-    const { env, user, anonymousUser } = getServiceContext(context);
+	"/example",
+	validateCaptcha, // Add if user-facing endpoint
+	describeRoute({
+		tags: ["example"],
+		summary: "Brief description for API docs",
+		description: "Detailed description of what this endpoint does",
+		responses: {
+			200: {
+				description: "Success response",
+				content: {
+					"application/json": { schema: resolver(exampleResponseSchema) },
+				},
+			},
+			400: {
+				description: "Bad request or validation error",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+			401: {
+				description: "Authentication error",
+				content: {
+					"application/json": { schema: resolver(errorResponseSchema) },
+				},
+			},
+		},
+	}),
+	zValidator("json", exampleRequestSchema),
+	async (context: Context) => {
+		const body = context.req.valid("json");
+		const { env, user, anonymousUser } = getServiceContext(context);
 
-    const response = await handleExampleService({
-      env,
-      user,
-      anonymousUser,
-      request: body,
-    });
+		const response = await handleExampleService({
+			env,
+			user,
+			anonymousUser,
+			request: body,
+		});
 
-    // If service returns Response (streaming), return directly
-    if (response instanceof Response) {
-      return response;
-    }
+		// If service returns Response (streaming), return directly
+		if (response instanceof Response) {
+			return response;
+		}
 
-    // Otherwise wrap in standard response
-    return ResponseFactory.success(context, response);
-  },
+		// Otherwise wrap in standard response
+		return ResponseFactory.success(context, response);
+	},
 );
 ```
 
 ### Service Function Pattern
+
 ```typescript
 // src/services/example/exampleService.ts
 import type { IEnv, IUser, IAnonymousUser } from "~/types";
@@ -116,64 +128,62 @@ import { getLogger, LogLevel } from "~/utils/logger";
 import type { ExampleRequest, ExampleResponse } from "@assistant/schemas";
 
 interface HandleExampleServiceParams {
-  env: IEnv;
-  user?: IUser;
-  anonymousUser?: IAnonymousUser;
-  request: ExampleRequest;
+	env: IEnv;
+	user?: IUser;
+	anonymousUser?: IAnonymousUser;
+	request: ExampleRequest;
 }
 
 export async function handleExampleService({
-  env,
-  user,
-  anonymousUser,
-  request,
+	env,
+	user,
+	anonymousUser,
+	request,
 }: HandleExampleServiceParams): Promise<ExampleResponse> {
-  const logger = getLogger("example-service", LogLevel.INFO);
-  const db = getDatabase(env);
-  const repositories = getRepositories(db);
+	const logger = getLogger("example-service", LogLevel.INFO);
+	const db = getDatabase(env);
+	const repositories = getRepositories(db);
 
-  try {
-    // Validate business rules
-    if (!request.required_field) {
-      throw new AssistantError(
-        "Missing required field",
-        ErrorType.VALIDATION_ERROR
-      );
-    }
+	try {
+		// Validate business rules
+		if (!request.required_field) {
+			throw new AssistantError(
+				"Missing required field",
+				ErrorType.VALIDATION_ERROR,
+			);
+		}
 
-    // Check authentication if needed
-    if (!user && !anonymousUser) {
-      throw new AssistantError(
-        "Authentication required",
-        ErrorType.AUTHENTICATION_ERROR
-      );
-    }
+		// Check authentication if needed
+		if (!user && !anonymousUser) {
+			throw new AssistantError(
+				"Authentication required",
+				ErrorType.AUTHENTICATION_ERROR,
+			);
+		}
 
-    // Use repository for database access
-    const entity = await repositories.example.findById(request.id);
+		// Use repository for database access
+		const entity = await repositories.example.findById(request.id);
 
-    if (!entity) {
-      throw new AssistantError(
-        "Entity not found",
-        ErrorType.NOT_FOUND
-      );
-    }
+		if (!entity) {
+			throw new AssistantError("Entity not found", ErrorType.NOT_FOUND);
+		}
 
-    // Perform business logic
-    const result = await processExample(entity, request);
+		// Perform business logic
+		const result = await processExample(entity, request);
 
-    logger.info("Example service completed", { entityId: request.id });
+		logger.info("Example service completed", { entityId: request.id });
 
-    // Return typed data
-    return { success: true, data: result };
-  } catch (error) {
-    logger.error("Example service error", error);
-    throw error; // Let route handler catch and format
-  }
+		// Return typed data
+		return { success: true, data: result };
+	} catch (error) {
+		logger.error("Example service error", error);
+		throw error; // Let route handler catch and format
+	}
 }
 ```
 
 ### Repository Pattern
+
 ```typescript
 // src/repositories/ExampleRepository.ts
 import { eq, and, desc } from "drizzle-orm";
@@ -182,129 +192,125 @@ import { example } from "~/lib/database/schema";
 import type { Database } from "~/lib/database";
 
 export class ExampleRepository extends BaseRepository<typeof example> {
-  constructor(db: Database) {
-    super(db, example);
-  }
+	constructor(db: Database) {
+		super(db, example);
+	}
 
-  async findByUserId(userId: number) {
-    return this.db.query.example.findMany({
-      where: (example, { eq }) => eq(example.user_id, userId),
-      orderBy: (example, { desc }) => [desc(example.created_at)],
-    });
-  }
+	async findByUserId(userId: number) {
+		return this.db.query.example.findMany({
+			where: (example, { eq }) => eq(example.user_id, userId),
+			orderBy: (example, { desc }) => [desc(example.created_at)],
+		});
+	}
 
-  async findActiveByUserId(userId: number) {
-    return this.db
-      .select()
-      .from(example)
-      .where(
-        and(
-          eq(example.user_id, userId),
-          eq(example.status, "active")
-        )
-      )
-      .orderBy(desc(example.created_at));
-  }
+	async findActiveByUserId(userId: number) {
+		return this.db
+			.select()
+			.from(example)
+			.where(and(eq(example.user_id, userId), eq(example.status, "active")))
+			.orderBy(desc(example.created_at));
+	}
 
-  async updateStatus(id: string, status: string) {
-    const [updated] = await this.db
-      .update(example)
-      .set({
-        status,
-        updated_at: sql`(CURRENT_TIMESTAMP)`
-      })
-      .where(eq(example.id, id))
-      .returning();
+	async updateStatus(id: string, status: string) {
+		const [updated] = await this.db
+			.update(example)
+			.set({
+				status,
+				updated_at: sql`(CURRENT_TIMESTAMP)`,
+			})
+			.where(eq(example.id, id))
+			.returning();
 
-    return updated;
-  }
+		return updated;
+	}
 
-  async deleteByUserId(userId: number) {
-    return this.db
-      .delete(example)
-      .where(eq(example.user_id, userId));
-  }
+	async deleteByUserId(userId: number) {
+		return this.db.delete(example).where(eq(example.user_id, userId));
+	}
 }
 ```
 
 ### Provider Implementation Pattern
+
 ```typescript
 // src/lib/providers/provider/example.ts
 import { BaseAIProvider } from "./base";
 import type {
-  ChatCompletionParams,
-  ChatCompletionResponse,
-  StreamingResponse
+	ChatCompletionParams,
+	ChatCompletionResponse,
+	StreamingResponse,
 } from "./base";
 
 export class ExampleProvider extends BaseAIProvider {
-  name = "example";
-  baseURL = "https://api.example.com/v1";
+	name = "example";
+	baseURL = "https://api.example.com/v1";
 
-  async generateChatCompletion(
-    params: ChatCompletionParams
-  ): Promise<ChatCompletionResponse> {
-    const { messages, model, temperature = 0.7, max_tokens } = params;
+	async generateChatCompletion(
+		params: ChatCompletionParams,
+	): Promise<ChatCompletionResponse> {
+		const { messages, model, temperature = 0.7, max_tokens } = params;
 
-    const response = await fetch(`${this.baseURL}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${this.getApiKey()}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        max_tokens,
-      }),
-    });
+		const response = await fetch(`${this.baseURL}/chat/completions`, {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${this.getApiKey()}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				model,
+				messages,
+				temperature,
+				max_tokens,
+			}),
+		});
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Example provider error: ${response.statusText} - ${error}`);
-    }
+		if (!response.ok) {
+			const error = await response.text();
+			throw new Error(
+				`Example provider error: ${response.statusText} - ${error}`,
+			);
+		}
 
-    return response.json();
-  }
+		return response.json();
+	}
 
-  async generateStreamingResponse(
-    params: ChatCompletionParams
-  ): Promise<Response> {
-    const { messages, model, temperature = 0.7 } = params;
+	async generateStreamingResponse(
+		params: ChatCompletionParams,
+	): Promise<Response> {
+		const { messages, model, temperature = 0.7 } = params;
 
-    const response = await fetch(`${this.baseURL}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${this.getApiKey()}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        stream: true,
-      }),
-    });
+		const response = await fetch(`${this.baseURL}/chat/completions`, {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${this.getApiKey()}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				model,
+				messages,
+				temperature,
+				stream: true,
+			}),
+		});
 
-    if (!response.ok) {
-      throw new Error(`Stream error: ${response.statusText}`);
-    }
+		if (!response.ok) {
+			throw new Error(`Stream error: ${response.statusText}`);
+		}
 
-    // Return the streaming response directly
-    return new Response(response.body, {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-      },
-    });
-  }
+		// Return the streaming response directly
+		return new Response(response.body, {
+			headers: {
+				"Content-Type": "text/event-stream",
+				"Cache-Control": "no-cache",
+				Connection: "keep-alive",
+			},
+		});
+	}
 
-  private getApiKey(): string {
-    // Implement based on env bindings
-    return this.env.EXAMPLE_API_KEY || "";
-  }
+	private getApiKey(): string {
+		// Implement based on env bindings
+		return this.env.EXAMPLE_API_KEY || "";
+	}
 }
 ```
 
@@ -313,18 +319,21 @@ export class ExampleProvider extends BaseAIProvider {
 ### When user requests...
 
 **"Add authentication to an endpoint"**
+
 - **Files**: `src/middleware/auth.ts` (modify auth logic), route file (apply middleware)
 - **Pattern**: Add `allowRestrictedPaths` middleware or create custom auth check
 - **Example**: `app.use("/*", async (c, next) => { await allowRestrictedPaths(c, next); })`
 - **Tests**: Add tests in `src/middleware/__test__/auth.test.ts`
 
 **"Add rate limiting to an endpoint"**
+
 - **Files**: `src/middleware/rateLimit.ts`, `wrangler.jsonc` (bindings), route file
 - **Pattern**: Apply `rateLimit` middleware with appropriate tier (FREE/PRO)
 - **Bindings**: Ensure `FREE_RATE_LIMITER` or `PRO_RATE_LIMITER` configured in wrangler.jsonc
 - **Example**: `app.post("/example", rateLimit("FREE"), ...)`
 
 **"Add new chat completion feature"**
+
 - **Schema**: `packages/schemas/src/chat.ts` (request/response schemas)
 - **Route**: `src/routes/chat.ts` (add endpoint with describeRoute)
 - **Service**: `src/services/completions/{feature}.ts` (implement business logic)
@@ -332,6 +341,7 @@ export class ExampleProvider extends BaseAIProvider {
 - **Tests**: Add service tests in `src/services/completions/__test__/`
 
 **"Add database table or modify schema"**
+
 - **Schema**: `src/lib/database/schema.ts` (define table using Drizzle)
 - **Migration**: Run `pnpm run db:generate` to create migration file
 - **Repository**: Create `src/repositories/{Entity}Repository.ts` extending BaseRepository
@@ -340,6 +350,7 @@ export class ExampleProvider extends BaseAIProvider {
 - **Apply**: Run `pnpm run db:migrate:local` to test locally
 
 **"Add AI provider support"**
+
 - **Provider**: Create `src/lib/providers/provider/{name}.ts` extending BaseAIProvider
 - **Factory**: Register in `src/lib/providers/factory.ts` providerConfigs array
 - **Models**: Add model definitions to `src/lib/models/index.ts`
@@ -347,18 +358,21 @@ export class ExampleProvider extends BaseAIProvider {
 - **Tests**: Mock provider responses and test error handling
 
 **"Improve error handling"**
+
 - **Utilities**: Use `AssistantError` from `src/utils/errors.ts` with appropriate ErrorType
 - **Service**: Wrap operations in try-catch, throw AssistantError for known errors
 - **Response**: Route handler catches and uses `ResponseFactory.error()` for consistent format
 - **Logging**: Use `getLogger()` from `src/utils/logger.ts` to log errors with context
 
 **"Add background task or queue"**
+
 - **Routes**: `src/routes/tasks.ts` (task submission endpoints)
 - **Services**: `src/services/tasks/` (TaskService, QueueExecutor, ScheduleExecutor)
 - **Bindings**: Configure Queue bindings in `wrangler.jsonc`
 - **Pattern**: Tasks submitted to queue are processed asynchronously by QueueExecutor
 
 **"Add middleware"**
+
 - **Create**: `src/middleware/{name}.ts` with middleware function
 - **Register**: Import and apply in `src/index.ts` (globally) or specific route file
 - **Pattern**: Middleware signature: `async (c: Context, next: Next) => { ... }`
@@ -373,51 +387,47 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 
 // Validation errors
 throw new AssistantError(
-  "Invalid input: email is required",
-  ErrorType.VALIDATION_ERROR
+	"Invalid input: email is required",
+	ErrorType.VALIDATION_ERROR,
 );
 
 // Authentication errors
 throw new AssistantError(
-  "Authentication required",
-  ErrorType.AUTHENTICATION_ERROR
+	"Authentication required",
+	ErrorType.AUTHENTICATION_ERROR,
 );
 
 // Authorization errors
 throw new AssistantError(
-  "Insufficient permissions",
-  ErrorType.AUTHORIZATION_ERROR
+	"Insufficient permissions",
+	ErrorType.AUTHORIZATION_ERROR,
 );
 
 // Not found errors
-throw new AssistantError(
-  "Resource not found",
-  ErrorType.NOT_FOUND
-);
+throw new AssistantError("Resource not found", ErrorType.NOT_FOUND);
 
 // Provider/external errors
-throw new AssistantError(
-  "AI provider unavailable",
-  ErrorType.PROVIDER_ERROR
-);
+throw new AssistantError("AI provider unavailable", ErrorType.PROVIDER_ERROR);
 
 // Rate limit errors
-throw new AssistantError(
-  "Rate limit exceeded",
-  ErrorType.RATE_LIMIT_ERROR
-);
+throw new AssistantError("Rate limit exceeded", ErrorType.RATE_LIMIT_ERROR);
 ```
 
 In routes, errors are caught and formatted via `ResponseFactory`:
+
 ```typescript
 try {
-  const result = await handleService(params);
-  return ResponseFactory.success(context, result);
+	const result = await handleService(params);
+	return ResponseFactory.success(context, result);
 } catch (error) {
-  if (error instanceof AssistantError) {
-    return ResponseFactory.error(context, error.message, error.type);
-  }
-  return ResponseFactory.error(context, "Internal server error", ErrorType.INTERNAL_ERROR);
+	if (error instanceof AssistantError) {
+		return ResponseFactory.error(context, error.message, error.type);
+	}
+	return ResponseFactory.error(
+		context,
+		"Internal server error",
+		ErrorType.INTERNAL_ERROR,
+	);
 }
 ```
 
@@ -426,34 +436,40 @@ try {
 ### Before committing changes that:
 
 **Add/modify routes**:
+
 - Add integration tests in route's `__test__/` directory
 - Test success cases, validation errors, auth failures
 - Mock service layer to isolate route logic
 
 **Add/modify services**:
+
 - Add unit tests in service's `__test__/` directory
 - Test business logic with various inputs
 - Mock repository and external dependencies
 - Test error conditions and edge cases
 
 **Change database schema**:
+
 - Test migration up: `pnpm run db:migrate:local`
 - Test migration down: `pnpm run db:migrate:local --down`
 - Validate with real data if possible
 - Test repository methods against new schema
 
 **Add providers**:
+
 - Mock provider API responses
 - Test error handling (network failures, rate limits, invalid responses)
 - Test both streaming and non-streaming modes
 - Verify monitoring/logging integration
 
 **Change auth/middleware**:
+
 - Test with authenticated users, anonymous users, and no auth
 - Test edge cases (expired tokens, invalid credentials)
 - Verify middleware chain order
 
 ### Test Commands
+
 ```bash
 pnpm --filter @assistant/api test              # Run all tests
 pnpm --filter @assistant/api test {file}       # Run specific test file
@@ -462,6 +478,7 @@ pnpm --filter @assistant/api test -- --watch   # Watch mode for development
 ```
 
 ### Coverage Requirements
+
 - Maintain existing coverage thresholds (70% global minimum)
 - New services should have >80% coverage
 - Critical paths (auth, payments, data mutations) should have >90% coverage
@@ -469,30 +486,35 @@ pnpm --filter @assistant/api test -- --watch   # Watch mode for development
 ## Common Pitfalls & Solutions
 
 ### Route Handler Pitfalls
+
 - **Putting business logic in routes**: Extract to services for testability
 - **Not using ResponseFactory**: Use for consistent error formatting
 - **Missing OpenAPI docs**: Every route needs `describeRoute` for documentation
 - **Forgetting validation**: Always use `zValidator` with Zod schemas
 
 ### Service Pitfalls
+
 - **Direct database queries**: Use repositories for all database access
 - **Not logging errors**: Always use `getLogger()` and log errors with context
 - **Swallowing errors**: Let errors propagate to route handler for proper formatting
 - **Passing Context objects**: Extract needed values, don't pass raw Hono Context
 
 ### Repository Pitfalls
+
 - **Not extending BaseRepository**: Reuse base functionality for common operations
 - **Complex logic in repositories**: Keep repositories as data access only
 - **Not using transactions**: Use Drizzle transactions for multi-step operations
 - **Forgetting indexes**: Add indexes in schema for frequently queried columns
 
 ### Provider Pitfalls
+
 - **Hardcoding API keys**: Use env bindings via `this.env`
 - **Not handling streaming**: Implement both sync and streaming methods
 - **Missing error handling**: Wrap provider calls in try-catch with meaningful errors
 - **Not respecting rate limits**: Implement backoff and retry logic
 
 ### Migration Pitfalls
+
 - **Hand-editing migrations**: Always use `pnpm run db:generate`
 - **Not testing rollback**: Ensure migrations can be safely reversed
 - **Breaking changes without coordination**: Coordinate schema changes with frontend
@@ -516,6 +538,7 @@ pnpm --filter @assistant/api test -- --watch   # Watch mode for development
 **IMPORTANT**: When you (the AI agent) make changes to the API, you MUST update this AGENTS.md file immediately after completing the implementation.
 
 ### Update Triggers
+
 - ✅ Added new route or endpoint
 - ✅ Added new service or repository
 - ✅ Added new provider or modified provider architecture
@@ -525,6 +548,7 @@ pnpm --filter @assistant/api test -- --watch   # Watch mode for development
 - ✅ Refactored existing patterns
 
 ### What to Update
+
 1. **Implementation Patterns**: Add or update code examples if pattern changed
 2. **Common Modification Locations**: Add entry for new feature type
 3. **Error Handling Standards**: Document new error types or patterns
@@ -533,8 +557,10 @@ pnpm --filter @assistant/api test -- --watch   # Watch mode for development
 6. **Guardrails**: Add new constraints or anti-patterns discovered
 
 ### Update Format
+
 ```markdown
 ### [Pattern/Feature Name] (Added: YYYY-MM-DD)
+
 **When to use**: [Specific scenario]
 **Files**: [File paths]
 **Pattern**: [Description]
@@ -543,12 +569,15 @@ pnpm --filter @assistant/api test -- --watch   # Watch mode for development
 ```
 
 ### Review Cycle
+
 - **After every significant change**: Update immediately
 - **Before PR submission**: Verify AGENTS.md changes included
 - **When patterns evolve**: Remove outdated examples, add new ones
 
 ### Why This Matters
+
 Future agents rely on this documentation to:
+
 - Understand API architecture and patterns
 - Make consistent changes
 - Avoid known pitfalls

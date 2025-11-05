@@ -41,24 +41,28 @@ React + Vite dashboard visualising Analytics Engine data for Polychat usage and 
 ### When user requests...
 
 **"Add new dashboard widget or chart"**
+
 - **Component**: Create in `src/components/{WidgetName}.tsx`
 - **Data fetching**: Add query to page loader or use React Query
 - **API**: Fetch from `/metrics` endpoint with appropriate filters
 - **Styling**: Use Tailwind classes, match existing dashboard aesthetic
 
 **"Add new metrics filter"**
+
 - **UI**: Update filter controls in `src/routes/index.tsx`
 - **State**: Add to component state or URL params
 - **API call**: Pass filters to metrics API
 - **Validation**: Validate filter values before API call
 
 **"Modify analytics tracking"**
+
 - **File**: `src/components/analytics.tsx`
 - **Configuration**: Update Beacon config or add new events
 - **Testing**: Verify events fire correctly in browser dev tools
 - **Privacy**: Ensure compliance with privacy policy
 
 **"Add new visualization library"**
+
 - **Install**: Add dependency via pnpm
 - **Import**: Import in component
 - **CSP**: May need to update CSP if library loads external resources
@@ -88,6 +92,7 @@ React + Vite dashboard visualising Analytics Engine data for Polychat usage and 
 **IMPORTANT**: When you (the AI agent) make changes to the metrics dashboard, you MUST update this AGENTS.md file immediately after completing the implementation.
 
 ### Update Triggers
+
 - ✅ Added new dashboard widget or visualization
 - ✅ Added new metrics filter or query parameter
 - ✅ Modified analytics tracking
@@ -95,13 +100,16 @@ React + Vite dashboard visualising Analytics Engine data for Polychat usage and 
 - ✅ Discovered common pitfalls
 
 ### What to Update
+
 1. **Common Modification Locations**: Add entry for new widget/filter types
 2. **Common Pitfalls**: Document problems and solutions
 3. **Component Highlights**: Update if new major components added
 
 ### Update Format
+
 ```markdown
 ### [Feature Name] (Added: YYYY-MM-DD)
+
 **Purpose**: [What this feature does]
 **Location**: [File paths]
 **Usage**: [How to use/modify]
