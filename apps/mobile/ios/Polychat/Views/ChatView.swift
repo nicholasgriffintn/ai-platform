@@ -213,44 +213,56 @@ struct MessageInputView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
-            HStack(spacing: 12) {
+            HStack(alignment: .bottom, spacing: 12) {
                 ImagePickerView(selectedImages: $selectedImages)
                     .foregroundColor(.blue)
+                    .padding(.bottom, 8)
 
-                TextEditor(text: $messageText)
-                    .focused($isInputFocused)
-                    .frame(minHeight: 36, maxHeight: 120)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18)
-                            .stroke(Color(.systemGray4), lineWidth: 1)
-                    )
-                    .onSubmit {
-                        sendMessage()
+                ZStack(alignment: .topLeading) {
+                    // Placeholder text
+                    if messageText.isEmpty {
+                        Text("Message...")
+                            .foregroundColor(Color(.systemGray3))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
                     }
 
+                    TextEditor(text: $messageText)
+                        .focused($isInputFocused)
+                        .scrollContentBackground(.hidden)
+                        .frame(minHeight: 40, maxHeight: 120)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                }
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(isInputFocused ? Color.blue.opacity(0.3) : Color(.systemGray4), lineWidth: isInputFocused ? 2 : 1)
+                )
+
                 Button(action: sendMessage) {
-                    Image(systemName: "paperplane.fill")
-                        .font(.system(size: 20))
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.white)
-                        .frame(width: 36, height: 36)
+                        .frame(width: 32, height: 32)
                         .background((messageText.isEmpty && selectedImages.isEmpty) ? Color.gray : Color.blue)
                         .clipShape(Circle())
                 }
                 .disabled(messageText.isEmpty && selectedImages.isEmpty)
+                .padding(.bottom, 8)
             }
-            .padding()
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
         .background(Color(.systemBackground))
         .overlay(
             Rectangle()
-                .frame(height: 1)
-                .foregroundColor(Color(.systemGray5)),
+                .frame(height: 0.5)
+                .foregroundColor(Color(.systemGray4)),
             alignment: .top
         )
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: -2)
     }
 }
 

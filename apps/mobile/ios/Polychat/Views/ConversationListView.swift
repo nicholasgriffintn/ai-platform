@@ -68,6 +68,8 @@ struct ConversationListView: View {
                                 )
                             }
                             .buttonStyle(PlainButtonStyle())
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .listRowBackground(Color.clear)
                         }
                         .onDelete { offsets in
                             deleteConversations(from: conversations, at: offsets)
@@ -89,8 +91,10 @@ struct ConversationListView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 40)
+                    .listRowBackground(Color.clear)
                 }
             }
+            .listStyle(.plain)
             .refreshable {
                 await conversationManager.refreshConversations()
             }
@@ -193,7 +197,13 @@ struct ConversationRow: View {
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 0)
+                .fill(isSelected ? Color.blue.opacity(0.05) : Color(.systemBackground))
+        )
+        .contentShape(Rectangle())
     }
 
     private func relativeDate(from date: Date) -> String {
