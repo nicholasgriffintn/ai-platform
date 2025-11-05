@@ -77,6 +77,7 @@ describe("Magic Link Service", () => {
 
 	describe("sendMagicLinkEmail", () => {
 		const mockEnv = {
+			DB: {} as any,
 			AWS_SES_ACCESS_KEY_ID: "test-key",
 			AWS_SES_SECRET_ACCESS_KEY: "test-secret",
 			SES_EMAIL_FROM: "test@example.com",
@@ -141,6 +142,7 @@ describe("Magic Link Service", () => {
 
 	describe("requestMagicLink", () => {
 		const mockEnv = {
+			DB: {} as any,
 			EMAIL_JWT_SECRET: "test-secret",
 		} as any;
 
@@ -221,6 +223,7 @@ describe("Magic Link Service", () => {
 
 	describe("verifyMagicLink", () => {
 		const mockEnv = {
+			DB: {} as any,
 			EMAIL_JWT_SECRET: "test-secret",
 		} as any;
 
