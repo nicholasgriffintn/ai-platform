@@ -1,4 +1,4 @@
-import type { IEnv, Message, IUser } from "~/types";
+import type { IEnv } from "~/types";
 import type { TaskMessage } from "../TaskService";
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import { getLogger } from "~/utils/logger";
@@ -9,6 +9,7 @@ import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
 import { TaskService } from "../TaskService";
 import { TaskRepository } from "~/repositories/TaskRepository";
+import { UserRepository } from "~/repositories/UserRepository";
 
 const logger = getLogger({ prefix: "services/tasks/async-message-polling" });
 
@@ -33,24 +34,17 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 			}
 
 			const database = Database.getInstance(env);
-			const user: IUser = {
-				id: data.userId,
-				name: null,
-				avatar_url: null,
-				email: "",
-				github_username: null,
-				company: null,
-				site: null,
-				location: null,
-				bio: null,
-				twitter_username: null,
-				role: null,
-				created_at: "",
-				updated_at: "",
-				setup_at: null,
-				terms_accepted_at: null,
-				plan_id: null,
-			};
+
+			const userRepository = new UserRepository(env);
+			const user = await userRepository.getUserById(data.userId);
+
+			if (!user) {
+				return {
+					status: "error",
+					message: `User ${data.userId} not found`,
+				};
+			}
+
 			const conversationManager = ConversationManager.getInstance({
 				database,
 				user,

@@ -1,11 +1,12 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
-import type { IEnv } from "~/types";
+import type { IEnv, User } from "~/types";
 import { AsyncMessagePollingHandler } from "../AsyncMessagePollingHandler";
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
 import { handleAsyncInvocation } from "~/services/completions/async/handler";
 import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
 import { TaskService } from "../../TaskService";
+import { UserRepository } from "~/repositories/UserRepository";
 import type { TaskMessage } from "../../TaskService";
 
 vi.mock("~/lib/database", () => ({
@@ -23,6 +24,7 @@ vi.mock("~/lib/conversationManager", () => ({
 vi.mock("~/services/completions/async/handler");
 vi.mock("~/lib/async/asyncInvocation");
 vi.mock("~/repositories/TaskRepository");
+vi.mock("~/repositories/UserRepository");
 vi.mock("../../TaskService");
 
 const mockedDatabase = vi.mocked(Database);
@@ -30,11 +32,31 @@ const mockedConversationManager = vi.mocked(ConversationManager);
 const mockedHandleAsyncInvocation = vi.mocked(handleAsyncInvocation);
 const mockedIsAsyncInvocationPending = vi.mocked(isAsyncInvocationPending);
 const mockedTaskService = vi.mocked(TaskService);
+const mockedUserRepository = vi.mocked(UserRepository);
 
 describe("AsyncMessagePollingHandler", () => {
 	const baseEnv = {
 		DB: {} as any,
 	} as unknown as IEnv;
+
+	const mockUser: User = {
+		id: 1,
+		name: "Test User",
+		avatar_url: null,
+		email: "test@example.com",
+		github_username: "testuser",
+		company: null,
+		site: null,
+		location: null,
+		bio: null,
+		twitter_username: null,
+		role: null,
+		created_at: "2024-01-01T00:00:00Z",
+		updated_at: "2024-01-01T00:00:00Z",
+		setup_at: null,
+		terms_accepted_at: null,
+		plan_id: null,
+	};
 
 	const baseMessage: TaskMessage = {
 		taskId: "test-task",
@@ -58,6 +80,14 @@ describe("AsyncMessagePollingHandler", () => {
 	beforeEach(() => {
 		vi.resetAllMocks();
 		handler = new AsyncMessagePollingHandler();
+
+		// Mock UserRepository to return a valid user
+		mockedUserRepository.mockImplementation(
+			() =>
+				({
+					getUserById: vi.fn().mockResolvedValue(mockUser),
+				}) as any,
+		);
 	});
 
 	it("returns error when required fields are missing", async () => {
@@ -72,6 +102,21 @@ describe("AsyncMessagePollingHandler", () => {
 		expect(result.message).toContain(
 			"conversationId, messageId, and asyncInvocation are required",
 		);
+	});
+
+	it("returns error when user not found", async () => {
+		// Override the default mock to return null
+		mockedUserRepository.mockImplementation(
+			() =>
+				({
+					getUserById: vi.fn().mockResolvedValue(null),
+				}) as any,
+		);
+
+		const result = await handler.handle(baseMessage, baseEnv);
+
+		expect(result.status).toBe("error");
+		expect(result.message).toContain("User 1 not found");
 	});
 
 	it("returns error when message not found", async () => {
