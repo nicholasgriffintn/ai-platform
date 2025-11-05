@@ -307,7 +307,7 @@ Services receive context via `getServiceContext(c)` middleware injected in route
 
 ## Further Reading
 - [README.md](README.md)
-- [DECISION_MATRIX.md](DECISION_MATRIX.md) - Quick reference for where to make changes
+- [AGENTS_DECISION_MATRIX.md](AGENTS_DECISION_MATRIX.md) - Quick reference for where to make changes
 - [apps/api/README.md](apps/api/README.md)
 - [apps/app/README.md](apps/app/README.md)
 - [apps/metrics/README.md](apps/metrics/README.md)

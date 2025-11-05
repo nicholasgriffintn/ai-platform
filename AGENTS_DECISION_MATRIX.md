@@ -78,7 +78,7 @@ Quick reference guide for determining where to make changes in the Polychat mono
 
 5. **Documentation**
    - Update relevant AGENTS.md files
-   - Add to this DECISION_MATRIX.md if new pattern
+   - Add to this AGENTS_DECISION_MATRIX.md if new pattern
 
 ### Changing Shared Schemas
 
