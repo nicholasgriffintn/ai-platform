@@ -438,8 +438,6 @@ app.get(
 		};
 		const userContext = context.get("user");
 
-		const refreshPending = context.req.query("refresh_pending") === "true";
-
 		const serviceContext = getServiceContext(context);
 
 		const data = await handleGetChatCompletion(
@@ -449,7 +447,6 @@ app.get(
 				context: serviceContext,
 			},
 			completion_id,
-			{ refreshPending },
 		);
 
 		return ResponseFactory.success(context, data);

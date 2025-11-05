@@ -8,6 +8,7 @@ import type {
 	ResearchProviderName,
 	ResearchOptions,
 	ResearchResult,
+	ResearchResultError,
 	ParallelTaskRun,
 	ExaTaskRun,
 } from "~/types";
@@ -37,9 +38,7 @@ export class ResearchPollingHandler implements TaskHandler {
 				};
 			}
 
-			const research = Research.getInstance(env, data.provider, {
-				id: data.userId,
-			});
+			const research = Research.getInstance(env, data.provider, undefined);
 
 			const result = await research.fetchResult(data.runId, data.options);
 
@@ -53,7 +52,7 @@ export class ResearchPollingHandler implements TaskHandler {
 				};
 			}
 
-			const researchResult = result as ResearchResult;
+			const researchResult = result as Exclude<ResearchResult, ResearchResultError>;
 			const status = researchResult.run?.status?.toLowerCase() || "unknown";
 
 			if (status === "completed") {
@@ -112,34 +111,32 @@ export class ResearchPollingHandler implements TaskHandler {
 	private async persistCompleted(
 		env: IEnv,
 		data: ResearchPollingData,
-		result: ResearchResult,
+		result: Exclude<ResearchResult, ResearchResultError>,
 	): Promise<void> {
 		if (!env.DB) return;
 
 		const responseRepo = new DynamicAppResponseRepository(env);
-		const responses = await responseRepo.getResponsesByItemId(data.runId);
+		const response = await responseRepo.getResponseByItemId(data.runId);
 
-		for (const response of responses) {
-			if (response.user_id !== data.userId) continue;
+		if (!response || response.user_id !== data.userId) return;
 
-			const existingData = safeParseJson(response.data) || {};
-			const updatedData = {
-				...existingData,
-				result: {
-					status: "completed",
-					data: {
-						provider: result.provider,
-						run: result.run,
-						output: result.output,
-						warnings: result.warnings,
-						poll: result.poll,
-					},
+		const existingData = safeParseJson(response.data) || {};
+		const updatedData = {
+			...existingData,
+			result: {
+				status: "completed",
+				data: {
+					provider: result.provider,
+					run: result.run,
+					output: result.output,
+					warnings: result.warnings,
+					poll: result.poll,
 				},
-				lastSyncedAt: new Date().toISOString(),
-			};
+			},
+			lastSyncedAt: new Date().toISOString(),
+		};
 
-			await responseRepo.updateResponseData(response.id, updatedData);
-		}
+		await responseRepo.updateResponseData(response.id, updatedData);
 	}
 
 	private async persistError(
@@ -150,51 +147,49 @@ export class ResearchPollingHandler implements TaskHandler {
 		if (!env.DB) return;
 
 		const responseRepo = new DynamicAppResponseRepository(env);
-		const responses = await responseRepo.getResponsesByItemId(data.runId);
+		const response = await responseRepo.getResponseByItemId(data.runId);
 
-		for (const response of responses) {
-			if (response.user_id !== data.userId) continue;
+		if (!response || response.user_id !== data.userId) return;
 
-			const existingData = safeParseJson(response.data) || {};
-			const now = new Date().toISOString();
+		const existingData = safeParseJson(response.data) || {};
+		const now = new Date().toISOString();
 
-			const errorRun =
-				data.provider === "parallel"
-					? ({
-							run_id: data.runId,
-							status: "errored",
-							is_active: false,
-							processor: "unknown",
-							metadata: null,
-							created_at: now,
-							modified_at: now,
-							warnings: [errorMessage],
-							error: errorMessage,
-							taskgroup_id: null,
-						} as ParallelTaskRun)
-					: ({
-							research_id: data.runId,
-							status: "errored",
-							created_at: now,
-							error: errorMessage,
-							warnings: [errorMessage],
-						} as ExaTaskRun);
-
-			const updatedData = {
-				...existingData,
-				result: {
-					status: "error",
-					error: errorMessage,
-					data: {
-						provider: data.provider,
-						run: errorRun,
+		const errorRun =
+			data.provider === "parallel"
+				? ({
+						run_id: data.runId,
+						status: "errored",
+						is_active: false,
+						processor: "unknown",
+						metadata: null,
+						created_at: now,
+						modified_at: now,
 						warnings: [errorMessage],
-					},
-				},
-				lastSyncedAt: now,
-			};
+						error: errorMessage,
+						taskgroup_id: null,
+					} as ParallelTaskRun)
+				: ({
+						research_id: data.runId,
+						status: "errored",
+						created_at: now,
+						error: errorMessage,
+						warnings: [errorMessage],
+					} as ExaTaskRun);
 
-			await responseRepo.updateResponseData(response.id, updatedData);
-		}
+		const updatedData = {
+			...existingData,
+			result: {
+				status: "error",
+				error: errorMessage,
+				data: {
+					provider: data.provider,
+					run: errorRun,
+					warnings: [errorMessage],
+				},
+			},
+			lastSyncedAt: now,
+		};
+
+		await responseRepo.updateResponseData(response.id, updatedData);
 	}
 }

@@ -32,10 +32,28 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 				};
 			}
 
-			const database = Database.getInstance(env.DB);
+			const database = Database.getInstance(env);
+			const user: IUser = {
+				id: data.userId,
+				name: null,
+				avatar_url: null,
+				email: "",
+				github_username: null,
+				company: null,
+				site: null,
+				location: null,
+				bio: null,
+				twitter_username: null,
+				role: null,
+				created_at: "",
+				updated_at: "",
+				setup_at: null,
+				terms_accepted_at: null,
+				plan_id: null,
+			};
 			const conversationManager = ConversationManager.getInstance({
 				database,
-				user: { id: data.userId } as IUser,
+				user,
 				store: true,
 				env,
 			});
@@ -78,7 +96,7 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 					conversationManager,
 					conversationId: data.conversationId,
 					env,
-					user: { id: data.userId } as IUser,
+					user,
 				},
 			);
 
