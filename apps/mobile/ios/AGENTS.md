@@ -2,10 +2,13 @@
 Native Swift-based Polychat client managed via Xcode; integrates with the shared API and mirrors web features where feasible.
 
 ## Project Layout
-- `Polychat/` – Application source (Swift, SwiftUI/UIKit, assets, entitlements).
-- `PolychatTests/`, `PolychatUITests/` – XCTest and UI test targets.
-- `Polychat.xcodeproj/` – Xcode project; treat as generated, edited via Xcode only.
-- `README.md` – Setup, build, and deployment instructions.
+- `Polychat/Models/` – Data models (ChatModels.swift)
+- `Polychat/Services/` – Business logic (APIClient, ConversationManager, ModelsStore, AuthenticationManager)
+- `Polychat/Views/` – SwiftUI views (ChatView, ConversationListView, SettingsView, ModelSelectorView, etc.)
+- `Polychat/DesignSystem/` – Color tokens and reusable design components
+- `Polychat/Intents/` – Siri shortcuts integration
+- `PolychatTests/`, `PolychatUITests/` – XCTest and UI test targets
+- `Polychat.xcodeproj/` – Xcode project; treat as generated, edited via Xcode only
 
 ## Commands & Tooling
 - **Install JS dependencies** (Capacitor or shared packages)
@@ -52,105 +55,39 @@ Native Swift-based Polychat client managed via Xcode; integrates with the shared
 - **CocoaPods**: Update Podfile if used
 - **Capacitor**: Update via pnpm if web bridge used
 
-## Recent Feature Additions (Added: 2025-11-05)
+## Architecture & Key Patterns
 
-### Enhanced Conversation List with Search & Categorization
-**Location**: `Polychat/Views/ConversationListView.swift`
-**Features**:
-- Search functionality across conversation titles and message content
-- Date-based categorization (Today, Yesterday, This Week, This Month, Older)
-- Improved conversation row design with icons, message count, and relative timestamps
-- Empty search state with helpful messaging
-- Better visual hierarchy and spacing
+### API Integration
+- **APIClient** (`Services/APIClient.swift`) - Singleton HTTP client handling all backend communication
+- Base URL: `https://api.polychat.app`
+- Authentication: Bearer token via `Authorization` header
+- All requests include `platform: "mobile"` identifier
+- Chat completions use `store: true` and `completion_id` for persistence
 
-### Markdown Support in Chat Messages
-**Location**: `Polychat/Views/ChatView.swift` (MessageBubble, MarkdownText)
-**Features**:
-- Native markdown rendering using AttributedString
-- Text selection enabled for all messages
-- Special styling for error messages and loading states
-- Message actions (copy, regenerate) appear on tap
-- Improved message bubble design with better spacing
+### State Management
+- **@MainActor** services ensure UI updates on main thread (ConversationManager, ModelsStore)
+- **@Published** properties trigger SwiftUI view updates automatically
+- **@EnvironmentObject** for dependency injection across view hierarchy
+- Conversations load from API on startup, lazy-load messages on demand
 
-### Advanced Chat Settings Panel
-**Location**: `Polychat/Views/ChatSettingsView.swift`, `Polychat/Models/ChatModels.swift`
-**Features**:
-- Temperature control (0-2 with 0.1 step)
-- Top P control (0-1 with 0.05 step)
-- Optional max tokens limit (256-8192 with 256 step)
-- Response mode selection (normal, concise, explanatory, formal)
-- Reset to defaults option
-- Accessible via menu in chat toolbar
+### Data Flow
+1. **App Launch** → Load conversations from `/chat/completions`
+2. **Select Conversation** → Fetch messages from `/chat/completions/{id}`
+3. **Send Message** → POST to `/chat/completions` with `completion_id` to persist
+4. **Pull-to-Refresh** → Re-fetch conversation list to sync
+5. **Delete** → DELETE `/chat/completions/{id}` then remove locally
 
-### Artifacts Panel for Code & Media
-**Location**: `Polychat/Views/ArtifactsView.swift`, `Polychat/Models/ChatModels.swift`
-**Features**:
-- Automatic extraction of code blocks from messages using regex
-- Support for multiple artifact types (code, image, text, markdown)
-- Full-screen artifact viewer with syntax highlighting
-- Copy functionality for artifacts
-- Badge indicator in toolbar showing artifact count
-- Expandable artifact cards with preview
+### UI Components
+- **SwiftUI** declarative views with @State, @Binding for local state
+- **Markdown rendering** via AttributedString for message content
+- **PhotosPicker** for image selection (multimodal support)
+- **Searchable** modifier for conversation search
+- **Refreshable** modifier for pull-to-refresh
 
-### Multimodal Support (Image Uploads)
-**Location**: `Polychat/Views/ImagePickerView.swift`, `Polychat/Views/ChatView.swift`
-**Features**:
-- PhotosPicker integration for selecting up to 5 images
-- Image preview thumbnails with remove buttons
-- Horizontal scrolling image gallery
-- Integrated into message input with visual feedback
-- Send button enables when images are selected
-
-### Enhanced Model Selector
-**Location**: `Polychat/Views/ModelSelectorView.swift`
-**Features**:
-- Model count badges per provider in section headers
-- Model description display in rows
-- Improved capability badges (Functions, Vision, Context)
-- Better visual hierarchy and spacing
-- Empty search state
-- Refresh capability with pull-to-refresh
-
-### Design System & Color Tokens
-**Location**: `Polychat/DesignSystem/Colors.swift`
-**Features**:
-- Polychat color palette matching web app (zinc scales, primary blue)
-- Semantic color definitions (success, warning, error)
-- View modifiers for consistent button and card styling
-- Dark mode compatible color system
-
-### Full API Integration & Persistence (Added: 2025-11-05)
-**Location**: `Polychat/Services/APIClient.swift`, `Polychat/Services/ConversationManager.swift`
-**Critical Fix**: App now fully integrates with backend API for conversation persistence
-
-**API Client Methods**:
-- `fetchConversations(limit:page:includeArchived:)` - Load all user conversations
-- `fetchConversation(id:refreshPending:)` - Load specific conversation with messages
-- `updateConversation(id:title:)` - Update conversation title on server
-- `deleteConversation(id:)` - Delete conversation from server
-- `createChatCompletion(messages:modelId:completionId:)` - Now includes `store:true` and `completion_id`
-
-**ConversationManager Features**:
-- Loads conversations from API on app startup
-- Lazy-loads messages when conversation clicked (performance optimization)
-- Pull-to-refresh to sync conversations
-- Delete operations sync with server
-- All new messages automatically persisted with `store:true`
-- Tracks `isLoadedFromAPI` flag to differentiate server vs local conversations
-
-**Data Flow**:
-1. App launch → `configure()` → `loadConversations()` fetches from API
-2. Click conversation → `loadConversationMessages()` loads full detail
-3. Send message → `addMessage()` with `completion_id` → persists to server
-4. Pull to refresh → `refreshConversations()` resyncs from server
-5. Delete → `deleteConversation()` removes from server then local
-
-**User Experience Improvements**:
-- Conversations persist across app restarts
-- Seamless sync between multiple devices
-- Loading indicators during API calls
-- Error alerts for network failures
-- Graceful fallback to local-only mode if API unavailable
+### Design System
+- Color tokens in `DesignSystem/Colors.swift` matching web app palette
+- `Color.polychat` namespace for semantic colors (primary, success, warning, error)
+- View modifiers: `.polychatPrimaryButton()`, `.polychatCard()`
 
 ## Common Pitfalls & Solutions
 
@@ -174,26 +111,48 @@ Native Swift-based Polychat client managed via Xcode; integrates with the shared
 
 ## 📋 AGENTS.md Maintenance Protocol
 
-**IMPORTANT**: When you (the AI agent) make changes to the iOS app, you MUST update this AGENTS.md file immediately after completing the implementation.
+### ⚠️ What to Document
 
-### Update Triggers
-- ✅ Added new Swift feature or screen
-- ✅ Modified API integration patterns
-- ✅ Added new capabilities or entitlements
-- ✅ Changed build configuration
-- ✅ Discovered iOS-specific pitfalls
+**DO document** (architecture and patterns):
+- New architectural patterns (e.g., changing from URLSession to Alamofire)
+- New dependency injection approaches
+- State management pattern changes
+- API integration changes that affect how future features should be built
+- Build configuration changes
+- New capabilities/entitlements requirements
+- iOS-specific pitfalls discovered
 
-### What to Update
-1. **Common Modification Locations**: Add entry for new feature types
-2. **Common Pitfalls**: Document iOS-specific problems and solutions
-3. **Guardrails**: Add new constraints discovered
+**DO NOT document** (implementation details):
+- Individual feature additions (those go in git commits)
+- UI component additions
+- New screens or views
+- Bug fixes
+- Code refactoring that doesn't change patterns
 
-### Update Format
+### When to Update
+
+Only update AGENTS.md when:
+1. **Architecture changes** - A future agent needs to know about a new pattern
+2. **Common pitfalls** - You discovered an iOS-specific issue that will affect future work
+3. **Integration patterns** - How services communicate changed fundamentally
+4. **Build/deployment** - Commands or requirements changed
+
+### How to Update
+
+- **Replace** existing sections with updated patterns, don't add dated entries
+- Keep it **concise** - 1-2 paragraphs max per section
+- Focus on **"how it works"** not **"what changed when"**
+- Update the relevant architecture section, not a changelog
+
+**Example BAD update:**
 ```markdown
-### [Feature Name] (Added: YYYY-MM-DD)
-**Purpose**: [What this feature does]
-**Location**: [File paths in Polychat/]
-**Requirements**: [iOS version, capabilities, etc.]
+### New Button Added (2025-11-05)
+Added a blue button to the settings screen at line 42...
 ```
 
-**Remember**: iOS development has unique constraints - document platform-specific issues.
+**Example GOOD update:**
+```markdown
+### State Management
+- Use @MainActor for services that update UI
+- ConversationManager now uses lazy loading pattern for performance
+```
