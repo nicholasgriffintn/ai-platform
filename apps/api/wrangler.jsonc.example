@@ -10,15 +10,6 @@
 	"dev": {
 		"port": 8787
 	},
-	"env": {
-    "dev": {
-      "triggers": {
-        "crons": [
-          "0 2 * * *"
-        ]
-      }
-    }
-  },
 	"vars": {
 		"ACCOUNT_ID": "REPLACE_ME",
 		"APP_BASE_URL": "REPLACE_ME",
@@ -29,6 +20,11 @@
 		"ALWAYS_ENABLED_PROVIDERS": "workers-ai,mistral,deepseek,google-ai-studio",
 		"LOG_LEVEL": "warn",
 		"ENV": "production"
+	},
+	"triggers": {
+		"crons": [
+			"0 2 * * *"
+		]
 	},
 	"ai": {
 		"binding": "AI",
