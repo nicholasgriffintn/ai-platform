@@ -122,7 +122,7 @@ struct ConversationListView: View {
     }
 
     private func startNewConversation() {
-        conversationManager.startNewConversation()
+        _ = conversationManager.startNewConversation()
     }
 
     private func deleteConversations(from conversations: [Conversation], at offsets: IndexSet) {
@@ -143,7 +143,7 @@ struct ConversationRow: View {
         guard let lastMessage = conversation.messages.last(where: { $0.role == "user" || $0.role == "assistant" }) else {
             return "No messages yet"
         }
-        return lastMessage.content
+        return lastMessage.content.textValue
     }
 
     private var messageCount: Int {

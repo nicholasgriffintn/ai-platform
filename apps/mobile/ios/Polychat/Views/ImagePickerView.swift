@@ -16,7 +16,7 @@ struct ImagePickerView: View {
                     .font(.system(size: 18))
             }
         }
-        .onChange(of: selectedItems) { _ in
+        .onChange(of: selectedItems) {
             loadImages()
         }
     }

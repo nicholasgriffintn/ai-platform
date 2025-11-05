@@ -69,8 +69,8 @@ struct SettingsView: View {
             
             Section(header: Text("Chat Settings")) {
                 Toggle("Auto-generate titles", isOn: $autoTitleGeneration)
-                    .onChange(of: autoTitleGeneration) { value in
-                        UserDefaults.standard.set(value, forKey: "autoTitleGeneration")
+                    .onChange(of: autoTitleGeneration) { _, newValue in
+                        UserDefaults.standard.set(newValue, forKey: "autoTitleGeneration")
                     }
             }
             
