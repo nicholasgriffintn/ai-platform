@@ -36,6 +36,8 @@ export function ReplicatePredictionDetail({
 			"bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
 		succeeded:
 			"bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
+		completed:
+			"bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
 		failed: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200",
 	};
 
@@ -88,7 +90,8 @@ export function ReplicatePredictionDetail({
 			)}
 
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				{prediction.status === "succeeded" &&
+				{(prediction.status === "succeeded" ||
+					prediction.status === "completed") &&
 					(prediction.output ||
 						prediction.predictionData?.output ||
 						prediction.predictionData?.response) && (
@@ -107,7 +110,7 @@ export function ReplicatePredictionDetail({
 					)}
 
 				<Card
-					className={`p-6 order-1 lg:order-2 ${prediction.status === "succeeded" && (prediction.output || prediction.predictionData?.output || prediction.predictionData?.response) ? "" : "lg:col-span-3"}`}
+					className={`p-6 order-1 lg:order-2 ${(prediction.status === "succeeded" || prediction.status === "completed") && (prediction.output || prediction.predictionData?.output || prediction.predictionData?.response) ? "" : "lg:col-span-3"}`}
 				>
 					<h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
 						Input Parameters

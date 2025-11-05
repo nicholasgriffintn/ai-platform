@@ -31,7 +31,7 @@ export interface ReplicateModel {
 export interface ReplicatePrediction {
 	id: string;
 	prediction_id?: string;
-	status: "processing" | "succeeded" | "failed";
+	status: "processing" | "succeeded" | "completed" | "failed";
 	output?: any;
 	error?: string;
 	modelId: string;
