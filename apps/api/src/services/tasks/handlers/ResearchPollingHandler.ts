@@ -66,8 +66,13 @@ export class ResearchPollingHandler implements TaskHandler {
 				};
 			}
 
-			if (status === "failed" || status === "errored" || status === "cancelled") {
-				const error = (researchResult.run as any).error || "Research task failed";
+			if (
+				status === "failed" ||
+				status === "errored" ||
+				status === "cancelled"
+			) {
+				const error =
+					(researchResult.run as any).error || "Research task failed";
 				logger.warn(`Research task ${data.runId} ${status}`);
 				await this.persistError(env, data, error);
 				return {

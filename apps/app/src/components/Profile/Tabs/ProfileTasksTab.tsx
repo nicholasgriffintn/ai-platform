@@ -15,6 +15,12 @@ function TaskItem({ task }: { task: Task }) {
 		switch (task.task_type) {
 			case "memory_synthesis":
 				return "Memory Synthesis";
+			case "research_polling":
+				return "Research Polling";
+			case "replicate_polling":
+				return "Replicate Polling";
+			case "async_message_polling":
+				return "Async Message Polling";
 			default:
 				return task.task_type;
 		}

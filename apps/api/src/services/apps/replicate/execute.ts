@@ -112,7 +112,6 @@ export const executeReplicateModel = async (
 			);
 		}
 
-		// Queue background polling task if prediction is async
 		if (isAsync && serviceContext.env.DB) {
 			const taskRepository = new TaskRepository(serviceContext.env);
 			const taskService = new TaskService(serviceContext.env, taskRepository);

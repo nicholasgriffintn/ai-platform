@@ -64,7 +64,10 @@ export class ReplicatePollingHandler implements TaskHandler {
 				return {
 					status: "success",
 					message: "Prediction not in processing state",
-					data: { predictionId: data.predictionId, status: predictionData.status },
+					data: {
+						predictionId: data.predictionId,
+						status: predictionData.status,
+					},
 				};
 			}
 
@@ -127,7 +130,9 @@ export class ReplicatePollingHandler implements TaskHandler {
 				};
 			}
 
-			logger.info(`Prediction ${data.predictionId} still in progress, re-queuing`);
+			logger.info(
+				`Prediction ${data.predictionId} still in progress, re-queuing`,
+			);
 
 			const taskRepository = new TaskRepository(env);
 			const taskService = new TaskService(env, taskRepository);
