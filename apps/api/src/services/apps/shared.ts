@@ -112,7 +112,7 @@ export async function getSharedItem({
 		throw new AssistantError("Shared item not found", ErrorType.NOT_FOUND);
 	}
 
-	let parsedData = safeParseJson(appData.data);
+	let parsedData = safeParseJson(appData.data) ?? {};
 
 	return {
 		id: appData.id,

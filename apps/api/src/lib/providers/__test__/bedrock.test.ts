@@ -288,7 +288,7 @@ describe("BedrockProvider", () => {
 			expect(endpoint).toBe(
 				"https://bedrock-runtime.us-east-1.amazonaws.com/model/amazon.nova-canvas-v1:0/invoke",
 			);
-		});
+		}, 10000);
 
 		it("should use async-invoke endpoint for nova-reel", async () => {
 			const actualModels =

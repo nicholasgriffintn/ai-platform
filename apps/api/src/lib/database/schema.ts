@@ -698,7 +698,12 @@ export const tasks = sqliteTable(
 	{
 		id: text().primaryKey(),
 		task_type: text({
-			enum: ["memory_synthesis"],
+			enum: [
+				"memory_synthesis",
+				"research_polling",
+				"replicate_polling",
+				"async_message_polling",
+			],
 		}).notNull(),
 		status: text({
 			enum: [

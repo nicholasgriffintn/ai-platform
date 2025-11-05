@@ -25,10 +25,10 @@ export function useResearchStatus({
 	runId,
 	provider,
 	enabled = true,
-	pollInterval = 5000,
+	pollInterval = 10000,
 	initialData,
 }: UseResearchStatusOptions) {
-	const sanitizedInterval = Math.max(1000, pollInterval || 0);
+	const sanitizedInterval = Math.max(5000, pollInterval || 0);
 
 	return useQuery<ResearchStatus, Error>({
 		queryKey: researchStatusQueryKey(runId, provider),
@@ -48,7 +48,7 @@ export function useResearchStatus({
 			const data = query.state.data as ResearchStatus | undefined;
 			const intervalFromData = data?.poll?.interval_ms;
 			const effectiveInterval = Math.max(
-				1000,
+				5000,
 				Number(intervalFromData ?? sanitizedInterval) || 0,
 			);
 
@@ -64,6 +64,11 @@ export function useResearchStatus({
 
 			if (FAILURE_STATUSES.has(status)) {
 				return false;
+			}
+
+			const pollCount = (query.state.dataUpdateCount || 0) + 1;
+			if (pollCount > 10) {
+				return Math.min(15000, effectiveInterval * 1.5);
 			}
 
 			return effectiveInterval;

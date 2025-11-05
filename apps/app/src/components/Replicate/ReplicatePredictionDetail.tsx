@@ -36,22 +36,30 @@ export function ReplicatePredictionDetail({
 			"bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
 		succeeded:
 			"bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
+		completed:
+			"bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
 		failed: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200",
 	};
 
 	return (
 		<div className="space-y-6">
-			<div className="flex items-start justify-between">
-				<div>
-					<h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-						{prediction.modelName || prediction.modelId}
+			<div className="flex items-start justify-between gap-4">
+				<div className="flex-1 min-w-0">
+					<h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 break-words">
+						{prediction.input?.prompt ||
+							prediction.modelName ||
+							prediction.modelId}
 					</h1>
-					<p className="text-zinc-600 dark:text-zinc-400">
-						{new Date(prediction.created_at).toLocaleString()}
-					</p>
+					<div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+						<span className="font-medium">
+							{prediction.modelName || prediction.modelId}
+						</span>
+						<span>•</span>
+						<span>{new Date(prediction.created_at).toLocaleString()}</span>
+					</div>
 				</div>
 				<span
-					className={`px-4 py-2 text-sm font-medium rounded-full ${
+					className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap shrink-0 ${
 						statusColors[prediction.status as keyof typeof statusColors]
 					}`}
 				>
@@ -88,7 +96,8 @@ export function ReplicatePredictionDetail({
 			)}
 
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				{prediction.status === "succeeded" &&
+				{(prediction.status === "succeeded" ||
+					prediction.status === "completed") &&
 					(prediction.output ||
 						prediction.predictionData?.output ||
 						prediction.predictionData?.response) && (
@@ -107,7 +116,7 @@ export function ReplicatePredictionDetail({
 					)}
 
 				<Card
-					className={`p-6 order-1 lg:order-2 ${prediction.status === "succeeded" && (prediction.output || prediction.predictionData?.output || prediction.predictionData?.response) ? "" : "lg:col-span-3"}`}
+					className={`p-6 order-1 lg:order-2 ${(prediction.status === "succeeded" || prediction.status === "completed") && (prediction.output || prediction.predictionData?.output || prediction.predictionData?.response) ? "" : "lg:col-span-3"}`}
 				>
 					<h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
 						Input Parameters

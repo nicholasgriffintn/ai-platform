@@ -3,6 +3,9 @@ import { getLogger } from "~/utils/logger";
 import { TaskMessage } from "./TaskService";
 import { TaskHandler } from "./TaskHandler";
 import { MemorySynthesisHandler } from "./handlers/MemorySynthesisHandler";
+import { ResearchPollingHandler } from "./handlers/ResearchPollingHandler";
+import { ReplicatePollingHandler } from "./handlers/ReplicatePollingHandler";
+import { AsyncMessagePollingHandler } from "./handlers/AsyncMessagePollingHandler";
 import { TaskExecutor } from "./TaskExecutor";
 
 const logger = getLogger({ prefix: "services/tasks/queue-executor" });
@@ -16,6 +19,9 @@ export class QueueExecutor {
 
 		const handlers = new Map<string, TaskHandler>([
 			["memory_synthesis", new MemorySynthesisHandler()],
+			["research_polling", new ResearchPollingHandler()],
+			["replicate_polling", new ReplicatePollingHandler()],
+			["async_message_polling", new AsyncMessagePollingHandler()],
 		]);
 
 		const taskExecutor = new TaskExecutor(env, handlers);

@@ -1,3 +1,5 @@
+import type { TaskType, ScheduleType } from "@assistant/schemas";
+
 import { BaseRepository } from "./BaseRepository";
 import type { Task, TaskExecution } from "~/lib/database/schema";
 import { safeParseJson } from "~/utils/json";
@@ -5,10 +7,10 @@ import { safeParseJson } from "~/utils/json";
 import { generateId } from "~/utils/id";
 
 export interface CreateTaskParams {
-	task_type: "memory_synthesis";
+	task_type: TaskType;
 	user_id?: number;
 	task_data?: Record<string, any>;
-	schedule_type?: "immediate" | "scheduled" | "recurring" | "event_triggered";
+	schedule_type?: ScheduleType;
 	scheduled_at?: string;
 	cron_expression?: string;
 	priority?: number;

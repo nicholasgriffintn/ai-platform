@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-export const TaskType = z.enum(["memory_synthesis"]);
+export const TaskType = z.enum([
+	"memory_synthesis",
+	"research_polling",
+	"replicate_polling",
+	"async_message_polling",
+]);
 
 export const TaskStatus = z.enum([
 	"pending",

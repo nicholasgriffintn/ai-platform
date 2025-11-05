@@ -65,7 +65,7 @@ export async function getArticleDetails({
 			throw new AssistantError("Forbidden", ErrorType.FORBIDDEN);
 		}
 
-		let parsedArticleData = safeParseJson(article.data || "{}");
+		let parsedArticleData = safeParseJson(article.data || "{}") ?? {};
 
 		const parsedArticle: AppData = {
 			...article,

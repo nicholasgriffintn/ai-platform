@@ -7,3 +7,9 @@ export const SCHEDULES = {
 export const ENABLED_SCHEDULES_FLAGS: Record<string, keyof IEnv> = {
 	memory_synthesis: "MEMORY_SYNTHESIS_ENABLED",
 };
+
+export const ALWAYS_ENABLED_SCHEDULES: string[] = [
+	"research_polling",
+	"replicate_polling",
+	"async_message_polling",
+];

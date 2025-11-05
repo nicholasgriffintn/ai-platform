@@ -67,7 +67,7 @@ export async function getSourceArticles({
 				const article = await appDataRepo.getAppDataById(id);
 
 				if (article && article.user_id === userId) {
-					let parsedArticleData = safeParseJson(article.data || "{}");
+					let parsedArticleData = safeParseJson(article.data || "{}") ?? {};
 
 					return {
 						...article,

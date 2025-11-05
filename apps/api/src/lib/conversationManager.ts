@@ -4,6 +4,7 @@ import type {
 	MessageContent,
 	Platform,
 	User,
+	IEnv,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -11,6 +12,10 @@ import { getLogger } from "~/utils/logger";
 import type { Database } from "./database";
 import { type UsageLimits, UsageManager } from "./usageManager";
 import { safeParseJson } from "~/utils/json";
+import type { AsyncInvocationMetadata } from "./async/asyncInvocation";
+import { isAsyncInvocationPending } from "./async/asyncInvocation";
+import { TaskRepository } from "~/repositories/TaskRepository";
+import { TaskService } from "~/services/tasks/TaskService";
 
 const logger = getLogger({ prefix: "lib/conversationManager" });
 
@@ -22,6 +27,7 @@ export class ConversationManager {
 	private user?: User | null;
 	private anonymousUser?: AnonymousUser | null;
 	private usageManager?: UsageManager;
+	private env?: IEnv;
 
 	private constructor(
 		database: Database,
@@ -30,6 +36,7 @@ export class ConversationManager {
 		model?: string,
 		platform?: Platform,
 		store?: boolean,
+		env?: IEnv,
 	) {
 		this.database = database;
 		this.user = user;
@@ -37,6 +44,7 @@ export class ConversationManager {
 		this.model = model;
 		this.platform = platform || "api";
 		this.store = store ?? true;
+		this.env = env;
 
 		this.usageManager = new UsageManager(database, user, anonymousUser);
 	}
@@ -48,6 +56,7 @@ export class ConversationManager {
 		model,
 		platform,
 		store,
+		env,
 	}: {
 		database: Database;
 		user?: User | null;
@@ -55,6 +64,7 @@ export class ConversationManager {
 		model?: string;
 		platform?: Platform;
 		store?: boolean;
+		env?: IEnv;
 	}): ConversationManager {
 		return new ConversationManager(
 			database,
@@ -63,6 +73,7 @@ export class ConversationManager {
 			model,
 			platform,
 			store ?? true,
+			env,
 		);
 	}
 
@@ -247,6 +258,38 @@ export class ConversationManager {
 				conversation_id,
 				lastMessage.id as string,
 			);
+		}
+
+		if (this.env?.DB && this.user?.id) {
+			for (const message of newMessages) {
+				const asyncInvocation = (
+					message.data as Record<string, any> | undefined
+				)?.asyncInvocation as AsyncInvocationMetadata | undefined;
+
+				if (asyncInvocation && isAsyncInvocationPending(asyncInvocation)) {
+					try {
+						const taskRepository = new TaskRepository(this.env);
+						const taskService = new TaskService(this.env, taskRepository);
+
+						await taskService.enqueueTask({
+							task_type: "async_message_polling",
+							user_id: this.user.id,
+							task_data: {
+								conversationId: conversation_id,
+								messageId: message.id,
+								asyncInvocation,
+								userId: this.user.id,
+							},
+							priority: 7,
+						});
+					} catch (error) {
+						logger.error(
+							`Failed to queue async message polling task for message ${message.id}:`,
+							error,
+						);
+					}
+				}
+			}
 		}
 
 		return newMessages;

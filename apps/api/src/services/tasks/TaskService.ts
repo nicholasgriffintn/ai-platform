@@ -1,3 +1,5 @@
+import type { TaskType, ScheduleType } from "@assistant/schemas";
+
 import type { IEnv } from "~/types";
 import type { TaskRepository } from "~/repositories/TaskRepository";
 import type { Task } from "~/lib/database/schema";
@@ -6,10 +8,10 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "services/tasks" });
 
 export interface TaskDefinition {
-	task_type: "memory_synthesis";
+	task_type: TaskType;
 	user_id?: number;
 	task_data: Record<string, any>;
-	schedule_type?: "immediate" | "scheduled" | "recurring" | "event_triggered";
+	schedule_type?: ScheduleType;
 	scheduled_at?: string;
 	cron_expression?: string;
 	priority?: number;

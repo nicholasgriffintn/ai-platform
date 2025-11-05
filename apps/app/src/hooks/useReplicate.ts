@@ -29,7 +29,7 @@ export function useReplicatePredictions() {
 			if (!data) return false;
 
 			const hasProcessing = data.some((pred) => pred.status === "processing");
-			return hasProcessing ? 5000 : false; // Poll every 5 seconds if any are processing
+			return hasProcessing ? 10000 : false;
 		},
 	});
 }
@@ -43,7 +43,7 @@ export function useReplicatePrediction(predictionId: string | null) {
 			const data = query.state.data as ReplicatePrediction | undefined;
 			if (!data) return false;
 
-			return data.status === "processing" ? 5000 : false;
+			return data.status === "processing" ? 10000 : false;
 		},
 	});
 }

@@ -9,6 +9,8 @@ import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { generateId } from "~/utils/id";
+import { TaskRepository } from "~/repositories/TaskRepository";
+import { TaskService } from "~/services/tasks/TaskService";
 
 const logger = getLogger({ prefix: "services/apps/replicate/execute" });
 
@@ -108,6 +110,23 @@ export const executeReplicateModel = async (
 				"Failed to store prediction data",
 				ErrorType.STORAGE_ERROR,
 			);
+		}
+
+		if (isAsync && serviceContext.env.DB) {
+			const taskRepository = new TaskRepository(serviceContext.env);
+			const taskService = new TaskService(serviceContext.env, taskRepository);
+
+			await taskService.enqueueTask({
+				task_type: "replicate_polling",
+				user_id: user.id,
+				task_data: {
+					predictionId: stored.id,
+					userId: user.id,
+					modelId: params.modelId,
+					startedAt: new Date().toISOString(),
+				},
+				priority: 6,
+			});
 		}
 
 		return {
