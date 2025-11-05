@@ -15,6 +15,8 @@ import type {
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
+import { TaskRepository } from "~/repositories/TaskRepository";
+import { TaskService } from "~/services/tasks/TaskService";
 import { safeParseJson } from "../../utils/json";
 
 const MAX_INPUT_LENGTH = 15000;
@@ -93,6 +95,7 @@ const getResearchInstance = async (
 
 export const startResearchTask = async (
 	req: ResearchTaskRequest,
+	responseId?: string,
 ): Promise<ResearchTaskHandle> => {
 	const { env, user, provider, options } = req;
 	const preparedInput = normaliseInput(req.input);
@@ -107,6 +110,35 @@ export const startResearchTask = async (
 
 	if ("status" in creation) {
 		throw new AssistantError(creation.error, ErrorType.EXTERNAL_API_ERROR);
+	}
+
+	// Queue background polling task to check status
+	if (user?.id && env.DB) {
+		const taskRepository = new TaskRepository(env);
+		const taskService = new TaskService(env, taskRepository);
+
+		const runId =
+			"run_id" in creation.run
+				? creation.run.run_id
+				: "research_id" in creation.run
+					? creation.run.research_id
+					: "";
+
+		if (runId) {
+			await taskService.enqueueTask({
+				task_type: "research_polling",
+				user_id: user.id,
+				task_data: {
+					runId,
+					provider: providerToUse,
+					userId: user.id,
+					options,
+					startedAt: new Date().toISOString(),
+					responseId,
+				},
+				priority: 7,
+			});
+		}
 	}
 
 	return {

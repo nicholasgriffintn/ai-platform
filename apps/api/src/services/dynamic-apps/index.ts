@@ -113,6 +113,7 @@ export const executeDynamicApp = async (
 		user,
 		store: !!user?.id,
 		platform: "dynamic-apps",
+		env,
 	});
 
 	try {

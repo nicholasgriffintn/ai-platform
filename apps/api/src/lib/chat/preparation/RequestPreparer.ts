@@ -83,6 +83,7 @@ export class RequestPreparer {
 			model: primaryModel,
 			platform,
 			store: options.store,
+			env: this.env,
 		});
 
 		const finalMessage = await this.processMessageContent(

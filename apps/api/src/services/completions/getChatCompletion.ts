@@ -1,6 +1,5 @@
 import { ConversationManager } from "~/lib/conversationManager";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
-import { refreshAsyncMessages } from "~/services/completions/refreshAsyncMessages";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -24,26 +23,16 @@ export const handleGetChatCompletion = async (
 	const conversationManager = ConversationManager.getInstance({
 		database: serviceContext.database,
 		user,
+		env,
 	});
 
-	let conversation =
+	const conversation =
 		await conversationManager.getConversationDetails(completion_id);
 
-	if (options?.refreshPending) {
-		const messages = (conversation.messages as any[]) || [];
-		const refreshedMessages = await refreshAsyncMessages({
-			conversationManager,
-			conversationId: completion_id,
-			env,
-			user,
-			messages,
-		});
-
-		conversation = {
-			...conversation,
-			messages: refreshedMessages,
-		};
-	}
+	// NOTE: refreshPending option is now deprecated. Async message polling is handled
+	// automatically by the task queue system. Background tasks poll provider APIs and
+	// update messages proactively, eliminating the need for manual refresh calls.
+	// The option is kept for backwards compatibility but does nothing.
 
 	return conversation;
 };
