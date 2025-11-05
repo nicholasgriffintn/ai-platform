@@ -89,7 +89,9 @@ describe("ResearchPollingHandler", () => {
 			}),
 			updateResponseData: vi.fn().mockResolvedValue(undefined),
 		};
-		mockedDynamicAppResponseRepository.mockImplementation(() => mockRepo as any);
+		mockedDynamicAppResponseRepository.mockImplementation(
+			() => mockRepo as any,
+		);
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -125,7 +127,9 @@ describe("ResearchPollingHandler", () => {
 			}),
 			updateResponseData: vi.fn().mockResolvedValue(undefined),
 		};
-		mockedDynamicAppResponseRepository.mockImplementation(() => mockRepo as any);
+		mockedDynamicAppResponseRepository.mockImplementation(
+			() => mockRepo as any,
+		);
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -160,7 +164,9 @@ describe("ResearchPollingHandler", () => {
 			}),
 			updateResponseData: vi.fn().mockResolvedValue(undefined),
 		};
-		mockedDynamicAppResponseRepository.mockImplementation(() => mockRepo as any);
+		mockedDynamicAppResponseRepository.mockImplementation(
+			() => mockRepo as any,
+		);
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -223,7 +229,9 @@ describe("ResearchPollingHandler", () => {
 			}),
 			updateResponseData: vi.fn().mockResolvedValue(undefined),
 		};
-		mockedDynamicAppResponseRepository.mockImplementation(() => mockRepo as any);
+		mockedDynamicAppResponseRepository.mockImplementation(
+			() => mockRepo as any,
+		);
 
 		await handler.handle(baseMessage, baseEnv);
 

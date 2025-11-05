@@ -52,7 +52,10 @@ export class ResearchPollingHandler implements TaskHandler {
 				};
 			}
 
-			const researchResult = result as Exclude<ResearchResult, ResearchResultError>;
+			const researchResult = result as Exclude<
+				ResearchResult,
+				ResearchResultError
+			>;
 			const status = researchResult.run?.status?.toLowerCase() || "unknown";
 
 			if (status === "completed") {

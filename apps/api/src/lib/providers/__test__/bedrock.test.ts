@@ -268,31 +268,27 @@ describe("BedrockProvider", () => {
 	});
 
 	describe("getEndpoint", () => {
-		it(
-			"should use invoke endpoint for nova-canvas",
-			async () => {
-				const actualModels =
-					await vi.importActual<typeof import("~/lib/models")>("~/lib/models");
+		it("should use invoke endpoint for nova-canvas", async () => {
+			const actualModels =
+				await vi.importActual<typeof import("~/lib/models")>("~/lib/models");
 
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockImplementation((model) =>
 				actualModels.getModelConfigByMatchingModel(model),
 			);
 
-				const provider = new BedrockProvider();
+			const provider = new BedrockProvider();
 
-				const endpoint = await (provider as any).getEndpoint({
-					model: "amazon.nova-canvas-v1:0",
-					stream: false,
-					env: { AI_GATEWAY_TOKEN: "test-token" },
-				});
+			const endpoint = await (provider as any).getEndpoint({
+				model: "amazon.nova-canvas-v1:0",
+				stream: false,
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			});
 
-				expect(endpoint).toBe(
-					"https://bedrock-runtime.us-east-1.amazonaws.com/model/amazon.nova-canvas-v1:0/invoke",
-				);
-			},
-			10000,
-		);
+			expect(endpoint).toBe(
+				"https://bedrock-runtime.us-east-1.amazonaws.com/model/amazon.nova-canvas-v1:0/invoke",
+			);
+		}, 10000);
 
 		it("should use async-invoke endpoint for nova-reel", async () => {
 			const actualModels =
