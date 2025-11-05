@@ -118,7 +118,6 @@ export async function requestMagicLink(
 				);
 			}
 
-			// Create user settings
 			try {
 				await repositories.userSettings.createUserSettings(
 					createdUser.id as number,
@@ -198,7 +197,6 @@ export async function verifyMagicLink(
 		);
 	}
 
-	// Use Database.consumeMagicLinkNonce as it's a complex business logic method
 	const consumed = await database.consumeMagicLinkNonce(nonce, userId);
 
 	if (!consumed) {

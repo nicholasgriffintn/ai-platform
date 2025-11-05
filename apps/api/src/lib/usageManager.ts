@@ -199,7 +199,9 @@ export class UsageManager {
 			);
 		}
 
-		await this.repositories.anonymousUsers.incrementDailyCount(this.anonymousUser.id);
+		await this.repositories.anonymousUsers.incrementDailyCount(
+			this.anonymousUser.id,
+		);
 	}
 
 	async checkProUsage(modelId: string) {

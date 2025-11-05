@@ -182,7 +182,10 @@ export async function createOrUpdateGithubUser(
 	},
 ): Promise<User> {
 	try {
-		const existingUser = await getUserByGithubId(repositories, userData.githubId);
+		const existingUser = await getUserByGithubId(
+			repositories,
+			userData.githubId,
+		);
 
 		if (existingUser) {
 			await repositories.users.updateUser(existingUser.id, {
@@ -251,7 +254,6 @@ export async function createOrUpdateGithubUser(
 			);
 		}
 
-		// Create user settings
 		if ("id" in result) {
 			try {
 				await repositories.userSettings.createUserSettings(result.id as number);

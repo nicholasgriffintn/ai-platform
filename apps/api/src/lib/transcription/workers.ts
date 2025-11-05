@@ -48,7 +48,9 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
 		}
 
 		const repositories = new RepositoryManager(env);
-		const userSettings = await repositories.userSettings.getUserSettings(user?.id);
+		const userSettings = await repositories.userSettings.getUserSettings(
+			user?.id,
+		);
 
 		const { model: modelToUse, provider: providerToUse } =
 			await getAuxiliarySpeechModel(env, userSettings);

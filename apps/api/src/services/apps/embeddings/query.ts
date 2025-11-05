@@ -19,7 +19,9 @@ export const queryEmbeddings = async (req: any): Promise<any> => {
 		}
 
 		const repositories = new RepositoryManager(env);
-		const userSettings = await repositories.userSettings.getUserSettings(req.user?.id);
+		const userSettings = await repositories.userSettings.getUserSettings(
+			req.user?.id,
+		);
 		if (!userSettings) {
 			throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
 		}

@@ -63,7 +63,9 @@ export async function createCheckoutSession(
 			metadata: { user_id: user.id.toString() },
 		});
 		customerId = customer.id;
-		await repositories.users.updateUser(user.id, { stripe_customer_id: customerId });
+		await repositories.users.updateUser(user.id, {
+			stripe_customer_id: customerId,
+		});
 	}
 
 	const session = await stripe.checkout.sessions.create({
@@ -276,7 +278,8 @@ export async function handleStripeWebhook(
 				const customerId = session.customer as string;
 				const subscriptionId = session.subscription as string;
 				if (customerId && subscriptionId) {
-					const user = await repositories.users.getUserByStripeCustomerId(customerId);
+					const user =
+						await repositories.users.getUserByStripeCustomerId(customerId);
 					if (user?.id) {
 						await repositories.users.updateUser(user.id, {
 							stripe_customer_id: customerId,
@@ -297,7 +300,8 @@ export async function handleStripeWebhook(
 			case "customer.subscription.updated": {
 				const subscription = event.data.object as Stripe.Subscription;
 				const customerId = subscription.customer as string;
-				const user = await repositories.users.getUserByStripeCustomerId(customerId);
+				const user =
+					await repositories.users.getUserByStripeCustomerId(customerId);
 				if (user?.id) {
 					await repositories.users.updateUser(user.id, {
 						stripe_subscription_id: subscription.id,
@@ -308,7 +312,8 @@ export async function handleStripeWebhook(
 			case "customer.subscription.deleted": {
 				const subscription = event.data.object as Stripe.Subscription;
 				const customerId = subscription.customer as string;
-				const user = await repositories.users.getUserByStripeCustomerId(customerId);
+				const user =
+					await repositories.users.getUserByStripeCustomerId(customerId);
 				if (user?.id) {
 					await repositories.users.updateUser(user.id, {
 						stripe_subscription_id: null,
@@ -327,7 +332,8 @@ export async function handleStripeWebhook(
 			case "invoice.payment_failed": {
 				const invoice = event.data.object as Stripe.Invoice;
 				const customerId = invoice.customer as string;
-				const user = await repositories.users.getUserByStripeCustomerId(customerId);
+				const user =
+					await repositories.users.getUserByStripeCustomerId(customerId);
 				if (user?.id && user.email) {
 					try {
 						await sendPaymentFailedEmail(env, user.email);
@@ -340,7 +346,8 @@ export async function handleStripeWebhook(
 			case "customer.subscription.trial_will_end": {
 				const subscription = event.data.object as Stripe.Subscription;
 				const customerId = subscription.customer as string;
-				const user = await repositories.users.getUserByStripeCustomerId(customerId);
+				const user =
+					await repositories.users.getUserByStripeCustomerId(customerId);
 				if (user?.id && user.email) {
 					try {
 						await sendTrialEndingEmail(env, user.email);

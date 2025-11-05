@@ -175,7 +175,10 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 
 		const matchesWithContent = await Promise.all(
 			filteredMatches.map(async (match) => {
-				const record = await this.repositories.embeddings.getEmbedding(match.id, options.type);
+				const record = await this.repositories.embeddings.getEmbedding(
+					match.id,
+					options.type,
+				);
 
 				return {
 					match_id: match.id,

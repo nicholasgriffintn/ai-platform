@@ -46,11 +46,15 @@ export async function getWebAuthnChallenge(
 		let challengeRecord;
 
 		if (challenge && userId) {
-			challengeRecord = await repositories.webAuthn.getChallenge(challenge, userId);
+			challengeRecord = await repositories.webAuthn.getChallenge(
+				challenge,
+				userId,
+			);
 		} else if (challenge) {
 			challengeRecord = await repositories.webAuthn.getChallenge(challenge);
 		} else if (userId) {
-			challengeRecord = await repositories.webAuthn.getChallengeByUserId(userId);
+			challengeRecord =
+				await repositories.webAuthn.getChallengeByUserId(userId);
 		}
 
 		if (!challengeRecord?.challenge) {
@@ -134,7 +138,8 @@ export async function getPasskeyWithUser(
 	user: Partial<User>;
 } | null> {
 	try {
-		const result = await repositories.webAuthn.getPasskeyByCredentialId(credentialId);
+		const result =
+			await repositories.webAuthn.getPasskeyByCredentialId(credentialId);
 
 		if (!result) {
 			return null;
@@ -177,7 +182,10 @@ export async function deletePasskey(
 	userId: number,
 ): Promise<boolean> {
 	try {
-		const success = await repositories.webAuthn.deletePasskey(passkeyId, userId);
+		const success = await repositories.webAuthn.deletePasskey(
+			passkeyId,
+			userId,
+		);
 		return success;
 	} catch (error) {
 		logger.error("Error deleting passkey:", { error });
@@ -250,7 +258,11 @@ export async function verifyAndRegisterPasskey(
 	expectedRPID: string,
 ): Promise<boolean> {
 	try {
-		const challenge = await getWebAuthnChallenge(repositories, undefined, user.id);
+		const challenge = await getWebAuthnChallenge(
+			repositories,
+			undefined,
+			user.id,
+		);
 
 		const verification = await verifyRegistrationResponse({
 			response,
@@ -346,7 +358,10 @@ export async function verifyPasskeyAuthentication(
 	try {
 		const credentialID = response.id;
 
-		const passkeyWithUser = await getPasskeyWithUser(repositories, credentialID);
+		const passkeyWithUser = await getPasskeyWithUser(
+			repositories,
+			credentialID,
+		);
 
 		if (!passkeyWithUser) {
 			throw new AssistantError(

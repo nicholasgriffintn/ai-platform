@@ -47,9 +47,10 @@ export class ConversationManager {
 		this.store = store ?? true;
 		this.env = env;
 
-		// Create RepositoryManager from env if available
 		const repositories = env ? new RepositoryManager(env) : null;
-		this.usageManager = repositories ? new UsageManager(repositories, user, anonymousUser) : undefined;
+		this.usageManager = repositories
+			? new UsageManager(repositories, user, anonymousUser)
+			: undefined;
 	}
 
 	public static getInstance({
@@ -322,7 +323,10 @@ export class ConversationManager {
 			);
 		}
 
-		const conversation = await this.database.repositories.conversations.getConversation(conversation_id);
+		const conversation =
+			await this.database.repositories.conversations.getConversation(
+				conversation_id,
+			);
 		if (conversation && conversation.user_id !== this.user?.id) {
 			throw new AssistantError(
 				"You don't have permission to update this conversation",
@@ -332,11 +336,17 @@ export class ConversationManager {
 
 		if (conversation) {
 			const existingMessages =
-				await this.database.repositories.messages.getConversationMessages(conversation_id);
+				await this.database.repositories.messages.getConversationMessages(
+					conversation_id,
+				);
 
 			const deletePromises = existingMessages
 				.filter((message) => message.id)
-				.map((message) => this.database.repositories.messages.deleteMessage(message.id as string));
+				.map((message) =>
+					this.database.repositories.messages.deleteMessage(
+						message.id as string,
+					),
+				);
 
 			await Promise.all(deletePromises);
 		}
@@ -361,7 +371,10 @@ export class ConversationManager {
 			);
 		}
 
-		const conversation = await this.database.repositories.conversations.getConversation(conversation_id);
+		const conversation =
+			await this.database.repositories.conversations.getConversation(
+				conversation_id,
+			);
 		if (!conversation) {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
@@ -397,7 +410,10 @@ export class ConversationManager {
 			}
 
 			if (Object.keys(updates).length > 0) {
-				await this.database.repositories.messages.updateMessage(message.id, updates);
+				await this.database.repositories.messages.updateMessage(
+					message.id,
+					updates,
+				);
 			}
 		}
 	}
@@ -427,7 +443,10 @@ export class ConversationManager {
 			);
 		}
 
-		const conversation = await this.database.repositories.conversations.getConversation(conversation_id);
+		const conversation =
+			await this.database.repositories.conversations.getConversation(
+				conversation_id,
+			);
 		if (!conversation) {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
@@ -439,11 +458,12 @@ export class ConversationManager {
 			);
 		}
 
-		const messages = await this.database.repositories.messages.getConversationMessages(
-			conversation_id,
-			limit,
-			after,
-		);
+		const messages =
+			await this.database.repositories.messages.getConversationMessages(
+				conversation_id,
+				limit,
+				after,
+			);
 
 		return messages.map((dbMessage) => this.formatMessage(dbMessage));
 	}
@@ -472,12 +492,13 @@ export class ConversationManager {
 			);
 		}
 
-		const result = await this.database.repositories.conversations.getUserConversations(
-			this.user?.id,
-			limit,
-			page,
-			includeArchived,
-		);
+		const result =
+			await this.database.repositories.conversations.getUserConversations(
+				this.user?.id,
+				limit,
+				page,
+				includeArchived,
+			);
 
 		const conversations = result.conversations.map((conversation) => {
 			const messagesString = conversation.messages as string;
@@ -511,7 +532,10 @@ export class ConversationManager {
 			);
 		}
 
-		const conversation = await this.database.repositories.conversations.getConversation(conversation_id);
+		const conversation =
+			await this.database.repositories.conversations.getConversation(
+				conversation_id,
+			);
 		if (!conversation) {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
@@ -523,9 +547,10 @@ export class ConversationManager {
 			);
 		}
 
-		const dbMessages = await this.database.repositories.messages.getConversationMessages(
-			conversation.id as string,
-		);
+		const dbMessages =
+			await this.database.repositories.messages.getConversationMessages(
+				conversation.id as string,
+			);
 
 		const messages = dbMessages.map((dbMessage) =>
 			this.formatMessage(dbMessage),
@@ -561,7 +586,10 @@ export class ConversationManager {
 			);
 		}
 
-		const conversation = await this.database.repositories.conversations.getConversation(conversation_id);
+		const conversation =
+			await this.database.repositories.conversations.getConversation(
+				conversation_id,
+			);
 		if (!conversation) {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
@@ -583,10 +611,15 @@ export class ConversationManager {
 			updateObj.is_archived = updates.archived;
 		}
 
-		await this.database.repositories.conversations.updateConversation(conversation_id, updateObj);
+		await this.database.repositories.conversations.updateConversation(
+			conversation_id,
+			updateObj,
+		);
 
 		const updatedConversation =
-			await this.database.repositories.conversations.getConversation(conversation_id);
+			await this.database.repositories.conversations.getConversation(
+				conversation_id,
+			);
 		return updatedConversation || {};
 	}
 
@@ -605,7 +638,8 @@ export class ConversationManager {
 			);
 		}
 
-		const result = await this.database.repositories.messages.getMessageById(message_id);
+		const result =
+			await this.database.repositories.messages.getMessageById(message_id);
 
 		if (!result) {
 			throw new AssistantError("Message not found", ErrorType.NOT_FOUND);
@@ -705,7 +739,10 @@ export class ConversationManager {
 			);
 		}
 
-		const conversation = await this.database.repositories.conversations.getConversation(conversation_id);
+		const conversation =
+			await this.database.repositories.conversations.getConversation(
+				conversation_id,
+			);
 
 		if (!conversation) {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -721,13 +758,14 @@ export class ConversationManager {
 		const share_id =
 			(conversation.share_id as string) || this.generateShareId();
 
-		const updatedConversation = await this.database.repositories.conversations.updateConversation(
-			conversation_id,
-			{
-				is_public: 1,
-				share_id,
-			},
-		);
+		const updatedConversation =
+			await this.database.repositories.conversations.updateConversation(
+				conversation_id,
+				{
+					is_public: 1,
+					share_id,
+				},
+			);
 
 		if (!updatedConversation) {
 			throw new AssistantError(
@@ -751,7 +789,10 @@ export class ConversationManager {
 			);
 		}
 
-		const conversation = await this.database.repositories.conversations.getConversation(conversation_id);
+		const conversation =
+			await this.database.repositories.conversations.getConversation(
+				conversation_id,
+			);
 
 		if (!conversation) {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -764,12 +805,13 @@ export class ConversationManager {
 			);
 		}
 
-		const updatedConversation = await this.database.repositories.conversations.updateConversation(
-			conversation_id,
-			{
-				is_public: 0,
-			},
-		);
+		const updatedConversation =
+			await this.database.repositories.conversations.updateConversation(
+				conversation_id,
+				{
+					is_public: 0,
+				},
+			);
 
 		if (!updatedConversation) {
 			throw new AssistantError(
@@ -791,7 +833,10 @@ export class ConversationManager {
 		limit = 50,
 		after?: string,
 	): Promise<Message[]> {
-		const conversation = await this.database.repositories.conversations.getConversationByShareId(share_id);
+		const conversation =
+			await this.database.repositories.conversations.getConversationByShareId(
+				share_id,
+			);
 
 		if (!conversation) {
 			throw new AssistantError(

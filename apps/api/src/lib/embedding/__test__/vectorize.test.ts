@@ -428,7 +428,9 @@ describe("VectorizeEmbeddingProvider", () => {
 				matches: [{ id: "match1", score: 0.95, metadata: { type: "article" } }],
 			});
 
-			mockRepositories.embeddings.getEmbedding.mockRejectedValue(new Error("DB error"));
+			mockRepositories.embeddings.getEmbedding.mockRejectedValue(
+				new Error("DB error"),
+			);
 
 			await expect(provider.searchSimilar("test query")).rejects.toThrow(
 				"DB error",

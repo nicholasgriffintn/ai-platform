@@ -126,7 +126,9 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 			if (enableVideoSearch) {
 				try {
 					const repositories = new RepositoryManager(env);
-					const userSettings = await repositories.userSettings.getUserSettings(user.id);
+					const userSettings = await repositories.userSettings.getUserSettings(
+						user.id,
+					);
 					const embedding = Embedding.getInstance(env, user, userSettings);
 
 					const videoId = `video-${Date.now()}-${generateId()}`;

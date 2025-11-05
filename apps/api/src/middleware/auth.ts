@@ -121,7 +121,8 @@ export async function authMiddleware(context: Context, next: Next) {
 		authPromises.push(
 			(async () => {
 				try {
-					const userId = await repositories.apiKeys.findUserIdByApiKey(authToken);
+					const userId =
+						await repositories.apiKeys.findUserIdByApiKey(authToken);
 					if (userId) {
 						const foundUser = await repositories.users.getUserById(userId);
 						return (foundUser as unknown as User) || null;

@@ -52,6 +52,7 @@ Cloudflare Worker backend serving OpenAI-compatible endpoints, provider routing,
 ### Route Handler Pattern
 
 **Modern Pattern** (Use ServiceContext):
+
 ```typescript
 // src/routes/example.ts
 import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
@@ -118,6 +119,7 @@ app.post(
 ### Service Function Pattern
 
 **Modern Pattern** (Use ServiceContext):
+
 ```typescript
 // src/services/example/exampleService.ts
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -169,6 +171,7 @@ export async function handleExampleService(
 ```
 
 **Benefits of ServiceContext Pattern:**
+
 - **Single parameter**: Instead of passing `env`, `user`, `anonymousUser` separately, pass one `context` object
 - **Helper methods**: Use `context.requireUser()` and `context.ensureDatabase()` for automatic validation
 - **Lazy loading**: `context.repositories` and `context.database` are only created when accessed
@@ -179,6 +182,7 @@ export async function handleExampleService(
 ### Database and Repository Pattern
 
 **Database Class** - Simplified wrapper around RepositoryManager:
+
 ```typescript
 // src/lib/database/index.ts
 import { RepositoryManager } from "~/repositories";
@@ -210,7 +214,8 @@ export class Database {
 	}
 
 	public async deleteAllChatCompletions(userId: number) {
-		const conversations = await this._repositories.conversations.getUserConversations(userId);
+		const conversations =
+			await this._repositories.conversations.getUserConversations(userId);
 
 		for (const conv of conversations) {
 			await this._repositories.messages.deleteAllMessages(conv.id);
@@ -221,6 +226,7 @@ export class Database {
 ```
 
 **Repository Pattern** - Direct data access layer:
+
 ```typescript
 // src/repositories/ExampleRepository.ts
 import { eq, and, desc } from "drizzle-orm";
@@ -241,16 +247,14 @@ export class ExampleRepository extends BaseRepository {
 	}
 
 	async findActiveByUserId(userId: number) {
-		return this.env.DB
-			.select()
+		return this.env.DB.select()
 			.from(example)
 			.where(and(eq(example.user_id, userId), eq(example.status, "active")))
 			.orderBy(desc(example.created_at));
 	}
 
 	async updateStatus(id: string, status: string) {
-		const [updated] = await this.env.DB
-			.update(example)
+		const [updated] = await this.env.DB.update(example)
 			.set({
 				status,
 				updated_at: sql`(CURRENT_TIMESTAMP)`,
@@ -264,6 +268,7 @@ export class ExampleRepository extends BaseRepository {
 ```
 
 **RepositoryManager** - Centralized access to all repositories:
+
 ```typescript
 // src/repositories/index.ts
 import type { IEnv } from "~/types";
@@ -288,6 +293,7 @@ export class RepositoryManager {
 ```
 
 **Usage in Services:**
+
 ```typescript
 // PREFERRED: Access repositories through ServiceContext
 const entity = await context.repositories.example.findById(id);

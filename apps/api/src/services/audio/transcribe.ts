@@ -28,7 +28,9 @@ export const handleTranscribe = async (
 
 		if (!selectedProvider) {
 			const repositories = new RepositoryManager(env);
-			const userSettings = await repositories.userSettings.getUserSettings(user?.id);
+			const userSettings = await repositories.userSettings.getUserSettings(
+				user?.id,
+			);
 
 			const speechModel = await getAuxiliarySpeechModel(env, userSettings);
 			selectedProvider =

@@ -46,17 +46,10 @@ export class Database {
 		return this._repositories;
 	}
 
-	/**
-	 * Get the raw D1 database connection
-	 */
 	public get connection(): D1Database {
 		return this.env.DB;
 	}
 
-	/**
-	 * Complex user creation with related settings
-	 * This is business logic that coordinates multiple repositories
-	 */
 	public async createUser(
 		userData: Record<string, unknown>,
 	): Promise<Record<string, unknown> | null> {
@@ -108,10 +101,6 @@ export class Database {
 		}
 	}
 
-	/**
-	 * Complex nonce consumption with find and delete
-	 * This is business logic that coordinates multiple repository operations
-	 */
 	public async consumeMagicLinkNonce(
 		nonce: string,
 		userId: number,
@@ -134,10 +123,6 @@ export class Database {
 		}
 	}
 
-	/**
-	 * Complex deletion that involves multiple repositories
-	 * This is business logic that coordinates message and conversation deletion
-	 */
 	public async deleteAllChatCompletions(userId: number): Promise<void> {
 		try {
 			const allConversations =

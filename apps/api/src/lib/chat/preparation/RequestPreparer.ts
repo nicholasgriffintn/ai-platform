@@ -67,7 +67,9 @@ export class RequestPreparer {
 
 		const isProUser = user?.plan_id === "pro";
 
-		const userSettings = await this.repositories.userSettings.getUserSettings(user?.id);
+		const userSettings = await this.repositories.userSettings.getUserSettings(
+			user?.id,
+		);
 
 		const modelConfigs = await this.buildModelConfigs(
 			options,
@@ -362,10 +364,11 @@ export class RequestPreparer {
 			try {
 				let memoryContext = "";
 
-				const synthesis = await this.repositories.memorySyntheses.getActiveSynthesis(
-					user.id,
-					"global",
-				);
+				const synthesis =
+					await this.repositories.memorySyntheses.getActiveSynthesis(
+						user.id,
+						"global",
+					);
 
 				if (synthesis) {
 					memoryContext += `\n\n# Memory Summary\nThe following is a consolidated summary of your long-term memories about this user:\n<memory_synthesis>\n${synthesis.synthesis_text}\n</memory_synthesis>`;

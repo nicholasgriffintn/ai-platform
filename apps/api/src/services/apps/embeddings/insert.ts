@@ -73,7 +73,10 @@ export const insertEmbedding = async (
 		const repositories = new RepositoryManager(env);
 
 		if (type === "blog") {
-			const blogExists = await repositories.embeddings.getEmbeddingIdByType(id, "blog");
+			const blogExists = await repositories.embeddings.getEmbeddingIdByType(
+				id,
+				"blog",
+			);
 
 			if (!blogExists) {
 				throw new AssistantError(
@@ -99,7 +102,9 @@ export const insertEmbedding = async (
 			throw new AssistantError("No unique ID found");
 		}
 
-		const userSettings = await repositories.userSettings.getUserSettings(req.user?.id);
+		const userSettings = await repositories.userSettings.getUserSettings(
+			req.user?.id,
+		);
 		if (!userSettings) {
 			throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
 		}

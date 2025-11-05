@@ -110,7 +110,9 @@ describe("Database", () => {
 
 		it("should have conversation repository methods accessible", () => {
 			expect(database.repositories.conversations).toBeDefined();
-			expect(database.repositories.conversations.createConversation).toBeDefined();
+			expect(
+				database.repositories.conversations.createConversation,
+			).toBeDefined();
 			expect(database.repositories.conversations.getConversation).toBeDefined();
 			expect(
 				database.repositories.conversations.getUserConversations,

@@ -32,7 +32,9 @@ export class GuardrailsValidator implements Validator {
 
 		try {
 			const repositories = new RepositoryManager(env);
-			const userSettings = await repositories.userSettings.getUserSettings(user?.id);
+			const userSettings = user?.id
+				? await repositories.userSettings.getUserSettings(user.id)
+				: null;
 
 			const guardrails = new Guardrails(env, user, userSettings);
 
