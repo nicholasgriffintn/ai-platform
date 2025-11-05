@@ -89,8 +89,154 @@ graph TD
 - `apps/api` hosts a Hono-based worker that layers auth, rate limiting, guardrails, and provider routing; repositories encapsulate D1 access while services orchestrate chat, tools, search, and app-specific flows.
 - Vector search (Cloudflare Vectorize) and AI providers sit behind `AIProviderFactory` and `ModelRouter`, enabling automatic model selection, cost tracking, and RAG operations.
 - `apps/app` consumes the API through typed Zod schemas, manages local/offline state with IndexedDB/Zustand, and optionally swaps to WebLLM for offline inference.
-- `apps/metrics` queries the API’s `/metrics` endpoint (Analytics Engine) for dashboards, while the iOS client mirrors frontend flows using the same REST contracts.
+- `apps/metrics` queries the API's `/metrics` endpoint (Analytics Engine) for dashboards, while the iOS client mirrors frontend flows using the same REST contracts.
 - Shared schema package keeps API contracts synchronized across all clients.
+
+### API Request Flow
+1. **Entry**: `apps/api/src/index.ts` → Middleware chain (CORS, CSRF, security headers, rate limit, auth)
+2. **Routing**: Hono routes (`apps/api/src/routes/*`) with OpenAPI descriptions via `describeRoute`
+3. **Validation**: Zod schema validation (`@assistant/schemas`) applied via `zValidator`
+4. **Service Layer**: Business logic in `apps/api/src/services/*` orchestrates operations
+5. **Repository Layer**: Database access in `apps/api/src/repositories/*` using Drizzle ORM
+6. **Response**: `ResponseFactory` (apps/api/src/lib/http/ResponseFactory.ts) ensures consistent API responses
+
+### Service Context Pattern
+Services receive context via `getServiceContext(c)` middleware injected in routes:
+- Context includes: `env`, `user`, `db`, `logger`, `repositories`, `monitoring`
+- Access in services via: `const { env, user, logger, repositories } = getServiceContext(c)`
+- Never pass raw Hono context to services; use extracted context objects
+
+### Provider Architecture
+- Multi-provider AI support via `AIProviderFactory` (`apps/api/src/lib/providers/factory.ts`)
+- Base provider interface defined in `apps/api/src/lib/providers/provider/base.ts`
+- Each provider extends base class and implements: `generateChatCompletion`, `generateStreamingResponse`
+- Model routing via `ModelRouter` (`apps/api/src/lib/modelRouter`) selects optimal provider based on model capabilities
+- Provider instances registered in factory config array with optional aliases
+
+## Common Modification Patterns
+
+### Adding a New API Endpoint
+1. Define Zod request/response schemas in `packages/schemas/src/{domain}.ts`
+2. Rebuild schemas: `pnpm --filter @assistant/schemas build`
+3. Create or update route handler in `apps/api/src/routes/{domain}.ts`
+4. Add OpenAPI documentation with `describeRoute({ tags, summary, description, responses })`
+5. Apply Zod validation with `zValidator("json", yourSchema)`
+6. Implement service function in `apps/api/src/services/{domain}/{feature}.ts`
+7. Use repositories from `apps/api/src/repositories/` for database access
+8. Add unit tests in service's `__test__/` directory
+9. Update `apps/api/AGENTS.md` with the new endpoint pattern
+
+### Adding a New AI Provider
+1. Create provider class in `apps/api/src/lib/providers/provider/{name}.ts`
+2. Extend `BaseAIProvider` from `base.ts`
+3. Implement required methods: `generateChatCompletion`, `generateStreamingResponse`
+4. Add provider to `factory.ts` providerConfigs array with key and optional aliases
+5. Add model definitions to `apps/api/src/lib/models/index.ts`
+6. Update usage tracking in `apps/api/src/lib/usageManager.ts` if pricing differs
+7. Test with mock responses and various model configurations
+8. Document provider-specific quirks and rate limits in `apps/api/AGENTS.md`
+
+### Adding a New Frontend Page
+1. Create page component in `apps/app/src/pages/{name}.tsx`
+2. Add route to `apps/app/src/routes.ts`
+3. Create API service client in `apps/app/src/lib/api/services/{name}.ts` if API calls needed
+4. Use `fetch-wrapper.ts` for all authenticated requests (includes CSRF tokens)
+5. Add Zustand store in `apps/app/src/state/stores/{name}Store.ts` if complex state needed
+6. Add component tests in test files
+7. Update CSP in `apps/app/src/constants.ts` if external resources required
+8. Update `apps/app/AGENTS.md` with page-specific patterns
+
+### Schema Changes (Cross-cutting)
+1. **ALWAYS start with schema**: Modify `packages/schemas/src/{domain}.ts`
+2. Use `.optional()` or `.default()` for non-breaking additions
+3. Rebuild: `pnpm --filter @assistant/schemas build`
+4. Update API route validation and service signatures
+5. If persistence needed, update `apps/api/src/lib/database/schema.ts`
+6. Generate migration: `cd apps/api && pnpm run db:generate`
+7. Apply locally: `pnpm run db:migrate:local`
+8. Test migration rollback safety
+9. Update frontend types and API service clients
+10. Update all affected AGENTS.md files with the schema change
+11. **For breaking changes**: Coordinate with all consuming applications first
+
+### Adding Database Table or Column
+1. Update schema in `apps/api/src/lib/database/schema.ts`
+2. Generate migration: `cd apps/api && pnpm run db:generate`
+3. Review generated SQL in `apps/api/migrations/` for correctness
+4. Apply locally: `cd apps/api && pnpm run db:migrate:local`
+5. Create or update repository in `apps/api/src/repositories/{Entity}Repository.ts`
+6. Extend `BaseRepository` and add custom query methods
+7. Export repository from `apps/api/src/repositories/index.ts`
+8. Add repository tests for new queries
+9. Update Zod schemas in `packages/schemas` if needed
+10. Document schema changes in `apps/api/AGENTS.md`
+
+### Adding Dynamic App or Tool
+1. Create app implementation in `apps/api/src/routes/apps/{name}.ts`
+2. Implement supporting service in `apps/api/src/services/apps/{name}.ts`
+3. Register app via `autoRegisterDynamicApps` in `apps/api/src/services/dynamic-apps/auto-register-apps.ts`
+4. Add app-specific schemas to `packages/schemas/src/apps.ts`
+5. Rebuild schemas and test app registration on API startup
+6. Add frontend integration in `apps/app/src/components/Apps/`
+7. Test app invocation through chat completions
+8. Document app capabilities and parameters in both API and app AGENTS.md files
+
+## Agent Guidelines & Best Practices
+
+### Before Making Changes
+- **Read AGENTS.md first**: Always read root AGENTS.md + relevant workspace-specific AGENTS.md before coding
+- **Use Task tool for exploration**: For open-ended codebase searches, use `Task` tool with `subagent_type=Explore`
+- **Parallel file reads**: When uncertain, read multiple potentially relevant files in parallel
+- **Schema-first approach**: Always update shared schemas before implementation changes
+
+### Code Location Decision Tree
+**Adding chat/conversation feature?** → `apps/api/src/routes/chat.ts` + `apps/api/src/services/completions/*`
+
+**Adding authentication logic?** → `apps/api/src/routes/auth/*` + `apps/api/src/middleware/auth.ts`
+
+**Adding AI provider?** → `apps/api/src/lib/providers/provider/{name}.ts` + `factory.ts`
+
+**Adding database access?** → `apps/api/src/repositories/{Entity}Repository.ts` extending `BaseRepository`
+
+**Adding business logic?** → `apps/api/src/services/{domain}/*` (never in routes)
+
+**Adding middleware?** → `apps/api/src/middleware/{name}.ts` (register in `index.ts`)
+
+**Adding frontend page?** → `apps/app/src/pages/{name}.tsx` + `routes.ts`
+
+**Adding frontend component?** → `apps/app/src/components/{Name}/{Name}.tsx`
+
+**Adding UI state management?** → `apps/app/src/state/stores/{name}Store.ts` with Zustand
+
+**Adding shared types/validation?** → `packages/schemas/src/{domain}.ts` with Zod
+
+**Adding metrics/analytics?** → `apps/api/src/services/metrics/` + Analytics Engine integration
+
+**Adding file uploads?** → `apps/api/src/routes/uploads.ts` + R2 storage via `lib/storage/`
+
+**Adding background tasks?** → `apps/api/src/services/tasks/` + Queue/Schedule executors
+
+### Anti-Patterns to Avoid
+- ❌ Direct database access in routes (always use repositories)
+- ❌ Business logic in routes (move to services)
+- ❌ Hardcoded credentials or API keys (use env bindings)
+- ❌ Hand-editing migration files (use `pnpm run db:generate`)
+- ❌ Skipping schema rebuild before starting dev servers
+- ❌ Creating new files when editing existing ones would suffice
+- ❌ Using bash commands for file operations (use Read/Edit/Write tools)
+- ❌ Modifying generated artifacts (node_modules, dist, build, migrations)
+- ❌ Passing raw Hono Context to services (extract and pass specific objects)
+- ❌ Forgetting to update AGENTS.md after implementing new patterns
+- ❌ Not using `fetch-wrapper.ts` for frontend API calls (breaks auth/CSRF)
+- ❌ Inline styles or hardcoded CSP entries (use constants)
+
+### When to Update Which AGENTS.md
+- **Root AGENTS.md**: Cross-cutting changes, new architectural patterns, monorepo structure changes
+- **apps/api/AGENTS.md**: New routes, services, providers, repositories, middleware
+- **apps/app/AGENTS.md**: New pages, components, state stores, API integrations
+- **packages/schemas/AGENTS.md**: Schema additions, breaking changes, validation patterns
+- **apps/metrics/AGENTS.md**: Dashboard changes, new analytics queries
+- **apps/mobile/ios/AGENTS.md**: Native iOS changes, Swift/Objective-C code
 
 ## Testing Strategy
 - **Before you submit**
@@ -134,8 +280,34 @@ graph TD
 - Frontend pages follow React Router file-conventions under `apps/app/src/pages`; shared state lives in `state/stores` (Zustand) and `lib/api` services.
 - Feature toggles and env flags (`ALWAYS_ENABLED_PROVIDERS`, `VITE_*`, `OLLAMA_ENABLED`, beacon analytics) provide runtime configurability without code changes.
 
+## Common Pitfalls & Solutions
+
+### Cross-Cutting Pitfalls
+- **Forgetting schema rebuild**: Always run `pnpm --filter @assistant/schemas build` after modifying schemas and before testing dependent apps
+- **Schema breaking changes**: Coordinate with all consuming apps (API, app, metrics) before making breaking schema changes
+- **Skipping migration testing**: Always test migrations locally with `db:migrate:local` before committing
+- **Not updating AGENTS.md**: Future agents lack context when patterns aren't documented
+
+### API-Specific Pitfalls
+- **Direct DB access in routes**: Use repositories, not direct Drizzle queries in route handlers
+- **Missing OpenAPI docs**: Every public route needs `describeRoute` for API documentation
+- **Hardcoding env values**: Use `context.env` bindings, never hardcode secrets
+- **Business logic in routes**: Extract to services for testability and reusability
+
+### Frontend-Specific Pitfalls
+- **Not using fetch-wrapper**: Always use `apps/app/src/lib/api/fetch-wrapper.ts` for authenticated requests (handles CSRF)
+- **Inline API calls**: Create service clients in `apps/app/src/lib/api/services/` instead
+- **Forgetting CSP updates**: Add external domains to `apps/app/src/constants.ts` CSP config
+- **Wrong state location**: Follow state management guidelines - not everything needs Zustand
+
+### Testing Pitfalls
+- **Skipping tests for new features**: Always add tests when implementing new functionality
+- **Not running full test suite**: Run `pnpm test` before commits, not just file-specific tests
+- **Missing E2E coverage**: Complex flows need Playwright tests in addition to unit tests
+
 ## Further Reading
 - [README.md](README.md)
+- [DECISION_MATRIX.md](DECISION_MATRIX.md) - Quick reference for where to make changes
 - [apps/api/README.md](apps/api/README.md)
 - [apps/app/README.md](apps/app/README.md)
 - [apps/metrics/README.md](apps/metrics/README.md)
@@ -145,3 +317,51 @@ graph TD
 - [apps/metrics/AGENTS.md](apps/metrics/AGENTS.md)
 - [packages/schemas/AGENTS.md](packages/schemas/AGENTS.md)
 - [apps/mobile/ios/AGENTS.md](apps/mobile/ios/AGENTS.md)
+
+---
+
+## 📋 AGENTS.md Maintenance Protocol
+
+**IMPORTANT**: When you (the AI agent) make changes to this monorepo, you MUST update the relevant AGENTS.md file(s) immediately after completing the implementation.
+
+### Update Triggers
+- ✅ Added new architectural pattern or cross-cutting concern
+- ✅ Changed monorepo structure or build commands
+- ✅ Added new workspace or moved files between workspaces
+- ✅ Discovered common pitfalls or recurring bugs
+- ✅ Refactored existing patterns used across multiple apps
+- ✅ Added new tooling, CI workflows, or quality gates
+
+### What to Update in Root AGENTS.md
+1. **Common Modification Patterns**: Add step-by-step guide if pattern differs from existing
+2. **Code Location Decision Tree**: Add new entry for feature type
+3. **Anti-Patterns**: Document newly discovered mistakes
+4. **Architecture Notes**: Update if system interactions changed
+5. **Common Pitfalls**: Add solutions to problems encountered
+
+### Update Format
+When adding new patterns, use this format:
+```markdown
+### [Pattern Name] (Added: YYYY-MM-DD)
+**When to use**: [Specific conditions or scenarios]
+**Affects**: [Which workspaces this impacts]
+**Steps**:
+1. [Detailed step with file paths]
+2. [Include rebuild/test requirements]
+**Example**: [Code snippet or file reference]
+**Update AGENTS.md**: [Which workspace AGENTS.md files to update]
+```
+
+### Review Cycle
+- **After every significant change**: Update immediately - don't batch updates
+- **Cross-cutting changes**: Update root + all affected workspace AGENTS.md files
+- **Before PR submission**: Verify AGENTS.md changes are included in commit
+
+### Why This Matters
+This file guides future AI agents working on the codebase. Keeping it current ensures:
+- Faster implementation of new features
+- Consistent patterns across the monorepo
+- Fewer errors from outdated guidance
+- Knowledge preservation as the codebase evolves
+
+**Remember**: You are documenting for the next agent. Be thorough, be specific, and include file paths.
