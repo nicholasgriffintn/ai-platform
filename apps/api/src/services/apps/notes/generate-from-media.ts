@@ -4,7 +4,7 @@ import {
 } from "~/services/audio/transcribe";
 import { AIProviderFactory } from "~/lib/providers/factory";
 import { getAuxiliaryModel, getModelConfig } from "~/lib/models";
-import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 import { Embedding } from "~/lib/embedding";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -125,8 +125,8 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 
 			if (enableVideoSearch) {
 				try {
-					const database = Database.getInstance(env);
-					const userSettings = await database.getUserSettings(user.id);
+					const repositories = new RepositoryManager(env);
+					const userSettings = await repositories.userSettings.getUserSettings(user.id);
 					const embedding = Embedding.getInstance(env, user, userSettings);
 
 					const videoId = `video-${Date.now()}-${generateId()}`;
@@ -149,7 +149,7 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 						type: "video",
 					});
 
-					await database.insertEmbedding(
+					await repositories.embeddings.insertEmbedding(
 						videoId,
 						metadata,
 						`Video: ${url}`,

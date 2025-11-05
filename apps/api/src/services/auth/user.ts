@@ -1,4 +1,4 @@
-import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 import type { IUserSettings, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -44,16 +44,16 @@ function mapToUser(result: Record<string, unknown>): User {
 
 /**
  * Get a user by their GitHub user ID
- * @param database - The database instance
+ * @param repositories - The repository manager instance
  * @param githubId - The GitHub user ID
  * @returns The User object or null if the user is not found
  */
 export async function getUserByGithubId(
-	database: Database,
+	repositories: RepositoryManager,
 	githubId: string,
 ): Promise<User | null> {
 	try {
-		const result = await database.getUserByGithubId(githubId);
+		const result = await repositories.users.getUserByGithubId(githubId);
 
 		if (!result) return null;
 
@@ -69,16 +69,16 @@ export async function getUserByGithubId(
 
 /**
  * Get a user by their session ID
- * @param database - The database instance
+ * @param repositories - The repository manager instance
  * @param sessionId - The session ID
  * @returns The User object or null if the user is not found
  */
 export async function getUserBySessionId(
-	database: Database,
+	repositories: RepositoryManager,
 	sessionId: string,
 ): Promise<User | null> {
 	try {
-		const result = await database.getUserBySessionId(sessionId);
+		const result = await repositories.users.getUserBySessionId(sessionId);
 
 		if (!result) return null;
 
@@ -94,12 +94,12 @@ export async function getUserBySessionId(
 
 /**
  * Get a user's settings
- * @param database - The database instance
+ * @param repositories - The repository manager instance
  * @param userId - The user ID
  * @returns The user settings or null if the user is not found
  */
 export async function getUserSettings(
-	database: Database,
+	repositories: RepositoryManager,
 	userId: number,
 ): Promise<IUserSettings | null> {
 	try {
@@ -107,7 +107,7 @@ export async function getUserSettings(
 			return null;
 		}
 
-		const result = await database.getUserSettings(userId);
+		const result = await repositories.userSettings.getUserSettings(userId);
 		return result;
 	} catch (error) {
 		logger.error("Error getting user settings:", { error });
@@ -120,20 +120,20 @@ export async function getUserSettings(
 
 /**
  * Get a user by their ID
- * @param database - The database instance
+ * @param repositories - The repository manager instance
  * @param userId - The user ID
  * @returns The User object or null if the user is not found
  */
 export async function getUserById(
-	database: Database,
+	repositories: RepositoryManager,
 	userId: number,
 ): Promise<User | null> {
 	try {
-		const result = await database.getUserById(userId);
+		const result = await repositories.users.getUserById(userId);
 
 		if (!result) return null;
 
-		return result;
+		return result as unknown as User | null;
 	} catch (error) {
 		logger.error("Error getting user by ID:", { error });
 		throw new AssistantError(
@@ -143,27 +143,31 @@ export async function getUserById(
 	}
 }
 
-export async function createUserSettings(database: Database, userId: number) {
-	const result = await database.createUserSettings(userId);
+export async function createUserSettings(
+	repositories: RepositoryManager,
+	userId: number,
+) {
+	const result = await repositories.userSettings.createUserSettings(userId);
 	return result;
 }
 
 export async function createUserProviderSettings(
-	database: Database,
+	repositories: RepositoryManager,
 	userId: number,
 ) {
-	const result = await database.createUserProviderSettings(userId);
+	const result =
+		await repositories.userSettings.createUserProviderSettings(userId);
 	return result;
 }
 
 /**
  * Create or update a user from GitHub data
- * @param database - The database instance
+ * @param repositories - The repository manager instance
  * @param userData - The user data
  * @returns The User object
  */
 export async function createOrUpdateGithubUser(
-	database: Database,
+	repositories: RepositoryManager,
 	userData: {
 		githubId: string;
 		username: string;
@@ -178,10 +182,10 @@ export async function createOrUpdateGithubUser(
 	},
 ): Promise<User> {
 	try {
-		const existingUser = await getUserByGithubId(database, userData.githubId);
+		const existingUser = await getUserByGithubId(repositories, userData.githubId);
 
 		if (existingUser) {
-			await database.updateUser(existingUser.id, {
+			await repositories.users.updateUser(existingUser.id, {
 				name: userData.name || null,
 				avatar_url: userData.avatar_url || null,
 				email: userData.email,
@@ -209,19 +213,22 @@ export async function createOrUpdateGithubUser(
 			};
 		}
 
-		const userByEmail = await database.getUserByEmail(userData.email);
+		const userByEmail = await repositories.users.getUserByEmail(userData.email);
 
 		if (userByEmail) {
-			await database.createOauthAccount(
-				userByEmail.id,
+			await repositories.users.createOauthAccount(
+				userByEmail.id as number,
 				"github",
 				userData.githubId,
 			);
 
-			await database.updateUserWithGithubData(userByEmail.id, userData);
+			await repositories.users.updateUserWithGithubData(
+				userByEmail.id as number,
+				userData,
+			);
 
 			return {
-				...userByEmail,
+				...(userByEmail as unknown as User),
 				github_username: userData.username,
 				name: userData.name || userByEmail.name,
 				avatar_url: userData.avatar_url || userByEmail.avatar_url,
@@ -232,10 +239,10 @@ export async function createOrUpdateGithubUser(
 					userData.twitter_username || userByEmail.twitter_username,
 				site: userData.site || userByEmail.site,
 				updated_at: new Date().toISOString(),
-			};
+			} as User;
 		}
 
-		const result = await database.createUser(userData);
+		const result = await repositories.users.createUser(userData);
 
 		if (!result) {
 			throw new AssistantError(
@@ -244,9 +251,32 @@ export async function createOrUpdateGithubUser(
 			);
 		}
 
+		// Create user settings
+		if ("id" in result) {
+			try {
+				await repositories.userSettings.createUserSettings(result.id as number);
+			} catch (settingsError) {
+				logger.error("Failed to create user settings:", { settingsError });
+			}
+
+			try {
+				await repositories.userSettings.createUserProviderSettings(
+					result.id as number,
+				);
+			} catch (providerSettingsError) {
+				logger.error("Failed to create user provider settings:", {
+					providerSettingsError,
+				});
+			}
+		}
+
 		const newUser = mapToUser(result);
 
-		await database.createOauthAccount(newUser.id, "github", userData.githubId);
+		await repositories.users.createOauthAccount(
+			newUser.id,
+			"github",
+			userData.githubId,
+		);
 
 		return newUser;
 	} catch (error) {
@@ -260,13 +290,13 @@ export async function createOrUpdateGithubUser(
 
 /**
  * Create a new session for a user
- * @param database - The database instance
+ * @param repositories - The repository manager instance
  * @param userId - The user ID
  * @param expiresInDays - The number of days the session will expire
  * @returns The session ID
  */
 export async function createSession(
-	database: Database,
+	repositories: RepositoryManager,
 	userId: number,
 	expiresInDays = 7,
 ): Promise<string> {
@@ -275,7 +305,7 @@ export async function createSession(
 		const expiresAt = new Date();
 		expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
-		await database.createSession(sessionId, userId, expiresAt);
+		await repositories.sessions.createSession(sessionId, userId, expiresAt);
 
 		return sessionId;
 	} catch (error) {
@@ -289,15 +319,15 @@ export async function createSession(
 
 /**
  * Delete a session
- * @param database - The database instance
+ * @param repositories - The repository manager instance
  * @param sessionId - The session ID
  */
 export async function deleteSession(
-	database: Database,
+	repositories: RepositoryManager,
 	sessionId: string,
 ): Promise<void> {
 	try {
-		await database.deleteSession(sessionId);
+		await repositories.sessions.deleteSession(sessionId);
 	} catch (error) {
 		logger.error("Error deleting session:", { error });
 		throw new AssistantError(

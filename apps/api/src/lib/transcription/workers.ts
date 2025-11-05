@@ -5,7 +5,7 @@ import { getAuxiliarySpeechModel } from "~/lib/models";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { TranscriptionRequest, TranscriptionResponse } from "./base";
 import { BaseTranscriptionProvider } from "./base";
-import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 
 async function getAudioForProvider(model: string, res: Response | Blob) {
 	// TODO: Only whisper has been configured to work with the body requirements, more to be done in order to configure it.
@@ -47,8 +47,8 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
 			throw new AssistantError("Missing AI binding", ErrorType.PARAMS_ERROR);
 		}
 
-		const database = Database.getInstance(env);
-		const userSettings = await database.getUserSettings(user?.id);
+		const repositories = new RepositoryManager(env);
+		const userSettings = await repositories.userSettings.getUserSettings(user?.id);
 
 		const { model: modelToUse, provider: providerToUse } =
 			await getAuxiliarySpeechModel(env, userSettings);

@@ -59,7 +59,7 @@ export const handleCheckChatCompletion = async (
 
 	const roleToCheck = role || "user";
 
-	const userSettings = await serviceContext.database.getUserSettings(user?.id);
+	const userSettings = await serviceContext.repositories.userSettings.getUserSettings(user?.id);
 	const guardrails = new Guardrails(serviceContext.env, user, userSettings);
 	const validation =
 		roleToCheck === "user"

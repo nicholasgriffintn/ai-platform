@@ -7,7 +7,7 @@ describe("VectorizeEmbeddingProvider", () => {
 	let provider: VectorizeEmbeddingProvider;
 	let mockAi: any;
 	let mockVectorDb: any;
-	let mockDatabase: any;
+	let mockRepositories: any;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -22,14 +22,16 @@ describe("VectorizeEmbeddingProvider", () => {
 			query: vi.fn(),
 		};
 
-		mockDatabase = {
-			getEmbedding: vi.fn(),
+		mockRepositories = {
+			embeddings: {
+				getEmbedding: vi.fn(),
+			},
 		};
 
 		provider = new VectorizeEmbeddingProvider({
 			ai: mockAi,
 			vector_db: mockVectorDb,
-			database: mockDatabase,
+			repositories: mockRepositories,
 		});
 	});
 
@@ -340,7 +342,7 @@ describe("VectorizeEmbeddingProvider", () => {
 				],
 			});
 
-			mockDatabase.getEmbedding.mockResolvedValue({
+			mockRepositories.embeddings.getEmbedding.mockResolvedValue({
 				id: "doc1",
 				title: "Test Article",
 				content: "Test content",
@@ -379,7 +381,7 @@ describe("VectorizeEmbeddingProvider", () => {
 				],
 			});
 
-			mockDatabase.getEmbedding.mockResolvedValue({
+			mockRepositories.embeddings.getEmbedding.mockResolvedValue({
 				id: "doc1",
 				title: "Test",
 				content: "Content",
@@ -426,7 +428,7 @@ describe("VectorizeEmbeddingProvider", () => {
 				matches: [{ id: "match1", score: 0.95, metadata: { type: "article" } }],
 			});
 
-			mockDatabase.getEmbedding.mockRejectedValue(new Error("DB error"));
+			mockRepositories.embeddings.getEmbedding.mockRejectedValue(new Error("DB error"));
 
 			await expect(provider.searchSimilar("test query")).rejects.toThrow(
 				"DB error",

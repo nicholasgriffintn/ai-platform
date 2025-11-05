@@ -2,7 +2,7 @@ import type { Context, Next } from "hono";
 import { isbot } from "isbot";
 
 import { KVCache } from "~/lib/cache";
-import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 import { getUserByJwtToken } from "~/services/auth/jwt";
 import { getUserBySessionId } from "~/services/auth/user";
 import type { AnonymousUser, User } from "~/types";
@@ -109,22 +109,22 @@ export async function authMiddleware(context: Context, next: Next) {
 	const anonymousId = cookies[ANONYMOUS_ID_COOKIE];
 
 	const isJwtToken = authToken?.split(".").length === 3;
-	const database = Database.getInstance(context.env);
+	const repositories = new RepositoryManager(context.env);
 
 	const authPromises: Promise<User | null>[] = [];
 
 	if (sessionId) {
-		authPromises.push(getUserBySessionId(database, sessionId));
+		authPromises.push(getUserBySessionId(repositories, sessionId));
 	}
 
 	if (authToken?.startsWith("ak_")) {
 		authPromises.push(
 			(async () => {
 				try {
-					const userId = await database.findUserIdByApiKey(authToken);
+					const userId = await repositories.apiKeys.findUserIdByApiKey(authToken);
 					if (userId) {
-						const foundUser = await database.getUserById(userId);
-						return foundUser || null;
+						const foundUser = await repositories.users.getUserById(userId);
+						return (foundUser as unknown as User) || null;
 					}
 					return null;
 				} catch (error) {
@@ -164,14 +164,16 @@ export async function authMiddleware(context: Context, next: Next) {
 	if (!user) {
 		try {
 			if (anonymousId) {
-				anonymousUser = await database.getAnonymousUserById(anonymousId);
+				anonymousUser =
+					await repositories.anonymousUsers.getAnonymousUserById(anonymousId);
 			}
 
 			if (!anonymousUser) {
-				anonymousUser = await database.getOrCreateAnonymousUser(
-					ipAddress,
-					userAgent,
-				);
+				anonymousUser =
+					await repositories.anonymousUsers.getOrCreateAnonymousUser(
+						ipAddress,
+						userAgent,
+					);
 
 				if (anonymousUser) {
 					context.header(

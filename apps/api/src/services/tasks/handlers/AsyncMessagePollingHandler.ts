@@ -33,7 +33,7 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 				};
 			}
 
-			const database = Database.getInstance(env);
+			const database = new Database(env);
 
 			const userRepository = new UserRepository(env);
 			const user = await userRepository.getUserById(data.userId);

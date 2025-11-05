@@ -1,5 +1,5 @@
 import { USAGE_CONFIG } from "~/constants/app";
-import type { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import type { AnonymousUser, ModelConfigItem, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -60,16 +60,16 @@ export interface UsageLimits {
 }
 
 export class UsageManager {
-	private database: Database;
+	private repositories: RepositoryManager;
 	private user: User | null;
 	private anonymousUser: AnonymousUser | null;
 
 	constructor(
-		database: Database,
+		repositories: RepositoryManager,
 		user: User | null,
 		anonymousUser: AnonymousUser | null,
 	) {
-		this.database = database;
+		this.repositories = repositories;
 		this.user = user;
 		this.anonymousUser = anonymousUser;
 	}
@@ -107,7 +107,7 @@ export class UsageManager {
 
 		if (needsUpdate) {
 			try {
-				await this.database.updateUser(this.user.id, updates);
+				await this.repositories.users.updateUser(this.user.id, updates);
 			} catch (resetError) {
 				logger.error("Failed to reset daily count", { error: resetError });
 				throw new AssistantError(
@@ -157,7 +157,7 @@ export class UsageManager {
 		};
 
 		try {
-			await this.database.updateUser(this.user.id, updates);
+			await this.repositories.users.updateUser(this.user.id, updates);
 		} catch (updateError) {
 			logger.error("Failed to update usage data", { error: updateError });
 			throw new AssistantError(
@@ -177,7 +177,7 @@ export class UsageManager {
 
 		const dailyLimit = USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT;
 		const { count: dailyCount } =
-			await this.database.checkAndResetAnonymousUserDailyLimit(
+			await this.repositories.anonymousUsers.checkAndResetDailyLimit(
 				this.anonymousUser.id,
 			);
 
@@ -199,7 +199,7 @@ export class UsageManager {
 			);
 		}
 
-		await this.database.incrementAnonymousUserDailyCount(this.anonymousUser.id);
+		await this.repositories.anonymousUsers.incrementDailyCount(this.anonymousUser.id);
 	}
 
 	async checkProUsage(modelId: string) {
@@ -235,7 +235,7 @@ export class UsageManager {
 
 		if (needsUpdate) {
 			try {
-				await this.database.updateUser(this.user.id, updates);
+				await this.repositories.users.updateUser(this.user.id, updates);
 			} catch (resetError) {
 				logger.error("Failed to reset pro usage", { error: resetError });
 				throw new AssistantError(
@@ -299,7 +299,7 @@ export class UsageManager {
 		};
 
 		try {
-			await this.database.updateUser(this.user.id, updates);
+			await this.repositories.users.updateUser(this.user.id, updates);
 		} catch (updateError) {
 			logger.error("Failed to increment pro usage", { error: updateError });
 			throw new AssistantError(
@@ -369,7 +369,7 @@ export class UsageManager {
 		if (!this.user?.id) {
 			if (this.anonymousUser?.id) {
 				const { count: dailyCount } =
-					await this.database.checkAndResetAnonymousUserDailyLimit(
+					await this.repositories.anonymousUsers.checkAndResetDailyLimit(
 						this.anonymousUser.id,
 					);
 
@@ -492,7 +492,7 @@ export class UsageManager {
 		}
 
 		try {
-			await this.database.updateUser(this.user.id, updates);
+			await this.repositories.users.updateUser(this.user.id, updates);
 		} catch (updateError) {
 			logger.error("Failed to update function usage data", {
 				error: updateError,

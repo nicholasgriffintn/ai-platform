@@ -1,6 +1,6 @@
 import jwt from "@tsndr/cloudflare-worker-jwt";
 
-import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 import type { IEnv, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -99,8 +99,8 @@ export async function getUserByJwtToken(
 		const decoded = await verifyJwtToken(token, secret);
 		const userId = Number.parseInt(decoded.payload.sub, 10);
 
-		const database = Database.getInstance(env);
-		return await getUserById(database, userId);
+		const repositories = new RepositoryManager(env);
+		return await getUserById(repositories, userId);
 	} catch (error) {
 		if (error instanceof AssistantError) {
 			throw error;

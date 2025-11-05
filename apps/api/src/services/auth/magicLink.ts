@@ -2,10 +2,12 @@ import * as jwt from "@tsndr/cloudflare-worker-jwt";
 
 import { MAGIC_LINK_EXPIRATION_MINUTES } from "~/constants/app";
 import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 import type { IEnv, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { generateId } from "~/utils/id";
+import { logError } from "~/utils/errorLogger";
 
 const logger = getLogger({ prefix: "services/auth/magicLink" });
 
@@ -101,20 +103,47 @@ export async function requestMagicLink(
 		);
 	}
 
-	const db = Database.getInstance(env);
-	const user = (await db.getUserByEmail(email)) as User | null;
+	const repositories = new RepositoryManager(env);
+	const user = (await repositories.users.getUserByEmail(email)) as User | null;
 
 	let newUser = user;
 	if (!user) {
 		try {
-			newUser = (await db.createUser({ email })) as unknown as User;
+			const createdUser = await repositories.users.createUser({ email });
 
-			if (!newUser) {
+			if (!createdUser || !("id" in createdUser)) {
 				throw new AssistantError(
 					"Failed to create user",
 					ErrorType.AUTHENTICATION_ERROR,
 				);
 			}
+
+			// Create user settings
+			try {
+				await repositories.userSettings.createUserSettings(
+					createdUser.id as number,
+				);
+			} catch (settingsError) {
+				logError(
+					"Failed to create user settings during magic link registration",
+					settingsError,
+					{ operation: "createUserSettings" },
+				);
+			}
+
+			try {
+				await repositories.userSettings.createUserProviderSettings(
+					createdUser.id as number,
+				);
+			} catch (providerSettingsError) {
+				logError(
+					"Failed to create user provider settings during magic link registration",
+					providerSettingsError,
+					{ operation: "createUserProviderSettings" },
+				);
+			}
+
+			newUser = createdUser as unknown as User;
 		} catch {
 			return { token: "", nonce: "" };
 		}
@@ -129,7 +158,7 @@ export async function requestMagicLink(
 	const expiresAt = new Date(
 		Date.now() + MAGIC_LINK_EXPIRATION_MINUTES * 60 * 1000,
 	);
-	await db.createMagicLinkNonce(nonce, newUser.id, expiresAt);
+	await repositories.magicLinkNonces.createNonce(nonce, newUser.id, expiresAt);
 
 	return { token, nonce };
 }
@@ -150,7 +179,7 @@ export async function verifyMagicLink(
 		);
 	}
 
-	const db = Database.getInstance(env);
+	const database = new Database(env);
 	const userIdString = await verifyMagicLinkToken(token, secret);
 
 	if (!userIdString) {
@@ -169,7 +198,8 @@ export async function verifyMagicLink(
 		);
 	}
 
-	const consumed = await db.consumeMagicLinkNonce(nonce, userId);
+	// Use Database.consumeMagicLinkNonce as it's a complex business logic method
+	const consumed = await database.consumeMagicLinkNonce(nonce, userId);
 
 	if (!consumed) {
 		throw new AssistantError(
@@ -178,7 +208,7 @@ export async function verifyMagicLink(
 		);
 	}
 
-	const user = await db.getUserById(userId);
+	const user = await database.repositories.users.getUserById(userId);
 
 	if (!user) {
 		throw new AssistantError(

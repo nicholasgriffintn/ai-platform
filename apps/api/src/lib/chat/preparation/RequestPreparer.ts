@@ -1,5 +1,6 @@
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 import { Embedding } from "~/lib/embedding";
 import { MemoryManager } from "~/lib/memory";
 import { getModelConfig } from "~/lib/models";
@@ -38,10 +39,10 @@ export interface PreparedRequest {
 }
 
 export class RequestPreparer {
-	private database: Database;
+	private repositories: RepositoryManager;
 
 	constructor(private env: any) {
-		this.database = Database.getInstance(env);
+		this.repositories = new RepositoryManager(env);
 	}
 
 	async prepare(
@@ -66,7 +67,7 @@ export class RequestPreparer {
 
 		const isProUser = user?.plan_id === "pro";
 
-		const userSettings = await this.database.getUserSettings(user?.id);
+		const userSettings = await this.repositories.userSettings.getUserSettings(user?.id);
 
 		const modelConfigs = await this.buildModelConfigs(
 			options,
@@ -77,7 +78,7 @@ export class RequestPreparer {
 		const primaryProvider = primaryModelConfig.provider;
 
 		const conversationManager = ConversationManager.getInstance({
-			database: this.database,
+			database: new Database(this.env),
 			user: user || undefined,
 			anonymousUser: anonymousUser,
 			model: primaryModel,
@@ -361,7 +362,7 @@ export class RequestPreparer {
 			try {
 				let memoryContext = "";
 
-				const synthesis = await this.database.getActiveMemorySynthesis(
+				const synthesis = await this.repositories.memorySyntheses.getActiveSynthesis(
 					user.id,
 					"global",
 				);

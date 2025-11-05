@@ -1,5 +1,5 @@
 import { sanitiseInput } from "~/lib/chat/utils";
-import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 import { Embedding } from "~/lib/embedding";
 import type { IRequest, RagOptions } from "~/types";
 import { chunkText } from "~/utils/embeddings";
@@ -70,10 +70,10 @@ export const insertEmbedding = async (
 			...(file && { fileData: file.data, mimeType: file.mimeType }),
 		};
 
-		const database = Database.getInstance(env);
+		const repositories = new RepositoryManager(env);
 
 		if (type === "blog") {
-			const blogExists = await database.getEmbeddingIdByType(id, "blog");
+			const blogExists = await repositories.embeddings.getEmbeddingIdByType(id, "blog");
 
 			if (!blogExists) {
 				throw new AssistantError(
@@ -86,7 +86,7 @@ export const insertEmbedding = async (
 		} else {
 			uniqueId = id || `${Date.now()}-${generateId()}`;
 
-			await database.insertEmbedding(
+			await repositories.embeddings.insertEmbedding(
 				uniqueId,
 				newMetadata,
 				title,
@@ -99,7 +99,7 @@ export const insertEmbedding = async (
 			throw new AssistantError("No unique ID found");
 		}
 
-		const userSettings = await database.getUserSettings(req.user?.id);
+		const userSettings = await repositories.userSettings.getUserSettings(req.user?.id);
 		if (!userSettings) {
 			throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
 		}
@@ -118,7 +118,7 @@ export const insertEmbedding = async (
 				const chunkId = `${id || uniqueId}-${i}`;
 				const chunkMeta = { ...metadata, title, chunkIndex: i.toString() };
 
-				await database.insertEmbedding(
+				await repositories.embeddings.insertEmbedding(
 					chunkId,
 					chunkMeta,
 					`${title} (chunk ${i})`,

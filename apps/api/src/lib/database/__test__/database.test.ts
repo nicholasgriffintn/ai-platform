@@ -83,28 +83,55 @@ describe("Database", () => {
 			database = Database.getInstance(mockEnv);
 		});
 
-		it("should have all expected user methods", () => {
-			expect(database.getUserByGithubId).toBeDefined();
-			expect(database.getUserBySessionId).toBeDefined();
-			expect(database.getUserById).toBeDefined();
+		it("should have repositories getter", () => {
+			expect(database.repositories).toBeDefined();
+			expect(database.repositories).toBeInstanceOf(Object);
+		});
+
+		it("should have connection getter", () => {
+			expect(database.connection).toBeDefined();
+			expect(database.connection).toBe(mockEnv.DB);
+		});
+
+		it("should have complex business logic methods", () => {
 			expect(database.createUser).toBeDefined();
-			expect(database.updateUser).toBeDefined();
+			expect(database.consumeMagicLinkNonce).toBeDefined();
+			expect(database.deleteAllChatCompletions).toBeDefined();
 		});
 
-		it("should have all expected conversation methods", () => {
-			expect(database.createConversation).toBeDefined();
-			expect(database.getConversation).toBeDefined();
-			expect(database.getUserConversations).toBeDefined();
-			expect(database.updateConversation).toBeDefined();
-			expect(database.deleteConversation).toBeDefined();
+		it("should have user repository methods accessible", () => {
+			expect(database.repositories.users).toBeDefined();
+			expect(database.repositories.users.getUserById).toBeDefined();
+			expect(database.repositories.users.getUserByGithubId).toBeDefined();
+			expect(database.repositories.users.getUserBySessionId).toBeDefined();
+			expect(database.repositories.users.createUser).toBeDefined();
+			expect(database.repositories.users.updateUser).toBeDefined();
 		});
 
-		it("should have all expected message methods", () => {
-			expect(database.createMessage).toBeDefined();
-			expect(database.getMessage).toBeDefined();
-			expect(database.getConversationMessages).toBeDefined();
-			expect(database.updateMessage).toBeDefined();
-			expect(database.deleteMessage).toBeDefined();
+		it("should have conversation repository methods accessible", () => {
+			expect(database.repositories.conversations).toBeDefined();
+			expect(database.repositories.conversations.createConversation).toBeDefined();
+			expect(database.repositories.conversations.getConversation).toBeDefined();
+			expect(
+				database.repositories.conversations.getUserConversations,
+			).toBeDefined();
+			expect(
+				database.repositories.conversations.updateConversation,
+			).toBeDefined();
+			expect(
+				database.repositories.conversations.deleteConversation,
+			).toBeDefined();
+		});
+
+		it("should have message repository methods accessible", () => {
+			expect(database.repositories.messages).toBeDefined();
+			expect(database.repositories.messages.createMessage).toBeDefined();
+			expect(database.repositories.messages.getMessage).toBeDefined();
+			expect(
+				database.repositories.messages.getConversationMessages,
+			).toBeDefined();
+			expect(database.repositories.messages.updateMessage).toBeDefined();
+			expect(database.repositories.messages.deleteMessage).toBeDefined();
 		});
 	});
 });

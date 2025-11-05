@@ -2,7 +2,7 @@ import { TranscriptionProviderFactory } from "~/lib/transcription/factory";
 import { getAuxiliarySpeechModel } from "~/lib/models";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 
 export type TranscriptionProvider = "workers" | "mistral" | "replicate";
 
@@ -27,8 +27,8 @@ export const handleTranscribe = async (
 		let selectedProvider = provider;
 
 		if (!selectedProvider) {
-			const database = Database.getInstance(env);
-			const userSettings = await database.getUserSettings(user?.id);
+			const repositories = new RepositoryManager(env);
+			const userSettings = await repositories.userSettings.getUserSettings(user?.id);
 
 			const speechModel = await getAuxiliarySpeechModel(env, userSettings);
 			selectedProvider =

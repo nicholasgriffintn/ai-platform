@@ -51,6 +51,7 @@ Cloudflare Worker backend serving OpenAI-compatible endpoints, provider routing,
 
 ### Route Handler Pattern
 
+**Modern Pattern** (Use ServiceContext):
 ```typescript
 // src/routes/example.ts
 import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
@@ -96,14 +97,12 @@ app.post(
 	zValidator("json", exampleRequestSchema),
 	async (context: Context) => {
 		const body = context.req.valid("json");
-		const { env, user, anonymousUser } = getServiceContext(context);
 
-		const response = await handleExampleService({
-			env,
-			user,
-			anonymousUser,
-			request: body,
-		});
+		// Use getServiceContext to get all dependencies at once
+		const serviceContext = getServiceContext(context);
+
+		// Pass ServiceContext to the service
+		const response = await handleExampleService(serviceContext, body);
 
 		// If service returns Response (streaming), return directly
 		if (response instanceof Response) {
@@ -118,31 +117,19 @@ app.post(
 
 ### Service Function Pattern
 
+**Modern Pattern** (Use ServiceContext):
 ```typescript
 // src/services/example/exampleService.ts
-import type { IEnv, IUser, IAnonymousUser } from "~/types";
-import { getDatabase } from "~/lib/database";
-import { getRepositories } from "~/repositories";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger, LogLevel } from "~/utils/logger";
 import type { ExampleRequest, ExampleResponse } from "@assistant/schemas";
 
-interface HandleExampleServiceParams {
-	env: IEnv;
-	user?: IUser;
-	anonymousUser?: IAnonymousUser;
-	request: ExampleRequest;
-}
-
-export async function handleExampleService({
-	env,
-	user,
-	anonymousUser,
-	request,
-}: HandleExampleServiceParams): Promise<ExampleResponse> {
+export async function handleExampleService(
+	context: ServiceContext,
+	request: ExampleRequest,
+): Promise<ExampleResponse> {
 	const logger = getLogger("example-service", LogLevel.INFO);
-	const db = getDatabase(env);
-	const repositories = getRepositories(db);
 
 	try {
 		// Validate business rules
@@ -153,20 +140,19 @@ export async function handleExampleService({
 			);
 		}
 
-		// Check authentication if needed
-		if (!user && !anonymousUser) {
-			throw new AssistantError(
-				"Authentication required",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
+		// Use ServiceContext helper methods
+		const user = context.requireUser(); // Throws if no user
+		context.ensureDatabase(); // Throws if no database
 
-		// Use repository for database access
-		const entity = await repositories.example.findById(request.id);
+		// Access repositories directly from context
+		const entity = await context.repositories.example.findById(request.id);
 
 		if (!entity) {
 			throw new AssistantError("Entity not found", ErrorType.NOT_FOUND);
 		}
+
+		// Access env from context if needed
+		const apiKey = context.env.SOME_API_KEY;
 
 		// Perform business logic
 		const result = await processExample(entity, request);
@@ -182,29 +168,80 @@ export async function handleExampleService({
 }
 ```
 
-### Repository Pattern
+**Benefits of ServiceContext Pattern:**
+- **Single parameter**: Instead of passing `env`, `user`, `anonymousUser` separately, pass one `context` object
+- **Helper methods**: Use `context.requireUser()` and `context.ensureDatabase()` for automatic validation
+- **Lazy loading**: `context.repositories` and `context.database` are only created when accessed
+- **Type safety**: Strong typing for all context properties
+- **Consistency**: Same pattern across all services
+- **Easy testing**: Mock one context object instead of multiple parameters
 
+### Database and Repository Pattern
+
+**Database Class** - Simplified wrapper around RepositoryManager:
+```typescript
+// src/lib/database/index.ts
+import { RepositoryManager } from "~/repositories";
+import type { IEnv } from "~/types";
+
+export class Database {
+	private _repositories: RepositoryManager;
+	private env: IEnv;
+
+	constructor(env: IEnv) {
+		this.env = env;
+		this._repositories = new RepositoryManager(env);
+	}
+
+	// Access repositories directly
+	public get repositories(): RepositoryManager {
+		return this._repositories;
+	}
+
+	// Complex business logic methods that coordinate multiple repositories
+	public async createUser(userData) {
+		const user = await this._repositories.users.createUser(userData);
+
+		// Create related entities
+		await this._repositories.userSettings.createUserSettings(user.id);
+		await this._repositories.userSettings.createUserProviderSettings(user.id);
+
+		return user;
+	}
+
+	public async deleteAllChatCompletions(userId: number) {
+		const conversations = await this._repositories.conversations.getUserConversations(userId);
+
+		for (const conv of conversations) {
+			await this._repositories.messages.deleteAllMessages(conv.id);
+			await this._repositories.conversations.deleteConversation(conv.id);
+		}
+	}
+}
+```
+
+**Repository Pattern** - Direct data access layer:
 ```typescript
 // src/repositories/ExampleRepository.ts
 import { eq, and, desc } from "drizzle-orm";
 import { BaseRepository } from "./BaseRepository";
 import { example } from "~/lib/database/schema";
-import type { Database } from "~/lib/database";
+import type { IEnv } from "~/types";
 
-export class ExampleRepository extends BaseRepository<typeof example> {
-	constructor(db: Database) {
-		super(db, example);
+export class ExampleRepository extends BaseRepository {
+	constructor(env: IEnv) {
+		super(env);
 	}
 
 	async findByUserId(userId: number) {
-		return this.db.query.example.findMany({
+		return this.env.DB.query.example.findMany({
 			where: (example, { eq }) => eq(example.user_id, userId),
 			orderBy: (example, { desc }) => [desc(example.created_at)],
 		});
 	}
 
 	async findActiveByUserId(userId: number) {
-		return this.db
+		return this.env.DB
 			.select()
 			.from(example)
 			.where(and(eq(example.user_id, userId), eq(example.status, "active")))
@@ -212,7 +249,7 @@ export class ExampleRepository extends BaseRepository<typeof example> {
 	}
 
 	async updateStatus(id: string, status: string) {
-		const [updated] = await this.db
+		const [updated] = await this.env.DB
 			.update(example)
 			.set({
 				status,
@@ -223,11 +260,46 @@ export class ExampleRepository extends BaseRepository<typeof example> {
 
 		return updated;
 	}
-
-	async deleteByUserId(userId: number) {
-		return this.db.delete(example).where(eq(example.user_id, userId));
-	}
 }
+```
+
+**RepositoryManager** - Centralized access to all repositories:
+```typescript
+// src/repositories/index.ts
+import type { IEnv } from "~/types";
+
+export class RepositoryManager {
+	constructor(private env: IEnv) {}
+
+	public get users() {
+		return new UserRepository(this.env);
+	}
+
+	public get conversations() {
+		return new ConversationRepository(this.env);
+	}
+
+	public get messages() {
+		return new MessageRepository(this.env);
+	}
+
+	// ... other repositories
+}
+```
+
+**Usage in Services:**
+```typescript
+// PREFERRED: Access repositories through ServiceContext
+const entity = await context.repositories.example.findById(id);
+
+// ALTERNATIVE: Direct RepositoryManager usage
+const repositories = new RepositoryManager(env);
+const entity = await repositories.example.findById(id);
+
+// AVOID: Don't use Database class for simple repository operations
+// Instead of: database.getUserById(id)
+// Use: database.repositories.users.getUserById(id)
+// Or better: context.repositories.users.getUserById(id)
 ```
 
 ### Provider Implementation Pattern
