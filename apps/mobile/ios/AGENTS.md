@@ -119,6 +119,39 @@ Native Swift-based Polychat client managed via Xcode; integrates with the shared
 - View modifiers for consistent button and card styling
 - Dark mode compatible color system
 
+### Full API Integration & Persistence (Added: 2025-11-05)
+**Location**: `Polychat/Services/APIClient.swift`, `Polychat/Services/ConversationManager.swift`
+**Critical Fix**: App now fully integrates with backend API for conversation persistence
+
+**API Client Methods**:
+- `fetchConversations(limit:page:includeArchived:)` - Load all user conversations
+- `fetchConversation(id:refreshPending:)` - Load specific conversation with messages
+- `updateConversation(id:title:)` - Update conversation title on server
+- `deleteConversation(id:)` - Delete conversation from server
+- `createChatCompletion(messages:modelId:completionId:)` - Now includes `store:true` and `completion_id`
+
+**ConversationManager Features**:
+- Loads conversations from API on app startup
+- Lazy-loads messages when conversation clicked (performance optimization)
+- Pull-to-refresh to sync conversations
+- Delete operations sync with server
+- All new messages automatically persisted with `store:true`
+- Tracks `isLoadedFromAPI` flag to differentiate server vs local conversations
+
+**Data Flow**:
+1. App launch → `configure()` → `loadConversations()` fetches from API
+2. Click conversation → `loadConversationMessages()` loads full detail
+3. Send message → `addMessage()` with `completion_id` → persists to server
+4. Pull to refresh → `refreshConversations()` resyncs from server
+5. Delete → `deleteConversation()` removes from server then local
+
+**User Experience Improvements**:
+- Conversations persist across app restarts
+- Seamless sync between multiple devices
+- Loading indicators during API calls
+- Error alerts for network failures
+- Graceful fallback to local-only mode if API unavailable
+
 ## Common Pitfalls & Solutions
 
 - **Hand-editing Xcode files**: Always use Xcode UI to modify project settings
