@@ -17,6 +17,7 @@ class APIClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("mobile", forHTTPHeaderField: "X-Platform")
         if !apiKey.isEmpty {
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         }
@@ -49,6 +50,7 @@ class APIClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("mobile", forHTTPHeaderField: "X-Platform")
         if !apiKey.isEmpty {
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         }
@@ -72,6 +74,7 @@ class APIClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("mobile", forHTTPHeaderField: "X-Platform")
         if !apiKey.isEmpty {
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         }
@@ -109,6 +112,7 @@ class APIClient: ObservableObject {
         var request = URLRequest(url: urlComponents.url!)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("mobile", forHTTPHeaderField: "X-Platform")
         if !apiKey.isEmpty {
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         }
@@ -136,6 +140,7 @@ class APIClient: ObservableObject {
         var request = URLRequest(url: urlComponents.url!)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("mobile", forHTTPHeaderField: "X-Platform")
         if !apiKey.isEmpty {
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         }
@@ -159,6 +164,7 @@ class APIClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("mobile", forHTTPHeaderField: "X-Platform")
         if !apiKey.isEmpty {
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         }
@@ -182,6 +188,7 @@ class APIClient: ObservableObject {
         let url = URL(string: "\(baseURL)/chat/completions/\(id)")!
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
+        request.setValue("mobile", forHTTPHeaderField: "X-Platform")
         if !apiKey.isEmpty {
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         }

@@ -5,6 +5,9 @@ struct SettingsView: View {
     @EnvironmentObject var modelsStore: ModelsStore
     @State private var showingModelSelector = false
     @State private var autoTitleGeneration = true
+    @State private var showingPrivacyPolicy = false
+    @State private var showingTerms = false
+    @State private var showingHelp = false
     
     var body: some View {
         List {
@@ -86,15 +89,44 @@ struct SettingsView: View {
                 }
             }
             
-            Section(header: Text("About")) {
-                NavigationLink("Privacy Policy") {
-                    Text("Privacy Policy Content")
+            Section(header: Text("Legal")) {
+                Button(action: {
+                    showingPrivacyPolicy = true
+                }) {
+                    HStack {
+                        Text("Privacy Policy")
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.gray)
+                            .font(.caption)
+                    }
                 }
-                NavigationLink("Terms of Service") {
-                    Text("Terms of Service Content")
+
+                Button(action: {
+                    showingTerms = true
+                }) {
+                    HStack {
+                        Text("Terms of Service")
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.gray)
+                            .font(.caption)
+                    }
                 }
-                NavigationLink("Help & Support") {
-                    Text("Help Content")
+
+                Button(action: {
+                    showingHelp = true
+                }) {
+                    HStack {
+                        Text("Help & Support")
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.gray)
+                            .font(.caption)
+                    }
                 }
             }
             
@@ -106,6 +138,24 @@ struct SettingsView: View {
         .navigationTitle("Settings")
         .sheet(isPresented: $showingModelSelector) {
             ModelSelectorView()
+        }
+        .sheet(isPresented: $showingPrivacyPolicy) {
+            WebViewScreen(
+                url: URL(string: "https://polychat.app/privacy")!,
+                title: "Privacy Policy"
+            )
+        }
+        .sheet(isPresented: $showingTerms) {
+            WebViewScreen(
+                url: URL(string: "https://polychat.app/terms")!,
+                title: "Terms of Service"
+            )
+        }
+        .sheet(isPresented: $showingHelp) {
+            WebViewScreen(
+                url: URL(string: "https://nicholasgriffin.dev/contact")!,
+                title: "Help & Support"
+            )
         }
         .onAppear {
             autoTitleGeneration = UserDefaults.standard.bool(forKey: "autoTitleGeneration")
