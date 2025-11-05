@@ -26,6 +26,7 @@ describe("Embedding", () => {
 		vi.clearAllMocks();
 
 		mockEnv = {
+			DB: {} as any,
 			AI: {},
 			VECTOR_DB: {},
 			AWS_REGION: "us-east-1",

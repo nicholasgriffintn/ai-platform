@@ -67,7 +67,7 @@ describe("UsageManager", () => {
 			};
 
 			const managerWithOldUser = new UsageManager(
-				mockDatabase as any,
+				mockRepositories as any,
 				userWithOldReset,
 				null,
 			);
@@ -93,7 +93,7 @@ describe("UsageManager", () => {
 			};
 
 			const managerAtLimit = new UsageManager(
-				mockDatabase as any,
+				mockRepositories as any,
 				userAtLimit,
 				null,
 			);
@@ -136,7 +136,7 @@ describe("UsageManager", () => {
 			};
 
 			const managerWithOldUser = new UsageManager(
-				mockDatabase as any,
+				mockRepositories as any,
 				userWithOldReset,
 				null,
 			);
@@ -166,7 +166,7 @@ describe("UsageManager", () => {
 	describe("checkAnonymousUsage", () => {
 		it("should check usage for anonymous user", async () => {
 			const managerAnonymous = new UsageManager(
-				mockDatabase as any,
+				mockRepositories as any,
 				null,
 				mockAnonymousUser,
 			);
@@ -185,7 +185,7 @@ describe("UsageManager", () => {
 
 		it("should throw error when anonymous limit reached", async () => {
 			const managerAnonymous = new UsageManager(
-				mockDatabase as any,
+				mockRepositories as any,
 				null,
 				mockAnonymousUser,
 			);
@@ -201,7 +201,7 @@ describe("UsageManager", () => {
 
 		it("should throw error when no anonymous user ID", async () => {
 			const managerNoAnonymous = new UsageManager(
-				mockDatabase as any,
+				mockRepositories as any,
 				null,
 				null,
 			);
@@ -242,7 +242,7 @@ describe("UsageManager", () => {
 			};
 
 			const managerOldProReset = new UsageManager(
-				mockDatabase as any,
+				mockRepositories as any,
 				userWithOldProReset,
 				null,
 			);
@@ -273,7 +273,7 @@ describe("UsageManager", () => {
 			};
 
 			const managerAtProLimit = new UsageManager(
-				mockDatabase as any,
+				mockRepositories as any,
 				userAtProLimit,
 				null,
 			);
@@ -358,7 +358,7 @@ describe("UsageManager", () => {
 			};
 
 			const proUsageManager = new UsageManager(
-				mockDatabase as any,
+				mockRepositories as any,
 				proUser,
 				null,
 			);
@@ -379,7 +379,7 @@ describe("UsageManager", () => {
 
 		it("should return anonymous limits for anonymous user", async () => {
 			const anonymousManager = new UsageManager(
-				mockDatabase as any,
+				mockRepositories as any,
 				null,
 				mockAnonymousUser,
 			);
@@ -461,7 +461,7 @@ describe("UsageManager", () => {
 
 		it("should handle anonymous database errors", async () => {
 			const anonymousManager = new UsageManager(
-				mockDatabase as any,
+				mockRepositories as any,
 				null,
 				mockAnonymousUser,
 			);

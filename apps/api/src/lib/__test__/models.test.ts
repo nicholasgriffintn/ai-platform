@@ -39,7 +39,13 @@ vi.mock("~/lib/cache", () => {
 	};
 });
 
-,
+vi.mock("~/lib/database", () => ({
+	Database: {
+		getInstance: vi.fn().mockReturnValue({
+			getUserById: vi.fn(),
+			getUserProviderSettings: vi.fn(),
+			getUserSettings: vi.fn(),
+		}),
 	},
 }));
 
