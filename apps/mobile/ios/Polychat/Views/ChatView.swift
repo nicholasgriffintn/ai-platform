@@ -84,7 +84,7 @@ struct ChatView: View {
                     .disabled(allArtifacts.isEmpty)
 
                     Button(action: {
-                        conversationManager.startNewConversation()
+                        _ = conversationManager.startNewConversation()
                     }) {
                         Image(systemName: "plus")
                     }
@@ -187,7 +187,7 @@ struct MessageListView: View {
                     }
                 }
                 .padding(.horizontal)
-                .onChange(of: messages.count) { _ in
+                .onChange(of: messages.count) {
                     if let lastMessageId = messages.last?.id {
                         withAnimation {
                             proxy.scrollTo(lastMessageId, anchor: .bottom)

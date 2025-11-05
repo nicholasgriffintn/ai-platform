@@ -10,8 +10,8 @@ struct ContentView: View {
             TabView(selection: $selectedTab) {
                 NavigationView {
                     ConversationListView()
-                        .onChange(of: conversationManager.currentConversation) { conversation in
-                            if conversation != nil {
+                        .onChange(of: conversationManager.currentConversation) {
+                            if conversationManager.currentConversation != nil {
                                 selectedTab = 1
                             }
                         }
@@ -23,7 +23,7 @@ struct ContentView: View {
                 .tag(0)
                 
                 NavigationView {
-                    if let currentConversation = conversationManager.currentConversation {
+                    if conversationManager.currentConversation != nil {
                         ChatView()
                     } else {
                         VStack {

@@ -148,9 +148,10 @@ class ConversationManager: ObservableObject {
             ) {
                 // Remove loading message
                 conversation.messages.removeLast()
-                
-                let assistantMessage = ChatMessage(role: "assistant", 
-                                                 content: response.choices.first?.message.content ?? "No response")
+
+                let contentText = response.choices.first?.message.content.textValue ?? "No response"
+                let assistantMessage = ChatMessage(role: "assistant",
+                                                 content: contentText)
                 conversation.messages.append(assistantMessage)
                 currentConversation = conversation
                 updateConversationInArray(conversation)
@@ -190,11 +191,14 @@ class ConversationManager: ObservableObject {
         }
         
         do {
-            try await apiClient?.generateTitle(conversationId: conversation.id, messages: conversation.messages)
+            let titleResponse = try await apiClient?.generateTitle(conversationId: conversation.id, messages: conversation.messages)
+            if let title = titleResponse?.data?.title {
+                await updateConversationTitle(conversation.id, title: title)
+            }
         } catch {
             // If title generation fails, use truncated first message as fallback
             if let firstUserMessage = conversation.messages.first(where: { $0.role == "user" }) {
-                let truncatedTitle = String(firstUserMessage.content.prefix(30))
+                let truncatedTitle = String(firstUserMessage.content.textValue.prefix(30))
                 await updateConversationTitle(conversation.id, title: truncatedTitle)
             }
         }

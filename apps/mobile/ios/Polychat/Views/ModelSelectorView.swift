@@ -108,8 +108,8 @@ struct ModelSelectorView: View {
                 }
             }
         }
-        .onChange(of: modelsStore.error) { error in
-            showingError = error != nil
+        .onChange(of: modelsStore.error) { _, newValue in
+            showingError = newValue != nil
         }
     }
 }

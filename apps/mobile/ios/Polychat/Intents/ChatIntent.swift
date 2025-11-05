@@ -20,10 +20,10 @@ struct ChatIntent: AppIntent {
             ChatMessage(role: "user", content: prompt)
         ], modelId: "mistral-small")
         
-        guard let answer = response.choices.first?.message.content else {
+        guard let answer = response.choices.first?.message.content.textValue else {
             throw NSError(domain: "com.polychat.app", code: 1, userInfo: [NSLocalizedDescriptionKey: "No response from AI"])
         }
-        
+
         return .result(value: answer)
     }
 }
