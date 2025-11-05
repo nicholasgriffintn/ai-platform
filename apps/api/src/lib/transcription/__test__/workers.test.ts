@@ -15,18 +15,14 @@ vi.mock("~/constants/app", () => ({
 	gatewayId: mockGatewayId,
 }));
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn().mockReturnValue({
-			getUserSettings: vi.fn(),
-		}),
+,
 	},
 }));
 
 describe("WorkersTranscriptionProvider", () => {
 	const provider = new WorkersTranscriptionProvider();
 
-	const mockEnv: IEnv = {
+	const mockEnv: IEnv = { DB: {} as any,
 		AI: mockAI,
 	} as any;
 

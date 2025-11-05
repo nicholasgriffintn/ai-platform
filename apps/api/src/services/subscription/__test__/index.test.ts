@@ -58,7 +58,7 @@ vi.mock("~/services/notifications", () => ({
 	sendTrialEndingEmail: vi.fn(),
 }));
 
-const mockEnv: IEnv = {
+const mockEnv: IEnv = { DB: {} as any,
 	STRIPE_SECRET_KEY: "sk_test_123",
 	STRIPE_WEBHOOK_SECRET: "whsec_test_123",
 } as IEnv;
