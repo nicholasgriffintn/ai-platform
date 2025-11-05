@@ -37,7 +37,7 @@ export async function getDrawingDetails({
 		throw new AssistantError("Drawing not found", ErrorType.NOT_FOUND);
 	}
 
-	let data = safeParseJson(entry.data);
+	let data = safeParseJson(entry.data) ?? {};
 
 	return {
 		id: entry.id,

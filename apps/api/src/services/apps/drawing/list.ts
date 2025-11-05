@@ -38,7 +38,7 @@ export async function listDrawings({
 	const list = await repo.getAppDataByUserAndApp(userId, "drawings");
 
 	return list.map((entry) => {
-		let data = safeParseJson(entry.data);
+		let data = safeParseJson(entry.data) ?? {};
 		return {
 			id: entry.id,
 			description: data.description,

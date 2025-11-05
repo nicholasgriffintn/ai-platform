@@ -41,7 +41,7 @@ export async function listNotes({
 	const list = await repo.getAppDataByUserAndApp(userId, "notes");
 
 	return list.map((entry) => {
-		let data = safeParseJson(entry.data);
+		let data = safeParseJson(entry.data) ?? {};
 		return {
 			id: entry.id,
 			title: data.title,
@@ -80,7 +80,7 @@ export async function getNote({
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
 	}
 
-	let data = safeParseJson(entry.data);
+	let data = safeParseJson(entry.data) ?? {};
 	return {
 		id: entry.id,
 		title: data.title,
@@ -137,7 +137,7 @@ export async function createNote({
 	);
 
 	const full = await repo.getAppDataById(entry.id);
-	let parsed = safeParseJson(full!.data);
+	let parsed = safeParseJson(full!.data) ?? {};
 
 	return {
 		id: full!.id,
@@ -197,7 +197,7 @@ export async function updateNote({
 
 	await repo.updateAppData(noteId, finalData);
 	const updated = await repo.getAppDataById(noteId);
-	let parsedData = safeParseJson(updated!.data);
+	let parsedData = safeParseJson(updated!.data) ?? {};
 
 	return {
 		id: updated!.id,

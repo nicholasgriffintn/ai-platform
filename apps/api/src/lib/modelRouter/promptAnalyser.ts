@@ -165,6 +165,12 @@ Ensure the output is nothing but the JSON object itself.`;
 					requirementsAnalysis = safeParseJson<Partial<PromptRequirements>>(
 						jsonMatch[0],
 					);
+					if (!requirementsAnalysis) {
+						throw new AssistantError(
+							"Invalid JSON response from AI analysis",
+							ErrorType.PROVIDER_ERROR,
+						);
+					}
 				} else {
 					throw new AssistantError(
 						"Could not extract valid JSON",
@@ -180,6 +186,7 @@ Ensure the output is nothing but the JSON object itself.`;
 		}
 
 		if (
+			!requirementsAnalysis ||
 			typeof requirementsAnalysis.expectedComplexity !== "number" ||
 			!Array.isArray(requirementsAnalysis.requiredCapabilities)
 		) {

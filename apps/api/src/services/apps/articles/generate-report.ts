@@ -91,7 +91,7 @@ export async function generateArticlesReport({
 
 		const combinedArticles = analysisItems
 			.map((item) => {
-				let parsed = safeParseJson(item.data || "{}");
+				let parsed = safeParseJson(item.data || "{}") ?? {};
 				return parsed.originalArticle;
 			})
 			.filter((content): content is string => !!content)
