@@ -4,6 +4,7 @@ struct ChatView: View {
     @EnvironmentObject var conversationManager: ConversationManager
     @EnvironmentObject var modelsStore: ModelsStore
     @State private var messageText = ""
+    @State private var selectedImages: [UIImage] = []
     @State private var showingModelSelector = false
     @State private var showingChatSettings = false
     @State private var showingArtifacts = false
@@ -27,7 +28,11 @@ struct ChatView: View {
     var body: some View {
         VStack {
             MessageListView(messages: messages)
-            MessageInputView(messageText: $messageText, sendMessage: sendMessage)
+            MessageInputView(
+                messageText: $messageText,
+                selectedImages: $selectedImages,
+                sendMessage: sendMessage
+            )
         }
         .navigationTitle(conversationManager.currentConversation?.title ?? "New Chat")
         #if os(iOS)
@@ -102,18 +107,69 @@ struct ChatView: View {
     
     private func sendMessage() {
         let text = messageText
-        guard !text.isEmpty else { return }
-        
+        let images = selectedImages
+        guard !text.isEmpty || !images.isEmpty else { return }
+
         messageText = ""
-        
+        selectedImages = []
+
         Task {
             do {
-                let userMessage = ChatMessage(role: "user", content: text)
-                try await conversationManager.addMessage(userMessage)
+                let userMessage: ChatMessage
+
+                if images.isEmpty {
+                    // Simple text message
+                    userMessage = ChatMessage(role: "user", content: text)
+                } else {
+                    // Multimodal message with images
+                    var contentBlocks: [MessageContentBlock] = []
+
+                    // Add text block if present
+                    if !text.isEmpty {
+                        contentBlocks.append(.text(MessageContentBlock.TextBlock(text: text)))
+                    }
+
+                    // Add image blocks
+                    for image in images {
+                        if let base64 = encodeImageToBase64(image) {
+                            let dataUrl = "data:image/jpeg;base64,\(base64)"
+                            contentBlocks.append(.imageUrl(MessageContentBlock.ImageUrlBlock(url: dataUrl, detail: "auto")))
+                        }
+                    }
+
+                    userMessage = ChatMessage(role: "user", contentBlocks: contentBlocks)
+                }
+
+                try await conversationManager.addMessage(userMessage, settings: chatSettings)
             } catch {
                 // Error is already handled in ConversationManager - shows error message in chat
             }
         }
+    }
+
+    private func encodeImageToBase64(_ image: UIImage) -> String? {
+        // Resize image if too large to avoid huge payloads
+        let maxDimension: CGFloat = 2048
+        let resizedImage: UIImage
+
+        if image.size.width > maxDimension || image.size.height > maxDimension {
+            let scale = min(maxDimension / image.size.width, maxDimension / image.size.height)
+            let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+
+            UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+            image.draw(in: CGRect(origin: .zero, size: newSize))
+            resizedImage = UIGraphicsGetImageFromCurrentImageContext() ?? image
+            UIGraphicsEndImageContext()
+        } else {
+            resizedImage = image
+        }
+
+        // Convert to JPEG with 0.8 quality
+        guard let imageData = resizedImage.jpegData(compressionQuality: 0.8) else {
+            return nil
+        }
+
+        return imageData.base64EncodedString()
     }
 }
 
@@ -146,9 +202,9 @@ struct MessageListView: View {
 // A subview for the text input field and send button.
 struct MessageInputView: View {
     @Binding var messageText: String
+    @Binding var selectedImages: [UIImage]
     let sendMessage: () -> Void
     @FocusState private var isInputFocused: Bool
-    @State private var selectedImages: [UIImage] = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -176,10 +232,7 @@ struct MessageInputView: View {
                         sendMessage()
                     }
 
-                Button(action: {
-                    sendMessage()
-                    selectedImages = []
-                }) {
+                Button(action: sendMessage) {
                     Image(systemName: "paperplane.fill")
                         .font(.system(size: 20))
                         .foregroundColor(.white)
@@ -216,7 +269,7 @@ struct MessageBubble: View {
             VStack(alignment: message.role == "user" ? .trailing : .leading, spacing: 8) {
                 // Message content
                 VStack(alignment: message.role == "user" ? .trailing : .leading, spacing: 0) {
-                    if message.content == "..." {
+                    if message.textContent == "..." {
                         // Loading indicator
                         HStack(spacing: 8) {
                             ProgressView()
@@ -229,12 +282,12 @@ struct MessageBubble: View {
                         .padding(.vertical, 12)
                         .background(Color(.systemGray5))
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    } else if message.content.hasPrefix("Error:") {
+                    } else if message.textContent.hasPrefix("Error:") {
                         // Error message
                         HStack(spacing: 8) {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundColor(.orange)
-                            Text(message.content)
+                            Text(message.textContent)
                                 .font(.body)
                                 .foregroundColor(.primary)
                         }
@@ -248,7 +301,7 @@ struct MessageBubble: View {
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     } else {
                         // Regular message with markdown support
-                        MarkdownText(content: message.content, isUser: message.role == "user")
+                        MarkdownText(content: message.textContent, isUser: message.role == "user")
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
                             .background(messageBackground)
@@ -257,7 +310,7 @@ struct MessageBubble: View {
                 }
 
                 // Message actions
-                if !message.content.contains("...") && !message.content.hasPrefix("Error:") {
+                if !message.textContent.contains("...") && !message.textContent.hasPrefix("Error:") {
                     HStack(spacing: 12) {
                         if message.role == "assistant" {
                             Button(action: regenerateMessage) {
@@ -312,7 +365,7 @@ struct MessageBubble: View {
     }
 
     private func copyMessage() {
-        UIPasteboard.general.string = message.content
+        UIPasteboard.general.string = message.textContent
     }
 }
 

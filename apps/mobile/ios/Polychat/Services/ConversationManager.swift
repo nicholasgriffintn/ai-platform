@@ -114,36 +114,37 @@ class ConversationManager: ObservableObject {
         return newConversation
     }
     
-    func addMessage(_ message: ChatMessage) async throws {
+    func addMessage(_ message: ChatMessage, settings: ChatSettings? = nil) async throws {
         guard var conversation = currentConversation else {
-            throw NSError(domain: "com.polychat.app", code: 3, 
+            throw NSError(domain: "com.polychat.app", code: 3,
                          userInfo: [NSLocalizedDescriptionKey: "No active conversation"])
         }
-        
+
         // Add user message
         conversation.messages.append(message)
         currentConversation = conversation
         updateConversationInArray(conversation)
-        
+
         // Add loading indicator
         let loadingMessage = ChatMessage(role: "assistant", content: "...")
         conversation.messages.append(loadingMessage)
         currentConversation = conversation
         updateConversationInArray(conversation)
-        
+
         do {
             // Get the model to use - from conversation, selected, or default
             let currentSelectedModelId = await MainActor.run { modelsStore?.selectedModelId }
-            let modelToUse = conversation.modelId ?? 
-                           selectedModelId ?? 
-                           currentSelectedModelId ?? 
+            let modelToUse = conversation.modelId ??
+                           selectedModelId ??
+                           currentSelectedModelId ??
                            "mistral-small"
-            
-            // Get API response with store:true and completion_id
+
+            // Get API response with store:true, completion_id, and settings
             if let response = try await apiClient?.createChatCompletion(
                 messages: Array(conversation.messages.dropLast()),
                 modelId: modelToUse,
-                completionId: conversation.id
+                completionId: conversation.id,
+                settings: settings
             ) {
                 // Remove loading message
                 conversation.messages.removeLast()

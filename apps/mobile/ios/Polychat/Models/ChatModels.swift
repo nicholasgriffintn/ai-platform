@@ -1,5 +1,106 @@
 import Foundation
 
+// Message content can be either simple text or multimodal content blocks
+public enum MessageContent: Codable, Equatable {
+    case text(String)
+    case multimodal([MessageContentBlock])
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .text(let string):
+            try container.encode(string)
+        case .multimodal(let blocks):
+            try container.encode(blocks)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let string = try? container.decode(String.self) {
+            self = .text(string)
+        } else if let blocks = try? container.decode([MessageContentBlock].self) {
+            self = .multimodal(blocks)
+        } else {
+            self = .text("")
+        }
+    }
+
+    public var textValue: String {
+        switch self {
+        case .text(let string):
+            return string
+        case .multimodal(let blocks):
+            return blocks.compactMap { block in
+                if case .text(let text) = block {
+                    return text.text
+                }
+                return nil
+            }.joined(separator: "\n")
+        }
+    }
+}
+
+// Content block types for multimodal messages
+public enum MessageContentBlock: Codable, Equatable {
+    case text(TextBlock)
+    case imageUrl(ImageUrlBlock)
+
+    public struct TextBlock: Codable, Equatable {
+        public let type: String = "text"
+        public let text: String
+
+        public init(text: String) {
+            self.text = text
+        }
+    }
+
+    public struct ImageUrlBlock: Codable, Equatable {
+        public let type: String = "image_url"
+        public let imageUrl: ImageUrl
+
+        public struct ImageUrl: Codable, Equatable {
+            public let url: String
+            public let detail: String?
+
+            public init(url: String, detail: String? = "auto") {
+                self.url = url
+                self.detail = detail
+            }
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case type
+            case imageUrl = "image_url"
+        }
+
+        public init(url: String, detail: String? = "auto") {
+            self.imageUrl = ImageUrl(url: url, detail: detail)
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .text(let block):
+            try container.encode(block)
+        case .imageUrl(let block):
+            try container.encode(block)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let textBlock = try? container.decode(TextBlock.self) {
+            self = .text(textBlock)
+        } else if let imageBlock = try? container.decode(ImageUrlBlock.self) {
+            self = .imageUrl(imageBlock)
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Unknown content block type")
+        }
+    }
+}
+
 public struct ChatMessage: Codable, Identifiable, Equatable {
     public static func == (lhs: ChatMessage, rhs: ChatMessage) -> Bool {
         lhs.id == rhs.id
@@ -7,7 +108,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
 
     public let id: UUID
     public let role: String
-    public let content: String
+    public let content: MessageContent
     public var artifacts: [Artifact]?
 
     public func encode(to encoder: Encoder) throws {
@@ -20,6 +121,12 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
         role == "user"
     }
 
+    // Convenience computed property for text content
+    public var textContent: String {
+        content.textValue
+    }
+
+    // Simple text message initializer
     public init(
         id: UUID = UUID(),
         role: String,
@@ -28,7 +135,20 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
     ) {
         self.id = id
         self.role = role
-        self.content = content
+        self.content = .text(content)
+        self.artifacts = artifacts
+    }
+
+    // Multimodal message initializer
+    public init(
+        id: UUID = UUID(),
+        role: String,
+        contentBlocks: [MessageContentBlock],
+        artifacts: [Artifact]? = nil
+    ) {
+        self.id = id
+        self.role = role
+        self.content = .multimodal(contentBlocks)
         self.artifacts = artifacts
     }
 
@@ -39,7 +159,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         role = try container.decode(String.self, forKey: .role)
-        content = try container.decode(String.self, forKey: .content)
+        content = try container.decode(MessageContent.self, forKey: .content)
         id = UUID()
         artifacts = nil
     }
@@ -50,8 +170,9 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
             return
         }
 
-        let nsContent = content as NSString
-        let matches = regex.matches(in: content, options: [], range: NSRange(location: 0, length: nsContent.length))
+        let textContent = self.textContent
+        let nsContent = textContent as NSString
+        let matches = regex.matches(in: textContent, options: [], range: NSRange(location: 0, length: nsContent.length))
 
         var extractedArtifacts: [Artifact] = []
 
@@ -117,18 +238,26 @@ public struct ChatCompletionRequest: Codable {
     let platform: String
     let store: Bool
     let completionId: String?
+    let temperature: Double?
+    let topP: Double?
+    let maxTokens: Int?
 
     enum CodingKeys: String, CodingKey {
-        case messages, model, platform, store
+        case messages, model, platform, store, temperature
         case completionId = "completion_id"
+        case topP = "top_p"
+        case maxTokens = "max_tokens"
     }
 
-    public init(messages: [ChatMessage], model: String, store: Bool = true, completionId: String? = nil) {
+    public init(messages: [ChatMessage], model: String, store: Bool = true, completionId: String? = nil, settings: ChatSettings? = nil) {
         self.messages = messages
         self.model = model
         self.platform = "mobile"
         self.store = store
         self.completionId = completionId
+        self.temperature = settings?.temperature
+        self.topP = settings?.topP
+        self.maxTokens = settings?.maxTokens
     }
 }
 

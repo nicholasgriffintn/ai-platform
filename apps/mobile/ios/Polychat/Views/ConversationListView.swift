@@ -11,7 +11,7 @@ struct ConversationListView: View {
         return conversationManager.conversations.filter { conversation in
             conversation.title.localizedCaseInsensitiveContains(searchText) ||
             conversation.messages.contains { message in
-                message.content.localizedCaseInsensitiveContains(searchText)
+                message.textContent.localizedCaseInsensitiveContains(searchText)
             }
         }
     }

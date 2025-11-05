@@ -12,7 +12,7 @@ class APIClient: ObservableObject {
         self.apiKey = key
     }
     
-    func createChatCompletion(messages: [ChatMessage], modelId: String, completionId: String? = nil) async throws -> ChatCompletionResponse {
+    func createChatCompletion(messages: [ChatMessage], modelId: String, completionId: String? = nil, settings: ChatSettings? = nil) async throws -> ChatCompletionResponse {
         let url = URL(string: "\(baseURL)/chat/completions")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -21,7 +21,7 @@ class APIClient: ObservableObject {
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         }
 
-        let requestBody = ChatCompletionRequest(messages: messages, model: modelId, store: true, completionId: completionId)
+        let requestBody = ChatCompletionRequest(messages: messages, model: modelId, store: true, completionId: completionId, settings: settings)
         request.httpBody = try JSONEncoder().encode(requestBody)
         
         let (data, response) = try await session.data(for: request)
