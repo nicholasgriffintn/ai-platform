@@ -6,6 +6,7 @@ import {
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "../../../utils/json";
 
 const logger = getLogger({ prefix: "services/apps/podcast/summarise" });
 
@@ -75,13 +76,7 @@ export const handlePodcastSummarise = async (
 			);
 
 		if (existingSummaries.length > 0) {
-			let summaryData;
-			try {
-				summaryData = JSON.parse(existingSummaries[0].data);
-			} catch (e) {
-				logger.error("Failed to parse summary data", { error: e });
-				summaryData = {};
-			}
+			let summaryData = safeParseJson(existingSummaries[0].data);
 			return {
 				status: "success",
 				content: summaryData.summary,
@@ -107,13 +102,7 @@ export const handlePodcastSummarise = async (
 			);
 		}
 
-		let parsedTranscriptionData;
-		try {
-			parsedTranscriptionData = JSON.parse(transcriptionData[0].data);
-		} catch (e) {
-			logger.error("Failed to parse transcription data", { error: e });
-			parsedTranscriptionData = {};
-		}
+		let parsedTranscriptionData = safeParseJson(transcriptionData[0].data);
 		const title = parsedTranscriptionData.title;
 		const description = parsedTranscriptionData.description;
 		const transcription = parsedTranscriptionData.transcriptionData.output;

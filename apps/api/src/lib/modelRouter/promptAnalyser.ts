@@ -5,6 +5,7 @@ import { availableFunctions } from "~/services/functions";
 import type { Attachment, IEnv, IUser, PromptRequirements } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/modelRouter/promptAnalyser" });
 
@@ -146,6 +147,7 @@ Ensure the output is nothing but the JSON object itself.`;
 		let requirementsAnalysis: Partial<PromptRequirements>;
 
 		try {
+			// NOTE: This is not using safeParseJson to allow the error to be caught below
 			requirementsAnalysis = JSON.parse(cleanedContent);
 		} catch (error) {
 			logger.error(
@@ -160,7 +162,9 @@ Ensure the output is nothing but the JSON object itself.`;
 			try {
 				const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
 				if (jsonMatch) {
-					requirementsAnalysis = JSON.parse(jsonMatch[0]);
+					requirementsAnalysis = safeParseJson<Partial<PromptRequirements>>(
+						jsonMatch[0],
+					);
 				} else {
 					throw new AssistantError(
 						"Could not extract valid JSON",

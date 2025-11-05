@@ -4,6 +4,7 @@ import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { detectStreaming } from "~/utils/streaming";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/providers/fetch" });
 
@@ -104,23 +105,11 @@ export async function fetchAIResponse<
 			);
 		}
 
-		let responseJson: any;
-		try {
-			responseJson = JSON.parse(responseText);
-			logger.error(
-				`Failed to get response for ${provider} from ${endpointOrUrl}`,
-				responseJson,
-			);
-		} catch (_jsonError) {
-			logger.error(
-				`Failed to parse response ${provider} from ${endpointOrUrl}. Response not valid JSON:`,
-				{
-					responseText,
-					status: response.status,
-					statusText: response.statusText,
-				},
-			);
-		}
+		let responseJson = safeParseJson(responseText);
+		logger.error(
+			`Failed to get response for ${provider} from ${endpointOrUrl}`,
+			responseJson,
+		);
 
 		throw new AssistantError(
 			`Failed to get response for ${provider} from ${endpointOrUrl}`,

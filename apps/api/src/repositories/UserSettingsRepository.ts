@@ -7,6 +7,7 @@ import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseRepository } from "./BaseRepository";
 import { generateId } from "~/utils/id";
+import { safeParseJson } from "../utils/json";
 
 export class UserSettingsRepository extends BaseRepository {
 	private static readonly CREDENTIALS_DELIMITER = "::@@::";
@@ -56,10 +57,8 @@ export class UserSettingsRepository extends BaseRepository {
 	private async decryptWithServerKey(encryptedData: string): Promise<string> {
 		try {
 			const key = await this.getServerEncryptionKey();
-			let parsedEncryptedData;
-			try {
-				parsedEncryptedData = JSON.parse(encryptedData);
-			} catch (_e) {
+			let parsedEncryptedData = safeParseJson(encryptedData);
+			if (!parsedEncryptedData) {
 				throw new AssistantError(
 					"Failed to parse encrypted data",
 					ErrorType.INTERNAL_ERROR,
@@ -343,10 +342,8 @@ export class UserSettingsRepository extends BaseRepository {
 				);
 			}
 
-			let publicKeyJwk;
-			try {
-				publicKeyJwk = JSON.parse(result.public_key);
-			} catch (_e) {
+			let publicKeyJwk = safeParseJson(result.public_key);
+			if (!publicKeyJwk) {
 				throw new AssistantError(
 					"Failed to parse public key",
 					ErrorType.INTERNAL_ERROR,
@@ -452,10 +449,8 @@ export class UserSettingsRepository extends BaseRepository {
 			const decryptedPrivateKeyString = await this.decryptWithServerKey(
 				userSettings.private_key,
 			);
-			let privateKeyJwk;
-			try {
-				privateKeyJwk = JSON.parse(decryptedPrivateKeyString);
-			} catch (_e) {
+			let privateKeyJwk = safeParseJson(decryptedPrivateKeyString);
+			if (!privateKeyJwk) {
 				throw new AssistantError(
 					"Failed to parse private key",
 					ErrorType.INTERNAL_ERROR,

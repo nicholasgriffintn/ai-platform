@@ -13,6 +13,7 @@ import type {
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/embedding/marengo" });
 
@@ -86,9 +87,8 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
 			const responseData = response.response;
 
 			if (typeof responseData === "string") {
-				try {
-					marengoResponse = JSON.parse(responseData);
-				} catch {
+				marengoResponse = safeParseJson(responseData);
+				if (!marengoResponse) {
 					throw new AssistantError(
 						"Invalid JSON response from Marengo",
 						ErrorType.EXTERNAL_API_ERROR,

@@ -3,6 +3,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { BaseRepository } from "./BaseRepository";
 import { generateId } from "~/utils/id";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "repositories/ApiKeyRepository" });
 
@@ -29,11 +30,9 @@ export class ApiKeyRepository extends BaseRepository {
 			throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
 		}
 
-		let publicKeyJwk;
-		try {
-			publicKeyJwk = JSON.parse(result.public_key);
-		} catch (e) {
-			logger.error("Failed to parse public key", { error: e });
+		let publicKeyJwk = safeParseJson(result.public_key);
+		if (!publicKeyJwk) {
+			logger.error("Failed to parse public key", { error: "" });
 			throw new AssistantError(
 				"Failed to parse public key",
 				ErrorType.INTERNAL_ERROR,

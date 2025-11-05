@@ -11,6 +11,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseProvider } from "./base";
 import { fetchAIResponse } from "../lib/fetch";
 import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
+import { safeParseJson } from "../../../utils/json";
 
 type ReplicateFieldType =
 	| "string"
@@ -164,24 +165,17 @@ function coerceValue(value: unknown, types: ReplicateFieldType[]): unknown {
 	}
 
 	if (types.includes("array") && typeof value === "string") {
-		try {
-			const parsed = JSON.parse(value);
-			if (Array.isArray(parsed)) {
-				return parsed;
-			}
-		} catch (_error) {
-			return value;
+		const parsed = safeParseJson(value);
+		if (Array.isArray(parsed)) {
+			return parsed;
 		}
+		return value;
 	}
 
 	if (types.includes("object") && typeof value === "string") {
-		try {
-			const parsed = JSON.parse(value);
-			if (parsed && typeof parsed === "object") {
-				return parsed;
-			}
-		} catch (_error) {
-			return value;
+		const parsed = safeParseJson(value);
+		if (parsed && typeof parsed === "object") {
+			return parsed;
 		}
 	}
 

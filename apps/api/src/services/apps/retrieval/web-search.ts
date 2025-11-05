@@ -10,6 +10,7 @@ import { handleWebSearch } from "~/services/search/web";
 import type { IEnv, IUser, SearchOptions, SearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { safeParseJson } from "../../../utils/json";
 
 export interface DeepWebSearchParams {
 	query: string;
@@ -145,13 +146,9 @@ export async function performDeepWebSearch(
 	if (hasSimarQuestions) {
 		similarQuestions = similarQuestionsResponse.response.questions;
 	} else if (isContentAnStringifiedArray) {
-		try {
-			const parsed = JSON.parse(similarQuestionsResponse.response) as string[];
-			if (Array.isArray(parsed)) {
-				similarQuestions = parsed;
-			}
-		} catch (e) {
-			// Ignore parsing errors
+		const parsed = safeParseJson(similarQuestionsResponse.response) as string[];
+		if (Array.isArray(parsed)) {
+			similarQuestions = parsed;
 		}
 	}
 

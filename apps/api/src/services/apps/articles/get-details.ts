@@ -6,6 +6,7 @@ import { type AppData } from "~/repositories/AppDataRepository";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "../../../utils/json";
 
 const logger = getLogger({ prefix: "services/apps/articles/get-details" });
 
@@ -64,13 +65,7 @@ export async function getArticleDetails({
 			throw new AssistantError("Forbidden", ErrorType.FORBIDDEN);
 		}
 
-		let parsedArticleData;
-		try {
-			parsedArticleData = JSON.parse(article.data || "{}");
-		} catch (e) {
-			logger.error("Failed to parse article data", { error: e });
-			parsedArticleData = {};
-		}
+		let parsedArticleData = safeParseJson(article.data || "{}");
 
 		const parsedArticle: AppData = {
 			...article,

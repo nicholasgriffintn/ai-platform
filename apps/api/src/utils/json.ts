@@ -59,7 +59,7 @@ export function parseAIResponseJson<T = any>(
 	}
 
 	try {
-		const parsedData = JSON.parse(cleanedResponse) as T;
+		const parsedData = safeParseJson(cleanedResponse) as T;
 		return {
 			data: parsedData,
 			error: null,
@@ -71,7 +71,7 @@ export function parseAIResponseJson<T = any>(
 				.replace(/,\s*\]/g, "]") // Remove trailing commas in arrays
 				.replace(/'/g, '"'); // Replace single quotes with double quotes
 
-			const fixedData = JSON.parse(fixedJson);
+			const fixedData = safeParseJson(fixedJson);
 			return {
 				data: fixedData as T,
 				error: null,

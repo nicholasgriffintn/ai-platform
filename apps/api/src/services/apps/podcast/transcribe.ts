@@ -8,6 +8,7 @@ import {
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "../../../utils/json";
 
 const logger = getLogger({ prefix: "services/apps/podcast/transcribe" });
 
@@ -58,15 +59,10 @@ export const handlePodcastTranscribe = async (
 			);
 
 		if (existingTranscriptions.length > 0) {
-			let transcriptionData;
-			try {
-				transcriptionData = JSON.parse(
-					existingTranscriptions[0].data,
-				).transcriptionData;
-			} catch (e) {
-				logger.error("Failed to parse transcription data", { error: e });
-				transcriptionData = {};
-			}
+			let transcriptionData = safeParseJson(
+				existingTranscriptions[0].data,
+			)?.transcriptionData;
+
 			return {
 				status: "success",
 				content: "Podcast Transcription retrieved from cache",
@@ -88,13 +84,7 @@ export const handlePodcastTranscribe = async (
 			);
 		}
 
-		let parsedUploadData: Record<string, any>;
-		try {
-			parsedUploadData = JSON.parse(uploadData[0].data);
-		} catch (e) {
-			logger.error("Failed to parse upload data", { error: e });
-			parsedUploadData = {};
-		}
+		let parsedUploadData = safeParseJson(uploadData?.[0]?.data || "{}");
 		const title = parsedUploadData.title;
 		const description = parsedUploadData.description;
 		const audioUrl = parsedUploadData.audioUrl;

@@ -17,6 +17,7 @@ import {
 import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "../../utils/json";
 
 const logger = getLogger({ prefix: "services/agents/completions" });
 
@@ -85,7 +86,9 @@ export async function createAgentCompletion({
 	let fewShotExamples;
 	if (agent.few_shot_examples) {
 		try {
-			const rawFewShotExamples = JSON.parse(agent.few_shot_examples as string);
+			const rawFewShotExamples = safeParseJson(
+				agent.few_shot_examples as string,
+			);
 
 			fewShotExamples = `
         Examples:
@@ -149,9 +152,8 @@ async function setupMCPFunctions(agent: any) {
 	try {
 		const serversJson = agent.servers as string;
 		let serverConfigs = [];
-		try {
-			serverConfigs = JSON.parse(serversJson) as Array<{ url: string }>;
-		} catch (error) {
+		serverConfigs = safeParseJson(serversJson) as Array<{ url: string }>;
+		if (!serverConfigs) {
 			throw new AssistantError(
 				"Invalid servers configuration",
 				ErrorType.PARAMS_ERROR,

@@ -5,6 +5,7 @@ import {
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "../../../utils/json";
 
 const logger = getLogger();
 
@@ -65,13 +66,7 @@ export const handlePodcastList = async (
 
 		const itemId = appData.item_id;
 		const itemType = appData.item_type || "unknown";
-		let data;
-		try {
-			data = JSON.parse(appData.data);
-		} catch (e) {
-			logger.error("Failed to parse podcast data", { error: e });
-			data = {};
-		}
+		let data = safeParseJson(appData.data);
 
 		if (!podcastMap.has(itemId)) {
 			podcastMap.set(itemId, { id: itemId, items: {} });

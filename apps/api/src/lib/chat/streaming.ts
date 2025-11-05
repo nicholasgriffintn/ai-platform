@@ -27,6 +27,7 @@ import {
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { emitDoneEvent, emitEvent } from "./emitter";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/chat/streaming" });
 
@@ -281,10 +282,8 @@ export async function createStreamWithPostProcessing(
 						}
 
 						try {
-							let data: ParsedSSEData;
-							try {
-								data = JSON.parse(dataStr) as ParsedSSEData;
-							} catch (_e) {
+							const data = safeParseJson(dataStr);
+							if (!data) {
 								throw new AssistantError(
 									"Failed to parse data",
 									ErrorType.PARAMS_ERROR,
@@ -462,14 +461,7 @@ export async function createStreamWithPostProcessing(
 									let parsedInput = {};
 									try {
 										if (toolState.accumulatedInput) {
-											parsedInput;
-											try {
-												parsedInput = JSON.parse(toolState.accumulatedInput);
-											} catch (e) {
-												logger.error("Failed to parse tool input:", {
-													error: e,
-												});
-											}
+											parsedInput = safeParseJson(toolState.accumulatedInput);
 
 											if (
 												parsedInput === null ||

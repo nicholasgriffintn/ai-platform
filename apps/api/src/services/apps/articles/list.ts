@@ -6,6 +6,7 @@ import { type AppData } from "~/repositories/AppDataRepository";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "../../../utils/json";
 
 const logger = getLogger({ prefix: "services/apps/articles/list" });
 
@@ -102,16 +103,7 @@ export async function listArticles({
 
 			if (reportItem?.data) {
 				try {
-					let reportData;
-					try {
-						reportData = JSON.parse(reportItem.data);
-					} catch (e) {
-						logger.error(
-							`Failed to parse report data for itemId ${group.itemId}`,
-							e,
-						);
-						reportData = {};
-					}
+					let reportData = safeParseJson(reportItem.data);
 					title = reportData.title || title;
 					sourceArticleCount = reportData.sourceItemIds?.length || 0;
 					reportId = reportItem.id;

@@ -6,6 +6,7 @@ import { AIProviderFactory } from "~/lib/providers/factory";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { safeParseJson } from "../../../utils/json";
 
 export const getReplicatePredictionDetails = async ({
 	context,
@@ -31,7 +32,7 @@ export const getReplicatePredictionDetails = async ({
 		throw new AssistantError("Unauthorized", ErrorType.UNAUTHORIZED);
 	}
 
-	const data = JSON.parse(prediction.data);
+	const data = safeParseJson(prediction.data);
 
 	const asyncInvocation = data.predictionData?.data?.asyncInvocation as
 		| AsyncInvocationMetadata

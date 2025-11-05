@@ -13,6 +13,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
 import { getLogger } from "~/utils/logger";
 import { verifyQuotes } from "~/utils/verify";
+import { safeParseJson } from "../../../utils/json";
 
 const logger = getLogger({
 	prefix: "services/apps/articles/generate-report",
@@ -90,13 +91,7 @@ export async function generateArticlesReport({
 
 		const combinedArticles = analysisItems
 			.map((item) => {
-				let parsed;
-				try {
-					parsed = JSON.parse(item.data || "{}");
-				} catch (e) {
-					logger.error("Failed to parse article data", { error: e });
-					parsed = {};
-				}
+				let parsed = safeParseJson(item.data || "{}");
 				return parsed.originalArticle;
 			})
 			.filter((content): content is string => !!content)

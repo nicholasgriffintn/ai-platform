@@ -15,6 +15,7 @@ import type {
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
+import { safeParseJson } from "../../utils/json";
 
 const MAX_INPUT_LENGTH = 15000;
 
@@ -135,11 +136,7 @@ export const getResearchTaskStatus = async (
 			return undefined;
 		}
 
-		try {
-			return JSON.parse(payload) as Record<string, any>;
-		} catch (_error) {
-			return undefined;
-		}
+		return safeParseJson(payload) as Record<string, any>;
 	};
 
 	const extractStoredResult = (

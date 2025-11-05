@@ -5,6 +5,7 @@ import {
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "../../../utils/json";
 
 const logger = getLogger();
 
@@ -37,13 +38,7 @@ export async function listDrawings({
 	const list = await repo.getAppDataByUserAndApp(userId, "drawings");
 
 	return list.map((entry) => {
-		let data;
-		try {
-			data = JSON.parse(entry.data);
-		} catch (e) {
-			logger.error("Failed to parse drawing data", { error: e });
-			data = {};
-		}
+		let data = safeParseJson(entry.data);
 		return {
 			id: entry.id,
 			description: data.description,

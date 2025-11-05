@@ -13,6 +13,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { getModelConfig } from "~/lib/models";
 import { AIProviderFactory } from "~/lib/providers/factory";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/embedding/mistral" });
 
@@ -69,9 +70,8 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 		const responseData = response;
 
 		if (typeof responseData === "string") {
-			try {
-				mistralResponse = JSON.parse(responseData);
-			} catch {
+			mistralResponse = safeParseJson(responseData);
+			if (!mistralResponse) {
 				throw new AssistantError(
 					"Invalid JSON response from Mistral",
 					ErrorType.EXTERNAL_API_ERROR,

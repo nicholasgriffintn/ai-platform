@@ -1,4 +1,5 @@
 import { getLogger } from "./logger";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "utils/awsEventStream" });
 
@@ -72,7 +73,7 @@ export function createEventStreamParser(): TransformStream {
 
 					try {
 						const payloadString = new TextDecoder().decode(payloadBytes);
-						const eventData = JSON.parse(payloadString);
+						const eventData = safeParseJson(payloadString);
 
 						const sseEvent = `data: ${JSON.stringify(eventData)}\n\n`;
 						controller.enqueue(new TextEncoder().encode(sseEvent));

@@ -1,5 +1,7 @@
 import type { KVNamespace } from "@cloudflare/workers-types";
+
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/cache" });
 
@@ -24,7 +26,7 @@ export class KVCache {
 			if (value === null) {
 				return null;
 			}
-			return JSON.parse(value) as T;
+			return safeParseJson(value) as T;
 		} catch (error) {
 			logger.error("Failed to get value from cache", { key, error });
 			return null;

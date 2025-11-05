@@ -11,6 +11,7 @@ import type {
 	ResearchProviderName,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { safeParseJson } from "../../utils/json";
 
 function coercePollingOptions(
 	args: any,
@@ -45,19 +46,8 @@ function coercePollingOptions(
 
 function buildTaskSpec(args: any): ParallelTaskSpec | undefined {
 	if (typeof args?.task_spec_json === "string") {
-		try {
-			const parsed = JSON.parse(args.task_spec_json);
-			return parsed;
-		} catch (error) {
-			throw new AssistantError(
-				"task_spec_json must be valid JSON",
-				ErrorType.PARAMS_ERROR,
-				400,
-				{
-					original: error instanceof Error ? error.message : String(error),
-				},
-			);
-		}
+		const parsed = safeParseJson(args.task_spec_json);
+		return parsed;
 	}
 
 	if (typeof args?.output_mode === "string") {
@@ -221,21 +211,16 @@ export const research: IFunction = {
 		}
 
 		if (typeof output_schema_json === "string") {
-			try {
-				const parsed = JSON.parse(output_schema_json);
-				options.exa_spec = {
-					output_schema: parsed,
-				};
-			} catch (error) {
+			const parsed = safeParseJson(output_schema_json);
+			if (!parsed) {
 				throw new AssistantError(
-					"output_schema_json must be valid JSON",
+					"Invalid output_schema_json provided",
 					ErrorType.PARAMS_ERROR,
-					400,
-					{
-						original: error instanceof Error ? error.message : String(error),
-					},
 				);
 			}
+			options.exa_spec = {
+				output_schema: parsed,
+			};
 		}
 
 		// Common options

@@ -8,6 +8,7 @@ import {
 	formatToolErrorResponse,
 	formatToolResponse,
 } from "~/utils/tool-responses";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/chat/tools" });
 
@@ -47,15 +48,11 @@ export const handleToolCalls = async (
 			if (functionName === "memory") {
 				const rawArgs =
 					toolCall.function?.arguments || toolCall.arguments || "{}";
-				let memoryArgs;
-
-				try {
-					memoryArgs =
-						typeof rawArgs === "string" ? JSON.parse(rawArgs) : rawArgs;
-				} catch (parseError: any) {
-					logger.error(`Failed to parse memory arguments: ${parseError}`);
+				const memoryArgs = safeParseJson(rawArgs);
+				if (!memoryArgs) {
+					logger.error(`Failed to parse memory arguments: ${rawArgs}`);
 					throw new AssistantError(
-						`Invalid memory tool arguments: ${parseError.message}`,
+						`Invalid memory tool arguments: ${rawArgs}`,
 						ErrorType.TOOL_CALL_ERROR,
 					);
 				}
@@ -87,18 +84,13 @@ export const handleToolCalls = async (
 			}
 
 			const rawArgs = toolCall.function?.arguments || toolCall.arguments;
-			let functionArgs = {};
-
-			try {
-				functionArgs =
-					typeof rawArgs === "string" ? JSON.parse(rawArgs) : rawArgs;
-			} catch (parseError: any) {
+			const functionArgs = safeParseJson(rawArgs);
+			if (!functionArgs) {
 				logger.error(
-					`Failed to parse arguments for ${functionName}:`,
-					parseError,
+					`Failed to parse arguments for ${functionName}: ${rawArgs}`,
 				);
 				throw new AssistantError(
-					`Invalid arguments for ${functionName}: ${parseError.message}`,
+					`Invalid arguments for ${functionName}: ${rawArgs}`,
 					ErrorType.TOOL_CALL_ERROR,
 				);
 			}

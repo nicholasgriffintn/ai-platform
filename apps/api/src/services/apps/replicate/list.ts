@@ -5,6 +5,7 @@ import {
 import { AIProviderFactory } from "~/lib/providers/factory";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import type { IEnv } from "~/types";
+import { safeParseJson } from "../../../utils/json";
 
 export const listReplicatePredictions = async ({
 	context,
@@ -25,7 +26,7 @@ export const listReplicatePredictions = async ({
 
 	const results = await Promise.all(
 		predictions.map(async (prediction) => {
-			const data = JSON.parse(prediction.data);
+			const data = safeParseJson(prediction.data);
 
 			const asyncInvocation = data.predictionData?.data?.asyncInvocation as
 				| AsyncInvocationMetadata

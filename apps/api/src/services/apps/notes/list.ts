@@ -9,6 +9,7 @@ import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "../../../utils/json";
 
 const logger = getLogger();
 
@@ -40,13 +41,7 @@ export async function listNotes({
 	const list = await repo.getAppDataByUserAndApp(userId, "notes");
 
 	return list.map((entry) => {
-		let data;
-		try {
-			data = JSON.parse(entry.data);
-		} catch (e) {
-			logger.error("Failed to parse note data", { error: e });
-			data = {};
-		}
+		let data = safeParseJson(entry.data);
 		return {
 			id: entry.id,
 			title: data.title,
@@ -85,14 +80,7 @@ export async function getNote({
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
 	}
 
-	let data;
-	try {
-		data = JSON.parse(entry.data);
-	} catch (e) {
-		logger.error("Failed to parse note data", { error: e });
-		data = {};
-	}
-
+	let data = safeParseJson(entry.data);
 	return {
 		id: entry.id,
 		title: data.title,
@@ -149,13 +137,7 @@ export async function createNote({
 	);
 
 	const full = await repo.getAppDataById(entry.id);
-	let parsed;
-	try {
-		parsed = JSON.parse(full!.data);
-	} catch (e) {
-		logger.error("Failed to parse note data", { error: e });
-		parsed = {};
-	}
+	let parsed = safeParseJson(full!.data);
 
 	return {
 		id: full!.id,
@@ -215,13 +197,7 @@ export async function updateNote({
 
 	await repo.updateAppData(noteId, finalData);
 	const updated = await repo.getAppDataById(noteId);
-	let parsedData;
-	try {
-		parsedData = JSON.parse(updated!.data);
-	} catch (e) {
-		logger.error("Failed to parse note data", { error: e });
-		parsedData = {};
-	}
+	let parsedData = safeParseJson(updated!.data);
 
 	return {
 		id: updated!.id,
@@ -433,7 +409,7 @@ Return only valid JSON without any markdown formatting.`;
 				aiResult.choices[0]?.message?.content) ||
 			(typeof aiResult === "string" ? aiResult : "{}");
 
-		return JSON.parse(response);
+		return safeParseJson(response);
 	} catch (error) {
 		logger.error("Error generating note metadata", { error });
 		const wordCount = content.split(/\s+/).length;

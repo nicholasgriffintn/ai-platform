@@ -17,6 +17,7 @@ import type { User } from "~/types";
 import { decodeBase64Url } from "~/utils/base64url";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "../../utils/json";
 
 const logger = getLogger({ prefix: "services/auth/webauthn" });
 
@@ -210,11 +211,11 @@ export async function generatePasskeyRegistrationOptions(
 			userName: user.github_username || user.email,
 			attestationType: "none",
 			excludeCredentials: existingCredentials.map((cred) => {
-				let parsedTransports;
-				try {
-					parsedTransports = JSON.parse(cred.transports as string);
-				} catch (e) {
-					logger.error("Failed to parse transports", { error: e });
+				let parsedTransports = safeParseJson(cred.transports as string);
+				if (!parsedTransports) {
+					logger.error("Failed to parse transports", {
+						error: cred.transports,
+					});
 					parsedTransports = undefined;
 				}
 				return {
@@ -359,10 +360,9 @@ export async function verifyPasskeyAuthentication(
 		const clientDataBytes = decodeBase64Url(response.response.clientDataJSON);
 		const clientDataText = new TextDecoder().decode(clientDataBytes);
 		let clientData;
-		try {
-			clientData = JSON.parse(clientDataText);
-		} catch (e) {
-			logger.error("Failed to parse client data", { error: e });
+		clientData = safeParseJson(clientDataText);
+		if (!clientData) {
+			logger.error("Failed to parse client data", { error: clientDataText });
 			throw new AssistantError(
 				"Failed to parse client data",
 				ErrorType.AUTHENTICATION_ERROR,

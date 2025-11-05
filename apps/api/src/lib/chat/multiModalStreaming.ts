@@ -12,6 +12,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { createStreamWithPostProcessing } from "./streaming";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/chat/multiModalStreaming" });
 
@@ -172,10 +173,8 @@ export function createMultiModelStream(
 							for (const match of matches) {
 								const dataStr = match.substring(6, match.length - 2);
 								if (dataStr === "[DONE]") continue;
-								let data;
-								try {
-									data = JSON.parse(dataStr);
-								} catch (_e) {
+								const data = safeParseJson(dataStr);
+								if (!data) {
 									throw new AssistantError(
 										"Failed to parse data",
 										ErrorType.PARAMS_ERROR,
@@ -232,10 +231,8 @@ export function createMultiModelStream(
 								for (const match of matches) {
 									const dataStr = match.substring(6, match.length - 2);
 									if (dataStr === "[DONE]") continue;
-									let data;
-									try {
-										data = JSON.parse(dataStr);
-									} catch (_e) {
+									const data = safeParseJson(dataStr);
+									if (!data) {
 										throw new AssistantError(
 											"Failed to parse data",
 											ErrorType.PARAMS_ERROR,

@@ -3,6 +3,7 @@ import { MCPClientManager } from "agents/mcp/client";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "../../utils/json";
 
 const logger = getLogger({ prefix: "services/agents/servers" });
 
@@ -19,13 +20,12 @@ export async function getAgentServers(
 	}
 
 	let serverConfigs: Array<{ url: string; type: "sse" }> = [];
-	try {
-		const serversJson = agent.servers as string;
-		serverConfigs = JSON.parse(serversJson) as Array<{
-			url: string;
-			type: "sse";
-		}>;
-	} catch (error) {
+	const serversJson = agent.servers as string;
+	serverConfigs = safeParseJson(serversJson) as Array<{
+		url: string;
+		type: "sse";
+	}>;
+	if (!serverConfigs) {
 		throw new AssistantError(
 			"Invalid servers configuration",
 			ErrorType.PARAMS_ERROR,

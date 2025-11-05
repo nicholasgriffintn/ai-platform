@@ -6,6 +6,7 @@ import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { safeParseJson } from "../../utils/json";
 
 const logger = getLogger({ prefix: "services/apps/shared" });
 
@@ -111,14 +112,7 @@ export async function getSharedItem({
 		throw new AssistantError("Shared item not found", ErrorType.NOT_FOUND);
 	}
 
-	let parsedData: Record<string, any> = {};
-	try {
-		parsedData = JSON.parse(appData.data);
-	} catch (error) {
-		logger.error("Error parsing app data:", {
-			error_message: error instanceof Error ? error.message : "Unknown error",
-		});
-	}
+	let parsedData = safeParseJson(appData.data);
 
 	return {
 		id: appData.id,

@@ -6,6 +6,7 @@ import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import type { IPodcast } from "./list";
+import { safeParseJson } from "../../../utils/json";
 
 const logger = getLogger();
 
@@ -55,13 +56,7 @@ export const handlePodcastDetail = async (
 		if (!appData.item_type) continue;
 
 		const itemType = appData.item_type;
-		let data;
-		try {
-			data = JSON.parse(appData.data);
-		} catch (e) {
-			logger.error("Failed to parse podcast data", { error: e });
-			data = {};
-		}
+		let data = safeParseJson(appData.data);
 
 		if (!podcastData.items) podcastData.items = {};
 		if (!podcastData.items[itemType]) podcastData.items[itemType] = [];

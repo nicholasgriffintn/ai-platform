@@ -1,4 +1,5 @@
 import type { ContentType, Message, MessageContent } from "~/types";
+import { safeParseJson } from "~/utils/json";
 
 interface MessageFormatOptions {
 	maxTokens?: number;
@@ -105,9 +106,7 @@ export class MessageFormatter {
 				if (provider === "anthropic") {
 					let toolCallArguments = message.tool_call_arguments;
 					if (typeof toolCallArguments === "string") {
-						try {
-							toolCallArguments = JSON.parse(toolCallArguments);
-						} catch {}
+						toolCallArguments = safeParseJson(toolCallArguments);
 					}
 
 					formattedMessages.push({

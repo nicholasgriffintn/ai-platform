@@ -10,6 +10,7 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import type { Database } from "./database";
 import { type UsageLimits, UsageManager } from "./usageManager";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/conversationManager" });
 
@@ -194,7 +195,7 @@ export class ConversationManager {
 
 			if (options?.metadata?.branch_of) {
 				try {
-					const branchData = JSON.parse(options.metadata.branch_of);
+					const branchData = safeParseJson(options.metadata.branch_of);
 					parentConversationId = branchData.conversation_id;
 					parentMessageId = branchData.message_id;
 				} catch (error) {
@@ -588,12 +589,7 @@ export class ConversationManager {
 				typeof content === "string" &&
 				(content.startsWith("[") || content.startsWith("{"))
 			) {
-				let parsed;
-				try {
-					parsed = JSON.parse(content);
-				} catch (e) {
-					logger.error("Error parsing message content", { error: e });
-				}
+				const parsed = safeParseJson(content);
 				content = parsed;
 			}
 		} catch (e) {
@@ -602,29 +598,17 @@ export class ConversationManager {
 
 		let toolCalls = dbMessage.tool_calls;
 		if (dbMessage.tool_calls) {
-			try {
-				toolCalls = JSON.parse(dbMessage.tool_calls as string);
-			} catch (e) {
-				logger.error("Error parsing tool calls", { error: e });
-			}
+			toolCalls = safeParseJson(dbMessage.tool_calls as string);
 		}
 
 		let citations = dbMessage.citations;
 		if (dbMessage.citations) {
-			try {
-				citations = JSON.parse(dbMessage.citations as string);
-			} catch (e) {
-				logger.error("Error parsing citations", { error: e });
-			}
+			citations = safeParseJson(dbMessage.citations as string);
 		}
 
 		let parsedData = dbMessage.data;
 		if (dbMessage.data) {
-			try {
-				parsedData = JSON.parse(dbMessage.data as string);
-			} catch (e) {
-				logger.error("Error parsing data", { error: e });
-			}
+			parsedData = safeParseJson(dbMessage.data as string);
 		}
 
 		return {
@@ -642,7 +626,7 @@ export class ConversationManager {
 			mode: dbMessage.mode as string,
 			data: parsedData,
 			usage: dbMessage.usage
-				? JSON.parse(dbMessage.usage as string)
+				? safeParseJson(dbMessage.usage as string)
 				: undefined,
 			log_id: dbMessage.log_id as string,
 		} as Message;

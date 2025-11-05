@@ -8,6 +8,7 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseRepository } from "./BaseRepository";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "repositories/SharedAgentRepository" });
 
@@ -73,13 +74,13 @@ export class SharedAgentRepository extends BaseRepository {
 			name: agent.name,
 			description: agent.description,
 			avatar_url: agent.avatar_url,
-			servers: agent.servers ? JSON.parse(agent.servers as string) : [],
+			servers: agent.servers ? safeParseJson(agent.servers as string) : [],
 			model: agent.model,
 			temperature: agent.temperature,
 			max_steps: agent.max_steps,
 			system_prompt: agent.system_prompt,
 			few_shot_examples: agent.few_shot_examples
-				? JSON.parse(agent.few_shot_examples as string)
+				? safeParseJson(agent.few_shot_examples as string)
 				: [],
 		};
 
@@ -314,13 +315,11 @@ export class SharedAgentRepository extends BaseRepository {
 			throw new AssistantError("Template data not found", ErrorType.NOT_FOUND);
 		}
 
-		let templateData = null;
-		try {
-			templateData = JSON.parse(sharedAgent.template_data as string);
-		} catch (e) {
+		let templateData = safeParseJson(sharedAgent.template_data as string);
+		if (!templateData) {
 			logger.error(
 				"Error parsing template data:",
-				e,
+				{ error: "" },
 				sharedAgent.template_data,
 			);
 			throw new AssistantError(
@@ -641,12 +640,12 @@ export class SharedAgentRepository extends BaseRepository {
 		const tagCounts: { [key: string]: number } = {};
 		for (const result of results) {
 			try {
-				const tags = JSON.parse(result.tags) as string[];
+				const tags = safeParseJson(result.tags) as string[];
 				for (const tag of tags) {
 					tagCounts[tag] = (tagCounts[tag] || 0) + 1;
 				}
 			} catch (e) {
-				logger.error("Error parsing tags:", e, result.tags);
+				logger.error("Error parsing tags:", { error: "", tags: result.tags });
 			}
 		}
 

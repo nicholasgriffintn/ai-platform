@@ -20,6 +20,7 @@ import type {
 import { AssistantError } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { EmbeddingProviderFactory } from "./factory";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/embedding" });
 
@@ -261,11 +262,13 @@ export class Embedding {
 						messages: [{ role: "user", content: rerankPrompt }],
 						user: this.user,
 					} as any);
-					let order: string[];
-					try {
-						order = JSON.parse(rerankRes.content || rerankRes.response);
-					} catch (e) {
-						logger.error("Failed to parse rerank response", { error: e });
+					let order = safeParseJson<string[]>(
+						rerankRes.content || rerankRes.response,
+					);
+					if (!order) {
+						logger.error("Failed to parse rerank response", {
+							error: rerankRes,
+						});
 						order = [];
 					}
 					ranked = order
