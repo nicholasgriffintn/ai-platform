@@ -4,7 +4,10 @@ import type { TaskHandler, TaskResult } from "./TaskHandler";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { getLogger } from "~/utils/logger";
 import { generateId } from "~/utils/id";
-import { ENABLED_SCHEDULES_FLAGS } from "~/constants/schedules";
+import {
+	ENABLED_SCHEDULES_FLAGS,
+	ALWAYS_ENABLED_SCHEDULES,
+} from "~/constants/schedules";
 
 const logger = getLogger({ prefix: "services/tasks/executor" });
 
@@ -23,12 +26,14 @@ export class TaskExecutor {
 		const startTime = Date.now();
 
 		try {
-			const isEnabledEnvVar = ENABLED_SCHEDULES_FLAGS[message.task_type];
-			if (this.env[isEnabledEnvVar] !== "true") {
-				logger.info(
-					`Task type ${message.task_type} is disabled via environment variable`,
-				);
-				return;
+			if (!ALWAYS_ENABLED_SCHEDULES.includes(message.task_type)) {
+				const isEnabledEnvVar = ENABLED_SCHEDULES_FLAGS[message.task_type];
+				if (this.env[isEnabledEnvVar] !== "true") {
+					logger.info(
+						`Task type ${message.task_type} is disabled via environment variable`,
+					);
+					return;
+				}
 			}
 
 			const handler = this.handlers.get(message.task_type);
