@@ -12,25 +12,6 @@ const mockEmbedding = {
 	insert: vi.fn(() => Promise.resolve({ mutationId: "mutation-123" })),
 };
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn(() => mockDatabase),
-	},
-}));
-
-vi.mock("~/lib/embedding", () => ({
-	Embedding: {
-		getInstance: vi.fn(() => mockEmbedding),
-	},
-}));
-
-global.fetch = vi.fn();
-
-vi.stubGlobal("crypto", {
-	subtle: {
-		digest: vi.fn(),
-	},
-});
 
 describe("extractContent", () => {
 	const mockUser = {

@@ -14,6 +14,24 @@ const mockDatabase = {
 	getConversationByShareId: vi.fn(),
 	getMessages: vi.fn(),
 	deleteAllChatCompletions: vi.fn(),
+	repositories: {
+		conversations: {
+			getConversation: vi.fn(),
+			createConversation: vi.fn(),
+			updateConversationAfterMessage: vi.fn(),
+			getUserConversations: vi.fn(),
+			updateConversation: vi.fn(),
+			getConversationByShareId: vi.fn(),
+			deleteAllChatCompletions: vi.fn(),
+		},
+		messages: {
+			createMessage: vi.fn(),
+			getConversationMessages: vi.fn(),
+			updateMessage: vi.fn(),
+			getMessageById: vi.fn(),
+			getMessages: vi.fn(),
+		},
+	},
 };
 
 const mockUsageManager = {

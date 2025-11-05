@@ -17,12 +17,6 @@ vi.mock("@tsndr/cloudflare-worker-jwt", () => ({
 	},
 }));
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn(),
-	},
-}));
-
 vi.mock("../user", () => ({
 	getUserById: vi.fn(),
 }));
@@ -41,10 +35,6 @@ describe("JWT Service", () => {
 
 		const userModule = await import("../user");
 		mockGetUserById = vi.mocked(userModule.getUserById);
-
-		const { Database } = await import("~/lib/database");
-		const mockDatabase = { getInstance: vi.fn() };
-		vi.mocked(Database.getInstance).mockReturnValue(mockDatabase as any);
 	});
 
 	describe("generateJwtToken", () => {
@@ -150,7 +140,7 @@ describe("JWT Service", () => {
 			mockGetUserById.mockResolvedValue(mockUser);
 
 			const result = await getUserByJwtToken(
-				{} as any,
+				{ DB: {} } as any,
 				"valid-token",
 				"secret",
 			);
@@ -168,7 +158,7 @@ describe("JWT Service", () => {
 			mockGetUserById.mockResolvedValue(null);
 
 			const result = await getUserByJwtToken(
-				{} as any,
+				{ DB: {} } as any,
 				"valid-token",
 				"secret",
 			);
@@ -184,7 +174,7 @@ describe("JWT Service", () => {
 			mockJwtVerify.mockRejectedValue(error);
 
 			await expect(
-				getUserByJwtToken({} as any, "invalid-token", "secret"),
+				getUserByJwtToken({ DB: {} } as any, "invalid-token", "secret"),
 			).rejects.toThrow("Invalid or expired authentication token");
 		});
 
@@ -192,7 +182,7 @@ describe("JWT Service", () => {
 			mockJwtVerify.mockRejectedValue(new Error("Some error"));
 
 			await expect(
-				getUserByJwtToken({} as any, "token", "secret"),
+				getUserByJwtToken({ DB: {} } as any, "token", "secret"),
 			).rejects.toThrow("Invalid or expired authentication token");
 		});
 	});
