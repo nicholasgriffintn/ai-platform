@@ -43,17 +43,23 @@ export function ReplicatePredictionDetail({
 
 	return (
 		<div className="space-y-6">
-			<div className="flex items-start justify-between">
-				<div>
-					<h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-						{prediction.modelName || prediction.modelId}
+			<div className="flex items-start justify-between gap-4">
+				<div className="flex-1 min-w-0">
+					<h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 break-words">
+						{prediction.input?.prompt ||
+							prediction.modelName ||
+							prediction.modelId}
 					</h1>
-					<p className="text-zinc-600 dark:text-zinc-400">
-						{new Date(prediction.created_at).toLocaleString()}
-					</p>
+					<div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+						<span className="font-medium">
+							{prediction.modelName || prediction.modelId}
+						</span>
+						<span>•</span>
+						<span>{new Date(prediction.created_at).toLocaleString()}</span>
+					</div>
 				</div>
 				<span
-					className={`px-4 py-2 text-sm font-medium rounded-full ${
+					className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap shrink-0 ${
 						statusColors[prediction.status as keyof typeof statusColors]
 					}`}
 				>
