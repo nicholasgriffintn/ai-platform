@@ -5,7 +5,7 @@ import { safeParseJson } from "~/utils/json";
 import { generateId } from "~/utils/id";
 
 export interface CreateTaskParams {
-	task_type: "memory_synthesis" | "user_automation" | "cleanup" | "analytics";
+	task_type: "memory_synthesis";
 	user_id?: number;
 	task_data?: Record<string, any>;
 	schedule_type?: "immediate" | "scheduled" | "recurring" | "event_triggered";

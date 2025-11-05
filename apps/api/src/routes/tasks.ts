@@ -172,11 +172,12 @@ app.delete(
 			}
 
 			return c.json({
+				success: true,
 				message: "Task cancelled successfully",
 			});
 		} catch (error) {
 			logger.error("Error cancelling task:", error);
-			return c.json({ error: "Failed to cancel task" }, 500);
+			return c.json({ success: false, error: "Failed to cancel task" }, 500);
 		}
 	},
 );
