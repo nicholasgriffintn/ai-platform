@@ -10,10 +10,12 @@ import { DynamicAppResponseRepository } from "./DynamicAppResponseRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
 import { MagicLinkNonceRepository } from "./MagicLinkNonceRepository";
 import { MemoryRepository } from "./MemoryRepository";
+import { MemorySynthesisRepository } from "./MemorySynthesisRepository";
 import { MessageRepository } from "./MessageRepository";
 import { PlanRepository } from "./PlanRepository";
 import { SessionRepository } from "./SessionRepository";
 import { SharedAgentRepository } from "./SharedAgentRepository";
+import { TaskRepository } from "./TaskRepository";
 import { UserRepository } from "./UserRepository";
 import { UserSettingsRepository } from "./UserSettingsRepository";
 import { WebAuthnRepository } from "./WebAuthnRepository";
@@ -29,8 +31,10 @@ export {
 	EmbeddingRepository,
 	MagicLinkNonceRepository,
 	MemoryRepository,
+	MemorySynthesisRepository,
 	MessageRepository,
 	SessionRepository,
+	TaskRepository,
 	UserRepository,
 	UserSettingsRepository,
 	WebAuthnRepository,
@@ -55,6 +59,8 @@ export class RepositoryManager {
 	private appDataRepo: AppDataRepository;
 	private sharedAgentRepo: SharedAgentRepository;
 	private dynamicAppResponseRepo: DynamicAppResponseRepository;
+	private taskRepo: TaskRepository;
+	private memorySynthesisRepo: MemorySynthesisRepository;
 
 	constructor(env: IEnv) {
 		this.agentRepo = new AgentRepository(env);
@@ -73,6 +79,8 @@ export class RepositoryManager {
 		this.appDataRepo = new AppDataRepository(env);
 		this.sharedAgentRepo = new SharedAgentRepository(env);
 		this.dynamicAppResponseRepo = new DynamicAppResponseRepository(env);
+		this.taskRepo = new TaskRepository(env);
+		this.memorySynthesisRepo = new MemorySynthesisRepository(env);
 	}
 
 	public static getInstance(env: IEnv): RepositoryManager {
@@ -141,5 +149,13 @@ export class RepositoryManager {
 
 	public get dynamicAppResponses(): DynamicAppResponseRepository {
 		return this.dynamicAppResponseRepo;
+	}
+
+	public get tasks(): TaskRepository {
+		return this.taskRepo;
+	}
+
+	public get memorySyntheses(): MemorySynthesisRepository {
+		return this.memorySynthesisRepo;
 	}
 }

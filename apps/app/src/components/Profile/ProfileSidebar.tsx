@@ -15,6 +15,8 @@ import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab";
 import { ProfileHistoryTab } from "./Tabs/ProfileHistoryTab";
 import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab";
 import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab";
+import { ProfileTasksTab } from "./Tabs/ProfileTasksTab";
+import { ProfileMemoriesTab } from "./Tabs/ProfileMemoriesTab";
 
 interface ProfileSidebarItem {
 	id: string;
@@ -35,6 +37,8 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
 	{ id: "agents", label: "Agents", component: ProfileAgentsTab },
 	{ id: "billing", label: "Billing", component: ProfileBillingTab },
 	{ id: "api-keys", label: "API Keys", component: ProfileApiKeysTab },
+	{ id: "tasks", label: "Tasks", component: ProfileTasksTab },
+	{ id: "memories", label: "Memories", component: ProfileMemoriesTab },
 ];
 
 interface ProfileSidebarProps {

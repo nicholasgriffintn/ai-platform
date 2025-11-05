@@ -1026,4 +1026,20 @@ export class Database {
 			return null;
 		}
 	}
+
+	// Memory synthesis methods
+	public async getActiveMemorySynthesis(
+		userId: number,
+		scope: string,
+	): Promise<Record<string, unknown> | null> {
+		try {
+			return this.repositories.memorySyntheses.getActiveSynthesis(
+				userId,
+				scope,
+			);
+		} catch (error) {
+			logger.error(`Error getting active memory synthesis: ${error}`);
+			return null;
+		}
+	}
 }

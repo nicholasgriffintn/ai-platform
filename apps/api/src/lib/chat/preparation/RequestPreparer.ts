@@ -358,6 +358,17 @@ export class RequestPreparer {
 
 		if (isProUser && memoriesEnabled && finalMessage) {
 			try {
+				let memoryContext = "";
+
+				const synthesis = await this.database.getActiveMemorySynthesis(
+					user.id,
+					"global",
+				);
+
+				if (synthesis) {
+					memoryContext += `\n\n# Memory Summary\nThe following is a consolidated summary of your long-term memories about this user:\n<memory_synthesis>\n${synthesis.synthesis_text}\n</memory_synthesis>`;
+				}
+
 				const memoryManager = MemoryManager.getInstance(this.env, user);
 				const recentMemories = await memoryManager.retrieveMemories(
 					finalMessage,
@@ -368,13 +379,15 @@ export class RequestPreparer {
 				);
 
 				if (recentMemories.length > 0) {
-					const memoryBlock = `\n\nYou have access to the following long-term memories:\n<user_memories>\n${recentMemories
+					memoryContext += `\n\n# Recently Relevant Memories\nThe following specific memories are most relevant to this conversation:\n<recent_memories>\n${recentMemories
 						.map((m) => `- ${m.text}`)
-						.join("\n")}\n</user_memories>`;
+						.join("\n")}\n</recent_memories>`;
+				}
 
+				if (memoryContext) {
 					return systemPrompt
-						? `${systemPrompt}\n\n${memoryBlock}`
-						: memoryBlock;
+						? `${systemPrompt}\n${memoryContext}`
+						: memoryContext;
 				}
 			} catch (error) {
 				logger.warn("Failed to retrieve memories", { error, userId: user?.id });

@@ -14,6 +14,7 @@ import { RequestPreparer } from "../RequestPreparer";
 
 const mockDatabase = {
 	getUserSettings: vi.fn(),
+	getActiveMemorySynthesis: vi.fn(),
 };
 
 const mockConversationManager = {
@@ -619,7 +620,7 @@ describe("RequestPreparer", () => {
 
 			expect(result).toContain("Base prompt");
 			expect(result).toContain(
-				"You have access to the following long-term memories:",
+				"The following specific memories are most relevant to this conversation:",
 			);
 			expect(result).toContain("- User likes coffee");
 			expect(result).toContain("- User works in tech");
@@ -677,7 +678,7 @@ describe("RequestPreparer", () => {
 			);
 
 			expect(result).toContain(
-				"You have access to the following long-term memories:",
+				"The following specific memories are most relevant to this conversation:",
 			);
 			expect(result).toContain("- User prefers short responses");
 			expect(result).not.toContain("Base prompt");

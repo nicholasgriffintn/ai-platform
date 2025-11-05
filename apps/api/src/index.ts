@@ -30,6 +30,7 @@ import plans from "./routes/plans";
 import realtime from "./routes/realtime";
 import { metricsParamsSchema, statusResponseSchema } from "@assistant/schemas";
 import stripe from "./routes/stripe";
+import tasks from "./routes/tasks";
 import tools from "./routes/tools";
 import uploads from "./routes/uploads";
 import user from "./routes/user";
@@ -47,6 +48,9 @@ import {
 import { LogLevel, getLogger } from "./utils/logger";
 import { tagDescriptions } from "./openapi/documentation";
 import { apiInfoDescription } from "./openapi/content/apiDescription";
+import { TaskMessage } from "./services/tasks/TaskService";
+import { ScheduleExecutor } from "./services/tasks/ScheduleExecutor";
+import { QueueExecutor } from "./services/tasks/QueueExecutor";
 
 const app = new Hono<{
 	Bindings: IEnv;
@@ -300,6 +304,7 @@ app.route(ROUTES.AUTH, auth);
 app.route(ROUTES.CHAT, chat);
 app.route(ROUTES.APPS, apps);
 app.route(ROUTES.MODELS, models);
+app.route(ROUTES.TASKS, tasks);
 app.route(ROUTES.TOOLS, tools);
 app.route(ROUTES.AUDIO, audio);
 app.route(ROUTES.DYNAMIC_APPS, dynamicApps);
@@ -333,5 +338,11 @@ export default {
 		}
 
 		return app.fetch(request, env, ctx);
+	},
+	async scheduled(event: ScheduledEvent, env: IEnv): Promise<void> {
+		await ScheduleExecutor.respondToCronSchedules(env, event);
+	},
+	async queue(batch: MessageBatch<TaskMessage>, env: IEnv): Promise<void> {
+		await QueueExecutor.respondToCronQueue(env, batch);
 	},
 };
