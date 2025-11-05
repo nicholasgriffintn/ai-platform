@@ -52,40 +52,55 @@ struct ConversationListView: View {
     }
 
     var body: some View {
-        List {
-            ForEach(categorizedConversations, id: \.0) { category, conversations in
-                Section(header: Text(category).font(.subheadline).fontWeight(.semibold)) {
-                    ForEach(conversations) { conversation in
-                        Button(action: {
-                            conversationManager.currentConversation = conversation
-                        }) {
-                            ConversationRow(
-                                conversation: conversation,
-                                isSelected: conversation.id == conversationManager.currentConversation?.id
-                            )
+        ZStack {
+            List {
+                ForEach(categorizedConversations, id: \.0) { category, conversations in
+                    Section(header: Text(category).font(.subheadline).fontWeight(.semibold)) {
+                        ForEach(conversations) { conversation in
+                            Button(action: {
+                                Task {
+                                    await conversationManager.loadConversationMessages(conversation)
+                                }
+                            }) {
+                                ConversationRow(
+                                    conversation: conversation,
+                                    isSelected: conversation.id == conversationManager.currentConversation?.id
+                                )
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
-                        .buttonStyle(PlainButtonStyle())
+                        .onDelete { offsets in
+                            deleteConversations(from: conversations, at: offsets)
+                        }
                     }
-                    .onDelete { offsets in
-                        deleteConversations(from: conversations, at: offsets)
+                }
+
+                if filteredConversations.isEmpty && !searchText.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 40))
+                            .foregroundColor(.gray)
+                        Text("No conversations found")
+                            .font(.headline)
+                            .foregroundColor(.gray)
+                        Text("Try a different search term")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 40)
                 }
             }
+            .refreshable {
+                await conversationManager.refreshConversations()
+            }
 
-            if filteredConversations.isEmpty && !searchText.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 40))
-                        .foregroundColor(.gray)
-                    Text("No conversations found")
-                        .font(.headline)
-                        .foregroundColor(.gray)
-                    Text("Try a different search term")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 40)
+            if conversationManager.isLoading && conversationManager.conversations.isEmpty {
+                ProgressView("Loading conversations...")
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .cornerRadius(10)
+                    .shadow(radius: 5)
             }
         }
         .searchable(text: $searchText, prompt: "Search conversations...")
@@ -95,6 +110,15 @@ struct ConversationListView: View {
                 Image(systemName: "plus")
             }
         }
+        .alert("Error", isPresented: .constant(conversationManager.error != nil)) {
+            Button("OK") {
+                conversationManager.error = nil
+            }
+        } message: {
+            if let error = conversationManager.error {
+                Text(error)
+            }
+        }
     }
 
     private func startNewConversation() {
@@ -102,14 +126,10 @@ struct ConversationListView: View {
     }
 
     private func deleteConversations(from conversations: [Conversation], at offsets: IndexSet) {
-        offsets.forEach { index in
-            let conversation = conversations[index]
-            if conversation.id == conversationManager.currentConversation?.id {
-                conversationManager.currentConversation = nil
-            }
-            // Remove from the main conversations array
-            if let mainIndex = conversationManager.conversations.firstIndex(where: { $0.id == conversation.id }) {
-                conversationManager.conversations.remove(at: mainIndex)
+        Task {
+            for index in offsets {
+                let conversation = conversations[index]
+                await conversationManager.deleteConversation(conversation)
             }
         }
     }

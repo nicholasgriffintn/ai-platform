@@ -114,12 +114,21 @@ public struct ChatCompletionResponse: Codable {
 public struct ChatCompletionRequest: Codable {
     let messages: [ChatMessage]
     let model: String
-	let platform: String
-    
-    public init(messages: [ChatMessage], model: String) {
+    let platform: String
+    let store: Bool
+    let completionId: String?
+
+    enum CodingKeys: String, CodingKey {
+        case messages, model, platform, store
+        case completionId = "completion_id"
+    }
+
+    public init(messages: [ChatMessage], model: String, store: Bool = true, completionId: String? = nil) {
         self.messages = messages
         self.model = model
-		self.platform = "mobile"
+        self.platform = "mobile"
+        self.store = store
+        self.completionId = completionId
     }
 }
 
@@ -200,6 +209,53 @@ public struct UpdateConversationResponse: Codable {
         public let id: String
         public let title: String
         public let updatedAt: String
+    }
+}
+
+// Conversation List Response
+public struct ConversationListResponse: Codable {
+    public let data: [ConversationSummary]
+    public let total: Int
+    public let page: Int
+    public let limit: Int
+    public let pages: Int
+
+    public struct ConversationSummary: Codable, Identifiable {
+        public let id: String
+        public let title: String?
+        public let createdAt: String
+        public let updatedAt: String
+        public let model: String?
+        public let isArchived: Bool
+        public let userId: String
+        public let shareId: String?
+
+        enum CodingKeys: String, CodingKey {
+            case id, title, model
+            case createdAt = "created_at"
+            case updatedAt = "updated_at"
+            case isArchived = "is_archived"
+            case userId = "user_id"
+            case shareId = "share_id"
+        }
+    }
+}
+
+// Conversation Detail Response
+public struct ConversationDetailResponse: Codable {
+    public let id: String
+    public let title: String?
+    public let createdAt: String
+    public let updatedAt: String
+    public let model: String?
+    public let isArchived: Bool
+    public let messages: [ChatMessage]
+
+    enum CodingKeys: String, CodingKey {
+        case id, title, model, messages
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+        case isArchived = "is_archived"
     }
 }
 
