@@ -68,7 +68,7 @@ describe("VectorizeEmbeddingProvider", () => {
 			]);
 
 			expect(mockAi.run).toHaveBeenCalledWith(
-				"@cf/baai/bge-base-en-v1.5",
+				"@cf/baai/bge-large-en-v1.5",
 				{ text: ["test content"] },
 				{
 					gateway: {
@@ -225,7 +225,7 @@ describe("VectorizeEmbeddingProvider", () => {
 			});
 
 			expect(mockAi.run).toHaveBeenCalledWith(
-				"@cf/baai/bge-base-en-v1.5",
+				"@cf/baai/bge-large-en-v1.5",
 				{ text: ["test query"] },
 				{
 					gateway: {

@@ -97,7 +97,7 @@ The chat API supports general RAG via the \`use_rag\` and \`rag_options\` parame
 
 ### Embedding Model
 
-- **Model:** \`@cf/baai/bge-base-en-v1.5\` (BAAI BGE Base)
+- **Model:** \`@cf/baai/bge-large-en-v1.5\` (BAAI BGE Large - 1024 dimensions)
 - **Provider:** Cloudflare Workers AI
 - **Not configurable** - this model is hardcoded
 

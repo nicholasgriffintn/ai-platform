@@ -50,7 +50,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 			}
 
 			const response = await this.ai.run(
-				"@cf/baai/bge-base-en-v1.5",
+				"@cf/baai/bge-large-en-v1.5",
 				{ text: [content] },
 				{
 					gateway: {
@@ -111,7 +111,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 		query: string,
 	): Promise<{ data: any; status: { success: boolean } }> {
 		const response = await this.ai.run(
-			"@cf/baai/bge-base-en-v1.5",
+			"@cf/baai/bge-large-en-v1.5",
 			{ text: [query] },
 			{
 				gateway: {

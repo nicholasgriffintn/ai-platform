@@ -59,7 +59,7 @@ describe("S3VectorsEmbeddingProvider", () => {
 		});
 
 		expect(mockAI.run).toHaveBeenCalledWith(
-			"@cf/baai/bge-base-en-v1.5",
+			"@cf/baai/bge-large-en-v1.5",
 			{ text: ["test content"] },
 			{
 				gateway: {
@@ -321,7 +321,7 @@ describe("S3VectorsEmbeddingProvider", () => {
 		const result = await provider.searchSimilar("test query", { topK: 3 });
 
 		expect(mockAI.run).toHaveBeenCalledWith(
-			"@cf/baai/bge-base-en-v1.5",
+			"@cf/baai/bge-large-en-v1.5",
 			{ text: ["test query"] },
 			expect.any(Object),
 		);
