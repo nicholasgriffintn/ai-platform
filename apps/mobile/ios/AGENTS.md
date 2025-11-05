@@ -52,6 +52,73 @@ Native Swift-based Polychat client managed via Xcode; integrates with the shared
 - **CocoaPods**: Update Podfile if used
 - **Capacitor**: Update via pnpm if web bridge used
 
+## Recent Feature Additions (Added: 2025-11-05)
+
+### Enhanced Conversation List with Search & Categorization
+**Location**: `Polychat/Views/ConversationListView.swift`
+**Features**:
+- Search functionality across conversation titles and message content
+- Date-based categorization (Today, Yesterday, This Week, This Month, Older)
+- Improved conversation row design with icons, message count, and relative timestamps
+- Empty search state with helpful messaging
+- Better visual hierarchy and spacing
+
+### Markdown Support in Chat Messages
+**Location**: `Polychat/Views/ChatView.swift` (MessageBubble, MarkdownText)
+**Features**:
+- Native markdown rendering using AttributedString
+- Text selection enabled for all messages
+- Special styling for error messages and loading states
+- Message actions (copy, regenerate) appear on tap
+- Improved message bubble design with better spacing
+
+### Advanced Chat Settings Panel
+**Location**: `Polychat/Views/ChatSettingsView.swift`, `Polychat/Models/ChatModels.swift`
+**Features**:
+- Temperature control (0-2 with 0.1 step)
+- Top P control (0-1 with 0.05 step)
+- Optional max tokens limit (256-8192 with 256 step)
+- Response mode selection (normal, concise, explanatory, formal)
+- Reset to defaults option
+- Accessible via menu in chat toolbar
+
+### Artifacts Panel for Code & Media
+**Location**: `Polychat/Views/ArtifactsView.swift`, `Polychat/Models/ChatModels.swift`
+**Features**:
+- Automatic extraction of code blocks from messages using regex
+- Support for multiple artifact types (code, image, text, markdown)
+- Full-screen artifact viewer with syntax highlighting
+- Copy functionality for artifacts
+- Badge indicator in toolbar showing artifact count
+- Expandable artifact cards with preview
+
+### Multimodal Support (Image Uploads)
+**Location**: `Polychat/Views/ImagePickerView.swift`, `Polychat/Views/ChatView.swift`
+**Features**:
+- PhotosPicker integration for selecting up to 5 images
+- Image preview thumbnails with remove buttons
+- Horizontal scrolling image gallery
+- Integrated into message input with visual feedback
+- Send button enables when images are selected
+
+### Enhanced Model Selector
+**Location**: `Polychat/Views/ModelSelectorView.swift`
+**Features**:
+- Model count badges per provider in section headers
+- Model description display in rows
+- Improved capability badges (Functions, Vision, Context)
+- Better visual hierarchy and spacing
+- Empty search state
+- Refresh capability with pull-to-refresh
+
+### Design System & Color Tokens
+**Location**: `Polychat/DesignSystem/Colors.swift`
+**Features**:
+- Polychat color palette matching web app (zinc scales, primary blue)
+- Semantic color definitions (success, warning, error)
+- View modifiers for consistent button and card styling
+- Dark mode compatible color system
+
 ## Common Pitfalls & Solutions
 
 - **Hand-editing Xcode files**: Always use Xcode UI to modify project settings
