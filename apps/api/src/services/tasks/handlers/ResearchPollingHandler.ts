@@ -13,6 +13,7 @@ import type {
 } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { TaskService } from "../TaskService";
+import { TaskRepository } from "~/repositories/TaskRepository";
 
 const logger = getLogger({ prefix: "services/tasks/research-polling" });
 
@@ -22,8 +23,6 @@ interface ResearchPollingData {
 	userId: number;
 	options?: ResearchOptions;
 	startedAt: string;
-	responseId?: string;
-	pollCount?: number;
 }
 
 export class ResearchPollingHandler implements TaskHandler {
@@ -46,20 +45,10 @@ export class ResearchPollingHandler implements TaskHandler {
 
 			if ("status" in result && result.status === "error") {
 				logger.warn(`Research task ${data.runId} failed: ${result.error}`);
-
-				if (data.responseId && env.DB) {
-					await this.persistErrorResult(
-						env,
-						data.responseId,
-						data.runId,
-						data.provider,
-						result.error,
-					);
-				}
-
+				await this.persistError(env, data, result.error);
 				return {
 					status: "success",
-					message: "Research task failed, error persisted",
+					message: "Research task failed",
 					data: { runId: data.runId, error: result.error },
 				};
 			}
@@ -68,86 +57,34 @@ export class ResearchPollingHandler implements TaskHandler {
 			const status = researchResult.run?.status?.toLowerCase() || "unknown";
 
 			if (status === "completed") {
-				logger.info(`Research task ${data.runId} completed successfully`);
-
-				if (data.responseId && env.DB) {
-					await this.persistCompletedResult(
-						env,
-						data.responseId,
-						researchResult,
-					);
-				}
-
+				logger.info(`Research task ${data.runId} completed`);
+				await this.persistCompleted(env, data, researchResult);
 				return {
 					status: "success",
 					message: "Research task completed",
-					data: {
-						runId: data.runId,
-						output: researchResult.output,
-					},
+					data: { runId: data.runId, output: researchResult.output },
 				};
 			}
 
 			if (status === "failed" || status === "errored" || status === "cancelled") {
-				const errorMessage =
-					(researchResult.run as any).error || "Research task failed";
-				logger.warn(`Research task ${data.runId} ${status}: ${errorMessage}`);
-
-				if (data.responseId && env.DB) {
-					await this.persistErrorResult(
-						env,
-						data.responseId,
-						data.runId,
-						data.provider,
-						errorMessage,
-					);
-				}
-
+				const error = (researchResult.run as any).error || "Research task failed";
+				logger.warn(`Research task ${data.runId} ${status}`);
+				await this.persistError(env, data, error);
 				return {
 					status: "success",
 					message: `Research task ${status}`,
-					data: { runId: data.runId, error: errorMessage },
+					data: { runId: data.runId, error },
 				};
 			}
 
-			const pollCount = (data.pollCount || 0) + 1;
-			const maxPolls = 120; // 10 minutes at 5-second intervals
-
-			if (pollCount >= maxPolls) {
-				logger.warn(`Research task ${data.runId} exceeded max poll attempts`);
-
-				if (data.responseId && env.DB) {
-					await this.persistErrorResult(
-						env,
-						data.responseId,
-						data.runId,
-						data.provider,
-						"Polling timeout exceeded",
-					);
-				}
-
-				return {
-					status: "error",
-					message: "Research polling timeout exceeded",
-				};
-			}
-
-			logger.info(
-				`Research task ${data.runId} still ${status}, re-queuing (attempt ${pollCount}/${maxPolls})`,
-			);
-
-			const taskService = new TaskService(
-				env,
-				// @ts-ignore - we'll fix this after implementing the repository access
-				null,
-			);
+			logger.info(`Research task ${data.runId} still ${status}, re-queuing`);
+			const taskRepository = new TaskRepository(env);
+			const taskService = new TaskService(env, taskRepository);
 
 			await taskService.enqueueTask({
 				task_type: "research_polling",
-				task_data: {
-					...data,
-					pollCount,
-				},
+				user_id: message.user_id,
+				task_data: data,
 				schedule_type: "scheduled",
 				scheduled_at: new Date(Date.now() + 5000).toISOString(),
 				priority: message.priority || 5,
@@ -155,8 +92,8 @@ export class ResearchPollingHandler implements TaskHandler {
 
 			return {
 				status: "success",
-				message: `Research still in progress, re-queued for polling (attempt ${pollCount})`,
-				data: { runId: data.runId, status, pollCount },
+				message: "Research still in progress, re-queued",
+				data: { runId: data.runId, status },
 			};
 		} catch (error) {
 			logger.error("Research polling error:", error);
@@ -167,97 +104,92 @@ export class ResearchPollingHandler implements TaskHandler {
 		}
 	}
 
-	private async persistCompletedResult(
+	private async persistCompleted(
 		env: IEnv,
-		responseId: string,
+		data: ResearchPollingData,
 		result: ResearchResult,
 	): Promise<void> {
+		if (!env.DB) return;
+
 		const responseRepo = new DynamicAppResponseRepository(env);
-		const existingResponse = await responseRepo.getResponseById(responseId);
+		const responses = await responseRepo.getResponsesByItemId(data.runId);
 
-		if (!existingResponse) {
-			logger.warn(`Response ${responseId} not found for persistence`);
-			return;
-		}
+		for (const response of responses) {
+			if (response.user_id !== data.userId) continue;
 
-		const existingData = safeParseJson(existingResponse.data) || {};
-		const existingResult = existingData.result || {};
-
-		const updatedData = {
-			...existingData,
-			result: {
-				...existingResult,
-				status: "completed",
-				data: {
-					provider: result.provider,
-					run: result.run,
-					output: result.output,
-					warnings: result.warnings,
-					poll: result.poll,
+			const existingData = safeParseJson(response.data) || {};
+			const updatedData = {
+				...existingData,
+				result: {
+					status: "completed",
+					data: {
+						provider: result.provider,
+						run: result.run,
+						output: result.output,
+						warnings: result.warnings,
+						poll: result.poll,
+					},
 				},
-			},
-			lastSyncedAt: new Date().toISOString(),
-		};
+				lastSyncedAt: new Date().toISOString(),
+			};
 
-		await responseRepo.updateResponseData(responseId, updatedData);
-		logger.info(`Research result persisted for response ${responseId}`);
+			await responseRepo.updateResponseData(response.id, updatedData);
+		}
 	}
 
-	private async persistErrorResult(
+	private async persistError(
 		env: IEnv,
-		responseId: string,
-		runId: string,
-		provider: ResearchProviderName,
+		data: ResearchPollingData,
 		errorMessage: string,
 	): Promise<void> {
+		if (!env.DB) return;
+
 		const responseRepo = new DynamicAppResponseRepository(env);
-		const existingResponse = await responseRepo.getResponseById(responseId);
+		const responses = await responseRepo.getResponsesByItemId(data.runId);
 
-		if (!existingResponse) {
-			logger.warn(`Response ${responseId} not found for error persistence`);
-			return;
-		}
+		for (const response of responses) {
+			if (response.user_id !== data.userId) continue;
 
-		const existingData = safeParseJson(existingResponse.data) || {};
-		const now = new Date().toISOString();
+			const existingData = safeParseJson(response.data) || {};
+			const now = new Date().toISOString();
 
-		const errorRun =
-			provider === "parallel"
-				? ({
-						run_id: runId,
-						status: "errored",
-						is_active: false,
-						processor: "unknown",
-						metadata: null,
-						created_at: now,
-						modified_at: now,
+			const errorRun =
+				data.provider === "parallel"
+					? ({
+							run_id: data.runId,
+							status: "errored",
+							is_active: false,
+							processor: "unknown",
+							metadata: null,
+							created_at: now,
+							modified_at: now,
+							warnings: [errorMessage],
+							error: errorMessage,
+							taskgroup_id: null,
+						} as ParallelTaskRun)
+					: ({
+							research_id: data.runId,
+							status: "errored",
+							created_at: now,
+							error: errorMessage,
+							warnings: [errorMessage],
+						} as ExaTaskRun);
+
+			const updatedData = {
+				...existingData,
+				result: {
+					status: "error",
+					error: errorMessage,
+					data: {
+						provider: data.provider,
+						run: errorRun,
 						warnings: [errorMessage],
-						error: errorMessage,
-						taskgroup_id: null,
-					} as ParallelTaskRun)
-				: ({
-						research_id: runId,
-						status: "errored",
-						created_at: now,
-						error: errorMessage,
-						warnings: [errorMessage],
-					} as ExaTaskRun);
-
-		const updatedData = {
-			...existingData,
-			result: {
-				status: "error",
-				error: errorMessage,
-				data: {
-					provider,
-					run: errorRun,
-					warnings: [errorMessage],
+					},
 				},
-			},
-			lastSyncedAt: now,
-		};
+				lastSyncedAt: now,
+			};
 
-		await responseRepo.updateResponseData(responseId, updatedData);
-		logger.info(`Research error persisted for response ${responseId}`);
+			await responseRepo.updateResponseData(response.id, updatedData);
+		}
 	}
 }

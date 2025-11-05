@@ -260,7 +260,6 @@ export class ConversationManager {
 			);
 		}
 
-		// Queue async message polling tasks for messages with asyncInvocation metadata
 		if (this.env?.DB && this.user?.id) {
 			for (const message of newMessages) {
 				const asyncInvocation = (
@@ -283,10 +282,6 @@ export class ConversationManager {
 							},
 							priority: 7,
 						});
-
-						logger.info(
-							`Queued async message polling task for message ${message.id}`,
-						);
 					} catch (error) {
 						logger.error(
 							`Failed to queue async message polling task for message ${message.id}:`,

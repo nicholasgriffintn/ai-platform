@@ -359,44 +359,13 @@ app.post(
 			return ResponseFactory.error(context, "User not authenticated", 401);
 		}
 
-		// Create a response record first to track the research task
-		const responseRepo = new (await import("~/repositories/DynamicAppResponseRepository")).DynamicAppResponseRepository(context.env as IEnv);
-		const runId = await responseRepo.createResponse({
-			user_id: user.id,
-			app_name: "research",
-			request_data: JSON.stringify(body),
+		const handle = await startResearchTask({
+			env: context.env as IEnv,
+			user,
+			input: body.input,
+			provider: body.provider as ResearchProviderName | undefined,
+			options: body.options,
 		});
-
-		const handle = await startResearchTask(
-			{
-				env: context.env as IEnv,
-				user,
-				input: body.input,
-				provider: body.provider as ResearchProviderName | undefined,
-				options: body.options,
-			},
-			runId,
-		);
-
-		// Store initial run info in the response
-		const actualRunId =
-			"run_id" in handle.run
-				? handle.run.run_id
-				: "research_id" in handle.run
-					? handle.run.research_id
-					: "";
-
-		if (actualRunId) {
-			await responseRepo.updateResponseByItemId(actualRunId, {
-				result: {
-					status: "in_progress",
-					data: {
-						provider: handle.provider,
-						run: handle.run,
-					},
-				},
-			});
-		}
 
 		const pollInterval =
 			body.options?.polling?.interval_ms &&

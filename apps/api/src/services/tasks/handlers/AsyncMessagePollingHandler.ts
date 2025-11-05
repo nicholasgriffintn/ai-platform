@@ -8,6 +8,7 @@ import { handleAsyncInvocation } from "~/services/completions/async/handler";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
 import { TaskService } from "../TaskService";
+import { TaskRepository } from "~/repositories/TaskRepository";
 
 const logger = getLogger({ prefix: "services/tasks/async-message-polling" });
 
@@ -16,7 +17,6 @@ interface AsyncMessagePollingData {
 	messageId: string;
 	asyncInvocation: AsyncInvocationMetadata;
 	userId: number;
-	pollCount?: number;
 }
 
 export class AsyncMessagePollingHandler implements TaskHandler {
@@ -37,6 +37,7 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 				database,
 				user: { id: data.userId } as IUser,
 				store: true,
+				env,
 			});
 
 			const messages = await conversationManager.get(data.conversationId);
@@ -58,7 +59,7 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 				!isAsyncInvocationPending(messageAsyncInvocation)
 			) {
 				logger.info(
-					`Message ${data.messageId} is not pending async invocation, skipping`,
+					`Message ${data.messageId} is not pending async invocation`,
 				);
 				return {
 					status: "success",
@@ -96,51 +97,17 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 				};
 			}
 
-			const pollCount = (data.pollCount || 0) + 1;
-			const maxPolls = 240; // 20 minutes at 5-second intervals
-
-			if (pollCount >= maxPolls) {
-				logger.warn(
-					`Async invocation for message ${data.messageId} exceeded max poll attempts`,
-				);
-
-				const failedMessage: Message = {
-					...targetMessage,
-					status: "failed",
-					data: {
-						...(targetMessage.data || {}),
-						asyncInvocation: {
-							...data.asyncInvocation,
-							status: "failed",
-						},
-						error: "Polling timeout exceeded",
-					},
-				};
-
-				await conversationManager.update(data.conversationId, [failedMessage]);
-
-				return {
-					status: "error",
-					message: "Async invocation polling timeout exceeded",
-				};
-			}
-
 			logger.info(
-				`Async invocation for message ${data.messageId} still in progress, re-queuing (attempt ${pollCount}/${maxPolls})`,
+				`Async invocation for message ${data.messageId} still in progress, re-queuing`,
 			);
 
-			const taskService = new TaskService(
-				env,
-				// @ts-ignore - we'll fix this after implementing the repository access
-				null,
-			);
+			const taskRepository = new TaskRepository(env);
+			const taskService = new TaskService(env, taskRepository);
 
 			await taskService.enqueueTask({
 				task_type: "async_message_polling",
-				task_data: {
-					...data,
-					pollCount,
-				},
+				user_id: message.user_id,
+				task_data: data,
 				schedule_type: "scheduled",
 				scheduled_at: new Date(Date.now() + 5000).toISOString(),
 				priority: message.priority || 5,
@@ -148,10 +115,9 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 
 			return {
 				status: "success",
-				message: `Async invocation still in progress, re-queued for polling (attempt ${pollCount})`,
+				message: "Async invocation still in progress, re-queued",
 				data: {
 					messageId: data.messageId,
-					pollCount,
 				},
 			};
 		} catch (error) {

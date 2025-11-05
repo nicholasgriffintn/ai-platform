@@ -95,7 +95,6 @@ const getResearchInstance = async (
 
 export const startResearchTask = async (
 	req: ResearchTaskRequest,
-	responseId?: string,
 ): Promise<ResearchTaskHandle> => {
 	const { env, user, provider, options } = req;
 	const preparedInput = normaliseInput(req.input);
@@ -112,7 +111,6 @@ export const startResearchTask = async (
 		throw new AssistantError(creation.error, ErrorType.EXTERNAL_API_ERROR);
 	}
 
-	// Queue background polling task to check status
 	if (user?.id && env.DB) {
 		const taskRepository = new TaskRepository(env);
 		const taskService = new TaskService(env, taskRepository);
@@ -134,7 +132,6 @@ export const startResearchTask = async (
 					userId: user.id,
 					options,
 					startedAt: new Date().toISOString(),
-					responseId,
 				},
 				priority: 7,
 			});

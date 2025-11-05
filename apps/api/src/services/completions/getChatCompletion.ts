@@ -6,7 +6,6 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 export const handleGetChatCompletion = async (
 	req: IRequest,
 	completion_id: string,
-	options?: { refreshPending?: boolean },
 ): Promise<Record<string, unknown>> => {
 	const { env, user, context } = req;
 
@@ -26,13 +25,5 @@ export const handleGetChatCompletion = async (
 		env,
 	});
 
-	const conversation =
-		await conversationManager.getConversationDetails(completion_id);
-
-	// NOTE: refreshPending option is now deprecated. Async message polling is handled
-	// automatically by the task queue system. Background tasks poll provider APIs and
-	// update messages proactively, eliminating the need for manual refresh calls.
-	// The option is kept for backwards compatibility but does nothing.
-
-	return conversation;
+	return await conversationManager.getConversationDetails(completion_id);
 };

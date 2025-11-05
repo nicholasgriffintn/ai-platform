@@ -25,10 +25,10 @@ export function useResearchStatus({
 	runId,
 	provider,
 	enabled = true,
-	pollInterval = 10000, // Increased default from 5s to 10s since backend polls proactively
+	pollInterval = 10000,
 	initialData,
 }: UseResearchStatusOptions) {
-	const sanitizedInterval = Math.max(5000, pollInterval || 0); // Minimum 5s instead of 1s
+	const sanitizedInterval = Math.max(5000, pollInterval || 0);
 
 	return useQuery<ResearchStatus, Error>({
 		queryKey: researchStatusQueryKey(runId, provider),
@@ -47,7 +47,6 @@ export function useResearchStatus({
 
 			const data = query.state.data as ResearchStatus | undefined;
 			const intervalFromData = data?.poll?.interval_ms;
-			// Backend now handles polling at 5s intervals, so we can be more relaxed
 			const effectiveInterval = Math.max(
 				5000,
 				Number(intervalFromData ?? sanitizedInterval) || 0,
@@ -67,10 +66,8 @@ export function useResearchStatus({
 				return false;
 			}
 
-			// Use exponential backoff for longer-running tasks
 			const pollCount = (query.state.dataUpdateCount || 0) + 1;
 			if (pollCount > 10) {
-				// After 10 polls (~1.5 minutes), increase to 15s
 				return Math.min(15000, effectiveInterval * 1.5);
 			}
 

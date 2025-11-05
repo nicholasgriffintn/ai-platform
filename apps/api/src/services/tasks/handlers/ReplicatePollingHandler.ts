@@ -7,6 +7,7 @@ import { AppDataRepository } from "~/repositories/AppDataRepository";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { safeParseJson } from "~/utils/json";
 import { TaskService } from "../TaskService";
+import { TaskRepository } from "~/repositories/TaskRepository";
 
 const logger = getLogger({ prefix: "services/tasks/replicate-polling" });
 
@@ -15,7 +16,6 @@ interface ReplicatePollingData {
 	userId: number;
 	modelId: string;
 	startedAt: string;
-	pollCount?: number;
 }
 
 export class ReplicatePollingHandler implements TaskHandler {
@@ -60,9 +60,7 @@ export class ReplicatePollingHandler implements TaskHandler {
 				?.asyncInvocation as AsyncInvocationMetadata | undefined;
 
 			if (!asyncInvocation || predictionData.status !== "processing") {
-				logger.info(
-					`Prediction ${data.predictionId} is not in processing state, skipping`,
-				);
+				logger.info(`Prediction ${data.predictionId} not in processing state`);
 				return {
 					status: "success",
 					message: "Prediction not in processing state",
@@ -93,7 +91,7 @@ export class ReplicatePollingHandler implements TaskHandler {
 			);
 
 			if (result.status === "completed" && result.result) {
-				logger.info(`Prediction ${data.predictionId} completed successfully`);
+				logger.info(`Prediction ${data.predictionId} completed`);
 
 				predictionData.status = "succeeded";
 				predictionData.predictionData = result.result;
@@ -129,39 +127,15 @@ export class ReplicatePollingHandler implements TaskHandler {
 				};
 			}
 
-			const pollCount = (data.pollCount || 0) + 1;
-			const maxPolls = 240; // 20 minutes at 5-second intervals
+			logger.info(`Prediction ${data.predictionId} still in progress, re-queuing`);
 
-			if (pollCount >= maxPolls) {
-				logger.warn(`Prediction ${data.predictionId} exceeded max poll attempts`);
-
-				predictionData.status = "failed";
-				predictionData.error = "Polling timeout exceeded";
-
-				await appDataRepo.updateAppData(data.predictionId, predictionData);
-
-				return {
-					status: "error",
-					message: "Prediction polling timeout exceeded",
-				};
-			}
-
-			logger.info(
-				`Prediction ${data.predictionId} still in progress, re-queuing (attempt ${pollCount}/${maxPolls})`,
-			);
-
-			const taskService = new TaskService(
-				env,
-				// @ts-ignore - we'll fix this after implementing the repository access
-				null,
-			);
+			const taskRepository = new TaskRepository(env);
+			const taskService = new TaskService(env, taskRepository);
 
 			await taskService.enqueueTask({
 				task_type: "replicate_polling",
-				task_data: {
-					...data,
-					pollCount,
-				},
+				user_id: message.user_id,
+				task_data: data,
 				schedule_type: "scheduled",
 				scheduled_at: new Date(Date.now() + 5000).toISOString(),
 				priority: message.priority || 5,
@@ -169,8 +143,8 @@ export class ReplicatePollingHandler implements TaskHandler {
 
 			return {
 				status: "success",
-				message: `Prediction still in progress, re-queued for polling (attempt ${pollCount})`,
-				data: { predictionId: data.predictionId, pollCount },
+				message: "Prediction still in progress, re-queued",
+				data: { predictionId: data.predictionId },
 			};
 		} catch (error) {
 			logger.error("Replicate polling error:", error);

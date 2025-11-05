@@ -29,8 +29,7 @@ export function useReplicatePredictions() {
 			if (!data) return false;
 
 			const hasProcessing = data.some((pred) => pred.status === "processing");
-			// Backend now polls proactively at 5s intervals, so we can poll less frequently
-			return hasProcessing ? 10000 : false; // Reduced from 5s to 10s
+			return hasProcessing ? 10000 : false;
 		},
 	});
 }
@@ -44,7 +43,6 @@ export function useReplicatePrediction(predictionId: string | null) {
 			const data = query.state.data as ReplicatePrediction | undefined;
 			if (!data) return false;
 
-			// Backend polls at 5s, we poll at 10s to reduce load
 			return data.status === "processing" ? 10000 : false;
 		},
 	});
