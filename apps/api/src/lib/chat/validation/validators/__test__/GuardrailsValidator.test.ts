@@ -37,7 +37,9 @@ describe("GuardrailsValidator", () => {
 				"~/lib/guardrails",
 			);
 
-		vi.mocked(RepositoryManager).mockImplementation(() => mockRepositories as any);
+		vi.mocked(RepositoryManager).mockImplementation(
+			() => mockRepositories as any,
+		);
 		(Guardrails as unknown as Mock).mockImplementation(
 			() => mockGuardrails as any,
 		);
@@ -98,7 +100,9 @@ describe("GuardrailsValidator", () => {
 			expect(result.validation.isValid).toBe(true);
 			expect(result.context.guardrails).toEqual(mockGuardrails);
 
-			expect(mockRepositories.userSettings.getUserSettings).toHaveBeenCalledWith(123);
+			expect(
+				mockRepositories.userSettings.getUserSettings,
+			).toHaveBeenCalledWith(123);
 			expect(mockGuardrails.validateInput).toHaveBeenCalledWith(
 				"Hello world",
 				123,
@@ -180,7 +184,9 @@ describe("GuardrailsValidator", () => {
 			);
 
 			expect(result.validation.isValid).toBe(true);
-			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
+			expect(
+				mockRepositories.userSettings.getUserSettings,
+			).not.toHaveBeenCalled();
 			expect(mockGuardrails.validateInput).toHaveBeenCalledWith(
 				"Hello world",
 				undefined,
@@ -197,7 +203,9 @@ describe("GuardrailsValidator", () => {
 			const result = await validator.validate(optionsWithoutUser, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
-			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
+			expect(
+				mockRepositories.userSettings.getUserSettings,
+			).not.toHaveBeenCalled();
 			expect(mockGuardrails.validateInput).toHaveBeenCalledWith(
 				"Hello world",
 				undefined,
@@ -371,7 +379,9 @@ describe("GuardrailsValidator", () => {
 				bedrock_guardrail_id: "test-guardrail-123",
 			};
 
-			mockRepositories.userSettings.getUserSettings.mockResolvedValue(userSettings);
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue(
+				userSettings,
+			);
 			mockGuardrails.validateInput.mockResolvedValue({
 				isValid: true,
 				violations: [],
@@ -380,7 +390,9 @@ describe("GuardrailsValidator", () => {
 			const result = await validator.validate(baseOptions, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
-			expect(mockRepositories.userSettings.getUserSettings).toHaveBeenCalledWith(123);
+			expect(
+				mockRepositories.userSettings.getUserSettings,
+			).toHaveBeenCalledWith(123);
 		});
 
 		it("should handle user settings returning null", async () => {
@@ -400,7 +412,9 @@ describe("GuardrailsValidator", () => {
 		it("should handle user settings returning undefined", async () => {
 			vi.clearAllMocks();
 
-			mockRepositories.userSettings.getUserSettings.mockResolvedValue(undefined);
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue(
+				undefined,
+			);
 			mockGuardrails.validateInput.mockResolvedValue({
 				isValid: true,
 				violations: [],

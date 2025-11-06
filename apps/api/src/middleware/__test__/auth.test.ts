@@ -91,7 +91,9 @@ describe("Auth Middleware", () => {
 		const { getUserBySessionId } = await import("~/services/auth/user");
 		const { isbot } = await import("isbot");
 
-		vi.mocked(RepositoryManager).mockImplementation(() => mockRepositories as any);
+		vi.mocked(RepositoryManager).mockImplementation(
+			() => mockRepositories as any,
+		);
 		vi.mocked(KVCache.createKey).mockReturnValue("bot:user-agent");
 		vi.mocked(getUserByJwtToken).mockImplementation(mockGetUserByJwtToken);
 		vi.mocked(getUserBySessionId).mockImplementation(mockGetUserBySessionId);
@@ -180,7 +182,9 @@ describe("Auth Middleware", () => {
 			expect(mockRepositories.apiKeys.findUserIdByApiKey).toHaveBeenCalledWith(
 				"ak_test123",
 			);
-			expect(mockRepositories.users.getUserById).toHaveBeenCalledWith("user-123");
+			expect(mockRepositories.users.getUserById).toHaveBeenCalledWith(
+				"user-123",
+			);
 			expect(context.set).toHaveBeenCalledWith("user", mockUser);
 			expect(mockNext).toHaveBeenCalled();
 		});
@@ -224,10 +228,9 @@ describe("Auth Middleware", () => {
 
 			await authMiddleware(context, mockNext);
 
-			expect(mockRepositories.anonymousUsers.getOrCreateAnonymousUser).toHaveBeenCalledWith(
-				"127.0.0.1",
-				"Mozilla/5.0",
-			);
+			expect(
+				mockRepositories.anonymousUsers.getOrCreateAnonymousUser,
+			).toHaveBeenCalledWith("127.0.0.1", "Mozilla/5.0");
 			expect(context.set).toHaveBeenCalledWith(
 				"anonymousUser",
 				mockAnonymousUser,
@@ -251,13 +254,15 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			mockRepositories.anonymousUsers.getAnonymousUserById.mockResolvedValue(mockAnonymousUser);
+			mockRepositories.anonymousUsers.getAnonymousUserById.mockResolvedValue(
+				mockAnonymousUser,
+			);
 
 			await authMiddleware(context, mockNext);
 
-			expect(mockRepositories.anonymousUsers.getAnonymousUserById).toHaveBeenCalledWith(
-				"anon-123",
-			);
+			expect(
+				mockRepositories.anonymousUsers.getAnonymousUserById,
+			).toHaveBeenCalledWith("anon-123");
 			expect(context.set).toHaveBeenCalledWith(
 				"anonymousUser",
 				mockAnonymousUser,

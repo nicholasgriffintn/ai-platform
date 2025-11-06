@@ -53,22 +53,32 @@ describe("User Service", () => {
 
 			mockRepositories.users.getUserByGithubId.mockResolvedValue(mockUser);
 
-			const result = await getUserByGithubId(mockRepositories as any, "github123");
+			const result = await getUserByGithubId(
+				mockRepositories as any,
+				"github123",
+			);
 
-			expect(mockRepositories.users.getUserByGithubId).toHaveBeenCalledWith("github123");
+			expect(mockRepositories.users.getUserByGithubId).toHaveBeenCalledWith(
+				"github123",
+			);
 			expect(result).toEqual(mockUser);
 		});
 
 		it("should return null for non-existent GitHub ID", async () => {
 			mockRepositories.users.getUserByGithubId.mockResolvedValue(null);
 
-			const result = await getUserByGithubId(mockRepositories as any, "nonexistent");
+			const result = await getUserByGithubId(
+				mockRepositories as any,
+				"nonexistent",
+			);
 
 			expect(result).toBeNull();
 		});
 
 		it("should handle database errors", async () => {
-			mockRepositories.users.getUserByGithubId.mockRejectedValue(new Error("DB error"));
+			mockRepositories.users.getUserByGithubId.mockRejectedValue(
+				new Error("DB error"),
+			);
 
 			await expect(
 				getUserByGithubId(mockRepositories as any, "github123"),
@@ -86,7 +96,10 @@ describe("User Service", () => {
 
 			mockRepositories.users.getUserBySessionId.mockResolvedValue(mockUser);
 
-			const result = await getUserBySessionId(mockRepositories as any, "session123");
+			const result = await getUserBySessionId(
+				mockRepositories as any,
+				"session123",
+			);
 
 			expect(mockRepositories.users.getUserBySessionId).toHaveBeenCalledWith(
 				"session123",
@@ -97,13 +110,18 @@ describe("User Service", () => {
 		it("should return null for invalid session ID", async () => {
 			mockRepositories.users.getUserBySessionId.mockResolvedValue(null);
 
-			const result = await getUserBySessionId(mockRepositories as any, "invalid");
+			const result = await getUserBySessionId(
+				mockRepositories as any,
+				"invalid",
+			);
 
 			expect(result).toBeNull();
 		});
 
 		it("should handle database errors", async () => {
-			mockRepositories.users.getUserBySessionId.mockRejectedValue(new Error("DB error"));
+			mockRepositories.users.getUserBySessionId.mockRejectedValue(
+				new Error("DB error"),
+			);
 
 			await expect(
 				getUserBySessionId(mockRepositories as any, "session123"),
@@ -119,11 +137,15 @@ describe("User Service", () => {
 		it("should return user settings for valid user ID", async () => {
 			const mockSettings = { theme: "dark", language: "en" };
 
-			mockRepositories.userSettings.getUserSettings.mockResolvedValue(mockSettings);
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue(
+				mockSettings,
+			);
 
 			const result = await getUserSettings(mockRepositories as any, 123);
 
-			expect(mockRepositories.userSettings.getUserSettings).toHaveBeenCalledWith(123);
+			expect(
+				mockRepositories.userSettings.getUserSettings,
+			).toHaveBeenCalledWith(123);
 			expect(result).toEqual(mockSettings);
 		});
 
@@ -134,9 +156,13 @@ describe("User Service", () => {
 		});
 
 		it("should handle database errors", async () => {
-			mockRepositories.userSettings.getUserSettings.mockRejectedValue(new Error("DB error"));
+			mockRepositories.userSettings.getUserSettings.mockRejectedValue(
+				new Error("DB error"),
+			);
 
-			await expect(getUserSettings(mockRepositories as any, 123)).rejects.toMatchObject({
+			await expect(
+				getUserSettings(mockRepositories as any, 123),
+			).rejects.toMatchObject({
 				message: "Failed to retrieve user settings",
 				type: ErrorType.UNKNOWN_ERROR,
 				name: "AssistantError",
@@ -165,9 +191,13 @@ describe("User Service", () => {
 		});
 
 		it("should handle database errors", async () => {
-			mockRepositories.users.getUserById.mockRejectedValue(new Error("DB error"));
+			mockRepositories.users.getUserById.mockRejectedValue(
+				new Error("DB error"),
+			);
 
-			await expect(getUserById(mockRepositories as any, 123)).rejects.toMatchObject({
+			await expect(
+				getUserById(mockRepositories as any, 123),
+			).rejects.toMatchObject({
 				message: "Failed to retrieve user by ID",
 				type: ErrorType.UNKNOWN_ERROR,
 				name: "AssistantError",
@@ -210,9 +240,14 @@ describe("User Service", () => {
 			mockRepositories.users.getUserByGithubId.mockResolvedValue(existingUser);
 			mockRepositories.users.updateUser.mockResolvedValue(true);
 
-			const result = await createOrUpdateGithubUser(mockRepositories as any, mockUserData);
+			const result = await createOrUpdateGithubUser(
+				mockRepositories as any,
+				mockUserData,
+			);
 
-			expect(mockRepositories.users.getUserByGithubId).toHaveBeenCalledWith("github123");
+			expect(mockRepositories.users.getUserByGithubId).toHaveBeenCalledWith(
+				"github123",
+			);
 			expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(
 				123,
 				expect.objectContaining({
@@ -225,24 +260,38 @@ describe("User Service", () => {
 		});
 
 		it("should link GitHub to existing email user", async () => {
-			const existingEmailUser = { id: 456, email: "user@example.com", name: "Test", avatar_url: null, company: null, location: null, bio: null, twitter_username: null, site: null };
+			const existingEmailUser = {
+				id: 456,
+				email: "user@example.com",
+				name: "Test",
+				avatar_url: null,
+				company: null,
+				location: null,
+				bio: null,
+				twitter_username: null,
+				site: null,
+			};
 
 			mockRepositories.users.getUserByGithubId.mockResolvedValue(null);
-			mockRepositories.users.getUserByEmail.mockResolvedValue(existingEmailUser);
+			mockRepositories.users.getUserByEmail.mockResolvedValue(
+				existingEmailUser,
+			);
 			mockRepositories.users.createOauthAccount.mockResolvedValue(true);
 			mockRepositories.users.updateUserWithGithubData.mockResolvedValue(true);
 
-			const result = await createOrUpdateGithubUser(mockRepositories as any, mockUserData);
+			const result = await createOrUpdateGithubUser(
+				mockRepositories as any,
+				mockUserData,
+			);
 
 			expect(mockRepositories.users.createOauthAccount).toHaveBeenCalledWith(
 				456,
 				"github",
 				"github123",
 			);
-			expect(mockRepositories.users.updateUserWithGithubData).toHaveBeenCalledWith(
-				456,
-				mockUserData,
-			);
+			expect(
+				mockRepositories.users.updateUserWithGithubData,
+			).toHaveBeenCalledWith(456, mockUserData);
 			expect(result.id).toBe(456);
 		});
 
@@ -257,12 +306,19 @@ describe("User Service", () => {
 			mockRepositories.users.getUserByEmail.mockResolvedValue(null);
 			mockRepositories.users.createUser.mockResolvedValue(newUser);
 			mockRepositories.userSettings.createUserSettings.mockResolvedValue(true);
-			mockRepositories.userSettings.createUserProviderSettings.mockResolvedValue(true);
+			mockRepositories.userSettings.createUserProviderSettings.mockResolvedValue(
+				true,
+			);
 			mockRepositories.users.createOauthAccount.mockResolvedValue(true);
 
-			const result = await createOrUpdateGithubUser(mockRepositories as any, mockUserData);
+			const result = await createOrUpdateGithubUser(
+				mockRepositories as any,
+				mockUserData,
+			);
 
-			expect(mockRepositories.users.createUser).toHaveBeenCalledWith(mockUserData);
+			expect(mockRepositories.users.createUser).toHaveBeenCalledWith(
+				mockUserData,
+			);
 			expect(mockRepositories.users.createOauthAccount).toHaveBeenCalledWith(
 				789,
 				"github",
@@ -282,7 +338,9 @@ describe("User Service", () => {
 		});
 
 		it("should handle database errors", async () => {
-			mockRepositories.users.getUserByGithubId.mockRejectedValue(new Error("DB error"));
+			mockRepositories.users.getUserByGithubId.mockRejectedValue(
+				new Error("DB error"),
+			);
 
 			await expect(
 				createOrUpdateGithubUser(mockRepositories as any, mockUserData),
@@ -337,9 +395,13 @@ describe("User Service", () => {
 			vi.stubGlobal("crypto", {
 				randomUUID: vi.fn().mockReturnValue("session-uuid"),
 			});
-			mockRepositories.sessions.createSession.mockRejectedValue(new Error("DB error"));
+			mockRepositories.sessions.createSession.mockRejectedValue(
+				new Error("DB error"),
+			);
 
-			await expect(createSession(mockRepositories as any, 123)).rejects.toMatchObject({
+			await expect(
+				createSession(mockRepositories as any, 123),
+			).rejects.toMatchObject({
 				message: "Failed to create session",
 				type: ErrorType.UNKNOWN_ERROR,
 				name: "AssistantError",
@@ -353,11 +415,15 @@ describe("User Service", () => {
 
 			await deleteSession(mockRepositories as any, "session123");
 
-			expect(mockRepositories.sessions.deleteSession).toHaveBeenCalledWith("session123");
+			expect(mockRepositories.sessions.deleteSession).toHaveBeenCalledWith(
+				"session123",
+			);
 		});
 
 		it("should handle database errors", async () => {
-			mockRepositories.sessions.deleteSession.mockRejectedValue(new Error("DB error"));
+			mockRepositories.sessions.deleteSession.mockRejectedValue(
+				new Error("DB error"),
+			);
 
 			await expect(
 				deleteSession(mockRepositories as any, "session123"),

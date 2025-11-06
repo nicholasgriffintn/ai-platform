@@ -568,7 +568,9 @@ describe("Models", () => {
 				"serper",
 			);
 			expect(provider).toBe("serper");
-			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
+			expect(
+				mockRepositories.userSettings.getUserSettings,
+			).not.toHaveBeenCalled();
 		});
 
 		it("should return requested provider without querying user settings", async () => {
@@ -579,7 +581,9 @@ describe("Models", () => {
 			);
 
 			expect(provider).toBe("parallel");
-			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
+			expect(
+				mockRepositories.userSettings.getUserSettings,
+			).not.toHaveBeenCalled();
 		});
 	});
 

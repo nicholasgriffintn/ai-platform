@@ -57,19 +57,43 @@ describe("ConversationManager", () => {
 		ConversationManager["instance"] = undefined as any;
 
 		// Link old methods to new repository structure for backwards compatibility
-		mockDatabase.repositories.conversations.getConversation.mockImplementation((...args) => mockDatabase.getConversation(...args));
-		mockDatabase.repositories.conversations.createConversation.mockImplementation((...args) => mockDatabase.createConversation(...args));
-		mockDatabase.repositories.conversations.updateConversationAfterMessage.mockImplementation((...args) => mockDatabase.updateConversationAfterMessage(...args));
-		mockDatabase.repositories.conversations.getUserConversations.mockImplementation((...args) => mockDatabase.getUserConversations(...args));
-		mockDatabase.repositories.conversations.updateConversation.mockImplementation((...args) => mockDatabase.updateConversation(...args));
-		mockDatabase.repositories.conversations.getConversationByShareId.mockImplementation((...args) => mockDatabase.getConversationByShareId(...args));
-		mockDatabase.repositories.conversations.deleteAllChatCompletions.mockImplementation((...args) => mockDatabase.deleteAllChatCompletions(...args));
+		mockDatabase.repositories.conversations.getConversation.mockImplementation(
+			(...args) => mockDatabase.getConversation(...args),
+		);
+		mockDatabase.repositories.conversations.createConversation.mockImplementation(
+			(...args) => mockDatabase.createConversation(...args),
+		);
+		mockDatabase.repositories.conversations.updateConversationAfterMessage.mockImplementation(
+			(...args) => mockDatabase.updateConversationAfterMessage(...args),
+		);
+		mockDatabase.repositories.conversations.getUserConversations.mockImplementation(
+			(...args) => mockDatabase.getUserConversations(...args),
+		);
+		mockDatabase.repositories.conversations.updateConversation.mockImplementation(
+			(...args) => mockDatabase.updateConversation(...args),
+		);
+		mockDatabase.repositories.conversations.getConversationByShareId.mockImplementation(
+			(...args) => mockDatabase.getConversationByShareId(...args),
+		);
+		mockDatabase.repositories.conversations.deleteAllChatCompletions.mockImplementation(
+			(...args) => mockDatabase.deleteAllChatCompletions(...args),
+		);
 
-		mockDatabase.repositories.messages.createMessage.mockImplementation((...args) => mockDatabase.createMessage(...args));
-		mockDatabase.repositories.messages.getConversationMessages.mockImplementation((...args) => mockDatabase.getConversationMessages(...args));
-		mockDatabase.repositories.messages.updateMessage.mockImplementation((...args) => mockDatabase.updateMessage(...args));
-		mockDatabase.repositories.messages.getMessageById.mockImplementation((...args) => mockDatabase.getMessageById(...args));
-		mockDatabase.repositories.messages.getMessages.mockImplementation((...args) => mockDatabase.getMessages(...args));
+		mockDatabase.repositories.messages.createMessage.mockImplementation(
+			(...args) => mockDatabase.createMessage(...args),
+		);
+		mockDatabase.repositories.messages.getConversationMessages.mockImplementation(
+			(...args) => mockDatabase.getConversationMessages(...args),
+		);
+		mockDatabase.repositories.messages.updateMessage.mockImplementation(
+			(...args) => mockDatabase.updateMessage(...args),
+		);
+		mockDatabase.repositories.messages.getMessageById.mockImplementation(
+			(...args) => mockDatabase.getMessageById(...args),
+		);
+		mockDatabase.repositories.messages.getMessages.mockImplementation(
+			(...args) => mockDatabase.getMessages(...args),
+		);
 	});
 
 	describe("getInstance", () => {

@@ -8,7 +8,7 @@ const mockRepositories = {
 		getUserSettings: vi.fn(() => Promise.resolve({})),
 	},
 };
-nvi.mock("~/repositories", () => ({
+vi.mock("~/repositories", () => ({
 	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
@@ -17,6 +17,11 @@ const mockEmbedding = {
 	insert: vi.fn(() => Promise.resolve({ mutationId: "mutation-123" })),
 };
 
+vi.mock("~/lib/embedding", () => ({
+	Embedding: {
+		getInstance: vi.fn(() => mockEmbedding),
+	},
+}));
 
 describe("extractContent", () => {
 	const mockUser = {
@@ -72,7 +77,7 @@ describe("extractContent", () => {
 			response_time: 1.2,
 		};
 
-		fetch.mockResolvedValue({
+		(fetch as any).mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
@@ -124,7 +129,7 @@ describe("extractContent", () => {
 			response_time: 2.5,
 		};
 
-		fetch.mockResolvedValue({
+		(fetch as any).mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
@@ -153,7 +158,7 @@ describe("extractContent", () => {
 			response_time: 1.0,
 		};
 
-		fetch.mockResolvedValue({
+		(fetch as any).mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
@@ -203,7 +208,7 @@ describe("extractContent", () => {
 			response_time: 1.0,
 		};
 
-		fetch.mockResolvedValue({
+		(fetch as any).mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
@@ -242,7 +247,7 @@ describe("extractContent", () => {
 			urls: "https://example.com",
 		};
 
-		fetch.mockResolvedValue({
+		(fetch as any).mockResolvedValue({
 			ok: false,
 			text: () => Promise.resolve("API Error: Invalid request"),
 		} as Response);
@@ -260,7 +265,7 @@ describe("extractContent", () => {
 			urls: "https://example.com",
 		};
 
-		fetch.mockRejectedValue(new Error("Network error"));
+		(fetch as any).mockRejectedValue(new Error("Network error"));
 
 		const result = await extractContent(params, mockRequest);
 
@@ -287,12 +292,14 @@ describe("extractContent", () => {
 			response_time: 1.0,
 		};
 
-		fetch.mockResolvedValue({
+		(fetch as any).mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
 
-		mockRepositories.userSettings.getUserSettings.mockRejectedValue(new Error("Database error"));
+		mockRepositories.userSettings.getUserSettings.mockRejectedValue(
+			new Error("Database error"),
+		);
 
 		const result = await extractContent(params, mockRequest);
 
@@ -324,7 +331,7 @@ describe("extractContent", () => {
 			response_time: 1.5,
 		};
 
-		fetch.mockResolvedValue({
+		(fetch as any).mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
@@ -348,7 +355,7 @@ describe("extractContent", () => {
 			response_time: 0.5,
 		};
 
-		fetch.mockResolvedValue({
+		(fetch as any).mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
@@ -377,7 +384,7 @@ describe("extractContent", () => {
 			response_time: 1.0,
 		};
 
-		fetch.mockResolvedValue({
+		(fetch as any).mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);

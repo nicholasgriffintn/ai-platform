@@ -34,9 +34,13 @@ describe("Plans Service", () => {
 		});
 
 		it("should handle database errors", async () => {
-			mockRepositories.plans.getAllPlans.mockRejectedValue(new Error("Database error"));
+			mockRepositories.plans.getAllPlans.mockRejectedValue(
+				new Error("Database error"),
+			);
 
-			await expect(listPlans({ DB: {} } as any)).rejects.toThrow("Database error");
+			await expect(listPlans({ DB: {} } as any)).rejects.toThrow(
+				"Database error",
+			);
 		});
 	});
 
@@ -54,7 +58,9 @@ describe("Plans Service", () => {
 		it("should throw error for non-existent plan", async () => {
 			mockRepositories.plans.getPlanById.mockResolvedValue(null);
 
-			await expect(getPlanDetails({ DB: {} } as any, "999")).rejects.toMatchObject({
+			await expect(
+				getPlanDetails({ DB: {} } as any, "999"),
+			).rejects.toMatchObject({
 				message: "Plan not found",
 				type: ErrorType.NOT_FOUND,
 				name: "AssistantError",
@@ -62,7 +68,9 @@ describe("Plans Service", () => {
 		});
 
 		it("should handle database errors", async () => {
-			mockRepositories.plans.getPlanById.mockRejectedValue(new Error("Database error"));
+			mockRepositories.plans.getPlanById.mockRejectedValue(
+				new Error("Database error"),
+			);
 
 			await expect(getPlanDetails({ DB: {} } as any, "1")).rejects.toThrow(
 				"Database error",

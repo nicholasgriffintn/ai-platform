@@ -92,7 +92,9 @@ describe("Magic Link Service", () => {
 		vi.mocked(Database).mockImplementation(() => mockDatabase);
 
 		mockRepositories.userSettings.createUserSettings.mockResolvedValue(true);
-		mockRepositories.userSettings.createUserProviderSettings.mockResolvedValue(true);
+		mockRepositories.userSettings.createUserProviderSettings.mockResolvedValue(
+			true,
+		);
 
 		const notifications = await import("~/services/notifications");
 		mockSendMagicLinkEmail = vi.mocked(notifications.sendMagicLinkEmail);
@@ -236,7 +238,9 @@ describe("Magic Link Service", () => {
 
 		it("should handle user creation failure", async () => {
 			mockRepositories.users.getUserByEmail.mockResolvedValue(null);
-			mockRepositories.users.createUser.mockRejectedValue(new Error("DB error"));
+			mockRepositories.users.createUser.mockRejectedValue(
+				new Error("DB error"),
+			);
 
 			const result = await requestMagicLink(mockEnv, "user@example.com");
 

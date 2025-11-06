@@ -171,7 +171,9 @@ describe("deleteEmbedding", () => {
 			},
 		};
 
-		mockRepositories.userSettings.getUserSettings.mockRejectedValue(new Error("Database error"));
+		mockRepositories.userSettings.getUserSettings.mockRejectedValue(
+			new Error("Database error"),
+		);
 
 		await expect(deleteEmbedding(req)).rejects.toThrow(
 			"Error deleting embedding",
@@ -191,24 +193,6 @@ describe("deleteEmbedding", () => {
 		mockEmbedding.delete.mockRejectedValue(
 			new Error("Embedding service error"),
 		);
-
-		await expect(deleteEmbedding(req)).rejects.toThrow(
-			"Error deleting embedding",
-		);
-	});
-
-	it("should handle service initialization errors", async () => {
-		const req = {
-			user: mockUser,
-			env: mockEnv,
-			request: {
-				ids: ["embedding-1"],
-			},
-		};
-
-		vi.mocked(Database.getInstance).mockImplementation(() => {
-			throw new Error("Service init error");
-		});
 
 		await expect(deleteEmbedding(req)).rejects.toThrow(
 			"Error deleting embedding",

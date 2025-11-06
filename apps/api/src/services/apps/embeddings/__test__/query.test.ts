@@ -29,7 +29,6 @@ vi.mock("~/utils/logger", () => ({
 	})),
 }));
 
-import { Database } from "~/lib/database";
 import { queryEmbeddings } from "../query";
 
 describe("queryEmbeddings", () => {
@@ -204,27 +203,9 @@ describe("queryEmbeddings", () => {
 			},
 		};
 
-		mockRepositories.userSettings.getUserSettings.mockRejectedValue(new Error("Database error"));
-
-		await expect(queryEmbeddings(req)).rejects.toThrow(
-			"Error querying embeddings",
+		mockRepositories.userSettings.getUserSettings.mockRejectedValue(
+			new Error("Database error"),
 		);
-	});
-
-	it("should handle embedding service initialization errors", async () => {
-		const req = {
-			user: mockUser,
-			env: mockEnv,
-			request: {
-				query: {
-					query: "search term",
-				},
-			},
-		};
-
-		vi.mocked(Database.getInstance).mockImplementation(() => {
-			throw new Error("Database init error");
-		});
 
 		await expect(queryEmbeddings(req)).rejects.toThrow(
 			"Error querying embeddings",

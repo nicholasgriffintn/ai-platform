@@ -60,7 +60,8 @@ vi.mock("~/services/notifications", () => ({
 	sendTrialEndingEmail: vi.fn(),
 }));
 
-const mockEnv: IEnv = { DB: {} as any,
+const mockEnv: IEnv = {
+	DB: {} as any,
 	STRIPE_SECRET_KEY: "sk_test_123",
 	STRIPE_WEBHOOK_SECRET: "whsec_test_123",
 } as IEnv;
@@ -105,7 +106,9 @@ describe("Subscription Service", () => {
 				"https://cancel.com",
 			);
 
-			expect(mockRepositories.plans.getPlanById).toHaveBeenCalledWith("plan-123");
+			expect(mockRepositories.plans.getPlanById).toHaveBeenCalledWith(
+				"plan-123",
+			);
 			expect(mockStripe.customers.create).toHaveBeenCalledWith({
 				email: "test@example.com",
 				metadata: { user_id: "1" },
@@ -386,7 +389,9 @@ describe("Subscription Service", () => {
 			const mockUser = { id: 1, email: "test@example.com" };
 
 			mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
-			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(mockUser);
+			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(
+				mockUser,
+			);
 
 			const result = await handleStripeWebhook(
 				mockEnv,
@@ -421,7 +426,9 @@ describe("Subscription Service", () => {
 			const mockUser = { id: 1, email: "test@example.com" };
 
 			mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
-			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(mockUser);
+			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(
+				mockUser,
+			);
 
 			const result = await handleStripeWebhook(
 				mockEnv,
@@ -453,7 +460,9 @@ describe("Subscription Service", () => {
 			const mockUser = { id: 1, email: "test@example.com" };
 
 			mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
-			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(mockUser);
+			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(
+				mockUser,
+			);
 
 			const result = await handleStripeWebhook(
 				mockEnv,
