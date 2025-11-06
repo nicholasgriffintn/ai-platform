@@ -126,9 +126,15 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 			if (enableVideoSearch) {
 				try {
 					const repositories = new RepositoryManager(env);
-					const userSettings = await repositories.userSettings.getUserSettings(
-						user.id,
-					);
+					const userSettings = user?.id
+						? await repositories.userSettings.getUserSettings(user.id)
+						: null;
+					if (!userSettings) {
+						throw new AssistantError(
+							"User settings not found",
+							ErrorType.NOT_FOUND,
+						);
+					}
 					const embedding = Embedding.getInstance(env, user, userSettings);
 
 					const videoId = `video-${Date.now()}-${generateId()}`;

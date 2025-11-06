@@ -67,9 +67,9 @@ export class RequestPreparer {
 
 		const isProUser = user?.plan_id === "pro";
 
-		const userSettings = await this.repositories.userSettings.getUserSettings(
-			user?.id,
-		);
+		const userSettings = user?.id
+			? await this.repositories.userSettings.getUserSettings(user.id)
+			: null;
 
 		const modelConfigs = await this.buildModelConfigs(
 			options,

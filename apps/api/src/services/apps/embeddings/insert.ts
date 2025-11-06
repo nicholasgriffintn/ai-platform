@@ -102,9 +102,9 @@ export const insertEmbedding = async (
 			throw new AssistantError("No unique ID found");
 		}
 
-		const userSettings = await repositories.userSettings.getUserSettings(
-			req.user?.id,
-		);
+		const userSettings = req.user?.id
+			? await repositories.userSettings.getUserSettings(req.user.id)
+			: null;
 		if (!userSettings) {
 			throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
 		}

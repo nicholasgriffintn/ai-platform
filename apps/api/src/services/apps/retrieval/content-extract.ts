@@ -90,9 +90,9 @@ export const extractContent = async (
 		if (params.should_vectorize && data.results.length > 0) {
 			try {
 				const repositories = new RepositoryManager(req.env);
-				const userSettings = await repositories.userSettings.getUserSettings(
-					req.user?.id,
-				);
+				const userSettings = req.user?.id
+					? await repositories.userSettings.getUserSettings(req.user.id)
+					: null;
 				const embedding = Embedding.getInstance(
 					req.env,
 					req.user,
