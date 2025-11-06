@@ -1,5 +1,5 @@
 import { KVCache } from "~/lib/cache";
-import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 import type {
 	IEnv,
 	IUser,
@@ -311,8 +311,8 @@ export async function getIncludedInRouterModelsForUser(
 		return await filterModelsForUserAccess(freeModels, env, userId, options);
 	}
 
-	const database = Database.getInstance(env);
-	const user = await database.getUserById(userId);
+	const repositories = new RepositoryManager(env);
+	const user = await repositories.users.getUserById(userId);
 	const isPro = user?.plan_id === "pro";
 
 	if (!isPro) {
@@ -406,13 +406,13 @@ export async function filterModelsForUserAccess(
 	}
 
 	try {
-		const database = Database.getInstance(env);
+		const repositories = new RepositoryManager(env);
 
 		const userProviderSettings = await withCache(
 			env,
 			"user-provider-settings",
 			[userId.toString()],
-			() => database.getUserProviderSettings(userId),
+			() => repositories.userSettings.getUserProviderSettings(userId),
 		);
 
 		const enabledProviders = new Map(
@@ -536,12 +536,12 @@ export const getAuxiliarySearchProvider = async (
 	}
 
 	if (user?.id) {
-		const database = Database.getInstance(env);
+		const repositories = new RepositoryManager(env);
 		const userSettings = await withCache(
 			env,
 			"user-settings",
 			[user.id.toString()],
-			() => database.getUserSettings(user.id),
+			() => repositories.userSettings.getUserSettings(user.id),
 		);
 
 		const userPreferredProvider = userSettings?.search_provider as
@@ -586,13 +586,13 @@ export const getAuxiliaryResearchProvider = async (
 		);
 	}
 
-	const database = Database.getInstance(env);
+	const repositories = new RepositoryManager(env);
 
 	const providerSettings = await withCache(
 		env,
 		"user-provider-settings",
 		[user.id.toString()],
-		() => database.getUserProviderSettings(user.id),
+		() => repositories.userSettings.getUserProviderSettings(user.id),
 	);
 
 	const hasProvider = Array.isArray(providerSettings)

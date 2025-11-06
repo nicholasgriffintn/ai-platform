@@ -27,20 +27,22 @@ const mockStripe = {
 	},
 };
 
-const mockDatabase = {
-	getPlanById: vi.fn(),
-	updateUser: vi.fn(),
-	getUserByStripeCustomerId: vi.fn(),
+const mockRepositories = {
+	plans: {
+		getPlanById: vi.fn(),
+	},
+	users: {
+		updateUser: vi.fn(),
+		getUserByStripeCustomerId: vi.fn(),
+	},
 };
 
 vi.mock("stripe", () => ({
 	default: vi.fn().mockImplementation(() => mockStripe),
 }));
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: () => mockDatabase,
-	},
+vi.mock("~/repositories", () => ({
+	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
 import {
@@ -59,6 +61,7 @@ vi.mock("~/services/notifications", () => ({
 }));
 
 const mockEnv: IEnv = {
+	DB: {} as any,
 	STRIPE_SECRET_KEY: "sk_test_123",
 	STRIPE_WEBHOOK_SECRET: "whsec_test_123",
 } as IEnv;
@@ -91,7 +94,7 @@ describe("Subscription Service", () => {
 				url: "https://checkout.stripe.com/pay/cs_123",
 			};
 
-			mockDatabase.getPlanById.mockResolvedValue(mockPlan);
+			mockRepositories.plans.getPlanById.mockResolvedValue(mockPlan);
 			mockStripe.customers.create.mockResolvedValue(mockCustomer);
 			mockStripe.checkout.sessions.create.mockResolvedValue(mockSession);
 
@@ -103,12 +106,14 @@ describe("Subscription Service", () => {
 				"https://cancel.com",
 			);
 
-			expect(mockDatabase.getPlanById).toHaveBeenCalledWith("plan-123");
+			expect(mockRepositories.plans.getPlanById).toHaveBeenCalledWith(
+				"plan-123",
+			);
 			expect(mockStripe.customers.create).toHaveBeenCalledWith({
 				email: "test@example.com",
 				metadata: { user_id: "1" },
 			});
-			expect(mockDatabase.updateUser).toHaveBeenCalledWith(1, {
+			expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, {
 				stripe_customer_id: "cus_123",
 			});
 			expect(result).toEqual({
@@ -139,7 +144,7 @@ describe("Subscription Service", () => {
 		});
 
 		it("should throw error if plan not found", async () => {
-			mockDatabase.getPlanById.mockResolvedValue(null);
+			mockRepositories.plans.getPlanById.mockResolvedValue(null);
 
 			await expect(
 				createCheckoutSession(
@@ -156,7 +161,7 @@ describe("Subscription Service", () => {
 			const envWithoutKey = { ...mockEnv, STRIPE_SECRET_KEY: undefined };
 			const mockPlan = { id: "plan-123", stripe_price_id: "price_123" };
 
-			mockDatabase.getPlanById.mockResolvedValue(mockPlan);
+			mockRepositories.plans.getPlanById.mockResolvedValue(mockPlan);
 
 			await expect(
 				createCheckoutSession(
@@ -217,7 +222,7 @@ describe("Subscription Service", () => {
 
 			const result = await getSubscriptionStatus(mockEnv, userWithSubscription);
 
-			expect(mockDatabase.updateUser).toHaveBeenCalledWith(1, {
+			expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, {
 				stripe_subscription_id: null,
 				plan_id: "free",
 			});
@@ -384,7 +389,9 @@ describe("Subscription Service", () => {
 			const mockUser = { id: 1, email: "test@example.com" };
 
 			mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
-			mockDatabase.getUserByStripeCustomerId.mockResolvedValue(mockUser);
+			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(
+				mockUser,
+			);
 
 			const result = await handleStripeWebhook(
 				mockEnv,
@@ -392,7 +399,7 @@ describe("Subscription Service", () => {
 				"test-payload",
 			);
 
-			expect(mockDatabase.updateUser).toHaveBeenCalledWith(1, {
+			expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, {
 				stripe_customer_id: "cus_123",
 				stripe_subscription_id: "sub_123",
 				plan_id: "pro",
@@ -419,7 +426,9 @@ describe("Subscription Service", () => {
 			const mockUser = { id: 1, email: "test@example.com" };
 
 			mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
-			mockDatabase.getUserByStripeCustomerId.mockResolvedValue(mockUser);
+			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(
+				mockUser,
+			);
 
 			const result = await handleStripeWebhook(
 				mockEnv,
@@ -427,7 +436,7 @@ describe("Subscription Service", () => {
 				"test-payload",
 			);
 
-			expect(mockDatabase.updateUser).toHaveBeenCalledWith(1, {
+			expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, {
 				stripe_subscription_id: null,
 				plan_id: "free",
 			});
@@ -451,7 +460,9 @@ describe("Subscription Service", () => {
 			const mockUser = { id: 1, email: "test@example.com" };
 
 			mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
-			mockDatabase.getUserByStripeCustomerId.mockResolvedValue(mockUser);
+			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(
+				mockUser,
+			);
 
 			const result = await handleStripeWebhook(
 				mockEnv,

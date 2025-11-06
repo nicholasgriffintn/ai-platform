@@ -12,7 +12,7 @@ import type {
 	RegistrationResponseJSON,
 } from "@simplewebauthn/types";
 
-import type { Database } from "~/lib/database";
+import type { RepositoryManager } from "~/repositories";
 import type { User } from "~/types";
 import { decodeBase64Url } from "~/utils/base64url";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -22,12 +22,12 @@ import { safeParseJson } from "../../utils/json";
 const logger = getLogger({ prefix: "services/auth/webauthn" });
 
 export async function saveWebAuthnChallenge(
-	database: Database,
+	repositories: RepositoryManager,
 	challenge: string,
 	userId?: number,
 ): Promise<void> {
 	try {
-		await database.createWebAuthnChallenge(challenge, userId);
+		await repositories.webAuthn.createChallenge(challenge, userId);
 	} catch (error) {
 		logger.error("Error saving WebAuthn challenge:", { error });
 		throw new AssistantError(
@@ -38,7 +38,7 @@ export async function saveWebAuthnChallenge(
 }
 
 export async function getWebAuthnChallenge(
-	database: Database,
+	repositories: RepositoryManager,
 	challenge?: string,
 	userId?: number,
 ): Promise<string> {
@@ -46,11 +46,15 @@ export async function getWebAuthnChallenge(
 		let challengeRecord;
 
 		if (challenge && userId) {
-			challengeRecord = await database.getWebAuthnChallenge(challenge, userId);
+			challengeRecord = await repositories.webAuthn.getChallenge(
+				challenge,
+				userId,
+			);
 		} else if (challenge) {
-			challengeRecord = await database.getWebAuthnChallenge(challenge);
+			challengeRecord = await repositories.webAuthn.getChallenge(challenge);
 		} else if (userId) {
-			challengeRecord = await database.getWebAuthnChallengeByUserId(userId);
+			challengeRecord =
+				await repositories.webAuthn.getChallengeByUserId(userId);
 		}
 
 		if (!challengeRecord?.challenge) {
@@ -74,19 +78,19 @@ export async function getWebAuthnChallenge(
 }
 
 export async function deleteWebAuthnChallenge(
-	database: Database,
+	repositories: RepositoryManager,
 	challenge: string,
 	userId?: number,
 ): Promise<void> {
 	try {
-		await database.deleteWebAuthnChallenge(challenge, userId);
+		await repositories.webAuthn.deleteChallenge(challenge, userId);
 	} catch (error) {
 		logger.error("Error deleting WebAuthn challenge:", { error });
 	}
 }
 
 export async function registerPasskey(
-	database: Database,
+	repositories: RepositoryManager,
 	userId: number,
 	credentialId: string,
 	publicKey: Uint8Array,
@@ -96,7 +100,7 @@ export async function registerPasskey(
 	transports?: AuthenticatorTransportFuture[],
 ): Promise<void> {
 	try {
-		await database.createPasskey(
+		await repositories.webAuthn.createPasskey(
 			userId,
 			credentialId,
 			publicKey,
@@ -115,11 +119,11 @@ export async function registerPasskey(
 }
 
 export async function getUserPasskeys(
-	database: Database,
+	repositories: RepositoryManager,
 	userId: number,
 ): Promise<Record<string, unknown>[]> {
 	try {
-		return await database.getPasskeysByUserId(userId);
+		return await repositories.webAuthn.getPasskeysByUserId(userId);
 	} catch (error) {
 		logger.error("Error getting user passkeys:", { error });
 		return [];
@@ -127,14 +131,15 @@ export async function getUserPasskeys(
 }
 
 export async function getPasskeyWithUser(
-	database: Database,
+	repositories: RepositoryManager,
 	credentialId: string,
 ): Promise<{
 	credential: Record<string, unknown>;
 	user: Partial<User>;
 } | null> {
 	try {
-		const result = await database.getPasskeyByCredentialId(credentialId);
+		const result =
+			await repositories.webAuthn.getPasskeyByCredentialId(credentialId);
 
 		if (!result) {
 			return null;
@@ -160,24 +165,27 @@ export async function getPasskeyWithUser(
 }
 
 export async function updatePasskeyCounter(
-	database: Database,
+	repositories: RepositoryManager,
 	credentialId: string,
 	counter: number,
 ): Promise<void> {
 	try {
-		await database.updatePasskeyCounter(credentialId, counter);
+		await repositories.webAuthn.updatePasskeyCounter(credentialId, counter);
 	} catch (error) {
 		logger.error("Error updating passkey counter:", { error });
 	}
 }
 
 export async function deletePasskey(
-	database: Database,
+	repositories: RepositoryManager,
 	passkeyId: number,
 	userId: number,
 ): Promise<boolean> {
 	try {
-		const success = await database.deletePasskey(passkeyId, userId);
+		const success = await repositories.webAuthn.deletePasskey(
+			passkeyId,
+			userId,
+		);
 		return success;
 	} catch (error) {
 		logger.error("Error deleting passkey:", { error });
@@ -189,7 +197,7 @@ export async function deletePasskey(
 }
 
 export async function generatePasskeyRegistrationOptions(
-	database: Database,
+	repositories: RepositoryManager,
 	user: User,
 	rpName: string,
 	rpID: string,
@@ -202,7 +210,7 @@ export async function generatePasskeyRegistrationOptions(
 			);
 		}
 
-		const existingCredentials = await getUserPasskeys(database, user.id);
+		const existingCredentials = await getUserPasskeys(repositories, user.id);
 
 		const options = await generateRegistrationOptions({
 			rpName,
@@ -230,7 +238,7 @@ export async function generatePasskeyRegistrationOptions(
 			},
 		});
 
-		await saveWebAuthnChallenge(database, options.challenge, user.id);
+		await saveWebAuthnChallenge(repositories, options.challenge, user.id);
 
 		return options;
 	} catch (error) {
@@ -243,14 +251,18 @@ export async function generatePasskeyRegistrationOptions(
 }
 
 export async function verifyAndRegisterPasskey(
-	database: Database,
+	repositories: RepositoryManager,
 	user: User,
 	response: RegistrationResponseJSON,
 	expectedOrigin: string,
 	expectedRPID: string,
 ): Promise<boolean> {
 	try {
-		const challenge = await getWebAuthnChallenge(database, undefined, user.id);
+		const challenge = await getWebAuthnChallenge(
+			repositories,
+			undefined,
+			user.id,
+		);
 
 		const verification = await verifyRegistrationResponse({
 			response,
@@ -266,7 +278,7 @@ export async function verifyAndRegisterPasskey(
 
 			const credentialId = response.rawId || response.id;
 
-			const existingCredentials = await getUserPasskeys(database, user.id);
+			const existingCredentials = await getUserPasskeys(repositories, user.id);
 			const duplicateCredential = existingCredentials.find(
 				(cred) => cred.credential_id === credentialId,
 			);
@@ -283,7 +295,7 @@ export async function verifyAndRegisterPasskey(
 
 			try {
 				await registerPasskey(
-					database,
+					repositories,
 					user.id,
 					credentialId,
 					credential.publicKey,
@@ -299,7 +311,7 @@ export async function verifyAndRegisterPasskey(
 				);
 			}
 
-			await deleteWebAuthnChallenge(database, challenge, user.id);
+			await deleteWebAuthnChallenge(repositories, challenge, user.id);
 		}
 
 		return verified;
@@ -313,7 +325,7 @@ export async function verifyAndRegisterPasskey(
 }
 
 export async function generatePasskeyAuthenticationOptions(
-	database: Database,
+	repositories: RepositoryManager,
 	rpID: string,
 ): Promise<PublicKeyCredentialRequestOptionsJSON> {
 	try {
@@ -322,7 +334,7 @@ export async function generatePasskeyAuthenticationOptions(
 			userVerification: "preferred",
 		});
 
-		await saveWebAuthnChallenge(database, options.challenge);
+		await saveWebAuthnChallenge(repositories, options.challenge);
 
 		return options;
 	} catch (error) {
@@ -338,7 +350,7 @@ export async function generatePasskeyAuthenticationOptions(
 }
 
 export async function verifyPasskeyAuthentication(
-	database: Database,
+	repositories: RepositoryManager,
 	response: AuthenticationResponseJSON,
 	expectedOrigin: string,
 	expectedRPID: string,
@@ -346,7 +358,10 @@ export async function verifyPasskeyAuthentication(
 	try {
 		const credentialID = response.id;
 
-		const passkeyWithUser = await getPasskeyWithUser(database, credentialID);
+		const passkeyWithUser = await getPasskeyWithUser(
+			repositories,
+			credentialID,
+		);
 
 		if (!passkeyWithUser) {
 			throw new AssistantError(
@@ -371,7 +386,7 @@ export async function verifyPasskeyAuthentication(
 		const challengeFromClient = clientData.challenge;
 
 		const expectedChallenge = await getWebAuthnChallenge(
-			database,
+			repositories,
 			challengeFromClient,
 		);
 
@@ -395,12 +410,12 @@ export async function verifyPasskeyAuthentication(
 
 		if (verified) {
 			await updatePasskeyCounter(
-				database,
+				repositories,
 				credentialID,
 				authenticationInfo.newCounter,
 			);
 
-			await deleteWebAuthnChallenge(database, expectedChallenge);
+			await deleteWebAuthnChallenge(repositories, expectedChallenge);
 
 			return { verified, user };
 		}

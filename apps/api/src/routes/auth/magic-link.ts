@@ -7,7 +7,7 @@ import {
 	errorResponseSchema,
 } from "@assistant/schemas";
 
-import { Database } from "~/lib/database";
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { requestMagicLink, verifyMagicLink } from "~/services/auth/magicLink";
 import { createSession } from "~/services/auth/user";
@@ -102,8 +102,8 @@ app.post(
 		};
 
 		const userId = await verifyMagicLink(c.env, token, nonce);
-		const database = Database.getInstance(c.env);
-		const sessionId = await createSession(database, userId);
+		const { repositories } = getServiceContext(c);
+		const sessionId = await createSession(repositories, userId);
 
 		c.header(
 			"Set-Cookie",

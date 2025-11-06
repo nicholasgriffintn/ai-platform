@@ -26,6 +26,7 @@ describe("Embedding", () => {
 		vi.clearAllMocks();
 
 		mockEnv = {
+			DB: {} as any,
 			AI: {},
 			VECTOR_DB: {},
 			AWS_REGION: "us-east-1",
@@ -76,11 +77,11 @@ describe("Embedding", () => {
 
 			expect(EmbeddingProviderFactory.getProvider).toHaveBeenCalledWith(
 				"vectorize",
-				{
+				expect.objectContaining({
 					ai: mockEnv.AI,
 					vector_db: mockEnv.VECTOR_DB,
-					database: mockDatabase,
-				},
+					repositories: expect.any(Object),
+				}),
 				mockEnv,
 				mockUser,
 			);

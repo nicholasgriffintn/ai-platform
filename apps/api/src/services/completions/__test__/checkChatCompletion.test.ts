@@ -71,7 +71,11 @@ describe("handleCheckChatCompletion", () => {
 			user: mockUser,
 			ensureDatabase: vi.fn(),
 			database: mockDatabase,
-			repositories: {} as any,
+			repositories: {
+				userSettings: {
+					getUserSettings: mockDatabase.getUserSettings,
+				},
+			} as any,
 		};
 
 		vi.mocked(resolveServiceContext).mockReturnValue(mockServiceContext);

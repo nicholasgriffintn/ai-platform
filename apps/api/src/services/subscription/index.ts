@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { FREE_TRIAL_DAYS } from "~/constants/app";
-import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 import {
 	sendPaymentFailedEmail,
 	sendSubscriptionCancellationNoticeEmail,
@@ -32,7 +32,7 @@ export async function createCheckoutSession(
 	successUrl: string,
 	cancelUrl: string,
 ): Promise<{ session_id: string; url: string }> {
-	const db = Database.getInstance(env);
+	const repositories = new RepositoryManager(env);
 
 	if (user.stripe_subscription_id) {
 		const stripe = getStripeClient(env);
@@ -48,7 +48,7 @@ export async function createCheckoutSession(
 		}
 	}
 
-	const plan = await db.getPlanById(planId);
+	const plan = await repositories.plans.getPlanById(planId);
 	if (!plan) {
 		throw new AssistantError("Plan not found", ErrorType.NOT_FOUND);
 	}
@@ -63,7 +63,9 @@ export async function createCheckoutSession(
 			metadata: { user_id: user.id.toString() },
 		});
 		customerId = customer.id;
-		await db.updateUser(user.id, { stripe_customer_id: customerId });
+		await repositories.users.updateUser(user.id, {
+			stripe_customer_id: customerId,
+		});
 	}
 
 	const session = await stripe.checkout.sessions.create({
@@ -116,9 +118,9 @@ export async function getSubscriptionStatus(
 		};
 	} catch (error: any) {
 		if (error.code === "resource_missing") {
-			const db = Database.getInstance(env);
+			const repositories = new RepositoryManager(env);
 
-			await db.updateUser(user.id, {
+			await repositories.users.updateUser(user.id, {
 				stripe_subscription_id: null,
 				plan_id: "free",
 			});
@@ -180,8 +182,8 @@ export async function cancelSubscription(
 		};
 	} catch (error: any) {
 		if (error.code === "resource_missing") {
-			const db = Database.getInstance(env);
-			await db.updateUser(user.id, {
+			const repositories = new RepositoryManager(env);
+			await repositories.users.updateUser(user.id, {
 				stripe_subscription_id: null,
 				plan_id: "free",
 			});
@@ -216,8 +218,8 @@ export async function reactivateSubscription(
 		return { status: updated.status, cancel_at_period_end: false };
 	} catch (error: any) {
 		if (error.code === "resource_missing") {
-			const db = Database.getInstance(env);
-			await db.updateUser(user.id, {
+			const repositories = new RepositoryManager(env);
+			await repositories.users.updateUser(user.id, {
 				stripe_subscription_id: null,
 				plan_id: "free",
 			});
@@ -268,7 +270,7 @@ export async function handleStripeWebhook(
 		);
 	}
 
-	const db = Database.getInstance(env);
+	const repositories = new RepositoryManager(env);
 	try {
 		switch (event.type) {
 			case "checkout.session.completed": {
@@ -276,9 +278,10 @@ export async function handleStripeWebhook(
 				const customerId = session.customer as string;
 				const subscriptionId = session.subscription as string;
 				if (customerId && subscriptionId) {
-					const user = await db.getUserByStripeCustomerId(customerId);
+					const user =
+						await repositories.users.getUserByStripeCustomerId(customerId);
 					if (user?.id) {
-						await db.updateUser(user.id, {
+						await repositories.users.updateUser(user.id, {
 							stripe_customer_id: customerId,
 							stripe_subscription_id: subscriptionId,
 							plan_id: "pro",
@@ -297,9 +300,10 @@ export async function handleStripeWebhook(
 			case "customer.subscription.updated": {
 				const subscription = event.data.object as Stripe.Subscription;
 				const customerId = subscription.customer as string;
-				const user = await db.getUserByStripeCustomerId(customerId);
+				const user =
+					await repositories.users.getUserByStripeCustomerId(customerId);
 				if (user?.id) {
-					await db.updateUser(user.id, {
+					await repositories.users.updateUser(user.id, {
 						stripe_subscription_id: subscription.id,
 					});
 				}
@@ -308,9 +312,10 @@ export async function handleStripeWebhook(
 			case "customer.subscription.deleted": {
 				const subscription = event.data.object as Stripe.Subscription;
 				const customerId = subscription.customer as string;
-				const user = await db.getUserByStripeCustomerId(customerId);
+				const user =
+					await repositories.users.getUserByStripeCustomerId(customerId);
 				if (user?.id) {
-					await db.updateUser(user.id, {
+					await repositories.users.updateUser(user.id, {
 						stripe_subscription_id: null,
 						plan_id: "free",
 					});
@@ -327,7 +332,8 @@ export async function handleStripeWebhook(
 			case "invoice.payment_failed": {
 				const invoice = event.data.object as Stripe.Invoice;
 				const customerId = invoice.customer as string;
-				const user = await db.getUserByStripeCustomerId(customerId);
+				const user =
+					await repositories.users.getUserByStripeCustomerId(customerId);
 				if (user?.id && user.email) {
 					try {
 						await sendPaymentFailedEmail(env, user.email);
@@ -340,7 +346,8 @@ export async function handleStripeWebhook(
 			case "customer.subscription.trial_will_end": {
 				const subscription = event.data.object as Stripe.Subscription;
 				const customerId = subscription.customer as string;
-				const user = await db.getUserByStripeCustomerId(customerId);
+				const user =
+					await repositories.users.getUserByStripeCustomerId(customerId);
 				if (user?.id && user.email) {
 					try {
 						await sendTrialEndingEmail(env, user.email);

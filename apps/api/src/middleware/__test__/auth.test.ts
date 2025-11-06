@@ -4,21 +4,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AssistantError } from "~/utils/errors";
 import { allowRestrictedPaths, authMiddleware, requireAuth } from "../auth";
 
-const mockDatabase = {
-	findUserIdByApiKey: vi.fn(),
-	getUserById: vi.fn(),
-	getAnonymousUserById: vi.fn(),
-	getOrCreateAnonymousUser: vi.fn(),
+const mockRepositories = {
+	apiKeys: {
+		findUserIdByApiKey: vi.fn(),
+	},
+	users: {
+		getUserById: vi.fn(),
+	},
+	anonymousUsers: {
+		getAnonymousUserById: vi.fn(),
+		getOrCreateAnonymousUser: vi.fn(),
+	},
 };
 
 const mockGetUserByJwtToken = vi.fn();
 const mockGetUserBySessionId = vi.fn();
 const mockIsbot = vi.fn();
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn(),
-	},
+vi.mock("~/repositories", () => ({
+	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
 vi.mock("~/lib/cache", () => ({
@@ -61,6 +65,7 @@ function createMockContext(overrides: any = {}): Context {
 			method: "GET",
 		},
 		env: {
+			DB: {} as any,
 			CACHE: null,
 			JWT_SECRET: "test-secret",
 			...overrides.env,
@@ -80,13 +85,15 @@ describe("Auth Middleware", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		const { Database } = await import("~/lib/database");
+		const { RepositoryManager } = await import("~/repositories");
 		const { KVCache } = await import("~/lib/cache");
 		const { getUserByJwtToken } = await import("~/services/auth/jwt");
 		const { getUserBySessionId } = await import("~/services/auth/user");
 		const { isbot } = await import("isbot");
 
-		vi.mocked(Database.getInstance).mockReturnValue(mockDatabase as any);
+		vi.mocked(RepositoryManager).mockImplementation(
+			() => mockRepositories as any,
+		);
 		vi.mocked(KVCache.createKey).mockReturnValue("bot:user-agent");
 		vi.mocked(getUserByJwtToken).mockImplementation(mockGetUserByJwtToken);
 		vi.mocked(getUserBySessionId).mockImplementation(mockGetUserBySessionId);
@@ -148,7 +155,7 @@ describe("Auth Middleware", () => {
 			await authMiddleware(context, mockNext);
 
 			expect(mockGetUserBySessionId).toHaveBeenCalledWith(
-				mockDatabase,
+				mockRepositories,
 				"session-123",
 			);
 			expect(context.set).toHaveBeenCalledWith("user", mockUser);
@@ -167,15 +174,17 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			mockDatabase.findUserIdByApiKey.mockResolvedValue("user-123");
-			mockDatabase.getUserById.mockResolvedValue(mockUser);
+			mockRepositories.apiKeys.findUserIdByApiKey.mockResolvedValue("user-123");
+			mockRepositories.users.getUserById.mockResolvedValue(mockUser);
 
 			await authMiddleware(context, mockNext);
 
-			expect(mockDatabase.findUserIdByApiKey).toHaveBeenCalledWith(
+			expect(mockRepositories.apiKeys.findUserIdByApiKey).toHaveBeenCalledWith(
 				"ak_test123",
 			);
-			expect(mockDatabase.getUserById).toHaveBeenCalledWith("user-123");
+			expect(mockRepositories.users.getUserById).toHaveBeenCalledWith(
+				"user-123",
+			);
 			expect(context.set).toHaveBeenCalledWith("user", mockUser);
 			expect(mockNext).toHaveBeenCalled();
 		});
@@ -213,16 +222,15 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			mockDatabase.getOrCreateAnonymousUser.mockResolvedValue(
+			mockRepositories.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(
 				mockAnonymousUser,
 			);
 
 			await authMiddleware(context, mockNext);
 
-			expect(mockDatabase.getOrCreateAnonymousUser).toHaveBeenCalledWith(
-				"127.0.0.1",
-				"Mozilla/5.0",
-			);
+			expect(
+				mockRepositories.anonymousUsers.getOrCreateAnonymousUser,
+			).toHaveBeenCalledWith("127.0.0.1", "Mozilla/5.0");
 			expect(context.set).toHaveBeenCalledWith(
 				"anonymousUser",
 				mockAnonymousUser,
@@ -246,13 +254,15 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			mockDatabase.getAnonymousUserById.mockResolvedValue(mockAnonymousUser);
+			mockRepositories.anonymousUsers.getAnonymousUserById.mockResolvedValue(
+				mockAnonymousUser,
+			);
 
 			await authMiddleware(context, mockNext);
 
-			expect(mockDatabase.getAnonymousUserById).toHaveBeenCalledWith(
-				"anon-123",
-			);
+			expect(
+				mockRepositories.anonymousUsers.getAnonymousUserById,
+			).toHaveBeenCalledWith("anon-123");
 			expect(context.set).toHaveBeenCalledWith(
 				"anonymousUser",
 				mockAnonymousUser,
@@ -271,7 +281,7 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			mockDatabase.findUserIdByApiKey.mockRejectedValue(
+			mockRepositories.apiKeys.findUserIdByApiKey.mockRejectedValue(
 				new Error("Database error"),
 			);
 

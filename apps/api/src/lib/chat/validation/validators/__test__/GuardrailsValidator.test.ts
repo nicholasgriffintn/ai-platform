@@ -4,18 +4,18 @@ import type { CoreChatOptions } from "~/types";
 import type { ValidationContext } from "../../ValidationPipeline";
 import { GuardrailsValidator } from "../GuardrailsValidator";
 
-const mockDatabase = {
-	getUserSettings: vi.fn(),
+const mockRepositories = {
+	userSettings: {
+		getUserSettings: vi.fn(),
+	},
 };
 
 const mockGuardrails = {
 	validateInput: vi.fn(),
 };
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn(() => mockDatabase),
-	},
+vi.mock("~/repositories", () => ({
+	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
 vi.mock("~/lib/guardrails", () => ({
@@ -30,14 +30,16 @@ describe("GuardrailsValidator", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		const { Database } =
-			await vi.importMock<typeof import("~/lib/database")>("~/lib/database");
+		const { RepositoryManager } =
+			await vi.importMock<typeof import("~/repositories")>("~/repositories");
 		const { Guardrails } =
 			await vi.importMock<typeof import("~/lib/guardrails")>(
 				"~/lib/guardrails",
 			);
 
-		vi.mocked(Database.getInstance).mockReturnValue(mockDatabase as any);
+		vi.mocked(RepositoryManager).mockImplementation(
+			() => mockRepositories as any,
+		);
 		(Guardrails as unknown as Mock).mockImplementation(
 			() => mockGuardrails as any,
 		);
@@ -80,7 +82,7 @@ describe("GuardrailsValidator", () => {
 			messageWithContext: "Hello world",
 		};
 
-		mockDatabase.getUserSettings.mockResolvedValue({
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({
 			guardrails_enabled: true,
 			guardrails_provider: "llamaguard",
 		});
@@ -98,7 +100,9 @@ describe("GuardrailsValidator", () => {
 			expect(result.validation.isValid).toBe(true);
 			expect(result.context.guardrails).toEqual(mockGuardrails);
 
-			expect(mockDatabase.getUserSettings).toHaveBeenCalledWith(123);
+			expect(
+				mockRepositories.userSettings.getUserSettings,
+			).toHaveBeenCalledWith(123);
 			expect(mockGuardrails.validateInput).toHaveBeenCalledWith(
 				"Hello world",
 				123,
@@ -180,7 +184,9 @@ describe("GuardrailsValidator", () => {
 			);
 
 			expect(result.validation.isValid).toBe(true);
-			expect(mockDatabase.getUserSettings).toHaveBeenCalledWith(undefined);
+			expect(
+				mockRepositories.userSettings.getUserSettings,
+			).not.toHaveBeenCalled();
 			expect(mockGuardrails.validateInput).toHaveBeenCalledWith(
 				"Hello world",
 				undefined,
@@ -197,7 +203,9 @@ describe("GuardrailsValidator", () => {
 			const result = await validator.validate(optionsWithoutUser, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
-			expect(mockDatabase.getUserSettings).toHaveBeenCalledWith(undefined);
+			expect(
+				mockRepositories.userSettings.getUserSettings,
+			).not.toHaveBeenCalled();
 			expect(mockGuardrails.validateInput).toHaveBeenCalledWith(
 				"Hello world",
 				undefined,
@@ -225,7 +233,7 @@ describe("GuardrailsValidator", () => {
 		});
 
 		it("should handle database getUserSettings throwing an error", async () => {
-			mockDatabase.getUserSettings.mockRejectedValue(
+			mockRepositories.userSettings.getUserSettings.mockRejectedValue(
 				new Error("Database connection failed"),
 			);
 
@@ -268,17 +276,17 @@ describe("GuardrailsValidator", () => {
 			expect(result.validation.validationType).toBe("input");
 		});
 
-		it("should handle Database.getInstance throwing an error", async () => {
-			const { Database } = await import("~/lib/database");
-			vi.mocked(Database.getInstance).mockImplementation(() => {
-				throw new Error("Database initialization failed");
+		it("should handle RepositoryManager throwing an error", async () => {
+			const { RepositoryManager } = await import("~/repositories");
+			vi.mocked(RepositoryManager).mockImplementation(() => {
+				throw new Error("RepositoryManager initialization failed");
 			});
 
 			const result = await validator.validate(baseOptions, baseContext);
 
 			expect(result.validation.isValid).toBe(false);
 			expect(result.validation.error).toBe(
-				"Guardrails validation failed: Database initialization failed",
+				"Guardrails validation failed: RepositoryManager initialization failed",
 			);
 			expect(result.validation.validationType).toBe("input");
 		});
@@ -287,9 +295,9 @@ describe("GuardrailsValidator", () => {
 			const errorWithoutMessage = new Error();
 			errorWithoutMessage.message = undefined as any;
 
-			const { Database } =
-				await vi.importMock<typeof import("~/lib/database")>("~/lib/database");
-			vi.mocked(Database.getInstance).mockImplementation(() => {
+			const { RepositoryManager } =
+				await vi.importMock<typeof import("~/repositories")>("~/repositories");
+			vi.mocked(RepositoryManager).mockImplementation(() => {
 				throw errorWithoutMessage;
 			});
 
@@ -305,7 +313,7 @@ describe("GuardrailsValidator", () => {
 		it("should handle complex messageWithContext", async () => {
 			vi.clearAllMocks();
 
-			mockDatabase.getUserSettings.mockResolvedValue({
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue({
 				guardrails_enabled: true,
 				guardrails_provider: "llamaguard",
 			});
@@ -333,7 +341,7 @@ describe("GuardrailsValidator", () => {
 		it("should handle guardrails validation returning null", async () => {
 			vi.clearAllMocks();
 
-			mockDatabase.getUserSettings.mockResolvedValue({
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue({
 				guardrails_enabled: true,
 				guardrails_provider: "llamaguard",
 			});
@@ -349,7 +357,7 @@ describe("GuardrailsValidator", () => {
 		it("should handle guardrails validation returning undefined", async () => {
 			vi.clearAllMocks();
 
-			mockDatabase.getUserSettings.mockResolvedValue({
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue({
 				guardrails_enabled: true,
 				guardrails_provider: "llamaguard",
 			});
@@ -371,7 +379,9 @@ describe("GuardrailsValidator", () => {
 				bedrock_guardrail_id: "test-guardrail-123",
 			};
 
-			mockDatabase.getUserSettings.mockResolvedValue(userSettings);
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue(
+				userSettings,
+			);
 			mockGuardrails.validateInput.mockResolvedValue({
 				isValid: true,
 				violations: [],
@@ -380,13 +390,15 @@ describe("GuardrailsValidator", () => {
 			const result = await validator.validate(baseOptions, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
-			expect(mockDatabase.getUserSettings).toHaveBeenCalledWith(123);
+			expect(
+				mockRepositories.userSettings.getUserSettings,
+			).toHaveBeenCalledWith(123);
 		});
 
 		it("should handle user settings returning null", async () => {
 			vi.clearAllMocks();
 
-			mockDatabase.getUserSettings.mockResolvedValue(null);
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue(null);
 			mockGuardrails.validateInput.mockResolvedValue({
 				isValid: true,
 				violations: [],
@@ -400,7 +412,9 @@ describe("GuardrailsValidator", () => {
 		it("should handle user settings returning undefined", async () => {
 			vi.clearAllMocks();
 
-			mockDatabase.getUserSettings.mockResolvedValue(undefined);
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue(
+				undefined,
+			);
 			mockGuardrails.validateInput.mockResolvedValue({
 				isValid: true,
 				violations: [],
@@ -414,7 +428,7 @@ describe("GuardrailsValidator", () => {
 		it("should handle validation result with empty violations array", async () => {
 			vi.clearAllMocks();
 
-			mockDatabase.getUserSettings.mockResolvedValue({
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue({
 				guardrails_enabled: true,
 				guardrails_provider: "llamaguard",
 			});
@@ -438,7 +452,7 @@ describe("GuardrailsValidator", () => {
 		it("should handle validation result with undefined violations", async () => {
 			vi.clearAllMocks();
 
-			mockDatabase.getUserSettings.mockResolvedValue({
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue({
 				guardrails_enabled: true,
 				guardrails_provider: "llamaguard",
 			});

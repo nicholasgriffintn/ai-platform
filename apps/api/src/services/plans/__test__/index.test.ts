@@ -3,15 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getPlanDetails, listPlans } from "../index";
 
-const mockDatabase = {
-	getAllPlans: vi.fn(),
-	getPlanById: vi.fn(),
+const mockRepositories = {
+	plans: {
+		getAllPlans: vi.fn(),
+		getPlanById: vi.fn(),
+	},
 };
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: () => mockDatabase,
-	},
+vi.mock("~/repositories", () => ({
+	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
 describe("Plans Service", () => {
@@ -25,36 +25,42 @@ describe("Plans Service", () => {
 				{ id: "1", name: "Basic Plan" },
 				{ id: "2", name: "Pro Plan" },
 			];
-			mockDatabase.getAllPlans.mockResolvedValue(mockPlans);
+			mockRepositories.plans.getAllPlans.mockResolvedValue(mockPlans);
 
-			const result = await listPlans({} as any);
+			const result = await listPlans({ DB: {} } as any);
 
-			expect(mockDatabase.getAllPlans).toHaveBeenCalledOnce();
+			expect(mockRepositories.plans.getAllPlans).toHaveBeenCalledOnce();
 			expect(result).toEqual(mockPlans);
 		});
 
 		it("should handle database errors", async () => {
-			mockDatabase.getAllPlans.mockRejectedValue(new Error("Database error"));
+			mockRepositories.plans.getAllPlans.mockRejectedValue(
+				new Error("Database error"),
+			);
 
-			await expect(listPlans({} as any)).rejects.toThrow("Database error");
+			await expect(listPlans({ DB: {} } as any)).rejects.toThrow(
+				"Database error",
+			);
 		});
 	});
 
 	describe("getPlanDetails", () => {
 		it("should return plan details for valid id", async () => {
 			const mockPlan = { id: "1", name: "Basic Plan", price: 9.99 };
-			mockDatabase.getPlanById.mockResolvedValue(mockPlan);
+			mockRepositories.plans.getPlanById.mockResolvedValue(mockPlan);
 
-			const result = await getPlanDetails({} as any, "1");
+			const result = await getPlanDetails({ DB: {} } as any, "1");
 
-			expect(mockDatabase.getPlanById).toHaveBeenCalledWith("1");
+			expect(mockRepositories.plans.getPlanById).toHaveBeenCalledWith("1");
 			expect(result).toEqual(mockPlan);
 		});
 
 		it("should throw error for non-existent plan", async () => {
-			mockDatabase.getPlanById.mockResolvedValue(null);
+			mockRepositories.plans.getPlanById.mockResolvedValue(null);
 
-			await expect(getPlanDetails({} as any, "999")).rejects.toMatchObject({
+			await expect(
+				getPlanDetails({ DB: {} } as any, "999"),
+			).rejects.toMatchObject({
 				message: "Plan not found",
 				type: ErrorType.NOT_FOUND,
 				name: "AssistantError",
@@ -62,9 +68,11 @@ describe("Plans Service", () => {
 		});
 
 		it("should handle database errors", async () => {
-			mockDatabase.getPlanById.mockRejectedValue(new Error("Database error"));
+			mockRepositories.plans.getPlanById.mockRejectedValue(
+				new Error("Database error"),
+			);
 
-			await expect(getPlanDetails({} as any, "1")).rejects.toThrow(
+			await expect(getPlanDetails({ DB: {} } as any, "1")).rejects.toThrow(
 				"Database error",
 			);
 		});

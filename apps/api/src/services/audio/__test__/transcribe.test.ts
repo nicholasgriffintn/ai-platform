@@ -3,12 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn().mockReturnValue({
-			getUserSettings: vi.fn(),
-		}),
+const mockRepositories = {
+	userSettings: {
+		getUserSettings: vi.fn(),
 	},
+};
+
+vi.mock("~/repositories", () => ({
+	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
 const mockWorkersProvider = vi.hoisted(() => ({
@@ -33,7 +35,7 @@ vi.mock("~/lib/transcription/factory", () => ({
 import { handleTranscribe } from "../transcribe";
 
 describe("handleTranscribe", () => {
-	const mockEnv: IEnv = {} as IEnv;
+	const mockEnv: IEnv = { DB: {} } as IEnv;
 
 	const mockUser: IUser = {
 		id: "user-123",

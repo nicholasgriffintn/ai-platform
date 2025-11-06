@@ -1,4 +1,4 @@
-import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 import { Embedding } from "~/lib/embedding";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -18,8 +18,10 @@ export const queryEmbeddings = async (req: any): Promise<any> => {
 			);
 		}
 
-		const database = Database.getInstance(env);
-		const userSettings = await database.getUserSettings(req.user?.id);
+		const repositories = new RepositoryManager(env);
+		const userSettings = req.user?.id
+			? await repositories.userSettings.getUserSettings(req.user.id)
+			: null;
 		if (!userSettings) {
 			throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
 		}

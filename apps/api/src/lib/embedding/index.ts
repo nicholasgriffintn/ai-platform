@@ -6,7 +6,7 @@ import type {
 	VectorizeVector,
 } from "@cloudflare/workers-types";
 
-import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 import { getAuxiliaryModel } from "~/lib/models";
 import { trackRagMetrics } from "~/lib/monitoring";
 import { AIProviderFactory } from "~/lib/providers/factory";
@@ -106,14 +106,14 @@ export class Embedding {
 					userSettings.s3vectors_region || this.env.AWS_REGION || "us-east-1",
 			});
 		} else {
-			const database = Database.getInstance(this.env);
+			const repositories = new RepositoryManager(this.env);
 
 			this.provider = EmbeddingProviderFactory.getProvider(
 				"vectorize",
 				{
 					ai: this.env.AI,
 					vector_db: this.env.VECTOR_DB,
-					database,
+					repositories,
 				},
 				this.env,
 				this.user,

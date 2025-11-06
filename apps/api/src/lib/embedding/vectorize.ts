@@ -5,7 +5,7 @@ import type {
 } from "@cloudflare/workers-types";
 
 import { gatewayId } from "~/constants/app";
-import type { Database } from "~/lib/database";
+import type { RepositoryManager } from "~/repositories";
 import type {
 	EmbeddingMutationResult,
 	EmbeddingProvider,
@@ -21,17 +21,17 @@ const logger = getLogger({ prefix: "lib/embedding/vectorize" });
 export interface VectorizeEmbeddingProviderConfig {
 	ai: Ai;
 	vector_db: Vectorize;
-	database: Database;
+	repositories: RepositoryManager;
 }
 
 export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 	private ai: Ai;
 	private vector_db: Vectorize;
-	private database: Database;
+	private repositories: RepositoryManager;
 
 	constructor(config: VectorizeEmbeddingProviderConfig) {
 		this.ai = config.ai;
-		this.database = config.database;
+		this.repositories = config.repositories;
 		this.vector_db = config.vector_db;
 	}
 
@@ -175,7 +175,10 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 
 		const matchesWithContent = await Promise.all(
 			filteredMatches.map(async (match) => {
-				const record = await this.database.getEmbedding(match.id, options.type);
+				const record = await this.repositories.embeddings.getEmbedding(
+					match.id,
+					options.type,
+				);
 
 				return {
 					match_id: match.id,

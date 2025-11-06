@@ -9,7 +9,6 @@ import {
 	errorResponseSchema,
 } from "@assistant/schemas";
 
-import { Database } from "~/lib/database";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -178,8 +177,8 @@ app.get(
 		}
 
 		try {
-			const database = Database.getInstance(c.env);
-			const userSettings = await getUserSettings(database, user.id);
+			const { repositories } = getServiceContext(c);
+			const userSettings = await getUserSettings(repositories, user.id);
 			return ResponseFactory.success(c, { user, userSettings });
 		} catch (error) {
 			logger.error(`Error fetching user settings for user ${user.id}:`, {

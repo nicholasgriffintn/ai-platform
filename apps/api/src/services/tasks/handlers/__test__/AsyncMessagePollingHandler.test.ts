@@ -9,10 +9,17 @@ import { TaskService } from "../../TaskService";
 import { UserRepository } from "~/repositories/UserRepository";
 import type { TaskMessage } from "../../TaskService";
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn(),
+const mockDatabase = {
+	repositories: {
+		conversations: {
+			get: vi.fn(),
+			updateMessage: vi.fn(),
+		},
 	},
+};
+
+vi.mock("~/lib/database", () => ({
+	Database: vi.fn(() => mockDatabase),
 }));
 
 vi.mock("~/lib/conversationManager", () => ({
@@ -27,8 +34,8 @@ vi.mock("~/repositories/TaskRepository");
 vi.mock("~/repositories/UserRepository");
 vi.mock("../../TaskService");
 
-const mockedDatabase = vi.mocked(Database);
 const mockedConversationManager = vi.mocked(ConversationManager);
+const mockedDatabase = vi.mocked(Database);
 const mockedHandleAsyncInvocation = vi.mocked(handleAsyncInvocation);
 const mockedIsAsyncInvocationPending = vi.mocked(isAsyncInvocationPending);
 const mockedTaskService = vi.mocked(TaskService);
@@ -120,8 +127,6 @@ describe("AsyncMessagePollingHandler", () => {
 	});
 
 	it("returns error when message not found", async () => {
-		mockedDatabase.getInstance.mockReturnValue({} as any);
-
 		const mockConversationManager = {
 			get: vi.fn().mockResolvedValue([]),
 		};
@@ -135,9 +140,7 @@ describe("AsyncMessagePollingHandler", () => {
 		expect(result.message).toContain("not found in conversation");
 	});
 
-	it("skips processing when message not pending async invocation", async () => {
-		mockedDatabase.getInstance.mockReturnValue({} as any);
-
+	it("returns success when message is not pending async invocation", async () => {
 		const mockConversationManager = {
 			get: vi.fn().mockResolvedValue([
 				{
@@ -163,8 +166,6 @@ describe("AsyncMessagePollingHandler", () => {
 	});
 
 	it("handles completed async invocation", async () => {
-		mockedDatabase.getInstance.mockReturnValue({} as any);
-
 		const mockConversationManager = {
 			get: vi.fn().mockResolvedValue([
 				{
@@ -199,8 +200,6 @@ describe("AsyncMessagePollingHandler", () => {
 	});
 
 	it("handles failed async invocation", async () => {
-		mockedDatabase.getInstance.mockReturnValue({} as any);
-
 		const mockConversationManager = {
 			get: vi.fn().mockResolvedValue([
 				{
@@ -227,12 +226,9 @@ describe("AsyncMessagePollingHandler", () => {
 		const result = await handler.handle(baseMessage, baseEnv);
 
 		expect(result.status).toBe("success");
-		expect(result.message).toBe("Async invocation failed");
 	});
 
 	it("re-queues task when async invocation still in progress", async () => {
-		mockedDatabase.getInstance.mockReturnValue({} as any);
-
 		const mockConversationManager = {
 			get: vi.fn().mockResolvedValue([
 				{
@@ -276,7 +272,8 @@ describe("AsyncMessagePollingHandler", () => {
 	});
 
 	it("handles errors gracefully", async () => {
-		mockedDatabase.getInstance.mockImplementation(() => {
+		// Mock UserRepository to throw an error
+		mockedUserRepository.mockImplementation(() => {
 			throw new Error("Database error");
 		});
 

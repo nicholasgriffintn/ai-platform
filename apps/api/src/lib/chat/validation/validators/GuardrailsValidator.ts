@@ -3,7 +3,7 @@ import type {
 	Validator,
 	ValidatorResult,
 } from "~/lib/chat/validation/ValidationPipeline";
-import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
 import { Guardrails } from "~/lib/guardrails";
 import type { CoreChatOptions } from "~/types";
 import { getLogger } from "~/utils/logger";
@@ -31,8 +31,10 @@ export class GuardrailsValidator implements Validator {
 		}
 
 		try {
-			const database = Database.getInstance(env);
-			const userSettings = await database.getUserSettings(user?.id);
+			const repositories = new RepositoryManager(env);
+			const userSettings = user?.id
+				? await repositories.userSettings.getUserSettings(user.id)
+				: null;
 
 			const guardrails = new Guardrails(env, user, userSettings);
 

@@ -15,7 +15,7 @@ import {
 } from "@assistant/schemas";
 
 import { APP_NAME, LOCAL_HOST, PROD_HOST } from "~/constants/app";
-import { Database } from "~/lib/database";
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { requireAuth } from "~/middleware/auth";
 import { createSession } from "~/services/auth/user";
@@ -81,10 +81,10 @@ app.post(
 			);
 		}
 
-		const database = Database.getInstance(c.env);
+		const { repositories } = getServiceContext(c);
 
 		const options = await generatePasskeyRegistrationOptions(
-			database,
+			repositories,
 			user,
 			rpName,
 			rpID(c),
@@ -134,13 +134,13 @@ app.post(
 			);
 		}
 
-		const database = Database.getInstance(c.env);
+		const { repositories } = getServiceContext(c);
 		const { response } = await c.req.json<{
 			response: RegistrationResponseJSON;
 		}>();
 
 		const verified = await verifyAndRegisterPasskey(
-			database,
+			repositories,
 			user,
 			response,
 			getOrigin(c),
@@ -177,10 +177,10 @@ app.post(
 	}),
 	zValidator("json", authenticationOptionsSchema),
 	async (c: Context) => {
-		const database = Database.getInstance(c.env);
+		const { repositories } = getServiceContext(c);
 
 		const options = await generatePasskeyAuthenticationOptions(
-			database,
+			repositories,
 			rpID(c),
 		);
 
@@ -219,20 +219,20 @@ app.post(
 	}),
 	zValidator("json", authenticationVerificationSchema),
 	async (c: Context) => {
-		const database = Database.getInstance(c.env);
+		const { repositories } = getServiceContext(c);
 		const requestData = await c.req.json<{
 			response: AuthenticationResponseJSON;
 		}>();
 
 		const { verified, user } = await verifyPasskeyAuthentication(
-			database,
+			repositories,
 			requestData.response,
 			getOrigin(c),
 			rpID(c),
 		);
 
 		if (verified && user && user.id) {
-			const sessionId = await createSession(database, user.id);
+			const sessionId = await createSession(repositories, user.id);
 
 			c.header(
 				"Set-Cookie",
@@ -288,9 +288,9 @@ app.get(
 			);
 		}
 
-		const database = Database.getInstance(c.env);
+		const { repositories } = getServiceContext(c);
 
-		const passkeys = await getUserPasskeys(database, user.id);
+		const passkeys = await getUserPasskeys(repositories, user.id);
 
 		const formattedPasskeys = passkeys.map((passkey) => ({
 			id: passkey.id,
@@ -364,9 +364,9 @@ app.delete(
 			);
 		}
 
-		const database = Database.getInstance(c.env);
+		const { repositories } = getServiceContext(c);
 
-		const success = await deletePasskey(database, passkeyId, user.id);
+		const success = await deletePasskey(repositories, passkeyId, user.id);
 
 		if (!success) {
 			throw new AssistantError(
