@@ -278,7 +278,7 @@ describe("User Service", () => {
 
 			await expect(
 				createOrUpdateGithubUser(mockRepositories as any, mockUserData),
-			).rejects.toThrow("Failed to create user");
+			).rejects.toThrow("Failed to create or update user");
 		});
 
 		it("should handle database errors", async () => {
@@ -287,7 +287,7 @@ describe("User Service", () => {
 			await expect(
 				createOrUpdateGithubUser(mockRepositories as any, mockUserData),
 			).rejects.toMatchObject({
-				message: "Failed to retrieve user by GitHub ID",
+				message: "Failed to create or update user",
 				type: ErrorType.UNKNOWN_ERROR,
 				name: "AssistantError",
 			});

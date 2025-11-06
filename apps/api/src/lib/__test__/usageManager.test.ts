@@ -7,8 +7,8 @@ const mockRepositories = {
 		updateUser: vi.fn(),
 	},
 	anonymousUsers: {
-		checkAndResetAnonymousUserDailyLimit: vi.fn(),
-		incrementAnonymousUserDailyCount: vi.fn(),
+		checkAndResetDailyLimit: vi.fn(),
+		incrementDailyCount: vi.fn(),
 	},
 };
 
@@ -171,7 +171,7 @@ describe("UsageManager", () => {
 				mockAnonymousUser,
 			);
 
-			mockRepositories.anonymousUsers.checkAndResetAnonymousUserDailyLimit.mockResolvedValue({
+			mockRepositories.anonymousUsers.checkAndResetDailyLimit.mockResolvedValue({
 				count: 3,
 			});
 
@@ -190,7 +190,7 @@ describe("UsageManager", () => {
 				mockAnonymousUser,
 			);
 
-			mockRepositories.anonymousUsers.checkAndResetAnonymousUserDailyLimit.mockResolvedValue({
+			mockRepositories.anonymousUsers.checkAndResetDailyLimit.mockResolvedValue({
 				count: 5,
 			});
 
@@ -384,7 +384,7 @@ describe("UsageManager", () => {
 				mockAnonymousUser,
 			);
 
-			mockRepositories.anonymousUsers.checkAndResetAnonymousUserDailyLimit.mockResolvedValue({
+			mockRepositories.anonymousUsers.checkAndResetDailyLimit.mockResolvedValue({
 				count: 3,
 			});
 
@@ -466,7 +466,7 @@ describe("UsageManager", () => {
 				mockAnonymousUser,
 			);
 
-			mockRepositories.anonymousUsers.checkAndResetAnonymousUserDailyLimit.mockRejectedValue(
+			mockRepositories.anonymousUsers.checkAndResetDailyLimit.mockRejectedValue(
 				new Error("Database error"),
 			);
 

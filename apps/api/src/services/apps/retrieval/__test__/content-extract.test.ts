@@ -3,9 +3,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { IRequest } from "~/types";
 import { extractContent } from "../content-extract";
 
-const mockDatabase = {
-	getUserSettings: vi.fn(() => Promise.resolve({})),
+const mockRepositories = {
+	userSettings: {
+		getUserSettings: vi.fn(() => Promise.resolve({})),
+	},
 };
+nvi.mock("~/repositories", () => ({
+	RepositoryManager: vi.fn(() => mockRepositories),
+}));
 
 const mockEmbedding = {
 	generate: vi.fn(() => Promise.resolve([{ id: "vec-1", vector: [0.1, 0.2] }])),
@@ -22,6 +27,7 @@ describe("extractContent", () => {
 	} as any;
 
 	const mockEnv = {
+		DB: {} as any,
 		TAVILY_API_KEY: "test-tavily-key",
 		ASSETS_BUCKET: "test-bucket",
 	} as any;
@@ -34,7 +40,13 @@ describe("extractContent", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 
-		vi.mocked(crypto.subtle.digest).mockResolvedValue(new ArrayBuffer(32));
+		vi.stubGlobal("crypto", {
+			subtle: {
+				digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+			},
+		});
+
+		vi.stubGlobal("fetch", vi.fn());
 	});
 
 	afterEach(() => {
@@ -60,7 +72,7 @@ describe("extractContent", () => {
 			response_time: 1.2,
 		};
 
-		vi.mocked(fetch).mockResolvedValue({
+		fetch.mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
@@ -112,7 +124,7 @@ describe("extractContent", () => {
 			response_time: 2.5,
 		};
 
-		vi.mocked(fetch).mockResolvedValue({
+		fetch.mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
@@ -141,12 +153,12 @@ describe("extractContent", () => {
 			response_time: 1.0,
 		};
 
-		vi.mocked(fetch).mockResolvedValue({
+		fetch.mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
 
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		// @ts-ignore - mockEmbedding.generate.mockResolvedValue is required
 		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
 		mockEmbedding.insert.mockResolvedValue({ mutationId: "mutation-123" });
@@ -191,12 +203,12 @@ describe("extractContent", () => {
 			response_time: 1.0,
 		};
 
-		vi.mocked(fetch).mockResolvedValue({
+		fetch.mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
 
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		// @ts-ignore - mockEmbedding.generate.mockResolvedValue is required
 		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
 		mockEmbedding.insert.mockResolvedValue({ mutationId: "mutation-123" });
@@ -230,7 +242,7 @@ describe("extractContent", () => {
 			urls: "https://example.com",
 		};
 
-		vi.mocked(fetch).mockResolvedValue({
+		fetch.mockResolvedValue({
 			ok: false,
 			text: () => Promise.resolve("API Error: Invalid request"),
 		} as Response);
@@ -248,7 +260,7 @@ describe("extractContent", () => {
 			urls: "https://example.com",
 		};
 
-		vi.mocked(fetch).mockRejectedValue(new Error("Network error"));
+		fetch.mockRejectedValue(new Error("Network error"));
 
 		const result = await extractContent(params, mockRequest);
 
@@ -275,12 +287,12 @@ describe("extractContent", () => {
 			response_time: 1.0,
 		};
 
-		vi.mocked(fetch).mockResolvedValue({
+		fetch.mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
 
-		mockDatabase.getUserSettings.mockRejectedValue(new Error("Database error"));
+		mockRepositories.userSettings.getUserSettings.mockRejectedValue(new Error("Database error"));
 
 		const result = await extractContent(params, mockRequest);
 
@@ -312,7 +324,7 @@ describe("extractContent", () => {
 			response_time: 1.5,
 		};
 
-		vi.mocked(fetch).mockResolvedValue({
+		fetch.mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
@@ -336,7 +348,7 @@ describe("extractContent", () => {
 			response_time: 0.5,
 		};
 
-		vi.mocked(fetch).mockResolvedValue({
+		fetch.mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
@@ -365,12 +377,12 @@ describe("extractContent", () => {
 			response_time: 1.0,
 		};
 
-		vi.mocked(fetch).mockResolvedValue({
+		fetch.mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
 
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		// @ts-ignore - mockEmbedding.generate.mockResolvedValue is required
 		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
 		// @ts-ignore - mockEmbedding.insert.mockResolvedValue is required

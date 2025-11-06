@@ -39,14 +39,18 @@ vi.mock("~/lib/cache", () => {
 	};
 });
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn().mockReturnValue({
-			getUserById: vi.fn(),
-			getUserProviderSettings: vi.fn(),
-			getUserSettings: vi.fn(),
-		}),
+const mockRepositories = {
+	userSettings: {
+		getUserProviderSettings: vi.fn(),
+		getUserSettings: vi.fn(),
 	},
+	users: {
+		getUserById: vi.fn(),
+	},
+};
+
+vi.mock("~/repositories", () => ({
+	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
 const mockModelConfig: ModelConfigItem = {
@@ -100,18 +104,18 @@ describe("Models", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		mockDatabase = Database.getInstance({} as any);
 		mockCache = new KVCache({} as any);
 
 		mockEnv = {
+			DB: {} as any,
 			CACHE: mockCache,
 			ALWAYS_ENABLED_PROVIDERS: "always-enabled-provider",
 		};
 
 		mockCache.get.mockResolvedValue(null);
 		mockCache.set.mockResolvedValue(true);
-		mockDatabase.getUserProviderSettings.mockResolvedValue([]);
-		mockDatabase.getUserSettings.mockResolvedValue(null);
+		mockRepositories.userSettings.getUserProviderSettings.mockResolvedValue([]);
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue(null);
 	});
 
 	describe("getModelConfig", () => {
@@ -380,7 +384,7 @@ describe("Models", () => {
 		});
 
 		it("should return models based on user provider settings", async () => {
-			mockDatabase.getUserProviderSettings.mockResolvedValue([
+			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValue([
 				{ provider_id: "paid-provider", enabled: true },
 			]);
 
@@ -396,7 +400,7 @@ describe("Models", () => {
 		});
 
 		it("should exclude disabled provider models", async () => {
-			mockDatabase.getUserProviderSettings.mockResolvedValue([
+			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValue([
 				{ provider_id: "paid-provider", enabled: false },
 			]);
 
@@ -426,7 +430,7 @@ describe("Models", () => {
 		});
 
 		it("should handle database errors gracefully", async () => {
-			mockDatabase.getUserProviderSettings.mockRejectedValue(
+			mockRepositories.userSettings.getUserProviderSettings.mockRejectedValue(
 				new Error("Database error"),
 			);
 
@@ -465,7 +469,7 @@ describe("Models", () => {
 		});
 
 		it("should prefer groq model when available", async () => {
-			mockDatabase.getUserProviderSettings.mockResolvedValue([
+			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValue([
 				{ provider_id: "groq", enabled: true },
 			]);
 
@@ -486,7 +490,7 @@ describe("Models", () => {
 		});
 
 		it("should prefer perplexity model when available", async () => {
-			mockDatabase.getUserProviderSettings.mockResolvedValue([
+			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValue([
 				{ provider_id: "perplexity-ai", enabled: true },
 			]);
 
@@ -507,7 +511,7 @@ describe("Models", () => {
 		});
 
 		it("should prefer groq model when available", async () => {
-			mockDatabase.getUserProviderSettings.mockResolvedValue([
+			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValue([
 				{ provider_id: "groq", enabled: true },
 			]);
 
@@ -536,7 +540,7 @@ describe("Models", () => {
 		});
 
 		it("should return user preferred provider when set in user settings", async () => {
-			mockDatabase.getUserSettings.mockResolvedValueOnce({
+			mockRepositories.userSettings.getUserSettings.mockResolvedValueOnce({
 				search_provider: "parallel",
 			});
 
@@ -548,7 +552,7 @@ describe("Models", () => {
 		});
 
 		it("should fall back to tavily when no user preference exists", async () => {
-			mockDatabase.getUserSettings.mockResolvedValueOnce(null);
+			mockRepositories.userSettings.getUserSettings.mockResolvedValueOnce(null);
 
 			const provider = await getAuxiliarySearchProvider(
 				mockEnv as any,
@@ -564,7 +568,7 @@ describe("Models", () => {
 				"serper",
 			);
 			expect(provider).toBe("serper");
-			expect(mockDatabase.getUserSettings).not.toHaveBeenCalled();
+			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
 		});
 
 		it("should return requested provider without querying user settings", async () => {
@@ -575,7 +579,7 @@ describe("Models", () => {
 			);
 
 			expect(provider).toBe("parallel");
-			expect(mockDatabase.getUserSettings).not.toHaveBeenCalled();
+			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
 		});
 	});
 

@@ -8,10 +8,10 @@ vi.mock("~/utils/id", () => ({
 	generateId: vi.fn(() => "generated-id"),
 }));
 
-const mockDatabase = {
-	getEmbeddingIdByType: vi.fn(),
-	insertEmbedding: vi.fn(),
-	getUserSettings: vi.fn(() => Promise.resolve({})),
+const mockRepositories = {
+	userSettings: {
+		getUserSettings: vi.fn(() => Promise.resolve({})),
+	},
 };
 
 const mockEmbedding = {
@@ -20,10 +20,8 @@ const mockEmbedding = {
 	insert: vi.fn(),
 };
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn(() => mockDatabase),
-	},
+vi.mock("~/repositories", () => ({
+	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
 vi.mock("~/lib/embedding", () => ({
@@ -63,7 +61,7 @@ describe("insertEmbedding", () => {
 		vi.clearAllMocks();
 		mockDatabase.getEmbeddingIdByType.mockResolvedValue(null);
 		mockDatabase.insertEmbedding.mockResolvedValue(undefined);
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbedding.getNamespace.mockReturnValue("default-namespace");
 		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
 		mockEmbedding.insert.mockResolvedValue({ status: "success" });
@@ -90,7 +88,7 @@ describe("insertEmbedding", () => {
 		};
 
 		mockDatabase.insertEmbedding.mockResolvedValue(undefined);
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbedding.getNamespace.mockReturnValue("custom-ns");
 		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
 		mockEmbedding.insert.mockResolvedValue({ status: "success" });
@@ -132,7 +130,7 @@ describe("insertEmbedding", () => {
 		};
 
 		mockDatabase.getEmbeddingIdByType.mockResolvedValue("blog-456");
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbedding.generate.mockResolvedValue([{ id: "vec-2" }]);
 		mockEmbedding.insert.mockResolvedValue({ status: "success" });
 
@@ -220,7 +218,7 @@ describe("insertEmbedding", () => {
 
 		vi.mocked(chunkText).mockReturnValue(["Chunk 1", "Chunk 2"]);
 		mockDatabase.insertEmbedding.mockResolvedValue(undefined);
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
 		mockEmbedding.insert.mockResolvedValue({ status: "success" });
 
@@ -248,7 +246,7 @@ describe("insertEmbedding", () => {
 		};
 
 		mockDatabase.insertEmbedding.mockResolvedValue(undefined);
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
 		mockEmbedding.insert.mockResolvedValue({ status: "success" });
 
@@ -274,7 +272,7 @@ describe("insertEmbedding", () => {
 		};
 
 		mockDatabase.insertEmbedding.mockResolvedValue(undefined);
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
 		mockEmbedding.insert.mockResolvedValue({ status: "error" });
 

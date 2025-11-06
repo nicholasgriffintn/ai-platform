@@ -77,11 +77,11 @@ describe("Embedding", () => {
 
 			expect(EmbeddingProviderFactory.getProvider).toHaveBeenCalledWith(
 				"vectorize",
-				{
+				expect.objectContaining({
 					ai: mockEnv.AI,
 					vector_db: mockEnv.VECTOR_DB,
-					database: mockDatabase,
-				},
+					repositories: expect.any(Object),
+				}),
 				mockEnv,
 				mockUser,
 			);

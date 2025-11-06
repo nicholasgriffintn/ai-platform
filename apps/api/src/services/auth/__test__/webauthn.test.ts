@@ -30,14 +30,25 @@ vi.mock("~/utils/base64url", () => ({
 	decodeBase64Url: vi.fn(),
 }));
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn(),
+const mockRepositories = {
+	webAuthn: {
+		createChallenge: vi.fn(),
+		getChallenge: vi.fn(),
+		getChallengeByUserId: vi.fn(),
+		deleteChallenge: vi.fn(),
+		createPasskey: vi.fn(),
+		getPasskeysByUserId: vi.fn(),
+		getPasskeyByCredentialId: vi.fn(),
+		updatePasskeyCounter: vi.fn(),
+		deletePasskey: vi.fn(),
 	},
+};
+
+vi.mock("~/repositories", () => ({
+	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
 describe("WebAuthn Service", () => {
-	let mockDatabase: any;
 	let mockGenerateRegistrationOptions: MockedFunction<any>;
 	let _mockGenerateAuthenticationOptions: MockedFunction<any>;
 	let mockVerifyRegistrationResponse: MockedFunction<any>;
@@ -63,41 +74,27 @@ describe("WebAuthn Service", () => {
 
 		const base64utils = await import("~/utils/base64url");
 		mockDecodeBase64Url = vi.mocked(base64utils.decodeBase64Url);
-
-		const { Database } = await import("~/lib/database");
-		mockDatabase = {
-			createWebAuthnChallenge: vi.fn(),
-			getWebAuthnChallenge: vi.fn(),
-			getWebAuthnChallengeByUserId: vi.fn(),
-			deleteWebAuthnChallenge: vi.fn(),
-			createPasskey: vi.fn(),
-			getPasskeysByUserId: vi.fn(),
-			getPasskeyByCredentialId: vi.fn(),
-			updatePasskeyCounter: vi.fn(),
-			deletePasskey: vi.fn(),
-		};
-		vi.mocked(Database.getInstance).mockReturnValue(mockDatabase);
 	});
 
 	describe("saveWebAuthnChallenge", () => {
 		it("should save challenge successfully", async () => {
-			mockDatabase.createWebAuthnChallenge.mockResolvedValue(true);
+			mockRepositories.webAuthn.createChallenge.mockResolvedValue(true);
 
-			await saveWebAuthnChallenge(mockDatabase, "challenge123", 123);
+			await saveWebAuthnChallenge(mockRepositories as any, "challenge123", 123);
 
-			expect(mockDatabase.createWebAuthnChallenge).toHaveBeenCalledWith(
+			expect(mockRepositories.webAuthn.createChallenge).toHaveBeenCalledWith(
 				"challenge123",
 				123,
 			);
 		});
 
 		it("should handle database errors", async () => {
-			mockDatabase.createWebAuthnChallenge.mockRejectedValue(
+			mockRepositories.webAuthn.createChallenge.mockRejectedValue(
 				new Error("DB error"),
 			);
 
 			await expect(
-				saveWebAuthnChallenge(mockDatabase, "challenge123"),
+				saveWebAuthnChallenge(mockRepositories as any, "challenge123"),
 			).rejects.toThrow("Failed to save WebAuthn challenge");
 		});
 	});
@@ -105,15 +102,15 @@ describe("WebAuthn Service", () => {
 	describe("getWebAuthnChallenge", () => {
 		it("should get challenge by challenge and userId", async () => {
 			const mockChallenge = { challenge: "challenge123" };
-			mockDatabase.getWebAuthnChallenge.mockResolvedValue(mockChallenge);
+			mockRepositories.webAuthn.getChallenge.mockResolvedValue(mockChallenge);
 
 			const result = await getWebAuthnChallenge(
-				mockDatabase,
+				mockRepositories as any,
 				"challenge123",
 				123,
 			);
 
-			expect(mockDatabase.getWebAuthnChallenge).toHaveBeenCalledWith(
+			expect(mockRepositories.webAuthn.getChallenge).toHaveBeenCalledWith(
 				"challenge123",
 				123,
 			);
@@ -122,11 +119,11 @@ describe("WebAuthn Service", () => {
 
 		it("should get challenge by challenge only", async () => {
 			const mockChallenge = { challenge: "challenge123" };
-			mockDatabase.getWebAuthnChallenge.mockResolvedValue(mockChallenge);
+			mockRepositories.webAuthn.getChallenge.mockResolvedValue(mockChallenge);
 
-			const result = await getWebAuthnChallenge(mockDatabase, "challenge123");
+			const result = await getWebAuthnChallenge(mockRepositories as any, "challenge123");
 
-			expect(mockDatabase.getWebAuthnChallenge).toHaveBeenCalledWith(
+			expect(mockRepositories.webAuthn.getChallenge).toHaveBeenCalledWith(
 				"challenge123",
 			);
 			expect(result).toBe("challenge123");
@@ -134,23 +131,23 @@ describe("WebAuthn Service", () => {
 
 		it("should get challenge by userId only", async () => {
 			const mockChallenge = { challenge: "challenge123" };
-			mockDatabase.getWebAuthnChallengeByUserId.mockResolvedValue(
+			mockRepositories.webAuthn.getChallengeByUserId.mockResolvedValue(
 				mockChallenge,
 			);
 
-			const result = await getWebAuthnChallenge(mockDatabase, undefined, 123);
+			const result = await getWebAuthnChallenge(mockRepositories as any, undefined, 123);
 
-			expect(mockDatabase.getWebAuthnChallengeByUserId).toHaveBeenCalledWith(
+			expect(mockRepositories.webAuthn.getChallengeByUserId).toHaveBeenCalledWith(
 				123,
 			);
 			expect(result).toBe("challenge123");
 		});
 
 		it("should throw error if challenge not found", async () => {
-			mockDatabase.getWebAuthnChallenge.mockResolvedValue(null);
+			mockRepositories.webAuthn.getChallenge.mockResolvedValue(null);
 
 			await expect(
-				getWebAuthnChallenge(mockDatabase, "invalid"),
+				getWebAuthnChallenge(mockRepositories as any, "invalid"),
 			).rejects.toMatchObject({
 				message: "WebAuthn challenge not found or expired",
 				type: "AUTHENTICATION_ERROR",
@@ -161,10 +158,10 @@ describe("WebAuthn Service", () => {
 	describe("registerPasskey", () => {
 		it("should register passkey successfully", async () => {
 			const publicKey = new Uint8Array([1, 2, 3]);
-			mockDatabase.createPasskey.mockResolvedValue(true);
+			mockRepositories.webAuthn.createPasskey.mockResolvedValue(true);
 
 			await registerPasskey(
-				mockDatabase,
+				mockRepositories as any,
 				123,
 				"credentialId",
 				publicKey,
@@ -174,7 +171,7 @@ describe("WebAuthn Service", () => {
 				["usb"],
 			);
 
-			expect(mockDatabase.createPasskey).toHaveBeenCalledWith(
+			expect(mockRepositories.webAuthn.createPasskey).toHaveBeenCalledWith(
 				123,
 				"credentialId",
 				publicKey,
@@ -187,11 +184,11 @@ describe("WebAuthn Service", () => {
 
 		it("should handle database errors", async () => {
 			const publicKey = new Uint8Array([1, 2, 3]);
-			mockDatabase.createPasskey.mockRejectedValue(new Error("DB error"));
+			mockRepositories.webAuthn.createPasskey.mockRejectedValue(new Error("DB error"));
 
 			await expect(
 				registerPasskey(
-					mockDatabase,
+					mockRepositories as any,
 					123,
 					"credentialId",
 					publicKey,
@@ -209,18 +206,18 @@ describe("WebAuthn Service", () => {
 				{ id: 1, credential_id: "cred1" },
 				{ id: 2, credential_id: "cred2" },
 			];
-			mockDatabase.getPasskeysByUserId.mockResolvedValue(mockPasskeys);
+			mockRepositories.webAuthn.getPasskeysByUserId.mockResolvedValue(mockPasskeys);
 
-			const result = await getUserPasskeys(mockDatabase, 123);
+			const result = await getUserPasskeys(mockRepositories as any, 123);
 
-			expect(mockDatabase.getPasskeysByUserId).toHaveBeenCalledWith(123);
+			expect(mockRepositories.webAuthn.getPasskeysByUserId).toHaveBeenCalledWith(123);
 			expect(result).toEqual(mockPasskeys);
 		});
 
 		it("should handle database errors gracefully", async () => {
-			mockDatabase.getPasskeysByUserId.mockRejectedValue(new Error("DB error"));
+			mockRepositories.webAuthn.getPasskeysByUserId.mockRejectedValue(new Error("DB error"));
 
-			const result = await getUserPasskeys(mockDatabase, 123);
+			const result = await getUserPasskeys(mockRepositories as any, 123);
 
 			expect(result).toEqual([]);
 		});
@@ -234,11 +231,11 @@ describe("WebAuthn Service", () => {
 				name: "Test User",
 				credential_id: "cred123",
 			};
-			mockDatabase.getPasskeyByCredentialId.mockResolvedValue(mockResult);
+			mockRepositories.webAuthn.getPasskeyByCredentialId.mockResolvedValue(mockResult);
 
-			const result = await getPasskeyWithUser(mockDatabase, "cred123");
+			const result = await getPasskeyWithUser(mockRepositories as any, "cred123");
 
-			expect(mockDatabase.getPasskeyByCredentialId).toHaveBeenCalledWith(
+			expect(mockRepositories.webAuthn.getPasskeyByCredentialId).toHaveBeenCalledWith(
 				"cred123",
 			);
 			expect(result).toEqual({
@@ -255,19 +252,19 @@ describe("WebAuthn Service", () => {
 		});
 
 		it("should return null if passkey not found", async () => {
-			mockDatabase.getPasskeyByCredentialId.mockResolvedValue(null);
+			mockRepositories.webAuthn.getPasskeyByCredentialId.mockResolvedValue(null);
 
-			const result = await getPasskeyWithUser(mockDatabase, "invalid");
+			const result = await getPasskeyWithUser(mockRepositories as any, "invalid");
 
 			expect(result).toBeNull();
 		});
 
 		it("should handle database errors gracefully", async () => {
-			mockDatabase.getPasskeyByCredentialId.mockRejectedValue(
+			mockRepositories.webAuthn.getPasskeyByCredentialId.mockRejectedValue(
 				new Error("DB error"),
 			);
 
-			const result = await getPasskeyWithUser(mockDatabase, "cred123");
+			const result = await getPasskeyWithUser(mockRepositories as any, "cred123");
 
 			expect(result).toBeNull();
 		});
@@ -288,12 +285,12 @@ describe("WebAuthn Service", () => {
 				rp: { name: "Test App", id: "example.com" },
 			};
 
-			mockDatabase.getPasskeysByUserId.mockResolvedValue(mockCredentials);
+			mockRepositories.webAuthn.getPasskeysByUserId.mockResolvedValue(mockCredentials);
 			mockGenerateRegistrationOptions.mockResolvedValue(mockOptions);
-			mockDatabase.createWebAuthnChallenge.mockResolvedValue(true);
+			mockRepositories.webAuthn.createChallenge.mockResolvedValue(true);
 
 			const result = await generatePasskeyRegistrationOptions(
-				mockDatabase,
+				mockRepositories as any,
 				mockUser,
 				"Test App",
 				"example.com",
@@ -320,7 +317,7 @@ describe("WebAuthn Service", () => {
 
 			await expect(
 				generatePasskeyRegistrationOptions(
-					mockDatabase,
+					mockRepositories as any,
 					mockUser,
 					"Test App",
 					"example.com",
@@ -348,16 +345,16 @@ describe("WebAuthn Service", () => {
 				},
 			};
 
-			mockDatabase.getWebAuthnChallengeByUserId.mockResolvedValue({
+			mockRepositories.webAuthn.getChallengeByUserId.mockResolvedValue({
 				challenge: "challenge123",
 			});
 			mockVerifyRegistrationResponse.mockResolvedValue(mockVerification);
-			mockDatabase.getPasskeysByUserId.mockResolvedValue([]);
-			mockDatabase.createPasskey.mockResolvedValue(true);
-			mockDatabase.deleteWebAuthnChallenge.mockResolvedValue(true);
+			mockRepositories.webAuthn.getPasskeysByUserId.mockResolvedValue([]);
+			mockRepositories.webAuthn.createPasskey.mockResolvedValue(true);
+			mockRepositories.webAuthn.deleteChallenge.mockResolvedValue(true);
 
 			const result = await verifyAndRegisterPasskey(
-				mockDatabase,
+				mockRepositories as any,
 				mockUser,
 				mockResponse,
 				"https://example.com",
@@ -385,17 +382,17 @@ describe("WebAuthn Service", () => {
 				},
 			};
 
-			mockDatabase.getWebAuthnChallengeByUserId.mockResolvedValue({
+			mockRepositories.webAuthn.getChallengeByUserId.mockResolvedValue({
 				challenge: "challenge123",
 			});
 			mockVerifyRegistrationResponse.mockResolvedValue(mockVerification);
-			mockDatabase.getPasskeysByUserId.mockResolvedValue([
+			mockRepositories.webAuthn.getPasskeysByUserId.mockResolvedValue([
 				{ credential_id: "credentialId" },
 			]);
 
 			await expect(
 				verifyAndRegisterPasskey(
-					mockDatabase,
+					mockRepositories as any,
 					mockUser,
 					mockResponse,
 					"https://example.com",
@@ -424,11 +421,11 @@ describe("WebAuthn Service", () => {
 				authenticationInfo: { newCounter: 2 },
 			};
 
-			mockDatabase.getPasskeyByCredentialId.mockResolvedValue(mockCredential);
+			mockRepositories.webAuthn.getPasskeyByCredentialId.mockResolvedValue(mockCredential);
 			mockDecodeBase64Url.mockReturnValue(
 				new TextEncoder().encode('{"challenge":"challenge123"}'),
 			);
-			mockDatabase.getWebAuthnChallenge.mockResolvedValue({
+			mockRepositories.webAuthn.getChallenge.mockResolvedValue({
 				challenge: "challenge123",
 			});
 			mockDecodeBase64Url.mockReturnValueOnce(
@@ -436,11 +433,11 @@ describe("WebAuthn Service", () => {
 			); // clientData
 			mockDecodeBase64Url.mockReturnValueOnce(new Uint8Array([1, 2, 3])); // publicKey
 			mockVerifyAuthenticationResponse.mockResolvedValue(mockVerification);
-			mockDatabase.updatePasskeyCounter.mockResolvedValue(true);
-			mockDatabase.deleteWebAuthnChallenge.mockResolvedValue(true);
+			mockRepositories.webAuthn.updatePasskeyCounter.mockResolvedValue(true);
+			mockRepositories.webAuthn.deleteChallenge.mockResolvedValue(true);
 
 			const result = await verifyPasskeyAuthentication(
-				mockDatabase,
+				mockRepositories as any,
 				mockResponse,
 				"https://example.com",
 				"example.com",
@@ -462,11 +459,11 @@ describe("WebAuthn Service", () => {
 		it("should throw error for unregistered authenticator", async () => {
 			const mockResponse = { id: "unknown" } as any;
 
-			mockDatabase.getPasskeyByCredentialId.mockResolvedValue(null);
+			mockRepositories.webAuthn.getPasskeyByCredentialId.mockResolvedValue(null);
 
 			await expect(
 				verifyPasskeyAuthentication(
-					mockDatabase,
+					mockRepositories as any,
 					mockResponse,
 					"https://example.com",
 					"example.com",

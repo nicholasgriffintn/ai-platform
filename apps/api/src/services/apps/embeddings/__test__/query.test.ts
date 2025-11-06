@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-const mockDatabase = {
-	getUserSettings: vi.fn(() => Promise.resolve({})),
+const mockRepositories = {
+	userSettings: {
+		getUserSettings: vi.fn(() => Promise.resolve({})),
+	},
 };
 
 const mockEmbedding = {
@@ -10,10 +12,8 @@ const mockEmbedding = {
 	searchSimilar: vi.fn(() => Promise.resolve([])),
 };
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn(() => mockDatabase),
-	},
+vi.mock("~/repositories", () => ({
+	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
 vi.mock("~/lib/embedding", () => ({
@@ -70,7 +70,7 @@ describe("queryEmbeddings", () => {
 			{ id: "doc-2", content: "matched content 2", score: 0.87 },
 		];
 
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbedding.getNamespace.mockReturnValue("custom-namespace");
 		mockEmbedding.searchSimilar.mockResolvedValue(mockResults);
 
@@ -97,7 +97,7 @@ describe("queryEmbeddings", () => {
 			},
 		};
 
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbedding.getNamespace.mockReturnValue("default-namespace");
 		mockEmbedding.searchSimilar.mockResolvedValue([]);
 
@@ -135,7 +135,7 @@ describe("queryEmbeddings", () => {
 			},
 		};
 
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbedding.getNamespace.mockReturnValue("test-namespace");
 		mockEmbedding.searchSimilar.mockResolvedValue([]);
 
@@ -161,7 +161,7 @@ describe("queryEmbeddings", () => {
 
 		const notFoundError = new AssistantError("Not found", ErrorType.NOT_FOUND);
 
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbedding.getNamespace.mockReturnValue("nonexistent-namespace");
 		mockEmbedding.searchSimilar.mockRejectedValue(notFoundError);
 
@@ -185,7 +185,7 @@ describe("queryEmbeddings", () => {
 		};
 
 		const serverError = new Error("Server error");
-		mockDatabase.getUserSettings.mockResolvedValue({});
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbedding.searchSimilar.mockRejectedValue(serverError);
 
 		await expect(queryEmbeddings(req)).rejects.toThrow(
@@ -204,7 +204,7 @@ describe("queryEmbeddings", () => {
 			},
 		};
 
-		mockDatabase.getUserSettings.mockRejectedValue(new Error("Database error"));
+		mockRepositories.userSettings.getUserSettings.mockRejectedValue(new Error("Database error"));
 
 		await expect(queryEmbeddings(req)).rejects.toThrow(
 			"Error querying embeddings",

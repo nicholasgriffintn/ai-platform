@@ -21,10 +21,29 @@ vi.mock("aws4fetch", () => ({
 	AwsClient: vi.fn(),
 }));
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: vi.fn(),
+const mockRepositories = {
+	users: {
+		getUserByEmail: vi.fn(),
+		createUser: vi.fn(),
+		getUserById: vi.fn(),
 	},
+	userSettings: {
+		createUserSettings: vi.fn(),
+		createUserProviderSettings: vi.fn(),
+	},
+	magicLinkNonces: {
+		createNonce: vi.fn(),
+	},
+};
+
+vi.mock("~/repositories", () => ({
+	RepositoryManager: vi.fn(() => mockRepositories),
+}));
+
+vi.mock("~/lib/database", () => ({
+	Database: vi.fn((env) => ({
+		consumeMagicLinkNonce: vi.fn(),
+	})),
 }));
 
 vi.mock("~/services/notifications", () => ({
@@ -63,13 +82,17 @@ describe("Magic Link Service", () => {
 
 		const { Database } = await import("~/lib/database");
 		mockDatabase = {
-			getUserByEmail: vi.fn(),
-			createUser: vi.fn(),
-			createMagicLinkNonce: vi.fn(),
 			consumeMagicLinkNonce: vi.fn(),
-			getUserById: vi.fn(),
+			repositories: {
+				users: {
+					getUserById: mockRepositories.users.getUserById,
+				},
+			},
 		};
-		vi.mocked(Database.getInstance).mockReturnValue(mockDatabase);
+		vi.mocked(Database).mockImplementation(() => mockDatabase);
+
+		mockRepositories.userSettings.createUserSettings.mockResolvedValue(true);
+		mockRepositories.userSettings.createUserProviderSettings.mockResolvedValue(true);
 
 		const notifications = await import("~/services/notifications");
 		mockSendMagicLinkEmail = vi.mocked(notifications.sendMagicLinkEmail);
@@ -151,7 +174,7 @@ describe("Magic Link Service", () => {
 			const mockToken = "test-token";
 			const mockNonce = "test-nonce";
 
-			mockDatabase.getUserByEmail.mockResolvedValue(mockUser);
+			mockRepositories.users.getUserByEmail.mockResolvedValue(mockUser);
 			mockJwtSign.mockResolvedValue(mockToken);
 
 			const mockUUID = vi.fn().mockReturnValue(mockNonce);
@@ -159,7 +182,7 @@ describe("Magic Link Service", () => {
 
 			const result = await requestMagicLink(mockEnv, "user@example.com");
 
-			expect(mockDatabase.getUserByEmail).toHaveBeenCalledWith(
+			expect(mockRepositories.users.getUserByEmail).toHaveBeenCalledWith(
 				"user@example.com",
 			);
 			expect(mockJwtSign).toHaveBeenCalledWith(
@@ -170,7 +193,7 @@ describe("Magic Link Service", () => {
 				"test-secret",
 				{ algorithm: "HS256" },
 			);
-			expect(mockDatabase.createMagicLinkNonce).toHaveBeenCalledWith(
+			expect(mockRepositories.magicLinkNonces.createNonce).toHaveBeenCalledWith(
 				mockNonce,
 				123,
 				expect.any(Date),
@@ -183,8 +206,8 @@ describe("Magic Link Service", () => {
 			const mockToken = "test-token";
 			const mockNonce = "test-nonce";
 
-			mockDatabase.getUserByEmail.mockResolvedValue(null);
-			mockDatabase.createUser.mockResolvedValue(mockNewUser);
+			mockRepositories.users.getUserByEmail.mockResolvedValue(null);
+			mockRepositories.users.createUser.mockResolvedValue(mockNewUser);
 			mockJwtSign.mockResolvedValue(mockToken);
 
 			vi.stubGlobal("crypto", {
@@ -193,7 +216,7 @@ describe("Magic Link Service", () => {
 
 			const result = await requestMagicLink(mockEnv, "newuser@example.com");
 
-			expect(mockDatabase.createUser).toHaveBeenCalledWith({
+			expect(mockRepositories.users.createUser).toHaveBeenCalledWith({
 				email: "newuser@example.com",
 			});
 			expect(result).toEqual({ token: mockToken, nonce: mockNonce });
@@ -212,8 +235,8 @@ describe("Magic Link Service", () => {
 		});
 
 		it("should handle user creation failure", async () => {
-			mockDatabase.getUserByEmail.mockResolvedValue(null);
-			mockDatabase.createUser.mockRejectedValue(new Error("DB error"));
+			mockRepositories.users.getUserByEmail.mockResolvedValue(null);
+			mockRepositories.users.createUser.mockRejectedValue(new Error("DB error"));
 
 			const result = await requestMagicLink(mockEnv, "user@example.com");
 
@@ -238,7 +261,7 @@ describe("Magic Link Service", () => {
 			mockJwtVerify.mockResolvedValue(true);
 			mockJwtDecode.mockReturnValue({ payload: mockPayload });
 			mockDatabase.consumeMagicLinkNonce.mockResolvedValue(true);
-			mockDatabase.getUserById.mockResolvedValue(mockUser);
+			mockRepositories.users.getUserById.mockResolvedValue(mockUser);
 
 			const result = await verifyMagicLink(
 				mockEnv,
@@ -253,7 +276,7 @@ describe("Magic Link Service", () => {
 				"valid-nonce",
 				123,
 			);
-			expect(mockDatabase.getUserById).toHaveBeenCalledWith(123);
+			expect(mockRepositories.users.getUserById).toHaveBeenCalledWith(123);
 			expect(result).toBe(123);
 		});
 
@@ -315,7 +338,7 @@ describe("Magic Link Service", () => {
 			mockJwtVerify.mockResolvedValue(true);
 			mockJwtDecode.mockReturnValue({ payload: mockPayload });
 			mockDatabase.consumeMagicLinkNonce.mockResolvedValue(true);
-			mockDatabase.getUserById.mockResolvedValue(null);
+			mockRepositories.users.getUserById.mockResolvedValue(null);
 
 			await expect(
 				verifyMagicLink(mockEnv, "token", "nonce"),

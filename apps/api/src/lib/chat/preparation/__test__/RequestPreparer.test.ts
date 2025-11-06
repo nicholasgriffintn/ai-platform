@@ -12,9 +12,13 @@ import { generateId } from "~/utils/id";
 import type { ValidationContext } from "../../validation/ValidationPipeline";
 import { RequestPreparer } from "../RequestPreparer";
 
-const mockDatabase = {
-	getUserSettings: vi.fn(),
-	getActiveMemorySynthesis: vi.fn(),
+const mockRepositories = {
+	userSettings: {
+		getUserSettings: vi.fn(),
+	},
+	memorySyntheses: {
+		getActiveSynthesis: vi.fn(),
+	},
 };
 
 const mockConversationManager = {
@@ -31,10 +35,8 @@ const mockMemoryManager = {
 	retrieveMemories: vi.fn(),
 };
 
-vi.mock("~/lib/database", () => ({
-	Database: {
-		getInstance: () => mockDatabase,
-	},
+vi.mock("~/repositories", () => ({
+	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
 vi.mock("~/lib/conversationManager", () => ({
@@ -84,6 +86,7 @@ describe("RequestPreparer", () => {
 		vi.clearAllMocks();
 
 		mockEnv = {
+			DB: {} as any,
 			AI: {},
 			VECTOR_DB: {},
 			AWS_REGION: "us-east-1",
@@ -131,7 +134,7 @@ describe("RequestPreparer", () => {
 			messageWithContext: "Hello world",
 		} as ValidationContext;
 
-		mockDatabase.getUserSettings.mockResolvedValue({
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({
 			embedding_provider: "vectorize",
 			memories_save_enabled: true,
 		});
