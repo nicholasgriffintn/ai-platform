@@ -37,7 +37,7 @@ importers:
         version: 22.0.1
       '@scalar/hono-api-reference':
         specifier: ^0.9.0
-        version: 0.9.23(hono@4.10.4)
+        version: 0.9.24(hono@4.10.4)
       '@simplewebauthn/server':
         specifier: ^13.1.1
         version: 13.1.2
@@ -2597,12 +2597,12 @@ packages:
     resolution: {integrity: sha512-6ORQfwtEJYpalCeVO21L4XXGSdbEMfyp2hEv6cP82afKXSwvse6d3sdelgaPWUxHIsFRkWvHDdzh8IyyKHZKxw==}
     engines: {node: '>=16'}
 
-  '@scalar/core@0.3.21':
-    resolution: {integrity: sha512-jwBWUHxxPf30V+ddrSyiDPXYPrC2Z2/Tch8mNPphhd3gi1Dr4Bgd6aMFVIEqlzdOInfTR0pbignifPnQL4GTeA==}
+  '@scalar/core@0.3.22':
+    resolution: {integrity: sha512-6lzeRkvgkukSgge35kvxJKiJBny4rdGSaLTNzn/sF1F6JRfUo7I0AgqFxxSZWMD+EG4kGyNxAz0zciDSx2Cjvw==}
     engines: {node: '>=20'}
 
-  '@scalar/hono-api-reference@0.9.23':
-    resolution: {integrity: sha512-Vi7ypOwJO7x1+lVFmh4z6ljqxMThGUWhCA3Z4eBenS8sv/eSYmucI/on1AjItqt2yYBNTZcAxhN8GsCeECR5FA==}
+  '@scalar/hono-api-reference@0.9.24':
+    resolution: {integrity: sha512-NjPY3iMm/FqYRXAgr6V7qBhJGbSUQ8hbijFUMuqZo4pIjGEUNLeB5L9U2Gh4cDIPPWeso8mlc16jaX7dV0FrPw==}
     engines: {node: '>=20'}
     peerDependencies:
       hono: ^4.10.3
@@ -8426,7 +8426,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
       '@types/debug': 4.1.12
-      debug: 4.4.3
+      debug: 4.3.4
       pony-cause: 2.1.11
       semver: 7.7.3
       uuid: 9.0.1
@@ -8441,7 +8441,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
       '@types/debug': 4.1.12
-      debug: 4.4.3
+      debug: 4.3.4
       pony-cause: 2.1.11
       semver: 7.7.3
       uuid: 9.0.1
@@ -9662,13 +9662,13 @@ snapshots:
   '@safe-global/safe-gateway-typescript-sdk@3.23.1':
     optional: true
 
-  '@scalar/core@0.3.21':
+  '@scalar/core@0.3.22':
     dependencies:
       '@scalar/types': 0.4.0
 
-  '@scalar/hono-api-reference@0.9.23(hono@4.10.4)':
+  '@scalar/hono-api-reference@0.9.24(hono@4.10.4)':
     dependencies:
-      '@scalar/core': 0.3.21
+      '@scalar/core': 0.3.22
       hono: 4.10.4
 
   '@scalar/openapi-types@0.5.1':
@@ -9704,7 +9704,7 @@ snapshots:
 
   '@scure/bip32@1.7.0':
     dependencies:
-      '@noble/curves': 1.9.7
+      '@noble/curves': 1.9.1
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
     optional: true
@@ -10570,7 +10570,7 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.28.4
       '@noble/curves': 1.9.7
-      '@noble/hashes': 1.8.0
+      '@noble/hashes': 1.4.0
       '@solana/buffer-layout': 4.0.1
       '@solana/codecs-numbers': 2.3.0(typescript@5.9.3)
       agentkeepalive: 4.6.0
@@ -11610,18 +11610,6 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
       zod: 4.1.12
-    optional: true
-
-  abitype@1.1.1(typescript@5.9.3)(zod@3.22.4):
-    optionalDependencies:
-      typescript: 5.9.3
-      zod: 3.22.4
-    optional: true
-
-  abitype@1.1.1(typescript@5.9.3)(zod@3.25.76):
-    optionalDependencies:
-      typescript: 5.9.3
-      zod: 3.25.76
     optional: true
 
   abitype@1.1.1(typescript@5.9.3)(zod@4.1.12):
@@ -13968,11 +13956,11 @@ snapshots:
   ox@0.6.7(typescript@5.9.3)(zod@4.1.12):
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
-      '@noble/curves': 1.9.7
-      '@noble/hashes': 1.8.0
-      '@scure/bip32': 1.7.0
-      '@scure/bip39': 1.6.0
-      abitype: 1.1.1(typescript@5.9.3)(zod@4.1.12)
+      '@noble/curves': 1.8.1
+      '@noble/hashes': 1.7.1
+      '@scure/bip32': 1.6.2
+      '@scure/bip39': 1.5.4
+      abitype: 1.0.8(typescript@5.9.3)(zod@4.1.12)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.9.3
@@ -14019,7 +14007,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.1.1(typescript@5.9.3)(zod@3.22.4)
+      abitype: 1.1.0(typescript@5.9.3)(zod@3.22.4)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.9.3
@@ -14035,7 +14023,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.1.1(typescript@5.9.3)(zod@3.25.76)
+      abitype: 1.1.0(typescript@5.9.3)(zod@3.25.76)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.9.3
@@ -14051,7 +14039,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.1.1(typescript@5.9.3)(zod@4.1.12)
+      abitype: 1.1.0(typescript@5.9.3)(zod@4.1.12)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.9.3
