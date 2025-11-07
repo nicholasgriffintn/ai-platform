@@ -33,7 +33,6 @@ export function StrudelPlayer({
 	readOnly = false,
 	onChange,
 }: StrudelPlayerProps) {
-	const [isInitialized, setIsInitialized] = useState(false);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [bpm, setBpm] = useState(120);
@@ -41,31 +40,22 @@ export function StrudelPlayer({
 	const strudelRef = useRef<Awaited<ReturnType<typeof prebake>> | null>(null);
 	const editorRef = useRef<HTMLTextAreaElement>(null);
 
-	useEffect(() => {
-		let mounted = true;
+	const initialize = useCallback(async () => {
+		if (strudelRef.current) return;
 
-		async function initialize() {
-			try {
-				const strudel = await prebake();
-				if (!mounted) return;
-
-				strudelRef.current = strudel;
-
-				strudel.evaluate(`setcps(${120} / 60 / 4);`);
-
-				setIsInitialized(true);
-			} catch (err) {
-				if (!mounted) return;
-				setError(
-					err instanceof Error ? err.message : "Failed to initialize Strudel",
-				);
-			}
+		try {
+			const strudel = await prebake();
+			strudelRef.current = strudel;
+			strudel.evaluate(`setcps(${120} / 60 / 4);`);
+		} catch (err) {
+			setError(
+				err instanceof Error ? err.message : "Failed to initialize Strudel",
+			);
 		}
+	}, []);
 
-		initialize();
-
+	useEffect(() => {
 		return () => {
-			mounted = false;
 			if (strudelRef.current) {
 				strudelRef.current.stop();
 			}
@@ -88,7 +78,9 @@ export function StrudelPlayer({
 		}
 	}, []);
 
-	const handlePlay = useCallback(() => {
+	const handlePlay = useCallback(async () => {
+		await initialize();
+
 		const strudel = strudelRef.current;
 		const editor = editorRef.current;
 		if (!strudel || !editor) return;
@@ -101,7 +93,7 @@ export function StrudelPlayer({
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Evaluation error");
 		}
-	}, [applyTempo, bpm]);
+	}, [initialize, applyTempo, bpm]);
 
 	const handlePause = useCallback(() => {
 		const strudel = strudelRef.current;
@@ -162,7 +154,7 @@ export function StrudelPlayer({
 							size="icon"
 							variant="ghost"
 							onClick={handlePlay}
-							disabled={!isInitialized || isPlaying}
+							disabled={isPlaying}
 							aria-label={isPlaying ? "update" : "play"}
 							className="h-7 w-7 rounded-full hover:bg-emerald-500/20"
 						>
@@ -172,7 +164,7 @@ export function StrudelPlayer({
 							size="icon"
 							variant="ghost"
 							onClick={handlePause}
-							disabled={!isInitialized || !isPlaying}
+							disabled={!isPlaying}
 							aria-label="pause"
 							className="h-7 w-7 rounded-full hover:bg-rose-500/20"
 						>
@@ -202,9 +194,6 @@ export function StrudelPlayer({
 					</div>
 
 					<div className="flex-1 flex items-center justify-end text-[11px] text-slate-400">
-						{!isInitialized && !error && (
-							<span>Initializing audio engine…</span>
-						)}
 						{isPlaying && (
 							<span className="text-emerald-300">Playing current pattern</span>
 						)}
