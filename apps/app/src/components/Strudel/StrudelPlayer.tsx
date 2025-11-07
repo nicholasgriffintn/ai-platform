@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { prebake } from "./strudel";
 import { Play, Pause } from "lucide-react";
+import { StrudelVisualizer } from "@strudel-studio/visualizer";
 
 import { Button } from "~/components/ui/Button";
+import { prebake } from "./strudel";
 
 export function sanitizeStrudelCode(code: string): string {
 	return code
@@ -22,9 +23,17 @@ interface StrudelPlayerProps {
 	code: string;
 	title?: string;
 	subtitle?: string;
+	readOnly?: boolean;
+	onChange?: (code: string) => void;
 }
 
-export function StrudelPlayer({ code, title, subtitle }: StrudelPlayerProps) {
+export function StrudelPlayer({
+	code,
+	title,
+	subtitle,
+	readOnly = false,
+	onChange,
+}: StrudelPlayerProps) {
 	const [isInitialized, setIsInitialized] = useState(false);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -203,11 +212,20 @@ export function StrudelPlayer({ code, title, subtitle }: StrudelPlayerProps) {
 					</div>
 				</div>
 
+				<StrudelVisualizer
+					code={code}
+					isPlaying={isPlaying}
+					width="100%"
+					height="50px"
+				/>
+
 				<textarea
 					ref={editorRef}
 					defaultValue={code}
 					className="w-full min-h-[320px] p-4 font-mono text-sm bg-transparent text-slate-100 resize-none focus:outline-none"
 					spellCheck={false}
+					readOnly={readOnly}
+					onChange={(e) => onChange?.(e.target.value)}
 				/>
 
 				{error && (

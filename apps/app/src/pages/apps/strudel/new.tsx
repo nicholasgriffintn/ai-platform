@@ -269,7 +269,7 @@ export default function CreateStrudelPatternPage() {
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
-							<StrudelPlayer code={code} />
+							<StrudelPlayer code={code} onChange={setCode} />
 						</CardContent>
 					</Card>
 				</div>

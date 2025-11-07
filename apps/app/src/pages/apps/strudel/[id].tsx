@@ -270,7 +270,7 @@ export default function StrudelPatternDetailPage() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
-								<StrudelPlayer code={code} />
+								<StrudelPlayer code={code} readOnly onChange={setCode} />
 								<div className="rounded-lg border border-dashed border-border bg-muted/40 p-3 text-sm font-mono text-muted-foreground whitespace-pre-wrap break-words max-h-64 overflow-auto">
 									{code || "// No pattern code available"}
 								</div>
