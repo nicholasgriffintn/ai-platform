@@ -39,18 +39,25 @@ export const ENABLE_CAPTCHA_IN_DEV = false;
 
 export const CSP = {
 	defaultSrc: ["'self'"],
-	frameSrc: ["https://hcaptcha.com", "https://*.hcaptcha.com"],
+	frameSrc: [
+		"https://hcaptcha.com",
+		"https://*.hcaptcha.com",
+		"https://strudel.cc",
+	],
 	scriptSrc: [
 		"eu.i.posthog.com",
 		"eu-assets.i.posthog.com",
 		"beacon.polychat.app",
 		"https://unpkg.com/react@18/umd/react.development.js",
 		"https://unpkg.com/react-dom@18/umd/react-dom.development.js",
+		"https://unpkg.com/@strudel/embed@latest",
+		"https://unpkg.com/@strudel/repl@latest",
 		"https://hcaptcha.com",
 		"https://*.hcaptcha.com",
 		"'self'",
 		"'unsafe-inline'",
 		"'unsafe-eval'",
+		"data:",
 	],
 	styleSrc: [
 		"https://hcaptcha.com",
@@ -80,6 +87,7 @@ export const CSP = {
 		"https://raw.githubusercontent.com",
 		"https://cdn-lfs-us-1.hf.co",
 		"https://assistant-assets.nickgriffin.uk",
+		"https://strudel.cc",
 	],
 	mediaSrc: ["'self'", "data:", "https://assistant-assets.nickgriffin.uk"],
 };

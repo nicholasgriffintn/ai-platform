@@ -34,5 +34,8 @@ export default [
 		"pages/apps/replicate/predictions/[id].tsx",
 	),
 	route("/apps/replicate/:id", "pages/apps/replicate/[id].tsx"),
+	route("/apps/strudel", "pages/apps/strudel/index.tsx"),
+	route("/apps/strudel/new", "pages/apps/strudel/new.tsx"),
+	route("/apps/strudel/:id", "pages/apps/strudel/[id].tsx"),
 	route("*?", "pages/catchall.tsx"),
 ] satisfies RouteConfig;

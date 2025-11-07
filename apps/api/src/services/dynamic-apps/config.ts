@@ -163,6 +163,19 @@ export const FUNCTION_APP_METADATA: Record<string, DynamicAppMetadata> = {
 
 export const FEATURED_APPS: FeaturedAppDefinition[] = [
 	{
+		id: "featured-strudel",
+		name: "Strudel Music Patterns",
+		description:
+			"Create and generate music patterns with AI using Strudel's powerful code-based music creation tool",
+		icon: "music",
+		category: "AI Generation",
+		theme: "indigo",
+		tags: ["music", "audio", "generation"],
+		href: "/apps/strudel",
+		type: "normal",
+		kind: "frontend",
+	},
+	{
 		id: "featured-replicate",
 		name: "Replicate Predictions",
 		description:

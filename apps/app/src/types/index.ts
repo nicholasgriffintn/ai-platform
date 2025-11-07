@@ -8,3 +8,4 @@ export * from "./note";
 export * from "./podcast";
 export * from "./user";
 export * from "./research";
+export * from "./strudel";

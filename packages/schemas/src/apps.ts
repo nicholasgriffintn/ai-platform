@@ -552,3 +552,71 @@ export const generateNotesFromMediaResponseSchema = z.object({
 export const listDynamicAppResponsesQuerySchema = z.object({
 	appId: z.string().optional(),
 });
+
+export const strudelGenerateSchema = z.object({
+	prompt: z
+		.string()
+		.min(1)
+		.describe("Natural language description of the music pattern to generate"),
+	style: z
+		.enum(["techno", "ambient", "house", "jazz", "drums", "experimental"])
+		.optional()
+		.describe("Musical style preset"),
+	tempo: z
+		.number()
+		.min(60)
+		.max(200)
+		.optional()
+		.describe("Beats per minute (BPM)"),
+	complexity: z
+		.enum(["simple", "medium", "complex"])
+		.optional()
+		.default("medium")
+		.describe("Pattern complexity level"),
+	model: z
+		.string()
+		.optional()
+		.describe(
+			"Model ID to use for generation (if not specified, uses auxiliary model)",
+		),
+});
+
+export const strudelSavePatternSchema = z.object({
+	code: z.string().min(1).describe("The Strudel pattern code to save"),
+	name: z.string().min(1).max(100).describe("Name for this pattern"),
+	description: z.string().max(500).optional().describe("Optional description"),
+	tags: z.array(z.string()).optional().describe("Tags for categorization"),
+});
+
+export const strudelUpdatePatternSchema = z.object({
+	code: z.string().min(1).optional(),
+	name: z.string().min(1).max(100).optional(),
+	description: z.string().max(500).optional(),
+	tags: z.array(z.string()).optional(),
+});
+
+export const strudelPatternSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	code: z.string(),
+	description: z.string().optional(),
+	tags: z.array(z.string()).optional(),
+	createdAt: z.string(),
+	updatedAt: z.string(),
+});
+
+export const strudelGenerateResponseSchema = z.object({
+	code: z.string().describe("Generated Strudel pattern code"),
+	explanation: z
+		.string()
+		.optional()
+		.describe("Explanation of the generated pattern"),
+});
+
+export const strudelListPatternsResponseSchema = z.object({
+	patterns: z.array(strudelPatternSchema),
+});
+
+export const strudelPatternDetailResponseSchema = z.object({
+	pattern: strudelPatternSchema,
+});

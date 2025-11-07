@@ -19,6 +19,7 @@ import podcasts from "./podcasts";
 import retrieval from "./retrieval";
 import shared from "./shared";
 import replicate from "./replicate";
+import strudel from "./strudel";
 
 const app = new Hono();
 
@@ -44,6 +45,8 @@ app.route("/notes", notes);
 app.route("/retrieval", retrieval);
 
 app.route("/replicate", replicate);
+
+app.route("/strudel", strudel);
 
 app.post(
 	"/prompt-coach",

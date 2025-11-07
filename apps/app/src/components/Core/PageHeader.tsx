@@ -12,6 +12,7 @@ export function PageHeader({
 		icon: ReactNode;
 		variant?: "primary" | "secondary";
 		disabled?: boolean;
+		isLoading?: boolean;
 	}[];
 }) {
 	return (
@@ -26,6 +27,7 @@ export function PageHeader({
 							variant={action.variant || "primary"}
 							icon={action.icon}
 							disabled={action.disabled}
+							isLoading={action.isLoading}
 						>
 							{action.label}
 						</Button>

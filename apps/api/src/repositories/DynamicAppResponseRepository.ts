@@ -54,4 +54,8 @@ export class DynamicAppResponseRepository {
 	): Promise<void> {
 		await this.repo.updateAppData(responseId, payload);
 	}
+
+	async deleteResponse(responseId: string): Promise<void> {
+		await this.repo.deleteAppData(responseId);
+	}
 }
