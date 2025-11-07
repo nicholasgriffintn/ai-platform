@@ -90,10 +90,9 @@ export default function CreateStrudelPatternPage() {
 
 	const parsedTags = useMemo(() => parseTagsInput(tagsInput), [tagsInput]);
 
-	// Get available text models for the selector
-	const availableModels = getAvailableModels(apiModels);
+	const availableModels = getAvailableModels(apiModels, false);
 	const textModels = Object.entries(availableModels)
-		.filter(([_, model]) => model.type.includes("text"))
+		.filter(([_, model]) => model.type.length === 1 && model.type[0] === "text")
 		.map(([id, model]) => ({
 			value: id,
 			label: model.name || id,

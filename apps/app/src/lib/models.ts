@@ -226,7 +226,13 @@ export const webLLMModels: ModelConfig = {
 	},
 };
 
-export function getAvailableModels(apiModels: ModelConfig) {
+export function getAvailableModels(
+	apiModels: ModelConfig,
+	shouldIncludeWebLLM = true,
+) {
+	if (!shouldIncludeWebLLM) {
+		return apiModels;
+	}
 	return { ...webLLMModels, ...apiModels };
 }
 
