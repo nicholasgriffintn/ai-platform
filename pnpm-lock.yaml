@@ -165,9 +165,6 @@ importers:
       '@simplewebauthn/browser':
         specifier: ^13.1.0
         version: 13.2.2
-      '@strudel-studio/visualizer':
-        specifier: ^1.0.0
-        version: 1.0.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@strudel/codemirror':
         specifier: 1.2.5
         version: 1.2.5(@codemirror/lint@6.9.2)
@@ -3310,12 +3307,6 @@ packages:
 
   '@standard-schema/spec@1.0.0':
     resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
-
-  '@strudel-studio/visualizer@1.0.0':
-    resolution: {integrity: sha512-+89xWkZpL918Hw3a5WXHEyv6FFBs36to6OXRmGsFBpTpPBKGKgKmXQN3DAO/dkivY1ZCZT/ncqulYNEZSBi9/Q==}
-    peerDependencies:
-      react: ^18.0.0 || ^19.0.0
-      react-dom: ^18.0.0 || ^19.0.0
 
   '@strudel/codemirror@1.2.5':
     resolution: {integrity: sha512-H9eMbgCEblENZJZQAdXPfYMFXcWoDVJL8f/D4e/rfAlvW0enGINSKQTXXKIKxqUrzRV72AVD1v1KZKJJMC2EcA==}
@@ -11159,11 +11150,6 @@ snapshots:
       zod-openapi: 5.4.3(zod@4.1.12)
 
   '@standard-schema/spec@1.0.0': {}
-
-  '@strudel-studio/visualizer@1.0.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
 
   '@strudel/codemirror@1.2.5(@codemirror/lint@6.9.2)':
     dependencies:

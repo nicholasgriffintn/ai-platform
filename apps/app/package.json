@@ -39,7 +39,6 @@
 		"@react-router/node": "7.9.5",
 		"@react-router/serve": "7.9.5",
 		"@simplewebauthn/browser": "^13.1.0",
-		"@strudel-studio/visualizer": "^1.0.0",
 		"@strudel/codemirror": "1.2.5",
 		"@strudel/core": "1.2.5",
 		"@strudel/draw": "1.2.5",

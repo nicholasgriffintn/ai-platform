@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Play, Pause } from "lucide-react";
-import { StrudelVisualizer } from "@strudel-studio/visualizer";
 
 import { Button } from "~/components/ui/Button";
 import { prebake } from "./strudel";
@@ -211,13 +210,6 @@ export function StrudelPlayer({
 						)}
 					</div>
 				</div>
-
-				<StrudelVisualizer
-					code={code}
-					isPlaying={isPlaying}
-					width="100%"
-					height="50px"
-				/>
 
 				<textarea
 					ref={editorRef}
