@@ -1,8 +1,20 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Play, Pause } from "lucide-react";
+import { StrudelMirror } from "@strudel/codemirror";
+// @ts-expect-error - @strudel/webaudio has no type definitions
+import { getAudioContext, webaudioOutput } from "@strudel/webaudio";
+// @ts-expect-error - @strudel/transpiler has no type definitions
+import { transpiler } from "@strudel/transpiler";
 
 import { Button } from "~/components/ui/Button";
 import { prebake } from "./strudel";
+
+interface StrudelMirrorInstance {
+	code: string;
+	evaluate: (arg?: string) => Promise<void>;
+	stop: () => void;
+	setCode: (code: string) => void;
+}
 
 export function sanitizeStrudelCode(code: string): string {
 	return code
@@ -35,71 +47,68 @@ export function StrudelPlayer({
 }: StrudelPlayerProps) {
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [bpm, setBpm] = useState(120);
 
-	const strudelRef = useRef<Awaited<ReturnType<typeof prebake>> | null>(null);
-	const editorRef = useRef<HTMLTextAreaElement>(null);
-
-	const initialize = useCallback(async () => {
-		if (strudelRef.current) return;
-
-		try {
-			const strudel = await prebake();
-			strudelRef.current = strudel;
-			strudel.evaluate(`setcps(${120} / 60 / 4);`);
-		} catch (err) {
-			setError(
-				err instanceof Error ? err.message : "Failed to initialize Strudel",
-			);
-		}
-	}, []);
+	const editorContainerRef = useRef<HTMLDivElement>(null);
+	const editorRef = useRef<StrudelMirrorInstance | null>(null);
 
 	useEffect(() => {
+		if (!editorContainerRef.current || editorRef.current) return;
+
+		// @ts-expect-error - StrudelMirror is a class but TS sees it as a React component
+		const editor = new StrudelMirror({
+			theme: "teletext",
+			defaultOutput: webaudioOutput,
+			getTime: () => getAudioContext().currentTime,
+			transpiler,
+			root: editorContainerRef.current,
+			initialCode: sanitizeStrudelCode(code),
+			drawTime: [-2, 2],
+			prebake,
+			onChange: (update: any) => {
+				if (update.docChanged) {
+					onChange?.(update.state.doc.toString());
+				}
+			},
+		});
+
+		editor.setTheme("tokyoNight");
+
+		editorRef.current = editor;
+
 		return () => {
-			if (strudelRef.current) {
-				strudelRef.current.stop();
+			if (editorRef.current) {
+				editorRef.current.stop();
 			}
 		};
 	}, []);
 
 	useEffect(() => {
 		if (editorRef.current) {
-			editorRef.current.value = sanitizeStrudelCode(code);
+			const sanitized = sanitizeStrudelCode(code);
+			if (editorRef.current.code !== sanitized) {
+				editorRef.current.setCode(sanitized);
+			}
 		}
 	}, [code]);
 
-	const applyTempo = useCallback((nextBpm: number) => {
-		const strudel = strudelRef.current;
-		if (!strudel) return;
-		try {
-			strudel.evaluate(`setcps(${nextBpm} / 60 / 4);`);
-		} catch (e) {
-			console.error("Failed to set tempo", e);
-		}
-	}, []);
-
 	const handlePlay = useCallback(async () => {
-		await initialize();
-
-		const strudel = strudelRef.current;
 		const editor = editorRef.current;
-		if (!strudel || !editor) return;
+		if (!editor) return;
 
 		try {
-			applyTempo(bpm);
-			strudel.evaluate(editor.value);
+			await editor.evaluate();
 			setIsPlaying(true);
 			setError(null);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Evaluation error");
 		}
-	}, [initialize, applyTempo, bpm]);
+	}, []);
 
 	const handlePause = useCallback(() => {
-		const strudel = strudelRef.current;
-		if (!strudel) return;
+		const editor = editorRef.current;
+		if (!editor) return;
 
-		strudel.stop();
+		editor.stop();
 		setIsPlaying(false);
 	}, []);
 
@@ -149,6 +158,12 @@ export function StrudelPlayer({
 						</span>
 					</div>
 
+					<div className="flex-1 flex items-center justify-end text-[11px] text-slate-400">
+						{isPlaying && (
+							<span className="text-emerald-300">Playing current pattern</span>
+						)}
+					</div>
+
 					<div className="flex items-center gap-2">
 						<Button
 							size="icon"
@@ -173,41 +188,15 @@ export function StrudelPlayer({
 					</div>
 				</div>
 
-				<div className="flex flex-col sm:flex-row gap-3 px-3 pt-2 pb-1 border-b border-slate-800/70 bg-slate-900/70">
-					<div className="flex items-center gap-2 text-xs text-slate-300">
-						<span className="font-mono uppercase tracking-wide text-[10px] text-slate-400">
-							BPM
-						</span>
-						<input
-							type="range"
-							min={60}
-							max={180}
-							value={bpm}
-							onChange={(e) => {
-								const next = Number(e.target.value);
-								setBpm(next);
-								applyTempo(next);
-							}}
-							className="w-28 accent-emerald-400"
-						/>
-						<span className="w-10 text-right tabular-nums">{bpm}</span>
+				{readOnly ? (
+					<div>
+						<pre className="p-4 overflow-x-auto text-xs sm:text-sm font-mono bg-slate-900/80">
+							{code}
+						</pre>
 					</div>
-
-					<div className="flex-1 flex items-center justify-end text-[11px] text-slate-400">
-						{isPlaying && (
-							<span className="text-emerald-300">Playing current pattern</span>
-						)}
-					</div>
-				</div>
-
-				<textarea
-					ref={editorRef}
-					defaultValue={code}
-					className="w-full min-h-[320px] p-4 font-mono text-sm bg-transparent text-slate-100 resize-none focus:outline-none"
-					spellCheck={false}
-					readOnly={readOnly}
-					onChange={(e) => onChange?.(e.target.value)}
-				/>
+				) : (
+					<div ref={editorContainerRef} className="w-full min-h-[320px]" />
+				)}
 
 				{error && (
 					<div className="px-3 py-2 bg-destructive/10 border-t border-destructive/20">

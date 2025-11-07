@@ -1,34 +1,37 @@
-// @ts-nocheck
 import {
-	repl,
 	evalScope,
 	noteToMidi,
 	valueToMidi,
 	Pattern,
+	// @ts-expect-error - @strudel/core has no type definitions
 } from "@strudel/core";
 import {
-	getAudioContext,
-	webaudioOutput,
 	initAudioOnFirstClick,
 	registerSynthSounds,
 	samples,
 	aliasBank,
 	registerZZFXSounds,
+	// @ts-expect-error - @strudel/webstudio has no type definitions
 } from "@strudel/webaudio";
-import { transpiler } from "@strudel/transpiler";
-import { registerSoundfonts } from "@strudel/soundfonts";
 
 async function prebake() {
 	initAudioOnFirstClick();
 
 	const modulesLoading = evalScope(
+		// @ts-expect-error - has no type definitions
 		import("@strudel/core"),
+		// @ts-expect-error - has no type definitions
 		import("@strudel/draw"),
+		// @ts-expect-error - has no type definitions
 		import("@strudel/mini"),
+		// @ts-expect-error - has no type definitions
 		import("@strudel/tonal"),
+		// @ts-expect-error - has no type definitions
 		import("@strudel/webaudio"),
 		import("@strudel/codemirror"),
+		// @ts-expect-error - has no type definitions
 		import("@strudel/hydra"),
+		// @ts-expect-error - has no type definitions
 		import("@strudel/midi"),
 	);
 
@@ -51,28 +54,29 @@ async function prebake() {
 	const panwidth = (pan: number, width: number) =>
 		pan * width + (1 - width) / 2;
 
+	type StrudelValue = Record<string, unknown>;
+
 	Pattern.prototype.piano = function (this: any) {
-		return this.fmap((v: unknown) => ({
-			...v,
-			clip: (v as Record<string, unknown>).clip ?? 1,
-		}))
+		return this.fmap((v: unknown) => {
+			const vObj = v as StrudelValue;
+			return {
+				...vObj,
+				clip: vObj.clip ?? 1,
+			};
+		})
 			.s("piano")
 			.release(0.1)
 			.fmap((value: unknown) => {
 				const midi = valueToMidi(value);
 				const pan = panwidth(Math.min(Math.round(midi) / maxPan, 1), 0.5);
+				const valueObj = value as StrudelValue;
+				const panValue = typeof valueObj.pan === "number" ? valueObj.pan : 1;
 				return {
-					...value,
-					pan: ((value as Record<string, unknown>).pan || 1) * pan,
+					...valueObj,
+					pan: panValue * pan,
 				};
 			});
 	};
-
-	return repl({
-		defaultOutput: webaudioOutput,
-		getTime: () => getAudioContext().currentTime,
-		transpiler,
-	});
 }
 
 export { prebake };
