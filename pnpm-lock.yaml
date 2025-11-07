@@ -166,8 +166,8 @@ importers:
         specifier: ^13.1.0
         version: 13.2.2
       '@strudel/codemirror':
-        specifier: 1.2.5
-        version: 1.2.5(@codemirror/lint@6.9.2)
+        specifier: 1.2.6
+        version: 1.2.6(@codemirror/lint@6.9.2)
       '@strudel/core':
         specifier: 1.2.5
         version: 1.2.5
@@ -3308,8 +3308,8 @@ packages:
   '@standard-schema/spec@1.0.0':
     resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
 
-  '@strudel/codemirror@1.2.5':
-    resolution: {integrity: sha512-H9eMbgCEblENZJZQAdXPfYMFXcWoDVJL8f/D4e/rfAlvW0enGINSKQTXXKIKxqUrzRV72AVD1v1KZKJJMC2EcA==}
+  '@strudel/codemirror@1.2.6':
+    resolution: {integrity: sha512-zjKbnbnOY40dlIAQu1poq28rcngYliLsuDwXXVnJsaXzCZSVuXEOMq91LqY4IGz/2QUOIDGm663ziz6Nb4IXeg==}
 
   '@strudel/core@1.2.4':
     resolution: {integrity: sha512-sUm9/zjEEQuWfW3hNOCcfNbn8jq2G+Ye+mvpLUgcGyLfI5XPlPTn/PBIkv2hFjNs/basnMyrOUvg0Z85AA6+OA==}
@@ -3329,9 +3329,6 @@ packages:
   '@strudel/midi@1.2.5':
     resolution: {integrity: sha512-bDA7J19ep1QJVCJDzX+oAOCc3zvV7WyXlR3DEJtEBFD3T28mDcuDwQ/plRapBwBZWGWbStLOhmEwNt3RZ/uE/w==}
 
-  '@strudel/mini@1.2.4':
-    resolution: {integrity: sha512-JdZ6Y3u3rNeRCa0FWD5ub9LSsWzmolDmnRSYfQv8W1nYnTfj1maUWky6SY7amAJ4zMVHQzdJKhzyD111xNhbJg==}
-
   '@strudel/mini@1.2.5':
     resolution: {integrity: sha512-GmTWSBt49C3ogBy0hjM3bmf6K12PaJ1JJLsEvQu7j5J+lUd2n7GmLYR1UL6fntY4yVqT8ZwMhfUf6vIgUCTNbw==}
 
@@ -3340,9 +3337,6 @@ packages:
 
   '@strudel/tonal@1.2.5':
     resolution: {integrity: sha512-mX3uW0nWH8Sa52HTLwnxlR5BrejFX77abeaiMbp+kQCMrX9I+XRdf8rEr7gdeInB6f/y2TzTVFpnsNsB5jLdoA==}
-
-  '@strudel/transpiler@1.2.4':
-    resolution: {integrity: sha512-VC5MF6vpSVfQRAN713Q3vBVRiYGEOzAT/XEkVca/4ycK9LTSN37f7neHb8VFZZs3zE/7KJhf52tvQCRyWg8DAg==}
 
   '@strudel/transpiler@1.2.5':
     resolution: {integrity: sha512-mBZWfQBzknvnIYsjjzR8D67A+uIZ1iZ60U2WoXT21q5luXKz2c95RcTpqdx3oOGpLK9K00lDzcKjhQDJtj4OKw==}
@@ -6855,6 +6849,9 @@ packages:
 
   superdough@1.2.5:
     resolution: {integrity: sha512-QVkMGGZjWzaRxYKXoZYMfsRHVk5vwNiqAaDOseccSTgqPPwFRTY2fmHAm5OmwwS8XqFOenZjn+XU3LEaCZMdJw==}
+
+  superdough@1.2.6:
+    resolution: {integrity: sha512-zHEFfG+N4zhxJ9lUDf8p4Oj4sdGGQ5SrOPksdc0cKv5Yn0hzlNlMehEa5TkeIfDCiR27Y4H81ks7S8/CGSByhQ==}
 
   superstruct@1.0.4:
     resolution: {integrity: sha512-7JpaAoX2NGyoFlI9NBh66BQXGONc+uE+MRS5i2iOBKuS4e+ccgMDjATgZldkah+33DakBxDHiss9kvUcGAO8UQ==}
@@ -11151,7 +11148,7 @@ snapshots:
 
   '@standard-schema/spec@1.0.0': {}
 
-  '@strudel/codemirror@1.2.5(@codemirror/lint@6.9.2)':
+  '@strudel/codemirror@1.2.6(@codemirror/lint@6.9.2)':
     dependencies:
       '@codemirror/autocomplete': 6.19.1
       '@codemirror/commands': 6.10.0
@@ -11165,10 +11162,13 @@ snapshots:
       '@replit/codemirror-emacs': 6.1.0(@codemirror/autocomplete@6.19.1)(@codemirror/commands@6.10.0)(@codemirror/search@6.5.11)(@codemirror/state@6.5.2)(@codemirror/view@6.38.6)
       '@replit/codemirror-vim': 6.3.0(@codemirror/commands@6.10.0)(@codemirror/language@6.11.3)(@codemirror/search@6.5.11)(@codemirror/state@6.5.2)(@codemirror/view@6.38.6)
       '@replit/codemirror-vscode-keymap': 6.0.2(@codemirror/autocomplete@6.19.1)(@codemirror/commands@6.10.0)(@codemirror/language@6.11.3)(@codemirror/lint@6.9.2)(@codemirror/search@6.5.11)(@codemirror/state@6.5.2)(@codemirror/view@6.38.6)
-      '@strudel/core': 1.2.4
-      '@strudel/draw': 1.2.4
-      '@strudel/transpiler': 1.2.4
+      '@strudel/core': 1.2.5
+      '@strudel/draw': 1.2.5
+      '@strudel/tonal': 1.2.5
+      '@strudel/transpiler': 1.2.5
+      '@tonaljs/tonal': 4.10.0
       nanostores: 0.11.4
+      superdough: 1.2.6
     transitivePeerDependencies:
       - '@codemirror/lint'
 
@@ -11203,10 +11203,6 @@ snapshots:
       '@strudel/webaudio': 1.2.5
       webmidi: 3.1.14
 
-  '@strudel/mini@1.2.4':
-    dependencies:
-      '@strudel/core': 1.2.4
-
   '@strudel/mini@1.2.5':
     dependencies:
       '@strudel/core': 1.2.5
@@ -11224,14 +11220,6 @@ snapshots:
       '@tonaljs/tonal': 4.10.0
       chord-voicings: 0.0.1
       webmidi: 3.1.14
-
-  '@strudel/transpiler@1.2.4':
-    dependencies:
-      '@strudel/core': 1.2.4
-      '@strudel/mini': 1.2.4
-      acorn: 8.15.0
-      escodegen: 2.1.0
-      estree-walker: 3.0.3
 
   '@strudel/transpiler@1.2.5':
     dependencies:
@@ -15949,6 +15937,10 @@ snapshots:
       ts-interface-checker: 0.1.13
 
   superdough@1.2.5:
+    dependencies:
+      nanostores: 0.11.4
+
+  superdough@1.2.6:
     dependencies:
       nanostores: 0.11.4
 
