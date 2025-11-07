@@ -30,6 +30,18 @@ export default defineConfig(({ isSsrBuild, command }) => ({
 								"@radix-ui/react-tabs",
 								"@radix-ui/react-toggle",
 								"@radix-ui/react-toggle-group",
+								"virtua",
+							],
+							"strudel-vendor": [
+								"@strudel/codemirror",
+								"@strudel/core",
+								"@strudel/draw",
+								"@strudel/hydra",
+								"@strudel/mini",
+								"@strudel/soundfonts",
+								"@strudel/tonal",
+								"@strudel/transpiler",
+								"@strudel/webaudio",
 							],
 							"query-vendor": ["@tanstack/react-query"],
 							"markdown-vendor": [
