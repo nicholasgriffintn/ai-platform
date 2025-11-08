@@ -51,7 +51,9 @@ describe("handleCheckChatCompletion", () => {
 
 		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
-		const { Guardrails } = await import("~/lib/guardrails");
+		const { Guardrails } = await import(
+			"~/lib/providers/capabilities/guardrails/providers"
+		);
 
 		mockDatabase = {
 			getUserSettings: vi.fn(),

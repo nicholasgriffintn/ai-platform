@@ -2,7 +2,7 @@ import type { IEnv } from "~/types";
 import type { TaskMessage } from "../TaskService";
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import { getLogger } from "~/utils/logger";
-import { Research } from "~/lib/research";
+import { providerLibrary } from "~/lib/providers/library";
 import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
 import type {
 	ResearchProviderName,
@@ -38,9 +38,14 @@ export class ResearchPollingHandler implements TaskHandler {
 				};
 			}
 
-			const research = Research.getInstance(env, data.provider, undefined);
+			const researchProvider = providerLibrary.research(data.provider, {
+				env,
+			});
 
-			const result = await research.fetchResult(data.runId, data.options);
+			const result = await researchProvider.fetchResearchResult(
+				data.runId,
+				data.options,
+			);
 
 			if ("status" in result && result.status === "error") {
 				logger.warn(`Research task ${data.runId} failed: ${result.error}`);

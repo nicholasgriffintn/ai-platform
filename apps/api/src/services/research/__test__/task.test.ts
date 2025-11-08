@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { IEnv } from "~/types";
 import { ErrorType } from "~/utils/errors";
 import { getAuxiliaryResearchProvider } from "~/lib/models";
-import { Research } from "~/lib/research";
+import { providerLibrary } from "~/lib/providers/library";
 import {
 	getResearchTaskStatus,
 	handleResearchTask,
@@ -13,28 +13,40 @@ vi.mock("~/lib/models", () => ({
 	getAuxiliaryResearchProvider: vi.fn(),
 }));
 
-vi.mock("~/lib/research", () => ({
-	Research: {
-		getInstance: vi.fn(),
+vi.mock("~/lib/providers/library", () => ({
+	providerLibrary: {
+		research: vi.fn(),
 	},
 }));
 
 const mockedGetAuxiliaryResearchProvider = vi.mocked(
 	getAuxiliaryResearchProvider,
 );
-const mockedResearchGetInstance = vi.mocked(Research.getInstance);
+const mockedProviderLibraryResearch = vi.mocked(providerLibrary.research);
 
 describe("handleResearchTask", () => {
 	const baseEnv = {
 		ACCOUNT_ID: "test",
 	} as unknown as IEnv;
 
+	let mockResearchProvider: {
+		performResearch: ReturnType<typeof vi.fn>;
+		createResearchTask: ReturnType<typeof vi.fn>;
+		fetchResearchResult: ReturnType<typeof vi.fn>;
+	};
+
 	beforeEach(() => {
 		vi.resetAllMocks();
+		mockResearchProvider = {
+			performResearch: vi.fn(),
+			createResearchTask: vi.fn(),
+			fetchResearchResult: vi.fn(),
+		};
+		mockedProviderLibraryResearch.mockReturnValue(mockResearchProvider as any);
 	});
 
 	it("runs research with sanitized string input", async () => {
-		const mockRun = vi.fn().mockResolvedValue({
+		mockResearchProvider.performResearch.mockResolvedValue({
 			provider: "parallel",
 			run: {
 				run_id: "test-run",
@@ -56,9 +68,6 @@ describe("handleResearchTask", () => {
 		});
 
 		mockedGetAuxiliaryResearchProvider.mockResolvedValue("parallel");
-		mockedResearchGetInstance.mockReturnValue({
-			run: mockRun,
-		} as any);
 
 		const response = await handleResearchTask({
 			env: baseEnv,
@@ -70,7 +79,10 @@ describe("handleResearchTask", () => {
 			undefined,
 			undefined,
 		);
-		expect(mockRun).toHaveBeenCalledWith("test query", undefined);
+		expect(mockResearchProvider.performResearch).toHaveBeenCalledWith(
+			"test query",
+			undefined,
+		);
 		expect(response).toMatchObject({
 			status: "success",
 			data: {
@@ -82,12 +94,10 @@ describe("handleResearchTask", () => {
 
 	it("throws when research provider returns an error result", async () => {
 		mockedGetAuxiliaryResearchProvider.mockResolvedValue("parallel");
-		mockedResearchGetInstance.mockReturnValue({
-			run: vi.fn().mockResolvedValue({
-				status: "error",
-				error: "Failed",
-			}),
-		} as any);
+		mockResearchProvider.performResearch.mockResolvedValue({
+			status: "error",
+			error: "Failed",
+		});
 
 		await expect(
 			handleResearchTask({
@@ -111,7 +121,7 @@ describe("handleResearchTask", () => {
 		});
 	});
 	it("starts research task without waiting for completion", async () => {
-		const mockCreateTask = vi.fn().mockResolvedValue({
+		mockResearchProvider.createResearchTask.mockResolvedValue({
 			provider: "parallel",
 			run: {
 				run_id: "start-run",
@@ -124,16 +134,16 @@ describe("handleResearchTask", () => {
 		});
 
 		mockedGetAuxiliaryResearchProvider.mockResolvedValue("parallel");
-		mockedResearchGetInstance.mockReturnValue({
-			createTask: mockCreateTask,
-		} as any);
 
 		const handle = await startResearchTask({
 			env: baseEnv,
 			input: " Start my research ",
 		});
 
-		expect(mockCreateTask).toHaveBeenCalledWith("Start my research", undefined);
+		expect(mockResearchProvider.createResearchTask).toHaveBeenCalledWith(
+			"Start my research",
+			undefined,
+		);
 		expect(handle).toMatchObject({
 			provider: "parallel",
 			run: expect.objectContaining({
@@ -144,7 +154,7 @@ describe("handleResearchTask", () => {
 	});
 
 	it("fetches research task status", async () => {
-		const mockFetchResult = vi.fn().mockResolvedValue({
+		mockResearchProvider.fetchResearchResult.mockResolvedValue({
 			provider: "parallel",
 			run: {
 				run_id: "status-run",
@@ -158,16 +168,16 @@ describe("handleResearchTask", () => {
 		});
 
 		mockedGetAuxiliaryResearchProvider.mockResolvedValue("parallel");
-		mockedResearchGetInstance.mockReturnValue({
-			fetchResult: mockFetchResult,
-		} as any);
 
 		const status = await getResearchTaskStatus({
 			env: baseEnv,
 			runId: "status-run",
 		});
 
-		expect(mockFetchResult).toHaveBeenCalledWith("status-run", undefined);
+		expect(mockResearchProvider.fetchResearchResult).toHaveBeenCalledWith(
+			"status-run",
+			undefined,
+		);
 		expect(status).toMatchObject({
 			provider: "parallel",
 			run: expect.objectContaining({ status: "running" }),

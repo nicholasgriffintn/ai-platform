@@ -10,6 +10,7 @@ import { RepositoryManager } from "~/repositories";
 import { getAuxiliaryModel } from "~/lib/models";
 import { trackRagMetrics } from "~/lib/monitoring";
 import { AIProviderFactory } from "~/lib/providers/factory";
+import { providerLibrary } from "~/lib/providers/library";
 import type {
 	EmbeddingProvider,
 	IEnv,
@@ -19,7 +20,6 @@ import type {
 } from "~/types";
 import { AssistantError } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { EmbeddingProviderFactory } from "./factory";
 import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/embedding" });
@@ -33,6 +33,16 @@ export class Embedding {
 		this.env = env;
 		this.user = user;
 
+		const resolveProvider = <TConfig>(
+			providerName: string,
+			config: TConfig,
+		): EmbeddingProvider =>
+			providerLibrary.embedding(providerName, {
+				env: this.env,
+				user: this.user,
+				config,
+			});
+
 		if (userSettings?.embedding_provider === "bedrock") {
 			if (
 				!userSettings.bedrock_knowledge_base_id ||
@@ -43,62 +53,42 @@ export class Embedding {
 				);
 			}
 
-			this.provider = EmbeddingProviderFactory.getProvider(
-				"bedrock",
-				{
-					knowledgeBaseId: userSettings.bedrock_knowledge_base_id,
-					knowledgeBaseCustomDataSourceId:
-						userSettings.bedrock_knowledge_base_custom_data_source_id,
-					region: this.env.AWS_REGION || "us-east-1",
-					accessKeyId: this.env.BEDROCK_AWS_ACCESS_KEY || "",
-					secretAccessKey: this.env.BEDROCK_AWS_SECRET_KEY || "",
-				},
-				this.env,
-				this.user,
-			);
+			this.provider = resolveProvider("bedrock", {
+				knowledgeBaseId: userSettings.bedrock_knowledge_base_id,
+				knowledgeBaseCustomDataSourceId:
+					userSettings.bedrock_knowledge_base_custom_data_source_id,
+				region: this.env.AWS_REGION || "us-east-1",
+				accessKeyId: this.env.BEDROCK_AWS_ACCESS_KEY || "",
+				secretAccessKey: this.env.BEDROCK_AWS_SECRET_KEY || "",
+			});
 			logger.debug("Using Bedrock embedding provider", {
 				knowledgeBaseId: userSettings.bedrock_knowledge_base_id,
 				region: this.env.AWS_REGION || "us-east-1",
 			});
 		} else if (userSettings?.embedding_provider === "mistral") {
-			this.provider = EmbeddingProviderFactory.getProvider(
-				"mistral",
-				{
-					vector_db: this.env.VECTOR_DB,
-				},
-				this.env,
-				this.user,
-			);
+			this.provider = resolveProvider("mistral", {
+				vector_db: this.env.VECTOR_DB,
+			});
 			logger.debug("Using Mistral embedding provider");
 		} else if (userSettings?.embedding_provider === "marengo") {
-			this.provider = EmbeddingProviderFactory.getProvider(
-				"marengo",
-				{
-					vector_db: this.env.VECTOR_DB,
-				},
-				this.env,
-				this.user,
-			);
+			this.provider = resolveProvider("marengo", {
+				vector_db: this.env.VECTOR_DB,
+			});
 			logger.debug("Using Marengo embedding provider");
 		} else if (userSettings?.embedding_provider === "s3vectors") {
 			if (!userSettings.s3vectors_bucket_name) {
 				throw new AssistantError("Missing required S3 vectors bucket name");
 			}
 
-			this.provider = EmbeddingProviderFactory.getProvider(
-				"s3vectors",
-				{
-					bucketName: userSettings.s3vectors_bucket_name,
-					indexName: userSettings.s3vectors_index_name || undefined,
-					region:
-						userSettings.s3vectors_region || this.env.AWS_REGION || "us-east-1",
-					accessKeyId: this.env.S3VECTORS_AWS_ACCESS_KEY || "",
-					secretAccessKey: this.env.S3VECTORS_AWS_SECRET_KEY || "",
-					ai: this.env.AI,
-				},
-				this.env,
-				this.user,
-			);
+			this.provider = resolveProvider("s3vectors", {
+				bucketName: userSettings.s3vectors_bucket_name,
+				indexName: userSettings.s3vectors_index_name || undefined,
+				region:
+					userSettings.s3vectors_region || this.env.AWS_REGION || "us-east-1",
+				accessKeyId: this.env.S3VECTORS_AWS_ACCESS_KEY || "",
+				secretAccessKey: this.env.S3VECTORS_AWS_SECRET_KEY || "",
+				ai: this.env.AI,
+			});
 			logger.debug("Using S3 Vectors embedding provider", {
 				bucketName: userSettings.s3vectors_bucket_name,
 				indexName: userSettings.s3vectors_index_name,
@@ -108,16 +98,11 @@ export class Embedding {
 		} else {
 			const repositories = new RepositoryManager(this.env);
 
-			this.provider = EmbeddingProviderFactory.getProvider(
-				"vectorize",
-				{
-					ai: this.env.AI,
-					vector_db: this.env.VECTOR_DB,
-					repositories,
-				},
-				this.env,
-				this.user,
-			);
+			this.provider = resolveProvider("vectorize", {
+				ai: this.env.AI,
+				vector_db: this.env.VECTOR_DB,
+				repositories,
+			});
 			logger.debug("Using Vectorize embedding provider", {
 				ai: this.env.AI,
 				vectorDb: this.env.VECTOR_DB,

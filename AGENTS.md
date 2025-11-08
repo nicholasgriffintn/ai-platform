@@ -107,11 +107,11 @@ Services receive context via `getServiceContext(c)` middleware injected in route
 - Never pass raw Hono context to services; use extracted context objects
 
 ### Provider Architecture
-- Multi-provider AI support via `AIProviderFactory` (`apps/api/src/lib/providers/factory.ts`)
+- Multi-provider AI support via `ProviderLibrary` (`apps/api/src/lib/providers/library.ts`) with category-specific registries; `AIProviderFactory` now resolves chat providers from this registry for backwards compatibility.
 - Base provider interface defined in `apps/api/src/lib/providers/provider/base.ts`
-- Each provider extends base class and implements: `generateChatCompletion`, `generateStreamingResponse`
+- Each provider extends the base class and implements: `generateChatCompletion`, `generateStreamingResponse`
 - Model routing via `ModelRouter` (`apps/api/src/lib/modelRouter`) selects optimal provider based on model capabilities
-- Provider instances registered in factory config array with optional aliases
+- Provider registrations for chat/audio/embedding/research/search/transcription are declared under `apps/api/src/lib/providers/registry/registrations/*` and bootstrap lazily when a category is first requested.
 
 ## Common Modification Patterns
 
@@ -130,7 +130,7 @@ Services receive context via `getServiceContext(c)` middleware injected in route
 1. Create provider class in `apps/api/src/lib/providers/provider/{name}.ts`
 2. Extend `BaseAIProvider` from `base.ts`
 3. Implement required methods: `generateChatCompletion`, `generateStreamingResponse`
-4. Add provider to `factory.ts` providerConfigs array with key and optional aliases
+4. Register the provider in `apps/api/src/lib/providers/registry/registrations/chat.ts` (or the relevant category file) so `providerLibrary` can resolve it; include aliases/metadata as needed. Use `AIProviderFactory.registerProvider` only for dynamic/runtime additions.
 5. Add model definitions to `apps/api/src/lib/models/index.ts`
 6. Update usage tracking in `apps/api/src/lib/usageManager.ts` if pricing differs
 7. Test with mock responses and various model configurations

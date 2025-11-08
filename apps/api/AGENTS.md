@@ -392,6 +392,123 @@ export class ExampleProvider extends BaseAIProvider {
 }
 ```
 
+### Text-to-Speech Providers (Added: 2024-11-08)
+
+**When to use**: Any time you add or modify audio/TTS providers or touch `/audio/speech`.
+
+**Files**:
+
+- `apps/api/src/services/audio/speech.ts`
+- `apps/api/src/lib/providers/capabilities/audio/providers/*`
+- `apps/api/src/lib/providers/registry/registrations/audio.ts`
+
+**Pattern**:
+
+1. Fetch providers through `providerLibrary.audio(providerName, { env, user })` instead of instantiating bespoke classes under `lib/audio`.
+2. Pass a full `AudioSynthesisRequest` (input, env, user, optional slug/storage/locale/voice) to `provider.synthesize`.
+3. Implement providers under `lib/providers/capabilities/audio/providers`, extending `BaseAudioProvider` for shared slug + R2 helpers.
+4. Register the provider inside `registerAudioProviders` so it can be lazily resolved.
+5. Return an `AudioSynthesisResult` containing either a persisted key/url or inline response data; `handleTextToSpeech` converts that into API responses.
+
+**Tests**:
+
+- Mock `providerLibrary` in `apps/api/src/services/audio/__test__/speech.test.ts` to emulate new providers.
+- Add unit coverage for any custom provider logic if it manipulates requests/responses beyond simple delegation.
+- Ensure metadata (voice, engine, raw payload references) is returned so downstream consumers can reason about the audio asset.
+
+### Transcription Providers (Added: 2024-11-08)
+
+**When to use**: Anytime you add or modify speech-to-text/transcription behavior.
+
+**Files**:
+
+- `apps/api/src/lib/providers/capabilities/transcription/**`
+- `apps/api/src/lib/providers/registry/registrations/transcription.ts`
+- `apps/api/src/services/audio/transcribe.ts`
+
+**Pattern**:
+
+1. Implement providers under `capabilities/transcription/providers`, extending `BaseTranscriptionProvider`.
+2. Expose them via `registerTranscriptionProviders` so `providerLibrary.transcription(name, { env, user })` can resolve them lazily.
+3. Route all runtime usage (e.g., `handleTranscribe`) through `providerLibrary` instead of bespoke factories.
+4. Return `TranscriptionResult` objects with `text` plus any metadata/raw payload required downstream.
+
+**Tests**:
+
+- Mock `providerLibrary` in `apps/api/src/services/audio/__test__/transcribe.test.ts`.
+- Keep provider-specific unit tests alongside their implementations (e.g., `capabilities/transcription/__test__`).
+- Include error-path coverage for size limits, missing bindings, and provider failures.
+
+### Search Providers (Added: 2024-11-08)
+
+**When to use**: Any backend change touching web search providers or `/services/search`.
+
+**Files**:
+
+- `apps/api/src/lib/providers/capabilities/search/**`
+- `apps/api/src/lib/providers/registry/registrations/search.ts`
+- `apps/api/src/services/search/web.ts`
+
+**Pattern**:
+
+1. Implement search providers under `capabilities/search/providers` so they can be lazily resolved via `providerLibrary.search`.
+2. Keep provider constructors validating env requirements (API keys, gateway tokens) and throw `AssistantError` with `CONFIGURATION_ERROR` when missing.
+3. Service entrypoints should request providers via `providerLibrary.search(name, { env, user })`—no legacy factories.
+4. Always return the full provider response plus normalized `results` arrays so downstream data consumers stay consistent.
+
+**Tests**:
+
+- Mock `providerLibrary.search` in `apps/api/src/services/search/__test__/web.test.ts`.
+- Write provider-specific unit tests under `capabilities/search/__test__` for each vendor (Serper, Tavily, etc.).
+- Cover error cases (missing keys, gateway failures, HTTP error bodies) in each provider test suite.
+
+### Research Providers (Added: 2024-11-08)
+
+**When to use**: Any change that touches Parallel/Exa research integrations or background research polling.
+
+**Files**:
+
+- `apps/api/src/lib/providers/capabilities/research/**`
+- `apps/api/src/lib/providers/registry/registrations/research.ts`
+- `apps/api/src/services/research/task.ts`
+- `apps/api/src/services/tasks/handlers/ResearchPollingHandler.ts`
+
+**Pattern**:
+
+1. Implement providers under `capabilities/research/providers` so they can be resolved via `providerLibrary.research`.
+2. Keep env validation inside the provider (API keys, gateway tokens) and emit `AssistantError` with a helpful type when missing.
+3. Service layers must call `providerLibrary.research(name, { env, user })` instead of custom factories; pass the resulting provider through all task/poll flows.
+4. Persist the exact provider output (run metadata, warnings, polls) so downstream consumers and polling jobs stay in sync.
+
+**Tests**:
+
+- Mock `providerLibrary.research` in `apps/api/src/services/research/__test__/task.test.ts` and `apps/api/src/services/tasks/handlers/__test__/ResearchPollingHandler.test.ts`.
+- Add provider-level unit tests under `capabilities/research/__test__` whenever you introduce new vendors or complex behaviors.
+- Assert repository updates (dynamic app responses, task queue) receive the normalized provider payloads when tasks complete or fail.
+
+### Embedding Providers (Added: 2024-11-08)
+
+**When to use**: Any change involving embeddings/vector storage across Vectorize, Bedrock, Mistral, Marengo, or S3 vectors.
+
+**Files**:
+
+- `apps/api/src/lib/providers/capabilities/embedding/**`
+- `apps/api/src/lib/providers/registry/registrations/embedding.ts`
+- `apps/api/src/lib/embedding/index.ts`
+
+**Pattern**:
+
+1. Implement provider logic under `capabilities/embedding/providers` and register them as `transient` so per-user configs stay isolated.
+2. From higher-level code (`Embedding`), resolve providers via `providerLibrary.embedding(name, { env, user, config })` rather than bespoke factories.
+3. Centralize env/config validation inside each provider and throw `AssistantError` when required credentials are missing.
+4. Keep namespace calculation and repository wiring inside `Embedding`; providers should focus solely on CRUD with their backing vector store.
+
+**Tests**:
+
+- Mock `providerLibrary.embedding` in `apps/api/src/lib/embedding/__test__/index.test.ts`.
+- Provider-specific suites live under `capabilities/embedding/__test__`; extend them when behavior changes.
+- Cover external dependency behavior (AWS clients, Vectorize AI responses) with appropriate mocks so regressions are caught early.
+
 ## Common Modification Locations
 
 ### When user requests...

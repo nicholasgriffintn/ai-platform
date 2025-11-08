@@ -4,7 +4,7 @@ import { getAIResponse } from "~/lib/chat/responses";
 import { createStreamWithPostProcessing } from "~/lib/chat/streaming";
 import { handleToolCalls } from "~/lib/chat/tools";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
-import { Guardrails } from "~/lib/guardrails";
+import { Guardrails } from "~/lib/providers/capabilities/guardrails/providers";
 import type { CoreChatOptions, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";

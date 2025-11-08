@@ -4,22 +4,29 @@ import { Database } from "~/lib/database";
 import { getAuxiliaryModel } from "~/lib/models";
 import { trackRagMetrics } from "~/lib/monitoring";
 import { AIProviderFactory } from "~/lib/providers/factory";
+import { providerLibrary } from "~/lib/providers/library";
 import { AssistantError } from "~/utils/errors";
 import type { IUserSettings } from "../../../types";
-import { EmbeddingProviderFactory } from "../factory";
 import { Embedding } from "../index";
 
-vi.mock("../factory");
 vi.mock("~/lib/database");
 vi.mock("~/lib/monitoring");
 vi.mock("~/lib/providers/factory");
 vi.mock("~/lib/models");
+vi.mock("~/lib/providers/library", () => ({
+	providerLibrary: {
+		embedding: vi.fn(),
+	},
+}));
 
 describe("Embedding", () => {
 	let mockEnv: any;
 	let mockUser: any;
 	let mockUserSettings: any;
 	let mockProvider: any;
+	let mockProviderLibraryEmbedding: ReturnType<
+		typeof vi.mocked<typeof providerLibrary.embedding>
+	>;
 	let mockDatabase: any;
 
 	beforeEach(() => {
@@ -57,9 +64,8 @@ describe("Embedding", () => {
 			getInstance: vi.fn().mockReturnValue({}),
 		};
 
-		vi.mocked(EmbeddingProviderFactory.getProvider).mockReturnValue(
-			mockProvider,
-		);
+		mockProviderLibraryEmbedding = vi.mocked(providerLibrary.embedding);
+		mockProviderLibraryEmbedding.mockReturnValue(mockProvider);
 		vi.mocked(Database.getInstance).mockReturnValue(mockDatabase);
 	});
 
@@ -75,15 +81,17 @@ describe("Embedding", () => {
 				mockUserSettings,
 			);
 
-			expect(EmbeddingProviderFactory.getProvider).toHaveBeenCalledWith(
+			expect(mockProviderLibraryEmbedding).toHaveBeenCalledWith(
 				"vectorize",
 				expect.objectContaining({
-					ai: mockEnv.AI,
-					vector_db: mockEnv.VECTOR_DB,
-					repositories: expect.any(Object),
+					env: mockEnv,
+					user: mockUser,
+					config: expect.objectContaining({
+						ai: mockEnv.AI,
+						vector_db: mockEnv.VECTOR_DB,
+						repositories: expect.any(Object),
+					}),
 				}),
-				mockEnv,
-				mockUser,
 			);
 			expect(embedding).toBeDefined();
 		});
@@ -101,17 +109,19 @@ describe("Embedding", () => {
 				bedrockSettings,
 			);
 
-			expect(EmbeddingProviderFactory.getProvider).toHaveBeenCalledWith(
+			expect(mockProviderLibraryEmbedding).toHaveBeenCalledWith(
 				"bedrock",
-				{
-					knowledgeBaseId: "test-kb-id",
-					knowledgeBaseCustomDataSourceId: "test-ds-id",
-					region: "us-east-1",
-					accessKeyId: "test-access-key",
-					secretAccessKey: "test-secret-key",
-				},
-				mockEnv,
-				mockUser,
+				expect.objectContaining({
+					env: mockEnv,
+					user: mockUser,
+					config: {
+						knowledgeBaseId: "test-kb-id",
+						knowledgeBaseCustomDataSourceId: "test-ds-id",
+						region: "us-east-1",
+						accessKeyId: "test-access-key",
+						secretAccessKey: "test-secret-key",
+					},
+				}),
 			);
 		});
 
@@ -122,13 +132,15 @@ describe("Embedding", () => {
 
 			Embedding.getInstance(mockEnv, mockUser, mistralSettings);
 
-			expect(EmbeddingProviderFactory.getProvider).toHaveBeenCalledWith(
+			expect(mockProviderLibraryEmbedding).toHaveBeenCalledWith(
 				"mistral",
-				{
-					vector_db: mockEnv.VECTOR_DB,
-				},
-				mockEnv,
-				mockUser,
+				expect.objectContaining({
+					env: mockEnv,
+					user: mockUser,
+					config: {
+						vector_db: mockEnv.VECTOR_DB,
+					},
+				}),
 			);
 			expect(Database.getInstance).not.toHaveBeenCalled();
 		});

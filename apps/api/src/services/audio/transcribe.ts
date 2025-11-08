@@ -1,5 +1,5 @@
-import { TranscriptionProviderFactory } from "~/lib/transcription/factory";
 import { getAuxiliarySpeechModel } from "~/lib/models";
+import { providerLibrary } from "~/lib/providers/library";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { RepositoryManager } from "~/repositories";
@@ -37,14 +37,17 @@ export const handleTranscribe = async (
 				speechModel.transcriptionProvider as TranscriptionProvider;
 		}
 
-		const transcriptionProvider =
-			TranscriptionProviderFactory.getProvider(selectedProvider);
+		const resolvedProvider = selectedProvider || "workers";
+		const transcriptionProvider = providerLibrary.transcription(
+			resolvedProvider,
+			{ env, user },
+		);
 
 		const result = await transcriptionProvider.transcribe({
 			env,
 			audio,
 			user,
-			provider: selectedProvider,
+			provider: resolvedProvider,
 			timestamps,
 		});
 

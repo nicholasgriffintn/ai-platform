@@ -1,6 +1,6 @@
 import { ConversationManager } from "~/lib/conversationManager";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
-import { Guardrails } from "~/lib/guardrails";
+import { Guardrails } from "~/lib/providers/capabilities/guardrails/providers";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 

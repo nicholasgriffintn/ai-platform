@@ -5,7 +5,6 @@ import {
 	type ServiceContext,
 } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export interface SpeechGenerationParams {
 	prompt: string;
