@@ -6,7 +6,11 @@ import { GuardrailsProviderFactory } from "../factory";
 import { Guardrails } from "../index";
 
 vi.mock("~/lib/monitoring");
-vi.mock("~/lib/guardrails/factory");
+vi.mock("../factory", () => ({
+	GuardrailsProviderFactory: {
+		getProvider: vi.fn(),
+	},
+}));
 
 const mockTrackGuardrailViolation = vi.mocked(trackGuardrailViolation);
 const mockGuardrailsProviderFactory = vi.mocked(GuardrailsProviderFactory);

@@ -3,7 +3,7 @@ import { getModelConfigByMatchingModel } from "~/lib/models";
 import { createCommonParameters } from "~/utils/parameters";
 import { WorkersProvider } from "../workers";
 
-vi.mock("~/lib/providers/provider/base", () => ({
+vi.mock("../base", () => ({
 	BaseProvider: class MockBaseProvider {
 		name = "mock";
 		supportsStreaming = true;

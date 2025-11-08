@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { ReplicateProvider, buildReplicateInput } from "../replicate";
 
-vi.mock("~/lib/providers/provider/base", () => ({
+vi.mock("../base", () => ({
 	BaseProvider: class MockBaseProvider {
 		name = "mock";
 		supportsStreaming = true;

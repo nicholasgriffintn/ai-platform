@@ -8,7 +8,7 @@ import {
 } from "~/utils/parameters";
 import { AnthropicProvider } from "../anthropic";
 
-vi.mock("~/lib/providers/provider/base", () => ({
+vi.mock("../base", () => ({
 	BaseProvider: class MockBaseProvider {
 		name = "mock";
 		supportsStreaming = true;

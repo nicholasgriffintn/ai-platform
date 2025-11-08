@@ -18,7 +18,7 @@ vi.mock("~/repositories", () => ({
 	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
-vi.mock("~/lib/guardrails", () => ({
+vi.mock("~/lib/providers/capabilities/guardrails/providers", () => ({
 	Guardrails: vi.fn(() => mockGuardrails),
 }));
 
@@ -32,10 +32,9 @@ describe("GuardrailsValidator", () => {
 
 		const { RepositoryManager } =
 			await vi.importMock<typeof import("~/repositories")>("~/repositories");
-		const { Guardrails } =
-			await vi.importMock<
-				typeof import("~/lib/providers/capabilities/guardrails/providers")
-			>("~/lib/guardrails");
+		const { Guardrails } = await vi.importMock<
+			typeof import("~/lib/providers/capabilities/guardrails/providers")
+		>("~/lib/providers/capabilities/guardrails/providers");
 
 		vi.mocked(RepositoryManager).mockImplementation(
 			() => mockRepositories as any,

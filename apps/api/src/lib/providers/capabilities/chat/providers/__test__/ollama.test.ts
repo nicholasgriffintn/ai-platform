@@ -7,7 +7,7 @@ import {
 } from "~/utils/parameters";
 import { OllamaProvider } from "../ollama";
 
-vi.mock("~/lib/providers/provider/base", () => ({
+vi.mock("../base", () => ({
 	BaseProvider: class MockBaseProvider {
 		name = "mock";
 		supportsStreaming = true;

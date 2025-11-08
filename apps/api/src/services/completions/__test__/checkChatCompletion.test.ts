@@ -20,7 +20,7 @@ vi.mock("~/lib/conversationManager", () => ({
 	},
 }));
 
-vi.mock("~/lib/guardrails", () => ({
+vi.mock("~/lib/providers/capabilities/guardrails/providers", () => ({
 	Guardrails: vi.fn(),
 }));
 

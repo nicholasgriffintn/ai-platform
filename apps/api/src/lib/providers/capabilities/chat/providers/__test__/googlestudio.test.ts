@@ -3,7 +3,7 @@ import { getModelConfigByMatchingModel } from "~/lib/models";
 import { getEffectiveMaxTokens } from "~/utils/parameters";
 import { GoogleStudioProvider } from "../googlestudio";
 
-vi.mock("~/lib/providers/provider/base", () => ({
+vi.mock("../base", () => ({
 	BaseProvider: class MockBaseProvider {
 		name = "mock";
 		supportsStreaming = true;

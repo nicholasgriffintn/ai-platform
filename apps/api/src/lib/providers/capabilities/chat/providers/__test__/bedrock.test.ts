@@ -33,7 +33,7 @@ vi.mock("aws4fetch", () => ({
 	})),
 }));
 
-vi.mock("~/lib/providers/provider/base", () => ({
+vi.mock("../base", () => ({
 	BaseProvider: class MockBaseProvider {
 		name = "mock";
 		supportsStreaming = true;
