@@ -1,7 +1,7 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getModelConfigByModel } from "~/lib/models";
 import { validateReplicatePayload } from "~/lib/models/utils/replicateValidation";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import {
 	resolveServiceContext,
 	type ServiceContext,
@@ -93,9 +93,10 @@ export async function generateVideo({
 			modelName: modelConfig.name || MODEL_KEY,
 		});
 
-		const provider = AIProviderFactory.getProvider(
-			modelConfig.provider || "replicate",
-		);
+		const provider = getChatProvider(modelConfig.provider || "replicate", {
+			env: runtimeEnv,
+			user: runtimeUser,
+		});
 
 		const videoData = await provider.getResponse({
 			completion_id,

@@ -53,12 +53,33 @@ export class TestHelpers {
 		await page.waitForLoadState("networkidle", { timeout });
 	}
 
-	static async clearLocalStorage(page: Page) {
+	static async clearLocalStorage(
+		page: Page,
+		options?: { preserveKeys?: string[] },
+	) {
 		try {
-			await page.evaluate(() => {
-				localStorage.clear();
-				sessionStorage.clear();
-			});
+			await page.evaluate(
+				({ preserveKeys }) => {
+					const preservedEntries: Array<[string, string]> = [];
+
+					if (Array.isArray(preserveKeys) && preserveKeys.length > 0) {
+						for (const key of preserveKeys) {
+							const value = window.localStorage.getItem(key);
+							if (value !== null) {
+								preservedEntries.push([key, value]);
+							}
+						}
+					}
+
+					localStorage.clear();
+					sessionStorage.clear();
+
+					for (const [key, value] of preservedEntries) {
+						window.localStorage.setItem(key, value);
+					}
+				},
+				{ preserveKeys: options?.preserveKeys ?? [] },
+			);
 		} catch (error) {
 			// localStorage not available yet, skip clearing
 			console.warn("Could not clear localStorage:", error);
@@ -71,6 +92,16 @@ export class TestHelpers {
 				localStorage.setItem(key, value);
 			},
 			{ key, value },
+		);
+	}
+
+	static async injectApiKeyBeforeNavigation(page: Page, apiKey: string) {
+		await page.addInitScript(
+			({ apiKey }) => {
+				window.localStorage.setItem("api_key", apiKey);
+				window.localStorage.setItem("localOnlyMode", "false");
+			},
+			{ apiKey },
 		);
 	}
 }

@@ -1,7 +1,7 @@
 import { decodeBase64 } from "hono/utils/encode";
 
 import { getModels } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { listConfigurableChatProviders } from "~/lib/providers/capabilities/chat";
 import type { IUserSettings } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -506,7 +506,7 @@ export class UserSettingsRepository extends BaseRepository {
 	}
 
 	public async createUserProviderSettings(userId: number): Promise<void> {
-		const providers = AIProviderFactory.getConfigurableProviders();
+		const providers = listConfigurableChatProviders();
 		const alwaysEnabledProviders = this.env.ALWAYS_ENABLED_PROVIDERS || "";
 		const defaultProviders = alwaysEnabledProviders?.split(",") || [];
 

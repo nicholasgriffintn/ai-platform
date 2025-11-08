@@ -5,7 +5,7 @@ import {
 	webSearchAnswerSystemPrompt,
 	webSearchSimilarQuestionsSystemPrompt,
 } from "~/lib/prompts";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { handleWebSearch } from "~/services/search/web";
 import type { IEnv, IUser, SearchOptions, SearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -45,7 +45,7 @@ export async function performDeepWebSearch(
 
 	const { model: modelToUse, provider: providerToUse } =
 		await getAuxiliaryModel(env, user);
-	const provider = AIProviderFactory.getProvider(providerToUse);
+	const provider = getChatProvider(providerToUse, { env, user });
 
 	const [webSearchResults, similarQuestionsResponse] = await Promise.all([
 		// TODO: Maybe we need to scrape to get the full content or force include raw content?

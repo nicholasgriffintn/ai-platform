@@ -18,7 +18,7 @@ vi.mock("~/repositories", () => ({
 	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
-vi.mock("~/lib/guardrails", () => ({
+vi.mock("~/lib/providers/capabilities/guardrails", () => ({
 	Guardrails: vi.fn(() => mockGuardrails),
 }));
 
@@ -32,10 +32,9 @@ describe("GuardrailsValidator", () => {
 
 		const { RepositoryManager } =
 			await vi.importMock<typeof import("~/repositories")>("~/repositories");
-		const { Guardrails } =
-			await vi.importMock<typeof import("~/lib/guardrails")>(
-				"~/lib/guardrails",
-			);
+		const { Guardrails } = await vi.importMock<
+			typeof import("~/lib/providers/capabilities/guardrails")
+		>("~/lib/providers/capabilities/guardrails");
 
 		vi.mocked(RepositoryManager).mockImplementation(
 			() => mockRepositories as any,
@@ -262,7 +261,9 @@ describe("GuardrailsValidator", () => {
 		});
 
 		it("should handle Guardrails initialization throwing an error", async () => {
-			const { Guardrails } = await import("~/lib/guardrails");
+			const { Guardrails } = await import(
+				"~/lib/providers/capabilities/guardrails"
+			);
 			(Guardrails as unknown as Mock).mockImplementation(() => {
 				throw new Error("Guardrails initialization failed");
 			});

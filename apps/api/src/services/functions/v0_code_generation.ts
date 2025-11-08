@@ -1,4 +1,4 @@
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { IFunction, IRequest } from "~/types";
 
 export const v0_code_generation: IFunction = {
@@ -70,7 +70,7 @@ export const v0_code_generation: IFunction = {
 			});
 		}
 
-		const provider = AIProviderFactory.getProvider("v0");
+		const provider = getChatProvider("v0", { env: req.env, user: req.user });
 		const response = await provider.getResponse(
 			{
 				model: "v0-1.0-md",

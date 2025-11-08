@@ -1,5 +1,5 @@
 import { getAuxiliaryModelForRetrieval } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -154,7 +154,7 @@ export async function analyseHackerNewsStories({
 
 		const { model: modelToUse, provider: providerToUse } =
 			await getAuxiliaryModelForRetrieval(env, user);
-		const provider = AIProviderFactory.getProvider(providerToUse);
+		const provider = getChatProvider(providerToUse, { env, user });
 
 		const stringifiedStories = stories
 			.map(

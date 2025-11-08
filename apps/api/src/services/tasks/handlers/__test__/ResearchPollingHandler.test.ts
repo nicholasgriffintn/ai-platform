@@ -1,22 +1,20 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { IEnv } from "~/types";
 import { ResearchPollingHandler } from "../ResearchPollingHandler";
-import { Research } from "~/lib/research";
+import { getResearchProvider } from "~/lib/providers/capabilities/research";
 import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
 import { TaskService } from "../../TaskService";
 import type { TaskMessage } from "../../TaskService";
 
-vi.mock("~/lib/research", () => ({
-	Research: {
-		getInstance: vi.fn(),
-	},
+vi.mock("~/lib/providers/capabilities/research", () => ({
+	getResearchProvider: vi.fn(),
 }));
 
 vi.mock("~/repositories/DynamicAppResponseRepository");
 vi.mock("~/repositories/TaskRepository");
 vi.mock("../../TaskService");
 
-const mockedResearchGetInstance = vi.mocked(Research.getInstance);
+const mockedGetResearchProvider = vi.mocked(getResearchProvider);
 const mockedDynamicAppResponseRepository = vi.mocked(
 	DynamicAppResponseRepository,
 );
@@ -77,8 +75,8 @@ describe("ResearchPollingHandler", () => {
 			error: "Research failed",
 		});
 
-		mockedResearchGetInstance.mockReturnValue({
-			fetchResult: mockFetchResult,
+		mockedGetResearchProvider.mockReturnValue({
+			fetchResearchResult: mockFetchResult,
 		} as any);
 
 		const mockRepo = {
@@ -115,8 +113,8 @@ describe("ResearchPollingHandler", () => {
 			},
 		});
 
-		mockedResearchGetInstance.mockReturnValue({
-			fetchResult: mockFetchResult,
+		mockedGetResearchProvider.mockReturnValue({
+			fetchResearchResult: mockFetchResult,
 		} as any);
 
 		const mockRepo = {
@@ -152,8 +150,8 @@ describe("ResearchPollingHandler", () => {
 			},
 		});
 
-		mockedResearchGetInstance.mockReturnValue({
-			fetchResult: mockFetchResult,
+		mockedGetResearchProvider.mockReturnValue({
+			fetchResearchResult: mockFetchResult,
 		} as any);
 
 		const mockRepo = {
@@ -183,8 +181,8 @@ describe("ResearchPollingHandler", () => {
 			},
 		});
 
-		mockedResearchGetInstance.mockReturnValue({
-			fetchResult: mockFetchResult,
+		mockedGetResearchProvider.mockReturnValue({
+			fetchResearchResult: mockFetchResult,
 		} as any);
 
 		const mockEnqueueTask = vi.fn().mockResolvedValue(undefined);
@@ -217,8 +215,8 @@ describe("ResearchPollingHandler", () => {
 			output: { content: "Results" },
 		});
 
-		mockedResearchGetInstance.mockReturnValue({
-			fetchResult: mockFetchResult,
+		mockedGetResearchProvider.mockReturnValue({
+			fetchResearchResult: mockFetchResult,
 		} as any);
 
 		const mockRepo = {

@@ -31,10 +31,8 @@ vi.mock("~/lib/modelRouter", () => ({
 	},
 }));
 
-vi.mock("~/lib/providers/factory", () => ({
-	AIProviderFactory: {
-		getProvider: mockGetProvider,
-	},
+vi.mock("~/lib/providers/capabilities/chat", () => ({
+	getChatProvider: mockGetProvider,
 }));
 
 import { handleCreateFimCompletions } from "../createFimCompletions";
@@ -106,7 +104,7 @@ describe("handleCreateFimCompletions", () => {
 		});
 
 		expect(mockSelectFimModel).not.toHaveBeenCalled();
-		expect(mockGetProvider).toHaveBeenCalledWith("mistral");
+		expect(mockGetProvider).toHaveBeenCalledWith("mistral", { env, user });
 		expect(mockGetResponse).toHaveBeenCalledWith({
 			env,
 			user,
@@ -140,7 +138,10 @@ describe("handleCreateFimCompletions", () => {
 		});
 
 		expect(mockSelectFimModel).toHaveBeenCalled();
-		expect(mockGetProvider).toHaveBeenCalledWith("mistral");
+		expect(mockGetProvider).toHaveBeenCalledWith("mistral", {
+			env,
+			user: undefined,
+		});
 		expect(mockGetResponse).toHaveBeenCalledWith({
 			env,
 			user: undefined,

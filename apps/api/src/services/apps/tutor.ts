@@ -2,7 +2,7 @@ import { sanitiseInput } from "~/lib/chat/utils";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { getAuxiliaryModel } from "~/lib/models";
 import { tutorSystemPrompt } from "~/lib/prompts";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { handleWebSearch } from "~/services/search/web";
 import type { IEnv, IUser, SearchOptions } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -88,7 +88,7 @@ export async function completeTutorRequest(
 
 	const { model: modelToUse, provider: providerToUse } =
 		await getAuxiliaryModel(env, user);
-	const provider = AIProviderFactory.getProvider(providerToUse);
+	const provider = getChatProvider(providerToUse, { env, user });
 
 	if (conversationManager) {
 		await conversationManager.add(new_completion_id, {

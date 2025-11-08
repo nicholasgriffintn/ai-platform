@@ -1,8 +1,5 @@
-import { CartesiaService } from "~/lib/audio/cartesia";
-import { ElevenLabsService } from "~/lib/audio/elevenlabs";
-import { MelottsService } from "~/lib/audio/melotts";
-import { PollyService } from "~/lib/audio/polly";
 import { StorageService } from "~/lib/storage";
+import { getAudioProvider } from "~/lib/providers/capabilities/audio";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -34,42 +31,56 @@ export const handleTextToSpeech = async (
 	const storage = new StorageService(env.ASSETS_BUCKET);
 	const slug = `tts/${encodeURIComponent(user?.email || "unknown").replace(/[^a-zA-Z0-9]/g, "-")}-${generateId()}`;
 
-	let response: string | { response: string; url: string };
+	const audioProvider = getAudioProvider(provider, { env, user });
+	const synthesisResult = await audioProvider.synthesize({
+		input,
+		env,
+		user,
+		slug,
+		storage,
+		locale: lang,
+	});
 
-	if (provider === "elevenlabs") {
-		const elevenlabs = new ElevenLabsService(env, user);
-		response = await elevenlabs.synthesizeSpeech(input, storage, slug);
-	} else if (provider === "cartesia") {
-		const cartesia = new CartesiaService(env, user);
-		response = await cartesia.synthesizeSpeech(input, storage, slug);
-	} else if (provider === "polly") {
-		const polly = new PollyService(env, user);
-
-		response = await polly.synthesizeSpeech(input, storage, slug);
-	} else {
-		const melotts = new MelottsService(env, user);
-
-		response = await melotts.synthesizeSpeech(input, lang);
-	}
-
-	if (!response) {
+	if (!synthesisResult) {
 		throw new AssistantError("No response from the text-to-speech service");
 	}
 
+	const audioKey = synthesisResult.key;
+
 	const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+	const normalizedKey = audioKey?.replace(/^\//, "");
+	const audioUrl =
+		synthesisResult.url ||
+		(normalizedKey
+			? baseAssetsUrl
+				? `${baseAssetsUrl.replace(/\/$/, "")}/${normalizedKey}`
+				: `/${normalizedKey}`
+			: undefined);
+	const responseText = synthesisResult.response;
+	const linkText = audioUrl ? `[Listen to the audio](${audioUrl})` : undefined;
+
+	let content: string;
+	if (responseText && linkText) {
+		content = `${responseText}\n${linkText}`;
+	} else if (responseText) {
+		content = responseText;
+	} else if (audioKey) {
+		content = audioKey;
+	} else if (linkText) {
+		content = linkText;
+	} else {
+		content = "Audio generated successfully";
+	}
+
 	return {
 		status: "success",
-		content:
-			typeof response === "string"
-				? response
-				: `${response.response}\n[Listen to the audio](${response.url})`,
-		data:
-			typeof response === "string"
-				? {
-						audioKey: response,
-						audioUrl: `${baseAssetsUrl}/${response}`,
-						provider,
-					}
-				: response,
+		content,
+		data: {
+			provider,
+			audioKey,
+			audioUrl,
+			response: responseText,
+			metadata: synthesisResult.metadata,
+		},
 	};
 };

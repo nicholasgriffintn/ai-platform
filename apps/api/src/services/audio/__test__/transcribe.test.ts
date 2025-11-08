@@ -23,13 +23,17 @@ const mockMistralProvider = vi.hoisted(() => ({
 	transcribe: vi.fn(),
 }));
 
-vi.mock("~/lib/transcription/factory", () => ({
-	TranscriptionProviderFactory: {
-		getProvider: vi.fn((provider: string) => {
-			if (provider === "mistral") return mockMistralProvider;
-			return mockWorkersProvider;
-		}),
-	},
+const mockProviderLibrary = vi.hoisted(() => ({
+	transcription: vi.fn((provider: string) => {
+		if (provider === "mistral") {
+			return mockMistralProvider;
+		}
+		return mockWorkersProvider;
+	}),
+}));
+
+vi.mock("~/lib/providers/library", () => ({
+	providerLibrary: mockProviderLibrary,
 }));
 
 import { handleTranscribe } from "../transcribe";
@@ -44,6 +48,12 @@ describe("handleTranscribe", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockProviderLibrary.transcription.mockImplementation((provider: string) => {
+			if (provider === "mistral") {
+				return mockMistralProvider;
+			}
+			return mockWorkersProvider;
+		});
 	});
 
 	describe("parameter validation", () => {

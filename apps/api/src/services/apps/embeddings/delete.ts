@@ -1,5 +1,5 @@
 import { RepositoryManager } from "~/repositories";
-import { Embedding } from "~/lib/embedding";
+import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -35,7 +35,7 @@ export const deleteEmbedding = async (
 		if (!userSettings) {
 			throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
 		}
-		const embedding = Embedding.getInstance(env, req.user, userSettings);
+		const embedding = getEmbeddingProvider(env, req.user, userSettings);
 
 		const result = await embedding.delete(ids);
 

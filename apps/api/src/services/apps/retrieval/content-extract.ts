@@ -1,5 +1,5 @@
 import { RepositoryManager } from "~/repositories";
-import { Embedding } from "~/lib/embedding";
+import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
 import type { IRequest } from "~/types";
 
 export interface ContentExtractParams {
@@ -93,11 +93,7 @@ export const extractContent = async (
 				const userSettings = req.user?.id
 					? await repositories.userSettings.getUserSettings(req.user.id)
 					: null;
-				const embedding = Embedding.getInstance(
-					req.env,
-					req.user,
-					userSettings,
-				);
+				const embedding = getEmbeddingProvider(req.env, req.user, userSettings);
 				const vectors = await Promise.all(
 					data.results.map(async (r) => {
 						const id = await generateShortId(r.url);
@@ -116,10 +112,8 @@ export const extractContent = async (
 					});
 
 					result.data!.vectorized = {
-						success: insertResult.mutationId !== undefined,
-						error: insertResult.mutationId
-							? undefined
-							: "Mutation ID is undefined",
+						success: insertResult.status === "success",
+						error: insertResult.error || undefined,
 					};
 				}
 			} catch (error) {

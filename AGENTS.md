@@ -107,11 +107,11 @@ Services receive context via `getServiceContext(c)` middleware injected in route
 - Never pass raw Hono context to services; use extracted context objects
 
 ### Provider Architecture
-- Multi-provider AI support via `AIProviderFactory` (`apps/api/src/lib/providers/factory.ts`)
+- Multi-provider AI support via `ProviderLibrary` (`apps/api/src/lib/providers/library.ts`) with category-specific registries; `AIProviderFactory` now resolves chat providers from this registry for backwards compatibility.
 - Base provider interface defined in `apps/api/src/lib/providers/provider/base.ts`
-- Each provider extends base class and implements: `generateChatCompletion`, `generateStreamingResponse`
+- Each provider extends the base class and implements: `generateChatCompletion`, `generateStreamingResponse`
 - Model routing via `ModelRouter` (`apps/api/src/lib/modelRouter`) selects optimal provider based on model capabilities
-- Provider instances registered in factory config array with optional aliases
+- Provider registrations for chat/audio/embedding/research/search/transcription are declared under `apps/api/src/lib/providers/registry/registrations/*` and bootstrap lazily when a category is first requested.
 
 ## Common Modification Patterns
 
@@ -130,11 +130,36 @@ Services receive context via `getServiceContext(c)` middleware injected in route
 1. Create provider class in `apps/api/src/lib/providers/provider/{name}.ts`
 2. Extend `BaseAIProvider` from `base.ts`
 3. Implement required methods: `generateChatCompletion`, `generateStreamingResponse`
-4. Add provider to `factory.ts` providerConfigs array with key and optional aliases
+4. Register the provider in `apps/api/src/lib/providers/registry/registrations/chat.ts` (or the relevant category file) so `providerLibrary` can resolve it; include aliases/metadata as needed. Use `AIProviderFactory.registerProvider` only for dynamic/runtime additions.
 5. Add model definitions to `apps/api/src/lib/models/index.ts`
 6. Update usage tracking in `apps/api/src/lib/usageManager.ts` if pricing differs
 7. Test with mock responses and various model configurations
 8. Document provider-specific quirks and rate limits in `apps/api/AGENTS.md`
+
+### Capability & Provider Patterns
+#### Use capability helpers for every provider call
+1. Import helpers from `apps/api/src/lib/providers/capabilities/{category}` (e.g., `getSearchProvider`, `listAudioProviders`) instead of reaching into the provider library directly.
+2. Guardrail flows should resolve helpers from `~/lib/providers/capabilities/guardrails`, which now co-locates the wrapper and helper logic.
+3. Mock the helper module in tests (`vi.mock("~/lib/providers/capabilities/search", () => ({ getSearchProvider: vi.fn() }))`) so suites stay aligned with the capability boundary.
+4. When exposing provider choices in UIs, use the capability discovery utilities instead of hardcoding names.
+
+#### Add a new capability category
+1. Extend `ProviderCategory`/`CategoryProviderMap` in `apps/api/src/lib/providers/registry/types.ts`.
+2. Create `apps/api/src/lib/providers/capabilities/{category}` containing `index.ts`, helpers, and provider implementations.
+3. Add a bootstrapper under `apps/api/src/lib/providers/registry/registrations/{category}.ts` and register it inside `DEFAULT_BOOTSTRAPPERS` in `library.ts`.
+4. Update relevant AGENTS files plus the decision matrix, and add capability-level tests (helper + env validation) before wiring the service layer.
+
+#### Provider lifecycle guidelines
+- `singleton` (default) providers are instantiated once per process—use when instances are stateless and safe to reuse.
+- `transient` providers are created per call—use when env/user configuration or stateful SDKs make reuse unsafe.
+- Document lifecycle decisions inside the registration function and add regression tests to ensure request-specific data does not leak.
+
+#### Provider migration workflow
+1. Announce the provider work, align schema/settings defaults, and register the provider (plus aliases) inside the appropriate capability bootstrapper.
+2. Update the capability helper to resolve/configure the provider and adjust any service code that should now rely on the helper.
+3. Add or refresh provider tests, capability helper tests, and service mocks.
+4. Run `pnpm --filter @assistant/api test`, `lint`, and `typecheck` to satisfy workspace gates.
+5. Update documentation (AGENTS files, README, decision matrix) so consumers know how to configure and select the provider.
 
 ### Adding a New Frontend Page
 1. Create page component in `apps/app/src/pages/{name}.tsx`
@@ -368,16 +393,18 @@ Services receive context via `getServiceContext(c)` middleware injected in route
 5. **Common Pitfalls**: Add solutions to problems encountered
 
 ### Update Format
-When adding new patterns, use this format:
+- Update the existing section that best matches the work instead of appending dated changelog entries.
+- When a new section is unavoidable, document it with this lightweight structure:
+
 ```markdown
-### [Pattern Name] (Added: YYYY-MM-DD)
+### Pattern Name
 **When to use**: [Specific conditions or scenarios]
-**Affects**: [Which workspaces this impacts]
+**Affects**: [Workspaces or features impacted]
 **Steps**:
 1. [Detailed step with file paths]
-2. [Include rebuild/test requirements]
+2. [Rebuild/test requirements]
 **Example**: [Code snippet or file reference]
-**Update AGENTS.md**: [Which workspace AGENTS.md files to update]
+**Documentation**: [Other AGENTS or READMEs that also need updates]
 ```
 
 ### Review Cycle

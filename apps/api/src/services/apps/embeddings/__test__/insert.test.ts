@@ -1,5 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const mockEmbeddingProvider = {
+	generate: vi.fn(),
+	insert: vi.fn(),
+};
+
+const embeddingHelperMocks = vi.hoisted(() => ({
+	getEmbeddingProvider: vi.fn(() => mockEmbeddingProvider),
+	getEmbeddingNamespace: vi.fn(),
+}));
+
+const mockGetEmbeddingProvider = embeddingHelperMocks.getEmbeddingProvider;
+const mockGetEmbeddingNamespace = embeddingHelperMocks.getEmbeddingNamespace;
+
 vi.mock("~/utils/embeddings", () => ({
 	chunkText: vi.fn(),
 }));
@@ -18,21 +31,14 @@ const mockRepositories = {
 	},
 };
 
-const mockEmbedding = {
-	getNamespace: vi.fn(),
-	generate: vi.fn(),
-	insert: vi.fn(),
-};
-
 vi.mock("~/repositories", () => ({
 	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
-vi.mock("~/lib/embedding", () => ({
-	Embedding: {
-		getInstance: vi.fn(() => mockEmbedding),
-	},
-}));
+vi.mock(
+	"~/lib/providers/capabilities/embedding/helpers",
+	() => embeddingHelperMocks,
+);
 
 vi.mock("~/lib/chat/utils", () => ({
 	sanitiseInput: vi.fn((input) => input),
@@ -66,9 +72,10 @@ describe("insertEmbedding", () => {
 		mockRepositories.embeddings.getEmbeddingIdByType.mockResolvedValue(null);
 		mockRepositories.embeddings.insertEmbedding.mockResolvedValue(undefined);
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.getNamespace.mockReturnValue("default-namespace");
-		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
-		mockEmbedding.insert.mockResolvedValue({ status: "success" });
+		mockGetEmbeddingNamespace.mockReturnValue("default-namespace");
+		mockEmbeddingProvider.generate.mockResolvedValue([{ id: "vec-1" }]);
+		mockEmbeddingProvider.insert.mockResolvedValue({ status: "success" });
+		mockGetEmbeddingProvider.mockReturnValue(mockEmbeddingProvider as any);
 		vi.mocked(chunkText).mockReturnValue(["single chunk"]);
 		vi.mocked(generateId).mockReturnValue("generated-id");
 	});
@@ -93,9 +100,9 @@ describe("insertEmbedding", () => {
 
 		mockRepositories.embeddings.insertEmbedding.mockResolvedValue(undefined);
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.getNamespace.mockReturnValue("custom-ns");
-		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
-		mockEmbedding.insert.mockResolvedValue({ status: "success" });
+		mockGetEmbeddingNamespace.mockReturnValue("custom-ns");
+		mockEmbeddingProvider.generate.mockResolvedValue([{ id: "vec-1" }]);
+		mockEmbeddingProvider.insert.mockResolvedValue({ status: "success" });
 
 		const result = await insertEmbedding(req);
 
@@ -137,8 +144,8 @@ describe("insertEmbedding", () => {
 			"blog-456",
 		);
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.generate.mockResolvedValue([{ id: "vec-2" }]);
-		mockEmbedding.insert.mockResolvedValue({ status: "success" });
+		mockEmbeddingProvider.generate.mockResolvedValue([{ id: "vec-2" }]);
+		mockEmbeddingProvider.insert.mockResolvedValue({ status: "success" });
 
 		const result = await insertEmbedding(req);
 
@@ -224,8 +231,8 @@ describe("insertEmbedding", () => {
 		vi.mocked(chunkText).mockReturnValue(["Chunk 1", "Chunk 2"]);
 		mockRepositories.embeddings.insertEmbedding.mockResolvedValue(undefined);
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
-		mockEmbedding.insert.mockResolvedValue({ status: "success" });
+		mockEmbeddingProvider.generate.mockResolvedValue([{ id: "vec-1" }]);
+		mockEmbeddingProvider.insert.mockResolvedValue({ status: "success" });
 
 		const result = await insertEmbedding(req);
 
@@ -254,8 +261,8 @@ describe("insertEmbedding", () => {
 
 		mockRepositories.embeddings.insertEmbedding.mockResolvedValue(undefined);
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
-		mockEmbedding.insert.mockResolvedValue({ status: "success" });
+		mockEmbeddingProvider.generate.mockResolvedValue([{ id: "vec-1" }]);
+		mockEmbeddingProvider.insert.mockResolvedValue({ status: "success" });
 
 		// @ts-ignore - req.request.id is required
 		const result = await insertEmbedding(req);
@@ -280,8 +287,8 @@ describe("insertEmbedding", () => {
 
 		mockRepositories.embeddings.insertEmbedding.mockResolvedValue(undefined);
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
-		mockEmbedding.insert.mockResolvedValue({ status: "error" });
+		mockEmbeddingProvider.generate.mockResolvedValue([{ id: "vec-1" }]);
+		mockEmbeddingProvider.insert.mockResolvedValue({ status: "error" });
 
 		await expect(insertEmbedding(req)).rejects.toThrow(
 			"Error inserting embedding",

@@ -22,10 +22,8 @@ const mockModelConfig = {
 	},
 };
 
-vi.mock("~/lib/providers/factory", () => ({
-	AIProviderFactory: {
-		getProvider: vi.fn(() => mockProvider),
-	},
+vi.mock("~/lib/providers/capabilities/chat", () => ({
+	getChatProvider: vi.fn(() => mockProvider),
 }));
 
 vi.mock("~/lib/chat/utils", () => ({

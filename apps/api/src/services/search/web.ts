@@ -1,6 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliarySearchProvider } from "~/lib/models";
-import { Search } from "~/lib/search";
+import { getSearchProvider } from "~/lib/providers/capabilities/search";
 import type {
 	IEnv,
 	IFunctionResponse,
@@ -34,8 +34,8 @@ export const handleWebSearch = async (
 	}
 
 	const providerToUse = await getAuxiliarySearchProvider(env, user, provider);
-	const search = Search.getInstance(env, providerToUse, user);
-	const response = await search.search(query, options);
+	const searchProvider = getSearchProvider(providerToUse, { env, user });
+	const response = await searchProvider.performWebSearch(query, options);
 
 	if (!response) {
 		throw new AssistantError("No response from the web search service");

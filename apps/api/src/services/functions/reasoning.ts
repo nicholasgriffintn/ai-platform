@@ -1,6 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { IFunction, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -69,7 +69,10 @@ Respond with:
 
 			const { model: modelToUse, provider: providerToUse } =
 				await getAuxiliaryModel(req.env, req.user);
-			const provider = AIProviderFactory.getProvider(providerToUse);
+			const provider = getChatProvider(providerToUse, {
+				env: req.env,
+				user: req.user,
+			});
 
 			const aiResponse = await provider.getResponse({
 				model: modelToUse,

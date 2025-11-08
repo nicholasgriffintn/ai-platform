@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getModelConfigByMatchingModel } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import * as chatCapability from "~/lib/providers/capabilities/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults } from "~/utils/parameters";
@@ -12,10 +12,8 @@ vi.mock("~/lib/models", () => ({
 	getModelConfigByMatchingModel: vi.fn(),
 }));
 
-vi.mock("~/lib/providers/factory", () => ({
-	AIProviderFactory: {
-		getProvider: vi.fn(),
-	},
+vi.mock("~/lib/providers/capabilities/chat", () => ({
+	getChatProvider: vi.fn(),
 }));
 
 vi.mock("~/utils/messages", () => ({
@@ -222,7 +220,7 @@ describe("responses", () => {
 				mockModelConfig,
 			);
 			// @ts-expect-error - mock implementation
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 			vi.mocked(formatMessages).mockReturnValue([
 				{ role: "user", content: "Hello" },
 			]);
@@ -240,7 +238,10 @@ describe("responses", () => {
 			const result = await getAIResponse(baseParams);
 
 			expect(getModelConfigByMatchingModel).toHaveBeenCalledWith("gpt-4");
-			expect(AIProviderFactory.getProvider).toHaveBeenCalledWith("openai");
+			expect(chatCapability.getChatProvider).toHaveBeenCalledWith("openai", {
+				env: baseParams.env,
+				user: baseParams.user,
+			});
 			expect(formatMessages).toHaveBeenCalledWith(
 				"openai",
 				[{ role: "user", content: "Hello" }],
@@ -312,7 +313,7 @@ describe("responses", () => {
 		});
 
 		it("should handle provider initialization error", async () => {
-			vi.mocked(AIProviderFactory.getProvider).mockImplementation(() => {
+			vi.mocked(chatCapability.getChatProvider).mockImplementation(() => {
 				throw new Error("Provider error");
 			});
 

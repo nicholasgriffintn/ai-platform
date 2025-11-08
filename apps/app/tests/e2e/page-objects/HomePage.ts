@@ -7,6 +7,7 @@ export class HomePage extends BasePage {
 	private readonly welcomeMessage: Locator;
 	private readonly modelSelector: Locator;
 	private readonly newChatButton: Locator;
+	private readonly assistantMessages: Locator;
 
 	constructor(page: Page) {
 		super(page);
@@ -17,6 +18,7 @@ export class HomePage extends BasePage {
 			.first();
 		this.modelSelector = page.getByRole("button", { name: /select model/i });
 		this.newChatButton = page.getByRole("button", { name: /New Chat/i });
+		this.assistantMessages = page.locator('[data-role="assistant"]');
 	}
 
 	async sendMessage(message: string) {
@@ -46,15 +48,36 @@ export class HomePage extends BasePage {
 		}
 	}
 
-	async waitForChatResponse() {
+	async waitForChatResponse(previousAssistantMessageCount?: number) {
+		if (typeof previousAssistantMessageCount === "number") {
+			await this.page.waitForFunction(
+				(prevCount) => {
+					return (
+						document.querySelectorAll('[data-role="assistant"]').length >
+						(prevCount ?? 0)
+					);
+				},
+				previousAssistantMessageCount,
+				{ timeout: 60000 },
+			);
+			return;
+		}
+
 		await this.page.waitForSelector('[data-role="assistant"]', {
-			timeout: 30000,
+			timeout: 60000,
 		});
 	}
 
 	async getLastMessage(): Promise<string> {
-		const messages = this.page.locator('[data-role="assistant"]');
-		const lastMessage = messages.last();
+		const lastMessage = this.assistantMessages.last();
 		return await this.getText(lastMessage);
+	}
+
+	async getAssistantMessageCount(): Promise<number> {
+		return await this.assistantMessages.count();
+	}
+
+	getLatestAssistantMessage(): Locator {
+		return this.assistantMessages.last();
 	}
 }

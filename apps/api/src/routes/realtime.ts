@@ -8,7 +8,7 @@ import {
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import type { IEnv } from "~/types";
-import { AIProviderFactory } from "../lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("realtime");
@@ -83,7 +83,7 @@ app.post(
 			};
 		}
 
-		const provider = AIProviderFactory.getProvider("openai");
+		const provider = getChatProvider("openai", { env, user });
 		const session = await provider.createRealtimeSession(env, user, type, body);
 
 		if (!session) {

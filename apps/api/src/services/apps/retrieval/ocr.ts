@@ -1,4 +1,4 @@
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { StorageService } from "~/lib/storage";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -55,7 +55,10 @@ export const performOcr = async (
 
 		const requestId = params.id || generateId();
 
-		const provider = AIProviderFactory.getProvider("mistral");
+		const provider = getChatProvider("mistral", {
+			env: req.env,
+			user: req.user,
+		});
 
 		const response = await provider.getResponse({
 			env: req.env,

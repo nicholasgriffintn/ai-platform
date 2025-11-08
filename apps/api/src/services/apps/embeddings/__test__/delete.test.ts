@@ -1,12 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import * as embeddingHelpers from "~/lib/providers/capabilities/embedding/helpers";
+
 const mockRepositories = {
 	userSettings: {
 		getUserSettings: vi.fn(() => Promise.resolve({})),
 	},
 };
 
-const mockEmbedding = {
+const mockEmbeddingProvider = {
 	delete: vi.fn(() => Promise.resolve({ status: "success" })),
 };
 
@@ -14,10 +16,8 @@ vi.mock("~/repositories", () => ({
 	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
-vi.mock("~/lib/embedding", () => ({
-	Embedding: {
-		getInstance: vi.fn(() => mockEmbedding),
-	},
+vi.mock("~/lib/providers/capabilities/embedding/helpers", () => ({
+	getEmbeddingProvider: vi.fn(() => mockEmbeddingProvider),
 }));
 
 vi.mock("~/utils/logger", () => ({
@@ -42,8 +42,18 @@ describe("deleteEmbedding", () => {
 		PUBLIC_ASSETS_URL: "https://assets.test.com",
 	} as any;
 
+	const mockedGetEmbeddingProvider = vi.mocked(
+		embeddingHelpers.getEmbeddingProvider,
+	);
+
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockEmbeddingProvider.delete.mockReset();
+		mockEmbeddingProvider.delete.mockResolvedValue({
+			status: "success",
+			error: null,
+		} as any);
+		mockedGetEmbeddingProvider.mockReturnValue(mockEmbeddingProvider as any);
 	});
 
 	afterEach(() => {
@@ -60,7 +70,7 @@ describe("deleteEmbedding", () => {
 		};
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.delete.mockResolvedValue({ status: "success" });
+		mockEmbeddingProvider.delete.mockResolvedValue({ status: "success" });
 
 		const result = await deleteEmbedding(req);
 
@@ -71,7 +81,7 @@ describe("deleteEmbedding", () => {
 			},
 		});
 
-		expect(mockEmbedding.delete).toHaveBeenCalledWith([
+		expect(mockEmbeddingProvider.delete).toHaveBeenCalledWith([
 			"embedding-1",
 			"embedding-2",
 			"embedding-3",
@@ -88,7 +98,7 @@ describe("deleteEmbedding", () => {
 		};
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.delete.mockResolvedValue({ status: "success" });
+		mockEmbeddingProvider.delete.mockResolvedValue({ status: "success" });
 
 		const result = await deleteEmbedding(req);
 
@@ -137,7 +147,7 @@ describe("deleteEmbedding", () => {
 		};
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.delete.mockResolvedValue({ status: "success" });
+		mockEmbeddingProvider.delete.mockResolvedValue({ status: "success" });
 
 		const result = await deleteEmbedding(req);
 
@@ -155,7 +165,7 @@ describe("deleteEmbedding", () => {
 		};
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.delete.mockResolvedValue({ status: "error" });
+		mockEmbeddingProvider.delete.mockResolvedValue({ status: "error" });
 
 		await expect(deleteEmbedding(req)).rejects.toThrow(
 			"Error deleting embedding",
@@ -190,7 +200,7 @@ describe("deleteEmbedding", () => {
 		};
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.delete.mockRejectedValue(
+		mockEmbeddingProvider.delete.mockRejectedValue(
 			new Error("Embedding service error"),
 		);
 

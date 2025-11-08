@@ -32,11 +32,14 @@ React Router 7 PWA for Polychat with offline storage, dynamic apps, and WebLLM s
   pnpm --filter @assistant/app format
   ```
 - **Tests**
+
   ```sh
   pnpm --filter @assistant/app test         # Vitest (jsdom)
   pnpm --filter @assistant/app coverage
   pnpm test:e2e                             # Playwright (root command)
   ```
+
+  - Chat Playwright specs hit the live API and require `PLAYWRIGHT_API_KEY` to be set to a valid local API key; they are skipped automatically when the variable is missing.
 
 ## Implementation Notes
 
@@ -685,8 +688,11 @@ describe("exampleStore", () => {
 
 ### Update Format
 
+- Update the section that best matches your change instead of creating dated changelog entries.
+- If a new subsection is necessary, document it with the template below and keep future edits within that subsection.
+
 ```markdown
-### [Pattern/Feature Name] (Added: YYYY-MM-DD)
+### [Pattern/Feature Name]
 
 **When to use**: [Specific scenario]
 **Files**: [File paths]

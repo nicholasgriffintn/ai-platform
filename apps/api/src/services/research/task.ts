@@ -1,6 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryResearchProvider } from "~/lib/models";
-import { Research } from "~/lib/research";
+import { getResearchProvider } from "~/lib/providers/capabilities/research";
 import type {
 	IEnv,
 	IFunctionResponse,
@@ -81,7 +81,7 @@ const normaliseInput = (input: unknown): unknown => {
 	);
 };
 
-const getResearchInstance = async (
+const getResearchProviderInstance = async (
 	env: IEnv,
 	user: IUser | undefined,
 	provider?: ResearchProviderName,
@@ -89,7 +89,10 @@ const getResearchInstance = async (
 	const providerToUse = await getAuxiliaryResearchProvider(env, user, provider);
 	return {
 		provider: providerToUse,
-		research: Research.getInstance(env, providerToUse, user),
+		researchProvider: getResearchProvider(providerToUse, {
+			env,
+			user,
+		}),
 	};
 };
 
@@ -99,13 +102,13 @@ export const startResearchTask = async (
 	const { env, user, provider, options } = req;
 	const preparedInput = normaliseInput(req.input);
 
-	const { provider: providerToUse, research } = await getResearchInstance(
-		env,
-		user,
-		provider,
-	);
+	const { provider: providerToUse, researchProvider } =
+		await getResearchProviderInstance(env, user, provider);
 
-	const creation = await research.createTask(preparedInput, options);
+	const creation = await researchProvider.createResearchTask(
+		preparedInput,
+		options,
+	);
 
 	if ("status" in creation) {
 		throw new AssistantError(creation.error, ErrorType.EXTERNAL_API_ERROR);
@@ -149,11 +152,8 @@ export const getResearchTaskStatus = async (
 ): Promise<ResearchResult> => {
 	const { env, runId, user, provider, options } = req;
 
-	const { provider: providerToUse, research } = await getResearchInstance(
-		env,
-		user,
-		provider,
-	);
+	const { provider: providerToUse, researchProvider } =
+		await getResearchProviderInstance(env, user, provider);
 	const responseRepo =
 		env.DB && user?.id ? new DynamicAppResponseRepository(env) : null;
 	const existingResponse = responseRepo
@@ -286,7 +286,7 @@ export const getResearchTaskStatus = async (
 		storedResult = merged;
 	};
 
-	const result = await research.fetchResult(runId, options);
+	const result = await researchProvider.fetchResearchResult(runId, options);
 
 	if ("status" in result) {
 		const now = new Date().toISOString();
@@ -345,13 +345,10 @@ export const handleResearchTask = async (
 	const { env, user, provider, options } = req;
 	const preparedInput = normaliseInput(req.input);
 
-	const { provider: providerToUse, research } = await getResearchInstance(
-		env,
-		user,
-		provider,
-	);
+	const { provider: providerToUse, researchProvider } =
+		await getResearchProviderInstance(env, user, provider);
 
-	const result = await research.run(preparedInput, options);
+	const result = await researchProvider.performResearch(preparedInput, options);
 
 	if ("status" in result) {
 		throw new AssistantError(result.error, ErrorType.EXTERNAL_API_ERROR);

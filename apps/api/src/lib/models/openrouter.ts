@@ -492,6 +492,36 @@ export const openrouterModelConfig: ModelConfig = {
 			"Kimi K2 is Moonshot AI's state-of-the-art Mixture-of-Experts (MoE) language model with 1 trillion total parameters and 32 billion activated parameters.",
 	},
 
+	"moonshotai/kimi-k2-thinking-openrouter": {
+		name: "Kimi K2 (Thinking)",
+		matchingModel: "moonshotai/kimi-k2-thinking",
+		provider: "openrouter",
+		type: ["text"],
+		knowledgeCutoffDate: "August 2024",
+		releaseDate: "November 6, 2025",
+		lastUpdated: "November 6, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsReasoning: true,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.0006,
+		costPer1kOutputTokens: 0.0025,
+		strengths: ["coding", "analysis", "multilingual", "tool_use"],
+		contextComplexity: 5,
+		reliability: 4,
+		speed: 3,
+		includedInRouter: true,
+		supportsArtifacts: true,
+		description:
+			"Kimi K2 Thinking is Moonshot AI’s most advanced open reasoning model to date, extending the K2 series into agentic, long-horizon reasoning.",
+	},
+
 	"google/gemini-2.5-pro": {
 		name: "Gemini 2.5 Pro",
 		matchingModel: "google/gemini-2.5-pro",

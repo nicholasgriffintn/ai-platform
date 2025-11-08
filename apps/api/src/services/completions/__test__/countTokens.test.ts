@@ -6,10 +6,8 @@ vi.mock("~/lib/models", () => ({
 	getModelConfigByModel: vi.fn(),
 }));
 
-vi.mock("~/lib/providers/factory", () => ({
-	AIProviderFactory: {
-		getProvider: vi.fn(),
-	},
+vi.mock("~/lib/providers/capabilities/chat", () => ({
+	getChatProvider: vi.fn(),
 }));
 
 vi.mock("~/utils/logger", () => ({
@@ -76,7 +74,7 @@ describe("countTokens", () => {
 	describe("successful token counting", () => {
 		it("should count tokens for a supported provider", async () => {
 			const { getModelConfigByModel } = await import("~/lib/models");
-			const { AIProviderFactory } = await import("~/lib/providers/factory");
+			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
 				"bedrock",
@@ -85,7 +83,7 @@ describe("countTokens", () => {
 			const mockProvider = createMockProvider();
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(
 				{ env: mockEnv, user: mockUser },
@@ -116,7 +114,7 @@ describe("countTokens", () => {
 
 		it("should work without a user", async () => {
 			const { getModelConfigByModel } = await import("~/lib/models");
-			const { AIProviderFactory } = await import("~/lib/providers/factory");
+			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
 				"bedrock",
@@ -125,7 +123,7 @@ describe("countTokens", () => {
 			const mockProvider = createMockProvider(true, 25);
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(
 				{ env: mockEnv },
@@ -155,7 +153,7 @@ describe("countTokens", () => {
 
 		it("should work without system prompt", async () => {
 			const { getModelConfigByModel } = await import("~/lib/models");
-			const { AIProviderFactory } = await import("~/lib/providers/factory");
+			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
 				"bedrock",
@@ -164,7 +162,7 @@ describe("countTokens", () => {
 			const mockProvider = createMockProvider(true, 30);
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(
 				{ env: mockEnv, user: mockUser },
@@ -206,7 +204,7 @@ describe("countTokens", () => {
 
 		it("should return error for unknown provider", async () => {
 			const { getModelConfigByModel } = await import("~/lib/models");
-			const { AIProviderFactory } = await import("~/lib/providers/factory");
+			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
 				"unknown-provider",
@@ -214,7 +212,7 @@ describe("countTokens", () => {
 			);
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(null);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(null);
 
 			const result = await handleCountTokens(
 				{ env: mockEnv, user: mockUser },
@@ -257,13 +255,13 @@ describe("countTokens", () => {
 
 		it("should return error for provider without token counting support", async () => {
 			const { getModelConfigByModel } = await import("~/lib/models");
-			const { AIProviderFactory } = await import("~/lib/providers/factory");
+			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig("openai", "gpt-4");
 			const mockProvider = createMockProvider(false); // No countTokens method
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(
 				{ env: mockEnv, user: mockUser },
@@ -283,7 +281,7 @@ describe("countTokens", () => {
 
 		it("should throw AssistantError when provider fails", async () => {
 			const { getModelConfigByModel } = await import("~/lib/models");
-			const { AIProviderFactory } = await import("~/lib/providers/factory");
+			const chatCapability = await import("~/lib/providers/capabilities/chat");
 			const { AssistantError } = await import("~/utils/errors");
 
 			const mockModelConfig = createMockModelConfig(
@@ -296,7 +294,7 @@ describe("countTokens", () => {
 			};
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			await expect(
 				handleCountTokens(
@@ -323,7 +321,7 @@ describe("countTokens", () => {
 	describe("edge cases", () => {
 		it("should handle empty messages array", async () => {
 			const { getModelConfigByModel } = await import("~/lib/models");
-			const { AIProviderFactory } = await import("~/lib/providers/factory");
+			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
 				"bedrock",
@@ -332,7 +330,7 @@ describe("countTokens", () => {
 			const mockProvider = createMockProvider(true, 0);
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(
 				{ env: mockEnv, user: mockUser },
@@ -351,7 +349,7 @@ describe("countTokens", () => {
 
 		it("should handle complex message content", async () => {
 			const { getModelConfigByModel } = await import("~/lib/models");
-			const { AIProviderFactory } = await import("~/lib/providers/factory");
+			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
 				"bedrock",
@@ -373,7 +371,7 @@ describe("countTokens", () => {
 			];
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(
 				{ env: mockEnv, user: mockUser },
@@ -401,7 +399,7 @@ describe("countTokens", () => {
 	describe("Anthropic provider", () => {
 		it("should count tokens for Anthropic models", async () => {
 			const { getModelConfigByModel } = await import("~/lib/models");
-			const { AIProviderFactory } = await import("~/lib/providers/factory");
+			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
 				"anthropic",
@@ -410,7 +408,7 @@ describe("countTokens", () => {
 			const mockProvider = createMockProvider(true, 28);
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(
 				{ env: mockEnv, user: mockUser },
@@ -439,7 +437,7 @@ describe("countTokens", () => {
 
 		it("should handle Anthropic models without system prompt", async () => {
 			const { getModelConfigByModel } = await import("~/lib/models");
-			const { AIProviderFactory } = await import("~/lib/providers/factory");
+			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
 				"anthropic",
@@ -448,7 +446,7 @@ describe("countTokens", () => {
 			const mockProvider = createMockProvider(true, 15);
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(
 				{ env: mockEnv, user: mockUser },

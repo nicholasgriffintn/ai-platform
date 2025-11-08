@@ -4,16 +4,18 @@ import {
 } from "~/lib/context/serviceContext";
 import { strudelGenerateResponseSchema } from "@assistant/schemas";
 import type { z } from "zod";
-import type { ChatRole, IEnv, IUser } from "~/types";
+import type { IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { buildStrudelSystemPrompt } from "~/lib/prompts/strudel";
 import {
 	getAuxiliaryModel,
 	getModels,
 	filterModelsForUserAccess,
 } from "~/lib/models";
+import { formatMessages } from "~/utils/messages";
+import { mergeParametersWithDefaults } from "~/utils/parameters";
 
 const logger = getLogger({ prefix: "services/strudel/generate" });
 
@@ -90,30 +92,56 @@ export async function generateStrudelCode({
 			providerName = auxiliaryModel.provider;
 		}
 
-		const provider = AIProviderFactory.getProvider(providerName);
+		const provider = getChatProvider(providerName, {
+			env: runtimeEnv,
+			user,
+		});
 
-		const messages: { role: ChatRole; content: string }[] = [
-			{
-				role: "system",
-				content: systemPrompt,
-			},
+		const baseMessages: Message[] = [
 			{
 				role: "user",
 				content: userPrompt,
 			},
 		];
 
-		const aiResponse: any = await provider.getResponse(
-			{
+		let formattedMessages: Message[];
+		try {
+			formattedMessages = formatMessages(
+				provider.name,
+				baseMessages,
+				systemPrompt,
 				model,
-				env: runtimeEnv,
-				user,
-				messages,
-				temperature: 0.7,
-				max_tokens: 8192,
-				stream: false,
-				store: false,
-			},
+			);
+		} catch (error) {
+			logger.error("Failed to format messages for provider", {
+				provider: provider.name,
+				error,
+			});
+			throw new AssistantError(
+				"Unable to prepare prompts for the selected model",
+				ErrorType.PARAMS_ERROR,
+			);
+		}
+
+		const requestParameters = mergeParametersWithDefaults({
+			model,
+			env: runtimeEnv,
+			user,
+			system_prompt: systemPrompt,
+			messages: formattedMessages,
+			temperature: 0.7,
+			max_tokens: 8192,
+			stream: false,
+			store: false,
+			completion_id: `strudel-${Date.now()}`,
+			enabled_tools: [],
+			tools: [],
+			mode: "normal",
+			platform: "dynamic-apps",
+		});
+
+		const aiResponse = await provider.getResponse(
+			requestParameters,
 			user?.id || null,
 		);
 

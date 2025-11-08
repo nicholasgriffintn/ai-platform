@@ -1,5 +1,5 @@
 import { getModelConfig, getModelConfigByMatchingModel } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { ModelRouter } from "~/lib/modelRouter";
 import type {
 	ChatCompletionParameters,
@@ -52,7 +52,7 @@ export const handleCreateNextEditCompletions = async ({
 		);
 	}
 
-	const provider = AIProviderFactory.getProvider(modelConfig.provider);
+	const provider = getChatProvider(modelConfig.provider, { env, user });
 
 	const normalizedMessages: Message[] = messages.map((message) => ({
 		role: message.role as ChatRole,

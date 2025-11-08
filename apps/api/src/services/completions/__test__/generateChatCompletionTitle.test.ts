@@ -16,10 +16,8 @@ vi.mock("~/lib/models", () => ({
 	getAuxiliaryModel: vi.fn(),
 }));
 
-vi.mock("~/lib/providers/factory", () => ({
-	AIProviderFactory: {
-		getProvider: vi.fn(),
-	},
+vi.mock("~/lib/providers/capabilities/chat", () => ({
+	getChatProvider: vi.fn(),
 }));
 
 vi.mock("~/lib/chat/utils", () => ({
@@ -47,7 +45,7 @@ let resolveServiceContext: any;
 describe("handleGenerateChatCompletionTitle", () => {
 	let mockConversationManager: any;
 	let mockGetAuxiliaryModel: any;
-	let mockAIProviderFactory: any;
+	let mockChatCapability: any;
 	let mockSanitiseMessages: any;
 
 	beforeEach(async () => {
@@ -56,7 +54,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
 		const { getAuxiliaryModel } = await import("~/lib/models");
-		const { AIProviderFactory } = await import("~/lib/providers/factory");
+		const chatCapability = await import("~/lib/providers/capabilities/chat");
 		const { sanitiseMessages } = await import("~/lib/chat/utils");
 
 		mockConversationManager = {
@@ -65,7 +63,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 		};
 
 		mockGetAuxiliaryModel = vi.mocked(getAuxiliaryModel);
-		mockAIProviderFactory = vi.mocked(AIProviderFactory);
+		mockChatCapability = vi.mocked(chatCapability);
 		mockSanitiseMessages = vi.mocked(sanitiseMessages);
 
 		mockServiceContext = {
@@ -86,7 +84,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 			provider: "test-provider",
 		});
 
-		mockAIProviderFactory.getProvider.mockReturnValue({
+		mockChatCapability.getChatProvider.mockReturnValue({
 			getResponse: vi.fn().mockResolvedValue({
 				response: "Generated Title",
 			}),
@@ -212,7 +210,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 			mockConversationManager.get.mockResolvedValue([]);
 			mockSanitiseMessages.mockReturnValue(messages);
 
-			const mockProvider = mockAIProviderFactory.getProvider();
+			const mockProvider = mockChatCapability.getChatProvider();
 			mockProvider.getResponse.mockResolvedValue({
 				response: '"Quoted Title"',
 			});
@@ -235,7 +233,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 			mockConversationManager.get.mockResolvedValue([]);
 			mockSanitiseMessages.mockReturnValue(messages);
 
-			const mockProvider = mockAIProviderFactory.getProvider();
+			const mockProvider = mockChatCapability.getChatProvider();
 			mockProvider.getResponse.mockResolvedValue({
 				response: longTitle,
 			});
@@ -272,7 +270,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 			mockConversationManager.get.mockResolvedValue([]);
 			mockSanitiseMessages.mockReturnValue(messages);
 
-			const mockProvider = mockAIProviderFactory.getProvider();
+			const mockProvider = mockChatCapability.getChatProvider();
 			mockProvider.getResponse.mockRejectedValue(
 				new Error("AI provider failed"),
 			);

@@ -1,0 +1,400 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { trackGuardrailViolation } from "~/lib/monitoring";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import * as providerLibraryModule from "~/lib/providers/library";
+import { Guardrails, getGuardrailsProvider } from "../../helpers";
+
+vi.mock("~/lib/monitoring");
+vi.mock("~/lib/providers/library", () => ({
+	providerLibrary: {
+		guardrails: vi.fn(),
+	},
+}));
+
+const mockTrackGuardrailViolation = vi.mocked(trackGuardrailViolation);
+const mockProviderLibrary = vi.mocked(providerLibraryModule.providerLibrary);
+
+const mockProvider = {
+	validateContent: vi.fn(),
+};
+
+describe("Guardrails", () => {
+	const mockEnv = {
+		AWS_REGION: "us-east-1",
+		BEDROCK_AWS_ACCESS_KEY: "test-access-key",
+		BEDROCK_AWS_SECRET_KEY: "test-secret-key",
+		AI: {},
+		ANALYTICS: {},
+		DB: {},
+	} as any;
+
+	const mockUser = {
+		id: "user-123",
+		email: "test@example.com",
+	} as any;
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockProviderLibrary.guardrails.mockReturnValue(mockProvider);
+	});
+
+	describe("construction", () => {
+		it("should initialize with disabled guardrails", () => {
+			const userSettings = {
+				guardrails_enabled: false,
+			} as any;
+
+			const instance = new Guardrails(mockEnv, mockUser, userSettings);
+			expect(instance).toBeDefined();
+		});
+
+		it("should initialize with bedrock provider", () => {
+			const userSettings = {
+				guardrails_enabled: true,
+				guardrails_provider: "bedrock",
+				bedrock_guardrail_id: "test-guardrail-id",
+				bedrock_guardrail_version: "1",
+			} as any;
+
+			new Guardrails(mockEnv, mockUser, userSettings);
+
+			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith("bedrock", {
+				env: mockEnv,
+				user: mockUser,
+				config: {
+					guardrailId: "test-guardrail-id",
+					guardrailVersion: "1",
+					region: "us-east-1",
+					accessKeyId: "test-access-key",
+					secretAccessKey: "test-secret-key",
+					env: mockEnv,
+				},
+			});
+		});
+
+		it("should initialize with llamaguard provider as default", () => {
+			const userSettings = {
+				guardrails_enabled: true,
+				guardrails_provider: "unknown",
+			} as any;
+
+			new Guardrails(mockEnv, mockUser, userSettings);
+
+			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith(
+				"llamaguard",
+				{
+					env: mockEnv,
+					user: mockUser,
+					config: {
+						ai: mockEnv.AI,
+						env: mockEnv,
+						user: mockUser,
+					},
+				},
+			);
+		});
+
+		it("should throw error for bedrock without guardrail ID", () => {
+			const userSettings = {
+				guardrails_enabled: true,
+				guardrails_provider: "bedrock",
+			} as any;
+
+			expect(() => {
+				new Guardrails(mockEnv, mockUser, userSettings);
+			}).toThrow(expect.any(AssistantError));
+
+			expect(() => {
+				new Guardrails(mockEnv, mockUser, userSettings);
+			}).toThrow("Missing required guardrail ID");
+		});
+
+		it("should use default bedrock guardrail version", () => {
+			const userSettings = {
+				guardrails_enabled: true,
+				guardrails_provider: "bedrock",
+				bedrock_guardrail_id: "test-guardrail-id",
+			} as any;
+
+			new Guardrails(mockEnv, mockUser, userSettings);
+
+			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith(
+				"bedrock",
+				expect.objectContaining({
+					config: expect.objectContaining({
+						guardrailVersion: "1",
+					}),
+				}),
+			);
+		});
+	});
+
+	describe("validateInput", () => {
+		it("should return valid result when guardrails disabled", async () => {
+			const userSettings = {
+				guardrails_enabled: false,
+			} as any;
+
+			const instance = new Guardrails(mockEnv, mockUser, userSettings);
+			const result = await instance.validateInput("test message");
+
+			expect(result.isValid).toBe(true);
+			expect(result.violations).toEqual([]);
+			expect(mockProvider.validateContent).not.toHaveBeenCalled();
+		});
+
+		it("should validate input content when enabled", async () => {
+			const userSettings = {
+				guardrails_enabled: true,
+				guardrails_provider: "llamaguard",
+			} as any;
+
+			mockProvider.validateContent.mockResolvedValue({
+				isValid: true,
+				violations: [],
+			});
+
+			const instance = new Guardrails(mockEnv, mockUser, userSettings);
+			const result = await instance.validateInput("test message");
+
+			expect(mockProvider.validateContent).toHaveBeenCalledWith(
+				"test message",
+				"INPUT",
+			);
+			expect(result.isValid).toBe(true);
+			expect(result.violations).toEqual([]);
+		});
+
+		it("should track violations for invalid input", async () => {
+			const userSettings = {
+				guardrails_enabled: true,
+				guardrails_provider: "llamaguard",
+			} as any;
+
+			mockProvider.validateContent.mockResolvedValue({
+				isValid: false,
+				violations: ["Violence detected"],
+			});
+
+			const instance = new Guardrails(mockEnv, mockUser, userSettings);
+			const result = await instance.validateInput(
+				"violent message",
+				123,
+				"completion-456",
+			);
+
+			expect(result.isValid).toBe(false);
+			expect(result.violations).toEqual(["Violence detected"]);
+			expect(mockTrackGuardrailViolation).toHaveBeenCalledWith(
+				"input_violation",
+				{
+					message: "violent message",
+					violations: ["Violence detected"],
+				},
+				mockEnv.ANALYTICS,
+				123,
+				"completion-456",
+			);
+		});
+
+		it("should not track violations for valid input", async () => {
+			const userSettings = {
+				guardrails_enabled: true,
+				guardrails_provider: "llamaguard",
+			} as any;
+
+			mockProvider.validateContent.mockResolvedValue({
+				isValid: true,
+				violations: [],
+			});
+
+			const instance = new Guardrails(mockEnv, mockUser, userSettings);
+			await instance.validateInput("safe message", 123, "completion-456");
+
+			expect(mockTrackGuardrailViolation).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("validateOutput", () => {
+		it("should return valid result when guardrails disabled", async () => {
+			const userSettings = {
+				guardrails_enabled: false,
+			} as any;
+
+			const instance = new Guardrails(mockEnv, mockUser, userSettings);
+			const result = await instance.validateOutput("test response");
+
+			expect(result.isValid).toBe(true);
+			expect(result.violations).toEqual([]);
+			expect(mockProvider.validateContent).not.toHaveBeenCalled();
+		});
+
+		it("should validate output content when enabled", async () => {
+			const userSettings = {
+				guardrails_enabled: true,
+				guardrails_provider: "llamaguard",
+			} as any;
+
+			mockProvider.validateContent.mockResolvedValue({
+				isValid: true,
+				violations: [],
+			});
+
+			const instance = new Guardrails(mockEnv, mockUser, userSettings);
+			const result = await instance.validateOutput("test response");
+
+			expect(mockProvider.validateContent).toHaveBeenCalledWith(
+				"test response",
+				"OUTPUT",
+			);
+			expect(result.isValid).toBe(true);
+			expect(result.violations).toEqual([]);
+		});
+
+		it("should track violations for invalid output", async () => {
+			const userSettings = {
+				guardrails_enabled: true,
+				guardrails_provider: "llamaguard",
+			} as any;
+
+			mockProvider.validateContent.mockResolvedValue({
+				isValid: false,
+				violations: ["Inappropriate content"],
+			});
+
+			const instance = new Guardrails(mockEnv, mockUser, userSettings);
+			const result = await instance.validateOutput(
+				"inappropriate response",
+				123,
+				"completion-456",
+			);
+
+			expect(result.isValid).toBe(false);
+			expect(result.violations).toEqual(["Inappropriate content"]);
+			expect(mockTrackGuardrailViolation).toHaveBeenCalledWith(
+				"output_violation",
+				{
+					response: "inappropriate response",
+					violations: ["Inappropriate content"],
+				},
+				mockEnv.ANALYTICS,
+				123,
+				"completion-456",
+			);
+		});
+
+		it("should handle undefined violations", async () => {
+			const userSettings = {
+				guardrails_enabled: true,
+				guardrails_provider: "llamaguard",
+			} as any;
+
+			mockProvider.validateContent.mockResolvedValue({
+				isValid: false,
+				violations: undefined,
+			});
+
+			const instance = new Guardrails(mockEnv, mockUser, userSettings);
+			const result = await instance.validateOutput("test response");
+
+			expect(result.isValid).toBe(false);
+			expect(mockTrackGuardrailViolation).not.toHaveBeenCalled();
+		});
+
+		it("should handle empty violations array", async () => {
+			const userSettings = {
+				guardrails_enabled: true,
+				guardrails_provider: "llamaguard",
+			} as any;
+
+			mockProvider.validateContent.mockResolvedValue({
+				isValid: false,
+				violations: [],
+			});
+
+			const instance = new Guardrails(mockEnv, mockUser, userSettings);
+			const result = await instance.validateOutput("test response");
+
+			expect(result.isValid).toBe(false);
+			expect(mockTrackGuardrailViolation).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("error handling", () => {
+		it("should handle constructor errors gracefully", () => {
+			const userSettings = {
+				guardrails_enabled: true,
+				guardrails_provider: "bedrock",
+			} as any;
+
+			expect(() => {
+				new Guardrails(mockEnv, mockUser, userSettings);
+			}).toThrow(expect.any(AssistantError));
+		});
+
+		it("should propagate error type correctly", () => {
+			const userSettings = {
+				guardrails_enabled: true,
+				guardrails_provider: "bedrock",
+			} as any;
+
+			try {
+				new Guardrails(mockEnv, mockUser, userSettings);
+			} catch (error) {
+				expect(error).toBeInstanceOf(AssistantError);
+				expect((error as AssistantError).type).toBe(ErrorType.PARAMS_ERROR);
+			}
+		});
+	});
+
+	describe("getGuardrailsProvider", () => {
+		it("should return null when guardrails disabled", () => {
+			const provider = getGuardrailsProvider(mockEnv, mockUser, {
+				guardrails_enabled: false,
+			} as any);
+			expect(provider).toBeNull();
+			expect(mockProviderLibrary.guardrails).not.toHaveBeenCalled();
+		});
+
+		it("should throw for bedrock without guardrail ID", () => {
+			expect(() =>
+				getGuardrailsProvider(mockEnv, mockUser, {
+					guardrails_enabled: true,
+					guardrails_provider: "bedrock",
+				} as any),
+			).toThrow("Missing required guardrail ID");
+		});
+
+		it("should initialize bedrock provider with defaults", () => {
+			const provider = getGuardrailsProvider(mockEnv, mockUser, {
+				guardrails_enabled: true,
+				guardrails_provider: "bedrock",
+				bedrock_guardrail_id: "test-id",
+			} as any);
+
+			expect(provider).toBe(mockProvider);
+			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith("bedrock", {
+				env: mockEnv,
+				user: mockUser,
+				config: expect.objectContaining({
+					guardrailId: "test-id",
+					guardrailVersion: "1",
+				}),
+			});
+		});
+
+		it("should default to llamaguard provider", () => {
+			const provider = getGuardrailsProvider(mockEnv, mockUser, {
+				guardrails_enabled: true,
+				guardrails_provider: "unknown",
+			} as any);
+
+			expect(provider).toBe(mockProvider);
+			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith(
+				"llamaguard",
+				expect.any(Object),
+			);
+		});
+	});
+});

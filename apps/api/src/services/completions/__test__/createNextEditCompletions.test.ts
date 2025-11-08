@@ -30,10 +30,8 @@ vi.mock("~/lib/modelRouter", () => ({
 	},
 }));
 
-vi.mock("~/lib/providers/factory", () => ({
-	AIProviderFactory: {
-		getProvider: mockGetProvider,
-	},
+vi.mock("~/lib/providers/capabilities/chat", () => ({
+	getChatProvider: mockGetProvider,
 }));
 
 import { handleCreateNextEditCompletions } from "../createNextEditCompletions";
@@ -68,7 +66,10 @@ describe("handleCreateNextEditCompletions", () => {
 		});
 
 		expect(mockSelectNextEditModel).toHaveBeenCalled();
-		expect(mockGetProvider).toHaveBeenCalledWith("inception");
+		expect(mockGetProvider).toHaveBeenCalledWith("inception", {
+			env,
+			user: undefined,
+		});
 		const [payload, userId] = mockGetResponse.mock.calls[0];
 		expect(payload).toEqual({
 			env,

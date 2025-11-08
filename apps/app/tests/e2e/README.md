@@ -59,3 +59,14 @@ pnpm run test:e2e -- --headed
 # Run tests with debug
 pnpm run test:e2e -- --debug
 ```
+
+## Local Authentication for Chat Flow
+
+The chat feature specs hit the real API to validate streaming responses. To keep the workflow local-only, generate a Polychat API key from your profile and export it before running the suite:
+
+```bash
+export PLAYWRIGHT_API_KEY="ak_xxx_your_local_key"
+pnpm run test:e2e -- features/chat.spec.ts
+```
+
+The Playwright helpers inject this key into `localStorage` prior to navigation so the browser session can authenticate without going through GitHub or magic links. If `PLAYWRIGHT_API_KEY` is not defined, the chat tests are skipped automatically.

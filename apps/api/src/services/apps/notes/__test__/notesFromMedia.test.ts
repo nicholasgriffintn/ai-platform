@@ -5,12 +5,10 @@ vi.mock("~/services/audio/transcribe", () => ({
 	handleTranscribe: vi.fn().mockResolvedValue([{ content: "mock transcript" }]),
 }));
 
-vi.mock("~/lib/providers/factory", () => ({
-	AIProviderFactory: {
-		getProvider: vi.fn().mockReturnValue({
-			getResponse: vi.fn().mockResolvedValue({ response: "mock response" }),
-		}),
-	},
+vi.mock("~/lib/providers/capabilities/chat", () => ({
+	getChatProvider: vi.fn().mockReturnValue({
+		getResponse: vi.fn().mockResolvedValue({ response: "mock response" }),
+	}),
 }));
 
 vi.mock("~/lib/models", () => ({

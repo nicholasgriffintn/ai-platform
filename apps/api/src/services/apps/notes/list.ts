@@ -1,6 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import {
 	resolveServiceContext,
 	type ServiceContext,
@@ -309,7 +309,7 @@ ${note.content}`;
 	try {
 		const { model: modelToUse, provider: providerToUse } =
 			await getAuxiliaryModel(runtimeEnv, user);
-		const provider = AIProviderFactory.getProvider(providerToUse);
+		const provider = getChatProvider(providerToUse, { env: runtimeEnv, user });
 
 		const messages = [
 			{
@@ -389,7 +389,7 @@ Return only valid JSON without any markdown formatting.`;
 	try {
 		const { model: modelToUse, provider: providerToUse } =
 			await getAuxiliaryModel(env, user);
-		const provider = AIProviderFactory.getProvider(providerToUse);
+		const provider = getChatProvider(providerToUse, { env, user });
 
 		const aiResult = await provider.getResponse(
 			{

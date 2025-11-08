@@ -4,7 +4,7 @@ import {
 	getModelConfigByMatchingModel,
 } from "~/lib/models";
 import { summariseArticlePrompt } from "~/lib/prompts";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import {
 	createServiceContext,
 	type ServiceContext,
@@ -80,7 +80,10 @@ export async function summariseArticle({
 		const { model: modelToUse, provider: providerToUse } =
 			await getAuxiliaryModelForRetrieval(serviceContext.env, user);
 		const modelConfig = await getModelConfigByMatchingModel(modelToUse);
-		const provider = AIProviderFactory.getProvider(providerToUse);
+		const provider = getChatProvider(providerToUse, {
+			env: serviceContext.env,
+			user,
+		});
 
 		const summaryGenData = await provider.getResponse({
 			completion_id,

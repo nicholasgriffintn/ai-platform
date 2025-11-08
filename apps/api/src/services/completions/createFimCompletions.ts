@@ -1,5 +1,5 @@
 import { getModelConfig, getModelConfigByMatchingModel } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { ModelRouter } from "~/lib/modelRouter";
 import type { IEnv, IUser, ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -51,7 +51,7 @@ export const handleCreateFimCompletions = async ({
 		);
 	}
 
-	const provider = AIProviderFactory.getProvider(modelConfig.provider);
+	const provider = getChatProvider(modelConfig.provider, { env, user });
 
 	const fimRequest: ChatCompletionParameters = {
 		env,

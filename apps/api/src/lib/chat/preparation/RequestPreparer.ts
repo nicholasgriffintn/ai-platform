@@ -1,7 +1,10 @@
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
 import { RepositoryManager } from "~/repositories";
-import { Embedding } from "~/lib/embedding";
+import {
+	getEmbeddingProvider,
+	augmentPrompt,
+} from "~/lib/providers/capabilities/embedding/helpers";
 import { MemoryManager } from "~/lib/memory";
 import { getModelConfig } from "~/lib/models";
 import { getSystemPrompt } from "~/lib/prompts";
@@ -200,13 +203,17 @@ export class RequestPreparer {
 		const finalUserMessage = sanitiseInput(lastMessageContentText);
 
 		if (use_rag === true) {
-			const embedding = Embedding.getInstance(env, user, userSettings);
-			return embedding.augmentPrompt(
-				finalUserMessage,
-				rag_options,
+			const embedding = getEmbeddingProvider(env, user, userSettings);
+			const augmentedPrompt = await augmentPrompt({
+				provider: embedding,
+				query: finalUserMessage,
+				options: rag_options || {},
 				env,
-				user?.id,
-			);
+				user,
+			});
+			return augmentedPrompt
+				? `${finalUserMessage}\n\n${augmentedPrompt}`
+				: finalUserMessage;
 		}
 
 		return finalUserMessage;
