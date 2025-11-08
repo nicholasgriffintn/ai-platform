@@ -1,40 +1,28 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import * as chatCapability from "~/lib/providers/capabilities/chat";
+import * as embeddingHelpers from "~/lib/providers/capabilities/embedding/helpers";
 import { parseAIResponseJson } from "~/utils/json";
 import { MemoryManager } from "../memory";
 
-vi.mock("~/lib/embedding", () => ({
-	Embedding: {
-		getInstance: vi.fn(() => ({
-			generate: vi
-				.fn()
-				.mockResolvedValue([{ values: [0.1, 0.2, 0.3], id: "test-id" }]),
-			getMatches: vi.fn().mockResolvedValue({ matches: [] }),
-			getQuery: vi.fn().mockResolvedValue({ data: [[0.1, 0.2, 0.3]] }),
-			insert: vi.fn().mockResolvedValue(undefined),
-		})),
-	},
-	EmbeddingSingleton: {
-		getInstance: vi.fn(() => ({
-			generate: vi
-				.fn()
-				.mockResolvedValue([{ values: [0.1, 0.2, 0.3], id: "test-id" }]),
-			getMatches: vi.fn().mockResolvedValue({ matches: [] }),
-			getQuery: vi.fn().mockResolvedValue({ data: [[0.1, 0.2, 0.3]] }),
-			insert: vi.fn().mockResolvedValue(undefined),
-		})),
-	},
+const mockEmbeddingProvider = {
+	generate: vi.fn(),
+	getMatches: vi.fn(),
+	getQuery: vi.fn(),
+	insert: vi.fn(),
+	delete: vi.fn(),
+};
+
+vi.mock("~/lib/providers/capabilities/embedding/helpers", () => ({
+	getEmbeddingProvider: vi.fn(() => mockEmbeddingProvider),
 }));
 
-vi.mock("~/lib/providers/factory", () => ({
-	AIProviderFactory: {
-		getProvider: vi.fn(() => ({
-			getResponse: vi.fn(),
-			name: "test-provider",
-			supportsStreaming: false,
-			createRealtimeSession: vi.fn(),
-		})),
-	},
+vi.mock("~/lib/providers/capabilities/chat", () => ({
+	getChatProvider: vi.fn(() => ({
+		getResponse: vi.fn(),
+		name: "test-provider",
+		supportsStreaming: false,
+		createRealtimeSession: vi.fn(),
+	})),
 }));
 
 vi.mock("~/lib/models", () => ({
@@ -66,9 +54,32 @@ vi.mock("~/lib/database", () => ({
 describe("MemoryManager", () => {
 	const mockEnv = { OPENAI_API_KEY: "test-key" } as any;
 	const mockUser = { id: 1, email: "test@example.com" } as any;
+	const mockedGetEmbeddingProvider = vi.mocked(
+		embeddingHelpers.getEmbeddingProvider,
+	);
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
+		mockEmbeddingProvider.generate.mockReset();
+		mockEmbeddingProvider.getMatches.mockReset();
+		mockEmbeddingProvider.getQuery.mockReset();
+		mockEmbeddingProvider.insert.mockReset();
+		mockEmbeddingProvider.delete.mockReset();
+
+		mockEmbeddingProvider.generate.mockResolvedValue([
+			{ values: [0.1, 0.2, 0.3], id: "test-id" },
+		] as any);
+		mockEmbeddingProvider.getMatches.mockResolvedValue({ matches: [] });
+		mockEmbeddingProvider.getQuery.mockResolvedValue({
+			data: [[0.1, 0.2, 0.3]],
+		});
+		mockEmbeddingProvider.insert.mockResolvedValue(undefined);
+		mockEmbeddingProvider.delete.mockResolvedValue({
+			status: "success",
+			error: null,
+		});
+
+		mockedGetEmbeddingProvider.mockReturnValue(mockEmbeddingProvider as any);
 		MemoryManager["instance"] = undefined as any;
 	});
 
@@ -111,7 +122,7 @@ describe("MemoryManager", () => {
 				supportsStreaming: false,
 				createRealtimeSession: vi.fn(),
 			};
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			vi.mocked(parseAIResponseJson)
 				.mockReturnValueOnce({
@@ -182,7 +193,7 @@ describe("MemoryManager", () => {
 				supportsStreaming: false,
 				createRealtimeSession: vi.fn(),
 			};
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const manager = MemoryManager.getInstance(mockEnv, mockUser);
 
@@ -241,7 +252,7 @@ describe("MemoryManager", () => {
 				supportsStreaming: false,
 				createRealtimeSession: vi.fn(),
 			};
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const manager = MemoryManager.getInstance(mockEnv, mockUser);
 			const mockConversationManager = { get: vi.fn() } as any;

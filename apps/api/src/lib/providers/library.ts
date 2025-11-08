@@ -3,6 +3,7 @@ import type { ProviderCategory } from "./registry/types";
 import { registerAudioProviders } from "./registry/registrations/audio";
 import { registerChatProviders } from "./registry/registrations/chat";
 import { registerEmbeddingProviders } from "./registry/registrations/embedding";
+import { registerGuardrailProviders } from "./registry/registrations/guardrails";
 import { registerResearchProviders } from "./registry/registrations/research";
 import { registerSearchProviders } from "./registry/registrations/search";
 import { registerTranscriptionProviders } from "./registry/registrations/transcription";
@@ -21,6 +22,7 @@ const DEFAULT_BOOTSTRAPPERS: Partial<
 	audio: [registerAudioProviders],
 	chat: [registerChatProviders],
 	embedding: [registerEmbeddingProviders],
+	guardrails: [registerGuardrailProviders],
 	research: [registerResearchProviders],
 	search: [registerSearchProviders],
 	transcription: [registerTranscriptionProviders],
@@ -102,6 +104,10 @@ export class ProviderLibrary {
 
 	embedding(providerName: string, context?: ProviderFactoryContext) {
 		return this.resolve("embedding", providerName, context);
+	}
+
+	guardrails(providerName: string, context?: ProviderFactoryContext) {
+		return this.resolve("guardrails", providerName, context);
 	}
 
 	transcription(providerName: string, context?: ProviderFactoryContext) {

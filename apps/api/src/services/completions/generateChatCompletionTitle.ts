@@ -2,7 +2,7 @@ import { sanitiseMessages } from "~/lib/chat/utils";
 import { ConversationManager } from "~/lib/conversationManager";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModel } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -81,7 +81,7 @@ export const handleGenerateChatCompletionTitle = async (
 
 	const { model: modelToUse, provider: providerToUse } =
 		await getAuxiliaryModel(runtimeEnv, user);
-	const provider = AIProviderFactory.getProvider(providerToUse);
+	const provider = getChatProvider(providerToUse, { env: runtimeEnv, user });
 	const response: any = await provider.getResponse({
 		env: runtimeEnv!,
 		model: modelToUse,

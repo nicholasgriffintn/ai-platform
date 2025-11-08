@@ -494,20 +494,56 @@ export class ExampleProvider extends BaseAIProvider {
 
 - `apps/api/src/lib/providers/capabilities/embedding/**`
 - `apps/api/src/lib/providers/registry/registrations/embedding.ts`
-- `apps/api/src/lib/embedding/index.ts`
+- `apps/api/src/lib/providers/capabilities/embedding/helpers.ts`
 
 **Pattern**:
 
 1. Implement provider logic under `capabilities/embedding/providers` and register them as `transient` so per-user configs stay isolated.
-2. From higher-level code (`Embedding`), resolve providers via `providerLibrary.embedding(name, { env, user, config })` rather than bespoke factories.
+2. From higher-level code, resolve providers via `getEmbeddingProvider(env, user, userSettings)` so capability helpers own instantiation and configuration.
 3. Centralize env/config validation inside each provider and throw `AssistantError` when required credentials are missing.
-4. Keep namespace calculation and repository wiring inside `Embedding`; providers should focus solely on CRUD with their backing vector store.
+4. Keep namespace calculation and repository wiring inside the helper layer (`getEmbeddingNamespace`); providers should focus solely on CRUD with their backing vector store.
 
 **Tests**:
 
-- Mock `providerLibrary.embedding` in `apps/api/src/lib/embedding/__test__/index.test.ts`.
+- Mock `getEmbeddingProvider`/`getEmbeddingNamespace` in service suites (`services/apps/embeddings/**/__test__`, `lib/__test__/memory.test.ts`, etc.) so you stay within the capability surface.
 - Provider-specific suites live under `capabilities/embedding/__test__`; extend them when behavior changes.
 - Cover external dependency behavior (AWS clients, Vectorize AI responses) with appropriate mocks so regressions are caught early.
+
+### Provider Library Migration Plan (Added: 2024-11-19)
+
+**When to use**: Anytime you touch code that still imports `AIProviderFactory` or manually instantiates providers instead of relying on `providerLibrary` + the capability registries under `apps/api/src/lib/providers/capabilities/**`.
+
+**Current coverage**:
+
+- `providerLibrary` already lazy-loads audio, chat, embedding, research, search, and transcription providers via `register*.ts`.
+- Audio (`services/audio/*.ts`), search (`services/search/web.ts`), research (`services/research/*.ts`), and the embedding capability helpers resolve providers directly from the library.
+- `AIProviderFactory` is now just a thin shim over `providerLibrary.chat` so legacy call sites keep working, but it hides provider metadata, can't inject context, and makes testing harder.
+
+**Remaining steps**:
+
+1. **Standardize chat provider resolution inside the capability layer** – Mirror the pattern used by audio/search/etc by exporting a `getChatProvider` (or similar) from `apps/api/src/lib/providers/capabilities/chat/index.ts` that simply re-exports `providerLibrary.chat(providerName, { env, user, options })` and preserves the `workers` fallback. Then update all chat/completions pipelines to import from that capability surface: `lib/chat/responses.ts`, `lib/modelRouter/promptAnalyser.ts`, `lib/memory.ts`, `routes/realtime.ts`, `services/completions/**`, `services/functions/**`, `services/apps/**`, `services/generate/**`, `services/tasks/handlers/**`, and retrieval helpers such as `services/apps/retrieval/*.ts`. Tests that currently mock `AIProviderFactory` should instead mock the capability-level helper so we stay inside the same provider system as the other categories.
+2. **Port background + dynamic app flows** – Replace `AIProviderFactory` usage in long-running handlers (`services/apps/notes/*`, `services/apps/articles/*`, `services/apps/replicate/*`, `services/apps/strudel/generate.ts`, `services/apps/podcast/transcribe.ts`, `services/tasks/handlers/*`, `services/completions/async/handler.ts`) so they request providers from the appropriate capability (`providerLibrary.chat` for LLMs, `providerLibrary.transcription`/`audio` where applicable). Thread `{ env, user }` context down so providers receive the right bindings without reaching for globals.
+3. **Bring guardrails + capability internals into the registry** – Extend `ProviderCategory` with `"guardrails"` and add `registerGuardrailProviders`. Delete `GuardrailsProviderFactory` once `capabilities/guardrails/providers/*.ts` resolve their underlying LLMs through `providerLibrary.chat` (or the chat capability helper) instead of `AIProviderFactory`. Also move any capability-specific chaining (e.g. rerankers, summarizers) into that capability’s surface so we no longer reach back out to the factory from helpers like `apps/api/src/lib/embedding/index.ts`.
+4. **Collapse the standalone embedding manager into the capability system** – Delete `apps/api/src/lib/embedding/index.ts` once the embedding providers accept all required dependencies via `providerLibrary.embedding`. Any remaining namespace/repository coordination should move into the capability context (or a tiny helper that doesn’t construct providers) so no code outside `capabilities/embedding/**` instantiates providers or calls `AIProviderFactory`. This keeps “one provider system” intact.
+5. **Update persistence/helpers** – Switch `repositories/UserSettingsRepository.ts` to call `providerLibrary.list("chat")` (or the new helper) when seeding configurable providers, and ensure schema/default settings keep in sync with the registry metadata (`aliases`, `tags`, etc.). Remove the `AIProviderFactory` import entirely after all call sites are migrated.
+6. **Retire the factory** – Once the steps above land, delete `AIProviderFactory`, migrate tests to the new helper, and document the change in this file plus `AGENTS.md` at the repo root. Verify no files outside `capabilities/**` import `providerLibrary` directly without going through the helper so instrumentation stays centralized.
+
+**Updates**:
+
+- 2024-11-21 – Removed the legacy `lib/embedding` manager in favor of `getEmbeddingProvider`/`getEmbeddingNamespace`, updated `MemoryManager`, embeddings services/tests, and added `capabilities/embedding/__test__/helpers.test.ts`.
+
+**Capability consistency cleanups**:
+
+- Standardize every `apps/api/src/lib/providers/capabilities/*/index.ts` to export `registerXProviders`, `getXProvider`, and shared context types so downstream code never reaches into nested paths or bespoke factories.
+- Define a single `CapabilityContext` (expanded from `ProviderFactoryContext` in `registry/types.ts`) and re-export narrowed aliases from each capability to keep `env`/`user` threading consistent.
+- Add helper builders in `registry/registrations/utils.ts` (e.g., `defineChatProvider`) to enforce lifecycle defaults, alias handling, and metadata tagging across capability registrations.
+- Introduce shared test mocks under `apps/api/src/lib/providers/capabilities/__test__/helpers.ts` so services can stub capability exports consistently instead of re-implementing `vi.fn()` wiring in every suite.
+
+**Tests**:
+
+- Run `pnpm --filter @assistant/api test` plus focused suites under `services/**/__test__` after each migration chunk.
+- For guardrails/capability refactors, add regression tests covering env validation and error paths before deleting the legacy factories.
+- Before removing `AIProviderFactory`, run `rg AIProviderFactory apps/api/src` and ensure it returns zero matches (tests included).
 
 ## Common Modification Locations
 

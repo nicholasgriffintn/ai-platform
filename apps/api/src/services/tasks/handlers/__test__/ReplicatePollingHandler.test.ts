@@ -1,22 +1,18 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { IEnv } from "~/types";
 import { ReplicatePollingHandler } from "../ReplicatePollingHandler";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import * as chatCapability from "~/lib/providers/capabilities/chat";
 import { AppDataRepository } from "~/repositories/AppDataRepository";
 import { TaskService } from "../../TaskService";
 import type { TaskMessage } from "../../TaskService";
 
-vi.mock("~/lib/providers/factory", () => ({
-	AIProviderFactory: {
-		getProvider: vi.fn(),
-	},
+vi.mock("~/lib/providers/capabilities/chat", () => ({
+	getChatProvider: vi.fn(),
 }));
 
 vi.mock("~/repositories/AppDataRepository");
 vi.mock("~/repositories/TaskRepository");
 vi.mock("../../TaskService");
-
-const mockedAIProviderFactory = vi.mocked(AIProviderFactory);
 const mockedAppDataRepository = vi.mocked(AppDataRepository);
 const mockedTaskService = vi.mocked(TaskService);
 
@@ -114,7 +110,9 @@ describe("ReplicatePollingHandler", () => {
 				},
 			}),
 		};
-		mockedAIProviderFactory.getProvider.mockReturnValue(mockProvider as any);
+		vi.mocked(chatCapability.getChatProvider).mockReturnValue(
+			mockProvider as any,
+		);
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -161,7 +159,9 @@ describe("ReplicatePollingHandler", () => {
 				},
 			}),
 		};
-		mockedAIProviderFactory.getProvider.mockReturnValue(mockProvider as any);
+		vi.mocked(chatCapability.getChatProvider).mockReturnValue(
+			mockProvider as any,
+		);
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -201,7 +201,9 @@ describe("ReplicatePollingHandler", () => {
 				status: "in_progress",
 			}),
 		};
-		mockedAIProviderFactory.getProvider.mockReturnValue(mockProvider as any);
+		vi.mocked(chatCapability.getChatProvider).mockReturnValue(
+			mockProvider as any,
+		);
 
 		const mockEnqueueTask = vi.fn().mockResolvedValue(undefined);
 		mockedTaskService.mockImplementation(
@@ -261,7 +263,9 @@ describe("ReplicatePollingHandler", () => {
 		mockedAppDataRepository.mockImplementation(() => mockRepo as any);
 
 		const mockProvider = {};
-		mockedAIProviderFactory.getProvider.mockReturnValue(mockProvider as any);
+		vi.mocked(chatCapability.getChatProvider).mockReturnValue(
+			mockProvider as any,
+		);
 
 		const result = await handler.handle(baseMessage, baseEnv);
 

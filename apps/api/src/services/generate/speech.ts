@@ -1,5 +1,5 @@
 import { sanitiseInput } from "~/lib/chat/utils";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import {
 	resolveServiceContext,
 	type ServiceContext,
@@ -47,7 +47,10 @@ export async function generateSpeech({
 		const runtimeEnv = serviceContext.env;
 		const runtimeUser = serviceContext.user ?? user;
 
-		const provider = AIProviderFactory.getProvider("workers-ai");
+		const provider = getChatProvider("workers-ai", {
+			env: runtimeEnv,
+			user: runtimeUser,
+		});
 
 		const sanitisedPrompt = sanitiseInput(args.prompt);
 

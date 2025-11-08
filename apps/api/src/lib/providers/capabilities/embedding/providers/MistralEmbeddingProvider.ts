@@ -12,7 +12,7 @@ import type {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { getModelConfig } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "../../chat";
 import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/embedding/mistral" });
@@ -50,9 +50,10 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 		}
 
 		const mistralModelConfig = await getModelConfig(model);
-		const mistralProvider = AIProviderFactory.getProvider(
-			mistralModelConfig.provider,
-		);
+		const mistralProvider = getChatProvider(mistralModelConfig.provider, {
+			env: this.env,
+			user: this.user,
+		});
 
 		const response = await mistralProvider.getResponse(
 			{

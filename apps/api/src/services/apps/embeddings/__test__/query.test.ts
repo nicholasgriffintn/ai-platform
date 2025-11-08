@@ -7,20 +7,26 @@ const mockRepositories = {
 	},
 };
 
-const mockEmbedding = {
-	getNamespace: vi.fn(() => "default-namespace"),
+const mockEmbeddingProvider = {
 	searchSimilar: vi.fn(() => Promise.resolve([])),
 };
+
+const embeddingHelperMocks = vi.hoisted(() => ({
+	getEmbeddingProvider: vi.fn(() => mockEmbeddingProvider),
+	getEmbeddingNamespace: vi.fn(() => "default-namespace"),
+}));
+
+const mockGetEmbeddingProvider = embeddingHelperMocks.getEmbeddingProvider;
+const mockGetEmbeddingNamespace = embeddingHelperMocks.getEmbeddingNamespace;
 
 vi.mock("~/repositories", () => ({
 	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
-vi.mock("~/lib/embedding", () => ({
-	Embedding: {
-		getInstance: vi.fn(() => mockEmbedding),
-	},
-}));
+vi.mock(
+	"~/lib/providers/capabilities/embedding/helpers",
+	() => embeddingHelperMocks,
+);
 
 vi.mock("~/utils/logger", () => ({
 	getLogger: vi.fn(() => ({
@@ -46,6 +52,9 @@ describe("queryEmbeddings", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockGetEmbeddingNamespace.mockReturnValue("default-namespace");
+		mockEmbeddingProvider.searchSimilar.mockResolvedValue([]);
+		mockGetEmbeddingProvider.mockReturnValue(mockEmbeddingProvider as any);
 	});
 
 	afterEach(() => {
@@ -70,8 +79,8 @@ describe("queryEmbeddings", () => {
 		];
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.getNamespace.mockReturnValue("custom-namespace");
-		mockEmbedding.searchSimilar.mockResolvedValue(mockResults);
+		mockGetEmbeddingNamespace.mockReturnValue("custom-namespace");
+		mockEmbeddingProvider.searchSimilar.mockResolvedValue(mockResults);
 
 		const result = await queryEmbeddings(req);
 
@@ -80,9 +89,12 @@ describe("queryEmbeddings", () => {
 			data: mockResults,
 		});
 
-		expect(mockEmbedding.searchSimilar).toHaveBeenCalledWith("search term", {
-			namespace: "custom-namespace",
-		});
+		expect(mockEmbeddingProvider.searchSimilar).toHaveBeenCalledWith(
+			"search term",
+			{
+				namespace: "custom-namespace",
+			},
+		);
 	});
 
 	it("should use default namespace when not provided", async () => {
@@ -97,13 +109,13 @@ describe("queryEmbeddings", () => {
 		};
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.getNamespace.mockReturnValue("default-namespace");
-		mockEmbedding.searchSimilar.mockResolvedValue([]);
+		mockGetEmbeddingNamespace.mockReturnValue("default-namespace");
+		mockEmbeddingProvider.searchSimilar.mockResolvedValue([]);
 
 		const result = await queryEmbeddings(req);
 
 		expect(result.status).toBe("success");
-		expect(mockEmbedding.getNamespace).toHaveBeenCalledWith({
+		expect(mockGetEmbeddingNamespace).toHaveBeenCalledWith(mockUser, {
 			namespace: undefined,
 		});
 	});
@@ -135,8 +147,8 @@ describe("queryEmbeddings", () => {
 		};
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.getNamespace.mockReturnValue("test-namespace");
-		mockEmbedding.searchSimilar.mockResolvedValue([]);
+		mockGetEmbeddingNamespace.mockReturnValue("test-namespace");
+		mockEmbeddingProvider.searchSimilar.mockResolvedValue([]);
 
 		const result = await queryEmbeddings(req);
 
@@ -161,8 +173,8 @@ describe("queryEmbeddings", () => {
 		const notFoundError = new AssistantError("Not found", ErrorType.NOT_FOUND);
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.getNamespace.mockReturnValue("nonexistent-namespace");
-		mockEmbedding.searchSimilar.mockRejectedValue(notFoundError);
+		mockGetEmbeddingNamespace.mockReturnValue("nonexistent-namespace");
+		mockEmbeddingProvider.searchSimilar.mockRejectedValue(notFoundError);
 
 		const result = await queryEmbeddings(req);
 
@@ -185,7 +197,7 @@ describe("queryEmbeddings", () => {
 
 		const serverError = new Error("Server error");
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbedding.searchSimilar.mockRejectedValue(serverError);
+		mockEmbeddingProvider.searchSimilar.mockRejectedValue(serverError);
 
 		await expect(queryEmbeddings(req)).rejects.toThrow(
 			"Error querying embeddings",

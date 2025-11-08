@@ -1,11 +1,11 @@
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
 import type { IEnv, IUser, IUserSettings, Message } from "~/types";
 import { generateId } from "~/utils/id";
 import { parseAIResponseJson } from "~/utils/json";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import type { ConversationManager } from "./conversationManager";
-import { Embedding } from "./embedding";
 import { getAuxiliaryModel } from "./models";
 import { MemoryRepository } from "~/repositories/MemoryRepository";
 
@@ -39,8 +39,9 @@ export class MemoryManager {
 		text: string,
 		metadata: Record<string, string>,
 		conversationId?: string,
+		userSettings?: IUserSettings,
 	): Promise<string | null> {
-		const embedding = Embedding.getInstance(this.env, this.user);
+		const embedding = getEmbeddingProvider(this.env, this.user, userSettings);
 		const vectorId = generateId();
 
 		logger.debug("Storing memory", { text, metadata, vectorId });
@@ -135,7 +136,7 @@ export class MemoryManager {
 
 		try {
 			if (memory.vector_id) {
-				const embedding = Embedding.getInstance(this.env, this.user);
+				const embedding = getEmbeddingProvider(this.env, this.user);
 				await embedding.delete([memory.vector_id]);
 			}
 
@@ -164,7 +165,7 @@ export class MemoryManager {
 		query: string,
 		opts?: { topK?: number; scoreThreshold?: number },
 	): Promise<Array<{ text: string; score: number }>> {
-		const embedding = Embedding.getInstance(this.env, this.user);
+		const embedding = getEmbeddingProvider(this.env, this.user);
 		const topK = opts?.topK ?? 3;
 		const scoreThreshold = opts?.scoreThreshold ?? 0.3;
 		const namespace = `memory_user_${this.user?.id ?? "global"}`;
@@ -231,7 +232,10 @@ export class MemoryManager {
 				if (lastUser.trim()) {
 					const { model: modelToUse, provider: providerToUse } =
 						await getAuxiliaryModel(this.env, this.user);
-					const provider = AIProviderFactory.getProvider(providerToUse);
+					const provider = getChatProvider(providerToUse, {
+						env: this.env,
+						user: this.user,
+					});
 					const classifier = await provider.getResponse(
 						{
 							model: modelToUse,
@@ -293,12 +297,17 @@ Respond with JSON: { storeMemory: boolean, category: string, summary: string }. 
 							category,
 						});
 
-						await this.storeMemory(summaryText, {
-							conversationId: completionId,
-							timestamp: Date.now().toString(),
-							category,
-							isNormalized: "false",
-						});
+						await this.storeMemory(
+							summaryText,
+							{
+								conversationId: completionId,
+								timestamp: Date.now().toString(),
+								category,
+								isNormalized: "false",
+							},
+							undefined,
+							userSettings,
+						);
 
 						if (["fact", "schedule", "preference"].includes(category)) {
 							try {
@@ -353,13 +362,18 @@ Respond with JSON: { storeMemory: boolean, category: string, summary: string }. 
 										);
 
 									for (const altText of normalized) {
-										await this.storeMemory(altText, {
-											conversationId: completionId,
-											timestamp: Date.now().toString(),
-											category,
-											isNormalized: "true",
-											originalText: summaryText,
-										});
+										await this.storeMemory(
+											altText,
+											{
+												conversationId: completionId,
+												timestamp: Date.now().toString(),
+												category,
+												isNormalized: "true",
+												originalText: summaryText,
+											},
+											undefined,
+											userSettings,
+										);
 										logger.debug("Stored alternative memory phrasing", {
 											altText,
 										});
@@ -401,7 +415,10 @@ Respond with JSON: { storeMemory: boolean, category: string, summary: string }. 
 					logger.debug("Summarizing conversation", { snippet });
 					const { model: modelToUse, provider: providerToUse } =
 						await getAuxiliaryModel(this.env, this.user);
-					const provider = AIProviderFactory.getProvider(providerToUse);
+					const provider = getChatProvider(providerToUse, {
+						env: this.env,
+						user: this.user,
+					});
 					const summaryResp = await provider.getResponse(
 						{
 							model: modelToUse,
@@ -423,11 +440,16 @@ Respond with JSON: { storeMemory: boolean, category: string, summary: string }. 
 						const category = "snapshot";
 						logger.debug("Storing snapshot", { text });
 						try {
-							await this.storeMemory(text, {
-								conversationId: completionId,
-								timestamp: Date.now().toString(),
-								category,
-							});
+							await this.storeMemory(
+								text,
+								{
+									conversationId: completionId,
+									timestamp: Date.now().toString(),
+									category,
+								},
+								undefined,
+								userSettings,
+							);
 							events.push({ type: "snapshot", text, category });
 						} catch (e) {
 							logger.debug("Failed to store snapshot", { error: e });

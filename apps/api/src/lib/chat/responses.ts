@@ -1,5 +1,5 @@
 import { getModelConfigByMatchingModel } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type {
 	AssistantMessageData,
 	ChatCompletionParameters,
@@ -150,9 +150,10 @@ export async function getAIResponse({
 
 	let provider;
 	try {
-		provider = AIProviderFactory.getProvider(
-			modelConfig?.provider || "workers-ai",
-		);
+		provider = getChatProvider(modelConfig?.provider || "workers-ai", {
+			env,
+			user,
+		});
 	} catch (error: any) {
 		responseLogger.error("Failed to initialize provider", {
 			provider: modelConfig?.provider,

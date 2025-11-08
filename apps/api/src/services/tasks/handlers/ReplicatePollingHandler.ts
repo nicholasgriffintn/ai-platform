@@ -2,7 +2,7 @@ import type { IEnv } from "~/types";
 import type { TaskMessage } from "../TaskService";
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import { getLogger } from "~/utils/logger";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { AppDataRepository } from "~/repositories/AppDataRepository";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { safeParseJson } from "~/utils/json";
@@ -71,8 +71,9 @@ export class ReplicatePollingHandler implements TaskHandler {
 				};
 			}
 
-			const provider = AIProviderFactory.getProvider(
+			const provider = getChatProvider(
 				asyncInvocation.provider || "replicate",
+				{ env, user: undefined },
 			);
 
 			if (!provider?.getAsyncInvocationStatus) {

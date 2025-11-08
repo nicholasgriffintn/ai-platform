@@ -1,5 +1,5 @@
 import { getModelConfigByModel } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -46,7 +46,7 @@ export async function handleCountTokens(
 		};
 	}
 
-	const provider = AIProviderFactory.getProvider(modelConfig.provider);
+	const provider = getChatProvider(modelConfig.provider, { env, user });
 	if (!provider) {
 		return {
 			status: "error",

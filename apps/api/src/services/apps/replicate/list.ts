@@ -2,7 +2,7 @@ import {
 	resolveServiceContext,
 	type ServiceContext,
 } from "~/lib/context/serviceContext";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import type { IEnv } from "~/types";
 import { safeParseJson } from "../../../utils/json";
@@ -34,8 +34,9 @@ export const listReplicatePredictions = async ({
 
 			if (asyncInvocation && data.status === "processing") {
 				try {
-					const provider = AIProviderFactory.getProvider(
+					const provider = getChatProvider(
 						asyncInvocation.provider || "replicate",
+						{ env: serviceContext.env, user: undefined },
 					);
 
 					if (provider?.getAsyncInvocationStatus) {

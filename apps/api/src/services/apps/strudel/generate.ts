@@ -7,7 +7,7 @@ import type { z } from "zod";
 import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { buildStrudelSystemPrompt } from "~/lib/prompts/strudel";
 import {
 	getAuxiliaryModel,
@@ -90,7 +90,7 @@ export async function generateStrudelCode({
 			providerName = auxiliaryModel.provider;
 		}
 
-		const provider = AIProviderFactory.getProvider(providerName);
+		const provider = getChatProvider(providerName, { env, user });
 
 		const messages: { role: ChatRole; content: string }[] = [
 			{

@@ -7,7 +7,7 @@ import type {
 	IUserSettings,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { GuardrailsProviderFactory } from "./factory";
+import { providerLibrary } from "~/lib/providers/library";
 
 export class Guardrails {
 	private provider: GuardrailsProvider;
@@ -28,9 +28,10 @@ export class Guardrails {
 				);
 			}
 
-			this.provider = GuardrailsProviderFactory.getProvider(
-				"bedrock",
-				{
+			this.provider = providerLibrary.guardrails("bedrock", {
+				env,
+				user,
+				config: {
 					guardrailId: userSettings.bedrock_guardrail_id,
 					guardrailVersion: userSettings.bedrock_guardrail_version || "1",
 					region: env.AWS_REGION || "us-east-1",
@@ -38,19 +39,26 @@ export class Guardrails {
 					secretAccessKey: env.BEDROCK_AWS_SECRET_KEY,
 					env,
 				},
-				user,
-			);
+			});
 		} else if (userSettings?.guardrails_provider === "mistral") {
-			this.provider = GuardrailsProviderFactory.getProvider("mistral", {
-				ai: env.AI,
+			this.provider = providerLibrary.guardrails("mistral", {
 				env,
 				user,
+				config: {
+					ai: env.AI,
+					env,
+					user,
+				},
 			});
 		} else {
-			this.provider = GuardrailsProviderFactory.getProvider("llamaguard", {
-				ai: env.AI,
+			this.provider = providerLibrary.guardrails("llamaguard", {
 				env,
 				user,
+				config: {
+					ai: env.AI,
+					env,
+					user,
+				},
 			});
 		}
 	}

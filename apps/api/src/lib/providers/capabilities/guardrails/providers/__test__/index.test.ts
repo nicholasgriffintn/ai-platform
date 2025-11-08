@@ -2,18 +2,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { trackGuardrailViolation } from "~/lib/monitoring";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { GuardrailsProviderFactory } from "../factory";
+import * as providerLibraryModule from "~/lib/providers/library";
 import { Guardrails } from "../index";
 
 vi.mock("~/lib/monitoring");
-vi.mock("../factory", () => ({
-	GuardrailsProviderFactory: {
-		getProvider: vi.fn(),
+vi.mock("~/lib/providers/library", () => ({
+	providerLibrary: {
+		guardrails: vi.fn(),
 	},
 }));
 
 const mockTrackGuardrailViolation = vi.mocked(trackGuardrailViolation);
-const mockGuardrailsProviderFactory = vi.mocked(GuardrailsProviderFactory);
+const mockProviderLibrary = vi.mocked(providerLibraryModule.providerLibrary);
 
 const mockProvider = {
 	validateContent: vi.fn(),
@@ -26,6 +26,7 @@ describe("Guardrails", () => {
 		BEDROCK_AWS_SECRET_KEY: "test-secret-key",
 		AI: {},
 		ANALYTICS: {},
+		DB: {},
 	} as any;
 
 	const mockUser = {
@@ -35,7 +36,7 @@ describe("Guardrails", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockGuardrailsProviderFactory.getProvider.mockReturnValue(mockProvider);
+		mockProviderLibrary.guardrails.mockReturnValue(mockProvider);
 	});
 
 	describe("construction", () => {
@@ -58,9 +59,10 @@ describe("Guardrails", () => {
 
 			new Guardrails(mockEnv, mockUser, userSettings);
 
-			expect(mockGuardrailsProviderFactory.getProvider).toHaveBeenCalledWith(
-				"bedrock",
-				{
+			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith("bedrock", {
+				env: mockEnv,
+				user: mockUser,
+				config: {
 					guardrailId: "test-guardrail-id",
 					guardrailVersion: "1",
 					region: "us-east-1",
@@ -68,8 +70,7 @@ describe("Guardrails", () => {
 					secretAccessKey: "test-secret-key",
 					env: mockEnv,
 				},
-				mockUser,
-			);
+			});
 		});
 
 		it("should initialize with llamaguard provider as default", () => {
@@ -80,12 +81,16 @@ describe("Guardrails", () => {
 
 			new Guardrails(mockEnv, mockUser, userSettings);
 
-			expect(mockGuardrailsProviderFactory.getProvider).toHaveBeenCalledWith(
+			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith(
 				"llamaguard",
 				{
-					ai: mockEnv.AI,
 					env: mockEnv,
 					user: mockUser,
+					config: {
+						ai: mockEnv.AI,
+						env: mockEnv,
+						user: mockUser,
+					},
 				},
 			);
 		});
@@ -114,12 +119,13 @@ describe("Guardrails", () => {
 
 			new Guardrails(mockEnv, mockUser, userSettings);
 
-			expect(mockGuardrailsProviderFactory.getProvider).toHaveBeenCalledWith(
+			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith(
 				"bedrock",
 				expect.objectContaining({
-					guardrailVersion: "1",
+					config: expect.objectContaining({
+						guardrailVersion: "1",
+					}),
 				}),
-				mockUser,
 			);
 		});
 	});

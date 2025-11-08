@@ -1,6 +1,6 @@
 import { getModelConfigByModel } from "~/lib/models";
 import { validateReplicatePayload } from "~/lib/models/utils/replicateValidation";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import {
 	resolveServiceContext,
 	type ServiceContext,
@@ -97,9 +97,10 @@ export const handlePodcastTranscribe = async (
 				ErrorType.CONFIGURATION_ERROR,
 			);
 		}
-		const provider = AIProviderFactory.getProvider(
-			modelConfig.provider || "replicate",
-		);
+		const provider = getChatProvider(modelConfig.provider || "replicate", {
+			env: runtimeEnv,
+			user,
+		});
 
 		const prompt = `${request.prompt} <title>${title}</title> <description>${description}</description>`;
 

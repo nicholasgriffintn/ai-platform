@@ -1,4 +1,4 @@
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import {
 	createAsyncInvocationMetadata,
 	mergeAsyncInvocationMetadata,
@@ -6,6 +6,7 @@ import {
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import type { ChatCompletionParameters, Message } from "~/types";
 import { getLogger } from "~/utils/logger";
+import { listChatProviders } from "~/lib/providers/capabilities/chat";
 
 import type {
 	AsyncInvocationHandler,
@@ -186,7 +187,7 @@ export const handleAsyncInvocation: AsyncInvocationHandler = async (
 	message,
 	context,
 ): Promise<AsyncRefreshResult> => {
-	const availableProviders = AIProviderFactory.getProviders();
+	const availableProviders = listChatProviders();
 
 	if (!availableProviders.includes(metadata.provider)) {
 		logger.warn("Skipping async refresh for unknown provider", {
@@ -197,7 +198,10 @@ export const handleAsyncInvocation: AsyncInvocationHandler = async (
 		return { status: message.status ?? "in_progress", message };
 	}
 
-	const provider = AIProviderFactory.getProvider(metadata.provider);
+	const provider = getChatProvider(metadata.provider, {
+		env: context.env,
+		user: context.user,
+	});
 
 	if (!provider?.getAsyncInvocationStatus) {
 		logger.warn("Provider does not support async polling", {

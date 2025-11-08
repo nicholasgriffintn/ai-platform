@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AIProviderFactory } from "~/lib/providers/factory";
+import * as chatCapability from "~/lib/providers/capabilities/chat";
 import type { IEnv, IUser } from "~/types";
 import { PromptAnalyzer } from "../promptAnalyser";
 
@@ -41,12 +41,10 @@ vi.mock("~/lib/models", () => ({
 	}),
 }));
 
-vi.mock("~/lib/providers/factory", () => ({
-	AIProviderFactory: {
-		getProvider: vi.fn().mockReturnValue({
-			getResponse: vi.fn(),
-		}),
-	},
+vi.mock("~/lib/providers/capabilities/chat", () => ({
+	getChatProvider: vi.fn().mockReturnValue({
+		getResponse: vi.fn(),
+	}),
 }));
 
 vi.mock("~/services/functions", () => ({
@@ -113,7 +111,7 @@ describe("PromptAnalyzer", () => {
 			}),
 		};
 
-		vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+		vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 	});
 
 	describe("analyzePrompt", () => {

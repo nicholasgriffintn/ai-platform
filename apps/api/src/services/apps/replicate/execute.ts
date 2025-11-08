@@ -1,6 +1,6 @@
 import { getModelConfigByModel } from "~/lib/models";
 import { validateReplicatePayload } from "~/lib/models/utils/replicateValidation";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import {
 	resolveServiceContext,
 	type ServiceContext,
@@ -61,9 +61,10 @@ export const executeReplicateModel = async (
 			modelName: modelConfig.name || params.modelId,
 		});
 
-		const provider = AIProviderFactory.getProvider(
-			modelConfig.provider || "replicate",
-		);
+		const provider = getChatProvider(modelConfig.provider || "replicate", {
+			env: serviceContext.env,
+			user,
+		});
 
 		const predictionId = generateId();
 

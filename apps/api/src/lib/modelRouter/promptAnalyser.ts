@@ -1,6 +1,6 @@
 import { KeywordFilter } from "~/lib/keywords";
 import { availableCapabilities, getAuxiliaryModel } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { availableFunctions } from "~/services/functions";
 import type { Attachment, IEnv, IUser, PromptRequirements } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -49,7 +49,7 @@ export class PromptAnalyzer {
 		const { model: modelToUse, provider: providerToUse } =
 			await getAuxiliaryModel(env, user);
 
-		const provider = AIProviderFactory.getProvider(providerToUse);
+		const provider = getChatProvider(providerToUse, { env, user });
 
 		return provider.getResponse({
 			env,

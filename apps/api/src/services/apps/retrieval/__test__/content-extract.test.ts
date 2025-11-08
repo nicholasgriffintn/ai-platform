@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { IRequest } from "~/types";
+import * as embeddingHelpers from "~/lib/providers/capabilities/embedding/helpers";
+import type {
+	EmbeddingMutationResult,
+	EmbeddingVector,
+	IRequest,
+} from "~/types";
 import { extractContent } from "../content-extract";
 
 const mockRepositories = {
@@ -12,15 +17,22 @@ vi.mock("~/repositories", () => ({
 	RepositoryManager: vi.fn(() => mockRepositories),
 }));
 
-const mockEmbedding = {
-	generate: vi.fn(() => Promise.resolve([{ id: "vec-1", vector: [0.1, 0.2] }])),
-	insert: vi.fn(() => Promise.resolve({ mutationId: "mutation-123" })),
+const mockEmbeddingProvider = {
+	generate: vi.fn(() =>
+		Promise.resolve([
+			{ id: "vec-1", values: [0.1, 0.2], metadata: {} },
+		] as EmbeddingVector[]),
+	),
+	insert: vi.fn(() =>
+		Promise.resolve({
+			status: "success",
+			error: null,
+		} as EmbeddingMutationResult),
+	),
 };
 
-vi.mock("~/lib/embedding", () => ({
-	Embedding: {
-		getInstance: vi.fn(() => mockEmbedding),
-	},
+vi.mock("~/lib/providers/capabilities/embedding/helpers", () => ({
+	getEmbeddingProvider: vi.fn(() => mockEmbeddingProvider),
 }));
 
 describe("extractContent", () => {
@@ -41,9 +53,22 @@ describe("extractContent", () => {
 		user: mockUser,
 		env: mockEnv,
 	} as any;
+	const mockedGetEmbeddingProvider = vi.mocked(
+		embeddingHelpers.getEmbeddingProvider,
+	);
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockEmbeddingProvider.generate.mockClear();
+		mockEmbeddingProvider.insert.mockClear();
+		mockEmbeddingProvider.generate.mockResolvedValue([
+			{ id: "vec-1", values: [0.1, 0.2], metadata: {} },
+		]);
+		mockEmbeddingProvider.insert.mockResolvedValue({
+			status: "success",
+			error: null,
+		});
+		mockedGetEmbeddingProvider.mockReturnValue(mockEmbeddingProvider as any);
 
 		vi.stubGlobal("crypto", {
 			subtle: {
@@ -164,9 +189,14 @@ describe("extractContent", () => {
 		} as Response);
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		// @ts-ignore - mockEmbedding.generate.mockResolvedValue is required
-		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
-		mockEmbedding.insert.mockResolvedValue({ mutationId: "mutation-123" });
+		const generatedVectors = [
+			{ id: "vec-1", values: [0.1, 0.2], metadata: {} },
+		];
+		mockEmbeddingProvider.generate.mockResolvedValue(generatedVectors);
+		mockEmbeddingProvider.insert.mockResolvedValue({
+			status: "success",
+			error: null,
+		});
 
 		const result = await extractContent(params, mockRequest);
 
@@ -175,7 +205,7 @@ describe("extractContent", () => {
 			success: true,
 		});
 
-		expect(mockEmbedding.generate).toHaveBeenCalledWith(
+		expect(mockEmbeddingProvider.generate).toHaveBeenCalledWith(
 			"webpage",
 			"Content to vectorize",
 			expect.any(String),
@@ -186,9 +216,12 @@ describe("extractContent", () => {
 			},
 		);
 
-		expect(mockEmbedding.insert).toHaveBeenCalledWith([{ id: "vec-1" }], {
-			namespace: "custom-namespace",
-		});
+		expect(mockEmbeddingProvider.insert).toHaveBeenCalledWith(
+			generatedVectors,
+			{
+				namespace: "custom-namespace",
+			},
+		);
 	});
 
 	it("should use default namespace for vectorization", async () => {
@@ -214,13 +247,16 @@ describe("extractContent", () => {
 		} as Response);
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		// @ts-ignore - mockEmbedding.generate.mockResolvedValue is required
-		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
-		mockEmbedding.insert.mockResolvedValue({ mutationId: "mutation-123" });
+		const defaultVectors = [{ id: "vec-1", values: [0.2, 0.3], metadata: {} }];
+		mockEmbeddingProvider.generate.mockResolvedValue(defaultVectors);
+		mockEmbeddingProvider.insert.mockResolvedValue({
+			status: "success",
+			error: null,
+		});
 
 		const _result = await extractContent(params, mockRequest);
 
-		expect(mockEmbedding.insert).toHaveBeenCalledWith([{ id: "vec-1" }], {
+		expect(mockEmbeddingProvider.insert).toHaveBeenCalledWith(defaultVectors, {
 			namespace: "webpages",
 		});
 	});
@@ -364,7 +400,7 @@ describe("extractContent", () => {
 
 		expect(result.status).toBe("success");
 		expect(result.data?.vectorized).toBeUndefined();
-		expect(mockEmbedding.generate).not.toHaveBeenCalled();
+		expect(mockEmbeddingProvider.generate).not.toHaveBeenCalled();
 	});
 
 	it("should handle vectorization failure due to undefined mutation ID", async () => {
@@ -390,10 +426,12 @@ describe("extractContent", () => {
 		} as Response);
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		// @ts-ignore - mockEmbedding.generate.mockResolvedValue is required
-		mockEmbedding.generate.mockResolvedValue([{ id: "vec-1" }]);
-		// @ts-ignore - mockEmbedding.insert.mockResolvedValue is required
-		mockEmbedding.insert.mockResolvedValue({});
+		const failingVectors = [{ id: "vec-1", values: [0.4, 0.5], metadata: {} }];
+		mockEmbeddingProvider.generate.mockResolvedValue(failingVectors);
+		mockEmbeddingProvider.insert.mockResolvedValue({
+			status: "error",
+			error: "Mutation ID is undefined",
+		});
 
 		const result = await extractContent(params, mockRequest);
 

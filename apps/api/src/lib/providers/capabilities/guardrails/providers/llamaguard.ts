@@ -4,7 +4,7 @@ import { getAuxiliaryGuardrailsModel } from "~/lib/models";
 import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { AssistantError } from "../../../../../utils/errors";
-import { AIProviderFactory } from "../../../factory";
+import { getChatProvider } from "../../chat";
 
 const logger = getLogger({ prefix: "lib/guardrails/llamaguard" });
 
@@ -47,7 +47,10 @@ S13: Elections.
 			const { model, provider: providerToUse } =
 				await getAuxiliaryGuardrailsModel(this.config.env, this.config.user);
 
-			const provider = AIProviderFactory.getProvider(providerToUse);
+			const provider = getChatProvider(providerToUse, {
+				env: this.config.env,
+				user: this.config.user,
+			});
 
 			const response = await provider.getResponse(
 				{

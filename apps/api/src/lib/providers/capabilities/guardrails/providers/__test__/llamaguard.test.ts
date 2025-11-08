@@ -1,15 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getAuxiliaryGuardrailsModel } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import * as chatCapability from "~/lib/providers/capabilities/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { LlamaGuardProvider } from "../llamaguard";
 
 vi.mock("~/lib/models");
-vi.mock("~/lib/providers/factory");
+vi.mock("~/lib/providers/capabilities/chat");
 
 const mockGetAuxiliaryGuardrailsModel = vi.mocked(getAuxiliaryGuardrailsModel);
-const mockAIProviderFactory = vi.mocked(AIProviderFactory);
 
 const mockAIProvider = {
 	getResponse: vi.fn(),
@@ -32,7 +31,7 @@ describe("LlamaGuardProvider", () => {
 			provider: "test-provider",
 		});
 		// @ts-ignore - mockAIProvider is not typed
-		mockAIProviderFactory.getProvider.mockReturnValue(mockAIProvider);
+		vi.spyOn(chatCapability, "getChatProvider").mockReturnValue(mockAIProvider);
 	});
 
 	describe("constructor", () => {

@@ -1,4 +1,4 @@
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "../../chat";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { TranscriptionRequest, TranscriptionResult } from "../index";
@@ -25,9 +25,10 @@ export class ReplicateTranscriptionProvider extends BaseTranscriptionProvider {
 			const modelConfig = await getModelConfigByMatchingModel(
 				REPLICATE_TRANSCRIBE_VERSION,
 			);
-			const provider = AIProviderFactory.getProvider(
-				modelConfig?.provider || "replicate",
-			);
+			const provider = getChatProvider(modelConfig?.provider || "replicate", {
+				env,
+				user,
+			});
 
 			const transcriptionData = await provider.getResponse({
 				version: REPLICATE_TRANSCRIBE_VERSION,

@@ -4,7 +4,7 @@ import type { TaskHandler, TaskResult } from "../TaskHandler";
 import { MemoryRepository } from "~/repositories/MemoryRepository";
 import { MemorySynthesisRepository } from "~/repositories/MemorySynthesisRepository";
 import { getLogger } from "~/utils/logger";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModel } from "~/lib/models";
 
 const logger = getLogger({ prefix: "services/tasks/memory-synthesis" });
@@ -156,7 +156,7 @@ Format as a structured document with clear sections.`;
 			const { model: modelToUse, provider: providerToUse } =
 				await getAuxiliaryModel(env);
 
-			const provider = AIProviderFactory.getProvider(providerToUse);
+			const provider = getChatProvider(providerToUse, { env, user: undefined });
 
 			const response = await provider.getResponse({
 				env,

@@ -1,7 +1,7 @@
 import type { Vectorize } from "@cloudflare/workers-types";
 
 import { getModelConfig } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "../../chat";
 import type {
 	EmbeddingMutationResult,
 	EmbeddingProvider,
@@ -55,9 +55,10 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
 
 			const marengoModelName = "marengo-embed";
 			const marengoModelConfig = await getModelConfig(marengoModelName);
-			const marengoProvider = AIProviderFactory.getProvider(
-				marengoModelConfig.provider,
-			);
+			const marengoProvider = getChatProvider(marengoModelConfig.provider, {
+				env: this.env,
+				user: this.user,
+			});
 
 			let requestContent: any[] = [{ type: "text", text: content }];
 

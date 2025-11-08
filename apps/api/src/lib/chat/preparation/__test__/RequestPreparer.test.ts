@@ -5,6 +5,7 @@ import {
 	pruneMessagesToFitContext,
 	sanitiseInput,
 } from "~/lib/chat/utils";
+import * as embeddingHelpers from "~/lib/providers/capabilities/embedding/helpers";
 import { getModelConfig } from "~/lib/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type { CoreChatOptions } from "~/types";
@@ -27,9 +28,13 @@ const mockConversationManager = {
 	replaceMessages: vi.fn(),
 };
 
-const mockEmbedding = {
+const embeddingHelperMocks = vi.hoisted(() => ({
+	getEmbeddingProvider: vi.fn(() => ({}) as any),
 	augmentPrompt: vi.fn(),
-};
+}));
+
+const mockGetEmbeddingProvider = embeddingHelperMocks.getEmbeddingProvider;
+const mockAugmentPrompt = embeddingHelperMocks.augmentPrompt;
 
 const mockMemoryManager = {
 	retrieveMemories: vi.fn(),
@@ -45,11 +50,10 @@ vi.mock("~/lib/conversationManager", () => ({
 	},
 }));
 
-vi.mock("~/lib/embedding", () => ({
-	Embedding: {
-		getInstance: vi.fn(() => mockEmbedding),
-	},
-}));
+vi.mock(
+	"~/lib/providers/capabilities/embedding/helpers",
+	() => embeddingHelperMocks,
+);
 
 vi.mock("~/lib/memory", () => ({
 	MemoryManager: {
@@ -84,6 +88,9 @@ describe("RequestPreparer", () => {
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
+		mockAugmentPrompt.mockReset();
+		mockGetEmbeddingProvider.mockReset();
+		mockGetEmbeddingProvider.mockReturnValue({} as any);
 
 		mockEnv = {
 			DB: {} as any,
@@ -273,7 +280,9 @@ describe("RequestPreparer", () => {
 				use_rag: true,
 				rag_options: { topK: 5 },
 			};
-			mockEmbedding.augmentPrompt.mockResolvedValue("Augmented prompt");
+			const providerInstance = { name: "mock-provider" };
+			mockGetEmbeddingProvider.mockReturnValueOnce(providerInstance as any);
+			mockAugmentPrompt.mockResolvedValue("Augmented prompt");
 
 			const result = await (preparer as any).processMessageContent(
 				ragOptions,
@@ -281,13 +290,14 @@ describe("RequestPreparer", () => {
 				{ embedding_provider: "vectorize" },
 			);
 
-			expect(result).toBe("Augmented prompt");
-			expect(mockEmbedding.augmentPrompt).toHaveBeenCalledWith(
-				"Hello world",
-				{ topK: 5 },
-				mockEnv,
-				"user-123",
-			);
+			expect(result).toBe("Hello world\n\nAugmented prompt");
+			expect(mockAugmentPrompt).toHaveBeenCalledWith({
+				provider: providerInstance,
+				query: "Hello world",
+				options: { topK: 5 },
+				env: mockEnv,
+				user: ragOptions.user,
+			});
 		});
 
 		it("should handle array content in last message", async () => {

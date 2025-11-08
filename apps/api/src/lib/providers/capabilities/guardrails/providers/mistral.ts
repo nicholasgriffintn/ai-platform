@@ -3,7 +3,7 @@ import type { Ai } from "@cloudflare/workers-types";
 import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { AssistantError } from "../../../../../utils/errors";
-import { AIProviderFactory } from "../../../factory";
+import { getChatProvider } from "../../chat";
 import { getModelConfig } from "~/lib/models";
 
 const logger = getLogger({ prefix: "lib/guardrails/mistral" });
@@ -30,7 +30,10 @@ export class MistralGuardProvider implements GuardrailsProvider {
 
 			const model = "mistral-moderation-latest";
 			const modelConfig = await getModelConfig(model);
-			const provider = AIProviderFactory.getProvider(modelConfig.provider);
+			const provider = getChatProvider(modelConfig.provider, {
+				env: this.config.env,
+				user: this.config.user,
+			});
 
 			const response = await provider.getResponse(
 				{

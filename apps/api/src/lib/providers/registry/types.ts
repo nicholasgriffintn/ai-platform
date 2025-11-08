@@ -2,6 +2,7 @@ import type { AudioProvider } from "../capabilities/audio";
 import type { AIProvider } from "../capabilities/chat/providers/base";
 import type {
 	EmbeddingProvider,
+	GuardrailsProvider,
 	IEnv,
 	IUser,
 	ResearchProvider,
@@ -13,6 +14,7 @@ export type ProviderCategory =
 	| "audio"
 	| "chat"
 	| "embedding"
+	| "guardrails"
 	| "research"
 	| "search"
 	| "transcription";
@@ -48,6 +50,7 @@ export type CategoryProviderMap = {
 	audio: AudioProvider;
 	chat: AIProvider;
 	embedding: EmbeddingProvider;
+	guardrails: GuardrailsProvider;
 	research: ResearchProvider;
 	search: SearchProvider;
 	transcription: TranscriptionProvider;

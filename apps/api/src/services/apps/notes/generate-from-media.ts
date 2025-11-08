@@ -2,10 +2,10 @@ import {
 	handleTranscribe,
 	TranscriptionProvider,
 } from "~/services/audio/transcribe";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModel, getModelConfig } from "~/lib/models";
 import { RepositoryManager } from "~/repositories";
-import { Embedding } from "~/lib/embedding";
+import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -99,9 +99,10 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 		if (useVideoAnalysis) {
 			const pegasusModelName = "pegasus-video";
 			const pegasusModelConfig = await getModelConfig(pegasusModelName);
-			const pegasusProvider = AIProviderFactory.getProvider(
-				pegasusModelConfig.provider,
-			);
+			const pegasusProvider = getChatProvider(pegasusModelConfig.provider, {
+				env,
+				user,
+			});
 
 			const videoResult = await pegasusProvider.getResponse(
 				{
@@ -135,7 +136,7 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 							ErrorType.NOT_FOUND,
 						);
 					}
-					const embedding = Embedding.getInstance(env, user, userSettings);
+					const embedding = getEmbeddingProvider(env, user, userSettings);
 
 					const videoId = `video-${Date.now()}-${generateId()}`;
 					const metadata = {
@@ -236,7 +237,7 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 		const { model: modelToUse, provider: providerToUse } =
 			await getAuxiliaryModel(env, user);
 
-		const provider = AIProviderFactory.getProvider(providerToUse);
+		const provider = getChatProvider(providerToUse, { env, user });
 
 		const userPrompt = `${extraPrompt ? `${extraPrompt}\n\n` : ""}Transcript:\n\n${transcriptText}`;
 

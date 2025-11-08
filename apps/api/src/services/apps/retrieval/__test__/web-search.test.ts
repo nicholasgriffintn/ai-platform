@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getAuxiliaryModel } from "~/lib/models";
-import { AIProviderFactory } from "~/lib/providers/factory";
+import * as chatCapability from "~/lib/providers/capabilities/chat";
 import { handleWebSearch } from "~/services/search/web";
 import { performDeepWebSearch } from "../web-search";
 
@@ -15,16 +15,14 @@ vi.mock("~/lib/models", () => ({
 	),
 }));
 
-vi.mock("~/lib/providers/factory", () => ({
-	AIProviderFactory: {
-		getProvider: vi.fn(() => ({
-			getResponse: vi.fn(() =>
-				Promise.resolve({
-					response: { questions: ["Related question 1", "Related question 2"] },
-				}),
-			),
-		})),
-	},
+vi.mock("~/lib/providers/capabilities/chat", () => ({
+	getChatProvider: vi.fn(() => ({
+		getResponse: vi.fn(() =>
+			Promise.resolve({
+				response: { questions: ["Related question 1", "Related question 2"] },
+			}),
+		),
+	})),
 }));
 
 vi.mock("~/services/search/web", () => ({
@@ -109,7 +107,7 @@ describe("performDeepWebSearch", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		// @ts-ignore - mockProvider is missing required properties
-		vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+		vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 		vi.mocked(getAuxiliaryModel).mockResolvedValue({
 			model: "gpt-4o-mini",
 			provider: "openai",

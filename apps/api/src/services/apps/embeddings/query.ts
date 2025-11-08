@@ -1,5 +1,8 @@
 import { RepositoryManager } from "~/repositories";
-import { Embedding } from "~/lib/embedding";
+import {
+	getEmbeddingProvider,
+	getEmbeddingNamespace,
+} from "~/lib/providers/capabilities/embedding/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
@@ -25,9 +28,9 @@ export const queryEmbeddings = async (req: any): Promise<any> => {
 		if (!userSettings) {
 			throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
 		}
-		const embedding = Embedding.getInstance(env, req.user, userSettings);
+		const embedding = getEmbeddingProvider(env, req.user, userSettings);
 
-		const finalNamespace = embedding.getNamespace({
+		const finalNamespace = getEmbeddingNamespace(req.user, {
 			namespace,
 		});
 

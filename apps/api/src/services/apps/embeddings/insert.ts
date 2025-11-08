@@ -1,6 +1,9 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { RepositoryManager } from "~/repositories";
-import { Embedding } from "~/lib/embedding";
+import {
+	getEmbeddingProvider,
+	getEmbeddingNamespace,
+} from "~/lib/providers/capabilities/embedding/helpers";
 import type { IRequest, RagOptions } from "~/types";
 import { chunkText } from "~/utils/embeddings";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -108,9 +111,9 @@ export const insertEmbedding = async (
 		if (!userSettings) {
 			throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
 		}
-		const embedding = Embedding.getInstance(env, req.user, userSettings);
 
-		const finalNamespace = embedding.getNamespace({
+		const embedding = getEmbeddingProvider(env, req.user, userSettings);
+		const finalNamespace = getEmbeddingNamespace(req.user, {
 			namespace: rag_options?.namespace,
 		});
 

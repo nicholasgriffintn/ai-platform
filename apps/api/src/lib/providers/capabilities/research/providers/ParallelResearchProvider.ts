@@ -380,7 +380,6 @@ export class ParallelResearchProvider implements ResearchProvider {
 			}
 
 			if (runStatus.status === "completed") {
-				// Should not happen without output, but guard anyway.
 				return {
 					provider: "parallel" as const,
 					run: runStatus,

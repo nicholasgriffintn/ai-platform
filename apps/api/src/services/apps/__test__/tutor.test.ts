@@ -15,10 +15,8 @@ vi.mock("~/lib/models", () => ({
 	getAuxiliaryModel: vi.fn(),
 }));
 
-vi.mock("~/lib/providers/factory", () => ({
-	AIProviderFactory: {
-		getProvider: vi.fn(),
-	},
+vi.mock("~/lib/providers/capabilities/chat", () => ({
+	getChatProvider: vi.fn(),
 }));
 
 vi.mock("~/utils/id", () => ({
@@ -87,14 +85,14 @@ describe("tutor service", () => {
 
 			const { handleWebSearch } = await import("~/services/search/web");
 			const { getAuxiliaryModel } = await import("~/lib/models");
-			const { AIProviderFactory } = await import("~/lib/providers/factory");
+			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			vi.mocked(handleWebSearch).mockResolvedValue(mockWebSearchResults);
 			vi.mocked(getAuxiliaryModel).mockResolvedValue({
 				model: "test-model",
 				provider: "test-provider",
 			});
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await completeTutorRequest(mockEnv, mockUser, {
 				topic: "machine learning",
@@ -187,14 +185,14 @@ describe("tutor service", () => {
 
 			const { handleWebSearch } = await import("~/services/search/web");
 			const { getAuxiliaryModel } = await import("~/lib/models");
-			const { AIProviderFactory } = await import("~/lib/providers/factory");
+			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			vi.mocked(handleWebSearch).mockResolvedValue(mockWebSearchResults);
 			vi.mocked(getAuxiliaryModel).mockResolvedValue({
 				model: "test-model",
 				provider: "test-provider",
 			});
-			vi.mocked(AIProviderFactory.getProvider).mockReturnValue(mockProvider);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await completeTutorRequest(mockEnv, mockUser, {
 				topic: "neural networks",
