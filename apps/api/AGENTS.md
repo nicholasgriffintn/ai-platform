@@ -392,7 +392,9 @@ export class ExampleProvider extends BaseAIProvider {
 }
 ```
 
-### Text-to-Speech Providers (Added: 2024-11-08)
+## Capability & Provider Guidance
+
+### Text-to-Speech Providers
 
 **When to use**: Any time you add or modify audio/TTS providers or touch `/audio/speech`.
 
@@ -416,7 +418,7 @@ export class ExampleProvider extends BaseAIProvider {
 - Add unit coverage for any custom provider logic if it manipulates requests/responses beyond simple delegation.
 - Ensure metadata (voice, engine, raw payload references) is returned so downstream consumers can reason about the audio asset.
 
-### Transcription Providers (Added: 2024-11-08)
+### Transcription Providers
 
 **When to use**: Anytime you add or modify speech-to-text/transcription behavior.
 
@@ -439,7 +441,7 @@ export class ExampleProvider extends BaseAIProvider {
 - Keep provider-specific unit tests alongside their implementations (e.g., `capabilities/transcription/__test__`).
 - Include error-path coverage for size limits, missing bindings, and provider failures.
 
-### Search Providers (Added: 2024-11-08)
+### Search Providers
 
 **When to use**: Any backend change touching web search providers or `/services/search`.
 
@@ -462,7 +464,7 @@ export class ExampleProvider extends BaseAIProvider {
 - Write provider-specific unit tests under `capabilities/search/__test__` for each vendor (Serper, Tavily, etc.).
 - Cover error cases (missing keys, gateway failures, HTTP error bodies) in each provider test suite.
 
-### Research Providers (Added: 2024-11-08)
+### Research Providers
 
 **When to use**: Any change that touches Parallel/Exa research integrations or background research polling.
 
@@ -486,7 +488,7 @@ export class ExampleProvider extends BaseAIProvider {
 - Add provider-level unit tests under `capabilities/research/__test__` whenever you introduce new vendors or complex behaviors.
 - Assert repository updates (dynamic app responses, task queue) receive the normalized provider payloads when tasks complete or fail.
 
-### Capability Helper Surface (Added: 2024-11-24)
+### Capability Helper Surface
 
 **When to use**: Anytime you need to resolve audio, search, research, transcription, or guardrail providers from services/routes/tests.
 
@@ -509,7 +511,36 @@ export class ExampleProvider extends BaseAIProvider {
 - Prefer mocking the exported helper (e.g., `vi.mock("~/lib/providers/capabilities/search", () => ({ getSearchProvider: vi.fn() }))`) instead of stubbing `providerLibrary`.
 - Guardrail validator/orchestrator suites can continue mocking `Guardrails`, but unit tests for env selection should exercise `getGuardrailsProvider`.
 
-### Embedding Providers (Added: 2024-11-08)
+### Custom Capability Categories
+
+**When to use**: Introducing a brand-new provider type (e.g., “reasoning”, “render”) that doesn’t fit the existing categories.
+
+**Steps**:
+
+1. Extend `ProviderCategory` plus the `CategoryProviderMap` in `apps/api/src/lib/providers/registry/types.ts`.
+2. Create `apps/api/src/lib/providers/capabilities/<category>/` with an `index.ts` exporting `get<Category>Provider`, `list<Category>Providers`, and any helpers/base classes the capability needs.
+3. Add `register<Category>Providers` under `apps/api/src/lib/providers/registry/registrations/`, exporting a bootstrapper that registers every implementation with lifecycle + metadata.
+4. Register the bootstrapper by appending it to `DEFAULT_BOOTSTRAPPERS` in `apps/api/src/lib/providers/library.ts`.
+5. Document the capability in this file (pattern + tests) and update root `AGENTS.md` so future agents know where it lives.
+6. Wire service layers through the capability helper—never resolve from `providerLibrary` directly outside of the capability folder.
+
+### Provider Lifecycle Guidelines
+
+- Default lifecycle is `singleton`; the registry caches the instance after the first resolution and reuses it for subsequent calls. Use this when providers are stateless or expensive to construct (OpenAI, Anthropic).
+- Set `lifecycle: "transient"` for providers that must be re-instantiated per request (e.g., guardrails that keep per-call state, providers that accept dynamic config objects).
+- Guard against accidental singleton reuse by keeping mutable request data out of provider instances; pass per-request context via the method arguments instead.
+- Tests for new providers should assert the correct lifecycle (see `registry/__test__/ProviderRegistry.test.ts`).
+
+### Provider Migration Checklist
+
+1. **Schemas & Settings** – Add any new provider identifiers to shared schemas/user settings defaults so clients can pick them.
+2. **Registry** – Register the provider under the capability bootstrapper with accurate metadata (vendor, tags, aliases).
+3. **Capability Helper** – Ensure helper logic (like `getGuardrailsProvider`) knows how to configure the provider from env + user settings.
+4. **Services** – Route all usages through the helper. For background tasks, pass `{ env, user }` context rather than reading globals.
+5. **Tests** – Cover the provider itself plus the helper flow (mocking the capability module in services, adding capability-level unit tests when env validation or normalization occurs).
+6. **Docs** – Update both this file and root `AGENTS.md` with the new provider, lifecycle notes, and any migration gotchas.
+
+### Embedding Providers
 
 **When to use**: Any change involving embeddings/vector storage across Vectorize, Bedrock, Mistral, Marengo, or S3 vectors.
 
@@ -532,7 +563,7 @@ export class ExampleProvider extends BaseAIProvider {
 - Provider-specific suites live under `capabilities/embedding/__test__`; extend them when behavior changes.
 - Cover external dependency behavior (AWS clients, Vectorize AI responses) with appropriate mocks so regressions are caught early.
 
-### Provider Library Migration Plan (Added: 2024-11-19)
+### Provider Library Migration Plan
 
 **When to use**: Anytime you touch code that still imports `AIProviderFactory` or manually instantiates providers instead of relying on `providerLibrary` + the capability registries under `apps/api/src/lib/providers/capabilities/**`.
 
@@ -812,8 +843,11 @@ pnpm --filter @assistant/api test -- --watch   # Watch mode for development
 
 ### Update Format
 
+- Update the section that best matches your change rather than adding dated changelog entries.
+- If a completely new subsection is required, document it with the template below and fold future edits back into that subsection.
+
 ```markdown
-### [Pattern/Feature Name] (Added: YYYY-MM-DD)
+### [Pattern/Feature Name]
 
 **When to use**: [Specific scenario]
 **Files**: [File paths]

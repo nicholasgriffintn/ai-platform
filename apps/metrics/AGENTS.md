@@ -107,8 +107,11 @@ React + Vite dashboard visualising Analytics Engine data for Polychat usage and 
 
 ### Update Format
 
+- Update whichever section already describes the change; avoid introducing dated changelog snippets.
+- When a brand-new subsection is warranted, use the following structure and keep future edits within it.
+
 ```markdown
-### [Feature Name] (Added: YYYY-MM-DD)
+### [Feature Name]
 
 **Purpose**: [What this feature does]
 **Location**: [File paths]

@@ -136,11 +136,30 @@ Services receive context via `getServiceContext(c)` middleware injected in route
 7. Test with mock responses and various model configurations
 8. Document provider-specific quirks and rate limits in `apps/api/AGENTS.md`
 
-### Using Capability Helpers (Added: 2024-11-24)
-1. All provider categories now expose `getXProvider` and `listXProviders` from `apps/api/src/lib/providers/capabilities/{category}/index.ts` (plus guardrail helpers under `helpers.ts`). Import these helpers from the capability surface instead of using `providerLibrary` directly.
-2. Guardrail validation flows should import `Guardrails`/`getGuardrailsProvider` from `~/lib/providers/capabilities/guardrails`; the wrapper now lives alongside the helper rather than in `providers/`.
-3. When writing tests, mock the helper module (e.g., `vi.mock("~/lib/providers/capabilities/search", () => ({ getSearchProvider: vi.fn() }))`) so service suites stay aligned with the capability boundary.
-4. Capability indices also export discovery utilities (`listAudioProviders`, `listSearchProviders`, etc.)—use them when surfacing provider choices in settings UIs instead of hardcoding names.
+### Capability & Provider Patterns
+#### Use capability helpers for every provider call
+1. Import helpers from `apps/api/src/lib/providers/capabilities/{category}` (e.g., `getSearchProvider`, `listAudioProviders`) instead of reaching into the provider library directly.
+2. Guardrail flows should resolve helpers from `~/lib/providers/capabilities/guardrails`, which now co-locates the wrapper and helper logic.
+3. Mock the helper module in tests (`vi.mock("~/lib/providers/capabilities/search", () => ({ getSearchProvider: vi.fn() }))`) so suites stay aligned with the capability boundary.
+4. When exposing provider choices in UIs, use the capability discovery utilities instead of hardcoding names.
+
+#### Add a new capability category
+1. Extend `ProviderCategory`/`CategoryProviderMap` in `apps/api/src/lib/providers/registry/types.ts`.
+2. Create `apps/api/src/lib/providers/capabilities/{category}` containing `index.ts`, helpers, and provider implementations.
+3. Add a bootstrapper under `apps/api/src/lib/providers/registry/registrations/{category}.ts` and register it inside `DEFAULT_BOOTSTRAPPERS` in `library.ts`.
+4. Update relevant AGENTS files plus the decision matrix, and add capability-level tests (helper + env validation) before wiring the service layer.
+
+#### Provider lifecycle guidelines
+- `singleton` (default) providers are instantiated once per process—use when instances are stateless and safe to reuse.
+- `transient` providers are created per call—use when env/user configuration or stateful SDKs make reuse unsafe.
+- Document lifecycle decisions inside the registration function and add regression tests to ensure request-specific data does not leak.
+
+#### Provider migration workflow
+1. Announce the provider work, align schema/settings defaults, and register the provider (plus aliases) inside the appropriate capability bootstrapper.
+2. Update the capability helper to resolve/configure the provider and adjust any service code that should now rely on the helper.
+3. Add or refresh provider tests, capability helper tests, and service mocks.
+4. Run `pnpm --filter @assistant/api test`, `lint`, and `typecheck` to satisfy workspace gates.
+5. Update documentation (AGENTS files, README, decision matrix) so consumers know how to configure and select the provider.
 
 ### Adding a New Frontend Page
 1. Create page component in `apps/app/src/pages/{name}.tsx`
@@ -374,16 +393,18 @@ Services receive context via `getServiceContext(c)` middleware injected in route
 5. **Common Pitfalls**: Add solutions to problems encountered
 
 ### Update Format
-When adding new patterns, use this format:
+- Update the existing section that best matches the work instead of appending dated changelog entries.
+- When a new section is unavoidable, document it with this lightweight structure:
+
 ```markdown
-### [Pattern Name] (Added: YYYY-MM-DD)
+### Pattern Name
 **When to use**: [Specific conditions or scenarios]
-**Affects**: [Which workspaces this impacts]
+**Affects**: [Workspaces or features impacted]
 **Steps**:
 1. [Detailed step with file paths]
-2. [Include rebuild/test requirements]
+2. [Rebuild/test requirements]
 **Example**: [Code snippet or file reference]
-**Update AGENTS.md**: [Which workspace AGENTS.md files to update]
+**Documentation**: [Other AGENTS or READMEs that also need updates]
 ```
 
 ### Review Cycle

@@ -685,8 +685,11 @@ describe("exampleStore", () => {
 
 ### Update Format
 
+- Update the section that best matches your change instead of creating dated changelog entries.
+- If a new subsection is necessary, document it with the template below and keep future edits within that subsection.
+
 ```markdown
-### [Pattern/Feature Name] (Added: YYYY-MM-DD)
+### [Pattern/Feature Name]
 
 **When to use**: [Specific scenario]
 **Files**: [File paths]
