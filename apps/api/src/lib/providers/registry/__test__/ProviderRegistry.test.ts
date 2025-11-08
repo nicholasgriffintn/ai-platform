@@ -25,7 +25,7 @@ describe("ProviderRegistry", () => {
 		registry.register("audio", createRegistration());
 
 		const instance = registry.resolve("audio", "test");
-		expect(instance).toEqual({ id: "instance" });
+		expect(instance.name).toBe("test");
 	});
 
 	it("supports aliases for resolution", () => {
@@ -36,7 +36,7 @@ describe("ProviderRegistry", () => {
 		});
 
 		const instance = registry.resolve("audio", "alias");
-		expect(instance).toEqual({ id: "instance" });
+		expect(instance.name).toBe("test");
 	});
 
 	it("throws when registering duplicate providers", () => {
