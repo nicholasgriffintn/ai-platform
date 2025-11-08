@@ -1,5 +1,5 @@
 import { StorageService } from "~/lib/storage";
-import { providerLibrary } from "~/lib/providers/library";
+import { getAudioProvider } from "~/lib/providers/capabilities/audio";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -31,7 +31,7 @@ export const handleTextToSpeech = async (
 	const storage = new StorageService(env.ASSETS_BUCKET);
 	const slug = `tts/${encodeURIComponent(user?.email || "unknown").replace(/[^a-zA-Z0-9]/g, "-")}-${generateId()}`;
 
-	const audioProvider = providerLibrary.audio(provider, { env, user });
+	const audioProvider = getAudioProvider(provider, { env, user });
 	const synthesisResult = await audioProvider.synthesize({
 		input,
 		env,

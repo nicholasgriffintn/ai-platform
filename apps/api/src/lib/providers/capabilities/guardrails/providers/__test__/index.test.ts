@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { trackGuardrailViolation } from "~/lib/monitoring";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import * as providerLibraryModule from "~/lib/providers/library";
-import { Guardrails } from "../index";
+import { Guardrails, getGuardrailsProvider } from "../../helpers";
 
 vi.mock("~/lib/monitoring");
 vi.mock("~/lib/providers/library", () => ({
@@ -345,6 +345,56 @@ describe("Guardrails", () => {
 				expect(error).toBeInstanceOf(AssistantError);
 				expect((error as AssistantError).type).toBe(ErrorType.PARAMS_ERROR);
 			}
+		});
+	});
+
+	describe("getGuardrailsProvider", () => {
+		it("should return null when guardrails disabled", () => {
+			const provider = getGuardrailsProvider(mockEnv, mockUser, {
+				guardrails_enabled: false,
+			} as any);
+			expect(provider).toBeNull();
+			expect(mockProviderLibrary.guardrails).not.toHaveBeenCalled();
+		});
+
+		it("should throw for bedrock without guardrail ID", () => {
+			expect(() =>
+				getGuardrailsProvider(mockEnv, mockUser, {
+					guardrails_enabled: true,
+					guardrails_provider: "bedrock",
+				} as any),
+			).toThrow("Missing required guardrail ID");
+		});
+
+		it("should initialize bedrock provider with defaults", () => {
+			const provider = getGuardrailsProvider(mockEnv, mockUser, {
+				guardrails_enabled: true,
+				guardrails_provider: "bedrock",
+				bedrock_guardrail_id: "test-id",
+			} as any);
+
+			expect(provider).toBe(mockProvider);
+			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith("bedrock", {
+				env: mockEnv,
+				user: mockUser,
+				config: expect.objectContaining({
+					guardrailId: "test-id",
+					guardrailVersion: "1",
+				}),
+			});
+		});
+
+		it("should default to llamaguard provider", () => {
+			const provider = getGuardrailsProvider(mockEnv, mockUser, {
+				guardrails_enabled: true,
+				guardrails_provider: "unknown",
+			} as any);
+
+			expect(provider).toBe(mockProvider);
+			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith(
+				"llamaguard",
+				expect.any(Object),
+			);
 		});
 	});
 });

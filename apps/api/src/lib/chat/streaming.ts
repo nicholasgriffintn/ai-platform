@@ -10,7 +10,7 @@ import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { Guardrails } from "~/lib/providers/capabilities/guardrails/providers";
+import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { MemoryManager } from "~/lib/memory";
 import { getModelConfigByMatchingModel } from "~/lib/models";
 import {

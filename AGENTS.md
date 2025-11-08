@@ -136,6 +136,12 @@ Services receive context via `getServiceContext(c)` middleware injected in route
 7. Test with mock responses and various model configurations
 8. Document provider-specific quirks and rate limits in `apps/api/AGENTS.md`
 
+### Using Capability Helpers (Added: 2024-11-24)
+1. All provider categories now expose `getXProvider` and `listXProviders` from `apps/api/src/lib/providers/capabilities/{category}/index.ts` (plus guardrail helpers under `helpers.ts`). Import these helpers from the capability surface instead of using `providerLibrary` directly.
+2. Guardrail validation flows should import `Guardrails`/`getGuardrailsProvider` from `~/lib/providers/capabilities/guardrails`; the wrapper now lives alongside the helper rather than in `providers/`.
+3. When writing tests, mock the helper module (e.g., `vi.mock("~/lib/providers/capabilities/search", () => ({ getSearchProvider: vi.fn() }))`) so service suites stay aligned with the capability boundary.
+4. Capability indices also export discovery utilities (`listAudioProviders`, `listSearchProviders`, etc.)—use them when surfacing provider choices in settings UIs instead of hardcoding names.
+
 ### Adding a New Frontend Page
 1. Create page component in `apps/app/src/pages/{name}.tsx`
 2. Add route to `apps/app/src/routes.ts`

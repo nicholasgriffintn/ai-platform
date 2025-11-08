@@ -1,6 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryResearchProvider } from "~/lib/models";
-import { providerLibrary } from "~/lib/providers/library";
+import { getResearchProvider } from "~/lib/providers/capabilities/research";
 import type {
 	IEnv,
 	IFunctionResponse,
@@ -89,7 +89,7 @@ const getResearchProviderInstance = async (
 	const providerToUse = await getAuxiliaryResearchProvider(env, user, provider);
 	return {
 		provider: providerToUse,
-		researchProvider: providerLibrary.research(providerToUse, {
+		researchProvider: getResearchProvider(providerToUse, {
 			env,
 			user,
 		}),

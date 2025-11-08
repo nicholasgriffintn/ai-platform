@@ -4,7 +4,7 @@ import type {
 	ValidatorResult,
 } from "~/lib/chat/validation/ValidationPipeline";
 import { RepositoryManager } from "~/repositories";
-import { Guardrails } from "~/lib/providers/capabilities/guardrails/providers";
+import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import type { CoreChatOptions } from "~/types";
 import { getLogger } from "~/utils/logger";
 

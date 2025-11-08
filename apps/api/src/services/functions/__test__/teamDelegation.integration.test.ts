@@ -52,7 +52,7 @@ vi.mock("~/lib/chat/responses", () => ({
 	getAIResponse: mockGetAIResponse,
 }));
 
-vi.mock("~/lib/providers/capabilities/guardrails/providers", () => ({
+vi.mock("~/lib/providers/capabilities/guardrails", () => ({
 	Guardrails: vi.fn(() => mockGuardrails),
 }));
 

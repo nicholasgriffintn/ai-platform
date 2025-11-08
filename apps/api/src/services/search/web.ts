@@ -1,6 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliarySearchProvider } from "~/lib/models";
-import { providerLibrary } from "~/lib/providers/library";
+import { getSearchProvider } from "~/lib/providers/capabilities/search";
 import type {
 	IEnv,
 	IFunctionResponse,
@@ -34,7 +34,7 @@ export const handleWebSearch = async (
 	}
 
 	const providerToUse = await getAuxiliarySearchProvider(env, user, provider);
-	const searchProvider = providerLibrary.search(providerToUse, { env, user });
+	const searchProvider = getSearchProvider(providerToUse, { env, user });
 	const response = await searchProvider.performWebSearch(query, options);
 
 	if (!response) {

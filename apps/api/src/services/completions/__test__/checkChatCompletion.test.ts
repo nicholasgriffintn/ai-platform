@@ -20,7 +20,7 @@ vi.mock("~/lib/conversationManager", () => ({
 	},
 }));
 
-vi.mock("~/lib/providers/capabilities/guardrails/providers", () => ({
+vi.mock("~/lib/providers/capabilities/guardrails", () => ({
 	Guardrails: vi.fn(),
 }));
 
@@ -52,7 +52,7 @@ describe("handleCheckChatCompletion", () => {
 		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
 		const { Guardrails } = await import(
-			"~/lib/providers/capabilities/guardrails/providers"
+			"~/lib/providers/capabilities/guardrails"
 		);
 
 		mockDatabase = {

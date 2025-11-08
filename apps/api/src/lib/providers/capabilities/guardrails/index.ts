@@ -1,2 +1,3 @@
-export type { GuardrailsProvider } from "~/types";
+export type { GuardrailResult, GuardrailsProvider } from "~/types";
 export * from "./providers";
+export * from "./helpers";

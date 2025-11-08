@@ -18,15 +18,13 @@ vi.mock("~/lib/models", () => ({
 	getAuxiliarySearchProvider: vi.fn(),
 }));
 
-vi.mock("~/lib/providers/library", () => ({
-	providerLibrary: {
-		search: vi.fn(),
-	},
+vi.mock("~/lib/providers/capabilities/search", () => ({
+	getSearchProvider: vi.fn(),
 }));
 
 describe("Web Search Service", () => {
 	let mockSanitiseInput: MockedFunction<any>;
-	let mockProviderLibrarySearch: MockedFunction<any>;
+	let mockGetSearchProvider: MockedFunction<any>;
 	let mockSearchProvider: { performWebSearch: MockedFunction<any> };
 	let mockGetAuxiliarySearchProvider: MockedFunction<any>;
 
@@ -42,13 +40,15 @@ describe("Web Search Service", () => {
 		);
 		mockGetAuxiliarySearchProvider.mockResolvedValue("tavily");
 
-		const providerLib = await import("~/lib/providers/library");
-		mockProviderLibrarySearch = vi.mocked(providerLib.providerLibrary.search);
+		const searchCapability = await import(
+			"~/lib/providers/capabilities/search"
+		);
+		mockGetSearchProvider = vi.mocked(searchCapability.getSearchProvider);
 
 		mockSearchProvider = {
 			performWebSearch: vi.fn(),
 		};
-		mockProviderLibrarySearch.mockReturnValue(mockSearchProvider);
+		mockGetSearchProvider.mockReturnValue(mockSearchProvider);
 	});
 
 	describe("handleWebSearch", () => {
@@ -74,7 +74,7 @@ describe("Web Search Service", () => {
 				mockRequest.user,
 				undefined,
 			);
-			expect(mockProviderLibrarySearch).toHaveBeenCalledWith("tavily", {
+			expect(mockGetSearchProvider).toHaveBeenCalledWith("tavily", {
 				env: {},
 				user: mockRequest.user,
 			});
@@ -112,7 +112,7 @@ describe("Web Search Service", () => {
 				mockRequest.user,
 				"serper",
 			);
-			expect(mockProviderLibrarySearch).toHaveBeenCalledWith("serper", {
+			expect(mockGetSearchProvider).toHaveBeenCalledWith("serper", {
 				env: {},
 				user: mockRequest.user,
 			});
@@ -141,7 +141,7 @@ describe("Web Search Service", () => {
 				freeUserRequest.user,
 				undefined,
 			);
-			expect(mockProviderLibrarySearch).toHaveBeenCalledWith("duckduckgo", {
+			expect(mockGetSearchProvider).toHaveBeenCalledWith("duckduckgo", {
 				env: {},
 				user: freeUserRequest.user,
 			});

@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { IEnv } from "~/types";
 import { ErrorType } from "~/utils/errors";
 import { getAuxiliaryResearchProvider } from "~/lib/models";
-import { providerLibrary } from "~/lib/providers/library";
+import { getResearchProvider } from "~/lib/providers/capabilities/research";
 import {
 	getResearchTaskStatus,
 	handleResearchTask,
@@ -13,16 +13,14 @@ vi.mock("~/lib/models", () => ({
 	getAuxiliaryResearchProvider: vi.fn(),
 }));
 
-vi.mock("~/lib/providers/library", () => ({
-	providerLibrary: {
-		research: vi.fn(),
-	},
+vi.mock("~/lib/providers/capabilities/research", () => ({
+	getResearchProvider: vi.fn(),
 }));
 
 const mockedGetAuxiliaryResearchProvider = vi.mocked(
 	getAuxiliaryResearchProvider,
 );
-const mockedProviderLibraryResearch = vi.mocked(providerLibrary.research);
+const mockedGetResearchProvider = vi.mocked(getResearchProvider);
 
 describe("handleResearchTask", () => {
 	const baseEnv = {
@@ -42,7 +40,7 @@ describe("handleResearchTask", () => {
 			createResearchTask: vi.fn(),
 			fetchResearchResult: vi.fn(),
 		};
-		mockedProviderLibraryResearch.mockReturnValue(mockResearchProvider as any);
+		mockedGetResearchProvider.mockReturnValue(mockResearchProvider as any);
 	});
 
 	it("runs research with sanitized string input", async () => {
@@ -79,6 +77,10 @@ describe("handleResearchTask", () => {
 			undefined,
 			undefined,
 		);
+		expect(mockedGetResearchProvider).toHaveBeenCalledWith("parallel", {
+			env: baseEnv,
+			user: undefined,
+		});
 		expect(mockResearchProvider.performResearch).toHaveBeenCalledWith(
 			"test query",
 			undefined,

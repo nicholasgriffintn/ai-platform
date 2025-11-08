@@ -1,22 +1,20 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { IEnv } from "~/types";
 import { ResearchPollingHandler } from "../ResearchPollingHandler";
-import { providerLibrary } from "~/lib/providers/library";
+import { getResearchProvider } from "~/lib/providers/capabilities/research";
 import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
 import { TaskService } from "../../TaskService";
 import type { TaskMessage } from "../../TaskService";
 
-vi.mock("~/lib/providers/library", () => ({
-	providerLibrary: {
-		research: vi.fn(),
-	},
+vi.mock("~/lib/providers/capabilities/research", () => ({
+	getResearchProvider: vi.fn(),
 }));
 
 vi.mock("~/repositories/DynamicAppResponseRepository");
 vi.mock("~/repositories/TaskRepository");
 vi.mock("../../TaskService");
 
-const mockedProviderLibraryResearch = vi.mocked(providerLibrary.research);
+const mockedGetResearchProvider = vi.mocked(getResearchProvider);
 const mockedDynamicAppResponseRepository = vi.mocked(
 	DynamicAppResponseRepository,
 );
@@ -77,7 +75,7 @@ describe("ResearchPollingHandler", () => {
 			error: "Research failed",
 		});
 
-		mockedProviderLibraryResearch.mockReturnValue({
+		mockedGetResearchProvider.mockReturnValue({
 			fetchResearchResult: mockFetchResult,
 		} as any);
 
@@ -115,7 +113,7 @@ describe("ResearchPollingHandler", () => {
 			},
 		});
 
-		mockedProviderLibraryResearch.mockReturnValue({
+		mockedGetResearchProvider.mockReturnValue({
 			fetchResearchResult: mockFetchResult,
 		} as any);
 
@@ -152,7 +150,7 @@ describe("ResearchPollingHandler", () => {
 			},
 		});
 
-		mockedProviderLibraryResearch.mockReturnValue({
+		mockedGetResearchProvider.mockReturnValue({
 			fetchResearchResult: mockFetchResult,
 		} as any);
 
@@ -183,7 +181,7 @@ describe("ResearchPollingHandler", () => {
 			},
 		});
 
-		mockedProviderLibraryResearch.mockReturnValue({
+		mockedGetResearchProvider.mockReturnValue({
 			fetchResearchResult: mockFetchResult,
 		} as any);
 
@@ -217,7 +215,7 @@ describe("ResearchPollingHandler", () => {
 			output: { content: "Results" },
 		});
 
-		mockedProviderLibraryResearch.mockReturnValue({
+		mockedGetResearchProvider.mockReturnValue({
 			fetchResearchResult: mockFetchResult,
 		} as any);
 

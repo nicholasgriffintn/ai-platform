@@ -2,7 +2,6 @@ import type { IEnv } from "~/types";
 import type { TaskMessage } from "../TaskService";
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import { getLogger } from "~/utils/logger";
-import { providerLibrary } from "~/lib/providers/library";
 import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
 import type {
 	ResearchProviderName,
@@ -15,6 +14,7 @@ import type {
 import { safeParseJson } from "~/utils/json";
 import { TaskService } from "../TaskService";
 import { TaskRepository } from "~/repositories/TaskRepository";
+import { getResearchProvider } from "~/lib/providers/capabilities/research";
 
 const logger = getLogger({ prefix: "services/tasks/research-polling" });
 
@@ -38,9 +38,7 @@ export class ResearchPollingHandler implements TaskHandler {
 				};
 			}
 
-			const researchProvider = providerLibrary.research(data.provider, {
-				env,
-			});
+			const researchProvider = getResearchProvider(data.provider, { env });
 
 			const result = await researchProvider.fetchResearchResult(
 				data.runId,

@@ -56,7 +56,7 @@ vi.mock("~/lib/chat/tools", () => ({
 	handleToolCalls: mockHandleToolCalls,
 }));
 
-vi.mock("~/lib/providers/capabilities/guardrails/providers", () => ({
+vi.mock("~/lib/providers/capabilities/guardrails", () => ({
 	Guardrails: vi.fn(() => mockGuardrails),
 }));
 
