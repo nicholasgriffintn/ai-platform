@@ -511,6 +511,7 @@ export const updateNote = async (params: {
 	title: string;
 	content: string;
 	metadata?: any;
+	options?: Record<string, any>;
 }): Promise<Note> => {
 	let headers = {};
 	try {

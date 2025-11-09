@@ -1,5 +1,5 @@
 import { Hash } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AIFormattingModal } from "~/components/Apps/Notes/AIFormattingModal";
 import { MediaGenerationModal } from "~/components/Apps/Notes/MediaGenerationModal";
@@ -26,6 +26,7 @@ interface NoteEditorProps {
 		title: string,
 		content: string,
 		metadata?: Record<string, any>,
+		options?: { refreshMetadata?: boolean },
 	) => Promise<string>;
 	onDelete?: () => Promise<void>;
 	onToggleFullBleed?: () => void;
@@ -65,6 +66,8 @@ export function NoteEditor({
 	);
 	const [showMetadata, setShowMetadata] = useState<boolean>(false);
 	const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+	const [isMetadataRefreshing, setIsMetadataRefreshing] = useState(false);
+	const saveOptionsRef = useRef<{ refreshMetadata?: boolean } | null>(null);
 
 	const tabCapture = useTabAudioCapture();
 
@@ -73,6 +76,7 @@ export function NoteEditor({
 		onSave,
 		tabInfo: tabCapture.tabInfo,
 		metadata: currentMetadata,
+		saveOptionsRef,
 	});
 
 	const {
@@ -90,11 +94,25 @@ export function NoteEditor({
 		async (newMetadata: Record<string, any>) => {
 			setCurrentMetadata(newMetadata);
 			if (noteId) {
-				forceSave();
+				forceSave({ bypassDirtyCheck: true });
 			}
 		},
 		[noteId, forceSave],
 	);
+
+	const handleMetadataRegenerate = useCallback(() => {
+		if (!noteId) return;
+		saveOptionsRef.current = { refreshMetadata: true };
+		setIsMetadataRefreshing(true);
+		const maybePromise = forceSave({ bypassDirtyCheck: true });
+		if (maybePromise?.finally) {
+			maybePromise.finally(() => {
+				setIsMetadataRefreshing(false);
+			});
+		} else {
+			setIsMetadataRefreshing(false);
+		}
+	}, [noteId, forceSave]);
 
 	const handleTranscriptionReceived = useCallback(
 		(newText: string, isPartial?: boolean) => {
@@ -151,6 +169,10 @@ export function NoteEditor({
 	useEffect(() => {
 		setFontSize(initialFontSize);
 	}, [initialFontSize]);
+
+	useEffect(() => {
+		setCurrentMetadata(initialMetadata || {});
+	}, [initialMetadata]);
 
 	const handleFontFamilyChange = useCallback(
 		(value: string) => {
@@ -252,6 +274,9 @@ export function NoteEditor({
 								metadata={currentMetadata}
 								onMetadataUpdate={handleMetadataUpdate}
 								isEditable={!!noteId}
+								canRegenerate={!!noteId}
+								onRegenerateMetadata={handleMetadataRegenerate}
+								isRegeneratingMetadata={isMetadataRefreshing}
 							/>
 						</div>
 					)}

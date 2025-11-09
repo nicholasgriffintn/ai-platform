@@ -1,7 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+	type MutableRefObject,
+} from "react";
 import { toast } from "sonner";
 
 import { splitTitleAndContent } from "~/lib/text-utils";
+
+interface SaveOptions {
+	refreshMetadata?: boolean;
+}
 
 interface UseAutoSaveOptions {
 	text: string;
@@ -9,10 +19,12 @@ interface UseAutoSaveOptions {
 		title: string,
 		content: string,
 		metadata?: Record<string, any>,
+		options?: SaveOptions,
 	) => Promise<string>;
 	tabInfo?: any;
 	metadata: Record<string, any>;
 	delay?: number;
+	saveOptionsRef?: MutableRefObject<SaveOptions | null>;
 }
 
 export function useAutoSave({
@@ -21,6 +33,7 @@ export function useAutoSave({
 	tabInfo,
 	metadata,
 	delay = 1000,
+	saveOptionsRef,
 }: UseAutoSaveOptions) {
 	const [lastSavedText, setLastSavedText] = useState<string>(text);
 	const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -49,7 +62,11 @@ export function useAutoSave({
 				const [title, content] = splitTitleAndContent(textToSave);
 				const tabMetadata = tabInfo ? { tabSource: tabInfo } : {};
 				const finalMetadata = { ...metadata, ...tabMetadata };
-				await onSave(title, content, finalMetadata);
+				const pendingOptions = saveOptionsRef?.current || undefined;
+				await onSave(title, content, finalMetadata, pendingOptions);
+				if (saveOptionsRef) {
+					saveOptionsRef.current = null;
+				}
 				setLastSavedText(textToSave);
 			} catch {
 				toast.error("Failed to save note");
@@ -57,14 +74,18 @@ export function useAutoSave({
 				setIsSaving(false);
 			}
 		},
-		[onSave, tabInfo, metadata],
+		[onSave, tabInfo, metadata, saveOptionsRef],
 	);
 
-	const forceSave = useCallback(() => {
-		if (textRef.current !== lastSavedRef.current && !isSavingRef.current) {
-			return saveNote(textRef.current);
-		}
-	}, [saveNote]);
+	const forceSave = useCallback(
+		(options?: { bypassDirtyCheck?: boolean }) => {
+			const hasChanges = textRef.current !== lastSavedRef.current;
+			if ((hasChanges || options?.bypassDirtyCheck) && !isSavingRef.current) {
+				return saveNote(textRef.current);
+			}
+		},
+		[saveNote],
+	);
 
 	useEffect(() => {
 		if (text === lastSavedText) return;

@@ -29,6 +29,7 @@ export default function NoteDetailPage() {
 			title: string,
 			content: string,
 			additionalMetadata?: Record<string, any>,
+			options?: { refreshMetadata?: boolean },
 		) => {
 			const metadata = {
 				themeMode,
@@ -40,6 +41,7 @@ export default function NoteDetailPage() {
 				title,
 				content,
 				metadata,
+				options,
 			});
 			return note.id;
 		},

@@ -27,6 +27,7 @@ export default function NewNotePage() {
 			title: string,
 			content: string,
 			additionalMetadata?: Record<string, any>,
+			options?: { refreshMetadata?: boolean },
 		) => {
 			const metadata = {
 				themeMode,
@@ -46,7 +47,12 @@ export default function NewNotePage() {
 				}
 				return note.id;
 			}
-			await updateMutation.mutateAsync({ title, content, metadata });
+			await updateMutation.mutateAsync({
+				title,
+				content,
+				metadata,
+				options,
+			});
 			return noteId;
 		},
 		[noteId, createMutation, updateMutation, themeMode, fontFamily, fontSize],

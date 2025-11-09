@@ -431,7 +431,18 @@ export const noteCreateSchema = z.object({
 	metadata: z.record(z.string(), z.any()).optional(),
 });
 
-export const noteUpdateSchema = noteCreateSchema;
+export const noteUpdateSchema = noteCreateSchema.extend({
+	options: z
+		.object({
+			refreshMetadata: z
+				.boolean()
+				.optional()
+				.describe(
+					"When true, forces the API to regenerate AI metadata for the note",
+				),
+		})
+		.optional(),
+});
 
 export const listNotesResponseSchema = z.object({
 	notes: z.array(noteSchema),

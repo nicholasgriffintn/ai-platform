@@ -40,8 +40,12 @@ export const useCreateNote = () => {
 export const useUpdateNote = (id: string) => {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: (data: { title: string; content: string; metadata?: any }) =>
-			updateNote({ id, ...data }),
+		mutationFn: (data: {
+			title: string;
+			content: string;
+			metadata?: any;
+			options?: Record<string, any>;
+		}) => updateNote({ id, ...data }),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["notes"] });
 			queryClient.invalidateQueries({ queryKey: ["note", id] });

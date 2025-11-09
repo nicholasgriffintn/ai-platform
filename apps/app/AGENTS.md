@@ -47,6 +47,7 @@ React Router 7 PWA for Polychat with offline storage, dynamic apps, and WebLLM s
 - Fetch calls must use `lib/api/fetch-wrapper.ts` to ensure CSRF headers and credentials are applied.
 - Offline storage flows depend on IndexedDB utilities in `lib/local`; ensure new features degrade gracefully without local persistence.
 - WebLLM manager (`lib/web-llm.ts`) maintains singleton state—avoid parallel instantiation.
+- Notes metadata regeneration is opt-in: the `NoteMetadata` component exposes a “Regenerate via AI” button that calls `NoteEditor`'s `handleMetadataRegenerate`, which in turn passes `{ refreshMetadata: true }` through the autosave pipeline; when you need to persist metadata-only edits, call `forceSave({ bypassDirtyCheck: true })` so the new schema flag reaches the API.
 
 ## Implementation Patterns
 

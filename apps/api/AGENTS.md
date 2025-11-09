@@ -783,6 +783,7 @@ pnpm --filter @assistant/api test -- --watch   # Watch mode for development
 - **Not logging errors**: Always use `getLogger()` and log errors with context
 - **Swallowing errors**: Let errors propagate to route handler for proper formatting
 - **Passing Context objects**: Extract needed values, don't pass raw Hono Context
+- **Notes metadata regen**: `services/apps/notes/list.ts` only regenerates AI metadata when the stored payload is empty/missing or when the request sets `refreshMetadata: true` in the options; keep control flags out of `metadata` blobs and rely on the dedicated boolean in the update schema/route.
 
 ### Repository Pitfalls
 

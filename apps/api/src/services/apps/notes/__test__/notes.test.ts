@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resolveServiceContext } from "~/lib/context/serviceContext";
+import { getAuxiliaryModel } from "~/lib/models";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { AssistantError } from "~/utils/errors";
 import {
 	createNote,
@@ -18,6 +20,10 @@ const mockRepo = {
 	deleteAppData: vi.fn(),
 };
 
+const mockChatProviderResponse = vi
+	.fn()
+	.mockResolvedValue({ response: JSON.stringify({}) });
+
 vi.mock("~/lib/context/serviceContext", () => ({
 	resolveServiceContext: vi.fn(),
 }));
@@ -28,6 +34,18 @@ vi.mock("~/utils/id", () => ({
 
 vi.mock("~/lib/chat/utils", () => ({
 	sanitiseInput: vi.fn((input) => input),
+}));
+
+vi.mock("~/lib/models", () => ({
+	getAuxiliaryModel: vi.fn(() =>
+		Promise.resolve({ model: "test-model", provider: "test-provider" }),
+	),
+}));
+
+vi.mock("~/lib/providers/capabilities/chat", () => ({
+	getChatProvider: vi.fn(() => ({
+		getResponse: mockChatProviderResponse,
+	})),
 }));
 
 describe("notes service", () => {
@@ -55,6 +73,18 @@ describe("notes service", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockChatProviderResponse.mockReset();
+		mockChatProviderResponse.mockResolvedValue({
+			response: JSON.stringify({
+				tags: ["ai"],
+				summary: "Generated summary",
+				keyTopics: ["topic"],
+				wordCount: 2,
+				readingTime: 1,
+				contentType: "text",
+				sentiment: "neutral",
+			}),
+		});
 		mockContext = {
 			ensureDatabase: vi.fn(),
 			repositories: {
@@ -214,10 +244,11 @@ describe("notes service", () => {
 					content: "New content",
 					metadata: {
 						contentType: "text",
-						keyTopics: [],
+						keyTopics: ["topic"],
 						readingTime: 1,
-						summary: "New content",
-						tags: [],
+						sentiment: "neutral",
+						summary: "Generated summary",
+						tags: ["ai"],
 						wordCount: 2,
 					},
 				},
@@ -241,10 +272,11 @@ describe("notes service", () => {
 				id: "note-1",
 				user_id: 123,
 				app_id: "notes",
+				data: '{"title": "Old Note", "content": "Old content", "metadata": {"summary": "Old summary"}}',
 			};
 			const mockUpdatedNote = {
 				id: "note-1",
-				data: '{"title": "Updated Note", "content": "Updated content"}',
+				data: '{"title": "Updated Note", "content": "Updated content", "metadata": {"summary": "Old summary"}}',
 				created_at: "2023-01-01T00:00:00Z",
 				updated_at: "2023-01-02T00:00:00Z",
 			};
@@ -277,6 +309,151 @@ describe("notes service", () => {
 					data: { title: "Test", content: "Test" },
 				}),
 			).rejects.toThrow(expect.any(AssistantError));
+		});
+
+		it("should skip metadata regeneration when note already has metadata", async () => {
+			const mockExistingNote = {
+				id: "note-1",
+				user_id: 123,
+				app_id: "notes",
+				data: JSON.stringify({
+					title: "Existing Note",
+					content: "Existing content",
+					metadata: {
+						summary: "Existing summary",
+						tags: ["existing"],
+						themeMode: "serif",
+					},
+				}),
+			};
+			const mockUpdatedNote = {
+				id: "note-1",
+				data: JSON.stringify({
+					title: "Updated Note",
+					content: "Updated content",
+					metadata: {
+						summary: "Existing summary",
+						tags: ["existing"],
+						themeMode: "sans",
+					},
+				}),
+				created_at: "2023-01-01T00:00:00Z",
+				updated_at: "2023-01-02T00:00:00Z",
+			};
+
+			mockRepo.getAppDataById
+				.mockResolvedValueOnce(mockExistingNote)
+				.mockResolvedValueOnce(mockUpdatedNote);
+
+			const result = await updateNote({
+				context: mockContext,
+				env: mockEnv,
+				user: mockUser,
+				noteId: "note-1",
+				data: {
+					title: "Updated Note",
+					content: "Updated content",
+					metadata: { themeMode: "sans" },
+				},
+			});
+
+			expect(getAuxiliaryModel).not.toHaveBeenCalled();
+			expect(mockRepo.updateAppData).toHaveBeenCalledWith("note-1", {
+				title: "Updated Note",
+				content: "Updated content",
+				metadata: {
+					contentType: "text",
+					keyTopics: [],
+					wordCount: 2,
+					readingTime: 1,
+					summary: "Existing summary",
+					tags: ["existing"],
+					themeMode: "sans",
+				},
+			});
+			expect(result.metadata).toEqual({
+				summary: "Existing summary",
+				tags: ["existing"],
+				themeMode: "sans",
+			});
+		});
+
+		it("should regenerate metadata when forced", async () => {
+			const mockExistingNote = {
+				id: "note-1",
+				user_id: 123,
+				app_id: "notes",
+				data: JSON.stringify({
+					title: "Existing Note",
+					content: "Existing content",
+					metadata: {
+						summary: "Existing summary",
+						tags: ["existing"],
+					},
+				}),
+			};
+			const mockUpdatedNote = {
+				id: "note-1",
+				data: JSON.stringify({
+					title: "Updated Note",
+					content: "Updated content",
+					metadata: {
+						contentType: "text",
+						keyTopics: ["topic"],
+						readingTime: 1,
+						sentiment: "neutral",
+						summary: "Generated summary",
+						tags: ["ai"],
+						themeMode: "sans",
+						wordCount: 2,
+					},
+				}),
+				created_at: "2023-01-01T00:00:00Z",
+				updated_at: "2023-01-02T00:00:00Z",
+			};
+
+			mockRepo.getAppDataById
+				.mockResolvedValueOnce(mockExistingNote)
+				.mockResolvedValueOnce(mockUpdatedNote);
+
+			const result = await updateNote({
+				context: mockContext,
+				env: mockEnv,
+				user: mockUser,
+				noteId: "note-1",
+				data: {
+					title: "Updated Note",
+					content: "Updated content",
+					metadata: { themeMode: "sans" },
+					options: { refreshMetadata: true },
+				},
+			});
+
+			expect(getAuxiliaryModel).toHaveBeenCalledTimes(1);
+			expect(mockRepo.updateAppData).toHaveBeenCalledWith("note-1", {
+				title: "Updated Note",
+				content: "Updated content",
+				metadata: {
+					contentType: "text",
+					keyTopics: ["topic"],
+					readingTime: 1,
+					sentiment: "neutral",
+					summary: "Generated summary",
+					tags: ["ai"],
+					themeMode: "sans",
+					wordCount: 2,
+				},
+			});
+			expect(result.metadata).toEqual({
+				contentType: "text",
+				keyTopics: ["topic"],
+				readingTime: 1,
+				sentiment: "neutral",
+				summary: "Generated summary",
+				tags: ["ai"],
+				themeMode: "sans",
+				wordCount: 2,
+			});
 		});
 	});
 

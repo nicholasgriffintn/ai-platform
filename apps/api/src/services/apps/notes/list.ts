@@ -160,7 +160,12 @@ export async function updateNote({
 	env?: IEnv;
 	user: IUser;
 	noteId: string;
-	data: { title: string; content: string; metadata?: Record<string, any> };
+	data: {
+		title: string;
+		content: string;
+		metadata?: Record<string, any>;
+		options?: Record<string, any>;
+	};
 }): Promise<Note> {
 	if (!user?.id || !noteId) {
 		throw new AssistantError(
@@ -183,16 +188,71 @@ export async function updateNote({
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
 	}
 
-	const generatedMetadata = await generateNoteMetadata(
-		runtimeEnv,
-		user,
-		data.title,
-		data.content,
-		data.metadata,
-	);
+	const parsedExistingData = safeParseJson(existing.data) ?? {};
+	const existingMetadata =
+		typeof parsedExistingData.metadata === "object" &&
+		!Array.isArray(parsedExistingData.metadata)
+			? parsedExistingData.metadata
+			: {};
+
+	const sanitisedTitle = sanitiseInput(data.title);
+	const sanitisedContent = sanitiseInput(data.content);
+
+	const incomingMetadata =
+		data.metadata &&
+		typeof data.metadata === "object" &&
+		!Array.isArray(data.metadata)
+			? data.metadata
+			: {};
+	const hasExistingMetadata =
+		existingMetadata && Object.keys(existingMetadata).length > 0;
+	const shouldRegenerateMetadata =
+		Boolean(data.options?.refreshMetadata) || !hasExistingMetadata;
+
+	const wordCount = sanitisedContent.split(/\s+/).length;
+	const readingTime = wordCount
+		? Math.max(1, Math.ceil(wordCount / 200))
+		: existingMetadata.readingTime || 1;
+
+	let mergedMetadata = {
+		...existingMetadata,
+		...incomingMetadata,
+	};
+
+	if (shouldRegenerateMetadata) {
+		const generatedMetadata = await generateNoteMetadata(
+			runtimeEnv,
+			user,
+			sanitisedTitle,
+			sanitisedContent,
+			mergedMetadata,
+		);
+		mergedMetadata = {
+			...mergedMetadata,
+			wordCount,
+			tags: mergedMetadata.tags || [],
+			summary: mergedMetadata.summary || "",
+			keyTopics: mergedMetadata.keyTopics || [],
+			readingTime: readingTime,
+			contentType: mergedMetadata.contentType || "text",
+			...generatedMetadata,
+		};
+	}
+
+	mergedMetadata = {
+		...mergedMetadata,
+		wordCount,
+		tags: mergedMetadata.tags || [],
+		summary: mergedMetadata.summary || "",
+		keyTopics: mergedMetadata.keyTopics || [],
+		readingTime: readingTime,
+		contentType: mergedMetadata.contentType || "text",
+	};
+
 	const finalData = {
-		...data,
-		metadata: { ...generatedMetadata, ...data.metadata },
+		title: sanitisedTitle,
+		content: sanitisedContent,
+		metadata: mergedMetadata,
 	};
 
 	await repo.updateAppData(noteId, finalData);
@@ -412,14 +472,5 @@ Return only valid JSON without any markdown formatting.`;
 		return safeParseJson(response);
 	} catch (error) {
 		logger.error("Error generating note metadata", { error });
-		const wordCount = content.split(/\s+/).length;
-		return {
-			tags: [],
-			summary: content.slice(0, 100) + (content.length > 100 ? "..." : ""),
-			keyTopics: [],
-			wordCount,
-			readingTime: Math.max(1, Math.ceil(wordCount / 200)),
-			contentType: "text",
-		};
 	}
 }

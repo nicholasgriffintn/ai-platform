@@ -19,12 +19,18 @@ interface NoteMetadataProps {
 	metadata?: Record<string, any>;
 	onMetadataUpdate?: (metadata: Record<string, any>) => void;
 	isEditable?: boolean;
+	canRegenerate?: boolean;
+	onRegenerateMetadata?: () => void;
+	isRegeneratingMetadata?: boolean;
 }
 
 export function NoteMetadata({
 	metadata,
 	onMetadataUpdate,
 	isEditable = false,
+	canRegenerate = false,
+	onRegenerateMetadata,
+	isRegeneratingMetadata = false,
 }: NoteMetadataProps) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editingMetadata, setEditingMetadata] = useState(metadata || {});
@@ -92,6 +98,19 @@ export function NoteMetadata({
 						Edit Metadata
 					</h3>
 					<div className="flex gap-2">
+						{canRegenerate && (
+							<Button
+								className="text-white"
+								variant="outline"
+								size="sm"
+								onClick={onRegenerateMetadata}
+								disabled={isRegeneratingMetadata}
+							>
+								{isRegeneratingMetadata
+									? "Regenerating..."
+									: "Regenerate via AI"}
+							</Button>
+						)}
 						<Button variant="secondary" size="sm" onClick={handleCancel}>
 							Cancel
 						</Button>
@@ -271,11 +290,28 @@ export function NoteMetadata({
 					<Hash size={16} className="text-gray-600 dark:text-gray-400" />
 					Note Metadata
 				</h3>
-				{isEditable && (
-					<Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
-						<Edit3 size={14} />
-					</Button>
-				)}
+				<div className="flex items-center gap-2">
+					{canRegenerate && (
+						<Button
+							className="text-white"
+							variant="outline"
+							size="sm"
+							onClick={onRegenerateMetadata}
+							disabled={isRegeneratingMetadata}
+						>
+							{isRegeneratingMetadata ? "Regenerating..." : "Regenerate via AI"}
+						</Button>
+					)}
+					{isEditable && (
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => setIsEditing(true)}
+						>
+							<Edit3 size={14} />
+						</Button>
+					)}
+				</div>
 			</div>
 
 			<div className="space-y-3">
@@ -322,7 +358,7 @@ export function NoteMetadata({
 				)}
 
 				<div className="grid grid-cols-2 gap-4 text-xs">
-					{metadata?.wordCount && (
+					{metadata?.wordCount !== undefined && (
 						<div className="flex items-center gap-1">
 							<FileText
 								size={12}
@@ -335,7 +371,7 @@ export function NoteMetadata({
 						</div>
 					)}
 
-					{metadata?.readingTime && (
+					{metadata?.readingTime !== undefined && (
 						<div className="flex items-center gap-1">
 							<Clock size={12} className="text-gray-600 dark:text-gray-400" />
 							<span className="text-gray-500 dark:text-gray-400">Read:</span>

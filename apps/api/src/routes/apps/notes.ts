@@ -1,5 +1,6 @@
 import { type Context, Hono } from "hono";
 import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import type { z } from "zod";
 import {
 	listNotesResponseSchema,
 	noteCreateSchema,
@@ -28,6 +29,8 @@ import {
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateNotesFromMedia } from "~/services/apps/notes/generate-from-media";
+
+type NoteUpdatePayload = z.infer<typeof noteUpdateSchema>;
 
 const app = new Hono();
 const routeLogger = createRouteLogger("apps/notes");
@@ -132,6 +135,7 @@ app.post(
 						properties: {
 							title: { type: "string" },
 							content: { type: "string" },
+							options: { type: "object" },
 						},
 						required: ["title", "content"],
 					},
@@ -233,10 +237,7 @@ app.put(
 	requirePlan("pro"),
 	async (c: Context) => {
 		const id = c.req.param("id");
-		const body = c.req.valid("json" as never) as {
-			title: string;
-			content: string;
-		};
+		const body = c.req.valid("json" as never) as NoteUpdatePayload;
 		const user = c.get("user") as IUser;
 
 		try {
