@@ -127,7 +127,7 @@ We are using SQLite to track all of the jobs and the dataset records as they are
    - Create one for the training data
    - Create one for the training outputs
 
-4. **IAM Role** with permissions (be sure to replace the bucket names):
+4. **IAM Role** with the trust policy:
 
    ```json
    {
@@ -135,25 +135,43 @@ We are using SQLite to track all of the jobs and the dataset records as they are
    	"Statement": [
    		{
    			"Effect": "Allow",
-   			"Action": [
-   				"bedrock:CreateModelCustomizationJob",
-   				"bedrock:GetModelCustomizationJob",
-   				"bedrock:ListModelCustomizationJobs",
-   				"bedrock:StopModelCustomizationJob"
-   			],
-   			"Resource": "*"
-   		},
-   		{
-   			"Effect": "Allow",
-   			"Action": ["s3:GetObject", "s3:PutObject", "s3:ListBucket"],
-   			"Resource": [
-   				"arn:aws:s3:::your-training-bucket/*",
-   				"arn:aws:s3:::your-training-bucket"
-   			]
+   			"Principal": { "Service": "bedrock.amazonaws.com" },
+   			"Action": "sts:AssumeRole",
+   			"Condition": {
+   				"StringEquals": { "aws:SourceAccount": "your-account-id" }
+   			}
    		}
    	]
    }
    ```
+
+and permissions (be sure to replace the bucket names):
+
+```json
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Effect": "Allow",
+			"Action": [
+				"bedrock:CreateModelCustomizationJob",
+				"bedrock:GetModelCustomizationJob",
+				"bedrock:ListModelCustomizationJobs",
+				"bedrock:StopModelCustomizationJob"
+			],
+			"Resource": "*"
+		},
+		{
+			"Effect": "Allow",
+			"Action": ["s3:GetObject", "s3:PutObject", "s3:ListBucket"],
+			"Resource": [
+				"arn:aws:s3:::your-training-bucket/*",
+				"arn:aws:s3:::your-training-bucket"
+			]
+		}
+	]
+}
+```
 
 5. **IAM User** with programmatic access (access key + secret key)
 
