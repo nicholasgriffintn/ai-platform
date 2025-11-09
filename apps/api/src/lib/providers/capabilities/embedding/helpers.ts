@@ -6,7 +6,7 @@ import type {
 	RagOptions,
 } from "~/types";
 import { RepositoryManager } from "~/repositories";
-import { getAuxiliaryModel } from "~/lib/models";
+import { getAuxiliaryModel } from "~/lib/providers/models";
 import { trackRagMetrics } from "~/lib/monitoring";
 import { getChatProvider } from "../chat";
 import { providerLibrary } from "../../library";

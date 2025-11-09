@@ -1,4 +1,7 @@
-import { getModelConfig, getModelConfigByMatchingModel } from "~/lib/models";
+import {
+	getModelConfig,
+	getModelConfigByMatchingModel,
+} from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { ModelRouter } from "~/lib/modelRouter";
 import type { IEnv, IUser, ChatCompletionParameters } from "~/types";

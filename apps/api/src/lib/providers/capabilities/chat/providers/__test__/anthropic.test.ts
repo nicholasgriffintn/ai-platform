@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import {
 	calculateReasoningBudget,
 	createCommonParameters,
@@ -33,7 +33,7 @@ vi.mock("../base", () => ({
 	},
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getModelConfigByMatchingModel: vi.fn(),
 }));
 

@@ -1,6 +1,6 @@
 import type { Vectorize } from "@cloudflare/workers-types";
 
-import { getModelConfig } from "~/lib/models";
+import { getModelConfig } from "~/lib/providers/models";
 import { getChatProvider } from "../../chat";
 import type {
 	EmbeddingMutationResult,

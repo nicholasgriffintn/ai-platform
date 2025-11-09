@@ -11,7 +11,7 @@ vi.mock("~/services/search/web", () => ({
 	handleWebSearch: vi.fn(),
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryModel: vi.fn(),
 }));
 
@@ -84,7 +84,7 @@ describe("tutor service", () => {
 			};
 
 			const { handleWebSearch } = await import("~/services/search/web");
-			const { getAuxiliaryModel } = await import("~/lib/models");
+			const { getAuxiliaryModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			vi.mocked(handleWebSearch).mockResolvedValue(mockWebSearchResults);
@@ -184,7 +184,7 @@ describe("tutor service", () => {
 			};
 
 			const { handleWebSearch } = await import("~/services/search/web");
-			const { getAuxiliaryModel } = await import("~/lib/models");
+			const { getAuxiliaryModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			vi.mocked(handleWebSearch).mockResolvedValue(mockWebSearchResults);

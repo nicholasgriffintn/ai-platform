@@ -6,7 +6,7 @@ import { TeamDelegation } from "../TeamDelegation";
 
 vi.mock("~/repositories/AgentRepository");
 vi.mock("~/lib/chat/responses");
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryModel: vi.fn().mockResolvedValue({
 		model: "mistral-medium-latest",
 		provider: "mistral",

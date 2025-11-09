@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { IEnv } from "~/types";
 import { ErrorType } from "~/utils/errors";
-import { getAuxiliaryResearchProvider } from "~/lib/models";
+import { getAuxiliaryResearchProvider } from "~/lib/providers/models";
 import { getResearchProvider } from "~/lib/providers/capabilities/research";
 import {
 	getResearchTaskStatus,
@@ -9,7 +9,7 @@ import {
 	startResearchTask,
 } from "../task";
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryResearchProvider: vi.fn(),
 }));
 

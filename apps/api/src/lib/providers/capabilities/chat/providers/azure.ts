@@ -1,4 +1,4 @@
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { fetchAIResponse } from "~/lib/providers/lib/fetch";
 import { StorageService } from "~/lib/storage";

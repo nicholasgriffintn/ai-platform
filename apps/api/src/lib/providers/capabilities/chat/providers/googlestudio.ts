@@ -1,4 +1,4 @@
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

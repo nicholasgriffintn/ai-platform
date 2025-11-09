@@ -1,4 +1,4 @@
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type {
 	AssistantMessageData,

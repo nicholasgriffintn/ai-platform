@@ -1,4 +1,7 @@
-import { createModelConfig, createModelConfigObject } from "~/lib/models/utils";
+import {
+	createModelConfig,
+	createModelConfigObject,
+} from "~/lib/providers/models/utils";
 import type { ModelConfig } from "~/types";
 
 const PROVIDER = "anthropic";

@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getAuxiliaryGuardrailsModel } from "~/lib/models";
+import { getAuxiliaryGuardrailsModel } from "~/lib/providers/models";
 import * as chatCapability from "~/lib/providers/capabilities/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { LlamaGuardProvider } from "../llamaguard";
 
-vi.mock("~/lib/models");
+vi.mock("~/lib/providers/models");
 vi.mock("~/lib/providers/capabilities/chat");
 
 const mockGetAuxiliaryGuardrailsModel = vi.mocked(getAuxiliaryGuardrailsModel);

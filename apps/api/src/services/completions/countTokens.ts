@@ -1,4 +1,4 @@
-import { getModelConfigByModel } from "~/lib/models";
+import { getModelConfigByModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

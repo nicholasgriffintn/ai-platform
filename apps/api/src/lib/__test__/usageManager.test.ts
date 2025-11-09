@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { UsageManager } from "../usageManager";
 
 const mockRepositories = {
@@ -12,7 +12,7 @@ const mockRepositories = {
 	},
 };
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getModelConfigByMatchingModel: vi.fn(),
 }));
 

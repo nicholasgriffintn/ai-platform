@@ -27,7 +27,7 @@ vi.mock("~/lib/keywords", () => ({
 	},
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	availableCapabilities: [
 		"reasoning",
 		"coding",

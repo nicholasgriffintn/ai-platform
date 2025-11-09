@@ -9,7 +9,7 @@ import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { executeReplicateModel } from "~/services/apps/replicate/execute";
 import { listReplicatePredictions } from "~/services/apps/replicate/list";
 import { getReplicatePredictionDetails } from "~/services/apps/replicate/get-details";
-import { replicateModelConfig } from "~/lib/models/replicate";
+import { replicateModelConfig } from "~/data-model/models/replicate";
 import type { AppTheme } from "~/types/app-schema";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError } from "~/utils/errors";

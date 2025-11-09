@@ -4,7 +4,7 @@ import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { AssistantError } from "../../../../../utils/errors";
 import { getChatProvider } from "../../chat";
-import { getModelConfig } from "~/lib/models";
+import { getModelConfig } from "~/lib/providers/models";
 
 const logger = getLogger({ prefix: "lib/guardrails/mistral" });
 

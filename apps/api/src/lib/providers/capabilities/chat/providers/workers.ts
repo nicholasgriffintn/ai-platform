@@ -1,5 +1,5 @@
 import { gatewayId } from "~/constants/app";
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { StorageService } from "~/lib/storage";
 import { uploadAudioFromChat, uploadImageFromChat } from "~/lib/upload";

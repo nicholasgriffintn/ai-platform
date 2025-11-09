@@ -8,7 +8,7 @@ const mockGetTextToImageSystemPrompt = vi.fn();
 const mockEmptyPrompt = vi.fn();
 const mockTrimTemplateWhitespace = vi.fn();
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getModelConfigByMatchingModel: mockGetModelConfigByMatchingModel,
 }));
 

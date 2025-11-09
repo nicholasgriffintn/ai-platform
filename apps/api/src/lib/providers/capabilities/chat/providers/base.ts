@@ -1,5 +1,5 @@
 import { ResponseFormatter } from "~/lib/formatter";
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { StorageService } from "~/lib/storage";

@@ -10,43 +10,43 @@ import type {
 	SearchProviderName,
 } from "~/types";
 import { getLogger } from "~/utils/logger";
-import { anthropicModelConfig } from "./anthropic";
-import { azureModelConfig } from "./azure";
-import { bedrockModelConfig } from "./bedrock";
-import { chutesModelConfig } from "./chutes";
+import { anthropicModelConfig } from "~/data-model/models/anthropic";
+import { azureModelConfig } from "~/data-model/models/azure";
+import { bedrockModelConfig } from "~/data-model/models/bedrock";
+import { chutesModelConfig } from "~/data-model/models/chutes";
 import {
 	type availableCapabilities,
 	type availableModelTypes,
 	defaultModel,
-} from "./constants";
+} from "~/constants/models";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { deepinfraModelConfig } from "./deepinfra";
-import { deepseekModelConfig } from "./deepseek";
-import { fireworksModelConfig } from "./fireworks";
-import { githubCopilotModelConfig } from "./githubcopilot";
-import { githubModelsConfig } from "./githubmodels";
-import { googleAiStudioModelConfig } from "./google-ai-studio";
-import { groqModelConfig } from "./groq";
-import { huggingfaceModelConfig } from "./huggingface";
-import { hyperbolicModelConfig } from "./hyperbolic";
-import { inceptionModelConfig } from "./inception";
-import { inferenceModelConfig } from "./inference";
-import { mistralModelConfig } from "./mistral";
-import { morphModelConfig } from "./morph";
-import { ollamaModelConfig } from "./ollama";
-import { openaiModelConfig } from "./openai";
-import { openrouterModelConfig } from "./openrouter";
-import { parallelModelConfig } from "./parallel";
-import { perplexityModelConfig } from "./perplexity";
-import { replicateModelConfig } from "./replicate";
-import { requestyModelConfig } from "./requesty";
-import { togetherAiModelConfig } from "./together-ai";
-import { upstageModelConfig } from "./upstage";
-import { v0ModelConfig } from "./v0";
-import { vercelModelConfig } from "./vercel";
-import { workersAiModelConfig } from "./workersai";
-import { xaiModelConfig } from "./xai";
-import { exaModelConfig } from "./exa";
+import { deepinfraModelConfig } from "~/data-model/models/deepinfra";
+import { deepseekModelConfig } from "~/data-model/models/deepseek";
+import { fireworksModelConfig } from "~/data-model/models/fireworks";
+import { githubCopilotModelConfig } from "~/data-model/models/githubcopilot";
+import { githubModelsConfig } from "~/data-model/models/githubmodels";
+import { googleAiStudioModelConfig } from "~/data-model/models/google-ai-studio";
+import { groqModelConfig } from "~/data-model/models/groq";
+import { huggingfaceModelConfig } from "~/data-model/models/huggingface";
+import { hyperbolicModelConfig } from "~/data-model/models/hyperbolic";
+import { inceptionModelConfig } from "~/data-model/models/inception";
+import { inferenceModelConfig } from "~/data-model/models/inference";
+import { mistralModelConfig } from "~/data-model/models/mistral";
+import { morphModelConfig } from "~/data-model/models/morph";
+import { ollamaModelConfig } from "~/data-model/models/ollama";
+import { openaiModelConfig } from "~/data-model/models/openai";
+import { openrouterModelConfig } from "~/data-model/models/openrouter";
+import { parallelModelConfig } from "~/data-model/models/parallel";
+import { perplexityModelConfig } from "~/data-model/models/perplexity";
+import { replicateModelConfig } from "~/data-model/models/replicate";
+import { requestyModelConfig } from "~/data-model/models/requesty";
+import { togetherAiModelConfig } from "~/data-model/models/together-ai";
+import { upstageModelConfig } from "~/data-model/models/upstage";
+import { v0ModelConfig } from "~/data-model/models/v0";
+import { vercelModelConfig } from "~/data-model/models/vercel";
+import { workersAiModelConfig } from "~/data-model/models/workersai";
+import { xaiModelConfig } from "~/data-model/models/xai";
+import { exaModelConfig } from "~/data-model/models/exa";
 
 const logger = getLogger({ prefix: "lib/models" });
 
@@ -638,4 +638,4 @@ export {
 	availableModelTypes,
 	defaultModel,
 	defaultProvider,
-} from "./constants";
+} from "~/constants/models";

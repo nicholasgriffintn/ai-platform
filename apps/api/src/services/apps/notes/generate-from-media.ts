@@ -3,7 +3,7 @@ import {
 	TranscriptionProvider,
 } from "~/services/audio/transcribe";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getAuxiliaryModel, getModelConfig } from "~/lib/models";
+import { getAuxiliaryModel, getModelConfig } from "~/lib/providers/models";
 import { RepositoryManager } from "~/repositories";
 import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
 import type { IEnv, IUser } from "~/types";

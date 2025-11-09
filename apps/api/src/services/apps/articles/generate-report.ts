@@ -1,7 +1,7 @@
 import {
 	getAuxiliaryModelForRetrieval,
 	getModelConfigByMatchingModel,
-} from "~/lib/models";
+} from "~/lib/providers/models";
 import { generateArticleReportPrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import {

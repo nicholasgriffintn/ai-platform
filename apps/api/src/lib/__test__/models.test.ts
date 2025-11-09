@@ -19,7 +19,7 @@ import {
 	getModels,
 	getModelsByCapability,
 	getModelsByType,
-} from "../models";
+} from "../providers/models";
 
 vi.mock("~/lib/cache", () => {
 	const mockCache = {

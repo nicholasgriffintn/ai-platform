@@ -6,7 +6,7 @@ import { parseAIResponseJson } from "~/utils/json";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import type { ConversationManager } from "./conversationManager";
-import { getAuxiliaryModel } from "./models";
+import { getAuxiliaryModel } from "./providers/models";
 import { MemoryRepository } from "~/repositories/MemoryRepository";
 
 const logger = getLogger({ prefix: "lib/memory" });

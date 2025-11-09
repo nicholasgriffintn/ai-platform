@@ -1,4 +1,4 @@
-import { getAuxiliaryModelForRetrieval } from "~/lib/models";
+import { getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

@@ -1,4 +1,7 @@
-import type { availableCapabilities, availableModelTypes } from "~/lib/models";
+import type {
+	availableCapabilities,
+	availableModelTypes,
+} from "~/lib/providers/models";
 
 export type ModelRanking = 1 | 2 | 3 | 4 | 5;
 

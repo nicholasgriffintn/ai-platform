@@ -25,7 +25,7 @@ vi.mock("~/lib/providers/capabilities/chat", () => ({
 	})),
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryModel: vi.fn().mockResolvedValue({
 		model: "gpt-3.5-turbo",
 		provider: "openai",

@@ -47,7 +47,7 @@ const mockModelConfig = {
 	},
 };
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getModelConfigByModel: vi.fn(async () => mockModelConfig),
 }));
 
@@ -66,7 +66,7 @@ describe("handlePodcastTranscribe", () => {
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
-		const { getModelConfigByModel } = await import("~/lib/models");
+		const { getModelConfigByModel } = await import("~/lib/providers/models");
 		vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig as any);
 	});
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import * as chatCapability from "~/lib/providers/capabilities/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { formatMessages } from "~/utils/messages";
@@ -8,7 +8,7 @@ import { mergeParametersWithDefaults } from "~/utils/parameters";
 import { withRetry } from "~/utils/retries";
 import { formatAssistantMessage, getAIResponse } from "../responses";
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getModelConfigByMatchingModel: vi.fn(),
 }));
 

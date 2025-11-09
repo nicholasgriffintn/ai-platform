@@ -12,7 +12,7 @@ import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { MemoryManager } from "~/lib/memory";
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import {
 	type ChatMode,
 	type IEnv,

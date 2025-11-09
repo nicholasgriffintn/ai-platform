@@ -1,5 +1,5 @@
 import { getChatProvider } from "../../chat";
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { TranscriptionRequest, TranscriptionResult } from "../index";
 import { BaseTranscriptionProvider } from "../base";

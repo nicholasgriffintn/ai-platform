@@ -5,7 +5,7 @@ import {
 	createAsyncInvocationMetadata,
 	type AsyncInvocationMetadata,
 } from "~/lib/async/asyncInvocation";
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters, ModelConfigItem } from "~/types";

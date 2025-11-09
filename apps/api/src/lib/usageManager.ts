@@ -1,6 +1,6 @@
 import { USAGE_CONFIG } from "~/constants/app";
 import { RepositoryManager } from "~/repositories";
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { AnonymousUser, ModelConfigItem, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";

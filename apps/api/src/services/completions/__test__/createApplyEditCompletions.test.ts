@@ -19,7 +19,7 @@ const {
 	};
 });
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getModelConfig: mockGetModelConfig,
 	getModelConfigByMatchingModel: mockGetModelConfigByMatchingModel,
 }));

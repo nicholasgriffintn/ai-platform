@@ -11,7 +11,7 @@ import type {
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { getModelConfig } from "~/lib/models";
+import { getModelConfig } from "~/lib/providers/models";
 import { getChatProvider } from "../../chat";
 import { safeParseJson } from "~/utils/json";
 

@@ -14,7 +14,7 @@ vi.mock("~/lib/chat/utils", () => ({
 	sanitiseInput: vi.fn(),
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getAuxiliarySearchProvider: vi.fn(),
 }));
 
@@ -34,7 +34,7 @@ describe("Web Search Service", () => {
 		const chatUtils = await import("~/lib/chat/utils");
 		mockSanitiseInput = vi.mocked(chatUtils.sanitiseInput);
 
-		const models = await import("~/lib/models");
+		const models = await import("~/lib/providers/models");
 		mockGetAuxiliarySearchProvider = vi.mocked(
 			models.getAuxiliarySearchProvider,
 		);

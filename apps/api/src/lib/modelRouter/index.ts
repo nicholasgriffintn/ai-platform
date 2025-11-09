@@ -4,7 +4,7 @@ import {
 	getIncludedInRouterModelsForUser,
 	getModelConfig,
 	getModels,
-} from "~/lib/models";
+} from "~/lib/providers/models";
 import { trackModelRoutingMetrics } from "~/lib/monitoring";
 import type {
 	Attachment,

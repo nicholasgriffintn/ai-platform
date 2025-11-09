@@ -6,7 +6,7 @@ import {
 	sanitiseInput,
 } from "~/lib/chat/utils";
 import * as embeddingHelpers from "~/lib/providers/capabilities/embedding/helpers";
-import { getModelConfig } from "~/lib/models";
+import { getModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type { CoreChatOptions } from "~/types";
 import { generateId } from "~/utils/id";
@@ -61,7 +61,7 @@ vi.mock("~/lib/memory", () => ({
 	},
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getModelConfig: vi.fn(),
 }));
 

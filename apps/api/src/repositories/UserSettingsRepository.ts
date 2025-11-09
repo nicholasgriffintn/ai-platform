@@ -1,6 +1,6 @@
 import { decodeBase64 } from "hono/utils/encode";
 
-import { getModels } from "~/lib/models";
+import { getModels } from "~/lib/providers/models";
 import { listConfigurableChatProviders } from "~/lib/providers/capabilities/chat";
 import type { IUserSettings } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";

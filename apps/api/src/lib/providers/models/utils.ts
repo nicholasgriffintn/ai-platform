@@ -1,5 +1,5 @@
 import type { ModelConfig, ModelConfigItem } from "~/types";
-import { availableCapabilities, availableModelTypes } from "./constants";
+import { availableCapabilities, availableModelTypes } from "~/constants/models";
 
 export function createModelConfig(
 	key: string,

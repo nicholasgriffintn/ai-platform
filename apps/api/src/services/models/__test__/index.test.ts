@@ -16,7 +16,7 @@ import {
 	listModelsByType,
 } from "../index";
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getModels: vi.fn(),
 	filterModelsForUserAccess: vi.fn(),
 	getModelsByCapability: vi.fn(),
@@ -36,7 +36,7 @@ describe("Models Service", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		const modelsLib = await import("~/lib/models");
+		const modelsLib = await import("~/lib/providers/models");
 		mockGetModels = vi.mocked(modelsLib.getModels);
 		mockFilterModelsForUserAccess = vi.mocked(
 			modelsLib.filterModelsForUserAccess,

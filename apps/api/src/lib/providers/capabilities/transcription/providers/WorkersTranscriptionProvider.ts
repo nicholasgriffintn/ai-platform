@@ -1,5 +1,5 @@
 import { gatewayId } from "~/constants/app";
-import { getAuxiliarySpeechModel } from "~/lib/models";
+import { getAuxiliarySpeechModel } from "~/lib/providers/models";
 import { RepositoryManager } from "~/repositories";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { TranscriptionRequest, TranscriptionResult } from "../index";

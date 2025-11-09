@@ -1,7 +1,7 @@
 import { sanitiseMessages } from "~/lib/chat/utils";
 import { ConversationManager } from "~/lib/conversationManager";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
-import { getAuxiliaryModel } from "~/lib/models";
+import { getAuxiliaryModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

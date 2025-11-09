@@ -1,4 +1,4 @@
-import { getAuxiliarySpeechModel } from "~/lib/models";
+import { getAuxiliarySpeechModel } from "~/lib/providers/models";
 import { getTranscriptionProvider } from "~/lib/providers/capabilities/transcription";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

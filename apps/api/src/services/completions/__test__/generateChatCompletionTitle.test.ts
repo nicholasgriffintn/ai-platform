@@ -12,7 +12,7 @@ vi.mock("~/lib/conversationManager", () => ({
 	},
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryModel: vi.fn(),
 }));
 
@@ -53,7 +53,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 
 		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
-		const { getAuxiliaryModel } = await import("~/lib/models");
+		const { getAuxiliaryModel } = await import("~/lib/providers/models");
 		const chatCapability = await import("~/lib/providers/capabilities/chat");
 		const { sanitiseMessages } = await import("~/lib/chat/utils");
 

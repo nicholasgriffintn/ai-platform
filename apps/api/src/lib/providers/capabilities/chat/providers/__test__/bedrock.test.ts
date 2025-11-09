@@ -8,7 +8,7 @@ import {
 	vi,
 } from "vitest";
 import { gatewayId } from "~/constants/app";
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { createAsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { BedrockProvider } from "../bedrock";
 import type { ChatCompletionParameters } from "~/types";
@@ -50,7 +50,7 @@ vi.mock("../base", () => ({
 	},
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getModelConfigByMatchingModel: vi.fn(),
 }));
 
@@ -269,8 +269,9 @@ describe("BedrockProvider", () => {
 
 	describe("getEndpoint", () => {
 		it("should use invoke endpoint for nova-canvas", async () => {
-			const actualModels =
-				await vi.importActual<typeof import("~/lib/models")>("~/lib/models");
+			const actualModels = await vi.importActual<
+				typeof import("~/lib/providers/models")
+			>("~/lib/providers/models");
 
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockImplementation((model) =>
@@ -291,8 +292,9 @@ describe("BedrockProvider", () => {
 		}, 10000);
 
 		it("should use async-invoke endpoint for nova-reel", async () => {
-			const actualModels =
-				await vi.importActual<typeof import("~/lib/models")>("~/lib/models");
+			const actualModels = await vi.importActual<
+				typeof import("~/lib/providers/models")
+			>("~/lib/providers/models");
 
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockImplementation((model) =>

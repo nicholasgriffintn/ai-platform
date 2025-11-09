@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resolveServiceContext } from "~/lib/context/serviceContext";
-import { getAuxiliaryModel } from "~/lib/models";
+import { getAuxiliaryModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { AssistantError } from "~/utils/errors";
 import {
@@ -36,7 +36,7 @@ vi.mock("~/lib/chat/utils", () => ({
 	sanitiseInput: vi.fn((input) => input),
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryModel: vi.fn(() =>
 		Promise.resolve({ model: "test-model", provider: "test-provider" }),
 	),

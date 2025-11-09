@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getAuxiliaryModel } from "~/lib/models";
+import { getAuxiliaryModel } from "~/lib/providers/models";
 import * as chatCapability from "~/lib/providers/capabilities/chat";
 import { handleWebSearch } from "~/services/search/web";
 import { performDeepWebSearch } from "../web-search";
@@ -9,7 +9,7 @@ vi.mock("~/lib/chat/utils", () => ({
 	sanitiseInput: vi.fn((input) => input),
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryModel: vi.fn(() =>
 		Promise.resolve({ model: "gpt-4o-mini", provider: "openai" }),
 	),

@@ -30,7 +30,7 @@ vi.mock("~/lib/chat/utils", () => ({
 	sanitiseInput: vi.fn(),
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getModelConfigByModel: vi.fn(async () => mockModelConfig),
 }));
 
@@ -42,7 +42,7 @@ describe("generateVideo", () => {
 		vi.clearAllMocks();
 		const { sanitiseInput } = await import("~/lib/chat/utils");
 		vi.mocked(sanitiseInput).mockImplementation((input) => input);
-		const { getModelConfigByModel } = await import("~/lib/models");
+		const { getModelConfigByModel } = await import("~/lib/providers/models");
 		vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig as any);
 	});
 

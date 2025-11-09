@@ -12,7 +12,7 @@ vi.mock("~/lib/chat/utils", () => ({
 	getAllAttachments: vi.fn(),
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getModelConfig: vi.fn(),
 }));
 
@@ -44,8 +44,9 @@ describe("ModelConfigValidator", () => {
 			await vi.importMock<typeof import("~/lib/chat/utils")>(
 				"~/lib/chat/utils",
 			);
-		const { getModelConfig } =
-			await vi.importMock<typeof import("~/lib/models")>("~/lib/models");
+		const { getModelConfig } = await vi.importMock<
+			typeof import("~/lib/providers/models")
+		>("~/lib/providers/models");
 		const { getLogger } =
 			await vi.importMock<typeof import("~/utils/logger")>("~/utils/logger");
 

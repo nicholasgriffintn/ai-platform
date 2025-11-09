@@ -1,5 +1,8 @@
 import { KeywordFilter } from "~/lib/keywords";
-import { availableCapabilities, getAuxiliaryModel } from "~/lib/models";
+import {
+	availableCapabilities,
+	getAuxiliaryModel,
+} from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { availableFunctions } from "~/services/functions";
 import type { Attachment, IEnv, IUser, PromptRequirements } from "~/types";

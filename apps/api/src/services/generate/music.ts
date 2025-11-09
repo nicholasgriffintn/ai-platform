@@ -1,6 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
-import { getModelConfigByModel } from "~/lib/models";
-import { validateReplicatePayload } from "~/lib/models/utils/replicateValidation";
+import { getModelConfigByModel } from "~/lib/providers/models";
+import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import {
 	resolveServiceContext,

@@ -6,7 +6,7 @@ import {
 	augmentPrompt,
 } from "~/lib/providers/capabilities/embedding/helpers";
 import { MemoryManager } from "~/lib/memory";
-import { getModelConfig } from "~/lib/models";
+import { getModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type {
 	ChatMode,

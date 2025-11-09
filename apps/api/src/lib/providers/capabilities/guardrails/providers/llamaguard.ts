@@ -1,6 +1,6 @@
 import type { Ai } from "@cloudflare/workers-types";
 
-import { getAuxiliaryGuardrailsModel } from "~/lib/models";
+import { getAuxiliaryGuardrailsModel } from "~/lib/providers/models";
 import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { AssistantError } from "../../../../../utils/errors";

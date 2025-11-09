@@ -1,6 +1,6 @@
 import { getAIResponse } from "~/lib/chat/responses";
 import type { Agent } from "~/lib/database/schema";
-import { getAuxiliaryModel, getModelConfig } from "~/lib/models";
+import { getAuxiliaryModel, getModelConfig } from "~/lib/providers/models";
 import { AgentRepository } from "~/repositories/AgentRepository";
 import type { AnonymousUser, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

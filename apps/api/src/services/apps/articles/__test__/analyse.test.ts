@@ -36,7 +36,7 @@ vi.mock("~/lib/chat/utils", () => ({
 	sanitiseInput: vi.fn((input) => input),
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryModelForRetrieval: vi.fn(),
 	getModelConfigByMatchingModel: vi.fn(),
 }));
@@ -73,7 +73,7 @@ describe("analyseArticle", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 		const { getAuxiliaryModelForRetrieval, getModelConfigByMatchingModel } =
-			await import("~/lib/models");
+			await import("~/lib/providers/models");
 		vi.mocked(getAuxiliaryModelForRetrieval).mockResolvedValue({
 			model: "test-model",
 			provider: "test-provider",

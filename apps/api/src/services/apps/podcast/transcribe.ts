@@ -1,5 +1,5 @@
-import { getModelConfigByModel } from "~/lib/models";
-import { validateReplicatePayload } from "~/lib/models/utils/replicateValidation";
+import { getModelConfigByModel } from "~/lib/providers/models";
+import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import {
 	resolveServiceContext,
@@ -8,7 +8,7 @@ import {
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { safeParseJson } from "../../../utils/json";
+import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "services/apps/podcast/transcribe" });
 

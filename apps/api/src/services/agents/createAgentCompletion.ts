@@ -5,7 +5,7 @@ import {
 	createServiceContext,
 	type ServiceContext,
 } from "~/lib/context/serviceContext";
-import { getModelConfig } from "~/lib/models";
+import { getModelConfig } from "~/lib/providers/models";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { registerMCPClient } from "~/services/functions/mcp";
 import { add_reasoning_step } from "~/services/functions/reasoning";

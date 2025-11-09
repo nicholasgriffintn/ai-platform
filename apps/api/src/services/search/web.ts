@@ -1,5 +1,5 @@
 import { sanitiseInput } from "~/lib/chat/utils";
-import { getAuxiliarySearchProvider } from "~/lib/models";
+import { getAuxiliarySearchProvider } from "~/lib/providers/models";
 import { getSearchProvider } from "~/lib/providers/capabilities/search";
 import type {
 	IEnv,

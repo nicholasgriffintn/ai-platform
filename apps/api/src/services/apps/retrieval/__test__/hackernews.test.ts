@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getAuxiliaryModelForRetrieval } from "~/lib/models";
+import { getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
 import * as chatCapability from "~/lib/providers/capabilities/chat";
 import {
 	analyseHackerNewsStories,
 	retrieveHackerNewsTopStories,
 } from "../hackernews";
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryModelForRetrieval: vi.fn(() =>
 		Promise.resolve({ model: "gpt-4o-mini", provider: "openai" }),
 	),

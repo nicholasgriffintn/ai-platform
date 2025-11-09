@@ -1,4 +1,4 @@
-import { getModelConfigByMatchingModel } from "~/lib/models";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { ChatMode, IBody, IUser, IUserSettings } from "~/types";
 import { trimTemplateWhitespace } from "~/utils/strings";
 import { returnCodingPrompt } from "./coding";

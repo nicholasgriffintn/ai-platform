@@ -6,7 +6,7 @@ import {
 	getModels,
 	getModelsByCapability,
 	getModelsByType,
-} from "~/lib/models";
+} from "~/lib/providers/models";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 

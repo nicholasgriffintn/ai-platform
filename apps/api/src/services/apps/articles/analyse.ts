@@ -2,7 +2,7 @@ import { sanitiseInput } from "~/lib/chat/utils";
 import {
 	getAuxiliaryModelForRetrieval,
 	getModelConfigByMatchingModel,
-} from "~/lib/models";
+} from "~/lib/providers/models";
 import { analyseArticlePrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import {

@@ -1,5 +1,5 @@
 import { sanitiseInput } from "~/lib/chat/utils";
-import { getAuxiliaryModel } from "~/lib/models";
+import { getAuxiliaryModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { IFunction, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

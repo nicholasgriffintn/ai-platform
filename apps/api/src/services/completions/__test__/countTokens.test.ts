@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { handleCountTokens } from "../countTokens";
 import type { IEnv, IUser, Message } from "~/types";
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getModelConfigByModel: vi.fn(),
 }));
 
@@ -73,7 +73,7 @@ describe("countTokens", () => {
 
 	describe("successful token counting", () => {
 		it("should count tokens for a supported provider", async () => {
-			const { getModelConfigByModel } = await import("~/lib/models");
+			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
@@ -113,7 +113,7 @@ describe("countTokens", () => {
 		});
 
 		it("should work without a user", async () => {
-			const { getModelConfigByModel } = await import("~/lib/models");
+			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
@@ -152,7 +152,7 @@ describe("countTokens", () => {
 		});
 
 		it("should work without system prompt", async () => {
-			const { getModelConfigByModel } = await import("~/lib/models");
+			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
@@ -182,7 +182,7 @@ describe("countTokens", () => {
 
 	describe("error handling", () => {
 		it("should return error for unknown model", async () => {
-			const { getModelConfigByModel } = await import("~/lib/models");
+			const { getModelConfigByModel } = await import("~/lib/providers/models");
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(null);
 
@@ -203,7 +203,7 @@ describe("countTokens", () => {
 		});
 
 		it("should return error for unknown provider", async () => {
-			const { getModelConfigByModel } = await import("~/lib/models");
+			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
@@ -231,7 +231,7 @@ describe("countTokens", () => {
 		});
 
 		it("should return error for model without token counting support", async () => {
-			const { getModelConfigByModel } = await import("~/lib/models");
+			const { getModelConfigByModel } = await import("~/lib/providers/models");
 
 			const mockModelConfig = createMockModelConfig("openai", "gpt-4", false); // supportsTokenCounting = false
 
@@ -254,7 +254,7 @@ describe("countTokens", () => {
 		});
 
 		it("should return error for provider without token counting support", async () => {
-			const { getModelConfigByModel } = await import("~/lib/models");
+			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig("openai", "gpt-4");
@@ -280,7 +280,7 @@ describe("countTokens", () => {
 		});
 
 		it("should throw AssistantError when provider fails", async () => {
-			const { getModelConfigByModel } = await import("~/lib/models");
+			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 			const { AssistantError } = await import("~/utils/errors");
 
@@ -320,7 +320,7 @@ describe("countTokens", () => {
 
 	describe("edge cases", () => {
 		it("should handle empty messages array", async () => {
-			const { getModelConfigByModel } = await import("~/lib/models");
+			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
@@ -348,7 +348,7 @@ describe("countTokens", () => {
 		});
 
 		it("should handle complex message content", async () => {
-			const { getModelConfigByModel } = await import("~/lib/models");
+			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
@@ -398,7 +398,7 @@ describe("countTokens", () => {
 
 	describe("Anthropic provider", () => {
 		it("should count tokens for Anthropic models", async () => {
-			const { getModelConfigByModel } = await import("~/lib/models");
+			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(
@@ -436,7 +436,7 @@ describe("countTokens", () => {
 		});
 
 		it("should handle Anthropic models without system prompt", async () => {
-			const { getModelConfigByModel } = await import("~/lib/models");
+			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig(

@@ -5,7 +5,7 @@ import { MemoryRepository } from "~/repositories/MemoryRepository";
 import { MemorySynthesisRepository } from "~/repositories/MemorySynthesisRepository";
 import { getLogger } from "~/utils/logger";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getAuxiliaryModel } from "~/lib/models";
+import { getAuxiliaryModel } from "~/lib/providers/models";
 
 const logger = getLogger({ prefix: "services/tasks/memory-synthesis" });
 

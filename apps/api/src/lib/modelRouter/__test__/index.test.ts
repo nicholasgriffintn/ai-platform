@@ -24,7 +24,7 @@ vi.mock("~/lib/modelRouter/promptAnalyser", () => ({
 	PromptAnalyzer: mockPromptAnalyzer,
 }));
 
-vi.mock("~/lib/models", () => mockModels);
+vi.mock("~/lib/providers/models", () => mockModels);
 
 vi.mock("~/lib/monitoring", () => mockMonitoring);
 

@@ -13,7 +13,7 @@ import {
 	getAuxiliaryModel,
 	getModels,
 	filterModelsForUserAccess,
-} from "~/lib/models";
+} from "~/lib/providers/models";
 import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults } from "~/utils/parameters";
 

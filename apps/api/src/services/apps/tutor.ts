@@ -1,6 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import type { ConversationManager } from "~/lib/conversationManager";
-import { getAuxiliaryModel } from "~/lib/models";
+import { getAuxiliaryModel } from "~/lib/providers/models";
 import { tutorSystemPrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { handleWebSearch } from "~/services/search/web";

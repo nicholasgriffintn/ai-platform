@@ -7,7 +7,7 @@ import {
 } from "../helpers";
 import { providerLibrary } from "~/lib/providers/library";
 import { trackRagMetrics } from "~/lib/monitoring";
-import { getAuxiliaryModel } from "~/lib/models";
+import { getAuxiliaryModel } from "~/lib/providers/models";
 import * as chatCapability from "../../chat";
 
 const mockRepositoryManager = {} as any;
@@ -26,7 +26,7 @@ vi.mock("~/lib/monitoring", () => ({
 	trackRagMetrics: vi.fn((fn: () => any) => fn()),
 }));
 
-vi.mock("~/lib/models", () => ({
+vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryModel: vi.fn(),
 }));
 

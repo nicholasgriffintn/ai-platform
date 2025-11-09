@@ -5,7 +5,7 @@ import type {
 	Validator,
 	ValidatorResult,
 } from "~/lib/chat/validation/ValidationPipeline";
-import { getModelConfig } from "~/lib/models";
+import { getModelConfig } from "~/lib/providers/models";
 import type { CoreChatOptions } from "~/types";
 import { getLogger } from "~/utils/logger";
 

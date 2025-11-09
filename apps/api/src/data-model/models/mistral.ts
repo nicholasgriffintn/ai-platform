@@ -1,5 +1,8 @@
 import type { ModelConfig } from "~/types";
-import { createModelConfig, createModelConfigObject } from "./utils";
+import {
+	createModelConfig,
+	createModelConfigObject,
+} from "~/lib/providers/models/utils";
 
 const PROVIDER = "mistral";
 
