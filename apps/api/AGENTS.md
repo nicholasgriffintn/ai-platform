@@ -39,6 +39,11 @@ Cloudflare Worker backend serving OpenAI-compatible endpoints, provider routing,
   pnpm --filter @assistant/api db:generate      # create new migration (adds file under migrations/)
   pnpm --filter @assistant/api db:migrate:local # apply to local D1 (requires wrangler)
   ```
+- **Preview DB sync**
+  ```sh
+  pnpm --filter @assistant/api db:sync:preview
+  ```
+  Requires `sqlite3`. Dumps the preview D1 database, wipes the local Miniflare SQLite file, pipes the dump directly into the local SQLite DB, then reapplies local migrations so schema stays current.
 
 ## Testing Expectations
 

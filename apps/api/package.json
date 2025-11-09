@@ -22,6 +22,7 @@
 		"db:migrate:local": "wrangler d1 migrations apply personal-assistant --local",
 		"db:migrate:preview": "wrangler d1 migrations apply personal-assistant-preview --remote",
 		"db:migrate:prod": "wrangler d1 migrations apply personal-assistant --remote",
+		"db:sync:preview": "bash ./scripts/db-sync-preview.sh",
 		"db:studio:local": "DB_LOCAL_PATH=$(find .wrangler/state/v3/d1/miniflare-D1DatabaseObject -type f -name '*.sqlite' -print -quit) drizzle-kit studio",
 		"db:studio:preview": "NODE_ENV='preview' drizzle-kit studio",
 		"db:studio:prod": "drizzle-kit studio"
