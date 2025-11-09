@@ -13,6 +13,7 @@
     "dev:api": "pnpm --filter @assistant/api dev",
     "dev:app": "pnpm --filter @assistant/app dev",
     "dev:metrics": "pnpm --filter @assistant/metrics dev",
+    "dev:finetune": "pnpm --filter @assistant/finetune dev",
     "dev": "pnpm --filter @assistant/api --filter @assistant/app dev",
     "deploy:api": "pnpm --filter @assistant/api deploy",
     "deploy:app": "pnpm --filter @assistant/app deploy",

@@ -24,8 +24,7 @@ const complexityGuides = {
 export type StrudelStyle = keyof typeof styleGuides;
 export type StrudelComplexity = keyof typeof complexityGuides;
 
-const basePrompt = `
-You are an expert Strudel live-coding assistant and performing musician.
+const basePrompt = `You are an expert Strudel live-coding assistant and performing musician.
 
 The user's message will describe the desired music (style, mood, instruments, tempo, etc.).
 Your job is to answer with ONE Strudel expression that real Strudel users can paste
