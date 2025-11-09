@@ -2,23 +2,6 @@
 
 This directory contains end-to-end tests for the AI platform using Playwright with the Page Object Model pattern.
 
-## Structure
-
-```
-tests/e2e/
-├── features/             # Feature-specific test files
-│   ├── feature.spec.ts   # A feature test
-├── page-objects/         # Page Object Model classes
-│   ├── BasePage.ts       # Base page class with common functionality
-│   ├── OtherPage.ts      # Any other page specific methods
-├── utils/                # Test utilities and helpers
-│   └── test-helpers.ts   # Helper functions for tests
-├── fixtures/             # Test data and fixtures
-│   └── test-data.ts      # Centralized test data
-├── smoke/                # Smoke tests
-│   └── basic.spec.ts     # Basic smoke tests
-```
-
 ## Page Object Model
 
 Each page object extends `BasePage` and encapsulates:
@@ -44,29 +27,57 @@ The `TestHelpers` class provides utilities for:
 - Managing localStorage/sessionStorage
 - Network idle waiting
 
+## Prerequisites
+
+1. **API Key**: Set `PLAYWRIGHT_API_KEY` environment variable with a valid Polychat API key
+
+   ```bash
+   export PLAYWRIGHT_API_KEY=your_api_key_here
+   ```
+
+   If this is not set, the API tests will be skipped.
+
+2. **Dependencies**: Install Playwright browsers
+   ```bash
+   pnpm exec playwright install
+   ```
+
 ## Running Tests
 
+### Run all E2E tests
+
 ```bash
-# Run all E2E tests
 pnpm run test:e2e
-
-# Run specific test file
-pnpm run test:e2e -- features/chat.spec.ts
-
-# Run tests in headed mode
-pnpm run test:e2e -- --headed
-
-# Run tests with debug
-pnpm run test:e2e -- --debug
 ```
 
-## Local Authentication for Chat Flow
-
-The chat feature specs hit the real API to validate streaming responses. To keep the workflow local-only, generate a Polychat API key from your profile and export it before running the suite:
+### Run specific test files
 
 ```bash
-export PLAYWRIGHT_API_KEY="ak_xxx_your_local_key"
-pnpm run test:e2e -- features/chat.spec.ts
+# Chat functionality only
+pnpm exec playwright test features/chat
+
+# App features only
+pnpm exec playwright test features/app
+
+# Resilience tests only
+pnpm exec playwright test features/resilience
+
+# Smoke tests only
+pnpm exec playwright test smoke/
 ```
 
-The Playwright helpers inject this key into `localStorage` prior to navigation so the browser session can authenticate without going through GitHub or magic links. If `PLAYWRIGHT_API_KEY` is not defined, the chat tests are skipped automatically.
+### Run in different modes
+
+```bash
+# Headed mode (see browser)
+pnpm exec playwright test --headed
+
+# Debug mode
+pnpm exec playwright test --debug
+
+# UI mode (interactive)
+pnpm exec playwright test --ui
+
+# Specific test by name
+pnpm exec playwright test -g "maintains context"
+```
