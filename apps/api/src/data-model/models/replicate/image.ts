@@ -283,4 +283,59 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			],
 		},
 	}),
+	createModelConfig("replicate-google-nano-banana", PROVIDER, {
+		name: "Google Nano Banana",
+		matchingModel: "google/nano-banana",
+		description: "Google's latest image editing model in Gemini 2.5 ",
+		type: ["text-to-image"],
+		modalities: {
+			input: ["text", "image"],
+			output: ["image"],
+		},
+		costPerRun: 0.039,
+		replicateInputSchema: {
+			reference: "https://replicate.com/google/nano-banana",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "Text prompt describing the desired image.",
+					required: true,
+				},
+				{
+					name: "image_input",
+					type: "array",
+					description:
+						"Input images to transform or use as reference (supports multiple images)",
+					required: false,
+				},
+				{
+					name: "aspect_ratio",
+					type: "string",
+					description: "Aspect ratio of the output image.",
+					default: "match_input_image",
+					enum: [
+						"match_input_image",
+						"1:1",
+						"2:3",
+						"3:2",
+						"3:4",
+						"4:3",
+						"4:5",
+						"5:4",
+						"9:16",
+						"16:9",
+						"21:9",
+					],
+				},
+				{
+					name: "output_format",
+					type: "string",
+					description: "Output format.",
+					default: "jpg",
+					enum: ["png", "jpg"],
+				},
+			],
+		},
+	}),
 ]);

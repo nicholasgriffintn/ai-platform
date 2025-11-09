@@ -238,4 +238,77 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			],
 		},
 	}),
+	createModelConfig("replicate-google-veo-3-1-fast", PROVIDER, {
+		name: "Google Veo 3.1 Fast",
+		matchingModel: "google/veo-3.1-fast",
+		description:
+			"New and improved version of Veo 3 Fast, with higher-fidelity video, context-aware audio and last frame support ",
+		type: ["text-to-video", "image-to-video"],
+		modalities: {
+			input: ["text", "image"],
+			output: ["video"],
+		},
+		costPerRun: 5,
+		replicateInputSchema: {
+			reference: "https://replicate.com/google/veo-3-1-fast",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "A text description of the video to generate",
+					required: true,
+				},
+				{
+					name: "aspect_ratio",
+					type: "string",
+					description: "Aspect ratio of the generated video.",
+					default: "16:9",
+					enum: ["16:9", "9:16"],
+				},
+				{
+					name: "duration",
+					type: "integer",
+					description: "Duration of the generated video in seconds.",
+					default: 8,
+				},
+				{
+					name: "image",
+					type: ["file", "string"],
+					description:
+						"Input image to start generating from. Ideal images are 16:9 or 9:16 and 1280x720 or 720x1280, depending on the aspect ratio you choose.",
+				},
+				{
+					name: "last_frame",
+					type: ["file", "string"],
+					description:
+						"Binding image for interpolation. When provided with an input image, creates a transition between the two images.",
+				},
+				{
+					name: "negative_prompt",
+					type: "string",
+					description:
+						"Text describing elements to avoid in the generated video.",
+					default: "",
+				},
+				{
+					name: "resolution",
+					type: "string",
+					description: "Resolution of the generated video.",
+					default: "1080p",
+					enum: ["720p", "1080p"],
+				},
+				{
+					name: "generate_audio",
+					type: "boolean",
+					description: "Whether to generate audio for the video.",
+					default: true,
+				},
+				{
+					name: "seed",
+					type: "integer",
+					description: "A random seed for the video generation.",
+				},
+			],
+		},
+	}),
 ]);

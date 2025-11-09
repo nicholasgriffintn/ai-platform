@@ -333,4 +333,38 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			],
 		},
 	}),
+	createModelConfig("replicate-elevenlabs-music", PROVIDER, {
+		name: "ElevenLabs Music",
+		matchingModel: "elevenlabs/music",
+		description: "Compose a song from a prompt or a composition plan ",
+		type: ["text-to-audio"],
+		modalities: {
+			input: ["text"],
+			output: ["audio"],
+		},
+		costPerRun: 1,
+		replicateInputSchema: {
+			reference: "https://replicate.com/elevenlabs/music",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "Text prompt describing the desired music.",
+					required: true,
+				},
+				{
+					name: "music_length_ms",
+					type: "integer",
+					description: "Length of the generated music in milliseconds.",
+					default: 30000,
+				},
+				{
+					name: "force_instrumental",
+					type: "boolean",
+					description: "Whether to generate instrumental music without vocals.",
+					default: false,
+				},
+			],
+		},
+	}),
 ]);
