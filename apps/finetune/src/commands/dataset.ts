@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import ora from "ora";
 import chalk from "chalk";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 
 import { StrudelGenerator } from "../generators/StrudelGenerator.js";
 import { DatasetFormatter } from "../formatters/DatasetFormatter.js";
@@ -39,8 +39,24 @@ datasetCommand
 		"Comma-separated list of complexities",
 		"simple,medium,complex",
 	)
+	.option("--resume", "Resume from existing progress file if available", false)
 	.action(async (options) => {
 		const spinner = ora("Initializing dataset generation...").start();
+
+		let isInterrupted = false;
+		const handleInterrupt = () => {
+			if (!isInterrupted) {
+				isInterrupted = true;
+				spinner.warn(chalk.yellow("\n\nInterrupted! Progress has been saved."));
+				console.log(
+					chalk.gray(
+						`Run the same command with --resume to continue from where you left off.`,
+					),
+				);
+				process.exit(0);
+			}
+		};
+		process.on("SIGINT", handleInterrupt);
 
 		try {
 			const count = parseInt(options.count);
@@ -49,7 +65,12 @@ datasetCommand
 				.split(",")
 				.map((c: string) => c.trim());
 
-			spinner.text = `Generating ${count} examples via ${options.apiUrl}...`;
+			const progressFile = `${options.output}/.progress.jsonl`;
+			if (options.resume && existsSync(progressFile)) {
+				spinner.text = "Found existing progress, resuming...";
+			} else {
+				spinner.text = `Generating ${count} examples via ${options.apiUrl}...`;
+			}
 
 			const generator = new StrudelGenerator();
 			const examples = await generator.generate({
@@ -59,7 +80,10 @@ datasetCommand
 				styles,
 				complexities,
 				model: options.model,
+				outputDir: options.output,
 			});
+
+			process.removeListener("SIGINT", handleInterrupt);
 
 			spinner.text = "Analyzing dataset...";
 			const formatter = new DatasetFormatter();

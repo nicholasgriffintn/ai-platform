@@ -241,9 +241,10 @@ Generate synthetic training examples by calling your API:
 
 ```bash
 pnpm tsx src/cli.ts dataset generate \
-  --count 300 \
+  --count 1000 \
   --model claude-4-5-sonnet \
-  --output ./datasets/strudel
+  --output ./datasets/strudel \
+  --resume
 ```
 
 **Options:**
@@ -255,12 +256,14 @@ pnpm tsx src/cli.ts dataset generate \
 - `--styles`: Comma-separated styles (default: all 6 styles)
 - `--complexities`: Comma-separated complexities (default: all 3)
 - `--output`: Output directory
+- `--resume`: Resume from existing progress file (highly recommended!)
 
 **What it does:**
 
 This will call the API on Polychat the number of times that you have specified in `--count`, cycling through different style and complexity combinations to generate a diverse dataset that will be formatted and stored on disk.
 
 These will be split into training and validation sets automatically and then recorded in the local SQLite database for tracking.
+
 **Process:**
 
 1. **Load prompt templates** from `configs/strudel-prompts.json`
@@ -345,13 +348,14 @@ Traditional fine-tuning adjusts all model weights using your training data:
 
 ```bash
 pnpm tsx src/cli.ts job create \
-  --name strudel-nova-pro-v1 \
-  --base-model amazon.nova-pro-v1:0:300k \
+  --name strudel-nova-lite-v1 \
+  --base-model amazon.nova-lite-v1:0:300k \
   --train-uri s3://my-bucket/strudel/.../train.jsonl \
   --val-uri s3://my-bucket/strudel/.../validation.jsonl \
-  --epochs 3 \
-  --learning-rate 0.00001 \
-  --batch-size 1
+  --epochs 2 \
+  --learning-rate 0.00005 \
+  --batch-size 1 \
+  --warmup-steps 6
 ```
 
 **Fine-Tuning Options:**
@@ -372,9 +376,9 @@ Distillation transfers knowledge from a larger teacher model to a smaller studen
 
 ```bash
 pnpm tsx src/cli.ts job distill \
-  --name strudel-nova-pro-distilled \
+  --name strudel-nova-lite-v1-distilled \
   --teacher us.amazon.nova-premier-v1:0 \
-  --student  amazon.nova-pro-v1:0:300k \
+  --student  amazon.nova-lite-v1:0:300k \
   --train-uri s3://my-bucket/strudel/.../train.jsonl \
   --val-uri s3://my-bucket/strudel/.../validation.jsonl \
   --project strudel
@@ -612,3 +616,13 @@ Model distillation costs include both the student model training and teacher mod
 - Distillation: ~$3.25
 - Testing (1 hour provisioned): ~$0.10
 - **Grand total: ~$5.70**
+
+## Notes
+
+- Nova Pro models have a fixed batch size of 1, as set in Bedrock. Instead we use the learningRateWarmupSteps parameter to adjust the rate of learning.
+- epochCount = "The number of iterations through the entire training dataset"
+- learningRate = "The rate at which model parameters are updated after each batch"
+- learningRateWarmupSteps = "The number of iterations over which the learning rate is gradually increased to the specified rate"
+- AWS recommends epochs of 2 for datasets under 5k examples, and 1 for datasets over 5k examples with a learning rate of 0.00005 and warmup steps calculated based on dataset size.
+
+- AWS requires a minimum of 100 examples to start fine-tuning, but this is likely too small for good results, I initially attempted 140 examples and expanded to 1000 for better performance.

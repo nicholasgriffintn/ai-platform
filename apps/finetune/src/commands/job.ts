@@ -26,9 +26,10 @@ jobCommand
 	.requiredOption("--train-uri <uri>", "S3 URI for training data")
 	.option("--val-uri <uri>", "S3 URI for validation data")
 	.option("--custom-name <name>", "Custom model name (defaults to job name)")
-	.option("--epochs <count>", "Number of epochs (1-5)", "3")
-	.option("--learning-rate <rate>", "Learning rate", "0.00001")
-	.option("--batch-size <size>", "Batch size", "8")
+	.option("--epochs <count>", "Number of epochs (1-5)", "2")
+	.option("--learning-rate <rate>", "Learning rate", "0.00005")
+	.option("--batch-size <size>", "Batch size (fixed at 1 for Nova models)", "1")
+	.option("--warmup-steps <steps>", "Learning rate warmup steps (0-100)", "0")
 	.option("--project <name>", "Project name for organization", "strudel")
 	.action(async (options) => {
 		const spinner = ora("Creating fine-tuning job...").start();
@@ -64,6 +65,7 @@ jobCommand
 					epochCount: options.epochs,
 					learningRate: options.learningRate,
 					batchSize: options.batchSize,
+					learningRateWarmupSteps: options.warmupSteps,
 				},
 			});
 
@@ -82,6 +84,7 @@ jobCommand
 						epochCount: options.epochs,
 						learningRate: options.learningRate,
 						batchSize: options.batchSize,
+						learningRateWarmupSteps: options.warmupSteps,
 					},
 				}),
 			});
@@ -98,6 +101,7 @@ jobCommand
 			console.log(chalk.gray(`  Epochs: ${options.epochs}`));
 			console.log(chalk.gray(`  Learning Rate: ${options.learningRate}`));
 			console.log(chalk.gray(`  Batch Size: ${options.batchSize}`));
+			console.log(chalk.gray(`  Warmup Steps: ${options.warmupSteps}`));
 			console.log(chalk.blue("\n📊 Next Steps:"));
 			console.log(chalk.gray(`  Monitor: finetune job watch ${jobArn}`));
 			console.log(chalk.gray(`  Status: finetune job status ${jobArn}`));

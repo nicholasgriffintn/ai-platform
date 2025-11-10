@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -25,11 +25,26 @@ export class StrudelGenerator {
 		this.promptConfig = JSON.parse(readFileSync(configPath, "utf-8"));
 	}
 
-	async generate(options: GenerateOptions): Promise<TrainingExample[]> {
+	async generate(
+		options: GenerateOptions & { outputDir?: string },
+	): Promise<TrainingExample[]> {
 		logger.info(`Starting dataset generation via ${options.apiUrl}`);
 		logger.info(`Target: ${options.count} examples`);
 
+		const progressFile = options.outputDir
+			? join(options.outputDir, ".progress.jsonl")
+			: null;
+
 		const examples: TrainingExample[] = [];
+		if (progressFile && existsSync(progressFile)) {
+			const progressContent = readFileSync(progressFile, "utf-8");
+			const lines = progressContent.split("\n").filter((line) => line.trim());
+			for (const line of lines) {
+				examples.push(JSON.parse(line));
+			}
+			logger.info(`Resuming from ${examples.length} existing examples`);
+		}
+
 		const combinations = this.buildCombinations(
 			options.styles,
 			options.complexities,
@@ -39,6 +54,9 @@ export class StrudelGenerator {
 		logger.info(
 			`Generating ${examplesPerCombo} examples for each of ${combinations.length} combinations`,
 		);
+
+		let consecutiveErrors = 0;
+		const maxConsecutiveErrors = 5;
 
 		for (const combo of combinations) {
 			logger.info(`Processing ${combo.style}/${combo.complexity}...`);
@@ -70,23 +88,53 @@ export class StrudelGenerator {
 						throw new Error("Invalid response format from API");
 					}
 
-					examples.push({
+					const example: TrainingExample = {
 						schemaVersion: "bedrock-conversation-2024",
 						system: [{ text: systemPrompt }],
 						messages: [
 							{ role: "user", content: [{ text: prompt }] },
 							{ role: "assistant", content: [{ text: response.code }] },
 						],
-					});
+					};
 
+					examples.push(example);
+
+					if (progressFile) {
+						writeFileSync(progressFile, `${JSON.stringify(example)}\n`, {
+							flag: "a",
+						});
+					}
+
+					consecutiveErrors = 0;
 					logger.success(
-						`Generated ${combo.style}/${combo.complexity} example ${i + 1}/${examplesPerCombo}`,
+						`Generated ${examples.length}/${options.count}: ${combo.style}/${combo.complexity}`,
 					);
-				} catch (error) {
+				} catch (error: any) {
+					consecutiveErrors++;
 					logger.error(
-						`Failed to generate example for ${combo.style}/${combo.complexity}`,
+						`Failed to generate example for ${combo.style}/${combo.complexity} (attempt ${consecutiveErrors}/${maxConsecutiveErrors})`,
 						error,
 					);
+
+					if (error?.message?.includes("429") || error?.status === 429) {
+						logger.warn("Rate limit detected, waiting 60 seconds...");
+						await this.sleep(60000);
+						consecutiveErrors = 0;
+						i--;
+					} else {
+						continue;
+					}
+
+					if (consecutiveErrors >= maxConsecutiveErrors) {
+						logger.error(
+							`Too many consecutive errors (${maxConsecutiveErrors}). Aborting.`,
+						);
+						throw new Error(
+							`Generation failed after ${maxConsecutiveErrors} consecutive errors`,
+						);
+					}
+
+					await this.sleep(1000);
 				}
 			}
 
@@ -97,6 +145,10 @@ export class StrudelGenerator {
 
 		logger.success(`Dataset generation complete: ${examples.length} examples`);
 		return examples.slice(0, options.count);
+	}
+
+	private sleep(ms: number): Promise<void> {
+		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 
 	private async callAPI(params: {
