@@ -4,6 +4,8 @@ import { dirname, join } from "node:path";
 
 import type { TrainingExample, GenerateOptions } from "../types/index.js";
 import { createLogger } from "../utils/logger.js";
+import { RateLimiter } from "../utils/rateLimiter.js";
+import { TokenEstimator } from "../utils/tokenEstimator.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -19,10 +21,17 @@ interface PromptConfig {
 
 export class StrudelGenerator {
 	private promptConfig: PromptConfig;
+	private rateLimiter: RateLimiter;
 
 	constructor() {
 		const configPath = join(__dirname, "../../configs/strudel-prompts.json");
 		this.promptConfig = JSON.parse(readFileSync(configPath, "utf-8"));
+
+		this.rateLimiter = new RateLimiter({
+			maxRequests: 45,
+			maxTokens: 28000,
+			windowMs: 60000,
+		});
 	}
 
 	async generate(
@@ -67,21 +76,21 @@ export class StrudelGenerator {
 				}
 
 				const prompt = this.generatePrompt(combo.style, combo.complexity, i);
+				const systemPrompt = this.buildSystemPrompt(
+					combo.style,
+					combo.complexity,
+				);
 
 				try {
 					const response = await this.callAPI({
 						apiUrl: options.apiUrl,
 						apiKey: options.apiKey,
 						prompt,
+						systemPrompt,
 						style: combo.style,
 						complexity: combo.complexity,
 						model: options.model,
 					});
-
-					const systemPrompt = this.buildSystemPrompt(
-						combo.style,
-						combo.complexity,
-					);
 
 					const assistantResponse = response.code;
 					if (!assistantResponse || typeof assistantResponse !== "string") {
@@ -155,10 +164,17 @@ export class StrudelGenerator {
 		apiUrl: string;
 		apiKey?: string;
 		prompt: string;
+		systemPrompt: string;
 		style: string;
 		complexity: string;
 		model?: string;
 	}): Promise<{ code: string; explanation?: string }> {
+		const estimatedTokens = TokenEstimator.estimateRequest(
+			params.systemPrompt,
+			params.prompt,
+		);
+		await this.rateLimiter.waitForSlot(estimatedTokens);
+
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
 			"User-Agent": "StrudelDatasetGenerator/1.0",
