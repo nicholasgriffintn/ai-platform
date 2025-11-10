@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleChatCompletionFeedbackSubmission } from "../chatCompletionFeedbackSubmission";
+import { RepositoryManager } from "~/repositories";
+
+vi.mock("~/repositories", () => ({
+	RepositoryManager: vi.fn(),
+}));
 
 const mockGateway = {
 	patchLog: vi.fn(),
@@ -23,6 +28,7 @@ const mockUser = {
 describe("handleChatCompletionFeedbackSubmission", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.mocked(RepositoryManager).mockClear();
 	});
 
 	afterEach(() => {
@@ -41,63 +47,6 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 			).rejects.toThrow("Missing request");
 		});
 
-		it("should throw error for missing AI_GATEWAY_TOKEN", async () => {
-			const envWithoutToken = {
-				ACCOUNT_ID: "test-account",
-				AI: mockAI,
-			} as any;
-
-			const request = {
-				log_id: "log-123",
-				feedback: "positive",
-			} as any;
-
-			await expect(() =>
-				handleChatCompletionFeedbackSubmission({
-					request,
-					env: envWithoutToken,
-					user: mockUser,
-					completion_id: "completion-123",
-				}),
-			).rejects.toThrow("Missing AI_GATEWAY_TOKEN or ACCOUNT_ID binding");
-		});
-
-		it("should throw error for missing ACCOUNT_ID", async () => {
-			const envWithoutAccount = {
-				AI_GATEWAY_TOKEN: "test-token",
-				AI: mockAI,
-			} as any;
-
-			const request = {
-				log_id: "log-123",
-				feedback: "positive",
-			} as any;
-
-			await expect(() =>
-				handleChatCompletionFeedbackSubmission({
-					request,
-					env: envWithoutAccount,
-					user: mockUser,
-					completion_id: "completion-123",
-				}),
-			).rejects.toThrow("Missing AI_GATEWAY_TOKEN or ACCOUNT_ID binding");
-		});
-
-		it("should throw error for missing log_id", async () => {
-			const request = {
-				feedback: "positive",
-			} as any;
-
-			await expect(() =>
-				handleChatCompletionFeedbackSubmission({
-					request,
-					env: mockEnv,
-					user: mockUser,
-					completion_id: "completion-123",
-				}),
-			).rejects.toThrow("Missing log_id or feedback");
-		});
-
 		it("should throw error for missing feedback", async () => {
 			const request = {
 				log_id: "log-123",
@@ -110,7 +59,70 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 					user: mockUser,
 					completion_id: "completion-123",
 				}),
-			).rejects.toThrow("Missing log_id or feedback");
+			).rejects.toThrow("Missing feedback");
+		});
+
+		it("should succeed without log_id when only feedback is provided", async () => {
+			const mockRepositories = {
+				trainingExamples: {
+					findMany: vi.fn().mockResolvedValue([]),
+				},
+			};
+
+			const mockEnvWithRepos = {
+				...mockEnv,
+				DB: {} as any,
+			};
+
+			vi.mocked(RepositoryManager).mockImplementation(
+				() => mockRepositories as any,
+			);
+
+			const request = {
+				feedback: "positive",
+			} as any;
+
+			const result = await handleChatCompletionFeedbackSubmission({
+				request,
+				env: mockEnvWithRepos,
+				user: mockUser,
+				completion_id: "completion-123",
+			});
+
+			expect(result.success).toBe(true);
+			expect(mockGateway.patchLog).not.toHaveBeenCalled();
+		});
+
+		it("should succeed without AI_GATEWAY_TOKEN when log_id not provided", async () => {
+			const envWithoutToken = {
+				ACCOUNT_ID: "test-account",
+				AI: mockAI,
+				DB: {} as any,
+			} as any;
+
+			const mockRepositories = {
+				trainingExamples: {
+					findMany: vi.fn().mockResolvedValue([]),
+				},
+			};
+
+			vi.mocked(RepositoryManager).mockImplementation(
+				() => mockRepositories as any,
+			);
+
+			const request = {
+				feedback: "positive",
+			} as any;
+
+			const result = await handleChatCompletionFeedbackSubmission({
+				request,
+				env: envWithoutToken,
+				user: mockUser,
+				completion_id: "completion-123",
+			});
+
+			expect(result.success).toBe(true);
+			expect(mockGateway.patchLog).not.toHaveBeenCalled();
 		});
 	});
 
@@ -335,7 +347,22 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 	});
 
 	describe("error handling", () => {
-		it("should handle gateway patch log errors", async () => {
+		it("should succeed even when gateway patch log fails", async () => {
+			const mockRepositories = {
+				trainingExamples: {
+					findMany: vi.fn().mockResolvedValue([]),
+				},
+			};
+
+			const mockEnvWithRepos = {
+				...mockEnv,
+				DB: {} as any,
+			};
+
+			vi.mocked(RepositoryManager).mockImplementation(
+				() => mockRepositories as any,
+			);
+
 			const request = {
 				log_id: "log-error",
 				feedback: "positive",
@@ -345,17 +372,28 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 				new Error("Gateway service unavailable"),
 			);
 
-			await expect(() =>
-				handleChatCompletionFeedbackSubmission({
-					request,
-					env: mockEnv,
-					user: mockUser,
-					completion_id: "completion-error",
-				}),
-			).rejects.toThrow("Gateway service unavailable");
+			const result = await handleChatCompletionFeedbackSubmission({
+				request,
+				env: mockEnvWithRepos,
+				user: mockUser,
+				completion_id: "completion-error",
+			});
+
+			expect(result.success).toBe(true);
+			expect(mockRepositories.trainingExamples.findMany).toHaveBeenCalled();
 		});
 
-		it("should handle gateway initialization errors", async () => {
+		it("should succeed even when gateway initialization fails", async () => {
+			const mockRepositories = {
+				trainingExamples: {
+					findMany: vi.fn().mockResolvedValue([]),
+				},
+			};
+
+			vi.mocked(RepositoryManager).mockImplementation(
+				() => mockRepositories as any,
+			);
+
 			const request = {
 				log_id: "log-init-error",
 				feedback: "positive",
@@ -364,6 +402,7 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 			const envWithFailingGateway = {
 				AI_GATEWAY_TOKEN: "test-token",
 				ACCOUNT_ID: "test-account",
+				DB: {} as any,
 				AI: {
 					gateway: vi.fn(() => {
 						throw new Error("Gateway initialization failed");
@@ -371,17 +410,33 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 				},
 			} as any;
 
-			await expect(() =>
-				handleChatCompletionFeedbackSubmission({
-					request,
-					env: envWithFailingGateway,
-					user: mockUser,
-					completion_id: "completion-init-error",
-				}),
-			).rejects.toThrow("Gateway initialization failed");
+			const result = await handleChatCompletionFeedbackSubmission({
+				request,
+				env: envWithFailingGateway,
+				user: mockUser,
+				completion_id: "completion-init-error",
+			});
+
+			expect(result.success).toBe(true);
+			expect(mockRepositories.trainingExamples.findMany).toHaveBeenCalled();
 		});
 
-		it("should handle invalid log ID", async () => {
+		it("should succeed even with invalid log ID", async () => {
+			const mockRepositories = {
+				trainingExamples: {
+					findMany: vi.fn().mockResolvedValue([]),
+				},
+			};
+
+			const mockEnvWithRepos = {
+				...mockEnv,
+				DB: {} as any,
+			};
+
+			vi.mocked(RepositoryManager).mockImplementation(
+				() => mockRepositories as any,
+			);
+
 			const request = {
 				log_id: "invalid-log-id",
 				feedback: "positive",
@@ -389,14 +444,15 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 
 			mockGateway.patchLog.mockRejectedValue(new Error("Log not found"));
 
-			await expect(() =>
-				handleChatCompletionFeedbackSubmission({
-					request,
-					env: mockEnv,
-					user: mockUser,
-					completion_id: "completion-invalid-log",
-				}),
-			).rejects.toThrow("Log not found");
+			const result = await handleChatCompletionFeedbackSubmission({
+				request,
+				env: mockEnvWithRepos,
+				user: mockUser,
+				completion_id: "completion-invalid-log",
+			});
+
+			expect(result.success).toBe(true);
+			expect(mockRepositories.trainingExamples.findMany).toHaveBeenCalled();
 		});
 	});
 

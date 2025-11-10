@@ -106,9 +106,14 @@ export default function Privacy() {
 				<h3>3.5 Training and Processing</h3>
 				<ul>
 					<li>
-						Your conversation data may be used to train and improve AI models,
-						this may be through the providers that we use rather than Polychat
-						itself.
+						Your conversation data and app interactions may be used to train and
+						improve AI models. This includes both training models through our AI
+						providers and training our own fine-tuned models to improve{" "}
+						{APP_NAME}'s performance.
+					</li>
+					<li>
+						You can opt out of having your data used for training purposes at
+						any time through your Privacy & Data settings in your profile.
 					</li>
 					<li>
 						We will retain conversation data if you have asked us to store it as
@@ -183,12 +188,20 @@ export default function Privacy() {
 					<li>Object to or restrict certain processing of your data</li>
 					<li>Request portability of your personal data</li>
 					<li>Opt out of certain communications and marketing</li>
+					<li>
+						Opt out of training data collection through your profile settings
+					</li>
 					<li>Withdraw consent where processing is based on consent</li>
 				</ul>
 				<h3>6.1 Exercising Your Rights</h3>
 				<p>
 					To exercise your data protection rights:
 					<ul>
+						<li>
+							For training data collection: Visit your Profile Settings and
+							toggle "Allow Tracking and Training Data Collection" in the
+							Privacy & Data section
+						</li>
 						<li>
 							For access, correction, or deletion requests: Email us at{" "}
 							<a href={CONTACT_LINK}>{CONTACT_LINK}</a> with the subject line

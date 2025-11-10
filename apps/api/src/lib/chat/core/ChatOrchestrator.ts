@@ -5,6 +5,8 @@ import { createStreamWithPostProcessing } from "~/lib/chat/streaming";
 import { handleToolCalls } from "~/lib/chat/tools";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
+import { captureTrainingExample } from "~/services/training/captureTrainingExample";
+import { resolveServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -319,6 +321,29 @@ export class ChatOrchestrator {
 			tool_calls: response.tool_calls || null,
 			status: response.status || undefined,
 		});
+
+		const userMessage = messages.find((m) => m.role === "user");
+		if (userMessage && response.response && store) {
+			const context = resolveServiceContext({
+				env: chatOptions.env,
+				user: chatOptions.user || undefined,
+			});
+
+			captureTrainingExample({
+				context,
+				source: "chat",
+				userPrompt:
+					typeof userMessage.content === "string"
+						? userMessage.content
+						: JSON.stringify(userMessage.content),
+				assistantResponse: response.response,
+				systemPrompt,
+				modelUsed: primaryModel,
+				conversationId: chatOptions.completion_id,
+			}).catch((err) => {
+				logger.error("Failed to capture training example", err);
+			});
+		}
 
 		return {
 			response,

@@ -16,6 +16,7 @@ import { PlanRepository } from "./PlanRepository";
 import { SessionRepository } from "./SessionRepository";
 import { SharedAgentRepository } from "./SharedAgentRepository";
 import { TaskRepository } from "./TaskRepository";
+import { TrainingExampleRepository } from "./TrainingExampleRepository";
 import { UserRepository } from "./UserRepository";
 import { UserSettingsRepository } from "./UserSettingsRepository";
 import { WebAuthnRepository } from "./WebAuthnRepository";
@@ -35,6 +36,7 @@ export {
 	MessageRepository,
 	SessionRepository,
 	TaskRepository,
+	TrainingExampleRepository,
 	UserRepository,
 	UserSettingsRepository,
 	WebAuthnRepository,
@@ -61,6 +63,7 @@ export class RepositoryManager {
 	private dynamicAppResponseRepo: DynamicAppResponseRepository;
 	private taskRepo: TaskRepository;
 	private memorySynthesisRepo: MemorySynthesisRepository;
+	private trainingExampleRepo: TrainingExampleRepository;
 
 	constructor(env: IEnv) {
 		this.agentRepo = new AgentRepository(env);
@@ -81,6 +84,7 @@ export class RepositoryManager {
 		this.dynamicAppResponseRepo = new DynamicAppResponseRepository(env);
 		this.taskRepo = new TaskRepository(env);
 		this.memorySynthesisRepo = new MemorySynthesisRepository(env);
+		this.trainingExampleRepo = new TrainingExampleRepository(env);
 	}
 
 	public static getInstance(env: IEnv): RepositoryManager {
@@ -157,5 +161,9 @@ export class RepositoryManager {
 
 	public get memorySyntheses(): MemorySynthesisRepository {
 		return this.memorySynthesisRepo;
+	}
+
+	public get trainingExamples(): TrainingExampleRepository {
+		return this.trainingExampleRepo;
 	}
 }

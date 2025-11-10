@@ -34,7 +34,6 @@ jobCommand
 		const spinner = ora("Creating fine-tuning job...").start();
 
 		try {
-			// Validate required config
 			validateConfig([
 				"BEDROCK_ROLE_ARN",
 				"BEDROCK_OUTPUT_BUCKET",
@@ -68,7 +67,6 @@ jobCommand
 				},
 			});
 
-			// Save to tracker
 			const tracker = new JobTracker();
 			tracker.saveJob({
 				jobArn,
@@ -208,10 +206,8 @@ jobCommand
 				jobArn,
 				intervalMs,
 				(status: JobStatus) => {
-					// Update tracker
 					tracker.updateJobStatus(jobArn, status.status);
 
-					// Print progress
 					console.log(
 						chalk.gray(
 							`[${new Date().toLocaleTimeString()}] Status: ${getStatusColor(status.status)}`,

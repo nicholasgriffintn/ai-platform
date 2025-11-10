@@ -251,3 +251,135 @@ datasetCommand
 			process.exit(1);
 		}
 	});
+
+datasetCommand
+	.command("export")
+	.description("Export training examples from D1 database")
+	.option("-o, --output <path>", "Output directory", "./datasets/production")
+	.option("--db <name>", "D1 database name", "personal-assistant")
+	.option("--remote", "Export from remote database (default: local)")
+	.option("--source <source>", "Filter by source (chat or app)")
+	.option("--app-name <name>", "Filter by app name (e.g., strudel)")
+	.option("--min-rating <rating>", "Minimum feedback rating")
+	.option("--since <date>", "Export examples since date (ISO format)")
+	.option("--limit <number>", "Maximum number of examples to export")
+	.option("--project <name>", "Project name for tracking", "production")
+	.action(async (options) => {
+		const spinner = ora("Querying D1 database...").start();
+
+		try {
+			const { execSync } = await import("node:child_process");
+
+			let query = `SELECT * FROM training_examples WHERE exported = 0 AND include_in_training = 1`;
+			const conditions: string[] = [];
+
+			if (options.source) {
+				conditions.push(`source = '${options.source}'`);
+			}
+			if (options.appName) {
+				conditions.push(`app_name = '${options.appName}'`);
+			}
+			if (options.minRating) {
+				conditions.push(`feedback_rating >= ${options.minRating}`);
+			}
+			if (options.since) {
+				conditions.push(`created_at >= '${options.since}'`);
+			}
+
+			if (conditions.length > 0) {
+				query += ` AND ${conditions.join(" AND ")}`;
+			}
+
+			query += " ORDER BY created_at DESC";
+
+			if (options.limit) {
+				query += ` LIMIT ${options.limit}`;
+			}
+
+			const remoteFlag = options.remote ? "--remote" : "--local";
+			const cmd = `wrangler d1 execute ${options.db} ${remoteFlag} --command="${query}" --json`;
+
+			spinner.text = `Executing query on ${options.remote ? "remote" : "local"} database...`;
+
+			const result = execSync(cmd, { encoding: "utf-8" });
+			const data = JSON.parse(result);
+
+			const examples = data[0]?.results || [];
+
+			if (examples.length === 0) {
+				spinner.warn(chalk.yellow("No training examples found"));
+				return;
+			}
+
+			spinner.text = `Processing ${examples.length} examples...`;
+
+			const bedrockExamples = examples.map((ex: any) => ({
+				schemaVersion: "bedrock-conversation-2024",
+				system: ex.system_prompt
+					? [{ text: ex.system_prompt }]
+					: [{ text: "You are a helpful AI assistant." }],
+				messages: [
+					{ role: "user", content: [{ text: ex.user_prompt }] },
+					{ role: "assistant", content: [{ text: ex.assistant_response }] },
+				],
+			}));
+
+			spinner.text = "Analyzing dataset...";
+			const formatter = new DatasetFormatter();
+			const analysis = formatter.analyzeDataset(bedrockExamples);
+
+			spinner.text = "Splitting into train/validation sets...";
+			const { train, validation } = formatter.splitAndFormat(
+				bedrockExamples,
+				0.8,
+			);
+
+			spinner.text = "Saving to disk...";
+			const { trainPath, validationPath } = await formatter.saveDataset(
+				options.output,
+				train,
+				validation,
+			);
+
+			spinner.succeed(chalk.green("Export complete!"));
+
+			console.log(chalk.blue("\n📊 Dataset Summary:"));
+			console.log(chalk.gray(`  Total examples: ${analysis.totalExamples}`));
+			console.log(chalk.gray(`  Training: ${train.length} examples`));
+			console.log(chalk.gray(`  Validation: ${validation.length} examples`));
+			console.log(
+				chalk.gray(`  Avg tokens/example: ${analysis.avgTokensPerExample}`),
+			);
+
+			if (options.source) {
+				console.log(chalk.gray(`  Source: ${options.source}`));
+			}
+			if (options.appName) {
+				console.log(chalk.gray(`  App: ${options.appName}`));
+			}
+
+			console.log(chalk.blue("\n📁 Files:"));
+			console.log(chalk.gray(`  Training: ${trainPath}`));
+			console.log(chalk.gray(`  Validation: ${validationPath}`));
+
+			const tracker = new JobTracker();
+			tracker.saveDataset({
+				project: options.project,
+				trainPath,
+				validationPath,
+			});
+			tracker.close();
+
+			const exampleIds = examples.map((ex: any) => ex.id).join("','");
+			if (exampleIds) {
+				spinner.start("Marking examples as exported...");
+				const updateCmd = `wrangler d1 execute ${options.db} ${remoteFlag} --command="UPDATE training_examples SET exported = 1, exported_at = datetime('now') WHERE id IN ('${exampleIds}')"`;
+				execSync(updateCmd, { encoding: "utf-8" });
+				spinner.succeed(chalk.green("Examples marked as exported"));
+			}
+		} catch (error) {
+			spinner.fail(chalk.red("Export failed"));
+			logger.error("Export error", error);
+			process.exit(1);
+		}
+	});

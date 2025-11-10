@@ -16,6 +16,8 @@ import {
 } from "~/lib/providers/models";
 import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults } from "~/utils/parameters";
+import { captureTrainingExample } from "~/services/training/captureTrainingExample";
+import { generateId } from "~/utils/id";
 
 const logger = getLogger({ prefix: "services/strudel/generate" });
 
@@ -175,9 +177,30 @@ export async function generateStrudelCode({
 			codeLength: generatedCode.length,
 		});
 
+		const generationId = generateId();
+
+		captureTrainingExample({
+			context: serviceContext,
+			source: "app",
+			appName: "strudel",
+			userPrompt: request.prompt,
+			assistantResponse: generatedCode,
+			systemPrompt,
+			modelUsed: model,
+			conversationId: generationId,
+			metadata: {
+				style: request.style,
+				complexity: request.complexity,
+				tempo: request.tempo,
+			},
+		}).catch((err) => {
+			logger.error("Failed to capture training example", err);
+		});
+
 		return {
 			code: generatedCode,
 			explanation: `Generated a ${request.style || "musical"} pattern${request.tempo ? ` at ${request.tempo} BPM` : ""}`,
+			generationId,
 		};
 	} catch (error) {
 		logger.error("Error generating Strudel code:", {

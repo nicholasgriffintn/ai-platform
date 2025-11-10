@@ -626,6 +626,7 @@ export const strudelGenerateResponseSchema = z.object({
 		.string()
 		.optional()
 		.describe("Explanation of the generated pattern"),
+	generationId: z.string().describe("Unique ID for feedback tracking"),
 });
 
 export const strudelListPatternsResponseSchema = z.object({
