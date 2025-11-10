@@ -320,7 +320,10 @@ app.route(ROUTES.MEMORIES, memories);
 app.notFound((c) => c.json({ status: "not found" }, 404));
 
 app.onError((err, _c) => {
-	const error = AssistantError.fromError(err, ErrorType.UNKNOWN_ERROR);
+	const error =
+		err instanceof AssistantError
+			? err
+			: AssistantError.fromError(err, ErrorType.UNKNOWN_ERROR);
 	return handleAIServiceError(error);
 });
 
