@@ -1,6 +1,11 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getLogger } from "~/utils/logger";
 import type { CreateTrainingExampleData } from "~/repositories/TrainingExampleRepository";
+import {
+	createEnhancedTrainingMetadata,
+	type UserSatisfactionSignals,
+	type EnhancedMetadata,
+} from "./metadataEnhancer";
 
 const logger = getLogger({ prefix: "services/training/capture" });
 
@@ -14,6 +19,10 @@ interface CaptureTrainingExampleOptions {
 	modelUsed?: string;
 	conversationId?: string;
 	metadata?: Record<string, any>;
+	startTime?: number;
+	previousMessages?: Array<{ role: "user" | "assistant"; content: string }>;
+	userBehavior?: UserSatisfactionSignals;
+	skipEnhancement?: boolean;
 }
 
 export async function captureTrainingExample(
@@ -29,6 +38,10 @@ export async function captureTrainingExample(
 		modelUsed,
 		conversationId,
 		metadata,
+		startTime,
+		previousMessages,
+		userBehavior,
+		skipEnhancement = false,
 	} = options;
 
 	try {
@@ -54,6 +67,30 @@ export async function captureTrainingExample(
 			return;
 		}
 
+		let enhancedMetadata: EnhancedMetadata = {};
+		if (!skipEnhancement) {
+			try {
+				enhancedMetadata = await createEnhancedTrainingMetadata(
+					context,
+					userPrompt,
+					assistantResponse,
+					{
+						conversationId,
+						startTime,
+						previousMessages,
+						userBehavior,
+					},
+				);
+			} catch (error) {
+				logger.warn(
+					"Failed to generate enhanced metadata, proceeding without it",
+					{
+						error: error instanceof Error ? error.message : String(error),
+					},
+				);
+			}
+		}
+
 		const trainingData: CreateTrainingExampleData = {
 			userId: userId || undefined,
 			conversationId,
@@ -65,6 +102,7 @@ export async function captureTrainingExample(
 			modelUsed,
 			metadata,
 			includeInTraining: true,
+			...enhancedMetadata,
 		};
 
 		await context.repositories.trainingExamples.create(trainingData);

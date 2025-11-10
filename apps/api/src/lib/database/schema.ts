@@ -703,6 +703,7 @@ export const tasks = sqliteTable(
 				"research_polling",
 				"replicate_polling",
 				"async_message_polling",
+				"training_quality_scoring",
 			],
 		}).notNull(),
 		status: text({
@@ -832,6 +833,21 @@ export const trainingExamples = sqliteTable(
 		exported_at: text(),
 		quality_score: integer(),
 		include_in_training: integer({ mode: "boolean" }).default(true),
+		task_category: text(),
+		difficulty_level: text({
+			enum: ["easy", "medium", "hard", "expert"],
+		}),
+		language_code: text().default("en"),
+		user_prompt_tokens: integer(),
+		assistant_response_tokens: integer(),
+		response_time_ms: integer(),
+		conversation_turn: integer().default(1),
+		conversation_context: text({
+			mode: "json",
+		}),
+		user_satisfaction_signals: text({
+			mode: "json",
+		}),
 		created_at: text()
 			.default(sql`(CURRENT_TIMESTAMP)`)
 			.notNull(),
@@ -855,6 +871,18 @@ export const trainingExamples = sqliteTable(
 		),
 		qualityScoreIdx: index("training_examples_quality_score_idx").on(
 			table.quality_score,
+		),
+		taskCategoryIdx: index("training_examples_task_category_idx").on(
+			table.task_category,
+		),
+		difficultyLevelIdx: index("training_examples_difficulty_level_idx").on(
+			table.difficulty_level,
+		),
+		languageCodeIdx: index("training_examples_language_code_idx").on(
+			table.language_code,
+		),
+		conversationTurnIdx: index("training_examples_conversation_turn_idx").on(
+			table.conversation_turn,
 		),
 	}),
 );

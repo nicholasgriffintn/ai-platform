@@ -16,6 +16,29 @@ export interface CreateTrainingExampleData {
 	metadata?: Record<string, any>;
 	qualityScore?: number;
 	includeInTraining?: boolean;
+	taskCategory?: string;
+	difficultyLevel?: "easy" | "medium" | "hard" | "expert";
+	languageCode?: string;
+	userPromptTokens?: number;
+	assistantResponseTokens?: number;
+	responseTimeMs?: number;
+	conversationTurn?: number;
+	conversationContext?: {
+		previousMessages?: Array<{
+			role: "user" | "assistant";
+			content: string;
+			timestamp?: string;
+		}>;
+		totalTurns?: number;
+		conversationStartTime?: string;
+	};
+	userSatisfactionSignals?: {
+		timeOnPage?: number;
+		scrollBehavior?: string;
+		copyToClipboard?: boolean;
+		followUpQuestions?: number;
+		sessionDuration?: number;
+	};
 }
 
 export interface TrainingExampleFilters {
@@ -30,6 +53,15 @@ export interface TrainingExampleFilters {
 	since?: Date;
 	limit?: number;
 	offset?: number;
+	taskCategory?: string;
+	difficultyLevel?: "easy" | "medium" | "hard" | "expert";
+	languageCode?: string;
+	minConversationTurn?: number;
+	maxConversationTurn?: number;
+	minResponseTime?: number;
+	maxResponseTime?: number;
+	minTokens?: number;
+	maxTokens?: number;
 }
 
 export class TrainingExampleRepository extends BaseRepository {
@@ -45,8 +77,11 @@ export class TrainingExampleRepository extends BaseRepository {
         id, user_id, conversation_id, source, app_name,
         user_prompt, assistant_response, system_prompt, model_used,
         feedback_rating, feedback_comment, metadata, quality_score,
-        include_in_training, exported, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now'), datetime('now'))
+        include_in_training, exported, task_category, difficulty_level,
+        language_code, user_prompt_tokens, assistant_response_tokens,
+        response_time_ms, conversation_turn, conversation_context,
+        user_satisfaction_signals, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       RETURNING *`,
 			[
 				id,
@@ -67,6 +102,19 @@ export class TrainingExampleRepository extends BaseRepository {
 						? 1
 						: 0
 					: 1,
+				data.taskCategory || null,
+				data.difficultyLevel || null,
+				data.languageCode || "en",
+				data.userPromptTokens || null,
+				data.assistantResponseTokens || null,
+				data.responseTimeMs || null,
+				data.conversationTurn || 1,
+				data.conversationContext
+					? JSON.stringify(data.conversationContext)
+					: null,
+				data.userSatisfactionSignals
+					? JSON.stringify(data.userSatisfactionSignals)
+					: null,
 			],
 			true,
 		);

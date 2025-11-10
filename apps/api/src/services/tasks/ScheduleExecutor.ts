@@ -1,7 +1,10 @@
 import { IEnv } from "~/types";
 import { SCHEDULES } from "~/constants/schedules";
 import { getLogger } from "~/utils/logger";
-import { scheduleDailySynthesis } from "./scheduledTasks";
+import {
+	scheduleDailySynthesis,
+	scheduleTrainingQualityScoring,
+} from "./scheduledTasks";
 
 const logger = getLogger({ prefix: "services/tasks/schedule-executor" });
 
@@ -24,6 +27,20 @@ export class ScheduleExecutor {
 				logger.info(`Starting daily memory synthesis task`);
 				await scheduleDailySynthesis(env);
 				logger.info(`Daily memory synthesis task completed`);
+				break;
+			case SCHEDULES.TRAINING_QUALITY_SCORING:
+				const isTrainingQualityScoringEnabled =
+					env.TRAINING_QUALITY_SCORING_ENABLED === "true";
+				if (!isTrainingQualityScoringEnabled) {
+					logger.info(
+						`Training quality scoring is disabled (TRAINING_QUALITY_SCORING_ENABLED=${env.TRAINING_QUALITY_SCORING_ENABLED})`,
+					);
+					return;
+				}
+
+				logger.info(`Starting training quality scoring task`);
+				await scheduleTrainingQualityScoring(env);
+				logger.info(`Training quality scoring task completed`);
 				break;
 			default:
 				logger.warn(`No handler for scheduled task: ${event.cron}`);

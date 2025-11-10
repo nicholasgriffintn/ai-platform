@@ -99,6 +99,8 @@ export class ChatOrchestrator {
 			max_steps,
 		} = chatOptions;
 
+		const startTime = Date.now();
+
 		const {
 			modelConfigs,
 			primaryModel,
@@ -322,27 +324,31 @@ export class ChatOrchestrator {
 			status: response.status || undefined,
 		});
 
-		const userMessage = messages.find((m) => m.role === "user");
-		if (userMessage && response.response && store) {
-			const context = resolveServiceContext({
-				env: chatOptions.env,
-				user: chatOptions.user || undefined,
-			});
+		if (userSettings?.tracking_enabled) {
+			const userMessage = messages.find((m) => m.role === "user");
+			if (userMessage && response.response && store) {
+				const context = resolveServiceContext({
+					env: chatOptions.env,
+					user: chatOptions.user || undefined,
+				});
 
-			captureTrainingExample({
-				context,
-				source: "chat",
-				userPrompt:
-					typeof userMessage.content === "string"
-						? userMessage.content
-						: JSON.stringify(userMessage.content),
-				assistantResponse: response.response,
-				systemPrompt,
-				modelUsed: primaryModel,
-				conversationId: chatOptions.completion_id,
-			}).catch((err) => {
-				logger.error("Failed to capture training example", err);
-			});
+				captureTrainingExample({
+					context,
+					source: "chat",
+					userPrompt:
+						typeof userMessage.content === "string"
+							? userMessage.content
+							: JSON.stringify(userMessage.content),
+					assistantResponse: response.response,
+					systemPrompt,
+					modelUsed: primaryModel,
+					conversationId: chatOptions.completion_id,
+					startTime,
+					skipEnhancement: true,
+				}).catch((err) => {
+					logger.error("Failed to capture training example", err);
+				});
+			}
 		}
 
 		return {
