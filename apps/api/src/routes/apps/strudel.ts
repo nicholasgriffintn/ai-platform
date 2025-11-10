@@ -175,10 +175,17 @@ app.post(
 			}
 			routeLogger.error("Error generating Strudel code:", {
 				error_message: error instanceof Error ? error.message : "Unknown error",
+				error_stack: error instanceof Error ? error.stack : undefined,
+				error_cause: error instanceof Error ? error.cause : undefined,
 			});
 			throw new AssistantError(
-				"Failed to generate Strudel code",
+				`Failed to generate Strudel code: ${error instanceof Error ? error.message : "Unknown error"}`,
 				ErrorType.UNKNOWN_ERROR,
+				500,
+				{
+					originalError: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
 		}
 	},

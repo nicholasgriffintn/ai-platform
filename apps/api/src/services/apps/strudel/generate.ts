@@ -182,6 +182,8 @@ export async function generateStrudelCode({
 	} catch (error) {
 		logger.error("Error generating Strudel code:", {
 			error_message: error instanceof Error ? error.message : "Unknown error",
+			error_stack: error instanceof Error ? error.stack : undefined,
+			error_cause: error instanceof Error ? error.cause : undefined,
 			prompt: request.prompt,
 		});
 
@@ -190,8 +192,13 @@ export async function generateStrudelCode({
 		}
 
 		throw new AssistantError(
-			"Failed to generate Strudel code",
+			`Failed to generate Strudel code: ${error instanceof Error ? error.message : "Unknown error"}`,
 			ErrorType.UNKNOWN_ERROR,
+			500,
+			{
+				originalError: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			},
 		);
 	}
 }
