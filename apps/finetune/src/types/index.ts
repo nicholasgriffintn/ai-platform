@@ -16,6 +16,10 @@ export interface GenerateOptions {
 	model?: string;
 }
 
+export interface DistillationConfig {
+	teacherModelIdentifier: string;
+}
+
 export interface BedrockJobConfig {
 	jobName: string;
 	customModelName: string;
@@ -26,6 +30,7 @@ export interface BedrockJobConfig {
 	outputDataS3Uri: string;
 	hyperParameters?: Record<string, string>;
 	customizationType?: "FINE_TUNING" | "CONTINUED_PRE_TRAINING" | "DISTILLATION";
+	distillationConfig?: DistillationConfig;
 }
 
 export interface JobStatus {

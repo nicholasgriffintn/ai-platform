@@ -4,7 +4,9 @@ import {
 	GetModelCustomizationJobCommand,
 	ListModelCustomizationJobsCommand,
 	StopModelCustomizationJobCommand,
+	ListFoundationModelsCommand,
 	type ModelCustomizationJobSummary,
+	type FoundationModelSummary,
 } from "@aws-sdk/client-bedrock";
 
 import type { BedrockJobConfig, JobStatus } from "../types/index.js";
@@ -42,15 +44,29 @@ export class BedrockService {
 			trainingDataConfig: {
 				s3Uri: jobConfig.trainingDataS3Uri,
 			},
-			validationDataConfig: jobConfig.validationDataS3Uri
-				? {
-						validators: [{ s3Uri: jobConfig.validationDataS3Uri }],
-					}
-				: undefined,
+			validationDataConfig:
+				jobConfig.customizationType !== "DISTILLATION" &&
+				jobConfig.validationDataS3Uri
+					? {
+							validators: [{ s3Uri: jobConfig.validationDataS3Uri }],
+						}
+					: undefined,
 			outputDataConfig: {
 				s3Uri: jobConfig.outputDataS3Uri,
 			},
 			hyperParameters: jobConfig.hyperParameters,
+			customizationConfig:
+				jobConfig.customizationType === "DISTILLATION" &&
+				jobConfig.distillationConfig
+					? {
+							distillationConfig: {
+								teacherModelConfig: {
+									teacherModelIdentifier:
+										jobConfig.distillationConfig.teacherModelIdentifier,
+								},
+							},
+						}
+					: undefined,
 			customModelKmsKeyId: config.BEDROCK_KMS_KEY_ARN,
 			vpcConfig:
 				config.BEDROCK_VPC_SECURITY_GROUP_IDS && config.BEDROCK_VPC_SUBNET_IDS
@@ -177,5 +193,73 @@ export class BedrockService {
 
 			await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
 		}
+	}
+
+	async listFoundationModels(): Promise<FoundationModelSummary[]> {
+		logger.info("Listing available foundation models");
+
+		try {
+			const command = new ListFoundationModelsCommand({
+				byCustomizationType: "FINE_TUNING",
+			});
+
+			const response = await this.client.send(command);
+			const models = response.modelSummaries || [];
+
+			logger.info(`Found ${models.length} models available for fine-tuning`);
+			return models;
+		} catch (error) {
+			logger.error("Failed to list foundation models", error);
+			throw error;
+		}
+	}
+
+	async listDistillationModels(): Promise<{
+		teachers: FoundationModelSummary[];
+		students: FoundationModelSummary[];
+	}> {
+		logger.info("Listing available models for distillation");
+
+		try {
+			const allModelsCommand = new ListFoundationModelsCommand({
+				byOutputModality: "TEXT",
+			});
+			const allModelsResponse = await this.client.send(allModelsCommand);
+			const allModels = allModelsResponse.modelSummaries || [];
+
+			const studentCommand = new ListFoundationModelsCommand({
+				byCustomizationType: "DISTILLATION",
+			});
+			const studentResponse = await this.client.send(studentCommand);
+			const students = studentResponse.modelSummaries || [];
+
+			const studentIds = new Set(students.map((m) => m.modelId));
+			const teachers = allModels.filter((m) => !studentIds.has(m.modelId));
+
+			logger.info(
+				`Found ${teachers.length} teacher models and ${students.length} student models`,
+			);
+			return { teachers, students };
+		} catch (error) {
+			logger.error("Failed to list distillation models", error);
+			throw error;
+		}
+	}
+
+	async createDistillationJob(
+		jobConfig: Omit<BedrockJobConfig, "customizationType"> & {
+			distillationConfig: { teacherModelIdentifier: string };
+		},
+	): Promise<{ jobArn: string }> {
+		logger.info(`Creating distillation job: ${jobConfig.jobName}`);
+		logger.info(
+			`Teacher model: ${jobConfig.distillationConfig.teacherModelIdentifier}`,
+		);
+		logger.info(`Student model: ${jobConfig.baseModelIdentifier}`);
+
+		return this.createFineTuningJob({
+			...jobConfig,
+			customizationType: "DISTILLATION",
+		});
 	}
 }

@@ -168,6 +168,13 @@ and permissions (be sure to replace the bucket names):
 				"arn:aws:s3:::your-training-bucket/*",
 				"arn:aws:s3:::your-training-bucket"
 			]
+		},
+		{
+			"Effect": "Allow",
+			"Action": ["bedrock:InvokeModel"],
+			"Resource": [
+				"arn:aws:bedrock:us-east-1:your-account-id:inference-profile/us.amazon.nova-premier-v1:0"
+			]
 		}
 	]
 }
@@ -334,18 +341,20 @@ S3 URIs:
 
 #### Create Fine-Tuning Job
 
+Traditional fine-tuning adjusts all model weights using your training data:
+
 ```bash
 pnpm tsx src/cli.ts job create \
   --name strudel-nova-pro-v1 \
-  --base-model amazon.nova-pro-v1:0 \
+  --base-model amazon.nova-pro-v1:0:300k \
   --train-uri s3://my-bucket/strudel/.../train.jsonl \
   --val-uri s3://my-bucket/strudel/.../validation.jsonl \
   --epochs 3 \
   --learning-rate 0.00001 \
-  --batch-size 8
+  --batch-size 1
 ```
 
-**Options:**
+**Fine-Tuning Options:**
 
 - `--name`: Job name (must be unique)
 - `--base-model`: Foundation model ID
@@ -355,6 +364,30 @@ pnpm tsx src/cli.ts job create \
 - `--epochs`: Number of training epochs (1-5, default: 3)
 - `--learning-rate`: Learning rate (default: 0.00001)
 - `--batch-size`: Batch size (default: 8)
+- `--project`: Project name for organization (default: strudel)
+
+#### Create Distillation Job
+
+Distillation transfers knowledge from a larger teacher model to a smaller student model, creating a faster and more cost-effective model:
+
+```bash
+pnpm tsx src/cli.ts job distill \
+  --name strudel-nova-pro-distilled \
+  --teacher us.amazon.nova-premier-v1:0 \
+  --student  amazon.nova-pro-v1:0:300k \
+  --train-uri s3://my-bucket/strudel/.../train.jsonl \
+  --val-uri s3://my-bucket/strudel/.../validation.jsonl \
+  --project strudel
+```
+
+**Distillation Options:**
+
+- `--name`: Job name (must be unique)
+- `--teacher`: Teacher model identifier (larger, more capable model)
+- `--student`: Student model identifier (smaller, faster model)
+- `--train-uri`: S3 URI for training prompts (can be prompt-only or full conversations)
+- `--val-uri`: S3 URI for validation data (optional)
+- `--custom-name`: Custom model name (defaults to job name)
 - `--project`: Project name for organization (default: strudel)
 
 **What happens during training:**
@@ -437,6 +470,22 @@ pnpm tsx src/cli.ts job list --local
 pnpm tsx src/cli.ts job stop <job-arn>
 ```
 
+#### List Models
+
+Get a list of available Bedrock models for fine-tuning:
+
+```bash
+# List all Bedrock models
+pnpm tsx src/cli.ts model list
+```
+
+Or only those that support distillation:
+
+```bash
+# List models available for distillation
+pnpm tsx src/cli.ts model list --distillation
+```
+
 ### Model Commands
 
 #### Export Model Config
@@ -477,8 +526,6 @@ After training has completed you can deploy the fine-tuned model for inference i
    - Pay-per-token pricing
    - No upfront commitment
    - Slightly higher latency
-
-\*\*Model ARN forma
 
 ## Cost Estimation
 
@@ -533,9 +580,35 @@ Calling your API 300 times will incur costs from the underlying model:
 - Output: ~500 tokens/request × 300 = 150K tokens × $0.015 = $2.25
 - **Total: ~$2.34**
 
-**Total project cost:**
+### Distillation Costs
+
+**Distillation Training:**
+
+Model distillation costs include both the student model training and teacher model inference:
+
+- Student training (Nova Lite): ~$0.002 per 1K tokens
+- Teacher inference (Claude 3.5 Sonnet): ~$0.003 input + $0.015 output per 1K tokens
+- For 300 prompts with teacher generation: ~$2.25 (teacher) + ~$1.00 (student training)
+- **Total distillation cost: ~$3.25**
+
+**Cost Comparison:**
+
+| Approach                 | Training Cost | Inference Cost (1M tokens) | Total    |
+| ------------------------ | ------------- | -------------------------- | -------- |
+| **Fine-tuned Nova Pro**  | ~$3.60        | ~$800                      | ~$803.60 |
+| **Distilled Nova Lite**  | ~$3.25        | ~$200                      | ~$203.25 |
+| **Distilled Nova Micro** | ~$2.50        | ~$100                      | ~$102.50 |
+
+**Total project cost (Fine-Tuning):**
 
 - Dataset generation: ~$2.34
 - Fine-tuning: ~$3.60
 - Testing (1 hour provisioned): ~$0.10
 - **Grand total: ~$6.00**
+
+**Total project cost (Distillation):**
+
+- Dataset generation: ~$2.34
+- Distillation: ~$3.25
+- Testing (1 hour provisioned): ~$0.10
+- **Grand total: ~$5.70**

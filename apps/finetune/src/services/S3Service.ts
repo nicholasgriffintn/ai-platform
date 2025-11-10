@@ -2,6 +2,7 @@ import {
 	S3Client,
 	PutObjectCommand,
 	HeadObjectCommand,
+	GetBucketLocationCommand,
 } from "@aws-sdk/client-s3";
 import { readFileSync } from "node:fs";
 
@@ -12,6 +13,7 @@ const logger = createLogger("S3Service");
 
 export class S3Service {
 	private client: S3Client;
+	private bucketRegions: Map<string, string> = new Map();
 
 	constructor() {
 		this.client = new S3Client({
@@ -25,6 +27,49 @@ export class S3Service {
 		logger.info(`Initialized S3 client in region: ${config.AWS_REGION}`);
 	}
 
+	private async getBucketRegion(bucket: string): Promise<string> {
+		if (this.bucketRegions.has(bucket)) {
+			return this.bucketRegions.get(bucket)!;
+		}
+
+		try {
+			const command = new GetBucketLocationCommand({ Bucket: bucket });
+			const response = await this.client.send(command);
+
+			const region = response.LocationConstraint || "us-east-1";
+			this.bucketRegions.set(bucket, region);
+
+			logger.info(`Detected bucket ${bucket} is in region: ${region}`);
+			return region;
+		} catch (error) {
+			logger.warn(
+				`Could not detect region for bucket ${bucket}, using configured region: ${config.AWS_REGION}`,
+			);
+			return config.AWS_REGION;
+		}
+	}
+
+	private async getClientForBucket(bucket: string): Promise<S3Client> {
+		const bucketRegion = await this.getBucketRegion(bucket);
+
+		if (bucketRegion === config.AWS_REGION) {
+			return this.client;
+		}
+
+		const regionClient = new S3Client({
+			region: bucketRegion,
+			credentials: {
+				accessKeyId: config.AWS_ACCESS_KEY_ID!,
+				secretAccessKey: config.AWS_SECRET_ACCESS_KEY!,
+			},
+		});
+
+		logger.info(
+			`Created S3 client for bucket ${bucket} in region: ${bucketRegion}`,
+		);
+		return regionClient;
+	}
+
 	async uploadFile(
 		filePath: string,
 		bucket: string,
@@ -34,6 +79,7 @@ export class S3Service {
 
 		try {
 			const fileContent = readFileSync(filePath);
+			const client = await this.getClientForBucket(bucket);
 
 			const command = new PutObjectCommand({
 				Bucket: bucket,
@@ -42,7 +88,7 @@ export class S3Service {
 				ContentType: "application/jsonl",
 			});
 
-			await this.client.send(command);
+			await client.send(command);
 
 			const s3Uri = `s3://${bucket}/${key}`;
 			logger.success(`Uploaded to ${s3Uri}`);
@@ -56,12 +102,13 @@ export class S3Service {
 
 	async fileExists(bucket: string, key: string): Promise<boolean> {
 		try {
+			const client = await this.getClientForBucket(bucket);
 			const command = new HeadObjectCommand({
 				Bucket: bucket,
 				Key: key,
 			});
 
-			await this.client.send(command);
+			await client.send(command);
 			return true;
 		} catch (error: any) {
 			if (

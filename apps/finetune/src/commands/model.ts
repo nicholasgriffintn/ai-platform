@@ -1,6 +1,8 @@
 import { Command } from "commander";
 import chalk from "chalk";
 
+import { BedrockService } from "../services/BedrockService.js";
+import { validateConfig } from "../utils/config.js";
 import { createLogger } from "../utils/logger.js";
 
 const logger = createLogger("model");
@@ -8,6 +10,143 @@ const logger = createLogger("model");
 export const modelCommand = new Command("model").description(
 	"Manage and test fine-tuned models",
 );
+
+modelCommand
+	.command("list")
+	.description("List available foundation models for fine-tuning")
+	.option("--distillation", "List models available for distillation")
+	.action(async (options) => {
+		const isDistillation = options.distillation;
+		console.log(
+			chalk.blue(
+				isDistillation
+					? "📋 Available Models for Distillation\n"
+					: "📋 Available Foundation Models for Fine-Tuning\n",
+			),
+		);
+
+		try {
+			validateConfig(["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]);
+
+			const bedrockService = new BedrockService();
+
+			if (isDistillation) {
+				const { teachers, students } =
+					await bedrockService.listDistillationModels();
+
+				if (teachers.length === 0 && students.length === 0) {
+					console.log(chalk.yellow("No models available for distillation"));
+					return;
+				}
+
+				console.log(
+					chalk.blue(
+						`Found ${teachers.length} teacher models and ${students.length} student models:\n`,
+					),
+				);
+
+				if (teachers.length > 0) {
+					console.log(
+						chalk.bold.green("🎓 TEACHER MODELS (use with --teacher)"),
+					);
+					console.log(
+						chalk.gray(
+							"   These are larger models that can teach smaller models:\n",
+						),
+					);
+
+					teachers.forEach((model) => {
+						console.log(chalk.bold(model.modelName || "Unknown"));
+						console.log(chalk.gray(`  Model ID: ${model.modelId}`));
+						console.log(chalk.gray(`  Provider: ${model.providerName}`));
+						if (model.inputModalities?.length) {
+							console.log(
+								chalk.gray(`  Input: ${model.inputModalities.join(", ")}`),
+							);
+						}
+						console.log("");
+					});
+				}
+
+				if (students.length > 0) {
+					console.log(
+						chalk.bold.cyan("\n🎯 STUDENT MODELS (use with --student)"),
+					);
+					console.log(
+						chalk.gray(
+							"   These are smaller models that can learn from teachers:\n",
+						),
+					);
+
+					students.forEach((model) => {
+						console.log(chalk.bold(model.modelName || "Unknown"));
+						console.log(chalk.gray(`  Model ID: ${model.modelId}`));
+						console.log(chalk.gray(`  Provider: ${model.providerName}`));
+						if (model.customizationsSupported?.length) {
+							console.log(
+								chalk.gray(
+									`  Supported: ${model.customizationsSupported.join(", ")}`,
+								),
+							);
+						}
+						console.log("");
+					});
+				}
+
+				console.log(
+					chalk.green(
+						"💡 Create a distillation job: finetune job distill --teacher <teacher-id> --student <student-id>",
+					),
+				);
+			} else {
+				const models = await bedrockService.listFoundationModels();
+
+				if (models.length === 0) {
+					console.log(chalk.yellow("No models available for fine-tuning"));
+					return;
+				}
+
+				console.log(
+					chalk.blue(
+						`Found ${models.length} models available for fine-tuning:\n`,
+					),
+				);
+
+				models.forEach((model) => {
+					console.log(chalk.bold(model.modelName || "Unknown"));
+					console.log(chalk.gray(`  Model ID: ${model.modelId}`));
+					console.log(chalk.gray(`  Provider: ${model.providerName}`));
+					if (model.customizationsSupported?.length) {
+						console.log(
+							chalk.gray(
+								`  Supported: ${model.customizationsSupported.join(", ")}`,
+							),
+						);
+					}
+					if (model.inputModalities?.length) {
+						console.log(
+							chalk.gray(`  Input: ${model.inputModalities.join(", ")}`),
+						);
+					}
+					if (model.outputModalities?.length) {
+						console.log(
+							chalk.gray(`  Output: ${model.outputModalities.join(", ")}`),
+						);
+					}
+					console.log("");
+				});
+
+				console.log(
+					chalk.green(
+						"💡 Use the Model ID in the --base-model parameter when creating jobs",
+					),
+				);
+			}
+		} catch (error) {
+			logger.error("Failed to list foundation models", error);
+			process.exit(1);
+		}
+	});
 
 modelCommand
 	.command("test <modelArn>")

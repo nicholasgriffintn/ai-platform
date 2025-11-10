@@ -108,9 +108,117 @@ jobCommand
 		}
 	});
 
-/**
- * Get job status
- */
+jobCommand
+	.command("distill")
+	.description(
+		"Create a distillation job to transfer knowledge from teacher to student model",
+	)
+	.requiredOption("--name <name>", "Job name")
+	.requiredOption(
+		"--teacher <model>",
+		"Teacher model identifier (e.g., anthropic.claude-3-5-sonnet-20241022-v2:0)",
+	)
+	.requiredOption(
+		"--student <model>",
+		"Student model identifier (e.g., amazon.nova-lite-v1:0)",
+	)
+	.requiredOption(
+		"--train-uri <uri>",
+		"S3 URI for training prompts (can be prompt-only)",
+	)
+	.option("--val-uri <uri>", "S3 URI for validation data")
+	.option("--custom-name <name>", "Custom model name (defaults to job name)")
+	.option("--project <name>", "Project name for organization", "strudel")
+	.action(async (options) => {
+		const spinner = ora("Creating distillation job...").start();
+
+		try {
+			validateConfig([
+				"BEDROCK_ROLE_ARN",
+				"BEDROCK_OUTPUT_BUCKET",
+				"AWS_ACCESS_KEY_ID",
+				"AWS_SECRET_ACCESS_KEY",
+			]);
+
+			const bedrockService = new BedrockService();
+			const s3Service = new S3Service();
+
+			const customModelName = options.customName || options.name;
+			const outputS3Uri = s3Service.getOutputS3Uri(
+				options.project,
+				options.name,
+			);
+
+			spinner.text = "Submitting distillation job to Bedrock...";
+
+			const { jobArn } = await bedrockService.createDistillationJob({
+				jobName: options.name,
+				customModelName,
+				baseModelIdentifier: options.student,
+				trainingDataS3Uri: options.trainUri,
+				validationDataS3Uri: options.valUri,
+				roleArn: config.BEDROCK_ROLE_ARN!,
+				outputDataS3Uri: outputS3Uri,
+				distillationConfig: {
+					teacherModelIdentifier: options.teacher,
+				},
+			});
+
+			const tracker = new JobTracker();
+			tracker.saveJob({
+				jobArn,
+				jobName: options.name,
+				baseModel: options.student,
+				customModelName,
+				status: "InProgress",
+				metadata: JSON.stringify({
+					type: "distillation",
+					teacherModel: options.teacher,
+					studentModel: options.student,
+					project: options.project,
+					trainUri: options.trainUri,
+					valUri: options.valUri,
+				}),
+			});
+			tracker.close();
+
+			spinner.succeed(chalk.green("Distillation job created!"));
+
+			console.log(chalk.blue("\n📋 Job Details:"));
+			console.log(chalk.gray(`  Job ARN: ${jobArn}`));
+			console.log(chalk.gray(`  Job Name: ${options.name}`));
+			console.log(chalk.gray(`  Teacher Model: ${options.teacher}`));
+			console.log(chalk.gray(`  Student Model: ${options.student}`));
+			console.log(chalk.gray(`  Custom Model: ${customModelName}`));
+			console.log(chalk.blue("\n💡 About Distillation:"));
+			console.log(
+				chalk.gray(
+					"  • Transfers knowledge from larger teacher to smaller student",
+				),
+			);
+			console.log(
+				chalk.gray(
+					"  • Student model will be up to 500% faster and 75% cheaper",
+				),
+			);
+			console.log(
+				chalk.gray("  • Expected accuracy loss: <2% for most use cases"),
+			);
+			console.log(
+				chalk.gray(
+					"  • Can use prompt-only data (teacher generates responses)",
+				),
+			);
+			console.log(chalk.blue("\n📊 Next Steps:"));
+			console.log(chalk.gray(`  Monitor: finetune job watch ${jobArn}`));
+			console.log(chalk.gray(`  Status: finetune job status ${jobArn}`));
+		} catch (error) {
+			spinner.fail(chalk.red("Failed to create distillation job"));
+			logger.error("Distillation job creation failed", error);
+			process.exit(1);
+		}
+	});
+
 jobCommand
 	.command("status <jobArn>")
 	.description("Get the status of a fine-tuning job")
@@ -185,9 +293,6 @@ jobCommand
 		}
 	});
 
-/**
- * Watch job progress
- */
 jobCommand
 	.command("watch <jobArn>")
 	.description("Watch a fine-tuning job until completion")
@@ -256,9 +361,6 @@ jobCommand
 		}
 	});
 
-/**
- * List all jobs
- */
 jobCommand
 	.command("list")
 	.description("List all fine-tuning jobs")
@@ -329,9 +431,6 @@ jobCommand
 		}
 	});
 
-/**
- * Stop a running job
- */
 jobCommand
 	.command("stop <jobArn>")
 	.description("Stop a running fine-tuning job")
