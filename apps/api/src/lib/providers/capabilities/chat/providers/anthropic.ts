@@ -82,7 +82,6 @@ export class AnthropicProvider extends BaseProvider {
 
 		const toolsParams = getToolsForProvider(params, modelConfig, this.name);
 
-		// Anthropic-specific tools
 		const tools = [];
 		if (modelConfig?.supportsToolCalls) {
 			if (
@@ -107,12 +106,16 @@ export class AnthropicProvider extends BaseProvider {
 		}
 		const allTools = [...tools, ...(toolsParams.tools || [])];
 
+		if (allTools.length > 0) {
+			const lastTool = allTools[allTools.length - 1];
+			lastTool.cache_control = { type: "ephemeral" };
+		}
+
 		const anthropicSpecificTools =
 			modelConfig?.supportsToolCalls && allTools.length > 0
 				? { tools: allTools }
 				: {};
 
-		// Handle thinking models
 		const supportsThinking = modelConfig?.supportsReasoning || false;
 		const thinkingParams = supportsThinking
 			? {
@@ -126,13 +129,25 @@ export class AnthropicProvider extends BaseProvider {
 				}
 			: {};
 
+		const systemPromptParams = params.system_prompt
+			? {
+					system: [
+						{
+							type: "text" as const,
+							text: params.system_prompt,
+							cache_control: { type: "ephemeral" },
+						},
+					],
+				}
+			: {};
+
 		return {
 			...commonParams,
 			...streamingParams,
 			...toolsParams,
 			...anthropicSpecificTools,
 			...thinkingParams,
-			system: params.system_prompt,
+			...systemPromptParams,
 			stop_sequences: params.stop,
 		};
 	}

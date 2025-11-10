@@ -51,6 +51,9 @@ export type MessageContent = {
 	name?: string;
 	content?: string;
 	input?: string | Record<string, string | number | boolean>;
+	cache_control?: {
+		type: "ephemeral";
+	};
 };
 
 export type Attachment = {

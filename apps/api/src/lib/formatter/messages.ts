@@ -156,23 +156,47 @@ export class MessageFormatter {
 						tool_calls: message.tool_calls,
 					} as Message);
 					break;
-				case "anthropic":
+				case "anthropic": {
+					let formattedContent: any;
+
 					if (
 						Array.isArray(content) &&
 						content.length === 1 &&
 						typeof content[0] === "string"
 					) {
-						formattedMessages.push({
-							role: message.role,
-							content: content[0],
-						} as Message);
+						formattedContent = [
+							{
+								type: "text" as ContentType,
+								text: content[0],
+								cache_control: { type: "ephemeral" },
+							},
+						];
+					} else if (typeof content === "string") {
+						formattedContent = [
+							{
+								type: "text" as ContentType,
+								text: content,
+								cache_control: { type: "ephemeral" },
+							},
+						];
+					} else if (Array.isArray(content)) {
+						formattedContent = content;
+						if (formattedContent.length > 0) {
+							const lastBlock = formattedContent[formattedContent.length - 1];
+							if (lastBlock && typeof lastBlock === "object") {
+								lastBlock.cache_control = { type: "ephemeral" };
+							}
+						}
 					} else {
-						formattedMessages.push({
-							role: message.role,
-							content: content,
-						} as Message);
+						formattedContent = content;
 					}
+
+					formattedMessages.push({
+						role: message.role,
+						content: formattedContent,
+					} as Message);
 					break;
+				}
 				default:
 					if (
 						Array.isArray(content) &&
@@ -379,7 +403,10 @@ export class MessageFormatter {
 			if (!item.text) {
 				return null;
 			}
-			return { type: "text", text: item.text };
+			return {
+				type: "text",
+				text: item.text,
+			};
 		}
 		if (item.type === "image_url" && item.image_url?.url) {
 			return {
@@ -387,9 +414,6 @@ export class MessageFormatter {
 				source: {
 					type: "url",
 					url: item.image_url.url,
-				},
-				cache_control: {
-					type: "ephemeral",
 				},
 			};
 		}
@@ -399,9 +423,6 @@ export class MessageFormatter {
 				source: {
 					type: "url",
 					url: item.document_url.url,
-				},
-				cache_control: {
-					type: "ephemeral",
 				},
 			};
 		}

@@ -334,7 +334,7 @@ describe("MessageFormatter", () => {
 	});
 
 	describe("content type handling", () => {
-		it("should convert single string array to string for anthropic", () => {
+		it("should convert single string array to text block with cache_control for anthropic", () => {
 			const messages: Message[] = [
 				{ role: "user", content: ["Single text content"] as any },
 			];
@@ -343,7 +343,13 @@ describe("MessageFormatter", () => {
 				provider: "anthropic",
 			});
 
-			expect(result[0].content).toBe("Single text content");
+			expect(result[0].content).toEqual([
+				{
+					type: "text",
+					text: "Single text content",
+					cache_control: { type: "ephemeral" },
+				},
+			]);
 		});
 
 		it("should preserve array content when multiple items for anthropic", () => {
@@ -363,6 +369,15 @@ describe("MessageFormatter", () => {
 
 			expect(Array.isArray(result[0].content)).toBe(true);
 			expect(result[0].content).toHaveLength(2);
+			expect(result[0].content[0]).toEqual({
+				type: "text",
+				text: "First",
+			});
+			expect(result[0].content[1]).toEqual({
+				type: "text",
+				text: "Second",
+				cache_control: { type: "ephemeral" },
+			});
 		});
 
 		it("should handle bedrock provider content formatting", () => {
@@ -417,6 +432,7 @@ describe("MessageFormatter", () => {
 			expect(result[0].content[0]).toEqual({
 				type: "text",
 				text: "Hello",
+				cache_control: { type: "ephemeral" },
 			});
 		});
 

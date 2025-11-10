@@ -348,7 +348,7 @@ Traditional fine-tuning adjusts all model weights using your training data:
 
 ```bash
 pnpm tsx src/cli.ts job create \
-  --name strudel-nova-lite-v1 \
+  --name strudel-nova-lite-v2 \
   --base-model amazon.nova-lite-v1:0:300k \
   --train-uri s3://my-bucket/strudel/.../train.jsonl \
   --val-uri s3://my-bucket/strudel/.../validation.jsonl \
@@ -625,4 +625,8 @@ Model distillation costs include both the student model training and teacher mod
 - learningRateWarmupSteps = "The number of iterations over which the learning rate is gradually increased to the specified rate"
 - AWS recommends epochs of 2 for datasets under 5k examples, and 1 for datasets over 5k examples with a learning rate of 0.00005 and warmup steps calculated based on dataset size.
 
-- AWS requires a minimum of 100 examples to start fine-tuning, but this is likely too small for good results, I initially attempted 140 examples and expanded to 1000 for better performance.
+- AWS requires a minimum of 100 examples to start fine-tuning, but this is likely too small for good results, I initially attempted 140 examples and expanded examples later to test improvements.
+
+- `strudel-nova-lite-v1` - 300 examples, 2 epochs, learning rate 0.00005, batch size 1, warmup steps 6
+- `strudel-nova-lite-v2` - 600 examples, 2 epochs, learning rate 0.00005, batch size 1, warmup steps 6
+- `strudel-nova-lite-v3` - 1000 examples, 2 epochs, learning rate 0.00005, batch size 1, warmup steps 6
