@@ -89,6 +89,7 @@ export type ModelConfigItem = {
 	supportsPresencePenalty?: boolean;
 	restrictsCombinedTopPAndTemperature?: boolean;
 	replicateInputSchema?: ReplicateInputSchemaDescriptor;
+	supportsPromptCaching?: boolean;
 };
 
 export type ModelConfig = {

@@ -35,6 +35,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsDocuments: true,
 		supportsToolCalls: true,
+		supportsPromptCaching: true,
 	}),
 
 	createModelConfig("nova-micro", PROVIDER, {
@@ -63,6 +64,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		multimodal: false,
 		includedInRouter: true,
 		supportsToolCalls: true,
+		supportsPromptCaching: true,
 	}),
 
 	createModelConfig("nova-pro", PROVIDER, {
@@ -91,6 +93,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		multimodal: true,
 		supportsDocuments: true,
 		supportsToolCalls: true,
+		supportsPromptCaching: true,
 	}),
 
 	createModelConfig("nova-canvas", PROVIDER, {
@@ -158,6 +161,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsSearchGrounding: true,
 		supportsCodeExecution: true,
 		supportsDocuments: true,
+		supportsPromptCaching: true,
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4", PROVIDER, {
@@ -200,6 +204,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsSearchGrounding: true,
 		supportsCodeExecution: true,
 		supportsDocuments: true,
+		supportsPromptCaching: true,
 	}),
 
 	createModelConfig("anthropic.claude-3-5-haiku", PROVIDER, {
@@ -240,6 +245,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsCodeExecution: true,
 		includedInRouter: true,
 		supportsTokenCounting: true,
+		supportsPromptCaching: true,
 	}),
 
 	createModelConfig("anthropic.claude-opus-4", PROVIDER, {
@@ -279,6 +285,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsDocuments: true,
 		supportsTokenCounting: true,
 		isFeatured: false,
+		supportsPromptCaching: true,
 	}),
 
 	createModelConfig("anthropic.claude-opus-4-1", PROVIDER, {
@@ -316,6 +323,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 		supportsToolCalls: true,
 		isFeatured: true,
+		supportsPromptCaching: true,
 	}),
 
 	createModelConfig("anthropic.claude-3-7-sonnet", PROVIDER, {
@@ -355,6 +363,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		supportsTokenCounting: true,
 		isFeatured: true,
+		supportsPromptCaching: true,
 	}),
 
 	createModelConfig("embed-english", PROVIDER, {
@@ -523,6 +532,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsReasoning: true,
 		supportsToolCalls: true,
 		supportsDocuments: true,
+		supportsPromptCaching: true,
 	}),
 
 	createModelConfig("llama-3-2-90b-bedrock", PROVIDER, {

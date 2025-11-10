@@ -426,10 +426,24 @@ export class BedrockProvider extends BaseProvider {
 
 		const bedrockMessages = formatBedrockMessages(params);
 
+		const systemPromptConfig =
+			params.system_prompt && modelConfig?.supportsPromptCaching
+				? {
+						system: [
+							{
+								text: params.system_prompt,
+							},
+							{
+								cachePoint: { type: "default" },
+							},
+						],
+					}
+				: params.system_prompt
+					? { system: [{ text: params.system_prompt }] }
+					: {};
+
 		return {
-			...(params.system_prompt && {
-				system: [{ text: params.system_prompt }],
-			}),
+			...systemPromptConfig,
 			messages: bedrockMessages,
 			inferenceConfig: {
 				temperature: commonParams.temperature,
