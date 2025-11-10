@@ -1,0 +1,33 @@
+# Build outputs
+dist/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+
+# Dependencies
+node_modules/
+
+# Generated datasets (can be large)
+datasets/**
+!datasets/.gitkeep
+
+# Reports and outputs
+reports/**
+!reports/.gitkeep
+
+# SQLite database
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db

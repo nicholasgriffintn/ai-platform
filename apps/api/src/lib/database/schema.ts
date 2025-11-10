@@ -703,6 +703,7 @@ export const tasks = sqliteTable(
 				"research_polling",
 				"replicate_polling",
 				"async_message_polling",
+				"training_quality_scoring",
 			],
 		}).notNull(),
 		status: text({
@@ -808,3 +809,82 @@ export const memorySyntheses = sqliteTable(
 );
 
 export type MemorySynthesis = typeof memorySyntheses.$inferSelect;
+
+export const trainingExamples = sqliteTable(
+	"training_examples",
+	{
+		id: text().primaryKey(),
+		user_id: integer().references(() => user.id),
+		conversation_id: text().references(() => conversation.id),
+		source: text({
+			enum: ["chat", "app"],
+		}).notNull(),
+		app_name: text(),
+		user_prompt: text().notNull(),
+		assistant_response: text().notNull(),
+		system_prompt: text(),
+		model_used: text(),
+		feedback_rating: integer(),
+		feedback_comment: text(),
+		metadata: text({
+			mode: "json",
+		}),
+		exported: integer({ mode: "boolean" }).default(false),
+		exported_at: text(),
+		quality_score: integer(),
+		include_in_training: integer({ mode: "boolean" }).default(true),
+		task_category: text(),
+		difficulty_level: text({
+			enum: ["easy", "medium", "hard", "expert"],
+		}),
+		language_code: text().default("en"),
+		user_prompt_tokens: integer(),
+		assistant_response_tokens: integer(),
+		response_time_ms: integer(),
+		conversation_turn: integer().default(1),
+		conversation_context: text({
+			mode: "json",
+		}),
+		user_satisfaction_signals: text({
+			mode: "json",
+		}),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		userIdIdx: index("training_examples_user_id_idx").on(table.user_id),
+		conversationIdIdx: index("training_examples_conversation_id_idx").on(
+			table.conversation_id,
+		),
+		sourceIdx: index("training_examples_source_idx").on(table.source),
+		appNameIdx: index("training_examples_app_name_idx").on(table.app_name),
+		exportedIdx: index("training_examples_exported_idx").on(table.exported),
+		includeInTrainingIdx: index("training_examples_include_in_training_idx").on(
+			table.include_in_training,
+		),
+		feedbackRatingIdx: index("training_examples_feedback_rating_idx").on(
+			table.feedback_rating,
+		),
+		qualityScoreIdx: index("training_examples_quality_score_idx").on(
+			table.quality_score,
+		),
+		taskCategoryIdx: index("training_examples_task_category_idx").on(
+			table.task_category,
+		),
+		difficultyLevelIdx: index("training_examples_difficulty_level_idx").on(
+			table.difficulty_level,
+		),
+		languageCodeIdx: index("training_examples_language_code_idx").on(
+			table.language_code,
+		),
+		conversationTurnIdx: index("training_examples_conversation_turn_idx").on(
+			table.conversation_turn,
+		),
+	}),
+);
+
+export type TrainingExample = typeof trainingExamples.$inferSelect;

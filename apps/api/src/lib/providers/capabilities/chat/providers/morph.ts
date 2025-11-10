@@ -1,4 +1,8 @@
 import type { ChatCompletionParameters } from "~/types";
+import {
+	getAiGatewayMetadataHeaders,
+	resolveAiGatewayCacheTtl,
+} from "~/utils/aiGateway";
 import { BaseProvider } from "./base";
 
 export class MorphProvider extends BaseProvider {
@@ -26,12 +30,8 @@ export class MorphProvider extends BaseProvider {
 		return {
 			Authorization: `Bearer ${apiKey}`,
 			"Content-Type": "application/json",
-			"cf-aig-metadata": JSON.stringify({
-				email: params.user?.email,
-				userId: params.user?.id,
-				platform: params.platform,
-				completionId: params.completion_id,
-			}),
+			"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+			"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
 		};
 	}
 }

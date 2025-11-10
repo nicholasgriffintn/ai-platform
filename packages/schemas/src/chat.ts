@@ -357,6 +357,19 @@ export const createChatCompletionsJsonSchema = z.object({
 		description:
 			"Maximum number of sequential LLM calls (steps), e.g. when you use tool calls.",
 	}),
+	options: z
+		.object({
+			cache_ttl_seconds: z.number().min(0).optional().meta({
+				description:
+					"Overrides the Cloudflare AI Gateway cache TTL (in seconds). Set to 0 to disable caching.",
+			}),
+		})
+		.passthrough()
+		.optional()
+		.meta({
+			description:
+				"Additional request options for advanced behaviors such as gateway caching.",
+		}),
 });
 
 export const getChatCompletionParamsSchema = z.object({

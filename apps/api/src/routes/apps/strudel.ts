@@ -1,6 +1,6 @@
 import { type Context, Hono } from "hono";
 import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
-import type { z } from "zod";
+import { z } from "zod";
 import {
 	strudelGenerateSchema,
 	strudelSavePatternSchema,
@@ -14,7 +14,6 @@ import {
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { requirePlan } from "~/middleware/requirePlan";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { generateStrudelCode } from "~/services/apps/strudel/generate";
 import { listPatterns } from "~/services/apps/strudel/list";
@@ -22,6 +21,7 @@ import { savePattern } from "~/services/apps/strudel/save";
 import { getPatternDetails } from "~/services/apps/strudel/get-details";
 import { updatePattern } from "~/services/apps/strudel/update";
 import { deletePattern } from "~/services/apps/strudel/delete";
+import { submitStrudelFeedback } from "~/services/apps/strudel/feedback";
 import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -176,10 +176,17 @@ app.post(
 			}
 			routeLogger.error("Error generating Strudel code:", {
 				error_message: error instanceof Error ? error.message : "Unknown error",
+				error_stack: error instanceof Error ? error.stack : undefined,
+				error_cause: error instanceof Error ? error.cause : undefined,
 			});
 			throw new AssistantError(
-				"Failed to generate Strudel code",
+				`Failed to generate Strudel code: ${error instanceof Error ? error.message : "Unknown error"}`,
 				ErrorType.UNKNOWN_ERROR,
+				500,
+				{
+					originalError: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
 		}
 	},
@@ -315,6 +322,78 @@ app.delete(
 			});
 			throw new AssistantError(
 				"Failed to delete Strudel pattern",
+				ErrorType.UNKNOWN_ERROR,
+			);
+		}
+	},
+);
+
+app.post(
+	"/feedback",
+	describeRoute({
+		tags: ["apps"],
+		description: "Submit feedback for a Strudel generation",
+		responses: {
+			200: {
+				description: "Feedback submitted successfully",
+				content: {
+					"application/json": {
+						schema: resolver(successResponseSchema),
+					},
+				},
+			},
+			400: {
+				description: "Bad request",
+				content: {
+					"application/json": {
+						schema: resolver(errorResponseSchema),
+					},
+				},
+			},
+			404: {
+				description: "Generation not found",
+				content: {
+					"application/json": {
+						schema: resolver(errorResponseSchema),
+					},
+				},
+			},
+		},
+	}),
+	zValidator(
+		"json",
+		z.object({
+			generationId: z.string(),
+			score: z.number().min(1).max(5).optional(),
+			feedback: z.string().optional(),
+		}),
+	),
+	async (c: Context) => {
+		const body = c.req.valid("json" as never) as {
+			generationId: string;
+			score?: number;
+			feedback?: string;
+		};
+
+		try {
+			const serviceContext = getServiceContext(c);
+			const result = await submitStrudelFeedback({
+				context: serviceContext,
+				generationId: body.generationId,
+				score: body.score,
+				feedback: body.feedback,
+			});
+
+			return ResponseFactory.success(c, result);
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
+			}
+			routeLogger.error("Error submitting Strudel feedback:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError(
+				"Failed to submit feedback",
 				ErrorType.UNKNOWN_ERROR,
 			);
 		}

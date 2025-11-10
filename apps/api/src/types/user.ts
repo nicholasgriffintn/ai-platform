@@ -50,6 +50,7 @@ export interface IUserSettings {
 	transcription_provider: string;
 	transcription_model: string;
 	search_provider: string | null;
+	tracking_enabled: boolean;
 }
 
 export interface UserSettings {

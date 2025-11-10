@@ -23,6 +23,7 @@ export type IEnv = {
 	CACHE: KVNamespace;
 	TASK_QUEUE?: Queue;
 	MEMORY_SYNTHESIS_ENABLED?: string;
+	TRAINING_QUALITY_SCORING_ENABLED?: string;
 	ASSETS_BUCKET: any;
 	ACCOUNT_ID: string;
 	ANTHROPIC_API_KEY?: string;

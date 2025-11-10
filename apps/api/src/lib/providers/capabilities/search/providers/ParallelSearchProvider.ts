@@ -9,6 +9,10 @@ import type {
 	SearchResult,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import {
+	getAiGatewayMetadataHeaders,
+	resolveAiGatewayCacheTtl,
+} from "~/utils/aiGateway";
 
 export class ParallelSearchProvider implements SearchProvider {
 	private env: IEnv;
@@ -99,10 +103,10 @@ export class ParallelSearchProvider implements SearchProvider {
 					"x-api-key": apiKey,
 					"cf-aig-authorization": this.env.AI_GATEWAY_TOKEN,
 					"cf-aig-metadata": JSON.stringify({
-						userId: this.user?.id,
-						email: this.user?.email,
+						...getAiGatewayMetadataHeaders({ user: this.user }),
 						provider: "parallel",
 					}),
+					"cf-aig-cache-ttl": resolveAiGatewayCacheTtl().toString(),
 				},
 				body: JSON.stringify(payload),
 			});

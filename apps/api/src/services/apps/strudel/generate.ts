@@ -16,6 +16,8 @@ import {
 } from "~/lib/providers/models";
 import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults } from "~/utils/parameters";
+import { captureTrainingExample } from "~/services/training/captureTrainingExample";
+import { generateId } from "~/utils/id";
 
 const logger = getLogger({ prefix: "services/strudel/generate" });
 
@@ -25,6 +27,7 @@ interface StrudelGenerateRequest {
 	tempo?: number;
 	complexity?: "simple" | "medium" | "complex";
 	model?: string;
+	options?: Record<string, any>;
 }
 
 type StrudelGenerateResponse = z.infer<typeof strudelGenerateResponseSchema>;
@@ -138,6 +141,9 @@ export async function generateStrudelCode({
 			tools: [],
 			mode: "normal",
 			platform: "dynamic-apps",
+			options: request.options || {
+				cache_ttl_seconds: 0,
+			},
 		});
 
 		const aiResponse = await provider.getResponse(
@@ -171,13 +177,36 @@ export async function generateStrudelCode({
 			codeLength: generatedCode.length,
 		});
 
+		const generationId = generateId();
+
+		captureTrainingExample({
+			context: serviceContext,
+			source: "app",
+			appName: "strudel",
+			userPrompt: request.prompt,
+			assistantResponse: generatedCode,
+			systemPrompt,
+			modelUsed: model,
+			conversationId: generationId,
+			metadata: {
+				style: request.style,
+				complexity: request.complexity,
+				tempo: request.tempo,
+			},
+		}).catch((err) => {
+			logger.error("Failed to capture training example", err);
+		});
+
 		return {
 			code: generatedCode,
 			explanation: `Generated a ${request.style || "musical"} pattern${request.tempo ? ` at ${request.tempo} BPM` : ""}`,
+			generationId,
 		};
 	} catch (error) {
 		logger.error("Error generating Strudel code:", {
 			error_message: error instanceof Error ? error.message : "Unknown error",
+			error_stack: error instanceof Error ? error.stack : undefined,
+			error_cause: error instanceof Error ? error.cause : undefined,
 			prompt: request.prompt,
 		});
 
@@ -186,8 +215,13 @@ export async function generateStrudelCode({
 		}
 
 		throw new AssistantError(
-			"Failed to generate Strudel code",
+			`Failed to generate Strudel code: ${error instanceof Error ? error.message : "Unknown error"}`,
 			ErrorType.UNKNOWN_ERROR,
+			500,
+			{
+				originalError: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			},
 		);
 	}
 }

@@ -5,6 +5,8 @@ import { createStreamWithPostProcessing } from "~/lib/chat/streaming";
 import { handleToolCalls } from "~/lib/chat/tools";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
+import { captureTrainingExample } from "~/services/training/captureTrainingExample";
+import { resolveServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -67,7 +69,7 @@ export class ChatOrchestrator {
 		}
 	}
 
-	private async executeRequest(options: CoreChatOptions, prepared: any) {
+	private async executeRequest(chatOptions: CoreChatOptions, prepared: any) {
 		const {
 			platform = "api",
 			stream = false,
@@ -95,7 +97,9 @@ export class ChatOrchestrator {
 			enabled_tools = [],
 			current_step,
 			max_steps,
-		} = options;
+		} = chatOptions;
+
+		const startTime = Date.now();
 
 		const {
 			modelConfigs,
@@ -114,12 +118,12 @@ export class ChatOrchestrator {
 		if (modelConfigs.length > 1 && stream) {
 			const transformedStream = createMultiModelStream(
 				{
-					app_url: options.app_url,
+					app_url: chatOptions.app_url,
 					system_prompt: systemPrompt,
-					env: options.env,
-					user: options.user?.id ? options.user : undefined,
+					env: chatOptions.env,
+					user: chatOptions.user?.id ? chatOptions.user : undefined,
 					disable_functions,
-					completion_id: options.completion_id,
+					completion_id: chatOptions.completion_id,
 					messages,
 					message: messageWithContext,
 					models: modelConfigs,
@@ -146,19 +150,20 @@ export class ChatOrchestrator {
 					tool_choice,
 					current_step,
 					max_steps,
-					current_agent_id: options.current_agent_id,
-					delegation_stack: options.delegation_stack,
-					max_delegation_depth: options.max_delegation_depth,
+					current_agent_id: chatOptions.current_agent_id,
+					delegation_stack: chatOptions.delegation_stack,
+					max_delegation_depth: chatOptions.max_delegation_depth,
+					options: chatOptions.options || {},
 				},
 				{
-					env: options.env,
-					completion_id: options.completion_id!,
+					env: chatOptions.env,
+					completion_id: chatOptions.completion_id!,
 					model: primaryModel,
 					provider: primaryProvider,
 					platform: platform || "api",
-					user: options.user,
+					user: chatOptions.user,
 					userSettings,
-					app_url: options.app_url,
+					app_url: chatOptions.app_url,
 					mode: currentMode,
 					tools,
 					enabled_tools,
@@ -170,17 +175,17 @@ export class ChatOrchestrator {
 				stream: transformedStream,
 				selectedModel: primaryModel,
 				selectedModels: modelConfigs.map((m) => m.model),
-				completion_id: options.completion_id,
+				completion_id: chatOptions.completion_id,
 			};
 		}
 
 		const params = {
-			app_url: options.app_url,
+			app_url: chatOptions.app_url,
 			system_prompt: systemPrompt,
-			env: options.env,
-			user: options.user?.id ? options.user : undefined,
+			env: chatOptions.env,
+			user: chatOptions.user?.id ? chatOptions.user : undefined,
 			disable_functions,
-			completion_id: options.completion_id,
+			completion_id: chatOptions.completion_id,
 			messages,
 			message: messageWithContext,
 			model: primaryModel,
@@ -210,6 +215,7 @@ export class ChatOrchestrator {
 			current_step,
 			max_steps,
 			provider: primaryProvider,
+			options: chatOptions.options || {},
 		};
 
 		const response = await getAIResponse(params);
@@ -218,22 +224,22 @@ export class ChatOrchestrator {
 			const transformedStream = await createStreamWithPostProcessing(
 				response,
 				{
-					env: options.env,
-					completion_id: options.completion_id!,
+					env: chatOptions.env,
+					completion_id: chatOptions.completion_id!,
 					model: primaryModel,
 					provider: primaryProvider,
 					platform: platform || "api",
-					user: options.user,
+					user: chatOptions.user,
 					userSettings,
-					app_url: options.app_url,
+					app_url: chatOptions.app_url,
 					mode: currentMode,
-					max_steps: options.max_steps,
-					current_step: options.current_step,
+					max_steps: chatOptions.max_steps,
+					current_step: chatOptions.current_step,
 					tools,
 					enabled_tools,
-					current_agent_id: options.current_agent_id,
-					delegation_stack: options.delegation_stack,
-					max_delegation_depth: options.max_delegation_depth,
+					current_agent_id: chatOptions.current_agent_id,
+					delegation_stack: chatOptions.delegation_stack,
+					max_delegation_depth: chatOptions.max_delegation_depth,
 				},
 				conversationManager,
 			);
@@ -241,7 +247,7 @@ export class ChatOrchestrator {
 			return {
 				stream: transformedStream,
 				selectedModel: primaryModel,
-				completion_id: options.completion_id,
+				completion_id: chatOptions.completion_id,
 			};
 		}
 
@@ -254,14 +260,14 @@ export class ChatOrchestrator {
 
 		if (response.response) {
 			const guardrails = new Guardrails(
-				options.env,
-				options.user,
+				chatOptions.env,
+				chatOptions.user,
 				userSettings,
 			);
 			const outputValidation = await guardrails.validateOutput(
 				response.response,
-				options.user?.id,
-				options.completion_id,
+				chatOptions.user?.id,
+				chatOptions.completion_id,
 			);
 
 			if (!outputValidation?.isValid) {
@@ -280,34 +286,34 @@ export class ChatOrchestrator {
 		const toolResponses: Message[] = [];
 		if (response.tool_calls?.length > 0) {
 			const toolResults = await handleToolCalls(
-				options.completion_id!,
+				chatOptions.completion_id!,
 				response,
 				conversationManager,
 				{
-					env: options.env,
+					env: chatOptions.env,
 					request: {
-						completion_id: options.completion_id!,
+						completion_id: chatOptions.completion_id!,
 						input: messageWithContext,
 						model: primaryModel,
 						date: new Date().toISOString().split("T")[0]!,
-						current_agent_id: options.current_agent_id,
-						delegation_stack: options.delegation_stack,
-						max_delegation_depth: options.max_delegation_depth,
+						current_agent_id: chatOptions.current_agent_id,
+						delegation_stack: chatOptions.delegation_stack,
+						max_delegation_depth: chatOptions.max_delegation_depth,
 					},
-					app_url: options.app_url,
-					user: options.user?.id ? options.user : undefined,
+					app_url: chatOptions.app_url,
+					user: chatOptions.user?.id ? chatOptions.user : undefined,
 				},
 			);
 
 			toolResponses.push(...toolResults);
 		}
 
-		await conversationManager.add(options.completion_id!, {
+		await conversationManager.add(chatOptions.completion_id!, {
 			role: "assistant",
 			content: response.response,
 			citations: response.citations || null,
 			data: response.data || null,
-			log_id: options.env.AI.aiGatewayLogId || response.log_id,
+			log_id: chatOptions.env.AI.aiGatewayLogId || response.log_id,
 			mode: currentMode,
 			id: generateId(),
 			timestamp: Date.now(),
@@ -318,13 +324,40 @@ export class ChatOrchestrator {
 			status: response.status || undefined,
 		});
 
+		if (userSettings?.tracking_enabled) {
+			const userMessage = messages.find((m) => m.role === "user");
+			if (userMessage && response.response && store) {
+				const context = resolveServiceContext({
+					env: chatOptions.env,
+					user: chatOptions.user || undefined,
+				});
+
+				captureTrainingExample({
+					context,
+					source: "chat",
+					userPrompt:
+						typeof userMessage.content === "string"
+							? userMessage.content
+							: JSON.stringify(userMessage.content),
+					assistantResponse: response.response,
+					systemPrompt,
+					modelUsed: primaryModel,
+					conversationId: chatOptions.completion_id,
+					startTime,
+					skipEnhancement: true,
+				}).catch((err) => {
+					logger.error("Failed to capture training example", err);
+				});
+			}
+		}
+
 		return {
 			response,
 			toolResponses,
 			selectedModel: primaryModel,
 			selectedModels:
 				modelConfigs.length > 1 ? modelConfigs.map((m) => m.model) : undefined,
-			completion_id: options.completion_id,
+			completion_id: chatOptions.completion_id,
 		};
 	}
 

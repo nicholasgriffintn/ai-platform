@@ -161,6 +161,7 @@ export function handleAIServiceError(error: AssistantError): Response {
 				{ status: 401 },
 			);
 		case ErrorType.FORBIDDEN:
+		case ErrorType.AUTHORISATION_ERROR:
 			logger.debug("Authorization error", logContext);
 
 			return Response.json(
@@ -224,6 +225,7 @@ export function handleAIServiceError(error: AssistantError): Response {
 			);
 		case ErrorType.PROVIDER_ERROR:
 		case ErrorType.EXTERNAL_API_ERROR:
+		case ErrorType.TOOL_CALL_ERROR:
 			logger.error("External service error", logContext);
 
 			return Response.json(
@@ -264,12 +266,24 @@ export function handleAIServiceError(error: AssistantError): Response {
 		default:
 			logger.error("Unknown error occurred", logContext);
 
-			return Response.json(
-				{
-					error: "An unexpected error occurred",
-					requestId: error.context.requestId,
-				},
-				{ status: 500 },
-			);
+			const errorResponse: {
+				error: string;
+				requestId?: string;
+				details?: string;
+				context?: any;
+			} = {
+				error: "An unexpected error occurred",
+				requestId: error.context?.requestId,
+				details: error.message,
+			};
+
+			if (error.context && Object.keys(error.context).length > 0) {
+				const { requestId, ...safeContext } = error.context;
+				if (Object.keys(safeContext).length > 0) {
+					errorResponse.context = safeContext;
+				}
+			}
+
+			return Response.json(errorResponse, { status: 500 });
 	}
 }

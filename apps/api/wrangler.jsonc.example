@@ -96,21 +96,17 @@
 			}
 		]
 	},
-	"env": {
-    "production": {
-			"triggers": {
-				"crons": ["0 2 * * *"],
+	"triggers": {
+		"crons": ["0 2 * * *", "0 3 * * *"],
+	},
+	"queues": {
+		"producers": [{ "binding": "TASK_QUEUE", "queue": "polychat-task-queue" }],
+		"consumers": [
+			{
+				"queue": "polychat-task-queue",
+				"max_batch_size": 10,
+				"dead_letter_queue": "polychat-task-queue-dlq",
 			},
-			"queues": {
-				"producers": [{ "binding": "TASK_QUEUE", "queue": "polychat-task-queue" }],
-				"consumers": [
-					{
-						"queue": "polychat-task-queue",
-						"max_batch_size": 10,
-						"dead_letter_queue": "polychat-task-queue-dlq",
-					},
-				],
-			},
-    }
-  }
+		]
+	}
 }

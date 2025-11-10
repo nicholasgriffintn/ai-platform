@@ -44,6 +44,7 @@ export function UserSettingsForm({
 		memories_save_enabled: userSettings?.memories_save_enabled || false,
 		memories_chat_history_enabled:
 			userSettings?.memories_chat_history_enabled || false,
+		tracking_enabled: userSettings?.tracking_enabled ?? true,
 		transcription_provider: userSettings?.transcription_provider || "workers",
 		transcription_model: userSettings?.transcription_model || "whisper-1",
 		search_provider: userSettings?.search_provider || "",
@@ -488,6 +489,38 @@ export function UserSettingsForm({
 					/>
 					<p className="text-sm text-zinc-500 dark:text-zinc-400">
 						Allow Polychat to save and use your chat history when responding.
+					</p>
+				</div>
+			</div>
+
+			<div>
+				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
+					Privacy &amp; Data
+				</h3>
+			</div>
+
+			<div className="space-y-4">
+				<div>
+					<label
+						htmlFor="tracking_enabled"
+						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+					>
+						Allow Tracking and Training Data Collection
+					</label>
+					<Switch
+						id="tracking_enabled"
+						checked={formData.tracking_enabled}
+						onChange={(e) =>
+							setFormData((prev) => ({
+								...prev,
+								tracking_enabled: e.target.checked,
+							}))
+						}
+					/>
+					<p className="text-sm text-zinc-500 dark:text-zinc-400">
+						Allow Polychat to save your conversations and app interactions for
+						improving AI models. Your data helps us create better responses and
+						features. You can opt out at any time.
 					</p>
 				</div>
 			</div>

@@ -10,7 +10,10 @@ import type { ModelConfigItem, ReplicateInputFieldDescriptor } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseProvider } from "./base";
 import { fetchAIResponse } from "../../../lib/fetch";
-import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
+import {
+	getAiGatewayMetadataHeaders,
+	resolveAiGatewayCacheTtl,
+} from "~/utils/aiGateway";
 import { safeParseJson } from "../../../../../utils/json";
 
 type ReplicateFieldType =
@@ -346,6 +349,7 @@ export class ReplicateProvider extends BaseProvider {
 			"Content-Type": "application/json",
 			Prefer: "wait=30",
 			"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+			"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
 		};
 	}
 
@@ -474,6 +478,7 @@ export class ReplicateProvider extends BaseProvider {
 			"cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
 			Authorization: `Token ${apiKey}`,
 			"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+			"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
 		};
 
 		const response = await fetch(

@@ -67,3 +67,37 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
 		throw error;
 	}
 }
+
+export async function scheduleTrainingQualityScoring(env: IEnv): Promise<void> {
+	try {
+		const repositories = RepositoryManager.getInstance(env);
+
+		const unscoredCount = await env.DB.prepare(
+			`SELECT COUNT(*) as count FROM training_examples 
+			 WHERE quality_score IS NULL AND include_in_training = 1`,
+		).first<{ count: number }>();
+
+		const hasUnscoredExamples = unscoredCount && unscoredCount.count > 0;
+
+		if (!hasUnscoredExamples) {
+			logger.info("No unscored training examples found for quality scoring");
+			return;
+		}
+
+		const taskService = new TaskService(env, repositories.tasks);
+
+		await taskService.enqueueTask({
+			task_type: "training_quality_scoring",
+			task_data: {
+				batchSize: 100,
+				minDaysOld: 1,
+			},
+			priority: 7,
+		});
+
+		logger.info("Training quality scoring task scheduled");
+	} catch (error) {
+		logger.error("Failed to schedule training quality scoring:", error);
+		throw error;
+	}
+}

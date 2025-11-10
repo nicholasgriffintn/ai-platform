@@ -107,7 +107,7 @@ describe("Auth Middleware", () => {
 	});
 
 	describe("authMiddleware", () => {
-		it("should skip authentication for unknown user agents", async () => {
+		it("should block unknown user agents", async () => {
 			const context = createMockContext();
 			// @ts-expect-error - mock implementation
 			context.req.header.mockImplementation((name: string) => {
@@ -116,13 +116,14 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			await authMiddleware(context, mockNext);
+			await expect(authMiddleware(context, mockNext)).rejects.toThrow(
+				"Bot access is not allowed.",
+			);
 
-			expect(mockNext).toHaveBeenCalled();
-			expect(context.set).not.toHaveBeenCalled();
+			expect(mockNext).not.toHaveBeenCalled();
 		});
 
-		it("should skip authentication for bots", async () => {
+		it("should block non-pro bots", async () => {
 			const context = createMockContext();
 			// @ts-expect-error - mock implementation
 			context.req.header.mockImplementation((name: string) => {
@@ -132,10 +133,34 @@ describe("Auth Middleware", () => {
 			});
 			mockIsbot.mockReturnValue(true);
 
+			await expect(authMiddleware(context, mockNext)).rejects.toThrow(
+				"Bot access is not allowed.",
+			);
+
+			expect(mockNext).not.toHaveBeenCalled();
+		});
+
+		it("should allow pro user bots", async () => {
+			const mockProUser = {
+				id: "user-123",
+				email: "test@example.com",
+				plan_id: "pro",
+			};
+			const context = createMockContext();
+			// @ts-expect-error - mock implementation
+			context.req.header.mockImplementation((name: string) => {
+				if (name === "user-agent") return "Googlebot";
+				if (name === "CF-Connecting-IP") return "127.0.0.1";
+				if (name === "Cookie") return "session=session-123";
+				return null;
+			});
+			mockIsbot.mockReturnValue(true);
+			mockGetUserBySessionId.mockResolvedValue(mockProUser);
+
 			await authMiddleware(context, mockNext);
 
 			expect(mockNext).toHaveBeenCalled();
-			expect(context.set).not.toHaveBeenCalled();
+			expect(context.set).toHaveBeenCalledWith("user", mockProUser);
 		});
 
 		it("should authenticate user with session ID", async () => {

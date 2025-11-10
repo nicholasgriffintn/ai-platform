@@ -590,6 +590,10 @@ export const strudelGenerateSchema = z.object({
 		.describe(
 			"Model ID to use for generation (if not specified, uses auxiliary model)",
 		),
+	options: z
+		.record(z.string(), z.any())
+		.optional()
+		.describe("Additional generation options"),
 });
 
 export const strudelSavePatternSchema = z.object({
@@ -622,6 +626,7 @@ export const strudelGenerateResponseSchema = z.object({
 		.string()
 		.optional()
 		.describe("Explanation of the generated pattern"),
+	generationId: z.string().describe("Unique ID for feedback tracking"),
 });
 
 export const strudelListPatternsResponseSchema = z.object({

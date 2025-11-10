@@ -11,6 +11,10 @@ import {
 	getToolsForProvider,
 	shouldEnableStreaming,
 } from "~/utils/parameters";
+import {
+	getAiGatewayMetadataHeaders,
+	resolveAiGatewayCacheTtl,
+} from "~/utils/aiGateway";
 import { BaseProvider } from "./base";
 
 const logger = getLogger({ prefix: "lib/providers/anthropic" });
@@ -163,12 +167,10 @@ export class AnthropicProvider extends BaseProvider {
 					"x-api-key": apiKey,
 					"anthropic-version": "2023-06-01",
 					"Content-Type": "application/json",
-					"cf-aig-metadata": JSON.stringify({
-						email: params.user?.email,
-						userId: params.user?.id,
-						platform: params.platform,
-						completionId: params.completion_id,
-					}),
+					"cf-aig-metadata": JSON.stringify(
+						getAiGatewayMetadataHeaders(params),
+					),
+					"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
 				};
 
 				const endpoint = `https://gateway.ai.cloudflare.com/v1/${params.env.ACCOUNT_ID}/${gatewayId}/anthropic/v1/messages/count_tokens`;

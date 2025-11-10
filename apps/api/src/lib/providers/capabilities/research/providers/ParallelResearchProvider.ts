@@ -14,6 +14,10 @@ import type {
 	ResearchTaskHandle,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import {
+	getAiGatewayMetadataHeaders,
+	resolveAiGatewayCacheTtl,
+} from "~/utils/aiGateway";
 
 type ParallelResultPayload = {
 	run: ParallelTaskRun;
@@ -109,11 +113,11 @@ export class ParallelResearchProvider implements ResearchProvider {
 			"x-api-key": apiKey,
 			"cf-aig-authorization": this.env.AI_GATEWAY_TOKEN,
 			"cf-aig-metadata": JSON.stringify({
-				userId: this.user?.id,
-				email: this.user?.email,
+				...getAiGatewayMetadataHeaders({ user: this.user }),
 				provider: "parallel",
 				feature: "research",
 			}),
+			"cf-aig-cache-ttl": resolveAiGatewayCacheTtl().toString(),
 		};
 	}
 
