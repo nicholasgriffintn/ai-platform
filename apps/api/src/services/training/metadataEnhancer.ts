@@ -67,7 +67,7 @@ export class TrainingMetadataEnhancer {
 					additionalContext.previousMessages,
 				);
 				metadata.conversationTurn =
-					additionalContext.previousMessages.length / 2 + 1;
+					Math.floor(additionalContext.previousMessages.length / 2) + 1;
 			}
 
 			if (additionalContext?.userBehavior) {

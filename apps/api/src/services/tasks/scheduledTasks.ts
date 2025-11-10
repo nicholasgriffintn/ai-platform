@@ -72,14 +72,12 @@ export async function scheduleTrainingQualityScoring(env: IEnv): Promise<void> {
 	try {
 		const repositories = RepositoryManager.getInstance(env);
 
-		const unscored = await repositories.trainingExamples.findMany({
-			limit: 1,
-		});
+		const unscoredCount = await env.DB.prepare(
+			`SELECT COUNT(*) as count FROM training_examples 
+			 WHERE quality_score IS NULL AND include_in_training = 1`,
+		).first<{ count: number }>();
 
-		const hasUnscoredExamples = unscored.some(
-			(example) =>
-				example.quality_score === null || example.quality_score === undefined,
-		);
+		const hasUnscoredExamples = unscoredCount && unscoredCount.count > 0;
 
 		if (!hasUnscoredExamples) {
 			logger.info("No unscored training examples found for quality scoring");
