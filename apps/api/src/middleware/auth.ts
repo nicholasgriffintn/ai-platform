@@ -90,12 +90,6 @@ export async function authMiddleware(context: Context, next: Next) {
 
 	const userAgent = context.req.header("user-agent") || "unknown";
 
-	const isBot = await isBotCached(userAgent, context.env.CACHE);
-
-	if (userAgent === "unknown" || isBot) {
-		return next();
-	}
-
 	const hasJwtSecret = !!context.env.JWT_SECRET;
 	let user: User | null = null;
 	let anonymousUser: AnonymousUser | null = null;
@@ -160,6 +154,16 @@ export async function authMiddleware(context: Context, next: Next) {
 		);
 		user =
 			fulfilledResult?.status === "fulfilled" ? fulfilledResult.value : null;
+	}
+
+	const isBot = await isBotCached(userAgent, context.env.CACHE);
+	const isProUser = user?.plan_id === "pro";
+
+	if (userAgent === "unknown" || (isBot && !isProUser)) {
+		throw new AssistantError(
+			"Bot access is not allowed.",
+			ErrorType.AUTHENTICATION_ERROR,
+		);
 	}
 
 	if (!user) {

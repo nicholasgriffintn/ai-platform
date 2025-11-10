@@ -104,6 +104,7 @@ export class StrudelGenerator {
 	}): Promise<{ code: string; explanation?: string }> {
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
+			"User-Agent": "StrudelDatasetGenerator/1.0",
 		};
 
 		if (params.apiKey) {
