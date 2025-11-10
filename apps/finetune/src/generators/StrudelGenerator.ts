@@ -65,6 +65,11 @@ export class StrudelGenerator {
 						combo.complexity,
 					);
 
+					const assistantResponse = response.code;
+					if (!assistantResponse || typeof assistantResponse !== "string") {
+						throw new Error("Invalid response format from API");
+					}
+
 					examples.push({
 						schemaVersion: "bedrock-conversation-2024",
 						system: [{ text: systemPrompt }],
@@ -132,7 +137,14 @@ export class StrudelGenerator {
 			);
 		}
 
-		return response.json() as Promise<{ code: string; explanation?: string }>;
+		const responseJson = (await response.json()) as {
+			data: {
+				code: string;
+				explanation?: string;
+			};
+		};
+
+		return responseJson.data;
 	}
 
 	private buildSystemPrompt(style: string, complexity: string): string {
