@@ -4,7 +4,10 @@ import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getEffectiveMaxTokens } from "~/utils/parameters";
 import { BaseProvider } from "./base";
-import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
+import {
+	getAiGatewayMetadataHeaders,
+	resolveAiGatewayCacheTtl,
+} from "~/utils/aiGateway";
 
 export class GoogleStudioProvider extends BaseProvider {
 	name = "google-ai-studio";
@@ -40,6 +43,7 @@ export class GoogleStudioProvider extends BaseProvider {
 			"x-goog-api-key": apiKey,
 			"Content-Type": "application/json",
 			"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+			"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
 		};
 	}
 

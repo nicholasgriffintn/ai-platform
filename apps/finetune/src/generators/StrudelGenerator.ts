@@ -118,6 +118,9 @@ export class StrudelGenerator {
 				style: params.style,
 				complexity: params.complexity,
 				model: params.model,
+				options: {
+					cache_ttl_seconds: 0,
+				},
 			}),
 		});
 

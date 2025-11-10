@@ -14,7 +14,6 @@ import {
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { requirePlan } from "~/middleware/requirePlan";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { generateStrudelCode } from "~/services/apps/strudel/generate";
 import { listPatterns } from "~/services/apps/strudel/list";

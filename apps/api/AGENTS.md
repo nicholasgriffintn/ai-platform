@@ -184,6 +184,13 @@ export async function handleExampleService(
 - **Consistency**: Same pattern across all services
 - **Easy testing**: Mock one context object instead of multiple parameters
 
+### Cloudflare AI Gateway Cache Control
+
+- Chat completion requests now expose `options.cache_ttl_seconds` so clients can tune the `cf-aig-cache-ttl` header sent through the AI Gateway. Omit the option to use the default 24 hour cache, set an explicit number of seconds to customize, or pass `0` to bypass caching entirely.
+- `buildAiGatewayHeaders` and the manual header builders in chat providers automatically call `resolveAiGatewayCacheTtl`, so no provider-specific work is needed beyond honoring the option in the incoming params.
+- When adding new chat providers that rely on the gateway, import `resolveAiGatewayCacheTtl` (if you are building headers manually) or reuse `buildAiGatewayHeaders` to ensure the TTL header stays consistent.
+- Always populate `cf-aig-metadata` via `getAiGatewayMetadataHeaders`. The helper now accepts partial metadata objects (just pass `{ user, platform, completion_id }`), so even non-chat providers like search/research can share the same structure before layering on provider-specific fields.
+
 ### Database and Repository Pattern
 
 **Database Class** - Simplified wrapper around RepositoryManager:

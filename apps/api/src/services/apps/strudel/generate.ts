@@ -25,6 +25,7 @@ interface StrudelGenerateRequest {
 	tempo?: number;
 	complexity?: "simple" | "medium" | "complex";
 	model?: string;
+	options?: Record<string, any>;
 }
 
 type StrudelGenerateResponse = z.infer<typeof strudelGenerateResponseSchema>;
@@ -138,6 +139,9 @@ export async function generateStrudelCode({
 			tools: [],
 			mode: "normal",
 			platform: "dynamic-apps",
+			options: request.options || {
+				cache_ttl_seconds: 0,
+			},
 		});
 
 		const aiResponse = await provider.getResponse(

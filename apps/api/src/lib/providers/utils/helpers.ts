@@ -1,6 +1,9 @@
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
+import {
+	getAiGatewayMetadataHeaders,
+	resolveAiGatewayCacheTtl,
+} from "~/utils/aiGateway";
 
 /**
  * Validates that AI_GATEWAY_TOKEN is present in the environment
@@ -31,6 +34,7 @@ export function buildAiGatewayHeaders(
 		Authorization: `Bearer ${apiKey}`,
 		"Content-Type": "application/json",
 		"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+		"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
 	};
 }
 

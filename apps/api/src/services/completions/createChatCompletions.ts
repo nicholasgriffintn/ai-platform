@@ -79,6 +79,7 @@ export const handleCreateChatCompletions = async (req: {
 		current_agent_id: request.current_agent_id,
 		delegation_stack: request.delegation_stack,
 		max_delegation_depth: request.max_delegation_depth,
+		options: request.options || {},
 	});
 
 	if ("validation" in result) {

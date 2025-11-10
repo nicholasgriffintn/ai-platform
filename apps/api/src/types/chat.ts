@@ -223,6 +223,10 @@ interface AIControlParams {
 	use_multi_model?: boolean;
 }
 
+export interface ChatRequestOptions extends Record<string, any> {
+	cache_ttl_seconds?: number;
+}
+
 interface AIResponseParamsBase extends AIControlParams {
 	// The platform the user requested with.
 	platform?: Platform;
@@ -288,7 +292,7 @@ interface AIResponseParamsBase extends AIControlParams {
 	// Whether to enable parallel tool calls for the response.
 	parallel_tool_calls?: boolean;
 	// Additional options for the response.
-	options?: Record<string, any>;
+	options?: ChatRequestOptions;
 	// The body of the request.
 	body?: Record<string, any>;
 	// Whether to enable thinking for the response.

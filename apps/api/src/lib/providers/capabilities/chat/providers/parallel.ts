@@ -1,5 +1,8 @@
 import type { ChatCompletionParameters } from "~/types";
-import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
+import {
+	getAiGatewayMetadataHeaders,
+	resolveAiGatewayCacheTtl,
+} from "~/utils/aiGateway";
 import { BaseProvider } from "./base";
 
 export class ParallelProvider extends BaseProvider {
@@ -29,6 +32,7 @@ export class ParallelProvider extends BaseProvider {
 			"x-api-key": apiKey,
 			"Content-Type": "application/json",
 			"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+			"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
 		};
 	}
 }

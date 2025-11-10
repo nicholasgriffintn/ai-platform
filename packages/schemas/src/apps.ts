@@ -590,6 +590,10 @@ export const strudelGenerateSchema = z.object({
 		.describe(
 			"Model ID to use for generation (if not specified, uses auxiliary model)",
 		),
+	options: z
+		.record(z.string(), z.any())
+		.optional()
+		.describe("Additional generation options"),
 });
 
 export const strudelSavePatternSchema = z.object({
