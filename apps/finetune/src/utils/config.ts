@@ -8,7 +8,7 @@ const __dirname = dirname(__filename);
 dotenv.config({ path: join(__dirname, "../../.env") });
 
 export const config = {
-	API_URL: process.env.API_URL || "https://polychat.app",
+	API_URL: process.env.API_URL || "https://api.polychat.app",
 	API_KEY: process.env.API_KEY,
 	AWS_REGION: process.env.AWS_REGION || "us-east-1",
 	AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
