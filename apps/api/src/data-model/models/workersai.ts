@@ -360,7 +360,7 @@ export const workersAiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		modalities: {
 			input: ["text"],
-			output: ["coding"],
+			output: ["text"],
 		},
 	},
 	"bge-base-en-v1.5": {
@@ -472,7 +472,7 @@ export const workersAiModelConfig: ModelConfig = {
 		contextComplexity: 5,
 		modalities: {
 			input: ["text"],
-			output: ["coding"],
+			output: ["text"],
 		},
 	},
 	"@cf/meta/llama-guard-3-8b": {

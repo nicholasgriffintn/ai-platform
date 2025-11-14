@@ -1,5 +1,5 @@
 import { availableFunctions } from "~/services/functions";
-import type { ChatCompletionParameters } from "~/types";
+import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { formatToolCalls } from "../lib/chat/tools";
 
@@ -47,7 +47,7 @@ export function mergeParametersWithDefaults(
  */
 export function calculateReasoningBudget(
 	params: ChatCompletionParameters,
-	modelConfig?: any,
+	modelConfig?: ModelConfigItem,
 ): number {
 	const effectiveMaxTokens = getEffectiveMaxTokens(
 		params.max_tokens,
@@ -272,7 +272,7 @@ export function getToolsForProvider(
  * @returns Whether streaming should be enabled
  */
 export function shouldEnableStreaming(
-	modelConfig: any,
+	modelConfig: ModelConfigItem,
 	supportsStreaming: boolean,
 	stream: boolean,
 ): boolean {
@@ -284,7 +284,7 @@ export function shouldEnableStreaming(
 	const outputs = modelConfig.modalities.output ?? inputs;
 	const supportsTextOutput =
 		outputs.includes("text") || (!outputs.length && inputs.includes("text"));
-	const isCodingModel = outputs.length === 1 && outputs[0] === "coding";
+	const isCodingModel = modelConfig?.promptTemplate === "coding";
 	const modelTypeSupportsStreaming = supportsTextOutput || isCodingModel;
 
 	return stream && supportsStreaming && modelTypeSupportsStreaming;

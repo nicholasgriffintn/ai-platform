@@ -200,6 +200,7 @@ describe("parameters", () => {
 			} as ChatCompletionParameters;
 			const modelConfig = { maxTokens: 2000 };
 
+			// @ts-expect-error - testing various modelConfig shapes
 			const result = calculateReasoningBudget(params, modelConfig);
 
 			expect(result).toBe(1500); // Based on effective max tokens (2000)
@@ -223,6 +224,7 @@ describe("parameters", () => {
 			} as ChatCompletionParameters;
 			const modelConfig = { maxTokens: 0 };
 
+			// @ts-expect-error - testing various modelConfig shapes
 			const result = calculateReasoningBudget(params, modelConfig);
 
 			expect(result).toBe(1024);
@@ -563,6 +565,7 @@ describe("parameters", () => {
 				modalities: { input: ["text"], output: ["text"] },
 			};
 
+			// @ts-expect-error - testing various modelConfig shapes
 			const result = shouldEnableStreaming(modelConfig, true, true);
 
 			expect(result).toBe(true);
@@ -570,9 +573,11 @@ describe("parameters", () => {
 
 		it("should enable streaming for coding models", () => {
 			const modelConfig = {
-				modalities: { input: ["text"], output: ["coding"] },
+				modalities: { input: ["text"], output: ["text"] },
+				promptTemplate: "coding",
 			};
 
+			// @ts-expect-error - testing various modelConfig shapes
 			const result = shouldEnableStreaming(modelConfig, true, true);
 
 			expect(result).toBe(true);
@@ -583,6 +588,7 @@ describe("parameters", () => {
 				modalities: { input: ["text"], output: ["text"] },
 			};
 
+			// @ts-expect-error - testing various modelConfig shapes
 			const result = shouldEnableStreaming(modelConfig, true, false);
 
 			expect(result).toBe(false);
@@ -593,6 +599,7 @@ describe("parameters", () => {
 				modalities: { input: ["text"], output: ["text"] },
 			};
 
+			// @ts-expect-error - testing various modelConfig shapes
 			const result = shouldEnableStreaming(modelConfig, false, true);
 
 			expect(result).toBe(false);
@@ -603,6 +610,7 @@ describe("parameters", () => {
 				modalities: { input: ["image"], output: ["image"] },
 			};
 
+			// @ts-expect-error - testing various modelConfig shapes
 			const result = shouldEnableStreaming(modelConfig, true, true);
 
 			expect(result).toBe(false);
@@ -611,6 +619,7 @@ describe("parameters", () => {
 		it("should handle missing model type", () => {
 			const modelConfig = {};
 
+			// @ts-expect-error - testing various modelConfig shapes
 			const result = shouldEnableStreaming(modelConfig, true, true);
 
 			expect(result).toBe(false);
@@ -619,6 +628,7 @@ describe("parameters", () => {
 		it("should handle null model type", () => {
 			const modelConfig = { modalities: null };
 
+			// @ts-expect-error - testing various modelConfig shapes
 			const result = shouldEnableStreaming(modelConfig, true, true);
 
 			expect(result).toBe(false);
@@ -629,6 +639,7 @@ describe("parameters", () => {
 				modalities: { input: ["text", "image"], output: ["text", "image"] },
 			};
 
+			// @ts-expect-error - testing various modelConfig shapes
 			const result = shouldEnableStreaming(modelConfig, true, true);
 
 			expect(result).toBe(true); // Contains text type

@@ -91,6 +91,7 @@ export type ModelConfigItem = {
 	restrictsCombinedTopPAndTemperature?: boolean;
 	replicateInputSchema?: ReplicateInputSchemaDescriptor;
 	supportsPromptCaching?: boolean;
+	promptTemplate?: string;
 };
 
 export type ModelConfig = {

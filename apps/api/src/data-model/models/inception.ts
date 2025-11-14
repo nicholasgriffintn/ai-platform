@@ -17,7 +17,7 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "July 31, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["coding"],
+			output: ["text"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,

@@ -40,7 +40,7 @@ export async function getSystemPrompt(
 		const outputs = modelConfig.modalities?.output ?? inputs;
 		const supportsTextOutput =
 			outputs.includes("text") || (!outputs.length && inputs.includes("text"));
-		const isCodingModel = outputs.length === 1 && outputs[0] === "coding";
+		const isCodingModel = modelConfig?.promptTemplate === "coding";
 		if (isCodingModel) {
 			prompt = returnCodingPrompt(
 				request,

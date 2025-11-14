@@ -63,7 +63,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "July 10, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["coding"],
+			output: ["text"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -275,7 +275,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "January 4, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["coding"],
+			output: ["text"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -306,7 +306,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "July 10, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["coding"],
+			output: ["text"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -459,7 +459,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "May 7, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["coding"],
+			output: ["text"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,

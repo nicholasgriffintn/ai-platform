@@ -597,7 +597,7 @@ export const openrouterModelConfig: ModelConfig = {
 		lastUpdated: "July 23, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["coding"],
+			output: ["text"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -625,7 +625,7 @@ export const openrouterModelConfig: ModelConfig = {
 		lastUpdated: "July 10, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["coding"],
+			output: ["text"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,

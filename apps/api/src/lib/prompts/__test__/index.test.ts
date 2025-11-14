@@ -76,7 +76,8 @@ describe("prompts index", () => {
 
 		it("should use coding prompt for coding models", async () => {
 			mockGetModelConfigByMatchingModel.mockResolvedValue({
-				modalities: { input: ["text"], output: ["coding"] },
+				modalities: { input: ["text"], output: ["text"] },
+				promptTemplate: "coding",
 				supportsToolCalls: true,
 				supportsArtifacts: true,
 				supportsReasoning: false,
@@ -102,7 +103,8 @@ describe("prompts index", () => {
 				{
 					modelId: "coding-model",
 					modelConfig: {
-						modalities: { input: ["text"], output: ["coding"] },
+						modalities: { input: ["text"], output: ["text"] },
+						promptTemplate: "coding",
 						supportsToolCalls: true,
 						supportsArtifacts: true,
 						supportsReasoning: false,
