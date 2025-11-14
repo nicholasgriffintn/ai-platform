@@ -37,7 +37,7 @@ describe("OllamaProvider", () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "llama2",
-				type: ["text"],
+				modalities: { input: ["text"], output: ["text"] },
 			});
 
 			vi.mocked(createCommonParameters).mockReturnValue({

@@ -10,7 +10,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Quantized Llama 3.2 1B model optimized for web browsers",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -21,7 +21,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Quantized Llama 3.2 3B model optimized for web browsers",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -32,7 +32,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Quantized Llama 3.1 8B model optimized for web browsers",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -43,7 +43,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Latest Mistral 7B v0.3 model optimized for web browsers",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -54,7 +54,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Google's Gemma 2B instruction-tuned model",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -65,7 +65,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Google's Gemma 9B instruction-tuned model",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -76,7 +76,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Efficient small language model optimized for web browsers",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -87,7 +87,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Microsoft's Phi 3.5 Mini model optimized for web browsers",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -99,7 +99,7 @@ export const webLLMModels: ModelConfig = {
 			"Microsoft's Phi 3.5 Vision model with multimodal capabilities",
 		strengths: ["text-generation", "image-to-text"],
 		provider: "web-llm",
-		type: ["text", "image-to-text"],
+		modalities: { input: ["text", "image"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -110,7 +110,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Alibaba's Qwen 2.5 small model optimized for web browsers",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 	},
 	"Qwen2.5-Coder-1.5B-Instruct-q4f32_1-MLC": {
 		id: "Qwen2.5-Coder-1.5B-Instruct-q4f32_1-MLC",
@@ -120,7 +120,7 @@ export const webLLMModels: ModelConfig = {
 			"Alibaba's Qwen 2.5 Coder model optimized for programming tasks",
 		strengths: ["text-generation", "code-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -131,7 +131,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Alibaba's Qwen 3 0.6B model optimized for web browsers",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -142,7 +142,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Alibaba's Qwen 3 1.7B model optimized for web browsers",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -153,7 +153,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Alibaba's Qwen 3 4B model optimized for web browsers",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -164,7 +164,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Alibaba's Qwen 3 8B model optimized for web browsers",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -175,7 +175,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Hermes 3 fine-tuned Llama 3.1 model for enhanced reasoning",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -186,7 +186,7 @@ export const webLLMModels: ModelConfig = {
 		description: "Hermes 3 fine-tuned Llama 3.2 model for enhanced reasoning",
 		strengths: ["text-generation"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -198,7 +198,7 @@ export const webLLMModels: ModelConfig = {
 			"Hermes 2 Pro fine-tuned Llama 3 model with function calling support",
 		strengths: ["text-generation", "function-calling"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -209,7 +209,7 @@ export const webLLMModels: ModelConfig = {
 		description: "DeepSeek's R1 model with enhanced reasoning capabilities",
 		strengths: ["text-generation", "reasoning"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -220,7 +220,7 @@ export const webLLMModels: ModelConfig = {
 		description: "DeepSeek's R1 model with enhanced reasoning capabilities",
 		strengths: ["text-generation", "reasoning"],
 		provider: "web-llm",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		isFree: true,
 		isFeatured: true,
 	},
@@ -255,16 +255,21 @@ export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
 	return Object.entries(models).reduce(
 		(acc, [key, model]) => {
 			const hasIncompatibleProvider = model.provider === "ollama";
-			const hasIncompatibleType =
-				model.type.includes("embedding") ||
-				model.type.includes("reranking") ||
-				model.type.includes("video-to-video") ||
-				model.type.includes("speech") ||
-				model.type.includes("text-to-speech");
-			const hasIncompatibleTypeAndIsNotText =
-				hasIncompatibleType && !model.type.includes("text");
+			const inputs = model.modalities?.input ?? ["text"];
+			const outputs = model.modalities?.output ?? inputs;
+			const supportsText = outputs.includes("text");
+			const isEmbeddingOnly =
+				outputs.length > 0 &&
+				outputs.every((modality) => modality === "embedding");
+			const isAudioOnly =
+				outputs.length > 0 && outputs.every((modality) => modality === "audio");
+			const isVideoOnly =
+				outputs.length > 0 && outputs.every((modality) => modality === "video");
 			const isIncompatible =
-				hasIncompatibleProvider || hasIncompatibleTypeAndIsNotText;
+				hasIncompatibleProvider ||
+				(!supportsText && (isAudioOnly || isVideoOnly)) ||
+				isEmbeddingOnly ||
+				model.hiddenFromDefaultList;
 
 			if (
 				!isIncompatible &&

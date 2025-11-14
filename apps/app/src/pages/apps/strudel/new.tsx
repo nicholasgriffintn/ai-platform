@@ -92,7 +92,15 @@ export default function CreateStrudelPatternPage() {
 
 	const availableModels = getAvailableModels(apiModels, false);
 	const textModels = Object.entries(availableModels)
-		.filter(([_, model]) => model.type.length === 1 && model.type[0] === "text")
+		.filter(([_, model]) => {
+			const inputs = model.modalities?.input ?? ["text"];
+			const outputs = model.modalities?.output ?? inputs;
+			const supportsOnlyText =
+				outputs.length === 1 &&
+				outputs[0] === "text" &&
+				inputs.includes("text");
+			return supportsOnlyText;
+		})
 		.map(([id, model]) => ({
 			value: id,
 			label: model.name || id,

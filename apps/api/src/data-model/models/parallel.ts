@@ -7,11 +7,14 @@ export const parallelModelConfig: ModelConfig = {
 		description:
 			"Parallel's speed-optimized model for fast, comprehensive research and analysis tasks. Uses OpenAI-compatible chat completions by default.",
 		provider: "parallel",
-		type: ["text"],
 		strengths: ["research", "search", "analysis"],
 		isFeatured: false,
 		includedInRouter: false,
 		supportsArtifacts: false,
 		isFree: false,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 };

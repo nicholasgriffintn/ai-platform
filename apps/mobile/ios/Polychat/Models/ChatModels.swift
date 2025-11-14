@@ -277,7 +277,7 @@ public struct ModelConfigItem: Codable, Identifiable {
     public let strengths: [String]?
     public let contextWindow: Int?
     public let pricing: ModelPricing?
-    public let type: [String]?
+    public let modalities: ModelModalities?
     public let supportsFunctions: Bool?
     public let multimodal: Bool?
     
@@ -286,12 +286,17 @@ public struct ModelConfigItem: Codable, Identifiable {
         public let costPer1kOutputTokens: Double?
     }
     
-    // Custom coding keys that excludes 'id' since it comes from the dictionary key
-    enum CodingKeys: String, CodingKey {
-        case name, provider, description, strengths, contextWindow, pricing, type, supportsFunctions, multimodal
+    public struct ModelModalities: Codable {
+        public let input: [String]
+        public let output: [String]?
     }
     
-    public init(id: String, name: String?, provider: String, description: String?, strengths: [String]?, contextWindow: Int?, pricing: ModelPricing?, type: [String]?, supportsFunctions: Bool?, multimodal: Bool?) {
+    // Custom coding keys that excludes 'id' since it comes from the dictionary key
+    enum CodingKeys: String, CodingKey {
+        case name, provider, description, strengths, contextWindow, pricing, modalities, supportsFunctions, multimodal
+    }
+    
+    public init(id: String, name: String?, provider: String, description: String?, strengths: [String]?, contextWindow: Int?, pricing: ModelPricing?, modalities: ModelModalities?, supportsFunctions: Bool?, multimodal: Bool?) {
         self.id = id
         self.name = name
         self.provider = provider
@@ -299,7 +304,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         self.strengths = strengths
         self.contextWindow = contextWindow
         self.pricing = pricing
-        self.type = type
+        self.modalities = modalities
         self.supportsFunctions = supportsFunctions
         self.multimodal = multimodal
     }

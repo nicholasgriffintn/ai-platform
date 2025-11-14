@@ -12,13 +12,12 @@ export const morphModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "auto",
 		description:
 			"Morph's automatic model selection that routes to the best model for the task.",
-		type: ["coding"],
 		knowledgeCutoffDate: "June 2024",
 		releaseDate: "June 1, 2024",
 		lastUpdated: "June 1, 2024",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["coding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -41,13 +40,12 @@ export const morphModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "morph-v3-large",
 		description:
 			"Morph's large v3 model with enhanced capabilities for complex tasks and analysis.",
-		type: ["coding"],
 		knowledgeCutoffDate: "August 2024",
 		releaseDate: "August 15, 2024",
 		lastUpdated: "August 15, 2024",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["coding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -70,13 +68,12 @@ export const morphModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "morph-v3-fast",
 		description:
 			"Morph's fast v3 model optimized for quick responses while maintaining quality.",
-		type: ["coding"],
 		knowledgeCutoffDate: "August 2024",
 		releaseDate: "August 15, 2024",
 		lastUpdated: "August 15, 2024",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["coding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,

@@ -4,7 +4,10 @@ import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import * as chatCapability from "~/lib/providers/capabilities/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { formatMessages } from "~/utils/messages";
-import { mergeParametersWithDefaults } from "~/utils/parameters";
+import {
+	mergeParametersWithDefaults,
+	shouldEnableStreaming,
+} from "~/utils/parameters";
 import { withRetry } from "~/utils/retries";
 import { formatAssistantMessage, getAIResponse } from "../responses";
 
@@ -22,6 +25,7 @@ vi.mock("~/utils/messages", () => ({
 
 vi.mock("~/utils/parameters", () => ({
 	mergeParametersWithDefaults: vi.fn(),
+	shouldEnableStreaming: vi.fn(),
 }));
 
 vi.mock("~/utils/retries", () => ({
@@ -60,6 +64,7 @@ vi.mock("~/utils/errors", () => ({
 describe("responses", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
+		vi.mocked(shouldEnableStreaming).mockReturnValue(false);
 	});
 
 	describe("formatAssistantMessage", () => {
@@ -204,7 +209,7 @@ describe("responses", () => {
 
 		const mockModelConfig = {
 			provider: "openai",
-			type: ["text"],
+			modalities: { input: ["text"], output: ["text"] },
 			supportsStreaming: true,
 		};
 
@@ -386,6 +391,7 @@ describe("responses", () => {
 		});
 
 		it("should enable streaming when conditions are met", async () => {
+			vi.mocked(shouldEnableStreaming).mockReturnValue(true);
 			// @ts-expect-error - test data
 			await getAIResponse({
 				...baseParams,
@@ -400,10 +406,11 @@ describe("responses", () => {
 		});
 
 		it("should disable streaming for non-text model types", async () => {
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
 			// @ts-expect-error - mock implementation
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				...mockModelConfig,
-				type: ["text-to-image"],
+				modalities: { input: ["text"], output: ["image"] },
 			});
 
 			// @ts-expect-error - test data

@@ -13,7 +13,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "amazon.nova-lite-v1:0",
 		description:
 			"Amazon Nova Lite is a very low-cost multimodal model that is lightning fast for processing image, video, and text inputs. Amazon Nova Lite's accuracy across a breadth of tasks, coupled with its lightning-fast speed, makes it suitable for a wide range of interactive and high-volume applications where cost is a key consideration.",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "December 3, 2024",
 		lastUpdated: "December 3, 2024",
@@ -43,7 +42,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "amazon.nova-micro-v1:0",
 		description:
 			"Amazon Nova Micro is a text only model that delivers the lowest latency responses at very low cost. It is highly performant at language understanding, translation, reasoning, code completion, brainstorming, and mathematical problem-solving. With its generation speed of over 200 tokens per second, Amazon Nova Micro is ideal for applications that require fast responses.",
-		type: ["text", "coding"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "December 3, 2024",
 		lastUpdated: "December 3, 2024",
@@ -72,7 +70,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "amazon.nova-pro-v1:0",
 		description:
 			"Amazon Nova Pro is a highly capable multimodal model with the best combination of accuracy, speed, and cost for a wide range of tasks.  Amazon Nova Pro's capabilities, coupled with its industry-leading speed and cost efficiency, makes it a compelling model for almost any task, including video summarization, Q&A, mathematical reasoning, software development, and AI agents that can execute multi-step workflows.",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "December 3, 2024",
 		lastUpdated: "December 3, 2024",
@@ -101,12 +98,15 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "amazon.nova-canvas-v1:0",
 		description:
 			"Amazon Nova Canvas is a state-of-the-art image generation model that creates professional grade images from text or images provided in prompts. Amazon Nova Canvas also provides features that make it easy to edit images using text inputs, controls for adjusting color scheme and layout, and built-in controls to support safe and responsible use of AI.",
-		type: ["text-to-image", "image-to-image"],
 		costPer1kInputTokens: 0.002,
 		contextWindow: 1024,
 		maxTokens: 1024,
 		multimodal: true,
 		bedrockApiOperation: "invoke",
+		modalities: {
+			input: ["text", "image"],
+			output: ["image"],
+		},
 	}),
 
 	createModelConfig("nova-reel", PROVIDER, {
@@ -114,11 +114,14 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "amazon.nova-reel-v1:1",
 		description:
 			"Amazon Nova Reel is a state-of-the-art video generation model that allows customers to easily create high quality video from text and images. Amazon Nova Reel supports use of natural language prompts to control visual style and pacing, including camera motion control, and built-in controls to support safe and responsible use of AI.",
-		type: ["text-to-video", "image-to-video"],
 		contextWindow: 512,
 		maxTokens: 512,
 		multimodal: true,
 		bedrockApiOperation: "async-invoke",
+		modalities: {
+			input: ["text", "image"],
+			output: ["video"],
+		},
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4.5", PROVIDER, {
@@ -126,7 +129,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
 		description:
 			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
@@ -169,7 +171,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "us.anthropic.claude-sonnet-4-20250514-v1:0",
 		description:
 			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
@@ -212,7 +213,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "us.anthropic.claude-3-5-haiku-20241022-v1:0",
 		description:
 			"With fast speeds, improved instruction following, and more accurate tool use, Claude 3.5 Haiku is well suited for user-facing products, specialized sub-agent tasks, and generating personalized experiences from huge volumes of data.",
-		type: ["text"],
 		knowledgeCutoffDate: "July 2024",
 		releaseDate: "October 22, 2024",
 		lastUpdated: "October 22, 2024",
@@ -253,7 +253,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "us.anthropic.claude-opus-4-20250514-v1:0",
 		description:
 			"The Claude 4 Opus is an advanced AI model by Anthropic designed for enterprise-level applications. It offers unmatched performance in handling complex tasks, making it an ideal solution for businesses requiring high-level data processing and analysis.",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
@@ -293,7 +292,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "us.anthropic.claude-opus-4-1-20250805-v1:0",
 		description:
 			"Enhanced Claude 4 Opus with improved reasoning and analysis capabilities.",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2025",
 		releaseDate: "August 5, 2025",
 		lastUpdated: "August 5, 2025",
@@ -331,7 +329,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
 		description:
 			"Advanced reasoning model with enhanced capabilities for complex analytical tasks.",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "February 19, 2025",
 		lastUpdated: "February 19, 2025",
@@ -369,15 +366,21 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("embed-english", PROVIDER, {
 		name: "Cohere Embed English",
 		matchingModel: "cohere.embed-english-v3",
-		type: ["embedding"],
 		costPer1kInputTokens: 0.0001,
+		modalities: {
+			input: ["embedding"],
+			output: ["embedding"],
+		},
 	}),
 
 	createModelConfig("embed-multilingual", PROVIDER, {
 		name: "Cohere Embed Multilingual",
 		matchingModel: "cohere.embed-multilingual-v3",
-		type: ["embedding"],
 		costPer1kInputTokens: 0.0001,
+		modalities: {
+			input: ["embedding"],
+			output: ["embedding"],
+		},
 	}),
 
 	createModelConfig("command-r", PROVIDER, {
@@ -385,7 +388,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "cohere.command-r-v1:0",
 		description:
 			"Command R is an instruction-following conversational model that performs language tasks at a higher quality, more reliably, and with a longer context than previous models. It can be used for complex workflows like code generation, retrieval augmented generation (RAG), tool use, and agents.",
-		type: ["text"],
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "March 11, 2024",
 		lastUpdated: "March 11, 2024",
@@ -410,7 +412,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "cohere.command-r-plus-v1:0",
 		description:
 			"Command R+ is an instruction-following conversational model that performs language tasks at a higher quality, more reliably, and with a longer context than previous models. It is best suited for complex RAG workflows and multi-step tool use.",
-		type: ["text"],
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 4, 2024",
 		lastUpdated: "April 4, 2024",
@@ -435,7 +436,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "ai21.jamba-1-5-large-v1:0",
 		description:
 			"Jamba 1.5 Large (94B active/398B total) is built for superior long context handling, speed, and quality. They mark the first time a non-Transformer model has been successfully scaled to the quality and strength of the market's leading models.",
-		type: ["text", "instruct"],
 		knowledgeCutoffDate: "August 2024",
 		releaseDate: "August 15, 2024",
 		lastUpdated: "August 15, 2024",
@@ -460,7 +460,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "ai21.jamba-1-5-mini-v1:0",
 		description:
 			"Jamba 1.5 Mini (12B active/52B total) is built for superior long context handling, speed, and quality. They mark the first time a non-Transformer model has been successfully scaled to the quality and strength of the market's leading models.",
-		type: ["text", "instruct"],
 		knowledgeCutoffDate: "August 2024",
 		releaseDate: "August 15, 2024",
 		lastUpdated: "August 15, 2024",
@@ -485,7 +484,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "ai21.jamba-instruct-v1:0",
 		description:
 			"Jambda Instruct is an aligned version of Jamba with additional training, chat capabilities, and safety guardrails to make it suitable for immediate and secure enterprise use.",
-		type: ["text", "instruct"],
 		knowledgeCutoffDate: "August 2024",
 		releaseDate: "August 15, 2024",
 		lastUpdated: "August 15, 2024",
@@ -510,7 +508,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "amazon.nova-premier-v1:0",
 		description:
 			"Amazon Nova Premier is the most capable multimodal model in the Nova family with advanced reasoning capabilities.",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "December 3, 2024",
 		lastUpdated: "December 3, 2024",
@@ -540,7 +537,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "meta.llama3-2-90b-instruct-v1:0",
 		description:
 			"Large multimodal model with 90B parameters offering strong vision and language capabilities.",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "December 2023",
 		releaseDate: "September 25, 2024",
 		lastUpdated: "September 25, 2024",
@@ -567,7 +563,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "meta.llama3-1-70b-instruct-v1:0",
 		description:
 			"Large language model with 70B parameters offering strong performance across various tasks.",
-		type: ["text"],
 		knowledgeCutoffDate: "December 2023",
 		releaseDate: "July 23, 2024",
 		lastUpdated: "July 23, 2024",
@@ -593,7 +588,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "deepseek.r1-v1:0",
 		description:
 			"Advanced reasoning model with strong performance in mathematical and logical tasks.",
-		type: ["text"],
 		knowledgeCutoffDate: "July 2024",
 		releaseDate: "January 20, 2025",
 		lastUpdated: "May 29, 2025",
@@ -620,7 +614,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "twelvelabs.marengo-embed-2-7-v1:0",
 		description:
 			"Advanced multimodal embedding model that generates vector representations from text, image, speech, and video inputs for semantic search and retrieval applications.",
-		type: ["embedding"],
 		knowledgeCutoffDate: "2024",
 		releaseDate: "2024",
 		lastUpdated: "2024",
@@ -648,7 +641,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "us.twelvelabs.pegasus-1-2-v1:0",
 		description:
 			"Advanced video understanding model that analyzes video content and generates detailed text responses, perfect for video summarization, content analysis, and multimodal question answering.",
-		type: ["text"],
 		knowledgeCutoffDate: "2024",
 		releaseDate: "2024",
 		lastUpdated: "2024",

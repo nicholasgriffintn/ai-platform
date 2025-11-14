@@ -6,6 +6,8 @@ import type {
 	IUserSettings,
 	ModelConfig,
 	ModelConfigItem,
+	ModelModalities,
+	ModelModality,
 	ResearchProviderName,
 	SearchProviderName,
 } from "~/types";
@@ -14,11 +16,7 @@ import { anthropicModelConfig } from "~/data-model/models/anthropic";
 import { azureModelConfig } from "~/data-model/models/azure";
 import { bedrockModelConfig } from "~/data-model/models/bedrock";
 import { chutesModelConfig } from "~/data-model/models/chutes";
-import {
-	type availableCapabilities,
-	type availableModelTypes,
-	defaultModel,
-} from "~/constants/models";
+import { type availableModalities, defaultModel } from "~/constants/models";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { deepinfraModelConfig } from "~/data-model/models/deepinfra";
 import { deepseekModelConfig } from "~/data-model/models/deepseek";
@@ -54,10 +52,11 @@ let cachedModels: typeof modelConfig | null = null;
 let cachedFreeModels: typeof modelConfig | null = null;
 let cachedFeaturedModels: typeof modelConfig | null = null;
 let cachedRouterModels: typeof modelConfig | null = null;
+let cachedCapabilities: string[] | null = null;
 
 export interface ModelsOptions {
 	shouldUseCache?: boolean;
-	excludeTypes?: Array<(typeof availableModelTypes)[number]>;
+	excludeModalities?: ModelModality[];
 }
 
 const modelConfig: ModelConfig = {
@@ -97,6 +96,25 @@ const modelConfig: ModelConfig = {
 const MODEL_CACHE_TTL = 14400;
 const USER_MODEL_CACHE_TTL = 3600;
 let modelCache: KVCache | null = null;
+
+const DEFAULT_MODALITIES: ModelModalities = {
+	input: ["text"],
+	output: ["text"],
+};
+
+function getModelModalities(model: ModelConfigItem): ModelModalities {
+	return model.modalities ?? DEFAULT_MODALITIES;
+}
+
+function modelSupportsModality(
+	model: ModelConfigItem,
+	modality: ModelModality,
+) {
+	const modalities = getModelModalities(model);
+	return (
+		modalities.input.includes(modality) || modalities.output.includes(modality)
+	);
+}
 
 function getModelCache(env: IEnv): KVCache | null {
 	if (!env.CACHE) return null;
@@ -197,7 +215,7 @@ export async function getModelConfigByMatchingModel(
 export function getModels(
 	options: ModelsOptions = {
 		shouldUseCache: true,
-		excludeTypes: [],
+		excludeModalities: [],
 	},
 ) {
 	if (cachedModels && options.shouldUseCache) {
@@ -207,7 +225,9 @@ export function getModels(
 	cachedModels = Object.entries(modelConfig).reduce((acc, [key, model]) => {
 		if (
 			!model.beta &&
-			!options.excludeTypes?.some((excluded) => model.type.includes(excluded))
+			!options.excludeModalities?.some((excluded) =>
+				modelSupportsModality(model, excluded),
+			)
 		) {
 			acc[key] = model;
 		}
@@ -215,6 +235,22 @@ export function getModels(
 	}, {});
 
 	return cachedModels;
+}
+
+export function getAvailableStrengths(): string[] {
+	if (cachedCapabilities) {
+		return cachedCapabilities;
+	}
+
+	const capabilities = new Set<string>();
+	for (const model of Object.values(modelConfig)) {
+		for (const capability of model.strengths ?? []) {
+			capabilities.add(capability);
+		}
+	}
+
+	cachedCapabilities = Array.from(capabilities);
+	return cachedCapabilities;
 }
 
 export function getFreeModels(
@@ -329,7 +365,7 @@ export function getModelsByCapability(capability: string) {
 		(acc, [key, model]) => {
 			if (
 				model.strengths?.includes(
-					capability as (typeof availableCapabilities)[number],
+					capability as (typeof availableModalities)[number],
 				)
 			) {
 				acc[key] = model;
@@ -340,10 +376,10 @@ export function getModelsByCapability(capability: string) {
 	);
 }
 
-export function getModelsByType(type: string) {
+export function getModelsByModality(modality: ModelModality) {
 	return Object.entries(modelConfig).reduce(
 		(acc, [key, model]) => {
-			if (model.type?.includes(type as (typeof availableModelTypes)[number])) {
+			if (modelSupportsModality(model, modality)) {
 				acc[key] = model;
 			}
 			return acc;
@@ -634,8 +670,7 @@ export const getAuxiliarySpeechModel = async (
 };
 
 export {
-	availableCapabilities,
-	availableModelTypes,
+	availableModalities,
 	defaultModel,
 	defaultProvider,
 } from "~/constants/models";

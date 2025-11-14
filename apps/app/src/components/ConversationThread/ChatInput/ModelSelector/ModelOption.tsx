@@ -24,6 +24,13 @@ export const ModelOption = ({
 	isTeamAgent = false,
 }: ModelOptionProps) => {
 	const [showDetails, setShowDetails] = useState(false);
+	const supportsVision =
+		model.modalities?.input?.some((modality) =>
+			["image", "video"].includes(modality),
+		) ||
+		model.modalities?.output?.some((modality) =>
+			["image", "video"].includes(modality),
+		);
 
 	const handleInfoClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -114,10 +121,7 @@ export const ModelOption = ({
 							/>
 						</div>
 					)}
-					{(model.multimodal ||
-						model.type?.some(
-							(t) => t.includes("image-to") || t.includes("to-image"),
-						)) && (
+					{(model.multimodal || supportsVision) && (
 						<div className="p-0.5 rounded-full bg-green-100 dark:bg-green-900/30">
 							<Eye size={14} className="text-green-600 dark:text-green-400" />
 						</div>

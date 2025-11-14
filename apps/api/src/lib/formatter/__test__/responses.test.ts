@@ -149,7 +149,7 @@ describe("ResponseFormatter", () => {
 			};
 
 			const result = await ResponseFormatter.formatResponse(data, "openai", {
-				type: ["text-to-image"],
+				modalities: { input: ["text"], output: ["image"] },
 			});
 
 			expect(result.response).toHaveLength(2);
@@ -168,7 +168,7 @@ describe("ResponseFormatter", () => {
 			};
 
 			const result = await ResponseFormatter.formatResponse(data, "openai", {
-				type: ["text-to-image"],
+				modalities: { input: ["text"], output: ["image"] },
 			});
 
 			expect(result.response).toHaveLength(1);
@@ -376,7 +376,7 @@ describe("ResponseFormatter", () => {
 			};
 
 			const result = await ResponseFormatter.formatResponse(data, "replicate", {
-				type: ["text-to-image"],
+				modalities: { input: ["text"], output: ["image"] },
 			});
 
 			expect(result.response).toEqual([
@@ -400,7 +400,7 @@ describe("ResponseFormatter", () => {
 			} as unknown as Response);
 
 			const result = await ResponseFormatter.formatResponse(data, "replicate", {
-				type: ["text-to-image"],
+				modalities: { input: ["text"], output: ["image"] },
 				env: mockEnv,
 				model: "replicate-image",
 			});
@@ -427,7 +427,7 @@ describe("ResponseFormatter", () => {
 			};
 
 			const result = await ResponseFormatter.formatResponse(data, "replicate", {
-				type: ["text-to-audio"],
+				modalities: { input: ["text"], output: ["audio"] },
 			});
 
 			expect(result.response).toEqual([
@@ -446,7 +446,7 @@ describe("ResponseFormatter", () => {
 			};
 
 			const result = await ResponseFormatter.formatResponse(data, "replicate", {
-				type: ["audio-to-text"],
+				modalities: { input: ["audio"], output: ["text"] },
 			});
 
 			expect(result.response).toBe("Transcribed speech");
@@ -591,7 +591,7 @@ describe("ResponseFormatter", () => {
 				data,
 				"workers-ai",
 				{
-					type: ["text-to-image"],
+					modalities: { input: ["text"], output: ["image"] },
 				},
 			);
 
@@ -617,7 +617,7 @@ describe("ResponseFormatter", () => {
 				data,
 				"workers-ai",
 				{
-					type: ["text-to-speech"],
+					modalities: { input: ["text"], output: ["audio"] },
 					env: mockEnv,
 					completion_id: "test-completion",
 				},
@@ -784,7 +784,7 @@ describe("ResponseFormatter", () => {
 			};
 
 			const result = await ResponseFormatter.formatResponse(data, "bedrock", {
-				type: ["text-to-image"],
+				modalities: { input: ["text"], output: ["image"] },
 			});
 
 			expect(result.response).toBe("base64imagedata");
@@ -898,7 +898,7 @@ describe("ResponseFormatter", () => {
 
 			await expect(
 				ResponseFormatter.formatResponse(data, "openai", {
-					type: ["text-to-image"],
+					modalities: { input: ["text"], output: ["image"] },
 					env: envWithoutBucket,
 				}),
 			).rejects.toThrow("ASSETS_BUCKET is not set");
@@ -914,7 +914,7 @@ describe("ResponseFormatter", () => {
 
 			await expect(
 				ResponseFormatter.formatResponse(data, "openai", {
-					type: ["text-to-image"],
+					modalities: { input: ["text"], output: ["image"] },
 					env: mockEnv,
 				}),
 			).rejects.toThrow("Fetch failed");
@@ -929,7 +929,7 @@ describe("ResponseFormatter", () => {
 
 			await expect(
 				ResponseFormatter.formatResponse(data, "openai", {
-					type: ["text-to-image"],
+					modalities: { input: ["text"], output: ["image"] },
 					env: envWithoutBucket,
 				}),
 			).rejects.toThrow("ASSETS_BUCKET is not set");

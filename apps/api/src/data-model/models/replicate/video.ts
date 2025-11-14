@@ -13,8 +13,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			"847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
 		description:
 			"A state-of-the-art text-to-video generation model capable of creating high-quality videos with realistic motion from text descriptions .",
-		type: ["text-to-video"],
-		strengths: ["creative", "video_generation"],
+		strengths: ["creative"],
 		supportsStreaming: false,
 		supportsAttachments: false,
 		costPerRun: 1.25,
@@ -71,7 +70,6 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		name: "Sora 2",
 		matchingModel: "openai/sora-2",
 		description: "OpenAI's Flagship video generation with synced audio ",
-		type: ["text-to-video"],
 		strengths: ["creative", "video"],
 		supportsStreaming: false,
 		supportsAttachments: false,
@@ -116,7 +114,6 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "minimax/hailuo-2.3",
 		description:
 			"A high-fidelity video generation model optimized for realistic human motion, cinematic VFX, expressive characters, and strong prompt and style adherence across both text-to-video and image-to-video workflows ",
-		type: ["text-to-video"],
 		strengths: ["creative", "video"],
 		supportsStreaming: false,
 		supportsAttachments: false,
@@ -167,7 +164,6 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "google/veo-3.1",
 		description:
 			"New and improved version of Veo 3, with higher-fidelity video, context-aware audio, reference image and last frame support ",
-		type: ["text-to-video"],
 		strengths: ["creative", "video"],
 		supportsStreaming: false,
 		supportsAttachments: false,
@@ -243,7 +239,6 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "google/veo-3.1-fast",
 		description:
 			"New and improved version of Veo 3 Fast, with higher-fidelity video, context-aware audio and last frame support ",
-		type: ["text-to-video", "image-to-video"],
 		modalities: {
 			input: ["text", "image"],
 			output: ["video"],

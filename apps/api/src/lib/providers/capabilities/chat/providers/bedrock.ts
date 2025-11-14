@@ -21,6 +21,16 @@ import { formatBedrockMessages } from "../../../utils/bedrockContent";
 
 const logger = getLogger({ prefix: "lib/providers/bedrock" });
 
+function getModalityInfo(modelConfig?: ModelConfigItem) {
+	const inputs = modelConfig?.modalities?.input ?? ["text"];
+	const outputs = modelConfig?.modalities?.output ?? inputs;
+	return {
+		inputs,
+		outputs,
+		outputSet: new Set(outputs),
+	};
+}
+
 type AsyncOperationStatus =
 	| "IN_PROGRESS"
 	| "SUCCESS"
@@ -341,11 +351,9 @@ export class BedrockProvider extends BaseProvider {
 			return requestBody;
 		}
 
-		const type = modelConfig?.type || ["text"];
-		const isImageType =
-			type.includes("text-to-image") || type.includes("image-to-image");
-		const isVideoType =
-			type.includes("text-to-video") || type.includes("image-to-video");
+		const modalityInfo = getModalityInfo(modelConfig);
+		const isImageType = modalityInfo.outputSet.has("image");
+		const isVideoType = modalityInfo.outputSet.has("video");
 
 		if (isVideoType) {
 			const prompt = await this.getInputPromptFromMessages(params);
@@ -501,9 +509,8 @@ export class BedrockProvider extends BaseProvider {
 			const modelConfig = await getModelConfigByMatchingModel(
 				params.model || "",
 			);
-			const types = modelConfig?.type || [];
-			const isVideoType =
-				types.includes("text-to-video") || types.includes("image-to-video");
+			const modalityInfo = getModalityInfo(modelConfig);
+			const isVideoType = modalityInfo.outputSet.has("video");
 
 			if (!isVideoType) {
 				return formatted;

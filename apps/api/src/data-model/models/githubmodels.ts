@@ -7,7 +7,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Efficient hybrid architecture model combining Transformer and Mamba layers for speed and context handling.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2024",
 		releaseDate: "August 29, 2024",
 		lastUpdated: "August 29, 2024",
@@ -37,7 +36,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Large-scale hybrid architecture model for complex reasoning and analysis tasks.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2024",
 		releaseDate: "August 29, 2024",
 		lastUpdated: "August 29, 2024",
@@ -67,7 +65,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Advanced GPT model with improved instruction following and 1M context window.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
@@ -98,7 +95,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Reasoning model optimized for complex problem-solving with enhanced mathematical capabilities.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "January 31, 2025",
 		lastUpdated: "January 31, 2025",
@@ -129,7 +125,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Compact reasoning model for mathematical and logical problem-solving.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "September 12, 2024",
 		lastUpdated: "December 17, 2024",
@@ -159,7 +154,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Efficient multimodal model with support for text, image, and audio inputs.",
 		provider: "github-models",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "July 18, 2024",
 		lastUpdated: "July 18, 2024",
@@ -190,7 +184,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Advanced multimodal GPT model with enhanced vision and audio capabilities.",
 		provider: "github-models",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "May 13, 2024",
 		lastUpdated: "May 13, 2024",
@@ -221,7 +214,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Latest compact reasoning model with enhanced problem-solving capabilities.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "January 31, 2025",
 		lastUpdated: "January 31, 2025",
@@ -251,7 +243,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Advanced reasoning model with multimodal capabilities and enhanced logical thinking.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "September 12, 2024",
 		lastUpdated: "December 17, 2024",
@@ -282,7 +273,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Microsoft's latest small language model optimized for reasoning and code generation.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "December 11, 2024",
 		lastUpdated: "December 11, 2024",
@@ -312,7 +302,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Multimodal version of Phi-4 with vision and audio capabilities.",
 		provider: "github-models",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "December 11, 2024",
 		lastUpdated: "December 11, 2024",
@@ -343,7 +332,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Specialized version of Phi-4 optimized for complex reasoning tasks.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "December 11, 2024",
 		lastUpdated: "December 11, 2024",
@@ -373,7 +361,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Vision-enabled Phi model for image understanding and analysis.",
 		provider: "github-models",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "August 20, 2024",
 		lastUpdated: "August 20, 2024",
@@ -404,7 +391,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Large multimodal Llama model with vision and audio capabilities.",
 		provider: "github-models",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "December 2023",
 		releaseDate: "September 25, 2024",
 		lastUpdated: "September 25, 2024",
@@ -435,7 +421,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Largest open-source language model with exceptional reasoning capabilities.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "December 2023",
 		releaseDate: "July 23, 2024",
 		lastUpdated: "July 23, 2024",
@@ -465,7 +450,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Advanced reasoning model with strong mathematical and logical capabilities.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "June 2024",
 		releaseDate: "January 20, 2025",
 		lastUpdated: "January 20, 2025",
@@ -495,7 +479,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Latest Mistral model with enhanced reasoning and multilingual capabilities.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "September 2024",
 		releaseDate: "November 1, 2024",
 		lastUpdated: "November 1, 2024",
@@ -525,7 +508,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Specialized Mistral model optimized for code generation and programming tasks.",
 		provider: "github-models",
-		type: ["text", "coding"],
 		knowledgeCutoffDate: "March 2024",
 		releaseDate: "January 1, 2025",
 		lastUpdated: "January 1, 2025",
@@ -555,7 +537,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"xAI's flagship model with strong reasoning capabilities and real-time knowledge.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "December 9, 2024",
 		lastUpdated: "December 9, 2024",
@@ -585,7 +566,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Efficient version of Grok 3 optimized for speed while maintaining reasoning capabilities.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "December 9, 2024",
 		lastUpdated: "December 9, 2024",
@@ -615,7 +595,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Cohere's conversational model optimized for RAG and tool use.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2024",
 		releaseDate: "March 11, 2024",
 		lastUpdated: "August 1, 2024",
@@ -645,7 +624,6 @@ export const githubModelsConfig: ModelConfig = {
 		description:
 			"Enhanced version of Command R with improved capabilities for complex workflows.",
 		provider: "github-models",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2024",
 		releaseDate: "April 4, 2024",
 		lastUpdated: "August 1, 2024",

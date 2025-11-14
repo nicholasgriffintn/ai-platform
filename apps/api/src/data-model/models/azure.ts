@@ -10,7 +10,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4-turbo-vision", PROVIDER, {
 		name: "GPT-4 Turbo Vision",
 		matchingModel: "gpt-4-turbo-vision",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -28,7 +27,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4", PROVIDER, {
 		name: "GPT-4",
 		matchingModel: "gpt-4",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -46,7 +44,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-3.5-turbo-0125", PROVIDER, {
 		name: "GPT-3.5 Turbo 0125",
 		matchingModel: "gpt-3.5-turbo-0125",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -64,7 +61,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4.1-mini", PROVIDER, {
 		name: "GPT-4.1 mini",
 		matchingModel: "gpt-4.1-mini",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -82,7 +78,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/o4-mini", PROVIDER, {
 		name: "o4-mini",
 		matchingModel: "o4-mini",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -100,7 +95,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-3.5-turbo-0613", PROVIDER, {
 		name: "GPT-3.5 Turbo 0613",
 		matchingModel: "gpt-3.5-turbo-0613",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -118,7 +112,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/o1-mini", PROVIDER, {
 		name: "o1-mini",
 		matchingModel: "o1-mini",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -136,7 +129,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/codex-mini", PROVIDER, {
 		name: "Codex Mini",
 		matchingModel: "codex-mini",
-		type: ["text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -154,7 +146,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4.1-nano", PROVIDER, {
 		name: "GPT-4.1 nano",
 		matchingModel: "gpt-4.1-nano",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -172,7 +163,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/o1-preview", PROVIDER, {
 		name: "o1-preview",
 		matchingModel: "o1-preview",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -190,7 +180,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-3.5-turbo-1106", PROVIDER, {
 		name: "GPT-3.5 Turbo 1106",
 		matchingModel: "gpt-3.5-turbo-1106",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -208,7 +197,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-3.5-turbo-instruct", PROVIDER, {
 		name: "GPT-3.5 Turbo Instruct",
 		matchingModel: "gpt-3.5-turbo-instruct",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -226,7 +214,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4o-mini", PROVIDER, {
 		name: "GPT-4o mini",
 		matchingModel: "gpt-4o-mini",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -244,7 +231,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4-turbo", PROVIDER, {
 		name: "GPT-4 Turbo",
 		matchingModel: "gpt-4-turbo",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -262,7 +248,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/o3-mini", PROVIDER, {
 		name: "o3-mini",
 		matchingModel: "o3-mini",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -280,7 +265,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-3.5-turbo-0301", PROVIDER, {
 		name: "GPT-3.5 Turbo 0301",
 		matchingModel: "gpt-3.5-turbo-0301",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -298,7 +282,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/o1", PROVIDER, {
 		name: "o1",
 		matchingModel: "o1",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -316,7 +299,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4.1", PROVIDER, {
 		name: "GPT-4.1",
 		matchingModel: "gpt-4.1",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -334,7 +316,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4o", PROVIDER, {
 		name: "GPT-4o",
 		matchingModel: "gpt-4o",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -352,7 +333,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4-32k", PROVIDER, {
 		name: "GPT-4 32K",
 		matchingModel: "gpt-4-32k",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -370,7 +350,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/o3", PROVIDER, {
 		name: "o3",
 		matchingModel: "o3",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: false,

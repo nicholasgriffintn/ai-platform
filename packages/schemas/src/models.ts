@@ -1,5 +1,15 @@
 import z from "zod/v4";
 
+const modalitySchema = z.enum([
+	"text",
+	"image",
+	"audio",
+	"video",
+	"pdf",
+	"document",
+	"embedding",
+]);
+
 export const modelSchema = z.object({
 	id: z.string(),
 	name: z.string(),
@@ -13,7 +23,12 @@ export const modelSchema = z.object({
 			completion: z.number().optional(),
 		})
 		.optional(),
-	type: z.string().optional(),
+	modalities: z
+		.object({
+			input: z.array(modalitySchema),
+			output: z.array(modalitySchema).optional(),
+		})
+		.optional(),
 });
 
 export const modelsResponseSchema = z.object({
@@ -35,5 +50,5 @@ export const capabilitiesResponseSchema = z.object({
 });
 
 export const capabilityParamsSchema = z.object({ capability: z.string() });
-export const typeParamsSchema = z.object({ type: z.string() });
+export const modalityParamsSchema = z.object({ modality: modalitySchema });
 export const modelParamsSchema = z.object({ id: z.string() });

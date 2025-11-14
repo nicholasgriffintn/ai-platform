@@ -59,7 +59,7 @@ export class AzureOpenAIProvider extends BaseProvider {
 		params: ChatCompletionParameters,
 	): Promise<Record<string, any>> {
 		const mapped = await this.defaultMapParameters(params);
-		delete (mapped as any).model;
+		delete mapped.model;
 		return mapped;
 	}
 

@@ -270,9 +270,14 @@ export class OpenAIProvider extends BaseProvider {
 			};
 		}
 
-		const type = modelConfig?.type || ["text"];
+		const inputs = modelConfig?.modalities?.input ?? ["text"];
+		const outputs = modelConfig?.modalities?.output ?? inputs;
+		const isImageEditing =
+			outputs.includes("image") && inputs.includes("image");
+		const isTextToImage =
+			outputs.includes("image") && !inputs.includes("image");
 
-		if (type.includes("image-to-image") || type.includes("text-to-image")) {
+		if (isImageEditing || isTextToImage) {
 			let prompt = "";
 			if (params.messages.length > 1) {
 				const content = params.messages[1].content;
@@ -304,7 +309,7 @@ export class OpenAIProvider extends BaseProvider {
 				);
 			}
 
-			if (type.includes("image-to-image") && hasImages) {
+			if (isImageEditing && hasImages) {
 				return this.handleImageToImageRequest(params, prompt);
 			}
 

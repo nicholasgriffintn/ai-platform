@@ -7,7 +7,6 @@ export const fireworksModelConfig: ModelConfig = {
 		description:
 			"Large 120B parameter open-source GPT model optimized for reasoning and complex tasks.",
 		provider: "fireworks",
-		type: ["text"],
 		releaseDate: "August 5, 2025",
 		lastUpdated: "August 5, 2025",
 		modalities: {
@@ -36,7 +35,6 @@ export const fireworksModelConfig: ModelConfig = {
 		description:
 			"Efficient 20B parameter open-source GPT model for fast reasoning and general tasks.",
 		provider: "fireworks",
-		type: ["text"],
 		releaseDate: "August 5, 2025",
 		lastUpdated: "August 5, 2025",
 		modalities: {
@@ -65,7 +63,6 @@ export const fireworksModelConfig: ModelConfig = {
 		description:
 			"Advanced DeepSeek R1 reasoning model hosted on Fireworks with enhanced mathematical and logical capabilities.",
 		provider: "fireworks",
-		type: ["text"],
 		knowledgeCutoffDate: "May 2025",
 		releaseDate: "May 28, 2025",
 		lastUpdated: "May 28, 2025",
@@ -95,7 +92,6 @@ export const fireworksModelConfig: ModelConfig = {
 		description:
 			"Large-scale Qwen3 model with 235B parameters, offering strong reasoning and language understanding.",
 		provider: "fireworks",
-		type: ["text"],
 		knowledgeCutoffDate: "April 2025",
 		releaseDate: "April 29, 2025",
 		lastUpdated: "April 29, 2025",
@@ -125,7 +121,6 @@ export const fireworksModelConfig: ModelConfig = {
 		description:
 			"DeepSeek V3 model hosted on Fireworks, optimized for coding and analytical tasks.",
 		provider: "fireworks",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "March 24, 2025",
 		lastUpdated: "March 24, 2025",
@@ -155,7 +150,6 @@ export const fireworksModelConfig: ModelConfig = {
 		description:
 			"Kimi K2 instruction-following model optimized for conversational AI and task completion.",
 		provider: "fireworks",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "July 11, 2025",
 		lastUpdated: "July 11, 2025",

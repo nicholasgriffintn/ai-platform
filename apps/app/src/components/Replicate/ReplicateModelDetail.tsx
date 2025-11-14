@@ -59,16 +59,20 @@ export function ReplicateModelDetail({ modelId }: ReplicateModelDetailProps) {
 					{model.description}
 				</p>
 
-				<div className="flex flex-wrap gap-2 mb-4">
-					{model.type.map((type) => (
-						<span
-							key={type}
-							className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-sm rounded-full"
-						>
-							{type.replace(/-/g, " ")}
-						</span>
-					))}
-				</div>
+				{(model.tags?.length || model.modalityLabel) && (
+					<div className="flex flex-wrap gap-2 mb-4">
+						{[model.modalityLabel, ...(model.tags ?? [])]
+							.filter(Boolean)
+							.map((tag) => (
+								<span
+									key={tag}
+									className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-sm rounded-full"
+								>
+									{tag}
+								</span>
+							))}
+					</div>
+				)}
 
 				<div className="text-sm text-zinc-600 dark:text-zinc-400">
 					Cost: ${model.costPerRun} per run

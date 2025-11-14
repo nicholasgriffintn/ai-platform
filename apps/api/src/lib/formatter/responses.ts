@@ -1,18 +1,33 @@
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
-import type { IEnv } from "~/types";
+import type { IEnv, ModelModalities } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { StorageService } from "../storage";
 import { uploadAudioFromChat, uploadImageFromChat } from "../upload";
 
 interface ResponseFormatOptions {
 	model?: string;
-	type?: string[];
+	modalities?: ModelModalities;
 	env?: IEnv;
 	completion_id?: string;
 	is_streaming?: boolean;
 }
 
 export class ResponseFormatter {
+	private static getModalityState(modalities?: ModelModalities) {
+		const inputs = modalities?.input ?? ["text"];
+		const outputs = modalities?.output ?? inputs;
+		const inputSet = new Set(inputs);
+		const outputSet = new Set(outputs);
+		return {
+			inputSet,
+			outputSet,
+			producesImages: outputSet.has("image"),
+			producesVideo: outputSet.has("video"),
+			producesAudio: outputSet.has("audio"),
+			producesText: outputSet.has("text"),
+		};
+	}
+
 	/**
 	 * Formats responses from any provider
 	 * Handles specific response formats for each provider
@@ -319,9 +334,11 @@ export class ResponseFormatter {
 		data: any,
 		options: ResponseFormatOptions,
 	): Promise<any> {
+		const modalityState = ResponseFormatter.getModalityState(
+			options.modalities,
+		);
 		const isImageType =
-			options.type?.includes("image-to-image") ||
-			options.type?.includes("text-to-image");
+			modalityState.producesImages && !modalityState.producesText;
 		if (isImageType && Array.isArray(data.data)) {
 			const dataImageUrls = data.data
 				.filter((item) => item.url)
@@ -470,14 +487,16 @@ export class ResponseFormatter {
 		data: any,
 		options: ResponseFormatOptions = {},
 	): Promise<any> {
-		const type = options.type || ["text"];
+		const modalityState = ResponseFormatter.getModalityState(
+			options.modalities,
+		);
 		const isImageType =
-			type.includes("text-to-image") || type.includes("image-to-image");
+			modalityState.producesImages && !modalityState.producesText;
 		const isAudioType =
-			type.includes("text-to-speech") || type.includes("audio-to-text");
+			modalityState.producesAudio && !modalityState.producesText;
 
-		if (isImageType && ((data as any).image || typeof data === "string")) {
-			const imageContent = (data as any).image || (data as any);
+		if (isImageType && (data.image || typeof data === "string")) {
+			const imageContent = data.image || data;
 			if (options.env) {
 				const imageId = Math.random().toString(36).substring(2);
 				const imageKey = `generations/${options.completion_id || "completion"}/${options.model || "model"}/${imageId}.png`;
@@ -497,8 +516,8 @@ export class ResponseFormatter {
 			return { ...data, response: imageContent };
 		}
 
-		if (isAudioType && ((data as any).audio || typeof data === "string")) {
-			const audioContent = (data as any).audio || (data as any);
+		if (isAudioType && (data.audio || typeof data === "string")) {
+			const audioContent = data.audio || data;
 			if (options.env) {
 				const audioId = Math.random().toString(36).substring(2);
 				const audioKey = `generations/${options.completion_id || "completion"}/${options.model || "model"}/${audioId}.mp3`;
@@ -536,18 +555,20 @@ export class ResponseFormatter {
 		data: any,
 		options: ResponseFormatOptions = {},
 	): Promise<any> {
-		const type = options.type || ["text"];
+		const modalityState = ResponseFormatter.getModalityState(
+			options.modalities,
+		);
 		const isImageType =
-			type.includes("text-to-image") || type.includes("image-to-image");
+			modalityState.producesImages && !modalityState.producesText;
 		const isVideoType =
-			type.includes("text-to-video") || type.includes("image-to-video");
+			modalityState.producesVideo && !modalityState.producesText;
 
 		if (isVideoType) {
 			return { ...data, response: data };
 		}
 
 		if (isImageType) {
-			const images = (data as any).images;
+			const images = data.images;
 			if (!images || !Array.isArray(images) || images.length === 0) {
 				throw new AssistantError(
 					"No images returned from Bedrock",
@@ -615,16 +636,17 @@ export class ResponseFormatter {
 			(value) => !value.toLowerCase().startsWith("http") && value,
 		);
 
-		const types = new Set(options.type || []);
+		const modalityState = ResponseFormatter.getModalityState(
+			options.modalities,
+		);
 		const isImageType =
-			types.has("text-to-image") || types.has("image-to-image");
+			modalityState.producesImages && !modalityState.producesText;
 		const isVideoType =
-			types.has("text-to-video") || types.has("image-to-video");
+			modalityState.producesVideo && !modalityState.producesText;
 		const isAudioType =
-			types.has("text-to-audio") ||
-			types.has("audio-to-audio") ||
-			types.has("audio-generation");
-		const isTranscriptionType = types.has("audio-to-text");
+			modalityState.producesAudio && !modalityState.producesText;
+		const isTranscriptionType =
+			modalityState.inputSet.has("audio") && modalityState.producesText;
 
 		if (isImageType) {
 			const imageUrls = ResponseFormatter.filterUrlsByExtension(urlStrings, [

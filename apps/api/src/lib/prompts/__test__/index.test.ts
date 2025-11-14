@@ -76,7 +76,7 @@ describe("prompts index", () => {
 
 		it("should use coding prompt for coding models", async () => {
 			mockGetModelConfigByMatchingModel.mockResolvedValue({
-				type: ["coding"],
+				modalities: { input: ["text"], output: ["coding"] },
 				supportsToolCalls: true,
 				supportsArtifacts: true,
 				supportsReasoning: false,
@@ -102,7 +102,7 @@ describe("prompts index", () => {
 				{
 					modelId: "coding-model",
 					modelConfig: {
-						type: ["coding"],
+						modalities: { input: ["text"], output: ["coding"] },
 						supportsToolCalls: true,
 						supportsArtifacts: true,
 						supportsReasoning: false,
@@ -116,7 +116,7 @@ describe("prompts index", () => {
 		it("should use text-to-image prompt for image models", async () => {
 			const mockImageRequest = { ...mockRequest, image_style: "cyberpunk" };
 			mockGetModelConfigByMatchingModel.mockResolvedValue({
-				type: ["text-to-image"],
+				modalities: { input: ["text"], output: ["image"] },
 			});
 			mockGetTextToImageSystemPrompt.mockReturnValue("image prompt");
 
@@ -134,7 +134,7 @@ describe("prompts index", () => {
 
 		it("should use empty prompt for non-text, non-coding, non-image models", async () => {
 			mockGetModelConfigByMatchingModel.mockResolvedValue({
-				type: ["other"],
+				modalities: { input: ["audio"], output: ["audio"] },
 			});
 			mockEmptyPrompt.mockReturnValue("");
 
@@ -152,7 +152,7 @@ describe("prompts index", () => {
 
 		it("should use standard prompt for text models", async () => {
 			mockGetModelConfigByMatchingModel.mockResolvedValue({
-				type: ["text"],
+				modalities: { input: ["text"], output: ["text"] },
 				supportsToolCalls: false,
 				supportsArtifacts: false,
 				supportsReasoning: true,
@@ -179,7 +179,7 @@ describe("prompts index", () => {
 				{
 					modelId: "text-model",
 					modelConfig: {
-						type: ["text"],
+						modalities: { input: ["text"], output: ["text"] },
 						supportsToolCalls: false,
 						supportsArtifacts: false,
 						supportsReasoning: true,
@@ -192,7 +192,7 @@ describe("prompts index", () => {
 
 		it("should prefer standard prompt for text+coding models", async () => {
 			mockGetModelConfigByMatchingModel.mockResolvedValue({
-				type: ["text", "coding"],
+				modalities: { input: ["text"], output: ["text", "coding"] },
 				supportsToolCalls: true,
 				supportsArtifacts: true,
 			});

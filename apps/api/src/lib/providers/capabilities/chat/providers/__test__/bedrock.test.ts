@@ -88,7 +88,7 @@ describe("BedrockProvider", () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "bedrock-video",
-				type: ["text-to-video"],
+				modalities: { input: ["text"], output: ["video"] },
 			});
 
 			const provider = new BedrockProvider();
@@ -125,7 +125,7 @@ describe("BedrockProvider", () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "bedrock-image",
-				type: ["text-to-image"],
+				modalities: { input: ["text"], output: ["image"] },
 			});
 
 			const provider = new BedrockProvider();
@@ -152,7 +152,7 @@ describe("BedrockProvider", () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "bedrock-multimodal",
-				type: ["text"],
+				modalities: { input: ["text"], output: ["text"] },
 				supportsToolCalls: false,
 			});
 
@@ -202,7 +202,7 @@ describe("BedrockProvider", () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "bedrock-multimodal",
-				type: ["text"],
+				modalities: { input: ["text"], output: ["text"] },
 				supportsToolCalls: false,
 			});
 
@@ -435,7 +435,7 @@ describe("BedrockProvider", () => {
 			const provider = new BedrockProvider();
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				type: ["text-to-video"],
+				modalities: { input: ["text"], output: ["video"] },
 			});
 			const params = {
 				model: "amazon.nova-reel-v1:1",
@@ -495,7 +495,7 @@ describe("BedrockProvider", () => {
 			const provider = new BedrockProvider();
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				type: ["text-to-video"],
+				modalities: { input: ["text"], output: ["video"] },
 			});
 			const params = {
 				model: "amazon.nova-reel-v1:1",
@@ -545,7 +545,7 @@ describe("BedrockProvider", () => {
 			const provider = new BedrockProvider();
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				type: ["text-to-video"],
+				modalities: { input: ["text"], output: ["video"] },
 			});
 			const params = {
 				model: "amazon.nova-reel-v1:1",

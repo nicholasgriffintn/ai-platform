@@ -50,7 +50,7 @@ describe("ModelRouter", () => {
 	const mockModelConfig: ModelConfigItem = {
 		name: "Test Model",
 		matchingModel: "test-model",
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		provider: "test-provider",
 		contextComplexity: 3,
 		costPer1kInputTokens: 0.01,
@@ -64,8 +64,8 @@ describe("ModelRouter", () => {
 
 	const mockRequirements: PromptRequirements = {
 		expectedComplexity: 3,
-		requiredCapabilities: ["reasoning", "coding"],
-		criticalCapabilities: [],
+		requiredStrengths: ["reasoning", "coding"],
+		criticalStrengths: [],
 		estimatedInputTokens: 1000,
 		estimatedOutputTokens: 500,
 		needsFunctions: false,
@@ -156,7 +156,7 @@ describe("ModelRouter", () => {
 		it("should filter out models with negative infinity scores", async () => {
 			const criticalRequirements: PromptRequirements = {
 				...mockRequirements,
-				criticalCapabilities: ["math"],
+				criticalStrengths: ["math"],
 			};
 
 			const availableModels = {
@@ -186,7 +186,7 @@ describe("ModelRouter", () => {
 			const simpleRequirements: PromptRequirements = {
 				...mockRequirements,
 				expectedComplexity: 2,
-				requiredCapabilities: ["chat"],
+				requiredStrengths: ["chat"],
 			};
 
 			const availableModels = { "test-model": mockModelConfig };
@@ -212,7 +212,7 @@ describe("ModelRouter", () => {
 			const complexRequirements: PromptRequirements = {
 				...mockRequirements,
 				expectedComplexity: 4,
-				requiredCapabilities: ["reasoning"],
+				requiredStrengths: ["reasoning"],
 			};
 
 			const availableModels = {
@@ -435,7 +435,7 @@ describe("ModelRouter", () => {
 		it("should prefer models with matching capabilities", async () => {
 			const codingRequirements: PromptRequirements = {
 				...mockRequirements,
-				requiredCapabilities: ["coding"],
+				requiredStrengths: ["coding"],
 			};
 
 			const availableModels = {

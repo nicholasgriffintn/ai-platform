@@ -28,17 +28,12 @@ vi.mock("~/lib/keywords", () => ({
 }));
 
 vi.mock("~/lib/providers/models", () => ({
-	availableCapabilities: [
-		"reasoning",
-		"coding",
-		"math",
-		"creative",
-		"general_knowledge",
-	],
 	getAuxiliaryModel: vi.fn().mockResolvedValue({
 		model: "test-model",
 		provider: "test-provider",
 	}),
+	getAvailableStrengths: vi.fn().mockReturnValue(["coding", "reasoning"]),
+	availableModalities: ["text", "image"],
 }));
 
 vi.mock("~/lib/providers/capabilities/chat", () => ({
@@ -86,7 +81,7 @@ describe("PromptAnalyzer", () => {
 
 	const validAIResponse = {
 		expectedComplexity: 3,
-		requiredCapabilities: ["coding", "reasoning"],
+		requiredStrengths: ["coding", "reasoning"],
 		estimatedInputTokens: 1000,
 		estimatedOutputTokens: 500,
 		needsFunctions: false,
@@ -126,7 +121,7 @@ describe("PromptAnalyzer", () => {
 
 			expect(result).toEqual({
 				expectedComplexity: 3,
-				requiredCapabilities: ["coding", "reasoning"],
+				requiredStrengths: ["coding", "reasoning"],
 				estimatedInputTokens: 1000,
 				estimatedOutputTokens: 500,
 				needsFunctions: false,
@@ -211,7 +206,7 @@ describe("PromptAnalyzer", () => {
 			);
 
 			expect(result.expectedComplexity).toBe(3);
-			expect(result.requiredCapabilities).toEqual(["coding", "reasoning"]);
+			expect(result.requiredStrengths).toEqual(["coding", "reasoning"]);
 		});
 
 		it("should handle JSON wrapped in code blocks", async () => {
@@ -277,7 +272,7 @@ describe("PromptAnalyzer", () => {
 		it("should normalize requirements with invalid values", async () => {
 			const invalidResponse = {
 				expectedComplexity: 10,
-				requiredCapabilities: ["coding"],
+				requiredStrengths: ["coding"],
 				estimatedInputTokens: -100,
 				estimatedOutputTokens: -50,
 			};
@@ -428,9 +423,9 @@ describe("PromptAnalyzer", () => {
 
 			const systemPrompt =
 				mockProvider.getResponse.mock.calls[0][0].messages[0].content;
-			expect(systemPrompt).toContain("reasoning");
-			expect(systemPrompt).toContain("coding");
-			expect(systemPrompt).toContain("math");
+			expect(systemPrompt).toContain(
+				'Only choose requiredStrengths and criticalStrengths that are available in this list: ["coding","reasoning"]',
+			);
 		});
 
 		it("should include available functions in system prompt", async () => {

@@ -6,7 +6,7 @@ import {
 	modelParamsSchema,
 	modelResponseSchema,
 	modelsResponseSchema,
-	typeParamsSchema,
+	modalityParamsSchema,
 	errorResponseSchema,
 } from "@assistant/schemas";
 
@@ -14,13 +14,14 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	getModelDetails,
-	listCapabilities,
-	listModelTypes,
+	listStrengths,
+	listModalities,
 	listModels,
-	listModelsByCapability,
-	listModelsByType,
+	listModelsByStrength,
+	listModelsByModality,
 } from "~/services/models";
 import type { IEnv } from "~/types";
+import { availableModalities } from "~/constants/models";
 
 const app = new Hono();
 
@@ -94,7 +95,7 @@ app.get(
 		},
 	}),
 	async (context: Context) => {
-		const caps = listCapabilities();
+		const caps = listStrengths();
 		return ResponseFactory.success(context, {
 			success: true,
 			message: "Capabilities fetched successfully",
@@ -150,8 +151,16 @@ app.get(
 		const { capability } = context.req.valid("param" as never) as {
 			capability: string;
 		};
+		const validCapabilities = listStrengths();
+		if (!validCapabilities.includes(capability)) {
+			return ResponseFactory.error(
+				context,
+				"Invalid capability parameter",
+				400,
+			);
+		}
 		const userId = context.get("user")?.id;
-		const models = await listModelsByCapability(
+		const models = await listModelsByStrength(
 			context.env as IEnv,
 			capability,
 			userId,
@@ -165,14 +174,14 @@ app.get(
 );
 
 app.get(
-	"/types",
+	"/modalities",
 	describeRoute({
 		tags: ["models"],
-		summary: "Get all model types",
-		description: "Returns a list of all available model types",
+		summary: "Get all model modalities",
+		description: "Returns a list of all supported input/output modalities",
 		responses: {
 			200: {
-				description: "List of all available model types",
+				description: "List of all available model modalities",
 				content: {
 					"application/json": {
 						schema: resolver(capabilitiesResponseSchema),
@@ -190,33 +199,33 @@ app.get(
 		},
 	}),
 	async (context: Context) => {
-		const types = listModelTypes();
+		const modalities = listModalities();
 		return ResponseFactory.success(context, {
 			success: true,
-			message: "Model types fetched successfully",
-			data: types,
+			message: "Model modalities fetched successfully",
+			data: modalities,
 		});
 	},
 );
 
 app.get(
-	"/types/:type",
+	"/modalities/:modality",
 	describeRoute({
 		tags: ["models"],
-		summary: "Get models by type",
-		description: "Returns all models of a specific type",
+		summary: "Get models by modality",
+		description: "Returns all models that support a specific modality",
 		parameters: [
 			{
-				name: "type",
+				name: "modality",
 				in: "path",
 				required: true,
 				schema: { type: "string" },
-				description: "Model type to filter by",
+				description: "Modality to filter models by",
 			},
 		],
 		responses: {
 			200: {
-				description: "List of models of the specified type",
+				description: "List of models of the specified modality",
 				content: {
 					"application/json": {
 						schema: resolver(modelsResponseSchema),
@@ -224,7 +233,7 @@ app.get(
 				},
 			},
 			400: {
-				description: "Invalid type parameter",
+				description: "Invalid modality parameter",
 				content: {
 					"application/json": {
 						schema: resolver(errorResponseSchema),
@@ -241,11 +250,24 @@ app.get(
 			},
 		},
 	}),
-	zValidator("param", typeParamsSchema),
+	zValidator("param", modalityParamsSchema),
 	async (context: Context) => {
-		const { type } = context.req.valid("param" as never) as { type: string };
+		const { modality } = context.req.valid("param" as never) as {
+			modality: string;
+		};
+		if (
+			!availableModalities.includes(
+				modality as (typeof availableModalities)[number],
+			)
+		) {
+			return ResponseFactory.error(context, "Invalid modality parameter", 400);
+		}
 		const userId = context.get("user")?.id;
-		const models = await listModelsByType(context.env as IEnv, type, userId);
+		const models = await listModelsByModality(
+			context.env as IEnv,
+			modality,
+			userId,
+		);
 		return ResponseFactory.success(context, {
 			success: true,
 			message: "Models fetched successfully",

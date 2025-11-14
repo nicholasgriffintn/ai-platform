@@ -33,7 +33,7 @@ class ModelsStore: ObservableObject {
                     strengths: model.strengths,
                     contextWindow: model.contextWindow,
                     pricing: model.pricing,
-                    type: model.type,
+                    modalities: model.modalities,
                     supportsFunctions: model.supportsFunctions,
                     multimodal: model.multimodal
                 )
@@ -87,7 +87,8 @@ class ModelsStore: ObservableObject {
         return models.filter { model in
             (model.name ?? model.id).lowercased().contains(query.lowercased()) ||
             model.provider.lowercased().contains(query.lowercased()) ||
-            (model.type?.contains { $0.lowercased().contains(query.lowercased()) } == true) ||
+            (model.modalities?.input.contains { $0.lowercased().contains(query.lowercased()) } == true) ||
+            (model.modalities?.output?.contains { $0.lowercased().contains(query.lowercased()) } == true) ||
             (model.strengths?.contains { $0.lowercased().contains(query.lowercased()) } == true) ||
             (model.description?.lowercased().contains(query.lowercased()) == true)
         }

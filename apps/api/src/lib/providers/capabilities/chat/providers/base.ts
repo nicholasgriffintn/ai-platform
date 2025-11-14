@@ -240,7 +240,7 @@ export abstract class BaseProvider implements AIProvider {
 
 		return await ResponseFormatter.formatResponse(data, providerName, {
 			model: params.model,
-			type: modelConfig?.type,
+			modalities: modelConfig?.modalities,
 			env: params.env,
 		});
 	}

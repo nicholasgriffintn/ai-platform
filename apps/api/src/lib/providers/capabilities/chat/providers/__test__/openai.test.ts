@@ -37,7 +37,7 @@ describe("OpenAIProvider", () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "dall-e-3",
-				type: ["text-to-image"],
+				modalities: { input: ["text"], output: ["image"] },
 			});
 
 			vi.mocked(createCommonParameters).mockReturnValue({});
@@ -64,7 +64,7 @@ describe("OpenAIProvider", () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "dall-e-edit",
-				type: ["image-to-image"],
+				modalities: { input: ["image"], output: ["image"] },
 			});
 
 			vi.mocked(createCommonParameters).mockReturnValue({});
@@ -101,7 +101,7 @@ describe("OpenAIProvider", () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "gpt-4o-search-preview",
-				type: ["text"],
+				modalities: { input: ["text"], output: ["text"] },
 			});
 
 			vi.mocked(createCommonParameters).mockReturnValue({
@@ -135,7 +135,7 @@ describe("OpenAIProvider", () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "gpt-4",
-				type: ["text"],
+				modalities: { input: ["text"], output: ["text"] },
 				supportsToolCalls: true,
 				supportsSearchGrounding: true,
 			});
@@ -166,7 +166,7 @@ describe("OpenAIProvider", () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "gpt-4-thinking",
-				type: ["text"],
+				modalities: { input: ["text"], output: ["text"] },
 				supportsReasoning: true,
 			});
 

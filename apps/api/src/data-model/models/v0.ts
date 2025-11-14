@@ -7,7 +7,6 @@ export const v0ModelConfig: ModelConfig = {
 			"The v0 model is designed for building modern web applications with text and image inputs and optimized for frontend and full stack web development.",
 		matchingModel: "v0-1.0-md",
 		provider: "v0",
-		type: ["text", "coding"],
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
 		modalities: {
@@ -38,7 +37,6 @@ export const v0ModelConfig: ModelConfig = {
 			"Enhanced v0 model with improved capabilities for building modern web applications with better understanding of design patterns and frameworks.",
 		matchingModel: "v0-1.5-md",
 		provider: "v0",
-		type: ["text", "coding"],
 		releaseDate: "June 9, 2025",
 		lastUpdated: "June 9, 2025",
 		modalities: {
@@ -69,7 +67,6 @@ export const v0ModelConfig: ModelConfig = {
 			"Large v0 model with extensive context window and advanced capabilities for complex web application development and comprehensive code generation.",
 		matchingModel: "v0-1.5-lg",
 		provider: "v0",
-		type: ["text", "coding"],
 		releaseDate: "June 9, 2025",
 		lastUpdated: "June 9, 2025",
 		modalities: {

@@ -12,7 +12,6 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "mistral/mistral-nemo-12b-instruct",
 		description:
 			"Trained jointly by Mistral AI and NVIDIA, it significantly outperforms existing models smaller or similar in size.",
-		type: ["text"],
 		knowledgeCutoffDate: "December 2024",
 		releaseDate: "January 1, 2025",
 		lastUpdated: "January 1, 2025",
@@ -41,7 +40,6 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "osmosis/osmosis-structure-0.6b",
 		description:
 			"Specialized small model optimized for structured data processing and analysis tasks.",
-		type: ["text"],
 		knowledgeCutoffDate: "December 2024",
 		releaseDate: "January 1, 2025",
 		lastUpdated: "January 1, 2025",
@@ -70,7 +68,6 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "google/gemma-3",
 		description:
 			"Google's latest Gemma model with multimodal capabilities and large context window.",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "December 2024",
 		releaseDate: "January 1, 2025",
 		lastUpdated: "January 1, 2025",
@@ -101,7 +98,6 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "meta/llama-3.2-1b-instruct",
 		description:
 			"Ultra-efficient 1B parameter Llama model optimized for fast inference and low-resource environments.",
-		type: ["text"],
 		knowledgeCutoffDate: "December 2023",
 		releaseDate: "January 1, 2025",
 		lastUpdated: "January 1, 2025",
@@ -130,7 +126,6 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "meta/llama-3.1-8b-instruct",
 		description:
 			"Medium-sized Llama model offering good balance between performance and efficiency.",
-		type: ["text"],
 		knowledgeCutoffDate: "December 2023",
 		releaseDate: "January 1, 2025",
 		lastUpdated: "January 1, 2025",
@@ -159,7 +154,6 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "meta/llama-3.2-3b-instruct",
 		description:
 			"Compact 3B parameter Llama model optimized for efficient inference with good capabilities.",
-		type: ["text"],
 		knowledgeCutoffDate: "December 2023",
 		releaseDate: "January 1, 2025",
 		lastUpdated: "January 1, 2025",
@@ -188,7 +182,6 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "meta/llama-3.2-11b-vision-instruct",
 		description:
 			"Multimodal Llama model with vision capabilities for image understanding and analysis.",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "December 2023",
 		releaseDate: "January 1, 2025",
 		lastUpdated: "January 1, 2025",
@@ -219,7 +212,6 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "qwen/qwen3-embedding-4b",
 		description:
 			"Specialized embedding model for generating high-quality text representations.",
-		type: ["embedding"],
 		knowledgeCutoffDate: "December 2024",
 		releaseDate: "January 1, 2025",
 		lastUpdated: "January 1, 2025",
@@ -248,7 +240,6 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "qwen/qwen-2.5-7b-vision-instruct",
 		description:
 			"Qwen's multimodal model with vision capabilities and large context window support.",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "December 2024",
 		releaseDate: "January 1, 2025",
 		lastUpdated: "January 1, 2025",

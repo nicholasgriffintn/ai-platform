@@ -305,7 +305,7 @@ export async function createStreamWithPostProcessing(
 								options.provider,
 								{
 									model,
-									type: modelConfig?.type,
+									modalities: modelConfig?.modalities,
 									env,
 									is_streaming: true,
 								},

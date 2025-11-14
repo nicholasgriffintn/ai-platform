@@ -21,7 +21,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: false,
-		type: ["text"],
 		card: "https://www.prompthub.us/models/o1",
 		contextWindow: 200000,
 		maxTokens: 100000,
@@ -47,7 +46,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "o3",
 		description:
 			"OpenAI's most powerful reasoning model, pushing frontiers in coding, math, science, visual perception. Agentically uses tools (web search, Python, visual analysis, image generation).",
-		type: ["text"],
 		knowledgeCutoffDate: "May 2024",
 		releaseDate: "January 24, 2025",
 		lastUpdated: "January 24, 2025",
@@ -80,7 +78,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "o4-mini",
 		description:
 			"Smaller model optimized for fast, cost-efficient reasoning. Strong performance in math, coding, visual tasks, and data science. Agentically uses tools.",
-		type: ["text"],
 		knowledgeCutoffDate: "May 2024",
 		releaseDate: "April 16, 2025",
 		lastUpdated: "April 16, 2025",
@@ -120,7 +117,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "o3-mini",
 		description:
 			"Fast, flexible reasoning model, predecessor to o4-mini. Good reasoning capabilities.",
-		type: ["text"],
 		knowledgeCutoffDate: "May 2024",
 		releaseDate: "December 20, 2024",
 		lastUpdated: "January 29, 2025",
@@ -153,7 +149,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "gpt-4o",
 		description:
 			"Enhanced GPT model with 128k context window, specialized in analysis, chat, coding, and multilingual tasks.",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "May 13, 2024",
 		lastUpdated: "May 13, 2024",
@@ -191,7 +186,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "gpt-4o-search-preview",
 		description:
 			"Enhanced GPT model with 128k context window, specialized in analysis, chat, coding, and multilingual tasks. With Search.",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "May 13, 2024",
 		lastUpdated: "May 13, 2024",
@@ -229,7 +223,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "gpt-4o-mini",
 		description:
 			"Efficient version of GPT-4o optimized for faster response times while maintaining core capabilities.",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "July 18, 2024",
 		lastUpdated: "July 18, 2024",
@@ -266,7 +259,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "gpt-4o-mini-search-preview",
 		description:
 			"Efficient version of GPT-4o optimized for faster response times while maintaining core capabilities. With search.",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "July 18, 2024",
 		lastUpdated: "July 18, 2024",
@@ -303,7 +295,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "gpt-4.5-preview",
 		description:
 			"GPT-4.5 excels at tasks that benefit from creative, open-ended thinking and conversation, such as writing, learning, or exploring new ideas.",
-		type: ["text"],
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "November 6, 2024",
 		lastUpdated: "November 6, 2024",
@@ -336,7 +327,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "gpt-4.1",
 		description:
 			"OpenAI's advanced model optimized for coding and instruction-following with 1M token context window",
-		type: ["coding"],
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
@@ -367,7 +357,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "gpt-4.1-mini",
 		description:
 			"Balanced version of GPT-4.1 with 1M token context window and lower cost",
-		type: ["coding"],
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
@@ -397,7 +386,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "gpt-4.1-nano",
 		description:
 			"Fastest and most cost-effective version of GPT-4.1 with 1M token context window",
-		type: ["coding"],
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
@@ -428,7 +416,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "gpt-5",
 		description:
 			"GPT-5 is OpenAI's flagship model for coding, reasoning, and agentic tasks across domains",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "August 7, 2025",
 		lastUpdated: "August 7, 2025",
@@ -452,7 +439,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "gpt-5-mini",
 		description:
 			"GPT-5 is OpenAI's flagship model for coding, reasoning, and agentic tasks across domains",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "August 7, 2025",
 		lastUpdated: "August 7, 2025",
@@ -476,7 +462,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "gpt-5-nano",
 		description:
 			"GPT-5 is OpenAI's flagship model for coding, reasoning, and agentic tasks across domains",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "August 7, 2025",
 		lastUpdated: "August 7, 2025",
@@ -501,12 +486,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "gpt-image-1",
 		description:
 			"OpenAI's latest and most advanced model for image generation is gpt-image-1, a natively multimodal language model.",
-		type: ["text-to-image", "image-to-image"],
-		strengths: ["image_generation"],
+		strengths: ["creative"],
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.04,
 		isFeatured: true,
 		supportsImageEdits: true,
 		timeout: 1000000,
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
 	}),
 ]);

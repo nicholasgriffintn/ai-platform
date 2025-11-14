@@ -12,7 +12,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "mistral-ocr-latest",
 		description:
 			"A document OCR (Optical Character Recognition) processor that works with PDFs and images.",
-		type: ["ocr"],
 		modalities: {
 			input: ["document", "image"],
 			output: ["text"],
@@ -23,7 +22,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "magistral-small",
 		description:
 			"The first reasoning model by Mistral AI — excelling in domain-specific, transparent, and multilingual reasoning.",
-		type: ["text"],
 		knowledgeCutoffDate: "June 2025",
 		releaseDate: "March 17, 2025",
 		lastUpdated: "March 17, 2025",
@@ -60,13 +58,12 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "devstral-small-2507",
 		description:
 			"Devstral Small is an agentic LLM for software engineering tasks.",
-		type: ["text", "coding"],
 		knowledgeCutoffDate: "May 2025",
 		releaseDate: "July 10, 2025",
 		lastUpdated: "July 10, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["coding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -90,7 +87,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "open-mixtral-8x22b",
 		description:
 			"Mixtral 8x22B is a sparse mixture-of-experts model with strong performance across coding, mathematics, and multilingual tasks.",
-		type: ["text"],
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 17, 2024",
 		lastUpdated: "April 17, 2024",
@@ -119,7 +115,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "mistral-large-latest",
 		description:
 			"Capable in code generation, mathematics, and reasoning with support for dozens of languages.",
-		type: ["text"],
 		knowledgeCutoffDate: "November 2024",
 		releaseDate: "November 1, 2024",
 		lastUpdated: "November 4, 2024",
@@ -157,7 +152,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "open-mistral-7b",
 		description:
 			"The first dense model released by Mistral AI, perfect for customization.",
-		type: ["text"],
 		knowledgeCutoffDate: "December 2023",
 		releaseDate: "September 27, 2023",
 		lastUpdated: "September 27, 2023",
@@ -186,7 +180,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "pixtral-large-latest",
 		description:
 			"Latest multimodal model with advanced vision capabilities for image understanding and analysis.",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "November 2024",
 		releaseDate: "November 1, 2024",
 		lastUpdated: "November 4, 2024",
@@ -218,7 +211,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "ministral-3b-latest",
 		description:
 			"Compact 3B parameter model optimized for edge deployment and efficient inference.",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "October 1, 2024",
 		lastUpdated: "October 4, 2024",
@@ -247,7 +239,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "mistral-medium-latest",
 		description:
 			"Capable in code generation, mathematics, and reasoning with support for dozens of languages.",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "May 2025",
 		releaseDate: "May 7, 2025",
 		lastUpdated: "May 10, 2025",
@@ -279,13 +270,12 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "codestral-latest",
 		description:
 			"Codestral is Mistral AI's first-ever code model designed for code generation tasks.",
-		type: ["coding"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "May 29, 2024",
 		lastUpdated: "January 4, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["coding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -311,13 +301,12 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "devstral-medium-2507",
 		description:
 			"Devstral Medium offers exceptional performance at a competitive price point for software engineering.",
-		type: ["text", "coding"],
 		knowledgeCutoffDate: "May 2025",
 		releaseDate: "July 10, 2025",
 		lastUpdated: "July 10, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["coding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -342,7 +331,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "open-mixtral-8x7b",
 		description:
 			"Sparse mixture-of-experts model outperforming Llama 2 70B on most benchmarks.",
-		type: ["text"],
 		knowledgeCutoffDate: "January 2024",
 		releaseDate: "December 11, 2023",
 		lastUpdated: "December 11, 2023",
@@ -371,7 +359,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "ministral-8b-latest",
 		description:
 			"Compact 8B parameter model offering a balance between performance and efficiency.",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "October 1, 2024",
 		lastUpdated: "October 4, 2024",
@@ -400,7 +387,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "pixtral-12b",
 		description:
 			"Multimodal model with vision capabilities for image understanding and analysis.",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "September 2024",
 		releaseDate: "September 1, 2024",
 		lastUpdated: "September 1, 2024",
@@ -430,7 +416,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "mistral-small-latest",
 		description:
 			"Mistral Small is a lightweight model designed for cost-effective use in tasks like translation and summarization.",
-		type: ["text", "image-to-text"],
 		knowledgeCutoffDate: "March 2025",
 		releaseDate: "September 1, 2024",
 		lastUpdated: "September 4, 2024",
@@ -469,13 +454,12 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "devstral-small-2505",
 		description:
 			"Earlier version of Devstral Small for software engineering tasks.",
-		type: ["text", "coding"],
 		knowledgeCutoffDate: "May 2025",
 		releaseDate: "May 7, 2025",
 		lastUpdated: "May 7, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["coding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -499,7 +483,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "magistral-medium-latest",
 		description:
 			"Enhanced reasoning model by Mistral AI with improved capabilities for complex problem-solving.",
-		type: ["text"],
 		knowledgeCutoffDate: "June 2025",
 		releaseDate: "March 17, 2025",
 		lastUpdated: "March 20, 2025",
@@ -536,7 +519,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "mistral-tiny-latest",
 		description:
 			"A projected ultra-lightweight open-weight model in the Mistral AI family, targeting the lower bound of LLM size/performance tradeoffs.",
-		type: ["text"],
 		knowledgeCutoffDate: "July 2024",
 		releaseDate: "July 1, 2024",
 		lastUpdated: "July 1, 2024",
@@ -573,7 +555,10 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "voxtral-small-2507",
 		description:
 			"Audio input capabilities enable models to chat and understand audio directly, this can be used for both chat use cases via audio or for optimal transcription purposes.",
-		type: ["text", "speech"],
+		modalities: {
+			input: ["text"],
+			output: ["speech"],
+		},
 		supportsAudio: true,
 	}),
 
@@ -582,7 +567,10 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "voxtral-mini-2507",
 		description:
 			"Audio input capabilities enable models to chat and understand audio directly, this can be used for both chat use cases via audio or for optimal transcription purposes.",
-		type: ["text", "speech"],
+		modalities: {
+			input: ["text"],
+			output: ["speech"],
+		},
 		supportsAudio: true,
 	}),
 
@@ -590,20 +578,29 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		name: "Mistral Embed",
 		matchingModel: "mistral-embed",
 		description: "An embedding model for text content",
-		type: ["embedding"],
+		modalities: {
+			input: ["embedding"],
+			output: ["embedding"],
+		},
 	}),
 
 	createModelConfig("codestral-embed", PROVIDER, {
 		name: "Codestral Embed",
 		matchingModel: "codestral-embed",
 		description: "An embedding model for code content",
-		type: ["embedding"],
+		modalities: {
+			input: ["embedding"],
+			output: ["embedding"],
+		},
 	}),
 
 	createModelConfig("mistral-moderation-latest", PROVIDER, {
 		name: "Mistral Moderation",
 		matchingModel: "mistral-moderation-latest",
 		description: "A moderation model for content filtering",
-		type: ["guardrails"],
+		modalities: {
+			input: ["moderation"],
+			output: ["moderation"],
+		},
 	}),
 ]);

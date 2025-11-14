@@ -7,7 +7,6 @@ export const deepseekModelConfig: ModelConfig = {
 		description:
 			"DeepSeek's latest model optimized for coding, analysis, and mathematical tasks with strong reasoning capabilities.",
 		provider: "deepseek",
-		type: ["text"],
 		knowledgeCutoffDate: "July 2024",
 		releaseDate: "December 26, 2024",
 		lastUpdated: "March 24, 2025",
@@ -37,7 +36,6 @@ export const deepseekModelConfig: ModelConfig = {
 		name: "DeepSeek Reasoner",
 		matchingModel: "deepseek-reasoner",
 		provider: "deepseek",
-		type: ["text"],
 		knowledgeCutoffDate: "July 2024",
 		releaseDate: "January 20, 2025",
 		lastUpdated: "May 29, 2025",

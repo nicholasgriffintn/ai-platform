@@ -6,21 +6,27 @@ export const workersAiModelConfig: ModelConfig = {
 		name: "OpenAI Whisper",
 		matchingModel: "@cf/openai/whisper-tiny-en",
 		provider: "workers-ai",
-		type: ["speech"],
 		strengths: ["audio"],
 		speed: 3,
 		reliability: 2,
 		contextComplexity: 2,
+		modalities: {
+			input: ["text"],
+			output: ["speech"],
+		},
 	},
 	whisper: {
 		name: "OpenAI Whisper",
 		matchingModel: "@cf/openai/whisper",
 		provider: "workers-ai",
-		type: ["speech"],
 		strengths: ["audio"],
 		speed: 3,
 		reliability: 4,
 		contextComplexity: 3,
+		modalities: {
+			input: ["text"],
+			output: ["speech"],
+		},
 	},
 	"whisper-large-v3-turbo": {
 		name: "OpenAI Whisper Large v3 Turbo",
@@ -28,11 +34,14 @@ export const workersAiModelConfig: ModelConfig = {
 			"A faster, more accurate speech-to-text model when compared to the base Whisper model.",
 		matchingModel: "@cf/openai/whisper-large-v3-turbo",
 		provider: "workers-ai",
-		type: ["speech"],
 		strengths: ["audio"],
 		speed: 4,
 		reliability: 5,
 		contextComplexity: 4,
+		modalities: {
+			input: ["text"],
+			output: ["speech"],
+		},
 	},
 	// TODO: These require responses API support
 	/* "gpt-oss-120b": {
@@ -41,7 +50,6 @@ export const workersAiModelConfig: ModelConfig = {
     description:
       "Large 120B parameter open-source GPT model optimized for reasoning and complex tasks.",
     provider: "workers-ai",
-    type: ["text"],
     releaseDate: "August 5, 2025",
     lastUpdated: "August 5, 2025",
     modalities: {
@@ -69,7 +77,6 @@ export const workersAiModelConfig: ModelConfig = {
     description:
       "Efficient 20B parameter open-source GPT model for fast reasoning and general tasks.",
     provider: "workers-ai",
-    type: ["text"],
     releaseDate: "August 5, 2025",
     lastUpdated: "August 5, 2025",
     modalities: {
@@ -97,11 +104,14 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"Melotts is a text-to-speech model that can generate high-quality speech from text.",
 		provider: "workers-ai",
-		type: ["text-to-speech"],
 		strengths: ["audio"],
 		speed: 4,
 		reliability: 4,
 		contextComplexity: 3,
+		modalities: {
+			input: ["text"],
+			output: ["speech"],
+		},
 	},
 	"llama-3.3-70b-instruct": {
 		name: "Meta Llama 3.3 70B Instruct",
@@ -109,7 +119,6 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"Meta's new 70B model that claims to have the same performance as the 450B model but more cost effective.",
 		provider: "workers-ai",
-		type: ["text"],
 		supportsResponseFormat: true,
 		strengths: [
 			"instruction",
@@ -122,6 +131,10 @@ export const workersAiModelConfig: ModelConfig = {
 		reliability: 5,
 		contextComplexity: 5,
 		supportsToolCalls: true,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	"llama-3.2-1b-instruct": {
 		name: "Meta Llama 3.2 1B Instruct",
@@ -129,11 +142,14 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"The Llama 3.2 instruction-tuned text only models are optimized for multilingual dialogue use cases, including agentic retrieval and summarization tasks.",
 		provider: "workers-ai",
-		type: ["text"],
 		strengths: ["instruction", "summarization", "multilingual"],
 		speed: 5,
 		reliability: 3,
 		contextComplexity: 2,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	"llama-3.2-3b-instruct": {
 		name: "Meta Llama 3.2 3B Instruct",
@@ -141,11 +157,14 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"The Llama 3.2 instruction-tuned text only models are optimized for multilingual dialogue use cases, including agentic retrieval and summarization tasks.",
 		provider: "workers-ai",
-		type: ["text"],
 		strengths: ["instruction", "summarization", "multilingual"],
 		speed: 4,
 		reliability: 4,
 		contextComplexity: 3,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	"llama-3.1-70b-instruct": {
 		name: "Meta Llama 3.1 70B Instruct",
@@ -153,7 +172,6 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"The Meta Llama 3.1 collection of multilingual large language models (LLMs) is a collection of pretrained and instruction tuned generative models. The Llama 3.1 instruction tuned text only models are optimized for multilingual dialogue use cases and outperform many of the available open source and closed chat models on common industry benchmarks.",
 		provider: "workers-ai",
-		type: ["text"],
 		supportsResponseFormat: true,
 		strengths: [
 			"instruction",
@@ -164,6 +182,10 @@ export const workersAiModelConfig: ModelConfig = {
 		speed: 3,
 		reliability: 5,
 		contextComplexity: 5,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	"llama-4-scout-17b": {
 		name: "Meta Llama 4 Scout 17B",
@@ -171,7 +193,6 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"Meta's Llama 4 Scout is a 17 billion parameter model with 16 experts that is natively multimodal. These models leverage a mixture-of-experts architecture to offer industry-leading performance in text and image understanding.",
 		provider: "workers-ai",
-		type: ["text"],
 		supportsToolCalls: true,
 		isFeatured: true,
 		multimodal: true,
@@ -185,6 +206,10 @@ export const workersAiModelConfig: ModelConfig = {
 		speed: 4,
 		reliability: 5,
 		contextComplexity: 5,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	"hermes-2-pro-mistral-7b": {
 		name: "Hermes 2 Pro Mistral 7B",
@@ -192,7 +217,6 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"An upgraded, retrained version of Nous Hermes 2, consisting of an updated and cleaned version of the OpenHermes 2.5 Dataset, as well as a newly introduced Function Calling and JSON Mode dataset developed in-house.",
 		provider: "workers-ai",
-		type: ["text"],
 		supportsToolCalls: true,
 		isFree: true,
 		isFeatured: true,
@@ -203,29 +227,39 @@ export const workersAiModelConfig: ModelConfig = {
 		speed: 4,
 		reliability: 4,
 		contextComplexity: 4,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	llava: {
 		name: "HuggingFace Llava 1.5 7B",
 		matchingModel: "@cf/llava-hf/llava-1.5-7b-hf",
 		provider: "workers-ai",
-		type: ["image-to-text"],
 		strengths: ["vision"],
 		speed: 3,
 		reliability: 4,
 		contextComplexity: 3,
 		multimodal: true,
+		modalities: {
+			input: ["image"],
+			output: ["text"],
+		},
 	},
 	"uform-gen2-qwen-500m": {
 		name: "UForm Gen2 Qwen 500M",
 		matchingModel: "@cf/unum/uform-gen2-qwen-500m",
 		description: "Generative vision-language model for captioning and VQA.",
 		provider: "workers-ai",
-		type: ["image-to-text"],
 		strengths: ["vision"],
 		speed: 4,
 		reliability: 3,
 		contextComplexity: 3,
 		multimodal: true,
+		modalities: {
+			input: ["image"],
+			output: ["text"],
+		},
 	},
 	flux: {
 		name: "Black Forest Labs Flux 1 Schnell",
@@ -233,31 +267,40 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"FLUX.1 [schnell] is a 12 billion parameter rectified flow transformer capable of generating images from text descriptions.",
 		provider: "workers-ai",
-		type: ["text-to-image"],
 		strengths: ["creative"],
 		speed: 4,
 		reliability: 4,
 		contextComplexity: 3,
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
 	},
 	"stable-diffusion-1.5-img2img": {
 		name: "Stable Diffusion 1.5 Img2Img",
 		matchingModel: "@cf/runwayml/stable-diffusion-v1-5-img2img",
 		provider: "workers-ai",
-		type: ["image-to-image"],
 		strengths: ["creative"],
 		speed: 3,
 		reliability: 4,
 		contextComplexity: 3,
+		modalities: {
+			input: ["image"],
+			output: ["image"],
+		},
 	},
 	"stable-diffusion-1.5-inpainting": {
 		name: "Stable Diffusion 1.5 Inpainting",
 		matchingModel: "@cf/runwayml/stable-diffusion-v1-5-inpainting",
 		provider: "workers-ai",
-		type: ["image-to-image"],
 		strengths: ["creative"],
 		speed: 3,
 		reliability: 4,
 		contextComplexity: 3,
+		modalities: {
+			input: ["image"],
+			output: ["image"],
+		},
 	},
 	"stable-diffusion-xl-base-1.0": {
 		name: "Stable Diffusion XL Base 1.0",
@@ -265,11 +308,14 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"Diffusion-based text-to-image generative model by Stability AI. Generates and modify images based on text prompts.",
 		provider: "workers-ai",
-		type: ["text-to-image"],
 		strengths: ["creative"],
 		speed: 3,
 		reliability: 4,
 		contextComplexity: 4,
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
 	},
 	"dreamshaper-8-lcm": {
 		name: "Dreamshaper 8 LCM",
@@ -277,11 +323,14 @@ export const workersAiModelConfig: ModelConfig = {
 			"Stable Diffusion model that has been fine-tuned to be better at photorealism without sacrificing range.",
 		matchingModel: "@cf/lykon/dreamshaper-8-lcm",
 		provider: "workers-ai",
-		type: ["text-to-image"],
 		strengths: ["creative"],
 		speed: 5,
 		reliability: 4,
 		contextComplexity: 3,
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
 	},
 	"stable-diffusion-xl-lightning": {
 		name: "Stable Diffusion XL Lightning",
@@ -289,11 +338,14 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"SDXL-Lightning is a lightning-fast text-to-image generation model. It can generate high-quality 1024px images in a few steps.",
 		provider: "workers-ai",
-		type: ["text-to-image"],
 		strengths: ["creative"],
 		speed: 5,
 		reliability: 4,
 		contextComplexity: 4,
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
 	},
 	sqlcoder: {
 		name: "SQLCoder 7B",
@@ -301,32 +353,41 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"SQLCoder is a model trained on SQL queries and their corresponding natural language descriptions. It can generate SQL queries from natural language descriptions and vice versa.",
 		provider: "workers-ai",
-		type: ["coding"],
 		isFree: true,
 		strengths: ["coding"],
 		speed: 4,
 		reliability: 4,
 		contextComplexity: 3,
+		modalities: {
+			input: ["text"],
+			output: ["coding"],
+		},
 	},
 	"bge-base-en-v1.5": {
 		name: "BGE Base English v1.5",
 		matchingModel: "@cf/baai/bge-base-en-v1.5",
 		provider: "workers-ai",
-		type: ["embedding"],
 		strengths: ["search"],
 		speed: 5,
 		reliability: 5,
 		contextComplexity: 3,
+		modalities: {
+			input: ["embedding"],
+			output: ["embedding"],
+		},
 	},
 	"bge-large-en-v1.5": {
 		name: "BGE Large English v1.5",
 		matchingModel: "@cf/baai/bge-large-en-v1.5",
 		provider: "workers-ai",
-		type: ["embedding"],
 		strengths: ["search"],
 		speed: 5,
 		reliability: 5,
 		contextComplexity: 3,
+		modalities: {
+			input: ["embedding"],
+			output: ["embedding"],
+		},
 	},
 	"bge-m3": {
 		name: "BGE M3",
@@ -334,11 +395,14 @@ export const workersAiModelConfig: ModelConfig = {
 			"A multi-lingual embeddings model that supports over 100 languages. It can also simultaneously perform dense retrieval, multi-vector retrieval, and sparse retrieval, with the ability to process inputs of different granularities.",
 		matchingModel: "@cf/baai/bge-m3",
 		provider: "workers-ai",
-		type: ["embedding"],
 		strengths: ["search", "multilingual"],
 		speed: 4,
 		reliability: 5,
 		contextComplexity: 4,
+		modalities: {
+			input: ["embedding"],
+			output: ["embedding"],
+		},
 	},
 	"bge-reranker-base": {
 		name: "BGE Reranker Base",
@@ -346,11 +410,14 @@ export const workersAiModelConfig: ModelConfig = {
 			"For use after the initial vector search to find the most relevant documents to return to a user by reranking the outputs.",
 		matchingModel: "@cf/baai/bge-reranker-base",
 		provider: "workers-ai",
-		type: ["reranking"],
 		strengths: ["search"],
 		speed: 4,
 		reliability: 5,
 		contextComplexity: 3,
+		modalities: {
+			input: ["reranking"],
+			output: ["reranking"],
+		},
 	},
 	"gemma-3-12b-it": {
 		name: "Gemma 3 12B IT",
@@ -358,7 +425,6 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"Gemma 3 models are well-suited for a variety of text generation and image understanding tasks, including question answering, summarization, and reasoning. Gemma 3 models are multimodal, handling text and image input and generating text output, with a large, 128K context window, multilingual support in over 140 languages.",
 		provider: "workers-ai",
-		type: ["text"],
 		includedInRouter: true,
 		strengths: [
 			"instruction",
@@ -371,6 +437,10 @@ export const workersAiModelConfig: ModelConfig = {
 		reliability: 4,
 		contextComplexity: 4,
 		multimodal: true,
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
 	},
 	"qwq-32b": {
 		name: "QWQ 32B",
@@ -378,13 +448,16 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"QwQ is the reasoning model of the Qwen series. Compared with conventional instruction-tuned models, QwQ, which is capable of thinking and reasoning, can achieve significantly enhanced performance in downstream tasks, especially hard problems.",
 		provider: "workers-ai",
-		type: ["text"],
 		includedInRouter: true,
 		strengths: ["reasoning", "math", "analysis"],
 		speed: 3,
 		reliability: 5,
 		contextComplexity: 5,
 		supportsReasoning: true,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	"qwen2.5-coder-32b": {
 		name: "Qwen 2.5 Coder 32B",
@@ -392,19 +465,25 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"Qwen2.5-Coder is the latest series of Code-Specific Qwen large language models. As of now, Qwen2.5-Coder has covered six mainstream model sizes, 0.5, 1.5, 3, 7, 14, 32 billion parameters, to meet the needs of different developers.",
 		provider: "workers-ai",
-		type: ["coding"],
 		includedInRouter: true,
 		strengths: ["coding"],
 		speed: 3,
 		reliability: 5,
 		contextComplexity: 5,
+		modalities: {
+			input: ["text"],
+			output: ["coding"],
+		},
 	},
 	"@cf/meta/llama-guard-3-8b": {
 		name: "LlamaGuard 3 8B",
 		matchingModel: "@cf/meta/llama-guard-3-8b",
 		provider: "workers-ai",
-		type: ["guardrails"],
 		isFree: true,
+		modalities: {
+			input: ["guardrails"],
+			output: ["guardrails"],
+		},
 	},
 	"lucid-origin": {
 		name: "Leonardo Lucid Origin",
@@ -412,11 +491,14 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"Leonardo.AI's most adaptable and prompt-responsive model to date. Whether you're generating images with sharp graphic design, stunning full-HD renders, or highly specific creative direction, it adheres closely to your prompts, renders text with accuracy, and supports a wide array of visual styles and aesthetics.",
 		provider: "workers-ai",
-		type: ["text-to-image"],
 		strengths: ["creative"],
 		speed: 4,
 		reliability: 4,
 		contextComplexity: 4,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	"phoenix-1.0": {
 		name: "Leonardo Phoenix 1.0",
@@ -424,11 +506,14 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"Phoenix 1.0 is a model by Leonardo.Ai that generates images with exceptional prompt adherence and coherent text.",
 		provider: "workers-ai",
-		type: ["text-to-image"],
 		strengths: ["creative"],
 		speed: 4,
 		reliability: 4,
 		contextComplexity: 4,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	"aura-1": {
 		name: "Deepgram Aura 1",
@@ -436,11 +521,14 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"Aura is a context-aware text-to-speech (TTS) model that applies natural pacing, expressiveness, and fillers based on the context of the provided text. The quality of your text input directly impacts the naturalness of the audio output.",
 		provider: "workers-ai",
-		type: ["text-to-speech"],
 		strengths: ["audio"],
 		speed: 4,
 		reliability: 4,
 		contextComplexity: 3,
+		modalities: {
+			input: ["text"],
+			output: ["speech"],
+		},
 	},
 	"nova-3": {
 		name: "Deepgram Nova 3",
@@ -448,11 +536,14 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"Transcribe audio using Deepgram's speech-to-text model with advanced features like language detection, speaker diarization, and sentiment analysis.",
 		provider: "workers-ai",
-		type: ["speech"],
 		strengths: ["audio"],
 		speed: 4,
 		reliability: 5,
 		contextComplexity: 4,
+		modalities: {
+			input: ["text"],
+			output: ["speech"],
+		},
 	},
 	"smart-turn-v2": {
 		name: "Pipecat Smart Turn v2",
@@ -460,20 +551,26 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"An open source, community-driven, native audio turn detection model that detects end-of-turn in audio streams to determine when someone has finished speaking.",
 		provider: "workers-ai",
-		type: ["voice-activity-detection"],
 		strengths: ["audio"],
 		speed: 4,
 		reliability: 4,
 		contextComplexity: 3,
+		modalities: {
+			input: ["speech"],
+			output: ["voice-activity-detection"],
+		},
 	},
 	"embeddinggemma-300m": {
 		name: "EmbeddingGemma 300M",
 		matchingModel: "@cf/google/embeddinggemma-300m",
 		provider: "workers-ai",
-		type: ["embedding"],
 		strengths: ["search"],
 		speed: 4,
 		reliability: 4,
 		contextComplexity: 3,
+		modalities: {
+			input: ["embedding"],
+			output: ["embedding"],
+		},
 	},
 };

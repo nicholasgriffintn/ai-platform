@@ -276,9 +276,16 @@ export function shouldEnableStreaming(
 	supportsStreaming: boolean,
 	stream: boolean,
 ): boolean {
-	const modelTypeIsText = modelConfig?.type?.includes("text") || false;
-	const modelTypeIsCoding = modelConfig?.type?.includes("coding") || false;
-	const modelTypeSupportsStreaming = modelTypeIsText || modelTypeIsCoding;
+	if (!modelConfig?.modalities) {
+		return false;
+	}
+
+	const inputs = modelConfig.modalities.input ?? [];
+	const outputs = modelConfig.modalities.output ?? inputs;
+	const supportsTextOutput =
+		outputs.includes("text") || (!outputs.length && inputs.includes("text"));
+	const isCodingModel = outputs.length === 1 && outputs[0] === "coding";
+	const modelTypeSupportsStreaming = supportsTextOutput || isCodingModel;
 
 	return stream && supportsStreaming && modelTypeSupportsStreaming;
 }

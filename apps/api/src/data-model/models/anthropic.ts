@@ -12,7 +12,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "claude-sonnet-4-5",
 		description:
 			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		type: ["text"],
 		knowledgeCutoffDate: "July 2025",
 		releaseDate: "September 29, 2025",
 		lastUpdated: "September 29, 2025",
@@ -56,7 +55,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "claude-sonnet-4-5-20250929",
 		description:
 			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		type: ["text"],
 		knowledgeCutoffDate: "July 2025",
 		releaseDate: "September 29, 2025",
 		lastUpdated: "September 29, 2025",
@@ -100,7 +98,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "claude-sonnet-4-0",
 		description:
 			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
@@ -143,7 +140,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "claude-sonnet-4-20250514",
 		description:
 			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
@@ -186,7 +182,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "claude-3-5-haiku-latest",
 		description:
 			"With fast speeds, improved instruction following, and more accurate tool use, Claude 3.5 Haiku is well suited for user-facing products, specialized sub-agent tasks, and generating personalized experiences from huge volumes of data.",
-		type: ["text"],
 		knowledgeCutoffDate: "July 2024",
 		releaseDate: "October 22, 2024",
 		lastUpdated: "October 22, 2024",
@@ -226,7 +221,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "claude-opus-4-20250514",
 		description:
 			"The Claude 4 Opus is an advanced AI model by Anthropic designed for enterprise-level applications. It offers unmatched performance in handling complex tasks, making it an ideal solution for businesses requiring high-level data processing and analysis.",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
@@ -265,7 +259,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "claude-opus-4-1",
 		description:
 			"Enhanced Claude 4 Opus with improved reasoning and analysis capabilities.",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2025",
 		releaseDate: "August 5, 2025",
 		lastUpdated: "August 5, 2025",
@@ -302,7 +295,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "claude-3-7-sonnet-20250219",
 		description:
 			"Advanced reasoning model with enhanced capabilities for complex analytical tasks.",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "February 19, 2025",
 		lastUpdated: "February 19, 2025",

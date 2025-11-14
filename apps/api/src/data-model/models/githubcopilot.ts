@@ -10,7 +10,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("ghcopilot/anthropic/claude-sonnet-4", PROVIDER, {
 		name: "Claude Sonnet 4",
 		matchingModel: "claude-sonnet-4",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: true,
@@ -26,7 +25,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("ghcopilot/openai/o4-mini", PROVIDER, {
 		name: "o4-mini (Preview)",
 		matchingModel: "o4-mini",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -42,7 +40,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("ghcopilot/anthropic/claude-3.5-sonnet", PROVIDER, {
 		name: "Claude Sonnet 3.5",
 		matchingModel: "claude-3.5-sonnet",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -58,7 +55,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("ghcopilot/google/gemini-2.0-flash-001", PROVIDER, {
 		name: "Gemini 2.0 Flash",
 		matchingModel: "gemini-2.0-flash-001",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -77,7 +73,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("ghcopilot/anthropic/claude-opus-4.1", PROVIDER, {
 		name: "Claude Opus 4.1",
 		matchingModel: "claude-opus-4.1",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: true,
@@ -93,7 +88,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("ghcopilot/anthropic/claude-3.7-sonnet-thought", PROVIDER, {
 		name: "Claude Sonnet 3.7 Thinking",
 		matchingModel: "claude-3.7-sonnet-thought",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: true,
@@ -109,7 +103,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("ghcopilot/anthropic/claude-3.7-sonnet", PROVIDER, {
 		name: "Claude Sonnet 3.7",
 		matchingModel: "claude-3.7-sonnet",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -125,7 +118,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("ghcopilot/google/gemini-2.5-pro", PROVIDER, {
 		name: "Gemini 2.5 Pro (Preview)",
 		matchingModel: "gemini-2.5-pro",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -144,7 +136,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("ghcopilot/anthropic/claude-opus-4", PROVIDER, {
 		name: "Claude Opus 4",
 		matchingModel: "claude-opus-4",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -160,7 +151,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("ghcopilot/openai/o3-mini", PROVIDER, {
 		name: "o3-mini",
 		matchingModel: "o3-mini",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -176,7 +166,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("ghcopilot/openai/gpt-4.1", PROVIDER, {
 		name: "GPT-4.1",
 		matchingModel: "gpt-4.1",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -192,7 +181,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("ghcopilot/openai/gpt-4o", PROVIDER, {
 		name: "GPT-4o",
 		matchingModel: "gpt-4o",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -208,7 +196,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/o3", PROVIDER, {
 		name: "o3 (Preview)",
 		matchingModel: "o3",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: false,

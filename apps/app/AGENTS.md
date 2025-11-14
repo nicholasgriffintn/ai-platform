@@ -718,4 +718,10 @@ Future agents rely on this documentation to:
 - Avoid known pitfalls
 - Follow React and TypeScript best practices
 
+### Model Data & Selection
+
+- All `ModelConfigItem` objects now expose `modalities` (`input`/`output` arrays of `text`, `image`, `audio`, `video`, `pdf`, `document`, or `embedding`). WebLLM definitions, mocks, and derived UI state should set/read these instead of the legacy `type` strings.
+- Use modality flags to drive UI (e.g., `model.modalities?.output?.includes("image")` to detect generation models). Do not reintroduce logic that matches `"text-to-image"` or similar values.
+- API responses include modality signatures/labels (e.g., for Replicate filters); reuse those metadata fields when building chips or dropdowns so client logic stays in sync with the backend.
+
 **Remember**: Include working code examples and explain the "why" behind patterns.

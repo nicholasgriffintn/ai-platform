@@ -19,20 +19,34 @@ const formatTypeLabel = (type: string): string =>
 export function ReplicateModels() {
 	const { data: models, isLoading, error } = useReplicateModels();
 	const navigate = useNavigate();
-	const [selectedType, setSelectedType] = useState<string | null>(null);
+	const [selectedSignature, setSelectedSignature] = useState<string | null>(
+		null,
+	);
 	const [searchQuery, setSearchQuery] = useState("");
 
-	const allTypes = useMemo(() => {
-		return Array.from(
-			new Set(models?.flatMap((model) => model.type) ?? []),
-		).sort();
-	}, [models]);
+	const signatureFilters = useMemo(
+		() =>
+			Array.from(
+				new Map(
+					(models ?? []).map((model) => [
+						model.modalitySignature,
+						model.modalityLabel,
+					]),
+				).entries(),
+			)
+				.map(([signature, label]) => ({
+					signature,
+					label: label ?? formatTypeLabel(signature.replace("->", " to ")),
+				}))
+				.sort((a, b) => a.label.localeCompare(b.label)),
+		[models],
+	);
 
 	const filteredModels = useMemo(() => {
 		const normalizedQuery = searchQuery.trim().toLowerCase();
 
 		return (models ?? []).filter((model) => {
-			if (selectedType && !model.type.includes(selectedType)) {
+			if (selectedSignature && model.modalitySignature !== selectedSignature) {
 				return false;
 			}
 
@@ -44,15 +58,15 @@ export function ReplicateModels() {
 				model.name,
 				model.description,
 				model.category,
+				model.modalityLabel,
 				...(model.tags ?? []),
-				...model.type,
 			]
 				.filter(Boolean)
 				.map((value) => value!.toLowerCase());
 
 			return searchableFields.some((field) => field.includes(normalizedQuery));
 		});
-	}, [models, selectedType, searchQuery]);
+	}, [models, selectedSignature, searchQuery]);
 
 	const appItems = useMemo<AppListItem[]>(() => {
 		return filteredModels.map((model) => ({
@@ -60,10 +74,9 @@ export function ReplicateModels() {
 			name: model.name,
 			description: model.description,
 			icon: model.icon ?? "sparkles",
-			category:
-				model.category ?? formatTypeLabel(model.type[0] ?? DEFAULT_CATEGORY),
+			category: model.category ?? model.modalityLabel ?? DEFAULT_CATEGORY,
 			theme: model.theme,
-			tags: model.tags ?? [...model.type],
+			tags: model.tags ?? [model.modalityLabel],
 			href: model.href ?? `/apps/replicate/${model.id}`,
 			kind: model.kind ?? "frontend",
 			featured: model.featured,
@@ -86,7 +99,7 @@ export function ReplicateModels() {
 
 	const handleClearFilters = useCallback(() => {
 		setSearchQuery("");
-		setSelectedType(null);
+		setSelectedSignature(null);
 	}, []);
 
 	if (isLoading) {
@@ -125,33 +138,33 @@ export function ReplicateModels() {
 					</Button>
 				</div>
 
-				{allTypes.length > 0 && (
+				{signatureFilters.length > 0 && (
 					<div className="flex flex-wrap gap-2">
 						<button
 							type="button"
-							onClick={() => setSelectedType(null)}
+							onClick={() => setSelectedSignature(null)}
 							className={cn(
 								"px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
-								selectedType === null
+								selectedSignature === null
 									? "bg-zinc-900 text-white dark:bg-zinc-200 dark:text-zinc-900 border-zinc-900 dark:border-zinc-200"
 									: "bg-white text-zinc-700 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 border-zinc-200 dark:border-zinc-700",
 							)}
 						>
 							All models
 						</button>
-						{allTypes.map((type) => (
+						{signatureFilters.map(({ signature, label }) => (
 							<button
 								type="button"
-								key={type}
-								onClick={() => setSelectedType(type)}
+								key={signature}
+								onClick={() => setSelectedSignature(signature)}
 								className={cn(
 									"px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
-									selectedType === type
+									selectedSignature === signature
 										? "bg-zinc-900 text-white dark:bg-zinc-200 dark:text-zinc-900 border-zinc-900 dark:border-zinc-200"
 										: "bg-white text-zinc-700 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 border-zinc-200 dark:border-zinc-700",
 								)}
 							>
-								{formatTypeLabel(type)}
+								{label}
 							</button>
 						))}
 					</div>
@@ -186,12 +199,12 @@ export function ReplicateModels() {
 					icon={<Sparkles className="h-8 w-8 text-zinc-400" />}
 					title="No models found"
 					message={
-						searchQuery || selectedType
+						searchQuery || selectedSignature
 							? "Try adjusting your search or filters to discover different models."
 							: "No Replicate models are currently available."
 					}
 					action={
-						searchQuery || selectedType ? (
+						searchQuery || selectedSignature ? (
 							<Button variant="secondary" onClick={handleClearFilters}>
 								Clear filters
 							</Button>

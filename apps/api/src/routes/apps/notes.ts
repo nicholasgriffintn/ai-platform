@@ -427,7 +427,9 @@ app.post(
 	zValidator("json", generateNotesFromMediaSchema),
 	requirePlan("pro"),
 	async (c: Context) => {
-		const body = c.req.valid("json" as never) as any;
+		const body = c.req.valid("json" as never) as z.infer<
+			typeof generateNotesFromMediaSchema
+		>;
 		const user = c.get("user") as IUser;
 
 		try {

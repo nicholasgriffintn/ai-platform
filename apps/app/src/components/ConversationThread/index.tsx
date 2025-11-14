@@ -123,9 +123,11 @@ export const ConversationThread = () => {
 			// For text-to-image models, only allow the first message unless they support image edits
 			if (model && apiModels?.[model]) {
 				const modelConfig = apiModels[model];
-				const isTextToImageModel = modelConfig.type?.includes("text-to-image");
+				const outputs = modelConfig.modalities?.output ?? [];
+				const isImageGenerationModel =
+					outputs.includes("image") && !outputs.includes("text");
 				if (
-					isTextToImageModel &&
+					isImageGenerationModel &&
 					!modelConfig.supportsImageEdits &&
 					messages.length > 0
 				) {

@@ -13,8 +13,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			"671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
 		description:
 			"Meta's MusicGen model for prompt-based music composition supporting conditioning on input audio clips.",
-		type: ["text-to-audio"],
-		strengths: ["creative", "audio", "text-to-audio"],
+		strengths: ["creative", "audio"],
 		supportsStreaming: false,
 		supportsAttachments: true,
 		costPerRun: 0.08,
@@ -124,7 +123,6 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			"cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
 		description:
 			"Blazing fast audio transcription with speaker diarization | Whisper Large V3 Turbo | word & sentence level timestamps | prompt ",
-		type: ["audio-to-text"],
 		strengths: ["ocr", "audio", "analysis"],
 		supportsStreaming: false,
 		supportsAttachments: true,
@@ -190,7 +188,6 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			"826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9",
 		description:
 			"Fast speech transcription with word-level timestamps and speaker diarization using Whisper large-v3.",
-		type: ["audio-to-text"],
 		strengths: ["ocr", "audio", "analysis"],
 		supportsStreaming: false,
 		supportsAttachments: true,
@@ -287,8 +284,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "stability-ai/stable-audio-2.5",
 		description:
 			"Stability AI's text-to-audio model for generating high-quality music and sound effects.",
-		type: ["text-to-audio"],
-		strengths: ["creative", "audio", "text-to-audio"],
+		strengths: ["creative", "audio"],
 		supportsStreaming: false,
 		supportsAttachments: false,
 		costPerRun: 0.2,
@@ -337,7 +333,6 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		name: "ElevenLabs Music",
 		matchingModel: "elevenlabs/music",
 		description: "Compose a song from a prompt or a composition plan ",
-		type: ["text-to-audio"],
 		modalities: {
 			input: ["text"],
 			output: ["audio"],

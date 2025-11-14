@@ -80,7 +80,7 @@ export const ModelSelector = ({
 		matchingModel: "auto",
 		name: "Automatic",
 		provider: "System",
-		type: [],
+		modalities: { input: ["text"], output: ["text"] },
 		strengths: [],
 		isFree: true,
 	};
@@ -492,7 +492,10 @@ export const ModelSelector = ({
 															matchingModel: agent.id,
 															name: agent.name,
 															provider: "agent",
-															type: [],
+															modalities: {
+																input: ["text"],
+																output: ["text"],
+															},
 															strengths: [],
 															isFree: false,
 															description: agent.description,

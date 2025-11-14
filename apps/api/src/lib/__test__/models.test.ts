@@ -18,7 +18,7 @@ import {
 	getModelConfigByModel,
 	getModels,
 	getModelsByCapability,
-	getModelsByType,
+	getModelsByModality,
 } from "../providers/models";
 
 vi.mock("~/lib/cache", () => {
@@ -58,7 +58,7 @@ const mockModelConfig: ModelConfigItem = {
 	name: "Test Model",
 	description: "A test model",
 	provider: "test-provider",
-	type: ["text"],
+	modalities: { input: ["text"], output: ["text"] },
 	isBeta: false,
 	supportsToolCalls: true,
 	isFree: false,
@@ -338,22 +338,20 @@ describe("Models", () => {
 		});
 	});
 
-	describe("getModelsByType", () => {
-		it("should return models with specified type", () => {
-			const result = getModelsByType("text");
+	describe("getModelsByModality", () => {
+		it("should return models with specified modality", () => {
+			const result = getModelsByModality("text");
 
 			expect(result).toBeDefined();
 			expect(typeof result).toBe("object");
 
 			for (const [_key, model] of Object.entries(result)) {
-				expect(model.type).toContain("text");
+				const inputs = model.modalities?.input ?? [];
+				const outputs = model.modalities?.output ?? [];
+				const supportsModality =
+					inputs.includes("text") || outputs.includes("text");
+				expect(supportsModality).toBe(true);
 			}
-		});
-
-		it("should return empty object for invalid type", () => {
-			const result = getModelsByType("nonexistent-type");
-
-			expect(result).toEqual({});
 		});
 	});
 

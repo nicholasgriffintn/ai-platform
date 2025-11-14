@@ -12,13 +12,12 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "mercury-coder",
 		description:
 			"Mercury Coder is a specialized model optimized for coding tasks with tool calling support and extensive context window.",
-		type: ["text", "coding"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "February 26, 2025",
 		lastUpdated: "July 31, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["coding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -45,7 +44,6 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "mercury",
 		description:
 			"Mercury is a general-purpose model with strong capabilities in text generation, analysis, and tool calling.",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "June 26, 2025",
 		lastUpdated: "July 31, 2025",

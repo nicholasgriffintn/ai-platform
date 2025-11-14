@@ -13,8 +13,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			"5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637",
 		description:
 			"Bytedance's SDXL Lightning model tuned for ultra-fast 4-step diffusion image generation with high fidelity outputs.",
-		type: ["text-to-image"],
-		strengths: ["creative", "image_generation"],
+		strengths: ["creative"],
 		supportsStreaming: false,
 		supportsAttachments: false,
 		costPerRun: 0.0016,
@@ -68,8 +67,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "black-forest-labs/flux-1.1-pro",
 		description:
 			"Black Forest Labs' flagship text-to-image model with excellent quality, prompt adherence, and 6x faster generation.",
-		type: ["text-to-image"],
-		strengths: ["creative", "image_generation"],
+		strengths: ["creative"],
 		supportsStreaming: false,
 		supportsAttachments: false,
 		costPerRun: 0.04,
@@ -143,8 +141,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "stability-ai/stable-diffusion-3.5-large",
 		description:
 			"A text-to-image model that generates high-resolution images with fine details. It supports various artistic styles and produces diverse outputs from the same prompt, thanks to Query-Key Normalization. ",
-		type: ["text-to-image", "image-to-image"],
-		strengths: ["creative", "image_generation"],
+		strengths: ["creative"],
 		supportsStreaming: false,
 		supportsAttachments: true,
 		costPerRun: 0.0055,
@@ -205,8 +202,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "nightmareai/real-esrgan",
 		description:
 			"Real-ESRGAN with optional face correction and adjustable upscale",
-		type: ["image-to-image"],
-		strengths: ["image_generation", "analysis"],
+		strengths: ["creative", "analysis"],
 		supportsStreaming: false,
 		supportsAttachments: true,
 		costPerRun: 0.002,
@@ -243,8 +239,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		name: "Remove Background",
 		matchingModel: "bria/remove-background",
 		description: "Bria AI's remove background model ",
-		type: ["image-to-image"],
-		strengths: ["image_generation", "analysis"],
+		strengths: ["creative", "analysis"],
 		supportsStreaming: false,
 		supportsAttachments: true,
 		costPerRun: 0.018,
@@ -287,7 +282,6 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		name: "Google Nano Banana",
 		matchingModel: "google/nano-banana",
 		description: "Google's latest image editing model in Gemini 2.5 ",
-		type: ["text-to-image"],
 		modalities: {
 			input: ["text", "image"],
 			output: ["image"],

@@ -1,19 +1,35 @@
-import type { ModelConfig, ModelConfigItem } from "~/types";
-import { availableCapabilities, availableModelTypes } from "~/constants/models";
+import type { ModelConfig, ModelConfigItem, ModelModalities } from "~/types";
+import { availableModalities } from "~/constants/models";
+
+const DEFAULT_MODALITIES: ModelModalities = {
+	input: ["text"],
+	output: ["text"],
+};
+
+type ModelConfigInput = Omit<ModelConfigItem, "provider" | "modalities"> & {
+	modalities?: ModelModalities;
+};
+
+function resolveModalities(modalities?: ModelModalities): ModelModalities {
+	return modalities ?? DEFAULT_MODALITIES;
+}
 
 export function createModelConfig(
 	key: string,
 	provider: string,
-	config: Partial<ModelConfigItem>,
+	config: ModelConfigInput,
 ): [string, ModelConfigItem] {
+	const { modalities, ...rest } = config;
+	const resolvedModalities = resolveModalities(modalities);
+
 	return [
 		key,
 		{
-			matchingModel: config.matchingModel || key,
-			name: config.name || key,
+			matchingModel: rest.matchingModel || key,
+			name: rest.name || key,
 			provider,
-			type: config.type || ["text"],
-			...config,
+			...rest,
+			modalities: resolvedModalities,
 		},
 	];
 }
@@ -24,4 +40,4 @@ export function createModelConfigObject(
 	return Object.fromEntries(entries);
 }
 
-export { availableCapabilities, availableModelTypes };
+export { availableModalities };

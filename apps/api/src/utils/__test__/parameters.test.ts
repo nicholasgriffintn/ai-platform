@@ -559,7 +559,9 @@ describe("parameters", () => {
 
 	describe("shouldEnableStreaming", () => {
 		it("should enable streaming for text models", () => {
-			const modelConfig = { type: ["text"] };
+			const modelConfig = {
+				modalities: { input: ["text"], output: ["text"] },
+			};
 
 			const result = shouldEnableStreaming(modelConfig, true, true);
 
@@ -567,7 +569,9 @@ describe("parameters", () => {
 		});
 
 		it("should enable streaming for coding models", () => {
-			const modelConfig = { type: ["coding"] };
+			const modelConfig = {
+				modalities: { input: ["text"], output: ["coding"] },
+			};
 
 			const result = shouldEnableStreaming(modelConfig, true, true);
 
@@ -575,7 +579,9 @@ describe("parameters", () => {
 		});
 
 		it("should not enable streaming when not requested", () => {
-			const modelConfig = { type: ["text"] };
+			const modelConfig = {
+				modalities: { input: ["text"], output: ["text"] },
+			};
 
 			const result = shouldEnableStreaming(modelConfig, true, false);
 
@@ -583,7 +589,9 @@ describe("parameters", () => {
 		});
 
 		it("should not enable streaming when provider doesn't support it", () => {
-			const modelConfig = { type: ["text"] };
+			const modelConfig = {
+				modalities: { input: ["text"], output: ["text"] },
+			};
 
 			const result = shouldEnableStreaming(modelConfig, false, true);
 
@@ -591,7 +599,9 @@ describe("parameters", () => {
 		});
 
 		it("should not enable streaming for unsupported model types", () => {
-			const modelConfig = { type: ["image"] };
+			const modelConfig = {
+				modalities: { input: ["image"], output: ["image"] },
+			};
 
 			const result = shouldEnableStreaming(modelConfig, true, true);
 
@@ -607,7 +617,7 @@ describe("parameters", () => {
 		});
 
 		it("should handle null model type", () => {
-			const modelConfig = { type: null };
+			const modelConfig = { modalities: null };
 
 			const result = shouldEnableStreaming(modelConfig, true, true);
 
@@ -615,7 +625,9 @@ describe("parameters", () => {
 		});
 
 		it("should handle mixed model types", () => {
-			const modelConfig = { type: ["text", "image"] };
+			const modelConfig = {
+				modalities: { input: ["text", "image"], output: ["text", "image"] },
+			};
 
 			const result = shouldEnableStreaming(modelConfig, true, true);
 

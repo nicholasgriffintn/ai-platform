@@ -82,6 +82,12 @@ export const userSchema = z.object({
 });
 ```
 
+### Models Schema Notes
+
+- `src/models.ts` now represents model capabilities via `modalities: { input: ModelModality[]; output?: ModelModality[] }` instead of the deprecated `type` array. Valid modalities are `text`, `image`, `audio`, `video`, `pdf`, `document`, and `embedding`.
+- Keep the modality enum in sync with `apps/api/src/constants/models.ts` whenever you add or remove values.
+- Use `modalityParamsSchema` to validate `/models/modalities/:modality` routes and never reintroduce `"text-to-*"` strings into the schema—UI layers derive those labels from the modality combinations.
+
 #### Breaking Changes (Requires Coordination)
 
 - Removing fields

@@ -12,7 +12,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "moonshotai/Kimi-K2-Instruct",
 		description:
 			"Kimi K2 is a powerful open-weights model with advanced text capabilities and tool calling support.",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "July 11, 2025",
 		lastUpdated: "July 11, 2025",
@@ -41,7 +40,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "Qwen/Qwen3-Coder-480B-A35B-Instruct-Turbo",
 		description:
 			"Qwen3 Coder Turbo model optimized for coding tasks with fast inference and extensive context window.",
-		type: ["text", "coding"],
 		knowledgeCutoffDate: "April 2025",
 		releaseDate: "July 23, 2025",
 		lastUpdated: "July 23, 2025",
@@ -70,7 +68,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "Qwen/Qwen3-Coder-480B-A35B-Instruct",
 		description:
 			"Qwen3 Coder model with advanced coding capabilities and extensive context window.",
-		type: ["text", "coding"],
 		knowledgeCutoffDate: "April 2025",
 		releaseDate: "July 23, 2025",
 		lastUpdated: "July 23, 2025",
@@ -100,7 +97,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "zai-org/GLM-4.5",
 		description:
 			"GLM-4.5 is a powerful open-weights model with advanced text generation and tool calling capabilities.",
-		type: ["text"],
 		knowledgeCutoffDate: "April 2025",
 		releaseDate: "July 28, 2025",
 		lastUpdated: "July 28, 2025",

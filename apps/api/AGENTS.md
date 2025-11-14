@@ -651,6 +651,7 @@ export class ExampleProvider extends BaseAIProvider {
 - **Provider**: Create `src/lib/providers/provider/{name}.ts` extending BaseAIProvider
 - **Factory**: Register in `src/lib/providers/factory.ts` providerConfigs array
 - **Models**: Add model definitions to `src/lib/models/index.ts`
+- **Modalities**: Each model definition must include `modalities: { input: ModelModality[]; output?: ModelModality[] }` (values: `text`, `image`, `audio`, `video`, `pdf`, `document`, `embedding`). Legacy `type` arrays are no longer recognized.
 - **Usage**: Update `src/lib/usageManager.ts` if pricing/quotas differ
 - **Tests**: Mock provider responses and test error handling
 

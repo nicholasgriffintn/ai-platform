@@ -3,7 +3,7 @@ import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { StorageService } from "~/lib/storage";
 import { uploadAudioFromChat, uploadImageFromChat } from "~/lib/upload";
-import type { ChatCompletionParameters } from "~/types";
+import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import {
@@ -15,6 +15,17 @@ import { BaseProvider } from "./base";
 import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
 const logger = getLogger({ prefix: "lib/providers/workers" });
+
+function getModalityFlags(modelConfig?: ModelConfigItem) {
+	const inputs = modelConfig?.modalities?.input ?? ["text"];
+	const outputs = modelConfig?.modalities?.output ?? inputs;
+	return {
+		isImageToText: inputs.includes("image") && outputs.includes("text"),
+		isImageToImage: inputs.includes("image") && outputs.includes("image"),
+		isTextToImage: !inputs.includes("image") && outputs.includes("image"),
+		isTextToSpeech: inputs.includes("text") && outputs.includes("audio"),
+	};
+}
 
 export class WorkersProvider extends BaseProvider {
 	name = "workers-ai";
@@ -50,14 +61,14 @@ export class WorkersProvider extends BaseProvider {
 			);
 		}
 
-		const type = modelConfig?.type || ["text"];
+		const flags = getModalityFlags(modelConfig);
 
 		let imageData: any;
 		if (
-			type.includes("image-to-text") ||
-			type.includes("image-to-image") ||
-			type.includes("text-to-image") ||
-			type.includes("text-to-speech")
+			flags.isImageToText ||
+			flags.isImageToImage ||
+			flags.isTextToImage ||
+			flags.isTextToSpeech
 		) {
 			if (
 				params.messages.length > 2 ||
@@ -96,7 +107,7 @@ export class WorkersProvider extends BaseProvider {
 				if (imageContent) {
 					const isUrl = imageContent.startsWith("http");
 
-					if (type.includes("image-to-text")) {
+					if (flags.isImageToText) {
 						let base64Data = null;
 
 						if (isUrl) {
@@ -226,7 +237,7 @@ export class WorkersProvider extends BaseProvider {
 				}
 			}
 
-			if (!imageData && !type.includes("text-to-image")) {
+			if (!imageData && !flags.isTextToImage) {
 				throw new AssistantError(
 					"No image data found in the request",
 					ErrorType.PARAMS_ERROR,
@@ -314,15 +325,15 @@ export class WorkersProvider extends BaseProvider {
 				});
 
 				const modelConfig = await getModelConfigByMatchingModel(model);
-				const type = modelConfig?.type || ["text"];
+				const responseFlags = getModalityFlags(modelConfig);
 
 				const responseWasStreamed = body.stream;
 
 				if (
 					// @ts-ignore
 					modelResponse?.image ||
-					(modelResponse && type.includes("text-to-image")) ||
-					type.includes("image-to-image")
+					(modelResponse && responseFlags.isTextToImage) ||
+					responseFlags.isImageToImage
 				) {
 					try {
 						const imageKey = `generations/${
@@ -369,7 +380,7 @@ export class WorkersProvider extends BaseProvider {
 				} else if (
 					// @ts-ignore
 					modelResponse?.audio ||
-					(modelResponse && type.includes("text-to-speech"))
+					(modelResponse && responseFlags.isTextToSpeech)
 				) {
 					try {
 						const audioKey = `generations/${

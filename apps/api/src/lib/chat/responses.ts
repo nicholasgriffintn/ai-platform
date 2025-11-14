@@ -9,7 +9,10 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { formatMessages } from "~/utils/messages";
-import { mergeParametersWithDefaults } from "~/utils/parameters";
+import {
+	mergeParametersWithDefaults,
+	shouldEnableStreaming,
+} from "~/utils/parameters";
 import { withRetry } from "~/utils/retries";
 
 const responseLogger = getLogger({ prefix: "CHAT:RESPONSES" });
@@ -194,17 +197,11 @@ export async function getAIResponse({
 		);
 	}
 
-	let shouldStream = false;
-	const modelTypeIsText = modelConfig?.type?.includes("text");
-	const modelTypeIsCoding = modelConfig?.type?.includes("coding");
-	const modelTypeSupportsStreaming = modelTypeIsText || modelTypeIsCoding;
-	if (
-		params.stream &&
-		provider.supportsStreaming &&
-		modelTypeSupportsStreaming
-	) {
-		shouldStream = true;
-	}
+	const shouldStream = shouldEnableStreaming(
+		modelConfig,
+		provider.supportsStreaming,
+		params.stream,
+	);
 
 	let parameters;
 	try {

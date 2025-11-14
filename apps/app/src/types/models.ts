@@ -1,5 +1,14 @@
 export type ModelRanking = 1 | 2 | 3 | 4 | 5;
 
+export type ModelModality =
+	| "text"
+	| "image"
+	| "audio"
+	| "video"
+	| "pdf"
+	| "document"
+	| "embedding";
+
 export interface ModelConfigItem {
 	id: string;
 	matchingModel: string;
@@ -7,7 +16,10 @@ export interface ModelConfigItem {
 	description?: string;
 	avatarUrl?: string;
 	provider: string;
-	type: string[];
+	modalities?: {
+		input: ModelModality[];
+		output?: ModelModality[];
+	};
 	isBeta?: boolean;
 	supportsToolCalls?: boolean;
 	isFree?: boolean;
@@ -32,6 +44,7 @@ export interface ModelConfigItem {
 	supportsNextEdit?: boolean;
 	supportsApplyEdit?: boolean;
 	supportsImageEdits?: boolean;
+	hiddenFromDefaultList?: boolean;
 }
 
 export interface ModelConfig {

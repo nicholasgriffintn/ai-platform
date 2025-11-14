@@ -103,10 +103,16 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
 			const modelData = apiModels[model] as ModelConfigItem | undefined;
 
-			const types = modelData?.type || [];
-			const hasTextToImage = types.includes("text-to-image");
-			const hasImageToImage = types.includes("image-to-image");
-			const hasImageToText = types.includes("image-to-text");
+			const inputs = modelData?.modalities?.input ?? ["text"];
+			const outputs = modelData?.modalities?.output ?? inputs;
+			const hasTextToImage =
+				outputs.includes("image") &&
+				!outputs.includes("text") &&
+				!inputs.includes("image");
+			const hasImageToImage =
+				outputs.includes("image") && inputs.includes("image");
+			const hasImageToText =
+				outputs.includes("text") && inputs.includes("image");
 			const multimodal = !!modelData?.multimodal || hasImageToText;
 			setIsMultimodalModel(multimodal);
 			const textOnlyToImage =

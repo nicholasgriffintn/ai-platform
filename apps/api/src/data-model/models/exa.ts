@@ -12,7 +12,6 @@ export const exaModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "exa",
 		description:
 			"Exa is the first meaning-based web search API powered by embeddings. It unlocks data no other search can, making your AI more relevant, factual, and reducing hallucinations.",
-		type: ["text"],
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -33,7 +32,6 @@ export const exaModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "exa-research",
 		description:
 			"Exa is the first meaning-based web search API powered by embeddings. It unlocks data no other search can, making your AI more relevant, factual, and reducing hallucinations.",
-		type: ["text"],
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -54,7 +52,6 @@ export const exaModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "exa-research-pro",
 		description:
 			"Exa is the first meaning-based web search API powered by embeddings. It unlocks data no other search can, making your AI more relevant, factual, and reducing hallucinations.",
-		type: ["text"],
 		modalities: {
 			input: ["text"],
 			output: ["text"],

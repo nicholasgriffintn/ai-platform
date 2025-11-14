@@ -1,11 +1,11 @@
 import {
-	availableCapabilities,
-	availableModelTypes,
+	availableModalities,
 	filterModelsForUserAccess,
+	getAvailableStrengths,
 	getModelConfig,
 	getModels,
 	getModelsByCapability,
-	getModelsByType,
+	getModelsByModality,
 } from "~/lib/providers/models";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -16,7 +16,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 export async function listModels(env: IEnv, userId?: number) {
 	const allModels = getModels({
 		shouldUseCache: false,
-		excludeTypes: [
+		excludeModalities: [
 			"guardrails",
 			"voice-activity-detection",
 			"reranking",
@@ -32,14 +32,14 @@ export async function listModels(env: IEnv, userId?: number) {
 /**
  * Get all capabilities.
  */
-export function listCapabilities() {
-	return availableCapabilities;
+export function listStrengths() {
+	return getAvailableStrengths();
 }
 
 /**
  * Filter models by capability and user access.
  */
-export async function listModelsByCapability(
+export async function listModelsByStrength(
 	env: IEnv,
 	capability: string,
 	userId?: number,
@@ -51,21 +51,23 @@ export async function listModelsByCapability(
 }
 
 /**
- * Get all model types.
+ * Get all model modalities.
  */
-export function listModelTypes() {
-	return availableModelTypes;
+export function listModalities() {
+	return availableModalities;
 }
 
 /**
- * Filter models by type and user access.
+ * Filter models by modality and user access.
  */
-export async function listModelsByType(
+export async function listModelsByModality(
 	env: IEnv,
-	type: string,
+	modality: string,
 	userId?: number,
 ) {
-	const models = getModelsByType(type);
+	const models = getModelsByModality(
+		modality as (typeof availableModalities)[number],
+	);
 	return await filterModelsForUserAccess(models, env, userId, {
 		shouldUseCache: false,
 	});

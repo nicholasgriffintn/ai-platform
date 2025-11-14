@@ -1,7 +1,4 @@
-import type {
-	availableCapabilities,
-	availableModelTypes,
-} from "~/lib/providers/models";
+import type { availableModalities } from "~/lib/providers/models";
 
 export type ModelRanking = 1 | 2 | 3 | 4 | 5;
 
@@ -34,12 +31,18 @@ export interface ReplicateInputSchemaDescriptor {
 	reference?: string;
 }
 
+export type ModelModality = (typeof availableModalities)[number];
+
+export type ModelModalities = {
+	input: ModelModality[];
+	output?: ModelModality[];
+};
+
 export type ModelConfigItem = {
 	matchingModel: string;
 	name?: string;
 	description?: string;
 	provider: string;
-	type: Array<(typeof availableModelTypes)[number]>;
 	isBeta?: boolean;
 	supportsToolCalls?: boolean;
 	isFree?: boolean;
@@ -51,7 +54,7 @@ export type ModelConfigItem = {
 	costPer1kReasoningTokens?: number;
 	costPer1kSearches?: number;
 	costPerRun?: number;
-	strengths?: Array<(typeof availableCapabilities)[number]>;
+	strengths?: Array<(typeof availableModalities)[number]>;
 	contextComplexity?: ModelRanking;
 	reliability?: ModelRanking;
 	speed?: ModelRanking;
@@ -60,6 +63,7 @@ export type ModelConfigItem = {
 	requiresThinkingPrompt?: boolean;
 	includedInRouter?: boolean;
 	isFeatured?: boolean;
+	hiddenFromDefaultList?: boolean;
 	supportsResponseFormat?: boolean;
 	supportsArtifacts?: boolean;
 	supportsStreaming?: boolean;
@@ -76,10 +80,7 @@ export type ModelConfigItem = {
 	knowledgeCutoffDate?: string;
 	releaseDate?: string;
 	lastUpdated?: string;
-	modalities?: {
-		input: string[];
-		output: string[];
-	};
+	modalities: ModelModalities;
 	supportsAttachments?: boolean;
 	supportsTemperature?: boolean;
 	supportsTopP?: boolean;
@@ -98,8 +99,8 @@ export type ModelConfig = {
 
 export interface PromptRequirements {
 	expectedComplexity: ModelRanking;
-	requiredCapabilities: Array<(typeof availableCapabilities)[number]>;
-	criticalCapabilities?: Array<(typeof availableCapabilities)[number]>;
+	requiredStrengths: Array<(typeof availableModalities)[number]>;
+	criticalStrengths?: Array<(typeof availableModalities)[number]>;
 	estimatedInputTokens: number;
 	estimatedOutputTokens: number;
 	hasImages: boolean;

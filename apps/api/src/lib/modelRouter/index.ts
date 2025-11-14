@@ -163,8 +163,8 @@ export class ModelRouter {
 		const capabilities = await getModelConfig(model);
 
 		if (
-			requirements.criticalCapabilities?.some(
-				(cap) => !capabilities.strengths?.includes(cap as any),
+			requirements.criticalStrengths?.some(
+				(strength) => !capabilities.strengths?.includes(strength),
 			)
 		) {
 			return {
@@ -174,8 +174,8 @@ export class ModelRouter {
 			};
 		}
 
-		if (requirements.requiredCapabilities.length === 0) {
-			return { model, score: 0, reason: "No required capabilities" };
+		if (requirements.requiredStrengths.length === 0) {
+			return { model, score: 0, reason: "No required strengths" };
 		}
 
 		const score = ModelRouter.calculateScore(requirements, capabilities);
@@ -242,16 +242,16 @@ export class ModelRouter {
 			score += ModelRouter.WEIGHTS.FUNCTIONS;
 		}
 
-		const requiredCapabilities = requirements.requiredCapabilities;
+		const requiredStrengths = requirements.requiredStrengths;
 		let totalRequiredWeight = 0;
 		let matchedWeight = 0;
 
-		for (const cap of requiredCapabilities) {
+		for (const strength of requiredStrengths) {
 			const weight =
-				ModelRouter.CAPABILITY_WEIGHTS[cap] ??
+				ModelRouter.CAPABILITY_WEIGHTS[strength] ??
 				ModelRouter.DEFAULT_CAPABILITY_WEIGHT;
 			totalRequiredWeight += weight;
-			if (model.strengths?.includes(cap as any)) {
+			if (model.strengths?.includes(strength)) {
 				matchedWeight += weight;
 			}
 		}
@@ -320,9 +320,9 @@ export class ModelRouter {
 	): boolean {
 		return (
 			requirements.expectedComplexity >= 3 &&
-			(requirements.requiredCapabilities.includes("general_knowledge") ||
-				requirements.requiredCapabilities.includes("creative") ||
-				requirements.requiredCapabilities.includes("reasoning"))
+			(requirements.requiredStrengths.includes("general_knowledge") ||
+				requirements.requiredStrengths.includes("creative") ||
+				requirements.requiredStrengths.includes("reasoning"))
 		);
 	}
 

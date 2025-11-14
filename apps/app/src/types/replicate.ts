@@ -13,7 +13,12 @@ export interface ReplicateModel {
 	id: string;
 	name: string;
 	description: string;
-	type: string[];
+	modalities?: {
+		input: string[];
+		output?: string[];
+	};
+	modalitySignature: string;
+	modalityLabel: string;
 	costPerRun: number;
 	inputSchema: {
 		fields: ReplicateInputField[];

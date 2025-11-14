@@ -25,7 +25,7 @@ const createMockModelConfig = (
 	({
 		provider,
 		matchingModel,
-		type: ["text"],
+		modalities: { input: ["text"], output: ["text"] },
 		name: "Test Model",
 		supportsTokenCounting,
 	}) as any;

@@ -10,7 +10,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/o3", PROVIDER, {
 		name: "o3",
 		matchingModel: "openai/o3",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -28,7 +27,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4o", PROVIDER, {
 		name: "GPT-4o",
 		matchingModel: "openai/gpt-4o",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -46,7 +44,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-5-mini", PROVIDER, {
 		name: "GPT-5 Mini",
 		matchingModel: "openai/gpt-5-mini",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -64,7 +61,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4.1", PROVIDER, {
 		name: "GPT-4.1",
 		matchingModel: "openai/gpt-4.1",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -82,7 +78,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-5", PROVIDER, {
 		name: "GPT-5",
 		matchingModel: "openai/gpt-5",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -100,7 +95,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/o1", PROVIDER, {
 		name: "o1",
 		matchingModel: "openai/o1",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -118,7 +112,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/o3-mini", PROVIDER, {
 		name: "o3-mini",
 		matchingModel: "openai/o3-mini",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -136,7 +129,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4-turbo", PROVIDER, {
 		name: "GPT-4 Turbo",
 		matchingModel: "openai/gpt-4-turbo",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -154,7 +146,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4o-mini", PROVIDER, {
 		name: "GPT-4o mini",
 		matchingModel: "openai/gpt-4o-mini",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -172,7 +163,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4.1-nano", PROVIDER, {
 		name: "GPT-4.1 nano",
 		matchingModel: "openai/gpt-4.1-nano",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -190,7 +180,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-5-nano", PROVIDER, {
 		name: "GPT-5 Nano",
 		matchingModel: "openai/gpt-5-nano",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -208,7 +197,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/o4-mini", PROVIDER, {
 		name: "o4-mini",
 		matchingModel: "openai/o4-mini",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: false,
@@ -226,7 +214,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-4.1-mini", PROVIDER, {
 		name: "GPT-4.1 mini",
 		matchingModel: "openai/gpt-4.1-mini",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -244,7 +231,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("deepseek/deepseek-r1-distill-llama-70b", PROVIDER, {
 		name: "DeepSeek R1 Distill Llama 70B",
 		matchingModel: "deepseek/deepseek-r1-distill-llama-70b",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: true,
 		supportsTemperature: true,
@@ -262,7 +248,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("deepseek/deepseek-r1", PROVIDER, {
 		name: "DeepSeek-R1",
 		matchingModel: "deepseek/deepseek-r1",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: true,
 		supportsTemperature: true,
@@ -280,7 +265,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic/claude-4-1-opus", PROVIDER, {
 		name: "Claude Opus 4",
 		matchingModel: "anthropic/claude-4-1-opus",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: true,
@@ -298,7 +282,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic/claude-3-opus", PROVIDER, {
 		name: "Claude Opus 3",
 		matchingModel: "anthropic/claude-3-opus",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -316,7 +299,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic/claude-3-haiku", PROVIDER, {
 		name: "Claude Haiku 3",
 		matchingModel: "anthropic/claude-3-haiku",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -334,7 +316,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic/claude-3.7-sonnet", PROVIDER, {
 		name: "Claude Sonnet 3.7",
 		matchingModel: "anthropic/claude-3.7-sonnet",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: true,
@@ -352,7 +333,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic/claude-3-5-haiku", PROVIDER, {
 		name: "Claude Haiku 3.5",
 		matchingModel: "anthropic/claude-3-5-haiku",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -370,7 +350,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic/claude-4-sonnet", PROVIDER, {
 		name: "Claude Sonnet 4",
 		matchingModel: "anthropic/claude-4-sonnet",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: true,
@@ -388,7 +367,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic/claude-3.5-sonnet", PROVIDER, {
 		name: "Claude Sonnet 3.5 v2",
 		matchingModel: "anthropic/claude-3.5-sonnet",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -406,7 +384,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic/claude-4-opus", PROVIDER, {
 		name: "Claude Opus 4",
 		matchingModel: "anthropic/claude-4-opus",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: true,
 		supportsTemperature: true,
@@ -424,7 +401,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("amazon/nova-micro", PROVIDER, {
 		name: "Nova Micro",
 		matchingModel: "amazon/nova-micro",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -442,7 +418,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("amazon/nova-pro", PROVIDER, {
 		name: "Nova Pro",
 		matchingModel: "amazon/nova-pro",
-		type: ["text", "image-to-text", "text-to-video"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -460,7 +435,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("amazon/nova-lite", PROVIDER, {
 		name: "Nova Lite",
 		matchingModel: "amazon/nova-lite",
-		type: ["text", "image-to-text", "text-to-video"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -478,7 +452,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral/ministral-8b", PROVIDER, {
 		name: "Ministral 8B",
 		matchingModel: "mistral/ministral-8b",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -496,7 +469,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral/magistral-medium", PROVIDER, {
 		name: "Magistral Medium",
 		matchingModel: "mistral/magistral-medium",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: true,
 		supportsTemperature: true,
@@ -514,7 +486,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral/codestral", PROVIDER, {
 		name: "Codestral",
 		matchingModel: "mistral/codestral",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -532,7 +503,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral/pixtral-large", PROVIDER, {
 		name: "Pixtral Large",
 		matchingModel: "mistral/pixtral-large",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -550,7 +520,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral/pixtral-12b", PROVIDER, {
 		name: "Pixtral 12B",
 		matchingModel: "mistral/pixtral-12b",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -568,7 +537,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral/ministral-3b", PROVIDER, {
 		name: "Ministral 3B",
 		matchingModel: "mistral/ministral-3b",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -586,7 +554,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral/mistral-small", PROVIDER, {
 		name: "Mistral Small",
 		matchingModel: "mistral/mistral-small",
-		type: ["text", "image-to-text"],
 		supportsAttachments: true,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -604,7 +571,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral/mixtral-8x22b-instruct", PROVIDER, {
 		name: "Mixtral 8x22B",
 		matchingModel: "mistral/mixtral-8x22b-instruct",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -622,7 +588,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral/magistral-small", PROVIDER, {
 		name: "Magistral Small",
 		matchingModel: "mistral/magistral-small",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: true,
 		supportsTemperature: true,
@@ -640,7 +605,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral/mistral-large", PROVIDER, {
 		name: "Mistral Large",
 		matchingModel: "mistral/mistral-large",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -658,7 +622,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("moonshotai/kimi-k2", PROVIDER, {
 		name: "Kimi K2 Instruct",
 		matchingModel: "moonshotai/kimi-k2",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,
@@ -676,7 +639,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("cerebras/qwen3-coder", PROVIDER, {
 		name: "Qwen 3 Coder 480B",
 		matchingModel: "cerebras/qwen3-coder",
-		type: ["text"],
 		supportsAttachments: false,
 		supportsReasoning: false,
 		supportsTemperature: true,

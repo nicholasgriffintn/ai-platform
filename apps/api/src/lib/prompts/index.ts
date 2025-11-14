@@ -36,10 +36,12 @@ export async function getSystemPrompt(
 			{ modelId: model },
 		);
 	} else {
-		const isTextModel = modelConfig.type.includes("text");
-
-		const isCodingModel = modelConfig.type.includes("coding");
-		if (isCodingModel && !isTextModel) {
+		const inputs = modelConfig.modalities?.input ?? ["text"];
+		const outputs = modelConfig.modalities?.output ?? inputs;
+		const supportsTextOutput =
+			outputs.includes("text") || (!outputs.length && inputs.includes("text"));
+		const isCodingModel = outputs.length === 1 && outputs[0] === "coding";
+		if (isCodingModel) {
 			prompt = returnCodingPrompt(
 				request,
 				userSettings,
@@ -50,10 +52,11 @@ export async function getSystemPrompt(
 				{ modelId: model, modelConfig },
 			);
 		} else {
-			const isTextToImageModel = modelConfig.type.includes("text-to-image");
+			const isTextToImageModel =
+				outputs.includes("image") && !supportsTextOutput;
 			if (isTextToImageModel) {
 				prompt = getTextToImageSystemPrompt(request.image_style);
-			} else if (!isTextModel) {
+			} else if (!supportsTextOutput) {
 				prompt = emptyPrompt();
 			} else {
 				prompt = await returnStandardPrompt(

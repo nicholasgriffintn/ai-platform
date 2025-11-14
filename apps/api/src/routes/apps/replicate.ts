@@ -11,10 +11,10 @@ import { listReplicatePredictions } from "~/services/apps/replicate/list";
 import { getReplicatePredictionDetails } from "~/services/apps/replicate/get-details";
 import { replicateModelConfig } from "~/data-model/models/replicate";
 import type { AppTheme } from "~/types/app-schema";
-import type { IEnv, IUser } from "~/types";
+import type { IEnv, IUser, ModelModalities, ModelModality } from "~/types";
 import { AssistantError } from "~/utils/errors";
 
-const typeMetadata: Record<
+const signatureMetadata: Record<
 	string,
 	{
 		category: string;
@@ -22,27 +22,32 @@ const typeMetadata: Record<
 		theme: AppTheme;
 	}
 > = {
-	"text-to-image": {
+	"text->image": {
 		category: "Image Generation",
 		icon: "image",
 		theme: "pink",
 	},
-	"image-to-image": {
+	"image->image": {
 		category: "Image Editing",
 		icon: "sparkles",
 		theme: "violet",
 	},
-	"text-to-video": {
+	"text->video": {
 		category: "Video Generation",
 		icon: "video",
 		theme: "rose",
 	},
-	"text-to-audio": {
+	"image->video": {
+		category: "Video Generation",
+		icon: "video",
+		theme: "rose",
+	},
+	"text->audio": {
 		category: "Audio Generation",
 		icon: "music",
 		theme: "indigo",
 	},
-	"audio-to-text": {
+	"audio->text": {
 		category: "Transcription",
 		icon: "mic",
 		theme: "emerald",
@@ -81,6 +86,15 @@ const DEFAULT_CATEGORY = "Creative Tools";
 const DEFAULT_ICON = "sparkles";
 const DEFAULT_THEME: AppTheme = "slate";
 
+function getModalitySignature(modalities?: ModelModalities) {
+	const input = (modalities?.input ?? ["text"]) as ModelModality[];
+	const output = (modalities?.output ?? ["text"]) as ModelModality[];
+	const signature = `${input.join("+")}->${output.join("+")}`;
+	const label = `${input.join(" & ")} \u2192 ${output.join(" & ")}`;
+
+	return { signature, label };
+}
+
 const app = new Hono();
 
 const routeLogger = createRouteLogger("apps/replicate");
@@ -114,28 +128,26 @@ app.get(
 	async (context: Context) => {
 		const models = Object.entries(replicateModelConfig).map(([id, model]) => {
 			const metadata = replicateModelMetadata[id] || {};
-			const primaryType = model.type?.[0];
-			const typeDefaults = primaryType ? typeMetadata[primaryType] : undefined;
+			const { signature, label } = getModalitySignature(model.modalities);
+			const signatureDefaults = signatureMetadata[signature] || null;
 
 			const category =
 				metadata.category ||
-				typeDefaults?.category ||
-				(primaryType ? primaryType.replace(/-/g, " ") : DEFAULT_CATEGORY);
-			const icon = metadata.icon || typeDefaults?.icon || DEFAULT_ICON;
-			const theme = metadata.theme || typeDefaults?.theme || DEFAULT_THEME;
+				signatureDefaults?.category ||
+				(DEFAULT_CATEGORY as string);
+			const icon = metadata.icon || signatureDefaults?.icon || DEFAULT_ICON;
+			const theme = metadata.theme || signatureDefaults?.theme || DEFAULT_THEME;
 			const tags = Array.from(
-				new Set([
-					...(model.type ?? []),
-					...(model.strengths ?? []),
-					...(metadata.tags ?? []),
-				]),
+				new Set([label, ...(model.strengths ?? []), ...(metadata.tags ?? [])]),
 			);
 
 			return {
 				id,
 				name: model.name,
 				description: model.description,
-				type: model.type,
+				modalities: model.modalities,
+				modalitySignature: signature,
+				modalityLabel: label,
 				costPerRun: model.costPerRun,
 				inputSchema: model.replicateInputSchema,
 				reference: model.replicateInputSchema?.reference,

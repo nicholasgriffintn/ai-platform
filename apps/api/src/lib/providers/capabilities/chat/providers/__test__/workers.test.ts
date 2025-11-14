@@ -60,7 +60,7 @@ describe("WorkersProvider", () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "worker-vision",
-				type: ["image-to-text"],
+				modalities: { input: ["image"], output: ["text"] },
 			});
 
 			vi.mocked(createCommonParameters).mockReturnValue({});
@@ -95,7 +95,7 @@ describe("WorkersProvider", () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "worker-vision",
-				type: ["image-to-text"],
+				modalities: { input: ["image"], output: ["text"] },
 			});
 
 			vi.mocked(createCommonParameters).mockReturnValue({});

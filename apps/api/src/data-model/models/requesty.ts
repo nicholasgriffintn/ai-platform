@@ -12,7 +12,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "openai/gpt-4.1-mini",
 		description:
 			"Balanced version of GPT-4.1 with massive 1M+ token context window and lower cost.",
-		type: ["text", "coding"],
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
@@ -43,7 +42,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "openai/o4-mini",
 		description:
 			"Smaller model optimized for fast, cost-efficient reasoning with strong performance in math, coding, and visual tasks.",
-		type: ["text"],
 		knowledgeCutoffDate: "June 2024",
 		releaseDate: "April 16, 2025",
 		lastUpdated: "April 16, 2025",
@@ -74,7 +72,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "openai/gpt-4o-mini",
 		description:
 			"Efficient version of GPT-4o optimized for faster response times while maintaining core capabilities.",
-		type: ["text"],
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "July 18, 2024",
 		lastUpdated: "July 18, 2024",
@@ -105,7 +102,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "openai/gpt-4.1",
 		description:
 			"OpenAI's advanced model optimized for coding and instruction-following with massive 1M+ token context window.",
-		type: ["text", "coding"],
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
@@ -136,7 +132,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "anthropic/claude-4-sonnet-20250522",
 		description:
 			"Claude's most advanced Sonnet model with enhanced reasoning capabilities and multimodal understanding.",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
@@ -167,7 +162,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "anthropic/claude-3-7-sonnet",
 		description:
 			"Enhanced version of Claude 3.5 Sonnet with improved reasoning and analysis capabilities.",
-		type: ["text"],
 		knowledgeCutoffDate: "January 2024",
 		releaseDate: "February 19, 2025",
 		lastUpdated: "February 19, 2025",
@@ -198,7 +192,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "anthropic/claude-opus-4-1-20250805",
 		description:
 			"Claude's most powerful model with exceptional reasoning, analysis, and creative capabilities.",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2025",
 		releaseDate: "August 5, 2025",
 		lastUpdated: "August 5, 2025",
@@ -229,7 +222,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "anthropic/claude-opus-4",
 		description:
 			"Claude's flagship Opus model with exceptional performance across all domains.",
-		type: ["text"],
 		knowledgeCutoffDate: "March 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
@@ -260,7 +252,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "google/gemini-2.5-flash",
 		description:
 			"Google's fast multimodal model with support for text, images, audio, video, and PDFs.",
-		type: ["text"],
 		knowledgeCutoffDate: "January 2025",
 		releaseDate: "June 17, 2025",
 		lastUpdated: "June 17, 2025",
@@ -292,7 +283,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "google/gemini-2.5-pro",
 		description:
 			"Google's advanced multimodal model with extensive capabilities across text, images, audio, video, and PDFs.",
-		type: ["text"],
 		knowledgeCutoffDate: "January 2025",
 		releaseDate: "June 17, 2025",
 		lastUpdated: "June 17, 2025",

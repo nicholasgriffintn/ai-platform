@@ -7,7 +7,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		description:
 			"Gemini 2.5 Pro is our state-of-the-art thinking model, capable of reasoning over complex problems in code, math, and STEM, as well as analyzing large datasets, codebases, and documents using long context.",
 		provider: "google-ai-studio",
-		type: ["text"],
 		card: "https://www.prompthub.us/models/gemini-2-5-pro",
 		strengths: ["coding", "analysis", "math", "multilingual"],
 		multimodal: true,
@@ -42,7 +41,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		description:
 			"Gemini 2.5 Flash delivers next-gen features and improved capabilities, including superior speed, native tool use, multimodal generation, and a 1M token context window.",
 		provider: "google-ai-studio",
-		type: ["text"],
 		card: "https://www.prompthub.us/models/gemini-2-5-flash",
 		strengths: ["coding", "analysis", "math", "multilingual"],
 		modalities: {
@@ -77,7 +75,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		description:
 			"A Gemini 2.5 Flash model optimized for cost efficiency and low latency.",
 		provider: "google-ai-studio",
-		type: ["text"],
 		card: "https://www.prompthub.us/models/gemini-2-5-flash-lite",
 		strengths: ["coding", "analysis", "math", "multilingual"],
 		modalities: {

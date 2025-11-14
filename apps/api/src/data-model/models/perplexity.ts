@@ -7,7 +7,6 @@ export const perplexityModelConfig: ModelConfig = {
 		description:
 			"Premier research offering with search grounding, supporting advanced queries and follow-ups.",
 		provider: "perplexity-ai",
-		type: ["text"],
 		strengths: [
 			"search",
 			"research",
@@ -25,6 +24,10 @@ export const perplexityModelConfig: ModelConfig = {
 		costPer1kReasoningTokens: 0.003,
 		costPer1kOutputTokens: 0.008,
 		costPer1kSearches: 0.005,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	"sonar-reasoning-pro": {
 		name: "Perplexity Sonar Reasoning Pro",
@@ -32,7 +35,6 @@ export const perplexityModelConfig: ModelConfig = {
 		description:
 			"Premier reasoning offering powered by DeepSeek R1 with Chain of Thought (CoT).",
 		provider: "perplexity-ai",
-		type: ["text"],
 		strengths: [
 			"reasoning",
 			"multilingual",
@@ -48,6 +50,10 @@ export const perplexityModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
 		costPer1kSearches: 0.005,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	"sonar-reasoning": {
 		name: "Perplexity Sonar Reasoning",
@@ -55,7 +61,6 @@ export const perplexityModelConfig: ModelConfig = {
 		description:
 			"Standard reasoning offering with Chain of Thought (CoT) capabilities.",
 		provider: "perplexity-ai",
-		type: ["text"],
 		strengths: [
 			"reasoning",
 			"multilingual",
@@ -72,6 +77,10 @@ export const perplexityModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
 		costPer1kSearches: 0.005,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	"sonar-pro": {
 		name: "Perplexity Sonar Pro",
@@ -79,7 +88,6 @@ export const perplexityModelConfig: ModelConfig = {
 		description:
 			"Premier search offering with search grounding, supporting advanced queries and follow-ups.",
 		provider: "perplexity-ai",
-		type: ["text"],
 		strengths: ["search", "analysis", "summarization", "general_knowledge"],
 		contextComplexity: 5,
 		reliability: 4,
@@ -89,6 +97,10 @@ export const perplexityModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
 		costPer1kSearches: 0.005,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	sonar: {
 		name: "Perplexity Sonar",
@@ -96,7 +108,6 @@ export const perplexityModelConfig: ModelConfig = {
 		description:
 			"Lightweight offering with search grounding, quicker and cheaper than Sonar Pro.",
 		provider: "perplexity-ai",
-		type: ["text"],
 		strengths: ["search", "analysis", "summarization", "general_knowledge"],
 		contextComplexity: 4,
 		reliability: 4,
@@ -106,6 +117,10 @@ export const perplexityModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.001,
 		costPer1kSearches: 0.005,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 	"r1-1776": {
 		name: "Perplexity R1 1776",
@@ -113,7 +128,6 @@ export const perplexityModelConfig: ModelConfig = {
 		description:
 			"R1-1776 is a version of the DeepSeek R1 model that has been post-trained to provide uncensored, unbiased, and factual information.",
 		provider: "perplexity-ai",
-		type: ["text"],
 		strengths: [
 			"reasoning",
 			"multilingual",
@@ -128,5 +142,9 @@ export const perplexityModelConfig: ModelConfig = {
 		includedInRouter: true,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 };

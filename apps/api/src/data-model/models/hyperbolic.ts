@@ -7,7 +7,6 @@ export const hyperbolicModelConfig: ModelConfig = {
 		description:
 			"Hermes 3 is a generalist language model with many improvements over Hermes 2, including advanced agentic capabilities, much better roleplaying, reasoning, multi-turn conversation, long context coherence, and improvements across the board.",
 		provider: "hyperbolic",
-		type: ["text"],
 		supportsToolCalls: true,
 		isFree: false,
 		isFeatured: true,
@@ -16,5 +15,9 @@ export const hyperbolicModelConfig: ModelConfig = {
 		maxTokens: 1024,
 		strengths: ["instruction", "coding", "reasoning", "chat"],
 		supportsTemperature: true,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
 	},
 };

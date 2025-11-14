@@ -9,28 +9,30 @@ import {
 
 import {
 	getModelDetails,
-	listCapabilities,
-	listModelTypes,
+	listStrengths,
+	listModalities,
 	listModels,
-	listModelsByCapability,
-	listModelsByType,
+	listModelsByStrength,
+	listModelsByModality,
 } from "../index";
 
 vi.mock("~/lib/providers/models", () => ({
 	getModels: vi.fn(),
 	filterModelsForUserAccess: vi.fn(),
 	getModelsByCapability: vi.fn(),
-	getModelsByType: vi.fn(),
+	getModelsByModality: vi.fn(),
 	getModelConfig: vi.fn(),
-	availableCapabilities: ["chat", "completion", "embedding"],
-	availableModelTypes: ["gpt", "claude", "gemini"],
+	getAvailableStrengths: vi
+		.fn()
+		.mockReturnValue(["chat", "completion", "embedding"]),
+	availableModalities: ["text", "image", "audio"],
 }));
 
 describe("Models Service", () => {
 	let mockGetModels: MockedFunction<any>;
 	let mockFilterModelsForUserAccess: MockedFunction<any>;
 	let mockGetModelsByCapability: MockedFunction<any>;
-	let mockGetModelsByType: MockedFunction<any>;
+	let mockGetModelsByModality: MockedFunction<any>;
 	let mockGetModelConfig: MockedFunction<any>;
 
 	beforeEach(async () => {
@@ -42,7 +44,7 @@ describe("Models Service", () => {
 			modelsLib.filterModelsForUserAccess,
 		);
 		mockGetModelsByCapability = vi.mocked(modelsLib.getModelsByCapability);
-		mockGetModelsByType = vi.mocked(modelsLib.getModelsByType);
+		mockGetModelsByModality = vi.mocked(modelsLib.getModelsByModality);
 		mockGetModelConfig = vi.mocked(modelsLib.getModelConfig);
 	});
 
@@ -87,15 +89,15 @@ describe("Models Service", () => {
 		});
 	});
 
-	describe("listCapabilities", () => {
+	describe("listStrengths", () => {
 		it("should return available capabilities", () => {
-			const result = listCapabilities();
+			const result = listStrengths();
 
 			expect(result).toEqual(["chat", "completion", "embedding"]);
 		});
 	});
 
-	describe("listModelsByCapability", () => {
+	describe("listModelsByStrength", () => {
 		it("should return filtered models by capability", async () => {
 			const mockModels = { "gpt-4": { id: "gpt-4" } };
 			const mockFilteredModels = { "gpt-4": { id: "gpt-4" } };
@@ -103,7 +105,7 @@ describe("Models Service", () => {
 			mockGetModelsByCapability.mockReturnValue(mockModels);
 			mockFilterModelsForUserAccess.mockResolvedValue(mockFilteredModels);
 
-			const result = await listModelsByCapability({} as any, "chat", 123);
+			const result = await listModelsByStrength({} as any, "chat", 123);
 
 			expect(mockGetModelsByCapability).toHaveBeenCalledWith("chat");
 			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith(
@@ -116,25 +118,25 @@ describe("Models Service", () => {
 		});
 	});
 
-	describe("listModelTypes", () => {
-		it("should return available model types", () => {
-			const result = listModelTypes();
+	describe("listModalities", () => {
+		it("should return available model modalities", () => {
+			const result = listModalities();
 
-			expect(result).toEqual(["gpt", "claude", "gemini"]);
+			expect(result).toEqual(["text", "image", "audio"]);
 		});
 	});
 
-	describe("listModelsByType", () => {
-		it("should return filtered models by type", async () => {
+	describe("listModelsByModality", () => {
+		it("should return filtered models by modality", async () => {
 			const mockModels = { "gpt-4": { id: "gpt-4" } };
 			const mockFilteredModels = { "gpt-4": { id: "gpt-4" } };
 
-			mockGetModelsByType.mockReturnValue(mockModels);
+			mockGetModelsByModality.mockReturnValue(mockModels);
 			mockFilterModelsForUserAccess.mockResolvedValue(mockFilteredModels);
 
-			const result = await listModelsByType({} as any, "gpt", 123);
+			const result = await listModelsByModality({} as any, "text", 123);
 
-			expect(mockGetModelsByType).toHaveBeenCalledWith("gpt");
+			expect(mockGetModelsByModality).toHaveBeenCalledWith("text");
 			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith(
 				mockModels,
 				{},
