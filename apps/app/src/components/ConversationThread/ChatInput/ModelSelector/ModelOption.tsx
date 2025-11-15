@@ -105,7 +105,7 @@ export const ModelOption = ({
 					) : null}
 				</div>
 				<div className="flex items-center gap-1.5">
-					{model.supportsReasoning && (
+					{model.reasoningConfig?.enabled && (
 						<div className="p-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30">
 							<BrainCircuit
 								size={14}

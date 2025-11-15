@@ -63,7 +63,7 @@ export function resolvePromptLayout({
 	}
 
 	if (
-		(!capabilities.supportsReasoning || capabilities.requiresThinkingPrompt) &&
+		(!capabilities.reasoningEnabled || capabilities.requiresThinkingPrompt) &&
 		exampleVariant === "omit"
 	) {
 		exampleVariant = "compact";

@@ -40,6 +40,7 @@ export type ModelModalities = {
 };
 
 export interface ModelReasoningConfig {
+	enabled: boolean;
 	supportedEffortLevels?: ReasoningEffortLevel[];
 	defaultEffort?: ReasoningEffortLevel;
 }
@@ -70,7 +71,6 @@ export type ModelConfigItem = {
 	reliability?: ModelRanking;
 	speed?: ModelRanking;
 	multimodal?: boolean;
-	supportsReasoning?: boolean;
 	requiresThinkingPrompt?: boolean;
 	includedInRouter?: boolean;
 	isFeatured?: boolean;

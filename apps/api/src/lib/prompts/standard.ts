@@ -21,7 +21,6 @@ export async function returnStandardPrompt(
 	userSettings?: IUserSettings,
 	supportsToolCalls?: boolean,
 	supportsArtifacts?: boolean,
-	supportsReasoning?: boolean,
 	requiresThinkingPrompt?: boolean,
 	modelMetadata?: PromptModelMetadata,
 ): Promise<string> {
@@ -47,7 +46,6 @@ export async function returnStandardPrompt(
 		const capabilities = resolvePromptCapabilities({
 			supportsToolCalls,
 			supportsArtifacts,
-			supportsReasoning,
 			requiresThinkingPrompt,
 			modelMetadata,
 		});
@@ -66,7 +64,7 @@ export async function returnStandardPrompt(
 			answerFormatInstructions,
 		} = getResponseStyle(
 			verbosity,
-			capabilities.supportsReasoning,
+			capabilities.reasoningEnabled,
 			capabilities.requiresThinkingPrompt,
 			capabilities.supportsToolCalls,
 			capabilities.supportsArtifacts,
@@ -91,7 +89,7 @@ export async function returnStandardPrompt(
 			isAgent,
 			supportsToolCalls: capabilities.supportsToolCalls,
 			supportsArtifacts: capabilities.supportsArtifacts,
-			supportsReasoning: capabilities.supportsReasoning,
+			reasoningEnabled: capabilities.reasoningEnabled,
 			verbosity,
 			preferredLanguage,
 			format: layout.principlesFormat,
@@ -130,7 +128,7 @@ export async function returnStandardPrompt(
 		if (layout.exampleVariant !== "omit") {
 			builder.add(
 				buildStandardExampleOutputSection({
-					supportsReasoning: capabilities.supportsReasoning,
+					reasoningEnabled: capabilities.reasoningEnabled,
 					supportsArtifacts: capabilities.supportsArtifacts,
 					problemBreakdownInstructions,
 					answerFormatInstructions,

@@ -116,7 +116,7 @@ export class AnthropicProvider extends BaseProvider {
 				? { tools: allTools }
 				: {};
 
-		const supportsThinking = modelConfig?.supportsReasoning || false;
+		const supportsThinking = modelConfig?.reasoningConfig?.enabled || false;
 		const shouldEnableThinking =
 			supportsThinking && params.reasoning_effort !== "none";
 		const thinkingParams = shouldEnableThinking

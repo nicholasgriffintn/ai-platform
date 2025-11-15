@@ -147,7 +147,18 @@ describe("returnCodingPrompt", () => {
 		it("should skip thinking section when supportsReasoning is true", () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
-			const result = returnCodingPrompt(request, undefined, false, false, true);
+			const result = returnCodingPrompt(
+				request,
+				undefined,
+				false,
+				false,
+				false,
+				{
+					modelConfig: {
+						reasoningConfig: { enabled: true },
+					} as any,
+				},
+			);
 			expect(result).not.toContain("<think>");
 		});
 
@@ -189,14 +200,7 @@ describe("returnCodingPrompt", () => {
 		it("should handle requiresThinkingPrompt flag", () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
-			const result = returnCodingPrompt(
-				request,
-				undefined,
-				false,
-				false,
-				false,
-				true,
-			);
+			const result = returnCodingPrompt(request, undefined, false, false, true);
 			expect(result).toContain("<response_traits>");
 			expect(result).toContain("<response_preferences>");
 		});
@@ -206,7 +210,6 @@ describe("returnCodingPrompt", () => {
 			const request: IBody = {};
 			const result = returnCodingPrompt(
 				request,
-				undefined,
 				undefined,
 				undefined,
 				undefined,
@@ -393,7 +396,6 @@ describe("returnCodingPrompt", () => {
 				userSettings,
 				true,
 				true,
-				false,
 				true,
 			);
 			expect(typeof result).toBe("string");

@@ -6,7 +6,7 @@ describe("buildAssistantPrinciplesSection", () => {
 		isAgent: false,
 		supportsToolCalls: false,
 		supportsArtifacts: false,
-		supportsReasoning: true,
+		reasoningEnabled: true,
 		verbosity: "medium",
 		preferredLanguage: null,
 	} as const;
@@ -28,7 +28,7 @@ describe("buildAssistantPrinciplesSection", () => {
 			...baseOptions,
 			supportsToolCalls: true,
 			supportsArtifacts: true,
-			supportsReasoning: false,
+			reasoningEnabled: false,
 			format: "compact",
 			verbosity: "low",
 			preferredLanguage: "fr",

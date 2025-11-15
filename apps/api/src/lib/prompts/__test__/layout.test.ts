@@ -5,7 +5,7 @@ import type { PromptCapabilities } from "../utils";
 const baseCapabilities: PromptCapabilities = {
 	supportsToolCalls: false,
 	supportsArtifacts: false,
-	supportsReasoning: true,
+	reasoningEnabled: true,
 	requiresThinkingPrompt: false,
 };
 
@@ -47,7 +47,7 @@ describe("resolvePromptLayout", () => {
 			isCoding: false,
 			capabilities: {
 				...baseCapabilities,
-				supportsReasoning: false,
+				reasoningEnabled: false,
 			},
 		});
 

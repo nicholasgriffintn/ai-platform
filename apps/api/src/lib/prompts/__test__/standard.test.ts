@@ -34,7 +34,6 @@ describe("returnStandardPrompt", () => {
 				false,
 				false,
 				false,
-				false,
 				{ modelId: "test-model" },
 			);
 			expect(result).toContain("<session_metadata>");
@@ -201,7 +200,12 @@ describe("returnStandardPrompt", () => {
 				undefined,
 				false,
 				false,
-				true,
+				false,
+				{
+					modelConfig: {
+						reasoningConfig: { enabled: true },
+					} as any,
+				},
 			);
 			expect(result).not.toContain("<think>");
 		});
@@ -229,7 +233,12 @@ describe("returnStandardPrompt", () => {
 				undefined,
 				undefined,
 				undefined,
-				true,
+				false,
+				{
+					modelConfig: {
+						reasoningConfig: { enabled: true },
+					} as any,
+				},
 			);
 			expect(result).not.toContain("<example_output>");
 		});
@@ -244,7 +253,6 @@ describe("returnStandardPrompt", () => {
 				undefined,
 				undefined,
 				false,
-				true,
 			);
 
 			expect(result).toContain("<example_output>");
@@ -261,10 +269,9 @@ describe("returnStandardPrompt", () => {
 				undefined,
 				undefined,
 				undefined,
-				undefined,
 				{
 					modelConfig: {
-						supportsReasoning: true,
+						reasoningConfig: { enabled: true },
 					} as any,
 				},
 			);

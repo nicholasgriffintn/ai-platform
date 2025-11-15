@@ -34,11 +34,13 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: false,
 		includedInRouter: true,
 		timeout: 1000000,
-		supportsReasoning: true,
 		supportsTopP: false,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 
 	createModelConfig("o3", PROVIDER, {
@@ -66,11 +68,13 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		multimodal: true,
 		isFeatured: false,
 		includedInRouter: false,
-		supportsReasoning: true,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
 		timeout: 1000000,
 		supportsTemperature: false,
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 
 	createModelConfig("o4-mini", PROVIDER, {
@@ -107,9 +111,11 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		multimodal: true,
 		isFeatured: false,
 		includedInRouter: false,
-		supportsReasoning: true,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 
 	createModelConfig("o3-mini", PROVIDER, {
@@ -139,9 +145,11 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		multimodal: false,
 		isFeatured: false,
 		includedInRouter: false,
-		supportsReasoning: true,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 
 	createModelConfig("gpt-4o", PROVIDER, {
@@ -497,13 +505,13 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: false,
 		card: "https://www.prompthub.us/models/gpt-5.1",
 		supportsToolCalls: true,
-		supportsReasoning: true,
 		maxTokens: 128000,
 		contextWindow: 400000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
 		supportsTopP: false,
 		reasoningConfig: {
+			enabled: true,
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "medium",
 		},
@@ -529,13 +537,13 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: false,
 		card: "https://www.prompthub.us/models/gpt-5.1",
 		supportsToolCalls: true,
-		supportsReasoning: true,
 		maxTokens: 128000,
 		contextWindow: 400000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
 		supportsTopP: false,
 		reasoningConfig: {
+			enabled: true,
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "medium",
 		},
@@ -562,13 +570,13 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: false,
 		card: "https://www.prompthub.us/models/gpt-5.1",
 		supportsToolCalls: true,
-		supportsReasoning: true,
 		maxTokens: 128000,
 		contextWindow: 400000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
 		supportsTopP: false,
 		reasoningConfig: {
+			enabled: true,
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "medium",
 		},
@@ -595,13 +603,13 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: false,
 		card: "https://www.prompthub.us/models/gpt-5.1",
 		supportsToolCalls: true,
-		supportsReasoning: true,
 		maxTokens: 128000,
 		contextWindow: 400000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
 		supportsTopP: false,
 		reasoningConfig: {
+			enabled: true,
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "medium",
 		},

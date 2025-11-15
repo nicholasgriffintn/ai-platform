@@ -72,7 +72,7 @@ export function buildAssistantMetadataSection({
 	const enabledCapabilities = [
 		modelConfig?.supportsToolCalls ? "tool_calls" : null,
 		modelConfig?.supportsArtifacts ? "artifacts" : null,
-		modelConfig?.supportsReasoning ? "reasoning" : null,
+		modelConfig?.reasoningConfig?.enabled ? "reasoning" : null,
 		modelConfig?.supportsDocuments ? "documents" : null,
 		modelConfig?.supportsSearchGrounding ? "search_grounding" : null,
 		modelConfig?.supportsCodeExecution ? "code_execution" : null,

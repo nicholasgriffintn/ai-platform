@@ -13,7 +13,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		supportsSearchGrounding: true,
 		supportsCodeExecution: true,
-		supportsReasoning: true,
+		reasoningConfig: { enabled: true },
 		supportsAttachments: true,
 		supportsTemperature: true,
 		modalities: {
@@ -51,7 +51,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		supportsCodeExecution: true,
 		supportsSearchGrounding: true,
-		supportsReasoning: true,
+		reasoningConfig: { enabled: true },
 		supportsTemperature: true,
 		multimodal: true,
 		knowledgeCutoffDate: "January 2025",

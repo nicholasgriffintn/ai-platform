@@ -4,14 +4,13 @@ import type { PromptModelMetadata } from "./sections/metadata";
 export interface PromptCapabilities {
 	supportsToolCalls: boolean;
 	supportsArtifacts: boolean;
-	supportsReasoning: boolean;
+	reasoningEnabled: boolean;
 	requiresThinkingPrompt: boolean;
 }
 
 interface ResolvePromptCapabilityArgs {
 	supportsToolCalls?: boolean;
 	supportsArtifacts?: boolean;
-	supportsReasoning?: boolean;
 	requiresThinkingPrompt?: boolean;
 	modelMetadata?: PromptModelMetadata;
 }
@@ -19,7 +18,6 @@ interface ResolvePromptCapabilityArgs {
 export function resolvePromptCapabilities({
 	supportsToolCalls,
 	supportsArtifacts,
-	supportsReasoning,
 	requiresThinkingPrompt,
 	modelMetadata,
 }: ResolvePromptCapabilityArgs): PromptCapabilities {
@@ -30,8 +28,7 @@ export function resolvePromptCapabilities({
 			supportsToolCalls ?? metadata?.supportsToolCalls ?? false,
 		supportsArtifacts:
 			supportsArtifacts ?? metadata?.supportsArtifacts ?? false,
-		supportsReasoning:
-			supportsReasoning ?? metadata?.supportsReasoning ?? false,
+		reasoningEnabled: metadata?.reasoningConfig?.enabled ?? false,
 		requiresThinkingPrompt:
 			requiresThinkingPrompt ?? metadata?.requiresThinkingPrompt ?? false,
 	};
@@ -39,7 +36,7 @@ export function resolvePromptCapabilities({
 
 export function getResponseStyle(
 	verbosity?: VerbosityLevel,
-	supportsReasoning = false,
+	reasoningEnabled = false,
 	requiresThinkingPrompt = false,
 	supportsToolCalls = false,
 	supportsArtifacts = false,
@@ -151,7 +148,7 @@ export function getResponseStyle(
 
 		const additionalGuidelines: string[] = [];
 
-		if (!supportsReasoning || requiresThinkingPrompt) {
+		if (!reasoningEnabled || requiresThinkingPrompt) {
 			additionalGuidelines.push(
 				"Before answering, outline the essential steps you will take and share them briefly with the user.",
 			);
@@ -237,7 +234,7 @@ export function getResponseStyle(
 	PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Read and understand questions carefully.\n`;
 	PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If the question is unclear or lacks necessary information, ask for clarification.\n`;
 
-	if (!supportsReasoning || requiresThinkingPrompt) {
+	if (!reasoningEnabled || requiresThinkingPrompt) {
 		PREFERENCES_WITH_INSTRUCTIONS += `${step}. Analyse the question and context thoroughly before answering, and outline the essential steps you will take.\n`;
 		if (isCoding) {
 			PREFERENCES_WITH_INSTRUCTIONS += `${step}.1 Break down the problem into smaller components.\n`;

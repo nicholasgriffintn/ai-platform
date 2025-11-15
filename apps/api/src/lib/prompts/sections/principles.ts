@@ -6,7 +6,7 @@ interface AssistantPrinciplesOptions {
 	isAgent: boolean;
 	supportsToolCalls?: boolean;
 	supportsArtifacts?: boolean;
-	supportsReasoning?: boolean;
+	reasoningEnabled?: boolean;
 	verbosity?: VerbosityLevel;
 	preferredLanguage?: string | null;
 	format?: "full" | "compact";
@@ -16,7 +16,7 @@ export function buildAssistantPrinciplesSection({
 	isAgent,
 	supportsToolCalls,
 	supportsArtifacts,
-	supportsReasoning,
+	reasoningEnabled,
 	verbosity,
 	preferredLanguage,
 	format = "full",
@@ -103,7 +103,7 @@ export function buildAssistantPrinciplesSection({
 		);
 	}
 
-	if (!supportsReasoning) {
+	if (!reasoningEnabled) {
 		addPrinciple(
 			format === "compact"
 				? "When native reasoning traces are unavailable, keep your reasoning summary clear while avoiding private scratchpads."

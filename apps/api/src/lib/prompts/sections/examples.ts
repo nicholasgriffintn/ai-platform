@@ -4,7 +4,7 @@ import type { PromptExampleVariant } from "../layout";
 import { getArtifactExample } from "../utils";
 
 interface StandardExampleOptions {
-	supportsReasoning?: boolean;
+	reasoningEnabled?: boolean;
 	supportsArtifacts?: boolean;
 	problemBreakdownInstructions: string;
 	answerFormatInstructions: string;
@@ -13,7 +13,7 @@ interface StandardExampleOptions {
 }
 
 interface CodingExampleOptions {
-	supportsReasoning?: boolean;
+	reasoningEnabled?: boolean;
 	supportsArtifacts?: boolean;
 	problemBreakdownInstructions: string;
 	answerFormatInstructions: string;
@@ -24,7 +24,7 @@ interface CodingExampleOptions {
 }
 
 export function buildStandardExampleOutputSection({
-	supportsReasoning,
+	reasoningEnabled,
 	supportsArtifacts,
 	problemBreakdownInstructions,
 	answerFormatInstructions,
@@ -37,7 +37,7 @@ export function buildStandardExampleOutputSection({
 	if (variant === "compact") {
 		const builder = new PromptBuilder("<example_output>\n");
 
-		if (!supportsReasoning) {
+		if (!reasoningEnabled) {
 			builder
 				.addLine("<think>")
 				.addLine(problemBreakdownInstructions)
@@ -61,7 +61,7 @@ export function buildStandardExampleOutputSection({
 		.addLine("Here is an example of the output you should provide:")
 		.addLine("<example_output>");
 
-	if (!supportsReasoning) {
+	if (!reasoningEnabled) {
 		builder
 			.addLine("<think>")
 			.addLine(problemBreakdownInstructions)
@@ -80,7 +80,7 @@ export function buildStandardExampleOutputSection({
 }
 
 export function buildCodingExampleOutputSection({
-	supportsReasoning,
+	reasoningEnabled,
 	supportsArtifacts,
 	problemBreakdownInstructions,
 	answerFormatInstructions,
@@ -120,7 +120,7 @@ export function buildCodingExampleOutputSection({
 		builder.addLine("<example_output>").addLine("<answer>");
 	}
 
-	if (!supportsReasoning) {
+	if (!reasoningEnabled) {
 		builder
 			.addLine("<think>")
 			.addLine(problemBreakdownInstructions)

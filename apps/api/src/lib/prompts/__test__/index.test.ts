@@ -68,7 +68,6 @@ describe("prompts index", () => {
 				false,
 				false,
 				false,
-				false,
 				{ modelId: "unknown-model" },
 			);
 			expect(result).toBe("standard prompt");
@@ -80,7 +79,7 @@ describe("prompts index", () => {
 				promptTemplate: "coding",
 				supportsToolCalls: true,
 				supportsArtifacts: true,
-				supportsReasoning: false,
+				reasoningConfig: { enabled: false },
 				requiresThinkingPrompt: false,
 			});
 			mockReturnCodingPrompt.mockResolvedValue("coding prompt");
@@ -99,7 +98,6 @@ describe("prompts index", () => {
 				true,
 				true,
 				false,
-				false,
 				{
 					modelId: "coding-model",
 					modelConfig: {
@@ -107,7 +105,7 @@ describe("prompts index", () => {
 						promptTemplate: "coding",
 						supportsToolCalls: true,
 						supportsArtifacts: true,
-						supportsReasoning: false,
+						reasoningConfig: { enabled: false },
 						requiresThinkingPrompt: false,
 					},
 				},
@@ -157,7 +155,7 @@ describe("prompts index", () => {
 				modalities: { input: ["text"], output: ["text"] },
 				supportsToolCalls: false,
 				supportsArtifacts: false,
-				supportsReasoning: true,
+				reasoningConfig: { enabled: true },
 				requiresThinkingPrompt: true,
 			});
 			mockReturnStandardPrompt.mockResolvedValue("text prompt");
@@ -177,14 +175,13 @@ describe("prompts index", () => {
 				false,
 				false,
 				true,
-				true,
 				{
 					modelId: "text-model",
 					modelConfig: {
 						modalities: { input: ["text"], output: ["text"] },
 						supportsToolCalls: false,
 						supportsArtifacts: false,
-						supportsReasoning: true,
+						reasoningConfig: { enabled: true },
 						requiresThinkingPrompt: true,
 					},
 				},
@@ -228,7 +225,6 @@ describe("prompts index", () => {
 				mockRequest,
 				undefined,
 				undefined,
-				false,
 				false,
 				false,
 				false,

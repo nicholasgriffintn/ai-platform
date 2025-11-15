@@ -255,7 +255,7 @@ export class OpenAIProvider extends BaseProvider {
 
 		const reasoningEffort = params.reasoning_effort;
 		const thinkingParams =
-			modelConfig?.supportsReasoning && reasoningEffort
+			modelConfig?.reasoningConfig?.enabled && reasoningEffort
 				? {
 						reasoning_effort: reasoningEffort,
 					}

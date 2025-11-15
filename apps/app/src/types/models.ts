@@ -12,6 +12,7 @@ export type ModelModality =
 	| "embedding";
 
 export interface ModelReasoningConfig {
+	enabled: boolean;
 	supportedEffortLevels?: ReasoningEffort[];
 	defaultEffort?: ReasoningEffort;
 }
@@ -47,7 +48,6 @@ export interface ModelConfigItem {
 	multimodal?: boolean;
 	includedInRouter?: boolean;
 	isFeatured?: boolean;
-	supportsReasoning?: boolean;
 	supportsDocuments?: boolean;
 	supportsSearchGrounding?: boolean;
 	supportsCodeExecution?: boolean;

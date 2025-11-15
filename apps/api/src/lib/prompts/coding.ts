@@ -16,7 +16,7 @@ export function returnCodingPrompt(
 	userSettings?: IUserSettings,
 	supportsToolCalls?: boolean,
 	supportsArtifacts?: boolean,
-	supportsReasoning?: boolean,
+
 	requiresThinkingPrompt?: boolean,
 	modelMetadata?: PromptModelMetadata,
 ): string {
@@ -42,7 +42,7 @@ export function returnCodingPrompt(
 	const capabilities = resolvePromptCapabilities({
 		supportsToolCalls,
 		supportsArtifacts,
-		supportsReasoning,
+
 		requiresThinkingPrompt,
 		modelMetadata,
 	});
@@ -61,7 +61,7 @@ export function returnCodingPrompt(
 		answerFormatInstructions,
 	} = getResponseStyle(
 		verbosity,
-		capabilities.supportsReasoning,
+		capabilities.reasoningEnabled,
 		capabilities.requiresThinkingPrompt,
 		capabilities.supportsToolCalls,
 		capabilities.supportsArtifacts,
@@ -86,7 +86,7 @@ export function returnCodingPrompt(
 		isAgent,
 		supportsToolCalls: capabilities.supportsToolCalls,
 		supportsArtifacts: capabilities.supportsArtifacts,
-		supportsReasoning: capabilities.supportsReasoning,
+		reasoningEnabled: capabilities.reasoningEnabled,
 		preferredLanguage,
 		verbosity,
 		format: layout.principlesFormat,
@@ -124,7 +124,7 @@ export function returnCodingPrompt(
 	builder
 		.add(
 			buildCodingExampleOutputSection({
-				supportsReasoning: capabilities.supportsReasoning,
+				reasoningEnabled: capabilities.reasoningEnabled,
 				supportsArtifacts: capabilities.supportsArtifacts,
 				problemBreakdownInstructions,
 				answerFormatInstructions,
