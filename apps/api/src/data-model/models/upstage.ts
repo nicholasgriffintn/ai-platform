@@ -23,6 +23,12 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
+		strengths: ["chat", "general_knowledge", "analysis"],
+		contextComplexity: 3,
+		reliability: 3,
+		speed: 5,
+		includedInRouter: true,
+		supportsArtifacts: true,
 	}),
 
 	createModelConfig("solar-pro2", PROVIDER, {
@@ -41,5 +47,12 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00025,
+		strengths: ["reasoning", "analysis", "coding", "general_knowledge"],
+		contextComplexity: 4,
+		reliability: 4,
+		speed: 4,
+		includedInRouter: true,
+		supportsArtifacts: true,
+		isFeatured: true,
 	}),
 ]);
