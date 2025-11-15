@@ -25,7 +25,7 @@ describe("prompts utils", () => {
 			it("should use custom user traits when provided", () => {
 				const customTraits = "custom trait set";
 				const result = getResponseStyle(
-					"normal",
+					"medium",
 					false,
 					false,
 					false,
@@ -40,7 +40,7 @@ describe("prompts utils", () => {
 			it("should use custom user preferences when provided", () => {
 				const customPreferences = "custom preferences";
 				const result = getResponseStyle(
-					"normal",
+					"medium",
 					false,
 					false,
 					false,
@@ -54,9 +54,9 @@ describe("prompts utils", () => {
 			});
 		});
 
-		describe("response mode handling", () => {
-			it("should handle concise mode", () => {
-				const result = getResponseStyle("concise");
+		describe("verbosity handling", () => {
+			it("should handle low verbosity", () => {
+				const result = getResponseStyle("low");
 				expect(result.problemBreakdownInstructions).toContain("brief");
 				expect(result.problemBreakdownInstructions).toContain(
 					"critical aspects",
@@ -66,8 +66,8 @@ describe("prompts utils", () => {
 				);
 			});
 
-			it("should handle explanatory mode", () => {
-				const result = getResponseStyle("explanatory");
+			it("should handle high verbosity", () => {
+				const result = getResponseStyle("high");
 				expect(result.problemBreakdownInstructions).toContain("thorough");
 				expect(result.problemBreakdownInstructions).toContain(
 					"detailed explanations",
@@ -75,17 +75,8 @@ describe("prompts utils", () => {
 				expect(result.answerFormatInstructions).toContain("detail");
 			});
 
-			it("should handle formal mode", () => {
-				const result = getResponseStyle("formal");
-				expect(result.problemBreakdownInstructions).toContain("formal");
-				expect(result.problemBreakdownInstructions).toContain(
-					"technical terminology",
-				);
-				expect(result.answerFormatInstructions).toContain("structured manner");
-			});
-
-			it("should handle normal/default mode", () => {
-				const result = getResponseStyle("normal");
+			it("should handle medium/default verbosity", () => {
+				const result = getResponseStyle("medium");
 				expect(result.problemBreakdownInstructions).toContain("balanced");
 				expect(result.answerFormatInstructions).toContain(
 					"Balance your answer with explanation, providing enough context to understand the solution without overwhelming detail.",
@@ -95,8 +86,8 @@ describe("prompts utils", () => {
 				);
 			});
 
-			it("should fallback to normal for invalid mode", () => {
-				const normalResult = getResponseStyle("normal");
+			it("should fallback to medium for invalid verbosity", () => {
+				const normalResult = getResponseStyle("medium");
 				const invalidResult = getResponseStyle("invalid" as any);
 				expect(invalidResult.problemBreakdownInstructions).toBe(
 					normalResult.problemBreakdownInstructions,
@@ -110,7 +101,7 @@ describe("prompts utils", () => {
 		describe("agent mode handling", () => {
 			it("should return simplified structure for agent mode", () => {
 				const result = getResponseStyle(
-					"normal",
+					"medium",
 					false,
 					false,
 					false,
@@ -130,7 +121,7 @@ describe("prompts utils", () => {
 
 			it("should not include step-by-step instructions for agent mode", () => {
 				const result = getResponseStyle(
-					"normal",
+					"medium",
 					false,
 					false,
 					false,
@@ -144,7 +135,7 @@ describe("prompts utils", () => {
 		describe("coding mode adjustments", () => {
 			it("should include coding-specific instructions when isCoding is true", () => {
 				const result = getResponseStyle(
-					"normal",
+					"medium",
 					false,
 					false,
 					false,
@@ -164,7 +155,7 @@ describe("prompts utils", () => {
 
 			it("should exclude plain text instruction when isCoding is true", () => {
 				const result = getResponseStyle(
-					"normal",
+					"medium",
 					false,
 					false,
 					false,
@@ -182,7 +173,7 @@ describe("prompts utils", () => {
 
 			it("should include plain text instruction when isCoding is false", () => {
 				const result = getResponseStyle(
-					"normal",
+					"medium",
 					false,
 					false,
 					false,
@@ -201,7 +192,7 @@ describe("prompts utils", () => {
 
 		describe("function support adjustments", () => {
 			it("should include function instructions when supportsToolCalls is true", () => {
-				const result = getResponseStyle("normal", false, false, true);
+				const result = getResponseStyle("medium", false, false, true);
 				expect(result.preferences).toContain(
 					"Prefer the lightest option (internal knowledge → retrieval → browsing → code execution)",
 				);
@@ -211,14 +202,14 @@ describe("prompts utils", () => {
 			});
 
 			it("should not include function instructions when supportsToolCalls is false", () => {
-				const result = getResponseStyle("normal", false, false, false);
+				const result = getResponseStyle("medium", false, false, false);
 				expect(result.preferences).not.toContain("tool is required");
 			});
 		});
 
 		describe("thinking mode adjustments", () => {
 			it("should include thinking instructions when supportsReasoning is false or requiresThinkingPrompt is true", () => {
-				const result = getResponseStyle("normal", false, false);
+				const result = getResponseStyle("medium", false, false);
 				expect(result.preferences).toContain(
 					"Analyse the question and context thoroughly before answering, and outline the essential steps you will take.",
 				);
@@ -228,7 +219,7 @@ describe("prompts utils", () => {
 			});
 
 			it("should not include thinking instructions when supportsReasoning is true and requiresThinkingPrompt is false", () => {
-				const result = getResponseStyle("normal", true, false);
+				const result = getResponseStyle("medium", true, false);
 				expect(result.preferences).not.toContain(
 					"Analyze the question and context thoroughly before answering",
 				);
@@ -238,7 +229,7 @@ describe("prompts utils", () => {
 		describe("memories feature handling", () => {
 			it("should include memories instructions when enabled", () => {
 				const result = getResponseStyle(
-					"normal",
+					"medium",
 					false,
 					false,
 					false,
@@ -256,7 +247,7 @@ describe("prompts utils", () => {
 
 			it("should include disabled message when memories are disabled", () => {
 				const result = getResponseStyle(
-					"normal",
+					"medium",
 					false,
 					false,
 					false,
@@ -273,7 +264,7 @@ describe("prompts utils", () => {
 		describe("compact instruction variant", () => {
 			it("should return condensed preferences when instructionVariant is compact", () => {
 				const result = getResponseStyle(
-					"normal",
+					"medium",
 					false,
 					false,
 					false,
@@ -299,7 +290,7 @@ describe("prompts utils", () => {
 
 			it("should include agent-specific compact guidance", () => {
 				const result = getResponseStyle(
-					"normal",
+					"medium",
 					false,
 					false,
 					true,

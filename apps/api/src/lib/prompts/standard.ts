@@ -39,7 +39,7 @@ export async function returnStandardPrompt(
 		const latitude = request.location?.latitude || user?.latitude;
 		const longitude = request.location?.longitude || user?.longitude;
 		const date = request.date || new Date().toISOString().split("T")[0];
-		const response_mode = request.response_mode || "normal";
+		const verbosity = request.text?.verbosity ?? request.verbosity ?? "medium";
 		const preferredLanguage = request.lang?.trim() || null;
 
 		const isAgent = chatMode === "agent";
@@ -65,7 +65,7 @@ export async function returnStandardPrompt(
 			problemBreakdownInstructions,
 			answerFormatInstructions,
 		} = getResponseStyle(
-			response_mode,
+			verbosity,
 			capabilities.supportsReasoning,
 			capabilities.requiresThinkingPrompt,
 			capabilities.supportsToolCalls,
@@ -92,7 +92,7 @@ export async function returnStandardPrompt(
 			supportsToolCalls: capabilities.supportsToolCalls,
 			supportsArtifacts: capabilities.supportsArtifacts,
 			supportsReasoning: capabilities.supportsReasoning,
-			responseMode: response_mode,
+			verbosity,
 			preferredLanguage,
 			format: layout.principlesFormat,
 		});

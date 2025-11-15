@@ -22,14 +22,8 @@ export type ContentType =
 export type ChatRole = "user" | "assistant" | "tool" | "developer" | "system";
 export type ChatMode = "normal" | "local" | "remote" | "no_system" | "agent";
 
-export type ResponseMode = "normal" | "concise" | "explanatory" | "formal";
-
 export interface ReasoningControls {
 	effort?: ReasoningEffortLevel;
-}
-
-export interface TextControls {
-	verbosity?: VerbosityLevel;
 }
 
 export type MessageContent = {
@@ -163,7 +157,7 @@ export interface IBody {
 	model?: string;
 	platform?: Platform;
 	mode?: ChatMode;
-	response_mode?: ResponseMode;
+	verbosity?: VerbosityLevel;
 	role?: ChatRole;
 	[other: string]: any;
 }
@@ -286,8 +280,6 @@ interface AIResponseParamsBase extends AIControlParams {
 	edit_operation?: "next" | "apply";
 	// The options for RAG for the response.
 	rag_options?: RagOptions;
-	// How the system prompt should be formed.
-	response_mode?: ResponseMode;
 	// The budget constraint to use for the response.
 	budget_constraint?: number;
 	// The location of the user to use for the response.

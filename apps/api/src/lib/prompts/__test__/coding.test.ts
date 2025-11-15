@@ -44,7 +44,7 @@ describe("returnCodingPrompt", () => {
 			expect(result).toContain("experienced software developer");
 		});
 
-		it("should use default response_mode when not provided", () => {
+		it("should use default verbosity when not provided", () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
 			const result = returnCodingPrompt(request);
@@ -52,9 +52,9 @@ describe("returnCodingPrompt", () => {
 			expect(result).toContain("<response_preferences>");
 		});
 
-		it("should handle different response modes", () => {
+		it("should handle different verbosity levels", () => {
 			// @ts-expect-error - mock implementation
-			const request: IBody = { response_mode: "concise" };
+			const request: IBody = { verbosity: "low" };
 			const result = returnCodingPrompt(request);
 			expect(result).toContain("<response_traits>");
 			expect(result).toContain("<response_preferences>");
@@ -322,28 +322,19 @@ describe("returnCodingPrompt", () => {
 		});
 	});
 
-	describe("response mode variations", () => {
-		it("should handle concise mode appropriately", () => {
+	describe("verbosity variations", () => {
+		it("should handle low verbosity appropriately", () => {
 			// @ts-expect-error - mock implementation
-			const request: IBody = { response_mode: "concise" };
+			const request: IBody = { verbosity: "low" };
 			const result = returnCodingPrompt(request);
 			expect(result).toContain("<response_traits>");
 			expect(result).toContain("<response_preferences>");
 			expect(result).toContain("<tone_hint>");
 		});
 
-		it("should handle explanatory mode appropriately", () => {
+		it("should handle high verbosity appropriately", () => {
 			// @ts-expect-error - mock implementation
-			const request: IBody = { response_mode: "explanatory" };
-			const result = returnCodingPrompt(request);
-			expect(result).toContain("<response_traits>");
-			expect(result).toContain("<response_preferences>");
-			expect(result).toContain("<tone_hint>");
-		});
-
-		it("should handle formal mode appropriately", () => {
-			// @ts-expect-error - mock implementation
-			const request: IBody = { response_mode: "formal" };
+			const request: IBody = { verbosity: "high" };
 			const result = returnCodingPrompt(request);
 			expect(result).toContain("<response_traits>");
 			expect(result).toContain("<response_preferences>");
@@ -377,7 +368,7 @@ describe("returnCodingPrompt", () => {
 	describe("output consistency", () => {
 		it("should produce consistent output for same inputs", () => {
 			// @ts-expect-error - mock implementation
-			const request: IBody = { mode: "standard", response_mode: "normal" };
+			const request: IBody = { mode: "standard", verbosity: "medium" };
 			// @ts-expect-error - mock implementation
 			const userSettings: IUserSettings = { nickname: "test" };
 			const result1 = returnCodingPrompt(request, userSettings);
@@ -387,7 +378,7 @@ describe("returnCodingPrompt", () => {
 
 		it("should handle complex user settings combinations", () => {
 			// @ts-expect-error - mock implementation
-			const request: IBody = { response_mode: "explanatory" };
+			const request: IBody = { verbosity: "high" };
 			// @ts-expect-error - mock implementation
 			const userSettings: IUserSettings = {
 				nickname: "CodeMaster",

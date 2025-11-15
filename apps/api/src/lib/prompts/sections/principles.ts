@@ -1,4 +1,5 @@
 import { APP_NAME } from "~/constants/app";
+import type { VerbosityLevel } from "~/types";
 import { PromptBuilder } from "../builder";
 
 interface AssistantPrinciplesOptions {
@@ -6,7 +7,7 @@ interface AssistantPrinciplesOptions {
 	supportsToolCalls?: boolean;
 	supportsArtifacts?: boolean;
 	supportsReasoning?: boolean;
-	responseMode?: string;
+	verbosity?: VerbosityLevel;
 	preferredLanguage?: string | null;
 	format?: "full" | "compact";
 }
@@ -16,7 +17,7 @@ export function buildAssistantPrinciplesSection({
 	supportsToolCalls,
 	supportsArtifacts,
 	supportsReasoning,
-	responseMode,
+	verbosity,
 	preferredLanguage,
 	format = "full",
 }: AssistantPrinciplesOptions): string {
@@ -59,16 +60,12 @@ export function buildAssistantPrinciplesSection({
 	}
 
 	const modeSpecificPrinciple = (() => {
-		switch (responseMode) {
-			case "concise":
+		switch (verbosity) {
+			case "low":
 				return format === "compact"
 					? "Keep answers tight but complete; avoid restating obvious context."
 					: "Favor brevity: deliver the essential answer in as few words as clarity allows while remaining complete.";
-			case "formal":
-				return format === "compact"
-					? "Use precise, formal language and structured explanations."
-					: "Maintain a formal, professional register and reference precise terminology when available.";
-			case "explanatory":
+			case "high":
 				return format === "compact"
 					? "Lay out your reasoning clearly so the user can follow each major step."
 					: "Expand on your reasoning with structured explanations so the user can follow each major step.";

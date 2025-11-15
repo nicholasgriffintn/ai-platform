@@ -58,7 +58,9 @@ export function buildAssistantMetadataSection({
 			`<origin_platform>${request.platform}</origin_platform>`,
 		)
 		.addLine(
-			`<response_mode>${request.response_mode || "normal"}</response_mode>`,
+			`<verbosity>${
+				request.text?.verbosity ?? request.verbosity ?? "medium"
+			}</verbosity>`,
 		)
 		.addIf(
 			!!request.lang,

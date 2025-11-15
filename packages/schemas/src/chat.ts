@@ -303,18 +303,9 @@ export const createChatCompletionsJsonSchema = z.object({
 	store: z.boolean().prefault(false).meta({
 		description: "Whether to store the output of the completion.",
 	}),
-	text: z
-		.object({
-			verbosity: z.enum(["low", "medium", "high"]).optional(),
-		})
-		.optional()
-		.meta({
-			description:
-				"Structured text generation controls used by providers like OpenAI to tune verbosity.",
-		}),
 	verbosity: z.enum(["low", "medium", "high"]).optional().meta({
 		description:
-			"Legacy verbosity toggle for providers that accept a top-level verbosity parameter.",
+			"Verbosity toggle to control the level of detail in the response.",
 	}),
 	response_format: z
 		.object({
@@ -343,13 +334,6 @@ export const createChatCompletionsJsonSchema = z.object({
 		description:
 			"The maximum amount of money the user is willing to spend on the completion.",
 	}),
-	response_mode: z
-		.enum(["normal", "concise", "explanatory", "formal"])
-		.optional()
-		.meta({
-			description:
-				"The mode of the response. This will affect the style of the response from the model when using default system prompts.",
-		}),
 	use_rag: z.boolean().optional().meta({
 		description: "Whether to use RAG to generate the response.",
 	}),

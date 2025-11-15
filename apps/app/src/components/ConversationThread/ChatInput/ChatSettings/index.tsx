@@ -33,7 +33,6 @@ export const ChatSettings = ({
 	const { chatSettings, setChatSettings, model } = useChatStore();
 	const [showSettings, setShowSettings] = useState(false);
 	const settingsButtonRef = useRef<HTMLButtonElement>(null);
-	const responseSelectRef = useRef<HTMLSelectElement>(null);
 	const { data: apiModels = {} } = useModels();
 	const availableModels = getAvailableModels(apiModels);
 
@@ -80,14 +79,6 @@ export const ChatSettings = ({
 		value: string | boolean,
 	) => {
 		if (typeof value === "string") {
-			if (key === "response_mode") {
-				setChatSettings({
-					...chatSettings,
-					[key]: value as ChatSettingsType["response_mode"],
-				});
-				return;
-			}
-
 			const numValue = Number.parseFloat(value);
 			if (!Number.isNaN(numValue)) {
 				setChatSettings({
@@ -167,26 +158,6 @@ export const ChatSettings = ({
 		});
 	};
 
-	const responseModeOptions = [
-		{ value: "normal", label: "Normal" },
-		{ value: "concise", label: "Concise" },
-		{ value: "explanatory", label: "Explanatory" },
-		{ value: "formal", label: "Formal" },
-	];
-
-	const getResponseModeDescription = (mode: string) => {
-		switch (mode) {
-			case "concise":
-				return "Brief, to-the-point responses";
-			case "explanatory":
-				return "Detailed explanations with examples";
-			case "formal":
-				return "Professional, structured responses";
-			default:
-				return "Balanced, conversational responses";
-		}
-	};
-
 	return (
 		<div className="flex items-center">
 			<Button
@@ -217,21 +188,6 @@ export const ChatSettings = ({
 								<TabsTrigger value="advanced">Advanced Settings</TabsTrigger>
 							</TabsList>
 							<TabsContent value="basic" className="space-y-6 pt-4">
-								<FormSelect
-									ref={responseSelectRef}
-									id="response_mode"
-									label="Response Mode"
-									value={chatSettings.response_mode ?? "normal"}
-									onChange={(e) =>
-										handleSettingChange("response_mode", e.target.value)
-									}
-									disabled={isDisabled}
-									options={responseModeOptions}
-									description={getResponseModeDescription(
-										chatSettings.response_mode ?? "normal",
-									)}
-									aria-describedby="response-mode-description"
-								/>
 								{reasoningOptions.length > 0 && (
 									<FormSelect
 										id="reasoning_effort"

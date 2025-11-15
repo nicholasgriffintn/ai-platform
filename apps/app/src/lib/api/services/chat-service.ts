@@ -382,7 +382,6 @@ export class ChatService {
 			mode,
 			messages: formattedMessages,
 			platform: "web",
-			response_mode: chatSettings.response_mode || "normal",
 			store,
 			stream: streamingEnabled,
 			enabled_tools: selectedTools,

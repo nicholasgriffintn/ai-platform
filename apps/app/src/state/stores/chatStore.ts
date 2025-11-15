@@ -18,7 +18,6 @@ const defaultSettings: ChatSettings = {
 		includeMetadata: false,
 		namespace: "",
 	},
-	response_mode: "normal",
 };
 
 export interface ChatStore {

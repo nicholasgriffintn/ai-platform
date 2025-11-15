@@ -50,7 +50,6 @@ export const handleCreateChatCompletions = async (req: {
 		response_format: request.response_format,
 		use_rag: request.use_rag,
 		rag_options: request.rag_options,
-		response_mode: request.response_mode,
 		budget_constraint: request.budget_constraint,
 		location: request.location || undefined,
 		lang: request.lang,

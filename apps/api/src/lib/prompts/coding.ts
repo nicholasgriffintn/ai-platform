@@ -30,7 +30,7 @@ export function returnCodingPrompt(
 		userSettings?.memories_save_enabled ||
 		userSettings?.memories_chat_history_enabled;
 
-	const response_mode = request.response_mode || "normal";
+	const verbosity = request.text?.verbosity ?? request.verbosity ?? "medium";
 	const preferredLanguage = request.lang?.trim() || null;
 
 	const isAgent = chatMode === "agent";
@@ -60,7 +60,7 @@ export function returnCodingPrompt(
 		problemBreakdownInstructions,
 		answerFormatInstructions,
 	} = getResponseStyle(
-		response_mode,
+		verbosity,
 		capabilities.supportsReasoning,
 		capabilities.requiresThinkingPrompt,
 		capabilities.supportsToolCalls,
@@ -88,7 +88,7 @@ export function returnCodingPrompt(
 		supportsArtifacts: capabilities.supportsArtifacts,
 		supportsReasoning: capabilities.supportsReasoning,
 		preferredLanguage,
-		responseMode: response_mode,
+		verbosity,
 		format: layout.principlesFormat,
 	});
 
@@ -129,7 +129,7 @@ export function returnCodingPrompt(
 				problemBreakdownInstructions,
 				answerFormatInstructions,
 				preferredLanguage,
-				responseMode: response_mode,
+				verbosity,
 				variant: layout.exampleVariant === "full" ? "full" : "compact",
 				artifactVariant: layout.artifactExampleVariant,
 			}),

@@ -83,7 +83,7 @@ function buildArticlePromptMetadata(
 	return buildAssistantMetadataSection({
 		request: {
 			mode,
-			response_mode: "explanatory",
+			verbosity: "high",
 		},
 		modelId: metadata?.modelId,
 		modelConfig: metadata?.modelConfig,

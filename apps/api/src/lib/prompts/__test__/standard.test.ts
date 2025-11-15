@@ -67,7 +67,7 @@ describe("returnStandardPrompt", () => {
 			expect(result).toContain("AI assistant helping with daily tasks");
 		});
 
-		it("should use default response_mode when not provided", async () => {
+		it("should use default verbosity when not provided", async () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
 			const result = await returnStandardPrompt(request);
@@ -75,9 +75,9 @@ describe("returnStandardPrompt", () => {
 			expect(result).toContain("<response_preferences>");
 		});
 
-		it("should handle different response modes", async () => {
+		it("should handle different verbosity levels", async () => {
 			// @ts-expect-error - mock implementation
-			const request: IBody = { response_mode: "concise" };
+			const request: IBody = { verbosity: "low" };
 			const result = await returnStandardPrompt(request);
 			expect(result).toContain("<response_traits>");
 			expect(result).toContain("<response_preferences>");

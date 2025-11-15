@@ -1,4 +1,4 @@
-import { ResponseMode } from "../../../types";
+import type { VerbosityLevel } from "~/types";
 import { PromptBuilder } from "../builder";
 import type { PromptExampleVariant } from "../layout";
 import { getArtifactExample } from "../utils";
@@ -18,7 +18,7 @@ interface CodingExampleOptions {
 	problemBreakdownInstructions: string;
 	answerFormatInstructions: string;
 	preferredLanguage?: string;
-	responseMode?: ResponseMode;
+	verbosity?: VerbosityLevel;
 	variant?: Exclude<PromptExampleVariant, "omit">;
 	artifactVariant?: "full" | "compact";
 }
@@ -85,7 +85,7 @@ export function buildCodingExampleOutputSection({
 	problemBreakdownInstructions,
 	answerFormatInstructions,
 	preferredLanguage,
-	responseMode,
+	verbosity,
 	variant = "full",
 	artifactVariant,
 }: CodingExampleOptions): string {
@@ -95,12 +95,10 @@ export function buildCodingExampleOutputSection({
 		artifactVariant ?? (variant === "full" ? "full" : "compact");
 
 	const toneHint = (() => {
-		switch (responseMode) {
-			case "concise":
+		switch (verbosity) {
+			case "low":
 				return "<tone_hint>Keep explanations crisp and focus on the actionable answer.</tone_hint>";
-			case "formal":
-				return "<tone_hint>Use a formal register with precise technical phrasing.</tone_hint>";
-			case "explanatory":
+			case "high":
 				return "<tone_hint>Provide an instructive tone, expanding on each major decision.</tone_hint>";
 			default:
 				return "";

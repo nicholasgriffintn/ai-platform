@@ -2,8 +2,6 @@ export type ChatRole = "user" | "assistant" | "system" | "tool";
 
 export type ChatMode = "remote" | "local" | "tool" | "agent";
 
-export type ResponseMode = "normal" | "concise" | "explanatory" | "formal";
-
 export type ReasoningEffort = "none" | "low" | "medium" | "high";
 export type VerbosityLevel = "low" | "medium" | "high";
 
@@ -18,7 +16,6 @@ export interface ChatSettings {
 	presence_penalty?: number;
 	frequency_penalty?: number;
 	use_rag?: boolean;
-	response_mode?: ResponseMode;
 	localOnly?: boolean;
 	enabled_tools?: string[];
 	rag_options?: {

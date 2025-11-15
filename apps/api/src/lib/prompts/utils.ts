@@ -1,3 +1,4 @@
+import type { VerbosityLevel } from "~/types";
 import type { PromptModelMetadata } from "./sections/metadata";
 
 export interface PromptCapabilities {
@@ -37,7 +38,7 @@ export function resolvePromptCapabilities({
 }
 
 export function getResponseStyle(
-	response_mode = "normal",
+	verbosity?: VerbosityLevel,
 	supportsReasoning = false,
 	requiresThinkingPrompt = false,
 	supportsToolCalls = false,
@@ -54,6 +55,9 @@ export function getResponseStyle(
 	problemBreakdownInstructions: string;
 	answerFormatInstructions: string;
 } {
+	const normalizedVerbosity: VerbosityLevel =
+		verbosity === "low" || verbosity === "high" ? verbosity : "medium";
+
 	const DEFAULT_TRAITS =
 		userTraits ||
 		"direct, intellectually curious, balanced in verbosity (concise for simple questions, thorough for complex ones), systematic in reasoning for complex problems";
@@ -83,12 +87,10 @@ export function getResponseStyle(
 
 	if (instructionVariant === "compact") {
 		const compactProblemBreakdownInstructions = (() => {
-			switch (response_mode) {
-				case "concise":
+			switch (normalizedVerbosity) {
+				case "low":
 					return "Capture only the key checks or steps before you answer.";
-				case "formal":
-					return "Outline the essential steps with precise terminology.";
-				case "explanatory":
+				case "high":
 					return "Highlight the main stages you'll cover before the final answer.";
 				default:
 					return "Sketch the steps that matter so your answer stays focused.";
@@ -97,12 +99,10 @@ export function getResponseStyle(
 
 		const compactAnswerFormatInstructions = (() => {
 			const deliverable = isCoding ? "code" : "answer";
-			switch (response_mode) {
-				case "concise":
+			switch (normalizedVerbosity) {
+				case "low":
 					return `Provide the ${deliverable} with only the context the user needs to act.`;
-				case "formal":
-					return `Present the ${deliverable} with clear structure and precise language.`;
-				case "explanatory":
+				case "high":
 					return `Deliver the ${deliverable} and briefly walk through the reasoning or workflow.`;
 				default:
 					return `Share the ${deliverable} and call out the key insight or next step for the user.`;
@@ -332,8 +332,8 @@ export function getResponseStyle(
 		PREFERENCES_WITH_INSTRUCTIONS += `\n${step++}. If the user asks you to remember something, explain that memories are disabled and suggest they capture the detail another way.\n`;
 	}
 
-	switch (response_mode) {
-		case "concise":
+	switch (normalizedVerbosity) {
+		case "low":
 			return {
 				traits: DEFAULT_TRAITS,
 				preferences: PREFERENCES_WITH_INSTRUCTIONS,
@@ -341,21 +341,13 @@ export function getResponseStyle(
 					"Keep your problem breakdown brief, focusing only on the most critical aspects of the problem.",
 				answerFormatInstructions: `Provide your ${isCoding ? "code" : "answer"} with minimal explanation, focusing on the answer itself.`,
 			};
-		case "explanatory":
+		case "high":
 			return {
 				traits: DEFAULT_TRAITS,
 				preferences: PREFERENCES_WITH_INSTRUCTIONS,
 				problemBreakdownInstructions:
 					"Provide a thorough problem breakdown with detailed explanations of your thought process and approach.",
 				answerFormatInstructions: `Explain your ${isCoding ? "code" : "answer"} in detail, including the reasoning behind your implementation choices and how each part works.`,
-			};
-		case "formal":
-			return {
-				traits: DEFAULT_TRAITS,
-				preferences: PREFERENCES_WITH_INSTRUCTIONS,
-				problemBreakdownInstructions:
-					"Structure your problem breakdown formally, using proper technical terminology and a methodical approach.",
-				answerFormatInstructions: `Present your ${isCoding ? "code" : "answer"} in a formal, structured manner with appropriate technical terminology and documentation.`,
 			};
 		default:
 			return {

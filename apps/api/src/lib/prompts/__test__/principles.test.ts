@@ -7,7 +7,7 @@ describe("buildAssistantPrinciplesSection", () => {
 		supportsToolCalls: false,
 		supportsArtifacts: false,
 		supportsReasoning: true,
-		responseMode: "normal",
+		verbosity: "medium",
 		preferredLanguage: null,
 	} as const;
 
@@ -30,7 +30,7 @@ describe("buildAssistantPrinciplesSection", () => {
 			supportsArtifacts: true,
 			supportsReasoning: false,
 			format: "compact",
-			responseMode: "concise",
+			verbosity: "low",
 			preferredLanguage: "fr",
 		});
 
