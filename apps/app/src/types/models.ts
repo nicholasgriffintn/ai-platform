@@ -1,3 +1,5 @@
+import type { ReasoningEffort, VerbosityLevel } from "./chat";
+
 export type ModelRanking = 1 | 2 | 3 | 4 | 5;
 
 export type ModelModality =
@@ -8,6 +10,16 @@ export type ModelModality =
 	| "pdf"
 	| "document"
 	| "embedding";
+
+export interface ModelReasoningConfig {
+	supportedEffortLevels?: ReasoningEffort[];
+	defaultEffort?: ReasoningEffort;
+}
+
+export interface ModelVerbosityConfig {
+	supportedVerbosityLevels?: VerbosityLevel[];
+	defaultVerbosity?: VerbosityLevel;
+}
 
 export interface ModelConfigItem {
 	id: string;
@@ -45,6 +57,8 @@ export interface ModelConfigItem {
 	supportsApplyEdit?: boolean;
 	supportsImageEdits?: boolean;
 	hiddenFromDefaultList?: boolean;
+	reasoningConfig?: ModelReasoningConfig;
+	verbosityConfig?: ModelVerbosityConfig;
 }
 
 export interface ModelConfig {

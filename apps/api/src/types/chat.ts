@@ -1,5 +1,10 @@
 import type { ServiceContext } from "../lib/context/serviceContext";
-import type { IEnv, RequireAtLeastOne } from "./shared";
+import type {
+	IEnv,
+	ReasoningEffortLevel,
+	RequireAtLeastOne,
+	VerbosityLevel,
+} from "./shared";
 import type { IUser } from "./user";
 
 export type Platform = "web" | "mobile" | "api" | "dynamic-apps";
@@ -18,6 +23,14 @@ export type ChatRole = "user" | "assistant" | "tool" | "developer" | "system";
 export type ChatMode = "normal" | "local" | "remote" | "no_system" | "agent";
 
 export type ResponseMode = "normal" | "concise" | "explanatory" | "formal";
+
+export interface ReasoningControls {
+	effort?: ReasoningEffortLevel;
+}
+
+export interface TextControls {
+	verbosity?: VerbosityLevel;
+}
 
 export type MessageContent = {
 	type: ContentType;
@@ -214,8 +227,8 @@ interface AIControlParams {
 	logit_bias?: Record<string, number>;
 	// The metadata to use for the response.
 	metadata?: Record<string, any>;
-	// The reasoning effort to use for the response.
-	reasoning_effort?: "low" | "medium" | "high";
+	// The reasoning effort to use for the response (legacy alias).
+	reasoning_effort?: ReasoningEffortLevel;
 	// Whether to store the response.
 	store?: boolean;
 	// The current step to use for the response.
@@ -259,6 +272,8 @@ interface AIResponseParamsBase extends AIControlParams {
 	model?: string;
 	// The mode to use for the response.
 	mode?: ChatMode;
+	// Desired output verbosity for providers that support the legacy knob.
+	verbosity?: VerbosityLevel;
 	// Whether to think for the response.
 	should_think?: boolean;
 	// The response format to use for the response.

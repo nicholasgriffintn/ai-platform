@@ -8,7 +8,6 @@ import {
 	shouldEnableStreaming,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
-import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
 interface ImageEditParams {
 	model: string;
@@ -254,8 +253,17 @@ export class OpenAIProvider extends BaseProvider {
 				? { tools: allTools }
 				: {};
 
-		const thinkingParams = modelConfig?.supportsReasoning
-			? { reasoning_effort: params.reasoning_effort }
+		const reasoningEffort = params.reasoning_effort;
+		const thinkingParams =
+			modelConfig?.supportsReasoning && reasoningEffort
+				? {
+						reasoning_effort: reasoningEffort,
+					}
+				: {};
+
+		const verbositySetting = params.verbosity;
+		const verbosityParams = verbositySetting
+			? { verbosity: verbositySetting }
 			: {};
 
 		let modelSpecificParams = {};
@@ -322,6 +330,7 @@ export class OpenAIProvider extends BaseProvider {
 			...toolsParams,
 			...openaiSpecificTools,
 			...thinkingParams,
+			...verbosityParams,
 			...modelSpecificParams,
 			store: params.store,
 			logit_bias: params.logit_bias,

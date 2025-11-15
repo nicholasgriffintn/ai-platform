@@ -210,6 +210,7 @@ export const messageSchema = z.discriminatedUnion("type", [
 ### Chat Schema Notes
 
 - `createChatCompletionsJsonSchema` now accepts an `options.cache_ttl_seconds` field so clients can override Cloudflare AI Gateway caching per request. The value is validated as a non-negative number; omit it to fall back to the 24h default or send `0` to disable caching entirely.
+- Reasoning controls expose both the legacy `reasoning_effort` field (now supporting `"none"`) and a structured `reasoning` object (`{ effort }`). Output verbosity is mirrored via the top-level `verbosity` field and a structured `text` object. Use the structured variants whenever possible so providers with richer controls (OpenAI, Anthropic, etc.) can opt in without new schema changes.
 
 export type Message = z.infer<typeof messageSchema>;
 // TypeScript knows: if (message.type === "text") { message.content }

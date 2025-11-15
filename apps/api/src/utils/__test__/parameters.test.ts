@@ -174,12 +174,34 @@ describe("parameters", () => {
 			expect(result).toBe(1800); // Math.floor(2000 * 0.9)
 		});
 
+		it("should return 0 when reasoning effort is none", () => {
+			const params = {
+				reasoning_effort: "none",
+				max_tokens: 2000,
+			} as ChatCompletionParameters;
+
+			const result = calculateReasoningBudget(params);
+
+			expect(result).toBe(0);
+		});
+
 		it("should use default (medium) for undefined reasoning effort", () => {
 			const params = { max_tokens: 2000 } as ChatCompletionParameters;
 
 			const result = calculateReasoningBudget(params);
 
 			expect(result).toBe(1500); // Default to medium
+		});
+
+		it("should read reasoning effort from structured controls", () => {
+			const params = {
+				reasoning_effort: "high",
+				max_tokens: 2000,
+			} as ChatCompletionParameters;
+
+			const result = calculateReasoningBudget(params);
+
+			expect(result).toBe(1800);
 		});
 
 		it("should respect minimum budget of 1024", () => {

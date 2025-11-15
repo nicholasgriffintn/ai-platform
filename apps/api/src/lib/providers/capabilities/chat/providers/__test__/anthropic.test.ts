@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import {
 	calculateReasoningBudget,
@@ -42,7 +42,12 @@ vi.mock("~/utils/parameters", () => ({
 	shouldEnableStreaming: vi.fn(),
 	getToolsForProvider: vi.fn(),
 	calculateReasoningBudget: vi.fn(),
+	getReasoningEffortSetting: vi.fn(),
 }));
+
+beforeEach(() => {
+	vi.clearAllMocks();
+});
 
 describe("AnthropicProvider", () => {
 	describe("validateParams", () => {
@@ -151,6 +156,7 @@ describe("AnthropicProvider", () => {
 				model: "claude-3-thinking",
 				messages: [{ role: "user", content: "Hello" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
+				reasoning_effort: "high",
 			};
 
 			const result = await provider.mapParameters(params as any);
@@ -161,6 +167,37 @@ describe("AnthropicProvider", () => {
 			});
 			expect(result.temperature).toBe(1);
 			expect(result.max_tokens).toBe(1025);
+		});
+
+		it("should skip thinking params when reasoning effort is none", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "claude-3-thinking",
+				supportsReasoning: true,
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({
+				model: "claude-3-thinking",
+				temperature: 0.7,
+				max_tokens: 1024,
+			});
+
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new AnthropicProvider();
+
+			const params = {
+				model: "claude-3-thinking",
+				messages: [{ role: "user", content: "Hello" }],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+				reasoning_effort: "none",
+			};
+
+			const result = await provider.mapParameters(params as any);
+
+			expect(result.thinking).toBeUndefined();
+			expect(calculateReasoningBudget).not.toHaveBeenCalled();
 		});
 	});
 });

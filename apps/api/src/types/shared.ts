@@ -89,3 +89,6 @@ export type IEnv = {
 	EMBEDDINGS_OUTPUT_BUCKET_OWNER?: string;
 	EMBEDDINGS_OUTPUT_BUCKET?: string;
 };
+
+export type ReasoningEffortLevel = "none" | "low" | "medium" | "high";
+export type VerbosityLevel = "low" | "medium" | "high";

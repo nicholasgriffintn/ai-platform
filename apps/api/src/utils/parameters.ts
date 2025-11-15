@@ -39,16 +39,16 @@ export function mergeParametersWithDefaults(
 	} as ChatCompletionParameters;
 }
 
-/**
- * Helper function to calculate reasoning budget based on reasoning_effort
- * @param params - The chat completion parameters
- * @param modelConfig - The model configuration (optional, for max token limits)
- * @returns The reasoning budget
- */
 export function calculateReasoningBudget(
 	params: ChatCompletionParameters,
 	modelConfig?: ModelConfigItem,
 ): number {
+	const reasoningEffort = params.reasoning_effort;
+
+	if (reasoningEffort === "none") {
+		return 0;
+	}
+
 	const effectiveMaxTokens = getEffectiveMaxTokens(
 		params.max_tokens,
 		modelConfig?.maxTokens,
@@ -58,7 +58,7 @@ export function calculateReasoningBudget(
 		return 1024;
 	}
 
-	switch (params.reasoning_effort) {
+	switch (reasoningEffort) {
 		case "low":
 			return Math.max(Math.floor(effectiveMaxTokens * 0.5), 1024);
 		case "medium":

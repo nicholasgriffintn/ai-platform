@@ -1,4 +1,5 @@
 import type { availableModalities } from "~/lib/providers/models";
+import type { ReasoningEffortLevel, VerbosityLevel } from "./shared";
 
 export type ModelRanking = 1 | 2 | 3 | 4 | 5;
 
@@ -37,6 +38,16 @@ export type ModelModalities = {
 	input: ModelModality[];
 	output?: ModelModality[];
 };
+
+export interface ModelReasoningConfig {
+	supportedEffortLevels?: ReasoningEffortLevel[];
+	defaultEffort?: ReasoningEffortLevel;
+}
+
+export interface ModelVerbosityConfig {
+	supportedVerbosityLevels?: VerbosityLevel[];
+	defaultVerbosity?: VerbosityLevel;
+}
 
 export type ModelConfigItem = {
 	matchingModel: string;
@@ -92,6 +103,8 @@ export type ModelConfigItem = {
 	replicateInputSchema?: ReplicateInputSchemaDescriptor;
 	supportsPromptCaching?: boolean;
 	promptTemplate?: string;
+	reasoningConfig?: ModelReasoningConfig;
+	verbosityConfig?: ModelVerbosityConfig;
 };
 
 export type ModelConfig = {

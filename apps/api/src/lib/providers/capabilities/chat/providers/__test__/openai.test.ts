@@ -29,6 +29,7 @@ vi.mock("~/utils/parameters", () => ({
 	createCommonParameters: vi.fn(),
 	getToolsForProvider: vi.fn(),
 	shouldEnableStreaming: vi.fn(),
+	getReasoningEffortSetting: vi.fn(),
 }));
 
 describe("OpenAIProvider", () => {
@@ -183,13 +184,44 @@ describe("OpenAIProvider", () => {
 			const params = {
 				model: "gpt-4-thinking",
 				messages: [{ role: "user", content: "Think about this problem" }],
-				reasoning_effort: "high",
 				env: { AI_GATEWAY_TOKEN: "test-token" },
+				reasoning_effort: "high",
 			};
 
 			const result = await provider.mapParameters(params as any);
 
 			expect(result.reasoning_effort).toBe("high");
+			expect(result.reasoning).toBeUndefined();
+		});
+
+		it("should include verbosity controls when provided", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gpt-5.1",
+				modalities: { input: ["text"], output: ["text"] },
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({
+				model: "gpt-5.1",
+				temperature: 0.7,
+			});
+
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new OpenAIProvider();
+
+			const params = {
+				model: "gpt-5.1",
+				messages: [{ role: "user", content: "Keep it brief" }],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+				verbosity: "low",
+			};
+
+			const result = await provider.mapParameters(params as any);
+
+			expect(result.verbosity).toBe("low");
+			expect(result.text).toBeUndefined();
 		});
 	});
 

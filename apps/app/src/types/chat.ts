@@ -4,6 +4,13 @@ export type ChatMode = "remote" | "local" | "tool" | "agent";
 
 export type ResponseMode = "normal" | "concise" | "explanatory" | "formal";
 
+export type ReasoningEffort = "none" | "low" | "medium" | "high";
+export type VerbosityLevel = "low" | "medium" | "high";
+
+export interface ChatReasoningSettings {
+	effort?: ReasoningEffort;
+}
+
 export interface ChatSettings {
 	temperature?: number;
 	top_p?: number;
@@ -21,6 +28,8 @@ export interface ChatSettings {
 		type?: string;
 		namespace?: string;
 	};
+	reasoning?: ChatReasoningSettings;
+	verbosity?: VerbosityLevel;
 }
 
 export interface MessageContent {

@@ -284,15 +284,37 @@ export const createChatCompletionsJsonSchema = z.object({
 		description: "Whether to enable parallel tool calls for the response.",
 	}),
 	reasoning_effort: z
-		.enum(["low", "medium", "high"])
+		.enum(["none", "low", "medium", "high"])
 		.prefault("medium")
 		.optional()
 		.meta({
 			description:
 				"Constrains effort on reasoning for reasoning models. Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response. Only supported in certain reasoning models.",
 		}),
+	reasoning: z
+		.object({
+			effort: z.enum(["none", "low", "medium", "high"]).optional(),
+		})
+		.optional()
+		.meta({
+			description:
+				'Structured reasoning controls for advanced models. Use effort="none" to disable provider-specific reasoning boosts.',
+		}),
 	store: z.boolean().prefault(false).meta({
 		description: "Whether to store the output of the completion.",
+	}),
+	text: z
+		.object({
+			verbosity: z.enum(["low", "medium", "high"]).optional(),
+		})
+		.optional()
+		.meta({
+			description:
+				"Structured text generation controls used by providers like OpenAI to tune verbosity.",
+		}),
+	verbosity: z.enum(["low", "medium", "high"]).optional().meta({
+		description:
+			"Legacy verbosity toggle for providers that accept a top-level verbosity parameter.",
 	}),
 	response_format: z
 		.object({
