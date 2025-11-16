@@ -35,6 +35,7 @@ import { V0Provider } from "../../capabilities/chat/providers/v0";
 import { VercelGatewayProvider } from "../../capabilities/chat/providers/vercel";
 import { WorkersProvider } from "../../capabilities/chat/providers/workers";
 import { ExaProvider } from "../../capabilities/chat/providers/exa";
+import { CerebrasProvider } from "../../capabilities/chat/providers/cerebras";
 
 const chatProviders: ProviderRegistration<AIProvider>[] = [
 	{
@@ -167,6 +168,11 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
 		name: "certesia",
 		create: () => new CertesiaProvider(),
 		metadata: { vendor: "Cartesia", categories: ["chat", "audio"] },
+	},
+	{
+		name: "cerebras",
+		create: () => new CerebrasProvider(),
+		metadata: { vendor: "Cerebras", categories: ["chat", "audio"] },
 	},
 	{
 		name: "elevenlabs",

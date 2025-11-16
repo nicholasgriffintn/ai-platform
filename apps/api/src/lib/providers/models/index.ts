@@ -45,6 +45,7 @@ import { vercelModelConfig } from "~/data-model/models/vercel";
 import { workersAiModelConfig } from "~/data-model/models/workersai";
 import { xaiModelConfig } from "~/data-model/models/xai";
 import { exaModelConfig } from "~/data-model/models/exa";
+import { cerebrasModelConfig } from "~/data-model/models/cerebras";
 
 const logger = getLogger({ prefix: "lib/models" });
 
@@ -91,6 +92,7 @@ const modelConfig: ModelConfig = {
 	...v0ModelConfig,
 	...replicateModelConfig,
 	...exaModelConfig,
+	...cerebrasModelConfig,
 };
 
 const MODEL_CACHE_TTL = 14400;
