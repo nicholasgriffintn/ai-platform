@@ -118,8 +118,8 @@ importers:
         specifier: ^7.26.10
         version: 7.28.5
       '@mlc-ai/web-llm':
-        specifier: 0.2.79
-        version: 0.2.79
+        specifier: 0.2.80
+        version: 0.2.80
       '@radix-ui/react-checkbox':
         specifier: ^1.2.2
         version: 1.3.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -1986,8 +1986,8 @@ packages:
   '@mjackson/node-fetch-server@0.2.0':
     resolution: {integrity: sha512-EMlH1e30yzmTpGLQjlFmaDAjyOeZhng1/XCd7DExR8PNAnG/G1tyruZxEoUe11ClnwGhGrtsdnyyUx1frSzjng==}
 
-  '@mlc-ai/web-llm@0.2.79':
-    resolution: {integrity: sha512-Hy1ZHQ0o2bZGZoVnGK48+fts/ZSKwLe96xjvqL/6C59Mem9HoHTcFE07NC2E23mRmhd01tL655N6CPeYmwWgwQ==}
+  '@mlc-ai/web-llm@0.2.80':
+    resolution: {integrity: sha512-Hwy1OCsK5cOU4nKr2wIJ2qA1g595PENtO5f2d9Wd/GgFsj5X04uxfaaJfqED8eFAJOpQpn/DirogdEY/yp5jQg==}
 
   '@modelcontextprotocol/sdk@1.22.0':
     resolution: {integrity: sha512-VUpl106XVTCpDmTBil2ehgJZjhyLY2QZikzF8NvTXtLRF1CvO5iEE2UNZdVIUer35vFOwMKYeUGbjJtvPWan3g==}
@@ -8207,7 +8207,7 @@ snapshots:
 
   '@mjackson/node-fetch-server@0.2.0': {}
 
-  '@mlc-ai/web-llm@0.2.79':
+  '@mlc-ai/web-llm@0.2.80':
     dependencies:
       loglevel: 1.9.2
 

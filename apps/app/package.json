@@ -23,7 +23,7 @@
 	"dependencies": {
 		"@assistant/schemas": "workspace:*",
 		"@babel/standalone": "^7.26.10",
-		"@mlc-ai/web-llm": "0.2.79",
+		"@mlc-ai/web-llm": "0.2.80",
 		"@radix-ui/react-checkbox": "^1.2.2",
 		"@radix-ui/react-dialog": "^1.1.10",
 		"@radix-ui/react-dropdown-menu": "^2.1.11",
