@@ -77,6 +77,7 @@ export const CSP = {
 		"'self'",
 		API_BASE_URL,
 		WS_API_URL,
+		"cas-bridge.xethub.hf.co",
 		"eu.i.posthog.com",
 		"eu-assets.i.posthog.com",
 		"beacon.polychat.app",
