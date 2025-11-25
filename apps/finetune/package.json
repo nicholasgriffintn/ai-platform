@@ -18,9 +18,9 @@
 		"test": "vitest"
 	},
 	"dependencies": {
-		"@aws-sdk/client-bedrock": "3.938.0",
-		"@aws-sdk/client-s3": "3.937.0",
-		"@aws-sdk/s3-request-presigner": "3.937.0",
+		"@aws-sdk/client-bedrock": "3.939.0",
+		"@aws-sdk/client-s3": "3.939.0",
+		"@aws-sdk/s3-request-presigner": "3.939.0",
 		"better-sqlite3": "12.4.6",
 		"chalk": "5.6.2",
 		"commander": "14.0.2",
