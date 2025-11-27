@@ -254,7 +254,7 @@ importers:
         version: 1.4.0
       virtua:
         specifier: ^0.47.0
-        version: 0.47.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 0.47.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       zustand:
         specifier: 5.0.8
         version: 5.0.8(@types/react@19.2.7)(react@19.2.0)(use-sync-external-store@1.4.0(react@19.2.0))
@@ -6345,8 +6345,8 @@ packages:
       typescript:
         optional: true
 
-  virtua@0.47.1:
-    resolution: {integrity: sha512-IGe/hnZJdywFtFqpmtvS25II/Ov7i4vWnyagdguxLPvM8bSLmfEZULChdmTYwfcWI2XnxX+VGV4GpgaOvGp+7g==}
+  virtua@0.47.2:
+    resolution: {integrity: sha512-4TINosxooggtYQjm/8n7tdVQKJ1NoTQCR5hd2P2Lqu2xLl07OWgiygZ+Z07yT7gJQvpQYkDzKuB+yy5xTQkefg==}
     peerDependencies:
       react: '>=16.14.0'
       react-dom: '>=16.14.0'
@@ -13180,7 +13180,7 @@ snapshots:
       - zod
     optional: true
 
-  virtua@0.47.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
+  virtua@0.47.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     optionalDependencies:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
