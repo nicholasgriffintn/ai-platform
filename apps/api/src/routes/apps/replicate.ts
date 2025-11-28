@@ -64,9 +64,13 @@ const replicateModelMetadata: Record<
 		featured: boolean;
 	}>
 > = {
+	"replicate-google-nano-banana-pro": {
+		featured: true,
+		tags: ["image", "editing", "google"],
+	},
 	"replicate-bytedance-sdxl-lightning-4step": {
 		featured: true,
-		tags: ["lightning", "fast", "sdxl"],
+		tags: ["image", "editing", "bytedance"],
 	},
 	"replicate-sora-2": {
 		featured: true,
