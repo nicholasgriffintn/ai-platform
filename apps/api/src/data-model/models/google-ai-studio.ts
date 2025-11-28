@@ -1,13 +1,12 @@
 import type { ModelConfig } from "~/types";
 
 export const googleAiStudioModelConfig: ModelConfig = {
-	"gemini-2.5-pro": {
-		name: "Gemini 2.5 Pro",
-		matchingModel: "gemini-2.5-pro",
+	"gemini-3-pro-preview": {
+		name: "Gemini 3 Pro",
+		matchingModel: "gemini-3-pro-preview",
 		description:
-			"Gemini 2.5 Pro is our state-of-the-art thinking model, capable of reasoning over complex problems in code, math, and STEM, as well as analyzing large datasets, codebases, and documents using long context.",
+			"Gemini 3 Pro is our state-of-the-art thinking model, capable of reasoning over complex problems in code, math, and STEM, as well as analyzing large datasets, codebases, and documents using long context.",
 		provider: "google-ai-studio",
-		card: "https://www.prompthub.us/models/gemini-2-5-pro",
 		strengths: ["coding", "analysis", "math", "multilingual"],
 		multimodal: true,
 		supportsToolCalls: true,
@@ -21,12 +20,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			output: ["text"],
 		},
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "March 20, 2025",
-		lastUpdated: "June 5, 2025",
 		contextWindow: 1048576,
 		maxTokens: 65536,
-		costPer1kInputTokens: 0.00125,
-		costPer1kOutputTokens: 0.01,
+		costPer1kInputTokens: 0.004,
+		costPer1kOutputTokens: 0.012,
 		supportsArtifacts: true,
 		isFeatured: true,
 		isFree: true,
@@ -35,13 +32,12 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		reliability: 5,
 		speed: 3,
 	},
-	"gemini-2.5-flash": {
-		name: "Gemini 2.5 Flash",
-		matchingModel: "gemini-2.5-flash",
+	"gemini-flash-latest": {
+		name: "Gemini Flash",
+		matchingModel: "gemini-flash-latest",
 		description:
-			"Gemini 2.5 Flash delivers next-gen features and improved capabilities, including superior speed, native tool use, multimodal generation, and a 1M token context window.",
+			"Gemini Flash delivers next-gen features and improved capabilities, including superior speed, native tool use, multimodal generation, and a 1M token context window.",
 		provider: "google-ai-studio",
-		card: "https://www.prompthub.us/models/gemini-2-5-flash",
 		strengths: ["coding", "analysis", "math", "multilingual"],
 		modalities: {
 			input: ["text", "image", "audio", "video", "pdf"],
@@ -55,8 +51,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		multimodal: true,
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "March 20, 2025",
-		lastUpdated: "June 5, 2025",
 		contextWindow: 1048576,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
@@ -69,13 +63,12 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		reliability: 4,
 		speed: 3,
 	},
-	"gemini-2.5-flash-lite": {
-		name: "Gemini 2.5 Flash Lite",
-		matchingModel: "gemini-2.5-flash-lite",
+	"gemini-flash-lite-latest": {
+		name: "Gemini Flash Lite",
+		matchingModel: "gemini-flash-lite-latest",
 		description:
-			"A Gemini 2.5 Flash model optimized for cost efficiency and low latency.",
+			"A Gemini Flash model optimized for cost efficiency and low latency.",
 		provider: "google-ai-studio",
-		card: "https://www.prompthub.us/models/gemini-2-5-flash-lite",
 		strengths: ["coding", "analysis", "math", "multilingual"],
 		modalities: {
 			input: ["text", "image", "audio", "video", "pdf"],
@@ -85,9 +78,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		supportsTemperature: true,
 		multimodal: true,
-		knowledgeCutoffDate: "June 2024",
-		releaseDate: "December 11, 2024",
-		lastUpdated: "December 11, 2024",
+		knowledgeCutoffDate: "January 2025",
 		contextWindow: 1048576,
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.000075,
