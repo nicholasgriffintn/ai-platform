@@ -7,6 +7,44 @@ import type { ModelConfig } from "~/types";
 const PROVIDER = "anthropic";
 
 export const anthropicModelConfig: ModelConfig = createModelConfigObject([
+	createModelConfig("claude-4.5-opus", PROVIDER, {
+		name: "Claude 4.5 Opus",
+		matchingModel: "claude-opus-4-5-20251101",
+		description:
+			"The Claude 4.5 Opus is intelligent, efficient, and the best model in the world for coding, agents, and computer use.",
+		knowledgeCutoffDate: "March 2025",
+		releaseDate: "November 1, 2025",
+		lastUpdated: "November 1, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		card: "https://www.prompthub.us/models/claude-4.5-opus",
+		contextWindow: 200000,
+		maxTokens: 32000,
+		costPer1kInputTokens: 0.005, // $5.00 per million tokens
+		costPer1kOutputTokens: 0.025, // $25.00 per million tokens
+		strengths: [
+			"chat",
+			"general_knowledge",
+			"analysis",
+			"reasoning",
+			"creative",
+		],
+		contextComplexity: 5,
+		reliability: 5,
+		speed: 3,
+		multimodal: true,
+		isFeatured: false,
+		supportsToolCalls: true,
+		supportsSearchGrounding: true,
+		supportsCodeExecution: true,
+		supportsDocuments: true,
+		supportsTokenCounting: true,
+		supportsTopP: false,
+	}),
 	createModelConfig("claude-4-5-sonnet", PROVIDER, {
 		name: "Claude 4.5 Sonnet",
 		matchingModel: "claude-sonnet-4-5",
