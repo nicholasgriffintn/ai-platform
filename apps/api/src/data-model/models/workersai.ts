@@ -276,6 +276,21 @@ export const workersAiModelConfig: ModelConfig = {
 			output: ["image"],
 		},
 	},
+	"flux-2-dev": {
+		name: "Black Forest Labs Flux 2 Dev",
+		matchingModel: "@cf/black-forest-labs/flux-2-dev",
+		description:
+			"Flux 2 is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
+		provider: "workers-ai",
+		strengths: ["creative"],
+		speed: 4,
+		reliability: 4,
+		contextComplexity: 3,
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
+	},
 	"stable-diffusion-1.5-img2img": {
 		name: "Stable Diffusion 1.5 Img2Img",
 		matchingModel: "@cf/runwayml/stable-diffusion-v1-5-img2img",

@@ -62,6 +62,302 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			],
 		},
 	}),
+	createModelConfig("replicate-flux-2-pro", PROVIDER, {
+		name: "FLUX 2 Pro",
+		matchingModel: "black-forest-labs/flux-2-pro",
+		description:
+			"Flux 2 Pro is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
+		strengths: ["creative"],
+		supportsStreaming: false,
+		supportsAttachments: false,
+		costPerRun: 0.015,
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
+		replicateInputSchema: {
+			reference: "https://replicate.com/black-forest-labs/flux-2-pro",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "Text prompt describing the desired image.",
+					required: true,
+				},
+				{
+					name: "input_images",
+					type: ["file", "string"],
+					description:
+						"A list of input images for image-to-image generation. Maximum 8 images. Must be jpeg, png, gif, or webp.",
+					required: false,
+				},
+				{
+					name: "aspect_ratio",
+					type: "string",
+					description:
+						"Aspect ratio for the generated image. Use 'match_input_image' to match the first input image's aspect ratio.",
+					default: "1:1",
+					enum: [
+						"1:1",
+						"16:9",
+						"3:2",
+						"2:3",
+						"4:5",
+						"5:4",
+						"9:16",
+						"3:4",
+						"4:3",
+						"match_input_image",
+						"custom",
+					],
+				},
+				{
+					name: "resolution",
+					type: "string",
+					description:
+						"Resolution in megapixels. Up to 4 MP is possible, but 2 MP or below is recommended. The maximum image size is 2048x2048, which means that high-resolution images may not respect the resolution if aspect ratio is not 1:1. Resolution is not used when aspect_ratio is 'custom'. When aspect_ratio is 'match_input_image', use 'match_input_image' to match the input image's resolution (clamped to 0.5-4 MP).",
+					default: "1 MP",
+					enum: ["1 MP", "2 MP", "4 MP", "0.5MP", "match_input_image"],
+				},
+				{
+					name: "width",
+					type: "integer",
+					description:
+						"Width of the generated image. Only used when aspect_ratio=custom. Must be a multiple of 32 (if it's not, it will be rounded to nearest multiple of 32).",
+					default: 1024,
+				},
+				{
+					name: "height",
+					type: "integer",
+					description:
+						"Height of the generated image. Only used when aspect_ratio=custom. Must be a multiple of 32 (if it's not, it will be rounded to nearest multiple of 32).",
+					default: 1024,
+				},
+				{
+					name: "safety_tolerance",
+					type: "integer",
+					description:
+						"Safety tolerance, 1 is most strict and 5 is most permissive",
+					default: 2,
+				},
+				{
+					name: "output_format",
+					type: "string",
+					description: "Output format.",
+					default: "webp",
+					enum: ["webp", "jpg", "png"],
+				},
+				{
+					name: "seed",
+					type: "integer",
+					description: "Random seed for reproducibility.",
+				},
+			],
+		},
+	}),
+	createModelConfig("replicate-flux-2-flex", PROVIDER, {
+		name: "FLUX 2 Flex",
+		matchingModel: "black-forest-labs/flux-2-flex",
+		description:
+			"Flux 2 Flex is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
+		strengths: ["creative"],
+		supportsStreaming: false,
+		supportsAttachments: false,
+		costPerRun: 0.06,
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
+		replicateInputSchema: {
+			reference: "https://replicate.com/black-forest-labs/flux-2-flex",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "Text prompt describing the desired image.",
+					required: true,
+				},
+				{
+					name: "input_images",
+					type: ["file", "string"],
+					description:
+						"A list of input images for image-to-image generation. Maximum 8 images. Must be jpeg, png, gif, or webp.",
+					required: false,
+				},
+				{
+					name: "aspect_ratio",
+					type: "string",
+					description:
+						"Aspect ratio for the generated image. Use 'match_input_image' to match the first input image's aspect ratio.",
+					default: "1:1",
+					enum: [
+						"1:1",
+						"16:9",
+						"3:2",
+						"2:3",
+						"4:5",
+						"5:4",
+						"9:16",
+						"3:4",
+						"4:3",
+						"match_input_image",
+						"custom",
+					],
+				},
+				{
+					name: "resolution",
+					type: "string",
+					description:
+						"Resolution in megapixels. Up to 4 MP is possible, but 2 MP or below is recommended. The maximum image size is 2048x2048, which means that high-resolution images may not respect the resolution if aspect ratio is not 1:1. Resolution is not used when aspect_ratio is 'custom'. When aspect_ratio is 'match_input_image', use 'match_input_image' to match the input image's resolution (clamped to 0.5-4 MP).",
+					default: "1 MP",
+					enum: ["1 MP", "2 MP", "4 MP", "0.5MP", "match_input_image"],
+				},
+				{
+					name: "width",
+					type: "integer",
+					description:
+						"Width of the generated image. Only used when aspect_ratio=custom. Must be a multiple of 32 (if it's not, it will be rounded to nearest multiple of 32).",
+					default: 1024,
+				},
+				{
+					name: "height",
+					type: "integer",
+					description:
+						"Height of the generated image. Only used when aspect_ratio=custom. Must be a multiple of 32 (if it's not, it will be rounded to nearest multiple of 32).",
+					default: 1024,
+				},
+				{
+					name: "safety_tolerance",
+					type: "integer",
+					description:
+						"Safety tolerance, 1 is most strict and 5 is most permissive",
+					default: 2,
+				},
+				{
+					name: "output_format",
+					type: "string",
+					description: "Output format.",
+					default: "webp",
+					enum: ["webp", "jpg", "png"],
+				},
+				{
+					name: "seed",
+					type: "integer",
+					description: "Random seed for reproducibility.",
+				},
+				{
+					name: "prompt_upsampling",
+					type: "boolean",
+					description: "Automatically enhance prompt.",
+					default: false,
+				},
+				{
+					name: "steps",
+					type: "integer",
+					description: "Number of inference steps",
+					default: 30,
+				},
+				{
+					name: "guidance",
+					type: "integer",
+					description:
+						"Guidance scale for generation. Controls how closely the output follows the prompt",
+					default: 4.5,
+				},
+			],
+		},
+	}),
+	createModelConfig("replicate-flux-2-dev", PROVIDER, {
+		name: "FLUX 2 Dev",
+		matchingModel: "black-forest-labs/flux-2-dev",
+		description:
+			"Flux 2 Dev is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
+		strengths: ["creative"],
+		supportsStreaming: false,
+		supportsAttachments: false,
+		costPerRun: 0.06,
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
+		replicateInputSchema: {
+			reference: "https://replicate.com/black-forest-labs/flux-2-dev",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "Text prompt describing the desired image.",
+					required: true,
+				},
+				{
+					name: "input_images",
+					type: ["file", "string"],
+					description:
+						"List of input images for image-to-image generation. Maximum 4 images. Must be jpeg, png, gif, or webp.",
+					required: false,
+				},
+				{
+					name: "aspect_ratio",
+					type: "string",
+					description:
+						"Aspect ratio for the generated image. Use 'match_input_image' to match the first input image's aspect ratio.",
+					default: "1:1",
+					enum: [
+						"1:1",
+						"16:9",
+						"3:2",
+						"2:3",
+						"4:5",
+						"5:4",
+						"9:16",
+						"3:4",
+						"4:3",
+						"match_input_image",
+						"custom",
+					],
+				},
+				{
+					name: "width",
+					type: "integer",
+					description:
+						"Width of the generated image. Only used when aspect_ratio=custom. Must be a multiple of 32 (if it's not, it will be rounded to nearest multiple of 32).",
+					default: 1024,
+				},
+				{
+					name: "height",
+					type: "integer",
+					description:
+						"Height of the generated image. Only used when aspect_ratio=custom. Must be a multiple of 32 (if it's not, it will be rounded to nearest multiple of 32).",
+					default: 1024,
+				},
+				{
+					name: "output_format",
+					type: "string",
+					description: "Output format.",
+					default: "webp",
+					enum: ["webp", "jpg", "png"],
+				},
+				{
+					name: "output_quality",
+					type: "integer",
+					description:
+						"Quality when saving the output images, from 0 to 100. 100 is best quality, 0 is lowest quality. Not relevant for .png outputs..",
+					default: 90,
+				},
+				{
+					name: "seed",
+					type: "integer",
+					description: "Random seed for reproducibility.",
+				},
+				{
+					name: "disable_safety_checker",
+					type: "boolean",
+					description: "Disable safety checker for generated images.",
+					default: false,
+				},
+			],
+		},
+	}),
 	createModelConfig("replicate-flux-1.1-pro", PROVIDER, {
 		name: "FLUX 1.1 Pro",
 		matchingModel: "black-forest-labs/flux-1.1-pro",
