@@ -68,7 +68,7 @@
 		"tailwind-merge": "3.4.0",
 		"tailwindcss": "4.1.17",
 		"tw-animate-css": "^1.2.7",
-		"virtua": "^0.47.0",
+		"virtua": "^0.48.0",
 		"zustand": "5.0.9"
 	},
 	"devDependencies": {
