@@ -8,6 +8,31 @@ const PROVIDER = "bedrock";
 
 // TODO: Cohere need a different input to nova, need to check others as well.
 export const bedrockModelConfig: ModelConfig = createModelConfigObject([
+	createModelConfig("nova-2-lite", PROVIDER, {
+		name: "Amazon Nova 2 Lite",
+		matchingModel: "amazon.nova-2-lite-v1:0",
+		description: "",
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		contextWindow: 1000000,
+		maxTokens: 1000000,
+		costPer1kInputTokens: 0.0008,
+		costPer1kOutputTokens: 0.0016,
+		strengths: ["analysis", "multilingual", "vision"],
+		contextComplexity: 3,
+		reliability: 3,
+		speed: 4,
+		multimodal: true,
+		includedInRouter: true,
+		supportsDocuments: true,
+		supportsToolCalls: true,
+		supportsPromptCaching: true,
+	}),
+
 	createModelConfig("nova-lite", PROVIDER, {
 		name: "Amazon Nova Lite",
 		matchingModel: "amazon.nova-lite-v1:0",
@@ -31,7 +56,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 3,
 		speed: 4,
 		multimodal: true,
-		includedInRouter: true,
+		includedInRouter: false,
 		supportsDocuments: true,
 		supportsToolCalls: true,
 		supportsPromptCaching: true,
@@ -121,6 +146,83 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		modalities: {
 			input: ["text", "image"],
 			output: ["video"],
+		},
+	}),
+
+	createModelConfig("nova-2-sonic", PROVIDER, {
+		name: "Amazon Nova 2 Sonic",
+		matchingModel: "amazon.nova-2-sonic-v1:0",
+		description: "",
+		modalities: {
+			input: ["speech"],
+			output: ["speech", "text"],
+		},
+	}),
+
+	createModelConfig("openai.gpt-oss-safeguard-120b", PROVIDER, {
+		name: "GPT OSS Safeguard 120B",
+		matchingModel: "openai.gpt-oss-safeguard-120b",
+		description:
+			"OpenAI's gpt-oss-safeguard-120B scales policy-driven safety approach to a 120B-parameter model for maximum accuracy and nuance. It can reason through ambiguous cases, multi-step conversations, and domain-specific rules that smaller filters routinely miss. This model is ideal for enterprises and scaled platforms that require maximal safety accuracy and nuanced policy enforcement. The primary use-cases include high-stakes content moderation, compliance screening, safety analysis of conversations/logs, and centralized policy orchestration across many downstream models.",
+		modalities: {
+			input: ["guardrails"],
+			output: ["guardrails"],
+		},
+	}),
+
+	createModelConfig("openai.gpt-oss-safeguard-20b", PROVIDER, {
+		name: "GPT OSS Safeguard 20B",
+		matchingModel: "openai.gpt-oss-safeguard-20b",
+		description:
+			"OpenAI's gpt-oss-safeguard-20B is a compact, open-weight safety model that lets you enforce your own moderation and compliance rules on any GPT-OSS deployment. It interprets natural-language safety policies and applies them to user prompts and model outputs, returning structured guidance or filtered text. This model is ideal for developers and platform teams who need cost effective policy-driven safety and moderation. The primary use-cases include Applying configurable safety policies to prompts/outputs, running local or edge moderation, and serving as a lightweight “safety layer” in front of open or proprietary LLMs.",
+		modalities: {
+			input: ["guardrails"],
+			output: ["guardrails"],
+		},
+	}),
+
+	createModelConfig("minimax.minimax-m2", PROVIDER, {
+		name: "MiniMax M2",
+		matchingModel: "minimax.minimax-m2",
+		description:
+			"MiniMax-M2 is a cutting-edge MoE model that blends frontier-level intelligence with highly efficient active parameters. It’s engineered for AI agents, with strong reasoning, coding, and multilingual performance at competitive cost. This model is ideal for teams seeking a strong open MoE model for agents, reasoning, and multilingual applications. The primary use-cases include general-purpose chat/coding, AI agents with tool use, multilingual assistants, and high-throughput inference on modern GPUs.",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+	}),
+
+	createModelConfig("moonshot.kimi-k2-thinking", PROVIDER, {
+		name: "Moonshot Kimi K2 Thinking",
+		matchingModel: "moonshot.kimi-k2-thinking",
+		description:
+			"Kimi-K2-Thinking is Moonshot’s flagship “thinking agent” model, designed from the ground up for deep, tool-augmented reasoning. Its 1T-parameter MoE architecture (32B active) powers state-of-the-art performance on long-horizon tasks like HLE and BrowseComp. Native INT4 quantization and a 256K context window let you run serious research- and agent-style workloads with practical hardware. This model is ideal for teams building deep reasoning agents, autonomous research and coding systems, and complex tool-using workflows. The primary use-cases include ;ong-horizon planning with tools, complex coding and debugging, research agents over large corpora, and workflows needing 200–300-step stable tool orchestration.",
+		modalities: {
+			input: ["speech"],
+			output: ["speech", "text"],
+		},
+		reasoningConfig: { enabled: true },
+	}),
+
+	createModelConfig("nvidia.nemotron-nano-12b-v2", PROVIDER, {
+		name: "NVIDIA Nemotron Nano 12B v2",
+		matchingModel: "nvidia.nemotron-nano-12b-v2",
+		description:
+			"NVIDIA-Nemotron-Nano-12B-v2-VL-BF16 brings multimodal understanding to the Nemotron Nano line, combining a 12.6B LLM with a capable vision encoder. It can analyze multiple high-resolution images (and videos) alongside long text prompts, excelling at visual QA, document intelligence, and media summarization. This model is ideal for teams building multimodal RAG and document/image understanding systems. The primary use-cases include Visual QA, document and slide understanding, multimodal assistants, and enterprise workflows combining images/docs with long text prompts.",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+	}),
+
+	createModelConfig("nvidia.nemotron-nano-9b-v2", PROVIDER, {
+		name: "NVIDIA Nemotron Nano 9B v2",
+		matchingModel: "nvidia.nemotron-nano-9b-v2",
+		description:
+			"NVIDIA-Nemotron-Nano-9B-v2 is a 9B-parameter open model tailored for efficient reasoning, coding, and general chat on a single modern GPU. It’s part of NVIDIA’s Nemotron Nano family, optimized for high throughput and low memory usage in real-world applications. This model is ideal for deevlopers who want a cost-effective open model for reasoning, coding, and chat. The primary use-cases include RAG-based assistants, analytics and business intelligence copilots, and cost effective customer support bots.",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
 		},
 	}),
 
