@@ -91,6 +91,7 @@ describe("RequestPreparer", () => {
 		mockAugmentPrompt.mockReset();
 		mockGetEmbeddingProvider.mockReset();
 		mockGetEmbeddingProvider.mockReturnValue({} as any);
+		RequestPreparer.clearModelConfigCache();
 
 		mockEnv = {
 			DB: {} as any,

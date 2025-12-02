@@ -27,6 +27,8 @@ import type { ValidationContext } from "../validation/ValidationPipeline";
 
 const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
 
+type ProviderModelConfig = Awaited<ReturnType<typeof getModelConfig>>;
+
 export interface PreparedRequest {
 	modelConfigs: ModelConfigInfo[];
 	primaryModel: string;
@@ -43,9 +45,38 @@ export interface PreparedRequest {
 
 export class RequestPreparer {
 	private repositories: RepositoryManager;
+	private static modelConfigCache = new Map<
+		string,
+		Promise<ProviderModelConfig | null>
+	>();
 
 	constructor(private env: any) {
 		this.repositories = new RepositoryManager(env);
+	}
+
+	public static clearModelConfigCache() {
+		RequestPreparer.modelConfigCache.clear();
+	}
+
+	private static getCachedModelConfig(model: string, env: any) {
+		if (!RequestPreparer.modelConfigCache.has(model)) {
+			const fetchPromise = (async () => {
+				try {
+					const config = await getModelConfig(model, env);
+					if (!config) {
+						RequestPreparer.modelConfigCache.delete(model);
+						return null;
+					}
+					return config;
+				} catch (error) {
+					RequestPreparer.modelConfigCache.delete(model);
+					throw error;
+				}
+			})();
+			RequestPreparer.modelConfigCache.set(model, fetchPromise);
+		}
+
+		return RequestPreparer.modelConfigCache.get(model)!;
 	}
 
 	async prepare(
@@ -77,10 +108,19 @@ export class RequestPreparer {
 			options,
 			validationContext,
 		);
+		const finalMessagePromise = (async () => {
+			const resolvedSettings = await userSettingsPromise;
+			return this.processMessageContent(
+				options,
+				validationContext,
+				resolvedSettings,
+			);
+		})();
 
-		const [userSettings, modelConfigs] = await Promise.all([
-			userSettingsPromise,
+		const [modelConfigs, userSettings, finalMessage] = await Promise.all([
 			modelConfigsPromise,
+			userSettingsPromise,
+			finalMessagePromise,
 		]);
 
 		const primaryModel = primaryModelConfig.matchingModel;
@@ -95,12 +135,6 @@ export class RequestPreparer {
 			store: options.store,
 			env: this.env,
 		});
-
-		const finalMessage = await this.processMessageContent(
-			options,
-			validationContext,
-			userSettings,
-		);
 
 		const storeMessagesTask = this.storeMessages(
 			options,
@@ -162,7 +196,7 @@ export class RequestPreparer {
 		}
 
 		const configPromises = selectedModels.map((model) =>
-			getModelConfig(model, env),
+			RequestPreparer.getCachedModelConfig(model, env),
 		);
 		const configResults = await Promise.allSettled(configPromises);
 
@@ -376,28 +410,25 @@ export class RequestPreparer {
 			userSettings?.memories_save_enabled ||
 			userSettings?.memories_chat_history_enabled;
 
-		if (isProUser && memoriesEnabled && finalMessage) {
+		if (isProUser && memoriesEnabled && finalMessage && user?.id) {
 			try {
 				let memoryContext = "";
 
-				const synthesis =
-					await this.repositories.memorySyntheses.getActiveSynthesis(
+				const memoryManager = MemoryManager.getInstance(this.env, user);
+				const [synthesis, recentMemories] = await Promise.all([
+					this.repositories.memorySyntheses.getActiveSynthesis(
 						user.id,
 						"global",
-					);
+					),
+					memoryManager.retrieveMemories(finalMessage, {
+						topK: 3,
+						scoreThreshold: 0.5,
+					}),
+				]);
 
 				if (synthesis) {
 					memoryContext += `\n\n# Memory Summary\nThe following is a consolidated summary of your long-term memories about this user:\n<memory_synthesis>\n${synthesis.synthesis_text}\n</memory_synthesis>`;
 				}
-
-				const memoryManager = MemoryManager.getInstance(this.env, user);
-				const recentMemories = await memoryManager.retrieveMemories(
-					finalMessage,
-					{
-						topK: 3,
-						scoreThreshold: 0.5,
-					},
-				);
 
 				if (recentMemories.length > 0) {
 					memoryContext += `\n\n# Recently Relevant Memories\nThe following specific memories are most relevant to this conversation:\n<recent_memories>\n${recentMemories
