@@ -10,6 +10,7 @@ export const MODEL_ICONS: Record<string, string> = {
 	voxtral: "mistral",
 	devstral: "mistral",
 	magistral: "mistral",
+	ministral: "mistral",
 	qwen: "qwen",
 	"gpt-": "openai",
 	o1: "openai",
@@ -33,6 +34,7 @@ export const MODEL_ICONS: Record<string, string> = {
 	nova: "bedrock",
 	moonshot: "moonshot",
 	kimi: "moonshot",
+	nvidia: "nvidia",
 };
 
 export const PROVIDER_ICONS: Record<string, string> = {
