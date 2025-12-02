@@ -70,14 +70,18 @@ export class RequestPreparer {
 
 		const isProUser = user?.plan_id === "pro";
 
-		const userSettings = user?.id
-			? await this.repositories.userSettings.getUserSettings(user.id)
-			: null;
-
-		const modelConfigs = await this.buildModelConfigs(
+		const userSettingsPromise = user?.id
+			? this.repositories.userSettings.getUserSettings(user.id)
+			: Promise.resolve(null);
+		const modelConfigsPromise = this.buildModelConfigs(
 			options,
 			validationContext,
 		);
+
+		const [userSettings, modelConfigs] = await Promise.all([
+			userSettingsPromise,
+			modelConfigsPromise,
+		]);
 
 		const primaryModel = primaryModelConfig.matchingModel;
 		const primaryProvider = primaryModelConfig.provider;
@@ -98,7 +102,7 @@ export class RequestPreparer {
 			userSettings,
 		);
 
-		await this.storeMessages(
+		const storeMessagesTask = this.storeMessages(
 			options,
 			conversationManager,
 			lastMessage!,
@@ -108,13 +112,18 @@ export class RequestPreparer {
 			mode,
 		);
 
-		const systemPrompt = await this.buildSystemPrompt(
+		const systemPromptTask = this.buildSystemPrompt(
 			options,
 			sanitizedMessages!,
 			finalMessage,
 			primaryModel,
 			userSettings,
 		);
+
+		const [_, systemPrompt] = await Promise.all([
+			storeMessagesTask,
+			systemPromptTask,
+		]);
 
 		const messages = this.buildFinalMessages(
 			sanitizedMessages!,
