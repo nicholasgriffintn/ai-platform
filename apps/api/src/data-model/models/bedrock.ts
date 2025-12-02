@@ -10,7 +10,7 @@ const PROVIDER = "bedrock";
 export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("nova-2-lite", PROVIDER, {
 		name: "Amazon Nova 2 Lite",
-		matchingModel: "amazon.nova-2-lite-v1:0",
+		matchingModel: "global.amazon.nova-2-lite-v1:0",
 		description: "",
 		modalities: {
 			input: ["text", "image", "video"],
@@ -157,6 +157,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			input: ["speech"],
 			output: ["speech", "text"],
 		},
+		contextWindow: 1000000,
+		maxTokens: 1000000,
 	}),
 
 	createModelConfig("openai.gpt-oss-safeguard-120b", PROVIDER, {
@@ -190,6 +192,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["text"],
 		},
+		maxTokens: 400000,
+		contextWindow: 400000,
 	}),
 
 	createModelConfig("moonshot.kimi-k2-thinking", PROVIDER, {
@@ -202,6 +206,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			output: ["speech", "text"],
 		},
 		reasoningConfig: { enabled: true },
+		contextWindow: 256000,
+		maxTokens: 256000,
 	}),
 
 	createModelConfig("nvidia.nemotron-nano-12b-v2", PROVIDER, {
@@ -213,6 +219,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		contextWindow: 128000,
+		maxTokens: 128000,
 	}),
 
 	createModelConfig("nvidia.nemotron-nano-9b-v2", PROVIDER, {
