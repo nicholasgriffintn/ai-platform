@@ -24,6 +24,7 @@ import {
 	sanitiseInput,
 } from "../utils";
 import type { ValidationContext } from "../validation/ValidationPipeline";
+import { memoizeRequest } from "~/utils/requestCache";
 
 const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
 
@@ -98,11 +99,14 @@ export class RequestPreparer {
 		}
 
 		const { platform = "api", user, anonymousUser, mode = "normal" } = options;
+		const requestCache = options.context?.requestCache;
 
 		const isProUser = user?.plan_id === "pro";
 
 		const userSettingsPromise = user?.id
-			? this.repositories.userSettings.getUserSettings(user.id)
+			? memoizeRequest(requestCache, `user-settings:${user.id}`, () =>
+					this.repositories.userSettings.getUserSettings(user.id),
+				)
 			: Promise.resolve(null);
 		const modelConfigsPromise = this.buildModelConfigs(
 			options,
@@ -140,6 +144,7 @@ export class RequestPreparer {
 			platform,
 			store: options.store,
 			env: this.env,
+			requestCache,
 		});
 
 		const shouldStoreMessages = options.store !== false;

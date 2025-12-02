@@ -29,6 +29,7 @@ export class ConversationManager {
 	private anonymousUser?: AnonymousUser | null;
 	private usageManager?: UsageManager;
 	private env?: IEnv;
+	private requestCache?: Map<string, unknown>;
 
 	private constructor(
 		database: Database,
@@ -38,6 +39,7 @@ export class ConversationManager {
 		platform?: Platform,
 		store?: boolean,
 		env?: IEnv,
+		requestCache?: Map<string, unknown>,
 	) {
 		this.database = database;
 		this.user = user;
@@ -46,10 +48,11 @@ export class ConversationManager {
 		this.platform = platform || "api";
 		this.store = store ?? true;
 		this.env = env;
+		this.requestCache = requestCache;
 
 		const repositories = env ? new RepositoryManager(env) : null;
 		this.usageManager = repositories
-			? new UsageManager(repositories, user, anonymousUser)
+			? new UsageManager(repositories, user, anonymousUser, requestCache)
 			: undefined;
 	}
 
@@ -61,6 +64,7 @@ export class ConversationManager {
 		platform,
 		store,
 		env,
+		requestCache,
 	}: {
 		database: Database;
 		user?: User | null;
@@ -69,6 +73,7 @@ export class ConversationManager {
 		platform?: Platform;
 		store?: boolean;
 		env?: IEnv;
+		requestCache?: Map<string, unknown>;
 	}): ConversationManager {
 		return new ConversationManager(
 			database,
@@ -78,6 +83,7 @@ export class ConversationManager {
 			platform,
 			store ?? true,
 			env,
+			requestCache,
 		);
 	}
 

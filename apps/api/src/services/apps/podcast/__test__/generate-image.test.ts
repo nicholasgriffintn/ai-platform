@@ -43,6 +43,7 @@ describe("handlePodcastGenerateImage", () => {
 			requireUser: vi.fn(() => mockUser),
 			database: {} as any,
 			requestId: undefined,
+			requestCache: new Map(),
 			...overrides,
 		}) satisfies ServiceContext;
 

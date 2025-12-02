@@ -7,6 +7,7 @@ import { RepositoryManager } from "~/repositories";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import type { CoreChatOptions } from "~/types";
 import { getLogger } from "~/utils/logger";
+import { memoizeRequest } from "~/utils/requestCache";
 
 const logger = getLogger({
 	prefix: "CHAT:VALIDATION:VALIDATORS:GUARDRAILS",
@@ -18,6 +19,7 @@ export class GuardrailsValidator implements Validator {
 		context: ValidationContext,
 	): Promise<ValidatorResult> {
 		const { env, user, completion_id } = options;
+		const requestCache = options.context?.requestCache;
 
 		if (!context.messageWithContext) {
 			return {
@@ -33,7 +35,9 @@ export class GuardrailsValidator implements Validator {
 		try {
 			const repositories = new RepositoryManager(env);
 			const userSettings = user?.id
-				? await repositories.userSettings.getUserSettings(user.id)
+				? await memoizeRequest(requestCache, `user-settings:${user.id}`, () =>
+						repositories.userSettings.getUserSettings(user.id),
+					)
 				: null;
 
 			const guardrails = new Guardrails(env, user, userSettings);

@@ -52,6 +52,7 @@ describe("logger", () => {
 
 		it("should create logger with custom prefix", () => {
 			const logger = getLogger({ prefix: "TEST" });
+			logger.setLevel(LogLevel.INFO);
 
 			logger.info("Test message");
 
@@ -257,6 +258,7 @@ describe("logger", () => {
 
 		it("should include prefix when provided", () => {
 			const logger = getLogger({ prefix: "TEST_PREFIX" });
+			logger.setLevel(LogLevel.INFO);
 
 			logger.info("Test message");
 

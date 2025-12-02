@@ -146,6 +146,10 @@ class Logger {
 }
 
 export const getLogger = (options?: LoggerOptions) => {
+	if (!options) {
+		return Logger.getInstance({ level: LogLevel.INFO });
+	}
+
 	return Logger.getInstance(options);
 };
 

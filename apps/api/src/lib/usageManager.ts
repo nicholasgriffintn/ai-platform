@@ -4,50 +4,9 @@ import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { AnonymousUser, ModelConfigItem, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { memoizeRequest, type RequestCache } from "~/utils/requestCache";
 
 const logger = getLogger({ prefix: "lib/usageManager" });
-
-async function isProModel(modelId: string): Promise<boolean> {
-	const config: ModelConfigItem | undefined =
-		await getModelConfigByMatchingModel(modelId);
-	return !!config && config.isFree !== true;
-}
-
-async function calculateUsageMultiplier(modelId: string): Promise<number> {
-	logger.debug("Calculating usage multiplier", { modelId });
-	const config = await getModelConfigByMatchingModel(modelId);
-	if (!config) {
-		logger.warn(
-			`No config found for model: ${modelId}, using default multiplier: 1`,
-		);
-		return 1;
-	}
-
-	if (!config.costPer1kInputTokens && !config.costPer1kOutputTokens) {
-		logger.warn(
-			`No cost data for model: ${modelId}, using default multiplier: 1`,
-		);
-		return 1;
-	}
-
-	const inputMultiplier =
-		(config.costPer1kInputTokens || 0) / USAGE_CONFIG.BASELINE_INPUT_COST;
-	const outputMultiplier =
-		(config.costPer1kOutputTokens || 0) / USAGE_CONFIG.BASELINE_OUTPUT_COST;
-	const avgMultiplier = (inputMultiplier + outputMultiplier) / 2;
-	const finalMultiplier = Math.ceil(avgMultiplier);
-
-	logger.debug(`Model: ${modelId} calculation:`, {
-		inputCost: config.costPer1kInputTokens,
-		outputCost: config.costPer1kOutputTokens,
-		inputMultiplier,
-		outputMultiplier,
-		avgMultiplier,
-		finalMultiplier,
-	});
-
-	return finalMultiplier;
-}
 
 export interface UsageLimits {
 	daily: {
@@ -64,15 +23,73 @@ export class UsageManager {
 	private repositories: RepositoryManager;
 	private user: User | null;
 	private anonymousUser: AnonymousUser | null;
+	private requestCache?: RequestCache;
 
 	constructor(
 		repositories: RepositoryManager,
 		user: User | null,
 		anonymousUser: AnonymousUser | null,
+		requestCache?: RequestCache,
 	) {
 		this.repositories = repositories;
 		this.user = user;
 		this.anonymousUser = anonymousUser;
+		this.requestCache = requestCache;
+	}
+
+	private memoize<T>(key: string, factory: () => Promise<T>): Promise<T> {
+		return memoizeRequest(this.requestCache, key, factory);
+	}
+
+	private async getModelConfig(
+		modelId: string,
+	): Promise<ModelConfigItem | undefined> {
+		return this.memoize(`usage:model-config:${modelId}`, () =>
+			getModelConfigByMatchingModel(modelId),
+		);
+	}
+
+	private async isProModel(modelId: string): Promise<boolean> {
+		const config = await this.getModelConfig(modelId);
+		return !!config && config.isFree !== true;
+	}
+
+	private async calculateUsageMultiplier(modelId: string): Promise<number> {
+		return this.memoize(`usage:model-multiplier:${modelId}`, async () => {
+			logger.debug("Calculating usage multiplier", { modelId });
+			const config = await this.getModelConfig(modelId);
+			if (!config) {
+				logger.warn(
+					`No config found for model: ${modelId}, using default multiplier: 1`,
+				);
+				return 1;
+			}
+
+			if (!config.costPer1kInputTokens && !config.costPer1kOutputTokens) {
+				logger.warn(
+					`No cost data for model: ${modelId}, using default multiplier: 1`,
+				);
+				return 1;
+			}
+
+			const inputMultiplier =
+				(config.costPer1kInputTokens || 0) / USAGE_CONFIG.BASELINE_INPUT_COST;
+			const outputMultiplier =
+				(config.costPer1kOutputTokens || 0) / USAGE_CONFIG.BASELINE_OUTPUT_COST;
+			const avgMultiplier = (inputMultiplier + outputMultiplier) / 2;
+			const finalMultiplier = Math.ceil(avgMultiplier);
+
+			logger.debug(`Model: ${modelId} calculation:`, {
+				inputCost: config.costPer1kInputTokens,
+				outputCost: config.costPer1kOutputTokens,
+				inputMultiplier,
+				outputMultiplier,
+				avgMultiplier,
+				finalMultiplier,
+			});
+
+			return finalMultiplier;
+		});
 	}
 
 	async checkUsage() {
@@ -239,7 +256,7 @@ export class UsageManager {
 
 		logger.debug("Calculating usage multiplier", { modelId });
 
-		const usageMultiplier = await calculateUsageMultiplier(modelId);
+		const usageMultiplier = await this.calculateUsageMultiplier(modelId);
 
 		let dailyProCount = this.user.daily_pro_message_count || 0;
 		const now = new Date();
@@ -281,7 +298,7 @@ export class UsageManager {
 			);
 		}
 
-		const modelConfig = await getModelConfigByMatchingModel(modelId);
+		const modelConfig = await this.getModelConfig(modelId);
 
 		logger.debug("Pro usage checked", { userId: this.user.id });
 
@@ -306,7 +323,7 @@ export class UsageManager {
 
 		logger.debug("Incrementing pro usage", { userId: this.user.id });
 
-		const usageMultiplier = await calculateUsageMultiplier(modelId);
+		const usageMultiplier = await this.calculateUsageMultiplier(modelId);
 
 		const count = this.user.daily_pro_message_count ?? 0;
 		const messageCount = this.user.message_count ?? 0;
@@ -346,7 +363,7 @@ export class UsageManager {
 
 	async checkUsageByModel(modelId: string, isPro: boolean) {
 		logger.debug("Checking usage by model", { modelId, isPro });
-		const modelIsPro = await isProModel(modelId);
+		const modelIsPro = await this.isProModel(modelId);
 
 		if (modelIsPro) {
 			if (!isPro) {
@@ -375,7 +392,7 @@ export class UsageManager {
 
 	async incrementUsageByModel(modelId: string, isPro: boolean) {
 		logger.debug("Incrementing usage by model", { modelId, isPro });
-		const modelIsPro = await isProModel(modelId);
+		const modelIsPro = await this.isProModel(modelId);
 
 		if (modelIsPro) {
 			if (isPro) {
@@ -487,8 +504,8 @@ export class UsageManager {
 		};
 	}> {
 		logger.debug("Getting model usage multiplier", { modelId });
-		const usageMultiplier = await calculateUsageMultiplier(modelId);
-		const modelConfig = await getModelConfigByMatchingModel(modelId);
+		const usageMultiplier = await this.calculateUsageMultiplier(modelId);
+		const modelConfig = await this.getModelConfig(modelId);
 
 		logger.debug("Model config fetched", { modelId, modelConfig });
 

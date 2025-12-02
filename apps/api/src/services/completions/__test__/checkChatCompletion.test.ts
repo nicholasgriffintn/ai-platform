@@ -78,6 +78,7 @@ describe("handleCheckChatCompletion", () => {
 					getUserSettings: mockDatabase.getUserSettings,
 				},
 			} as any,
+			requestCache: new Map(),
 		};
 
 		vi.mocked(resolveServiceContext).mockReturnValue(mockServiceContext);

@@ -401,4 +401,5 @@ export type CoreChatOptions = ChatCompletionParameters & {
 	anonymousUser?: any;
 	current_step?: number;
 	max_steps?: number;
+	context?: ServiceContext;
 };

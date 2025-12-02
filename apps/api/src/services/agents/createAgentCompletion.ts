@@ -131,6 +131,7 @@ export async function createAgentCompletion({
 		request: requestParams,
 		user,
 		anonymousUser,
+		context: serviceContext,
 	});
 
 	return response;

@@ -5,6 +5,7 @@ import type { IEnv, IUser } from "~/types";
 import { Database } from "~/lib/database";
 import { RepositoryManager } from "~/repositories";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { createRequestCache, type RequestCache } from "~/utils/requestCache";
 
 export interface ServiceContextOptions {
 	env: IEnv;
@@ -18,6 +19,7 @@ export interface ServiceContext {
 	requestId?: string;
 	database: Database;
 	repositories: RepositoryManager;
+	requestCache: RequestCache;
 	requireUser(): IUser;
 	ensureDatabase(): D1Database;
 }
@@ -29,6 +31,7 @@ export const createServiceContext = ({
 }: ServiceContextOptions): ServiceContext => {
 	let _database: Database | null = null;
 	let _repositories: RepositoryManager | null = null;
+	const requestCache = createRequestCache();
 
 	const ensureDatabase = (): D1Database => {
 		if (!env.DB) {
@@ -56,6 +59,7 @@ export const createServiceContext = ({
 		env,
 		user,
 		requestId,
+		requestCache,
 		get database() {
 			if (!_database) _database = new Database(env);
 			return _database;

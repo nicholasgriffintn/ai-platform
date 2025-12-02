@@ -119,6 +119,7 @@ app.post(
 
 		const userContext = context.get("user");
 		const anonymousUserContext = context.get("anonymousUser");
+		const serviceContext = getServiceContext(context);
 
 		const user = {
 			// @ts-ignore
@@ -133,6 +134,7 @@ app.post(
 			request: body,
 			user,
 			anonymousUser: anonymousUserContext,
+			context: serviceContext,
 		});
 
 		if (response instanceof Response) {

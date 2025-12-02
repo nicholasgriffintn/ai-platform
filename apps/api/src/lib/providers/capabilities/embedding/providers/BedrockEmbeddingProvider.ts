@@ -208,9 +208,20 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 			);
 		}
 
+		let responseData: unknown = null;
+		if (typeof response.json === "function") {
+			try {
+				responseData = await response.json();
+			} catch (error) {
+				logger.warn("Failed to parse Bedrock response JSON", { error });
+			}
+		} else if (typeof response.text === "function") {
+			responseData = await response.text();
+		}
+
 		logger.debug("Bedrock Knowledge Base API response", {
 			status: response.status,
-			data: await response.json(),
+			data: responseData,
 		});
 
 		return {

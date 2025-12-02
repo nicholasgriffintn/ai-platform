@@ -117,10 +117,9 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 			};
 		} catch (error) {
 			logger.error("Failed to insert Vectorize embeddings", { error });
-			return {
-				status: "error",
-				error: error instanceof Error ? error.message : "Unknown error",
-			};
+			throw error instanceof Error
+				? error
+				: new AssistantError("Vector DB insert failed");
 		}
 	}
 
@@ -135,10 +134,9 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 			};
 		} catch (error) {
 			logger.error("Failed to delete Vectorize embeddings", { error, ids });
-			return {
-				status: "error",
-				error: error instanceof Error ? error.message : "Unknown error",
-			};
+			throw error instanceof Error
+				? error
+				: new AssistantError("Vector DB delete failed");
 		}
 	}
 

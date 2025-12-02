@@ -7,6 +7,7 @@ import type {
 	IEnv,
 	IUser,
 } from "~/types";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
@@ -20,8 +21,9 @@ export const handleCreateChatCompletions = async (req: {
 	user?: IUser;
 	anonymousUser?: AnonymousUser;
 	app_url?: string;
+	context?: ServiceContext;
 }): Promise<CreateChatCompletionsResponse | Response> => {
-	const { env, request, user, anonymousUser, app_url } = req;
+	const { env, request, user, anonymousUser, app_url, context } = req;
 	const isStreaming = !!request.stream;
 
 	if (!request.messages?.length) {
@@ -80,6 +82,7 @@ export const handleCreateChatCompletions = async (req: {
 		delegation_stack: request.delegation_stack,
 		max_delegation_depth: request.max_delegation_depth,
 		options: request.options || {},
+		context,
 	});
 
 	if ("validation" in result) {

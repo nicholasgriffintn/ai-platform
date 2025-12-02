@@ -11,6 +11,7 @@ describe("KVCache", () => {
 	let cache: KVCache;
 
 	beforeEach(() => {
+		KVCache.clearMemoryCache();
 		vi.clearAllMocks();
 		cache = new KVCache(mockKV as any, 3600);
 	});

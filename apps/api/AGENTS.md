@@ -184,6 +184,18 @@ export async function handleExampleService(
 - **Consistency**: Same pattern across all services
 - **Easy testing**: Mock one context object instead of multiple parameters
 
+### Request Cache & Memoization
+
+**When to use**: Expensive lookups (user settings, model configs, usage multipliers) that repeat within a single request.
+**Affects**: `ServiceContext`, `UsageManager`, guardrail validators, chat prep services.
+**Steps**:
+
+1. `ServiceContext` now exposes `requestCache` (a `Map<string, unknown>`). Use `const requestCache = context.requestCache;` in routes/services and thread it through to helpers that need memoization.
+2. Use `memoizeRequest(cache, key, factory)` from `~/utils/requestCache` to dedupe asynchronous work. The helper stores a Promise per key and automatically clears failed entries, so every caller can `await` the same work without extra KV/DB hits.
+3. When instantiating helpers outside of routes (e.g., `ConversationManager`, `UsageManager`, `GuardrailsValidator`), pass the cache down so usage tracking and validation code reuse the same results.
+4. Prefer descriptive cache keys such as `user-settings:${user.id}` or `usage:model:${modelId}` so multiple layers can intentionally share entries.
+5. Tests that mock `ServiceContext` must now include `requestCache: new Map()` (or a fake) to satisfy the contract.
+
 ### Cloudflare AI Gateway Cache Control
 
 - Chat completion requests now expose `options.cache_ttl_seconds` so clients can tune the `cf-aig-cache-ttl` header sent through the AI Gateway. Omit the option to use the default 24 hour cache, set an explicit number of seconds to customize, or pass `0` to bypass caching entirely.
