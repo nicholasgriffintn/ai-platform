@@ -6,6 +6,7 @@ export const TaskType = z.enum([
 	"replicate_polling",
 	"async_message_polling",
 	"training_quality_scoring",
+	"usage_update",
 ]);
 
 export const TaskStatus = z.enum([

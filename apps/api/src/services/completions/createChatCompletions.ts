@@ -1,3 +1,4 @@
+import type { ExecutionContext } from "@cloudflare/workers-types";
 import { processChatRequest } from "~/lib/chat/core";
 import { formatAssistantMessage } from "~/lib/chat/responses";
 import type {
@@ -22,8 +23,10 @@ export const handleCreateChatCompletions = async (req: {
 	anonymousUser?: AnonymousUser;
 	app_url?: string;
 	context?: ServiceContext;
+	executionCtx?: ExecutionContext;
 }): Promise<CreateChatCompletionsResponse | Response> => {
-	const { env, request, user, anonymousUser, app_url, context } = req;
+	const { env, request, user, anonymousUser, app_url, context, executionCtx } =
+		req;
 	const isStreaming = !!request.stream;
 
 	if (!request.messages?.length) {
@@ -83,6 +86,7 @@ export const handleCreateChatCompletions = async (req: {
 		max_delegation_depth: request.max_delegation_depth,
 		options: request.options || {},
 		context,
+		executionCtx,
 	});
 
 	if ("validation" in result) {

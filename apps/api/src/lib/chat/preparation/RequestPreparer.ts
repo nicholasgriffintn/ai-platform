@@ -98,7 +98,13 @@ export class RequestPreparer {
 			);
 		}
 
-		const { platform = "api", user, anonymousUser, mode = "normal" } = options;
+		const {
+			platform = "api",
+			user,
+			anonymousUser,
+			mode = "normal",
+			executionCtx,
+		} = options;
 		const requestCache = options.context?.requestCache;
 
 		const isProUser = user?.plan_id === "pro";
@@ -158,7 +164,7 @@ export class RequestPreparer {
 					platform,
 					mode,
 				)
-			: Promise.resolve();
+			: null;
 
 		const systemPromptTask = this.buildSystemPrompt(
 			options,
@@ -169,10 +175,22 @@ export class RequestPreparer {
 			memoriesEnabled,
 		);
 
-		const [_, systemPrompt] = await Promise.all([
-			storeMessagesTask,
-			systemPromptTask,
-		]);
+		if (storeMessagesTask) {
+			if (executionCtx) {
+				executionCtx.waitUntil(
+					storeMessagesTask.catch((error) => {
+						logger.error("Failed to store messages asynchronously", {
+							error,
+							completionId: options.completion_id,
+						});
+					}),
+				);
+			} else {
+				await storeMessagesTask;
+			}
+		}
+
+		const systemPrompt = await systemPromptTask;
 
 		const messages = this.buildFinalMessages(
 			sanitizedMessages!,

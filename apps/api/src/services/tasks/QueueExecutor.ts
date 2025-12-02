@@ -7,6 +7,7 @@ import { ResearchPollingHandler } from "./handlers/ResearchPollingHandler";
 import { ReplicatePollingHandler } from "./handlers/ReplicatePollingHandler";
 import { AsyncMessagePollingHandler } from "./handlers/AsyncMessagePollingHandler";
 import { TrainingQualityHandler } from "./handlers/TrainingQualityHandler";
+import { UsageUpdateHandler } from "./handlers/UsageUpdateHandler";
 import { TaskExecutor } from "./TaskExecutor";
 
 const logger = getLogger({ prefix: "services/tasks/queue-executor" });
@@ -24,6 +25,7 @@ export class QueueExecutor {
 			["replicate_polling", new ReplicatePollingHandler()],
 			["async_message_polling", new AsyncMessagePollingHandler()],
 			["training_quality_scoring", new TrainingQualityHandler()],
+			["usage_update", new UsageUpdateHandler()],
 		]);
 
 		const taskExecutor = new TaskExecutor(env, handlers);

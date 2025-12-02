@@ -11,7 +11,11 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import type { Database } from "./database";
 import { RepositoryManager } from "~/repositories";
-import { type UsageLimits, UsageManager } from "./usageManager";
+import {
+	type UsageLimits,
+	UsageManager,
+	type UsageUpdateTaskPayload,
+} from "./usageManager";
 import { safeParseJson } from "~/utils/json";
 import type { AsyncInvocationMetadata } from "./async/asyncInvocation";
 import { isAsyncInvocationPending } from "./async/asyncInvocation";
@@ -30,6 +34,7 @@ export class ConversationManager {
 	private usageManager?: UsageManager;
 	private env?: IEnv;
 	private requestCache?: Map<string, unknown>;
+	private taskService?: TaskService;
 
 	private constructor(
 		database: Database,
@@ -51,8 +56,31 @@ export class ConversationManager {
 		this.requestCache = requestCache;
 
 		const repositories = env ? new RepositoryManager(env) : null;
+
+		if (env?.DB) {
+			this.taskService = new TaskService(env, new TaskRepository(env));
+		}
+
+		const enqueueUsageTask = this.taskService
+			? async (payload: UsageUpdateTaskPayload) => {
+					await this.taskService!.enqueueTask({
+						task_type: "usage_update",
+						user_id:
+							"userId" in payload && typeof payload.userId === "number"
+								? payload.userId
+								: undefined,
+						task_data: payload,
+						priority: 2,
+					});
+				}
+			: undefined;
+
 		this.usageManager = repositories
-			? new UsageManager(repositories, user, anonymousUser, requestCache)
+			? new UsageManager(repositories, user, anonymousUser, {
+					requestCache,
+					enqueueUsageTask,
+					asyncUsageUpdates: true,
+				})
 			: undefined;
 	}
 
@@ -271,7 +299,7 @@ export class ConversationManager {
 			);
 		}
 
-		if (this.env?.DB && this.user?.id) {
+		if (this.taskService && this.user?.id) {
 			for (const message of newMessages) {
 				const asyncInvocation = (
 					message.data as Record<string, any> | undefined
@@ -279,10 +307,7 @@ export class ConversationManager {
 
 				if (asyncInvocation && isAsyncInvocationPending(asyncInvocation)) {
 					try {
-						const taskRepository = new TaskRepository(this.env);
-						const taskService = new TaskService(this.env, taskRepository);
-
-						await taskService.enqueueTask({
+						await this.taskService.enqueueTask({
 							task_type: "async_message_polling",
 							user_id: this.user.id,
 							task_data: {

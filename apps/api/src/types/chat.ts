@@ -1,3 +1,4 @@
+import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ServiceContext } from "../lib/context/serviceContext";
 import type {
 	IEnv,
@@ -402,4 +403,5 @@ export type CoreChatOptions = ChatCompletionParameters & {
 	current_step?: number;
 	max_steps?: number;
 	context?: ServiceContext;
+	executionCtx?: ExecutionContext;
 };

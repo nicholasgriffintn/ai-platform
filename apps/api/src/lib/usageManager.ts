@@ -8,6 +8,35 @@ import { memoizeRequest, type RequestCache } from "~/utils/requestCache";
 
 const logger = getLogger({ prefix: "lib/usageManager" });
 
+export type UsageUpdateTaskInput =
+	| {
+			action: "increment_usage";
+			userId: number;
+	  }
+	| {
+			action: "increment_pro_usage";
+			userId: number;
+			modelId?: string;
+			usageMultiplier: number;
+	  }
+	| {
+			action: "increment_anonymous_usage";
+			anonymousUserId: string;
+	  }
+	| {
+			action: "increment_function_usage";
+			userId: number;
+			functionType: "premium" | "normal";
+			isProUser: boolean;
+			costPerCall: number;
+	  };
+
+export type UsageUpdateTaskPayload = UsageUpdateTaskInput & {
+	queuedAt: number;
+};
+
+type UsageTaskEnqueuer = (payload: UsageUpdateTaskPayload) => Promise<void>;
+
 export interface UsageLimits {
 	daily: {
 		used: number;
@@ -24,17 +53,26 @@ export class UsageManager {
 	private user: User | null;
 	private anonymousUser: AnonymousUser | null;
 	private requestCache?: RequestCache;
+	private enqueueUsageTask?: UsageTaskEnqueuer;
+	private asyncUsageUpdates: boolean;
 
 	constructor(
 		repositories: RepositoryManager,
 		user: User | null,
 		anonymousUser: AnonymousUser | null,
-		requestCache?: RequestCache,
+		options?: {
+			requestCache?: RequestCache;
+			enqueueUsageTask?: UsageTaskEnqueuer;
+			asyncUsageUpdates?: boolean;
+		},
 	) {
 		this.repositories = repositories;
 		this.user = user;
 		this.anonymousUser = anonymousUser;
-		this.requestCache = requestCache;
+		this.requestCache = options?.requestCache;
+		this.enqueueUsageTask = options?.enqueueUsageTask;
+		this.asyncUsageUpdates =
+			options?.asyncUsageUpdates ?? Boolean(options?.enqueueUsageTask);
 	}
 
 	private memoize<T>(key: string, factory: () => Promise<T>): Promise<T> {
@@ -56,7 +94,7 @@ export class UsageManager {
 
 	private async calculateUsageMultiplier(modelId: string): Promise<number> {
 		return this.memoize(`usage:model-multiplier:${modelId}`, async () => {
-			logger.debug("Calculating usage multiplier", { modelId });
+			logger.debug("Calculating function usage multiplier", { modelId });
 			const config = await this.getModelConfig(modelId);
 			if (!config) {
 				logger.warn(
@@ -159,31 +197,27 @@ export class UsageManager {
 
 		logger.debug("Incrementing usage", { userId: this.user.id });
 
-		const messageCount = this.user.message_count ?? 0;
-		const dailyCount = this.user.daily_message_count ?? 0;
-
-		const now = new Date();
-		const lastReset = this.user.daily_reset
-			? new Date(this.user.daily_reset)
-			: null;
-		const isNewDay =
-			!lastReset ||
-			now.getUTCDate() !== lastReset.getUTCDate() ||
-			now.getUTCMonth() !== lastReset.getUTCMonth() ||
-			now.getUTCFullYear() !== lastReset.getUTCFullYear();
-		const currentDailyCount = isNewDay ? 0 : dailyCount;
-
-		const updates = {
-			message_count: messageCount + 1,
-			daily_message_count: currentDailyCount + 1,
-			last_active_at: now.toISOString(),
-			...(isNewDay && { daily_reset: now.toISOString() }),
-		};
+		if (
+			await this.tryEnqueueUsageTask({
+				action: "increment_usage",
+				userId: this.user.id,
+			})
+		) {
+			this.incrementLocalCounts(["message_count", "daily_message_count"]);
+			return;
+		}
 
 		try {
-			await this.repositories.users.updateUser(this.user.id, updates);
-		} catch (updateError) {
-			logger.error("Failed to update usage data", { error: updateError });
+			const updatedUser = await UsageManager.applyAuthenticatedUsageUpdate(
+				this.repositories,
+				this.user,
+			);
+			this.user = updatedUser;
+		} catch (error) {
+			logger.error("Failed to update usage data", {
+				error,
+				userId: this.user.id,
+			});
 			throw new AssistantError(
 				"Failed to update usage data",
 				ErrorType.INTERNAL_ERROR,
@@ -237,7 +271,17 @@ export class UsageManager {
 			anonymousUserId: this.anonymousUser.id,
 		});
 
-		await this.repositories.anonymousUsers.incrementDailyCount(
+		if (
+			await this.tryEnqueueUsageTask({
+				action: "increment_anonymous_usage",
+				anonymousUserId: this.anonymousUser.id,
+			})
+		) {
+			return;
+		}
+
+		await UsageManager.applyAnonymousUsageUpdate(
+			this.repositories,
 			this.anonymousUser.id,
 		);
 
@@ -254,7 +298,7 @@ export class UsageManager {
 			);
 		}
 
-		logger.debug("Calculating usage multiplier", { modelId });
+		logger.debug("Checking pro usage", { modelId });
 
 		const usageMultiplier = await this.calculateUsageMultiplier(modelId);
 
@@ -325,38 +369,25 @@ export class UsageManager {
 
 		const usageMultiplier = await this.calculateUsageMultiplier(modelId);
 
-		const count = this.user.daily_pro_message_count ?? 0;
-		const messageCount = this.user.message_count ?? 0;
-
-		const now = new Date();
-		const lastReset = this.user.daily_pro_reset
-			? new Date(this.user.daily_pro_reset)
-			: null;
-		const isNewDay =
-			!lastReset ||
-			now.getUTCDate() !== lastReset.getUTCDate() ||
-			now.getUTCMonth() !== lastReset.getUTCMonth() ||
-			now.getUTCFullYear() !== lastReset.getUTCFullYear();
-		const currentDailyCount = isNewDay ? 0 : count;
-
-		const updatedCount = currentDailyCount + usageMultiplier;
-
-		const updates = {
-			message_count: messageCount + 1,
-			daily_pro_message_count: updatedCount,
-			last_active_at: new Date().toISOString(),
-			...(isNewDay && { daily_pro_reset: now.toISOString() }),
-		};
-
-		try {
-			await this.repositories.users.updateUser(this.user.id, updates);
-		} catch (updateError) {
-			logger.error("Failed to increment pro usage", { error: updateError });
-			throw new AssistantError(
-				"Failed to increment pro usage",
-				ErrorType.INTERNAL_ERROR,
-			);
+		if (
+			await this.tryEnqueueUsageTask({
+				action: "increment_pro_usage",
+				userId: this.user.id,
+				modelId,
+				usageMultiplier,
+			})
+		) {
+			this.incrementLocalCounts(["message_count"]);
+			this.incrementLocalCounts(["daily_pro_message_count"], usageMultiplier);
+			return;
 		}
+
+		const updatedUser = await UsageManager.applyProUsageUpdate(
+			this.repositories,
+			this.user,
+			usageMultiplier,
+		);
+		this.user = updatedUser;
 
 		logger.debug("Pro usage incremented", { userId: this.user.id });
 	}
@@ -539,35 +570,167 @@ export class UsageManager {
 			functionType,
 		});
 
-		const dailyCount = this.user.daily_message_count ?? 0;
-		const dailyProCount = this.user.daily_pro_message_count ?? 0;
-
-		const updates: Partial<User> & Record<string, any> = {
-			daily_message_count: dailyCount + 1,
-		};
-
-		if (functionType === "premium") {
-			if (!isPro) {
-				throw new AssistantError(
-					"You are not a paid user. Please upgrade to a paid plan to use premium functions.",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+		if (
+			await this.tryEnqueueUsageTask({
+				action: "increment_function_usage",
+				userId: this.user.id,
+				functionType,
+				isProUser: isPro,
+				costPerCall,
+			})
+		) {
+			this.incrementLocalCounts(["daily_message_count"]);
+			if (functionType === "premium") {
+				this.incrementLocalCounts(["daily_pro_message_count"], costPerCall);
 			}
-			updates.daily_pro_message_count = dailyProCount + costPerCall;
+			return;
+		}
+
+		const updatedUser = await UsageManager.applyFunctionUsageUpdate(
+			this.repositories,
+			this.user,
+			{ functionType, isPro, costPerCall },
+		);
+		this.user = updatedUser;
+
+		logger.debug("Function usage incremented", { userId: this.user.id });
+	}
+
+	private incrementLocalCounts(fields: Array<keyof User>, increment = 1): void {
+		if (!this.user) return;
+		for (const field of fields) {
+			const current = Number(this.user[field] ?? 0);
+			(this.user as any)[field] = current + increment;
+		}
+		this.user.last_active_at = new Date().toISOString();
+	}
+
+	private async tryEnqueueUsageTask(
+		payload: UsageUpdateTaskInput,
+	): Promise<boolean> {
+		if (!this.shouldEnqueueUsage()) {
+			return false;
 		}
 
 		try {
-			await this.repositories.users.updateUser(this.user.id, updates);
-		} catch (updateError) {
-			logger.error("Failed to update function usage data", {
-				error: updateError,
-			});
+			const enrichedPayload: UsageUpdateTaskPayload = {
+				...payload,
+				queuedAt: Date.now(),
+			};
+
+			await this.enqueueUsageTask!(enrichedPayload);
+			return true;
+		} catch (error) {
+			logger.error("Failed to enqueue usage task", { error, payload });
+			return false;
+		}
+	}
+
+	private shouldEnqueueUsage(): boolean {
+		return Boolean(this.enqueueUsageTask && this.asyncUsageUpdates);
+	}
+
+	public static async applyAuthenticatedUsageUpdate(
+		repositories: RepositoryManager,
+		user: User,
+	): Promise<User> {
+		const now = new Date();
+		const lastReset = user.daily_reset ? new Date(user.daily_reset) : null;
+		const isNewDay =
+			!lastReset ||
+			now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
+			now.getUTCMonth() !== lastReset.getUTCMonth() ||
+			now.getUTCDate() !== lastReset.getUTCDate();
+
+		const currentDailyCount = isNewDay ? 0 : (user.daily_message_count ?? 0);
+		const updates: Partial<User> & Record<string, any> = {
+			message_count: (user.message_count ?? 0) + 1,
+			daily_message_count: currentDailyCount + 1,
+			last_active_at: now.toISOString(),
+			...(isNewDay && { daily_reset: now.toISOString() }),
+		};
+
+		await repositories.users.updateUser(user.id, updates);
+
+		return {
+			...user,
+			...updates,
+		};
+	}
+
+	public static async applyProUsageUpdate(
+		repositories: RepositoryManager,
+		user: User,
+		usageMultiplier: number,
+	): Promise<User> {
+		const now = new Date();
+		const lastReset = user.daily_pro_reset
+			? new Date(user.daily_pro_reset)
+			: null;
+		const isNewDay =
+			!lastReset ||
+			now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
+			now.getUTCMonth() !== lastReset.getUTCMonth() ||
+			now.getUTCDate() !== lastReset.getUTCDate();
+
+		const currentDailyCount = isNewDay
+			? 0
+			: (user.daily_pro_message_count ?? 0);
+
+		const updates: Partial<User> & Record<string, any> = {
+			message_count: (user.message_count ?? 0) + 1,
+			daily_pro_message_count: currentDailyCount + usageMultiplier,
+			last_active_at: now.toISOString(),
+			...(isNewDay && { daily_pro_reset: now.toISOString() }),
+		};
+
+		await repositories.users.updateUser(user.id, updates);
+
+		return {
+			...user,
+			...updates,
+		};
+	}
+
+	public static async applyAnonymousUsageUpdate(
+		repositories: RepositoryManager,
+		anonymousUserId: string,
+	): Promise<void> {
+		await repositories.anonymousUsers.incrementDailyCount(anonymousUserId);
+	}
+
+	public static async applyFunctionUsageUpdate(
+		repositories: RepositoryManager,
+		user: User,
+		options: {
+			functionType: "premium" | "normal";
+			isPro: boolean;
+			costPerCall: number;
+		},
+	): Promise<User> {
+		if (options.functionType === "premium" && !options.isPro) {
 			throw new AssistantError(
-				"Failed to update function usage data",
-				ErrorType.INTERNAL_ERROR,
+				"You are not a paid user. Please upgrade to a paid plan to use premium functions.",
+				ErrorType.AUTHENTICATION_ERROR,
 			);
 		}
 
-		logger.debug("Function usage incremented", { userId: this.user.id });
+		const updates: Partial<User> & Record<string, any> = {
+			daily_message_count: (user.daily_message_count ?? 0) + 1,
+			message_count: (user.message_count ?? 0) + 1,
+			last_active_at: new Date().toISOString(),
+		};
+
+		if (options.functionType === "premium") {
+			updates.daily_pro_message_count =
+				(user.daily_pro_message_count ?? 0) + options.costPerCall;
+		}
+
+		await repositories.users.updateUser(user.id, updates);
+
+		return {
+			...user,
+			...updates,
+		};
 	}
 }

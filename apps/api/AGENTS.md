@@ -196,6 +196,29 @@ export async function handleExampleService(
 4. Prefer descriptive cache keys such as `user-settings:${user.id}` or `usage:model:${modelId}` so multiple layers can intentionally share entries.
 5. Tests that mock `ServiceContext` must now include `requestCache: new Map()` (or a fake) to satisfy the contract.
 
+### Usage Updates via Task Queue
+
+**When to use**: Any time you adjust usage counters (`message_count`, `daily_*`, anonymous counts, premium function tallies). Never perform the writes directly inside a request hot path.
+**Affects**: `src/lib/usageManager.ts`, `src/lib/conversationManager.ts`, `src/services/tasks/handlers/UsageUpdateHandler.ts`, `packages/schemas/src/tasks.ts`, queue bindings.
+**Steps**:
+
+1. Instantiate `UsageManager` with `enqueueUsageTask` by creating a `TaskService` (see `ConversationManager`) and pass a closure that calls `taskService.enqueueTask({ task_type: "usage_update", task_data })`. The helper automatically memoizes limits via the per-request cache.
+2. `UsageManager` builds a `UsageUpdateTaskPayload` (see same file) and calls `tryEnqueueUsageTask`. If the task queue is unavailable it falls back to synchronous `apply*UsageUpdate` helpers, so you never need to call repositories directly from routes.
+3. The shared queue executor now wires `UsageUpdateHandler`, which loads the user/anonymous record via `RepositoryManager` and applies the appropriate static helper. Add new usage actions here if you introduce new counters.
+4. `TaskType` includes `"usage_update"` and is listed under `ALWAYS_ENABLED_SCHEDULES`, so no new env flag is required. Reuse the same handler instead of creating another queue or Worker binding.
+5. Tests that need to assert enqueueing can pass a fake `(payload) => Promise.resolve()` function via the UsageManager options; synchronous behavior stays available by omitting the callback.
+
+### Async Chat Storage & ExecutionContext
+
+**When to use**: Chat flows that hit Cloudflare queues/D1 (conversation storage, memory lookups) should defer non-blocking writes.
+**Affects**: `src/routes/chat.ts`, `src/services/completions/createChatCompletions.ts`, `src/lib/chat/preparation/RequestPreparer.ts`.
+**Steps**:
+
+1. Thread `context.executionCtx` from Hono routes into the service call (`handleCreateChatCompletions`) and onward to `processChatRequest`.
+2. `RequestPreparer.prepare` now grabs `options.executionCtx` and calls `executionCtx.waitUntil(...)` around `storeMessages(...)`. Errors are logged instead of surfacing to the user to keep latency low.
+3. When adding new background work in chat prep (e.g., new persistence or telemetry), follow the same pattern: run it in `waitUntil` if it does not affect routing, fall back to `await` only when `executionCtx` is missing (unit tests).
+4. Memory enrichment and other prompt-building steps remain synchronous because they affect the model response; document any deviations if you change that behavior.
+
 ### Cloudflare AI Gateway Cache Control
 
 - Chat completion requests now expose `options.cache_ttl_seconds` so clients can tune the `cf-aig-cache-ttl` header sent through the AI Gateway. Omit the option to use the default 24 hour cache, set an explicit number of seconds to customize, or pass `0` to bypass caching entirely.

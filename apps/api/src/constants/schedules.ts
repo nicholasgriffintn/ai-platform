@@ -14,4 +14,5 @@ export const ALWAYS_ENABLED_SCHEDULES: string[] = [
 	"research_polling",
 	"replicate_polling",
 	"async_message_polling",
+	"usage_update",
 ];

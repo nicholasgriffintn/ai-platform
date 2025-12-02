@@ -135,6 +135,7 @@ app.post(
 			user,
 			anonymousUser: anonymousUserContext,
 			context: serviceContext,
+			executionCtx: context.executionCtx,
 		});
 
 		if (response instanceof Response) {
