@@ -165,6 +165,25 @@ export class MemoryManager {
 		query: string,
 		opts?: { topK?: number; scoreThreshold?: number },
 	): Promise<Array<{ text: string; score: number }>> {
+		const normalizedQuery = query.trim();
+
+		if (normalizedQuery.length < 4) {
+			logger.debug("Skipping memory retrieval for short query", {
+				query: normalizedQuery,
+			});
+			return [];
+		}
+
+		const trivialWords = ["hi", "hey", "hello", "sup", "yo"];
+		const words = normalizedQuery.toLowerCase().split(/\s+/);
+
+		if (words.length <= 2 && words.every((w) => trivialWords.includes(w))) {
+			logger.debug("Skipping memory retrieval for trivial query", {
+				query: normalizedQuery,
+			});
+			return [];
+		}
+
 		const embedding = getEmbeddingProvider(this.env, this.user);
 		const topK = opts?.topK ?? 3;
 		const scoreThreshold = opts?.scoreThreshold ?? 0.3;

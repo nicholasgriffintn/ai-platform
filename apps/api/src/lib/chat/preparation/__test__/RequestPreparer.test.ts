@@ -561,6 +561,7 @@ describe("RequestPreparer", () => {
 				"test message",
 				"claude-3-sonnet",
 				{},
+				false,
 			);
 
 			expect(result).toBe("");
@@ -578,6 +579,7 @@ describe("RequestPreparer", () => {
 				"test message",
 				"claude-3-sonnet",
 				{},
+				false,
 			);
 
 			expect(result).toBe("Custom system prompt");
@@ -600,6 +602,7 @@ describe("RequestPreparer", () => {
 				"test message",
 				"claude-3-sonnet",
 				{},
+				false,
 			);
 
 			expect(result).toBe("System message from conversation");
@@ -612,12 +615,12 @@ describe("RequestPreparer", () => {
 				"test message",
 				"claude-3-sonnet",
 				{},
+				false,
 			);
 
 			expect(result).toBe("Generated system prompt");
 		});
 	});
-
 	describe("enhanceSystemPromptWithMemory", () => {
 		it("should enhance prompt with memories for pro user", async () => {
 			mockMemoryManager.retrieveMemories.mockResolvedValue([
@@ -629,7 +632,7 @@ describe("RequestPreparer", () => {
 				"Base prompt",
 				"test message",
 				{ id: "user-123", plan_id: "pro" },
-				{ memories_save_enabled: true },
+				true,
 			);
 
 			expect(result).toContain("Base prompt");
@@ -645,7 +648,7 @@ describe("RequestPreparer", () => {
 				"Base prompt",
 				"test message",
 				{ id: "user-123", plan_id: "free" },
-				{ memories_save_enabled: true },
+				true,
 			);
 
 			expect(result).toBe("Base prompt");
@@ -657,7 +660,7 @@ describe("RequestPreparer", () => {
 				"Base prompt",
 				"test message",
 				{ id: "user-123", plan_id: "pro" },
-				{ memories_save_enabled: false },
+				false,
 			);
 
 			expect(result).toBe("Base prompt");
@@ -673,7 +676,7 @@ describe("RequestPreparer", () => {
 				"Base prompt",
 				"test message",
 				{ id: "user-123", plan_id: "pro" },
-				{ memories_save_enabled: true },
+				true,
 			);
 
 			expect(result).toBe("Base prompt");
@@ -688,7 +691,7 @@ describe("RequestPreparer", () => {
 				"",
 				"test message",
 				{ id: "user-123", plan_id: "pro" },
-				{ memories_save_enabled: true },
+				true,
 			);
 
 			expect(result).toContain(
@@ -696,6 +699,22 @@ describe("RequestPreparer", () => {
 			);
 			expect(result).toContain("- User prefers short responses");
 			expect(result).not.toContain("Base prompt");
+		});
+
+		it("should skip memories when flag disabled", async () => {
+			mockMemoryManager.retrieveMemories.mockResolvedValue([
+				{ text: "Should not be used" },
+			]);
+
+			const result = await (preparer as any).enhanceSystemPromptWithMemory(
+				"Base prompt",
+				"test message",
+				{ id: "user-123", plan_id: "pro" },
+				false,
+			);
+
+			expect(result).toBe("Base prompt");
+			expect(mockMemoryManager.retrieveMemories).not.toHaveBeenCalled();
 		});
 	});
 

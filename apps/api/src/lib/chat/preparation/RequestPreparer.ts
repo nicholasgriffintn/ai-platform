@@ -123,6 +123,12 @@ export class RequestPreparer {
 			finalMessagePromise,
 		]);
 
+		const memoriesEnabled = this.shouldUseMemories(
+			user,
+			userSettings,
+			options.store,
+		);
+
 		const primaryModel = primaryModelConfig.matchingModel;
 		const primaryProvider = primaryModelConfig.provider;
 
@@ -136,15 +142,18 @@ export class RequestPreparer {
 			env: this.env,
 		});
 
-		const storeMessagesTask = this.storeMessages(
-			options,
-			conversationManager,
-			lastMessage!,
-			finalMessage,
-			primaryModel,
-			platform,
-			mode,
-		);
+		const shouldStoreMessages = options.store !== false;
+		const storeMessagesTask = shouldStoreMessages
+			? this.storeMessages(
+					options,
+					conversationManager,
+					lastMessage!,
+					finalMessage,
+					primaryModel,
+					platform,
+					mode,
+				)
+			: Promise.resolve();
 
 		const systemPromptTask = this.buildSystemPrompt(
 			options,
@@ -152,6 +161,7 @@ export class RequestPreparer {
 			finalMessage,
 			primaryModel,
 			userSettings,
+			memoriesEnabled,
 		);
 
 		const [_, systemPrompt] = await Promise.all([
@@ -335,6 +345,7 @@ export class RequestPreparer {
 		finalMessage: string,
 		primaryModel: string,
 		userSettings: any,
+		memoriesEnabled: boolean,
 	): Promise<string> {
 		const {
 			system_prompt,
@@ -356,7 +367,7 @@ export class RequestPreparer {
 				system_prompt,
 				finalMessage,
 				user,
-				userSettings,
+				memoriesEnabled,
 			);
 		}
 
@@ -372,7 +383,7 @@ export class RequestPreparer {
 				systemPromptFromMessages.content,
 				finalMessage,
 				user,
-				userSettings,
+				memoriesEnabled,
 			);
 		}
 
@@ -395,7 +406,7 @@ export class RequestPreparer {
 			generatedPrompt,
 			finalMessage,
 			user,
-			userSettings,
+			memoriesEnabled,
 		);
 	}
 
@@ -403,14 +414,11 @@ export class RequestPreparer {
 		systemPrompt: string,
 		finalMessage: string,
 		user: any,
-		userSettings: any,
+		memoriesEnabled: boolean,
 	): Promise<string> {
 		const isProUser = user?.plan_id === "pro";
-		const memoriesEnabled =
-			userSettings?.memories_save_enabled ||
-			userSettings?.memories_chat_history_enabled;
 
-		if (isProUser && memoriesEnabled && finalMessage && user?.id) {
+		if (memoriesEnabled && isProUser && finalMessage && user?.id) {
 			try {
 				let memoryContext = "";
 
@@ -447,6 +455,25 @@ export class RequestPreparer {
 		}
 
 		return systemPrompt;
+	}
+
+	private shouldUseMemories(
+		user: any,
+		userSettings: any,
+		store?: boolean,
+	): boolean {
+		if (store === false) {
+			return false;
+		}
+
+		if (!user?.id || user?.plan_id !== "pro") {
+			return false;
+		}
+
+		return Boolean(
+			userSettings?.memories_save_enabled ||
+				userSettings?.memories_chat_history_enabled,
+		);
 	}
 
 	private buildFinalMessages(
