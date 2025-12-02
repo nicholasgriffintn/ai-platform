@@ -59,6 +59,7 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
 		source: "INPUT" | "OUTPUT",
 	): Promise<GuardrailResult> {
 		try {
+			logger.debug("Validating content with Bedrock Guardrails");
 			let accessKeyId = this.defaultAccessKeyId;
 			let secretAccessKey = this.defaultSecretAccessKey;
 
@@ -169,6 +170,11 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
 					);
 				}
 			}
+
+			logger.debug("Bedrock Guardrails validation result", {
+				violations,
+				data,
+			});
 
 			return {
 				provider: "bedrock",

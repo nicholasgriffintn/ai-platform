@@ -189,7 +189,6 @@ export class ConversationManager {
 		}
 
 		if (!this.store) {
-			logger.debug("No store found, returning new messages");
 			return newMessages;
 		}
 
@@ -206,8 +205,6 @@ export class ConversationManager {
 			);
 
 		if (!conversation) {
-			logger.debug("No conversation found, creating new conversation");
-
 			let parentConversationId: string | undefined;
 			let parentMessageId: string | undefined;
 

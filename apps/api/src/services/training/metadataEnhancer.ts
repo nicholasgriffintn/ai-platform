@@ -74,14 +74,6 @@ export class TrainingMetadataEnhancer {
 				metadata.userSatisfactionSignals = additionalContext.userBehavior;
 			}
 
-			logger.debug("Enhanced metadata generated", {
-				taskCategory: metadata.taskCategory,
-				difficultyLevel: metadata.difficultyLevel,
-				tokens:
-					metadata.userPromptTokens + (metadata.assistantResponseTokens || 0),
-				conversationTurn: metadata.conversationTurn,
-			});
-
 			return metadata;
 		} catch (error) {
 			logger.error("Failed to enhance metadata", {

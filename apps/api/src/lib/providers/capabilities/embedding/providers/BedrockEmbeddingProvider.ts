@@ -134,6 +134,9 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 		embeddings: EmbeddingVector[],
 		_options: RagOptions = {},
 	): Promise<EmbeddingMutationResult> {
+		logger.debug("Inserting embeddings into Bedrock Knowledge Base", {
+			count: embeddings.length,
+		});
 		const url = `${this.agentEndpoint}/knowledgebases/${this.knowledgeBaseId}/datasources/${this.knowledgeBaseCustomDataSourceId}/documents`;
 
 		const body = JSON.stringify({
@@ -204,6 +207,11 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 				response.status,
 			);
 		}
+
+		logger.debug("Bedrock Knowledge Base API response", {
+			status: response.status,
+			data: await response.json(),
+		});
 
 		return {
 			status: "success",

@@ -139,7 +139,7 @@ export function handleAIServiceError(error: AssistantError): Response {
 				{ status: 500 },
 			);
 		case ErrorType.RATE_LIMIT_ERROR:
-			logger.debug("Rate limit exceeded", logContext);
+			logger.error("Rate limit exceeded", logContext);
 
 			return Response.json(
 				{
@@ -151,8 +151,6 @@ export function handleAIServiceError(error: AssistantError): Response {
 			);
 		case ErrorType.AUTHENTICATION_ERROR:
 		case ErrorType.UNAUTHORIZED:
-			logger.debug("Authentication error", logContext);
-
 			return Response.json(
 				{
 					error: error.getUserMessage(),
@@ -162,8 +160,6 @@ export function handleAIServiceError(error: AssistantError): Response {
 			);
 		case ErrorType.FORBIDDEN:
 		case ErrorType.AUTHORISATION_ERROR:
-			logger.debug("Authorization error", logContext);
-
 			return Response.json(
 				{
 					error: error.getUserMessage(),
@@ -172,8 +168,6 @@ export function handleAIServiceError(error: AssistantError): Response {
 				{ status: 403 },
 			);
 		case ErrorType.PARAMS_ERROR:
-			logger.debug("Parameter validation error", logContext);
-
 			return Response.json(
 				{
 					error: error.getUserMessage(),
@@ -184,8 +178,6 @@ export function handleAIServiceError(error: AssistantError): Response {
 			);
 		case ErrorType.NOT_FOUND:
 		case ErrorType.USER_NOT_FOUND:
-			logger.info("Resource not found", logContext);
-
 			return Response.json(
 				{
 					error: error.getUserMessage(),
@@ -194,8 +186,6 @@ export function handleAIServiceError(error: AssistantError): Response {
 				{ status: 404 },
 			);
 		case ErrorType.CONFLICT_ERROR:
-			logger.debug("Resource conflict", logContext);
-
 			return Response.json(
 				{
 					error: error.getUserMessage(),
@@ -204,8 +194,6 @@ export function handleAIServiceError(error: AssistantError): Response {
 				{ status: 409 },
 			);
 		case ErrorType.CONTEXT_WINDOW_EXCEEDED:
-			logger.debug("Context window exceeded", logContext);
-
 			return Response.json(
 				{
 					error: "Request too large. Please reduce the input size.",
@@ -214,8 +202,6 @@ export function handleAIServiceError(error: AssistantError): Response {
 				{ status: 413 },
 			);
 		case ErrorType.USAGE_LIMIT_ERROR:
-			logger.debug("Usage limit exceeded", logContext);
-
 			return Response.json(
 				{
 					error: error.getUserMessage(),

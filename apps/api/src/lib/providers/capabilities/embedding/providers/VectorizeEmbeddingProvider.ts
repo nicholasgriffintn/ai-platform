@@ -49,6 +49,8 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 				);
 			}
 
+			logger.debug("Generating embeddings with Vectorize", { type, id });
+
 			const response = await this.ai.run(
 				"@cf/baai/bge-large-en-v1.5",
 				{ text: [content] },
@@ -69,11 +71,18 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 			const mergedMetadata = { ...metadata, type };
 
 			// @ts-ignore
-			return response.data.map((vector: number[]) => ({
+			const data = response.data.map((vector: number[]) => ({
 				id,
 				values: vector,
 				metadata: mergedMetadata,
 			}));
+
+			logger.debug("Vectorize embedding generation result", {
+				id,
+				values: data[0].values,
+			});
+
+			return data;
 		} catch (error) {
 			logger.error("Vectorize Embedding API error:", { error });
 			throw error;
@@ -84,32 +93,59 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 		embeddings: EmbeddingVector[],
 		options: RagOptions = {},
 	): Promise<EmbeddingMutationResult> {
-		await this.vector_db.upsert(
-			embeddings.map((embedding) => ({
-				id: embedding.id,
-				values: embedding.values,
-				metadata: embedding.metadata,
-				namespace: options.namespace || "assistant-embeddings",
-			})),
-		);
-		return {
-			status: "success",
-			error: null,
-		};
+		try {
+			logger.debug("Inserting embeddings into Vectorize Vector DB", {
+				count: embeddings.length,
+			});
+
+			await this.vector_db.upsert(
+				embeddings.map((embedding) => ({
+					id: embedding.id,
+					values: embedding.values,
+					metadata: embedding.metadata,
+					namespace: options.namespace || "assistant-embeddings",
+				})),
+			);
+
+			logger.debug("Vectorize Vector DB upsert response", {
+				status: "success",
+			});
+
+			return {
+				status: "success",
+				error: null,
+			};
+		} catch (error) {
+			logger.error("Failed to insert Vectorize embeddings", { error });
+			return {
+				status: "error",
+				error: error instanceof Error ? error.message : "Unknown error",
+			};
+		}
 	}
 
 	async delete(ids: string[]) {
-		await this.vector_db.deleteByIds(ids);
+		try {
+			logger.debug("Deleting embeddings from Vectorize Vector DB", { ids });
+			await this.vector_db.deleteByIds(ids);
 
-		return {
-			status: "success",
-			error: null,
-		};
+			return {
+				status: "success",
+				error: null,
+			};
+		} catch (error) {
+			logger.error("Failed to delete Vectorize embeddings", { error, ids });
+			return {
+				status: "error",
+				error: error instanceof Error ? error.message : "Unknown error",
+			};
+		}
 	}
 
 	async getQuery(
 		query: string,
 	): Promise<{ data: any; status: { success: boolean } }> {
+		logger.debug("Generating query embedding with Vectorize", { query });
 		const response = await this.ai.run(
 			"@cf/baai/bge-large-en-v1.5",
 			{ text: [query] },
@@ -122,6 +158,13 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 			},
 		);
 
+		// @ts-ignore
+		if (!response.data) {
+			throw new AssistantError("No data returned from Vectorize API");
+		}
+
+		logger.debug("Vectorize query embedding result", { query });
+
 		return {
 			// @ts-ignore
 			data: response.data,
@@ -133,12 +176,15 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 		queryVector: VectorFloatArray,
 		options: RagOptions = {},
 	): Promise<EmbeddingQueryResult> {
+		logger.debug("Querying Vectorize Vector DB", { queryVector });
 		const matches = await this.vector_db.query(queryVector, {
 			topK: options.topK ?? 15,
 			returnValues: options.returnValues ?? false,
 			returnMetadata: options.returnMetadata ?? "none",
 			namespace: options.namespace || "assistant-embeddings",
 		});
+
+		logger.debug("Vectorize Vector DB query response", { matches });
 
 		return {
 			matches:
@@ -152,6 +198,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 	}
 
 	async searchSimilar(query: string, options: RagOptions = {}) {
+		logger.debug("Searching for similar embeddings in Vectorize", { query });
 		const queryVector = await this.getQuery(query);
 
 		if (!queryVector.data) {
@@ -194,6 +241,8 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 				};
 			}),
 		);
+
+		logger.debug("Vectorize search similar embeddings result", { query });
 
 		return matchesWithContent;
 	}

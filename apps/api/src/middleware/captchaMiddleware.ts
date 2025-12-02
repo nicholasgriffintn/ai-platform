@@ -15,12 +15,10 @@ export async function validateCaptcha(c: Context, next: Next) {
 	const anonymousUser = c.get("anonymousUser");
 
 	if (user) {
-		logger.debug("Skipping captcha verification for authenticated user");
 		return next();
 	}
 
 	if (!c.env.REQUIRE_CAPTCHA_SECRET_KEY) {
-		logger.debug("Captcha verification is disabled");
 		return next();
 	}
 
@@ -29,13 +27,15 @@ export async function validateCaptcha(c: Context, next: Next) {
 		return next();
 	}
 
-	const userIP =
-		c.req.header("cf-connecting-ip") ||
-		c.req.header("x-forwarded-for") ||
-		"unknown";
-	const userAgent = c.req.header("user-agent") || "unknown";
-
 	try {
+		logger.debug("Validating captcha for anonymous user");
+
+		const userIP =
+			c.req.header("cf-connecting-ip") ||
+			c.req.header("x-forwarded-for") ||
+			"unknown";
+		const userAgent = c.req.header("user-agent") || "unknown";
+
 		const repositories = RepositoryManager.getInstance(c.env);
 
 		if (anonymousUser && anonymousUser.captcha_verified === 1) {

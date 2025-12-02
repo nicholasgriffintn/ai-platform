@@ -49,6 +49,8 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 			);
 		}
 
+		logger.debug("Fetching embedding from Mistral", { model });
+
 		const mistralModelConfig = await getModelConfig(model);
 		const mistralProvider = getChatProvider(mistralModelConfig.provider, {
 			env: this.env,
@@ -97,6 +99,10 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 			);
 		}
 
+		logger.debug("Mistral embedding generation result", {
+			values: mistralResponse.data[0].embedding,
+		});
+
 		return mistralResponse;
 	}
 
@@ -113,6 +119,8 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 			);
 		}
 
+		logger.debug("Generating embeddings with Mistral", { type, id });
+
 		const mistralModelName =
 			type === "code" ? "codestral-embed" : "mistral-embed";
 		const mistralResponse = await this.fetchEmbedding(
@@ -125,6 +133,11 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 			type,
 			source: "mistral",
 		};
+
+		logger.debug("Mistral embedding generation result", {
+			id,
+			values: mistralResponse.data[0].embedding,
+		});
 
 		return [
 			{
@@ -140,6 +153,10 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 		options: RagOptions = {},
 	): Promise<EmbeddingMutationResult> {
 		try {
+			logger.debug("Inserting embeddings into Mistral Vector DB", {
+				count: embeddings.length,
+			});
+
 			await this.vector_db.upsert(
 				embeddings.map((embedding) => ({
 					id: embedding.id,
@@ -148,6 +165,10 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 					namespace: options.namespace || "assistant-embeddings",
 				})),
 			);
+
+			logger.debug("Mistral Vector DB upsert response", {
+				status: "success",
+			});
 
 			return {
 				status: "success",
@@ -164,7 +185,11 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 
 	async delete(ids: string[]): Promise<EmbeddingMutationResult> {
 		try {
+			logger.debug("Deleting embeddings from Mistral Vector DB", { ids });
+
 			await this.vector_db.deleteByIds(ids);
+
+			logger.debug("Mistral Vector DB delete response", { status: "success" });
 
 			return {
 				status: "success",
@@ -202,6 +227,8 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 		queryVector: VectorFloatArray,
 		options: RagOptions = {},
 	): Promise<EmbeddingQueryResult> {
+		logger.debug("Querying Mistral Vector DB", { queryVector, options });
+
 		const matches = await this.vector_db.query(queryVector, {
 			topK: options.topK ?? 15,
 			returnValues: options.returnValues ?? false,
@@ -209,6 +236,8 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 			namespace: options.namespace || "assistant-embeddings",
 			filter: options.filter,
 		});
+
+		logger.debug("Mistral Vector DB query response", { matches });
 
 		return {
 			matches:
@@ -240,6 +269,8 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 			);
 		}
 
+		logger.debug("Generating embeddings with Mistral");
+
 		const mistralModelName = "mistral-embed";
 		const mistralResponse = await this.fetchEmbedding(query, mistralModelName);
 
@@ -258,7 +289,7 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 			throw new AssistantError("No matches found", ErrorType.NOT_FOUND);
 		}
 
-		return matches.matches
+		const data = matches.matches
 			.filter((match) => match.score >= (options.scoreThreshold || 0))
 			.slice(0, options.topK || 3)
 			.map((match) => ({
@@ -268,5 +299,9 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 				score: match.score || 0,
 				type: (match.metadata?.type as string) || options.type || "unknown",
 			}));
+
+		logger.debug("Mistral Vector DB query result", { data });
+
+		return data;
 	}
 }

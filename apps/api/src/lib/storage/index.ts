@@ -1,11 +1,15 @@
 import type { R2Bucket } from "@cloudflare/workers-types";
 
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "lib/storage" });
 
 export class StorageService {
 	constructor(private readonly bucket: R2Bucket) {}
 
 	async getObject(key: string): Promise<string | null> {
+		logger.debug("Getting object from storage", { key });
 		const normalizedKey = key.startsWith("/") ? key.slice(1) : key;
 		const object = await this.bucket.get(normalizedKey);
 		if (!object) {
@@ -20,7 +24,12 @@ export class StorageService {
 		data: string | ArrayBuffer | Uint8Array,
 		options?: Record<string, string | number>,
 	): Promise<string> {
+		logger.debug("Uploading object to storage", { key });
+
 		await this.bucket.put(key, data, options);
+
+		logger.debug("Object uploaded successfully", { key });
+
 		return key;
 	}
 
@@ -33,6 +42,8 @@ export class StorageService {
 		}
 
 		try {
+			logger.debug("Downloading file from URL", { url });
+
 			const response = await fetch(url);
 			if (!response.ok) {
 				throw new AssistantError(
@@ -49,6 +60,8 @@ export class StorageService {
 					ErrorType.PARAMS_ERROR,
 				);
 			}
+
+			logger.debug("File downloaded successfully", { url });
 
 			return blob;
 		} catch (error) {

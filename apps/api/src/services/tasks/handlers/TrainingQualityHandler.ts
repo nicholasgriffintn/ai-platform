@@ -59,9 +59,6 @@ export class TrainingQualityHandler implements TaskHandler {
 
 					if (qualityScore < 3) {
 						await trainingRepository.updateIncludeInTraining(example.id, false);
-						logger.debug(
-							`Excluded low quality example ${example.id} (score: ${qualityScore})`,
-						);
 					}
 				} catch (error) {
 					logger.error(`Failed to score example ${example.id}:`, error);

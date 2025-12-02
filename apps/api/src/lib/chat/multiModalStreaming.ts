@@ -40,12 +40,7 @@ export function createMultiModelStream(
 	},
 	conversationManager: ConversationManager,
 ): ReadableStream {
-	logger.debug("Starting multi-model stream", {
-		completion_id: options.completion_id,
-		models: parameters.models.map((m: ModelConfigInfo) => m.model),
-	});
 	const { models, ...baseParams } = parameters;
-	logger.debug("Primary model request", { model: models[0].model });
 	const primaryParams = {
 		...baseParams,
 		model: models[0].model,

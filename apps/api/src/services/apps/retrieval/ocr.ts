@@ -77,8 +77,6 @@ export const performOcr = async (
 			user: req.user,
 		});
 
-		logger.debug("Received OCR response with pages:", response.pages?.length);
-
 		const storageService = new StorageService(req.env.ASSETS_BUCKET);
 
 		if (params.output_format === "json") {

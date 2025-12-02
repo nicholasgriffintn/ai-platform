@@ -85,14 +85,6 @@ export async function createStreamWithPostProcessing(
 	},
 	conversationManager: ConversationManager,
 ): Promise<ReadableStream> {
-	logger.debug("Starting stream post-processing", {
-		completion_id: options.completion_id,
-		model: options.model,
-		platform: options.platform,
-		userId: options.user?.id,
-		mode: options.mode,
-	});
-
 	const {
 		env,
 		completion_id,
@@ -371,9 +363,6 @@ export async function createStreamWithPostProcessing(
 								data,
 								currentEventType,
 							);
-							if (toolCallData) {
-								logger.debug("Detected tool call delta", { toolCallData });
-							}
 
 							if (toolCallData) {
 								if (toolCallData.format === "openai") {
@@ -554,9 +543,6 @@ export async function createStreamWithPostProcessing(
 				async function handlePostProcessing() {
 					try {
 						if (postProcessingDone) {
-							logger.debug("Post-processing already done, skipping", {
-								completion_id,
-							});
 							return;
 						}
 
@@ -636,8 +622,6 @@ export async function createStreamWithPostProcessing(
 									outputValidation,
 									violations: guardrailViolations,
 								});
-							} else {
-								logger.debug("Guardrails passed", { completion_id });
 							}
 						}
 
@@ -688,12 +672,6 @@ export async function createStreamWithPostProcessing(
 							platform: assistantMessage.platform,
 							usage: assistantMessage.usage,
 							tool_calls: assistantMessage.tool_calls,
-						});
-
-						logger.debug("Stored assistant message", {
-							completion_id,
-							messageId: assistantMessage.id,
-							finish_reason: assistantMessage.finish_reason,
 						});
 
 						emitEvent(controller, "message_delta", {

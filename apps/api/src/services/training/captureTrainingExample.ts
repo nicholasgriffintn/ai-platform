@@ -52,20 +52,21 @@ export async function captureTrainingExample(
 				await context.repositories.userSettings.getUserSettings(userId);
 
 			if (!userSettings?.tracking_enabled) {
-				logger.debug(
-					"Skipping training example capture - user has opted out of tracking",
-					{ userId },
-				);
 				return;
 			}
 		}
 
 		if (!assistantResponse || assistantResponse.trim().length === 0) {
-			logger.debug(
-				"Skipping training example capture - empty assistant response",
-			);
 			return;
 		}
+
+		logger.debug("Capturing training example", {
+			source,
+			appName,
+			userId: userId || "anonymous",
+			promptLength: userPrompt.length,
+			responseLength: assistantResponse.length,
+		});
 
 		let enhancedMetadata: EnhancedMetadata = {};
 		if (!skipEnhancement) {
@@ -107,7 +108,7 @@ export async function captureTrainingExample(
 
 		await context.repositories.trainingExamples.create(trainingData);
 
-		logger.info("Training example captured", {
+		logger.debug("Training example captured", {
 			source,
 			appName,
 			userId: userId || "anonymous",

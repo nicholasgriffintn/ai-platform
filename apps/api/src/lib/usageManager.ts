@@ -14,6 +14,7 @@ async function isProModel(modelId: string): Promise<boolean> {
 }
 
 async function calculateUsageMultiplier(modelId: string): Promise<number> {
+	logger.debug("Calculating usage multiplier", { modelId });
 	const config = await getModelConfigByMatchingModel(modelId);
 	if (!config) {
 		logger.warn(
@@ -36,7 +37,7 @@ async function calculateUsageMultiplier(modelId: string): Promise<number> {
 	const avgMultiplier = (inputMultiplier + outputMultiplier) / 2;
 	const finalMultiplier = Math.ceil(avgMultiplier);
 
-	logger.info(`Model: ${modelId} calculation:`, {
+	logger.debug(`Model: ${modelId} calculation:`, {
 		inputCost: config.costPer1kInputTokens,
 		outputCost: config.costPer1kOutputTokens,
 		inputMultiplier,
@@ -82,6 +83,8 @@ export class UsageManager {
 			);
 		}
 
+		logger.debug("Checking usage limits", { userId: this.user.id });
+
 		const dailyLimit = USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT;
 
 		const now = new Date();
@@ -124,6 +127,8 @@ export class UsageManager {
 			);
 		}
 
+		logger.debug("Usage limits checked", { userId: this.user.id });
+
 		return { dailyCount, dailyLimit };
 	}
 
@@ -134,6 +139,8 @@ export class UsageManager {
 				ErrorType.PARAMS_ERROR,
 			);
 		}
+
+		logger.debug("Incrementing usage", { userId: this.user.id });
 
 		const messageCount = this.user.message_count ?? 0;
 		const dailyCount = this.user.daily_message_count ?? 0;
@@ -165,6 +172,8 @@ export class UsageManager {
 				ErrorType.INTERNAL_ERROR,
 			);
 		}
+
+		logger.debug("Usage incremented", { userId: this.user.id });
 	}
 
 	async checkAnonymousUsage() {
@@ -174,6 +183,10 @@ export class UsageManager {
 				ErrorType.PARAMS_ERROR,
 			);
 		}
+
+		logger.debug("Checking anonymous usage limits", {
+			anonymousUserId: this.anonymousUser.id,
+		});
 
 		const dailyLimit = USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT;
 		const { count: dailyCount } =
@@ -188,6 +201,10 @@ export class UsageManager {
 			);
 		}
 
+		logger.debug("Anonymous usage limits checked", {
+			anonymousUserId: this.anonymousUser.id,
+		});
+
 		return { dailyCount, dailyLimit };
 	}
 
@@ -199,9 +216,17 @@ export class UsageManager {
 			);
 		}
 
+		logger.debug("Incrementing anonymous usage", {
+			anonymousUserId: this.anonymousUser.id,
+		});
+
 		await this.repositories.anonymousUsers.incrementDailyCount(
 			this.anonymousUser.id,
 		);
+
+		logger.debug("Anonymous usage incremented", {
+			anonymousUserId: this.anonymousUser.id,
+		});
 	}
 
 	async checkProUsage(modelId: string) {
@@ -211,6 +236,8 @@ export class UsageManager {
 				ErrorType.PARAMS_ERROR,
 			);
 		}
+
+		logger.debug("Calculating usage multiplier", { modelId });
 
 		const usageMultiplier = await calculateUsageMultiplier(modelId);
 
@@ -256,6 +283,8 @@ export class UsageManager {
 
 		const modelConfig = await getModelConfigByMatchingModel(modelId);
 
+		logger.debug("Pro usage checked", { userId: this.user.id });
+
 		return {
 			dailyProCount,
 			limit: USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS,
@@ -274,6 +303,8 @@ export class UsageManager {
 				ErrorType.PARAMS_ERROR,
 			);
 		}
+
+		logger.debug("Incrementing pro usage", { userId: this.user.id });
 
 		const usageMultiplier = await calculateUsageMultiplier(modelId);
 
@@ -309,9 +340,12 @@ export class UsageManager {
 				ErrorType.INTERNAL_ERROR,
 			);
 		}
+
+		logger.debug("Pro usage incremented", { userId: this.user.id });
 	}
 
 	async checkUsageByModel(modelId: string, isPro: boolean) {
+		logger.debug("Checking usage by model", { modelId, isPro });
 		const modelIsPro = await isProModel(modelId);
 
 		if (modelIsPro) {
@@ -340,6 +374,7 @@ export class UsageManager {
 	}
 
 	async incrementUsageByModel(modelId: string, isPro: boolean) {
+		logger.debug("Incrementing usage by model", { modelId, isPro });
 		const modelIsPro = await isProModel(modelId);
 
 		if (modelIsPro) {
@@ -368,6 +403,7 @@ export class UsageManager {
 	 * @returns UsageLimits object with information about regular and pro limits
 	 */
 	async getUsageLimits(): Promise<UsageLimits> {
+		logger.debug("Fetching usage limits");
 		if (!this.user?.id) {
 			if (this.anonymousUser?.id) {
 				const { count: dailyCount } =
@@ -433,6 +469,8 @@ export class UsageManager {
 			};
 		}
 
+		logger.debug("Usage limits fetched", { userId: this.user.id });
+
 		return usageLimits;
 	}
 
@@ -448,8 +486,11 @@ export class UsageManager {
 			outputCost: number;
 		};
 	}> {
+		logger.debug("Getting model usage multiplier", { modelId });
 		const usageMultiplier = await calculateUsageMultiplier(modelId);
 		const modelConfig = await getModelConfigByMatchingModel(modelId);
+
+		logger.debug("Model config fetched", { modelId, modelConfig });
 
 		return {
 			multiplier: usageMultiplier,
@@ -475,6 +516,11 @@ export class UsageManager {
 				ErrorType.PARAMS_ERROR,
 			);
 		}
+
+		logger.debug("Incrementing function usage", {
+			userId: this.user.id,
+			functionType,
+		});
 
 		const dailyCount = this.user.daily_message_count ?? 0;
 		const dailyProCount = this.user.daily_pro_message_count ?? 0;
@@ -504,5 +550,7 @@ export class UsageManager {
 				ErrorType.INTERNAL_ERROR,
 			);
 		}
+
+		logger.debug("Function usage incremented", { userId: this.user.id });
 	}
 }

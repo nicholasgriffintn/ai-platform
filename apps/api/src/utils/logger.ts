@@ -13,7 +13,7 @@ interface LoggerOptions {
 
 class Logger {
 	private static instances: Record<string, Logger> = {};
-	private static readonly defaultLevel = LogLevel.DEBUG;
+	private static readonly defaultLevel = LogLevel.ERROR;
 	private level: LogLevel;
 	private prefix: string;
 
@@ -93,7 +93,9 @@ class Logger {
 		message: string,
 		...args: any[]
 	) {
-		if (level > this.level) return;
+		if (level > this.level) {
+			return;
+		}
 
 		const formattedMessage = this.formatMessage(levelName, message, ...args);
 

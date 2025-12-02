@@ -84,6 +84,8 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 				);
 			}
 
+			logger.debug("Generating embeddings with S3 Vectors", { type, id });
+
 			const response = await this.ai.run(
 				"@cf/baai/bge-large-en-v1.5",
 				{ text: [content] },
@@ -100,6 +102,11 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 			if (!response.data) {
 				throw new AssistantError("No data returned from embedding model");
 			}
+
+			logger.debug("S3 Vectors embedding generation result", {
+				id,
+				metadata: { ...metadata, type, content },
+			});
 
 			// @ts-ignore
 			return response.data.map((vector: number[]) => ({
@@ -156,6 +163,10 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 		embeddings: EmbeddingVector[],
 		_options: RagOptions = {},
 	): Promise<EmbeddingMutationResult> {
+		logger.debug("Inserting embeddings into S3 Vectors", {
+			count: embeddings.length,
+		});
+
 		const url = `${this.endpoint}/PutVectors`;
 
 		const vectors = embeddings.map((embedding) => ({
@@ -190,6 +201,8 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 			);
 		}
 
+		logger.debug("S3 Vectors insert response", { status: "success" });
+
 		return {
 			status: "success",
 			error: null,
@@ -199,15 +212,16 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 	async delete(
 		ids: string[],
 	): Promise<{ status: string; error: string | null }> {
-		const url = `${this.endpoint}/DeleteVectors`;
-
-		const body = JSON.stringify({
-			vectorBucketName: this.bucketName,
-			indexName: this.indexName,
-			keys: ids,
-		});
-
 		try {
+			logger.debug("Deleting embeddings from S3 Vectors", { ids });
+			const url = `${this.endpoint}/DeleteVectors`;
+
+			const body = JSON.stringify({
+				vectorBucketName: this.bucketName,
+				indexName: this.indexName,
+				keys: ids,
+			});
+
 			const aws = await this.getAwsClient();
 			const response = await aws.fetch(url, {
 				method: "POST",
@@ -226,6 +240,8 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 				);
 			}
 
+			logger.debug("S3 Vectors delete response", { status: "success" });
+
 			return {
 				status: "success",
 				error: null,
@@ -242,6 +258,15 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 	async getQuery(
 		query: string,
 	): Promise<{ data: any; status: { success: boolean } }> {
+		if (!query?.trim()) {
+			throw new AssistantError(
+				"Empty query provided for embeddings search",
+				ErrorType.PARAMS_ERROR,
+			);
+		}
+
+		logger.debug("Generating embeddings with S3 Vectors", { query });
+
 		const response = await this.ai.run(
 			"@cf/baai/bge-large-en-v1.5",
 			{ text: [query] },
@@ -254,6 +279,13 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 			},
 		);
 
+		// @ts-ignore
+		if (!response.data) {
+			throw new AssistantError("No data returned from embedding model");
+		}
+
+		logger.debug("S3 Vectors query embedding result");
+
 		return {
 			// @ts-ignore
 			data: response.data,
@@ -265,6 +297,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 		queryVector: number[],
 		options: RagOptions = {},
 	): Promise<EmbeddingQueryResult> {
+		logger.debug("Querying S3 Vectors", { options });
 		const url = `${this.endpoint}/QueryVectors`;
 
 		const request: Record<string, any> = {
@@ -306,6 +339,8 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 		}
 
 		const data = (await response.json()) as any;
+
+		logger.debug("S3 Vectors query result", { data });
 
 		return {
 			matches:

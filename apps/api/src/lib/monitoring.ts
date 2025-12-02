@@ -37,6 +37,7 @@ export class Monitoring {
 	}
 
 	public recordMetric(metric: Metric): void {
+		logger.debug("Recording metric", { metric });
 		const metricWithTraceId = {
 			...metric,
 			traceId: metric.traceId || generateId(),
@@ -79,6 +80,8 @@ export class Monitoring {
 			doubles: [metricWithTraceId.value, metricWithTraceId.timestamp],
 			indexes: [metricWithTraceId.traceId],
 		});
+
+		logger.debug("Metric recorded successfully", { metric: metricWithTraceId });
 	}
 
 	private validateMetric(metric: Metric): boolean {

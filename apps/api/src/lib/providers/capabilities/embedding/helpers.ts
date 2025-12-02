@@ -142,9 +142,8 @@ export async function augmentPrompt({
 	env: IEnv;
 	user?: IUser;
 }) {
-	logger.debug("augmentPrompt called", { query, options, userId: user?.id });
-
 	try {
+		logger.debug("augmentPrompt called", { query, options });
 		const namespace = getEmbeddingNamespace(user, options);
 		const trimmedQuery = query.trim();
 		const topK =
@@ -168,11 +167,6 @@ export async function augmentPrompt({
 			user?.id,
 		);
 
-		logger.debug("augmentPrompt retrieved docs", {
-			count: docs.length,
-			topK,
-		});
-
 		if (!docs || docs.length === 0) {
 			return "";
 		}
@@ -190,8 +184,6 @@ export async function augmentPrompt({
 					2,
 				)}`;
 
-				logger.debug("augmentPrompt reranking", { rerankPrompt });
-
 				const response = await reranker.getResponse({
 					env,
 					model: "bge-reranker-base",
@@ -207,8 +199,6 @@ export async function augmentPrompt({
 				if (reordered.length) {
 					ranked = reordered as typeof docs;
 				}
-
-				logger.debug("augmentPrompt reranked", { ranked });
 			} catch (error) {
 				logger.warn("augmentPrompt reranking failed, using original order", {
 					error,
@@ -218,7 +208,6 @@ export async function augmentPrompt({
 		}
 
 		const selected = ranked.slice(0, topK);
-		logger.debug("augmentPrompt selected", { selected });
 
 		const summaryThreshold =
 			options.summaryThreshold || DEFAULT_SUMMARY_THRESHOLD;
@@ -237,7 +226,6 @@ export async function augmentPrompt({
 						messages: [{ role: "user", content: sumPrompt }],
 					});
 					doc.content = sumRes.content || sumRes.response || doc.content;
-					logger.debug("augmentPrompt summarized", { doc });
 				} catch (error) {
 					logger.warn("augmentPrompt summarization failed, using original", {
 						error,

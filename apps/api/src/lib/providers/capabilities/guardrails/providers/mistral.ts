@@ -26,7 +26,7 @@ export class MistralGuardProvider implements GuardrailsProvider {
 		source: "INPUT" | "OUTPUT",
 	): Promise<GuardrailResult> {
 		try {
-			const role = source === "INPUT" ? "user" : "assistant";
+			logger.debug("Validating content with Mistral Guard");
 
 			const model = "mistral-moderation-latest";
 			const modelConfig = await getModelConfig(model);
@@ -58,6 +58,11 @@ export class MistralGuardProvider implements GuardrailsProvider {
 			}, {});
 			const violations = Object.keys(combinedResults);
 			const isValid = violations.length === 0;
+
+			logger.debug("Mistral Guard validation result", {
+				violations,
+				data: response.response,
+			});
 
 			return {
 				provider: "mistral",

@@ -420,14 +420,20 @@ describe("logger", () => {
 	});
 
 	describe("default behavior", () => {
-		it("should use DEBUG as default level", () => {
+		it("should use ERROR as default level", () => {
 			const logger = getLogger({ prefix: "DEFAULT_TEST" });
 
 			logger.debug("Debug message");
 			logger.trace("Trace message");
+			logger.info("Info message");
+			logger.warn("Warn message");
+			logger.error("Error message");
 
-			expect(consoleSpy.debug).toHaveBeenCalled();
+			expect(consoleSpy.debug).not.toHaveBeenCalled();
 			expect(consoleSpy.trace).not.toHaveBeenCalled();
+			expect(consoleSpy.info).not.toHaveBeenCalled();
+			expect(consoleSpy.warn).not.toHaveBeenCalled();
+			expect(consoleSpy.error).toHaveBeenCalled();
 		});
 
 		it("should handle empty prefix", () => {

@@ -15,7 +15,7 @@ import {
 } from "~/utils/parameters";
 import { withRetry } from "~/utils/retries";
 
-const responseLogger = getLogger({ prefix: "CHAT:RESPONSES" });
+const logger = getLogger({ prefix: "lib/chat/responses" });
 
 /**
  * Formats assistant message data into a standardized structure that can be used
@@ -42,21 +42,21 @@ export function formatAssistantMessage({
 	annotations = null,
 }: Partial<AssistantMessageData>): AssistantMessageData {
 	if (tool_calls && !Array.isArray(tool_calls)) {
-		responseLogger.warn("Invalid tool_calls format, expected array", {
+		logger.warn("Invalid tool_calls format, expected array", {
 			tool_calls,
 		});
 		tool_calls = [];
 	}
 
 	if (citations && !Array.isArray(citations)) {
-		responseLogger.warn("Invalid citations format, expected array", {
+		logger.warn("Invalid citations format, expected array", {
 			citations,
 		});
 		citations = [];
 	}
 
 	if (typeof timestamp !== "number" || Number.isNaN(timestamp)) {
-		responseLogger.warn("Invalid timestamp, using current time", { timestamp });
+		logger.warn("Invalid timestamp, using current time", { timestamp });
 		timestamp = Date.now();
 	}
 
@@ -134,6 +134,8 @@ export async function getAIResponse({
 		);
 	}
 
+	logger.debug("Getting AI response", { model, mode, user: user?.id });
+
 	let modelConfig;
 	try {
 		modelConfig = await getModelConfigByMatchingModel(model);
@@ -144,7 +146,7 @@ export async function getAIResponse({
 			);
 		}
 	} catch (error: any) {
-		responseLogger.error("Failed to get model configuration", { model, error });
+		logger.error("Failed to get model configuration", { model, error });
 		throw new AssistantError(
 			`Invalid model configuration for ${model}: ${error.message}`,
 			ErrorType.PARAMS_ERROR,
@@ -158,7 +160,7 @@ export async function getAIResponse({
 			user,
 		});
 	} catch (error: any) {
-		responseLogger.error("Failed to initialize provider", {
+		logger.error("Failed to initialize provider", {
 			provider: modelConfig?.provider,
 			error,
 		});
@@ -174,7 +176,7 @@ export async function getAIResponse({
 			: messages;
 
 	if (filteredMessages.length === 0) {
-		responseLogger.warn("No messages after filtering", { mode });
+		logger.warn("No messages after filtering", { mode });
 		throw new AssistantError(
 			"No valid messages after filtering",
 			ErrorType.PARAMS_ERROR,
@@ -190,7 +192,7 @@ export async function getAIResponse({
 			model,
 		);
 	} catch (error: any) {
-		responseLogger.error("Failed to format messages", { error });
+		logger.error("Failed to format messages", { error });
 		throw new AssistantError(
 			`Failed to format messages: ${error.message}`,
 			ErrorType.PARAMS_ERROR,
@@ -220,7 +222,7 @@ export async function getAIResponse({
 			tools,
 		});
 	} catch (error: any) {
-		responseLogger.error("Failed to merge parameters", { error });
+		logger.error("Failed to merge parameters", { error });
 		throw new AssistantError(
 			`Failed to prepare request parameters: ${error.message}`,
 			ErrorType.PARAMS_ERROR,
@@ -248,7 +250,7 @@ export async function getAIResponse({
 			errorType = ErrorType.AUTHENTICATION_ERROR;
 		}
 
-		responseLogger.error("Model invocation failed", {
+		logger.error("Model invocation failed", {
 			model,
 			provider: provider.name,
 			error: err,
@@ -266,7 +268,7 @@ export async function getAIResponse({
 		typeof response === "object" && response && "usage" in response
 			? response.usage.total_tokens
 			: null;
-	responseLogger.debug("Model invocation metrics", {
+	logger.debug("Model invocation metrics", {
 		model,
 		provider: provider.name,
 		durationMs,
@@ -279,6 +281,8 @@ export async function getAIResponse({
 			ErrorType.PROVIDER_ERROR,
 		);
 	}
+
+	logger.debug("AI response received", { model, mode, user: user?.id });
 
 	return response;
 }

@@ -44,8 +44,6 @@ export class MemoryManager {
 		const embedding = getEmbeddingProvider(this.env, this.user, userSettings);
 		const vectorId = generateId();
 
-		logger.debug("Storing memory", { text, metadata, vectorId });
-
 		const vectors = await embedding.generate("memory", text, vectorId, {
 			...metadata,
 			text,
@@ -72,17 +70,8 @@ export class MemoryManager {
 			}));
 
 		if (similarMemories.length > 0) {
-			logger.debug("Found similar memories, skipping insertion", {
-				similarMemories,
-			});
 			return null;
 		}
-
-		logger.debug("Inserting memory", {
-			vectorCount: vectors.length,
-			namespace,
-			category: metadata.category,
-		});
 
 		await embedding.insert(vectors, { namespace });
 
@@ -144,10 +133,6 @@ export class MemoryManager {
 
 			await repository.removeMemoryFromGroups(memoryId);
 
-			logger.debug("Memory deleted successfully", {
-				memoryId,
-				vectorId: memory.vector_id,
-			});
 			return true;
 		} catch (error) {
 			logger.error("Failed to delete memory", { error, memoryId });
@@ -168,9 +153,6 @@ export class MemoryManager {
 		const normalizedQuery = query.trim();
 
 		if (normalizedQuery.length < 4) {
-			logger.debug("Skipping memory retrieval for short query", {
-				query: normalizedQuery,
-			});
 			return [];
 		}
 
@@ -178,9 +160,6 @@ export class MemoryManager {
 		const words = normalizedQuery.toLowerCase().split(/\s+/);
 
 		if (words.length <= 2 && words.every((w) => trivialWords.includes(w))) {
-			logger.debug("Skipping memory retrieval for trivial query", {
-				query: normalizedQuery,
-			});
 			return [];
 		}
 
@@ -188,8 +167,6 @@ export class MemoryManager {
 		const topK = opts?.topK ?? 3;
 		const scoreThreshold = opts?.scoreThreshold ?? 0.3;
 		const namespace = `memory_user_${this.user?.id ?? "global"}`;
-
-		logger.debug("Memory query", { query });
 
 		const queryEmb = await embedding.getQuery(query);
 		const rawNumbers = queryEmb.data[0] as number[];
@@ -202,13 +179,7 @@ export class MemoryManager {
 			returnMetadata: "all",
 		});
 
-		logger.debug("Raw memory matches", {
-			matches: result.matches?.length || 0,
-		});
-
 		if (!result.matches) {
-			logger.debug("Insufficient matches.");
-
 			return [];
 		}
 
@@ -219,11 +190,6 @@ export class MemoryManager {
 			)
 			.slice(0, topK)
 			.map((m) => ({ text: m.metadata.text as string, score: m.score }));
-
-		logger.debug("Retrieved memories", {
-			count: memories.length,
-			topScore: memories[0]?.score,
-		});
 
 		return memories;
 	}
@@ -311,11 +277,6 @@ Respond with JSON: { storeMemory: boolean, category: string, summary: string }. 
 						const summaryText = parsed.data.summary || lastUser;
 						const category = parsed.data.category || "general";
 
-						logger.debug("Storing classified memory", {
-							summaryText,
-							category,
-						});
-
 						await this.storeMemory(
 							summaryText,
 							{
@@ -393,18 +354,15 @@ Respond with JSON: { storeMemory: boolean, category: string, summary: string }. 
 											undefined,
 											userSettings,
 										);
-										logger.debug("Stored alternative memory phrasing", {
-											altText,
-										});
 									}
 								} catch (e) {
-									logger.debug("Failed to process normalized memory", {
+									logger.error("Failed to process normalized memory", {
 										error: e,
 										response: normalizer.response,
 									});
 								}
 							} catch (e) {
-								logger.debug("Failed to normalize memory", { error: e });
+								logger.error("Failed to normalize memory", { error: e });
 							}
 						}
 
@@ -412,7 +370,7 @@ Respond with JSON: { storeMemory: boolean, category: string, summary: string }. 
 					}
 				}
 			} catch (e) {
-				logger.debug("Memory classification failed", { error: e });
+				logger.error("Memory classification failed", { error: e });
 			}
 		}
 
@@ -431,13 +389,14 @@ Respond with JSON: { storeMemory: boolean, category: string, summary: string }. 
 								`${m.role}: ${typeof m.content === "string" ? m.content : JSON.stringify(m.content)}`,
 						)
 						.join("\n");
-					logger.debug("Summarizing conversation", { snippet });
+
 					const { model: modelToUse, provider: providerToUse } =
 						await getAuxiliaryModel(this.env, this.user);
 					const provider = getChatProvider(providerToUse, {
 						env: this.env,
 						user: this.user,
 					});
+
 					const summaryResp = await provider.getResponse(
 						{
 							model: modelToUse,
@@ -457,7 +416,7 @@ Respond with JSON: { storeMemory: boolean, category: string, summary: string }. 
 					const text = summaryResp.response?.trim();
 					if (text) {
 						const category = "snapshot";
-						logger.debug("Storing snapshot", { text });
+
 						try {
 							await this.storeMemory(
 								text,
@@ -471,12 +430,12 @@ Respond with JSON: { storeMemory: boolean, category: string, summary: string }. 
 							);
 							events.push({ type: "snapshot", text, category });
 						} catch (e) {
-							logger.debug("Failed to store snapshot", { error: e });
+							logger.error("Failed to store snapshot", { error: e });
 						}
 					}
 				}
 			} catch (e) {
-				logger.debug("Snapshot generation failed", { error: e });
+				logger.error("Snapshot generation failed", { error: e });
 			}
 		}
 

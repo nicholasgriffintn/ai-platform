@@ -53,6 +53,8 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
 				);
 			}
 
+			logger.debug("Generating embeddings with Marengo", { type, id });
+
 			const marengoModelName = "marengo-embed";
 			const marengoModelConfig = await getModelConfig(marengoModelName);
 			const marengoProvider = getChatProvider(marengoModelConfig.provider, {
@@ -123,6 +125,12 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
 				embeddingOption: marengoResponse.embeddingOption,
 			};
 
+			logger.debug("Marengo embedding generation result", {
+				id,
+				values: marengoResponse.embedding,
+				metadata: mergedMetadata,
+			});
+
 			return [
 				{
 					id,
@@ -146,6 +154,9 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
 		options: RagOptions = {},
 	): Promise<EmbeddingMutationResult> {
 		try {
+			logger.debug("Inserting embeddings into Marengo Vector DB", {
+				count: embeddings.length,
+			});
 			await this.vector_db.upsert(
 				embeddings.map((embedding) => ({
 					id: embedding.id,
@@ -154,6 +165,10 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
 					namespace: options.namespace || "assistant-embeddings",
 				})),
 			);
+
+			logger.debug("Marengo Vector DB upsert response", {
+				status: "success",
+			});
 
 			return {
 				status: "success",

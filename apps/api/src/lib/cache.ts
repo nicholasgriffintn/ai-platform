@@ -22,6 +22,7 @@ export class KVCache {
 
 	async get<T>(key: string): Promise<T | null> {
 		try {
+			logger.debug("Getting value from cache", { key });
 			const value = await this.kv.get(key);
 			if (value === null) {
 				return null;
@@ -39,6 +40,7 @@ export class KVCache {
 		options?: CacheOptions,
 	): Promise<boolean> {
 		try {
+			logger.debug("Setting value in cache", { key, options });
 			const ttl = options?.ttl || this.defaultTTL;
 			await this.kv.put(key, JSON.stringify(value), {
 				expirationTtl: ttl,
@@ -52,6 +54,7 @@ export class KVCache {
 
 	async delete(key: string): Promise<boolean> {
 		try {
+			logger.debug("Deleting value from cache", { key });
 			await this.kv.delete(key);
 			return true;
 		} catch (error) {
@@ -62,6 +65,7 @@ export class KVCache {
 
 	async has(key: string): Promise<boolean> {
 		try {
+			logger.debug("Checking if key exists in cache", { key });
 			const value = await this.kv.get(key);
 			return value !== null;
 		} catch (error) {
@@ -83,6 +87,7 @@ export class KVCache {
 		options?: CacheOptions & { skipIfNull?: boolean },
 	): Promise<T> {
 		try {
+			logger.debug("Attempting to cache DB query", { cacheKey });
 			const cached = await this.get<T>(cacheKey);
 			if (cached !== null) {
 				return cached;
@@ -98,6 +103,8 @@ export class KVCache {
 				});
 			}
 
+			logger.debug("Cached DB query result", { cacheKey });
+
 			return result;
 		} catch (error) {
 			logger.error("Failed to cache query", { cacheKey, error });
@@ -107,6 +114,7 @@ export class KVCache {
 
 	async clearUserModelCache(userId: string): Promise<boolean> {
 		try {
+			logger.debug("Clearing user model cache", { userId });
 			const userModelKey = KVCache.createKey("user-models", userId);
 			const providerSettingsKey = KVCache.createKey(
 				"user-provider-settings",
@@ -116,7 +124,7 @@ export class KVCache {
 				this.kv.delete(userModelKey),
 				this.kv.delete(providerSettingsKey),
 			]);
-			logger.info("Cleared user model cache", { userId, key: userModelKey });
+			logger.debug("Cleared user model cache", { userId, key: userModelKey });
 			return true;
 		} catch (error) {
 			logger.error("Failed to clear user model cache", { userId, error });

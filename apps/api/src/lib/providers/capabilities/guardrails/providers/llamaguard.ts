@@ -26,7 +26,8 @@ export class LlamaGuardProvider implements GuardrailsProvider {
 		source: "INPUT" | "OUTPUT",
 	): Promise<GuardrailResult> {
 		try {
-			const unsafeCatagories = `<BEGIN UNSAFE CONTENT CATEGORIES>
+			logger.debug("Validating content with Llama Guard");
+			const unsafeCategories = `<BEGIN UNSAFE CONTENT CATEGORIES>
 S1: Violent Crimes. 
 S2: Non-Violent Crimes. 
 S3: Sex Crimes. 
@@ -65,7 +66,7 @@ S13: Elections.
 <|image|> Task: Check if there is unsafe content in '${role}' messages in conversations according to our safety policy with the below categories.
 
 <BEGIN UNSAFE CONTENT CATEGORIES>
-${unsafeCatagories}
+${unsafeCategories}
 <END UNSAFE CONTENT CATEGORIES>
 
 <BEGIN CONVERSATION>
@@ -87,6 +88,11 @@ Provide your safety assessment for ONLY THE LAST ${role} in the above conversati
 			const isValid =
 				responseText.startsWith("safe") || responseText.includes("allowed");
 			const violations = isValid ? [] : [response.response];
+
+			logger.debug("Llama Guard validation result", {
+				violations,
+				data: response.response,
+			});
 
 			return {
 				provider: "llamaguard",
