@@ -77,13 +77,7 @@ describe("UsageManager", () => {
 			const result = await managerWithOldUser.checkUsage();
 
 			expect(result.dailyCount).toBe(0);
-			expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(
-				userWithOldReset.id,
-				expect.objectContaining({
-					daily_message_count: 0,
-					daily_reset: expect.any(String),
-				}),
-			);
+			expect(mockRepositories.users.updateUser).not.toHaveBeenCalled();
 		});
 
 		it("should throw error when daily limit reached", async () => {
@@ -269,13 +263,7 @@ describe("UsageManager", () => {
 			const result = await managerOldProReset.checkProUsage("gpt-4");
 
 			expect(result.dailyProCount).toBe(0);
-			expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(
-				userWithOldProReset.id,
-				expect.objectContaining({
-					daily_pro_message_count: 0,
-					daily_pro_reset: expect.any(String),
-				}),
-			);
+			expect(mockRepositories.users.updateUser).not.toHaveBeenCalled();
 		});
 
 		it("should throw error when pro limit reached", async () => {

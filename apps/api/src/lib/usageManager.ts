@@ -55,6 +55,8 @@ export class UsageManager {
 	private requestCache?: RequestCache;
 	private enqueueUsageTask?: UsageTaskEnqueuer;
 	private asyncUsageUpdates: boolean;
+	private regularUsageSnapshot?: { dailyCount: number; limit: number };
+	private proUsageSnapshot?: { dailyCount: number; limit: number };
 
 	constructor(
 		repositories: RepositoryManager,
@@ -73,6 +75,87 @@ export class UsageManager {
 		this.enqueueUsageTask = options?.enqueueUsageTask;
 		this.asyncUsageUpdates =
 			options?.asyncUsageUpdates ?? Boolean(options?.enqueueUsageTask);
+	}
+
+	private isNewUtcDay(now: Date, lastReset: Date | null): boolean {
+		return (
+			!lastReset ||
+			now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
+			now.getUTCMonth() !== lastReset.getUTCMonth() ||
+			now.getUTCDate() !== lastReset.getUTCDate()
+		);
+	}
+
+	private getRegularUsageSnapshot(): { dailyCount: number; limit: number } {
+		if (!this.user?.id) {
+			throw new AssistantError(
+				"User required to check authenticated usage",
+				ErrorType.PARAMS_ERROR,
+			);
+		}
+
+		if (this.regularUsageSnapshot) {
+			return this.regularUsageSnapshot;
+		}
+
+		const now = new Date();
+		const lastReset = this.user.daily_reset
+			? new Date(this.user.daily_reset)
+			: null;
+		const isNewDay = this.isNewUtcDay(now, lastReset);
+		const dailyCount = isNewDay ? 0 : (this.user.daily_message_count ?? 0);
+
+		if (isNewDay) {
+			this.user.daily_message_count = 0;
+			this.user.daily_reset = now.toISOString();
+		}
+
+		this.regularUsageSnapshot = {
+			dailyCount,
+			limit: USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT,
+		};
+
+		return this.regularUsageSnapshot;
+	}
+
+	private getProUsageSnapshot(): { dailyCount: number; limit: number } {
+		if (!this.user?.id) {
+			throw new AssistantError(
+				"User required to check pro usage",
+				ErrorType.PARAMS_ERROR,
+			);
+		}
+
+		if (this.proUsageSnapshot) {
+			return this.proUsageSnapshot;
+		}
+
+		const now = new Date();
+		const lastReset = this.user.daily_pro_reset
+			? new Date(this.user.daily_pro_reset)
+			: null;
+		const isNewDay = this.isNewUtcDay(now, lastReset);
+		const dailyCount = isNewDay ? 0 : (this.user.daily_pro_message_count ?? 0);
+
+		if (isNewDay) {
+			this.user.daily_pro_message_count = 0;
+			this.user.daily_pro_reset = now.toISOString();
+		}
+
+		this.proUsageSnapshot = {
+			dailyCount,
+			limit: USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS,
+		};
+
+		return this.proUsageSnapshot;
+	}
+
+	private invalidateRegularUsageSnapshot() {
+		this.regularUsageSnapshot = undefined;
+	}
+
+	private invalidateProUsageSnapshot() {
+		this.proUsageSnapshot = undefined;
 	}
 
 	private memoize<T>(key: string, factory: () => Promise<T>): Promise<T> {
@@ -131,60 +214,23 @@ export class UsageManager {
 	}
 
 	async checkUsage() {
-		if (!this.user?.id) {
-			throw new AssistantError(
-				"User required to check authenticated usage",
-				ErrorType.PARAMS_ERROR,
-			);
-		}
+		const snapshot = this.getRegularUsageSnapshot();
 
-		logger.debug("Checking usage limits", { userId: this.user.id });
+		logger.debug("Checking usage limits", { userId: this.user?.id });
 
-		const dailyLimit = USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT;
-
-		const now = new Date();
-		let dailyCount = this.user.daily_message_count ?? 0;
-		const lastReset = this.user.daily_reset
-			? new Date(this.user.daily_reset)
-			: null;
-		let needsUpdate = false;
-		const updates: Partial<User> & Record<string, any> = {};
-
-		const isNewDay =
-			!lastReset ||
-			now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
-			now.getUTCMonth() !== lastReset.getUTCMonth() ||
-			now.getUTCDate() !== lastReset.getUTCDate();
-
-		if (isNewDay) {
-			dailyCount = 0;
-			updates.daily_message_count = 0;
-			updates.daily_reset = now.toISOString();
-			needsUpdate = true;
-		}
-
-		if (needsUpdate) {
-			try {
-				await this.repositories.users.updateUser(this.user.id, updates);
-			} catch (resetError) {
-				logger.error("Failed to reset daily count", { error: resetError });
-				throw new AssistantError(
-					"Failed to reset daily count",
-					ErrorType.INTERNAL_ERROR,
-				);
-			}
-		}
-
-		if (dailyCount >= dailyLimit) {
+		if (snapshot.dailyCount >= snapshot.limit) {
 			throw new AssistantError(
 				"Daily message limit for authenticated users reached.",
 				ErrorType.USAGE_LIMIT_ERROR,
 			);
 		}
 
-		logger.debug("Usage limits checked", { userId: this.user.id });
+		logger.debug("Usage limits checked", { userId: this.user?.id });
 
-		return { dailyCount, dailyLimit };
+		return {
+			dailyCount: snapshot.dailyCount,
+			dailyLimit: snapshot.limit,
+		};
 	}
 
 	async incrementUsage() {
@@ -213,6 +259,7 @@ export class UsageManager {
 				this.user,
 			);
 			this.user = updatedUser;
+			this.invalidateRegularUsageSnapshot();
 		} catch (error) {
 			logger.error("Failed to update usage data", {
 				error,
@@ -291,51 +338,13 @@ export class UsageManager {
 	}
 
 	async checkProUsage(modelId: string) {
-		if (!this.user?.id) {
-			throw new AssistantError(
-				"User required to check pro usage",
-				ErrorType.PARAMS_ERROR,
-			);
-		}
-
 		logger.debug("Checking pro usage", { modelId });
 
+		const snapshot = this.getProUsageSnapshot();
 		const usageMultiplier = await this.calculateUsageMultiplier(modelId);
+		const dailyProCount = snapshot.dailyCount;
 
-		let dailyProCount = this.user.daily_pro_message_count || 0;
-		const now = new Date();
-		const lastReset = this.user.daily_pro_reset
-			? new Date(this.user.daily_pro_reset)
-			: null;
-		let needsUpdate = false;
-		const updates: Partial<User> & Record<string, any> = {};
-
-		const isNewDay =
-			!lastReset ||
-			now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
-			now.getUTCMonth() !== lastReset.getUTCMonth() ||
-			now.getUTCDate() !== lastReset.getUTCDate();
-
-		if (isNewDay) {
-			dailyProCount = 0;
-			updates.daily_pro_message_count = 0;
-			updates.daily_pro_reset = now.toISOString();
-			needsUpdate = true;
-		}
-
-		if (needsUpdate) {
-			try {
-				await this.repositories.users.updateUser(this.user.id, updates);
-			} catch (resetError) {
-				logger.error("Failed to reset pro usage", { error: resetError });
-				throw new AssistantError(
-					"Failed to reset pro usage",
-					ErrorType.INTERNAL_ERROR,
-				);
-			}
-		}
-
-		if (dailyProCount >= USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS) {
+		if (dailyProCount >= snapshot.limit) {
 			throw new AssistantError(
 				"Daily Pro model limit reached.",
 				ErrorType.USAGE_LIMIT_ERROR,
@@ -348,7 +357,7 @@ export class UsageManager {
 
 		return {
 			dailyProCount,
-			limit: USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS,
+			limit: snapshot.limit,
 			costMultiplier: usageMultiplier,
 			modelCostInfo: {
 				inputCost: modelConfig?.costPer1kInputTokens || 0,
@@ -388,6 +397,7 @@ export class UsageManager {
 			usageMultiplier,
 		);
 		this.user = updatedUser;
+		this.invalidateProUsageSnapshot();
 
 		logger.debug("Pro usage incremented", { userId: this.user.id });
 	}
@@ -473,47 +483,20 @@ export class UsageManager {
 			);
 		}
 
-		const now = new Date();
-		let regularDailyCount = this.user.daily_message_count ?? 0;
-		let proDailyCount = this.user.daily_pro_message_count ?? 0;
-
-		const lastReset = this.user.daily_reset
-			? new Date(this.user.daily_reset)
-			: null;
-		const isNewRegularDay =
-			!lastReset ||
-			now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
-			now.getUTCMonth() !== lastReset.getUTCMonth() ||
-			now.getUTCDate() !== lastReset.getUTCDate();
-
-		if (isNewRegularDay) {
-			regularDailyCount = 0;
-		}
-
-		const lastProReset = this.user.daily_pro_reset
-			? new Date(this.user.daily_pro_reset)
-			: null;
-		const isNewProDay =
-			!lastProReset ||
-			now.getUTCFullYear() !== lastProReset.getUTCFullYear() ||
-			now.getUTCMonth() !== lastProReset.getUTCMonth() ||
-			now.getUTCDate() !== lastProReset.getUTCDate();
-
-		if (isNewProDay) {
-			proDailyCount = 0;
-		}
+		const regularSnapshot = this.getRegularUsageSnapshot();
 
 		const usageLimits: UsageLimits = {
 			daily: {
-				used: regularDailyCount,
-				limit: USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT,
+				used: regularSnapshot.dailyCount,
+				limit: regularSnapshot.limit,
 			},
 		};
 
 		if (this.user.plan_id === "pro") {
+			const proSnapshot = this.getProUsageSnapshot();
 			usageLimits.pro = {
-				used: proDailyCount,
-				limit: USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS,
+				used: proSnapshot.dailyCount,
+				limit: proSnapshot.limit,
 			};
 		}
 
@@ -592,6 +575,8 @@ export class UsageManager {
 			{ functionType, isPro, costPerCall },
 		);
 		this.user = updatedUser;
+		this.invalidateRegularUsageSnapshot();
+		this.invalidateProUsageSnapshot();
 
 		logger.debug("Function usage incremented", { userId: this.user.id });
 	}
@@ -601,6 +586,14 @@ export class UsageManager {
 		for (const field of fields) {
 			const current = Number(this.user[field] ?? 0);
 			(this.user as any)[field] = current + increment;
+
+			if (field === "daily_message_count" && this.regularUsageSnapshot) {
+				this.regularUsageSnapshot.dailyCount += increment;
+			}
+
+			if (field === "daily_pro_message_count" && this.proUsageSnapshot) {
+				this.proUsageSnapshot.dailyCount += increment;
+			}
 		}
 		this.user.last_active_at = new Date().toISOString();
 	}
