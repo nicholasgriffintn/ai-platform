@@ -6,6 +6,8 @@ import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+const TITLE_MAX_MESSAGES = 3;
+
 export const handleGenerateChatCompletionTitle = async (
 	req: IRequest,
 	completion_id: string,
@@ -37,33 +39,53 @@ export const handleGenerateChatCompletionTitle = async (
 		store,
 	});
 
-	try {
-		await conversationManager.get(completion_id);
-	} catch {
-		throw new AssistantError(
-			"Conversation not found or you don't have access to it",
-			ErrorType.NOT_FOUND,
-		);
-	}
-
 	let messagesToUse: Message[] = [];
 
 	const rawMessages = messages;
+	const hasProvidedMessages =
+		Array.isArray(rawMessages) && rawMessages.length > 0;
 
-	if (rawMessages && rawMessages.length > 0) {
+	if (hasProvidedMessages) {
+		try {
+			await conversationManager.get(completion_id, undefined, 1);
+		} catch {
+			throw new AssistantError(
+				"Conversation not found or you don't have access to it",
+				ErrorType.NOT_FOUND,
+			);
+		}
+
 		const sanitisedMessages = sanitiseMessages(rawMessages);
-		messagesToUse = sanitisedMessages.slice(0, Math.min(3, rawMessages.length));
+		messagesToUse = sanitisedMessages.slice(0, TITLE_MAX_MESSAGES);
 	} else {
-		const conversationMessages = await conversationManager.get(completion_id);
+		let conversationMessages: Message[];
+		try {
+			conversationMessages = await conversationManager.get(
+				completion_id,
+				undefined,
+				TITLE_MAX_MESSAGES,
+			);
+		} catch {
+			throw new AssistantError(
+				"Conversation not found or you don't have access to it",
+				ErrorType.NOT_FOUND,
+			);
+		}
 
 		if (conversationMessages.length === 0) {
 			return { title: "New Conversation" };
 		}
 
-		messagesToUse = conversationMessages.map((msg) => ({
-			role: msg.role,
-			content: msg.content,
-		}));
+		messagesToUse = conversationMessages
+			.slice(0, TITLE_MAX_MESSAGES)
+			.map((msg) => ({
+				role: msg.role,
+				content: msg.content,
+			}));
+	}
+
+	if (!messagesToUse.length) {
+		return { title: "New Conversation" };
 	}
 
 	const prompt = `You are a title generator. Your only job is to create a short, concise title (maximum 5 words) for a conversation.

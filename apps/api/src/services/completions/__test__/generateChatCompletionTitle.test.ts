@@ -165,6 +165,11 @@ describe("handleGenerateChatCompletionTitle", () => {
 				{ title: "Generated Title" },
 			);
 			expect(result).toEqual({ title: "Generated Title" });
+			expect(mockConversationManager.get).toHaveBeenCalledWith(
+				completionId,
+				undefined,
+				1,
+			);
 		});
 
 		it("should generate title from conversation messages when no messages provided", async () => {
@@ -174,9 +179,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 				{ role: "assistant", content: "Hi!" },
 			];
 
-			mockConversationManager.get
-				.mockResolvedValueOnce([]) // First call for conversation check
-				.mockResolvedValueOnce(conversationMessages); // Second call for message retrieval
+			mockConversationManager.get.mockResolvedValue(conversationMessages);
 
 			const result = await handleGenerateChatCompletionTitle(
 				// @ts-expect-error - mock request
@@ -185,14 +188,17 @@ describe("handleGenerateChatCompletionTitle", () => {
 			);
 
 			expect(result).toEqual({ title: "Generated Title" });
+			expect(mockConversationManager.get).toHaveBeenCalledWith(
+				completionId,
+				undefined,
+				expect.any(Number),
+			);
 		});
 
 		it("should return default title for empty conversation", async () => {
 			const completionId = "completion-empty";
 
-			mockConversationManager.get
-				.mockResolvedValueOnce([]) // First call for conversation check
-				.mockResolvedValueOnce([]); // Second call returns empty messages
+			mockConversationManager.get.mockResolvedValue([]);
 
 			const result = await handleGenerateChatCompletionTitle(
 				// @ts-expect-error - mock request
@@ -201,6 +207,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 			);
 
 			expect(result).toEqual({ title: "New Conversation" });
+			expect(mockConversationManager.updateConversation).not.toHaveBeenCalled();
 		});
 
 		it("should trim quotes from generated title", async () => {
