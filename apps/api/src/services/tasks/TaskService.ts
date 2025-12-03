@@ -73,7 +73,12 @@ export class TaskService {
 
 			await this.env.TASK_QUEUE.send(message);
 
-			logger.info(`Task ${task.id} enqueued successfully`);
+			logger.info("Task enqueued successfully", {
+				taskId: task.id,
+				taskType: taskDef.task_type,
+				priority: message.priority,
+				queuedAt: message.task_data?.queuedAt ?? Date.now(),
+			});
 			return task.id;
 		} catch (error) {
 			logger.error("Failed to enqueue task:", error);

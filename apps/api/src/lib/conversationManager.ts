@@ -35,6 +35,7 @@ export class ConversationManager {
 	private env?: IEnv;
 	private requestCache?: Map<string, unknown>;
 	private taskService?: TaskService;
+	private repositories?: RepositoryManager;
 
 	private constructor(
 		database: Database,
@@ -45,6 +46,7 @@ export class ConversationManager {
 		store?: boolean,
 		env?: IEnv,
 		requestCache?: Map<string, unknown>,
+		repositories?: RepositoryManager,
 	) {
 		this.database = database;
 		this.user = user;
@@ -54,8 +56,8 @@ export class ConversationManager {
 		this.store = store ?? true;
 		this.env = env;
 		this.requestCache = requestCache;
-
-		const repositories = env ? new RepositoryManager(env) : null;
+		this.repositories = repositories ?? database.repositories;
+		const resolvedRepositories = this.repositories;
 
 		if (env?.DB) {
 			this.taskService = new TaskService(env, new TaskRepository(env));
@@ -75,8 +77,8 @@ export class ConversationManager {
 				}
 			: undefined;
 
-		this.usageManager = repositories
-			? new UsageManager(repositories, user, anonymousUser, {
+		this.usageManager = resolvedRepositories
+			? new UsageManager(resolvedRepositories, user, anonymousUser, {
 					requestCache,
 					enqueueUsageTask,
 					asyncUsageUpdates: true,
@@ -93,6 +95,7 @@ export class ConversationManager {
 		store,
 		env,
 		requestCache,
+		repositories,
 	}: {
 		database: Database;
 		user?: User | null;
@@ -102,6 +105,7 @@ export class ConversationManager {
 		store?: boolean;
 		env?: IEnv;
 		requestCache?: Map<string, unknown>;
+		repositories?: RepositoryManager;
 	}): ConversationManager {
 		return new ConversationManager(
 			database,
@@ -112,6 +116,7 @@ export class ConversationManager {
 			store ?? true,
 			env,
 			requestCache,
+			repositories,
 		);
 	}
 

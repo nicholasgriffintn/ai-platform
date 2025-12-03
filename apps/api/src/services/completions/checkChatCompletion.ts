@@ -3,7 +3,6 @@ import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { memoizeRequest } from "~/utils/requestCache";
 
 export const handleCheckChatCompletion = async (
 	req: IRequest,
@@ -61,13 +60,7 @@ export const handleCheckChatCompletion = async (
 
 	const roleToCheck = role || "user";
 
-	const userSettings = user?.id
-		? await memoizeRequest(
-				serviceContext.requestCache,
-				`user-settings:${user.id}`,
-				() => serviceContext.repositories.userSettings.getUserSettings(user.id),
-			)
-		: null;
+	const userSettings = await serviceContext.getUserSettings();
 	const guardrails = new Guardrails(serviceContext.env, user, userSettings);
 	const validation =
 		roleToCheck === "user"

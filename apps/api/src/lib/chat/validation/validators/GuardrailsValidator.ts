@@ -33,12 +33,17 @@ export class GuardrailsValidator implements Validator {
 		}
 
 		try {
-			const repositories = new RepositoryManager(env);
-			const userSettings = user?.id
-				? await memoizeRequest(requestCache, `user-settings:${user.id}`, () =>
-						repositories.userSettings.getUserSettings(user.id),
-					)
-				: null;
+			let userSettings: any = null;
+			if (options.context?.getUserSettings) {
+				userSettings = await options.context.getUserSettings();
+			} else if (user?.id) {
+				const repositories = new RepositoryManager(env);
+				userSettings = await memoizeRequest(
+					requestCache,
+					`user-settings:${user.id}`,
+					() => repositories.userSettings.getUserSettings(user.id),
+				);
+			}
 
 			const guardrails = new Guardrails(env, user, userSettings);
 

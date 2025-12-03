@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError } from "~/utils/errors";
 import { handlePodcastDetail } from "../get-details";
+import { getLogger } from "~/utils/logger";
 
 const mockRepositories = {
 	appData: {
@@ -13,8 +14,9 @@ const mockRepositories = {
 describe("handlePodcastDetail", () => {
 	const mockEnv = { DB: {} } as any;
 	const mockUser = { id: "user-123", email: "test@example.com" } as any;
-	const createMockContext = (overrides: Partial<ServiceContext> = {}) =>
-		({
+	const createMockContext = (overrides: Partial<ServiceContext> = {}) => {
+		const logger = getLogger({ prefix: "test" });
+		return {
 			env: mockEnv,
 			user: mockUser,
 			repositories: mockRepositories as any,
@@ -23,8 +25,13 @@ describe("handlePodcastDetail", () => {
 			database: {} as any,
 			requestId: undefined,
 			requestCache: new Map(),
+			userSettings: null,
+			getUserSettings: vi.fn().mockResolvedValue(null),
+			setUserSettings: vi.fn(),
+			getLogger: vi.fn(() => logger),
 			...overrides,
-		}) satisfies ServiceContext;
+		} satisfies ServiceContext;
+	};
 
 	beforeEach(() => {
 		vi.clearAllMocks();

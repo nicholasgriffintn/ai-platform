@@ -79,6 +79,8 @@ describe("handleCheckChatCompletion", () => {
 				},
 			} as any,
 			requestCache: new Map(),
+			getUserSettings: vi.fn().mockResolvedValue({}),
+			setUserSettings: vi.fn(),
 		};
 
 		vi.mocked(resolveServiceContext).mockReturnValue(mockServiceContext);
@@ -173,7 +175,7 @@ describe("handleCheckChatCompletion", () => {
 
 			mockConversationManager.get.mockResolvedValue(mockMessages);
 			mockGuardrails.validateInput.mockResolvedValue(mockValidation);
-			mockDatabase.getUserSettings.mockResolvedValue({});
+			mockServiceContext.getUserSettings.mockResolvedValue({});
 
 			const result = await handleCheckChatCompletion(
 				mockRequest,
@@ -182,7 +184,7 @@ describe("handleCheckChatCompletion", () => {
 			);
 
 			expect(mockConversationManager.get).toHaveBeenCalledWith(completionId);
-			expect(mockDatabase.getUserSettings).toHaveBeenCalledWith("user-123");
+			expect(mockServiceContext.getUserSettings).toHaveBeenCalled();
 			expect(mockGuardrails.validateInput).toHaveBeenCalledWith(
 				expect.stringContaining("user: Hello, how are you?"),
 				"user-123",
@@ -487,7 +489,7 @@ describe("handleCheckChatCompletion", () => {
 			];
 
 			mockConversationManager.get.mockResolvedValue(mockMessages);
-			mockDatabase.getUserSettings.mockRejectedValue(
+			mockServiceContext.getUserSettings.mockRejectedValue(
 				new Error("Settings retrieval failed"),
 			);
 

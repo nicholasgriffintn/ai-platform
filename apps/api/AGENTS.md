@@ -195,6 +195,8 @@ export async function handleExampleService(
 3. When instantiating helpers outside of routes (e.g., `ConversationManager`, `UsageManager`, `GuardrailsValidator`), pass the cache down so usage tracking and validation code reuse the same results.
 4. Prefer descriptive cache keys such as `user-settings:${user.id}` or `usage:model:${modelId}` so multiple layers can intentionally share entries.
 5. Tests that mock `ServiceContext` must now include `requestCache: new Map()` (or a fake) to satisfy the contract.
+6. `ServiceContext.getUserSettings()` returns a memoized promise and stores the resolved value on `context.userSettings`. Call this helper (instead of hitting `repositories.userSettings` manually) whenever you need user preferences inside a request. Routes should preload it when downstream code expects the data.
+7. `ServiceContext.getLogger({ prefix })` wraps the shared logger with the current `requestId` so per-request logs stay correlated.
 
 ### Usage Updates via Task Queue
 
@@ -218,6 +220,7 @@ export async function handleExampleService(
 2. `RequestPreparer.prepare` now grabs `options.executionCtx` and calls `executionCtx.waitUntil(...)` around `storeMessages(...)`. Errors are logged instead of surfacing to the user to keep latency low.
 3. When adding new background work in chat prep (e.g., new persistence or telemetry), follow the same pattern: run it in `waitUntil` if it does not affect routing, fall back to `await` only when `executionCtx` is missing (unit tests).
 4. Memory enrichment and other prompt-building steps remain synchronous because they affect the model response; document any deviations if you change that behavior.
+5. Conversation-related helpers should reuse the `Database` and `RepositoryManager` from `ServiceContext` by passing them into `ConversationManager.getInstance({ database: context.database, repositories: context.repositories })` to avoid re-instantiating D1 connections mid-request.
 
 ### Cloudflare AI Gateway Cache Control
 

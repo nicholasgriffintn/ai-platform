@@ -6,14 +6,16 @@ export enum LogLevel {
 	TRACE = 4,
 }
 
-interface LoggerOptions {
+export interface LoggerOptions {
 	level?: LogLevel;
 	prefix?: string;
+	defaultMeta?: Record<string, unknown>;
+	requestId?: string;
 }
 
 class Logger {
 	private static instances: Record<string, Logger> = {};
-	private static readonly defaultLevel = LogLevel.ERROR;
+	private static defaultLevel = resolveLogLevelFromEnv();
 	private level: LogLevel;
 	private prefix: string;
 
@@ -143,14 +145,94 @@ class Logger {
 	public setLevel(level: LogLevel) {
 		this.level = level;
 	}
+
+	public withContext(meta: Record<string, any>): LoggerAdapter {
+		return new LoggerAdapter(this, meta);
+	}
+}
+
+class LoggerAdapter {
+	constructor(
+		private base: Logger,
+		private context: Record<string, any>,
+	) {}
+
+	public error(message: string, ...args: any[]) {
+		this.base.error(message, ...args, this.context);
+	}
+
+	public warn(message: string, ...args: any[]) {
+		this.base.warn(message, ...args, this.context);
+	}
+
+	public info(message: string, ...args: any[]) {
+		this.base.info(message, ...args, this.context);
+	}
+
+	public debug(message: string, ...args: any[]) {
+		this.base.debug(message, ...args, this.context);
+	}
+
+	public trace(message: string, ...args: any[]) {
+		this.base.trace(message, ...args, this.context);
+	}
+
+	public setLevel(level: LogLevel) {
+		this.base.setLevel(level);
+	}
+}
+
+function resolveLogLevelFromEnv(): LogLevel {
+	const value =
+		(typeof globalThis !== "undefined" &&
+		typeof (globalThis as Record<string, any>).LOG_LEVEL === "string"
+			? ((globalThis as Record<string, any>).LOG_LEVEL as string)
+			: typeof process !== "undefined" && process?.env?.LOG_LEVEL
+				? process.env.LOG_LEVEL
+				: undefined) ?? "";
+
+	if (!value) {
+		return LogLevel.ERROR;
+	}
+
+	const normalized = value.toUpperCase();
+	switch (normalized) {
+		case "TRACE":
+			return LogLevel.TRACE;
+		case "DEBUG":
+			return LogLevel.DEBUG;
+		case "INFO":
+			return LogLevel.INFO;
+		case "WARN":
+			return LogLevel.WARN;
+		case "ERROR":
+		default:
+			return LogLevel.ERROR;
+	}
 }
 
 export const getLogger = (options?: LoggerOptions) => {
+	const instanceOptions: LoggerOptions = {
+		prefix: options?.prefix,
+		level: options?.level,
+	};
+
 	if (!options) {
-		return Logger.getInstance({ level: LogLevel.INFO });
+		instanceOptions.level = LogLevel.INFO;
 	}
 
-	return Logger.getInstance(options);
+	const baseLogger = Logger.getInstance(instanceOptions);
+
+	const mergedMeta = {
+		...(options?.defaultMeta ?? {}),
+		...(options?.requestId ? { requestId: options.requestId } : {}),
+	};
+
+	if (Object.keys(mergedMeta).length > 0) {
+		return baseLogger.withContext(mergedMeta);
+	}
+
+	return baseLogger;
 };
 
 export default Logger;

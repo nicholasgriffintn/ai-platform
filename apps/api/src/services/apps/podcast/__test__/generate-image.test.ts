@@ -3,6 +3,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { IFunctionResponse } from "~/types";
 import { AssistantError } from "~/utils/errors";
 import { handlePodcastGenerateImage } from "../generate-image";
+import { getLogger } from "~/utils/logger";
 
 const mockRepositories = {
 	appData: {
@@ -34,8 +35,9 @@ describe("handlePodcastGenerateImage", () => {
 		PUBLIC_ASSETS_URL: "https://assets.example.com",
 	} as any;
 	const mockUser = { id: "user-123", email: "test@example.com" } as any;
-	const createMockContext = (overrides: Partial<ServiceContext> = {}) =>
-		({
+	const createMockContext = (overrides: Partial<ServiceContext> = {}) => {
+		const logger = getLogger({ prefix: "test" });
+		return {
 			env: mockEnv,
 			user: mockUser,
 			repositories: mockRepositories as any,
@@ -44,8 +46,13 @@ describe("handlePodcastGenerateImage", () => {
 			database: {} as any,
 			requestId: undefined,
 			requestCache: new Map(),
+			userSettings: null,
+			getUserSettings: vi.fn().mockResolvedValue(null),
+			setUserSettings: vi.fn(),
+			getLogger: vi.fn(() => logger),
 			...overrides,
-		}) satisfies ServiceContext;
+		} satisfies ServiceContext;
+	};
 
 	beforeEach(async () => {
 		vi.clearAllMocks();

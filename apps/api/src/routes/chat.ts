@@ -129,6 +129,17 @@ app.post(
 			...userContext,
 		};
 
+		if (user?.id) {
+			try {
+				await serviceContext.getUserSettings();
+			} catch (error) {
+				routeLogger.warn("Failed to preload user settings", {
+					requestId: serviceContext.requestId,
+					error,
+				});
+			}
+		}
+
 		const response = await handleCreateChatCompletions({
 			env: context.env as IEnv,
 			request: body,

@@ -106,18 +106,24 @@ export class RequestPreparer {
 			executionCtx,
 		} = options;
 		const requestCache = options.context?.requestCache;
+		const database = options.context?.database ?? new Database(this.env);
+		const repositories = options.context?.repositories ?? database.repositories;
 
 		const isProUser = user?.plan_id === "pro";
 
-		const userSettingsPromise = user?.id
-			? memoizeRequest(requestCache, `user-settings:${user.id}`, () =>
-					this.repositories.userSettings.getUserSettings(user.id),
-				)
-			: Promise.resolve(null);
+		const userSettingsPromise = options.context?.getUserSettings
+			? options.context.getUserSettings()
+			: user?.id
+				? memoizeRequest(requestCache, `user-settings:${user.id}`, () =>
+						repositories.userSettings.getUserSettings(user.id),
+					)
+				: Promise.resolve(null);
+
 		const modelConfigsPromise = this.buildModelConfigs(
 			options,
 			validationContext,
 		);
+
 		const finalMessagePromise = (async () => {
 			const resolvedSettings = await userSettingsPromise;
 			return this.processMessageContent(
@@ -143,7 +149,8 @@ export class RequestPreparer {
 		const primaryProvider = primaryModelConfig.provider;
 
 		const conversationManager = ConversationManager.getInstance({
-			database: new Database(this.env),
+			database,
+			repositories,
 			user: user || undefined,
 			anonymousUser: anonymousUser,
 			model: primaryModel,
