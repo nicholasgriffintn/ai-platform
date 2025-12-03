@@ -36,8 +36,6 @@ export async function validateCaptcha(c: Context, next: Next) {
 			"unknown";
 		const userAgent = c.req.header("user-agent") || "unknown";
 
-		const repositories = RepositoryManager.getInstance(c.env);
-
 		if (anonymousUser && anonymousUser.captcha_verified === 1) {
 			return next();
 		}
@@ -71,17 +69,29 @@ export async function validateCaptcha(c: Context, next: Next) {
 			);
 		}
 
+		let repositories: RepositoryManager | null = null;
+		const getRepositories = () => {
+			if (!repositories) {
+				repositories = RepositoryManager.getInstance(c.env);
+			}
+			return repositories;
+		};
+
 		if (anonymousUser) {
-			await repositories.anonymousUsers.updateAnonymousUser(anonymousUser.id, {
-				captcha_verified: 1,
-			});
-		} else {
-			const user = await repositories.anonymousUsers.getOrCreateAnonymousUser(
-				userIP,
-				userAgent,
+			await getRepositories().anonymousUsers.updateAnonymousUser(
+				anonymousUser.id,
+				{
+					captcha_verified: 1,
+				},
 			);
+		} else {
+			const user =
+				await getRepositories().anonymousUsers.getOrCreateAnonymousUser(
+					userIP,
+					userAgent,
+				);
 			if (user) {
-				await repositories.anonymousUsers.updateAnonymousUser(user.id, {
+				await getRepositories().anonymousUsers.updateAnonymousUser(user.id, {
 					captcha_verified: 1,
 				});
 

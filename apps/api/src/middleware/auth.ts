@@ -106,13 +106,20 @@ export async function authMiddleware(context: Context, next: Next) {
 	const authFromHeaders = context.req.header("Authorization");
 	const authToken = authFromQuery || authFromHeaders?.split("Bearer ")[1];
 
-	const cookies = parseCookies(context.req.header("Cookie") || "");
-	const sessionId = cookies.session;
-	const anonymousId = cookies[ANONYMOUS_ID_COOKIE];
+	let parsedCookies: Record<string, string> | null = null;
+	const getCookies = () => {
+		if (parsedCookies === null) {
+			const header = context.req.header("Cookie") || "";
+			parsedCookies = header ? parseCookies(header) : {};
+		}
+		return parsedCookies;
+	};
 
 	const isJwtToken = authToken?.split(".").length === 3;
 
 	const authPromises: Promise<User | null>[] = [];
+
+	const sessionId = getCookies().session;
 
 	if (sessionId) {
 		authPromises.push(getUserBySessionId(getRepositories(), sessionId));
@@ -188,6 +195,7 @@ export async function authMiddleware(context: Context, next: Next) {
 
 	if (!user) {
 		try {
+			const anonymousId = getCookies()[ANONYMOUS_ID_COOKIE];
 			if (anonymousId) {
 				anonymousUser =
 					await getRepositories().anonymousUsers.getAnonymousUserById(

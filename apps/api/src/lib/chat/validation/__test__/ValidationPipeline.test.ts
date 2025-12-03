@@ -166,8 +166,8 @@ describe("ValidationPipeline", () => {
 			expect(result.validation.error).toBe("Invalid input");
 			expect(result.validation.validationType).toBe("input");
 
+			expect(mockAuthValidator.validate).toHaveBeenCalled();
 			expect(mockBasicInputValidator.validate).toHaveBeenCalled();
-			expect(mockAuthValidator.validate).not.toHaveBeenCalled();
 			expect(mockModelConfigValidator.validate).not.toHaveBeenCalled();
 			expect(mockContextLimitValidator.validate).not.toHaveBeenCalled();
 			expect(mockGuardrailsValidator.validate).not.toHaveBeenCalled();
@@ -189,7 +189,7 @@ describe("ValidationPipeline", () => {
 			expect(result.validation.error).toBe("Authentication failed");
 			expect(result.validation.validationType).toBe("auth");
 
-			expect(mockBasicInputValidator.validate).toHaveBeenCalled();
+			expect(mockBasicInputValidator.validate).not.toHaveBeenCalled();
 			expect(mockAuthValidator.validate).toHaveBeenCalled();
 			expect(mockModelConfigValidator.validate).not.toHaveBeenCalled();
 		});

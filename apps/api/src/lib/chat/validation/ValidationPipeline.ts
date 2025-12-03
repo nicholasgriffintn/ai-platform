@@ -36,8 +36,8 @@ export interface Validator {
 
 export class ValidationPipeline {
 	private validators: Validator[] = [
-		new BasicInputValidator(),
 		new AuthValidator(),
+		new BasicInputValidator(),
 		new ModelConfigValidator(),
 		new ContextLimitValidator(),
 		new GuardrailsValidator(),
