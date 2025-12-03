@@ -225,8 +225,8 @@ export class RequestPreparer {
 		validationContext: ValidationContext,
 	): Promise<ModelConfigInfo[]> {
 		const { env } = options;
-
-		const selectedModels = validationContext.selectedModels;
+		const { selectedModels, modelConfig } = validationContext;
+		const primaryModelConfig = modelConfig as ProviderModelConfig | undefined;
 
 		if (!selectedModels || selectedModels.length === 0) {
 			throw new AssistantError(
@@ -235,23 +235,41 @@ export class RequestPreparer {
 			);
 		}
 
-		const configPromises = selectedModels.map((model) =>
+		const successfulConfigs: ModelConfigInfo[] = [];
+		const seenModels = new Set<string>();
+		const addConfig = (config: ProviderModelConfig | null) => {
+			if (!config || seenModels.has(config.matchingModel)) {
+				return;
+			}
+			seenModels.add(config.matchingModel);
+			successfulConfigs.push({
+				model: config.matchingModel,
+				provider: config.provider,
+				displayName: config.name || config.matchingModel,
+			});
+		};
+
+		const shouldSkipPrimaryFetch =
+			Boolean(primaryModelConfig) && selectedModels.length > 0;
+
+		if (shouldSkipPrimaryFetch && primaryModelConfig) {
+			addConfig(primaryModelConfig);
+		}
+
+		const modelsToFetch = shouldSkipPrimaryFetch
+			? selectedModels.slice(1)
+			: selectedModels.slice();
+
+		const configPromises = modelsToFetch.map((model) =>
 			RequestPreparer.getCachedModelConfig(model, env),
 		);
 		const configResults = await Promise.allSettled(configPromises);
-
-		const successfulConfigs: ModelConfigInfo[] = [];
-
 		configResults.forEach((result, index) => {
 			if (result.status === "fulfilled" && result.value) {
-				successfulConfigs.push({
-					model: result.value.matchingModel,
-					provider: result.value.provider,
-					displayName: result.value.name || result.value.matchingModel,
-				});
+				addConfig(result.value);
 			} else {
 				logger.warn("Failed to get model configuration", {
-					model: selectedModels[index],
+					model: modelsToFetch[index],
 					error:
 						result.status === "rejected" ? result.reason : "No config returned",
 				});

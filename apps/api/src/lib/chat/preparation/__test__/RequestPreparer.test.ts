@@ -258,9 +258,49 @@ describe("RequestPreparer", () => {
 		it("should throw error when model config is invalid", async () => {
 			vi.mocked(getModelConfig).mockResolvedValue(null);
 
+			const contextWithoutPrimary = {
+				...baseValidationContext,
+				modelConfig: undefined,
+			};
+
 			await expect(
-				(preparer as any).buildModelConfigs(baseOptions, baseValidationContext),
+				(preparer as any).buildModelConfigs(baseOptions, contextWithoutPrimary),
 			).rejects.toThrow("No valid model configurations available");
+		});
+
+		it("should reuse primary model config and avoid refetching it", async () => {
+			const secondaryModel = {
+				matchingModel: "gpt-4o",
+				provider: "openai",
+				name: "GPT-4o",
+			};
+
+			const multiModelContext = {
+				...baseValidationContext,
+				selectedModels: ["claude-3-sonnet", "gpt-4o"],
+			};
+
+			vi.mocked(getModelConfig).mockResolvedValueOnce(secondaryModel as any);
+
+			const result = await (preparer as any).buildModelConfigs(
+				baseOptions,
+				multiModelContext,
+			);
+
+			expect(getModelConfig).toHaveBeenCalledTimes(1);
+			expect(getModelConfig).toHaveBeenCalledWith("gpt-4o", mockEnv);
+			expect(result).toEqual([
+				{
+					model: "claude-3-sonnet",
+					provider: "anthropic",
+					displayName: "Claude 3 Sonnet",
+				},
+				{
+					model: "gpt-4o",
+					provider: "openai",
+					displayName: "GPT-4o",
+				},
+			]);
 		});
 	});
 
