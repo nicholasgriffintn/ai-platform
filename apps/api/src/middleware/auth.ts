@@ -91,6 +91,14 @@ export async function authMiddleware(context: Context, next: Next) {
 	const userAgent = context.req.header("user-agent") || "unknown";
 
 	const hasJwtSecret = !!context.env.JWT_SECRET;
+	let repositories: RepositoryManager | null = null;
+	const getRepositories = () => {
+		if (!repositories) {
+			repositories = new RepositoryManager(context.env);
+		}
+		return repositories;
+	};
+
 	let user: User | null = null;
 	let anonymousUser: AnonymousUser | null = null;
 
@@ -103,22 +111,21 @@ export async function authMiddleware(context: Context, next: Next) {
 	const anonymousId = cookies[ANONYMOUS_ID_COOKIE];
 
 	const isJwtToken = authToken?.split(".").length === 3;
-	const repositories = new RepositoryManager(context.env);
 
 	const authPromises: Promise<User | null>[] = [];
 
 	if (sessionId) {
-		authPromises.push(getUserBySessionId(repositories, sessionId));
+		authPromises.push(getUserBySessionId(getRepositories(), sessionId));
 	}
 
 	if (authToken?.startsWith("ak_")) {
 		authPromises.push(
 			(async () => {
 				try {
-					const userId =
-						await repositories.apiKeys.findUserIdByApiKey(authToken);
+					const repo = getRepositories();
+					const userId = await repo.apiKeys.findUserIdByApiKey(authToken);
 					if (userId) {
-						const foundUser = await repositories.users.getUserById(userId);
+						const foundUser = await repo.users.getUserById(userId);
 						return (foundUser as unknown as User) || null;
 					}
 					return null;
@@ -156,10 +163,23 @@ export async function authMiddleware(context: Context, next: Next) {
 			fulfilledResult?.status === "fulfilled" ? fulfilledResult.value : null;
 	}
 
-	const isBot = await isBotCached(userAgent, context.env.CACHE);
 	const isProUser = user?.plan_id === "pro";
 
-	if (userAgent === "unknown" || (isBot && !isProUser)) {
+	if (userAgent === "unknown") {
+		throw new AssistantError(
+			"Bot access is not allowed.",
+			ErrorType.AUTHENTICATION_ERROR,
+		);
+	}
+
+	let isBot = false;
+	const shouldSkipBotCheck = Boolean(authToken) || Boolean(isProUser);
+
+	if (!shouldSkipBotCheck) {
+		isBot = await isBotCached(userAgent, context.env.CACHE);
+	}
+
+	if (isBot && !isProUser) {
 		throw new AssistantError(
 			"Bot access is not allowed.",
 			ErrorType.AUTHENTICATION_ERROR,
@@ -170,12 +190,14 @@ export async function authMiddleware(context: Context, next: Next) {
 		try {
 			if (anonymousId) {
 				anonymousUser =
-					await repositories.anonymousUsers.getAnonymousUserById(anonymousId);
+					await getRepositories().anonymousUsers.getAnonymousUserById(
+						anonymousId,
+					);
 			}
 
 			if (!anonymousUser) {
 				anonymousUser =
-					await repositories.anonymousUsers.getOrCreateAnonymousUser(
+					await getRepositories().anonymousUsers.getOrCreateAnonymousUser(
 						ipAddress,
 						userAgent,
 					);

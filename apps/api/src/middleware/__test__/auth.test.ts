@@ -20,6 +20,7 @@ const mockRepositories = {
 const mockGetUserByJwtToken = vi.fn();
 const mockGetUserBySessionId = vi.fn();
 const mockIsbot = vi.fn();
+let RepositoryManagerMock: any;
 
 vi.mock("~/repositories", () => ({
 	RepositoryManager: vi.fn(() => mockRepositories),
@@ -91,9 +92,8 @@ describe("Auth Middleware", () => {
 		const { getUserBySessionId } = await import("~/services/auth/user");
 		const { isbot } = await import("isbot");
 
-		vi.mocked(RepositoryManager).mockImplementation(
-			() => mockRepositories as any,
-		);
+		RepositoryManagerMock = vi.mocked(RepositoryManager);
+		RepositoryManagerMock.mockImplementation(() => mockRepositories as any);
 		vi.mocked(KVCache.createKey).mockReturnValue("bot:user-agent");
 		vi.mocked(getUserByJwtToken).mockImplementation(mockGetUserByJwtToken);
 		vi.mocked(getUserBySessionId).mockImplementation(mockGetUserBySessionId);
@@ -138,6 +138,7 @@ describe("Auth Middleware", () => {
 			);
 
 			expect(mockNext).not.toHaveBeenCalled();
+			expect(mockIsbot).toHaveBeenCalled();
 		});
 
 		it("should allow pro user bots", async () => {
@@ -161,6 +162,7 @@ describe("Auth Middleware", () => {
 
 			expect(mockNext).toHaveBeenCalled();
 			expect(context.set).toHaveBeenCalledWith("user", mockProUser);
+			expect(mockIsbot).not.toHaveBeenCalled();
 		});
 
 		it("should authenticate user with session ID", async () => {
@@ -212,6 +214,7 @@ describe("Auth Middleware", () => {
 			);
 			expect(context.set).toHaveBeenCalledWith("user", mockUser);
 			expect(mockNext).toHaveBeenCalled();
+			expect(mockIsbot).not.toHaveBeenCalled();
 		});
 
 		it("should authenticate user with JWT token", async () => {
@@ -234,6 +237,8 @@ describe("Auth Middleware", () => {
 			expect(mockGetUserByJwtToken).toHaveBeenCalled();
 			expect(context.set).toHaveBeenCalledWith("user", mockUser);
 			expect(mockNext).toHaveBeenCalled();
+			expect(mockIsbot).not.toHaveBeenCalled();
+			expect(RepositoryManagerMock).not.toHaveBeenCalled();
 		});
 
 		it("should create anonymous user when no authentication found", async () => {
