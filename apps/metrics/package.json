@@ -26,8 +26,8 @@
 		"class-variance-authority": "0.7.1",
 		"clsx": "2.1.1",
 		"lucide-react": "0.555.0",
-		"react": "19.2.0",
-		"react-dom": "19.2.0",
+		"react": "19.2.1",
+		"react-dom": "19.2.1",
 		"recharts": "2.15.4",
 		"tailwind-merge": "3.4.0",
 		"tailwindcss": "4.1.17"
