@@ -54,6 +54,7 @@ class AuthService {
 		try {
 			const response = await fetchApi("/auth/me", {
 				method: "GET",
+				timeoutMs: 10000,
 			});
 
 			if (!response.ok) {
@@ -97,6 +98,7 @@ class AuthService {
 
 			const response = await fetchApi("/auth/token", {
 				method: "GET",
+				timeoutMs: 10000,
 			});
 
 			if (!response.ok) {
@@ -132,11 +134,16 @@ class AuthService {
 
 		const refreshTime = this.tokenExpiry.getTime() - Date.now() - 3 * 60 * 1000;
 
-		if (refreshTime > 0) {
+		if (refreshTime <= 0) {
 			this.refreshTimer = setTimeout(async () => {
 				await this.getToken();
-			}, refreshTime);
+			}, 0);
+			return;
 		}
+
+		this.refreshTimer = setTimeout(async () => {
+			await this.getToken();
+		}, refreshTime);
 	}
 
 	private clearTokenRefresh(): void {
@@ -151,6 +158,7 @@ class AuthService {
 		try {
 			const response = await fetchApi("/auth/logout", {
 				method: "POST",
+				timeoutMs: 10000,
 			});
 
 			if (response.ok) {
@@ -205,6 +213,7 @@ class AuthService {
 			const response = await fetchApi("/auth/magic-link/request", {
 				method: "POST",
 				body: JSON.stringify({ email }),
+				timeoutMs: 10000,
 			});
 
 			if (!response.ok) {
@@ -236,6 +245,7 @@ class AuthService {
 			const response = await fetchApi("/auth/magic-link/verify", {
 				method: "POST",
 				body: JSON.stringify({ token, nonce }),
+				timeoutMs: 10000,
 			});
 
 			const data = await returnFetchedData<{

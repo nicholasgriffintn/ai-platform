@@ -16,6 +16,11 @@ export async function rateLimit(context: Context, next: Next) {
 
 	const url = context.req.url;
 	const pathname = new URL(url).pathname;
+
+	if (pathname === "/status" || pathname === "/openapi") {
+		return next();
+	}
+
 	const formattedPathname = pathname.replace(/\//g, "_");
 
 	const user = context.get("user");

@@ -39,27 +39,12 @@ export const BEACON_CONFIG = {
 export const CAPTCHA_SITE_KEY = import.meta.env.VITE_CAPTCHA_SITE_KEY || "";
 export const ENABLE_CAPTCHA_IN_DEV = false;
 
-export const CSP = {
+const COMMON_CSP = {
 	defaultSrc: ["'self'"],
 	frameSrc: [
 		"https://hcaptcha.com",
 		"https://*.hcaptcha.com",
 		"https://strudel.cc",
-	],
-	scriptSrc: [
-		"eu.i.posthog.com",
-		"eu-assets.i.posthog.com",
-		"beacon.polychat.app",
-		"https://unpkg.com/react@18/umd/react.development.js",
-		"https://unpkg.com/react-dom@18/umd/react-dom.development.js",
-		"https://unpkg.com/@strudel/embed@latest",
-		"https://unpkg.com/@strudel/repl@latest",
-		"https://hcaptcha.com",
-		"https://*.hcaptcha.com",
-		"'self'",
-		"'unsafe-inline'",
-		"'unsafe-eval'",
-		"data:",
 	],
 	styleSrc: [
 		"https://hcaptcha.com",
@@ -93,7 +78,32 @@ export const CSP = {
 		"https://strudel.cc",
 	],
 	mediaSrc: ["'self'", "data:", "https://assistant-assets.nickgriffin.uk"],
-};
+} as const;
+
+const SCRIPT_SRC = [
+	"eu.i.posthog.com",
+	"eu-assets.i.posthog.com",
+	"beacon.polychat.app",
+	"https://unpkg.com/react@18/umd/react.development.js",
+	"https://unpkg.com/react-dom@18/umd/react-dom.development.js",
+	"https://unpkg.com/@strudel/embed@latest",
+	"https://unpkg.com/@strudel/repl@latest",
+	"https://hcaptcha.com",
+	"https://*.hcaptcha.com",
+	"'self'",
+	"'unsafe-inline'",
+	"'unsafe-eval'",
+	"data:",
+];
+
+const CSP = {
+	...COMMON_CSP,
+	scriptSrc: SCRIPT_SRC,
+} as const;
+
+export const BEACON_ALLOWED_ORIGINS = IS_PRODUCTION
+	? ["https://beacon.polychat.app"]
+	: ["https://beacon.polychat.app", "http://localhost:5173"];
 
 /**
  * Generates the Content Security Policy string from the CSP configuration

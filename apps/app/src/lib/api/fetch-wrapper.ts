@@ -1,5 +1,7 @@
 import { API_BASE_URL } from "~/constants";
 
+const DEFAULT_FETCH_TIMEOUT_MS = 15_000;
+
 /**
  * Reads a specific cookie by name.
  * @param name The name of the cookie.
@@ -22,7 +24,20 @@ function getCookie(name: string): string | null {
  */
 type FetchApiOptions = Omit<RequestInit, "body"> & {
 	body?: BodyInit | Record<string, any> | null;
+	timeoutMs?: number | null;
 };
+
+export class ApiError extends Error {
+	status: number;
+	data?: unknown;
+
+	constructor(message: string, status: number, data?: unknown) {
+		super(message);
+		this.name = "ApiError";
+		this.status = status;
+		this.data = data;
+	}
+}
 
 /**
  * A wrapper around the native fetch function to automatically handle
@@ -37,18 +52,19 @@ async function performFetch(
 	options: FetchApiOptions = {},
 ): Promise<Response> {
 	const url = `${API_BASE_URL}${path}`;
+	const { timeoutMs, ...restOptions } = options;
 
 	const defaultHeaders: Record<string, string> = {
-		...(options.headers as Record<string, string>),
+		...(restOptions.headers as Record<string, string>),
 	};
 
-	const isFormData = options.body instanceof FormData;
+	const isFormData = restOptions.body instanceof FormData;
 
 	if (!isFormData && !defaultHeaders["Content-Type"]) {
 		defaultHeaders["Content-Type"] = "application/json";
 	}
 
-	const method = options.method?.toUpperCase() || "GET";
+	const method = restOptions.method?.toUpperCase() || "GET";
 
 	if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
 		const csrfToken = getCookie("_csrf");
@@ -57,30 +73,51 @@ async function performFetch(
 		}
 	}
 
+	const resolvedTimeout =
+		timeoutMs === null || timeoutMs === 0
+			? null
+			: (timeoutMs ?? DEFAULT_FETCH_TIMEOUT_MS);
+	let timeoutId: NodeJS.Timeout | null = null;
+
 	const fetchOptions: RequestInit = {
-		...options,
+		...restOptions,
 		headers: defaultHeaders,
 		credentials: "include",
 		body: undefined,
 	};
 
-	if (options.body !== null && options.body !== undefined) {
+	if (!restOptions.signal) {
+		const controller = new AbortController();
+		fetchOptions.signal = controller.signal;
+		timeoutId = setTimeout(
+			() => controller.abort(),
+			resolvedTimeout ?? DEFAULT_FETCH_TIMEOUT_MS,
+		);
+	}
+
+	if (restOptions.body !== null && restOptions.body !== undefined) {
 		if (
-			typeof options.body === "string" ||
-			options.body instanceof Blob ||
-			options.body instanceof FormData ||
-			options.body instanceof URLSearchParams ||
-			options.body instanceof ArrayBuffer ||
-			options.body instanceof ReadableStream ||
-			ArrayBuffer.isView(options.body)
+			typeof restOptions.body === "string" ||
+			restOptions.body instanceof Blob ||
+			restOptions.body instanceof FormData ||
+			restOptions.body instanceof URLSearchParams ||
+			restOptions.body instanceof ArrayBuffer ||
+			restOptions.body instanceof ReadableStream ||
+			ArrayBuffer.isView(restOptions.body)
 		) {
-			fetchOptions.body = options.body as BodyInit;
-		} else if (typeof options.body === "object") {
-			fetchOptions.body = JSON.stringify(options.body);
+			fetchOptions.body = restOptions.body as BodyInit;
+		} else if (typeof restOptions.body === "object") {
+			fetchOptions.body = JSON.stringify(restOptions.body);
 		}
 	}
 
-	return fetch(url, fetchOptions);
+	try {
+		return await fetch(url, fetchOptions);
+	} finally {
+		if (timeoutId) {
+			clearTimeout(timeoutId);
+		}
+	}
 }
 
 export async function fetchApi(
@@ -90,6 +127,32 @@ export async function fetchApi(
 	let response = await performFetch(path, options);
 
 	return response;
+}
+
+/**
+ * Fetch wrapper that throws ApiError on non-2xx responses and attempts to parse
+ * a JSON error body when available.
+ */
+export async function fetchApiOrThrow(
+	path: string,
+	options: FetchApiOptions = {},
+): Promise<Response> {
+	const response = await performFetch(path, options);
+	if (response.ok) return response;
+
+	let parsed: unknown;
+	try {
+		parsed = await response.clone().json();
+	} catch {
+		parsed = undefined;
+	}
+
+	const message =
+		parsed && typeof parsed === "object" && "error" in parsed && parsed.error
+			? String((parsed as { error: string }).error)
+			: response.statusText || "Request failed";
+
+	throw new ApiError(message, response.status, parsed);
 }
 
 export async function returnFetchedData<T>(response: Response): Promise<T> {

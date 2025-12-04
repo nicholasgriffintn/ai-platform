@@ -104,6 +104,9 @@ app.use(securityHeaders());
 
 app.use("*", loggerMiddleware);
 
+app.use("/status", async (_c, next) => next());
+app.use("/openapi", async (_c, next) => next());
+
 app.use("*", authMiddleware);
 
 app.use("*", rateLimit);
@@ -212,17 +215,23 @@ app.get(
 			{ status: string; responseTime?: number; error?: string }
 		> = {};
 
-		try {
-			const dbStart = Date.now();
-			await c.env.DB.prepare("SELECT 1").first();
+		if (c.env.DB) {
+			try {
+				const dbStart = Date.now();
+				await c.env.DB.prepare("SELECT 1").first();
+				healthChecks.database = {
+					status: "healthy",
+					responseTime: Date.now() - dbStart,
+				};
+			} catch (error) {
+				healthChecks.database = {
+					status: "unhealthy",
+					error: error instanceof Error ? error.message : "Unknown error",
+				};
+			}
+		} else {
 			healthChecks.database = {
-				status: "healthy",
-				responseTime: Date.now() - dbStart,
-			};
-		} catch (error) {
-			healthChecks.database = {
-				status: "unhealthy",
-				error: error instanceof Error ? error.message : "Unknown error",
+				status: "not_configured",
 			};
 		}
 

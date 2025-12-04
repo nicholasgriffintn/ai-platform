@@ -47,6 +47,7 @@ export class UserService {
 		const response = await fetchApi("/models", {
 			method: "GET",
 			headers,
+			timeoutMs: 10000,
 		});
 
 		if (!response.ok) {
@@ -68,6 +69,7 @@ export class UserService {
 		const response = await fetchApi("/tools", {
 			method: "GET",
 			headers,
+			timeoutMs: 10000,
 		});
 		if (!response.ok) {
 			throw new Error(`Failed to fetch tools: ${response.statusText}`);
@@ -97,6 +99,7 @@ export class UserService {
 				apiKey,
 				secretKey,
 			},
+			timeoutMs: 10000,
 		});
 
 		if (!response.ok) {
@@ -119,6 +122,7 @@ export class UserService {
 		const response = await fetchApi("/user/providers", {
 			method: "GET",
 			headers,
+			timeoutMs: 10000,
 		});
 
 		if (!response.ok) {
@@ -141,6 +145,7 @@ export class UserService {
 		const response = await fetchApi("/user/sync-providers", {
 			method: "POST",
 			headers,
+			timeoutMs: 10000,
 		});
 
 		if (!response.ok) {
@@ -161,6 +166,7 @@ export class UserService {
 		const response = await fetchApi("/user/api-keys", {
 			method: "GET",
 			headers,
+			timeoutMs: 10000,
 		});
 
 		if (!response.ok) {
@@ -186,6 +192,7 @@ export class UserService {
 			method: "POST",
 			headers,
 			body: { name },
+			timeoutMs: 10000,
 		});
 
 		if (!response.ok) {
@@ -211,6 +218,7 @@ export class UserService {
 		const response = await fetchApi(`/user/api-keys/${keyId}`, {
 			method: "DELETE",
 			headers,
+			timeoutMs: 10000,
 		});
 
 		if (!response.ok) {

@@ -12,7 +12,7 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "middleware/auth" });
 
 const ANONYMOUS_ID_COOKIE = "anon_id";
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const BOT_CACHE_TTL = 86400; // 24 hours - bot detection is very stable
 
 let botCache: KVCache | null = null;
@@ -82,6 +82,11 @@ function parseCookies(cookieHeader: string): Record<string, string> {
  * @returns The next middleware function
  */
 export async function authMiddleware(context: Context, next: Next) {
+	const path = context.req.path;
+	if (path === "/status" || path === "/openapi") {
+		return next();
+	}
+
 	const ipAddress =
 		context.req.header("CF-Connecting-IP") ||
 		context.req.header("X-Forwarded-For") ||
@@ -211,10 +216,16 @@ export async function authMiddleware(context: Context, next: Next) {
 					);
 
 				if (anonymousUser) {
-					context.header(
-						"Set-Cookie",
-						`${ANONYMOUS_ID_COOKIE}=${anonymousUser.id}; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax; HttpOnly`,
-					);
+					const anonymousCookie = [
+						`${ANONYMOUS_ID_COOKIE}=${anonymousUser.id}`,
+						"Path=/",
+						`Max-Age=${COOKIE_MAX_AGE}`,
+						"SameSite=Lax",
+						"HttpOnly",
+						"Secure",
+					].join("; ");
+
+					context.header("Set-Cookie", anonymousCookie);
 				}
 			}
 		} catch (error) {
