@@ -85,7 +85,7 @@ describe("Rate Limit Middleware", () => {
 			await rateLimit(context, mockNext);
 
 			expect(context.env.PRO_RATE_LIMITER.limit).toHaveBeenCalledWith({
-				key: "authenticated-user-123-/chat/completions",
+				key: "authenticated-user-123-_chat_completions",
 			});
 			expect(mockNext).toHaveBeenCalled();
 		});
@@ -100,7 +100,7 @@ describe("Rate Limit Middleware", () => {
 			await rateLimit(context, mockNext);
 
 			expect(context.env.FREE_RATE_LIMITER.limit).toHaveBeenCalledWith({
-				key: "unauthenticated-undefined-/chat/completions",
+				key: "unauthenticated-_chat_completions",
 			});
 			expect(mockNext).toHaveBeenCalled();
 		});
@@ -199,7 +199,7 @@ describe("Rate Limit Middleware", () => {
 			await rateLimit(context, mockNext);
 
 			expect(context.env.FREE_RATE_LIMITER.limit).toHaveBeenCalledWith({
-				key: "unauthenticated-undefined-/chat/audio/speech",
+				key: "unauthenticated-_chat_audio_speech",
 			});
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
