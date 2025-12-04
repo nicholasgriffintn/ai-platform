@@ -16,15 +16,20 @@ export async function rateLimit(context: Context, next: Next) {
 
 	const url = context.req.url;
 	const pathname = new URL(url).pathname;
+	const formattedPathname = pathname.replace(/\//g, "_");
 
 	const user = context.get("user");
+	const anonymousUser = context.get("anonymousUser");
 	const userId: string = user?.id;
+	const anonymousUserId: string = anonymousUser?.id;
 
-	const key = user?.id
-		? `authenticated-${userId}-${pathname}`
-		: `unauthenticated-${userId}-${pathname}`;
+	const key = userId
+		? `authenticated-${userId}-${formattedPathname}`
+		: anonymousUserId
+			? `unauthenticated-${anonymousUserId}-${formattedPathname}`
+			: `unauthenticated-${formattedPathname}`;
 
-	const rateLimiter = user?.id
+	const rateLimiter = userId
 		? context.env.PRO_RATE_LIMITER
 		: context.env.FREE_RATE_LIMITER;
 
@@ -33,7 +38,7 @@ export async function rateLimit(context: Context, next: Next) {
 	});
 
 	if (!result.success) {
-		const errorMessage = user?.id
+		const errorMessage = userId
 			? "Rate limit exceeded: 100 requests per minute"
 			: "Rate limit exceeded: 10 requests per minute. Please authenticate for higher limits.";
 
@@ -41,14 +46,14 @@ export async function rateLimit(context: Context, next: Next) {
 			userId,
 			pathname,
 			key,
-			isAuthenticated: !!user?.id,
+			isAuthenticated: !!userId,
 		});
 
 		throw new AssistantError(errorMessage, ErrorType.RATE_LIMIT_ERROR);
 	}
 
 	const routeName = pathname.split("/").pop() || "unknown";
-	trackUsageMetric(userId, routeName, context.env.ANALYTICS);
+	trackUsageMetric(userId || anonymousUserId, routeName, context.env.ANALYTICS);
 
 	return next();
 }
