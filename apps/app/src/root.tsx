@@ -51,6 +51,7 @@ export default function Root() {
 							<Suspense fallback={null}>
 								<AnalyticsLazy
 									isEnabled={beaconConfig.enabled}
+									isExperimentsEnabled={beaconConfig.experimentsEnabled}
 									beaconEndpoint={beaconConfig.endpoint}
 									beaconSiteId={beaconConfig.siteId}
 									beaconDebug={beaconConfig.debug}

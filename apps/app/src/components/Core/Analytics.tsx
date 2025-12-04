@@ -69,7 +69,8 @@ declare global {
 }
 
 export function Analytics({
-	isEnabled = true,
+	isEnabled = false,
+	isExperimentsEnabled = false,
 	beaconEndpoint = BEACON_ENDPOINT,
 	beaconSiteId = "test-beacon",
 	beaconDebug = false,
@@ -79,6 +80,7 @@ export function Analytics({
 	batchTimeout = 5000,
 }: {
 	isEnabled?: boolean;
+	isExperimentsEnabled?: boolean;
 	beaconEndpoint?: string;
 	beaconSiteId?: string;
 	beaconDebug?: boolean;
@@ -128,7 +130,7 @@ export function Analytics({
 	}, [isEnabled]);
 
 	useEffect(() => {
-		if (!isEnabled) {
+		if (!isExperimentsEnabled) {
 			return;
 		}
 
@@ -159,7 +161,7 @@ export function Analytics({
 		document.head.appendChild(script);
 
 		return () => {};
-	}, [isEnabled]);
+	}, [isExperimentsEnabled]);
 
 	return null;
 }

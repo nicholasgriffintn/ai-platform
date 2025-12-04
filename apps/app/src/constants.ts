@@ -29,6 +29,8 @@ export const POSTHOG_CONFIG = {
 
 export const BEACON_CONFIG = {
 	enabled: import.meta.env.VITE_ENABLE_BEACON === "true" || false,
+	experimentsEnabled:
+		import.meta.env.VITE_ENABLE_BEACON_EXPERIMENTS === "true" || false,
 	endpoint: import.meta.env.VITE_BEACON_ENDPOINT || "",
 	siteId: import.meta.env.VITE_BEACON_SITE_ID || "",
 	debug: import.meta.env.VITE_BEACON_DEBUG === "true" || false,
