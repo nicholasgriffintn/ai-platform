@@ -47,17 +47,15 @@ export default function Root() {
 			<LoadingProvider>
 				<AppInitializer>
 					<CaptchaProvider>
-						{beaconConfig.enabled && (
-							<Suspense fallback={null}>
-								<AnalyticsLazy
-									isEnabled={beaconConfig.enabled}
-									isExperimentsEnabled={beaconConfig.experimentsEnabled}
-									beaconEndpoint={beaconConfig.endpoint}
-									beaconSiteId={beaconConfig.siteId}
-									beaconDebug={beaconConfig.debug}
-								/>
-							</Suspense>
-						)}
+						<Suspense fallback={null}>
+							<AnalyticsLazy
+								isEnabled={beaconConfig.enabled}
+								isExperimentsEnabled={beaconConfig.experimentsEnabled}
+								beaconEndpoint={beaconConfig.endpoint}
+								beaconSiteId={beaconConfig.siteId}
+								beaconDebug={beaconConfig.debug}
+							/>
+						</Suspense>
 						<Outlet />
 						<ServiceWorkerRegistration />
 						<Toaster />

@@ -56,22 +56,27 @@ const app = new Hono<{
 	Bindings: IEnv;
 }>();
 
-const corsOrigin = (origin: string, c: Context) => {
-	if (!origin) return "";
-	const environment = c.env.ENV;
-	if (environment === "production" && origin.includes(PROD_HOST)) return origin;
-	if (environment === "development" && origin.includes(LOCAL_HOST))
-		return origin;
-	return "";
+const getOriginHost = (origin: string) => {
+	try {
+		return new URL(origin).host;
+	} catch {
+		return "";
+	}
 };
 
-const csrfOrigin = (origin: string, c: Context) => {
-	if (!origin) return false;
-	const environment = c.env.ENV;
-	if (environment === "production" && origin.includes(PROD_HOST)) return true;
-	if (environment === "development" && origin.includes(LOCAL_HOST)) return true;
+const isAllowedOrigin = (origin: string, environment: string) => {
+	const host = getOriginHost(origin);
+	if (!host) return false;
+	if (environment === "production") return host === PROD_HOST;
+	if (environment === "development") return host === LOCAL_HOST;
 	return false;
 };
+
+const corsOrigin = (origin: string, c: Context) =>
+	origin && isAllowedOrigin(origin, c.env.ENV) ? origin : "";
+
+const csrfOrigin = (origin: string, c: Context) =>
+	Boolean(origin && isAllowedOrigin(origin, c.env.ENV));
 
 app.use(
 	"*",
@@ -288,10 +293,14 @@ app.get(
 	async (context: Context) => {
 		const query = context.req.query();
 
+		const boundedLimit = Math.min(Number(query.limit) || 100, 500);
+		const boundedInterval = Math.min(Number(query.interval) || 1, 60);
+		const boundedTimeframe = Math.min(Number(query.timeframe) || 24, 72);
+
 		const metricsResponse = await handleGetMetrics(context, {
-			limit: Number(query.limit) || 100,
-			interval: query.interval || "1",
-			timeframe: query.timeframe || "24",
+			limit: boundedLimit,
+			interval: boundedInterval.toString(),
+			timeframe: boundedTimeframe.toString(),
 			type: query.type,
 			status: query.status,
 		});

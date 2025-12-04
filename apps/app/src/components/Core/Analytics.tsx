@@ -72,7 +72,7 @@ export function Analytics({
 	isEnabled = false,
 	isExperimentsEnabled = false,
 	beaconEndpoint = BEACON_ENDPOINT,
-	beaconSiteId = "test-beacon",
+	beaconSiteId = "",
 	beaconDebug = false,
 	directEvents = false,
 	directPageViews = true,
@@ -90,24 +90,35 @@ export function Analytics({
 	batchTimeout?: number;
 }) {
 	useEffect(() => {
-		if (!isEnabled) {
+		if (!isEnabled || !beaconSiteId.trim()) {
 			return;
 		}
 
-		if (
-			window._beaconInitialized ||
-			document.querySelector(`script[src="${beaconEndpoint}/beacon.min.js"]`)
-		) {
-			return;
+		let beaconScript: HTMLScriptElement | null = null;
+
+		if (window._beaconInitialized) {
+			const existingBeaconScript = document.querySelector(
+				`script[src="${beaconEndpoint}/beacon.min.js"]`,
+			);
+			if (!existingBeaconScript) {
+				delete window._beaconInitialized;
+			} else {
+				beaconScript = existingBeaconScript as HTMLScriptElement;
+				return () => {
+					beaconScript?.remove();
+					delete window._beaconInitialized;
+					delete window.Beacon;
+				};
+			}
 		}
 
 		window._beaconInitialized = true;
 
-		const script = document.createElement("script");
-		script.src = `${beaconEndpoint}/beacon.min.js`;
-		script.async = true;
+		beaconScript = document.createElement("script");
+		beaconScript.src = `${beaconEndpoint}/beacon.min.js`;
+		beaconScript.async = true;
 
-		script.onload = () => {
+		beaconScript.onload = () => {
 			if (window.Beacon) {
 				window.Beacon.init({
 					endpoint: beaconEndpoint,
@@ -115,7 +126,7 @@ export function Analytics({
 					debug: beaconDebug,
 					trackClicks: true,
 					trackUserTimings: true,
-					respectDoNotTrack: false,
+					respectDoNotTrack: true,
 					directEvents,
 					directPageViews,
 					batchSize,
@@ -124,32 +135,54 @@ export function Analytics({
 			}
 		};
 
-		document.head.appendChild(script);
+		document.head.appendChild(beaconScript);
 
-		return () => {};
-	}, [isEnabled]);
+		return () => {
+			beaconScript?.remove();
+			delete window._beaconInitialized;
+			delete window.Beacon;
+		};
+	}, [
+		batchSize,
+		batchTimeout,
+		beaconDebug,
+		beaconEndpoint,
+		beaconSiteId,
+		directEvents,
+		directPageViews,
+		isEnabled,
+	]);
 
 	useEffect(() => {
 		if (!isExperimentsEnabled) {
 			return;
 		}
 
-		if (
-			window._expBeaconInitialized ||
-			document.querySelector(
+		let expBeaconScript: HTMLScriptElement | null = null;
+
+		if (window._expBeaconInitialized) {
+			const existingExpScript = document.querySelector(
 				`script[src="${beaconEndpoint}/exp-beacon.min.js"]`,
-			)
-		) {
-			return;
+			);
+			if (!existingExpScript) {
+				delete window._expBeaconInitialized;
+			} else {
+				expBeaconScript = existingExpScript as HTMLScriptElement;
+				return () => {
+					expBeaconScript?.remove();
+					delete window._expBeaconInitialized;
+					delete window.BeaconExperiments;
+				};
+			}
 		}
 
 		window._expBeaconInitialized = true;
 
-		const script = document.createElement("script");
-		script.src = `${beaconEndpoint}/exp-beacon.min.js`;
-		script.async = true;
+		expBeaconScript = document.createElement("script");
+		expBeaconScript.src = `${beaconEndpoint}/exp-beacon.min.js`;
+		expBeaconScript.async = true;
 
-		script.onload = () => {
+		expBeaconScript.onload = () => {
 			if (window.BeaconExperiments) {
 				window.BeaconExperiments.init({
 					debug: beaconDebug,
@@ -158,10 +191,14 @@ export function Analytics({
 			}
 		};
 
-		document.head.appendChild(script);
+		document.head.appendChild(expBeaconScript);
 
-		return () => {};
-	}, [isExperimentsEnabled]);
+		return () => {
+			expBeaconScript?.remove();
+			delete window._expBeaconInitialized;
+			delete window.BeaconExperiments;
+		};
+	}, [beaconDebug, beaconEndpoint, isExperimentsEnabled]);
 
 	return null;
 }

@@ -54,8 +54,6 @@ export class UserService {
 		}
 		const responseData = await returnFetchedData<any>(response);
 
-		console.log("Fetched models:", responseData);
-
 		return responseData.data;
 	}
 
