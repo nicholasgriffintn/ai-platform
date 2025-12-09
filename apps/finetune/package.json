@@ -31,7 +31,7 @@
 	"devDependencies": {
 		"@prettier/plugin-oxc": "^0.0.5",
 		"@types/better-sqlite3": "7.6.13",
-		"@types/node": "24.10.1",
+		"@types/node": "24.10.2",
 		"oxlint": "1.32.0",
 		"prettier": "3.6.2",
 		"tsx": "4.21.0",
