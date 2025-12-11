@@ -341,8 +341,8 @@ importers:
   apps/finetune:
     dependencies:
       '@aws-sdk/client-bedrock':
-        specifier: 3.948.0
-        version: 3.948.0
+        specifier: 3.949.0
+        version: 3.949.0
       '@aws-sdk/client-s3':
         specifier: 3.948.0
         version: 3.948.0
@@ -594,8 +594,8 @@ packages:
   '@aws-crypto/util@5.2.0':
     resolution: {integrity: sha512-4RkU9EsI6ZpBve5fseQlGNUWKMa1RLPQ1dnjnQoe07ldfIzcsGb5hC5W0Dm7u423KWzawlrpbjXBrXCEv9zazQ==}
 
-  '@aws-sdk/client-bedrock@3.948.0':
-    resolution: {integrity: sha512-y6/CtirWYt+Q71I12IQbVufN1ZeGqXVdcUudP1r2+pBCL+ANZmx+tcEMAi63Zw3yp8rFeu9to1gGa4/pdY60UQ==}
+  '@aws-sdk/client-bedrock@3.949.0':
+    resolution: {integrity: sha512-15u1+A6LHafEHjEBLWAQJywcmujjLdttLMi5umNPWWMLm/17isxbiEOwTTP3ovlBqoqigkrEmpXUf2HxQGrKbA==}
     engines: {node: '>=18.0.0'}
 
   '@aws-sdk/client-s3@3.948.0':
@@ -6559,7 +6559,7 @@ snapshots:
       '@smithy/util-utf8': 2.3.0
       tslib: 2.8.1
 
-  '@aws-sdk/client-bedrock@3.948.0':
+  '@aws-sdk/client-bedrock@3.949.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
