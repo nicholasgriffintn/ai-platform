@@ -27,7 +27,7 @@
 		"check": "pnpm lint && pnpm format:check"
 	},
 	"dependencies": {
-		"zod": "4.1.13"
+		"zod": "4.2.0"
 	},
 	"devDependencies": {
 		"@prettier/plugin-oxc": "^0.0.5",
@@ -38,6 +38,6 @@
 		"typescript": "5.9.3"
 	},
 	"peerDependencies": {
-		"zod": "4.1.13"
+		"zod": "4.2.0"
 	}
 }
