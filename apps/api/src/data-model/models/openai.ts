@@ -672,8 +672,46 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 	}),
 
+	createModelConfig("gpt-image-1", PROVIDER, {
+		name: "GPT Image Generation 1",
+		matchingModel: "gpt-image-1",
+		description: "OpenAI's model for image generation.",
+		strengths: ["creative"],
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.001,
+		contextComplexity: 3,
+		reliability: 4,
+		speed: 3,
+		isFeatured: true,
+		supportsImageEdits: true,
+		timeout: 1000000,
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
+	}),
+
+	createModelConfig("gpt-image-1-mini", PROVIDER, {
+		name: "GPT Image Generation 1 Mini",
+		matchingModel: "gpt-image-1-mini",
+		description: "OpenAI's model for image generation, but smaller / faster.",
+		strengths: ["creative"],
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.001,
+		contextComplexity: 2,
+		reliability: 4,
+		speed: 4,
+		isFeatured: true,
+		supportsImageEdits: true,
+		timeout: 1000000,
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
+	}),
+
 	createModelConfig("gpt-image-1.5", PROVIDER, {
-		name: "GPT Image Generation",
+		name: "GPT Image Generation 1.5",
 		matchingModel: "gpt-image-1.5",
 		description:
 			"OpenAI's latest and most advanced model for image generation, a natively multimodal language model.",

@@ -8,6 +8,7 @@ import {
 	shouldEnableStreaming,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
+import { imageGenerationSchema } from "../../../../../../../../packages/schemas/src/apps";
 
 interface ImageEditParams {
 	model: string;
@@ -34,7 +35,7 @@ export class OpenAIProvider extends BaseProvider {
 	}
 
 	private isImageGeneration(params: ChatCompletionParameters): boolean {
-		return params.model === "gpt-image-1";
+		return params.model.startsWith("gpt-image-");
 	}
 
 	protected async getEndpoint(
@@ -162,14 +163,9 @@ export class OpenAIProvider extends BaseProvider {
 		}
 
 		return {
+			model: params.model,
 			prompt,
 			image: imageUrls,
-		};
-	}
-
-	private handleTextToImageRequest(prompt: string): Record<string, any> {
-		return {
-			prompt,
 		};
 	}
 
@@ -321,7 +317,10 @@ export class OpenAIProvider extends BaseProvider {
 				return this.handleImageToImageRequest(params, prompt);
 			}
 
-			return this.handleTextToImageRequest(prompt);
+			return {
+				model: params.model,
+				prompt,
+			};
 		}
 
 		return {
