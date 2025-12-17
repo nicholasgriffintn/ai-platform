@@ -32,9 +32,9 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		reliability: 5,
 		speed: 3,
 	},
-	"gemini-flash-latest": {
-		name: "Gemini Flash",
-		matchingModel: "gemini-flash-latest",
+	"gemini-3-flash-preview": {
+		name: "Gemini 3 Flash Preview",
+		matchingModel: "gemini-3-flash-preview",
 		description:
 			"Gemini Flash delivers next-gen features and improved capabilities, including superior speed, native tool use, multimodal generation, and a 1M token context window.",
 		provider: "google-ai-studio",
@@ -53,8 +53,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		knowledgeCutoffDate: "January 2025",
 		contextWindow: 1048576,
 		maxTokens: 65536,
-		costPer1kInputTokens: 0.0003,
-		costPer1kOutputTokens: 0.0025,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.0006,
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,

@@ -511,25 +511,24 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("gpt-5.1", PROVIDER, {
-		name: "OpenAI GPT 5.1",
-		matchingModel: "gpt-5.1",
+		name: "OpenAI GPT 5.2",
+		matchingModel: "gpt-5.2",
 		description:
 			"GPT-5.1 is an improved version of OpenAI's flagship model for coding, reasoning, and agentic tasks across domains",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "November 13, 2025",
-		lastUpdated: "November 13, 2025",
+		knowledgeCutoffDate: "2025-08",
+		releaseDate: "2025-12-11",
+		lastUpdated: "2025-12-11",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
 		supportsTemperature: false,
-		card: "https://www.prompthub.us/models/gpt-5.1",
 		supportsToolCalls: true,
 		maxTokens: 128000,
 		contextWindow: 400000,
-		costPer1kInputTokens: 0.00125,
-		costPer1kOutputTokens: 0.01,
+		costPer1kInputTokens: 0.00175,
+		costPer1kOutputTokens: 0.014,
 		supportsTopP: false,
 		strengths: ["coding", "reasoning", "analysis", "multilingual", "creative"],
 		contextComplexity: 5,
@@ -549,21 +548,20 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 		isFeatured: true,
 	}),
-	createModelConfig("gpt-5.1-chat", PROVIDER, {
-		name: "OpenAI GPT 5.1 Chat",
-		matchingModel: "gpt-5.1-chat-latest",
+	createModelConfig("gpt-5.2-chat", PROVIDER, {
+		name: "OpenAI GPT 5.2 Chat",
+		matchingModel: "gpt-5.2-chat-latest",
 		description:
-			"A chat-optimized version of GPT-5.1, designed for dynamic and interactive conversations across various topics",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "November 13, 2025",
-		lastUpdated: "November 13, 2025",
+			"A chat-optimized version of GPT-5.2, designed for dynamic and interactive conversations across various topics",
+		knowledgeCutoffDate: "2025-08",
+		releaseDate: "2025-12-11",
+		lastUpdated: "2025-12-11",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
 		supportsTemperature: false,
-		card: "https://www.prompthub.us/models/gpt-5.1",
 		supportsToolCalls: true,
 		maxTokens: 128000,
 		contextWindow: 400000,
@@ -594,6 +592,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 		isFeatured: true,
 	}),
+
 	createModelConfig("gpt-5.1-codex", PROVIDER, {
 		name: "OpenAI GPT 5.1 Codex",
 		matchingModel: "gpt-5.1-codex",
@@ -673,14 +672,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 	}),
 
-	createModelConfig("gpt-image-1", PROVIDER, {
+	createModelConfig("gpt-image-1.5", PROVIDER, {
 		name: "GPT Image Generation",
-		matchingModel: "gpt-image-1",
+		matchingModel: "gpt-image-1.5",
 		description:
-			"OpenAI's latest and most advanced model for image generation is gpt-image-1, a natively multimodal language model.",
+			"OpenAI's latest and most advanced model for image generation, a natively multimodal language model.",
 		strengths: ["creative"],
-		costPer1kInputTokens: 0.01,
-		costPer1kOutputTokens: 0.04,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.001,
 		contextComplexity: 3,
 		reliability: 4,
 		speed: 3,
