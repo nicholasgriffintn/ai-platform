@@ -8,7 +8,6 @@ import {
 	shouldEnableStreaming,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
-import { imageGenerationSchema } from "../../../../../../../../packages/schemas/src/apps";
 
 interface ImageEditParams {
 	model: string;

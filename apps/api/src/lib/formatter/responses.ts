@@ -226,10 +226,39 @@ export class ResponseFormatter {
 		};
 	}
 
-	private static async uploadImages(
-		imageUrls: string[],
+	private static decodeBase64Image(image: string): Uint8Array {
+		const normalized = image.replace(/\s/g, "");
+
+		if (typeof atob === "function") {
+			const binaryString = atob(normalized);
+			const bytes = new Uint8Array(binaryString.length);
+			for (let i = 0; i < binaryString.length; i++) {
+				bytes[i] = binaryString.charCodeAt(i);
+			}
+			return bytes;
+		}
+
+		if (typeof Buffer !== "undefined") {
+			return Uint8Array.from(Buffer.from(normalized, "base64"));
+		}
+
+		throw new AssistantError(
+			"Base64 decoding is not supported in this environment",
+			ErrorType.UNKNOWN_ERROR,
+		);
+	}
+
+	private static async persistBase64Images(
+		base64Images: string[],
 		options: ResponseFormatOptions,
-	): Promise<any> {
+	): Promise<{
+		urls: string[];
+		metadata: Array<{ key: string; url: string; source: "base64" }>;
+	}> {
+		if (!base64Images.length) {
+			return { urls: [], metadata: [] };
+		}
+
 		const env = options.env;
 
 		if (!env?.ASSETS_BUCKET) {
@@ -240,22 +269,28 @@ export class ResponseFormatter {
 		}
 
 		const storageService = new StorageService(env.ASSETS_BUCKET);
-
 		const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
 
-		const uploadedImageUrls = await Promise.all(
-			imageUrls.map(async (url) => {
-				const imageKey = `generations/${options.completion_id || "completion"}/${options.model || "model"}/${Date.now()}.png`;
-				const imageBuffer = await fetch(url).then((res) => res.arrayBuffer());
-				await storageService.uploadObject(imageKey, imageBuffer, {
+		const uploads = await Promise.all(
+			base64Images.map(async (image) => {
+				const bytes = ResponseFormatter.decodeBase64Image(image);
+				const key = ResponseFormatter.buildAssetKey(options, "png");
+
+				await storageService.uploadObject(key, bytes, {
 					contentType: "image/png",
-					contentLength: imageBuffer.byteLength,
+					contentLength: bytes.byteLength,
 				});
-				return `${baseAssetsUrl}/${imageKey}`;
+
+				const url = baseAssetsUrl ? `${baseAssetsUrl}/${key}` : key;
+
+				return { key, url, source: "base64" as const };
 			}),
 		);
 
-		return uploadedImageUrls;
+		return {
+			urls: uploads.map((upload) => upload.url),
+			metadata: uploads,
+		};
 	}
 
 	/**
@@ -340,29 +375,73 @@ export class ResponseFormatter {
 		const isImageType =
 			modalityState.producesImages && !modalityState.producesText;
 		if (isImageType && Array.isArray(data.data)) {
-			const dataImageUrls = data.data
+			const imageData = Array.isArray(data.data) ? data.data : [];
+			const dataImageUrls = imageData
 				.filter((item) => item.url)
 				.map((item) => item.url);
+			const base64Images = imageData
+				.map((item) => item.b64_json)
+				.filter(
+					(value): value is string => typeof value === "string" && !!value,
+				);
+			const revisedPrompt =
+				data.revised_prompt ||
+				imageData.find((item) => item.revised_prompt)?.revised_prompt;
 
-			let imageUrls: string[];
-			if (options.env) {
-				imageUrls = await ResponseFormatter.uploadImages(
+			const assets: Array<{
+				key: string;
+				url: string;
+				originalUrl?: string;
+				source?: "base64";
+			}> = [];
+
+			let imageUrls: string[] = [];
+			if (dataImageUrls.length && options.env) {
+				const uploads = await ResponseFormatter.persistRemoteAssets(
 					dataImageUrls,
 					options,
+					{ extension: "png", contentType: "image/png" },
 				);
-			} else {
+				imageUrls = uploads.urls;
+				assets.push(...uploads.metadata);
+			} else if (dataImageUrls.length) {
 				imageUrls = dataImageUrls;
 			}
 
-			let imagesContent = [];
-			if (imageUrls.length > 0) {
-				imagesContent = imageUrls.map((url) => ({
-					type: "image_url",
-					image_url: { url },
-				}));
+			if (base64Images.length) {
+				const uploads = await ResponseFormatter.persistBase64Images(
+					base64Images,
+					options,
+				);
+				imageUrls = [...imageUrls, ...uploads.urls];
+				assets.push(...uploads.metadata);
 			}
 
-			return { ...data, response: imagesContent };
+			if (!imageUrls.length) {
+				return { ...data, response: [] };
+			}
+
+			const imagesContent = imageUrls.map((url) => ({
+				type: "image_url",
+				image_url: { url },
+			}));
+
+			const sanitizedData =
+				revisedPrompt || assets.length
+					? {
+							...(revisedPrompt ? { revised_prompt: revisedPrompt } : {}),
+							...(assets.length ? { assets } : {}),
+						}
+					: undefined;
+
+			const { data: _rawData, ...rest } = data;
+			const result: any = { ...rest, response: imagesContent };
+
+			if (sanitizedData) {
+				result.data = sanitizedData;
+			}
+
+			return result;
 		}
 
 		const message = data.choices?.[0]?.message;

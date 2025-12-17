@@ -849,6 +849,7 @@ pnpm --filter @assistant/api test -- --watch   # Watch mode for development
 - **Not handling streaming**: Implement both sync and streaming methods
 - **Missing error handling**: Wrap provider calls in try-catch with meaningful errors
 - **Not respecting rate limits**: Implement backoff and retry logic
+- **Storing raw base64 outputs**: Do not persist `b64_json` or data URIs from image providers. `ResponseFormatter` uploads image payloads to `ASSETS_BUCKET` and replaces them with asset URLs—bypassing this path will cause oversized rows and `SQLITE_TOOBIG` failures.
 
 ### Migration Pitfalls
 

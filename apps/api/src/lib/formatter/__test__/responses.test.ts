@@ -177,6 +177,47 @@ describe("ResponseFormatter", () => {
 			);
 		});
 
+		it("uploads base64 image generations and strips raw payloads", async () => {
+			const base64Image =
+				"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO4cF2kAAAAASUVORK5CYII=";
+			const data = {
+				created: 123,
+				data: [
+					{
+						b64_json: base64Image,
+						revised_prompt: "Refined hamster prompt",
+					},
+				],
+			};
+
+			const result = await ResponseFormatter.formatResponse(data, "openai", {
+				modalities: { input: ["text"], output: ["image"] },
+				env: mockEnv,
+				model: "gpt-image-1.5",
+				completion_id: "chat_123",
+			});
+
+			const storageCalls =
+				mockStorageService.uploadObject.mock.calls.length +
+				mockBucket.put.mock.calls.length;
+			expect(storageCalls).toBe(1);
+
+			const [key, bytes, options] =
+				mockStorageService.uploadObject.mock.calls[0] ||
+				mockBucket.put.mock.calls[0];
+			expect(key).toContain("generations/chat_123/gpt-image-1.5/");
+			expect((options as any).contentType).toBe("image/png");
+			expect((bytes as Uint8Array).byteLength).toBeGreaterThan(0);
+
+			expect(result.response).toHaveLength(1);
+			expect(result.response[0].image_url.url).toContain(
+				mockEnv.PUBLIC_ASSETS_URL,
+			);
+			expect(result.data.assets).toHaveLength(1);
+			expect(result.data.revised_prompt).toBe("Refined hamster prompt");
+			expect(JSON.stringify(result).includes(base64Image)).toBe(false);
+		});
+
 		it("should handle regular chat response", async () => {
 			const data = {
 				choices: [
