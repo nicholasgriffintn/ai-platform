@@ -30,8 +30,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.1(@standard-schema/spec@1.0.0)(hono@4.11.1)
       '@hono/zod-validator':
-        specifier: 0.7.5
-        version: 0.7.5(hono@4.11.1)(zod@4.2.1)
+        specifier: 0.7.6
+        version: 0.7.6(hono@4.11.1)(zod@4.2.1)
       '@octokit/rest':
         specifier: 22.0.1
         version: 22.0.1
@@ -1667,8 +1667,8 @@ packages:
       '@standard-schema/spec': 1.0.0
       hono: '>=3.9.0'
 
-  '@hono/zod-validator@0.7.5':
-    resolution: {integrity: sha512-n4l4hutkfYU07PzRUHBOVzUEn38VSfrh+UVE5d0w4lyfWDOEhzxIupqo5iakRiJL44c3vTuFJBvcmUl8b9agIA==}
+  '@hono/zod-validator@0.7.6':
+    resolution: {integrity: sha512-Io1B6d011Gj1KknV4rXYz4le5+5EubcWEU/speUjuw9XMMIaP3n78yXLhjd2A3PXaXaUwEAluOiAyLqhBEJgsw==}
     peerDependencies:
       hono: '>=3.9.0'
       zod: ^3.25.0 || ^4.0.0
@@ -7739,7 +7739,7 @@ snapshots:
       '@standard-schema/spec': 1.0.0
       hono: 4.11.1
 
-  '@hono/zod-validator@0.7.5(hono@4.11.1)(zod@4.2.1)':
+  '@hono/zod-validator@0.7.6(hono@4.11.1)(zod@4.2.1)':
     dependencies:
       hono: 4.11.1
       zod: 4.2.1
