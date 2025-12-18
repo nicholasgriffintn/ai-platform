@@ -1,0 +1,1 @@
+Read AGENTS.md and PROJECT_LOG.md, then ask what I need help with.
