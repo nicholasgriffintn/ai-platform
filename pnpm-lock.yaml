@@ -45,8 +45,8 @@ importers:
         specifier: 3.2.1
         version: 3.2.1
       agents:
-        specifier: ^0.2.0
-        version: 0.2.23(@cloudflare/workers-types@4.20251225.0)(react@19.2.3)(typescript@5.9.3)(viem@2.38.0(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.2.1))
+        specifier: ^0.3.0
+        version: 0.3.0(@cloudflare/workers-types@4.20251225.0)(react@19.2.3)(typescript@5.9.3)(viem@2.38.0(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.2.1))(zod@4.2.1)
       aws4fetch:
         specifier: 1.0.20
         version: 1.0.20
@@ -58,7 +58,7 @@ importers:
         version: 4.11.3
       hono-openapi:
         specifier: 1.1.2
-        version: 1.1.2(@hono/standard-validator@0.2.1(@standard-schema/spec@1.0.0)(hono@4.11.3))(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.24.6(zod@4.2.1))(zod@4.2.1))(@standard-community/standard-openapi@0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.24.6(zod@4.2.1))(zod@4.2.1))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(valibot@1.2.0(typescript@5.9.3))(zod-openapi@5.4.5(zod@4.2.1))(zod@4.2.1))(@types/json-schema@7.0.15)(hono@4.11.3)(openapi-types@12.1.3)
+        version: 1.1.2(@hono/standard-validator@0.2.1(@standard-schema/spec@1.0.0)(hono@4.11.3))(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.25.0(zod@4.2.1))(zod@4.2.1))(@standard-community/standard-openapi@0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.25.0(zod@4.2.1))(zod@4.2.1))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(valibot@1.2.0(typescript@5.9.3))(zod-openapi@5.4.5(zod@4.2.1))(zod@4.2.1))(@types/json-schema@7.0.15)(hono@4.11.3)(openapi-types@12.1.3)
       isbot:
         specifier: 5.1.32
         version: 5.1.32
@@ -531,28 +531,6 @@ packages:
 
   '@adraffy/ens-normalize@1.11.1':
     resolution: {integrity: sha512-nhCBV3quEgesuf7c7KYfperqSS14T8bYuvJ8PcLJp6znkZpFc0AuW4qBtr8eKVyPPe/8RSr7sglCWPU5eaxwKQ==}
-
-  '@ai-sdk/gateway@2.0.7':
-    resolution: {integrity: sha512-/AI5AKi4vOK9SEb8Z1dfXkhsJ5NAfWsoJQc96B/mzn2KIrjw5occOjIwD06scuhV9xWlghCoXJT1sQD9QH/tyg==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/openai@2.0.64':
-    resolution: {integrity: sha512-+1mqxn42uB32DPZ6kurSyGAmL3MgCaDpkYU7zNDWI4NLy3Zg97RxTsI1jBCGIqkEVvRZKJlIMYtb89OvMnq3AQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/provider-utils@3.0.16':
-    resolution: {integrity: sha512-lsWQY9aDXHitw7C1QRYIbVGmgwyT98TF3MfM8alNIXKpdJdi+W782Rzd9f1RyOfgRmZ08gJ2EYNDhWNK7RqpEA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/provider@2.0.0':
-    resolution: {integrity: sha512-6o7Y2SeO9vFKB8lArHXehNuusnpddKPk7xqL7T2/b+OvXMRIXUO1rR4wcv1hAFUAT9avGZshty3Wlua/XA7TvA==}
-    engines: {node: '>=18'}
 
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
@@ -1848,11 +1826,12 @@ packages:
   '@mlc-ai/web-llm@0.2.80':
     resolution: {integrity: sha512-Hwy1OCsK5cOU4nKr2wIJ2qA1g595PENtO5f2d9Wd/GgFsj5X04uxfaaJfqED8eFAJOpQpn/DirogdEY/yp5jQg==}
 
-  '@modelcontextprotocol/sdk@1.22.0':
-    resolution: {integrity: sha512-VUpl106XVTCpDmTBil2ehgJZjhyLY2QZikzF8NvTXtLRF1CvO5iEE2UNZdVIUer35vFOwMKYeUGbjJtvPWan3g==}
+  '@modelcontextprotocol/sdk@1.23.0':
+    resolution: {integrity: sha512-MCGd4K9aZKvuSqdoBkdMvZNcYXCkZRYVs/Gh92mdV5IHbctX9H9uIvd4X93+9g8tBbXv08sxc/QHXTzf8y65bA==}
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
+      zod: ^3.25 || ^4.0
     peerDependenciesMeta:
       '@cfworker/json-schema':
         optional: true
@@ -3465,10 +3444,6 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@vercel/oidc@3.0.3':
-    resolution: {integrity: sha512-yNEQvPcVrK9sIe637+I0jD6leluPxzwJKx/Haw6F4H77CdDsszUn5V3o96LPziXkSNE2B83+Z3mjqGKBK/R6Gg==}
-    engines: {node: '>= 20'}
-
   '@vitejs/plugin-react@5.1.2':
     resolution: {integrity: sha512-EcA07pHJouywpzsoTUqNh5NwGayl2PPVEJKUSinGGSxFGYn+shYbqMGBg6FXDqgXum9Ou/ecb+411ssw8HImJQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -3550,24 +3525,28 @@ packages:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
-  agents@0.2.23:
-    resolution: {integrity: sha512-YctplbuIuLocBc/uwFDD+pFk0QMhFf3SZXcl3pkgLYvSL2y1KKC6vpJyWTPu8pqzayspfys9RmEtxzfTtvcDUg==}
+  agents@0.3.0:
+    resolution: {integrity: sha512-UwhTWs6YPrhHTfV6vvEkYlJnC643nwpCSOvoUmyabWbZvUiHuIvhhAMclmsSh9J0GYQSpg7rKb1tCId2xumvbQ==}
     hasBin: true
     peerDependencies:
-      react: '*'
+      '@ai-sdk/openai': ^3.0.0
+      '@ai-sdk/react': ^3.0.0
+      ai: ^6.0.0
+      react: ^19.0.0
       viem: '>=2.0.0'
       x402: ^0.7.1
+      zod: ^3.25.0 || ^4.0.0
     peerDependenciesMeta:
+      '@ai-sdk/openai':
+        optional: true
+      '@ai-sdk/react':
+        optional: true
+      ai:
+        optional: true
       viem:
         optional: true
       x402:
         optional: true
-
-  ai@5.0.89:
-    resolution: {integrity: sha512-8Nq+ZojGacQrupoJEQLrTDzT5VtR3gyp5AaqFSV3tzsAXlYQ9Igb7QE3yeoEdzOk5IRfDwWL7mDCUD+oBg1hDA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
 
   ajv-formats@3.0.1:
     resolution: {integrity: sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==}
@@ -3901,9 +3880,9 @@ packages:
   crelt@1.0.6:
     resolution: {integrity: sha512-VQ2MBenTq1fWZUH9DJNGti7kKv6EeAuYr3cLwxUWhIu1baTaXh4Ib5W2CqHVqib4/MqbYGJqiL3Zb8GJZr3l4g==}
 
-  cron-schedule@5.0.4:
-    resolution: {integrity: sha512-nH0a49E/kSVk6BeFgKZy4uUsy6D2A16p120h5bYD9ILBhQu7o2sJFH+WI4R731TSBQ0dB1Ik7inB/dRAB4C8QQ==}
-    engines: {node: '>=18'}
+  cron-schedule@6.0.0:
+    resolution: {integrity: sha512-BoZaseYGXOo5j5HUwTaegIog3JJbuH4BbrY9A1ArLjXpy+RWb3mV28F/9Gv1dDA7E2L8kngWva4NWisnLTyfgQ==}
+    engines: {node: '>=20'}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -5261,13 +5240,13 @@ packages:
     resolution: {integrity: sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ==}
     engines: {node: '>= 0.8'}
 
-  partyserver@0.0.75:
-    resolution: {integrity: sha512-i/18vvdxuGjx+rpQ+fDdExlvQoRb7EfTF+6b+kA2ILEpHemtpLWV8NdgDrOPEklRNdCc/4WlzDtYn05d17aZAQ==}
+  partyserver@0.1.0:
+    resolution: {integrity: sha512-rtJ9ztQOglaheNfFUn+5RSZAoyC8se4LGq1SLWAE+zkk7w5Exw9bH0Aqh0HVewnyU3zuzinnbPNp+55DzA90yg==}
     peerDependencies:
       '@cloudflare/workers-types': ^4.20240729.0
 
-  partysocket@1.1.6:
-    resolution: {integrity: sha512-LkEk8N9hMDDsDT0iDK0zuwUDFVrVMUXFXCeN3850Ng8wtjPqPBeJlwdeY6ROlJSEh3tPoTTasXoSBYH76y118w==}
+  partysocket@1.1.10:
+    resolution: {integrity: sha512-ACfn0P6lQuj8/AqB4L5ZDFcIEbpnIteNNObrlxqV1Ge80GTGhjuJ2sNKwNQlFzhGi4kI7fP/C1Eqh8TR78HjDQ==}
 
   path-key@3.1.1:
     resolution: {integrity: sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==}
@@ -6422,10 +6401,10 @@ packages:
     peerDependencies:
       zod: ^3.25.74 || ^4.0.0
 
-  zod-to-json-schema@3.24.6:
-    resolution: {integrity: sha512-h/z3PKvcTcTetyjl1fkj79MHNEjm+HpD6NXheWjzOekY7kV+lwDYnHw+ivHkijnCSMz1yJaWBD9vu/Fcmk+vEg==}
+  zod-to-json-schema@3.25.0:
+    resolution: {integrity: sha512-HvWtU2UG41LALjajJrML6uQejQhNJx+JBO9IflpSja4R03iNWfKXrj6W2h7ljuLyc1nKS+9yDyL/9tD1U/yBnQ==}
     peerDependencies:
-      zod: ^3.24.1
+      zod: ^3.25 || ^4
 
   zod-to-ts@2.0.0:
     resolution: {integrity: sha512-aHsUgIl+CQutKAxtRNeZslLCLXoeuSq+j5HU7q3kvi/c2KIAo6q4YjT7/lwFfACxLB923ELHYMkHmlxiqFy4lw==}
@@ -6435,9 +6414,6 @@ packages:
 
   zod@3.22.3:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
-
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
   zod@4.2.1:
     resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
@@ -6471,30 +6447,6 @@ snapshots:
 
   '@adraffy/ens-normalize@1.11.1':
     optional: true
-
-  '@ai-sdk/gateway@2.0.7(zod@3.25.76)':
-    dependencies:
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.16(zod@3.25.76)
-      '@vercel/oidc': 3.0.3
-      zod: 3.25.76
-
-  '@ai-sdk/openai@2.0.64(zod@3.25.76)':
-    dependencies:
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.16(zod@3.25.76)
-      zod: 3.25.76
-
-  '@ai-sdk/provider-utils@3.0.16(zod@3.25.76)':
-    dependencies:
-      '@ai-sdk/provider': 2.0.0
-      '@standard-schema/spec': 1.0.0
-      eventsource-parser: 3.0.6
-      zod: 3.25.76
-
-  '@ai-sdk/provider@2.0.0':
-    dependencies:
-      json-schema: 0.4.0
 
   '@ampproject/remapping@2.3.0':
     dependencies:
@@ -7905,7 +7857,7 @@ snapshots:
     dependencies:
       loglevel: 1.9.2
 
-  '@modelcontextprotocol/sdk@1.22.0(@cfworker/json-schema@4.1.1)':
+  '@modelcontextprotocol/sdk@1.23.0(@cfworker/json-schema@4.1.1)(zod@4.2.1)':
     dependencies:
       ajv: 8.17.1
       ajv-formats: 3.0.1(ajv@8.17.1)
@@ -7918,8 +7870,8 @@ snapshots:
       express-rate-limit: 7.5.1(express@5.1.0)
       pkce-challenge: 5.0.0
       raw-body: 3.0.1
-      zod: 3.25.76
-      zod-to-json-schema: 3.24.6(zod@3.25.76)
+      zod: 4.2.1
+      zod-to-json-schema: 3.25.0(zod@4.2.1)
     optionalDependencies:
       '@cfworker/json-schema': 4.1.1
     transitivePeerDependencies:
@@ -8009,7 +7961,8 @@ snapshots:
     dependencies:
       '@octokit/openapi-types': 27.0.0
 
-  '@opentelemetry/api@1.9.0': {}
+  '@opentelemetry/api@1.9.0':
+    optional: true
 
   '@oxc-parser/binding-android-arm64@0.97.0':
     optional: true
@@ -9191,7 +9144,7 @@ snapshots:
 
   '@speed-highlight/core@1.2.7': {}
 
-  '@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.24.6(zod@4.2.1))(zod@4.2.1)':
+  '@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.25.0(zod@4.2.1))(zod@4.2.1)':
     dependencies:
       '@standard-schema/spec': 1.0.0
       '@types/json-schema': 7.0.15
@@ -9199,11 +9152,11 @@ snapshots:
     optionalDependencies:
       valibot: 1.2.0(typescript@5.9.3)
       zod: 4.2.1
-      zod-to-json-schema: 3.24.6(zod@4.2.1)
+      zod-to-json-schema: 3.25.0(zod@4.2.1)
 
-  '@standard-community/standard-openapi@0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.24.6(zod@4.2.1))(zod@4.2.1))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(valibot@1.2.0(typescript@5.9.3))(zod-openapi@5.4.5(zod@4.2.1))(zod@4.2.1)':
+  '@standard-community/standard-openapi@0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.25.0(zod@4.2.1))(zod@4.2.1))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(valibot@1.2.0(typescript@5.9.3))(zod-openapi@5.4.5(zod@4.2.1))(zod@4.2.1)':
     dependencies:
-      '@standard-community/standard-json': 0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.24.6(zod@4.2.1))(zod@4.2.1)
+      '@standard-community/standard-json': 0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.25.0(zod@4.2.1))(zod@4.2.1)
       '@standard-schema/spec': 1.0.0
       openapi-types: 12.1.3
     optionalDependencies:
@@ -9740,8 +9693,6 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@vercel/oidc@3.0.3': {}
-
   '@vitejs/plugin-react@5.1.2(vite@7.3.0(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0))':
     dependencies:
       '@babel/core': 7.28.5
@@ -9839,37 +9790,27 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  agents@0.2.23(@cloudflare/workers-types@4.20251225.0)(react@19.2.3)(typescript@5.9.3)(viem@2.38.0(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.2.1)):
+  agents@0.3.0(@cloudflare/workers-types@4.20251225.0)(react@19.2.3)(typescript@5.9.3)(viem@2.38.0(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.2.1))(zod@4.2.1):
     dependencies:
-      '@ai-sdk/openai': 2.0.64(zod@3.25.76)
       '@cfworker/json-schema': 4.1.1
-      '@modelcontextprotocol/sdk': 1.22.0(@cfworker/json-schema@4.1.1)
-      ai: 5.0.89(zod@3.25.76)
-      cron-schedule: 5.0.4
+      '@modelcontextprotocol/sdk': 1.23.0(@cfworker/json-schema@4.1.1)(zod@4.2.1)
+      cron-schedule: 6.0.0
       json-schema: 0.4.0
       json-schema-to-typescript: 15.0.4
       mimetext: 3.0.27
       nanoid: 5.1.6
-      partyserver: 0.0.75(@cloudflare/workers-types@4.20251225.0)
-      partysocket: 1.1.6
+      partyserver: 0.1.0(@cloudflare/workers-types@4.20251225.0)
+      partysocket: 1.1.10
       react: 19.2.3
       yargs: 18.0.0
-      zod: 3.25.76
-      zod-to-ts: 2.0.0(typescript@5.9.3)(zod@3.25.76)
+      zod: 4.2.1
+      zod-to-ts: 2.0.0(typescript@5.9.3)(zod@4.2.1)
     optionalDependencies:
       viem: 2.38.0(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.2.1)
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
       - supports-color
       - typescript
-
-  ai@5.0.89(zod@3.25.76):
-    dependencies:
-      '@ai-sdk/gateway': 2.0.7(zod@3.25.76)
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.16(zod@3.25.76)
-      '@opentelemetry/api': 1.9.0
-      zod: 3.25.76
 
   ajv-formats@3.0.1(ajv@8.17.1):
     optionalDependencies:
@@ -10202,7 +10143,7 @@ snapshots:
 
   crelt@1.0.6: {}
 
-  cron-schedule@5.0.4: {}
+  cron-schedule@6.0.0: {}
 
   cross-spawn@7.0.6:
     dependencies:
@@ -10814,10 +10755,10 @@ snapshots:
 
   highlight.js@11.11.1: {}
 
-  hono-openapi@1.1.2(@hono/standard-validator@0.2.1(@standard-schema/spec@1.0.0)(hono@4.11.3))(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.24.6(zod@4.2.1))(zod@4.2.1))(@standard-community/standard-openapi@0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.24.6(zod@4.2.1))(zod@4.2.1))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(valibot@1.2.0(typescript@5.9.3))(zod-openapi@5.4.5(zod@4.2.1))(zod@4.2.1))(@types/json-schema@7.0.15)(hono@4.11.3)(openapi-types@12.1.3):
+  hono-openapi@1.1.2(@hono/standard-validator@0.2.1(@standard-schema/spec@1.0.0)(hono@4.11.3))(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.25.0(zod@4.2.1))(zod@4.2.1))(@standard-community/standard-openapi@0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.25.0(zod@4.2.1))(zod@4.2.1))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(valibot@1.2.0(typescript@5.9.3))(zod-openapi@5.4.5(zod@4.2.1))(zod@4.2.1))(@types/json-schema@7.0.15)(hono@4.11.3)(openapi-types@12.1.3):
     dependencies:
-      '@standard-community/standard-json': 0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.24.6(zod@4.2.1))(zod@4.2.1)
-      '@standard-community/standard-openapi': 0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.24.6(zod@4.2.1))(zod@4.2.1))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(valibot@1.2.0(typescript@5.9.3))(zod-openapi@5.4.5(zod@4.2.1))(zod@4.2.1)
+      '@standard-community/standard-json': 0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.25.0(zod@4.2.1))(zod@4.2.1)
+      '@standard-community/standard-openapi': 0.2.4(@standard-community/standard-json@0.3.1(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.2.0(typescript@5.9.3))(zod-to-json-schema@3.25.0(zod@4.2.1))(zod@4.2.1))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(valibot@1.2.0(typescript@5.9.3))(zod-openapi@5.4.5(zod@4.2.1))(zod@4.2.1)
       '@types/json-schema': 7.0.15
       openapi-types: 12.1.3
     optionalDependencies:
@@ -11757,12 +11698,12 @@ snapshots:
 
   parseurl@1.3.3: {}
 
-  partyserver@0.0.75(@cloudflare/workers-types@4.20251225.0):
+  partyserver@0.1.0(@cloudflare/workers-types@4.20251225.0):
     dependencies:
       '@cloudflare/workers-types': 4.20251225.0
       nanoid: 5.1.6
 
-  partysocket@1.1.6:
+  partysocket@1.1.10:
     dependencies:
       event-target-polyfill: 0.0.4
 
@@ -13035,23 +12976,16 @@ snapshots:
     dependencies:
       zod: 4.2.1
 
-  zod-to-json-schema@3.24.6(zod@3.25.76):
-    dependencies:
-      zod: 3.25.76
-
-  zod-to-json-schema@3.24.6(zod@4.2.1):
+  zod-to-json-schema@3.25.0(zod@4.2.1):
     dependencies:
       zod: 4.2.1
-    optional: true
 
-  zod-to-ts@2.0.0(typescript@5.9.3)(zod@3.25.76):
+  zod-to-ts@2.0.0(typescript@5.9.3)(zod@4.2.1):
     dependencies:
       typescript: 5.9.3
-      zod: 3.25.76
+      zod: 4.2.1
 
   zod@3.22.3: {}
-
-  zod@3.25.76: {}
 
   zod@4.2.1: {}
 
