@@ -29,7 +29,7 @@
 		"zod": "4.2.1"
 	},
 	"devDependencies": {
-		"@prettier/plugin-oxc": "^0.0.5",
+		"@prettier/plugin-oxc": "^0.1.0",
 		"@types/better-sqlite3": "7.6.13",
 		"@types/node": "24.10.4",
 		"oxlint": "1.35.0",
