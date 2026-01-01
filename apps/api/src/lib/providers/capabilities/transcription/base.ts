@@ -5,9 +5,7 @@ import type {
 	TranscriptionResult,
 } from "./index";
 
-export abstract class BaseTranscriptionProvider
-	implements TranscriptionProvider
-{
+export abstract class BaseTranscriptionProvider implements TranscriptionProvider {
 	abstract name: string;
 
 	/**

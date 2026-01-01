@@ -28,7 +28,11 @@ vi.mock("~/lib/providers/capabilities/chat", () => ({
 }));
 
 vi.mock("~/lib/storage", () => ({
-	StorageService: vi.fn(() => mockStorageService),
+	StorageService: class {
+		constructor() {
+			return mockStorageService;
+		}
+	},
 }));
 
 vi.mock("~/utils/markdown", () => ({

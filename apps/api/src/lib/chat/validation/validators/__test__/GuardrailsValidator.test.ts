@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CoreChatOptions } from "~/types";
 import type { ValidationContext } from "../../ValidationPipeline";
@@ -14,12 +14,23 @@ const mockGuardrails = {
 	validateInput: vi.fn(),
 };
 
+let repositoryFactory = () => mockRepositories;
+let guardrailsFactory = () => mockGuardrails;
+
 vi.mock("~/repositories", () => ({
-	RepositoryManager: vi.fn(() => mockRepositories),
+	RepositoryManager: class {
+		constructor() {
+			return repositoryFactory();
+		}
+	},
 }));
 
 vi.mock("~/lib/providers/capabilities/guardrails", () => ({
-	Guardrails: vi.fn(() => mockGuardrails),
+	Guardrails: class {
+		constructor() {
+			return guardrailsFactory();
+		}
+	},
 }));
 
 describe("GuardrailsValidator", () => {
@@ -29,19 +40,8 @@ describe("GuardrailsValidator", () => {
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
-
-		const { RepositoryManager } =
-			await vi.importMock<typeof import("~/repositories")>("~/repositories");
-		const { Guardrails } = await vi.importMock<
-			typeof import("~/lib/providers/capabilities/guardrails")
-		>("~/lib/providers/capabilities/guardrails");
-
-		vi.mocked(RepositoryManager).mockImplementation(
-			() => mockRepositories as any,
-		);
-		(Guardrails as unknown as Mock).mockImplementation(
-			() => mockGuardrails as any,
-		);
+		repositoryFactory = () => mockRepositories;
+		guardrailsFactory = () => mockGuardrails;
 
 		validator = new GuardrailsValidator();
 
@@ -261,12 +261,9 @@ describe("GuardrailsValidator", () => {
 		});
 
 		it("should handle Guardrails initialization throwing an error", async () => {
-			const { Guardrails } = await import(
-				"~/lib/providers/capabilities/guardrails"
-			);
-			(Guardrails as unknown as Mock).mockImplementation(() => {
+			guardrailsFactory = () => {
 				throw new Error("Guardrails initialization failed");
-			});
+			};
 
 			const result = await validator.validate(baseOptions, baseContext);
 
@@ -278,10 +275,9 @@ describe("GuardrailsValidator", () => {
 		});
 
 		it("should handle RepositoryManager throwing an error", async () => {
-			const { RepositoryManager } = await import("~/repositories");
-			vi.mocked(RepositoryManager).mockImplementation(() => {
+			repositoryFactory = () => {
 				throw new Error("RepositoryManager initialization failed");
-			});
+			};
 
 			const result = await validator.validate(baseOptions, baseContext);
 
@@ -296,11 +292,9 @@ describe("GuardrailsValidator", () => {
 			const errorWithoutMessage = new Error();
 			errorWithoutMessage.message = undefined as any;
 
-			const { RepositoryManager } =
-				await vi.importMock<typeof import("~/repositories")>("~/repositories");
-			vi.mocked(RepositoryManager).mockImplementation(() => {
+			repositoryFactory = () => {
 				throw errorWithoutMessage;
-			});
+			};
 
 			const result = await validator.validate(baseOptions, baseContext);
 

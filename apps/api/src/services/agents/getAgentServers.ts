@@ -36,7 +36,16 @@ export async function getAgentServers(
 		return [];
 	}
 
-	const mcp = new MCPClientManager(agent.id, "1.0.0");
+	if (!context.env.MCP_STORAGE) {
+		throw new AssistantError(
+			"MCP storage not configured",
+			ErrorType.CONFIGURATION_ERROR,
+		);
+	}
+
+	const mcp = new MCPClientManager(agent.id, "1.0.0", {
+		storage: context.env.MCP_STORAGE,
+	});
 
 	const serverDetails = await Promise.all(
 		serverConfigs.map(async (server) => {

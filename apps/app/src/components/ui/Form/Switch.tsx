@@ -4,8 +4,10 @@ import { forwardRef } from "react";
 import { cn } from "~/lib/utils";
 import { Label } from "../label";
 
-export interface SwitchProps
-	extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "onChange"> {
+export interface SwitchProps extends Omit<
+	InputHTMLAttributes<HTMLInputElement>,
+	"type" | "onChange"
+> {
 	label?: string;
 	description?: string;
 	className?: string;

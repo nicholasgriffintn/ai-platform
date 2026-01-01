@@ -1,10 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleChatCompletionFeedbackSubmission } from "../chatCompletionFeedbackSubmission";
-import { RepositoryManager } from "~/repositories";
+let repositoryFactory = () => ({});
 
 vi.mock("~/repositories", () => ({
-	RepositoryManager: vi.fn(),
+	RepositoryManager: class {
+		constructor() {
+			return repositoryFactory();
+		}
+	},
 }));
 
 const mockGateway = {
@@ -28,7 +32,7 @@ const mockUser = {
 describe("handleChatCompletionFeedbackSubmission", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.mocked(RepositoryManager).mockClear();
+		repositoryFactory = () => ({});
 	});
 
 	afterEach(() => {
@@ -74,9 +78,7 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 				DB: {} as any,
 			};
 
-			vi.mocked(RepositoryManager).mockImplementation(
-				() => mockRepositories as any,
-			);
+			repositoryFactory = () => mockRepositories as any;
 
 			const request = {
 				feedback: "positive",
@@ -106,9 +108,7 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 				},
 			};
 
-			vi.mocked(RepositoryManager).mockImplementation(
-				() => mockRepositories as any,
-			);
+			repositoryFactory = () => mockRepositories as any;
 
 			const request = {
 				feedback: "positive",
@@ -359,9 +359,7 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 				DB: {} as any,
 			};
 
-			vi.mocked(RepositoryManager).mockImplementation(
-				() => mockRepositories as any,
-			);
+			repositoryFactory = () => mockRepositories as any;
 
 			const request = {
 				log_id: "log-error",
@@ -390,9 +388,7 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 				},
 			};
 
-			vi.mocked(RepositoryManager).mockImplementation(
-				() => mockRepositories as any,
-			);
+			repositoryFactory = () => mockRepositories as any;
 
 			const request = {
 				log_id: "log-init-error",
@@ -433,9 +429,7 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 				DB: {} as any,
 			};
 
-			vi.mocked(RepositoryManager).mockImplementation(
-				() => mockRepositories as any,
-			);
+			repositoryFactory = () => mockRepositories as any;
 
 			const request = {
 				log_id: "invalid-log-id",

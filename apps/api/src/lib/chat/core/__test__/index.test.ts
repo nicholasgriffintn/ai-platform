@@ -7,7 +7,11 @@ const mockOrchestrator = {
 };
 
 vi.mock("../ChatOrchestrator", () => ({
-	ChatOrchestrator: vi.fn(() => mockOrchestrator),
+	ChatOrchestrator: class {
+		constructor() {
+			return mockOrchestrator;
+		}
+	},
 }));
 
 describe("processChatRequest", () => {

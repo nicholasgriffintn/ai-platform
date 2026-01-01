@@ -8,9 +8,17 @@ const mockAppDataRepo = {
 	getAppDataByShareId: vi.fn(),
 	updateAppDataWithShareId: vi.fn(),
 };
+let appDataRepoFactory: (() => any) | undefined;
 
 vi.mock("~/repositories/AppDataRepository", () => ({
-	AppDataRepository: vi.fn(() => mockAppDataRepo),
+	AppDataRepository: class {
+		constructor() {
+			if (appDataRepoFactory) {
+				return appDataRepoFactory();
+			}
+			return mockAppDataRepo;
+		}
+	},
 }));
 
 vi.mock("~/utils/id", () => ({
@@ -22,6 +30,7 @@ describe("shared services", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		appDataRepoFactory = () => mockAppDataRepo;
 	});
 
 	describe("shareItem", () => {

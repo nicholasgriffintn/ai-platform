@@ -10,7 +10,7 @@ vi.mock("~/utils/logger", () => ({
 }));
 
 function createMockContext(overrides: any = {}): Context {
-	const mockContext = {
+	const baseContext = {
 		req: {
 			method: "GET",
 			url: "http://example.com/test",
@@ -22,13 +22,25 @@ function createMockContext(overrides: any = {}): Context {
 		},
 		get: vi.fn(),
 		set: vi.fn(),
+	} as any;
+
+	const mockContext = {
+		...baseContext,
 		...overrides,
+		req: {
+			...baseContext.req,
+			...(overrides.req ?? {}),
+		},
+		res: {
+			...baseContext.res,
+			...(overrides.res ?? {}),
+		},
 	} as any;
 
 	return mockContext;
 }
 
-const mockNext: Next = vi.fn();
+const mockNext = vi.fn() as ReturnType<typeof vi.fn> & Next;
 
 describe("Logger Middleware", () => {
 	let mockLogger: any;
@@ -37,6 +49,8 @@ describe("Logger Middleware", () => {
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
+		mockNext.mockReset();
+		mockNext.mockImplementation(async () => undefined);
 		vi.useFakeTimers();
 
 		vi.resetModules();
@@ -80,7 +94,7 @@ describe("Logger Middleware", () => {
 			const startTime = Date.now();
 			vi.setSystemTime(startTime);
 
-			const middlewarePromise = loggerMiddleware(context, mockNext);
+			const middlewarePromise = loggerMiddleware(context, mockNext as Next);
 
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				"Request started: GET http://example.com/test",
@@ -118,7 +132,7 @@ describe("Logger Middleware", () => {
 				return null;
 			});
 
-			await loggerMiddleware(context, mockNext);
+			await loggerMiddleware(context, mockNext as Next);
 
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				"Request started: GET http://example.com/test",
@@ -147,13 +161,12 @@ describe("Logger Middleware", () => {
 				return null;
 			});
 
-			// @ts-expect-error - mock implementation
 			mockNext.mockRejectedValue(error);
 
 			const startTime = Date.now();
 			vi.setSystemTime(startTime);
 
-			const middlewarePromise = loggerMiddleware(context, mockNext);
+			const middlewarePromise = loggerMiddleware(context, mockNext as Next);
 
 			vi.setSystemTime(startTime + 50);
 
@@ -185,10 +198,9 @@ describe("Logger Middleware", () => {
 			});
 
 			const nonErrorValue = "String error";
-			// @ts-expect-error - mock implementation
 			mockNext.mockRejectedValue(nonErrorValue);
 
-			await expect(loggerMiddleware(context, mockNext)).rejects.toBe(
+			await expect(loggerMiddleware(context, mockNext as Next)).rejects.toBe(
 				nonErrorValue,
 			);
 
@@ -213,10 +225,9 @@ describe("Logger Middleware", () => {
 			});
 
 			const error = new Error("Test error");
-			// @ts-expect-error - mock implementation
 			mockNext.mockRejectedValue(error);
 
-			await expect(loggerMiddleware(context, mockNext)).rejects.toThrow(
+			await expect(loggerMiddleware(context, mockNext as Next)).rejects.toThrow(
 				"Test error",
 			);
 
@@ -242,7 +253,7 @@ describe("Logger Middleware", () => {
 			// @ts-expect-error - mock implementation
 			context.req.header.mockReturnValue("Mozilla/5.0");
 
-			await loggerMiddleware(context, mockNext);
+			await loggerMiddleware(context, mockNext as Next);
 
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				"Request started: POST http://example.com/api/users",
@@ -265,7 +276,7 @@ describe("Logger Middleware", () => {
 			// @ts-expect-error - mock implementation
 			context.req.header.mockReturnValue("Mozilla/5.0");
 
-			await loggerMiddleware(context, mockNext);
+			await loggerMiddleware(context, mockNext as Next);
 
 			expect(mockLogger.warn).toHaveBeenCalledWith(
 				"Request completed with client error: GET http://example.com/test",
@@ -285,7 +296,7 @@ describe("Logger Middleware", () => {
 			const startTime = Date.now();
 			vi.setSystemTime(startTime);
 
-			const middlewarePromise = loggerMiddleware(context, mockNext);
+			const middlewarePromise = loggerMiddleware(context, mockNext as Next);
 
 			vi.setSystemTime(startTime + 250);
 			await middlewarePromise;

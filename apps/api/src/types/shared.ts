@@ -6,6 +6,7 @@ import type {
 	Queue,
 	Vectorize,
 } from "@cloudflare/workers-types";
+import type { MCPClientManagerOptions } from "agents/mcp/client";
 
 export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<
 	T,
@@ -50,6 +51,7 @@ export type IEnv = {
 	OLLAMA_ENABLED?: string;
 	OLLAMA_URL?: string;
 	GITHUB_MODELS_API_TOKEN?: string;
+	MCP_STORAGE?: MCPClientManagerOptions["storage"];
 	POLLY_ACCESS_KEY_ID?: string;
 	POLLY_SECRET_ACCESS_KEY?: string;
 	DEEPSEEK_API_KEY?: string;

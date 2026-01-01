@@ -520,7 +520,7 @@ export class RequestPreparer {
 
 		return Boolean(
 			userSettings?.memories_save_enabled ||
-				userSettings?.memories_chat_history_enabled,
+			userSettings?.memories_chat_history_enabled,
 		);
 	}
 

@@ -20,10 +20,16 @@ const mockRepositories = {
 const mockGetUserByJwtToken = vi.fn();
 const mockGetUserBySessionId = vi.fn();
 const mockIsbot = vi.fn();
-let RepositoryManagerMock: any;
+const repositoryCtor = vi.fn();
+let repositoryFactory = () => mockRepositories;
 
 vi.mock("~/repositories", () => ({
-	RepositoryManager: vi.fn(() => mockRepositories),
+	RepositoryManager: class {
+		constructor() {
+			repositoryCtor();
+			return repositoryFactory();
+		}
+	},
 }));
 
 vi.mock("~/lib/cache", () => ({
@@ -85,15 +91,14 @@ const mockNext: Next = vi.fn();
 describe("Auth Middleware", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
+		repositoryCtor.mockClear();
 
-		const { RepositoryManager } = await import("~/repositories");
 		const { KVCache } = await import("~/lib/cache");
 		const { getUserByJwtToken } = await import("~/services/auth/jwt");
 		const { getUserBySessionId } = await import("~/services/auth/user");
 		const { isbot } = await import("isbot");
 
-		RepositoryManagerMock = vi.mocked(RepositoryManager);
-		RepositoryManagerMock.mockImplementation(() => mockRepositories as any);
+		repositoryFactory = () => mockRepositories as any;
 		vi.mocked(KVCache.createKey).mockReturnValue("bot:user-agent");
 		vi.mocked(getUserByJwtToken).mockImplementation(mockGetUserByJwtToken);
 		vi.mocked(getUserBySessionId).mockImplementation(mockGetUserBySessionId);
@@ -238,7 +243,7 @@ describe("Auth Middleware", () => {
 			expect(context.set).toHaveBeenCalledWith("user", mockUser);
 			expect(mockNext).toHaveBeenCalled();
 			expect(mockIsbot).not.toHaveBeenCalled();
-			expect(RepositoryManagerMock).not.toHaveBeenCalled();
+			expect(repositoryCtor).not.toHaveBeenCalled();
 		});
 
 		it("should create anonymous user when no authentication found", async () => {

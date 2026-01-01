@@ -8,7 +8,11 @@ const mockStorageService = {
 };
 
 vi.mock("~/lib/storage", () => ({
-	StorageService: vi.fn().mockImplementation(() => mockStorageService),
+	StorageService: class {
+		constructor() {
+			return mockStorageService;
+		}
+	},
 }));
 
 vi.mock("~/lib/documentConverter", () => ({
@@ -105,6 +109,10 @@ describe("handleFileUpload", () => {
 				formData.append("file_type", "document");
 
 				mockStorageService.uploadObject.mockResolvedValue("test-key");
+				mockConvertToMarkdownViaCloudflare.mockResolvedValue({
+					result: null,
+					error: null,
+				});
 
 				const result = await handleFileUpload(mockEnv, 1, formData);
 
@@ -434,16 +442,18 @@ describe("handleFileUpload", () => {
 
 	describe("error handling", () => {
 		it("should handle file buffer conversion errors", async () => {
-			const mockFile = vi.fn().mockImplementation(() => ({
-				type: "image/jpeg",
-				name: "test.jpg",
-				arrayBuffer: vi.fn().mockRejectedValue(new Error("Buffer error")),
-			}));
+			class MockFile {
+				type = "image/jpeg";
+				name = "test.jpg";
+				arrayBuffer = vi.fn().mockRejectedValue(new Error("Buffer error"));
+			}
+
+			const mockFile = () => new MockFile();
 
 			const formData = new FormData();
 			formData.set = vi.fn();
 			formData.get = vi.fn().mockImplementation((key) => {
-				if (key === "file") return new mockFile();
+				if (key === "file") return mockFile();
 				if (key === "file_type") return "image";
 				return null;
 			});

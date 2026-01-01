@@ -2,11 +2,8 @@ import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { IEnv, User } from "~/types";
 import { AsyncMessagePollingHandler } from "../AsyncMessagePollingHandler";
 import { ConversationManager } from "~/lib/conversationManager";
-import { Database } from "~/lib/database";
 import { handleAsyncInvocation } from "~/services/completions/async/handler";
 import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
-import { TaskService } from "../../TaskService";
-import { UserRepository } from "~/repositories/UserRepository";
 import type { TaskMessage } from "../../TaskService";
 
 const mockDatabase = {
@@ -19,7 +16,11 @@ const mockDatabase = {
 };
 
 vi.mock("~/lib/database", () => ({
-	Database: vi.fn(() => mockDatabase),
+	Database: class {
+		constructor() {
+			return mockDatabase;
+		}
+	},
 }));
 
 vi.mock("~/lib/conversationManager", () => ({
@@ -30,16 +31,40 @@ vi.mock("~/lib/conversationManager", () => ({
 
 vi.mock("~/services/completions/async/handler");
 vi.mock("~/lib/async/asyncInvocation");
-vi.mock("~/repositories/TaskRepository");
-vi.mock("~/repositories/UserRepository");
-vi.mock("../../TaskService");
+
+let taskRepositoryImpl: any;
+let taskServiceImpl: any;
+let userRepositoryFactory = () => ({
+	getUserById: vi.fn(),
+});
+
+vi.mock("~/repositories/TaskRepository", () => ({
+	TaskRepository: class {
+		constructor() {
+			return taskRepositoryImpl ?? {};
+		}
+	},
+}));
+
+vi.mock("~/repositories/UserRepository", () => ({
+	UserRepository: class {
+		constructor() {
+			return userRepositoryFactory();
+		}
+	},
+}));
+
+vi.mock("../../TaskService", () => ({
+	TaskService: class {
+		constructor() {
+			return taskServiceImpl ?? {};
+		}
+	},
+}));
 
 const mockedConversationManager = vi.mocked(ConversationManager);
-const mockedDatabase = vi.mocked(Database);
 const mockedHandleAsyncInvocation = vi.mocked(handleAsyncInvocation);
 const mockedIsAsyncInvocationPending = vi.mocked(isAsyncInvocationPending);
-const mockedTaskService = vi.mocked(TaskService);
-const mockedUserRepository = vi.mocked(UserRepository);
 
 describe("AsyncMessagePollingHandler", () => {
 	const baseEnv = {
@@ -86,15 +111,14 @@ describe("AsyncMessagePollingHandler", () => {
 
 	beforeEach(() => {
 		vi.resetAllMocks();
+		taskRepositoryImpl = undefined;
+		taskServiceImpl = undefined;
 		handler = new AsyncMessagePollingHandler();
 
 		// Mock UserRepository to return a valid user
-		mockedUserRepository.mockImplementation(
-			() =>
-				({
-					getUserById: vi.fn().mockResolvedValue(mockUser),
-				}) as any,
-		);
+		userRepositoryFactory = () => ({
+			getUserById: vi.fn().mockResolvedValue(mockUser),
+		});
 	});
 
 	it("returns error when required fields are missing", async () => {
@@ -113,12 +137,9 @@ describe("AsyncMessagePollingHandler", () => {
 
 	it("returns error when user not found", async () => {
 		// Override the default mock to return null
-		mockedUserRepository.mockImplementation(
-			() =>
-				({
-					getUserById: vi.fn().mockResolvedValue(null),
-				}) as any,
-		);
+		userRepositoryFactory = () => ({
+			getUserById: vi.fn().mockResolvedValue(null),
+		});
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -253,12 +274,9 @@ describe("AsyncMessagePollingHandler", () => {
 		} as any);
 
 		const mockEnqueueTask = vi.fn().mockResolvedValue(undefined);
-		mockedTaskService.mockImplementation(
-			() =>
-				({
-					enqueueTask: mockEnqueueTask,
-				}) as any,
-		);
+		taskServiceImpl = {
+			enqueueTask: mockEnqueueTask,
+		};
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -273,9 +291,9 @@ describe("AsyncMessagePollingHandler", () => {
 
 	it("handles errors gracefully", async () => {
 		// Mock UserRepository to throw an error
-		mockedUserRepository.mockImplementation(() => {
+		userRepositoryFactory = () => {
 			throw new Error("Database error");
-		});
+		};
 
 		const result = await handler.handle(baseMessage, baseEnv);
 

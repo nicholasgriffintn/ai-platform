@@ -16,7 +16,7 @@ class AuthService {
 	private user: User | null = null;
 	private userSettings: UserSettings | null = null;
 	private tokenExpiry: Date | null = null;
-	private refreshTimer: NodeJS.Timeout | null = null;
+	private refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
 	private constructor() {}
 

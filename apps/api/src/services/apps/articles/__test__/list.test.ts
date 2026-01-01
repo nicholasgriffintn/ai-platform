@@ -1,20 +1,30 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AppDataRepository } from "~/repositories/AppDataRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { listArticles } from "../list";
 
-vi.mock("~/repositories/AppDataRepository");
+let mockAppDataRepo: any;
+let appDataRepoFactory: (() => any) | undefined;
+
+vi.mock("~/repositories/AppDataRepository", () => ({
+	AppDataRepository: class {
+		constructor() {
+			if (appDataRepoFactory) {
+				return appDataRepoFactory();
+			}
+			return mockAppDataRepo;
+		}
+	},
+}));
 
 describe("listArticles", () => {
-	let mockAppDataRepo: any;
 	const mockEnv = { DB: {} } as any;
 
 	beforeEach(() => {
 		mockAppDataRepo = {
 			getAppDataByUserAndApp: vi.fn(),
 		};
-		vi.mocked(AppDataRepository).mockImplementation(() => mockAppDataRepo);
+		appDataRepoFactory = () => mockAppDataRepo;
 	});
 
 	afterEach(() => {

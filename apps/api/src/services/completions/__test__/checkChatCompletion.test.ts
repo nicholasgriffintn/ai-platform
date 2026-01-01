@@ -1,12 +1,4 @@
-import {
-	afterEach,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	vi,
-	type Mock,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleCheckChatCompletion } from "../checkChatCompletion";
 
@@ -21,7 +13,11 @@ vi.mock("~/lib/conversationManager", () => ({
 }));
 
 vi.mock("~/lib/providers/capabilities/guardrails", () => ({
-	Guardrails: vi.fn(),
+	Guardrails: class {
+		constructor() {
+			return guardrailsFactory ? guardrailsFactory() : mockGuardrails;
+		}
+	},
 }));
 
 const mockEnv = {
@@ -40,20 +36,18 @@ const mockRequest = {
 
 let mockServiceContext: any;
 let resolveServiceContext: any;
+let guardrailsFactory: (() => any) | undefined;
+let mockGuardrails: any;
 
 describe("handleCheckChatCompletion", () => {
 	let mockDatabase: any;
 	let mockConversationManager: any;
-	let mockGuardrails: any;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
 		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
-		const { Guardrails } = await import(
-			"~/lib/providers/capabilities/guardrails"
-		);
 
 		mockDatabase = {
 			getUserSettings: vi.fn(),
@@ -67,6 +61,8 @@ describe("handleCheckChatCompletion", () => {
 			validateInput: vi.fn(),
 			validateOutput: vi.fn(),
 		};
+
+		guardrailsFactory = () => mockGuardrails;
 
 		mockServiceContext = {
 			env: mockEnv,
@@ -87,7 +83,6 @@ describe("handleCheckChatCompletion", () => {
 		vi.mocked(ConversationManager.getInstance).mockReturnValue(
 			mockConversationManager,
 		);
-		(Guardrails as unknown as Mock).mockImplementation(() => mockGuardrails);
 	});
 
 	afterEach(() => {

@@ -7,6 +7,8 @@ import {
 	vi,
 } from "vitest";
 
+import type { ModelConfig, ModelConfigItem } from "~/types";
+
 import {
 	getModelDetails,
 	listStrengths,
@@ -15,6 +17,8 @@ import {
 	listModelsByStrength,
 	listModelsByModality,
 } from "../index";
+
+type ModelsLib = typeof import("~/lib/providers/models");
 
 vi.mock("~/lib/providers/models", () => ({
 	getModels: vi.fn(),
@@ -29,11 +33,15 @@ vi.mock("~/lib/providers/models", () => ({
 }));
 
 describe("Models Service", () => {
-	let mockGetModels: MockedFunction<any>;
-	let mockFilterModelsForUserAccess: MockedFunction<any>;
-	let mockGetModelsByCapability: MockedFunction<any>;
-	let mockGetModelsByModality: MockedFunction<any>;
-	let mockGetModelConfig: MockedFunction<any>;
+	let mockGetModels: MockedFunction<ModelsLib["getModels"]>;
+	let mockFilterModelsForUserAccess: MockedFunction<
+		ModelsLib["filterModelsForUserAccess"]
+	>;
+	let mockGetModelsByCapability: MockedFunction<
+		ModelsLib["getModelsByCapability"]
+	>;
+	let mockGetModelsByModality: MockedFunction<ModelsLib["getModelsByModality"]>;
+	let mockGetModelConfig: MockedFunction<ModelsLib["getModelConfig"]>;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -53,8 +61,10 @@ describe("Models Service", () => {
 			const mockModels = {
 				"gpt-4": { id: "gpt-4" },
 				"claude-3": { id: "claude-3" },
-			};
-			const mockFilteredModels = { "gpt-4": { id: "gpt-4" } };
+			} as unknown as ModelConfig;
+			const mockFilteredModels = {
+				"gpt-4": { id: "gpt-4" },
+			} as unknown as Record<string, ModelConfigItem>;
 
 			mockGetModels.mockReturnValue(mockModels);
 			mockFilterModelsForUserAccess.mockResolvedValue(mockFilteredModels);
@@ -72,7 +82,7 @@ describe("Models Service", () => {
 		});
 
 		it("should work without userId", async () => {
-			const mockModels = { "gpt-4": { id: "gpt-4" } };
+			const mockModels = { "gpt-4": { id: "gpt-4" } } as unknown as ModelConfig;
 
 			mockGetModels.mockReturnValue(mockModels);
 			mockFilterModelsForUserAccess.mockResolvedValue(mockModels);
@@ -99,8 +109,10 @@ describe("Models Service", () => {
 
 	describe("listModelsByStrength", () => {
 		it("should return filtered models by capability", async () => {
-			const mockModels = { "gpt-4": { id: "gpt-4" } };
-			const mockFilteredModels = { "gpt-4": { id: "gpt-4" } };
+			const mockModels = { "gpt-4": { id: "gpt-4" } } as unknown as ModelConfig;
+			const mockFilteredModels = {
+				"gpt-4": { id: "gpt-4" },
+			} as unknown as Record<string, ModelConfigItem>;
 
 			mockGetModelsByCapability.mockReturnValue(mockModels);
 			mockFilterModelsForUserAccess.mockResolvedValue(mockFilteredModels);
@@ -128,8 +140,10 @@ describe("Models Service", () => {
 
 	describe("listModelsByModality", () => {
 		it("should return filtered models by modality", async () => {
-			const mockModels = { "gpt-4": { id: "gpt-4" } };
-			const mockFilteredModels = { "gpt-4": { id: "gpt-4" } };
+			const mockModels = { "gpt-4": { id: "gpt-4" } } as unknown as ModelConfig;
+			const mockFilteredModels = {
+				"gpt-4": { id: "gpt-4" },
+			} as unknown as Record<string, ModelConfigItem>;
 
 			mockGetModelsByModality.mockReturnValue(mockModels);
 			mockFilterModelsForUserAccess.mockResolvedValue(mockFilteredModels);
@@ -149,8 +163,13 @@ describe("Models Service", () => {
 
 	describe("getModelDetails", () => {
 		it("should return model details for accessible model", async () => {
-			const mockModel = { id: "gpt-4", name: "GPT-4" };
-			const mockAccessibleModels = { "gpt-4": mockModel };
+			const mockModel = {
+				id: "gpt-4",
+				name: "GPT-4",
+			} as unknown as ModelConfigItem;
+			const mockAccessibleModels = {
+				"gpt-4": mockModel,
+			} as unknown as Record<string, ModelConfigItem>;
 
 			mockGetModelConfig.mockResolvedValue(mockModel);
 			mockFilterModelsForUserAccess.mockResolvedValue(mockAccessibleModels);
@@ -168,8 +187,14 @@ describe("Models Service", () => {
 		});
 
 		it("should throw error for inaccessible model", async () => {
-			const mockModel = { id: "gpt-4", name: "GPT-4" };
-			const mockAccessibleModels = {};
+			const mockModel = {
+				id: "gpt-4",
+				name: "GPT-4",
+			} as unknown as ModelConfigItem;
+			const mockAccessibleModels = {} as unknown as Record<
+				string,
+				ModelConfigItem
+			>;
 
 			mockGetModelConfig.mockResolvedValue(mockModel);
 			mockFilterModelsForUserAccess.mockResolvedValue(mockAccessibleModels);

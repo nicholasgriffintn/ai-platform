@@ -10,7 +10,11 @@ const mockAwsClient = {
 const mockFetch = vi.fn();
 
 vi.mock("aws4fetch", () => ({
-	AwsClient: vi.fn().mockImplementation(() => mockAwsClient),
+	AwsClient: class {
+		constructor() {
+			return mockAwsClient;
+		}
+	},
 }));
 
 global.fetch = mockFetch;

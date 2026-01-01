@@ -12,7 +12,11 @@ const mockGenerateId = vi.hoisted(() => vi.fn(() => "generated-id-123"));
 const mockFetch = vi.hoisted(() => vi.fn());
 
 vi.mock("~/lib/storage", () => ({
-	StorageService: vi.fn(() => mockStorageService),
+	StorageService: class {
+		constructor() {
+			return mockStorageService;
+		}
+	},
 }));
 
 vi.mock("~/utils/id", () => ({

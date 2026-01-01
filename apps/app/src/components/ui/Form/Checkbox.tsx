@@ -4,8 +4,10 @@ import { forwardRef } from "react";
 import { cn } from "~/lib/utils";
 import { Label } from "../label";
 
-export interface FormCheckboxProps
-	extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
+export interface FormCheckboxProps extends Omit<
+	InputHTMLAttributes<HTMLInputElement>,
+	"type"
+> {
 	label?: string;
 	description?: string;
 	className?: string;

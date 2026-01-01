@@ -42,10 +42,9 @@ export function Markdown({ children, className, isStreaming }: MarkdownProps) {
 	}, [children, isStreaming]);
 
 	return (
-		<div className="relative">
+		<div className={`relative ${markdownClassName}`}>
 			<ReactMarkdown
 				components={components}
-				className={markdownClassName}
 				rehypePlugins={rehypePlugins}
 				remarkPlugins={remarkPlugins}
 			>

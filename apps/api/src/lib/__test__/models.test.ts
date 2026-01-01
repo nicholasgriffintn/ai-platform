@@ -30,9 +30,14 @@ vi.mock("~/lib/cache", () => {
 		cacheQuery: vi.fn(),
 	};
 
-	const MockKVCache = vi.fn().mockImplementation(() => mockCache);
-	// @ts-expect-error - mock implementation
-	MockKVCache.createKey = vi.fn((...parts) => parts.join(":"));
+	class MockKVCache {
+		constructor() {
+			return mockCache;
+		}
+		static createKey(...parts: string[]) {
+			return parts.join(":");
+		}
+	}
 
 	return {
 		KVCache: MockKVCache,
@@ -50,7 +55,11 @@ const mockRepositories = {
 };
 
 vi.mock("~/repositories", () => ({
-	RepositoryManager: vi.fn(() => mockRepositories),
+	RepositoryManager: class {
+		constructor() {
+			return mockRepositories;
+		}
+	},
 }));
 
 const mockModelConfig: ModelConfigItem = {

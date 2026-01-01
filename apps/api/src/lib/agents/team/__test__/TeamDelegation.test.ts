@@ -1,10 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getAIResponse } from "~/lib/chat/responses";
-import { AgentRepository } from "~/repositories/AgentRepository";
 import type { Agent, IEnv, IUser, Message } from "~/types";
 import { TeamDelegation } from "../TeamDelegation";
 
-vi.mock("~/repositories/AgentRepository");
+let agentRepositoryFactory: (() => any) | undefined;
+
+vi.mock("~/repositories/AgentRepository", () => ({
+	AgentRepository: class {
+		constructor() {
+			if (agentRepositoryFactory) {
+				return agentRepositoryFactory();
+			}
+			return {};
+		}
+	},
+}));
 vi.mock("~/lib/chat/responses");
 vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryModel: vi.fn().mockResolvedValue({
@@ -51,7 +61,7 @@ describe("TeamDelegation", () => {
 			getAgentsByTeamAndUser: vi.fn(),
 		};
 
-		(AgentRepository as any).mockImplementation(() => mockAgentRepository);
+		agentRepositoryFactory = () => mockAgentRepository;
 
 		teamDelegation = new TeamDelegation({
 			env: mockEnv,

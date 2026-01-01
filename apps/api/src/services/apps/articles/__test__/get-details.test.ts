@@ -1,10 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AppDataRepository } from "~/repositories/AppDataRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getArticleDetails } from "../get-details";
 
-vi.mock("~/repositories/AppDataRepository");
+let mockAppDataRepo: any;
+let appDataRepoFactory: (() => any) | undefined;
+
+vi.mock("~/repositories/AppDataRepository", () => ({
+	AppDataRepository: class {
+		constructor() {
+			if (appDataRepoFactory) {
+				return appDataRepoFactory();
+			}
+			return mockAppDataRepo;
+		}
+	},
+}));
 vi.mock("~/utils/logger", () => ({
 	getLogger: vi.fn(() => ({
 		error: vi.fn(),
@@ -12,14 +23,13 @@ vi.mock("~/utils/logger", () => ({
 }));
 
 describe("getArticleDetails", () => {
-	let mockAppDataRepo: any;
 	const mockEnv = { DB: {} } as any;
 
 	beforeEach(() => {
 		mockAppDataRepo = {
 			getAppDataById: vi.fn(),
 		};
-		vi.mocked(AppDataRepository).mockImplementation(() => mockAppDataRepo);
+		appDataRepoFactory = () => mockAppDataRepo;
 	});
 
 	afterEach(() => {

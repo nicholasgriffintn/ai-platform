@@ -42,7 +42,11 @@ const mockGenerateId = vi.hoisted(() => vi.fn(() => "test-id-123"));
 const mockSanitiseInput = vi.hoisted(() => vi.fn((input: string) => input));
 
 vi.mock("~/lib/storage", () => ({
-	StorageService: vi.fn(() => mockStorageService),
+	StorageService: class {
+		constructor() {
+			return mockStorageService;
+		}
+	},
 }));
 
 vi.mock("~/lib/providers/library", () => ({

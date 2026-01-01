@@ -363,8 +363,16 @@ describe("guessDrawingFromImage", () => {
 			id: "app-data-123",
 		});
 
-		const mockDate = new Date("2023-01-01T12:00:00Z");
-		vi.spyOn(global, "Date").mockImplementation(() => mockDate as any);
+		const OriginalDate = Date;
+		global.Date = class extends OriginalDate {
+			constructor(...args: ConstructorParameters<typeof OriginalDate>) {
+				if (args.length) {
+					super(...args);
+				} else {
+					super("2023-01-01T12:00:00Z");
+				}
+			}
+		} as typeof Date;
 
 		await guessDrawingFromImage({
 			env: mockEnv,
@@ -383,6 +391,6 @@ describe("guessDrawingFromImage", () => {
 			},
 		);
 
-		vi.restoreAllMocks();
+		global.Date = OriginalDate;
 	});
 });

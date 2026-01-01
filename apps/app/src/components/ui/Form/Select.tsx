@@ -9,8 +9,7 @@ export interface FormSelectOption {
 	label: string;
 }
 
-export interface FormSelectProps
-	extends SelectHTMLAttributes<HTMLSelectElement> {
+export interface FormSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 	label?: string;
 	description?: string;
 	className?: string;

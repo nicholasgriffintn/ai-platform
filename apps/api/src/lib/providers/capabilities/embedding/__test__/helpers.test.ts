@@ -13,7 +13,11 @@ import * as chatCapability from "../../chat";
 const mockRepositoryManager = {} as any;
 
 vi.mock("~/repositories", () => ({
-	RepositoryManager: vi.fn(() => mockRepositoryManager),
+	RepositoryManager: class {
+		constructor() {
+			return mockRepositoryManager;
+		}
+	},
 }));
 
 vi.mock("~/lib/providers/library", () => ({

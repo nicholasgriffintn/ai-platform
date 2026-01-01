@@ -391,7 +391,9 @@ export async function verifyPasskeyAuthentication(
 		);
 
 		const publicKeyString = credential.public_key as string;
-		const publicKeyBytes = decodeBase64Url(publicKeyString);
+		const publicKeyBytes = decodeBase64Url(
+			publicKeyString,
+		) as Uint8Array<ArrayBuffer>;
 
 		const verification = await verifyAuthenticationResponse({
 			response,

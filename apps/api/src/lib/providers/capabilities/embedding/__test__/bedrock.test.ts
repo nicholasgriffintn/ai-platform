@@ -1,22 +1,39 @@
-import { AwsClient } from "aws4fetch";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import { AssistantError } from "~/utils/errors";
 import { BedrockEmbeddingProvider } from "../providers/BedrockEmbeddingProvider";
 
-vi.mock("aws4fetch");
-vi.mock("~/repositories/UserSettingsRepository");
+let mockAwsClient: any;
+let mockUserSettingsRepo: any;
+const awsClientCtor = vi.fn();
+const userSettingsRepoCtor = vi.fn();
+
+vi.mock("aws4fetch", () => ({
+	AwsClient: class {
+		constructor(options: any) {
+			awsClientCtor(options);
+			return mockAwsClient;
+		}
+	},
+}));
+
+vi.mock("~/repositories/UserSettingsRepository", () => ({
+	UserSettingsRepository: class {
+		constructor() {
+			userSettingsRepoCtor();
+			return mockUserSettingsRepo;
+		}
+	},
+}));
 
 describe("BedrockEmbeddingProvider", () => {
 	let provider: BedrockEmbeddingProvider;
 	let mockEnv: any;
 	let mockUser: any;
-	let mockAwsClient: any;
-	let mockUserSettingsRepo: any;
-
 	beforeEach(() => {
 		vi.clearAllMocks();
+		awsClientCtor.mockReset();
+		userSettingsRepoCtor.mockReset();
 
 		mockEnv = {
 			DB: {},
@@ -37,11 +54,6 @@ describe("BedrockEmbeddingProvider", () => {
 		mockUserSettingsRepo = {
 			getProviderApiKey: vi.fn(),
 		};
-
-		vi.mocked(AwsClient).mockImplementation(() => mockAwsClient);
-		vi.mocked(UserSettingsRepository).mockImplementation(
-			() => mockUserSettingsRepo,
-		);
 
 		provider = new BedrockEmbeddingProvider(
 			{
@@ -109,7 +121,7 @@ describe("BedrockEmbeddingProvider", () => {
 			const client = await provider.getAwsClient();
 
 			expect(client).toBeDefined();
-			expect(AwsClient).toHaveBeenCalledWith({
+			expect(awsClientCtor).toHaveBeenCalledWith({
 				accessKeyId: "test-access-key",
 				secretAccessKey: "test-secret-key",
 				region: "us-east-1",
@@ -125,7 +137,7 @@ describe("BedrockEmbeddingProvider", () => {
 			const client = await provider.getAwsClient();
 
 			expect(client).toBeDefined();
-			expect(AwsClient).toHaveBeenCalledWith({
+			expect(awsClientCtor).toHaveBeenCalledWith({
 				accessKeyId: "user-access",
 				secretAccessKey: "user-secret",
 				region: "us-east-1",

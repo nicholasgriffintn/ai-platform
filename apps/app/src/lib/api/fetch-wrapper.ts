@@ -77,7 +77,7 @@ async function performFetch(
 		timeoutMs === null || timeoutMs === 0
 			? null
 			: (timeoutMs ?? DEFAULT_FETCH_TIMEOUT_MS);
-	let timeoutId: NodeJS.Timeout | null = null;
+	let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 	const fetchOptions: RequestInit = {
 		...restOptions,

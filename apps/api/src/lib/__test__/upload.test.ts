@@ -6,7 +6,11 @@ const mockStorageService = {
 };
 
 vi.mock("../storage", () => ({
-	StorageService: vi.fn().mockImplementation(() => mockStorageService),
+	StorageService: class {
+		constructor() {
+			return mockStorageService;
+		}
+	},
 }));
 
 const _createMockReadableStream = (_data: Uint8Array[]) => {

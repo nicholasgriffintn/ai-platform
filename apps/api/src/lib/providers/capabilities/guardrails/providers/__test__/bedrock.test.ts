@@ -12,13 +12,19 @@ const mockUserSettingsRepo = {
 };
 
 vi.mock("aws4fetch", () => ({
-	AwsClient: vi.fn().mockImplementation(() => mockAws),
+	AwsClient: class {
+		constructor() {
+			return mockAws;
+		}
+	},
 }));
 
 vi.mock("~/repositories/UserSettingsRepository", () => ({
-	UserSettingsRepository: vi
-		.fn()
-		.mockImplementation(() => mockUserSettingsRepo),
+	UserSettingsRepository: class {
+		constructor() {
+			return mockUserSettingsRepo;
+		}
+	},
 }));
 
 describe("BedrockGuardrailsProvider", () => {

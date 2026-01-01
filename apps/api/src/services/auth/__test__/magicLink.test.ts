@@ -7,9 +7,14 @@ import {
 	vi,
 } from "vitest";
 
+import type { JwtData } from "@tsndr/cloudflare-worker-jwt";
+
 import { sendMagicLinkEmail } from "~/services/notifications";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { requestMagicLink, verifyMagicLink } from "../magicLink";
+
+type JwtModule = typeof import("@tsndr/cloudflare-worker-jwt");
+type NotificationsModule = typeof import("~/services/notifications");
 
 vi.mock("@tsndr/cloudflare-worker-jwt", () => ({
 	sign: vi.fn(),
@@ -17,8 +22,14 @@ vi.mock("@tsndr/cloudflare-worker-jwt", () => ({
 	decode: vi.fn(),
 }));
 
+let awsClientFactory = () => ({}) as any;
+
 vi.mock("aws4fetch", () => ({
-	AwsClient: vi.fn(),
+	AwsClient: class {
+		constructor() {
+			return awsClientFactory();
+		}
+	},
 }));
 
 const mockRepositories = {
@@ -36,14 +47,28 @@ const mockRepositories = {
 	},
 };
 
+let mockDatabase: any;
+let databaseFactory: (() => any) | undefined;
+
 vi.mock("~/repositories", () => ({
-	RepositoryManager: vi.fn(() => mockRepositories),
+	RepositoryManager: class {
+		constructor() {
+			return mockRepositories;
+		}
+	},
 }));
 
 vi.mock("~/lib/database", () => ({
-	Database: vi.fn((env) => ({
-		consumeMagicLinkNonce: vi.fn(),
-	})),
+	Database: class {
+		constructor() {
+			if (databaseFactory) {
+				return databaseFactory();
+			}
+			return {
+				consumeMagicLinkNonce: vi.fn(),
+			};
+		}
+	},
 }));
 
 vi.mock("~/services/notifications", () => ({
@@ -59,12 +84,13 @@ global.TextEncoder = class {
 } as any;
 
 describe("Magic Link Service", () => {
-	let mockJwtSign: MockedFunction<any>;
-	let mockJwtVerify: MockedFunction<any>;
-	let mockJwtDecode: MockedFunction<any>;
+	let mockJwtSign: MockedFunction<JwtModule["sign"]>;
+	let mockJwtVerify: MockedFunction<JwtModule["verify"]>;
+	let mockJwtDecode: MockedFunction<JwtModule["decode"]>;
 	let mockAwsClient: any;
-	let mockDatabase: any;
-	let mockSendMagicLinkEmail: MockedFunction<any>;
+	let mockSendMagicLinkEmail: MockedFunction<
+		NotificationsModule["sendMagicLinkEmail"]
+	>;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -74,13 +100,11 @@ describe("Magic Link Service", () => {
 		mockJwtVerify = vi.mocked(jwt.verify);
 		mockJwtDecode = vi.mocked(jwt.decode);
 
-		const { AwsClient } = await import("aws4fetch");
 		mockAwsClient = {
 			sign: vi.fn(),
 		};
-		vi.mocked(AwsClient).mockImplementation(() => mockAwsClient);
+		awsClientFactory = () => mockAwsClient;
 
-		const { Database } = await import("~/lib/database");
 		mockDatabase = {
 			consumeMagicLinkNonce: vi.fn(),
 			repositories: {
@@ -89,7 +113,7 @@ describe("Magic Link Service", () => {
 				},
 			},
 		};
-		vi.mocked(Database).mockImplementation(() => mockDatabase);
+		databaseFactory = () => mockDatabase;
 
 		mockRepositories.userSettings.createUserSettings.mockResolvedValue(true);
 		mockRepositories.userSettings.createUserProviderSettings.mockResolvedValue(
@@ -262,8 +286,14 @@ describe("Magic Link Service", () => {
 			};
 			const mockUser = { id: 123, email: "user@example.com" };
 
-			mockJwtVerify.mockResolvedValue(true);
-			mockJwtDecode.mockReturnValue({ payload: mockPayload });
+			mockJwtVerify.mockResolvedValue({
+				header: { alg: "HS256" },
+				payload: mockPayload,
+			} as JwtData);
+			mockJwtDecode.mockReturnValue({
+				header: { alg: "HS256" },
+				payload: mockPayload,
+			} as JwtData);
 			mockDatabase.consumeMagicLinkNonce.mockResolvedValue(true);
 			mockRepositories.users.getUserById.mockResolvedValue(mockUser);
 
@@ -285,7 +315,7 @@ describe("Magic Link Service", () => {
 		});
 
 		it("should throw error for invalid token", async () => {
-			mockJwtVerify.mockResolvedValue(false);
+			mockJwtVerify.mockResolvedValue(undefined);
 
 			await expect(
 				verifyMagicLink(mockEnv, "invalid-token", "nonce"),
@@ -302,8 +332,14 @@ describe("Magic Link Service", () => {
 				exp: Math.floor(Date.now() / 1000) - 300,
 			};
 
-			mockJwtVerify.mockResolvedValue(true);
-			mockJwtDecode.mockReturnValue({ payload: expiredPayload });
+			mockJwtVerify.mockResolvedValue({
+				header: { alg: "HS256" },
+				payload: expiredPayload,
+			} as JwtData);
+			mockJwtDecode.mockReturnValue({
+				header: { alg: "HS256" },
+				payload: expiredPayload,
+			} as JwtData);
 
 			await expect(
 				verifyMagicLink(mockEnv, "expired-token", "nonce"),
@@ -320,8 +356,14 @@ describe("Magic Link Service", () => {
 				exp: Math.floor(Date.now() / 1000) + 300,
 			};
 
-			mockJwtVerify.mockResolvedValue(true);
-			mockJwtDecode.mockReturnValue({ payload: mockPayload });
+			mockJwtVerify.mockResolvedValue({
+				header: { alg: "HS256" },
+				payload: mockPayload,
+			} as JwtData);
+			mockJwtDecode.mockReturnValue({
+				header: { alg: "HS256" },
+				payload: mockPayload,
+			} as JwtData);
 			mockDatabase.consumeMagicLinkNonce.mockResolvedValue(false);
 
 			await expect(
@@ -339,8 +381,14 @@ describe("Magic Link Service", () => {
 				exp: Math.floor(Date.now() / 1000) + 300,
 			};
 
-			mockJwtVerify.mockResolvedValue(true);
-			mockJwtDecode.mockReturnValue({ payload: mockPayload });
+			mockJwtVerify.mockResolvedValue({
+				header: { alg: "HS256" },
+				payload: mockPayload,
+			} as JwtData);
+			mockJwtDecode.mockReturnValue({
+				header: { alg: "HS256" },
+				payload: mockPayload,
+			} as JwtData);
 			mockDatabase.consumeMagicLinkNonce.mockResolvedValue(true);
 			mockRepositories.users.getUserById.mockResolvedValue(null);
 

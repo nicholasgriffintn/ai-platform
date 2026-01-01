@@ -38,11 +38,19 @@ const mockRepositories = {
 };
 
 vi.mock("stripe", () => ({
-	default: vi.fn().mockImplementation(() => mockStripe),
+	default: class {
+		constructor() {
+			return mockStripe;
+		}
+	},
 }));
 
 vi.mock("~/repositories", () => ({
-	RepositoryManager: vi.fn(() => mockRepositories),
+	RepositoryManager: class {
+		constructor() {
+			return mockRepositories;
+		}
+	},
 }));
 
 import {

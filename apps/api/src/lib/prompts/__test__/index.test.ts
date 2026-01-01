@@ -278,9 +278,8 @@ describe("prompts index", () => {
 		});
 
 		it("should generate web search questions system prompt", async () => {
-			const { webSearchSimilarQuestionsSystemPrompt } = await import(
-				"../index"
-			);
+			const { webSearchSimilarQuestionsSystemPrompt } =
+				await import("../index");
 			const result = webSearchSimilarQuestionsSystemPrompt();
 
 			expect(typeof result).toBe("string");

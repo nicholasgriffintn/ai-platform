@@ -2,19 +2,39 @@ import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { IEnv } from "~/types";
 import { ReplicatePollingHandler } from "../ReplicatePollingHandler";
 import * as chatCapability from "~/lib/providers/capabilities/chat";
-import { AppDataRepository } from "~/repositories/AppDataRepository";
-import { TaskService } from "../../TaskService";
 import type { TaskMessage } from "../../TaskService";
 
 vi.mock("~/lib/providers/capabilities/chat", () => ({
 	getChatProvider: vi.fn(),
 }));
 
-vi.mock("~/repositories/AppDataRepository");
-vi.mock("~/repositories/TaskRepository");
-vi.mock("../../TaskService");
-const mockedAppDataRepository = vi.mocked(AppDataRepository);
-const mockedTaskService = vi.mocked(TaskService);
+let appDataRepoImpl: any;
+let taskRepositoryImpl: any;
+let taskServiceImpl: any;
+
+vi.mock("~/repositories/AppDataRepository", () => ({
+	AppDataRepository: class {
+		constructor() {
+			return appDataRepoImpl;
+		}
+	},
+}));
+
+vi.mock("~/repositories/TaskRepository", () => ({
+	TaskRepository: class {
+		constructor() {
+			return taskRepositoryImpl ?? {};
+		}
+	},
+}));
+
+vi.mock("../../TaskService", () => ({
+	TaskService: class {
+		constructor() {
+			return taskServiceImpl ?? {};
+		}
+	},
+}));
 
 describe("ReplicatePollingHandler", () => {
 	const baseEnv = {
@@ -38,6 +58,9 @@ describe("ReplicatePollingHandler", () => {
 
 	beforeEach(() => {
 		vi.resetAllMocks();
+		appDataRepoImpl = undefined;
+		taskRepositoryImpl = undefined;
+		taskServiceImpl = undefined;
 		handler = new ReplicatePollingHandler();
 	});
 
@@ -57,7 +80,7 @@ describe("ReplicatePollingHandler", () => {
 		const mockRepo = {
 			getAppDataById: vi.fn().mockResolvedValue(null),
 		};
-		mockedAppDataRepository.mockImplementation(() => mockRepo as any);
+		appDataRepoImpl = mockRepo;
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -73,7 +96,7 @@ describe("ReplicatePollingHandler", () => {
 				data: JSON.stringify({}),
 			}),
 		};
-		mockedAppDataRepository.mockImplementation(() => mockRepo as any);
+		appDataRepoImpl = mockRepo;
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -100,7 +123,7 @@ describe("ReplicatePollingHandler", () => {
 			}),
 			updateAppData: vi.fn().mockResolvedValue(undefined),
 		};
-		mockedAppDataRepository.mockImplementation(() => mockRepo as any);
+		appDataRepoImpl = mockRepo;
 
 		const mockProvider = {
 			getAsyncInvocationStatus: vi.fn().mockResolvedValue({
@@ -149,7 +172,7 @@ describe("ReplicatePollingHandler", () => {
 			}),
 			updateAppData: vi.fn().mockResolvedValue(undefined),
 		};
-		mockedAppDataRepository.mockImplementation(() => mockRepo as any);
+		appDataRepoImpl = mockRepo;
 
 		const mockProvider = {
 			getAsyncInvocationStatus: vi.fn().mockResolvedValue({
@@ -194,7 +217,7 @@ describe("ReplicatePollingHandler", () => {
 				}),
 			}),
 		};
-		mockedAppDataRepository.mockImplementation(() => mockRepo as any);
+		appDataRepoImpl = mockRepo;
 
 		const mockProvider = {
 			getAsyncInvocationStatus: vi.fn().mockResolvedValue({
@@ -206,12 +229,9 @@ describe("ReplicatePollingHandler", () => {
 		);
 
 		const mockEnqueueTask = vi.fn().mockResolvedValue(undefined);
-		mockedTaskService.mockImplementation(
-			() =>
-				({
-					enqueueTask: mockEnqueueTask,
-				}) as any,
-		);
+		taskServiceImpl = {
+			enqueueTask: mockEnqueueTask,
+		};
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -234,7 +254,7 @@ describe("ReplicatePollingHandler", () => {
 				}),
 			}),
 		};
-		mockedAppDataRepository.mockImplementation(() => mockRepo as any);
+		appDataRepoImpl = mockRepo;
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -260,7 +280,7 @@ describe("ReplicatePollingHandler", () => {
 				}),
 			}),
 		};
-		mockedAppDataRepository.mockImplementation(() => mockRepo as any);
+		appDataRepoImpl = mockRepo;
 
 		const mockProvider = {};
 		vi.mocked(chatCapability.getChatProvider).mockReturnValue(

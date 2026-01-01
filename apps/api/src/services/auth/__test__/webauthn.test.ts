@@ -7,6 +7,12 @@ import {
 	vi,
 } from "vitest";
 
+import type {
+	PublicKeyCredentialCreationOptionsJSON,
+	VerifiedAuthenticationResponse,
+	VerifiedRegistrationResponse,
+} from "@simplewebauthn/server";
+
 import { AssistantError, ErrorType } from "~/utils/errors";
 import {
 	generatePasskeyRegistrationOptions,
@@ -18,6 +24,9 @@ import {
 	verifyAndRegisterPasskey,
 	verifyPasskeyAuthentication,
 } from "../webauthn";
+
+type WebAuthnServer = typeof import("@simplewebauthn/server");
+type Base64Utils = typeof import("~/utils/base64url");
 
 vi.mock("@simplewebauthn/server", () => ({
 	generateAuthenticationOptions: vi.fn(),
@@ -45,15 +54,27 @@ const mockRepositories = {
 };
 
 vi.mock("~/repositories", () => ({
-	RepositoryManager: vi.fn(() => mockRepositories),
+	RepositoryManager: class {
+		constructor() {
+			return mockRepositories;
+		}
+	},
 }));
 
 describe("WebAuthn Service", () => {
-	let mockGenerateRegistrationOptions: MockedFunction<any>;
-	let _mockGenerateAuthenticationOptions: MockedFunction<any>;
-	let mockVerifyRegistrationResponse: MockedFunction<any>;
-	let mockVerifyAuthenticationResponse: MockedFunction<any>;
-	let mockDecodeBase64Url: MockedFunction<any>;
+	let mockGenerateRegistrationOptions: MockedFunction<
+		WebAuthnServer["generateRegistrationOptions"]
+	>;
+	let _mockGenerateAuthenticationOptions: MockedFunction<
+		WebAuthnServer["generateAuthenticationOptions"]
+	>;
+	let mockVerifyRegistrationResponse: MockedFunction<
+		WebAuthnServer["verifyRegistrationResponse"]
+	>;
+	let mockVerifyAuthenticationResponse: MockedFunction<
+		WebAuthnServer["verifyAuthenticationResponse"]
+	>;
+	let mockDecodeBase64Url: MockedFunction<Base64Utils["decodeBase64Url"]>;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -311,7 +332,7 @@ describe("WebAuthn Service", () => {
 			const mockOptions = {
 				challenge: "challenge123",
 				rp: { name: "Test App", id: "example.com" },
-			};
+			} as PublicKeyCredentialCreationOptionsJSON;
 
 			mockRepositories.webAuthn.getPasskeysByUserId.mockResolvedValue(
 				mockCredentials,
@@ -373,7 +394,7 @@ describe("WebAuthn Service", () => {
 					credentialDeviceType: "platform",
 					credentialBackedUp: true,
 				},
-			};
+			} as unknown as VerifiedRegistrationResponse;
 
 			mockRepositories.webAuthn.getChallengeByUserId.mockResolvedValue({
 				challenge: "challenge123",
@@ -410,7 +431,7 @@ describe("WebAuthn Service", () => {
 					credentialDeviceType: "platform",
 					credentialBackedUp: true,
 				},
-			};
+			} as unknown as VerifiedRegistrationResponse;
 
 			mockRepositories.webAuthn.getChallengeByUserId.mockResolvedValue({
 				challenge: "challenge123",
@@ -449,7 +470,7 @@ describe("WebAuthn Service", () => {
 			const mockVerification = {
 				verified: true,
 				authenticationInfo: { newCounter: 2 },
-			};
+			} as VerifiedAuthenticationResponse;
 
 			mockRepositories.webAuthn.getPasskeyByCredentialId.mockResolvedValue(
 				mockCredential,

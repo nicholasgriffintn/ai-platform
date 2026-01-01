@@ -10,6 +10,18 @@ import {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { handleWebSearch } from "../web";
 
+import type {
+	SearchProvider,
+	SearchResult,
+} from "~/lib/providers/capabilities/search";
+
+type ChatUtils = typeof import("~/lib/chat/utils");
+type ModelsLib = typeof import("~/lib/providers/models");
+type SearchCapability = typeof import("~/lib/providers/capabilities/search");
+type MockedSearchProvider = {
+	performWebSearch: MockedFunction<SearchProvider["performWebSearch"]>;
+};
+
 vi.mock("~/lib/chat/utils", () => ({
 	sanitiseInput: vi.fn(),
 }));
@@ -23,10 +35,14 @@ vi.mock("~/lib/providers/capabilities/search", () => ({
 }));
 
 describe("Web Search Service", () => {
-	let mockSanitiseInput: MockedFunction<any>;
-	let mockGetSearchProvider: MockedFunction<any>;
-	let mockSearchProvider: { performWebSearch: MockedFunction<any> };
-	let mockGetAuxiliarySearchProvider: MockedFunction<any>;
+	let mockSanitiseInput: MockedFunction<ChatUtils["sanitiseInput"]>;
+	let mockGetSearchProvider: MockedFunction<
+		SearchCapability["getSearchProvider"]
+	>;
+	let mockSearchProvider: MockedSearchProvider;
+	let mockGetAuxiliarySearchProvider: MockedFunction<
+		ModelsLib["getAuxiliarySearchProvider"]
+	>;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -40,13 +56,14 @@ describe("Web Search Service", () => {
 		);
 		mockGetAuxiliarySearchProvider.mockResolvedValue("tavily");
 
-		const searchCapability = await import(
-			"~/lib/providers/capabilities/search"
-		);
+		const searchCapability =
+			await import("~/lib/providers/capabilities/search");
 		mockGetSearchProvider = vi.mocked(searchCapability.getSearchProvider);
 
 		mockSearchProvider = {
-			performWebSearch: vi.fn(),
+			performWebSearch: vi.fn() as MockedFunction<
+				SearchProvider["performWebSearch"]
+			>,
 		};
 		mockGetSearchProvider.mockReturnValue(mockSearchProvider);
 	});
@@ -59,8 +76,16 @@ describe("Web Search Service", () => {
 		};
 
 		it("should perform successful web search", async () => {
-			const mockSearchResponse = {
-				results: [{ title: "Test Result", url: "https://example.com" }],
+			const mockSearchResponse: SearchResult = {
+				provider: "tavily",
+				results: [
+					{
+						title: "Test Result",
+						content: "Test content",
+						url: "https://example.com",
+						score: 0.9,
+					},
+				],
 			};
 
 			mockSanitiseInput.mockReturnValue("test query");
@@ -95,7 +120,10 @@ describe("Web Search Service", () => {
 		});
 
 		it("should use custom provider", async () => {
-			const mockSearchResponse = { results: [] };
+			const mockSearchResponse: SearchResult = {
+				provider: "tavily",
+				results: [],
+			};
 			const requestWithProvider = {
 				...mockRequest,
 				provider: "serper" as const,
@@ -132,7 +160,11 @@ describe("Web Search Service", () => {
 			};
 			mockSanitiseInput.mockReturnValue("free query");
 			mockGetAuxiliarySearchProvider.mockResolvedValueOnce("duckduckgo");
-			mockSearchProvider.performWebSearch.mockResolvedValue({ results: [] });
+			const mockSearchResponse: SearchResult = {
+				provider: "tavily",
+				results: [],
+			};
+			mockSearchProvider.performWebSearch.mockResolvedValue(mockSearchResponse);
 
 			const result = await handleWebSearch(freeUserRequest);
 
@@ -150,7 +182,10 @@ describe("Web Search Service", () => {
 		});
 
 		it("should pass search options", async () => {
-			const mockSearchResponse = { results: [] };
+			const mockSearchResponse: SearchResult = {
+				provider: "tavily",
+				results: [],
+			};
 			const searchOptions = { limit: 5 };
 			const requestWithOptions = {
 				...mockRequest,

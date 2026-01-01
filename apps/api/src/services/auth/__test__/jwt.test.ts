@@ -7,8 +7,15 @@ import {
 	vi,
 } from "vitest";
 
+import type { JwtData } from "@tsndr/cloudflare-worker-jwt";
+
+import type { User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateJwtToken, getUserByJwtToken, verifyJwtToken } from "../jwt";
+
+type JwtModule = typeof import("@tsndr/cloudflare-worker-jwt");
+type JwtDefault = JwtModule["default"];
+type UserModule = typeof import("../user");
 
 vi.mock("@tsndr/cloudflare-worker-jwt", () => ({
 	default: {
@@ -22,9 +29,9 @@ vi.mock("../user", () => ({
 }));
 
 describe("JWT Service", () => {
-	let mockJwtSign: MockedFunction<any>;
-	let mockJwtVerify: MockedFunction<any>;
-	let mockGetUserById: MockedFunction<any>;
+	let mockJwtSign: MockedFunction<JwtDefault["sign"]>;
+	let mockJwtVerify: MockedFunction<JwtDefault["verify"]>;
+	let mockGetUserById: MockedFunction<UserModule["getUserById"]>;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -92,7 +99,7 @@ describe("JWT Service", () => {
 
 	describe("verifyJwtToken", () => {
 		it("should verify valid JWT token", async () => {
-			const mockDecoded = {
+			const mockDecoded: JwtData<{ email: string }> = {
 				header: { typ: "JWT", alg: "HS256" },
 				payload: { sub: "123", email: "test@example.com" },
 			};
@@ -131,10 +138,11 @@ describe("JWT Service", () => {
 
 	describe("getUserByJwtToken", () => {
 		it("should return user for valid token", async () => {
-			const mockDecoded = {
+			const mockDecoded: JwtData = {
+				header: { alg: "HS256" },
 				payload: { sub: "123" },
 			};
-			const mockUser = { id: 123, email: "test@example.com" };
+			const mockUser = { id: 123, email: "test@example.com" } as User;
 
 			mockJwtVerify.mockResolvedValue(mockDecoded);
 			mockGetUserById.mockResolvedValue(mockUser);
@@ -150,7 +158,8 @@ describe("JWT Service", () => {
 		});
 
 		it("should handle non-existent user", async () => {
-			const mockDecoded = {
+			const mockDecoded: JwtData = {
+				header: { alg: "HS256" },
 				payload: { sub: "999" },
 			};
 

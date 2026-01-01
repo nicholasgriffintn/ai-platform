@@ -2,23 +2,41 @@ import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { IEnv } from "~/types";
 import { ResearchPollingHandler } from "../ResearchPollingHandler";
 import { getResearchProvider } from "~/lib/providers/capabilities/research";
-import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
-import { TaskService } from "../../TaskService";
 import type { TaskMessage } from "../../TaskService";
 
 vi.mock("~/lib/providers/capabilities/research", () => ({
 	getResearchProvider: vi.fn(),
 }));
 
-vi.mock("~/repositories/DynamicAppResponseRepository");
-vi.mock("~/repositories/TaskRepository");
-vi.mock("../../TaskService");
+let dynamicResponseRepoImpl: any;
+let taskRepositoryImpl: any;
+let taskServiceImpl: any;
+
+vi.mock("~/repositories/DynamicAppResponseRepository", () => ({
+	DynamicAppResponseRepository: class {
+		constructor() {
+			return dynamicResponseRepoImpl;
+		}
+	},
+}));
+
+vi.mock("~/repositories/TaskRepository", () => ({
+	TaskRepository: class {
+		constructor() {
+			return taskRepositoryImpl ?? {};
+		}
+	},
+}));
+
+vi.mock("../../TaskService", () => ({
+	TaskService: class {
+		constructor() {
+			return taskServiceImpl ?? {};
+		}
+	},
+}));
 
 const mockedGetResearchProvider = vi.mocked(getResearchProvider);
-const mockedDynamicAppResponseRepository = vi.mocked(
-	DynamicAppResponseRepository,
-);
-const mockedTaskService = vi.mocked(TaskService);
 
 describe("ResearchPollingHandler", () => {
 	const baseEnv = {
@@ -42,6 +60,9 @@ describe("ResearchPollingHandler", () => {
 
 	beforeEach(() => {
 		vi.resetAllMocks();
+		dynamicResponseRepoImpl = undefined;
+		taskRepositoryImpl = undefined;
+		taskServiceImpl = undefined;
 		handler = new ResearchPollingHandler();
 	});
 
@@ -87,9 +108,7 @@ describe("ResearchPollingHandler", () => {
 			}),
 			updateResponseData: vi.fn().mockResolvedValue(undefined),
 		};
-		mockedDynamicAppResponseRepository.mockImplementation(
-			() => mockRepo as any,
-		);
+		dynamicResponseRepoImpl = mockRepo;
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -125,9 +144,7 @@ describe("ResearchPollingHandler", () => {
 			}),
 			updateResponseData: vi.fn().mockResolvedValue(undefined),
 		};
-		mockedDynamicAppResponseRepository.mockImplementation(
-			() => mockRepo as any,
-		);
+		dynamicResponseRepoImpl = mockRepo;
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -162,9 +179,7 @@ describe("ResearchPollingHandler", () => {
 			}),
 			updateResponseData: vi.fn().mockResolvedValue(undefined),
 		};
-		mockedDynamicAppResponseRepository.mockImplementation(
-			() => mockRepo as any,
-		);
+		dynamicResponseRepoImpl = mockRepo;
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -186,12 +201,9 @@ describe("ResearchPollingHandler", () => {
 		} as any);
 
 		const mockEnqueueTask = vi.fn().mockResolvedValue(undefined);
-		mockedTaskService.mockImplementation(
-			() =>
-				({
-					enqueueTask: mockEnqueueTask,
-				}) as any,
-		);
+		taskServiceImpl = {
+			enqueueTask: mockEnqueueTask,
+		};
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -227,9 +239,7 @@ describe("ResearchPollingHandler", () => {
 			}),
 			updateResponseData: vi.fn().mockResolvedValue(undefined),
 		};
-		mockedDynamicAppResponseRepository.mockImplementation(
-			() => mockRepo as any,
-		);
+		dynamicResponseRepoImpl = mockRepo;
 
 		await handler.handle(baseMessage, baseEnv);
 

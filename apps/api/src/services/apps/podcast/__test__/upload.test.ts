@@ -20,7 +20,11 @@ vi.mock("~/repositories", () => ({
 }));
 
 vi.mock("~/lib/storage", () => ({
-	StorageService: vi.fn(() => mockStorageService),
+	StorageService: class {
+		constructor() {
+			return mockStorageService;
+		}
+	},
 }));
 
 vi.mock("~/lib/chat/utils", () => ({

@@ -1,10 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AppDataRepository } from "~/repositories/AppDataRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getSourceArticles } from "../get-source-articles";
 
-vi.mock("~/repositories/AppDataRepository");
+let mockAppDataRepo: any;
+let appDataRepoFactory: (() => any) | undefined;
+
+vi.mock("~/repositories/AppDataRepository", () => ({
+	AppDataRepository: class {
+		constructor() {
+			if (appDataRepoFactory) {
+				return appDataRepoFactory();
+			}
+			return mockAppDataRepo;
+		}
+	},
+}));
 vi.mock("~/utils/logger", () => ({
 	getLogger: vi.fn(() => ({
 		error: vi.fn(),
@@ -12,14 +23,13 @@ vi.mock("~/utils/logger", () => ({
 }));
 
 describe("getSourceArticles", () => {
-	let mockAppDataRepo: any;
 	const mockEnv = { DB: {} } as any;
 
 	beforeEach(() => {
 		mockAppDataRepo = {
 			getAppDataById: vi.fn(),
 		};
-		vi.mocked(AppDataRepository).mockImplementation(() => mockAppDataRepo);
+		appDataRepoFactory = () => mockAppDataRepo;
 	});
 
 	afterEach(() => {
@@ -247,9 +257,9 @@ describe("getSourceArticles", () => {
 	});
 
 	it("should throw AssistantError when repository creation fails", async () => {
-		vi.mocked(AppDataRepository).mockImplementation(() => {
+		appDataRepoFactory = () => {
 			throw new Error("Repository creation failed");
-		});
+		};
 
 		await expect(
 			getSourceArticles({
@@ -274,9 +284,9 @@ describe("getSourceArticles", () => {
 			ErrorType.NOT_FOUND,
 		);
 
-		vi.mocked(AppDataRepository).mockImplementation(() => {
+		appDataRepoFactory = () => {
 			throw originalError;
-		});
+		};
 
 		await expect(
 			getSourceArticles({

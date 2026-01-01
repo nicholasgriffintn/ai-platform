@@ -40,12 +40,32 @@ const {
 	mockHandleToolCalls: vi.fn(),
 }));
 
+let validationFactory: (() => any) | undefined;
+let preparerFactory: ((env: any) => any) | undefined;
+let guardrailsFactory: (() => any) | undefined;
+let agentRepositoryFactory: (() => any) | undefined;
+let teamDelegationFactory: (() => any) | undefined;
+
 vi.mock("~/lib/chat/validation/ValidationPipeline", () => ({
-	ValidationPipeline: vi.fn(() => mockValidator),
+	ValidationPipeline: class {
+		constructor() {
+			if (validationFactory) {
+				return validationFactory();
+			}
+			return mockValidator;
+		}
+	},
 }));
 
 vi.mock("~/lib/chat/preparation/RequestPreparer", () => ({
-	RequestPreparer: vi.fn(() => mockPreparer),
+	RequestPreparer: class {
+		constructor(env: any) {
+			if (preparerFactory) {
+				return preparerFactory(env);
+			}
+			return mockPreparer;
+		}
+	},
 }));
 
 vi.mock("~/lib/chat/responses", () => ({
@@ -53,15 +73,36 @@ vi.mock("~/lib/chat/responses", () => ({
 }));
 
 vi.mock("~/lib/providers/capabilities/guardrails", () => ({
-	Guardrails: vi.fn(() => mockGuardrails),
+	Guardrails: class {
+		constructor() {
+			if (guardrailsFactory) {
+				return guardrailsFactory();
+			}
+			return mockGuardrails;
+		}
+	},
 }));
 
 vi.mock("~/repositories/AgentRepository", () => ({
-	AgentRepository: vi.fn(() => mockAgentRepository),
+	AgentRepository: class {
+		constructor() {
+			if (agentRepositoryFactory) {
+				return agentRepositoryFactory();
+			}
+			return mockAgentRepository;
+		}
+	},
 }));
 
 vi.mock("~/lib/agents/team/TeamDelegation", () => ({
-	TeamDelegation: vi.fn(() => mockTeamDelegation),
+	TeamDelegation: class {
+		constructor() {
+			if (teamDelegationFactory) {
+				return teamDelegationFactory();
+			}
+			return mockTeamDelegation;
+		}
+	},
 }));
 
 vi.mock("~/lib/chat/tools", () => ({
@@ -88,6 +129,12 @@ describe("Team Delegation Integration", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+
+		validationFactory = () => mockValidator;
+		preparerFactory = () => mockPreparer;
+		guardrailsFactory = () => mockGuardrails;
+		agentRepositoryFactory = () => mockAgentRepository;
+		teamDelegationFactory = () => mockTeamDelegation;
 
 		mockEnv = { DB: {}, AI: { aiGatewayLogId: "test-log-id" } };
 		mockUser = { id: "user-123" };

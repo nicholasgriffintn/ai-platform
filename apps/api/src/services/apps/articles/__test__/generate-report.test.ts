@@ -25,6 +25,7 @@ const mockAppDataRepo = {
 	getAppDataByUserAppAndItem: vi.fn(),
 	createAppDataWithItem: vi.fn(),
 };
+let appDataRepoFactory: (() => any) | undefined;
 
 const mockProvider = {
 	name: "test-provider",
@@ -50,7 +51,14 @@ vi.mock("~/lib/providers/capabilities/chat", () => ({
 }));
 
 vi.mock("~/repositories/AppDataRepository", () => ({
-	AppDataRepository: vi.fn(() => mockAppDataRepo),
+	AppDataRepository: class {
+		constructor() {
+			if (appDataRepoFactory) {
+				return appDataRepoFactory();
+			}
+			return mockAppDataRepo;
+		}
+	},
 }));
 
 vi.mock("~/utils/extract", () => ({
@@ -87,6 +95,7 @@ describe("generateArticlesReport", () => {
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
+		appDataRepoFactory = () => mockAppDataRepo;
 		const { getAuxiliaryModelForRetrieval, getModelConfigByMatchingModel } =
 			await import("~/lib/providers/models");
 		vi.mocked(getAuxiliaryModelForRetrieval).mockResolvedValue({

@@ -77,7 +77,10 @@ export default defineConfig(({ isSsrBuild, command }) => ({
 		}),
 		tailwindcss(),
 		reactRouter(),
-		tsconfigPaths(),
+		tsconfigPaths({
+			projectDiscovery: "lazy",
+			logFile: false,
+		}),
 		command === "build" &&
 			visualizer({
 				filename: "dist/stats.html",

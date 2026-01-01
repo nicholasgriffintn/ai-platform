@@ -13,7 +13,11 @@ const mockEmbeddingProvider = {
 };
 
 vi.mock("~/repositories", () => ({
-	RepositoryManager: vi.fn(() => mockRepositories),
+	RepositoryManager: class {
+		constructor() {
+			return mockRepositories;
+		}
+	},
 }));
 
 vi.mock("~/lib/providers/capabilities/embedding/helpers", () => ({

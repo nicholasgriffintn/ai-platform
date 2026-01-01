@@ -28,9 +28,13 @@ const createSignedRequest = (url: string, init: RequestInit = {}) =>
 	});
 
 vi.mock("aws4fetch", () => ({
-	AwsClient: vi.fn().mockImplementation(() => ({
-		sign: signMock,
-	})),
+	AwsClient: class {
+		constructor() {
+			return {
+				sign: signMock,
+			};
+		}
+	},
 }));
 
 vi.mock("../base", () => ({

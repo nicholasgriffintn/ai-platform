@@ -21,7 +21,11 @@ const mockAI = {
 };
 
 vi.mock("~/lib/storage", () => ({
-	StorageService: vi.fn(() => mockStorageService),
+	StorageService: class {
+		constructor() {
+			return mockStorageService;
+		}
+	},
 }));
 
 vi.mock("~/utils/id", () => ({

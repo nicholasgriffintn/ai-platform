@@ -32,12 +32,30 @@ const {
 	mockHandleToolCalls: vi.fn(),
 }));
 
+let validationFactory: (() => any) | undefined;
+let preparerFactory: ((env: any) => any) | undefined;
+let guardrailsFactory: (() => any) | undefined;
+
 vi.mock("~/lib/chat/validation/ValidationPipeline", () => ({
-	ValidationPipeline: vi.fn(() => mockValidator),
+	ValidationPipeline: class {
+		constructor() {
+			if (validationFactory) {
+				return validationFactory();
+			}
+			return mockValidator;
+		}
+	},
 }));
 
 vi.mock("~/lib/chat/preparation/RequestPreparer", () => ({
-	RequestPreparer: vi.fn(() => mockPreparer),
+	RequestPreparer: class {
+		constructor(env: any) {
+			if (preparerFactory) {
+				return preparerFactory(env);
+			}
+			return mockPreparer;
+		}
+	},
 }));
 
 vi.mock("~/lib/chat/responses", () => ({
@@ -57,7 +75,14 @@ vi.mock("~/lib/chat/tools", () => ({
 }));
 
 vi.mock("~/lib/providers/capabilities/guardrails", () => ({
-	Guardrails: vi.fn(() => mockGuardrails),
+	Guardrails: class {
+		constructor() {
+			if (guardrailsFactory) {
+				return guardrailsFactory();
+			}
+			return mockGuardrails;
+		}
+	},
 }));
 
 vi.mock("~/utils/id", () => ({
@@ -78,6 +103,10 @@ describe("ChatOrchestrator", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+
+		validationFactory = () => mockValidator;
+		preparerFactory = () => mockPreparer;
+		guardrailsFactory = () => mockGuardrails;
 
 		mockEnv = { AI: { aiGatewayLogId: "test-log-id" } };
 		orchestrator = new ChatOrchestrator(mockEnv);

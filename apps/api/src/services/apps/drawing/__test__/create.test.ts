@@ -10,7 +10,11 @@ vi.mock("~/lib/context/serviceContext", () => ({
 }));
 
 vi.mock("~/lib/storage", () => ({
-	StorageService: vi.fn(),
+	StorageService: class {
+		constructor() {
+			return storageServiceImpl ?? mockStorageService;
+		}
+	},
 }));
 
 vi.mock("~/utils/id", () => ({
@@ -33,6 +37,23 @@ const mockAppDataRepo = {
 const mockStorageService = {
 	uploadObject: vi.fn(),
 };
+
+let storageServiceImpl: typeof mockStorageService | undefined;
+let originalResponse: typeof Response | undefined;
+
+const buildResponseMock = (fallbackBuffer: ArrayBuffer) =>
+	class Response {
+		private blob: any;
+		constructor(blob: any) {
+			this.blob = blob;
+		}
+		async arrayBuffer() {
+			if (this.blob?.arrayBuffer) {
+				return this.blob.arrayBuffer();
+			}
+			return fallbackBuffer;
+		}
+	};
 
 const mockConversationManager = {
 	add: vi.fn(),
@@ -61,9 +82,10 @@ describe("generateImageFromDrawing", () => {
 	let mockContext: any;
 
 	beforeEach(() => {
-		vi.mocked(StorageService).mockImplementation(
-			() => mockStorageService as any,
-		);
+		if (!originalResponse) {
+			originalResponse = global.Response;
+		}
+		storageServiceImpl = mockStorageService;
 		mockContext = {
 			ensureDatabase: vi.fn(),
 			repositories: {
@@ -86,6 +108,9 @@ describe("generateImageFromDrawing", () => {
 
 	afterEach(() => {
 		vi.clearAllMocks();
+		if (originalResponse) {
+			global.Response = originalResponse;
+		}
 	});
 
 	it("should throw AssistantError when drawing is missing", async () => {
@@ -123,10 +148,7 @@ describe("generateImageFromDrawing", () => {
 			mockPaintingArrayBuffer,
 		);
 
-		global.Response = vi.fn().mockImplementation((blob) => ({
-			arrayBuffer: () =>
-				blob.arrayBuffer?.() || Promise.resolve(mockPaintingArrayBuffer),
-		})) as any;
+		global.Response = buildResponseMock(mockPaintingArrayBuffer) as any;
 
 		mockEnv.AI.run
 			.mockResolvedValueOnce(mockDescriptionResponse)
@@ -251,9 +273,7 @@ describe("generateImageFromDrawing", () => {
 			type: "image/png",
 		});
 
-		global.Response = vi.fn().mockImplementation(() => ({
-			arrayBuffer: () => Promise.resolve(new ArrayBuffer(200)),
-		})) as any;
+		global.Response = buildResponseMock(new ArrayBuffer(200)) as any;
 
 		mockEnv.AI.run
 			.mockResolvedValueOnce(mockDescriptionResponse)
@@ -294,9 +314,7 @@ describe("generateImageFromDrawing", () => {
 			type: "image/png",
 		});
 
-		global.Response = vi.fn().mockImplementation(() => ({
-			arrayBuffer: () => Promise.resolve(new ArrayBuffer(200)),
-		})) as any;
+		global.Response = buildResponseMock(new ArrayBuffer(200)) as any;
 
 		mockEnv.AI.run
 			.mockResolvedValueOnce(mockDescriptionResponse)
@@ -335,9 +353,7 @@ describe("generateImageFromDrawing", () => {
 			type: "image/png",
 		});
 
-		global.Response = vi.fn().mockImplementation(() => ({
-			arrayBuffer: () => Promise.resolve(new ArrayBuffer(200)),
-		})) as any;
+		global.Response = buildResponseMock(new ArrayBuffer(200)) as any;
 
 		mockEnv.AI.run
 			.mockResolvedValueOnce(mockDescriptionResponse)
@@ -401,9 +417,7 @@ describe("generateImageFromDrawing", () => {
 			type: "image/png",
 		});
 
-		global.Response = vi.fn().mockImplementation(() => ({
-			arrayBuffer: () => Promise.resolve(new ArrayBuffer(200)),
-		})) as any;
+		global.Response = buildResponseMock(new ArrayBuffer(200)) as any;
 
 		mockEnv.AI.run
 			.mockResolvedValueOnce(mockDescriptionResponse)
@@ -470,9 +484,7 @@ describe("generateImageFromDrawing", () => {
 			type: "image/png",
 		});
 
-		global.Response = vi.fn().mockImplementation(() => ({
-			arrayBuffer: () => Promise.resolve(new ArrayBuffer(200)),
-		})) as any;
+		global.Response = buildResponseMock(new ArrayBuffer(200)) as any;
 
 		mockEnv.AI.run
 			.mockResolvedValueOnce(mockDescriptionResponse)
@@ -544,9 +556,7 @@ describe("generateImageFromDrawing", () => {
 			type: "image/png",
 		});
 
-		global.Response = vi.fn().mockImplementation(() => ({
-			arrayBuffer: () => Promise.resolve(new ArrayBuffer(200)),
-		})) as any;
+		global.Response = buildResponseMock(new ArrayBuffer(200)) as any;
 
 		mockEnv.AI.run
 			.mockResolvedValueOnce(mockDescriptionResponse)
@@ -578,9 +588,7 @@ describe("generateImageFromDrawing", () => {
 			type: "image/png",
 		});
 
-		global.Response = vi.fn().mockImplementation(() => ({
-			arrayBuffer: () => Promise.resolve(new ArrayBuffer(200)),
-		})) as any;
+		global.Response = buildResponseMock(new ArrayBuffer(200)) as any;
 
 		mockEnv.AI.run
 			.mockResolvedValueOnce(mockDescriptionResponse)

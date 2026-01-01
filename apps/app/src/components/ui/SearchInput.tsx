@@ -3,8 +3,10 @@ import type { InputHTMLAttributes } from "react";
 
 import { cn } from "~/lib/utils";
 
-interface SearchInputProps
-	extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "onChange"> {
+interface SearchInputProps extends Omit<
+	InputHTMLAttributes<HTMLInputElement>,
+	"type" | "onChange"
+> {
 	/** Current search value */
 	value: string;
 	/** Change handler */

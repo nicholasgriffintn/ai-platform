@@ -11,41 +11,81 @@ import { ValidationPipeline } from "../ValidationPipeline";
 const mockBasicInputValidator = {
 	validate: vi.fn(),
 };
+let basicInputValidatorFactory: (() => any) | undefined;
 
 const mockAuthValidator = {
 	validate: vi.fn(),
 };
+let authValidatorFactory: (() => any) | undefined;
 
 const mockModelConfigValidator = {
 	validate: vi.fn(),
 };
+let modelConfigValidatorFactory: (() => any) | undefined;
 
 const mockContextLimitValidator = {
 	validate: vi.fn(),
 };
+let contextLimitValidatorFactory: (() => any) | undefined;
 
 const mockGuardrailsValidator = {
 	validate: vi.fn(),
 };
+let guardrailsValidatorFactory: (() => any) | undefined;
 
 vi.mock("../validators/BasicInputValidator", () => ({
-	BasicInputValidator: vi.fn(() => mockBasicInputValidator),
+	BasicInputValidator: class {
+		constructor() {
+			if (basicInputValidatorFactory) {
+				return basicInputValidatorFactory();
+			}
+			return mockBasicInputValidator;
+		}
+	},
 }));
 
 vi.mock("../validators/AuthValidator", () => ({
-	AuthValidator: vi.fn(() => mockAuthValidator),
+	AuthValidator: class {
+		constructor() {
+			if (authValidatorFactory) {
+				return authValidatorFactory();
+			}
+			return mockAuthValidator;
+		}
+	},
 }));
 
 vi.mock("../validators/ModelConfigValidator", () => ({
-	ModelConfigValidator: vi.fn(() => mockModelConfigValidator),
+	ModelConfigValidator: class {
+		constructor() {
+			if (modelConfigValidatorFactory) {
+				return modelConfigValidatorFactory();
+			}
+			return mockModelConfigValidator;
+		}
+	},
 }));
 
 vi.mock("../validators/ContextLimitValidator", () => ({
-	ContextLimitValidator: vi.fn(() => mockContextLimitValidator),
+	ContextLimitValidator: class {
+		constructor() {
+			if (contextLimitValidatorFactory) {
+				return contextLimitValidatorFactory();
+			}
+			return mockContextLimitValidator;
+		}
+	},
 }));
 
 vi.mock("../validators/GuardrailsValidator", () => ({
-	GuardrailsValidator: vi.fn(() => mockGuardrailsValidator),
+	GuardrailsValidator: class {
+		constructor() {
+			if (guardrailsValidatorFactory) {
+				return guardrailsValidatorFactory();
+			}
+			return mockGuardrailsValidator;
+		}
+	},
 }));
 
 describe("ValidationPipeline", () => {
@@ -55,6 +95,12 @@ describe("ValidationPipeline", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+
+		authValidatorFactory = () => mockAuthValidator;
+		basicInputValidatorFactory = () => mockBasicInputValidator;
+		modelConfigValidatorFactory = () => mockModelConfigValidator;
+		contextLimitValidatorFactory = () => mockContextLimitValidator;
+		guardrailsValidatorFactory = () => mockGuardrailsValidator;
 
 		pipeline = new ValidationPipeline();
 

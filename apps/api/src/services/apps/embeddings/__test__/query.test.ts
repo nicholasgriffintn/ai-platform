@@ -20,7 +20,11 @@ const mockGetEmbeddingProvider = embeddingHelperMocks.getEmbeddingProvider;
 const mockGetEmbeddingNamespace = embeddingHelperMocks.getEmbeddingNamespace;
 
 vi.mock("~/repositories", () => ({
-	RepositoryManager: vi.fn(() => mockRepositories),
+	RepositoryManager: class {
+		constructor() {
+			return mockRepositories;
+		}
+	},
 }));
 
 vi.mock(

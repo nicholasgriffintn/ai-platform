@@ -28,7 +28,11 @@ const {
 });
 
 vi.mock("../storage", () => ({
-	StorageService: vi.fn().mockImplementation(() => mockStorageService),
+	StorageService: class {
+		constructor() {
+			return mockStorageService;
+		}
+	},
 }));
 
 vi.mock("../upload", () => ({

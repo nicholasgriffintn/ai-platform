@@ -54,7 +54,7 @@ export async function createAgentCompletion({
 
 	const agent = await getValidatedAgent(serviceContext, agentId, user?.id);
 
-	const mcpFunctions = await setupMCPFunctions(agent);
+	const mcpFunctions = await setupMCPFunctions(agent, serviceContext.env);
 
 	const teamDelegationTools = setupTeamDelegationTools(agent);
 
@@ -137,7 +137,7 @@ export async function createAgentCompletion({
 	return response;
 }
 
-async function setupMCPFunctions(agent: any) {
+async function setupMCPFunctions(agent: any, env: IEnv) {
 	const mcpFunctions: Array<{
 		name: string;
 		description?: string;
@@ -162,7 +162,16 @@ async function setupMCPFunctions(agent: any) {
 		}
 
 		if (serverConfigs && serverConfigs.length > 0) {
-			mcp = new MCPClientManager(agent.id, "1.0.0");
+			if (!env.MCP_STORAGE) {
+				throw new AssistantError(
+					"MCP storage not configured",
+					ErrorType.CONFIGURATION_ERROR,
+				);
+			}
+
+			mcp = new MCPClientManager(agent.id, "1.0.0", {
+				storage: env.MCP_STORAGE,
+			});
 			registerMCPClient(agent.id, mcp);
 
 			for (const cfg of serverConfigs) {
