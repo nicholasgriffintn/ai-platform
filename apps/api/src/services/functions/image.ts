@@ -6,23 +6,10 @@ import {
 	type ImageResponse,
 	generateImage,
 } from "~/services/generate/image";
-import type { IFunction, IRequest, ModelConfig } from "~/types";
+import type { IFunction, IRequest } from "~/types";
+import { getModelIdsByOutput } from "~/utils/models";
 
 const IMAGE_PROVIDERS = ["workers-ai", "replicate"] as const;
-
-function getModelIdsByOutput(
-	config: ModelConfig,
-	provider: string,
-	modality: "image" | "audio" | "video" | "speech",
-) {
-	return Object.entries(config)
-		.filter(
-			([, model]) =>
-				model.provider === provider &&
-				(model.modalities?.output ?? []).includes(modality),
-		)
-		.map(([id]) => id);
-}
 
 const IMAGE_MODELS = [
 	...getModelIdsByOutput(replicateModelConfig, "replicate", "image"),

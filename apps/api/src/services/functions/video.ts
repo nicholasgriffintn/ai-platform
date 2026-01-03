@@ -4,7 +4,8 @@ import {
 	generateVideo,
 } from "~/services/generate/video";
 import { replicateModelConfig } from "~/data-model/models/replicate";
-import type { IFunction, IRequest, ModelConfig } from "~/types";
+import type { IFunction, IRequest } from "~/types";
+import { getModelIdsByOutput } from "~/utils/models";
 
 const DEFAULT_HEIGHT = 320;
 const DEFAULT_WIDTH = 576;
@@ -16,20 +17,6 @@ const DEFAULT_INFER_STEPS = 50;
 const MIN_INFER_STEPS = 1;
 const DEFAULT_FLOW_SHIFT = 7;
 const VIDEO_PROVIDERS = ["replicate"] as const;
-
-function getModelIdsByOutput(
-	config: ModelConfig,
-	provider: string,
-	modality: "image" | "audio" | "video" | "speech",
-) {
-	return Object.entries(config)
-		.filter(
-			([, model]) =>
-				model.provider === provider &&
-				(model.modalities?.output ?? []).includes(modality),
-		)
-		.map(([id]) => id);
-}
 
 const VIDEO_MODELS = [
 	...getModelIdsByOutput(replicateModelConfig, "replicate", "video"),

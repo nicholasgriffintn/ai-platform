@@ -5,23 +5,10 @@ import {
 } from "~/services/generate/speech";
 import { replicateModelConfig } from "~/data-model/models/replicate";
 import { workersAiModelConfig } from "~/data-model/models/workersai";
-import type { IFunction, IRequest, ModelConfig } from "~/types";
+import type { IFunction, IRequest } from "~/types";
+import { getModelIdsByOutput } from "~/utils/models";
 
 const SPEECH_PROVIDERS = ["workers-ai", "replicate"] as const;
-
-function getModelIdsByOutput(
-	config: ModelConfig,
-	provider: string,
-	modality: "image" | "audio" | "video" | "speech",
-) {
-	return Object.entries(config)
-		.filter(
-			([, model]) =>
-				model.provider === provider &&
-				(model.modalities?.output ?? []).includes(modality),
-		)
-		.map(([id]) => id);
-}
 
 const SPEECH_MODELS = [
 	...getModelIdsByOutput(workersAiModelConfig, "workers-ai", "speech"),

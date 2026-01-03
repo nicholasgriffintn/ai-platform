@@ -5,23 +5,10 @@ import {
 } from "~/services/generate/music";
 import { replicateModelConfig } from "~/data-model/models/replicate";
 import type { IFunction, IRequest, ModelConfig } from "~/types";
+import { getModelIdsByOutput } from "~/utils/models";
 
 const DEFAULT_DURATION = 8;
 const MUSIC_PROVIDERS = ["replicate", "elevenlabs"] as const;
-
-function getModelIdsByOutput(
-	config: ModelConfig,
-	provider: string,
-	modality: "image" | "audio" | "video" | "speech",
-) {
-	return Object.entries(config)
-		.filter(
-			([, model]) =>
-				model.provider === provider &&
-				(model.modalities?.output ?? []).includes(modality),
-		)
-		.map(([id]) => id);
-}
 
 const MUSIC_MODELS = [
 	...getModelIdsByOutput(replicateModelConfig, "replicate", "audio"),
