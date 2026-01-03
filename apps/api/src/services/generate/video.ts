@@ -26,7 +26,7 @@ export interface VideoResponse {
 	data: any;
 }
 
-const MODEL_KEY = "replicate-zeroscope-v2-xl";
+const MODEL_KEY = "replicate-google-veo-3-1-fast";
 
 export async function generateVideo({
 	completion_id,

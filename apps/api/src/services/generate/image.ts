@@ -9,7 +9,6 @@ import {
 	type ServiceContext,
 } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
-import { ErrorType } from "~/utils/errors";
 
 export interface ImageGenerationParams {
 	prompt: string;
@@ -23,6 +22,8 @@ export interface ImageResponse {
 	content: string;
 	data: any;
 }
+
+const MODEL_KEY = "@cf/black-forest-labs/flux-2-dev";
 
 export async function generateImage({
 	completion_id,
@@ -74,7 +75,7 @@ export async function generateImage({
 
 		const imageData = await provider.getResponse({
 			completion_id,
-			model: "@cf/black-forest-labs/flux-1-schnell",
+			model: MODEL_KEY,
 			app_url,
 			messages: [
 				{

@@ -22,7 +22,7 @@ export interface MusicResponse {
 	data: any;
 }
 
-const MODEL_KEY = "replicate-musicgen";
+const MODEL_KEY = "replicate-stable-audio";
 
 export async function generateMusic({
 	completion_id,
