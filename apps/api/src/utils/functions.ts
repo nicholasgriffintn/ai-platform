@@ -33,6 +33,8 @@ export const getFunctionResponseType = (name: string): ResponseDisplayType => {
 	if (name.includes("speech")) return ResponseDisplayType.TEXT;
 	if (name.includes("prompt_coach")) return ResponseDisplayType.TEMPLATE;
 	if (name.includes("call_api")) return ResponseDisplayType.JSON;
+	if (name === "request_approval") return ResponseDisplayType.TEMPLATE;
+	if (name === "ask_user") return ResponseDisplayType.TEMPLATE;
 	if (name.startsWith("mcp_")) return ResponseDisplayType.JSON;
 	if (name.startsWith("analyse_")) return ResponseDisplayType.TEMPLATE;
 	return ResponseDisplayType.CUSTOM;
@@ -157,6 +159,69 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
             <p>{{data.prompt_type}}</p>
           </div>
         {{/if}}
+      </div>
+    `;
+	} else if (name === "request_approval") {
+		display.template = `
+      <div class="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-zinc-800 p-5 space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">⏸️</span>
+          <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Approval Required</h3>
+        </div>
+        <div class="text-sm text-zinc-700 dark:text-zinc-300">
+          <p>{{data.message}}</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          {{#each data.options}}
+            <button class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40" data-option="{{this}}">{{this}}</button>
+          {{/each}}
+        </div>
+        {{#if data.context}}
+          <details class="mt-2">
+            <summary class="cursor-pointer text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200">Additional Context</summary>
+            <pre class="mt-2 p-3 bg-zinc-50 dark:bg-zinc-900 rounded-md text-xs overflow-x-auto border border-zinc-200 dark:border-zinc-700"><code>{{json data.context}}</code></pre>
+          </details>
+        {{/if}}
+        <div class="text-xs text-zinc-500 dark:text-zinc-400">
+          {{data.timestamp}}
+        </div>
+      </div>
+    `;
+	} else if (name === "ask_user") {
+		display.template = `
+      <div class="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-zinc-800 p-5 space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">❓</span>
+          <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Input Required</h3>
+        </div>
+        <div class="text-sm text-zinc-700 dark:text-zinc-300">
+          <p>{{data.question}}</p>
+        </div>
+        {{#if data.expected_format}}
+          <div class="text-xs text-zinc-600 dark:text-zinc-400 italic">
+            Expected format: {{data.expected_format}}
+          </div>
+        {{/if}}
+        {{#if data.suggestions}}
+          <div class="flex flex-wrap gap-2">
+            {{#each data.suggestions}}
+              <button class="px-3 py-1.5 rounded-md bg-off-white-highlight dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600 text-zinc-700 dark:text-zinc-200 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40" data-suggestion="{{this}}">{{this}}</button>
+            {{/each}}
+          </div>
+        {{/if}}
+        <div class="flex gap-2">
+          <input type="text" class="flex-1 h-9 px-3 py-1 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-transparent text-zinc-900 dark:text-zinc-100 shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]" placeholder="Your answer..." />
+          <button class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40">Submit</button>
+        </div>
+        {{#if data.context}}
+          <details class="mt-2">
+            <summary class="cursor-pointer text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200">Additional Context</summary>
+            <pre class="mt-2 p-3 bg-zinc-50 dark:bg-zinc-900 rounded-md text-xs overflow-x-auto border border-zinc-200 dark:border-zinc-700"><code>{{json data.context}}</code></pre>
+          </details>
+        {{/if}}
+        <div class="text-xs text-zinc-500 dark:text-zinc-400">
+          {{data.timestamp}}
+        </div>
       </div>
     `;
 	}

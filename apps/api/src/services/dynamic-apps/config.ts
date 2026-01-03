@@ -190,6 +190,18 @@ export const FUNCTION_APP_METADATA: Record<string, DynamicAppMetadata> = {
 		theme: "emerald",
 		tags: ["error-recovery", "fallback", "reliability"],
 	},
+	request_approval: {
+		category: "System & Meta",
+		icon: "check-circle",
+		theme: "blue",
+		tags: ["human-in-the-loop", "approval", "workflow"],
+	},
+	ask_user: {
+		category: "System & Meta",
+		icon: "message-circle-question",
+		theme: "cyan",
+		tags: ["human-in-the-loop", "input", "interactive"],
+	},
 };
 
 export const FEATURED_APPS: FeaturedAppDefinition[] = [

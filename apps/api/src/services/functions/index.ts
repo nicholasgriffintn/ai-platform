@@ -7,6 +7,7 @@ import { call_api } from "./api_call";
 import { search_functions, get_function_schema } from "./discovery";
 import { retry_with_backoff, fallback } from "./error_recovery";
 import { extract_content } from "./extract_content";
+import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { handleMCPTool } from "./mcp";
 import { create_music } from "./music";
@@ -59,6 +60,8 @@ export const availableFunctions: IFunction[] = [
 	get_function_schema,
 	retry_with_backoff,
 	fallback,
+	request_approval,
+	ask_user,
 ];
 
 export const handleFunctions = async ({

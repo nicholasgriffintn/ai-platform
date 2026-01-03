@@ -114,7 +114,7 @@ const mapJsonSchemaTypeToFieldType = (
 		case "boolean":
 			return FieldType.CHECKBOX;
 		case "array":
-			return FieldType.MULTISELECT;
+			return FieldType.TEXTAREA;
 		default:
 			return FieldType.TEXTAREA;
 	}
