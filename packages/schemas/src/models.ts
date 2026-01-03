@@ -8,6 +8,7 @@ const modalitySchema = z.enum([
 	"pdf",
 	"document",
 	"embedding",
+	"speech",
 ]);
 
 export const modelSchema = z.object({

@@ -1,14 +1,18 @@
 import { sanitiseInput } from "~/lib/chat/utils";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { getSpeechProvider } from "~/lib/providers/capabilities/speech";
 import {
 	resolveServiceContext,
 	type ServiceContext,
 } from "~/lib/context/serviceContext";
+import { getModelConfigByModel } from "~/lib/providers/models";
 import type { IEnv, IUser } from "~/types";
 
 export interface SpeechGenerationParams {
 	prompt: string;
 	lang?: string;
+	provider?: string;
+	model?: string;
+	voice?: string;
 }
 
 export interface SpeechResponse {
@@ -16,6 +20,22 @@ export interface SpeechResponse {
 	name: string;
 	content: string;
 	data: any;
+}
+
+const DEFAULT_PROVIDER = "workers-ai";
+
+async function resolveProviderName(
+	provider: string | undefined,
+	model: string | undefined,
+): Promise<string> {
+	if (model) {
+		const modelConfig = await getModelConfigByModel(model);
+		if (modelConfig?.provider) {
+			return modelConfig.provider;
+		}
+	}
+
+	return provider || DEFAULT_PROVIDER;
 }
 
 export async function generateSpeech({
@@ -47,33 +67,39 @@ export async function generateSpeech({
 		const runtimeEnv = serviceContext.env;
 		const runtimeUser = serviceContext.user ?? user;
 
-		const provider = getChatProvider("workers-ai", {
-			env: runtimeEnv,
-			user: runtimeUser,
-		});
-
 		const sanitisedPrompt = sanitiseInput(args.prompt);
 
-		const speechData = await provider.getResponse({
-			completion_id,
-			model: "@cf/myshell-ai/melotts",
-			app_url,
-			messages: [
-				{
-					role: "user",
-					// @ts-ignore
-					content: [
-						{
-							type: "text",
-							text: sanitisedPrompt,
-						},
-					],
-				},
-			],
-			lang: args.lang || "en",
+		const providerName = await resolveProviderName(args.provider, args.model);
+		const provider = getSpeechProvider(providerName, {
 			env: runtimeEnv,
 			user: runtimeUser,
 		});
+
+		const request = {
+			prompt: sanitisedPrompt,
+			env: runtimeEnv,
+			user: runtimeUser,
+			completion_id,
+			app_url,
+			locale: args.lang || "en",
+			voice: args.voice,
+			model: args.model,
+		};
+
+		let speechData;
+		try {
+			speechData = await provider.generate(request);
+		} catch (error) {
+			if (providerName !== DEFAULT_PROVIDER && !args.model) {
+				const fallbackProvider = getSpeechProvider(DEFAULT_PROVIDER, {
+					env: runtimeEnv,
+					user: runtimeUser,
+				});
+				speechData = await fallbackProvider.generate(request);
+			} else {
+				throw error;
+			}
+		}
 
 		return {
 			status: "success",

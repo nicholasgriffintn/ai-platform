@@ -2,36 +2,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { generateVideo } from "../video";
 
 const mockProvider = {
-	getResponse: vi.fn(),
+	generate: vi.fn(),
 };
 
-const mockModelConfig = {
-	matchingModel:
-		"847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
-	provider: "replicate",
-	name: "Zeroscope V2 XL",
-	replicateInputSchema: {
-		fields: [
-			{ name: "prompt", type: "string", required: true },
-			{ name: "negative_prompt", type: "string" },
-			{ name: "guidance_scale", type: "number" },
-			{ name: "duration", type: "number" },
-			{ name: "height", type: "integer" },
-			{ name: "width", type: "integer" },
-		],
-	},
-};
-
-vi.mock("~/lib/providers/capabilities/chat", () => ({
-	getChatProvider: vi.fn(() => mockProvider),
+vi.mock("~/lib/providers/capabilities/video", () => ({
+	getVideoProvider: vi.fn(() => mockProvider),
 }));
 
 vi.mock("~/lib/chat/utils", () => ({
 	sanitiseInput: vi.fn(),
-}));
-
-vi.mock("~/lib/providers/models", () => ({
-	getModelConfigByModel: vi.fn(async () => mockModelConfig),
 }));
 
 describe("generateVideo", () => {
@@ -42,8 +21,6 @@ describe("generateVideo", () => {
 		vi.clearAllMocks();
 		const { sanitiseInput } = await import("~/lib/chat/utils");
 		vi.mocked(sanitiseInput).mockImplementation((input) => input);
-		const { getModelConfigByModel } = await import("~/lib/providers/models");
-		vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig as any);
 	});
 
 	it("should generate video successfully", async () => {
@@ -56,7 +33,7 @@ describe("generateVideo", () => {
 				},
 			},
 		};
-		mockProvider.getResponse.mockResolvedValue(mockVideoData);
+		mockProvider.generate.mockResolvedValue(mockVideoData);
 
 		const result = await generateVideo({
 			completion_id: "completion-123",
@@ -70,29 +47,26 @@ describe("generateVideo", () => {
 		expect(result.name).toBe("create_video");
 		expect(result.content).toBe("Video generation in progress");
 		expect(result.data).toBe(mockVideoData);
-		expect(mockProvider.getResponse).toHaveBeenCalledWith({
-			completion_id: "completion-123",
-			app_url: "https://example.com",
-			model: "847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
-			messages: [
-				{
-					role: "user",
-					content: "A cat playing with a ball",
-				},
-			],
-			body: {
-				input: {
-					prompt: "A cat playing with a ball",
-				},
-			},
+		expect(mockProvider.generate).toHaveBeenCalledWith({
+			prompt: "A cat playing with a ball",
 			env: mockEnv,
 			user: mockUser,
+			completion_id: "completion-123",
+			app_url: "https://example.com",
+			negativePrompt: undefined,
+			guidanceScale: undefined,
+			videoLength: undefined,
+			duration: undefined,
+			height: undefined,
+			width: undefined,
+			aspectRatio: undefined,
+			model: undefined,
 		});
 	});
 
 	it("should include optional parameters when provided", async () => {
 		const mockVideoData = { url: "https://example.com/video.mp4" };
-		mockProvider.getResponse.mockResolvedValue(mockVideoData);
+		mockProvider.generate.mockResolvedValue(mockVideoData);
 
 		await generateVideo({
 			completion_id: "completion-123",
@@ -109,24 +83,14 @@ describe("generateVideo", () => {
 			user: mockUser,
 		});
 
-		expect(mockProvider.getResponse).toHaveBeenCalledWith(
+		expect(mockProvider.generate).toHaveBeenCalledWith(
 			expect.objectContaining({
-				messages: [
-					{
-						role: "user",
-						content: "A cat playing with a ball",
-					},
-				],
-				body: {
-					input: {
-						prompt: "A cat playing with a ball",
-						negative_prompt: "blurry, low quality",
-						guidance_scale: 7.5,
-						duration: 10,
-						height: 512,
-						width: 512,
-					},
-				},
+				prompt: "A cat playing with a ball",
+				negativePrompt: "blurry, low quality",
+				guidanceScale: 7.5,
+				videoLength: 10,
+				height: 512,
+				width: 512,
 			}),
 		);
 	});
@@ -144,12 +108,12 @@ describe("generateVideo", () => {
 		expect(result.name).toBe("create_video");
 		expect(result.content).toBe("Missing prompt");
 		expect(result.data).toEqual({});
-		expect(mockProvider.getResponse).not.toHaveBeenCalled();
+		expect(mockProvider.generate).not.toHaveBeenCalled();
 	});
 
 	it("should sanitise input prompt", async () => {
 		const mockVideoData = { url: "https://example.com/video.mp4" };
-		mockProvider.getResponse.mockResolvedValue(mockVideoData);
+		mockProvider.generate.mockResolvedValue(mockVideoData);
 
 		const { sanitiseInput } = await import("~/lib/chat/utils");
 		vi.mocked(sanitiseInput).mockReturnValue("sanitised prompt");
@@ -165,26 +129,16 @@ describe("generateVideo", () => {
 		expect(vi.mocked(sanitiseInput)).toHaveBeenCalledWith(
 			"unsafe <script>alert('xss')</script> prompt",
 		);
-		expect(mockProvider.getResponse).toHaveBeenCalledWith(
+		expect(mockProvider.generate).toHaveBeenCalledWith(
 			expect.objectContaining({
-				messages: [
-					{
-						role: "user",
-						content: "sanitised prompt",
-					},
-				],
-				body: {
-					input: {
-						prompt: "sanitised prompt",
-					},
-				},
+				prompt: "sanitised prompt",
 			}),
 		);
 	});
 
 	it("should handle provider errors", async () => {
 		const error = new Error("Provider failed");
-		mockProvider.getResponse.mockRejectedValue(error);
+		mockProvider.generate.mockRejectedValue(error);
 
 		const result = await generateVideo({
 			completion_id: "completion-123",
@@ -201,7 +155,7 @@ describe("generateVideo", () => {
 	});
 
 	it("should handle unknown errors", async () => {
-		mockProvider.getResponse.mockRejectedValue("Unknown error");
+		mockProvider.generate.mockRejectedValue("Unknown error");
 
 		const result = await generateVideo({
 			completion_id: "completion-123",

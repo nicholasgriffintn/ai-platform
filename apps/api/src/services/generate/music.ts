@@ -1,18 +1,18 @@
 import { sanitiseInput } from "~/lib/chat/utils";
+import { getMusicProvider } from "~/lib/providers/capabilities/music";
 import { getModelConfigByModel } from "~/lib/providers/models";
-import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import {
 	resolveServiceContext,
 	type ServiceContext,
 } from "~/lib/context/serviceContext";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IEnv, IUser } from "~/types";
 
 export interface MusicGenerationParams {
 	prompt: string;
 	input_audio?: string;
 	duration?: number;
+	provider?: string;
+	model?: string;
 }
 
 export interface MusicResponse {
@@ -22,7 +22,21 @@ export interface MusicResponse {
 	data: any;
 }
 
-const MODEL_KEY = "replicate-stable-audio";
+const DEFAULT_PROVIDER = "replicate";
+
+async function resolveProviderName(
+	provider: string | undefined,
+	model: string | undefined,
+): Promise<string> {
+	if (model) {
+		const modelConfig = await getModelConfigByModel(model);
+		if (modelConfig?.provider) {
+			return modelConfig.provider;
+		}
+	}
+
+	return provider || DEFAULT_PROVIDER;
+}
 
 export async function generateMusic({
 	completion_id,
@@ -63,50 +77,37 @@ export async function generateMusic({
 			};
 		}
 
-		const modelConfig = await getModelConfigByModel(MODEL_KEY);
-
-		if (!modelConfig) {
-			throw new AssistantError(
-				`Model configuration not found for ${MODEL_KEY}`,
-				ErrorType.CONFIGURATION_ERROR,
-			);
-		}
-
-		const replicatePayload = Object.fromEntries(
-			Object.entries({
-				prompt: sanitisedPrompt,
-				input_audio: args.input_audio,
-				duration: args.duration,
-			}).filter(([, value]) => value !== undefined && value !== null),
-		);
-
-		validateReplicatePayload({
-			payload: replicatePayload,
-			schema: modelConfig.replicateInputSchema,
-			modelName: modelConfig.name || MODEL_KEY,
-		});
-
-		const provider = getChatProvider(modelConfig.provider || "replicate", {
+		const providerName = await resolveProviderName(args.provider, args.model);
+		const provider = getMusicProvider(providerName, {
 			env: runtimeEnv,
 			user: runtimeUser,
 		});
 
-		const musicData = await provider.getResponse({
+		const request = {
+			prompt: sanitisedPrompt,
+			env: runtimeEnv,
+			user: runtimeUser,
 			completion_id,
 			app_url,
-			model: modelConfig.matchingModel,
-			messages: [
-				{
-					role: "user",
-					content: replicatePayload.prompt as string,
-				},
-			],
-			body: {
-				input: replicatePayload,
-			},
-			env: runtimeEnv,
-			user: runtimeUser,
-		});
+			inputAudio: args.input_audio,
+			duration: args.duration,
+			model: args.model,
+		};
+
+		let musicData;
+		try {
+			musicData = await provider.generate(request);
+		} catch (error) {
+			if (providerName !== DEFAULT_PROVIDER && !args.model) {
+				const fallbackProvider = getMusicProvider(DEFAULT_PROVIDER, {
+					env: runtimeEnv,
+					user: runtimeUser,
+				});
+				musicData = await fallbackProvider.generate(request);
+			} else {
+				throw error;
+			}
+		}
 
 		return {
 			status: "success",

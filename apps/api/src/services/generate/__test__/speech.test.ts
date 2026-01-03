@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { generateSpeech } from "../speech";
 
 const mockProvider = {
-	getResponse: vi.fn(),
+	generate: vi.fn(),
 };
 
-vi.mock("~/lib/providers/capabilities/chat", () => ({
-	getChatProvider: vi.fn(() => mockProvider),
+vi.mock("~/lib/providers/capabilities/speech", () => ({
+	getSpeechProvider: vi.fn(() => mockProvider),
 }));
 
 vi.mock("~/lib/chat/utils", () => ({
@@ -25,7 +25,7 @@ describe("generateSpeech", () => {
 
 	it("should generate speech successfully", async () => {
 		const mockSpeechData = { audio: "base64audiodata" };
-		mockProvider.getResponse.mockResolvedValue(mockSpeechData);
+		mockProvider.generate.mockResolvedValue(mockSpeechData);
 
 		const result = await generateSpeech({
 			completion_id: "completion-123",
@@ -39,30 +39,21 @@ describe("generateSpeech", () => {
 		expect(result.name).toBe("create_speech");
 		expect(result.content).toBe("Speech generated successfully");
 		expect(result.data).toBe(mockSpeechData);
-		expect(mockProvider.getResponse).toHaveBeenCalledWith({
-			completion_id: "completion-123",
-			model: "@cf/myshell-ai/melotts",
-			app_url: "https://example.com",
-			messages: [
-				{
-					role: "user",
-					content: [
-						{
-							type: "text",
-							text: "Hello world",
-						},
-					],
-				},
-			],
-			lang: "en",
+		expect(mockProvider.generate).toHaveBeenCalledWith({
+			prompt: "Hello world",
 			env: mockEnv,
 			user: mockUser,
+			completion_id: "completion-123",
+			app_url: "https://example.com",
+			locale: "en",
+			voice: undefined,
+			model: undefined,
 		});
 	});
 
 	it("should use custom language when provided", async () => {
 		const mockSpeechData = { audio: "base64audiodata" };
-		mockProvider.getResponse.mockResolvedValue(mockSpeechData);
+		mockProvider.generate.mockResolvedValue(mockSpeechData);
 
 		await generateSpeech({
 			completion_id: "completion-123",
@@ -72,9 +63,9 @@ describe("generateSpeech", () => {
 			user: mockUser,
 		});
 
-		expect(mockProvider.getResponse).toHaveBeenCalledWith(
+		expect(mockProvider.generate).toHaveBeenCalledWith(
 			expect.objectContaining({
-				lang: "es",
+				locale: "es",
 			}),
 		);
 	});
@@ -92,12 +83,12 @@ describe("generateSpeech", () => {
 		expect(result.name).toBe("create_speech");
 		expect(result.content).toBe("Missing prompt");
 		expect(result.data).toEqual({});
-		expect(mockProvider.getResponse).not.toHaveBeenCalled();
+		expect(mockProvider.generate).not.toHaveBeenCalled();
 	});
 
 	it("should sanitise input prompt", async () => {
 		const mockSpeechData = { audio: "base64audiodata" };
-		mockProvider.getResponse.mockResolvedValue(mockSpeechData);
+		mockProvider.generate.mockResolvedValue(mockSpeechData);
 
 		const { sanitiseInput } = await import("~/lib/chat/utils");
 		vi.mocked(sanitiseInput).mockReturnValue("sanitised prompt");
@@ -113,26 +104,16 @@ describe("generateSpeech", () => {
 		expect(vi.mocked(sanitiseInput)).toHaveBeenCalledWith(
 			"unsafe <script>alert('xss')</script> prompt",
 		);
-		expect(mockProvider.getResponse).toHaveBeenCalledWith(
+		expect(mockProvider.generate).toHaveBeenCalledWith(
 			expect.objectContaining({
-				messages: [
-					{
-						role: "user",
-						content: [
-							{
-								type: "text",
-								text: "sanitised prompt",
-							},
-						],
-					},
-				],
+				prompt: "sanitised prompt",
 			}),
 		);
 	});
 
 	it("should handle provider errors", async () => {
 		const error = new Error("Provider failed");
-		mockProvider.getResponse.mockRejectedValue(error);
+		mockProvider.generate.mockRejectedValue(error);
 
 		const result = await generateSpeech({
 			completion_id: "completion-123",
@@ -149,7 +130,7 @@ describe("generateSpeech", () => {
 	});
 
 	it("should handle unknown errors", async () => {
-		mockProvider.getResponse.mockRejectedValue("Unknown error");
+		mockProvider.generate.mockRejectedValue("Unknown error");
 
 		const result = await generateSpeech({
 			completion_id: "completion-123",

@@ -3,9 +3,29 @@ import {
 	type MusicResponse,
 	generateMusic,
 } from "~/services/generate/music";
-import type { IFunction, IRequest } from "~/types";
+import { replicateModelConfig } from "~/data-model/models/replicate";
+import type { IFunction, IRequest, ModelConfig } from "~/types";
 
 const DEFAULT_DURATION = 8;
+const MUSIC_PROVIDERS = ["replicate", "elevenlabs"] as const;
+
+function getModelIdsByOutput(
+	config: ModelConfig,
+	provider: string,
+	modality: "image" | "audio" | "video" | "speech",
+) {
+	return Object.entries(config)
+		.filter(
+			([, model]) =>
+				model.provider === provider &&
+				(model.modalities?.output ?? []).includes(modality),
+		)
+		.map(([id]) => id);
+}
+
+const MUSIC_MODELS = [
+	...getModelIdsByOutput(replicateModelConfig, "replicate", "audio"),
+].sort();
 
 export const create_music: IFunction = {
 	name: "create_music",
@@ -27,6 +47,17 @@ export const create_music: IFunction = {
 				type: "number",
 				description: `The duration of the generated music in seconds. Defaults to ${DEFAULT_DURATION} seconds.`,
 				default: DEFAULT_DURATION,
+			},
+			provider: {
+				type: "string",
+				description: "Music generation provider",
+				enum: Array.from(MUSIC_PROVIDERS),
+				default: "replicate",
+			},
+			model: {
+				type: "string",
+				description: "Specific music generation model to use",
+				enum: MUSIC_MODELS,
 			},
 		},
 		required: ["prompt"],

@@ -3,33 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { generateMusic } from "../music";
 
 const mockProvider = {
-	getResponse: vi.fn(),
+	generate: vi.fn(),
 };
 
-const mockModelConfig = {
-	matchingModel:
-		"671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
-	provider: "replicate",
-	name: "MusicGen",
-	replicateInputSchema: {
-		fields: [
-			{ name: "prompt", type: "string", required: true },
-			{ name: "input_audio", type: ["file", "string"] },
-			{ name: "duration", type: "number" },
-		],
-	},
-};
-
-vi.mock("~/lib/providers/capabilities/chat", () => ({
-	getChatProvider: vi.fn(() => mockProvider),
+vi.mock("~/lib/providers/capabilities/music", () => ({
+	getMusicProvider: vi.fn(() => mockProvider),
 }));
 
 vi.mock("~/lib/chat/utils", () => ({
 	sanitiseInput: vi.fn(),
-}));
-
-vi.mock("~/lib/providers/models", () => ({
-	getModelConfigByModel: vi.fn(async () => mockModelConfig),
 }));
 
 describe("generateMusic", () => {
@@ -40,13 +22,11 @@ describe("generateMusic", () => {
 		vi.clearAllMocks();
 		const { sanitiseInput } = await import("~/lib/chat/utils");
 		vi.mocked(sanitiseInput).mockImplementation((input) => input);
-		const { getModelConfigByModel } = await import("~/lib/providers/models");
-		vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig as any);
 	});
 
 	it("should generate music successfully", async () => {
 		const mockMusicData = { audio: "https://example.com/music.mp3" };
-		mockProvider.getResponse.mockResolvedValue(mockMusicData);
+		mockProvider.generate.mockResolvedValue(mockMusicData);
 
 		const result = await generateMusic({
 			completion_id: "completion-123",
@@ -60,29 +40,21 @@ describe("generateMusic", () => {
 		expect(result.name).toBe("create_music");
 		expect(result.content).toBe("Music generated successfully");
 		expect(result.data).toBe(mockMusicData);
-		expect(mockProvider.getResponse).toHaveBeenCalledWith({
-			completion_id: "completion-123",
-			app_url: "https://example.com",
-			model: "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
-			messages: [
-				{
-					role: "user",
-					content: "Upbeat electronic music",
-				},
-			],
-			body: {
-				input: {
-					prompt: "Upbeat electronic music",
-				},
-			},
+		expect(mockProvider.generate).toHaveBeenCalledWith({
+			prompt: "Upbeat electronic music",
 			env: mockEnv,
 			user: mockUser,
+			completion_id: "completion-123",
+			app_url: "https://example.com",
+			inputAudio: undefined,
+			duration: undefined,
+			model: undefined,
 		});
 	});
 
 	it("should include optional parameters when provided", async () => {
 		const mockMusicData = { audio: "https://example.com/music.mp3" };
-		mockProvider.getResponse.mockResolvedValue(mockMusicData);
+		mockProvider.generate.mockResolvedValue(mockMusicData);
 
 		await generateMusic({
 			completion_id: "completion-123",
@@ -96,21 +68,11 @@ describe("generateMusic", () => {
 			user: mockUser,
 		});
 
-		expect(mockProvider.getResponse).toHaveBeenCalledWith(
+		expect(mockProvider.generate).toHaveBeenCalledWith(
 			expect.objectContaining({
-				messages: [
-					{
-						role: "user",
-						content: "Upbeat electronic music",
-					},
-				],
-				body: {
-					input: {
-						prompt: "Upbeat electronic music",
-						input_audio: "base64audiodata",
-						duration: 30,
-					},
-				},
+				prompt: "Upbeat electronic music",
+				inputAudio: "base64audiodata",
+				duration: 30,
 			}),
 		);
 	});
@@ -128,12 +90,12 @@ describe("generateMusic", () => {
 		expect(result.name).toBe("create_music");
 		expect(result.content).toBe("Missing prompt");
 		expect(result.data).toEqual({});
-		expect(mockProvider.getResponse).not.toHaveBeenCalled();
+		expect(mockProvider.generate).not.toHaveBeenCalled();
 	});
 
 	it("should sanitise input prompt", async () => {
 		const mockMusicData = { audio: "https://example.com/music.mp3" };
-		mockProvider.getResponse.mockResolvedValue(mockMusicData);
+		mockProvider.generate.mockResolvedValue(mockMusicData);
 
 		const { sanitiseInput } = await import("~/lib/chat/utils");
 		vi.mocked(sanitiseInput).mockReturnValue("sanitised prompt");
@@ -149,26 +111,16 @@ describe("generateMusic", () => {
 		expect(vi.mocked(sanitiseInput)).toHaveBeenCalledWith(
 			"unsafe <script>alert('xss')</script> prompt",
 		);
-		expect(mockProvider.getResponse).toHaveBeenCalledWith(
+		expect(mockProvider.generate).toHaveBeenCalledWith(
 			expect.objectContaining({
-				messages: [
-					{
-						role: "user",
-						content: "sanitised prompt",
-					},
-				],
-				body: {
-					input: {
-						prompt: "sanitised prompt",
-					},
-				},
+				prompt: "sanitised prompt",
 			}),
 		);
 	});
 
 	it("should handle provider errors", async () => {
 		const error = new Error("Provider failed");
-		mockProvider.getResponse.mockRejectedValue(error);
+		mockProvider.generate.mockRejectedValue(error);
 
 		const result = await generateMusic({
 			completion_id: "completion-123",
@@ -185,7 +137,7 @@ describe("generateMusic", () => {
 	});
 
 	it("should handle unknown errors", async () => {
-		mockProvider.getResponse.mockRejectedValue("Unknown error");
+		mockProvider.generate.mockRejectedValue("Unknown error");
 
 		const result = await generateMusic({
 			completion_id: "completion-123",

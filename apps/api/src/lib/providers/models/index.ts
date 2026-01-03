@@ -390,6 +390,19 @@ export function getModelsByModality(modality: ModelModality) {
 	);
 }
 
+export function getModelsByOutputModality(modality: ModelModality) {
+	return Object.entries(modelConfig).reduce(
+		(acc, [key, model]) => {
+			const outputs = model.modalities?.output ?? [];
+			if (outputs.includes(modality)) {
+				acc[key] = model;
+			}
+			return acc;
+		},
+		{} as typeof modelConfig,
+	);
+}
+
 export async function filterModelsForUserAccess(
 	allModels: Record<string, ModelConfigItem>,
 	env: IEnv,

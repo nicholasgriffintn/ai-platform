@@ -6,6 +6,7 @@ import {
 	getModels,
 	getModelsByCapability,
 	getModelsByModality,
+	getModelsByOutputModality,
 } from "~/lib/providers/models";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -66,6 +67,22 @@ export async function listModelsByModality(
 	userId?: number,
 ) {
 	const models = getModelsByModality(
+		modality as (typeof availableModalities)[number],
+	);
+	return await filterModelsForUserAccess(models, env, userId, {
+		shouldUseCache: false,
+	});
+}
+
+/**
+ * Filter models by output modality and user access.
+ */
+export async function listModelsByOutputModality(
+	env: IEnv,
+	modality: string,
+	userId?: number,
+) {
+	const models = getModelsByOutputModality(
 		modality as (typeof availableModalities)[number],
 	);
 	return await filterModelsForUserAccess(models, env, userId, {

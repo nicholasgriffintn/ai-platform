@@ -3,7 +3,8 @@ import {
 	type VideoResponse,
 	generateVideo,
 } from "~/services/generate/video";
-import type { IFunction, IRequest } from "~/types";
+import { replicateModelConfig } from "~/data-model/models/replicate";
+import type { IFunction, IRequest, ModelConfig } from "~/types";
 
 const DEFAULT_HEIGHT = 320;
 const DEFAULT_WIDTH = 576;
@@ -14,6 +15,25 @@ const MIN_GUIDANCE_SCALE = 1;
 const DEFAULT_INFER_STEPS = 50;
 const MIN_INFER_STEPS = 1;
 const DEFAULT_FLOW_SHIFT = 7;
+const VIDEO_PROVIDERS = ["replicate"] as const;
+
+function getModelIdsByOutput(
+	config: ModelConfig,
+	provider: string,
+	modality: "image" | "audio" | "video" | "speech",
+) {
+	return Object.entries(config)
+		.filter(
+			([, model]) =>
+				model.provider === provider &&
+				(model.modalities?.output ?? []).includes(modality),
+		)
+		.map(([id]) => id);
+}
+
+const VIDEO_MODELS = [
+	...getModelIdsByOutput(replicateModelConfig, "replicate", "video"),
+].sort();
 
 export const create_video: IFunction = {
 	name: "create_video",
@@ -67,6 +87,21 @@ export const create_video: IFunction = {
 				description: `The width of the video. Defaults to ${DEFAULT_WIDTH}, must be less than or equal to ${MAX_DIMENSION}.`,
 				default: DEFAULT_WIDTH,
 				maximum: MAX_DIMENSION,
+			},
+			provider: {
+				type: "string",
+				description: "Video generation provider",
+				enum: Array.from(VIDEO_PROVIDERS),
+				default: "replicate",
+			},
+			model: {
+				type: "string",
+				description: "Specific video generation model to use",
+				enum: VIDEO_MODELS,
+			},
+			aspect_ratio: {
+				type: "string",
+				description: "Aspect ratio for the generated video",
 			},
 		},
 		required: ["prompt"],

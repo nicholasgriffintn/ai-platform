@@ -4,9 +4,13 @@ import { registerAudioProviders } from "./registry/registrations/audio";
 import { registerChatProviders } from "./registry/registrations/chat";
 import { registerEmbeddingProviders } from "./registry/registrations/embedding";
 import { registerGuardrailProviders } from "./registry/registrations/guardrails";
+import { registerImageProviders } from "./registry/registrations/image";
+import { registerMusicProviders } from "./registry/registrations/music";
 import { registerResearchProviders } from "./registry/registrations/research";
 import { registerSearchProviders } from "./registry/registrations/search";
+import { registerSpeechProviders } from "./registry/registrations/speech";
 import { registerTranscriptionProviders } from "./registry/registrations/transcription";
+import { registerVideoProviders } from "./registry/registrations/video";
 import type {
 	CategoryProviderMap,
 	ProviderFactoryContext,
@@ -23,9 +27,13 @@ const DEFAULT_BOOTSTRAPPERS: Partial<
 	chat: [registerChatProviders],
 	embedding: [registerEmbeddingProviders],
 	guardrails: [registerGuardrailProviders],
+	image: [registerImageProviders],
+	music: [registerMusicProviders],
 	research: [registerResearchProviders],
 	search: [registerSearchProviders],
+	speech: [registerSpeechProviders],
 	transcription: [registerTranscriptionProviders],
+	video: [registerVideoProviders],
 };
 
 export class ProviderLibrary {
@@ -94,6 +102,14 @@ export class ProviderLibrary {
 		return this.resolve("audio", providerName, context);
 	}
 
+	image(providerName: string, context?: ProviderFactoryContext) {
+		return this.resolve("image", providerName, context);
+	}
+
+	music(providerName: string, context?: ProviderFactoryContext) {
+		return this.resolve("music", providerName, context);
+	}
+
 	search(providerName: string, context?: ProviderFactoryContext) {
 		return this.resolve("search", providerName, context);
 	}
@@ -110,8 +126,16 @@ export class ProviderLibrary {
 		return this.resolve("guardrails", providerName, context);
 	}
 
+	speech(providerName: string, context?: ProviderFactoryContext) {
+		return this.resolve("speech", providerName, context);
+	}
+
 	transcription(providerName: string, context?: ProviderFactoryContext) {
 		return this.resolve("transcription", providerName, context);
+	}
+
+	video(providerName: string, context?: ProviderFactoryContext) {
+		return this.resolve("video", providerName, context);
 	}
 
 	list(category?: ProviderCategory): ProviderSummary[] {

@@ -1,4 +1,4 @@
-import type { availableModalities } from "~/lib/providers/models";
+import type { availableModalities } from "~/constants/models";
 import type { ReasoningEffortLevel, VerbosityLevel } from "./shared";
 
 export type ModelRanking = 1 | 2 | 3 | 4 | 5;
@@ -105,6 +105,9 @@ export type ModelConfigItem = {
 	promptTemplate?: string;
 	reasoningConfig?: ModelReasoningConfig;
 	verbosityConfig?: ModelVerbosityConfig;
+	deprecated?: boolean;
+	deprecationMessage?: string;
+	replacementModel?: string;
 };
 
 export type ModelConfig = {

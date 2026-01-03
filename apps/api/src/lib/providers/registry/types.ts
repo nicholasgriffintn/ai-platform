@@ -1,5 +1,8 @@
 import type { AudioProvider } from "../capabilities/audio";
 import type { AIProvider } from "../capabilities/chat/providers/base";
+import type { ImageProvider } from "../capabilities/image";
+import type { MusicProvider } from "../capabilities/music";
+import type { SpeechProvider } from "../capabilities/speech";
 import type {
 	EmbeddingProvider,
 	GuardrailsProvider,
@@ -9,15 +12,20 @@ import type {
 	SearchProvider,
 } from "~/types";
 import type { TranscriptionProvider } from "../capabilities/transcription";
+import type { VideoProvider } from "../capabilities/video";
 
 export type ProviderCategory =
 	| "audio"
 	| "chat"
 	| "embedding"
 	| "guardrails"
+	| "image"
+	| "music"
 	| "research"
 	| "search"
-	| "transcription";
+	| "speech"
+	| "transcription"
+	| "video";
 
 export interface ProviderFactoryContext {
 	env?: IEnv;
@@ -51,9 +59,13 @@ export type CategoryProviderMap = {
 	chat: AIProvider;
 	embedding: EmbeddingProvider;
 	guardrails: GuardrailsProvider;
+	image: ImageProvider;
+	music: MusicProvider;
 	research: ResearchProvider;
 	search: SearchProvider;
+	speech: SpeechProvider;
 	transcription: TranscriptionProvider;
+	video: VideoProvider;
 };
 
 export interface ProviderSummary {

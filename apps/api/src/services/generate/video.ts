@@ -1,12 +1,10 @@
 import { sanitiseInput } from "~/lib/chat/utils";
+import { getVideoProvider } from "~/lib/providers/capabilities/video";
 import { getModelConfigByModel } from "~/lib/providers/models";
-import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import {
 	resolveServiceContext,
 	type ServiceContext,
 } from "~/lib/context/serviceContext";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IEnv, IUser } from "~/types";
 
 export interface VideoGenerationParams {
@@ -17,6 +15,9 @@ export interface VideoGenerationParams {
 	duration?: number;
 	height?: number;
 	width?: number;
+	provider?: string;
+	model?: string;
+	aspect_ratio?: string;
 }
 
 export interface VideoResponse {
@@ -26,7 +27,21 @@ export interface VideoResponse {
 	data: any;
 }
 
-const MODEL_KEY = "replicate-google-veo-3-1-fast";
+const DEFAULT_PROVIDER = "replicate";
+
+async function resolveProviderName(
+	provider: string | undefined,
+	model: string | undefined,
+): Promise<string> {
+	if (model) {
+		const modelConfig = await getModelConfigByModel(model);
+		if (modelConfig?.provider) {
+			return modelConfig.provider;
+		}
+	}
+
+	return provider || DEFAULT_PROVIDER;
+}
 
 export async function generateVideo({
 	completion_id,
@@ -67,53 +82,42 @@ export async function generateVideo({
 			};
 		}
 
-		const modelConfig = await getModelConfigByModel(MODEL_KEY);
-
-		if (!modelConfig) {
-			throw new AssistantError(
-				`Model configuration not found for ${MODEL_KEY}`,
-				ErrorType.CONFIGURATION_ERROR,
-			);
-		}
-
-		const replicatePayload = Object.fromEntries(
-			Object.entries({
-				prompt: sanitisedPrompt,
-				negative_prompt: args.negative_prompt,
-				guidance_scale: args.guidance_scale,
-				duration: args.video_length ?? args.duration,
-				height: args.height,
-				width: args.width,
-			}).filter(([, value]) => value !== undefined && value !== null),
-		);
-
-		validateReplicatePayload({
-			payload: replicatePayload,
-			schema: modelConfig.replicateInputSchema,
-			modelName: modelConfig.name || MODEL_KEY,
-		});
-
-		const provider = getChatProvider(modelConfig.provider || "replicate", {
+		const providerName = await resolveProviderName(args.provider, args.model);
+		const provider = getVideoProvider(providerName, {
 			env: runtimeEnv,
 			user: runtimeUser,
 		});
 
-		const videoData = await provider.getResponse({
+		const request = {
+			prompt: sanitisedPrompt,
+			env: runtimeEnv,
+			user: runtimeUser,
 			completion_id,
 			app_url,
-			model: modelConfig.matchingModel,
-			messages: [
-				{
-					role: "user",
-					content: replicatePayload.prompt as string,
-				},
-			],
-			body: {
-				input: replicatePayload,
-			},
-			env: runtimeEnv,
-			user: runtimeUser,
-		});
+			negativePrompt: args.negative_prompt,
+			guidanceScale: args.guidance_scale,
+			videoLength: args.video_length,
+			duration: args.duration,
+			height: args.height,
+			width: args.width,
+			aspectRatio: args.aspect_ratio,
+			model: args.model,
+		};
+
+		let videoData;
+		try {
+			videoData = await provider.generate(request);
+		} catch (error) {
+			if (providerName !== DEFAULT_PROVIDER && !args.model) {
+				const fallbackProvider = getVideoProvider(DEFAULT_PROVIDER, {
+					env: runtimeEnv,
+					user: runtimeUser,
+				});
+				videoData = await fallbackProvider.generate(request);
+			} else {
+				throw error;
+			}
+		}
 
 		const isAsync = videoData?.status === "in_progress";
 

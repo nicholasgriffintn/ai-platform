@@ -19,6 +19,7 @@ import {
 	listModels,
 	listModelsByStrength,
 	listModelsByModality,
+	listModelsByOutputModality,
 } from "~/services/models";
 import type { IEnv } from "~/types";
 import { availableModalities } from "~/constants/models";
@@ -264,6 +265,70 @@ app.get(
 		}
 		const userId = context.get("user")?.id;
 		const models = await listModelsByModality(
+			context.env as IEnv,
+			modality,
+			userId,
+		);
+		return ResponseFactory.success(context, {
+			success: true,
+			message: "Models fetched successfully",
+			data: models,
+		});
+	},
+);
+
+app.get(
+	"/output/:modality",
+	describeRoute({
+		tags: ["models"],
+		summary: "Get models by output modality",
+		description: "Returns all models that output the specified modality",
+		parameters: [
+			{
+				name: "modality",
+				in: "path",
+				required: true,
+				schema: { type: "string" },
+				description: "Output modality to filter models by",
+			},
+		],
+		responses: {
+			200: {
+				description: "List of models with the specified output modality",
+				content: {
+					"application/json": {
+						schema: resolver(modelsResponseSchema),
+					},
+				},
+			},
+			400: {
+				description: "Invalid modality parameter",
+				content: {
+					"application/json": {
+						schema: resolver(errorResponseSchema),
+					},
+				},
+			},
+			500: {
+				description: "Server error",
+				content: {
+					"application/json": {
+						schema: resolver(errorResponseSchema),
+					},
+				},
+			},
+		},
+	}),
+	zValidator("param", modalityParamsSchema),
+	async (context: Context) => {
+		const { modality } = context.req.valid("param" as never) as {
+			modality: string;
+		};
+		if (!availableModalities.includes(modality as never)) {
+			return ResponseFactory.error(context, "Invalid modality parameter", 400);
+		}
+		const userId = context.get("user")?.id;
+		const models = await listModelsByOutputModality(
 			context.env as IEnv,
 			modality,
 			userId,

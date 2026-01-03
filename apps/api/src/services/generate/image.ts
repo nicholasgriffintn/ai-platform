@@ -1,19 +1,22 @@
 import { sanitiseInput } from "~/lib/chat/utils";
-import {
-	getTextToImageSystemPrompt,
-	type imagePrompts,
-} from "~/lib/prompts/image";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { type imagePrompts } from "~/lib/prompts/image";
+import { getImageProvider } from "~/lib/providers/capabilities/image";
 import {
 	resolveServiceContext,
 	type ServiceContext,
 } from "~/lib/context/serviceContext";
+import { getModelConfigByModel } from "~/lib/providers/models";
 import type { IEnv, IUser } from "~/types";
 
 export interface ImageGenerationParams {
 	prompt: string;
-	image_style: keyof typeof imagePrompts;
-	steps: number;
+	image_style?: keyof typeof imagePrompts;
+	steps?: number;
+	provider?: string;
+	model?: string;
+	aspect_ratio?: string;
+	width?: number;
+	height?: number;
 }
 
 export interface ImageResponse {
@@ -23,7 +26,21 @@ export interface ImageResponse {
 	data: any;
 }
 
-const MODEL_KEY = "@cf/black-forest-labs/flux-2-dev";
+const DEFAULT_PROVIDER = "workers-ai";
+
+async function resolveProviderName(
+	provider: string | undefined,
+	model: string | undefined,
+): Promise<string> {
+	if (model) {
+		const modelConfig = await getModelConfigByModel(model);
+		if (modelConfig?.provider) {
+			return modelConfig.provider;
+		}
+	}
+
+	return provider || DEFAULT_PROVIDER;
+}
 
 export async function generateImage({
 	completion_id,
@@ -54,15 +71,10 @@ export async function generateImage({
 		const runtimeEnv = serviceContext.env;
 		const runtimeUser = serviceContext.user ?? user;
 
-		const provider = getChatProvider("workers-ai", {
-			env: runtimeEnv,
-			user: runtimeUser,
-		});
-
 		const sanitisedPrompt = sanitiseInput(args.prompt);
 
-		const systemPrompt = getTextToImageSystemPrompt(args.image_style);
-		const diffusionSteps = args.steps || 4;
+		const diffusionSteps =
+			args.steps === undefined || args.steps === 0 ? 4 : args.steps;
 
 		if (diffusionSteps < 1 || diffusionSteps > 8) {
 			return {
@@ -73,25 +85,43 @@ export async function generateImage({
 			};
 		}
 
-		const imageData = await provider.getResponse({
-			completion_id,
-			model: MODEL_KEY,
-			app_url,
-			messages: [
-				{
-					role: "user",
-					// @ts-ignore
-					content: [
-						{
-							type: "text",
-							text: `${systemPrompt}\n\n${sanitisedPrompt}`,
-						},
-					],
-				},
-			],
+		const providerName = await resolveProviderName(args.provider, args.model);
+		const provider = getImageProvider(providerName, {
 			env: runtimeEnv,
 			user: runtimeUser,
 		});
+
+		const request = {
+			prompt: sanitisedPrompt,
+			env: runtimeEnv,
+			user: runtimeUser,
+			completion_id,
+			app_url,
+			style: args.image_style,
+			aspectRatio: args.aspect_ratio,
+			width: args.width,
+			height: args.height,
+			steps: diffusionSteps,
+			model: args.model,
+			metadata: {
+				steps: diffusionSteps,
+			},
+		};
+
+		let imageData;
+		try {
+			imageData = await provider.generate(request);
+		} catch (error) {
+			if (providerName !== DEFAULT_PROVIDER && !args.model) {
+				const fallbackProvider = getImageProvider(DEFAULT_PROVIDER, {
+					env: runtimeEnv,
+					user: runtimeUser,
+				});
+				imageData = await fallbackProvider.generate(request);
+			} else {
+				throw error;
+			}
+		}
 
 		return {
 			status: "success",
