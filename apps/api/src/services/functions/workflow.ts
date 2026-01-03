@@ -362,6 +362,7 @@ export const compose_functions: IFunction = {
 	description:
 		"Chain multiple tool calls together with data passing. Use output_var to name a step's result, then reference it via $output_var or { $ref: '$output_var.data' } in later args.",
 	type: "normal",
+	isDefault: true,
 	costPerCall: 0,
 	parameters: {
 		type: "object",
@@ -433,6 +434,7 @@ export const if_then_else: IFunction = {
 	description:
 		"Run a condition tool and branch into then_steps or else_steps. Condition must return a boolean via data.result, data.value, data.condition, or content 'true'/'false'.",
 	type: "normal",
+	isDefault: true,
 	costPerCall: 0,
 	parameters: {
 		type: "object",
@@ -574,6 +576,7 @@ export const parallel_execute: IFunction = {
 	description:
 		"Execute multiple tool calls concurrently. Each task must include { function } and may include { args, output_var }. args can reference prior outputs via $output_var or { $ref: '$output_var.data' }.",
 	type: "normal",
+	isDefault: true,
 	costPerCall: 0,
 	parameters: {
 		type: "object",

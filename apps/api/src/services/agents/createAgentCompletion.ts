@@ -10,6 +10,23 @@ import { handleCreateChatCompletions } from "~/services/completions/createChatCo
 import { registerMCPClient } from "~/services/functions/mcp";
 import { add_reasoning_step } from "~/services/functions/reasoning";
 import {
+	compose_functions,
+	if_then_else,
+	parallel_execute,
+} from "~/services/functions/workflow";
+import {
+	request_approval,
+	ask_user,
+} from "~/services/functions/human_in_the_loop";
+import {
+	retry_with_backoff,
+	fallback,
+} from "~/services/functions/error_recovery";
+import {
+	search_functions,
+	get_function_schema,
+} from "~/services/functions/discovery";
+import {
 	delegateToTeamMember,
 	delegateToTeamMemberByRole,
 	getTeamMembers,
@@ -63,6 +80,51 @@ export async function createAgentCompletion({
 			name: add_reasoning_step.name,
 			description: add_reasoning_step.description,
 			parameters: add_reasoning_step.parameters,
+		},
+		{
+			name: compose_functions.name,
+			description: compose_functions.description,
+			parameters: compose_functions.parameters,
+		},
+		{
+			name: if_then_else.name,
+			description: if_then_else.description,
+			parameters: if_then_else.parameters,
+		},
+		{
+			name: parallel_execute.name,
+			description: parallel_execute.description,
+			parameters: parallel_execute.parameters,
+		},
+		{
+			name: request_approval.name,
+			description: request_approval.description,
+			parameters: request_approval.parameters,
+		},
+		{
+			name: ask_user.name,
+			description: ask_user.description,
+			parameters: ask_user.parameters,
+		},
+		{
+			name: retry_with_backoff.name,
+			description: retry_with_backoff.description,
+			parameters: retry_with_backoff.parameters,
+		},
+		{
+			name: fallback.name,
+			description: fallback.description,
+			parameters: fallback.parameters,
+		},
+		{
+			name: search_functions.name,
+			description: search_functions.description,
+			parameters: search_functions.parameters,
+		},
+		{
+			name: get_function_schema.name,
+			description: get_function_schema.description,
+			parameters: get_function_schema.parameters,
 		},
 		...teamDelegationTools,
 		...mcpFunctions.map((fn) => ({

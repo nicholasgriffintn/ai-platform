@@ -16,5 +16,6 @@
 - Implemented workflow-specific response templates/icons and added tests for workflow execution and display formatting.
 - Added JSON string parsing for workflow step arrays and covered it with tests.
 - Added JSON string parsing for if-then-else condition objects with tests.
+- Enabled workflow tools by default and exposed them in agent tool schemas.
 - Added media provider capability scaffolding and provider registrations for image, music, video, and speech, plus service refactors and provider tests.
 - Updated media function definitions with provider/model selection, and added an output-modality models endpoint.

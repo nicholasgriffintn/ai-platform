@@ -116,7 +116,8 @@ export const call_api: IFunction = {
 	description:
 		"Calls a REST or GraphQL API and returns a structured response. Use this when you need to fetch data from external APIs.",
 	type: "normal",
-	costPerCall: 0.5,
+	costPerCall: 0,
+	isDefault: true,
 	parameters: {
 		type: "object",
 		properties: {
