@@ -28,6 +28,7 @@ export const availableModalities = [
 	"research",
 	"agents",
 	"ocr",
+	"transcription",
 ] as const;
 
 export const defaultModel = "mistral-medium";

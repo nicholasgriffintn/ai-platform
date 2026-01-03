@@ -62,6 +62,103 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			],
 		},
 	}),
+	createModelConfig("replicate-flux-2-max", PROVIDER, {
+		name: "FLUX 2 Max",
+		matchingModel: "black-forest-labs/flux-2-max",
+		description: "The highest fidelity image model from Black Forest Labs",
+		strengths: ["creative"],
+		supportsStreaming: false,
+		supportsAttachments: false,
+		costPerRun: 0.04,
+		modalities: {
+			input: ["text", "image"],
+			output: ["image"],
+		},
+		replicateInputSchema: {
+			reference: "https://replicate.com/black-forest-labs/flux-2-max",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "Text prompt for image generation",
+					required: true,
+				},
+				{
+					name: "input_images",
+					type: "array",
+					description:
+						"List of input images for image-to-image generation. Maximum 8 images. Must be jpeg, png, gif, or webp.",
+					default: [],
+				},
+				{
+					name: "aspect_ratio",
+					type: "string",
+					description:
+						"Aspect ratio for the generated image. Use 'match_input_image' to match the first input image's aspect ratio.",
+					default: "1:1",
+					enum: [
+						"match_input_image",
+						"custom",
+						"1:1",
+						"16:9",
+						"3:2",
+						"2:3",
+						"4:5",
+						"5:4",
+						"9:16",
+						"3:4",
+						"4:3",
+					],
+				},
+				{
+					name: "resolution",
+					type: "string",
+					description:
+						"Resolution in megapixels. Up to 4 MP is possible, but 2 MP or below is recommended. The maximum image size is 2048x2048, which means that high-resolution images may not respect the resolution if aspect ratio is not 1:1. Resolution is not used when aspect_ratio is 'custom'. When aspect_ratio is 'match_input_image', use 'match_input_image' to match the input image's resolution (clamped to 0.5-4 MP).",
+					default: "1 MP",
+					enum: ["match_input_image", "0.5 MP", "1 MP", "2 MP", "4 MP"],
+				},
+				{
+					name: "width",
+					type: "integer",
+					description:
+						"Width of the generated image. Only used when aspect_ratio=custom. Must be a multiple of 32 (if it's not, it will be rounded to nearest multiple of 32).",
+				},
+				{
+					name: "height",
+					type: "integer",
+					description:
+						"Height of the generated image. Only used when aspect_ratio=custom. Must be a multiple of 32 (if it's not, it will be rounded to nearest multiple of 32).",
+				},
+				{
+					name: "safety_tolerance",
+					type: "integer",
+					description:
+						"Safety tolerance, 1 is most strict and 5 is most permissive",
+					default: 2,
+				},
+				{
+					name: "seed",
+					type: "integer",
+					description: "Random seed. Set for reproducible generation",
+				},
+				{
+					name: "output_format",
+					type: "string",
+					description: "Format of the output images.",
+					default: "webp",
+					enum: ["webp", "jpg", "png"],
+				},
+				{
+					name: "output_quality",
+					type: "integer",
+					description:
+						"Quality when saving the output images, from 0 to 100. 100 is best quality, 0 is lowest quality. Not relevant for .png outputs",
+					default: 80,
+				},
+			],
+		},
+	}),
 	createModelConfig("replicate-flux-2-pro", PROVIDER, {
 		name: "FLUX 2 Pro",
 		matchingModel: "black-forest-labs/flux-2-pro",
@@ -697,6 +794,76 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 					description: "Output format.",
 					default: "jpg",
 					enum: ["png", "jpg"],
+				},
+			],
+		},
+	}),
+	createModelConfig("replicate-qwen-image-edit-2511", PROVIDER, {
+		name: "Qwen Image Edit 2511",
+		matchingModel: "qwen/qwen-image-edit-2511",
+		description:
+			"An enhanced version over Qwen-Image-Edit-2509, featuring multiple improvements including notably better consistency",
+		strengths: ["creative"],
+		supportsStreaming: false,
+		supportsAttachments: true,
+		costPerRun: 0.03,
+		modalities: {
+			input: ["text", "image"],
+			output: ["image"],
+		},
+		replicateInputSchema: {
+			reference: "https://replicate.com/qwen/qwen-image-edit-2511",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "Text instruction on how to edit the given image.",
+					required: true,
+				},
+				{
+					name: "image",
+					type: "array",
+					description:
+						"Images to use as reference. Must be jpeg, png, gif, or webp.",
+					required: true,
+				},
+				{
+					name: "aspect_ratio",
+					type: "string",
+					description: "Aspect ratio for the generated image.",
+					default: "1:1",
+					enum: ["1:1", "16:9", "9:16", "4:3", "3:4", "match_input_image"],
+				},
+				{
+					name: "go_fast",
+					type: "boolean",
+					description: "Run faster predictions with additional optimizations.",
+					default: true,
+				},
+				{
+					name: "seed",
+					type: "integer",
+					description: "Random seed. Set for reproducible generation.",
+				},
+				{
+					name: "output_format",
+					type: "string",
+					description: "Format of the output images.",
+					default: "webp",
+					enum: ["webp", "jpg", "png"],
+				},
+				{
+					name: "output_quality",
+					type: "integer",
+					description:
+						"Quality when saving the output images, from 0 to 100. 100 is best quality, 0 is lowest quality. Not relevant for .png outputs.",
+					default: 95,
+				},
+				{
+					name: "disable_safety_checker",
+					type: "boolean",
+					description: "Disable safety checker for generated images.",
+					default: false,
 				},
 			],
 		},

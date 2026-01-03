@@ -362,4 +362,99 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			],
 		},
 	}),
+	createModelConfig("replicate-chatterbox-turbo", PROVIDER, {
+		name: "Chatterbox Turbo",
+		matchingModel: "resemble-ai/chatterbox-turbo",
+		description:
+			"The fastest open source TTS model without sacrificing quality",
+		strengths: ["creative", "audio"],
+		supportsStreaming: false,
+		supportsAttachments: false,
+		costPerRun: 0.025,
+		modalities: {
+			input: ["text"],
+			output: ["audio"],
+		},
+		replicateInputSchema: {
+			reference: "https://replicate.com/resemble-ai/chatterbox-turbo",
+			fields: [
+				{
+					name: "text",
+					type: "string",
+					description:
+						"Text to synthesize into speech (maximum 500 characters). Supported paralinguistic tags: [clear throat], [sigh], [sush], [cough], [groan], [sniff], [gasp], [chuckle], [laugh]",
+					required: true,
+				},
+				{
+					name: "voice",
+					type: "string",
+					description:
+						"Pre-made voice to use for synthesis. Ignored if reference_audio is provided.",
+					default: "Andy",
+					enum: [
+						"Aaron",
+						"Abigail",
+						"Anaya",
+						"Andy",
+						"Archer",
+						"Brian",
+						"Chloe",
+						"Dylan",
+						"Emmanuel",
+						"Ethan",
+						"Evelyn",
+						"Gavin",
+						"Gordon",
+						"Ivan",
+						"Laura",
+						"Lucy",
+						"Madison",
+						"Marisol",
+						"Meera",
+						"Walter",
+					],
+				},
+				{
+					name: "reference_audio",
+					type: ["file", "string"],
+					description:
+						"Reference audio file for voice cloning (optional). Must be longer than 5 seconds. If provided, overrides the voice selection.",
+				},
+				{
+					name: "temperature",
+					type: "number",
+					description:
+						"Controls randomness in generation. Higher values produce more varied speech.",
+					default: 0.8,
+				},
+				{
+					name: "top_p",
+					type: "number",
+					description:
+						"Nucleus sampling threshold. Lower values make output more focused.",
+					default: 0.95,
+				},
+				{
+					name: "top_k",
+					type: "integer",
+					description:
+						"Top-k sampling. Limits vocabulary to top k tokens at each step.",
+					default: 1000,
+				},
+				{
+					name: "repetition_penalty",
+					type: "number",
+					description:
+						"Penalizes token repetition. Higher values reduce repetition.",
+					default: 1.2,
+				},
+				{
+					name: "seed",
+					type: "integer",
+					description:
+						"Random seed for reproducible results. Leave blank for random generation.",
+				},
+			],
+		},
+	}),
 ]);

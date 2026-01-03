@@ -233,7 +233,11 @@ function buildFieldValue(
 	let value = pickFromSources(field.name, candidateSources);
 
 	if (value === undefined) {
-		if (types.includes("string") && field.name.toLowerCase() === "prompt") {
+		if (
+			types.includes("string") &&
+			(field.name.toLowerCase() === "prompt" ||
+				field.name.toLowerCase() === "text")
+		) {
 			const prompt = extractPromptFromMessages(params.messages || []);
 			if (prompt) {
 				value = prompt;
@@ -326,7 +330,10 @@ export class ReplicateProvider extends BaseProvider {
 		this.validateAiGatewayToken(params);
 
 		const lastMessage = params.messages[params.messages.length - 1];
-		if (!lastMessage.content) {
+		const hasContent = Boolean(lastMessage.content);
+		const hasBodyInput = Boolean(params.body?.input);
+
+		if (!hasContent && !hasBodyInput) {
 			throw new AssistantError(
 				"Missing last message content",
 				ErrorType.PARAMS_ERROR,
