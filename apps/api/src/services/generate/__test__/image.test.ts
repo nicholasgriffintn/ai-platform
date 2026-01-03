@@ -63,7 +63,7 @@ describe("generateImage", () => {
 		);
 		expect(mockProvider.getResponse).toHaveBeenCalledWith({
 			completion_id: "completion-123",
-			model: "@cf/black-forest-labs/flux-1-schnell",
+			model: "@cf/black-forest-labs/flux-2-dev",
 			app_url: "https://example.com",
 			messages: [
 				{

@@ -3,6 +3,7 @@ import type { IFunction, IFunctionResponse, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { analyse_hacker_news } from "./analyse_hacker_news";
+import { call_api } from "./api_call";
 import { extract_content } from "./extract_content";
 import { create_image } from "./image";
 import { handleMCPTool } from "./mcp";
@@ -38,6 +39,7 @@ export const availableFunctions: IFunction[] = [
 	next_edit_completion,
 	apply_edit_completion,
 	web_search,
+	call_api,
 	research,
 	extract_content,
 	extract_text_from_document,

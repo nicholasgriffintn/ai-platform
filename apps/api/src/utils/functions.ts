@@ -32,6 +32,7 @@ export const getFunctionResponseType = (name: string): ResponseDisplayType => {
 	if (name.includes("extract")) return ResponseDisplayType.TEXT;
 	if (name.includes("speech")) return ResponseDisplayType.TEXT;
 	if (name.includes("prompt_coach")) return ResponseDisplayType.TEMPLATE;
+	if (name.includes("call_api")) return ResponseDisplayType.JSON;
 	if (name.startsWith("mcp_")) return ResponseDisplayType.JSON;
 	if (name.startsWith("analyse_")) return ResponseDisplayType.TEMPLATE;
 	return ResponseDisplayType.CUSTOM;
