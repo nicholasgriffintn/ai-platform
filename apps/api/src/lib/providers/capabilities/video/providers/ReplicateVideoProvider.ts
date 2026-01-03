@@ -73,7 +73,7 @@ export class ReplicateVideoProvider implements VideoProvider {
 
 		validateReplicatePayload({
 			payload: replicatePayload,
-			schema: modelConfig.replicateInputSchema,
+			schema: modelConfig.inputSchema,
 			modelName: modelConfig.name || modelId,
 		});
 

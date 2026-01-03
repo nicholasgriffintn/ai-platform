@@ -29,7 +29,7 @@ const mockModelConfig = {
 	name: "Whisper Large V3",
 	matchingModel:
 		"cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
-	replicateInputSchema: {
+	inputSchema: {
 		fields: [
 			{ name: "file", type: ["file", "string"], required: true },
 			{ name: "num_speakers", type: "integer" },

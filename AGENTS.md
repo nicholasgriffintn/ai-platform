@@ -5,13 +5,6 @@ These rules apply to _all_ work, with no exceptions. They exist due to prior fai
 
 ---
 
-## Session Start
-
-- **Always read `PROJECT_LOG.md` first** to understand state, context, and in‑progress work.
-- Never start work without full context.
-
----
-
 ## Task Intake
 
 - Do **exactly** what is asked—nothing more, nothing less.
@@ -68,7 +61,6 @@ These rules apply to _all_ work, with no exceptions. They exist due to prior fai
 - Commit often, clearly, and atomically.
 - Push regularly.
 - Follow defined branching strategies.
-- Update `PROJECT_LOG.md` with **rebuild-level detail** after major changes.
 - At phase boundaries, run a **mandatory phase completion review** covering:
   - Background processes
   - Git status

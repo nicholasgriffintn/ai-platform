@@ -9,7 +9,7 @@ export interface ModelConfigInfo {
 	displayName: string;
 }
 
-export type ReplicateInputFieldType =
+export type InputSchemaInputFieldType =
 	| "string"
 	| "number"
 	| "integer"
@@ -18,17 +18,17 @@ export type ReplicateInputFieldType =
 	| "array"
 	| "object";
 
-export interface ReplicateInputFieldDescriptor {
+export interface InputSchemaInputFieldDescriptor {
 	name: string;
-	type: ReplicateInputFieldType | ReplicateInputFieldType[];
+	type: InputSchemaInputFieldType | InputSchemaInputFieldType[];
 	description?: string;
 	default?: unknown;
 	enum?: Array<string | number>;
 	required?: boolean;
 }
 
-export interface ReplicateInputSchemaDescriptor {
-	fields: ReplicateInputFieldDescriptor[];
+export interface InputSchemaInputSchemaDescriptor {
+	fields: InputSchemaInputFieldDescriptor[];
 	reference?: string;
 }
 
@@ -100,7 +100,8 @@ export type ModelConfigItem = {
 	bedrockStreamingApiOperation?: string;
 	supportsPresencePenalty?: boolean;
 	restrictsCombinedTopPAndTemperature?: boolean;
-	replicateInputSchema?: ReplicateInputSchemaDescriptor;
+	InputSchemaInputSchema?: InputSchemaInputSchemaDescriptor;
+	inputSchema?: InputSchemaInputSchemaDescriptor;
 	supportsPromptCaching?: boolean;
 	promptTemplate?: string;
 	reasoningConfig?: ModelReasoningConfig;

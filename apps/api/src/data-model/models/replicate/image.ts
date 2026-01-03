@@ -17,7 +17,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		supportsStreaming: false,
 		supportsAttachments: false,
 		costPerRun: 0.0016,
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/bytedance/sdxl-lightning-4step",
 			fields: [
 				{
@@ -74,7 +74,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["image"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/black-forest-labs/flux-2-max",
 			fields: [
 				{
@@ -172,7 +172,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["image"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/black-forest-labs/flux-2-pro",
 			fields: [
 				{
@@ -265,7 +265,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["image"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/black-forest-labs/flux-2-flex",
 			fields: [
 				{
@@ -377,7 +377,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["image"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/black-forest-labs/flux-2-dev",
 			fields: [
 				{
@@ -468,7 +468,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["image"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/black-forest-labs/flux-1.1-pro",
 			fields: [
 				{
@@ -542,7 +542,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["image"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/stability-ai/sdxl",
 			fields: [
 				{
@@ -603,7 +603,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["image"],
 			output: ["image"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/nightmareai/real-esrgan",
 			fields: [
 				{
@@ -640,7 +640,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["image"],
 			output: ["image"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/bria/remove-background",
 			fields: [
 				{
@@ -681,7 +681,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			output: ["image"],
 		},
 		costPerRun: 0.039,
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/google/nano-banana-pro",
 			fields: [
 				{
@@ -753,7 +753,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			output: ["image"],
 		},
 		costPerRun: 0.039,
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/google/nano-banana",
 			fields: [
 				{
@@ -811,7 +811,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["image"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/qwen/qwen-image-edit-2511",
 			fields: [
 				{

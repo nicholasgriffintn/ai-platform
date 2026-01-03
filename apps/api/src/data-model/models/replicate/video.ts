@@ -17,7 +17,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		supportsStreaming: false,
 		supportsAttachments: false,
 		costPerRun: 1.25,
-		replicateInputSchema: {
+		inputSchema: {
 			reference:
 				"https://replicate.com/turian/insanely-fast-whisper-with-video",
 			fields: [
@@ -74,7 +74,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		supportsStreaming: false,
 		supportsAttachments: false,
 		costPerRun: 1.25,
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/tencent/hunyuan-video",
 			fields: [
 				{
@@ -135,7 +135,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["video"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/openai/sora-2",
 			fields: [
 				{
@@ -179,7 +179,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["video"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/minimax/hailuo-2-3",
 			fields: [
 				{
@@ -229,7 +229,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["video"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/google/veo-3-1",
 			fields: [
 				{
@@ -301,7 +301,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			output: ["video"],
 		},
 		costPerRun: 5,
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/google/veo-3-1-fast",
 			fields: [
 				{
@@ -376,7 +376,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["video"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/bytedance/seedance-1.5-pro",
 			fields: [
 				{

@@ -70,7 +70,7 @@ export class ReplicateSpeechProvider implements SpeechProvider {
 
 		validateReplicatePayload({
 			payload: replicatePayload,
-			schema: modelConfig.replicateInputSchema,
+			schema: modelConfig.inputSchema,
 			modelName: modelConfig.name || modelId,
 		});
 

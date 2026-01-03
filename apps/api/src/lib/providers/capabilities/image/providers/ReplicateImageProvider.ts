@@ -85,7 +85,7 @@ export class ReplicateImageProvider implements ImageProvider {
 
 		validateReplicatePayload({
 			payload: replicatePayload,
-			schema: modelConfig.replicateInputSchema,
+			schema: modelConfig.inputSchema,
 			modelName: modelConfig.name || modelId,
 		});
 

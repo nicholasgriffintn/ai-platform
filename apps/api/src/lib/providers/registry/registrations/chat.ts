@@ -35,6 +35,7 @@ import { V0Provider } from "../../capabilities/chat/providers/v0";
 import { VercelGatewayProvider } from "../../capabilities/chat/providers/vercel";
 import { WorkersProvider } from "../../capabilities/chat/providers/workers";
 import { ExaProvider } from "../../capabilities/chat/providers/exa";
+import { FalAIProvider } from "../../capabilities/chat/providers/fal";
 import { CerebrasProvider } from "../../capabilities/chat/providers/cerebras";
 
 const chatProviders: ProviderRegistration<AIProvider>[] = [
@@ -221,6 +222,11 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
 		name: "exa",
 		create: () => new ExaProvider(),
 		metadata: { vendor: "Exa", categories: ["chat", "research"] },
+	},
+	{
+		name: "fal",
+		create: () => new FalAIProvider(),
+		metadata: { vendor: "Fal AI", categories: ["chat", "image", "video"] },
 	},
 ];
 

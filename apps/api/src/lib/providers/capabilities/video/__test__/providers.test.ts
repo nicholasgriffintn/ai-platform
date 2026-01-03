@@ -15,7 +15,7 @@ vi.mock("~/lib/providers/models", () => ({
 		matchingModel: "replicate-model",
 		provider: "replicate",
 		name: "Replicate Video",
-		replicateInputSchema: {
+		inputSchema: {
 			fields: [{ name: "prompt", type: "string", required: true }],
 		},
 	})),

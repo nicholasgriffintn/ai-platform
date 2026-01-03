@@ -17,7 +17,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		supportsStreaming: false,
 		supportsAttachments: true,
 		costPerRun: 0.08,
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/meta/musicgen",
 			fields: [
 				{
@@ -127,7 +127,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		supportsStreaming: false,
 		supportsAttachments: true,
 		costPerRun: 0.0058,
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/thomasmol/whisper-diarization",
 			fields: [
 				{
@@ -196,7 +196,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["audio"],
 			output: ["text"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/victor-upmeet/whisperx",
 			fields: [
 				{
@@ -292,7 +292,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["audio"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/stability-ai/stable-audio-2.5",
 			fields: [
 				{
@@ -338,7 +338,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			output: ["audio"],
 		},
 		costPerRun: 1,
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/elevenlabs/music",
 			fields: [
 				{
@@ -375,7 +375,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["audio"],
 		},
-		replicateInputSchema: {
+		inputSchema: {
 			reference: "https://replicate.com/resemble-ai/chatterbox-turbo",
 			fields: [
 				{

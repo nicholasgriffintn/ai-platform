@@ -186,3 +186,5 @@ test-results
 
 *.pid
 playwright-report
+
+.claude

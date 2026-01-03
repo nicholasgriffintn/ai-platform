@@ -1,4 +1,4 @@
-import type { ReplicateInputSchemaDescriptor } from "~/types";
+import type { InputSchemaInputSchemaDescriptor } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 type ReplicateFieldType =
@@ -80,7 +80,7 @@ export function validateReplicatePayload({
 	modelName,
 }: {
 	payload: Record<string, unknown>;
-	schema?: ReplicateInputSchemaDescriptor | null;
+	schema?: InputSchemaInputSchemaDescriptor | null;
 	modelName: string;
 }): void {
 	if (!schema?.fields?.length) {

@@ -73,6 +73,7 @@ export class ResponseFormatter {
 			"github-models": ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
 			"together-ai": ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
 			replicate: ResponseFormatter.formatReplicateResponse,
+			fal: ResponseFormatter.formatReplicateResponse,
 		};
 
 		return formatters[provider] || ResponseFormatter.formatGenericResponse;
@@ -699,6 +700,7 @@ export class ResponseFormatter {
 		options: ResponseFormatOptions = {},
 	): Promise<any> {
 		const output =
+			data?.images ??
 			data?.output ??
 			data?.prediction?.output ??
 			data?.data?.output ??

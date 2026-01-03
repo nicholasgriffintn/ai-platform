@@ -119,7 +119,7 @@ export const handlePodcastTranscribe = async (
 
 		validateReplicatePayload({
 			payload: replicatePayload,
-			schema: modelConfig.replicateInputSchema,
+			schema: modelConfig.inputSchema,
 			modelName: modelConfig.name || MODEL_KEY,
 		});
 

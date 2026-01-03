@@ -57,7 +57,7 @@ export const executeReplicateModel = async (
 
 		validateReplicatePayload({
 			payload: params.input,
-			schema: modelConfig.replicateInputSchema,
+			schema: modelConfig.inputSchema,
 			modelName: modelConfig.name || params.modelId,
 		});
 

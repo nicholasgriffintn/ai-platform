@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
+
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import { ReplicateProvider, buildReplicateInput } from "../replicate";
+import { ReplicateProvider } from "../replicate";
+import { buildInputSchemaInput } from "~/utils/inputSchema";
 
 vi.mock("../base", () => ({
 	BaseProvider: class MockBaseProvider {
@@ -30,7 +32,7 @@ describe("ReplicateProvider", () => {
 			// @ts-ignore - mocked implementation
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel: "replicate-model",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
 						{ name: "num_outputs", type: "integer", default: 1 },
@@ -62,7 +64,7 @@ describe("ReplicateProvider", () => {
 			// @ts-ignore - mocked implementation
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel: "replicate-model",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
 						{
@@ -106,7 +108,7 @@ describe("ReplicateProvider", () => {
 
 			const config: any = {
 				matchingModel: "replicate-model",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
 						{ name: "model_version", type: "string", enum: ["melody"] },
@@ -114,7 +116,7 @@ describe("ReplicateProvider", () => {
 				},
 			};
 
-			expect(() => buildReplicateInput(params, config)).toThrow(
+			expect(() => buildInputSchemaInput(params, config)).toThrow(
 				'Invalid value "invalid" for field "model_version"',
 			);
 		});
@@ -143,7 +145,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"a91bed9b0301d9d10b34b89b1f4d0255f2e2499c59576bfcd13405575dacdb25",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
 						{ name: "width", type: "integer", default: 1024 },
@@ -184,7 +186,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"46ad775d45e4c606eb4a8f022a40e9e3d0a22993815d798bcd2103c0e72427bd",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
 						{ name: "image", type: ["file", "string"] },
@@ -225,7 +227,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "input_image", type: ["file", "string"], required: true },
 						{
@@ -265,7 +267,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "image", type: ["file", "string"], required: true },
 						{ name: "scale", type: "number", default: 4, enum: [2, 4] },
@@ -301,7 +303,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"41ecfbfb261e6c1adf3ad896c9066ca98346996d7c4045c5bc944a79d430f174",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "image", type: ["file", "string"], required: true },
 						{ name: "prompt", type: "string", required: true },
@@ -338,7 +340,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "image", type: ["file", "string"], required: true },
 						{
@@ -378,7 +380,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "audio_file", type: ["file", "string"], required: true },
 						{ name: "diarize", type: "boolean", default: false },
@@ -417,7 +419,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"f2d7f3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
 						{ name: "duration", type: "number", default: 30 },
@@ -454,7 +456,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"77a5f9e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "video", type: ["file", "string"], required: true },
 						{ name: "points", type: "string" },
@@ -492,7 +494,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"3ab86df6c8f54c11309d4d1f930ac292bad43ace52d10c80d87eb258b3c9f79c",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "audio", type: ["file", "string"], required: true },
 						{
@@ -540,7 +542,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"e6cff243d7a5e551e1ca2b4bf291413d649c9f1417f9a52c1c0a4fbc36027b83",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
 						{ name: "image", type: ["file", "string"] },
@@ -577,7 +579,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
 						{
@@ -622,7 +624,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"spspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspsp",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
 						{ name: "duration", type: "integer", default: 10 },
@@ -670,7 +672,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"ohohohohohohohohohohohohohohohohohohohohohohohohohohohohohohohoh",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "image", type: ["file", "string"], required: true },
 						{ name: "audio", type: ["file", "string"] },
@@ -707,7 +709,7 @@ describe("ReplicateProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				matchingModel:
 					"dpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdp",
-				replicateInputSchema: {
+				inputSchema: {
 					fields: [
 						{ name: "image", type: ["file", "string"], required: true },
 						{

@@ -73,7 +73,7 @@ export class ReplicateMusicProvider implements MusicProvider {
 
 		validateReplicatePayload({
 			payload: replicatePayload,
-			schema: modelConfig.replicateInputSchema,
+			schema: modelConfig.inputSchema,
 			modelName: modelConfig.name || modelId,
 		});
 
