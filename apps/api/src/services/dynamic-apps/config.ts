@@ -7,7 +7,8 @@ type DynamicAppCategory =
 	| "Code Assistance"
 	| "Productivity & Coaching"
 	| "Data & Utilities"
-	| "OCR";
+	| "OCR"
+	| "System & Meta";
 
 export type AppKind = "dynamic" | "frontend";
 
@@ -158,6 +159,36 @@ export const FUNCTION_APP_METADATA: Record<string, DynamicAppMetadata> = {
 		icon: "document-text",
 		theme: "blue",
 		tags: ["document", "extraction"],
+	},
+	call_api: {
+		category: "System & Meta",
+		icon: "server-cog",
+		theme: "slate",
+		tags: ["api", "integration"],
+	},
+	search_functions: {
+		category: "System & Meta",
+		icon: "search-code",
+		theme: "slate",
+		tags: ["discovery", "system", "meta"],
+	},
+	get_function_schema: {
+		category: "System & Meta",
+		icon: "file-json",
+		theme: "slate",
+		tags: ["schema", "system", "meta"],
+	},
+	retry_with_backoff: {
+		category: "System & Meta",
+		icon: "refresh-cw",
+		theme: "amber",
+		tags: ["error-recovery", "retry", "reliability"],
+	},
+	fallback: {
+		category: "System & Meta",
+		icon: "shield-check",
+		theme: "emerald",
+		tags: ["error-recovery", "fallback", "reliability"],
 	},
 };
 

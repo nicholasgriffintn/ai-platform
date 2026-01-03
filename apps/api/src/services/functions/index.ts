@@ -4,6 +4,8 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { analyse_hacker_news } from "./analyse_hacker_news";
 import { call_api } from "./api_call";
+import { search_functions, get_function_schema } from "./discovery";
+import { retry_with_backoff, fallback } from "./error_recovery";
 import { extract_content } from "./extract_content";
 import { create_image } from "./image";
 import { handleMCPTool } from "./mcp";
@@ -53,6 +55,10 @@ export const availableFunctions: IFunction[] = [
 	delegateToTeamMember,
 	delegateToTeamMemberByRole,
 	getTeamMembers,
+	search_functions,
+	get_function_schema,
+	retry_with_backoff,
+	fallback,
 ];
 
 export const handleFunctions = async ({
