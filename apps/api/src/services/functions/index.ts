@@ -30,6 +30,7 @@ import { get_weather } from "./weather";
 import { web_search } from "./web_search";
 import { research } from "./research";
 import { extract_text_from_document } from "./ocr";
+import { compose_functions, if_then_else, parallel_execute } from "./workflow";
 
 const logger = getLogger({ prefix: "services/functions" });
 
@@ -60,6 +61,9 @@ export const availableFunctions: IFunction[] = [
 	get_function_schema,
 	retry_with_backoff,
 	fallback,
+	compose_functions,
+	if_then_else,
+	parallel_execute,
 	request_approval,
 	ask_user,
 ];

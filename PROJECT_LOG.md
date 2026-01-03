@@ -12,3 +12,7 @@
 - Added `call_api` tool to execute REST/GraphQL requests with validation, timeouts, and structured responses.
 - Wired the new tool into available functions and JSON response rendering.
 - Added Vitest coverage for REST and GraphQL request behavior.
+- Added workflow meta-tools (`compose_functions`, `if_then_else`, `parallel_execute`) with shared step execution, argument references, and error handling.
+- Implemented workflow-specific response templates/icons and added tests for workflow execution and display formatting.
+- Added JSON string parsing for workflow step arrays and covered it with tests.
+- Added JSON string parsing for if-then-else condition objects with tests.

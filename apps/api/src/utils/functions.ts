@@ -18,6 +18,9 @@ export const getFunctionIcon = (name: string): string => {
 	if (name.includes("extract") || name.includes("content")) return "file-text";
 	if (name.includes("create")) return "plus-circle";
 	if (name.includes("get")) return "folder-open";
+	if (name === "compose_functions") return "braces";
+	if (name === "if_then_else") return "brain-circuit";
+	if (name === "parallel_execute") return "users";
 	if (name.startsWith("mcp_")) return "file-text";
 	if (name.startsWith("analyse_")) return "file-text";
 	return "app";
@@ -35,6 +38,13 @@ export const getFunctionResponseType = (name: string): ResponseDisplayType => {
 	if (name.includes("call_api")) return ResponseDisplayType.JSON;
 	if (name === "request_approval") return ResponseDisplayType.TEMPLATE;
 	if (name === "ask_user") return ResponseDisplayType.TEMPLATE;
+	if (
+		name === "compose_functions" ||
+		name === "if_then_else" ||
+		name === "parallel_execute"
+	) {
+		return ResponseDisplayType.TEMPLATE;
+	}
 	if (name.startsWith("mcp_")) return ResponseDisplayType.JSON;
 	if (name.startsWith("analyse_")) return ResponseDisplayType.TEMPLATE;
 	return ResponseDisplayType.CUSTOM;
@@ -222,6 +232,60 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         <div class="text-xs text-zinc-500 dark:text-zinc-400">
           {{data.timestamp}}
         </div>
+      </div>
+    `;
+	} else if (
+		name === "compose_functions" ||
+		name === "parallel_execute" ||
+		name === "if_then_else"
+	) {
+		const headerTitle =
+			name === "compose_functions"
+				? "Workflow Results"
+				: name === "parallel_execute"
+					? "Parallel Execution"
+					: "Conditional Workflow";
+
+		display.template = `
+      <div class="workflow-response rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-zinc-800 p-5 space-y-4">
+        <div class="workflow-header flex items-start justify-between gap-4">
+          <div>
+            <h2 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">${headerTitle}</h2>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Execution summary</p>
+          </div>
+          <div class="flex flex-wrap gap-2 text-xs">
+            {{#if data.branch}}
+              <span class="workflow-branch rounded-full bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100 px-2 py-0.5">Branch: {{data.branch}}</span>
+            {{/if}}
+            {{#if data.condition}}
+              <span class="workflow-condition rounded-full bg-zinc-100 text-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-200 px-2 py-0.5">Condition: {{data.condition.name}}</span>
+            {{/if}}
+          </div>
+        </div>
+        {{#if data.steps}}
+          <ol class="workflow-steps space-y-3">
+            {{#each data.steps}}
+              <li class="workflow-step rounded-md border border-zinc-200/70 dark:border-zinc-700/60 bg-white/70 dark:bg-zinc-900/40 p-3 space-y-2">
+                <div class="workflow-step-header flex items-center justify-between text-xs">
+                  <span class="step-name font-medium text-zinc-900 dark:text-zinc-100">{{this.name}}</span>
+                  <span class="step-status uppercase tracking-wide text-[10px] text-zinc-500 dark:text-zinc-400">{{this.status}}</span>
+                </div>
+                {{#if this.output_var}}
+                  <div class="step-output text-xs text-zinc-600 dark:text-zinc-300">Output: {{this.output_var}}</div>
+                {{/if}}
+                {{#if this.result_preview}}
+                  <pre class="step-preview text-xs whitespace-pre-wrap rounded-md bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-700/60 p-2 text-zinc-700 dark:text-zinc-200">{{this.result_preview}}</pre>
+                {{/if}}
+                {{#if this.error}}
+                  <div class="step-error text-xs text-red-600 dark:text-red-400">{{this.error}}</div>
+                {{/if}}
+              </li>
+            {{/each}}
+          </ol>
+        {{/if}}
+        {{#if data.failed_count}}
+          <div class="workflow-summary text-xs text-red-600 dark:text-red-400">Failed: {{data.failed_count}}</div>
+        {{/if}}
       </div>
     `;
 	}

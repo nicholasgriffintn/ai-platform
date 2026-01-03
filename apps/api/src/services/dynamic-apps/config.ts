@@ -202,6 +202,24 @@ export const FUNCTION_APP_METADATA: Record<string, DynamicAppMetadata> = {
 		theme: "cyan",
 		tags: ["human-in-the-loop", "input", "interactive"],
 	},
+	compose_functions: {
+		category: "System & Meta",
+		icon: "layers",
+		theme: "slate",
+		tags: ["workflow", "composition", "system"],
+	},
+	if_then_else: {
+		category: "System & Meta",
+		icon: "branch",
+		theme: "slate",
+		tags: ["workflow", "logic", "system"],
+	},
+	parallel_execute: {
+		category: "System & Meta",
+		icon: "shuffle",
+		theme: "slate",
+		tags: ["workflow", "parallelism", "system"],
+	},
 };
 
 export const FEATURED_APPS: FeaturedAppDefinition[] = [

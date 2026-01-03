@@ -100,6 +100,12 @@ describe("functions", () => {
 			expect(getFunctionIcon("analyse_hacker_news")).toBe("file-text");
 		});
 
+		it("should return correct icons for workflow functions", () => {
+			expect(getFunctionIcon("compose_functions")).toBe("braces");
+			expect(getFunctionIcon("if_then_else")).toBe("brain-circuit");
+			expect(getFunctionIcon("parallel_execute")).toBe("users");
+		});
+
 		it("should return default icon for unknown functions", () => {
 			expect(getFunctionIcon("unknown_function")).toBe("app");
 			expect(getFunctionIcon("random_name")).toBe("app");
@@ -189,6 +195,18 @@ describe("functions", () => {
 			);
 		});
 
+		it("should return TEMPLATE for workflow functions", () => {
+			expect(getFunctionResponseType("compose_functions")).toBe(
+				ResponseDisplayType.TEMPLATE,
+			);
+			expect(getFunctionResponseType("if_then_else")).toBe(
+				ResponseDisplayType.TEMPLATE,
+			);
+			expect(getFunctionResponseType("parallel_execute")).toBe(
+				ResponseDisplayType.TEMPLATE,
+			);
+		});
+
 		it("should return CUSTOM for unknown functions", () => {
 			expect(getFunctionResponseType("unknown_function")).toBe(
 				ResponseDisplayType.CUSTOM,
@@ -254,6 +272,15 @@ describe("functions", () => {
 			expect(display.template).toContain("{{data.confidence_score}}");
 		});
 
+		it("should include template for workflow functions", () => {
+			const display = getFunctionResponseDisplay("compose_functions");
+
+			expect(display.template).toBeDefined();
+			expect(display.template).toContain("workflow-response");
+			expect(display.template).toContain("workflow-steps");
+			expect(display.template).toContain("step-status");
+		});
+
 		it("should not include template for non-template functions", () => {
 			const display = getFunctionResponseDisplay("web_search");
 
@@ -291,6 +318,7 @@ describe("functions", () => {
 				"generate_image",
 				"text_to_speech",
 				"prompt_coach",
+				"compose_functions",
 				"analyse_data",
 				"unknown_function",
 			];
