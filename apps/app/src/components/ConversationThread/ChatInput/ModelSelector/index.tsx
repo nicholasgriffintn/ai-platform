@@ -63,6 +63,7 @@ export const ModelSelector = ({
 	const [isOpen, setIsOpen] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [showAllModels, setShowAllModels] = useState(false);
+
 	const [selectedCapability, setSelectedCapability] = useState<string | null>(
 		null,
 	);
@@ -283,14 +284,19 @@ export const ModelSelector = ({
 		chatMode,
 	});
 
+	const currentAgentModel = selectedAgentId
+		? agents.find((a) => a.id === selectedAgentId)?.model
+		: null;
+
 	useEffect(() => {
-		if (selectedAgentId) {
-			const agent = agents.find((a) => a.id === selectedAgentId);
-			if (agent?.model) {
-				setModel(agent.model);
-			}
+		// Only update model if it's different from the agent's model
+		if (currentAgentModel !== undefined && currentAgentModel !== model) {
+			setModel(currentAgentModel);
+		} else if (!selectedAgentId && model !== null) {
+			// Clear model when no agent is selected
+			setModel(null);
 		}
-	}, [selectedAgentId, agents, setModel]);
+	}, [currentAgentModel, model, selectedAgentId, setModel]);
 
 	if (isLoadingModels) {
 		return (
