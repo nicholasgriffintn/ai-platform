@@ -18,6 +18,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -27,7 +28,7 @@ VALUES (
   1,
   'Tech Lead Orchestrator',
   'React/Node.js tech lead for the user''s application. Plans multi-step tasks and delegates to specialized agents. Use for feature development, API work, and complex React implementations.',
-  'https://polychat.app/logos/orchestrator.svg',
+  '',
   '[]',
   'mistral-large',
   '0.7',
@@ -90,6 +91,7 @@ Use these tools to delegate work:
 
 Keep it simple, delegate effectively, ship features.',
   NULL,
+  '["web_search", "delegate_to_team_member", "delegate_to_team_member_by_role", "get_team_members"]',
   'app-dev-team',
   'orchestrator',
   1
@@ -108,6 +110,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -117,7 +120,7 @@ VALUES (
   1,
   'Engineering Manager',
   'Senior engineering manager overseeing the development team. Provides strategic guidance, code architecture decisions, and technical leadership.',
-  'https://polychat.app/logos/manager.svg',
+  '',
   '[]',
   'mistral-large',
   '0.6',
@@ -158,6 +161,7 @@ When making architectural decisions, consider:
 - Collaborative and inclusive in decision-making
 - Focused on long-term platform success',
   NULL,
+  '["web_search", "research"]',
   'app-dev-team',
   'leader',
   1
@@ -176,6 +180,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -185,7 +190,7 @@ VALUES (
   1,
   'React Component Architect',
   'React expert for the user''s application. Builds chat interfaces, AI components, and modern React patterns. Focuses on React 19, TypeScript, and real-time features.',
-  'https://polychat.app/logos/react.svg',
+  '',
   '[]',
   'codestral',
   '0.8',
@@ -232,6 +237,7 @@ You build React components for the user''s application. Focus on chat interfaces
 
 Keep components simple, reusable, and focused on the chat/AI experience.',
   NULL,
+  '["web_search", "v0_code_generation"]',
   'app-dev-team',
   'specialist',
   1
@@ -250,6 +256,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -259,7 +266,7 @@ VALUES (
   1,
   'Node.js Backend Expert', 
   'Node.js and Cloudflare Workers specialist for the user''s application development. Expert in serverless architecture, AI provider integrations, and real-time systems.',
-  'https://polychat.app/logos/nodejs.svg',
+  '',
   '[]',
   'codestral',
   '0.7',
@@ -310,6 +317,7 @@ You build the backend systems for the user''s application using Cloudflare Worke
 
 Focus on scalable, maintainable serverless architecture.',
   NULL,
+  '["web_search", "call_api", "research"]',
   'app-dev-team',
   'specialist',
   1
@@ -328,6 +336,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -337,7 +346,7 @@ VALUES (
   1,
   'Code Reviewer',
   'Expert code reviewer ensuring quality, security, and maintainability across all languages. Provides actionable feedback with severity categorization.',
-  'https://polychat.app/logos/reviewer.svg',
+  '',
   '[]',
   'codestral',
   '0.5',
@@ -389,6 +398,7 @@ You are a senior code reviewer ensuring code quality, security, and maintainabil
 
 Be constructive, specific, and educational in your feedback.',
   NULL,
+  '["web_search", "research"]',
   'app-dev-team',
   'coordinator',
   1
@@ -407,6 +417,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -416,7 +427,7 @@ VALUES (
   1,
   'Documentation Specialist',
   'Technical documentation expert creating clear, comprehensive docs for APIs, components, and development workflows. Focuses on developer experience.',
-  'https://polychat.app/logos/docs.svg',
+  '',
   '[]',
   'mistral-large',
   '0.6',
@@ -476,6 +487,7 @@ Common issues and solutions
 
 Make complex technical concepts accessible to developers.',
   NULL,
+  '["web_search", "research"]',
   'app-dev-team',
   'coordinator',
   1
@@ -494,6 +506,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -503,7 +516,7 @@ VALUES (
   1,
   'Performance Optimizer',
   'Performance analysis and optimization expert for web applications, serverless functions, and database queries. Focuses on speed, efficiency, and scalability.',
-  'https://polychat.app/logos/performance.svg',
+  '',
   '[]',
   'codestral',
   '0.6',
@@ -573,6 +586,7 @@ You analyze and optimize performance across the user''s application - frontend, 
 
 Focus on measurable improvements and real-world performance gains.',
   NULL,
+  '["web_search", "research"]',
   'app-dev-team',
   'coordinator',
   1
@@ -591,6 +605,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -600,7 +615,7 @@ VALUES (
   1,
   'Backend Developer',
   'General backend developer skilled in APIs, databases, authentication, and server-side logic. Handles routine backend tasks and integrations.',
-  'https://polychat.app/logos/backend.svg',
+  '',
   '[]',
   'codestral',
   '0.7',
@@ -655,6 +670,7 @@ You handle general backend development tasks for the user''s application.
 
 Handle backend tasks efficiently while maintaining code quality and security standards.',
   NULL,
+  '["web_search", "research"]',
   'app-dev-team',
   'member',
   1
@@ -673,6 +689,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -682,14 +699,14 @@ VALUES (
   1,
   'Frontend Developer',
   'General frontend developer skilled in React, TypeScript, and modern web development. Handles UI implementation, styling, and user interactions.',
-  'https://polychat.app/logos/frontend.svg',
+  '',
   '[]',
   'codestral',
   '0.8',
   15,
   '# Frontend Developer
 
-You handle general frontend development tasks for the user''s application.
+You handle general frontend development tasks for user''s application.
 
 ## Core Skills
 
@@ -737,6 +754,7 @@ You handle general frontend development tasks for the user''s application.
 
 Create clean, maintainable frontend code that provides excellent user experience.',
   NULL,
+  '["web_search", "research"]',
   'app-dev-team',
   'member',
   1
@@ -755,6 +773,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -764,7 +783,7 @@ VALUES (
   1,
   'Fullstack Developer',
   'Versatile fullstack developer comfortable with both frontend and backend development. Handles end-to-end feature implementation and system integration.',
-  'https://polychat.app/logos/fullstack.svg',
+  '',
   '[]',
   'codestral',
   '0.7',
@@ -802,8 +821,8 @@ You handle end-to-end development tasks across the entire user''s application st
 - Testing strategies
 
 ## Development Approach
-1. **Plan the Feature** - Understand requirements fully
-2. **Design the API** - Define contracts and data flow
+1. **Plan** Feature - Understand requirements fully
+2. **Design** API - Define contracts and data flow
 3. **Build Backend First** - Implement API endpoints and logic
 4. **Create Frontend** - Build UI components and interactions  
 5. **Integrate & Test** - Connect pieces and verify functionality
@@ -818,6 +837,7 @@ You handle end-to-end development tasks across the entire user''s application st
 
 Bridge the gap between frontend and backend to deliver complete, working features.',
   NULL,
+  '["web_search", "research"]',
   'app-dev-team',
   'member',
   1

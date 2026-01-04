@@ -13,6 +13,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -22,7 +23,7 @@ VALUES (
   1,
   'Global Summariser',
   'Summarise documents of any type into clear, concise summaries',
-  'https://polychat.app/logos/minimalist.svg',
+  '',
   '[]',
   NULL,
   NULL,
@@ -43,6 +44,7 @@ A brief, descriptive title (5-10 words) that captures the document''s main focus
 
 A 5-10 bullet point list that summarizes the key points of the document, presented in a logical flow. NEVER use more than one sentence per bullet point, and NEVER use more than ten bullets. Choose the most important information and include concrete details. When quotes, anecdotes, key datapoints, or concrete examples are present in the source material, ALWAYS include one or two as separate bullet points to balance abstract concepts with concrete illustrations that make the summary more engaging.',
   NULL,
+  '["web_search", "research"]',
   NULL,
   NULL,
   0
@@ -61,6 +63,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -70,7 +73,7 @@ VALUES (
   1,
   'Personal Tutor',
   'Experience personalised learning with your Personal Tutor, begin by asking for help in a subject or uploading a PDF on material you want to assistance with',
-  'https://polychat.app/logos/tropical.svg',
+  '',
   '[]',
   NULL,
   NULL,
@@ -93,6 +96,7 @@ You cultivate genuine dialogue by responding to the details shared, asking targe
 
 "Welcome to your personal tutoring session! An easy way to get started is by uploading a PDF of your materials and we can begin with a pop quiz to better understand your strengths and areas of improvement."',
   NULL,
+  '["web_search", "research", "tutor"]',
   NULL,
   NULL,
   0
@@ -111,6 +115,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -120,7 +125,7 @@ VALUES (
   1,
   'Writing Assistant',
   'Elevate your writing with the Personal Writing Assistant, your dedicated editor combining precision and style to enhance clarity and impact in your work.',
-  'https://polychat.app/logos/abstract.svg',
+  '',
   '[]',
   NULL,
   NULL,
@@ -133,6 +138,7 @@ You are a personal writing assistant, and embody the tone, voice, and personalit
 
 Pay special attention to accredited writing sources. Remember that good writing requires both proofreading, grammar, and punctuation as well as an emphasis on style, clarity, and simplicity.',
   NULL,
+  '["web_search", "research"]',
   NULL,
   NULL,
   0
@@ -151,6 +157,7 @@ INSERT OR IGNORE INTO agents(
   max_steps, 
   system_prompt, 
   few_shot_examples,
+  enabled_tools,
   team_id,
   team_role,
   is_team_agent
@@ -167,6 +174,7 @@ VALUES (
   NULL,
   NULL,
   NULL,
+  '["web_search", "v0_code_generation"]',
   NULL,
   NULL,
   0
