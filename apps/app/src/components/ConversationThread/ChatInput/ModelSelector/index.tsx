@@ -289,14 +289,14 @@ export const ModelSelector = ({
 		: null;
 
 	useEffect(() => {
-		// Only update model if it's different from the agent's model
-		if (currentAgentModel !== undefined && currentAgentModel !== model) {
+		if (
+			chatMode === "agent" &&
+			currentAgentModel !== undefined &&
+			currentAgentModel !== model
+		) {
 			setModel(currentAgentModel);
-		} else if (!selectedAgentId && model !== null) {
-			// Clear model when no agent is selected
-			setModel(null);
 		}
-	}, [currentAgentModel, model, selectedAgentId, setModel]);
+	}, [currentAgentModel, model, setModel, chatMode]);
 
 	if (isLoadingModels) {
 		return (
