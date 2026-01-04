@@ -47,6 +47,7 @@ import { xaiModelConfig } from "~/data-model/models/xai";
 import { exaModelConfig } from "~/data-model/models/exa";
 import { cerebrasModelConfig } from "~/data-model/models/cerebras";
 import { falModelConfig } from "~/data-model/models/fal";
+import { ideogramModelConfig } from "~/data-model/models/ideogram";
 
 const logger = getLogger({ prefix: "lib/models" });
 
@@ -94,6 +95,7 @@ const modelConfig: ModelConfig = {
 	...replicateModelConfig,
 	...exaModelConfig,
 	...falModelConfig,
+	...ideogramModelConfig,
 	...cerebrasModelConfig,
 };
 

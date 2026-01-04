@@ -37,6 +37,7 @@ export type IEnv = {
 	MISTRAL_API_KEY?: string;
 	OPENROUTER_API_KEY?: string;
 	FAL_KEY?: string;
+	IDEOGRAM_API_KEY?: string;
 	PARALLEL_API_KEY?: string;
 	EXA_API_KEY?: string;
 	BEDROCK_AWS_ACCESS_KEY?: string;

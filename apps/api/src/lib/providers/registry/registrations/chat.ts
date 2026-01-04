@@ -37,6 +37,7 @@ import { WorkersProvider } from "../../capabilities/chat/providers/workers";
 import { ExaProvider } from "../../capabilities/chat/providers/exa";
 import { FalAIProvider } from "../../capabilities/chat/providers/fal";
 import { CerebrasProvider } from "../../capabilities/chat/providers/cerebras";
+import { IdeogramProvider } from "../../capabilities/chat/providers/ideogram";
 
 const chatProviders: ProviderRegistration<AIProvider>[] = [
 	{
@@ -227,6 +228,11 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
 		name: "fal",
 		create: () => new FalAIProvider(),
 		metadata: { vendor: "Fal AI", categories: ["chat", "image", "video"] },
+	},
+	{
+		name: "ideogram",
+		create: () => new IdeogramProvider(),
+		metadata: { vendor: "Ideogram", categories: ["chat", "image"] },
 	},
 ];
 

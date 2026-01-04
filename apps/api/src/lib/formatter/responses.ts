@@ -74,6 +74,7 @@ export class ResponseFormatter {
 			"together-ai": ResponseFormatter.formatOpenAIResponse, // Uses OpenAI format
 			replicate: ResponseFormatter.formatReplicateResponse,
 			fal: ResponseFormatter.formatReplicateResponse,
+			ideogram: ResponseFormatter.formatReplicateResponse,
 		};
 
 		return formatters[provider] || ResponseFormatter.formatGenericResponse;
@@ -705,6 +706,7 @@ export class ResponseFormatter {
 			data?.prediction?.output ??
 			data?.data?.output ??
 			data?.response ??
+			data?.data ??
 			[];
 
 		const strings = ResponseFormatter.collectStringsFromOutput(output).map(
