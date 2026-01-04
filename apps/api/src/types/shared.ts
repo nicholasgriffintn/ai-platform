@@ -82,9 +82,11 @@ export type IEnv = {
 	LOG_LEVEL?: string;
 	STRIPE_SECRET_KEY?: string;
 	STRIPE_WEBHOOK_SECRET?: string;
+	EMAIL_PROVIDER?: string;
 	AWS_SES_ACCESS_KEY_ID?: string;
 	AWS_SES_SECRET_ACCESS_KEY?: string;
 	SES_EMAIL_FROM?: string;
+	RESEND_API_KEY?: string;
 	HCAPTCHA_SECRET_KEY?: string;
 	HCAPTCHA_SITE_KEY?: string;
 	FREE_RATE_LIMITER?: unknown;

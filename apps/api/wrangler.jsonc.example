@@ -27,7 +27,8 @@
 		"REQUIRE_CAPTCHA_SECRET_KEY": "false",
 		"ALWAYS_ENABLED_PROVIDERS": "workers-ai,mistral,deepseek,google-ai-studio",
 		"LOG_LEVEL": "warn",
-		"ENV": "production"
+		"ENV": "production",
+		"EMAIL_PROVIDER": "aws_ses"
 	},
 	"ai": {
 		"binding": "AI",
