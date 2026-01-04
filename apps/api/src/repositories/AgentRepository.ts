@@ -15,6 +15,7 @@ export class AgentRepository extends BaseRepository {
 		maxSteps?: number,
 		systemPrompt?: string,
 		fewShotExamples?: any[],
+		enabledTools?: string[],
 		teamId?: string | null,
 		teamRole?: string | null,
 		isTeamAgent?: boolean,
@@ -37,11 +38,15 @@ export class AgentRepository extends BaseRepository {
 				max_steps: maxSteps ?? null,
 				system_prompt: systemPrompt ?? null,
 				few_shot_examples: fewShotExamples ?? null,
+				enabled_tools: enabledTools ?? null,
 				team_id: teamId ?? null,
 				team_role: teamRole ?? null,
 				is_team_agent: isTeamAgent ? 1 : 0,
 			},
-			{ jsonFields: ["servers", "few_shot_examples"], returning: "*" },
+			{
+				jsonFields: ["servers", "few_shot_examples", "enabled_tools"],
+				returning: "*",
+			},
 		);
 
 		if (!insert) {
@@ -93,6 +98,7 @@ export class AgentRepository extends BaseRepository {
 			max_steps: number;
 			system_prompt: string;
 			few_shot_examples: any[];
+			enabled_tools: string[];
 			team_id: string;
 			team_role: string;
 			is_team_agent: boolean;
@@ -108,6 +114,7 @@ export class AgentRepository extends BaseRepository {
 			"max_steps",
 			"system_prompt",
 			"few_shot_examples",
+			"enabled_tools",
 			"team_id",
 			"team_role",
 			"is_team_agent",
@@ -120,7 +127,7 @@ export class AgentRepository extends BaseRepository {
 			"id = ?",
 			[agentId],
 			{
-				jsonFields: ["servers", "few_shot_examples"],
+				jsonFields: ["servers", "few_shot_examples", "enabled_tools"],
 				transformer: (field, value) => {
 					if (
 						field === "temperature" &&
@@ -182,6 +189,7 @@ export class AgentRepository extends BaseRepository {
 			maxSteps,
 			systemPrompt,
 			fewShotExamples,
+			undefined,
 			teamId,
 			teamRole,
 			true,

@@ -24,11 +24,13 @@ import { ToolSelector } from "./ToolSelector";
 interface ChatSettingsProps {
 	isDisabled?: boolean;
 	supportsToolCalls?: boolean;
+	toolSelectionLocked?: boolean;
 }
 
 export const ChatSettings = ({
 	isDisabled = false,
 	supportsToolCalls = false,
+	toolSelectionLocked = false,
 }: ChatSettingsProps) => {
 	const { chatSettings, setChatSettings, model } = useChatStore();
 	const [showSettings, setShowSettings] = useState(false);
@@ -172,7 +174,9 @@ export const ChatSettings = ({
 				aria-label="Open chat settings"
 			/>
 
-			{supportsToolCalls && <ToolSelector isDisabled={isDisabled} />}
+			{supportsToolCalls && (
+				<ToolSelector isDisabled={isDisabled || toolSelectionLocked} />
+			)}
 
 			<Dialog open={showSettings} onOpenChange={setShowSettings} width="640px">
 				<DialogContent>

@@ -246,6 +246,7 @@ class ApiService {
 		maxSteps?: number | null,
 		systemPrompt?: string | null,
 		fewShotExamples?: any[] | null,
+		enabledTools?: string[] | null,
 		teamId?: string | null,
 		teamRole?: string | null,
 		isTeamAgent?: boolean | null,
@@ -260,6 +261,7 @@ class ApiService {
 			maxSteps,
 			systemPrompt,
 			fewShotExamples,
+			enabledTools,
 			teamId,
 			teamRole,
 			isTeamAgent,
@@ -278,6 +280,7 @@ class ApiService {
 			max_steps: number;
 			system_prompt: string;
 			few_shot_examples: Array<{ input: string; output: string }>;
+			enabled_tools: string[];
 		}>,
 	): Promise<void> => {
 		return this.agentService.updateAgent(agentId, data);

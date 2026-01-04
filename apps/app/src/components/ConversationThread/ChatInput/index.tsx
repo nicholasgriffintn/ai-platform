@@ -53,7 +53,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		ref,
 	) => {
 		const { isMobile } = useUIStore();
-		const { model, chatInput, setChatInput } = useChatStore();
+		const { model, chatInput, setChatInput, chatMode, selectedAgentId } =
+			useChatStore();
 		const { isPro, currentConversationId } = useChatStore();
 		const { isRecording, isTranscribing, startRecording, stopRecording } =
 			useVoiceRecorder({ onTranscribe });
@@ -447,6 +448,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			? getAttachmentIconAndLabel()
 			: { preview: null, label: "" };
 
+		const isToolSelectionLocked =
+			chatMode === "agent" && selectedAgentId !== null;
+
 		return (
 			<div className="relative rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-[#121212] shadow-sm hover:border-zinc-300 dark:hover:border-zinc-600 focus-within:border-zinc-300 dark:focus-within:border-zinc-500 transition-colors">
 				<div className="flex flex-col">
@@ -611,7 +615,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								<div className="min-w-0 flex-shrink">
 									<ModelSelector isDisabled={isLoading} mono={true} />
 								</div>
-								<ToolToggles isDisabled={isLoading} />
+								<ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
 							</div>
 							<div className="flex-shrink-0 flex items-center gap-2">
 								{!isMobile && (
@@ -621,6 +625,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								)}
 								<ChatSettingsComponent
 									isDisabled={isLoading}
+									toolSelectionLocked={isToolSelectionLocked}
 									supportsToolCalls={supportsToolCalls}
 								/>
 							</div>

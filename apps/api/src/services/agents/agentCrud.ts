@@ -57,6 +57,7 @@ interface CreateAgentParams {
 	max_steps: number;
 	system_prompt: string;
 	few_shot_examples?: any[];
+	enabled_tools?: string[];
 	team_id?: string;
 	team_role?: string;
 	is_team_agent?: boolean;
@@ -81,6 +82,7 @@ export async function createAgent(
 		params.max_steps,
 		params.system_prompt,
 		params.few_shot_examples,
+		params.enabled_tools,
 		params.team_id,
 		params.team_role,
 		params.is_team_agent,
@@ -97,6 +99,7 @@ interface UpdateAgentParams {
 	max_steps?: number;
 	system_prompt?: string;
 	few_shot_examples?: any[];
+	enabled_tools?: string[];
 	team_id?: string;
 	team_role?: string;
 	is_team_agent?: boolean;

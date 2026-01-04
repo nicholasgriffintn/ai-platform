@@ -118,6 +118,7 @@ app.post(
 			max_steps: body.max_steps,
 			system_prompt: body.system_prompt,
 			few_shot_examples: body.few_shot_examples,
+			enabled_tools: body.enabled_tools,
 			team_id: body.team_id,
 			team_role: body.team_role,
 			is_team_agent: body.is_team_agent,

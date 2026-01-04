@@ -86,6 +86,7 @@ export const ToolSelector = ({
 												id={`tool-${tool.id}`}
 												checked={selectedTools.includes(tool.id)}
 												onChange={() => toggleTool(tool.id)}
+												disabled={isDisabled}
 												className={cn(
 													"h-4 w-4 rounded focus:ring-offset-1",
 													"border-zinc-300 dark:border-zinc-700",
@@ -120,6 +121,7 @@ export const ToolSelector = ({
 								onClick={resetToDefaults}
 								variant="secondary"
 								className="text-sm"
+								disabled={isDisabled}
 							>
 								Reset to defaults
 							</Button>

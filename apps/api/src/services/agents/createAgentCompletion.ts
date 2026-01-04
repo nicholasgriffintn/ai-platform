@@ -180,6 +180,7 @@ export async function createAgentCompletion({
 		system_prompt: systemPrompt,
 		model: modelToUse,
 		tools: formattedTools,
+		enabled_tools: body.enabled_tools,
 		stream: true,
 		mode: "agent",
 		max_steps: agent.max_steps || body.max_steps || 20,

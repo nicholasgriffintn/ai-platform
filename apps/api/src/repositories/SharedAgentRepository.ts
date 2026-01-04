@@ -82,6 +82,9 @@ export class SharedAgentRepository extends BaseRepository {
 			few_shot_examples: agent.few_shot_examples
 				? safeParseJson(agent.few_shot_examples as string)
 				: [],
+			enabled_tools: agent.enabled_tools
+				? safeParseJson(agent.enabled_tools as string)
+				: [],
 		};
 
 		await this.executeRun(
@@ -340,8 +343,8 @@ export class SharedAgentRepository extends BaseRepository {
 
 		await this.executeRun(
 			`INSERT INTO agents 
-       (id, user_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, user_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples, enabled_tools) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			[
 				agentId,
 				userId,
@@ -354,6 +357,7 @@ export class SharedAgentRepository extends BaseRepository {
 				templateData.max_steps,
 				templateData.system_prompt,
 				JSON.stringify(templateData.few_shot_examples),
+				JSON.stringify(templateData.enabled_tools ?? []),
 			],
 		);
 
@@ -381,6 +385,7 @@ export class SharedAgentRepository extends BaseRepository {
 			max_steps: templateData.max_steps,
 			system_prompt: templateData.system_prompt,
 			few_shot_examples: JSON.stringify(templateData.few_shot_examples),
+			enabled_tools: JSON.stringify(templateData.enabled_tools ?? []),
 			is_team_agent: false,
 			team_id: null,
 			team_role: null,

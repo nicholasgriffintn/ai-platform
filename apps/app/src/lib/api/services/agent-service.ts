@@ -221,6 +221,7 @@ export class AgentService {
 		maxSteps?: number | null,
 		systemPrompt?: string | null,
 		fewShotExamples?: any[] | null,
+		enabledTools?: string[] | null,
 		teamId?: string | null,
 		teamRole?: string | null,
 		isTeamAgent?: boolean | null,
@@ -243,6 +244,7 @@ export class AgentService {
 			max_steps: maxSteps !== undefined ? maxSteps : undefined,
 			system_prompt: systemPrompt || undefined,
 			few_shot_examples: fewShotExamples || undefined,
+			enabled_tools: enabledTools || undefined,
 			team_id: teamId || undefined,
 			team_role: teamRole || undefined,
 			is_team_agent: isTeamAgent ? isTeamAgent : undefined,
@@ -275,6 +277,7 @@ export class AgentService {
 			max_steps: number;
 			system_prompt: string;
 			few_shot_examples: Array<{ input: string; output: string }>;
+			enabled_tools: string[];
 		}>,
 	): Promise<void> {
 		let headers: Record<string, string> = {};
@@ -296,6 +299,7 @@ export class AgentService {
 			max_steps: data.max_steps !== undefined ? data.max_steps : undefined,
 			system_prompt: data.system_prompt || undefined,
 			few_shot_examples: data.few_shot_examples || undefined,
+			enabled_tools: data.enabled_tools || undefined,
 		};
 
 		const response = await fetchApi(`/agents/${agentId}`, {

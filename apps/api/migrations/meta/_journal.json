@@ -274,6 +274,13 @@
       "when": 1762744825836,
       "tag": "0038_melodic_mole_man",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "6",
+      "when": 1767487336038,
+      "tag": "0039_wise_lorna_dane",
+      "breakpoints": true
     }
   ]
 }

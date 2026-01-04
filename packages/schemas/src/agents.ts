@@ -66,6 +66,10 @@ export const createAgentSchema = z.object({
 		.array(fewShotExampleSchema)
 		.optional()
 		.meta({ description: "Few-shot examples for the agent" }),
+	enabled_tools: z
+		.array(z.string())
+		.optional()
+		.meta({ description: "Tools enabled by default for this agent" }),
 	team_id: z
 		.string()
 		.optional()
@@ -120,6 +124,10 @@ export const updateAgentSchema = z
 			.array(fewShotExampleSchema)
 			.optional()
 			.meta({ description: "Few-shot examples for the agent" }),
+		enabled_tools: z
+			.array(z.string())
+			.optional()
+			.meta({ description: "Tools enabled by default for this agent" }),
 		team_id: z
 			.string()
 			.optional()

@@ -19,13 +19,15 @@ These rules apply to _all_ work, with no exceptions. They exist due to prior fai
 
 - Read files before editing them.
 - Preserve existing, working code.
-- Prefer editing existing files over creating new ones.
+- Prefer editing existing files over creating new ones (outside of clean code requirements and refactoring).
+- Follow project coding styles and conventions.
+- Write clear, concise, and maintainable code.
 - Use the correct tools for reading, editing, writing, searching, and globbing.
 - Batch tool calls where possible.
 - Pin dependency versions and use stable releases.
 - **No placeholders**—all code must be complete and functional.
 - Use extended timeouts for installs, builds, Docker, and git operations.
-- Test before claiming success.
+- Test and run type checks before claiming success.
 - Never mark work complete without verification.
 - Update todo status immediately and accurately.
 

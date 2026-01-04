@@ -473,6 +473,7 @@ export const agents = sqliteTable(
 		max_steps: integer(),
 		system_prompt: text(),
 		few_shot_examples: text({ mode: "json" }),
+		enabled_tools: text({ mode: "json" }),
 		team_id: text(),
 		team_role: text(),
 		is_team_agent: integer({ mode: "boolean" }).default(false),

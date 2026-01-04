@@ -34,6 +34,7 @@ export function useAgentForm() {
 	const [fewShotExamples, setFewShotExamples] = useState<FewShotExample[]>([
 		{ id: generateId(), input: "", output: "" },
 	]);
+	const [enabledTools, setEnabledTools] = useState<string[]>([]);
 	const [teamId, setTeamId] = useState("");
 	const [teamRole, setTeamRole] = useState("");
 	const [isTeamAgent, setIsTeamAgent] = useState(false);
@@ -53,6 +54,7 @@ export function useAgentForm() {
 		setSystemPrompt("");
 		setUseFewShotExamples(false);
 		setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
+		setEnabledTools([]);
 		setTeamId("");
 		setTeamRole("");
 		setIsTeamAgent(false);
@@ -128,6 +130,23 @@ export function useAgentForm() {
 				setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
 			}
 
+			if (agent.enabled_tools) {
+				try {
+					const parsedTools = Array.isArray(agent.enabled_tools)
+						? agent.enabled_tools
+						: JSON.parse(agent.enabled_tools);
+					setEnabledTools(
+						Array.isArray(parsedTools)
+							? parsedTools.filter((tool: unknown) => typeof tool === "string")
+							: [],
+					);
+				} catch (_e) {
+					setEnabledTools([]);
+				}
+			} else {
+				setEnabledTools([]);
+			}
+
 			setTeamId(agent.team_id || "");
 			setTeamRole(agent.team_role || "");
 			setIsTeamAgent(agent.is_team_agent || false);
@@ -153,6 +172,7 @@ export function useAgentForm() {
 					output,
 				})),
 			}),
+			...(enabledTools.length > 0 && { enabled_tools: enabledTools }),
 			...(isTeamAgent && { is_team_agent: isTeamAgent }),
 			...(teamId && { team_id: teamId }),
 			...(teamRole && { team_role: teamRole }),
@@ -169,6 +189,7 @@ export function useAgentForm() {
 		systemPrompt,
 		useFewShotExamples,
 		fewShotExamples,
+		enabledTools,
 		isTeamAgent,
 		teamId,
 		teamRole,
@@ -206,6 +227,7 @@ export function useAgentForm() {
 		systemPrompt,
 		useFewShotExamples,
 		fewShotExamples,
+		enabledTools,
 		teamId,
 		teamRole,
 		isTeamAgent,
@@ -222,6 +244,7 @@ export function useAgentForm() {
 		setSystemPrompt,
 		setUseFewShotExamples,
 		setFewShotExamples,
+		setEnabledTools,
 		setTeamId,
 		setTeamRole,
 		setIsTeamAgent,

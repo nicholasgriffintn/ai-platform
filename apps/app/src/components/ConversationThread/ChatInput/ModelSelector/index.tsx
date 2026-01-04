@@ -21,6 +21,7 @@ import {
 	getFeaturedModelIds,
 	getModelsByMode,
 } from "~/lib/models";
+import { useAgentToolDefaults } from "~/hooks/useAgentToolDefaults";
 import {
 	useIsLoading,
 	useLoadingMessage,
@@ -275,6 +276,12 @@ export const ModelSelector = ({
 
 	const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
 	const isModelLockedByAgent = selectedAgent?.model;
+
+	useAgentToolDefaults({
+		agents,
+		selectedAgentId,
+		chatMode,
+	});
 
 	useEffect(() => {
 		if (selectedAgentId) {

@@ -15,6 +15,7 @@ import { Textarea } from "~/components/ui/Textarea";
 import { Label } from "~/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useAgentForm } from "~/hooks/useAgentForm";
+import { useTools } from "~/hooks/useTools";
 import { cn, generateId } from "~/lib/utils";
 
 interface AgentFormModalProps {
@@ -41,6 +42,8 @@ export function AgentFormModal({
 	agent,
 }: AgentFormModalProps) {
 	const form = useAgentForm();
+	const { data: toolsData, isLoading: isLoadingTools } = useTools();
+	const tools = toolsData?.data || [];
 
 	React.useEffect(() => {
 		if (agent && open) {
@@ -344,6 +347,63 @@ export function AgentFormModal({
 						</TabsContent>
 
 						<TabsContent value="advanced" className="space-y-4 mt-6">
+							<div className="space-y-2">
+								<Label className="text-sm font-medium">
+									Default Enabled Tools
+								</Label>
+								<p className="text-xs text-muted-foreground">
+									These tools are selected automatically when using this agent.
+								</p>
+								{isLoadingTools ? (
+									<div className="flex justify-center py-2">
+										<Loader2 className="h-4 w-4 animate-spin" />
+									</div>
+								) : tools.length === 0 ? (
+									<p className="text-xs text-muted-foreground">
+										No tools available.
+									</p>
+								) : (
+									<div className="space-y-2 border rounded-lg p-3 max-h-56 overflow-y-auto">
+										{tools.map((tool: any) => {
+											const isSelected = form.enabledTools.includes(tool.id);
+											return (
+												<label
+													key={tool.id}
+													className="flex items-start gap-2 text-sm cursor-pointer"
+												>
+													<input
+														type="checkbox"
+														checked={isSelected}
+														onChange={(e) => {
+															if (e.target.checked) {
+																form.setEnabledTools([
+																	...form.enabledTools,
+																	tool.id,
+																]);
+															} else {
+																form.setEnabledTools(
+																	form.enabledTools.filter(
+																		(id) => id !== tool.id,
+																	),
+																);
+															}
+														}}
+													/>
+													<span>
+														<span className="font-medium">{tool.name}</span>
+														{tool.description && (
+															<span className="block text-xs text-muted-foreground">
+																{tool.description}
+															</span>
+														)}
+													</span>
+												</label>
+											);
+										})}
+									</div>
+								)}
+							</div>
+
 							<div className="flex items-start gap-3">
 								<Switch
 									id="use-few-shot"

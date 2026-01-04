@@ -15,6 +15,7 @@ export type AgentData = {
 	max_steps?: number;
 	system_prompt?: string;
 	few_shot_examples?: Array<{ input: string; output: string }>;
+	enabled_tools?: string[];
 	team_id?: string;
 	team_role?: string;
 	is_team_agent?: boolean;
@@ -44,6 +45,7 @@ export function useAgents() {
 			max_steps,
 			system_prompt,
 			few_shot_examples,
+			enabled_tools,
 			team_id,
 			team_role,
 			is_team_agent,
@@ -58,6 +60,7 @@ export function useAgents() {
 				max_steps,
 				system_prompt,
 				few_shot_examples,
+				enabled_tools,
 				team_id,
 				team_role,
 				is_team_agent,
