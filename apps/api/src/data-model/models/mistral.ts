@@ -19,7 +19,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 	createModelConfig("magistral-small", PROVIDER, {
 		name: "Magistral Small",
-		matchingModel: "magistral-small",
+		matchingModel: "magistral-small-latest",
 		description:
 			"The first reasoning model by Mistral AI — excelling in domain-specific, transparent, and multilingual reasoning.",
 		knowledgeCutoffDate: "June 2025",
