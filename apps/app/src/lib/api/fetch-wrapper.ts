@@ -138,7 +138,9 @@ export async function fetchApiOrThrow(
 	options: FetchApiOptions = {},
 ): Promise<Response> {
 	const response = await performFetch(path, options);
-	if (response.ok) return response;
+	if (response.ok) {
+		return response;
+	}
 
 	let parsed: unknown;
 	try {

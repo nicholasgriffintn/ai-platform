@@ -56,19 +56,13 @@ app.get(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json({
-				status: "success",
-				data: [],
-			});
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		const serviceContext = getServiceContext(ctx);
 		const agents = await getUserAgents(serviceContext);
 
-		return ctx.json({
-			status: "success",
-			data: agents,
-		});
+		return ResponseFactory.success(ctx, agents);
 	},
 );
 
@@ -98,13 +92,7 @@ app.post(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		const serviceContext = getServiceContext(ctx);
@@ -124,10 +112,7 @@ app.post(
 			is_team_agent: body.is_team_agent,
 		});
 
-		return ctx.json({
-			status: "success",
-			data: agent,
-		});
+		return ResponseFactory.success(ctx, agent);
 	},
 );
 
@@ -153,22 +138,13 @@ app.get(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		const serviceContext = getServiceContext(ctx);
 		const agents = await getUserTeamAgents(serviceContext);
 
-		return ctx.json({
-			status: "success",
-			data: agents,
-		});
+		return ResponseFactory.success(ctx, agents);
 	},
 );
 
@@ -196,22 +172,13 @@ app.get(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		const serviceContext = getServiceContext(ctx);
 		const agents = await getAgentsByTeam(serviceContext, teamId);
 
-		return ctx.json({
-			status: "success",
-			data: agents,
-		});
+		return ResponseFactory.success(ctx, agents);
 	},
 );
 
@@ -240,22 +207,13 @@ app.get(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		const serviceContext = getServiceContext(ctx);
 		const agent = await getAgentById(serviceContext, agentId);
 
-		return ctx.json({
-			status: "success",
-			data: agent,
-		});
+		return ResponseFactory.success(ctx, agent);
 	},
 );
 
@@ -282,22 +240,13 @@ app.get(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		const serviceContext = getServiceContext(ctx);
 		const serverDetails = await getAgentServers(serviceContext, agentId);
 
-		return ctx.json({
-			status: "success",
-			data: serverDetails,
-		});
+		return ResponseFactory.success(ctx, serverDetails);
 	},
 );
 
@@ -328,22 +277,13 @@ app.put(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		const serviceContext = getServiceContext(ctx);
 		const agent = await updateAgent(serviceContext, agentId, body);
 
-		return ctx.json({
-			status: "success",
-			data: agent,
-		});
+		return ResponseFactory.success(ctx, agent);
 	},
 );
 
@@ -370,20 +310,14 @@ app.delete(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		const serviceContext = getServiceContext(ctx);
 		await deleteAgent(serviceContext, agentId);
 
-		return ctx.json({
-			status: "success",
+		return ResponseFactory.success(ctx, {
+			message: "Agent deleted successfully",
 		});
 	},
 );
@@ -413,13 +347,7 @@ app.post(
 		const anonymousUser = ctx.get("anonymousUser");
 
 		if (!user && !anonymousUser) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		const body = ctx.req.valid("json" as never) as ChatCompletionParameters;
@@ -435,7 +363,9 @@ app.post(
 			anonymousUser,
 		});
 
-		return response instanceof Response ? response : ctx.json(response);
+		return response instanceof Response
+			? response
+			: ResponseFactory.success(ctx, response);
 	},
 );
 

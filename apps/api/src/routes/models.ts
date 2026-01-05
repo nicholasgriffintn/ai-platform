@@ -62,11 +62,7 @@ app.get(
 	async (context: Context) => {
 		const userId = context.get("user")?.id;
 		const models = await listModels(context.env, userId);
-		return ResponseFactory.success(context, {
-			success: true,
-			message: "Models fetched successfully",
-			data: models,
-		});
+		return ResponseFactory.success(context, models);
 	},
 );
 
@@ -97,11 +93,7 @@ app.get(
 	}),
 	async (context: Context) => {
 		const caps = listStrengths();
-		return ResponseFactory.success(context, {
-			success: true,
-			message: "Capabilities fetched successfully",
-			data: caps,
-		});
+		return ResponseFactory.success(context, caps);
 	},
 );
 
@@ -166,11 +158,7 @@ app.get(
 			capability,
 			userId,
 		);
-		return ResponseFactory.success(context, {
-			success: true,
-			message: "Models fetched successfully",
-			data: models,
-		});
+		return ResponseFactory.success(context, models);
 	},
 );
 
@@ -201,11 +189,7 @@ app.get(
 	}),
 	async (context: Context) => {
 		const modalities = listModalities();
-		return ResponseFactory.success(context, {
-			success: true,
-			message: "Model modalities fetched successfully",
-			data: modalities,
-		});
+		return ResponseFactory.success(context, modalities);
 	},
 );
 
@@ -269,11 +253,7 @@ app.get(
 			modality,
 			userId,
 		);
-		return ResponseFactory.success(context, {
-			success: true,
-			message: "Models fetched successfully",
-			data: models,
-		});
+		return ResponseFactory.success(context, models);
 	},
 );
 
@@ -333,11 +313,7 @@ app.get(
 			modality,
 			userId,
 		);
-		return ResponseFactory.success(context, {
-			success: true,
-			message: "Models fetched successfully",
-			data: models,
-		});
+		return ResponseFactory.success(context, models);
 	},
 );
 
@@ -398,11 +374,7 @@ app.get(
 		const userId = context.get("user")?.id;
 		try {
 			const model = await getModelDetails(context.env as IEnv, id, userId);
-			return ResponseFactory.success(context, {
-				success: true,
-				message: "Model fetched successfully",
-				data: model,
-			});
+			return ResponseFactory.success(context, model);
 		} catch (_error) {
 			return ResponseFactory.error(
 				context,

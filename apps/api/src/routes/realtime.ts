@@ -53,19 +53,15 @@ app.post(
 		];
 
 		if (!availableModels.includes(model)) {
-			return ResponseFactory.success(
-				c,
-				{ error: "Invalid model specified" },
-				400,
-			);
+			return ResponseFactory.error(c, "Invalid model specified", 400);
 		}
 
 		if (!user?.id) {
-			return ResponseFactory.success(c, { error: "Unauthorized" }, 401);
+			return ResponseFactory.error(c, "Unauthorized", 401);
 		}
 
 		if (type !== "transcription") {
-			return ResponseFactory.success(c, { error: "Invalid session type" }, 400);
+			return ResponseFactory.error(c, "Invalid session type", 400);
 		}
 
 		const body: Record<string, any> = {};
@@ -87,11 +83,7 @@ app.post(
 		const session = await provider.createRealtimeSession(env, user, type, body);
 
 		if (!session) {
-			return ResponseFactory.success(
-				c,
-				{ error: "Failed to create realtime session" },
-				500,
-			);
+			return ResponseFactory.error(c, "Failed to create realtime session", 500);
 		}
 
 		return ResponseFactory.success(c, session);

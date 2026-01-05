@@ -23,13 +23,7 @@ export interface PaginatedResponse<T = unknown> {
 
 export class ResponseFactory {
 	static success<T>(context: Context, data: T, statusCode: number = 200) {
-		return context.json(
-			{
-				status: "success" as const,
-				data,
-			},
-			statusCode as any,
-		);
+		return context.json(data, statusCode as any);
 	}
 
 	static error(context: Context, message: string, statusCode: number = 400) {

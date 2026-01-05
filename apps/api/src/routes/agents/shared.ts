@@ -79,10 +79,7 @@ app.get(
 			sortBy: filters.sort_by,
 		});
 
-		return ctx.json({
-			status: "success",
-			data: agents,
-		});
+		return ResponseFactory.success(ctx, agents);
 	},
 );
 
@@ -111,10 +108,7 @@ app.get(
 		const serviceContext = getServiceContext(ctx);
 		const agents = await getFeaturedAgents(serviceContext, limit);
 
-		return ctx.json({
-			status: "success",
-			data: agents,
-		});
+		return ResponseFactory.success(ctx, agents);
 	},
 );
 
@@ -139,10 +133,7 @@ app.get(
 		const serviceContext = getServiceContext(ctx);
 		const categories = await getSharedAgentCategories(serviceContext);
 
-		return ctx.json({
-			status: "success",
-			data: categories,
-		});
+		return ResponseFactory.success(ctx, categories);
 	},
 );
 
@@ -167,10 +158,7 @@ app.get(
 		const serviceContext = getServiceContext(ctx);
 		const tags = await getSharedAgentPopularTags(serviceContext);
 
-		return ctx.json({
-			status: "success",
-			data: tags,
-		});
+		return ResponseFactory.success(ctx, tags);
 	},
 );
 
@@ -198,19 +186,10 @@ app.get(
 		const agent = await getSharedAgentById(serviceContext, id);
 
 		if (!agent) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Shared agent not found",
-				},
-				404,
-			);
+			return ResponseFactory.error(ctx, "Shared agent not found", 404);
 		}
 
-		return ctx.json({
-			status: "success",
-			data: agent,
-		});
+		return ResponseFactory.success(ctx, agent);
 	},
 );
 
@@ -237,30 +216,18 @@ app.post(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		try {
 			const serviceContext = getServiceContext(ctx);
 			const result = await installSharedAgent(serviceContext, id, user.id);
 
-			return ctx.json({
-				status: "success",
-				data: result,
-			});
+			return ResponseFactory.success(ctx, result);
 		} catch (error) {
-			return ctx.json(
-				{
-					status: "error",
-					error:
-						error instanceof Error ? error.message : "Failed to install agent",
-				},
+			return ResponseFactory.error(
+				ctx,
+				error instanceof Error ? error.message : "Failed to install agent",
 				400,
 			);
 		}
@@ -290,20 +257,14 @@ app.post(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		const serviceContext = getServiceContext(ctx);
 		await uninstallSharedAgent(serviceContext, id, user.id);
 
-		return ctx.json({
-			status: "success",
+		return ResponseFactory.success(ctx, {
+			message: "Agent uninstalled successfully",
 		});
 	},
 );
@@ -335,13 +296,7 @@ app.post(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		try {
@@ -354,17 +309,11 @@ app.post(
 				user.id,
 			);
 
-			return ctx.json({
-				status: "success",
-				data: rating,
-			});
+			return ResponseFactory.success(ctx, rating);
 		} catch (error) {
-			return ctx.json(
-				{
-					status: "error",
-					error:
-						error instanceof Error ? error.message : "Failed to rate agent",
-				},
+			return ResponseFactory.error(
+				ctx,
+				error instanceof Error ? error.message : "Failed to rate agent",
 				400,
 			);
 		}
@@ -397,10 +346,7 @@ app.get(
 		const serviceContext = getServiceContext(ctx);
 		const ratings = await getSharedAgentRatings(serviceContext, id, limit);
 
-		return ctx.json({
-			status: "success",
-			data: ratings,
-		});
+		return ResponseFactory.success(ctx, ratings);
 	},
 );
 
@@ -428,24 +374,15 @@ app.get(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		const serviceContext = getServiceContext(ctx);
 		const sharedAgent = await getSharedAgentByAgentId(serviceContext, agentId);
 
-		return ctx.json({
-			status: "success",
-			data: {
-				isShared: !!sharedAgent,
-				sharedAgent: sharedAgent || null,
-			},
+		return ResponseFactory.success(ctx, {
+			isShared: !!sharedAgent,
+			sharedAgent: sharedAgent || null,
 		});
 	},
 );
@@ -476,13 +413,7 @@ app.post(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		try {
@@ -500,17 +431,11 @@ app.post(
 				user.id,
 			);
 
-			return ctx.json({
-				status: "success",
-				data: sharedAgent,
-			});
+			return ResponseFactory.success(ctx, sharedAgent);
 		} catch (error) {
-			return ctx.json(
-				{
-					status: "error",
-					error:
-						error instanceof Error ? error.message : "Failed to share agent",
-				},
+			return ResponseFactory.error(
+				ctx,
+				error instanceof Error ? error.message : "Failed to share agent",
 				400,
 			);
 		}
@@ -544,31 +469,20 @@ app.put(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		try {
 			const serviceContext = getServiceContext(ctx);
 			await updateSharedAgent(serviceContext, id, body, user.id);
 
-			return ctx.json({
-				status: "success",
+			return ResponseFactory.success(ctx, {
+				message: "Shared agent updated successfully",
 			});
 		} catch (error) {
-			return ctx.json(
-				{
-					status: "error",
-					error:
-						error instanceof Error
-							? error.message
-							: "Failed to update shared agent",
-				},
+			return ResponseFactory.error(
+				ctx,
+				error instanceof Error ? error.message : "Failed to update agent",
 				400,
 			);
 		}
@@ -598,31 +512,20 @@ app.delete(
 		const user = ctx.get("user");
 
 		if (!user?.id) {
-			return ctx.json(
-				{
-					status: "error",
-					error: "Unauthorized",
-				},
-				401,
-			);
+			return ResponseFactory.error(ctx, "Unauthorized", 401);
 		}
 
 		try {
 			const serviceContext = getServiceContext(ctx);
 			await deleteSharedAgent(serviceContext, id, user.id);
 
-			return ctx.json({
-				status: "success",
+			return ResponseFactory.success(ctx, {
+				message: "Shared agent deleted successfully",
 			});
 		} catch (error) {
-			return ctx.json(
-				{
-					status: "error",
-					error:
-						error instanceof Error
-							? error.message
-							: "Failed to delete shared agent",
-				},
+			return ResponseFactory.error(
+				ctx,
+				error instanceof Error ? error.message : "Failed to delete agent",
 				400,
 			);
 		}
@@ -662,8 +565,8 @@ app.post(
 		const serviceContext = getServiceContext(ctx);
 		await setFeaturedStatus(serviceContext, id, featured);
 
-		return ctx.json({
-			status: "success",
+		return ResponseFactory.success(ctx, {
+			message: "Featured status updated successfully",
 		});
 	},
 );
@@ -701,8 +604,8 @@ app.post(
 		const serviceContext = getServiceContext(ctx);
 		await moderateSharedAgent(serviceContext, id, is_public);
 
-		return ctx.json({
-			status: "success",
+		return ResponseFactory.success(ctx, {
+			message: "Shared agent moderated successfully",
 		});
 	},
 );

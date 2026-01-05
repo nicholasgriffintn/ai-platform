@@ -149,10 +149,7 @@ app.get(
 		const serviceContext = getServiceContext(c);
 		const models = await getUserEnabledModels(serviceContext, user.id);
 
-		return ResponseFactory.success(c, {
-			success: true,
-			models,
-		});
+		return ResponseFactory.success(c, models);
 	},
 );
 
@@ -273,10 +270,7 @@ app.get(
 		const serviceContext = getServiceContext(c);
 		const providers = await getUserProviderSettings(serviceContext, user.id);
 
-		return ResponseFactory.success(c, {
-			success: true,
-			providers,
-		});
+		return ResponseFactory.success(c, providers);
 	},
 );
 

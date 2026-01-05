@@ -55,7 +55,7 @@ export class UserService {
 		}
 		const responseData = await returnFetchedData<any>(response);
 
-		return responseData.data;
+		return responseData;
 	}
 
 	async fetchTools(): Promise<any> {

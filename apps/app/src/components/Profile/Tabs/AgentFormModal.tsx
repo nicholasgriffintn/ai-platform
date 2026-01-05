@@ -43,7 +43,7 @@ export function AgentFormModal({
 }: AgentFormModalProps) {
 	const form = useAgentForm();
 	const { data: toolsData, isLoading: isLoadingTools } = useTools();
-	const tools = toolsData?.data || [];
+	const tools = toolsData || [];
 
 	React.useEffect(() => {
 		if (agent && open) {

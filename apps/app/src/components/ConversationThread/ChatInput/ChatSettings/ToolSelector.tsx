@@ -29,7 +29,7 @@ export const ToolSelector = ({
 		setDefaultTools,
 	} = useToolsStore();
 
-	const tools = toolsData?.data || [];
+	const tools = toolsData || [];
 
 	if (tools.length > 0 && defaultTools.length === 0) {
 		setDefaultTools(tools);

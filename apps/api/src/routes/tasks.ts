@@ -10,6 +10,7 @@ import {
 	TriggerMemorySynthesisRequest,
 } from "@assistant/schemas";
 import { getLogger } from "~/utils/logger";
+import { ResponseFactory } from "../lib/http/ResponseFactory";
 
 const logger = getLogger({ prefix: "routes/tasks" });
 
@@ -171,8 +172,7 @@ app.delete(
 				return c.json({ error: "Task cannot be cancelled" }, 400);
 			}
 
-			return c.json({
-				success: true,
+			return ResponseFactory.success(c, {
 				message: "Task cancelled successfully",
 			});
 		} catch (error) {

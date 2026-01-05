@@ -42,11 +42,7 @@ app.get(
 		const user = context.get("user");
 		const isPro = user?.plan_id === "pro";
 		const tools = getAvailableTools(isPro);
-		return ResponseFactory.success(context, {
-			success: true,
-			message: "Tools fetched successfully",
-			data: tools,
-		});
+		return ResponseFactory.success(context, tools);
 	},
 );
 

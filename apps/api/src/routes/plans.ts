@@ -36,7 +36,7 @@ app.get(
 	}),
 	async (c: Context) => {
 		const plans = await listPlans(c.env as IEnv);
-		return ResponseFactory.success(c, { success: true, data: plans });
+		return ResponseFactory.success(c, plans);
 	},
 );
 
@@ -64,7 +64,7 @@ app.get(
 	async (c: Context) => {
 		const { id } = c.req.valid("param" as never) as { id: string };
 		const plan = await getPlanDetails(c.env as IEnv, id);
-		return ResponseFactory.success(c, { success: true, data: plan });
+		return ResponseFactory.success(c, plan);
 	},
 );
 

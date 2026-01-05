@@ -16,6 +16,7 @@ import {
 } from "~/services/admin/sharedAgents";
 import type { IEnv } from "~/types";
 import { getServiceContext } from "~/lib/context/serviceContext";
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("admin");
@@ -64,19 +65,14 @@ app.put(
 		});
 
 		if (!result.success) {
-			return ctx.json(
-				{
-					status: "error",
-					error: result.error,
-				},
+			return ResponseFactory.error(
+				ctx,
+				result.error || "Failed to set featured status",
 				400,
 			);
 		}
 
-		return ctx.json({
-			status: "success",
-			data: result.data,
-		});
+		return ResponseFactory.success(ctx, result.data);
 	},
 );
 
@@ -102,10 +98,7 @@ app.get(
 	async (ctx: Context) => {
 		const agents = await getAllSharedAgentsForAdmin(ctx.env);
 
-		return ctx.json({
-			status: "success",
-			data: agents,
-		});
+		return ResponseFactory.success(ctx, agents);
 	},
 );
 
@@ -150,19 +143,14 @@ app.put(
 		});
 
 		if (!result.success) {
-			return ctx.json(
-				{
-					status: "error",
-					error: result.error,
-				},
+			return ResponseFactory.error(
+				ctx,
+				result.error || "Failed to moderate agent",
 				400,
 			);
 		}
 
-		return ctx.json({
-			status: "success",
-			data: result.data,
-		});
+		return ResponseFactory.success(ctx, result.data);
 	},
 );
 
