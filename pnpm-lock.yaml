@@ -46,7 +46,7 @@ importers:
         version: 3.2.1
       agents:
         specifier: 0.3.3
-        version: 0.3.3(@cloudflare/ai-chat@0.0.3)(@cloudflare/codemode@0.0.3)(@cloudflare/workers-types@4.20260103.0)(ai@6.0.5(zod@4.3.5))(react@19.2.3)(zod@4.3.5)
+        version: 0.3.3(@cloudflare/ai-chat@0.0.3)(@cloudflare/codemode@0.0.3)(@cloudflare/workers-types@4.20260103.0)(ai@6.0.6(zod@4.3.5))(react@19.2.3)(zod@4.3.5)
       aws4fetch:
         specifier: 1.0.20
         version: 1.0.20
@@ -529,8 +529,8 @@ packages:
   '@adobe/css-tools@4.4.4':
     resolution: {integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==}
 
-  '@ai-sdk/gateway@3.0.4':
-    resolution: {integrity: sha512-OlccjNYZ5+4FaNyvs0kb3N5H6U/QCKlKPTGsgUo8IZkqfMQu8ALI1XD6l/BCuTKto+OO9xUPObT/W7JhbqJ5nA==}
+  '@ai-sdk/gateway@3.0.5':
+    resolution: {integrity: sha512-AtxA1wcoKTHr9uFoC5KZEXqJP4SMW4j3VbcliUECUYssbWbePJ9+b3AaCny1lxf1xhDK9EIyAgBOKhXoQSr9nA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -1017,11 +1017,11 @@ packages:
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
 
-  '@emnapi/core@1.7.1':
-    resolution: {integrity: sha512-o1uhUASyo921r2XtHYOHy7gdkGLge8ghBEQHMWmyJFoXlpU58kIrhhN3w26lpQb6dspetweapMn2CSNwQ8I4wg==}
+  '@emnapi/core@1.8.1':
+    resolution: {integrity: sha512-AvT9QFpxK0Zd8J0jopedNm+w/2fIzvtPKPjqyw9jwvBaReTTqPBk9Hixaz7KbjimP+QNz605/XnjFcDAL2pqBg==}
 
-  '@emnapi/runtime@1.7.1':
-    resolution: {integrity: sha512-PVtJr5CmLwYAU9PZDMITZoR5iAOShYREoR45EyyLrbntV50mdePTgUn4AmOw90Ifcj+x2kRjdzr1HP3RrNiHGA==}
+  '@emnapi/runtime@1.8.1':
+    resolution: {integrity: sha512-mehfKSMWjjNol8659Z8KxEMrdSJDDot5SXMq00dM8BN4o+CLNXQ0xH2V7EchNHV4RmbZLmmPdEaXZc5H2FXmDg==}
 
   '@emnapi/wasi-threads@1.1.0':
     resolution: {integrity: sha512-WI0DdZ8xFSbgMjR1sFsKABJ/C5OnRrjT06JXbZKexJGrDuPTzZdDYfFlsgcCXCyf+suG5QU2e/y1Wo2V/OapLQ==}
@@ -1634,8 +1634,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@exodus/bytes@1.7.0':
-    resolution: {integrity: sha512-5i+BtvujK/vM07YCGDyz4C4AyDzLmhxHMtM5HpUyPRtJPBdFPsj290ffXW+UXY21/G7GtXeHD2nRmq0T1ShyQQ==}
+  '@exodus/bytes@1.8.0':
+    resolution: {integrity: sha512-8JPn18Bcp8Uo1T82gR8lh2guEOa5KKU/IEKvvdp0sgmi7coPBWf1Doi1EXsGZb2ehc8ym/StJCjffYV+ne7sXQ==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
     peerDependencies:
       '@exodus/crypto': ^1.0.0-rc.4
@@ -3573,8 +3573,8 @@ packages:
       x402:
         optional: true
 
-  ai@6.0.5:
-    resolution: {integrity: sha512-CKL3dDHedWskC6EY67LrULonZBU9vL+Bwa+xQEcprBhJfxpogntG3utjiAkYuy5ZQatyWk+SmWG8HLvcnhvbRg==}
+  ai@6.0.6:
+    resolution: {integrity: sha512-LM0eAMWVn3RTj+0X5O1m/8g+7QiTeWG5aN5FsDbdmCkAQHVg93XxLbljFOLzi0NMjuJgf7fKLKmWoPsrdMyqfw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -6138,8 +6138,8 @@ packages:
   web-vitals@4.2.4:
     resolution: {integrity: sha512-r4DIlprAGwJ7YM11VZp4R884m0Vmgr6EAKe3P+kO0PPj3Unqyvv59rczf6UiGcb9Z8QxZVcqKNwv/g0WNdWwsw==}
 
-  webidl-conversions@8.0.0:
-    resolution: {integrity: sha512-n4W4YFyz5JzOfQeA8oN7dUYpR+MBP3PIUsn2jLjWXwK5ASUzt0Jc/A5sAUZoCYFJRGF0FBKJ+1JjN43rNdsQzA==}
+  webidl-conversions@8.0.1:
+    resolution: {integrity: sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==}
     engines: {node: '>=20'}
 
   webmidi@3.1.14:
@@ -6304,7 +6304,7 @@ snapshots:
 
   '@adobe/css-tools@4.4.4': {}
 
-  '@ai-sdk/gateway@3.0.4(zod@4.3.5)':
+  '@ai-sdk/gateway@3.0.5(zod@4.3.5)':
     dependencies:
       '@ai-sdk/provider': 3.0.1
       '@ai-sdk/provider-utils': 4.0.2(zod@4.3.5)
@@ -7102,17 +7102,17 @@ snapshots:
 
   '@cfworker/json-schema@4.1.1': {}
 
-  '@cloudflare/ai-chat@0.0.3(agents@0.3.3)(ai@6.0.5(zod@4.3.5))(react@19.2.3)(zod@4.3.5)':
+  '@cloudflare/ai-chat@0.0.3(agents@0.3.3)(ai@6.0.6(zod@4.3.5))(react@19.2.3)(zod@4.3.5)':
     dependencies:
-      agents: 0.3.3(@cloudflare/ai-chat@0.0.3)(@cloudflare/codemode@0.0.3)(@cloudflare/workers-types@4.20260103.0)(ai@6.0.5(zod@4.3.5))(react@19.2.3)(zod@4.3.5)
-      ai: 6.0.5(zod@4.3.5)
+      agents: 0.3.3(@cloudflare/ai-chat@0.0.3)(@cloudflare/codemode@0.0.3)(@cloudflare/workers-types@4.20260103.0)(ai@6.0.6(zod@4.3.5))(react@19.2.3)(zod@4.3.5)
+      ai: 6.0.6(zod@4.3.5)
       react: 19.2.3
       zod: 4.3.5
 
-  '@cloudflare/codemode@0.0.3(agents@0.3.3)(ai@6.0.5(zod@4.3.5))(typescript@5.9.3)(zod@4.3.5)':
+  '@cloudflare/codemode@0.0.3(agents@0.3.3)(ai@6.0.6(zod@4.3.5))(typescript@5.9.3)(zod@4.3.5)':
     dependencies:
-      agents: 0.3.3(@cloudflare/ai-chat@0.0.3)(@cloudflare/codemode@0.0.3)(@cloudflare/workers-types@4.20260103.0)(ai@6.0.5(zod@4.3.5))(react@19.2.3)(zod@4.3.5)
-      ai: 6.0.5(zod@4.3.5)
+      agents: 0.3.3(@cloudflare/ai-chat@0.0.3)(@cloudflare/codemode@0.0.3)(@cloudflare/workers-types@4.20260103.0)(ai@6.0.6(zod@4.3.5))(react@19.2.3)(zod@4.3.5)
+      ai: 6.0.6(zod@4.3.5)
       zod: 4.3.5
       zod-to-ts: 2.0.0(typescript@5.9.3)(zod@4.3.5)
     transitivePeerDependencies:
@@ -7229,13 +7229,13 @@ snapshots:
 
   '@drizzle-team/brocli@0.10.2': {}
 
-  '@emnapi/core@1.7.1':
+  '@emnapi/core@1.8.1':
     dependencies:
       '@emnapi/wasi-threads': 1.1.0
       tslib: 2.8.1
     optional: true
 
-  '@emnapi/runtime@1.7.1':
+  '@emnapi/runtime@1.8.1':
     dependencies:
       tslib: 2.8.1
     optional: true
@@ -7555,7 +7555,7 @@ snapshots:
   '@esbuild/win32-x64@0.27.2':
     optional: true
 
-  '@exodus/bytes@1.7.0': {}
+  '@exodus/bytes@1.8.0': {}
 
   '@floating-ui/core@1.7.3':
     dependencies:
@@ -7652,7 +7652,7 @@ snapshots:
 
   '@img/sharp-wasm32@0.33.5':
     dependencies:
-      '@emnapi/runtime': 1.7.1
+      '@emnapi/runtime': 1.8.1
     optional: true
 
   '@img/sharp-win32-ia32@0.33.5':
@@ -7744,8 +7744,8 @@ snapshots:
 
   '@napi-rs/wasm-runtime@1.1.1':
     dependencies:
-      '@emnapi/core': 1.7.1
-      '@emnapi/runtime': 1.7.1
+      '@emnapi/core': 1.8.1
+      '@emnapi/runtime': 1.8.1
       '@tybys/wasm-util': 0.10.1
     optional: true
 
@@ -9692,13 +9692,13 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  agents@0.3.3(@cloudflare/ai-chat@0.0.3)(@cloudflare/codemode@0.0.3)(@cloudflare/workers-types@4.20260103.0)(ai@6.0.5(zod@4.3.5))(react@19.2.3)(zod@4.3.5):
+  agents@0.3.3(@cloudflare/ai-chat@0.0.3)(@cloudflare/codemode@0.0.3)(@cloudflare/workers-types@4.20260103.0)(ai@6.0.6(zod@4.3.5))(react@19.2.3)(zod@4.3.5):
     dependencies:
       '@cfworker/json-schema': 4.1.1
-      '@cloudflare/ai-chat': 0.0.3(agents@0.3.3)(ai@6.0.5(zod@4.3.5))(react@19.2.3)(zod@4.3.5)
-      '@cloudflare/codemode': 0.0.3(agents@0.3.3)(ai@6.0.5(zod@4.3.5))(typescript@5.9.3)(zod@4.3.5)
+      '@cloudflare/ai-chat': 0.0.3(agents@0.3.3)(ai@6.0.6(zod@4.3.5))(react@19.2.3)(zod@4.3.5)
+      '@cloudflare/codemode': 0.0.3(agents@0.3.3)(ai@6.0.6(zod@4.3.5))(typescript@5.9.3)(zod@4.3.5)
       '@modelcontextprotocol/sdk': 1.23.0(@cfworker/json-schema@4.1.1)(zod@4.3.5)
-      ai: 6.0.5(zod@4.3.5)
+      ai: 6.0.6(zod@4.3.5)
       cron-schedule: 6.0.0
       json-schema: 0.4.0
       json-schema-to-typescript: 15.0.4
@@ -9713,9 +9713,9 @@ snapshots:
       - '@cloudflare/workers-types'
       - supports-color
 
-  ai@6.0.5(zod@4.3.5):
+  ai@6.0.6(zod@4.3.5):
     dependencies:
-      '@ai-sdk/gateway': 3.0.4(zod@4.3.5)
+      '@ai-sdk/gateway': 3.0.5(zod@4.3.5)
       '@ai-sdk/provider': 3.0.1
       '@ai-sdk/provider-utils': 4.0.2(zod@4.3.5)
       '@opentelemetry/api': 1.9.0
@@ -10625,7 +10625,7 @@ snapshots:
 
   html-encoding-sniffer@6.0.0:
     dependencies:
-      '@exodus/bytes': 1.7.0
+      '@exodus/bytes': 1.8.0
     transitivePeerDependencies:
       - '@exodus/crypto'
 
@@ -10783,7 +10783,7 @@ snapshots:
     dependencies:
       '@acemir/cssom': 0.9.30
       '@asamuzakjp/dom-selector': 6.7.6
-      '@exodus/bytes': 1.7.0
+      '@exodus/bytes': 1.8.0
       cssstyle: 5.3.6
       data-urls: 6.0.0
       decimal.js: 10.6.0
@@ -10796,7 +10796,7 @@ snapshots:
       symbol-tree: 3.2.4
       tough-cookie: 6.0.0
       w3c-xmlserializer: 5.0.0
-      webidl-conversions: 8.0.0
+      webidl-conversions: 8.0.1
       whatwg-mimetype: 4.0.0
       whatwg-url: 15.1.0
       ws: 8.18.3
@@ -12563,7 +12563,7 @@ snapshots:
 
   web-vitals@4.2.4: {}
 
-  webidl-conversions@8.0.0: {}
+  webidl-conversions@8.0.1: {}
 
   webmidi@3.1.14:
     dependencies:
@@ -12576,7 +12576,7 @@ snapshots:
   whatwg-url@15.1.0:
     dependencies:
       tr46: 6.0.0
-      webidl-conversions: 8.0.0
+      webidl-conversions: 8.0.1
 
   which@2.0.2:
     dependencies:
