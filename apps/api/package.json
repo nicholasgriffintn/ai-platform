@@ -55,7 +55,7 @@
 		"oxlint": "1.38.0",
 		"prettier": "3.7.4",
 		"typescript": "5.9.3",
-		"vite-tsconfig-paths": "6.0.3",
+		"vite-tsconfig-paths": "6.0.4",
 		"vitest": "4.0.16",
 		"wrangler": "4.58.0"
 	}
