@@ -36,7 +36,15 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("cerebras/zai-glm-4.6", PROVIDER, {
 		name: "Cerebras ZAI GLM 4.6",
 		matchingModel: "zai-glm-4.6",
-		description: "",
+		description:
+			"This model delivers strong coding performance with advanced reasoning capabilities, superior tool use, and enhanced real-world performance in agentic coding applications.",
+		modalities: { input: ["text"], output: ["text"] },
+	}),
+	createModelConfig("cerebras/zai-glm-4.7", PROVIDER, {
+		name: "Cerebras ZAI GLM 4.7",
+		matchingModel: "zai-glm-4.7",
+		description:
+			"This model delivers strong coding performance with advanced reasoning capabilities, superior tool use, and enhanced real-world performance in agentic coding applications.",
 		modalities: { input: ["text"], output: ["text"] },
 	}),
 ]);
