@@ -4,7 +4,9 @@ export type StrudelStyle =
 	| "house"
 	| "jazz"
 	| "drums"
-	| "experimental";
+	| "experimental"
+	| "lofi"
+	| "hiphop";
 
 export type StrudelComplexity = "simple" | "medium" | "complex";
 

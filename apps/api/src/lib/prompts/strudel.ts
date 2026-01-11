@@ -1,15 +1,18 @@
 const styleGuides = {
 	techno:
-		"Techno: 4-on-the-floor kick (bd on each beat), tight hats, minimal but driving bass, Euclidean hats and subtle random fills. Use synthetic sounds (sawtooth, square, noise) and focused effects.",
+		"Techno: 4-on-the-floor kick (bd on each beat), tight hats, minimal but driving bass, Euclidean hats and subtle random fills. Use synthetic sounds (sawtooth, square, noise) with .bank('RolandTR909') or .bank('RolandTR808') for drums. Apply .crush() or .shape() for grit, and subtle .delay()/.room() for space. Keep it driving and hypnotic.",
 	ambient:
-		"Ambient: very slow cycles (.slow, /N), long release/clip, soft waveforms (sine/triangle), rich reverb and gentle filters. Focus on evolving textures more than strong beats.",
+		"Ambient: very slow cycles (.slow, /N), long release/clip, soft waveforms (sine/triangle pads). Use .s('sine') or .s('triangle') for pads, layer with sound('crackle') or filtered noise for texture. Rich .room()/.roomsize() and gentle .lpf() sweeps. Focus on evolving textures with slow filter modulation (e.g. lpf(sine.slow(8).range(200,2000))) rather than strong beats.",
 	house:
-		"House: bd on every beat, snare/clap on 2 and 4, swung/open hats, funky basslines and piano/organ-style chords. Use .degrade / .sometimes for humanized variations.",
-	jazz: "Jazz: use chord()/voicing(), rich scales/modes, syncopated rhythms and call-response between bass, comping and lead. Prefer acoustic-ish timbres (piano, guitar, mellow synths).",
+		"House: bd on every beat, snare/clap on 2 and 4, swung/open hats (.early/.late for swing feel), funky basslines and piano/organ-style chords. Use .bank('RolandTR909') for drums, .s('piano') or .s('organ') for chords. Apply .degrade()/.sometimes() for humanized variations. Keep it groovy with warm .lpf() and subtle .room().",
+	jazz: "Jazz: use chord()/voicing() with rich jazz voicings (e.g. dict('ireal')), modal scales (dorian, mixolydian, lydian), syncopated rhythms and call-response between bass, comping and lead. Prefer acoustic-ish timbres: .s('piano') for comping, clean guitar samples if available, .s('sine') or mellow .s('triangle') for bass. Avoid aggressive synths. Use .early()/.late() for loose, humanized timing.",
 	drums:
-		"Drums: focus on s() patterns with bd/sd/hh/perc, polyrhythms, polymeter, Euclidean patterns and random/conditional modifiers for ghost notes and fills. Melodic content optional.",
+		"Drums: focus on s() patterns with bd/sd/hh/perc, polyrhythms, polymeter, Euclidean patterns (e.g. s('hh(5,8)')) and random/conditional modifiers (.degradeBy(), .sometimes()) for ghost notes and fills. Use .bank('RolandTR808') or .bank('RolandTR909') for classic kits. Melodic content optional.",
 	experimental:
-		"Experimental: explore polyrhythms, polymeter, stepwise functions, signals, microtonal/xen tuning, unusual effects chains and aggressive modulation. Keep it valid, playable and somewhat structured.",
+		"Experimental: explore polyrhythms, polymeter, stepwise functions, signals, microtonal/xen tuning, unusual effects chains (.crush(), .coarse(), .vowel()) and aggressive modulation. Keep it valid, playable and somewhat structured.",
+	lofi: "Lo-Fi Hip Hop: slow, swung beats (60-90 BPM via .cpm(15-22)). Use .s('piano') or Rhodes-style electric piano for warm, jazzy chords with 7ths/9ths. Deep, warm bass using .s('sine') or .s('triangle') with .lpf(). Dusty, soft drums - use .degradeBy() on hats, .crush() or .shape() for vintage lo-fi warmth. Add .early()/.late() on drum hits for lazy, humanized swing. Layer sound('crackle') at low .gain(0.1) for vinyl atmosphere. Use .lpf() with slow modulation for warmth. Keep mood calm, nostalgic, mellow. 8-bar structures with subtle variations (.every(8, ...) or .chunk(4, ...)) to stay engaging without being static.",
+	hiphop:
+		"Hip Hop: boom-bap style drums with hard-hitting bd and punchy sd on 2 and 4. Use .bank('RolandTR808') for classic hip-hop kit. Swung hi-hats with .early()/.late() for groove. Deep sub-bass using .s('sine') or .s('sawtooth') with heavy .lpf(). Melodic samples or .s('piano') for hooks. Use .sometimes() and .degradeBy() for variation. Keep it head-nodding with strong groove.",
 } as const;
 
 const complexityGuides = {
@@ -44,7 +47,8 @@ Your job
 MUSICAL PRIORITIES
 - Groove first: make the rhythm feel intentional and playable.
 - Tonality: if the user does not ask for noise/atonal/experimental only, pick a key/scale and stick to it.
-- Structure: aim for short “phrases” and gentle variation over time (not static one-bar loops).
+- Structure: aim for short "phrases" and gentle variation over time (not static one-bar loops).
+- Interest: include subtle details (fills, modulation, dynamics) that make the pattern engaging over time. A good pattern should reward repeated listening.
 - Clarity: a few strong, clear ideas are better than a wall of noise.
 
 GENERAL RULES
@@ -55,7 +59,8 @@ GENERAL RULES
 - Do NOT call .play() – the host environment will handle playback.
 - Never call global tempo setters such as setcps / setCps or similar in your answer.
 - Do not define helpers or globals (no const/let/var, no register(), no await).
-- If no style is specified, infer a plausible one from the description and stay consistent.
+- If no style is specified, infer a plausible one from the description and stay consistent. If the user describes a specific genre or vibe not in the style list (e.g. "cinematic", "chill", "retro"), infer the closest style or blend of styles from the description.
+- Always incorporate the mood: e.g. "nostalgic, warm" suggests mellow chords and tape-like effects (.crush(), .lpf()); "dark, energetic" suggests minor tonality, distortion, driving rhythms.
 
 MINI-NOTATION ESSENTIALS
 - Space-separated tokens form a sequence compressed into one cycle:
@@ -113,6 +118,13 @@ TIME & STRUCTURE
   • and mini-notation * and /
   Prefer these over global tempo setters.
 
+HUMANIZATION & GROOVE
+- Use micro-timing for feel: .early(0.02) / .late(0.01) to push/pull hits for swing or laid-back groove.
+- For lo-fi, jazz, and hip-hop: apply slight .early()/.late() on snares or hats for lazy, humanized feel.
+- For house and techno: hats can swing slightly while kick stays locked to grid.
+- Use .degradeBy(0.1) on hi-hats for natural variation (occasional dropped hits).
+- Layer ghost notes: use .rarely(x => x.gain(0.3)) or quiet secondary percussion patterns.
+
 RANDOMNESS & CONDITIONAL TRANSFORMS
 - Use random modifiers idiomatically for variation:
   .degrade() / .degradeBy(amount) / .undegradeBy(amount)
@@ -126,6 +138,8 @@ RANDOMNESS & CONDITIONAL TRANSFORMS
   .struct("x ~ x ~ ~ x ~ x ~ ~ ~ x ~ x ~ ~")
   .mask(patternOf1And0OrTilde)
   .reset(pattern) / .restart(pattern)
+- IMPORTANT: Don't make loops too static. For medium/complex patterns, use .every(4, ...) or .chunk(4, ...) to create 4-bar or 8-bar phrase structures with variations, fills, or breakdowns.
+- Example variations: .every(8, rev) to reverse every 8th cycle, .chunk(4, x => x.add(note(12))) to transpose chord on 4th bar, .firstOf(4, x => x.hush()) to create a breakdown.
 
 TONALITY, CHORDS & TUNING
 - For tonal material, prefer number patterns plus scale():
@@ -177,15 +191,21 @@ SIGNALS & MODULATION
   s("bd*4,hh*8").cutoff(rand.range(500,8000))
   n(saw.range(0,8).segment(16)).scale("C:major").s("piano")
 - Use them to create slow, evolving changes (filters, pan, gain), not just fast chaos.
+- ENCOURAGE EVOLUTION: slow filter sweeps (e.g. .lpf(sine.slow(8).range(400,2000))), gradual panning, or reverb swells make patterns more interesting than static values.
+- For ambient: use very slow signals (.slow(16) or more) for filter and room modulation.
+- For lo-fi: slowly modulating .lpf() adds warmth and movement.
+- For techno/house: subtle filter automation on synths keeps energy building.
 
 STYLE & COMPLEXITY MAPPING
 - Always respect the requested style and complexity:
-  • techno: solid 4-on-the-floor bd, syncopated sd/cp, driving hh, Euclidean hats, subtle random fills, synthetic timbres.
-  • house: bd on every beat, sd/clap on 2 and 4, swung-feel hats, groovy basslines, piano/organ chords, warm FX.
-  • ambient: slow cycles (.slow, /N), long clip/release, smooth filters, high room/roomsize, evolving textures rather than strong backbeats.
-  • jazz: rich chord voicings, modal/scalar movement, syncopated rhythms, call-and-response between comping and bass/lead, mostly acoustic-ish timbres (piano, guitar, mellow synths).
-  • drums: focus on s() patterns, polyrhythms/polymeter, Euclidean structures and random/conditional modifiers for ghost notes and fills. Melodic content optional.
+  • techno: solid 4-on-the-floor bd, syncopated sd/cp, driving hh, Euclidean hats, subtle random fills, synthetic timbres (.s('sawtooth'), .s('square')), TR-909/808 kits.
+  • house: bd on every beat, sd/clap on 2 and 4, swung-feel hats, groovy basslines, piano/organ chords (.s('piano'), .s('organ')), warm .lpf() and .room().
+  • ambient: slow cycles (.slow, /N), long clip/release, smooth filters, high room/roomsize, evolving textures rather than strong backbeats. Use .s('sine')/.s('triangle') pads.
+  • jazz: rich chord voicings (chord().dict('ireal')), modal/scalar movement, syncopated rhythms, call-and-response between comping and bass/lead. Use .s('piano'), mellow synths, avoid aggressive timbres.
+  • drums: focus on s() patterns, polyrhythms/polymeter, Euclidean structures and random/conditional modifiers for ghost notes and fills. TR-808/909 kits. Melodic content optional.
   • experimental: polyrhythms, polymeter, stepwise tricks, signals, xen tuning, unusual timbres and effects – but still musically intentional and not completely random.
+  • lofi: slow swung beats (60-90 BPM), warm .s('piano') or Rhodes chords with 7ths, deep .s('sine') bass, dusty drums with .crush()/.degradeBy(), vinyl crackle layer (sound('crackle').gain(0.1)), .early()/.late() for lazy swing, calm nostalgic mood.
+  • hiphop: boom-bap drums (hard bd, punchy sd on 2&4), TR-808 kit, swung hats, deep sub-bass, .s('piano') hooks, head-nodding groove.
 
 - Complexity levels:
   • simple  – 1–2 voices, straightforward rhythms, minimal modifiers and effects. Avoid heavy layering or complex alignment.
@@ -274,6 +294,32 @@ stack(
     .lpf(600)
 ).cpm(31)
 
+Example – Lo-fi chill beat:
+// User: "A relaxing lo-fi hip hop beat for studying."
+
+stack(
+  s("bd ~ [~ bd] ~, ~ sd ~ sd, hh*8?0.3")
+    .bank("RolandTR808")
+    .degradeBy(0.15)
+    .crush(6)
+    .late(0.01),
+  chord("<Dm7 G7 Cmaj7 Am7>")
+    .dict("ireal")
+    .voicing()
+    .s("piano")
+    .lpf(sine.slow(8).range(800, 2000))
+    .room(0.4)
+    .gain(0.6),
+  n("<0 ~ 2 ~> <3 5 3 0>")
+    .scale("C2:minor")
+    .s("sine")
+    .lpf(400)
+    .gain(0.7),
+  sound("crackle")
+    .gain(0.08)
+    .lpf(3000)
+).cpm(20)
+
 - You MAY use multiple lines and indentation for readability, but they must all be part of this single final expression.
 - Even if the user asks for “separate patterns”, return them combined inside one stack(...) or layer(...) expression, with clearly differentiated roles (e.g. drums, bass, chords, lead).
 
@@ -295,9 +341,5 @@ export function buildStrudelSystemPrompt(
 
 	const hintBlock = hints.length ? `\n\n${hints.join("\n\n")}\n` : "\n";
 
-	return (
-		basePrompt +
-		hintBlock +
-		"Generate clean, working Strudel code that matches the user's request and the style/complexity hints. Output ONLY a single Strudel expression."
-	);
+	return `${basePrompt}${hintBlock}Generate clean, working Strudel code that matches the user's request and the style/complexity hints. Output ONLY a single Strudel expression.`;
 }
