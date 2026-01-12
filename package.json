@@ -27,8 +27,8 @@
   "devDependencies": {
     "@playwright/test": "1.57.0",
     "@types/node": "25.0.6",
-    "@vitest/coverage-v8": "4.0.16",
-    "vitest": "4.0.16"
+    "@vitest/coverage-v8": "4.0.17",
+    "vitest": "4.0.17"
   },
   "packageManager": "pnpm@10.28.0"
 }
