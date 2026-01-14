@@ -35,7 +35,7 @@
 		"@scalar/hono-api-reference": "0.9.32",
 		"@simplewebauthn/server": "13.2.2",
 		"@tsndr/cloudflare-worker-jwt": "3.2.1",
-		"agents": "0.3.4",
+		"agents": "0.3.5",
 		"aws4fetch": "1.0.20",
 		"drizzle-orm": "0.45.1",
 		"hono": "4.11.4",
