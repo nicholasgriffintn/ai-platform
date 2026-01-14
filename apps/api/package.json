@@ -29,7 +29,7 @@
 	},
 	"dependencies": {
 		"@assistant/schemas": "workspace:*",
-		"@hono/standard-validator": "0.2.1",
+		"@hono/standard-validator": "0.2.2",
 		"@hono/zod-validator": "0.7.6",
 		"@octokit/rest": "22.0.1",
 		"@scalar/hono-api-reference": "0.9.32",
