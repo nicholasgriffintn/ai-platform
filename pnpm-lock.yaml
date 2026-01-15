@@ -94,8 +94,8 @@ importers:
         specifier: 1.39.0
         version: 1.39.0
       prettier:
-        specifier: 3.7.4
-        version: 3.7.4
+        specifier: 3.8.0
+        version: 3.8.0
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -311,8 +311,8 @@ importers:
         specifier: 1.39.0
         version: 1.39.0
       prettier:
-        specifier: 3.7.4
-        version: 3.7.4
+        specifier: 3.8.0
+        version: 3.8.0
       rollup-plugin-visualizer:
         specifier: 6.0.5
         version: 6.0.5(rollup@4.55.1)
@@ -381,8 +381,8 @@ importers:
         specifier: 1.39.0
         version: 1.39.0
       prettier:
-        specifier: 3.7.4
-        version: 3.7.4
+        specifier: 3.8.0
+        version: 3.8.0
       tsx:
         specifier: 4.21.0
         version: 4.21.0
@@ -475,8 +475,8 @@ importers:
         specifier: 1.39.0
         version: 1.39.0
       prettier:
-        specifier: 3.7.4
-        version: 3.7.4
+        specifier: 3.8.0
+        version: 3.8.0
       rollup-plugin-visualizer:
         specifier: 6.0.5
         version: 6.0.5(rollup@4.55.1)
@@ -512,8 +512,8 @@ importers:
         specifier: 1.39.0
         version: 1.39.0
       prettier:
-        specifier: 3.7.4
-        version: 3.7.4
+        specifier: 3.8.0
+        version: 3.8.0
       tsup:
         specifier: 8.5.1
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)
@@ -5315,8 +5315,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  prettier@3.7.4:
-    resolution: {integrity: sha512-v6UNi1+3hSlVvv8fSaoUbggEM5VErKmmpGA7Pl3HF8V6uKY7rvClBOJlH6yNwQtfTueNkGVpOv/mtWL9L4bgRA==}
+  prettier@3.8.0:
+    resolution: {integrity: sha512-yEPsovQfpxYfgWNhCfECjG5AQaO+K3dp6XERmOepyPDVqcJm+bjyCVO3pmU+nAPe0N5dDvekfGezt/EIiRe1TA==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -8540,7 +8540,7 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.1.1
       pkg-types: 2.3.0
-      prettier: 3.7.4
+      prettier: 3.8.0
       react-refresh: 0.14.2
       react-router: 7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       semver: 7.7.3
@@ -10871,7 +10871,7 @@ snapshots:
       js-yaml: 4.1.1
       lodash: 4.17.21
       minimist: 1.2.8
-      prettier: 3.7.4
+      prettier: 3.8.0
       tinyglobby: 0.2.15
 
   json-schema-traverse@1.0.0: {}
@@ -11658,7 +11658,7 @@ snapshots:
       tar-fs: 2.1.4
       tunnel-agent: 0.6.0
 
-  prettier@3.7.4: {}
+  prettier@3.8.0: {}
 
   pretty-format@27.5.1:
     dependencies:
