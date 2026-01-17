@@ -45,8 +45,8 @@ importers:
         specifier: 3.2.1
         version: 3.2.1
       agents:
-        specifier: 0.3.5
-        version: 0.3.5(@cloudflare/ai-chat@0.0.4)(@cloudflare/codemode@0.0.4)(@cloudflare/workers-types@4.20260117.0)(ai@6.0.27(zod@4.3.5))(hono@4.11.4)(react@19.2.3)(zod@4.3.5)
+        specifier: 0.3.6
+        version: 0.3.6(@cloudflare/ai-chat@0.0.4)(@cloudflare/codemode@0.0.4)(@cloudflare/workers-types@4.20260117.0)(ai@6.0.27(zod@4.3.5))(hono@4.11.4)(react@19.2.3)(zod@4.3.5)
       aws4fetch:
         specifier: 1.0.20
         version: 1.0.20
@@ -3698,14 +3698,14 @@ packages:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
-  agents@0.3.5:
-    resolution: {integrity: sha512-+qEW8jWP8JHEDE8izdMBYFXvh+bWIhnlSujf+zI9m8XWkWWpRUhiiZz7eB40lMeEBZ35p4MEDWmHUL55PnaUDA==}
+  agents@0.3.6:
+    resolution: {integrity: sha512-gJtXDGV2jhPI/WzZOYAM5GJleOq7U2o7fnenE89RJ3Y5klm29O1Pk4sQoLVASO2sTucPNtJRMztQCGL2352B+g==}
     hasBin: true
     peerDependencies:
       '@ai-sdk/openai': ^3.0.0
       '@ai-sdk/react': ^3.0.0
       '@cloudflare/ai-chat': ^0.0.4
-      '@cloudflare/codemode': ^0.0.4
+      '@cloudflare/codemode': ^0.0.5
       ai: ^6.0.0
       react: ^19.0.0
       viem: '>=2.0.0'
@@ -7235,16 +7235,16 @@ snapshots:
 
   '@cfworker/json-schema@4.1.1': {}
 
-  '@cloudflare/ai-chat@0.0.4(agents@0.3.5)(ai@6.0.27(zod@4.3.5))(react@19.2.3)(zod@4.3.5)':
+  '@cloudflare/ai-chat@0.0.4(agents@0.3.6)(ai@6.0.27(zod@4.3.5))(react@19.2.3)(zod@4.3.5)':
     dependencies:
-      agents: 0.3.5(@cloudflare/ai-chat@0.0.4)(@cloudflare/codemode@0.0.4)(@cloudflare/workers-types@4.20260117.0)(ai@6.0.27(zod@4.3.5))(hono@4.11.4)(react@19.2.3)(zod@4.3.5)
+      agents: 0.3.6(@cloudflare/ai-chat@0.0.4)(@cloudflare/codemode@0.0.4)(@cloudflare/workers-types@4.20260117.0)(ai@6.0.27(zod@4.3.5))(hono@4.11.4)(react@19.2.3)(zod@4.3.5)
       ai: 6.0.27(zod@4.3.5)
       react: 19.2.3
       zod: 4.3.5
 
-  '@cloudflare/codemode@0.0.4(agents@0.3.5)(ai@6.0.27(zod@4.3.5))(typescript@5.9.3)(zod@4.3.5)':
+  '@cloudflare/codemode@0.0.4(agents@0.3.6)(ai@6.0.27(zod@4.3.5))(typescript@5.9.3)(zod@4.3.5)':
     dependencies:
-      agents: 0.3.5(@cloudflare/ai-chat@0.0.4)(@cloudflare/codemode@0.0.4)(@cloudflare/workers-types@4.20260117.0)(ai@6.0.27(zod@4.3.5))(hono@4.11.4)(react@19.2.3)(zod@4.3.5)
+      agents: 0.3.6(@cloudflare/ai-chat@0.0.4)(@cloudflare/codemode@0.0.4)(@cloudflare/workers-types@4.20260117.0)(ai@6.0.27(zod@4.3.5))(hono@4.11.4)(react@19.2.3)(zod@4.3.5)
       ai: 6.0.27(zod@4.3.5)
       zod: 4.3.5
       zod-to-ts: 2.0.0(typescript@5.9.3)(zod@4.3.5)
@@ -9956,11 +9956,11 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  agents@0.3.5(@cloudflare/ai-chat@0.0.4)(@cloudflare/codemode@0.0.4)(@cloudflare/workers-types@4.20260117.0)(ai@6.0.27(zod@4.3.5))(hono@4.11.4)(react@19.2.3)(zod@4.3.5):
+  agents@0.3.6(@cloudflare/ai-chat@0.0.4)(@cloudflare/codemode@0.0.4)(@cloudflare/workers-types@4.20260117.0)(ai@6.0.27(zod@4.3.5))(hono@4.11.4)(react@19.2.3)(zod@4.3.5):
     dependencies:
       '@cfworker/json-schema': 4.1.1
-      '@cloudflare/ai-chat': 0.0.4(agents@0.3.5)(ai@6.0.27(zod@4.3.5))(react@19.2.3)(zod@4.3.5)
-      '@cloudflare/codemode': 0.0.4(agents@0.3.5)(ai@6.0.27(zod@4.3.5))(typescript@5.9.3)(zod@4.3.5)
+      '@cloudflare/ai-chat': 0.0.4(agents@0.3.6)(ai@6.0.27(zod@4.3.5))(react@19.2.3)(zod@4.3.5)
+      '@cloudflare/codemode': 0.0.4(agents@0.3.6)(ai@6.0.27(zod@4.3.5))(typescript@5.9.3)(zod@4.3.5)
       '@modelcontextprotocol/sdk': 1.25.2(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.5)
       ai: 6.0.27(zod@4.3.5)
       cron-schedule: 6.0.0
