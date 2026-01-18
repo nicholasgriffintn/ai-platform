@@ -190,8 +190,8 @@ importers:
         specifier: 1.2.6
         version: 1.2.6
       '@strudel/transpiler':
-        specifier: 1.2.5
-        version: 1.2.5
+        specifier: 1.2.6
+        version: 1.2.6
       '@strudel/webaudio':
         specifier: 1.2.6
         version: 1.2.6
@@ -3305,6 +3305,10 @@ packages:
 
   '@strudel/transpiler@1.2.5':
     resolution: {integrity: sha512-mBZWfQBzknvnIYsjjzR8D67A+uIZ1iZ60U2WoXT21q5luXKz2c95RcTpqdx3oOGpLK9K00lDzcKjhQDJtj4OKw==}
+
+  '@strudel/transpiler@1.2.6':
+    resolution: {integrity: sha512-NzmyQDS4BqjafOPzHGFowxILDx3ZRAPD47YszxNaPB7PggMA2rMo9t3rLz80G0GxA0ZAyMbVMR3px9jDWnJ5hg==}
+    engines: {node: '>=18.0.0'}
 
   '@strudel/webaudio@1.2.5':
     resolution: {integrity: sha512-ilcyBsuwkH6Ghz0egaqIJ5DZi0xFBZwVWvZb0vnfU7kVESroD2j6yptyFMysJFZhQ5pfRiZs2ZeF6yTsviUjng==}
@@ -9479,6 +9483,14 @@ snapshots:
     dependencies:
       '@strudel/core': 1.2.5
       '@strudel/mini': 1.2.5
+      acorn: 8.15.0
+      escodegen: 2.1.0
+      estree-walker: 3.0.3
+
+  '@strudel/transpiler@1.2.6':
+    dependencies:
+      '@strudel/core': 1.2.6
+      '@strudel/mini': 1.2.6
       acorn: 8.15.0
       escodegen: 2.1.0
       estree-walker: 3.0.3
