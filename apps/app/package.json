@@ -42,7 +42,7 @@
 		"@strudel/codemirror": "1.2.6",
 		"@strudel/core": "1.2.6",
 		"@strudel/draw": "1.2.6",
-		"@strudel/hydra": "1.2.5",
+		"@strudel/hydra": "1.2.6",
 		"@strudel/midi": "1.2.5",
 		"@strudel/mini": "1.2.5",
 		"@strudel/soundfonts": "1.2.6",
