@@ -181,8 +181,8 @@ importers:
         specifier: 1.2.5
         version: 1.2.5
       '@strudel/mini':
-        specifier: 1.2.5
-        version: 1.2.5
+        specifier: 1.2.6
+        version: 1.2.6
       '@strudel/soundfonts':
         specifier: 1.2.6
         version: 1.2.6
@@ -3288,6 +3288,10 @@ packages:
 
   '@strudel/mini@1.2.5':
     resolution: {integrity: sha512-GmTWSBt49C3ogBy0hjM3bmf6K12PaJ1JJLsEvQu7j5J+lUd2n7GmLYR1UL6fntY4yVqT8ZwMhfUf6vIgUCTNbw==}
+
+  '@strudel/mini@1.2.6':
+    resolution: {integrity: sha512-I5GFPLHI3TPcJuD2RdDcurA+lTogaSQ0TB+EimKTgEtSAbU6ZMEkSUOXZIFO5eaAcJcMucgKaBcmTKpD4oZjPA==}
+    engines: {node: '>=18.0.0'}
 
   '@strudel/soundfonts@1.2.6':
     resolution: {integrity: sha512-F7eBhohkCXCMo8WiufSAhD3JCfL5GTgCh9RlOJVT+1swiFeIss1vUAWJR3WjonB6moL8BiuNpcYOqO6i6cFy4A==}
@@ -9441,6 +9445,10 @@ snapshots:
   '@strudel/mini@1.2.5':
     dependencies:
       '@strudel/core': 1.2.5
+
+  '@strudel/mini@1.2.6':
+    dependencies:
+      '@strudel/core': 1.2.6
 
   '@strudel/soundfonts@1.2.6':
     dependencies:
