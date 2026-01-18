@@ -172,8 +172,8 @@ importers:
         specifier: 1.2.6
         version: 1.2.6
       '@strudel/draw':
-        specifier: 1.2.5
-        version: 1.2.5
+        specifier: 1.2.6
+        version: 1.2.6
       '@strudel/hydra':
         specifier: 1.2.5
         version: 1.2.5(rollup@4.55.1)
@@ -3274,6 +3274,10 @@ packages:
 
   '@strudel/draw@1.2.5':
     resolution: {integrity: sha512-ZI4WPxUsVsxgDoeZMHo6VfFf+S1tsj8ubKBeSLcf6lH29JqPp7Nz6tPmbomOV1fzazZ7+xpkC7z772MdtgWy2g==}
+
+  '@strudel/draw@1.2.6':
+    resolution: {integrity: sha512-7UPJ4xgDi2bt12KWSVAEt4rZjcOajxhHBJikvNA3LQT5IA/FTfD+TRSNu0CSB7zhmFM0Njgq6t7ttgsC8fdKCg==}
+    engines: {node: '>=18.0.0'}
 
   '@strudel/hydra@1.2.5':
     resolution: {integrity: sha512-IMosQ2SYYIwct4hnalimgRH+ROhNLBK0+7Jg5yzhN0dAeWEXMM6xAWYYycxU9/gThzeesrmO3BSHm8uWJQYSjg==}
@@ -9413,6 +9417,10 @@ snapshots:
   '@strudel/draw@1.2.5':
     dependencies:
       '@strudel/core': 1.2.5
+
+  '@strudel/draw@1.2.6':
+    dependencies:
+      '@strudel/core': 1.2.6
 
   '@strudel/hydra@1.2.5(rollup@4.55.1)':
     dependencies:
