@@ -187,8 +187,8 @@ importers:
         specifier: 1.2.6
         version: 1.2.6
       '@strudel/tonal':
-        specifier: 1.2.5
-        version: 1.2.5
+        specifier: 1.2.6
+        version: 1.2.6
       '@strudel/transpiler':
         specifier: 1.2.5
         version: 1.2.5
@@ -3298,6 +3298,10 @@ packages:
 
   '@strudel/tonal@1.2.5':
     resolution: {integrity: sha512-mX3uW0nWH8Sa52HTLwnxlR5BrejFX77abeaiMbp+kQCMrX9I+XRdf8rEr7gdeInB6f/y2TzTVFpnsNsB5jLdoA==}
+
+  '@strudel/tonal@1.2.6':
+    resolution: {integrity: sha512-I2ev0IJFmqvDt/vFkL8vIDXNanK5EZF+MNhlio3nHt1d6ngZZJyCNzC1OxoaiQKxZNN7+mpGIC3Cx/zcBC3weQ==}
+    engines: {node: '>=18.0.0'}
 
   '@strudel/transpiler@1.2.5':
     resolution: {integrity: sha512-mBZWfQBzknvnIYsjjzR8D67A+uIZ1iZ60U2WoXT21q5luXKz2c95RcTpqdx3oOGpLK9K00lDzcKjhQDJtj4OKw==}
@@ -9460,6 +9464,13 @@ snapshots:
   '@strudel/tonal@1.2.5':
     dependencies:
       '@strudel/core': 1.2.5
+      '@tonaljs/tonal': 4.10.0
+      chord-voicings: 0.0.1
+      webmidi: 3.1.14
+
+  '@strudel/tonal@1.2.6':
+    dependencies:
+      '@strudel/core': 1.2.6
       '@tonaljs/tonal': 4.10.0
       chord-voicings: 0.0.1
       webmidi: 3.1.14
