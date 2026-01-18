@@ -175,8 +175,8 @@ importers:
         specifier: 1.2.6
         version: 1.2.6
       '@strudel/hydra':
-        specifier: 1.2.5
-        version: 1.2.5(rollup@4.55.1)
+        specifier: 1.2.6
+        version: 1.2.6(rollup@4.55.1)
       '@strudel/midi':
         specifier: 1.2.5
         version: 1.2.5
@@ -3279,8 +3279,9 @@ packages:
     resolution: {integrity: sha512-7UPJ4xgDi2bt12KWSVAEt4rZjcOajxhHBJikvNA3LQT5IA/FTfD+TRSNu0CSB7zhmFM0Njgq6t7ttgsC8fdKCg==}
     engines: {node: '>=18.0.0'}
 
-  '@strudel/hydra@1.2.5':
-    resolution: {integrity: sha512-IMosQ2SYYIwct4hnalimgRH+ROhNLBK0+7Jg5yzhN0dAeWEXMM6xAWYYycxU9/gThzeesrmO3BSHm8uWJQYSjg==}
+  '@strudel/hydra@1.2.6':
+    resolution: {integrity: sha512-8eBNHLffyj7G5b5L5bXP9ZjUzYll+SdRVZleIauOt5OOD4/0ezzqiEnqt4jQG/qlbQw9Jcwvzqvm0JWMEGVSuQ==}
+    engines: {node: '>=18.0.0'}
 
   '@strudel/midi@1.2.5':
     resolution: {integrity: sha512-bDA7J19ep1QJVCJDzX+oAOCc3zvV7WyXlR3DEJtEBFD3T28mDcuDwQ/plRapBwBZWGWbStLOhmEwNt3RZ/uE/w==}
@@ -9422,10 +9423,10 @@ snapshots:
     dependencies:
       '@strudel/core': 1.2.6
 
-  '@strudel/hydra@1.2.5(rollup@4.55.1)':
+  '@strudel/hydra@1.2.6(rollup@4.55.1)':
     dependencies:
-      '@strudel/core': 1.2.5
-      '@strudel/draw': 1.2.5
+      '@strudel/core': 1.2.6
+      '@strudel/draw': 1.2.6
       hydra-synth: 1.4.0(rollup@4.55.1)
     transitivePeerDependencies:
       - rollup
