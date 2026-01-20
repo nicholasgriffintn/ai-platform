@@ -45,7 +45,7 @@
 		"@strudel/hydra": "1.2.6",
 		"@strudel/midi": "1.3.0",
 		"@strudel/mini": "1.2.6",
-		"@strudel/soundfonts": "1.2.6",
+		"@strudel/soundfonts": "1.3.0",
 		"@strudel/tonal": "1.2.6",
 		"@strudel/transpiler": "1.2.6",
 		"@strudel/webaudio": "1.2.6",
