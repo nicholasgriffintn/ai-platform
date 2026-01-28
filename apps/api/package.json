@@ -46,7 +46,7 @@
 		"zod-openapi": "5.4.6"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "4.20260124.0",
+		"@cloudflare/workers-types": "4.20260128.0",
 		"@prettier/plugin-oxc": "0.1.3",
 		"@simplewebauthn/types": "12.0.0",
 		"@types/node": "25.0.10",
