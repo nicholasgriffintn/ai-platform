@@ -32,7 +32,7 @@
 		"@hono/standard-validator": "0.2.2",
 		"@hono/zod-validator": "0.7.6",
 		"@octokit/rest": "22.0.1",
-		"@scalar/hono-api-reference": "0.9.37",
+		"@scalar/hono-api-reference": "0.9.38",
 		"@simplewebauthn/server": "13.2.2",
 		"@tsndr/cloudflare-worker-jwt": "3.2.1",
 		"agents": "0.3.6",
