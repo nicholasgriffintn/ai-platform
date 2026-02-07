@@ -72,7 +72,7 @@
 		"zustand": "5.0.11"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "4.20260206.0",
+		"@cloudflare/workers-types": "4.20260207.0",
 		"@prettier/plugin-oxc": "0.1.3",
 		"@react-router/dev": "7.13.0",
 		"@simplewebauthn/types": "12.0.0",
