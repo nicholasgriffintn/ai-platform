@@ -97,6 +97,6 @@
 		"vite-plugin-babel": "1.4.1",
 		"vite-tsconfig-paths": "6.0.5",
 		"vitest": "4.0.18",
-		"wrangler": "4.62.0"
+		"wrangler": "4.63.0"
 	}
 }
