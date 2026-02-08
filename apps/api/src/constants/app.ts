@@ -28,6 +28,8 @@ export const ROUTES = {
 	AGENTS: "/agents",
 	ADMIN: "/admin",
 	MEMORIES: "/memories",
+	SANDBOX: "/sandbox",
+	WEBHOOKS: "/webhooks",
 } as const;
 
 const NON_AUTH_DAILY_MESSAGE_LIMIT = 10;

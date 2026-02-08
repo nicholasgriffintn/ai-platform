@@ -29,6 +29,9 @@ export type IEnv = {
 	ACCOUNT_ID: string;
 	ANTHROPIC_API_KEY?: string;
 	AI_GATEWAY_TOKEN?: string;
+	SANDBOX_WORKER?: Fetcher;
+	GITHUB_TOKEN?: string;
+	GITHUB_WEBHOOK_SECRET?: string;
 	GROK_API_KEY?: string;
 	HUGGINGFACE_TOKEN?: string;
 	REPLICATE_API_TOKEN?: string;

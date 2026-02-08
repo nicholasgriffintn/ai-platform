@@ -1,0 +1,29 @@
+{
+	"name": "@assistant/sandbox-worker",
+	"license": "Apache-2.0",
+	"version": "0.0.1",
+	"private": true,
+	"main": "src/index.ts",
+	"scripts": {
+		"dev": "wrangler dev src/index.ts",
+		"start": "wrangler dev src/index.ts",
+		"test": "vitest",
+		"coverage": "vitest run --coverage",
+		"cf-typegen": "wrangler types",
+		"format": "pnpm prettier --write .",
+		"format:check": "pnpm prettier --check .",
+		"lint": "pnpm oxlint",
+		"check": "pnpm lint && pnpm format:check",
+		"typecheck": "tsc --noEmit",
+		"deploy": "pnpm typecheck && wrangler deploy src/index.ts --name=assistant-sandbox-worker"
+	},
+	"dependencies": {
+		"@cloudflare/sandbox": "0.7.0"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "4.20260207.0",
+		"@types/node": "^25.2.2",
+		"typescript": "5.9.3",
+		"wrangler": "4.63.0"
+	}
+}

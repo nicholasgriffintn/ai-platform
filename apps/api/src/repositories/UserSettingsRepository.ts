@@ -222,6 +222,7 @@ export class UserSettingsRepository extends BaseRepository {
 			"transcription_provider",
 			"transcription_model",
 			"search_provider",
+			"sandbox_model",
 		];
 		const { query, values } = this.buildSelectQuery(
 			"user_settings",
