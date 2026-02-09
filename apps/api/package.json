@@ -51,7 +51,7 @@
 		"@simplewebauthn/types": "12.0.0",
 		"@types/node": "25.2.2",
 		"better-sqlite3": "12.6.2",
-		"drizzle-kit": "0.31.8",
+		"drizzle-kit": "0.31.9",
 		"oxlint": "1.43.0",
 		"prettier": "3.8.1",
 		"typescript": "5.9.3",
