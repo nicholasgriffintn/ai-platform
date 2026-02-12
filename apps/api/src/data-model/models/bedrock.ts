@@ -506,7 +506,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: { enabled: true },
 		supportsArtifacts: true,
 		supportsToolCalls: true,
-		isFeatured: true,
+		isFeatured: false,
 		supportsPromptCaching: true,
 	}),
 
@@ -545,7 +545,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 		supportsToolCalls: true,
 		supportsTokenCounting: true,
-		isFeatured: true,
+		isFeatured: false,
 		supportsPromptCaching: true,
 	}),
 

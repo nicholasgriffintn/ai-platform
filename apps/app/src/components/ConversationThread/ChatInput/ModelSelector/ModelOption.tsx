@@ -129,7 +129,7 @@ export const ModelOption = ({
 						) : null}
 					</div>
 				</div>
-				<div className="flex w-[108px] flex-shrink-0 items-start justify-end gap-1.5 sm:w-[124px]">
+				<div className="flex w-[108px] flex-shrink-0 items-center justify-end gap-1.5 sm:w-[124px]">
 					{model.reasoningConfig?.enabled && (
 						<div
 							className="rounded-full bg-blue-100 p-1 dark:bg-blue-900/30"
@@ -153,12 +153,12 @@ export const ModelOption = ({
 						</div>
 					)}
 					{(model.multimodal || supportsVision) && (
-						<div className="p-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30">
+						<div className="rounded-full bg-blue-100 p-1 dark:bg-blue-900/30">
 							<Eye size={12} className="text-blue-600 dark:text-blue-400" />
 						</div>
 					)}
 					{model.supportsSearchGrounding && (
-						<div className="p-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30">
+						<div className="rounded-full bg-amber-100 p-1 dark:bg-amber-900/30">
 							<Search
 								size={12}
 								className="text-amber-600 dark:text-amber-400"
@@ -166,7 +166,7 @@ export const ModelOption = ({
 						</div>
 					)}
 					{model.supportsCodeExecution && (
-						<div className="p-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+						<div className="rounded-full bg-emerald-100 p-1 dark:bg-emerald-900/30">
 							<Code2
 								size={12}
 								className="text-emerald-600 dark:text-emerald-400"
@@ -174,7 +174,7 @@ export const ModelOption = ({
 						</div>
 					)}
 					{model.supportsAudio && (
-						<div className="p-0.5 rounded-full bg-green-100 dark:bg-green-900/30">
+						<div className="rounded-full bg-green-100 p-1 dark:bg-green-900/30">
 							<AudioWaveform
 								size={12}
 								className="text-green-600 dark:text-green-400"
@@ -182,7 +182,7 @@ export const ModelOption = ({
 						</div>
 					)}
 					{model.isFeatured && (
-						<div className="p-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30">
+						<div className="rounded-full bg-rose-100 p-1 dark:bg-rose-900/30">
 							<Sparkles
 								size={12}
 								className="text-rose-600 dark:text-rose-400"
