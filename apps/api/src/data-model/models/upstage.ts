@@ -55,4 +55,25 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 		isFeatured: true,
 	}),
+	createModelConfig("solar-pro3", PROVIDER, {
+		name: "solar-pro3",
+		matchingModel: "solar-pro3",
+		knowledgeCutoffDate: "March 2025",
+		releaseDate: "January 2026",
+		lastUpdated: "January 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 131072,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.00025,
+		costPer1kOutputTokens: 0.00025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
 ]);

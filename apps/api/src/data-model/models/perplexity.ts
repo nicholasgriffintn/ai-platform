@@ -30,7 +30,7 @@ export const perplexityModelConfig: ModelConfig = {
 		},
 	},
 	"sonar-reasoning-pro": {
-		name: "Perplexity Sonar Reasoning Pro",
+		name: "Sonar Reasoning Pro",
 		matchingModel: "sonar-reasoning-pro",
 		description:
 			"Premier reasoning offering powered by DeepSeek R1 with Chain of Thought (CoT).",
@@ -51,8 +51,19 @@ export const perplexityModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.008,
 		costPer1kSearches: 0.005,
 		modalities: {
-			input: ["text"],
+			input: ["text", "image"],
 			output: ["text"],
+		},
+		knowledgeCutoffDate: "September 1, 2025",
+		releaseDate: "January 1, 2024",
+		lastUpdated: "September 1, 2025",
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		reasoningConfig: {
+			enabled: true,
 		},
 	},
 	"sonar-reasoning": {
@@ -83,7 +94,7 @@ export const perplexityModelConfig: ModelConfig = {
 		},
 	},
 	"sonar-pro": {
-		name: "Perplexity Sonar Pro",
+		name: "Sonar Pro",
 		matchingModel: "sonar-pro",
 		description:
 			"Premier search offering with search grounding, supporting advanced queries and follow-ups.",
@@ -98,12 +109,23 @@ export const perplexityModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.015,
 		costPer1kSearches: 0.005,
 		modalities: {
-			input: ["text"],
+			input: ["text", "image"],
 			output: ["text"],
+		},
+		knowledgeCutoffDate: "September 1, 2025",
+		releaseDate: "January 1, 2024",
+		lastUpdated: "September 1, 2025",
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 200000,
+		maxTokens: 8192,
+		reasoningConfig: {
+			enabled: false,
 		},
 	},
 	sonar: {
-		name: "Perplexity Sonar",
+		name: "Sonar",
 		matchingModel: "sonar",
 		description:
 			"Lightweight offering with search grounding, quicker and cheaper than Sonar Pro.",
@@ -120,6 +142,17 @@ export const perplexityModelConfig: ModelConfig = {
 		modalities: {
 			input: ["text"],
 			output: ["text"],
+		},
+		knowledgeCutoffDate: "September 1, 2025",
+		releaseDate: "January 1, 2024",
+		lastUpdated: "September 1, 2025",
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		reasoningConfig: {
+			enabled: false,
 		},
 	},
 	"r1-1776": {

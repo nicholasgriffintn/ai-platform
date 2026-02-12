@@ -26,6 +26,7 @@ export const xaiModelConfig: ModelConfig = {
 		speed: 5,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		costPer1kReasoningTokens: 0.004,
 	},
 
 	"grok-2-vision-latest": {
@@ -111,6 +112,7 @@ export const xaiModelConfig: ModelConfig = {
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		costPer1kReasoningTokens: 0.0005,
 	},
 
 	"grok-3-fast-latest": {
@@ -195,6 +197,7 @@ export const xaiModelConfig: ModelConfig = {
 		speed: 4,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		costPer1kReasoningTokens: 0.0005,
 	},
 
 	"grok-3-mini-fast": {
@@ -222,6 +225,7 @@ export const xaiModelConfig: ModelConfig = {
 		speed: 5,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		costPer1kReasoningTokens: 0.004,
 	},
 
 	"grok-3-latest": {
@@ -280,6 +284,7 @@ export const xaiModelConfig: ModelConfig = {
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsPresencePenalty: false,
+		costPer1kReasoningTokens: 0.015,
 	},
 
 	"grok-vision-beta": {
@@ -362,5 +367,211 @@ export const xaiModelConfig: ModelConfig = {
 		speed: 5,
 		includedInRouter: false,
 		supportsArtifacts: true,
+	},
+	"grok-2-1212": {
+		name: "Grok 2 (1212)",
+		matchingModel: "grok-2-1212",
+		provider: "grok",
+		knowledgeCutoffDate: "August 2024",
+		releaseDate: "December 12, 2024",
+		lastUpdated: "December 12, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 131072,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			enabled: false,
+		},
+	},
+
+	"grok-2-vision": {
+		name: "Grok 2 Vision",
+		matchingModel: "grok-2-vision",
+		provider: "grok",
+		knowledgeCutoffDate: "August 2024",
+		releaseDate: "August 20, 2024",
+		lastUpdated: "August 20, 2024",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 8192,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			enabled: false,
+		},
+	},
+
+	"grok-2-vision-1212": {
+		name: "Grok 2 Vision (1212)",
+		matchingModel: "grok-2-vision-1212",
+		provider: "grok",
+		knowledgeCutoffDate: "August 2024",
+		releaseDate: "August 20, 2024",
+		lastUpdated: "December 12, 2024",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 8192,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			enabled: false,
+		},
+	},
+
+	"grok-4-1-fast": {
+		name: "Grok 4.1 Fast",
+		matchingModel: "grok-4-1-fast",
+		provider: "grok",
+		knowledgeCutoffDate: "July 2025",
+		releaseDate: "November 19, 2025",
+		lastUpdated: "November 19, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 2000000,
+		maxTokens: 30000,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"grok-4-1-fast-non-reasoning": {
+		name: "Grok 4.1 Fast (Non-Reasoning)",
+		matchingModel: "grok-4-1-fast-non-reasoning",
+		provider: "grok",
+		knowledgeCutoffDate: "July 2025",
+		releaseDate: "November 19, 2025",
+		lastUpdated: "November 19, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 2000000,
+		maxTokens: 30000,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			enabled: false,
+		},
+	},
+
+	"grok-4-fast": {
+		name: "Grok 4 Fast",
+		matchingModel: "grok-4-fast",
+		provider: "grok",
+		knowledgeCutoffDate: "July 2025",
+		releaseDate: "September 19, 2025",
+		lastUpdated: "September 19, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 2000000,
+		maxTokens: 30000,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"grok-4-fast-non-reasoning": {
+		name: "Grok 4 Fast (Non-Reasoning)",
+		matchingModel: "grok-4-fast-non-reasoning",
+		provider: "grok",
+		knowledgeCutoffDate: "July 2025",
+		releaseDate: "September 19, 2025",
+		lastUpdated: "September 19, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 2000000,
+		maxTokens: 30000,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			enabled: false,
+		},
+	},
+
+	"grok-beta": {
+		name: "Grok Beta",
+		matchingModel: "grok-beta",
+		provider: "grok",
+		knowledgeCutoffDate: "August 2024",
+		releaseDate: "November 1, 2024",
+		lastUpdated: "November 1, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 131072,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	},
+
+	"grok-code-fast-1": {
+		name: "Grok Code Fast 1",
+		matchingModel: "grok-code-fast-1",
+		provider: "grok",
+		knowledgeCutoffDate: "October 2023",
+		releaseDate: "August 28, 2025",
+		lastUpdated: "August 28, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 10000,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			enabled: true,
+		},
 	},
 };

@@ -8,17 +8,17 @@ const PROVIDER = "anthropic";
 
 export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("claude-4.6-opus", PROVIDER, {
-		name: "Claude 4.6 Opus",
+		name: "Claude Opus 4.6",
 		matchingModel: "claude-opus-4-6",
 		description:
 			"The Claude 4.6 Opus is intelligent, efficient, and the best model in the world for coding, agents, and computer use.",
 		knowledgeCutoffDate: "May 2025",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		contextWindow: 200000,
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005, // $5.00 per million tokens
@@ -41,23 +41,28 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsDocuments: true,
 		supportsTokenCounting: true,
 		supportsTopP: false,
+		releaseDate: "February 5, 2026",
+		lastUpdated: "February 5, 2026",
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 	createModelConfig("claude-4-5-sonnet", PROVIDER, {
-		name: "Claude 4.5 Sonnet",
+		name: "Claude Sonnet 4.5 (latest)",
 		matchingModel: "claude-sonnet-4-5",
 		description:
 			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		knowledgeCutoffDate: "July 2025",
+		knowledgeCutoffDate: "July 31, 2025",
 		releaseDate: "September 29, 2025",
 		lastUpdated: "September 29, 2025",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
 		card: "https://www.prompthub.us/models/claude-sonnet-4-5",
-		contextWindow: 1000000,
+		contextWindow: 200000,
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
@@ -86,21 +91,21 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("claude-4-5-sonnet-thinking", PROVIDER, {
-		name: "Claude 4.5 Sonnet Thinking",
+		name: "Claude Sonnet 4.5 (Thinking)",
 		matchingModel: "claude-sonnet-4-5-20250929",
 		description:
 			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		knowledgeCutoffDate: "July 2025",
+		knowledgeCutoffDate: "July 31, 2025",
 		releaseDate: "September 29, 2025",
 		lastUpdated: "September 29, 2025",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
 		card: "https://www.prompthub.us/models/claude-sonnet-4-5",
-		contextWindow: 1000000,
+		contextWindow: 200000,
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
@@ -129,15 +134,15 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("claude-4-sonnet", PROVIDER, {
-		name: "Claude 4 Sonnet",
+		name: "Claude Sonnet 4 (latest)",
 		matchingModel: "claude-sonnet-4-0",
 		description:
 			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		knowledgeCutoffDate: "March 2025",
+		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
@@ -171,15 +176,15 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("claude-4-sonnet-thinking", PROVIDER, {
-		name: "Claude 4 Sonnet Thinking",
+		name: "Claude Sonnet 4 (Thinking)",
 		matchingModel: "claude-sonnet-4-20250514",
 		description:
 			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		knowledgeCutoffDate: "March 2025",
+		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
@@ -251,24 +256,24 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("claude-3.5-haiku", PROVIDER, {
-		name: "Claude 3.5 Haiku",
+		name: "Claude Haiku 3.5 (latest)",
 		matchingModel: "claude-3-5-haiku-latest",
 		description:
 			"With fast speeds, improved instruction following, and more accurate tool use, Claude 3.5 Haiku is well suited for user-facing products, specialized sub-agent tasks, and generating personalized experiences from huge volumes of data.",
-		knowledgeCutoffDate: "July 2024",
+		knowledgeCutoffDate: "July 31, 2024",
 		releaseDate: "October 22, 2024",
 		lastUpdated: "October 22, 2024",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
 		card: "https://www.prompthub.us/models/claude-3-5-haiku",
-		contextWindow: 80000,
+		contextWindow: 200000,
 		maxTokens: 8192,
-		costPer1kInputTokens: 0.001,
-		costPer1kOutputTokens: 0.005,
+		costPer1kInputTokens: 0.0008,
+		costPer1kOutputTokens: 0.004,
 		strengths: [
 			"chat",
 			"general_knowledge",
@@ -287,18 +292,21 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsCodeExecution: true,
 		includedInRouter: true,
 		supportsTokenCounting: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
 	createModelConfig("claude-4-opus", PROVIDER, {
-		name: "Claude 4 Opus",
+		name: "Claude Opus 4",
 		matchingModel: "claude-opus-4-20250514",
 		description:
 			"The Claude 4 Opus is an advanced AI model by Anthropic designed for enterprise-level applications. It offers unmatched performance in handling complex tasks, making it an ideal solution for businesses requiring high-level data processing and analysis.",
-		knowledgeCutoffDate: "March 2025",
+		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
@@ -325,25 +333,28 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsCodeExecution: true,
 		supportsDocuments: true,
 		supportsTokenCounting: true,
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 
 	createModelConfig("claude-4.5-opus", PROVIDER, {
-		name: "Claude 4.5 Opus",
+		name: "Claude Opus 4.5",
 		matchingModel: "claude-opus-4-5-20251101",
 		description:
 			"The Claude 4.5 Opus is intelligent, efficient, and the best model in the world for coding, agents, and computer use.",
-		knowledgeCutoffDate: "March 2025",
+		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "November 1, 2025",
 		lastUpdated: "November 1, 2025",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		card: "https://www.prompthub.us/models/claude-4.5-opus",
 		contextWindow: 200000,
-		maxTokens: 32000,
+		maxTokens: 64000,
 		costPer1kInputTokens: 0.005, // $5.00 per million tokens
 		costPer1kOutputTokens: 0.025, // $25.00 per million tokens
 		strengths: [
@@ -364,18 +375,21 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsDocuments: true,
 		supportsTokenCounting: true,
 		supportsTopP: false,
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 
 	createModelConfig("claude-4.1-opus", PROVIDER, {
-		name: "Claude 4.1 Opus",
+		name: "Claude Opus 4.1 (latest)",
 		matchingModel: "claude-opus-4-1",
 		description:
 			"Enhanced Claude 4 Opus with improved reasoning and analysis capabilities.",
-		knowledgeCutoffDate: "March 2025",
+		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "August 5, 2025",
 		lastUpdated: "August 5, 2025",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
@@ -403,15 +417,15 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("claude-3.7-sonnet", PROVIDER, {
-		name: "Claude 3.7 Sonnet",
+		name: "Claude Sonnet 3.7",
 		matchingModel: "claude-3-7-sonnet-20250219",
 		description:
 			"Advanced reasoning model with enhanced capabilities for complex analytical tasks.",
-		knowledgeCutoffDate: "October 2024",
+		knowledgeCutoffDate: "October 31, 2024",
 		releaseDate: "February 19, 2025",
 		lastUpdated: "February 19, 2025",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
@@ -437,5 +451,268 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 		supportsToolCalls: true,
 		supportsTokenCounting: true,
+	}),
+	createModelConfig("claude-3-5-haiku-20241022", PROVIDER, {
+		name: "Claude Haiku 3.5",
+		matchingModel: "claude-3-5-haiku-20241022",
+		knowledgeCutoffDate: "July 31, 2024",
+		releaseDate: "October 22, 2024",
+		lastUpdated: "October 22, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.0008,
+		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("claude-3-5-sonnet-20240620", PROVIDER, {
+		name: "Claude Sonnet 3.5",
+		matchingModel: "claude-3-5-sonnet-20240620",
+		knowledgeCutoffDate: "April 30, 2024",
+		releaseDate: "June 20, 2024",
+		lastUpdated: "June 20, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("claude-3-5-sonnet-20241022", PROVIDER, {
+		name: "Claude Sonnet 3.5 v2",
+		matchingModel: "claude-3-5-sonnet-20241022",
+		knowledgeCutoffDate: "April 30, 2024",
+		releaseDate: "October 22, 2024",
+		lastUpdated: "October 22, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("claude-3-7-sonnet-latest", PROVIDER, {
+		name: "Claude Sonnet 3.7 (latest)",
+		matchingModel: "claude-3-7-sonnet-latest",
+		knowledgeCutoffDate: "October 31, 2024",
+		releaseDate: "February 19, 2025",
+		lastUpdated: "February 19, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("claude-3-haiku-20240307", PROVIDER, {
+		name: "Claude Haiku 3",
+		matchingModel: "claude-3-haiku-20240307",
+		knowledgeCutoffDate: "August 31, 2023",
+		releaseDate: "March 13, 2024",
+		lastUpdated: "March 13, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00025,
+		costPer1kOutputTokens: 0.00125,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("claude-3-opus-20240229", PROVIDER, {
+		name: "Claude Opus 3",
+		matchingModel: "claude-3-opus-20240229",
+		knowledgeCutoffDate: "August 31, 2023",
+		releaseDate: "February 29, 2024",
+		lastUpdated: "February 29, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.015,
+		costPer1kOutputTokens: 0.075,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("claude-3-sonnet-20240229", PROVIDER, {
+		name: "Claude Sonnet 3",
+		matchingModel: "claude-3-sonnet-20240229",
+		knowledgeCutoffDate: "August 31, 2023",
+		releaseDate: "March 4, 2024",
+		lastUpdated: "March 4, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("claude-haiku-4-5", PROVIDER, {
+		name: "Claude Haiku 4.5 (latest)",
+		matchingModel: "claude-haiku-4-5",
+		knowledgeCutoffDate: "February 28, 2025",
+		releaseDate: "October 15, 2025",
+		lastUpdated: "October 15, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.001,
+		costPer1kOutputTokens: 0.005,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("claude-haiku-4-5-20251001", PROVIDER, {
+		name: "Claude Haiku 4.5",
+		matchingModel: "claude-haiku-4-5-20251001",
+		knowledgeCutoffDate: "February 28, 2025",
+		releaseDate: "October 15, 2025",
+		lastUpdated: "October 15, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.001,
+		costPer1kOutputTokens: 0.005,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("claude-opus-4-0", PROVIDER, {
+		name: "Claude Opus 4 (latest)",
+		matchingModel: "claude-opus-4-0",
+		knowledgeCutoffDate: "March 31, 2025",
+		releaseDate: "May 22, 2025",
+		lastUpdated: "May 22, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 32000,
+		costPer1kInputTokens: 0.015,
+		costPer1kOutputTokens: 0.075,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("claude-opus-4-1-20250805", PROVIDER, {
+		name: "Claude Opus 4.1",
+		matchingModel: "claude-opus-4-1-20250805",
+		knowledgeCutoffDate: "March 31, 2025",
+		releaseDate: "August 5, 2025",
+		lastUpdated: "August 5, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 32000,
+		costPer1kInputTokens: 0.015,
+		costPer1kOutputTokens: 0.075,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("claude-opus-4-5", PROVIDER, {
+		name: "Claude Opus 4.5 (latest)",
+		matchingModel: "claude-opus-4-5",
+		knowledgeCutoffDate: "March 31, 2025",
+		releaseDate: "November 24, 2025",
+		lastUpdated: "November 24, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 ]);
