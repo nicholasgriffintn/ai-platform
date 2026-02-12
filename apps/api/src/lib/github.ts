@@ -7,24 +7,22 @@ export async function getGithubConnectionToken(
 	userId: number,
 	ctx: ReturnType<typeof getServiceContext>,
 ) {
-	const providerIds = ["github-models", "github-copilot", "github"];
+	const providerId = "github";
 
-	for (const providerId of providerIds) {
-		try {
-			const token = await ctx.repositories.userSettings.getProviderApiKey(
-				userId,
-				providerId,
-			);
-			if (token) {
-				return token;
-			}
-		} catch (error) {
-			logger.warn("Failed to load GitHub provider token for sandbox route", {
-				user_id: userId,
-				provider_id: providerId,
-				error_message: error instanceof Error ? error.message : String(error),
-			});
+	try {
+		const token = await ctx.repositories.userSettings.getProviderApiKey(
+			userId,
+			providerId,
+		);
+		if (token) {
+			return token;
 		}
+	} catch (error) {
+		logger.warn("Failed to load GitHub provider token for sandbox route", {
+			user_id: userId,
+			provider_id: providerId,
+			error_message: error instanceof Error ? error.message : String(error),
+		});
 	}
 
 	return null;

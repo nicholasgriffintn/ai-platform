@@ -72,10 +72,7 @@ export const run_feature_implementation: IFunction = {
 			expiresIn,
 		);
 
-		const githubToken =
-			(await getGithubConnectionToken(user.id, context)) ||
-			request.env.GITHUB_TOKEN ||
-			null;
+		const githubToken = await getGithubConnectionToken(user.id, context);
 
 		const response = await request.env.SANDBOX_WORKER.fetch(
 			new Request("http://sandbox/execute", {

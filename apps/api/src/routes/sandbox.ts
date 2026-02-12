@@ -48,10 +48,7 @@ sandbox.post("/execute", async (c: Context) => {
 		expiresIn,
 	);
 
-	const githubToken =
-		(await getGithubConnectionToken(user.id, ctx)) ||
-		c.env.GITHUB_TOKEN ||
-		null;
+	const githubToken = await getGithubConnectionToken(user.id, ctx);
 
 	const response = await c.env.SANDBOX_WORKER.fetch(
 		new Request("http://sandbox/execute", {
