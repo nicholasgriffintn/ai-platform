@@ -80,17 +80,25 @@ function getHoverPreviewPosition(anchorRect: DOMRect) {
 
 	const viewportWidth = window.innerWidth;
 	const viewportHeight = window.innerHeight;
-	let left = anchorRect.right + HOVER_PREVIEW_GUTTER;
 
-	if (left + HOVER_PREVIEW_WIDTH > viewportWidth - HOVER_PREVIEW_EDGE) {
+	const spaceOnRight = viewportWidth - anchorRect.right;
+	const spaceOnLeft = anchorRect.left;
+	const requiredSpace =
+		HOVER_PREVIEW_WIDTH + HOVER_PREVIEW_GUTTER + HOVER_PREVIEW_EDGE;
+
+	let left: number;
+	if (spaceOnRight >= requiredSpace) {
+		left = anchorRect.right + HOVER_PREVIEW_GUTTER;
+	} else if (spaceOnLeft >= requiredSpace) {
 		left = anchorRect.left - HOVER_PREVIEW_WIDTH - HOVER_PREVIEW_GUTTER;
-	}
-
-	const cannotFitHorizontally =
-		left < HOVER_PREVIEW_EDGE ||
-		left + HOVER_PREVIEW_WIDTH > viewportWidth - HOVER_PREVIEW_EDGE;
-	if (cannotFitHorizontally) {
-		return null;
+	} else {
+		left = Math.max(
+			HOVER_PREVIEW_EDGE,
+			Math.min(
+				viewportWidth - HOVER_PREVIEW_WIDTH - HOVER_PREVIEW_EDGE,
+				anchorRect.left,
+			),
+		);
 	}
 
 	const top = Math.min(
