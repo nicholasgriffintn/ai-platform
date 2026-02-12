@@ -7,23 +7,20 @@ import type { ModelConfig } from "~/types";
 const PROVIDER = "anthropic";
 
 export const anthropicModelConfig: ModelConfig = createModelConfigObject([
-	createModelConfig("claude-4.5-opus", PROVIDER, {
-		name: "Claude 4.5 Opus",
-		matchingModel: "claude-opus-4-5-20251101",
+	createModelConfig("claude-4.6-opus", PROVIDER, {
+		name: "Claude 4.6 Opus",
+		matchingModel: "claude-opus-4-6",
 		description:
-			"The Claude 4.5 Opus is intelligent, efficient, and the best model in the world for coding, agents, and computer use.",
-		knowledgeCutoffDate: "March 2025",
-		releaseDate: "November 1, 2025",
-		lastUpdated: "November 1, 2025",
+			"The Claude 4.6 Opus is intelligent, efficient, and the best model in the world for coding, agents, and computer use.",
+		knowledgeCutoffDate: "May 2025",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
 		supportsTemperature: false,
-		card: "https://www.prompthub.us/models/claude-4.5-opus",
 		contextWindow: 200000,
-		maxTokens: 32000,
+		maxTokens: 128000,
 		costPer1kInputTokens: 0.005, // $5.00 per million tokens
 		costPer1kOutputTokens: 0.025, // $25.00 per million tokens
 		strengths: [
@@ -215,6 +212,44 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsTokenCounting: true,
 	}),
 
+	createModelConfig("claude-4.5-haiku", PROVIDER, {
+		name: "Claude 4.5 Haiku",
+		matchingModel: "claude-4-5-haiku-latest",
+		description:
+			"With fast speeds, improved instruction following, and more accurate tool use, Claude 4.5 Haiku is well suited for user-facing products, specialized sub-agent tasks, and generating personalized experiences from huge volumes of data.",
+		knowledgeCutoffDate: "July 2024",
+		releaseDate: "October 22, 2024",
+		lastUpdated: "October 22, 2024",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.001,
+		costPer1kOutputTokens: 0.005,
+		strengths: [
+			"chat",
+			"general_knowledge",
+			"analysis",
+			"reasoning",
+			"creative",
+		],
+		contextComplexity: 3,
+		reliability: 3,
+		speed: 5,
+		isFeatured: false,
+		multimodal: true,
+		supportsArtifacts: true,
+		supportsToolCalls: true,
+		supportsSearchGrounding: true,
+		supportsCodeExecution: true,
+		includedInRouter: true,
+		supportsTokenCounting: true,
+	}),
+
 	createModelConfig("claude-3.5-haiku", PROVIDER, {
 		name: "Claude 3.5 Haiku",
 		matchingModel: "claude-3-5-haiku-latest",
@@ -290,6 +325,45 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsCodeExecution: true,
 		supportsDocuments: true,
 		supportsTokenCounting: true,
+	}),
+
+	createModelConfig("claude-4.5-opus", PROVIDER, {
+		name: "Claude 4.5 Opus",
+		matchingModel: "claude-opus-4-5-20251101",
+		description:
+			"The Claude 4.5 Opus is intelligent, efficient, and the best model in the world for coding, agents, and computer use.",
+		knowledgeCutoffDate: "March 2025",
+		releaseDate: "November 1, 2025",
+		lastUpdated: "November 1, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		card: "https://www.prompthub.us/models/claude-4.5-opus",
+		contextWindow: 200000,
+		maxTokens: 32000,
+		costPer1kInputTokens: 0.005, // $5.00 per million tokens
+		costPer1kOutputTokens: 0.025, // $25.00 per million tokens
+		strengths: [
+			"chat",
+			"general_knowledge",
+			"analysis",
+			"reasoning",
+			"creative",
+		],
+		contextComplexity: 5,
+		reliability: 5,
+		speed: 3,
+		multimodal: true,
+		isFeatured: false,
+		supportsToolCalls: true,
+		supportsSearchGrounding: true,
+		supportsCodeExecution: true,
+		supportsDocuments: true,
+		supportsTokenCounting: true,
+		supportsTopP: false,
 	}),
 
 	createModelConfig("claude-4.1-opus", PROVIDER, {

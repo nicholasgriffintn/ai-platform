@@ -510,7 +510,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 	}),
 
-	createModelConfig("gpt-5.1", PROVIDER, {
+	createModelConfig("gpt-5.2", PROVIDER, {
 		name: "OpenAI GPT 5.2",
 		matchingModel: "gpt-5.2",
 		description:

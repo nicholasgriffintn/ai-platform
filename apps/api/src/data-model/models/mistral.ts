@@ -7,6 +7,18 @@ import {
 const PROVIDER = "mistral";
 
 export const mistralModelConfig: ModelConfig = createModelConfigObject([
+	createModelConfig("mistral-small-creative", PROVIDER, {
+		name: "Mistral Small Creative (Labs)",
+		matchingModel: "labs-mistral-small-creative",
+		description:
+			"An experimental specialized small model trained on meticulously curated data, designed for creative writing, narrative generation, roleplay and character-driven dialog, general-purpose instruction following and conversational agents.",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		contextWindow: 32768,
+	}),
+
 	createModelConfig("mistral-ocr-latest", PROVIDER, {
 		name: "Mistral OCR",
 		matchingModel: "mistral-ocr-latest",
@@ -53,9 +65,9 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		requiresThinkingPrompt: true,
 	}),
 
-	createModelConfig("devstral-small-2507", PROVIDER, {
+	createModelConfig("devstral-small", PROVIDER, {
 		name: "Devstral Small",
-		matchingModel: "devstral-small-2507",
+		matchingModel: "devstral-small-latest",
 		description:
 			"Devstral Small is an agentic LLM for software engineering tasks.",
 		knowledgeCutoffDate: "May 2025",
@@ -495,9 +507,9 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 	}),
 
-	createModelConfig("devstral-small-2505", PROVIDER, {
+	createModelConfig("devstral-small-latest", PROVIDER, {
 		name: "Devstral Small 2505",
-		matchingModel: "devstral-small-2505",
+		matchingModel: "devstral-small-latest",
 		description:
 			"Earlier version of Devstral Small for software engineering tasks.",
 		knowledgeCutoffDate: "May 2025",
@@ -598,7 +610,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("voxtral-small", PROVIDER, {
 		name: "Voxtral Small",
-		matchingModel: "voxtral-small-2507",
+		matchingModel: "voxtral-small-latest",
 		description:
 			"Audio input capabilities enable models to chat and understand audio directly, this can be used for both chat use cases via audio or for optimal transcription purposes.",
 		modalities: {
@@ -610,7 +622,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("voxtral-mini", PROVIDER, {
 		name: "Voxtral Mini",
-		matchingModel: "voxtral-mini-2507",
+		matchingModel: "voxtral-mini-latest",
 		description:
 			"Audio input capabilities enable models to chat and understand audio directly, this can be used for both chat use cases via audio or for optimal transcription purposes.",
 		modalities: {
