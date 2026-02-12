@@ -7,6 +7,7 @@ export interface TaskParams {
 	userToken: string;
 	shouldCommit?: boolean;
 	polychatApiUrl: string;
+	githubToken?: string;
 }
 
 export interface TaskResult {
@@ -15,6 +16,7 @@ export interface TaskResult {
 	diff?: string;
 	summary?: string;
 	error?: string;
+	branchName?: string;
 }
 
 export interface Env {

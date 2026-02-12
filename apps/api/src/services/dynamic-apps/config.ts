@@ -142,6 +142,12 @@ export const FUNCTION_APP_METADATA: Record<string, DynamicAppMetadata> = {
 		theme: "slate",
 		tags: ["code", "generation"],
 	},
+	run_feature_implementation: {
+		category: "Code Assistance",
+		icon: "hammer",
+		theme: "slate",
+		tags: ["sandbox", "github", "automation"],
+	},
 	prompt_coach: {
 		category: "Productivity & Coaching",
 		icon: "sparkles",

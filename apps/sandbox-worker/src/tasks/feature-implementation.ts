@@ -2,8 +2,20 @@ import { getSandbox } from "@cloudflare/sandbox";
 
 import { PolychatClient } from "../lib/polychat-client";
 import type { TaskParams, TaskResult, Env } from "../types";
+import {
+	execOrThrow,
+	resolveGitHubRepo,
+	extractCommands,
+	assertSafeCommand,
+	formatCommandResult,
+	buildSummary,
+	truncateLog,
+	quoteForShell,
+	buildCommitMessage,
+} from "../lib/commands";
 
-// TODO: Add streaming back: https://developers.cloudflare.com/sandbox/guides/streaming-output/
+const DEFAULT_MODEL = "mistral-large";
+const MAX_COMMANDS = 30;
 
 export async function executeFeatureImplementation(
 	params: TaskParams,
@@ -11,78 +23,126 @@ export async function executeFeatureImplementation(
 ): Promise<TaskResult> {
 	const sandbox = getSandbox(env.Sandbox, crypto.randomUUID().slice(0, 8));
 	const client = new PolychatClient(params.polychatApiUrl, params.userToken);
+	const executionLogs: string[] = [];
+	let branchName: string | undefined;
 
 	try {
-		if (!params.model) {
-			params.model = "mistral-large";
+		const task = params.task.trim();
+		if (!task) {
+			throw new Error("Task is required");
 		}
 
-		const repoName = params.repo.split("/").pop() ?? "repo";
-		await sandbox.gitCheckout(params.repo, { targetDir: repoName });
+		const model = params.model || DEFAULT_MODEL;
+		const repo = resolveGitHubRepo(params.repo, params.githubToken);
+
+		await sandbox.gitCheckout(repo.checkoutUrl, {
+			targetDir: repo.targetDir,
+			depth: 1,
+		});
 
 		if (params.shouldCommit) {
-			const generatedBranchName = `polychat/feature-${Date.now()}`;
-			await sandbox.exec(
-				`cd ${repoName} && git checkout ${generatedBranchName}`,
+			branchName = `polychat/feature-${Date.now()}`;
+			await execOrThrow(
+				sandbox,
+				`git -C ${quoteForShell(repo.targetDir)} checkout -b ${quoteForShell(branchName)}`,
+				executionLogs,
 			);
 		}
 
 		const planPrompt =
-			`Implement this feature in the repository: ${params.task}\n\n` +
-			`First, analyse the codebase structure. Then provide a step-by-step plan with specific commands.`;
+			`Implement this feature in the repository ${repo.displayName}: ${task}\n\n` +
+			"First, analyse the current code and produce a concise implementation plan.";
 
 		const plan = await client.chatCompletion({
 			messages: [{ role: "user", content: planPrompt }],
-			model: params.model,
+			model,
 		});
 
 		const implPrompt =
 			`Based on this plan:\n${plan}\n\n` +
-			`Provide the exact commands and code changes needed. Format as shell commands.`;
+			"Return only shell commands in a single ```bash``` block.\n" +
+			"Requirements: do not include explanations, do not include `cd`, and do not chain commands with `&&`, `||`, `;`, or pipes.";
 
 		const implementation = await client.chatCompletion({
 			messages: [{ role: "user", content: implPrompt }],
-			model: params.model,
+			model,
 		});
 
-		const commands = extractCommands(implementation);
-		let logs = "";
-
-		// TODO: We probably want to use the methods to manage files: https://developers.cloudflare.com/sandbox/guides/manage-files/
-		for (const cmd of commands) {
-			const result = await sandbox.exec(`cd ${repoName} && ${cmd}`);
-			logs += `$ ${cmd}\n${result.stdout}\n${result.stderr}\n`;
+		const commands = extractCommands(implementation).slice(0, MAX_COMMANDS);
+		if (commands.length === 0) {
+			throw new Error("No executable commands were returned by the model");
 		}
 
-		const diffResult = await sandbox.exec(`cd ${repoName} && git diff`);
+		for (const cmd of commands) {
+			assertSafeCommand(cmd);
+
+			const result = await sandbox.exec(
+				`cd ${quoteForShell(repo.targetDir)} && ${cmd}`,
+			);
+			executionLogs.push(formatCommandResult(cmd, result));
+
+			if (!result.success) {
+				throw new Error(
+					`Command failed (${result.exitCode}): ${cmd}\n${result.stderr || result.stdout}`,
+				);
+			}
+		}
+
+		const diffResult = await sandbox.exec(
+			`git -C ${quoteForShell(repo.targetDir)} diff --patch`,
+		);
+		if (!diffResult.success) {
+			throw new Error(diffResult.stderr || "Failed to generate git diff");
+		}
 		const diff = diffResult.stdout;
 
 		if (params.shouldCommit) {
-			await sandbox.exec('cd repo && git config user.name "Polychat Bot"');
-			await sandbox.exec('cd repo && git config user.email "bot@polychat.app"');
-			// TODO: Work out the commit message based on the implementation details
-			await sandbox.exec("cd repo && git add .");
-			await sandbox.exec(
-				'cd repo && git commit -m "Implement feature: ${params.task}"',
+			await execOrThrow(
+				sandbox,
+				`git -C ${quoteForShell(repo.targetDir)} config user.name ${quoteForShell("Polychat Bot")}`,
+				executionLogs,
 			);
+			await execOrThrow(
+				sandbox,
+				`git -C ${quoteForShell(repo.targetDir)} config user.email ${quoteForShell("bot@polychat.app")}`,
+				executionLogs,
+			);
+			await execOrThrow(
+				sandbox,
+				`git -C ${quoteForShell(repo.targetDir)} add -A`,
+				executionLogs,
+			);
+
+			const stagedStatus = await sandbox.exec(
+				`git -C ${quoteForShell(repo.targetDir)} diff --cached --quiet`,
+			);
+			if (stagedStatus.exitCode !== 0) {
+				await execOrThrow(
+					sandbox,
+					`git -C ${quoteForShell(repo.targetDir)} commit -m ${quoteForShell(buildCommitMessage(task))}`,
+					executionLogs,
+				);
+			}
 		}
 
 		return {
 			success: true,
-			logs,
+			logs: truncateLog(executionLogs.join("\n")),
 			diff,
-			summary: `Implemented: ${params.task}`,
+			branchName,
+			summary: buildSummary(
+				task,
+				repo.displayName,
+				commands.length,
+				branchName,
+			),
 		};
 	} catch (error) {
 		return {
 			success: false,
-			logs: "",
-			error: String(error),
+			logs: truncateLog(executionLogs.join("\n")),
+			branchName,
+			error: error instanceof Error ? error.message : String(error),
 		};
 	}
-}
-
-function extractCommands(text: string): string[] {
-	// TODO: work out how to extract the commands
-	return [];
 }

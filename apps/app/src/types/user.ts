@@ -42,4 +42,5 @@ export interface UserSettings {
 	transcription_provider?: string;
 	transcription_model?: string;
 	search_provider?: string;
+	sandbox_model?: string;
 }

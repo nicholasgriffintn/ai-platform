@@ -3,6 +3,7 @@ import { type Context, Hono } from "hono";
 import { requireAuth } from "~/middleware/auth";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { generateJwtToken } from "~/services/auth/jwt";
+import { getGithubConnectionToken } from "~/lib/github";
 
 const sandbox = new Hono();
 sandbox.use("*", requireAuth);
@@ -10,14 +11,25 @@ sandbox.use("*", requireAuth);
 sandbox.post("/execute", async (c: Context) => {
 	const ctx = getServiceContext(c);
 	const user = ctx.requireUser();
-	const body = await c.req.json();
+	let body: Record<string, unknown>;
+	try {
+		body = (await c.req.json()) as Record<string, unknown>;
+	} catch {
+		return c.json({ error: "Invalid JSON body" }, 400);
+	}
 
 	if (!c.env.SANDBOX_WORKER) {
 		return c.json({ error: "Sandbox not available" }, 503);
 	}
 
+	if (body.model !== undefined && typeof body.model !== "string") {
+		return c.json({ error: "model must be a string" }, 400);
+	}
+
 	const settings = await ctx.repositories.userSettings.getUserSettings(user.id);
-	const model = body.model || settings?.sandbox_model;
+	const model =
+		(typeof body.model === "string" ? body.model : undefined) ||
+		settings?.sandbox_model;
 
 	if (!model) {
 		return c.json(
@@ -36,6 +48,11 @@ sandbox.post("/execute", async (c: Context) => {
 		expiresIn,
 	);
 
+	const githubToken =
+		(await getGithubConnectionToken(user.id, ctx)) ||
+		c.env.GITHUB_TOKEN ||
+		null;
+
 	const response = await c.env.SANDBOX_WORKER.fetch(
 		new Request("http://sandbox/execute", {
 			method: "POST",
@@ -47,7 +64,12 @@ sandbox.post("/execute", async (c: Context) => {
 				task: body.task,
 				model,
 				userToken: sandboxToken,
-				polychatApiUrl: "https://api.polychat.app",
+				shouldCommit: Boolean(body.shouldCommit),
+				polychatApiUrl:
+					c.env.ENV === "production"
+						? "https://api.polychat.app"
+						: "http://localhost:8787",
+				githubToken: githubToken || undefined,
 			}),
 		}),
 	);

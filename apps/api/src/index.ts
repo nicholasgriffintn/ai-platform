@@ -80,6 +80,10 @@ const corsOrigin = (origin: string, c: Context) =>
 const csrfOrigin = (origin: string, c: Context) =>
 	Boolean(origin && isAllowedOrigin(origin, c.env.ENV));
 
+const csrfMiddleware = csrf({
+	origin: csrfOrigin,
+});
+
 app.use(
 	"*",
 	cors({
@@ -96,11 +100,13 @@ app.use(
 	}),
 );
 
-app.use(
-	csrf({
-		origin: csrfOrigin,
-	}),
-);
+app.use("*", (c, next) => {
+	if (c.req.path.startsWith(ROUTES.WEBHOOKS)) {
+		return next();
+	}
+
+	return csrfMiddleware(c, next);
+});
 
 app.use(securityHeaders());
 

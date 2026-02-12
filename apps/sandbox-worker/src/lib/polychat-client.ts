@@ -25,6 +25,13 @@ export class PolychatClient {
 			}),
 		});
 
+		if (!response.ok) {
+			const errorText = await response.text();
+			throw new Error(
+				`Polychat API request failed (${response.status}): ${errorText.slice(0, 500)}`,
+			);
+		}
+
 		const data = (await response.json()) as {
 			choices: Array<{
 				message: {
@@ -32,6 +39,12 @@ export class PolychatClient {
 				};
 			}>;
 		};
-		return data.choices[0].message.content;
+
+		const content = data.choices?.[0]?.message?.content;
+		if (!content) {
+			throw new Error("Polychat API returned an empty completion response");
+		}
+
+		return content;
 	}
 }

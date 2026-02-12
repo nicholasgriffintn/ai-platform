@@ -281,6 +281,13 @@
       "when": 1767487336038,
       "tag": "0039_wise_lorna_dane",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "6",
+      "when": 1770764044885,
+      "tag": "0040_motionless_hobgoblin",
+      "breakpoints": true
     }
   ]
 }

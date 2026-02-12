@@ -175,6 +175,7 @@ export class UserSettingsRepository extends BaseRepository {
 			transcription_provider: settings.transcription_provider ?? null,
 			transcription_model: settings.transcription_model ?? null,
 			search_provider: settings.search_provider ?? null,
+			sandbox_model: settings.sandbox_model ?? null,
 		};
 
 		const allowedFields = Object.keys(updates);
