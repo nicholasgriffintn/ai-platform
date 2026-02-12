@@ -41,7 +41,7 @@ export default function ErrorRoute({
 					<button
 						type="button"
 						onClick={() => window.location.reload()}
-						className="rounded bg-primary px-3 py-2 text-sm text-white"
+						className="rounded bg-black px-3 py-2 text-sm text-white"
 					>
 						Retry
 					</button>
