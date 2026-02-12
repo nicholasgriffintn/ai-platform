@@ -1,33 +1,78 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-import { getServiceContext } from "~/lib/context/serviceContext";
+import { githubApiRequest } from "~/services/github/api-client";
+import { createGitHubAppJwt } from "~/services/github/app-jwt";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/github" });
+const GITHUB_API_BASE = "https://api.github.com";
 
-export async function getGithubConnectionToken(
-	userId: number,
-	ctx: ReturnType<typeof getServiceContext>,
-) {
-	const providerId = "github";
+async function getInstallationIdForRepo(
+	repo: string,
+	appJwt: string,
+): Promise<number> {
+	const response = await githubApiRequest({
+		url: `${GITHUB_API_BASE}/repos/${repo}/installation`,
+		method: "GET",
+		bearerToken: appJwt,
+	});
+	const data = (await response.json()) as { id?: number };
 
-	try {
-		const token = await ctx.repositories.userSettings.getProviderApiKey(
-			userId,
-			providerId,
-		);
-		if (token) {
-			return token;
-		}
-	} catch (error) {
-		logger.warn("Failed to load GitHub provider token for sandbox route", {
-			user_id: userId,
-			provider_id: providerId,
-			error_message: error instanceof Error ? error.message : String(error),
-		});
+	if (!data.id) {
+		throw new Error(`No GitHub App installation found for ${repo}`);
 	}
 
-	return null;
+	return data.id;
+}
+
+export async function getGitHubAppInstallationToken({
+	appId,
+	privateKey,
+	repo,
+	installationId,
+}: {
+	appId: string;
+	privateKey: string;
+	repo?: string;
+	installationId?: number;
+}): Promise<string> {
+	try {
+		const appJwt = createGitHubAppJwt({ appId, privateKey });
+		const resolvedInstallationId = installationId
+			? installationId
+			: repo
+				? await getInstallationIdForRepo(repo, appJwt)
+				: null;
+
+		if (!resolvedInstallationId) {
+			throw new Error("installationId or repo is required");
+		}
+
+		const tokenResponse = await githubApiRequest({
+			url: `${GITHUB_API_BASE}/app/installations/${resolvedInstallationId}/access_tokens`,
+			method: "POST",
+			bearerToken: appJwt,
+			body: {},
+		});
+		const tokenData = (await tokenResponse.json()) as {
+			token?: string;
+			expires_at?: string;
+		};
+
+		if (!tokenData.token) {
+			throw new Error("GitHub App installation token was not returned");
+		}
+
+		return tokenData.token;
+	} catch (error) {
+		logger.error("Failed to create GitHub App installation token", {
+			app_id: appId,
+			repo,
+			installation_id: installationId,
+			error_message: error instanceof Error ? error.message : String(error),
+		});
+		throw error;
+	}
 }
 
 export function validateSignature(
@@ -52,25 +97,12 @@ export async function postCommentToPR(
 	body: string,
 	token: string,
 ) {
-	const response = await fetch(
-		`https://api.github.com/repos/${repo}/issues/${pr}/comments`,
-		{
-			method: "POST",
-			headers: {
-				Authorization: `Bearer ${token}`,
-				"Content-Type": "application/json",
-				Accept: "application/vnd.github+json",
-			},
-			body: JSON.stringify({ body }),
-		},
-	);
-
-	if (!response.ok) {
-		const errorText = await response.text();
-		throw new Error(
-			`GitHub API error (${response.status}): ${errorText.slice(0, 500)}`,
-		);
-	}
+	await githubApiRequest({
+		url: `${GITHUB_API_BASE}/repos/${repo}/issues/${pr}/comments`,
+		method: "POST",
+		bearerToken: token,
+		body: { body },
+	});
 }
 
 export function formatResultComment(result: {

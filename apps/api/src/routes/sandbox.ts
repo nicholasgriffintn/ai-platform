@@ -3,7 +3,8 @@ import { type Context, Hono } from "hono";
 import { requireAuth } from "~/middleware/auth";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { generateJwtToken } from "~/services/auth/jwt";
-import { getGithubConnectionToken } from "~/lib/github";
+import { getGitHubAppInstallationToken } from "~/lib/github";
+import { getGitHubAppConnectionForUserRepo } from "~/services/github/connections";
 
 const sandbox = new Hono();
 sandbox.use("*", requireAuth);
@@ -24,6 +25,12 @@ sandbox.post("/execute", async (c: Context) => {
 
 	if (body.model !== undefined && typeof body.model !== "string") {
 		return c.json({ error: "model must be a string" }, 400);
+	}
+	if (typeof body.repo !== "string" || !body.repo.trim()) {
+		return c.json({ error: "repo must be a non-empty string" }, 400);
+	}
+	if (typeof body.task !== "string" || !body.task.trim()) {
+		return c.json({ error: "task must be a non-empty string" }, 400);
 	}
 
 	const settings = await ctx.repositories.userSettings.getUserSettings(user.id);
@@ -48,25 +55,36 @@ sandbox.post("/execute", async (c: Context) => {
 		expiresIn,
 	);
 
-	const githubToken = await getGithubConnectionToken(user.id, ctx);
+	const githubConnection = await getGitHubAppConnectionForUserRepo(
+		ctx,
+		user.id,
+		body.repo,
+	);
+	const githubToken = await getGitHubAppInstallationToken({
+		appId: githubConnection.appId,
+		privateKey: githubConnection.privateKey,
+		installationId: githubConnection.installationId,
+	});
 
 	const response = await c.env.SANDBOX_WORKER.fetch(
 		new Request("http://sandbox/execute", {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${sandboxToken}`,
+				"X-GitHub-Token": githubToken,
+			},
 			body: JSON.stringify({
 				userId: user.id,
 				taskType: body.taskType,
 				repo: body.repo,
 				task: body.task,
 				model,
-				userToken: sandboxToken,
 				shouldCommit: Boolean(body.shouldCommit),
 				polychatApiUrl:
 					c.env.ENV === "production"
 						? "https://api.polychat.app"
 						: "http://localhost:8787",
-				githubToken: githubToken || undefined,
 			}),
 		}),
 	);

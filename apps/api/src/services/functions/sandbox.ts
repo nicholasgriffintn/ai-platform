@@ -1,6 +1,7 @@
 import type { IFunction } from "~/types";
 import { generateJwtToken } from "~/services/auth/jwt";
-import { getGithubConnectionToken } from "~/lib/github";
+import { getGitHubAppInstallationToken } from "~/lib/github";
+import { getGitHubAppConnectionForUserRepo } from "~/services/github/connections";
 
 export const run_feature_implementation: IFunction = {
 	name: "run_feature_implementation",
@@ -72,25 +73,36 @@ export const run_feature_implementation: IFunction = {
 			expiresIn,
 		);
 
-		const githubToken = await getGithubConnectionToken(user.id, context);
+		const githubConnection = await getGitHubAppConnectionForUserRepo(
+			context,
+			user.id,
+			repo,
+		);
+		const githubToken = await getGitHubAppInstallationToken({
+			appId: githubConnection.appId,
+			privateKey: githubConnection.privateKey,
+			installationId: githubConnection.installationId,
+		});
 
 		const response = await request.env.SANDBOX_WORKER.fetch(
 			new Request("http://sandbox/execute", {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${sandboxToken}`,
+					"X-GitHub-Token": githubToken,
+				},
 				body: JSON.stringify({
 					userId: user.id,
 					taskType: "feature-implementation",
 					repo,
 					task,
 					model: selectedModel,
-					userToken: sandboxToken,
 					shouldCommit: Boolean(shouldCommit),
 					polychatApiUrl:
 						request.env.ENV === "production"
 							? "https://api.polychat.app"
 							: "http://localhost:8787",
-					githubToken: githubToken || undefined,
 				}),
 			}),
 		);

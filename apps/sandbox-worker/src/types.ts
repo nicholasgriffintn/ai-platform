@@ -4,9 +4,12 @@ export interface TaskParams {
 	repo: string;
 	task: string;
 	model?: string;
-	userToken: string;
 	shouldCommit?: boolean;
 	polychatApiUrl: string;
+}
+
+export interface TaskSecrets {
+	userToken: string;
 	githubToken?: string;
 }
 

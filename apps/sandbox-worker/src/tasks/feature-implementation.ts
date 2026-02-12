@@ -1,9 +1,10 @@
 import { getSandbox } from "@cloudflare/sandbox";
 
 import { PolychatClient } from "../lib/polychat-client";
-import type { TaskParams, TaskResult, Env } from "../types";
+import type { TaskParams, TaskResult, TaskSecrets, Env } from "../types";
 import {
 	execOrThrow,
+	execOrThrowRedacted,
 	resolveGitHubRepo,
 	extractCommands,
 	assertSafeCommand,
@@ -19,10 +20,11 @@ const MAX_COMMANDS = 30;
 
 export async function executeFeatureImplementation(
 	params: TaskParams,
+	secrets: TaskSecrets,
 	env: Env,
 ): Promise<TaskResult> {
 	const sandbox = getSandbox(env.Sandbox, crypto.randomUUID().slice(0, 8));
-	const client = new PolychatClient(params.polychatApiUrl, params.userToken);
+	const client = new PolychatClient(params.polychatApiUrl, secrets.userToken);
 	const executionLogs: string[] = [];
 	let branchName: string | undefined;
 
@@ -33,12 +35,21 @@ export async function executeFeatureImplementation(
 		}
 
 		const model = params.model || DEFAULT_MODEL;
-		const repo = resolveGitHubRepo(params.repo, params.githubToken);
+		const repo = resolveGitHubRepo(params.repo, secrets.githubToken);
 
-		await sandbox.gitCheckout(repo.checkoutUrl, {
-			targetDir: repo.targetDir,
-			depth: 1,
-		});
+		if (repo.checkoutAuthHeader) {
+			await execOrThrowRedacted(
+				sandbox,
+				`git -c http.extraHeader=${quoteForShell(repo.checkoutAuthHeader)} clone --depth 1 ${quoteForShell(repo.checkoutUrl)} ${quoteForShell(repo.targetDir)}`,
+				executionLogs,
+				`git clone --depth 1 ${quoteForShell(repo.checkoutUrl)} ${quoteForShell(repo.targetDir)} [auth header redacted]`,
+			);
+		} else {
+			await sandbox.gitCheckout(repo.checkoutUrl, {
+				targetDir: repo.targetDir,
+				depth: 1,
+			});
+		}
 
 		if (params.shouldCommit) {
 			branchName = `polychat/feature-${Date.now()}`;

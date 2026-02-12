@@ -2,6 +2,8 @@ import { Hono } from "hono";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { executeDynamicApp } from "~/services/dynamic-apps";
+import { getGitHubAppConnectionForInstallation } from "~/services/github/connections";
+import type { GitHubAppConnection } from "~/services/github/connection-parser";
 import type { IRequest, IEnv, IUser } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -10,6 +12,7 @@ import {
 	postCommentToPR,
 	formatResultComment,
 	extractImplementTask,
+	getGitHubAppInstallationToken,
 } from "~/lib/github";
 
 const github = new Hono<{ Bindings: IEnv }>();
@@ -17,6 +20,9 @@ const logger = getLogger({ prefix: "routes/webhooks/github" });
 
 interface GithubIssueCommentEvent {
 	action?: string;
+	installation?: {
+		id?: number;
+	};
 	comment?: {
 		body?: string;
 		user?: {
@@ -34,29 +40,43 @@ interface GithubIssueCommentEvent {
 }
 
 github.post("/", async (c) => {
-	// TODO: This really needs to come from a GitHub app that the user has configured.
-	const secret = c.env.GITHUB_WEBHOOK_SECRET;
-	if (!secret) {
-		return c.json({ error: "Webhook secret not configured" }, 503);
-	}
-
 	const signature = c.req.header("x-hub-signature-256");
 	const payload = await c.req.text();
-
-	if (!validateSignature(payload, signature, secret)) {
-		return c.json({ error: "Invalid signature" }, 401);
-	}
-
-	const eventType = c.req.header("x-github-event");
-	if (eventType !== "issue_comment") {
-		return c.json({ success: true });
-	}
 
 	let event: GithubIssueCommentEvent;
 	try {
 		event = JSON.parse(payload) as GithubIssueCommentEvent;
 	} catch {
 		return c.json({ error: "Invalid JSON payload" }, 400);
+	}
+
+	const installationId = event.installation?.id;
+	if (!installationId || !Number.isFinite(installationId)) {
+		return c.json({ error: "Missing installation context" }, 400);
+	}
+
+	const serviceContext = getServiceContext(c);
+	let githubConnection: GitHubAppConnection;
+	try {
+		githubConnection = await getGitHubAppConnectionForInstallation(
+			serviceContext,
+			installationId,
+		);
+	} catch {
+		return c.json({ error: "GitHub App connection not found" }, 401);
+	}
+
+	if (!githubConnection.webhookSecret) {
+		return c.json({ error: "GitHub webhook secret not configured" }, 503);
+	}
+
+	if (!validateSignature(payload, signature, githubConnection.webhookSecret)) {
+		return c.json({ error: "Invalid signature" }, 401);
+	}
+
+	const eventType = c.req.header("x-github-event");
+	if (eventType !== "issue_comment") {
+		return c.json({ success: true });
 	}
 
 	if (
@@ -79,7 +99,26 @@ github.post("/", async (c) => {
 		return c.json({ error: "Missing repository context" }, 400);
 	}
 
-	const serviceContext = getServiceContext(c);
+	let githubInstallationToken: string;
+	try {
+		githubInstallationToken = await getGitHubAppInstallationToken({
+			appId: githubConnection.appId,
+			privateKey: githubConnection.privateKey,
+			installationId: githubConnection.installationId,
+		});
+	} catch (error) {
+		logger.error("Failed to resolve GitHub App installation token", {
+			repo,
+			pr: prNumber,
+			installation_id: installationId,
+			error_message: error instanceof Error ? error.message : String(error),
+		});
+		return c.json(
+			{ error: "GitHub App connection is not configured for this repository" },
+			503,
+		);
+	}
+
 	const linkedUser = await serviceContext.repositories.users.getUserByGithubId(
 		String(commenterId),
 	);
@@ -127,28 +166,25 @@ github.post("/", async (c) => {
 			error_message: errorMessage,
 		});
 
-		// TODO: This should again come from a GitHub app that the user has configured, rather than a global token.
-		if (c.env.GITHUB_TOKEN) {
-			try {
-				await postCommentToPR(
-					repo,
-					prNumber,
-					formatResultComment({
-						success: false,
-						error: errorMessage,
-					}),
-					c.env.GITHUB_TOKEN,
-				);
-			} catch (commentError) {
-				logger.error("Failed to post GitHub PR failure comment", {
-					repo,
-					pr: prNumber,
-					error_message:
-						commentError instanceof Error
-							? commentError.message
-							: String(commentError),
-				});
-			}
+		try {
+			await postCommentToPR(
+				repo,
+				prNumber,
+				formatResultComment({
+					success: false,
+					error: errorMessage,
+				}),
+				githubInstallationToken,
+			);
+		} catch (commentError) {
+			logger.error("Failed to post GitHub PR failure comment", {
+				repo,
+				pr: prNumber,
+				error_message:
+					commentError instanceof Error
+						? commentError.message
+						: String(commentError),
+			});
 		}
 
 		return c.json({ success: true });
@@ -161,24 +197,22 @@ github.post("/", async (c) => {
 		error?: string;
 	};
 
-	if (c.env.GITHUB_TOKEN) {
-		const body = formatResultComment({
-			success: Boolean(result.success),
-			summary: result.summary,
-			diff: result.diff,
-			error: result.error,
-			responseId: execution.response_id,
-		});
+	const body = formatResultComment({
+		success: Boolean(result.success),
+		summary: result.summary,
+		diff: result.diff,
+		error: result.error,
+		responseId: execution.response_id,
+	});
 
-		try {
-			await postCommentToPR(repo, prNumber, body, c.env.GITHUB_TOKEN);
-		} catch (error) {
-			logger.error("Failed to post GitHub PR comment", {
-				repo,
-				pr: prNumber,
-				error_message: error instanceof Error ? error.message : String(error),
-			});
-		}
+	try {
+		await postCommentToPR(repo, prNumber, body, githubInstallationToken);
+	} catch (error) {
+		logger.error("Failed to post GitHub PR comment", {
+			repo,
+			pr: prNumber,
+			error_message: error instanceof Error ? error.message : String(error),
+		});
 	}
 
 	return c.json({ success: true, response_id: execution.response_id });

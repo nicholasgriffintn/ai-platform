@@ -1,5 +1,6 @@
 import { type Context, Hono } from "hono";
 import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import z from "zod/v4";
 import {
 	errorResponseSchema,
 	successResponseSchema,
@@ -21,12 +22,21 @@ import {
 	getUserProviderSettings,
 	syncUserProviders,
 } from "~/services/user/userOperations";
+import { upsertGitHubConnectionForUser } from "~/services/github/manage-connections";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import apiKeys from "./apiKeys";
 import exportHistoryRoute from "./export-history";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("user");
+
+const githubConnectionSchema = z.object({
+	installationId: z.number().int().positive(),
+	appId: z.string().trim().min(1),
+	privateKey: z.string().trim().min(1),
+	webhookSecret: z.string().trim().min(1).optional(),
+	repositories: z.array(z.string().trim().min(1)).optional(),
+});
 
 app.use("/*", requireAuth);
 
@@ -150,6 +160,82 @@ app.get(
 		const models = await getUserEnabledModels(serviceContext, user.id);
 
 		return ResponseFactory.success(c, models);
+	},
+);
+
+app.post(
+	"/github-app-connection",
+	describeRoute({
+		tags: ["user"],
+		summary: "Create or update GitHub App connection",
+		description:
+			"Stores encrypted GitHub App credentials for the authenticated user and installation",
+		requestBody: {
+			description: "GitHub App connection details",
+			required: true,
+			content: {
+				"application/json": {
+					schema: {
+						type: "object",
+						properties: {
+							installationId: { type: "number" },
+							appId: { type: "string" },
+							privateKey: { type: "string" },
+							webhookSecret: { type: "string" },
+							repositories: { type: "array", items: { type: "string" } },
+						},
+						required: ["installationId", "appId", "privateKey"],
+					},
+				},
+			},
+		},
+		responses: {
+			200: {
+				description: "Connection saved successfully",
+				content: {
+					"application/json": {
+						schema: resolver(successResponseSchema),
+					},
+				},
+			},
+			400: {
+				description: "Bad request or validation error",
+				content: {
+					"application/json": {
+						schema: resolver(errorResponseSchema),
+					},
+				},
+			},
+			401: {
+				description: "Authentication required",
+				content: {
+					"application/json": {
+						schema: resolver(errorResponseSchema),
+					},
+				},
+			},
+		},
+	}),
+	zValidator("json", githubConnectionSchema),
+	async (c: Context) => {
+		const user = c.get("user");
+		if (!user?.id) {
+			throw new AssistantError(
+				"Authentication required",
+				ErrorType.AUTHENTICATION_ERROR,
+			);
+		}
+
+		const payload = c.req.valid("json" as never) as z.infer<
+			typeof githubConnectionSchema
+		>;
+		const serviceContext = getServiceContext(c);
+		await upsertGitHubConnectionForUser(serviceContext, user.id, payload);
+
+		return ResponseFactory.success(c, {
+			success: true,
+			message: "GitHub App connection saved successfully",
+		});
 	},
 );
 

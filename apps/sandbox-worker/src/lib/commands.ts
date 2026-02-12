@@ -20,6 +20,7 @@ interface RepoInfo {
 	displayName: string;
 	targetDir: string;
 	checkoutUrl: string;
+	checkoutAuthHeader?: string;
 }
 
 export async function execOrThrow(
@@ -29,6 +30,19 @@ export async function execOrThrow(
 ) {
 	const result = await sandbox.exec(command);
 	logs.push(formatCommandResult(command, result));
+	if (!result.success) {
+		throw new Error(result.stderr || `Command failed (${result.exitCode})`);
+	}
+}
+
+export async function execOrThrowRedacted(
+	sandbox: SandboxInstance,
+	command: string,
+	logs: string[],
+	redactedCommand: string,
+) {
+	const result = await sandbox.exec(command);
+	logs.push(formatCommandResult(redactedCommand, result));
 	if (!result.success) {
 		throw new Error(result.stderr || `Command failed (${result.exitCode})`);
 	}
@@ -58,14 +72,16 @@ export function resolveGitHubRepo(
 	const displayName = `${owner}/${safeName}`;
 	const targetDir = safeName.replace(/[^A-Za-z0-9_.-]/g, "-");
 
-	const checkoutUrl = githubToken
-		? `https://x-access-token:${encodeURIComponent(githubToken)}@github.com/${displayName}.git`
-		: `https://github.com/${displayName}.git`;
+	const checkoutUrl = `https://github.com/${displayName}.git`;
+	const checkoutAuthHeader = githubToken
+		? `AUTHORIZATION: basic ${Buffer.from(`x-access-token:${githubToken}`).toString("base64")}`
+		: undefined;
 
 	return {
 		displayName,
 		targetDir,
 		checkoutUrl,
+		checkoutAuthHeader,
 	};
 }
 
