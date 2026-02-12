@@ -149,7 +149,7 @@ export function ModelsList({
 	return (
 		<div className="overflow-hidden rounded-lg border border-zinc-200/70 bg-white/60 dark:border-zinc-700/70 dark:bg-zinc-900/50">
 			<div className="flex max-h-[min(60vh,400px)] min-h-[280px] sm:max-h-[420px] sm:min-h-[320px]">
-				<div className="flex w-20 flex-col border-r border-zinc-200/70 dark:border-zinc-700/70 sm:w-24 md:w-28">
+				<div className="flex w-12 flex-col border-r border-zinc-200/70 dark:border-zinc-700/70 sm:w-16 md:w-20">
 					<div className="flex-1 overflow-y-auto overflow-x-hidden px-1.5 py-2 sm:px-2">
 						<div className="space-y-1">
 							{providerEntries.map((providerEntry) => {
