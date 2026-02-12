@@ -7,6 +7,18 @@ import {
 const PROVIDER = "mistral";
 
 export const mistralModelConfig: ModelConfig = createModelConfigObject([
+	createModelConfig("mistral-small-creative", PROVIDER, {
+		name: "Mistral Small Creative (Labs)",
+		matchingModel: "labs-mistral-small-creative",
+		description:
+			"An experimental specialized small model trained on meticulously curated data, designed for creative writing, narrative generation, roleplay and character-driven dialog, general-purpose instruction following and conversational agents.",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		contextWindow: 32768,
+	}),
+
 	createModelConfig("mistral-ocr-latest", PROVIDER, {
 		name: "Mistral OCR",
 		matchingModel: "mistral-ocr-latest",
@@ -53,9 +65,9 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		requiresThinkingPrompt: true,
 	}),
 
-	createModelConfig("devstral-small-2507", PROVIDER, {
+	createModelConfig("devstral-small", PROVIDER, {
 		name: "Devstral Small",
-		matchingModel: "devstral-small-2507",
+		matchingModel: "devstral-small-latest",
 		description:
 			"Devstral Small is an agentic LLM for software engineering tasks.",
 		knowledgeCutoffDate: "May 2025",
@@ -117,20 +129,20 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			"Capable in code generation, mathematics, and reasoning with support for dozens of languages.",
 		knowledgeCutoffDate: "November 2024",
 		releaseDate: "November 1, 2024",
-		lastUpdated: "November 4, 2024",
+		lastUpdated: "December 2, 2025",
 		modalities: {
-			input: ["text"],
+			input: ["text", "image"],
 			output: ["text"],
 		},
-		supportsAttachments: false,
+		supportsAttachments: true,
 		supportsTemperature: true,
 		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/mistral-large",
-		contextWindow: 131072,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.006,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.0005,
+		costPer1kOutputTokens: 0.0015,
 		strengths: [
 			"chat",
 			"general_knowledge",
@@ -218,7 +230,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
-		supportsAttachments: true,
+		supportsAttachments: false,
 		supportsTemperature: true,
 		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
@@ -367,7 +379,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
-		supportsAttachments: true,
+		supportsAttachments: false,
 		supportsTemperature: true,
 		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
@@ -428,22 +440,22 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("ministral-8b", PROVIDER, {
-		name: "Ministral 8b",
+		name: "Ministral 8B",
 		matchingModel: "ministral-8b-latest",
 		description:
 			"Ministral 3 8B is a powerful and efficient model in the Ministral 3 family, offering best-in-class text and vision capabilities. Built for edge deployment, it delivers high performance across diverse hardware, including local setups.",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text"],
 			output: ["text"],
 		},
-		supportsAttachments: true,
+		supportsAttachments: false,
 		supportsTemperature: true,
 		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
-		contextWindow: 256000,
-		maxTokens: 256000,
-		costPer1kInputTokens: 0.00015,
-		costPer1kOutputTokens: 0.00015,
+		contextWindow: 128000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0001,
+		costPer1kOutputTokens: 0.0001,
 		strengths: [
 			"chat",
 			"general_knowledge",
@@ -459,6 +471,9 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		knowledgeCutoffDate: "October 2024",
+		releaseDate: "October 1, 2024",
+		lastUpdated: "October 4, 2024",
 	}),
 
 	createModelConfig("ministral-3-3b", PROVIDER, {
@@ -467,17 +482,17 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		description:
 			"Ministral 3 3B is the smallest and most efficient model in the Ministral 3 family, offering robust language and vision capabilities in a compact package. Designed for edge deployment, it delivers high performance across diverse hardware, including local setups.",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text"],
 			output: ["text"],
 		},
-		supportsAttachments: true,
+		supportsAttachments: false,
 		supportsTemperature: true,
 		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
-		contextWindow: 256000,
-		maxTokens: 256000,
-		costPer1kInputTokens: 0.0001,
-		costPer1kOutputTokens: 0.0001,
+		contextWindow: 128000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.00004,
+		costPer1kOutputTokens: 0.00004,
 		strengths: [
 			"chat",
 			"general_knowledge",
@@ -493,11 +508,14 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		knowledgeCutoffDate: "October 2024",
+		releaseDate: "October 1, 2024",
+		lastUpdated: "October 4, 2024",
 	}),
 
-	createModelConfig("devstral-small-2505", PROVIDER, {
+	createModelConfig("devstral-small-latest", PROVIDER, {
 		name: "Devstral Small 2505",
-		matchingModel: "devstral-small-2505",
+		matchingModel: "devstral-small-latest",
 		description:
 			"Earlier version of Devstral Small for software engineering tasks.",
 		knowledgeCutoffDate: "May 2025",
@@ -598,7 +616,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("voxtral-small", PROVIDER, {
 		name: "Voxtral Small",
-		matchingModel: "voxtral-small-2507",
+		matchingModel: "voxtral-small-latest",
 		description:
 			"Audio input capabilities enable models to chat and understand audio directly, this can be used for both chat use cases via audio or for optimal transcription purposes.",
 		modalities: {
@@ -610,7 +628,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("voxtral-mini", PROVIDER, {
 		name: "Voxtral Mini",
-		matchingModel: "voxtral-mini-2507",
+		matchingModel: "voxtral-mini-latest",
 		description:
 			"Audio input capabilities enable models to chat and understand audio directly, this can be used for both chat use cases via audio or for optimal transcription purposes.",
 		modalities: {
@@ -625,8 +643,20 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "mistral-embed",
 		description: "An embedding model for text content",
 		modalities: {
-			input: ["embedding"],
-			output: ["embedding"],
+			input: ["text"],
+			output: ["text"],
+		},
+		releaseDate: "December 11, 2023",
+		lastUpdated: "December 11, 2023",
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		contextWindow: 8000,
+		maxTokens: 3072,
+		costPer1kInputTokens: 0.0001,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: false,
 		},
 	}),
 
@@ -647,6 +677,247 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		modalities: {
 			input: ["moderation"],
 			output: ["moderation"],
+		},
+	}),
+	createModelConfig("devstral-2512", PROVIDER, {
+		name: "Devstral 2",
+		matchingModel: "devstral-2512",
+		knowledgeCutoffDate: "December 2025",
+		releaseDate: "December 9, 2025",
+		lastUpdated: "December 9, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.0004,
+		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("devstral-medium-latest", PROVIDER, {
+		name: "Devstral 2",
+		matchingModel: "devstral-medium-latest",
+		knowledgeCutoffDate: "December 2025",
+		releaseDate: "December 2, 2025",
+		lastUpdated: "December 2, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.0004,
+		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("devstral-small-2505", PROVIDER, {
+		name: "Devstral Small 2505",
+		matchingModel: "devstral-small-2505",
+		knowledgeCutoffDate: "May 2025",
+		releaseDate: "May 7, 2025",
+		lastUpdated: "May 7, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0001,
+		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("devstral-small-2507", PROVIDER, {
+		name: "Devstral Small",
+		matchingModel: "devstral-small-2507",
+		knowledgeCutoffDate: "May 2025",
+		releaseDate: "July 10, 2025",
+		lastUpdated: "July 10, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0001,
+		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("labs-devstral-small-2512", PROVIDER, {
+		name: "Devstral Small 2",
+		matchingModel: "labs-devstral-small-2512",
+		knowledgeCutoffDate: "December 2025",
+		releaseDate: "December 9, 2025",
+		lastUpdated: "December 9, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 256000,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral-large-2411", PROVIDER, {
+		name: "Mistral Large 2.1",
+		matchingModel: "mistral-large-2411",
+		knowledgeCutoffDate: "November 2024",
+		releaseDate: "November 1, 2024",
+		lastUpdated: "November 4, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 131072,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral-large-2512", PROVIDER, {
+		name: "Mistral Large 3",
+		matchingModel: "mistral-large-2512",
+		knowledgeCutoffDate: "November 2024",
+		releaseDate: "November 1, 2024",
+		lastUpdated: "December 2, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.0005,
+		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral-medium-2505", PROVIDER, {
+		name: "Mistral Medium 3",
+		matchingModel: "mistral-medium-2505",
+		knowledgeCutoffDate: "May 2025",
+		releaseDate: "May 7, 2025",
+		lastUpdated: "May 7, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 131072,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.0004,
+		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral-medium-2508", PROVIDER, {
+		name: "Mistral Medium 3.1",
+		matchingModel: "mistral-medium-2508",
+		knowledgeCutoffDate: "May 2025",
+		releaseDate: "August 12, 2025",
+		lastUpdated: "August 12, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.0004,
+		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral-nemo", PROVIDER, {
+		name: "Mistral Nemo",
+		matchingModel: "mistral-nemo",
+		knowledgeCutoffDate: "July 2024",
+		releaseDate: "July 1, 2024",
+		lastUpdated: "July 1, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.00015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral-small-2506", PROVIDER, {
+		name: "Mistral Small 3.2",
+		matchingModel: "mistral-small-2506",
+		knowledgeCutoffDate: "March 2025",
+		releaseDate: "June 20, 2025",
+		lastUpdated: "June 20, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.0001,
+		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			enabled: false,
 		},
 	}),
 ]);

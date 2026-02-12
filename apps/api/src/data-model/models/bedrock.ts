@@ -34,7 +34,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("nova-lite", PROVIDER, {
-		name: "Amazon Nova Lite",
+		name: "Nova Lite",
 		matchingModel: "amazon.nova-lite-v1:0",
 		description:
 			"Amazon Nova Lite is a very low-cost multimodal model that is lightning fast for processing image, video, and text inputs. Amazon Nova Lite's accuracy across a breadth of tasks, coupled with its lightning-fast speed, makes it suitable for a wide range of interactive and high-volume applications where cost is a key consideration.",
@@ -48,9 +48,9 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: true,
 		contextWindow: 300000,
-		maxTokens: 5000,
-		costPer1kInputTokens: 0.0008,
-		costPer1kOutputTokens: 0.0016,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.00006,
+		costPer1kOutputTokens: 0.00024,
 		strengths: ["analysis", "multilingual", "vision"],
 		contextComplexity: 3,
 		reliability: 3,
@@ -60,10 +60,13 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsDocuments: true,
 		supportsToolCalls: true,
 		supportsPromptCaching: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
 	createModelConfig("nova-micro", PROVIDER, {
-		name: "Amazon Nova Micro",
+		name: "Nova Micro",
 		matchingModel: "amazon.nova-micro-v1:0",
 		description:
 			"Amazon Nova Micro is a text only model that delivers the lowest latency responses at very low cost. It is highly performant at language understanding, translation, reasoning, code completion, brainstorming, and mathematical problem-solving. With its generation speed of over 200 tokens per second, Amazon Nova Micro is ideal for applications that require fast responses.",
@@ -77,9 +80,9 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		contextWindow: 128000,
-		maxTokens: 5000,
-		costPer1kInputTokens: 0.0001,
-		costPer1kOutputTokens: 0.0002,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.000035,
+		costPer1kOutputTokens: 0.00014,
 		strengths: ["coding", "analysis", "multilingual"],
 		contextComplexity: 2,
 		reliability: 3,
@@ -88,10 +91,13 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsToolCalls: true,
 		supportsPromptCaching: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
 	createModelConfig("nova-pro", PROVIDER, {
-		name: "Amazon Nova Pro",
+		name: "Nova Pro",
 		matchingModel: "amazon.nova-pro-v1:0",
 		description:
 			"Amazon Nova Pro is a highly capable multimodal model with the best combination of accuracy, speed, and cost for a wide range of tasks.  Amazon Nova Pro's capabilities, coupled with its industry-leading speed and cost efficiency, makes it a compelling model for almost any task, including video summarization, Q&A, mathematical reasoning, software development, and AI agents that can execute multi-step workflows.",
@@ -105,9 +111,9 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: true,
 		contextWindow: 300000,
-		maxTokens: 5000,
-		costPer1kInputTokens: 0.0015,
-		costPer1kOutputTokens: 0.006,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.0008,
+		costPer1kOutputTokens: 0.0032,
 		strengths: ["coding", "analysis", "math", "reasoning", "vision"],
 		contextComplexity: 4,
 		reliability: 4,
@@ -116,6 +122,9 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsDocuments: true,
 		supportsToolCalls: true,
 		supportsPromptCaching: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
 	createModelConfig("nova-canvas", PROVIDER, {
@@ -167,8 +176,20 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		description:
 			"OpenAI's gpt-oss-safeguard-120B scales policy-driven safety approach to a 120B-parameter model for maximum accuracy and nuance. It can reason through ambiguous cases, multi-step conversations, and domain-specific rules that smaller filters routinely miss. This model is ideal for enterprises and scaled platforms that require maximal safety accuracy and nuanced policy enforcement. The primary use-cases include high-stakes content moderation, compliance screening, safety analysis of conversations/logs, and centralized policy orchestration across many downstream models.",
 		modalities: {
-			input: ["guardrails"],
-			output: ["guardrails"],
+			input: ["text"],
+			output: ["text"],
+		},
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			enabled: false,
 		},
 	}),
 
@@ -178,8 +199,20 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		description:
 			"OpenAI's gpt-oss-safeguard-20B is a compact, open-weight safety model that lets you enforce your own moderation and compliance rules on any GPT-OSS deployment. It interprets natural-language safety policies and applies them to user prompts and model outputs, returning structured guidance or filtered text. This model is ideal for developers and platform teams who need cost effective policy-driven safety and moderation. The primary use-cases include Applying configurable safety policies to prompts/outputs, running local or edge moderation, and serving as a lightweight “safety layer” in front of open or proprietary LLMs.",
 		modalities: {
-			input: ["guardrails"],
-			output: ["guardrails"],
+			input: ["text"],
+			output: ["text"],
+		},
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00007,
+		costPer1kOutputTokens: 0.0002,
+		reasoningConfig: {
+			enabled: false,
 		},
 	}),
 
@@ -192,26 +225,44 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["text"],
 		},
-		maxTokens: 400000,
-		contextWindow: 400000,
+		maxTokens: 128000,
+		contextWindow: 204608,
+		releaseDate: "October 27, 2025",
+		lastUpdated: "October 27, 2025",
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: false,
+		costPer1kInputTokens: 0.0003,
+		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 
 	createModelConfig("moonshot.kimi-k2-thinking", PROVIDER, {
-		name: "Moonshot Kimi K2 Thinking",
+		name: "Kimi K2 Thinking",
 		matchingModel: "moonshot.kimi-k2-thinking",
 		description:
 			"Kimi-K2-Thinking is Moonshot’s flagship “thinking agent” model, designed from the ground up for deep, tool-augmented reasoning. Its 1T-parameter MoE architecture (32B active) powers state-of-the-art performance on long-horizon tasks like HLE and BrowseComp. Native INT4 quantization and a 256K context window let you run serious research- and agent-style workloads with practical hardware. This model is ideal for teams building deep reasoning agents, autonomous research and coding systems, and complex tool-using workflows. The primary use-cases include ;ong-horizon planning with tools, complex coding and debugging, research agents over large corpora, and workflows needing 200–300-step stable tool orchestration.",
 		modalities: {
-			input: ["speech"],
-			output: ["speech", "text"],
+			input: ["text"],
+			output: ["text"],
 		},
 		reasoningConfig: { enabled: true },
 		contextWindow: 256000,
 		maxTokens: 256000,
+		releaseDate: "December 2, 2025",
+		lastUpdated: "December 2, 2025",
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		costPer1kInputTokens: 0.0006,
+		costPer1kOutputTokens: 0.0025,
 	}),
 
 	createModelConfig("nvidia.nemotron-nano-12b-v2", PROVIDER, {
-		name: "NVIDIA Nemotron Nano 12B v2",
+		name: "NVIDIA Nemotron Nano 12B v2 VL BF16",
 		matchingModel: "nvidia.nemotron-nano-12b-v2",
 		description:
 			"NVIDIA-Nemotron-Nano-12B-v2-VL-BF16 brings multimodal understanding to the Nemotron Nano line, combining a 12.6B LLM with a capable vision encoder. It can analyze multiple high-resolution images (and videos) alongside long text prompts, excelling at visual QA, document intelligence, and media summarization. This model is ideal for teams building multimodal RAG and document/image understanding systems. The primary use-cases include Visual QA, document and slide understanding, multimodal assistants, and enterprise workflows combining images/docs with long text prompts.",
@@ -220,7 +271,17 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			output: ["text"],
 		},
 		contextWindow: 128000,
-		maxTokens: 128000,
+		maxTokens: 4096,
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
 	createModelConfig("nvidia.nemotron-nano-9b-v2", PROVIDER, {
@@ -232,18 +293,30 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["text"],
 		},
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00006,
+		costPer1kOutputTokens: 0.00023,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4.5", PROVIDER, {
-		name: "Claude 4.5 Sonnet (Bedrock US)",
+		name: "Claude Sonnet 4.5 (US)",
 		matchingModel: "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
 		description:
 			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		knowledgeCutoffDate: "March 2025",
-		releaseDate: "May 22, 2025",
-		lastUpdated: "May 22, 2025",
+		knowledgeCutoffDate: "July 31, 2025",
+		releaseDate: "September 29, 2025",
+		lastUpdated: "September 29, 2025",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
@@ -277,15 +350,15 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4", PROVIDER, {
-		name: "Claude 4 Sonnet (Bedrock US)",
+		name: "Claude Sonnet 4 (US)",
 		matchingModel: "us.anthropic.claude-sonnet-4-20250514-v1:0",
 		description:
 			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		knowledgeCutoffDate: "March 2025",
+		knowledgeCutoffDate: "April 2024",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
@@ -359,15 +432,15 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("anthropic.claude-opus-4", PROVIDER, {
-		name: "Claude 4 Opus (Bedrock US)",
+		name: "Claude Opus 4 (US)",
 		matchingModel: "us.anthropic.claude-opus-4-20250514-v1:0",
 		description:
 			"The Claude 4 Opus is an advanced AI model by Anthropic designed for enterprise-level applications. It offers unmatched performance in handling complex tasks, making it an ideal solution for businesses requiring high-level data processing and analysis.",
-		knowledgeCutoffDate: "March 2025",
+		knowledgeCutoffDate: "April 2024",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
@@ -395,18 +468,21 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsTokenCounting: true,
 		isFeatured: false,
 		supportsPromptCaching: true,
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 
 	createModelConfig("anthropic.claude-opus-4-1", PROVIDER, {
-		name: "Claude 4.1 Opus (Bedrock US)",
+		name: "Claude Opus 4.1 (US)",
 		matchingModel: "us.anthropic.claude-opus-4-1-20250805-v1:0",
 		description:
 			"Enhanced Claude 4 Opus with improved reasoning and analysis capabilities.",
-		knowledgeCutoffDate: "March 2025",
+		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "August 5, 2025",
 		lastUpdated: "August 5, 2025",
 		modalities: {
-			input: ["text", "image"],
+			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
@@ -430,7 +506,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: { enabled: true },
 		supportsArtifacts: true,
 		supportsToolCalls: true,
-		isFeatured: true,
+		isFeatured: false,
 		supportsPromptCaching: true,
 	}),
 
@@ -469,11 +545,11 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 		supportsToolCalls: true,
 		supportsTokenCounting: true,
-		isFeatured: true,
+		isFeatured: false,
 		supportsPromptCaching: true,
 	}),
 
-	createModelConfig("embed-english", PROVIDER, {
+	createModelConfig("cohere.embed-english", PROVIDER, {
 		name: "Cohere Embed English",
 		matchingModel: "cohere.embed-english-v3",
 		costPer1kInputTokens: 0.0001,
@@ -483,7 +559,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		},
 	}),
 
-	createModelConfig("embed-multilingual", PROVIDER, {
+	createModelConfig("cohere.embed-multilingual", PROVIDER, {
 		name: "Cohere Embed Multilingual",
 		matchingModel: "cohere.embed-multilingual-v3",
 		costPer1kInputTokens: 0.0001,
@@ -493,8 +569,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		},
 	}),
 
-	createModelConfig("command-r", PROVIDER, {
-		name: "Cohere Command R",
+	createModelConfig("cohere.command-r", PROVIDER, {
+		name: "Command R",
 		matchingModel: "cohere.command-r-v1:0",
 		description:
 			"Command R is an instruction-following conversational model that performs language tasks at a higher quality, more reliably, and with a longer context than previous models. It can be used for complex workflows like code generation, retrieval augmented generation (RAG), tool use, and agents.",
@@ -515,10 +591,14 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 3,
 		reliability: 3,
 		speed: 3,
+		supportsToolCalls: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
-	createModelConfig("command-r-plus", PROVIDER, {
-		name: "Cohere Command R+",
+	createModelConfig("cohere.command-r-plus", PROVIDER, {
+		name: "Command R+",
 		matchingModel: "cohere.command-r-plus-v1:0",
 		description:
 			"Command R+ is an instruction-following conversational model that performs language tasks at a higher quality, more reliably, and with a longer context than previous models. It is best suited for complex RAG workflows and multi-step tool use.",
@@ -539,10 +619,14 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 2,
+		supportsToolCalls: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
-	createModelConfig("jamba-large", PROVIDER, {
-		name: "AI21 Jamba 1.5 Large",
+	createModelConfig("ai21.jamba-1-5-large", PROVIDER, {
+		name: "Jamba 1.5 Large",
 		matchingModel: "ai21.jamba-1-5-large-v1:0",
 		description:
 			"Jamba 1.5 Large (94B active/398B total) is built for superior long context handling, speed, and quality. They mark the first time a non-Transformer model has been successfully scaled to the quality and strength of the market's leading models.",
@@ -555,18 +639,22 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		contextWindow: 128000,
-		maxTokens: 8000,
+		contextWindow: 256000,
+		maxTokens: 4096,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
 		strengths: ["analysis", "reasoning"],
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
+		supportsToolCalls: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
-	createModelConfig("jamba-mini", PROVIDER, {
-		name: "AI21 Jamba 1.5 Mini",
+	createModelConfig("ai21.jamba-1-5-mini", PROVIDER, {
+		name: "Jamba 1.5 Mini",
 		matchingModel: "ai21.jamba-1-5-mini-v1:0",
 		description:
 			"Jamba 1.5 Mini (12B active/52B total) is built for superior long context handling, speed, and quality. They mark the first time a non-Transformer model has been successfully scaled to the quality and strength of the market's leading models.",
@@ -579,17 +667,21 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		contextWindow: 128000,
-		maxTokens: 8000,
+		contextWindow: 256000,
+		maxTokens: 4096,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0004,
 		strengths: ["analysis"],
 		contextComplexity: 3,
 		reliability: 3,
 		speed: 4,
+		supportsToolCalls: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
-	createModelConfig("jambda-instruct", PROVIDER, {
+	createModelConfig("ai21.jamba-instruct", PROVIDER, {
 		name: "AI21 Jambda Instruct",
 		matchingModel: "ai21.jamba-instruct-v1:0",
 		description:
@@ -614,7 +706,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("nova-premier", PROVIDER, {
-		name: "Amazon Nova Premier",
+		name: "Nova Premier",
 		matchingModel: "amazon.nova-premier-v1:0",
 		description:
 			"Amazon Nova Premier is the most capable multimodal model in the Nova family with advanced reasoning capabilities.",
@@ -666,9 +758,12 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		supportsToolCalls: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
-	createModelConfig("llama-3-1-70b-bedrock", PROVIDER, {
+	createModelConfig("meta/llama-3-1-70b-bedrock", PROVIDER, {
 		name: "Llama 3.1 70B Instruct",
 		matchingModel: "meta.llama3-1-70b-instruct-v1:0",
 		description:
@@ -691,9 +786,12 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 3,
 		supportsToolCalls: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
-	createModelConfig("deepseek-r1-bedrock", PROVIDER, {
+	createModelConfig("deepseek.r1-bedrock", PROVIDER, {
 		name: "DeepSeek-R1",
 		matchingModel: "deepseek.r1-v1:0",
 		description:
@@ -719,7 +817,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 	}),
 
-	createModelConfig("marengo-embed", PROVIDER, {
+	createModelConfig("twelvelabs.marengo-embed-2-7-v1", PROVIDER, {
 		name: "Twelve Labs Marengo Embed",
 		matchingModel: "twelvelabs.marengo-embed-2-7-v1:0",
 		description:
@@ -746,7 +844,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		bedrockApiOperation: "start-async-invoke",
 	}),
 
-	createModelConfig("pegasus-video", PROVIDER, {
+	createModelConfig("twelvelabs.pegasus-1-2-v1", PROVIDER, {
 		name: "Twelve Labs Pegasus (Bedrock US)",
 		matchingModel: "us.twelvelabs.pegasus-1-2-v1:0",
 		description:
@@ -774,5 +872,1482 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsDocuments: false,
 		bedrockApiOperation: "invoke",
 		bedrockStreamingApiOperation: "invoke-with-response-stream",
+	}),
+	createModelConfig("amazon.nova-2-lite-v1:0", PROVIDER, {
+		name: "Nova 2 Lite",
+		matchingModel: "amazon.nova-2-lite-v1:0",
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00033,
+		costPer1kOutputTokens: 0.00275,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("amazon.titan-text-express-v1", PROVIDER, {
+		name: "Titan Text G1 - Express",
+		matchingModel: "amazon.titan-text-express-v1",
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("amazon.titan-text-express-v1:0:8k", PROVIDER, {
+		name: "Titan Text G1 - Express",
+		matchingModel: "amazon.titan-text-express-v1:0:8k",
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-3-5-haiku-20241022-v1:0", PROVIDER, {
+		name: "Claude Haiku 3.5",
+		matchingModel: "anthropic.claude-3-5-haiku-20241022-v1:0",
+		knowledgeCutoffDate: "July 2024",
+		releaseDate: "October 22, 2024",
+		lastUpdated: "October 22, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.0008,
+		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-3-5-sonnet-20240620-v1:0", PROVIDER, {
+		name: "Claude Sonnet 3.5",
+		matchingModel: "anthropic.claude-3-5-sonnet-20240620-v1:0",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "June 20, 2024",
+		lastUpdated: "June 20, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-3-5-sonnet-20241022-v2:0", PROVIDER, {
+		name: "Claude Sonnet 3.5 v2",
+		matchingModel: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "October 22, 2024",
+		lastUpdated: "October 22, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-3-7-sonnet-20250219-v1:0", PROVIDER, {
+		name: "Claude Sonnet 3.7",
+		matchingModel: "anthropic.claude-3-7-sonnet-20250219-v1:0",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "February 19, 2025",
+		lastUpdated: "February 19, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-3-haiku-20240307-v1:0", PROVIDER, {
+		name: "Claude Haiku 3",
+		matchingModel: "anthropic.claude-3-haiku-20240307-v1:0",
+		knowledgeCutoffDate: "February 2024",
+		releaseDate: "March 13, 2024",
+		lastUpdated: "March 13, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00025,
+		costPer1kOutputTokens: 0.00125,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-3-opus-20240229-v1:0", PROVIDER, {
+		name: "Claude Opus 3",
+		matchingModel: "anthropic.claude-3-opus-20240229-v1:0",
+		knowledgeCutoffDate: "August 2023",
+		releaseDate: "February 29, 2024",
+		lastUpdated: "February 29, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.015,
+		costPer1kOutputTokens: 0.075,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-3-sonnet-20240229-v1:0", PROVIDER, {
+		name: "Claude Sonnet 3",
+		matchingModel: "anthropic.claude-3-sonnet-20240229-v1:0",
+		knowledgeCutoffDate: "August 2023",
+		releaseDate: "March 4, 2024",
+		lastUpdated: "March 4, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
+		name: "Claude Haiku 4.5",
+		matchingModel: "anthropic.claude-haiku-4-5-20251001-v1:0",
+		knowledgeCutoffDate: "February 28, 2025",
+		releaseDate: "October 15, 2025",
+		lastUpdated: "October 15, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.001,
+		costPer1kOutputTokens: 0.005,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-instant-v1", PROVIDER, {
+		name: "Claude Instant",
+		matchingModel: "anthropic.claude-instant-v1",
+		knowledgeCutoffDate: "August 2023",
+		releaseDate: "March 1, 2023",
+		lastUpdated: "March 1, 2023",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 100000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.0008,
+		costPer1kOutputTokens: 0.0024,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-opus-4-1-20250805-v1:0", PROVIDER, {
+		name: "Claude Opus 4.1",
+		matchingModel: "anthropic.claude-opus-4-1-20250805-v1:0",
+		knowledgeCutoffDate: "March 31, 2025",
+		releaseDate: "August 5, 2025",
+		lastUpdated: "August 5, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 32000,
+		costPer1kInputTokens: 0.015,
+		costPer1kOutputTokens: 0.075,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-opus-4-20250514-v1:0", PROVIDER, {
+		name: "Claude Opus 4",
+		matchingModel: "anthropic.claude-opus-4-20250514-v1:0",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "May 22, 2025",
+		lastUpdated: "May 22, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 32000,
+		costPer1kInputTokens: 0.015,
+		costPer1kOutputTokens: 0.075,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
+		name: "Claude Opus 4.5",
+		matchingModel: "anthropic.claude-opus-4-5-20251101-v1:0",
+		knowledgeCutoffDate: "March 31, 2025",
+		releaseDate: "November 24, 2025",
+		lastUpdated: "August 1, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-opus-4-6-v1", PROVIDER, {
+		name: "Claude Opus 4.6",
+		matchingModel: "anthropic.claude-opus-4-6-v1",
+		knowledgeCutoffDate: "May 2025",
+		releaseDate: "February 5, 2026",
+		lastUpdated: "February 5, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-sonnet-4-20250514-v1:0", PROVIDER, {
+		name: "Claude Sonnet 4",
+		matchingModel: "anthropic.claude-sonnet-4-20250514-v1:0",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "May 22, 2025",
+		lastUpdated: "May 22, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
+		name: "Claude Sonnet 4.5",
+		matchingModel: "anthropic.claude-sonnet-4-5-20250929-v1:0",
+		knowledgeCutoffDate: "July 31, 2025",
+		releaseDate: "September 29, 2025",
+		lastUpdated: "September 29, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-v2", PROVIDER, {
+		name: "Claude 2",
+		matchingModel: "anthropic.claude-v2",
+		knowledgeCutoffDate: "August 2023",
+		releaseDate: "July 11, 2023",
+		lastUpdated: "July 11, 2023",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 100000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.008,
+		costPer1kOutputTokens: 0.024,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-v2:1", PROVIDER, {
+		name: "Claude 2.1",
+		matchingModel: "anthropic.claude-v2:1",
+		knowledgeCutoffDate: "August 2023",
+		releaseDate: "November 21, 2023",
+		lastUpdated: "November 21, 2023",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 200000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.008,
+		costPer1kOutputTokens: 0.024,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("cohere.command-light-text-v14", PROVIDER, {
+		name: "Command Light",
+		matchingModel: "cohere.command-light-text-v14",
+		knowledgeCutoffDate: "August 2023",
+		releaseDate: "November 1, 2023",
+		lastUpdated: "November 1, 2023",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 4096,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.0003,
+		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("cohere.command-text-v14", PROVIDER, {
+		name: "Command",
+		matchingModel: "cohere.command-text-v14",
+		knowledgeCutoffDate: "August 2023",
+		releaseDate: "November 1, 2023",
+		lastUpdated: "November 1, 2023",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 4096,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("deepseek.v3-v1:0", PROVIDER, {
+		name: "DeepSeek-V3.1",
+		matchingModel: "deepseek.v3-v1:0",
+		knowledgeCutoffDate: "July 2024",
+		releaseDate: "September 18, 2025",
+		lastUpdated: "September 18, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 163840,
+		maxTokens: 81920,
+		costPer1kInputTokens: 0.00058,
+		costPer1kOutputTokens: 0.00168,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("eu.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
+		name: "Claude Haiku 4.5 (EU)",
+		matchingModel: "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+		knowledgeCutoffDate: "February 28, 2025",
+		releaseDate: "October 15, 2025",
+		lastUpdated: "October 15, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.001,
+		costPer1kOutputTokens: 0.005,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("eu.anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
+		name: "Claude Opus 4.5 (EU)",
+		matchingModel: "eu.anthropic.claude-opus-4-5-20251101-v1:0",
+		knowledgeCutoffDate: "March 31, 2025",
+		releaseDate: "November 24, 2025",
+		lastUpdated: "August 1, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("eu.anthropic.claude-opus-4-6-v1", PROVIDER, {
+		name: "Claude Opus 4.6 (EU)",
+		matchingModel: "eu.anthropic.claude-opus-4-6-v1",
+		knowledgeCutoffDate: "May 2025",
+		releaseDate: "February 5, 2026",
+		lastUpdated: "February 5, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("eu.anthropic.claude-sonnet-4-20250514-v1:0", PROVIDER, {
+		name: "Claude Sonnet 4 (EU)",
+		matchingModel: "eu.anthropic.claude-sonnet-4-20250514-v1:0",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "May 22, 2025",
+		lastUpdated: "May 22, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("eu.anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
+		name: "Claude Sonnet 4.5 (EU)",
+		matchingModel: "eu.anthropic.claude-sonnet-4-5-20250929-v1:0",
+		knowledgeCutoffDate: "July 31, 2025",
+		releaseDate: "September 29, 2025",
+		lastUpdated: "September 29, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig(
+		"global.anthropic.claude-haiku-4-5-20251001-v1:0",
+		PROVIDER,
+		{
+			name: "Claude Haiku 4.5 (Global)",
+			matchingModel: "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+			knowledgeCutoffDate: "February 28, 2025",
+			releaseDate: "October 15, 2025",
+			lastUpdated: "October 15, 2025",
+			modalities: {
+				input: ["text", "image", "pdf"],
+				output: ["text"],
+			},
+			supportsAttachments: true,
+			supportsTemperature: true,
+			supportsToolCalls: true,
+			contextWindow: 200000,
+			maxTokens: 64000,
+			costPer1kInputTokens: 0.001,
+			costPer1kOutputTokens: 0.005,
+			reasoningConfig: {
+				enabled: true,
+			},
+		},
+	),
+
+	createModelConfig(
+		"global.anthropic.claude-opus-4-5-20251101-v1:0",
+		PROVIDER,
+		{
+			name: "Claude Opus 4.5 (Global)",
+			matchingModel: "global.anthropic.claude-opus-4-5-20251101-v1:0",
+			knowledgeCutoffDate: "March 31, 2025",
+			releaseDate: "November 24, 2025",
+			lastUpdated: "August 1, 2025",
+			modalities: {
+				input: ["text", "image", "pdf"],
+				output: ["text"],
+			},
+			supportsAttachments: true,
+			supportsTemperature: true,
+			supportsToolCalls: true,
+			contextWindow: 200000,
+			maxTokens: 64000,
+			costPer1kInputTokens: 0.005,
+			costPer1kOutputTokens: 0.025,
+			reasoningConfig: {
+				enabled: true,
+			},
+		},
+	),
+
+	createModelConfig("global.anthropic.claude-opus-4-6-v1", PROVIDER, {
+		name: "Claude Opus 4.6 (Global)",
+		matchingModel: "global.anthropic.claude-opus-4-6-v1",
+		knowledgeCutoffDate: "May 2025",
+		releaseDate: "February 5, 2026",
+		lastUpdated: "February 5, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig(
+		"global.anthropic.claude-sonnet-4-20250514-v1:0",
+		PROVIDER,
+		{
+			name: "Claude Sonnet 4 (Global)",
+			matchingModel: "global.anthropic.claude-sonnet-4-20250514-v1:0",
+			knowledgeCutoffDate: "April 2024",
+			releaseDate: "May 22, 2025",
+			lastUpdated: "May 22, 2025",
+			modalities: {
+				input: ["text", "image", "pdf"],
+				output: ["text"],
+			},
+			supportsAttachments: true,
+			supportsTemperature: true,
+			supportsToolCalls: true,
+			contextWindow: 200000,
+			maxTokens: 64000,
+			costPer1kInputTokens: 0.003,
+			costPer1kOutputTokens: 0.015,
+			reasoningConfig: {
+				enabled: true,
+			},
+		},
+	),
+
+	createModelConfig(
+		"global.anthropic.claude-sonnet-4-5-20250929-v1:0",
+		PROVIDER,
+		{
+			name: "Claude Sonnet 4.5 (Global)",
+			matchingModel: "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
+			knowledgeCutoffDate: "July 31, 2025",
+			releaseDate: "September 29, 2025",
+			lastUpdated: "September 29, 2025",
+			modalities: {
+				input: ["text", "image", "pdf"],
+				output: ["text"],
+			},
+			supportsAttachments: true,
+			supportsTemperature: true,
+			supportsToolCalls: true,
+			contextWindow: 200000,
+			maxTokens: 64000,
+			costPer1kInputTokens: 0.003,
+			costPer1kOutputTokens: 0.015,
+			reasoningConfig: {
+				enabled: true,
+			},
+		},
+	),
+
+	createModelConfig("google.gemma-3-12b-it", PROVIDER, {
+		name: "Google Gemma 3 12B",
+		matchingModel: "google.gemma-3-12b-it",
+		knowledgeCutoffDate: "December 2024",
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 131072,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.00005,
+		costPer1kOutputTokens: 0.0001,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("google.gemma-3-27b-it", PROVIDER, {
+		name: "Google Gemma 3 27B Instruct",
+		matchingModel: "google.gemma-3-27b-it",
+		knowledgeCutoffDate: "July 2025",
+		releaseDate: "July 27, 2025",
+		lastUpdated: "July 27, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 202752,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.00012,
+		costPer1kOutputTokens: 0.0002,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("google.gemma-3-4b-it", PROVIDER, {
+		name: "Gemma 3 4B IT",
+		matchingModel: "google.gemma-3-4b-it",
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00004,
+		costPer1kOutputTokens: 0.00008,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("meta.llama3-1-8b-instruct-v1:0", PROVIDER, {
+		name: "Llama 3.1 8B Instruct",
+		matchingModel: "meta.llama3-1-8b-instruct-v1:0",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "July 23, 2024",
+		lastUpdated: "July 23, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00022,
+		costPer1kOutputTokens: 0.00022,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("meta.llama3-2-11b-instruct-v1:0", PROVIDER, {
+		name: "Llama 3.2 11B Instruct",
+		matchingModel: "meta.llama3-2-11b-instruct-v1:0",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "September 25, 2024",
+		lastUpdated: "September 25, 2024",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00016,
+		costPer1kOutputTokens: 0.00016,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("meta.llama3-2-1b-instruct-v1:0", PROVIDER, {
+		name: "Llama 3.2 1B Instruct",
+		matchingModel: "meta.llama3-2-1b-instruct-v1:0",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "September 25, 2024",
+		lastUpdated: "September 25, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 131000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.0001,
+		costPer1kOutputTokens: 0.0001,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("meta.llama3-2-3b-instruct-v1:0", PROVIDER, {
+		name: "Llama 3.2 3B Instruct",
+		matchingModel: "meta.llama3-2-3b-instruct-v1:0",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "September 25, 2024",
+		lastUpdated: "September 25, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 131000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.00015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("meta.llama3-3-70b-instruct-v1:0", PROVIDER, {
+		name: "Llama 3.3 70B Instruct",
+		matchingModel: "meta.llama3-3-70b-instruct-v1:0",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "December 6, 2024",
+		lastUpdated: "December 6, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00072,
+		costPer1kOutputTokens: 0.00072,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("meta.llama3-70b-instruct-v1:0", PROVIDER, {
+		name: "Llama 3 70B Instruct",
+		matchingModel: "meta.llama3-70b-instruct-v1:0",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "July 23, 2024",
+		lastUpdated: "July 23, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 8192,
+		maxTokens: 2048,
+		costPer1kInputTokens: 0.00265,
+		costPer1kOutputTokens: 0.0035,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("meta.llama3-8b-instruct-v1:0", PROVIDER, {
+		name: "Llama 3 8B Instruct",
+		matchingModel: "meta.llama3-8b-instruct-v1:0",
+		knowledgeCutoffDate: "March 2023",
+		releaseDate: "July 23, 2024",
+		lastUpdated: "July 23, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 8192,
+		maxTokens: 2048,
+		costPer1kInputTokens: 0.0003,
+		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("meta.llama4-maverick-17b-instruct-v1:0", PROVIDER, {
+		name: "Llama 4 Maverick 17B Instruct",
+		matchingModel: "meta.llama4-maverick-17b-instruct-v1:0",
+		knowledgeCutoffDate: "August 2024",
+		releaseDate: "April 5, 2025",
+		lastUpdated: "April 5, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.00024,
+		costPer1kOutputTokens: 0.00097,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("meta.llama4-scout-17b-instruct-v1:0", PROVIDER, {
+		name: "Llama 4 Scout 17B Instruct",
+		matchingModel: "meta.llama4-scout-17b-instruct-v1:0",
+		knowledgeCutoffDate: "August 2024",
+		releaseDate: "April 5, 2025",
+		lastUpdated: "April 5, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 3500000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.00017,
+		costPer1kOutputTokens: 0.00066,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("minimax.minimax-m2.1", PROVIDER, {
+		name: "MiniMax M2.1",
+		matchingModel: "minimax.minimax-m2.1",
+		releaseDate: "December 23, 2025",
+		lastUpdated: "December 23, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: false,
+		contextWindow: 204800,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.0003,
+		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("mistral.ministral-3-14b-instruct", PROVIDER, {
+		name: "Ministral 14B 3.0",
+		matchingModel: "mistral.ministral-3-14b-instruct",
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0002,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral.ministral-3-8b-instruct", PROVIDER, {
+		name: "Ministral 3 8B",
+		matchingModel: "mistral.ministral-3-8b-instruct",
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.00015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral.mistral-7b-instruct-v0:2", PROVIDER, {
+		name: "Mistral-7B-Instruct-v0.3",
+		matchingModel: "mistral.mistral-7b-instruct-v0:2",
+		releaseDate: "April 1, 2025",
+		lastUpdated: "April 1, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 127000,
+		maxTokens: 127000,
+		costPer1kInputTokens: 0.00011,
+		costPer1kOutputTokens: 0.00011,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral.mistral-large-2402-v1:0", PROVIDER, {
+		name: "Mistral Large (24.02)",
+		matchingModel: "mistral.mistral-large-2402-v1:0",
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.0005,
+		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral.mixtral-8x7b-instruct-v0:1", PROVIDER, {
+		name: "Mixtral-8x7B-Instruct-v0.1",
+		matchingModel: "mistral.mixtral-8x7b-instruct-v0:1",
+		releaseDate: "April 1, 2025",
+		lastUpdated: "April 1, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		supportsResponseFormat: true,
+		contextWindow: 32000,
+		maxTokens: 32000,
+		costPer1kInputTokens: 0.0007,
+		costPer1kOutputTokens: 0.0007,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral.voxtral-mini-3b-2507", PROVIDER, {
+		name: "Voxtral Mini 3B 2507",
+		matchingModel: "mistral.voxtral-mini-3b-2507",
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		modalities: {
+			input: ["audio", "text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00004,
+		costPer1kOutputTokens: 0.00004,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral.voxtral-small-24b-2507", PROVIDER, {
+		name: "Voxtral Small 24B 2507",
+		matchingModel: "mistral.voxtral-small-24b-2507",
+		releaseDate: "July 1, 2025",
+		lastUpdated: "July 1, 2025",
+		modalities: {
+			input: ["text", "audio"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 32000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.00035,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("moonshotai.kimi-k2.5", PROVIDER, {
+		name: "Kimi K2.5",
+		matchingModel: "moonshotai.kimi-k2.5",
+		releaseDate: "February 6, 2026",
+		lastUpdated: "February 6, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 256000,
+		costPer1kInputTokens: 0.0006,
+		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("openai.gpt-oss-120b-1:0", PROVIDER, {
+		name: "gpt-oss-120b",
+		matchingModel: "openai.gpt-oss-120b-1:0",
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("openai.gpt-oss-20b-1:0", PROVIDER, {
+		name: "gpt-oss-20b",
+		matchingModel: "openai.gpt-oss-20b-1:0",
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 1, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00007,
+		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("qwen.qwen3-235b-a22b-2507-v1:0", PROVIDER, {
+		name: "Qwen3 235B A22B 2507",
+		matchingModel: "qwen.qwen3-235b-a22b-2507-v1:0",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "September 18, 2025",
+		lastUpdated: "September 18, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.00022,
+		costPer1kOutputTokens: 0.00088,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("qwen.qwen3-32b-v1:0", PROVIDER, {
+		name: "Qwen3 32B (dense)",
+		matchingModel: "qwen.qwen3-32b-v1:0",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "September 18, 2025",
+		lastUpdated: "September 18, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 16384,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("qwen.qwen3-coder-30b-a3b-v1:0", PROVIDER, {
+		name: "Qwen3 Coder 30B A3B Instruct",
+		matchingModel: "qwen.qwen3-coder-30b-a3b-v1:0",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "September 18, 2025",
+		lastUpdated: "September 18, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("qwen.qwen3-coder-480b-a35b-v1:0", PROVIDER, {
+		name: "Qwen3 Coder 480B A35B Instruct",
+		matchingModel: "qwen.qwen3-coder-480b-a35b-v1:0",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "September 18, 2025",
+		lastUpdated: "September 18, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 131072,
+		maxTokens: 65536,
+		costPer1kInputTokens: 0.00022,
+		costPer1kOutputTokens: 0.0018,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("qwen.qwen3-next-80b-a3b", PROVIDER, {
+		name: "Qwen/Qwen3-Next-80B-A3B-Instruct",
+		matchingModel: "qwen.qwen3-next-80b-a3b",
+		releaseDate: "September 18, 2025",
+		lastUpdated: "November 25, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262000,
+		maxTokens: 262000,
+		costPer1kInputTokens: 0.00014,
+		costPer1kOutputTokens: 0.0014,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("qwen.qwen3-vl-235b-a22b", PROVIDER, {
+		name: "Qwen/Qwen3-VL-235B-A22B-Instruct",
+		matchingModel: "qwen.qwen3-vl-235b-a22b",
+		releaseDate: "October 4, 2025",
+		lastUpdated: "November 25, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262000,
+		maxTokens: 262000,
+		costPer1kInputTokens: 0.0003,
+		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("us.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
+		name: "Claude Haiku 4.5 (US)",
+		matchingModel: "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+		knowledgeCutoffDate: "February 28, 2025",
+		releaseDate: "October 15, 2025",
+		lastUpdated: "October 15, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.001,
+		costPer1kOutputTokens: 0.005,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("us.anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
+		name: "Claude Opus 4.5 (US)",
+		matchingModel: "us.anthropic.claude-opus-4-5-20251101-v1:0",
+		knowledgeCutoffDate: "March 31, 2025",
+		releaseDate: "November 24, 2025",
+		lastUpdated: "August 1, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("us.anthropic.claude-opus-4-6-v1", PROVIDER, {
+		name: "Claude Opus 4.6 (US)",
+		matchingModel: "us.anthropic.claude-opus-4-6-v1",
+		knowledgeCutoffDate: "May 2025",
+		releaseDate: "February 5, 2026",
+		lastUpdated: "February 5, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("zai.glm-4.7", PROVIDER, {
+		name: "GLM-4.7",
+		matchingModel: "zai.glm-4.7",
+		knowledgeCutoffDate: "April 2025",
+		releaseDate: "December 22, 2025",
+		lastUpdated: "December 22, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 204800,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.0006,
+		costPer1kOutputTokens: 0.0022,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("zai.glm-4.7-flash", PROVIDER, {
+		name: "GLM-4.7-Flash",
+		matchingModel: "zai.glm-4.7-flash",
+		knowledgeCutoffDate: "April 2025",
+		releaseDate: "January 19, 2026",
+		lastUpdated: "January 19, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.00007,
+		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 ]);

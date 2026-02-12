@@ -2,26 +2,34 @@ import {
 	Bot,
 	Cloud,
 	Computer,
+	Filter,
+	Gauge,
 	Loader2,
 	Search,
 	Server,
+	WalletCards,
 	Wand2,
 } from "lucide-react";
-import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+import {
+	type KeyboardEvent,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
-import { FormInput, FormSelect } from "~/components/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { useTrackEvent } from "~/hooks/use-track-event";
+import { useAgentToolDefaults } from "~/hooks/useAgentToolDefaults";
 import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
+import { useTrackEvent } from "~/hooks/use-track-event";
 import {
 	defaultModel,
 	getAvailableModels,
 	getFeaturedModelIds,
 	getModelsByMode,
 } from "~/lib/models";
-import { useAgentToolDefaults } from "~/hooks/useAgentToolDefaults";
 import {
 	useIsLoading,
 	useLoadingMessage,
@@ -38,6 +46,209 @@ interface ModelSelectorProps {
 	minimal?: boolean;
 	mono?: boolean;
 	featuredOnly?: boolean;
+}
+
+interface HoverPreviewState {
+	model: ModelConfigItem;
+	left: number;
+	top: number;
+}
+
+const HOVER_PREVIEW_WIDTH = 320;
+const HOVER_PREVIEW_HEIGHT = 460;
+const HOVER_PREVIEW_GUTTER = 12;
+const HOVER_PREVIEW_EDGE = 8;
+
+function formatTokenCount(value?: number) {
+	if (!value) return null;
+	if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+	if (value >= 1_000) return `${(value / 1_000).toFixed(0)}K`;
+	return String(value);
+}
+
+function formatCost(value?: number) {
+	if (typeof value !== "number") return null;
+	if (value === 0) return "$0 / 1K tokens";
+	if (value < 0.01) return `$${value.toFixed(4)} / 1K tokens`;
+	return `$${value.toFixed(2)} / 1K tokens`;
+}
+
+function getHoverPreviewPosition(anchorRect: DOMRect) {
+	if (typeof window === "undefined" || window.innerWidth < 1024) {
+		return null;
+	}
+
+	const viewportWidth = window.innerWidth;
+	const viewportHeight = window.innerHeight;
+
+	const spaceOnRight = viewportWidth - anchorRect.right;
+	const spaceOnLeft = anchorRect.left;
+	const requiredSpace =
+		HOVER_PREVIEW_WIDTH + HOVER_PREVIEW_GUTTER + HOVER_PREVIEW_EDGE;
+
+	let left: number;
+	if (spaceOnRight >= requiredSpace) {
+		left = anchorRect.right + HOVER_PREVIEW_GUTTER;
+	} else if (spaceOnLeft >= requiredSpace) {
+		left = anchorRect.left - HOVER_PREVIEW_WIDTH - HOVER_PREVIEW_GUTTER;
+	} else {
+		left = Math.max(
+			HOVER_PREVIEW_EDGE,
+			Math.min(
+				viewportWidth - HOVER_PREVIEW_WIDTH - HOVER_PREVIEW_EDGE,
+				anchorRect.left,
+			),
+		);
+	}
+
+	const top = Math.min(
+		Math.max(anchorRect.top - 40, HOVER_PREVIEW_EDGE),
+		Math.max(
+			HOVER_PREVIEW_EDGE,
+			viewportHeight - HOVER_PREVIEW_HEIGHT - HOVER_PREVIEW_EDGE,
+		),
+	);
+
+	return { left, top };
+}
+
+function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
+	if (!preview) return null;
+
+	const model = preview.model;
+	const supportsVision =
+		model.modalities?.input?.some((modality) =>
+			["image", "video"].includes(modality),
+		) ||
+		model.modalities?.output?.some((modality) =>
+			["image", "video"].includes(modality),
+		);
+
+	const featureTags = Array.from(
+		new Set(
+			[
+				model.supportsToolCalls ? "Tool Calling" : null,
+				model.reasoningConfig?.enabled ? "Reasoning" : null,
+				model.supportsSearchGrounding ? "Web Grounding" : null,
+				model.supportsCodeExecution ? "Code Execution" : null,
+				model.supportsAudio ? "Audio" : null,
+				model.multimodal || supportsVision ? "Vision" : null,
+				...(model.strengths || []),
+			].filter(Boolean) as string[],
+		),
+	);
+
+	return (
+		<div
+			style={{ top: preview.top, left: preview.left }}
+			className="pointer-events-none fixed z-[70] hidden w-[320px] max-h-[70vh] overflow-y-auto rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-2xl backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/95 lg:block"
+		>
+			<div className="mb-3 rounded-lg border border-zinc-200/70 p-3 dark:border-zinc-700/70">
+				<div className="flex items-center gap-2">
+					<ModelIcon
+						url={model.avatarUrl}
+						modelName={model.name || model.matchingModel}
+						provider={model.provider}
+						size={28}
+					/>
+					<div className="min-w-0">
+						<p className="font-semibold text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
+							{model.name || model.matchingModel}
+						</p>
+						<p className="text-xs text-zinc-500 dark:text-zinc-400 whitespace-normal break-words">
+							{model.provider}
+						</p>
+					</div>
+				</div>
+				{model.description && (
+					<p className="mt-2 text-xs text-zinc-600 whitespace-normal break-words dark:text-zinc-300">
+						{model.description}
+					</p>
+				)}
+			</div>
+
+			{featureTags.length > 0 && (
+				<div className="mb-3">
+					<p className="mb-1 text-[11px] font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+						Features
+					</p>
+					<div className="flex flex-wrap gap-1">
+						{featureTags.map((feature) => (
+							<span
+								key={`${model.id}-${feature}`}
+								className="rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+							>
+								{feature}
+							</span>
+						))}
+					</div>
+				</div>
+			)}
+
+			<div className="space-y-2 text-xs">
+				<div className="rounded-lg border border-zinc-200/70 p-2.5 dark:border-zinc-700/70">
+					<div className="mb-1 flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
+						<Gauge className="h-3.5 w-3.5" />
+						<span className="font-semibold">Capacity</span>
+					</div>
+					<div className="space-y-1">
+						{model.contextWindow && (
+							<div className="flex items-center justify-between gap-2">
+								<span className="text-zinc-500 dark:text-zinc-400">
+									Context Window
+								</span>
+								<span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
+									{formatTokenCount(model.contextWindow)} tokens
+								</span>
+							</div>
+						)}
+						{model.maxTokens && (
+							<div className="flex items-center justify-between gap-2">
+								<span className="text-zinc-500 dark:text-zinc-400">
+									Max Output
+								</span>
+								<span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
+									{formatTokenCount(model.maxTokens)} tokens
+								</span>
+							</div>
+						)}
+					</div>
+				</div>
+
+				{(typeof model.costPer1kInputTokens === "number" ||
+					typeof model.costPer1kOutputTokens === "number") && (
+					<div className="rounded-lg border border-zinc-200/70 p-2.5 dark:border-zinc-700/70">
+						<div className="mb-1 flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
+							<WalletCards className="h-3.5 w-3.5" />
+							<span className="font-semibold">Pricing</span>
+						</div>
+						<div className="space-y-1">
+							{typeof model.costPer1kInputTokens === "number" && (
+								<div className="flex items-center justify-between gap-2">
+									<span className="text-zinc-500 dark:text-zinc-400">
+										Input
+									</span>
+									<span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
+										{formatCost(model.costPer1kInputTokens)}
+									</span>
+								</div>
+							)}
+							{typeof model.costPer1kOutputTokens === "number" && (
+								<div className="flex items-center justify-between gap-2">
+									<span className="text-zinc-500 dark:text-zinc-400">
+										Output
+									</span>
+									<span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
+										{formatCost(model.costPer1kOutputTokens)}
+									</span>
+								</div>
+							)}
+						</div>
+					</div>
+				)}
+			</div>
+		</div>
+	);
 }
 
 export const ModelSelector = ({
@@ -62,11 +273,13 @@ export const ModelSelector = ({
 	const { chatAgents: agents, isLoadingAgents } = useAgents();
 	const [isOpen, setIsOpen] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [showAllModels, setShowAllModels] = useState(false);
-
 	const [selectedCapability, setSelectedCapability] = useState<string | null>(
 		null,
 	);
+	const [hoverPreview, setHoverPreview] = useState<HoverPreviewState | null>(
+		null,
+	);
+
 	const dropdownRef = useRef<HTMLDialogElement>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const [selectedTab, setSelectedTab] = useState<"auto" | "agent" | "models">(
@@ -96,8 +309,10 @@ export const ModelSelector = ({
 	const functionModels: Record<string, ModelConfigItem> = Object.entries(
 		availableModels,
 	).reduce(
-		(acc, [key, m]) => {
-			if (m.supportsToolCalls) acc[key] = { ...m, id: key };
+		(acc, [key, modelConfig]) => {
+			if (modelConfig.supportsToolCalls) {
+				acc[key] = { ...modelConfig, id: key };
+			}
 			return acc;
 		},
 		{} as Record<string, ModelConfigItem>,
@@ -117,14 +332,42 @@ export const ModelSelector = ({
 			)
 		: baseFilteredModels;
 
-	useEffect(() => {
-		if (searchQuery || selectedCapability) {
-			setShowAllModels(true);
-		}
-	}, [searchQuery, selectedCapability]);
-
 	const selectedModelInfo =
 		model === null ? automaticModelOption : filteredModels[model];
+
+	const capabilities = useMemo(
+		() =>
+			Array.from(
+				new Set(
+					Object.values(filteredModels).flatMap(
+						(modelConfig) => modelConfig.strengths || [],
+					),
+				),
+			).sort(),
+		[filteredModels],
+	);
+
+	const filteredModelList = useMemo(() => {
+		const normalizedQuery = searchQuery.trim().toLowerCase();
+
+		return Object.values(filteredModels).filter((modelConfig) => {
+			const matchesSearch =
+				normalizedQuery.length === 0 ||
+				(modelConfig.name || modelConfig.matchingModel)
+					.toLowerCase()
+					.includes(normalizedQuery) ||
+				(modelConfig.description || "")
+					.toLowerCase()
+					.includes(normalizedQuery) ||
+				(modelConfig.provider || "").toLowerCase().includes(normalizedQuery);
+
+			const matchesCapability =
+				!selectedCapability ||
+				Boolean(modelConfig.strengths?.includes(selectedCapability));
+
+			return matchesSearch && matchesCapability;
+		});
+	}, [filteredModels, searchQuery, selectedCapability]);
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -138,6 +381,21 @@ export const ModelSelector = ({
 
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => document.removeEventListener("mousedown", handleClickOutside);
+	}, []);
+
+	useEffect(() => {
+		if (isOpen) return;
+		setHoverPreview(null);
+	}, [isOpen]);
+
+	useEffect(() => {
+		const clearPreview = () => setHoverPreview(null);
+		window.addEventListener("resize", clearPreview);
+		window.addEventListener("scroll", clearPreview, true);
+		return () => {
+			window.removeEventListener("resize", clearPreview);
+			window.removeEventListener("scroll", clearPreview, true);
+		};
 	}, []);
 
 	const handleKeyDown = (e: KeyboardEvent<HTMLDialogElement>) => {
@@ -162,14 +420,13 @@ export const ModelSelector = ({
 	};
 
 	useEffect(() => {
-		if (isOpen) {
-			if (!isMobile && searchInputRef.current) {
-				searchInputRef.current.focus();
-			} else {
-				const firstOpt = dropdownRef.current?.querySelector('[role="option"]');
-				(firstOpt as HTMLElement | null)?.focus();
-			}
+		if (!isOpen) return;
+		if (!isMobile && searchInputRef.current) {
+			searchInputRef.current.focus();
+			return;
 		}
+		const firstOpt = dropdownRef.current?.querySelector('[role="option"]');
+		(firstOpt as HTMLElement | null)?.focus();
 	}, [isOpen, isMobile]);
 
 	const handleToggleModelSource = (newChatMode: ChatMode) => {
@@ -201,82 +458,8 @@ export const ModelSelector = ({
 		});
 	};
 
-	const featuredModels = Object.values(filteredModels).filter(
-		(model) => featuredModelIds[model.id],
-	);
-
-	const otherModels = Object.values(filteredModels).filter(
-		(model) => !featuredModelIds[model.id],
-	);
-
-	const groupModelsByProvider = (models: ModelConfigItem[]) => {
-		return models.reduce(
-			(acc, model) => {
-				const provider = model.provider || "unknown";
-				if (!acc[provider]) {
-					acc[provider] = [];
-				}
-				acc[provider].push(model);
-				return acc;
-			},
-			{} as Record<string, ModelConfigItem[]>,
-		);
-	};
-
-	const groupedFeaturedModels = groupModelsByProvider(featuredModels);
-	const groupedOtherModels = groupModelsByProvider(otherModels);
-
-	const capabilities = Array.from(
-		new Set(
-			Object.values(filteredModels).flatMap((model) => model.strengths || []),
-		),
-	).sort();
-
-	const capabilityOptions = [
-		{ value: "", label: "All" },
-		...capabilities.map((capability) => ({
-			value: capability,
-			label: capability,
-		})),
-	];
-
-	const filterModels = (models: Record<string, ModelConfigItem[]>) => {
-		const result: Record<string, ModelConfigItem[]> = {};
-
-		for (const [provider, providerModels] of Object.entries(models)) {
-			const filtered = providerModels.filter((model) => {
-				const matchesSearch =
-					searchQuery === "" ||
-					(
-						model.name?.toLowerCase() || model.matchingModel.toLowerCase()
-					).includes(searchQuery.toLowerCase()) ||
-					(model.description?.toLowerCase() || "").includes(
-						searchQuery.toLowerCase(),
-					);
-
-				const matchesCapability =
-					!selectedCapability ||
-					model.strengths?.includes(selectedCapability) ||
-					false;
-
-				return matchesSearch && matchesCapability;
-			});
-
-			if (filtered.length > 0) {
-				result[provider] = filtered;
-			}
-		}
-
-		return result;
-	};
-
-	const filteredFeaturedModels = filterModels(groupedFeaturedModels);
-	const filteredOtherModels = featuredOnly
-		? ({} as Record<string, ModelConfigItem[]>)
-		: filterModels(groupedOtherModels);
-
 	const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
-	const isModelLockedByAgent = selectedAgent?.model;
+	const isModelLockedByAgent = Boolean(selectedAgent?.model);
 
 	useAgentToolDefaults({
 		agents,
@@ -285,7 +468,7 @@ export const ModelSelector = ({
 	});
 
 	const currentAgentModel = selectedAgentId
-		? agents.find((a) => a.id === selectedAgentId)?.model
+		? agents.find((agent) => agent.id === selectedAgentId)?.model
 		: null;
 
 	useEffect(() => {
@@ -316,6 +499,31 @@ export const ModelSelector = ({
 			label: "select_model",
 			value: newModel,
 		});
+	};
+
+	const handleInfoHoverStart = (
+		modelInfo: ModelConfigItem,
+		anchorRect: DOMRect,
+	) => {
+		if (isMobile || !isOpen) {
+			setHoverPreview(null);
+			return;
+		}
+
+		const position = getHoverPreviewPosition(anchorRect);
+		if (!position) {
+			setHoverPreview(null);
+			return;
+		}
+
+		setHoverPreview({
+			model: modelInfo,
+			...position,
+		});
+	};
+
+	const handleInfoHoverEnd = () => {
+		setHoverPreview(null);
 	};
 
 	return (
@@ -389,48 +597,55 @@ export const ModelSelector = ({
 					ref={dropdownRef}
 					open
 					onKeyDown={handleKeyDown}
-					className="absolute bottom-full left-0 mb-1 w-[400px] bg-off-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-700 shadow-lg z-50"
+					className="absolute bottom-full left-0 z-50 mb-1 w-[min(96vw,600px)] max-w-[600px] rounded-xl border border-zinc-200 bg-off-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900 sm:w-[min(90vw,660px)] sm:max-w-[660px]"
 					aria-label="Model selection dialog"
 				>
 					{selectedTab !== "auto" && (
-						<div className="p-2 border-b border-zinc-200 dark:border-zinc-700">
-							<div className="flex items-center gap-2">
-								<div className="relative w-58 flex-shrink-0">
-									<FormInput
+						<div className="border-b border-zinc-200 p-2 dark:border-zinc-700">
+							<div className="flex flex-col gap-2 sm:flex-row">
+								<div className="relative flex-1">
+									<input
 										ref={searchInputRef}
-										placeholder="Search..."
+										placeholder="Search models..."
 										value={searchQuery}
 										onChange={(e) => setSearchQuery(e.target.value)}
-										className="pl-8 w-full"
-										aria-label="Search"
-										fullWidth={false}
+										className="w-full rounded-md border border-zinc-200 bg-off-white py-2 pl-8 pr-3 text-sm text-zinc-900 placeholder:text-zinc-500 focus:border-zinc-300 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-400"
+										aria-label="Search models"
 									/>
-									<div className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none">
-										<Search
-											className="h-4 w-4 text-zinc-400"
-											aria-hidden="true"
-										/>
-									</div>
+									<Search
+										className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+										aria-hidden="true"
+									/>
 								</div>
-								<div className="w-35 flex-shrink-0">
-									<FormSelect
+								<div className="relative sm:w-48">
+									<select
 										value={selectedCapability || ""}
 										onChange={(e) =>
 											setSelectedCapability(e.target.value || null)
 										}
-										options={capabilityOptions}
-										aria-label="Filter by capability"
-										className="text-sm w-full"
-										fullWidth={false}
+										className="w-full appearance-none rounded-md border border-zinc-200 bg-off-white py-2 pl-8 pr-3 text-sm text-zinc-900 focus:border-zinc-300 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+										aria-label="Filter by model type"
+									>
+										<option value="">All model types</option>
+										{capabilities.map((capability) => (
+											<option key={capability} value={capability}>
+												{capability}
+											</option>
+										))}
+									</select>
+									<Filter
+										className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+										aria-hidden="true"
 									/>
 								</div>
 							</div>
 						</div>
 					)}
+
 					<Tabs
 						value={selectedTab}
-						onValueChange={(val) => {
-							const tab = val as "auto" | "agent" | "models";
+						onValueChange={(value) => {
+							const tab = value as "auto" | "agent" | "models";
 							setSelectedTab(tab);
 							if (tab === "auto") {
 								setChatMode("remote");
@@ -458,7 +673,7 @@ export const ModelSelector = ({
 								});
 							}
 						}}
-						className="px-2 pt-2"
+						className="px-2 pb-2 pt-2"
 					>
 						<TabsList className="w-full">
 							<TabsTrigger value="auto">
@@ -475,18 +690,20 @@ export const ModelSelector = ({
 							</TabsTrigger>
 						</TabsList>
 						<div className="w-full border-b border-zinc-200 dark:border-zinc-700" />
+
 						<TabsContent value="auto">
 							<div className="p-4 text-sm text-zinc-700 dark:text-zinc-300">
 								Automatic automatically selects the best agent or model based on
 								your query.
 							</div>
 						</TabsContent>
+
 						<TabsContent value="agent">
-							<div>
-								<div className="pt-2 pb-2 border-b border-zinc-200 dark:border-zinc-700 max-h-[100px] overflow-y-auto">
+							<div className="space-y-3 pt-2">
+								<div className="max-h-[140px] overflow-y-auto rounded-lg border border-zinc-200/70 p-2 dark:border-zinc-700/70">
 									<h3
 										id="agents-heading"
-										className="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2"
+										className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100"
 									>
 										Agents
 									</h3>
@@ -495,6 +712,10 @@ export const ModelSelector = ({
 											<div className="flex justify-center py-2">
 												<Loader2 className="h-5 w-5 animate-spin" />
 											</div>
+										) : agents.length === 0 ? (
+											<p className="text-xs text-zinc-500 dark:text-zinc-400">
+												No agents available.
+											</p>
 										) : (
 											<div className="space-y-1">
 												{agents.map((agent) => (
@@ -533,81 +754,11 @@ export const ModelSelector = ({
 										)}
 									</fieldset>
 								</div>
-								<div className="pt-2 max-h-[200px] overflow-y-auto">
-									<h3
-										id="models-heading"
-										className="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2"
-									>
-										Models
-									</h3>
-									<ModelsList
-										disabled={isModelLockedByAgent}
-										featured={filteredFeaturedModels}
-										other={filteredOtherModels}
-										showAll={showAllModels}
-										setShowAll={setShowAllModels}
-										showAllDisabled={!!(searchQuery || selectedCapability)}
-										isDisabled={isDisabled}
-										isPro={isPro}
-										selectedId={selectedModelInfo?.id}
-										onSelect={(id) => {
-											handleModelChange(id);
-											setIsOpen(false);
-										}}
-										mono={mono}
-									/>
-								</div>
-							</div>
-						</TabsContent>
-						<TabsContent value="models">
-							<div className="p-2 border-b border-zinc-200 dark:border-zinc-700">
-								<div className="flex items-center justify-between">
-									<div className="text-xs text-zinc-500 dark:text-zinc-400">
-										Model Source:
-									</div>
-									<div className="flex items-center">
-										<button
-											type="button"
-											className={`cursor-pointer flex items-center justify-center gap-1 py-1 px-2 rounded text-xs ${
-												chatMode === "remote"
-													? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-200"
-													: "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
-											}`}
-											onClick={() =>
-												chatMode !== "remote" &&
-												handleToggleModelSource("remote")
-											}
-											aria-pressed={chatMode === "remote"}
-										>
-											<Cloud className="h-3 w-3" />
-											Remote
-										</button>
-										<span className="mx-1 text-zinc-400">|</span>
-										<button
-											type="button"
-											className={`cursor-pointer flex items-center justify-center gap-1 py-1 px-2 rounded text-xs ${
-												chatMode === "local"
-													? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-200"
-													: "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
-											}`}
-											onClick={() =>
-												chatMode !== "local" && handleToggleModelSource("local")
-											}
-											aria-pressed={chatMode === "local"}
-										>
-											<Computer className="h-3 w-3" />
-											Local
-										</button>
-									</div>
-								</div>
-							</div>
-							<div className="pt-4 max-h-[300px] overflow-y-auto">
+
 								<ModelsList
-									featured={filteredFeaturedModels}
-									other={filteredOtherModels}
-									showAll={showAllModels}
-									setShowAll={setShowAllModels}
-									showAllDisabled={!!(searchQuery || selectedCapability)}
+									disabled={isModelLockedByAgent}
+									models={filteredModelList}
+									featuredModelIds={featuredModelIds}
 									isDisabled={isDisabled}
 									isPro={isPro}
 									selectedId={selectedModelInfo?.id}
@@ -616,12 +767,76 @@ export const ModelSelector = ({
 										setIsOpen(false);
 									}}
 									mono={mono}
+									onInfoHoverStart={handleInfoHoverStart}
+									onInfoHoverEnd={handleInfoHoverEnd}
+								/>
+							</div>
+						</TabsContent>
+
+						<TabsContent value="models">
+							<div className="space-y-3">
+								<div>
+									<div className="flex items-center justify-between">
+										<div className="text-xs text-zinc-500 dark:text-zinc-400">
+											Model Source:
+										</div>
+										<div className="flex items-center rounded-md bg-zinc-100 p-0.5 dark:bg-zinc-800">
+											<button
+												type="button"
+												className={`cursor-pointer flex items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
+													chatMode === "remote"
+														? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
+														: "text-zinc-600 dark:text-zinc-400"
+												}`}
+												onClick={() =>
+													chatMode !== "remote" &&
+													handleToggleModelSource("remote")
+												}
+												aria-pressed={chatMode === "remote"}
+											>
+												<Cloud className="h-3 w-3" />
+												Remote
+											</button>
+											<button
+												type="button"
+												className={`cursor-pointer flex items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
+													chatMode === "local"
+														? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
+														: "text-zinc-600 dark:text-zinc-400"
+												}`}
+												onClick={() =>
+													chatMode !== "local" &&
+													handleToggleModelSource("local")
+												}
+												aria-pressed={chatMode === "local"}
+											>
+												<Computer className="h-3 w-3" />
+												Local
+											</button>
+										</div>
+									</div>
+								</div>
+
+								<ModelsList
+									models={filteredModelList}
+									featuredModelIds={featuredModelIds}
+									isDisabled={isDisabled}
+									isPro={isPro}
+									selectedId={selectedModelInfo?.id}
+									onSelect={(id) => {
+										handleModelChange(id);
+										setIsOpen(false);
+									}}
+									mono={mono}
+									onInfoHoverStart={handleInfoHoverStart}
+									onInfoHoverEnd={handleInfoHoverEnd}
 								/>
 							</div>
 						</TabsContent>
 					</Tabs>
 				</dialog>
 			)}
+			<HoverPreview preview={hoverPreview} />
 		</div>
 	);
 };

@@ -8,7 +8,7 @@ const PROVIDER = "openai";
 
 export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("o1", PROVIDER, {
-		name: "OpenAI o1",
+		name: "o1",
 		matchingModel: "o1",
 		description:
 			"Advanced model with strong capabilities in coding, analysis, math, reasoning, and multilingual support. Predecessor to o3, features 200k context window. Surpassed by o3 in complex reasoning and tool use.",
@@ -44,13 +44,13 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("o3", PROVIDER, {
-		name: "OpenAI o3",
+		name: "o3",
 		matchingModel: "o3",
 		description:
 			"OpenAI's most powerful reasoning model, pushing frontiers in coding, math, science, visual perception. Agentically uses tools (web search, Python, visual analysis, image generation).",
 		knowledgeCutoffDate: "May 2024",
-		releaseDate: "January 24, 2025",
-		lastUpdated: "January 24, 2025",
+		releaseDate: "April 16, 2025",
+		lastUpdated: "April 16, 2025",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -59,8 +59,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 100000,
-		costPer1kInputTokens: 0.0011,
-		costPer1kOutputTokens: 0.0044,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.008,
 		strengths: ["coding", "math", "reasoning", "analysis", "multilingual"],
 		contextComplexity: 5,
 		reliability: 5,
@@ -78,7 +78,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("o4-mini", PROVIDER, {
-		name: "OpenAI o4 Mini",
+		name: "o4-mini",
 		matchingModel: "o4-mini",
 		description:
 			"Smaller model optimized for fast, cost-efficient reasoning. Strong performance in math, coding, visual tasks, and data science. Agentically uses tools.",
@@ -119,7 +119,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("o3-mini", PROVIDER, {
-		name: "OpenAI o3 Mini",
+		name: "o3-mini",
 		matchingModel: "o3-mini",
 		description:
 			"Fast, flexible reasoning model, predecessor to o4-mini. Good reasoning capabilities.",
@@ -150,16 +150,17 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsToolCalls: true,
 	}),
 
 	createModelConfig("gpt-4o", PROVIDER, {
-		name: "OpenAI GPT-4o",
+		name: "GPT-4o",
 		matchingModel: "gpt-4o",
 		description:
 			"Enhanced GPT model with 128k context window, specialized in analysis, chat, coding, and multilingual tasks.",
-		knowledgeCutoffDate: "October 2023",
+		knowledgeCutoffDate: "September 2023",
 		releaseDate: "May 13, 2024",
-		lastUpdated: "May 13, 2024",
+		lastUpdated: "August 6, 2024",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -169,7 +170,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/gpt-4o",
 		contextWindow: 128000,
-		maxTokens: 16484,
+		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
 		strengths: [
@@ -187,6 +188,9 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
 	createModelConfig("gpt-4o-search-preview", PROVIDER, {
@@ -227,11 +231,11 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("gpt-4o-mini", PROVIDER, {
-		name: "OpenAI GPT-4o Mini",
+		name: "GPT-4o mini",
 		matchingModel: "gpt-4o-mini",
 		description:
 			"Efficient version of GPT-4o optimized for faster response times while maintaining core capabilities.",
-		knowledgeCutoffDate: "October 2023",
+		knowledgeCutoffDate: "September 2023",
 		releaseDate: "July 18, 2024",
 		lastUpdated: "July 18, 2024",
 		modalities: {
@@ -243,7 +247,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/gpt-4o-mini",
 		contextWindow: 128000,
-		maxTokens: 16484,
+		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
 		strengths: [
@@ -260,6 +264,9 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
 	createModelConfig("gpt-4o-mini-search", PROVIDER, {
@@ -331,7 +338,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("gpt-4.1", PROVIDER, {
-		name: "OpenAI GPT-4.1",
+		name: "GPT-4.1",
 		matchingModel: "gpt-4.1",
 		description:
 			"OpenAI's advanced model optimized for coding and instruction-following with 1M token context window",
@@ -346,8 +353,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		card: "https://www.prompthub.us/models/gpt-4-1",
 		supportsToolCalls: true,
-		maxTokens: 1000000,
-		contextWindow: 1000000,
+		maxTokens: 32768,
+		contextWindow: 1047576,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
 		strengths: ["coding", "academic", "reasoning", "instruction", "vision"],
@@ -359,9 +366,13 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: false,
 		includedInRouter: true,
 		timeout: 1000000,
+		supportsResponseFormat: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 	createModelConfig("gpt-4.1-mini", PROVIDER, {
-		name: "OpenAI GPT-4.1 Mini",
+		name: "GPT-4.1 mini",
 		matchingModel: "gpt-4.1-mini",
 		description:
 			"Balanced version of GPT-4.1 with 1M token context window and lower cost",
@@ -376,8 +387,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		card: "https://www.prompthub.us/models/gpt-4-1-mini",
 		supportsToolCalls: true,
-		maxTokens: 1000000,
-		contextWindow: 1000000,
+		maxTokens: 32768,
+		contextWindow: 1047576,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0016,
 		strengths: ["coding", "academic", "instruction", "vision"],
@@ -388,9 +399,13 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 		isFeatured: false,
 		includedInRouter: true,
+		supportsResponseFormat: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 	createModelConfig("gpt-4.1-nano", PROVIDER, {
-		name: "OpenAI GPT-4.1 Nano",
+		name: "GPT-4.1 nano",
 		matchingModel: "gpt-4.1-nano",
 		description:
 			"Fastest and most cost-effective version of GPT-4.1 with 1M token context window",
@@ -405,8 +420,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		card: "https://www.prompthub.us/models/gpt-4-1-nano",
 		supportsToolCalls: true,
-		maxTokens: 1000000,
-		contextWindow: 1000000,
+		maxTokens: 32768,
+		contextWindow: 1047576,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
 		strengths: ["coding", "academic", "instruction"],
@@ -417,14 +432,18 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 		isFeatured: false,
 		includedInRouter: true,
+		supportsResponseFormat: true,
+		reasoningConfig: {
+			enabled: false,
+		},
 	}),
 
 	createModelConfig("gpt-5", PROVIDER, {
-		name: "OpenAI GPT 5",
+		name: "GPT-5",
 		matchingModel: "gpt-5",
 		description:
 			"GPT-5 is OpenAI's flagship model for coding, reasoning, and agentic tasks across domains",
-		knowledgeCutoffDate: "October 2024",
+		knowledgeCutoffDate: "September 30, 2024",
 		releaseDate: "August 7, 2025",
 		lastUpdated: "August 7, 2025",
 		modalities: {
@@ -448,13 +467,17 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		supportsResponseFormat: true,
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 	createModelConfig("gpt-5-mini", PROVIDER, {
-		name: "OpenAI GPT 5 Mini",
+		name: "GPT-5 Mini",
 		matchingModel: "gpt-5-mini",
 		description:
 			"GPT-5 is OpenAI's flagship model for coding, reasoning, and agentic tasks across domains",
-		knowledgeCutoffDate: "October 2024",
+		knowledgeCutoffDate: "May 30, 2024",
 		releaseDate: "August 7, 2025",
 		lastUpdated: "August 7, 2025",
 		modalities: {
@@ -467,8 +490,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		maxTokens: 128000,
 		contextWindow: 400000,
-		costPer1kInputTokens: 0.00125,
-		costPer1kOutputTokens: 0.01,
+		costPer1kInputTokens: 0.00025,
+		costPer1kOutputTokens: 0.002,
 		supportsTopP: false,
 		strengths: ["coding", "reasoning", "analysis", "multilingual"],
 		contextComplexity: 4,
@@ -478,13 +501,17 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		supportsResponseFormat: true,
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 	createModelConfig("gpt-5-nano", PROVIDER, {
-		name: "OpenAI GPT 5 Nano",
+		name: "GPT-5 Nano",
 		matchingModel: "gpt-5-nano",
 		description:
 			"GPT-5 is OpenAI's flagship model for coding, reasoning, and agentic tasks across domains",
-		knowledgeCutoffDate: "October 2024",
+		knowledgeCutoffDate: "May 30, 2024",
 		releaseDate: "August 7, 2025",
 		lastUpdated: "August 7, 2025",
 		modalities: {
@@ -497,8 +524,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		maxTokens: 128000,
 		contextWindow: 400000,
-		costPer1kInputTokens: 0.00125,
-		costPer1kOutputTokens: 0.01,
+		costPer1kInputTokens: 0.00005,
+		costPer1kOutputTokens: 0.0004,
 		supportsTopP: false,
 		strengths: ["coding", "chat", "general_knowledge"],
 		contextComplexity: 3,
@@ -508,16 +535,20 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		supportsResponseFormat: true,
+		reasoningConfig: {
+			enabled: true,
+		},
 	}),
 
-	createModelConfig("gpt-5.1", PROVIDER, {
-		name: "OpenAI GPT 5.2",
+	createModelConfig("gpt-5.2", PROVIDER, {
+		name: "GPT-5.2",
 		matchingModel: "gpt-5.2",
 		description:
 			"GPT-5.1 is an improved version of OpenAI's flagship model for coding, reasoning, and agentic tasks across domains",
-		knowledgeCutoffDate: "2025-08",
-		releaseDate: "2025-12-11",
-		lastUpdated: "2025-12-11",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "December 11, 2025",
+		lastUpdated: "December 11, 2025",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -547,15 +578,16 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		isFeatured: true,
+		supportsResponseFormat: true,
 	}),
 	createModelConfig("gpt-5.2-chat", PROVIDER, {
-		name: "OpenAI GPT 5.2 Chat",
+		name: "GPT-5.2 Chat",
 		matchingModel: "gpt-5.2-chat-latest",
 		description:
 			"A chat-optimized version of GPT-5.2, designed for dynamic and interactive conversations across various topics",
-		knowledgeCutoffDate: "2025-08",
-		releaseDate: "2025-12-11",
-		lastUpdated: "2025-12-11",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "December 11, 2025",
+		lastUpdated: "December 11, 2025",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -563,10 +595,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
-		maxTokens: 128000,
-		contextWindow: 400000,
-		costPer1kInputTokens: 0.00125,
-		costPer1kOutputTokens: 0.01,
+		maxTokens: 16384,
+		contextWindow: 128000,
+		costPer1kInputTokens: 0.00175,
+		costPer1kOutputTokens: 0.014,
 		supportsTopP: false,
 		strengths: [
 			"chat",
@@ -591,14 +623,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		isFeatured: true,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("gpt-5.1-codex", PROVIDER, {
-		name: "OpenAI GPT 5.1 Codex",
+		name: "GPT-5.1 Codex",
 		matchingModel: "gpt-5.1-codex",
 		description:
 			"GPT-5.1 Codex is a specialized version of GPT-5.1, fine-tuned for code generation and understanding tasks.",
-		knowledgeCutoffDate: "October 2024",
+		knowledgeCutoffDate: "September 30, 2024",
 		releaseDate: "November 13, 2025",
 		lastUpdated: "November 13, 2025",
 		modalities: {
@@ -631,13 +664,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		isFeatured: true,
+		supportsResponseFormat: true,
 	}),
 	createModelConfig("gpt-5.1-codex-mini", PROVIDER, {
-		name: "OpenAI GPT 5.1 Codex Mini",
+		name: "GPT-5.1 Codex mini",
 		matchingModel: "gpt-5.1-codex-mini",
 		description:
 			"GPT-5.1 Codex Mini is a lightweight version of GPT-5.1 Codex, optimized for faster performance and lower resource usage.",
-		knowledgeCutoffDate: "October 2024",
+		knowledgeCutoffDate: "September 30, 2024",
 		releaseDate: "November 13, 2025",
 		lastUpdated: "November 13, 2025",
 		modalities: {
@@ -651,8 +685,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		maxTokens: 128000,
 		contextWindow: 400000,
-		costPer1kInputTokens: 0.00125,
-		costPer1kOutputTokens: 0.01,
+		costPer1kInputTokens: 0.00025,
+		costPer1kOutputTokens: 0.002,
 		supportsTopP: false,
 		contextComplexity: 4,
 		reliability: 5,
@@ -670,6 +704,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		isFeatured: true,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("gpt-image-1", PROVIDER, {
@@ -727,6 +762,596 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		modalities: {
 			input: ["text"],
 			output: ["image"],
+		},
+	}),
+	createModelConfig("codex-mini-latest", PROVIDER, {
+		name: "Codex Mini",
+		matchingModel: "codex-mini-latest",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "May 16, 2025",
+		lastUpdated: "May 16, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 100000,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-3.5-turbo", PROVIDER, {
+		name: "GPT-3.5-turbo",
+		matchingModel: "gpt-3.5-turbo",
+		knowledgeCutoffDate: "September 1, 2021",
+		releaseDate: "March 1, 2023",
+		lastUpdated: "November 6, 2023",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		supportsResponseFormat: false,
+		contextWindow: 16385,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.0005,
+		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("gpt-4", PROVIDER, {
+		name: "GPT-4",
+		matchingModel: "gpt-4",
+		knowledgeCutoffDate: "November 2023",
+		releaseDate: "November 6, 2023",
+		lastUpdated: "April 9, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: false,
+		contextWindow: 8192,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.03,
+		costPer1kOutputTokens: 0.06,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("gpt-4-turbo", PROVIDER, {
+		name: "GPT-4 Turbo",
+		matchingModel: "gpt-4-turbo",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "November 6, 2023",
+		lastUpdated: "April 9, 2024",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: false,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.01,
+		costPer1kOutputTokens: 0.03,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("gpt-4o-2024-05-13", PROVIDER, {
+		name: "GPT-4o (2024-05-13)",
+		matchingModel: "gpt-4o-2024-05-13",
+		knowledgeCutoffDate: "September 2023",
+		releaseDate: "May 13, 2024",
+		lastUpdated: "May 13, 2024",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("gpt-4o-2024-08-06", PROVIDER, {
+		name: "GPT-4o (2024-08-06)",
+		matchingModel: "gpt-4o-2024-08-06",
+		knowledgeCutoffDate: "September 2023",
+		releaseDate: "August 6, 2024",
+		lastUpdated: "August 6, 2024",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("gpt-4o-2024-11-20", PROVIDER, {
+		name: "GPT-4o (2024-11-20)",
+		matchingModel: "gpt-4o-2024-11-20",
+		knowledgeCutoffDate: "September 2023",
+		releaseDate: "November 20, 2024",
+		lastUpdated: "November 20, 2024",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("gpt-5-chat-latest", PROVIDER, {
+		name: "GPT-5 Chat (latest)",
+		matchingModel: "gpt-5-chat-latest",
+		knowledgeCutoffDate: "September 30, 2024",
+		releaseDate: "August 7, 2025",
+		lastUpdated: "August 7, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5-codex", PROVIDER, {
+		name: "GPT-5-Codex",
+		matchingModel: "gpt-5-codex",
+		knowledgeCutoffDate: "September 30, 2024",
+		releaseDate: "September 15, 2025",
+		lastUpdated: "September 15, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5-pro", PROVIDER, {
+		name: "GPT-5 Pro",
+		matchingModel: "gpt-5-pro",
+		knowledgeCutoffDate: "September 30, 2024",
+		releaseDate: "October 6, 2025",
+		lastUpdated: "October 6, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 272000,
+		costPer1kInputTokens: 0.015,
+		costPer1kOutputTokens: 0.12,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.1", PROVIDER, {
+		name: "GPT-5.1",
+		matchingModel: "gpt-5.1",
+		knowledgeCutoffDate: "September 30, 2024",
+		releaseDate: "November 13, 2025",
+		lastUpdated: "November 13, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.1-chat-latest", PROVIDER, {
+		name: "GPT-5.1 Chat",
+		matchingModel: "gpt-5.1-chat-latest",
+		knowledgeCutoffDate: "September 30, 2024",
+		releaseDate: "November 13, 2025",
+		lastUpdated: "November 13, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.1-codex-max", PROVIDER, {
+		name: "GPT-5.1 Codex Max",
+		matchingModel: "gpt-5.1-codex-max",
+		knowledgeCutoffDate: "September 30, 2024",
+		releaseDate: "November 13, 2025",
+		lastUpdated: "November 13, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.2-codex", PROVIDER, {
+		name: "GPT-5.2 Codex",
+		matchingModel: "gpt-5.2-codex",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "December 11, 2025",
+		lastUpdated: "December 11, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.00175,
+		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.2-pro", PROVIDER, {
+		name: "GPT-5.2 Pro",
+		matchingModel: "gpt-5.2-pro",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "December 11, 2025",
+		lastUpdated: "December 11, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.021,
+		costPer1kOutputTokens: 0.168,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.3-codex", PROVIDER, {
+		name: "GPT-5.3 Codex",
+		matchingModel: "gpt-5.3-codex",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "February 5, 2026",
+		lastUpdated: "February 5, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.00175,
+		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.3-codex-spark", PROVIDER, {
+		name: "GPT-5.3 Codex Spark",
+		matchingModel: "gpt-5.3-codex-spark",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "February 5, 2026",
+		lastUpdated: "February 5, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 32000,
+		costPer1kInputTokens: 0.00175,
+		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("o1-mini", PROVIDER, {
+		name: "o1-mini",
+		matchingModel: "o1-mini",
+		knowledgeCutoffDate: "September 2023",
+		releaseDate: "September 12, 2024",
+		lastUpdated: "September 12, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 65536,
+		costPer1kInputTokens: 0.0011,
+		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("o1-preview", PROVIDER, {
+		name: "o1-preview",
+		matchingModel: "o1-preview",
+		knowledgeCutoffDate: "September 2023",
+		releaseDate: "September 12, 2024",
+		lastUpdated: "September 12, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 128000,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0.015,
+		costPer1kOutputTokens: 0.06,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("o1-pro", PROVIDER, {
+		name: "o1-pro",
+		matchingModel: "o1-pro",
+		knowledgeCutoffDate: "September 2023",
+		releaseDate: "March 19, 2025",
+		lastUpdated: "March 19, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 200000,
+		maxTokens: 100000,
+		costPer1kInputTokens: 0.15,
+		costPer1kOutputTokens: 0.6,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("o3-deep-research", PROVIDER, {
+		name: "o3-deep-research",
+		matchingModel: "o3-deep-research",
+		knowledgeCutoffDate: "May 2024",
+		releaseDate: "June 26, 2024",
+		lastUpdated: "June 26, 2024",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 100000,
+		costPer1kInputTokens: 0.01,
+		costPer1kOutputTokens: 0.04,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("o3-pro", PROVIDER, {
+		name: "o3-pro",
+		matchingModel: "o3-pro",
+		knowledgeCutoffDate: "May 2024",
+		releaseDate: "June 10, 2025",
+		lastUpdated: "June 10, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 200000,
+		maxTokens: 100000,
+		costPer1kInputTokens: 0.02,
+		costPer1kOutputTokens: 0.08,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("o4-mini-deep-research", PROVIDER, {
+		name: "o4-mini-deep-research",
+		matchingModel: "o4-mini-deep-research",
+		knowledgeCutoffDate: "May 2024",
+		releaseDate: "June 26, 2024",
+		lastUpdated: "June 26, 2024",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 100000,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.008,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("text-embedding-3-large", PROVIDER, {
+		name: "text-embedding-3-large",
+		matchingModel: "text-embedding-3-large",
+		knowledgeCutoffDate: "January 2024",
+		releaseDate: "January 25, 2024",
+		lastUpdated: "January 25, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		contextWindow: 8191,
+		maxTokens: 3072,
+		costPer1kInputTokens: 0.00013,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("text-embedding-3-small", PROVIDER, {
+		name: "text-embedding-3-small",
+		matchingModel: "text-embedding-3-small",
+		knowledgeCutoffDate: "January 2024",
+		releaseDate: "January 25, 2024",
+		lastUpdated: "January 25, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		contextWindow: 8191,
+		maxTokens: 1536,
+		costPer1kInputTokens: 0.00002,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("text-embedding-ada-002", PROVIDER, {
+		name: "text-embedding-ada-002",
+		matchingModel: "text-embedding-ada-002",
+		knowledgeCutoffDate: "December 2022",
+		releaseDate: "December 15, 2022",
+		lastUpdated: "December 15, 2022",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		contextWindow: 8192,
+		maxTokens: 1536,
+		costPer1kInputTokens: 0.0001,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: false,
 		},
 	}),
 ]);

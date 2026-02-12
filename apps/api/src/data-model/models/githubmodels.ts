@@ -2,7 +2,7 @@ import type { ModelConfig } from "~/types";
 
 export const githubModelsConfig: ModelConfig = {
 	"jamba-1-5-mini-gh": {
-		name: "AI21 Jamba 1.5 Mini (GitHub)",
+		name: "AI21 Jamba 1.5 Mini",
 		matchingModel: "ai21-labs/ai21-jamba-1.5-mini",
 		description:
 			"Efficient hybrid architecture model combining Transformer and Mamba layers for speed and context handling.",
@@ -31,7 +31,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"jamba-1-5-large-gh": {
-		name: "AI21 Jamba 1.5 Large (GitHub)",
+		name: "AI21 Jamba 1.5 Large",
 		matchingModel: "ai21-labs/ai21-jamba-1.5-large",
 		description:
 			"Large-scale hybrid architecture model for complex reasoning and analysis tasks.",
@@ -60,7 +60,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"gpt-4-1-mini-gh": {
-		name: "GPT-4.1 Mini (GitHub)",
+		name: "GPT-4.1-mini",
 		matchingModel: "openai/gpt-4.1-mini",
 		description:
 			"Advanced GPT model with improved instruction following and 1M context window.",
@@ -90,7 +90,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"o4-mini-gh": {
-		name: "OpenAI o4-mini (GitHub)",
+		name: "OpenAI o4-mini",
 		matchingModel: "openai/o4-mini",
 		description:
 			"Reasoning model optimized for complex problem-solving with enhanced mathematical capabilities.",
@@ -120,7 +120,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"o1-mini-gh": {
-		name: "OpenAI o1-mini (GitHub)",
+		name: "OpenAI o1-mini",
 		matchingModel: "openai/o1-mini",
 		description:
 			"Compact reasoning model for mathematical and logical problem-solving.",
@@ -149,7 +149,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"gpt-4o-mini-gh": {
-		name: "GPT-4o Mini (GitHub)",
+		name: "GPT-4o mini",
 		matchingModel: "openai/gpt-4o-mini",
 		description:
 			"Efficient multimodal model with support for text, image, and audio inputs.",
@@ -179,7 +179,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"gpt-4o-gh": {
-		name: "GPT-4o (GitHub)",
+		name: "GPT-4o",
 		matchingModel: "openai/gpt-4o",
 		description:
 			"Advanced multimodal GPT model with enhanced vision and audio capabilities.",
@@ -209,7 +209,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"o3-mini-gh": {
-		name: "OpenAI o3-mini (GitHub)",
+		name: "OpenAI o3-mini",
 		matchingModel: "openai/o3-mini",
 		description:
 			"Latest compact reasoning model with enhanced problem-solving capabilities.",
@@ -238,7 +238,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"o1-gh": {
-		name: "OpenAI o1 (GitHub)",
+		name: "OpenAI o1",
 		matchingModel: "openai/o1",
 		description:
 			"Advanced reasoning model with multimodal capabilities and enhanced logical thinking.",
@@ -268,7 +268,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"phi-4-gh": {
-		name: "Phi-4 (GitHub)",
+		name: "Phi-4",
 		matchingModel: "microsoft/phi-4",
 		description:
 			"Microsoft's latest small language model optimized for reasoning and code generation.",
@@ -297,7 +297,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"phi-4-multimodal-gh": {
-		name: "Phi-4 Multimodal (GitHub)",
+		name: "Phi-4-multimodal-instruct",
 		matchingModel: "microsoft/phi-4-multimodal-instruct",
 		description:
 			"Multimodal version of Phi-4 with vision and audio capabilities.",
@@ -327,7 +327,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"phi-4-reasoning-gh": {
-		name: "Phi-4 Reasoning (GitHub)",
+		name: "Phi-4-Reasoning",
 		matchingModel: "microsoft/phi-4-reasoning",
 		description:
 			"Specialized version of Phi-4 optimized for complex reasoning tasks.",
@@ -356,7 +356,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"phi-3-5-vision-gh": {
-		name: "Phi-3.5 Vision (GitHub)",
+		name: "Phi-3.5-vision instruct (128k)",
 		matchingModel: "microsoft/phi-3.5-vision-instruct",
 		description:
 			"Vision-enabled Phi model for image understanding and analysis.",
@@ -386,7 +386,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"llama-3-2-90b-vision-gh": {
-		name: "Llama 3.2 90B Vision (GitHub)",
+		name: "Llama-3.2-90B-Vision-Instruct",
 		matchingModel: "meta/llama-3.2-90b-vision-instruct",
 		description:
 			"Large multimodal Llama model with vision and audio capabilities.",
@@ -416,7 +416,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"llama-3-1-405b-gh": {
-		name: "Meta Llama 3.1 405B (GitHub)",
+		name: "Meta-Llama-3.1-405B-Instruct",
 		matchingModel: "meta/meta-llama-3.1-405b-instruct",
 		description:
 			"Largest open-source language model with exceptional reasoning capabilities.",
@@ -445,7 +445,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"deepseek-r1-gh": {
-		name: "DeepSeek-R1 (GitHub)",
+		name: "DeepSeek-R1",
 		matchingModel: "deepseek/deepseek-r1",
 		description:
 			"Advanced reasoning model with strong mathematical and logical capabilities.",
@@ -474,7 +474,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"mistral-large-2411-gh": {
-		name: "Mistral Large 24.11 (GitHub)",
+		name: "Mistral Large 24.11",
 		matchingModel: "mistral-ai/mistral-large-2411",
 		description:
 			"Latest Mistral model with enhanced reasoning and multilingual capabilities.",
@@ -503,7 +503,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"codestral-2501-gh": {
-		name: "Codestral 25.01 (GitHub)",
+		name: "Codestral 25.01",
 		matchingModel: "mistral-ai/codestral-2501",
 		description:
 			"Specialized Mistral model optimized for code generation and programming tasks.",
@@ -532,7 +532,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"grok-3-gh": {
-		name: "Grok 3 (GitHub)",
+		name: "Grok 3",
 		matchingModel: "xai/grok-3",
 		description:
 			"xAI's flagship model with strong reasoning capabilities and real-time knowledge.",
@@ -561,7 +561,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"grok-3-mini-gh": {
-		name: "Grok 3 Mini (GitHub)",
+		name: "Grok 3 Mini",
 		matchingModel: "xai/grok-3-mini",
 		description:
 			"Efficient version of Grok 3 optimized for speed while maintaining reasoning capabilities.",
@@ -590,7 +590,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"command-r-gh": {
-		name: "Cohere Command R (GitHub)",
+		name: "Cohere Command R",
 		matchingModel: "cohere/cohere-command-r",
 		description:
 			"Cohere's conversational model optimized for RAG and tool use.",
@@ -619,7 +619,7 @@ export const githubModelsConfig: ModelConfig = {
 	},
 
 	"command-r-plus-gh": {
-		name: "Cohere Command R+ (GitHub)",
+		name: "Cohere Command R+",
 		matchingModel: "cohere/cohere-command-r-plus",
 		description:
 			"Enhanced version of Command R with improved capabilities for complex workflows.",
@@ -645,5 +645,763 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 2,
 		includedInRouter: false,
 		supportsArtifacts: true,
+	},
+	"cohere/cohere-command-a": {
+		name: "Cohere Command A",
+		matchingModel: "cohere/cohere-command-a",
+		provider: "github-models",
+		knowledgeCutoffDate: "March 2024",
+		releaseDate: "November 1, 2024",
+		lastUpdated: "November 1, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"cohere/cohere-command-r-08-2024": {
+		name: "Cohere Command R 08-2024",
+		matchingModel: "cohere/cohere-command-r-08-2024",
+		provider: "github-models",
+		knowledgeCutoffDate: "March 2024",
+		releaseDate: "August 1, 2024",
+		lastUpdated: "August 1, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"cohere/cohere-command-r-plus-08-2024": {
+		name: "Cohere Command R+ 08-2024",
+		matchingModel: "cohere/cohere-command-r-plus-08-2024",
+		provider: "github-models",
+		knowledgeCutoffDate: "March 2024",
+		releaseDate: "August 1, 2024",
+		lastUpdated: "August 1, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"core42/jais-30b-chat": {
+		name: "JAIS 30b Chat",
+		matchingModel: "core42/jais-30b-chat",
+		provider: "github-models",
+		knowledgeCutoffDate: "March 2023",
+		releaseDate: "August 30, 2023",
+		lastUpdated: "August 30, 2023",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 8192,
+		maxTokens: 2048,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"deepseek/deepseek-r1-0528": {
+		name: "DeepSeek-R1-0528",
+		matchingModel: "deepseek/deepseek-r1-0528",
+		provider: "github-models",
+		knowledgeCutoffDate: "June 2024",
+		releaseDate: "May 28, 2025",
+		lastUpdated: "May 28, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 65536,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"deepseek/deepseek-v3-0324": {
+		name: "DeepSeek-V3-0324",
+		matchingModel: "deepseek/deepseek-v3-0324",
+		provider: "github-models",
+		knowledgeCutoffDate: "June 2024",
+		releaseDate: "March 24, 2025",
+		lastUpdated: "March 24, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"meta/llama-3.2-11b-vision-instruct": {
+		name: "Llama-3.2-11B-Vision-Instruct",
+		matchingModel: "meta/llama-3.2-11b-vision-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "September 25, 2024",
+		lastUpdated: "September 25, 2024",
+		modalities: {
+			input: ["text", "image", "audio"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"meta/llama-3.3-70b-instruct": {
+		name: "Llama-3.3-70B-Instruct",
+		matchingModel: "meta/llama-3.3-70b-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "December 6, 2024",
+		lastUpdated: "December 6, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"meta/llama-4-maverick-17b-128e-instruct-fp8": {
+		name: "Llama 4 Maverick 17B 128E Instruct FP8",
+		matchingModel: "meta/llama-4-maverick-17b-128e-instruct-fp8",
+		provider: "github-models",
+		knowledgeCutoffDate: "December 2024",
+		releaseDate: "January 31, 2025",
+		lastUpdated: "January 31, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"meta/llama-4-scout-17b-16e-instruct": {
+		name: "Llama 4 Scout 17B 16E Instruct",
+		matchingModel: "meta/llama-4-scout-17b-16e-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "December 2024",
+		releaseDate: "January 31, 2025",
+		lastUpdated: "January 31, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"meta/meta-llama-3-70b-instruct": {
+		name: "Meta-Llama-3-70B-Instruct",
+		matchingModel: "meta/meta-llama-3-70b-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "April 18, 2024",
+		lastUpdated: "April 18, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 8192,
+		maxTokens: 2048,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"meta/meta-llama-3-8b-instruct": {
+		name: "Meta-Llama-3-8B-Instruct",
+		matchingModel: "meta/meta-llama-3-8b-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "April 18, 2024",
+		lastUpdated: "April 18, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 8192,
+		maxTokens: 2048,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"meta/meta-llama-3.1-70b-instruct": {
+		name: "Meta-Llama-3.1-70B-Instruct",
+		matchingModel: "meta/meta-llama-3.1-70b-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "July 23, 2024",
+		lastUpdated: "July 23, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"meta/meta-llama-3.1-8b-instruct": {
+		name: "Meta-Llama-3.1-8B-Instruct",
+		matchingModel: "meta/meta-llama-3.1-8b-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "July 23, 2024",
+		lastUpdated: "July 23, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"microsoft/mai-ds-r1": {
+		name: "MAI-DS-R1",
+		matchingModel: "microsoft/mai-ds-r1",
+		provider: "github-models",
+		knowledgeCutoffDate: "June 2024",
+		releaseDate: "January 20, 2025",
+		lastUpdated: "January 20, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 65536,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"microsoft/phi-3-medium-128k-instruct": {
+		name: "Phi-3-medium instruct (128k)",
+		matchingModel: "microsoft/phi-3-medium-128k-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "October 2023",
+		releaseDate: "April 23, 2024",
+		lastUpdated: "April 23, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"microsoft/phi-3-medium-4k-instruct": {
+		name: "Phi-3-medium instruct (4k)",
+		matchingModel: "microsoft/phi-3-medium-4k-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "October 2023",
+		releaseDate: "April 23, 2024",
+		lastUpdated: "April 23, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 4096,
+		maxTokens: 1024,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"microsoft/phi-3-mini-128k-instruct": {
+		name: "Phi-3-mini instruct (128k)",
+		matchingModel: "microsoft/phi-3-mini-128k-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "October 2023",
+		releaseDate: "April 23, 2024",
+		lastUpdated: "April 23, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"microsoft/phi-3-mini-4k-instruct": {
+		name: "Phi-3-mini instruct (4k)",
+		matchingModel: "microsoft/phi-3-mini-4k-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "October 2023",
+		releaseDate: "April 23, 2024",
+		lastUpdated: "April 23, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 4096,
+		maxTokens: 1024,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"microsoft/phi-3-small-128k-instruct": {
+		name: "Phi-3-small instruct (128k)",
+		matchingModel: "microsoft/phi-3-small-128k-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "October 2023",
+		releaseDate: "April 23, 2024",
+		lastUpdated: "April 23, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"microsoft/phi-3-small-8k-instruct": {
+		name: "Phi-3-small instruct (8k)",
+		matchingModel: "microsoft/phi-3-small-8k-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "October 2023",
+		releaseDate: "April 23, 2024",
+		lastUpdated: "April 23, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 8192,
+		maxTokens: 2048,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"microsoft/phi-3.5-mini-instruct": {
+		name: "Phi-3.5-mini instruct (128k)",
+		matchingModel: "microsoft/phi-3.5-mini-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "October 2023",
+		releaseDate: "August 20, 2024",
+		lastUpdated: "August 20, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"microsoft/phi-3.5-moe-instruct": {
+		name: "Phi-3.5-MoE instruct (128k)",
+		matchingModel: "microsoft/phi-3.5-moe-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "October 2023",
+		releaseDate: "August 20, 2024",
+		lastUpdated: "August 20, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"microsoft/phi-4-mini-instruct": {
+		name: "Phi-4-mini-instruct",
+		matchingModel: "microsoft/phi-4-mini-instruct",
+		provider: "github-models",
+		knowledgeCutoffDate: "October 2023",
+		releaseDate: "December 11, 2024",
+		lastUpdated: "December 11, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"microsoft/phi-4-mini-reasoning": {
+		name: "Phi-4-mini-reasoning",
+		matchingModel: "microsoft/phi-4-mini-reasoning",
+		provider: "github-models",
+		knowledgeCutoffDate: "October 2023",
+		releaseDate: "December 11, 2024",
+		lastUpdated: "December 11, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"mistral-ai/ministral-3b": {
+		name: "Ministral 3B",
+		matchingModel: "mistral-ai/ministral-3b",
+		provider: "github-models",
+		knowledgeCutoffDate: "March 2024",
+		releaseDate: "October 22, 2024",
+		lastUpdated: "October 22, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"mistral-ai/mistral-medium-2505": {
+		name: "Mistral Medium 3 (25.05)",
+		matchingModel: "mistral-ai/mistral-medium-2505",
+		provider: "github-models",
+		knowledgeCutoffDate: "September 2024",
+		releaseDate: "May 1, 2025",
+		lastUpdated: "May 1, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"mistral-ai/mistral-nemo": {
+		name: "Mistral Nemo",
+		matchingModel: "mistral-ai/mistral-nemo",
+		provider: "github-models",
+		knowledgeCutoffDate: "March 2024",
+		releaseDate: "July 18, 2024",
+		lastUpdated: "July 18, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"mistral-ai/mistral-small-2503": {
+		name: "Mistral Small 3.1",
+		matchingModel: "mistral-ai/mistral-small-2503",
+		provider: "github-models",
+		knowledgeCutoffDate: "September 2024",
+		releaseDate: "March 1, 2025",
+		lastUpdated: "March 1, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"openai/gpt-4.1": {
+		name: "GPT-4.1",
+		matchingModel: "openai/gpt-4.1",
+		provider: "github-models",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "April 14, 2025",
+		lastUpdated: "April 14, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: false,
+		},
+	},
+
+	"openai/gpt-4.1-nano": {
+		name: "GPT-4.1-nano",
+		matchingModel: "openai/gpt-4.1-nano",
+		provider: "github-models",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "April 14, 2025",
+		lastUpdated: "April 14, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: false,
+		},
+	},
+
+	"openai/o1-preview": {
+		name: "OpenAI o1-preview",
+		matchingModel: "openai/o1-preview",
+		provider: "github-models",
+		knowledgeCutoffDate: "October 2023",
+		releaseDate: "September 12, 2024",
+		lastUpdated: "September 12, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		contextWindow: 128000,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"openai/o3": {
+		name: "OpenAI o3",
+		matchingModel: "openai/o3",
+		provider: "github-models",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "January 31, 2025",
+		lastUpdated: "January 31, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		contextWindow: 200000,
+		maxTokens: 100000,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			enabled: true,
+		},
 	},
 };
