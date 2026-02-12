@@ -589,7 +589,7 @@ export const ModelSelector = ({
 					ref={dropdownRef}
 					open
 					onKeyDown={handleKeyDown}
-					className="absolute bottom-full left-0 z-50 mb-1 w-[min(94vw,660px)] max-w-[660px] rounded-xl border border-zinc-200 bg-off-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
+					className="absolute bottom-full left-0 z-50 mb-1 w-[min(96vw,600px)] max-w-[600px] rounded-xl border border-zinc-200 bg-off-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900 sm:w-[min(90vw,660px)] sm:max-w-[660px]"
 					aria-label="Model selection dialog"
 				>
 					{selectedTab !== "auto" && (
@@ -766,8 +766,8 @@ export const ModelSelector = ({
 						</TabsContent>
 
 						<TabsContent value="models">
-							<div className="space-y-3 pt-2">
-								<div className="rounded-lg border border-zinc-200/70 p-2 dark:border-zinc-700/70">
+							<div className="space-y-3">
+								<div>
 									<div className="flex items-center justify-between">
 										<div className="text-xs text-zinc-500 dark:text-zinc-400">
 											Model Source:

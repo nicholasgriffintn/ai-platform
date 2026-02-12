@@ -148,66 +148,70 @@ export function ModelsList({
 
 	return (
 		<div className="overflow-hidden rounded-lg border border-zinc-200/70 bg-white/60 dark:border-zinc-700/70 dark:bg-zinc-900/50">
-			<div className="flex min-h-[320px]">
-				<div className="w-16 border-r border-zinc-200/70 px-1.5 py-2 dark:border-zinc-700/70 sm:w-20 sm:px-2">
-					<div className="max-h-[320px] space-y-1 overflow-y-auto overflow-x-hidden">
-						{providerEntries.map((providerEntry) => {
-							const isFeaturedProvider =
-								providerEntry.key === FEATURED_PROVIDER_KEY;
-							const isSelected = selectedProvider === providerEntry.key;
-							return (
-								<button
-									key={providerEntry.key}
-									type="button"
-									onClick={() => {
-										onInfoHoverEnd?.();
-										setSelectedProvider(providerEntry.key);
-									}}
-									className={cn(
-										"flex w-full flex-col items-center gap-1 rounded-lg border px-1 py-2 text-[10px] transition-colors sm:text-[11px]",
-										isSelected
-											? "border-fuchsia-300 bg-fuchsia-50 text-fuchsia-700 dark:border-fuchsia-500/40 dark:bg-fuchsia-950/30 dark:text-fuchsia-200"
-											: "border-transparent text-zinc-500 hover:border-zinc-300 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:bg-zinc-800",
-									)}
-									aria-pressed={isSelected}
-									title={providerEntry.label}
-								>
-									{isFeaturedProvider ? (
-										<Sparkles className="h-4 w-4" />
-									) : (
-										<ModelIcon
-											modelName={providerEntry.label}
-											provider={providerEntry.key}
-											size={18}
-											mono={mono}
-										/>
-									)}
-									<span className="line-clamp-1 w-full text-center">
-										{isFeaturedProvider
-											? "Featured"
-											: providerEntry.label.split(" ")[0]}
-									</span>
-									<span className="rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
-										{providerEntry.models.length}
-									</span>
-								</button>
-							);
-						})}
+			<div className="flex max-h-[min(60vh,400px)] min-h-[280px] sm:max-h-[420px] sm:min-h-[320px]">
+				<div className="flex w-20 flex-col border-r border-zinc-200/70 dark:border-zinc-700/70 sm:w-24 md:w-28">
+					<div className="flex-1 overflow-y-auto overflow-x-hidden px-1.5 py-2 sm:px-2">
+						<div className="space-y-1">
+							{providerEntries.map((providerEntry) => {
+								const isFeaturedProvider =
+									providerEntry.key === FEATURED_PROVIDER_KEY;
+								const isSelected = selectedProvider === providerEntry.key;
+								return (
+									<button
+										key={providerEntry.key}
+										type="button"
+										onClick={() => {
+											onInfoHoverEnd?.();
+											setSelectedProvider(providerEntry.key);
+										}}
+										className={cn(
+											"flex w-full flex-col items-center gap-1 rounded-lg border px-1 py-2 text-[10px] transition-colors sm:text-[11px]",
+											isSelected
+												? "border-fuchsia-300 bg-fuchsia-50 text-fuchsia-700 dark:border-fuchsia-500/40 dark:bg-fuchsia-950/30 dark:text-fuchsia-200"
+												: "border-transparent text-zinc-500 hover:border-zinc-300 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:bg-zinc-800",
+										)}
+										aria-pressed={isSelected}
+										title={providerEntry.label}
+									>
+										{isFeaturedProvider ? (
+											<Sparkles className="h-4 w-4" />
+										) : (
+											<ModelIcon
+												modelName={providerEntry.label}
+												provider={providerEntry.key}
+												size={18}
+												mono={mono}
+											/>
+										)}
+										<span className="line-clamp-1 w-full text-center">
+											{isFeaturedProvider
+												? "Featured"
+												: providerEntry.label.split(" ")[0]}
+										</span>
+										<span className="rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
+											{providerEntry.models.length}
+										</span>
+									</button>
+								);
+							})}
+						</div>
 					</div>
 				</div>
 
-				<div className="min-w-0 flex-1 p-2">
-					<div className="mb-2 flex items-center justify-between gap-2 px-1">
-						<h4 className="text-sm font-semibold text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
-							{selectedProviderEntry?.label || "Models"}
-						</h4>
-						<span className="flex-shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
-							{visibleModels.length} model
-							{visibleModels.length === 1 ? "" : "s"}
-						</span>
+				<div className="flex min-w-0 flex-1 flex-col">
+					<div className="flex-shrink-0 border-b border-zinc-200/70 px-3 py-2 dark:border-zinc-700/70">
+						<div className="flex items-center justify-between gap-2">
+							<h4 className="text-sm font-semibold text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
+								{selectedProviderEntry?.label || "Models"}
+							</h4>
+							<span className="flex-shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
+								{visibleModels.length} model
+								{visibleModels.length === 1 ? "" : "s"}
+							</span>
+						</div>
 					</div>
 					<div
-						className="max-h-[320px] overflow-x-hidden overflow-y-auto pr-1"
+						className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-2"
 						onMouseLeave={() => onInfoHoverEnd?.()}
 					>
 						<fieldset role="listbox" aria-label="Available models">
