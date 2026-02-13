@@ -6,7 +6,9 @@ import { encryptGitHubConnectionPayload } from "../connection-crypto";
 import {
 	GITHUB_CONNECTION_APP_ID,
 	getGitHubAppConnectionForInstallation,
+	getGitHubAppConnectionForUserInstallation,
 	getGitHubAppConnectionForUserRepo,
+	listGitHubAppConnectionsForUser,
 } from "../connections";
 
 const JWT_SECRET = "jwt-secret";
@@ -115,6 +117,86 @@ describe("github connections", () => {
 			appId: "123456",
 			installationId: 3001,
 			webhookSecret: "webhook-secret",
+		});
+	});
+
+	it("returns the user-scoped connection by installation id", async () => {
+		const getAppDataByUserAppAndItem = vi.fn().mockResolvedValue([
+			await createEncryptedRecord({
+				recordId: "record-installation-user",
+				installationId: 8001,
+			}),
+		]);
+
+		const context = {
+			env: { JWT_SECRET },
+			repositories: {
+				appData: {
+					getAppDataByUserAppAndItem,
+				},
+			},
+		} as unknown as ServiceContext;
+
+		const connection = await getGitHubAppConnectionForUserInstallation(
+			context,
+			USER_ID,
+			8001,
+		);
+
+		expect(getAppDataByUserAppAndItem).toHaveBeenCalledWith(
+			USER_ID,
+			GITHUB_CONNECTION_APP_ID,
+			"8001",
+			"github_installation",
+		);
+		expect(connection).toMatchObject({
+			appId: "123456",
+			installationId: 8001,
+		});
+	});
+
+	it("lists user connections in updated order", async () => {
+		const getAppDataByUserAndApp = vi.fn().mockResolvedValue([
+			{
+				...(await createEncryptedRecord({
+					recordId: "record-old",
+					installationId: 9101,
+					repositories: ["owner/old"],
+				})),
+				updated_at: "2026-01-01T00:00:00.000Z",
+			},
+			{
+				...(await createEncryptedRecord({
+					recordId: "record-new",
+					installationId: 9102,
+					repositories: ["owner/new"],
+					webhookSecret: "secret",
+				})),
+				updated_at: "2026-01-02T00:00:00.000Z",
+			},
+		]);
+
+		const context = {
+			env: { JWT_SECRET },
+			repositories: {
+				appData: {
+					getAppDataByUserAndApp,
+				},
+			},
+		} as unknown as ServiceContext;
+
+		const summaries = await listGitHubAppConnectionsForUser(context, USER_ID);
+
+		expect(summaries).toHaveLength(2);
+		expect(summaries[0]).toMatchObject({
+			installationId: 9102,
+			repositories: ["owner/new"],
+			hasWebhookSecret: true,
+		});
+		expect(summaries[1]).toMatchObject({
+			installationId: 9101,
+			repositories: ["owner/old"],
+			hasWebhookSecret: false,
 		});
 	});
 

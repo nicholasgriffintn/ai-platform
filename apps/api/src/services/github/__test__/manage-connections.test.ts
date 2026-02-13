@@ -3,7 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { decryptGitHubConnectionPayload } from "../connection-crypto";
 import { GITHUB_CONNECTION_APP_ID } from "../connections";
-import { upsertGitHubConnectionForUser } from "../manage-connections";
+import {
+	deleteGitHubConnectionForUser,
+	upsertGitHubConnectionForUser,
+} from "../manage-connections";
 
 const JWT_SECRET = "jwt-secret";
 const USER_ID = 42;
@@ -115,5 +118,25 @@ describe("upsertGitHubConnectionForUser", () => {
 				privateKey: "private-key",
 			}),
 		).rejects.toThrow("JWT secret not configured");
+	});
+
+	it("deletes the user connection for a given installation", async () => {
+		const deleteAppDataByUserAppAndItem = vi.fn().mockResolvedValue(undefined);
+		const context = {
+			repositories: {
+				appData: {
+					deleteAppDataByUserAppAndItem,
+				},
+			},
+		} as unknown as ServiceContext;
+
+		await deleteGitHubConnectionForUser(context, USER_ID, 7002);
+
+		expect(deleteAppDataByUserAppAndItem).toHaveBeenCalledWith(
+			USER_ID,
+			GITHUB_CONNECTION_APP_ID,
+			"7002",
+			"github_installation",
+		);
 	});
 });

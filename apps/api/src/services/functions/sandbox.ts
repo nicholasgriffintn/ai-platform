@@ -1,7 +1,8 @@
 import type { IFunction } from "~/types";
-import { generateJwtToken } from "~/services/auth/jwt";
-import { getGitHubAppInstallationToken } from "~/lib/github";
-import { getGitHubAppConnectionForUserRepo } from "~/services/github/connections";
+import {
+	executeSandboxWorker,
+	resolveApiBaseUrl,
+} from "~/services/sandbox/worker";
 
 export const run_feature_implementation: IFunction = {
 	name: "run_feature_implementation",
@@ -29,6 +30,11 @@ export const run_feature_implementation: IFunction = {
 				description:
 					"Whether to create a commit inside the sandbox repository after applying changes",
 			},
+			installationId: {
+				type: "number",
+				description:
+					"Optional GitHub App installation ID to force a specific connection",
+			},
 		},
 		required: ["repo", "task"],
 	},
@@ -44,68 +50,30 @@ export const run_feature_implementation: IFunction = {
 			task: string;
 			model?: string;
 			shouldCommit?: boolean;
+			installationId?: number;
 		};
 
-		if (!request.env.SANDBOX_WORKER) {
-			throw new Error("Sandbox worker not available");
-		}
 		if (!request.context || !request.user) {
 			throw new Error("User context is required for sandbox execution");
 		}
+
 		const context = request.context;
 		const user = request.user;
-
-		const settings = await context.repositories.userSettings.getUserSettings(
-			user.id,
-		);
-		const selectedModel = model || settings?.sandbox_model;
-
-		if (!selectedModel) {
-			throw new Error(
-				"No model specified. Provide a model or configure one in settings.",
-			);
-		}
-
-		const expiresIn = 60 * 60;
-		const sandboxToken = await generateJwtToken(
-			user,
-			context.env.JWT_SECRET,
-			expiresIn,
-		);
-
-		const githubConnection = await getGitHubAppConnectionForUserRepo(
+		const response = await executeSandboxWorker({
+			env: request.env,
 			context,
-			user.id,
+			user,
 			repo,
-		);
-		const githubToken = await getGitHubAppInstallationToken({
-			appId: githubConnection.appId,
-			privateKey: githubConnection.privateKey,
-			installationId: githubConnection.installationId,
+			task,
+			model,
+			shouldCommit,
+			installationId:
+				typeof (args as { installationId?: unknown }).installationId ===
+				"number"
+					? (args as { installationId: number }).installationId
+					: undefined,
+			apiBaseUrl: resolveApiBaseUrl(request.env, undefined, request.app_url),
 		});
-
-		const response = await request.env.SANDBOX_WORKER.fetch(
-			new Request("http://sandbox/execute", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${sandboxToken}`,
-					"X-GitHub-Token": githubToken,
-				},
-				body: JSON.stringify({
-					userId: user.id,
-					taskType: "feature-implementation",
-					repo,
-					task,
-					model: selectedModel,
-					shouldCommit: Boolean(shouldCommit),
-					polychatApiUrl:
-						request.env.ENV === "production"
-							? "https://api.polychat.app"
-							: "http://localhost:8787",
-				}),
-			}),
-		);
 
 		if (!response.ok) {
 			const errorText = await response.text();

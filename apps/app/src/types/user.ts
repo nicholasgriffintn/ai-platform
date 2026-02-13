@@ -27,6 +27,7 @@ export interface UserSettings {
 	job_role: string;
 	traits: string;
 	preferences: string;
+	tracking_enabled?: boolean;
 	guardrails_enabled?: boolean;
 	guardrails_provider?: string;
 	bedrock_guardrail_id?: string;

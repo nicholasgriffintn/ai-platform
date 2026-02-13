@@ -1,13 +1,16 @@
 import { type Context, Hono } from "hono";
 
 import { requireAuth } from "~/middleware/auth";
+import { requirePlan } from "~/middleware/requirePlan";
 import { getServiceContext } from "~/lib/context/serviceContext";
-import { generateJwtToken } from "~/services/auth/jwt";
-import { getGitHubAppInstallationToken } from "~/lib/github";
-import { getGitHubAppConnectionForUserRepo } from "~/services/github/connections";
+import {
+	executeSandboxWorker,
+	resolveApiBaseUrl,
+} from "~/services/sandbox/worker";
 
 const sandbox = new Hono();
 sandbox.use("*", requireAuth);
+sandbox.use("*", requirePlan("pro"));
 
 sandbox.post("/execute", async (c: Context) => {
 	const ctx = getServiceContext(c);
@@ -33,61 +36,26 @@ sandbox.post("/execute", async (c: Context) => {
 		return c.json({ error: "task must be a non-empty string" }, 400);
 	}
 
-	const settings = await ctx.repositories.userSettings.getUserSettings(user.id);
-	const model =
-		(typeof body.model === "string" ? body.model : undefined) ||
-		settings?.sandbox_model;
+	const installationId =
+		typeof body.installationId === "number" &&
+		Number.isFinite(body.installationId)
+			? body.installationId
+			: undefined;
 
-	if (!model) {
-		return c.json(
-			{
-				error:
-					"No model specified. Provide a model or configure one in settings.",
-			},
-			400,
-		);
-	}
-
-	const expiresIn = 60 * 60;
-	const sandboxToken = await generateJwtToken(
+	const response = await executeSandboxWorker({
+		env: c.env,
+		context: ctx,
 		user,
-		c.env.JWT_SECRET,
-		expiresIn,
-	);
-
-	const githubConnection = await getGitHubAppConnectionForUserRepo(
-		ctx,
-		user.id,
-		body.repo,
-	);
-	const githubToken = await getGitHubAppInstallationToken({
-		appId: githubConnection.appId,
-		privateKey: githubConnection.privateKey,
-		installationId: githubConnection.installationId,
+		repo: body.repo,
+		task: body.task,
+		taskType: typeof body.taskType === "string" ? body.taskType : undefined,
+		model: typeof body.model === "string" ? body.model : undefined,
+		shouldCommit: Boolean(body.shouldCommit),
+		installationId,
+		stream: c.req.header("accept")?.includes("text/event-stream"),
+		runId: typeof body.runId === "string" ? body.runId : undefined,
+		apiBaseUrl: resolveApiBaseUrl(c.env, c.req.url),
 	});
-
-	const response = await c.env.SANDBOX_WORKER.fetch(
-		new Request("http://sandbox/execute", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${sandboxToken}`,
-				"X-GitHub-Token": githubToken,
-			},
-			body: JSON.stringify({
-				userId: user.id,
-				taskType: body.taskType,
-				repo: body.repo,
-				task: body.task,
-				model,
-				shouldCommit: Boolean(body.shouldCommit),
-				polychatApiUrl:
-					c.env.ENV === "production"
-						? "https://api.polychat.app"
-						: "http://localhost:8787",
-			}),
-		}),
-	);
 
 	return response;
 });

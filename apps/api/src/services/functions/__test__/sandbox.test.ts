@@ -23,6 +23,7 @@ describe("run_feature_implementation", () => {
 	const request: IRequest = {
 		env: {
 			ENV: "production",
+			JWT_SECRET: "secret",
 			SANDBOX_WORKER: {
 				fetch: sandboxFetch,
 			},
@@ -80,7 +81,7 @@ describe("run_feature_implementation", () => {
 
 		expect(generateJwtToken).toHaveBeenCalledWith(
 			request.user,
-			request.context?.env.JWT_SECRET,
+			request.env.JWT_SECRET,
 			60 * 60,
 		);
 		expect(sandboxFetch).toHaveBeenCalledTimes(1);

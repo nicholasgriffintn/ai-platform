@@ -333,8 +333,15 @@ export class AppDataRepository extends BaseRepository {
 	 * @param id - The ID of the app data
 	 */
 	public async deleteAppData(id: string): Promise<void> {
+		const existing = await this.getAppDataById(id);
 		const { query, values } = this.buildDeleteQuery("app_data", { id });
 		await this.executeRun(query, values);
+
+		if (this.cache && existing) {
+			const itemCacheKey = KVCache.createKey("app-data", id);
+			await this.cache.delete(itemCacheKey);
+			await this.invalidateUserAppCache(existing.user_id, existing.app_id);
+		}
 	}
 
 	/**
@@ -351,6 +358,8 @@ export class AppDataRepository extends BaseRepository {
 			app_id: appId,
 		});
 		await this.executeRun(query, values);
+
+		await this.invalidateUserAppCache(userId, appId);
 	}
 
 	/**
@@ -374,6 +383,8 @@ export class AppDataRepository extends BaseRepository {
 			item_type: itemType,
 		});
 		await this.executeRun(query, values);
+
+		await this.invalidateUserAppCache(userId, appId);
 	}
 
 	/**

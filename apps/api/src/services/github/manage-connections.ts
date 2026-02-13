@@ -78,3 +78,17 @@ export async function upsertGitHubConnectionForUser(
 
 	return { installationId: input.installationId };
 }
+
+export async function deleteGitHubConnectionForUser(
+	context: ServiceContext,
+	userId: number,
+	installationId: number,
+): Promise<void> {
+	const itemId = String(installationId);
+	await context.repositories.appData.deleteAppDataByUserAppAndItem(
+		userId,
+		GITHUB_CONNECTION_APP_ID,
+		itemId,
+		"github_installation",
+	);
+}

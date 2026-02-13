@@ -2,7 +2,10 @@ import { Hono } from "hono";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { executeDynamicApp } from "~/services/dynamic-apps";
-import { getGitHubAppConnectionForInstallation } from "~/services/github/connections";
+import {
+	getGitHubAppConnectionForInstallation,
+	getGitHubAppConnectionForUserInstallation,
+} from "~/services/github/connections";
 import type { GitHubAppConnection } from "~/services/github/connection-parser";
 import type { IRequest, IEnv, IUser } from "~/types";
 import { generateId } from "~/utils/id";
@@ -132,6 +135,35 @@ github.post("/", async (c) => {
 		return c.json({ success: true });
 	}
 
+	const linkedUserId = Number((linkedUser as { id?: unknown }).id);
+	if (!Number.isFinite(linkedUserId) || linkedUserId <= 0) {
+		logger.warn("Ignoring /implement command for invalid linked user id", {
+			github_user_id: commenterId,
+			repo,
+			pr: prNumber,
+		});
+		return c.json({ success: true });
+	}
+
+	try {
+		await getGitHubAppConnectionForUserInstallation(
+			serviceContext,
+			linkedUserId,
+			installationId,
+		);
+	} catch {
+		logger.warn(
+			"Ignoring /implement command for installation not linked to user",
+			{
+				user_id: linkedUserId,
+				installation_id: installationId,
+				repo,
+				pr: prNumber,
+			},
+		);
+		return c.json({ success: true });
+	}
+
 	const req: IRequest = {
 		app_url: c.env.APP_BASE_URL || "https://polychat.app",
 		env: c.env,
@@ -152,6 +184,7 @@ github.post("/", async (c) => {
 			{
 				repo,
 				task,
+				installationId,
 			},
 			req,
 		);

@@ -14,7 +14,7 @@ export function ProfileCustomisationTab() {
 
 			<div className="space-y-6">
 				<UserSettingsForm
-					userSettings={userSettings}
+					userSettings={userSettings ?? null}
 					isAuthenticated={isAuthenticated}
 				/>
 			</div>
