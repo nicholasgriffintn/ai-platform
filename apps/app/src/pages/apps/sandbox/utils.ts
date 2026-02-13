@@ -1,0 +1,55 @@
+import type { SandboxRunStatus, SandboxRunEvent } from "~/types/sandbox";
+
+export const REPO_PATTERN = /^[\w.-]+\/[\w.-]+$/;
+export const REPO_STORAGE_PREFIX = "sandbox:last-repo";
+
+export const getStatusBadgeVariant = (
+	status: SandboxRunStatus,
+): "outline" | "secondary" | "destructive" => {
+	const variants: Record<
+		SandboxRunStatus,
+		"outline" | "secondary" | "destructive"
+	> = {
+		completed: "outline",
+		failed: "destructive",
+		cancelled: "secondary",
+		queued: "secondary",
+		running: "secondary",
+	};
+	return variants[status];
+};
+
+export function describeEvent(event: SandboxRunEvent): string {
+	switch (event.type) {
+		case "run_started":
+			return "Run started";
+		case "planning_started":
+			return "Generating implementation plan";
+		case "planning_completed":
+			return "Plan generated";
+		case "command_batch_ready":
+			return `Prepared ${event.commandTotal ?? "?"} commands`;
+		case "command_started":
+			return `Running command ${event.commandIndex ?? "?"}/${event.commandTotal ?? "?"}: ${event.command ?? ""}`;
+		case "command_completed":
+			return `Completed command ${event.commandIndex ?? "?"}/${event.commandTotal ?? "?"}`;
+		case "command_failed":
+			return `Command failed: ${event.command ?? "unknown command"}`;
+		case "repo_clone_started":
+			return "Cloning repository";
+		case "repo_clone_completed":
+			return "Repository cloned";
+		case "git_branch_created":
+			return `Created branch ${event.branchName ?? ""}`.trim();
+		case "diff_generated":
+			return "Generated code diff";
+		case "commit_created":
+			return `Created commit on ${event.branchName ?? "feature branch"}`;
+		case "run_completed":
+			return "Run completed successfully";
+		case "run_failed":
+			return `Run failed: ${event.error ?? "Unknown error"}`;
+		default:
+			return event.message || event.type;
+	}
+}

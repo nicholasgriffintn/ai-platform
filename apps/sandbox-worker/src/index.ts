@@ -12,15 +12,7 @@ function toSseChunk(value: unknown): Uint8Array {
 	return new TextEncoder().encode(`data: ${JSON.stringify(value)}\n\n`);
 }
 
-function isValidTaskPayload(params: TaskParams): boolean {
-	if (
-		typeof params.userId !== "number" ||
-		!Number.isFinite(params.userId) ||
-		params.userId <= 0
-	) {
-		return false;
-	}
-
+function isValidTaskPayload(params: Omit<TaskParams, "userId">): boolean {
 	if (typeof params.repo !== "string" || !params.repo.trim()) {
 		return false;
 	}

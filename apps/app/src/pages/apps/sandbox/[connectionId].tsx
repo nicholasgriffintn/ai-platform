@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
 	AlertCircle,
 	CheckCircle2,
+	Copy,
 	LoaderCircle,
 	Play,
 	Square,
@@ -43,11 +44,13 @@ import { useAuthStatus } from "~/hooks/useAuth";
 import { formatRelativeTime } from "~/lib/dates";
 import { streamSandboxRun } from "~/lib/api/sandbox";
 import { cn } from "~/lib/utils";
-import type {
-	SandboxRun,
-	SandboxRunEvent,
-	SandboxRunStatus,
-} from "~/types/sandbox";
+import type { SandboxRun, SandboxRunEvent } from "~/types/sandbox";
+import {
+	REPO_PATTERN,
+	REPO_STORAGE_PREFIX,
+	getStatusBadgeVariant,
+	describeEvent,
+} from "./utils";
 
 interface TimelineEvent {
 	id: string;
@@ -60,55 +63,6 @@ interface ChatMessage {
 	role: "user" | "assistant";
 	content: string;
 	createdAt: string;
-}
-
-const REPO_PATTERN = /^[\w.-]+\/[\w.-]+$/;
-const REPO_STORAGE_PREFIX = "sandbox:last-repo";
-
-const statusBadgeVariant: Record<
-	SandboxRunStatus,
-	"outline" | "secondary" | "destructive"
-> = {
-	completed: "outline",
-	failed: "destructive",
-	cancelled: "secondary",
-	queued: "secondary",
-	running: "secondary",
-};
-
-function describeEvent(event: SandboxRunEvent): string {
-	switch (event.type) {
-		case "run_started":
-			return "Run started";
-		case "planning_started":
-			return "Generating implementation plan";
-		case "planning_completed":
-			return "Plan generated";
-		case "command_batch_ready":
-			return `Prepared ${event.commandTotal ?? "?"} commands`;
-		case "command_started":
-			return `Running command ${event.commandIndex ?? "?"}/${event.commandTotal ?? "?"}: ${event.command ?? ""}`;
-		case "command_completed":
-			return `Completed command ${event.commandIndex ?? "?"}/${event.commandTotal ?? "?"}`;
-		case "command_failed":
-			return `Command failed: ${event.command ?? "unknown command"}`;
-		case "repo_clone_started":
-			return "Cloning repository";
-		case "repo_clone_completed":
-			return "Repository cloned";
-		case "git_branch_created":
-			return `Created branch ${event.branchName ?? ""}`.trim();
-		case "diff_generated":
-			return "Generated code diff";
-		case "commit_created":
-			return `Created commit on ${event.branchName ?? "feature branch"}`;
-		case "run_completed":
-			return "Run completed successfully";
-		case "run_failed":
-			return `Run failed: ${event.error ?? "Unknown error"}`;
-		default:
-			return event.message || event.type;
-	}
 }
 
 function summariseRunResult(run: SandboxRun): string {
@@ -125,6 +79,15 @@ function summariseRunResult(run: SandboxRun): string {
 		return run.error || "Run failed.";
 	}
 	return "Run in progress.";
+}
+
+async function copyToClipboard(text: string, label: string) {
+	try {
+		await navigator.clipboard.writeText(text);
+		toast.success(`${label} copied to clipboard`);
+	} catch {
+		toast.error("Failed to copy to clipboard");
+	}
 }
 
 function normaliseRepoInput(value: string): string {
@@ -240,6 +203,34 @@ export default function SandboxConnectionPage() {
 	const [activeRunId, setActiveRunId] = useState<string | undefined>();
 	const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
+	const timelineEndRef = useRef<HTMLDivElement>(null);
+
+	const commandProgress = useMemo(() => {
+		const commandEvents = timeline.filter(
+			(entry) =>
+				entry.event.type === "command_started" ||
+				entry.event.type === "command_batch_ready",
+		);
+		const batchEvent = commandEvents.find(
+			(entry) => entry.event.type === "command_batch_ready",
+		);
+		const lastCommandEvent = commandEvents
+			.filter((entry) => entry.event.type === "command_started")
+			.pop();
+
+		if (!batchEvent || !lastCommandEvent) {
+			return null;
+		}
+
+		const total = batchEvent.event.commandTotal;
+		const current = lastCommandEvent.event.commandIndex;
+
+		if (typeof total === "number" && typeof current === "number" && total > 0) {
+			return { current, total };
+		}
+
+		return null;
+	}, [timeline]);
 
 	useEffect(() => {
 		searchParamsRef.current = searchParams;
@@ -334,6 +325,12 @@ export default function SandboxConnectionPage() {
 		setMessages(buildMessagesFromRun(selectedRun));
 		hydratedSnapshotRef.current = snapshotKey;
 	}, [isSubmitting, selectedRun]);
+
+	useEffect(() => {
+		if (isSubmitting && timeline.length > 0) {
+			timelineEndRef.current?.scrollIntoView({ behavior: "smooth" });
+		}
+	}, [isSubmitting, timeline.length]);
 
 	const canSubmit = useMemo(() => {
 		return (
@@ -592,12 +589,16 @@ export default function SandboxConnectionPage() {
 												<option key={repository} value={repository} />
 											))}
 										</datalist>
-										{repoSuggestions.length === 0 && (
+										{repo.trim() && !REPO_PATTERN.test(normalisedRepo) ? (
+											<p className="text-xs text-red-600 dark:text-red-400">
+												Repository must use owner/repo format (or a GitHub URL).
+											</p>
+										) : repoSuggestions.length === 0 ? (
 											<p className="text-xs text-muted-foreground">
 												No repo suggestions yet. Paste owner/repo or a GitHub
 												repo URL and we will remember it for this installation.
 											</p>
-										)}
+										) : null}
 									</div>
 									<div className="space-y-2">
 										<Label htmlFor="sandbox-model-input">
@@ -625,6 +626,26 @@ export default function SandboxConnectionPage() {
 										placeholder="Implement feature X, update tests, and explain the changes."
 									/>
 								</div>
+								{isSubmitting && commandProgress && (
+									<div className="rounded-md border border-blue-200/80 bg-blue-50/50 p-3 dark:border-blue-800/50 dark:bg-blue-950/20">
+										<div className="mb-2 flex items-center justify-between text-xs">
+											<span className="font-medium text-blue-900 dark:text-blue-100">
+												Executing commands
+											</span>
+											<span className="text-blue-700 dark:text-blue-300">
+												{commandProgress.current} / {commandProgress.total}
+											</span>
+										</div>
+										<div className="h-2 w-full overflow-hidden rounded-full bg-blue-200/50 dark:bg-blue-900/30">
+											<div
+												className="h-full bg-blue-600 transition-all duration-300 dark:bg-blue-500"
+												style={{
+													width: `${(commandProgress.current / commandProgress.total) * 100}%`,
+												}}
+											/>
+										</div>
+									</div>
+								)}
 								<div className="flex flex-wrap items-center justify-between gap-3">
 									<label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
 										<Checkbox
@@ -662,11 +683,6 @@ export default function SandboxConnectionPage() {
 										</Button>
 									</div>
 								</div>
-								{repo.trim() && !REPO_PATTERN.test(normalisedRepo) && (
-									<p className="text-xs text-red-600 dark:text-red-400">
-										Repository must use owner/repo format (or a GitHub URL).
-									</p>
-								)}
 							</CardContent>
 						</Card>
 
@@ -712,10 +728,24 @@ export default function SandboxConnectionPage() {
 
 						<Card>
 							<CardHeader>
-								<CardTitle>Live stream</CardTitle>
+								<div className="flex items-center justify-between gap-2">
+									<CardTitle>Live stream</CardTitle>
+									{isSubmitting && (
+										<Badge variant="secondary" className="gap-1">
+											<span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+											Live
+										</Badge>
+									)}
+									{!isSubmitting && selectedRun && (
+										<Badge variant="outline" className="text-xs">
+											Historical
+										</Badge>
+									)}
+								</div>
 								<CardDescription>
-									Command-level events from live execution or selected run
-									history.
+									{isSubmitting
+										? "Real-time events from the current execution"
+										: "Command-level events from selected run history"}
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
@@ -743,6 +773,7 @@ export default function SandboxConnectionPage() {
 												</p>
 											</div>
 										))}
+										<div ref={timelineEndRef} />
 									</div>
 								)}
 							</CardContent>
@@ -793,7 +824,7 @@ export default function SandboxConnectionPage() {
 													<div className="truncate text-sm font-medium">
 														{run.repo}
 													</div>
-													<Badge variant={statusBadgeVariant[run.status]}>
+													<Badge variant={getStatusBadgeVariant(run.status)}>
 														{run.status}
 													</Badge>
 												</div>
@@ -834,7 +865,9 @@ export default function SandboxConnectionPage() {
 								) : selectedRun ? (
 									<div className="space-y-3 text-sm">
 										<div className="flex items-center justify-between gap-2">
-											<Badge variant={statusBadgeVariant[selectedRun.status]}>
+											<Badge
+												variant={getStatusBadgeVariant(selectedRun.status)}
+											>
 												{selectedRun.status}
 											</Badge>
 											<span className="text-xs text-muted-foreground">
@@ -853,10 +886,26 @@ export default function SandboxConnectionPage() {
 										{typeof selectedRun.result?.diff === "string" &&
 											selectedRun.result.diff.trim() && (
 												<div>
-													<p className="mb-1 flex items-center gap-2 font-medium">
-														<TerminalSquare className="h-4 w-4" />
-														Diff
-													</p>
+													<div className="mb-1 flex items-center justify-between gap-2">
+														<p className="flex items-center gap-2 font-medium">
+															<TerminalSquare className="h-4 w-4" />
+															Diff
+														</p>
+														<Button
+															variant="ghost"
+															size="sm"
+															className="h-7 gap-1 text-xs"
+															onClick={() =>
+																copyToClipboard(
+																	selectedRun.result?.diff as string,
+																	"Diff",
+																)
+															}
+														>
+															<Copy className="h-3 w-3" />
+															Copy
+														</Button>
+													</div>
 													<pre className="max-h-56 overflow-auto rounded-md bg-zinc-900 p-3 text-xs text-zinc-100">
 														{selectedRun.result.diff}
 													</pre>
@@ -865,10 +914,26 @@ export default function SandboxConnectionPage() {
 										{typeof selectedRun.result?.logs === "string" &&
 											selectedRun.result.logs.trim() && (
 												<div>
-													<p className="mb-1 flex items-center gap-2 font-medium">
-														<CheckCircle2 className="h-4 w-4" />
-														Logs
-													</p>
+													<div className="mb-1 flex items-center justify-between gap-2">
+														<p className="flex items-center gap-2 font-medium">
+															<CheckCircle2 className="h-4 w-4" />
+															Logs
+														</p>
+														<Button
+															variant="ghost"
+															size="sm"
+															className="h-7 gap-1 text-xs"
+															onClick={() =>
+																copyToClipboard(
+																	selectedRun.result?.logs as string,
+																	"Logs",
+																)
+															}
+														>
+															<Copy className="h-3 w-3" />
+															Copy
+														</Button>
+													</div>
 													<pre className="max-h-56 overflow-auto rounded-md bg-zinc-900 p-3 text-xs text-zinc-100">
 														{selectedRun.result.logs}
 													</pre>

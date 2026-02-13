@@ -46,6 +46,7 @@ import {
 	useUpsertSandboxConnection,
 } from "~/hooks/useSandbox";
 import { formatRelativeTime } from "~/lib/dates";
+import { getStatusBadgeVariant } from "./utils";
 
 interface ConnectionFormState {
 	installationId: string;
@@ -424,15 +425,7 @@ export default function SandboxConnectionsPage() {
 													>
 														{run.repo}
 													</Link>
-													<Badge
-														variant={
-															run.status === "completed"
-																? "outline"
-																: run.status === "failed"
-																	? "destructive"
-																	: "secondary"
-														}
-													>
+													<Badge variant={getStatusBadgeVariant(run.status)}>
 														{run.status}
 													</Badge>
 												</div>

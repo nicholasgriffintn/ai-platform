@@ -20,13 +20,15 @@ import {
 } from "~/services/sandbox/worker";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
+import { parseSseBuffer } from "~/utils/streaming";
+import {
+	SANDBOX_RUNS_APP_ID,
+	SANDBOX_RUN_ITEM_TYPE,
+	MAX_STORED_STREAM_EVENTS,
+} from "~/constants/app";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("apps/sandbox");
-
-const SANDBOX_RUNS_APP_ID = "sandbox_runs";
-const SANDBOX_RUN_ITEM_TYPE = "sandbox_run";
-const MAX_STORED_STREAM_EVENTS = 500;
 
 const githubConnectionSchema = z.object({
 	installationId: z.number().int().positive(),
@@ -524,56 +526,27 @@ app.post(
 					);
 				};
 
-				const parseEventBlocks = (data: string) => {
-					const blocks = data.split("\n\n");
-					buffer = blocks.pop() || "";
+				const handleParsedEvent = (parsed: Record<string, unknown>) => {
+					pushEvent(parsed);
 
-					for (const block of blocks) {
-						const lines = block
-							.split("\n")
-							.map((line) => line.trim())
-							.filter(Boolean);
-						const dataLines = lines
-							.filter((line) => line.startsWith("data:"))
-							.map((line) => line.slice(5).trimStart());
-						if (dataLines.length === 0) {
-							continue;
-						}
-
-						const payload = dataLines.join("\n").trim();
-						if (!payload || payload === "[DONE]") {
-							continue;
-						}
-
-						try {
-							const parsed = JSON.parse(payload) as Record<string, unknown>;
-							pushEvent(parsed);
-
-							if (parsed.type === "run_completed") {
-								status = "completed";
-								completedAt = new Date().toISOString();
-								result =
-									parsed.result &&
-									typeof parsed.result === "object" &&
-									!Array.isArray(parsed.result)
-										? (parsed.result as Record<string, unknown>)
-										: undefined;
-							} else if (parsed.type === "run_failed") {
-								status = "failed";
-								completedAt = new Date().toISOString();
-								errorMessage =
-									typeof parsed.error === "string"
-										? parsed.error
-										: "Sandbox run failed";
-							} else if (parsed.type === "run_started") {
-								status = "running";
-							}
-						} catch (error) {
-							routeLogger.error("Failed to parse sandbox stream event", {
-								error_message:
-									error instanceof Error ? error.message : String(error),
-							});
-						}
+					if (parsed.type === "run_completed") {
+						status = "completed";
+						completedAt = new Date().toISOString();
+						result =
+							parsed.result &&
+							typeof parsed.result === "object" &&
+							!Array.isArray(parsed.result)
+								? (parsed.result as Record<string, unknown>)
+								: undefined;
+					} else if (parsed.type === "run_failed") {
+						status = "failed";
+						completedAt = new Date().toISOString();
+						errorMessage =
+							typeof parsed.error === "string"
+								? parsed.error
+								: "Sandbox run failed";
+					} else if (parsed.type === "run_started") {
+						status = "running";
 					}
 				};
 
@@ -589,11 +562,23 @@ app.post(
 
 						controller.enqueue(value);
 						buffer += decoder.decode(value, { stream: true });
-						parseEventBlocks(buffer);
+						buffer = parseSseBuffer(buffer, {
+							onEvent: handleParsedEvent,
+							onError: (error) => {
+								routeLogger.error("Failed to parse sandbox stream event", {
+									error_message: error.message,
+								});
+							},
+						});
 					}
 
 					if (buffer.trim()) {
-						parseEventBlocks(buffer + "\n\n");
+						parseSseBuffer(buffer + "\n\n", {
+							onEvent: handleParsedEvent,
+							onError: () => {
+								// Ignore errors from final buffer flush
+							},
+						});
 					}
 				} catch (error) {
 					status = "failed";
