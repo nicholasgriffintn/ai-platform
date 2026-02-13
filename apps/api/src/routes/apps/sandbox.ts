@@ -11,6 +11,7 @@ import type { IUser } from "~/types";
 import { listGitHubAppConnectionsForUser } from "~/services/github/connections";
 import {
 	deleteGitHubConnectionForUser,
+	upsertGitHubConnectionFromDefaultAppForUser,
 	upsertGitHubConnectionForUser,
 } from "~/services/github/manage-connections";
 import {
@@ -48,6 +49,11 @@ const executeSandboxRunSchema = z.object({
 	shouldCommit: z.boolean().optional(),
 });
 
+const autoConnectSchema = z.object({
+	installationId: z.number().int().positive(),
+	repositories: z.array(z.string().trim().min(1)).optional(),
+});
+
 const listRunsQuerySchema = z.object({
 	installationId: z.coerce.number().int().positive().optional(),
 	repo: z.string().trim().min(1).optional(),
@@ -83,6 +89,20 @@ app.use("/*", (c, next) => {
 });
 
 app.use("/*", requirePlan("pro"));
+
+const getGitHubInstallUrl = (context: Context): string | undefined => {
+	const explicitUrl = context.env.GITHUB_APP_INSTALL_URL?.trim();
+	if (explicitUrl) {
+		return explicitUrl;
+	}
+
+	const appSlug = context.env.GITHUB_APP_SLUG?.trim();
+	if (!appSlug) {
+		return undefined;
+	}
+
+	return `https://github.com/apps/${appSlug}/installations/new`;
+};
 
 const toRunResponse = (data: SandboxRunData) => ({
 	runId: data.runId,
@@ -135,6 +155,21 @@ app.get("/connections", async (c: Context) => {
 	return ResponseFactory.success(c, { connections });
 });
 
+app.get("/github/install-config", async (c: Context) => {
+	const canAutoConnect = Boolean(
+		c.env.GITHUB_APP_ID?.trim() && c.env.GITHUB_APP_PRIVATE_KEY?.trim(),
+	);
+	const callbackUrl = c.env.APP_BASE_URL
+		? `${c.env.APP_BASE_URL.replace(/\/$/, "")}/apps/sandbox`
+		: undefined;
+
+	return ResponseFactory.success(c, {
+		installUrl: getGitHubInstallUrl(c),
+		canAutoConnect,
+		callbackUrl,
+	});
+});
+
 app.post(
 	"/connections",
 	zValidator("json", githubConnectionSchema),
@@ -150,6 +185,28 @@ app.post(
 		return ResponseFactory.success(c, {
 			success: true,
 			message: "GitHub App connection saved successfully",
+		});
+	},
+);
+
+app.post(
+	"/connections/auto",
+	zValidator("json", autoConnectSchema),
+	async (c: Context) => {
+		const user = c.get("user") as IUser;
+		const payload = c.req.valid("json" as never) as z.infer<
+			typeof autoConnectSchema
+		>;
+		const serviceContext = getServiceContext(c);
+
+		await upsertGitHubConnectionFromDefaultAppForUser(serviceContext, user.id, {
+			installationId: payload.installationId,
+			repositories: payload.repositories,
+		});
+
+		return ResponseFactory.success(c, {
+			success: true,
+			message: "GitHub App installation connected successfully",
 		});
 	},
 );

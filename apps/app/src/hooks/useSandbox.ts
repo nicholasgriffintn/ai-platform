@@ -1,16 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+	connectSandboxInstallation,
+	fetchSandboxInstallConfig,
 	deleteSandboxConnection,
 	fetchSandboxConnections,
 	fetchSandboxRun,
 	fetchSandboxRuns,
 	upsertSandboxConnection,
 } from "~/lib/api/sandbox";
-import type { CreateSandboxConnectionInput, SandboxRun } from "~/types/sandbox";
+import type {
+	ConnectSandboxInstallationInput,
+	CreateSandboxConnectionInput,
+	SandboxRun,
+} from "~/types/sandbox";
 
 export const SANDBOX_QUERY_KEYS = {
 	root: ["sandbox"] as const,
+	installConfig: () => [...SANDBOX_QUERY_KEYS.root, "install-config"] as const,
 	connections: () => [...SANDBOX_QUERY_KEYS.root, "connections"] as const,
 	runs: (params: { installationId?: number; repo?: string; limit?: number }) =>
 		[
@@ -30,6 +37,12 @@ export const useSandboxConnections = () =>
 		queryFn: () => fetchSandboxConnections(),
 	});
 
+export const useSandboxInstallConfig = () =>
+	useQuery({
+		queryKey: SANDBOX_QUERY_KEYS.installConfig(),
+		queryFn: () => fetchSandboxInstallConfig(),
+	});
+
 export const useUpsertSandboxConnection = () => {
 	const queryClient = useQueryClient();
 	return useMutation<void, Error, CreateSandboxConnectionInput>({
@@ -46,6 +59,21 @@ export const useDeleteSandboxConnection = () => {
 	const queryClient = useQueryClient();
 	return useMutation<void, Error, number>({
 		mutationFn: (installationId) => deleteSandboxConnection(installationId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: SANDBOX_QUERY_KEYS.connections(),
+			});
+			queryClient.invalidateQueries({
+				queryKey: SANDBOX_QUERY_KEYS.root,
+			});
+		},
+	});
+};
+
+export const useConnectSandboxInstallation = () => {
+	const queryClient = useQueryClient();
+	return useMutation<void, Error, ConnectSandboxInstallationInput>({
+		mutationFn: (input) => connectSandboxInstallation(input),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: SANDBOX_QUERY_KEYS.connections(),

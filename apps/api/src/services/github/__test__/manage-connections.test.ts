@@ -5,6 +5,7 @@ import { decryptGitHubConnectionPayload } from "../connection-crypto";
 import { GITHUB_CONNECTION_APP_ID } from "../connections";
 import {
 	deleteGitHubConnectionForUser,
+	upsertGitHubConnectionFromDefaultAppForUser,
 	upsertGitHubConnectionForUser,
 } from "../manage-connections";
 
@@ -138,5 +139,71 @@ describe("upsertGitHubConnectionForUser", () => {
 			"7002",
 			"github_installation",
 		);
+	});
+
+	it("creates a connection from default app env values", async () => {
+		const getAppDataByUserAppAndItem = vi.fn().mockResolvedValue([]);
+		const createAppDataWithItem = vi.fn().mockResolvedValue(undefined);
+		const context = {
+			env: {
+				JWT_SECRET,
+				GITHUB_APP_ID: "env-app-id",
+				GITHUB_APP_PRIVATE_KEY: "line-1\\nline-2",
+				GITHUB_APP_WEBHOOK_SECRET: "env-webhook",
+			},
+			repositories: {
+				appData: {
+					getAppDataByUserAppAndItem,
+					createAppDataWithItem,
+					updateAppData: vi.fn(),
+				},
+			},
+		} as unknown as ServiceContext;
+
+		await upsertGitHubConnectionFromDefaultAppForUser(context, USER_ID, {
+			installationId: 8080,
+		});
+
+		const createdPayload = createAppDataWithItem.mock.calls[0][4] as {
+			encrypted: {
+				v: 1;
+				iv: string;
+				data: string;
+			};
+		};
+
+		const decrypted = await decryptGitHubConnectionPayload({
+			jwtSecret: JWT_SECRET,
+			userId: USER_ID,
+			encrypted: createdPayload.encrypted,
+		});
+
+		expect(decrypted).toMatchObject({
+			app_id: "env-app-id",
+			private_key: "line-1\nline-2",
+			installation_id: 8080,
+			webhook_secret: "env-webhook",
+		});
+	});
+
+	it("fails when default app env values are missing", async () => {
+		const context = {
+			env: {
+				JWT_SECRET,
+			},
+			repositories: {
+				appData: {
+					getAppDataByUserAppAndItem: vi.fn(),
+					createAppDataWithItem: vi.fn(),
+					updateAppData: vi.fn(),
+				},
+			},
+		} as unknown as ServiceContext;
+
+		await expect(
+			upsertGitHubConnectionFromDefaultAppForUser(context, USER_ID, {
+				installationId: 9090,
+			}),
+		).rejects.toThrow("Default GitHub App is not configured");
 	});
 });

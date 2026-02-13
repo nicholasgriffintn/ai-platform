@@ -62,6 +62,17 @@ export interface CreateSandboxConnectionInput {
 	repositories?: string[];
 }
 
+export interface ConnectSandboxInstallationInput {
+	installationId: number;
+	repositories?: string[];
+}
+
+export interface SandboxInstallConfig {
+	installUrl?: string;
+	canAutoConnect: boolean;
+	callbackUrl?: string;
+}
+
 export interface ExecuteSandboxRunInput {
 	installationId: number;
 	repo: string;

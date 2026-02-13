@@ -65,6 +65,11 @@ export type IEnv = {
 	BROWSER_RENDERING_API_KEY?: string;
 	GITHUB_CLIENT_ID?: string;
 	GITHUB_CLIENT_SECRET?: string;
+	GITHUB_APP_ID?: string;
+	GITHUB_APP_PRIVATE_KEY?: string;
+	GITHUB_APP_WEBHOOK_SECRET?: string;
+	GITHUB_APP_INSTALL_URL?: string;
+	GITHUB_APP_SLUG?: string;
 	JWT_SECRET?: string;
 	EMAIL_JWT_SECRET?: string;
 	CARTESIA_API_KEY?: string;

@@ -11,6 +11,12 @@ export interface UpsertGitHubConnectionInput {
 	repositories?: string[];
 }
 
+interface DefaultGitHubAppCredentials {
+	appId: string;
+	privateKey: string;
+	webhookSecret?: string;
+}
+
 function normaliseRepositories(repositories?: string[]): string[] | undefined {
 	if (!repositories) {
 		return undefined;
@@ -25,6 +31,27 @@ function normaliseRepositories(repositories?: string[]): string[] | undefined {
 	}
 
 	return Array.from(new Set(normalized));
+}
+
+function resolveDefaultGitHubAppCredentials(
+	context: ServiceContext,
+): DefaultGitHubAppCredentials {
+	const appId = context.env.GITHUB_APP_ID?.trim();
+	const privateKeyRaw = context.env.GITHUB_APP_PRIVATE_KEY?.trim();
+	const webhookSecret = context.env.GITHUB_APP_WEBHOOK_SECRET?.trim();
+
+	if (!appId || !privateKeyRaw) {
+		throw new AssistantError(
+			"Default GitHub App is not configured",
+			ErrorType.CONFIGURATION_ERROR,
+		);
+	}
+
+	return {
+		appId,
+		privateKey: privateKeyRaw.replace(/\\n/g, "\n"),
+		webhookSecret: webhookSecret || undefined,
+	};
 }
 
 export async function upsertGitHubConnectionForUser(
@@ -77,6 +104,25 @@ export async function upsertGitHubConnectionForUser(
 	}
 
 	return { installationId: input.installationId };
+}
+
+export async function upsertGitHubConnectionFromDefaultAppForUser(
+	context: ServiceContext,
+	userId: number,
+	input: {
+		installationId: number;
+		repositories?: string[];
+	},
+): Promise<{ installationId: number }> {
+	const credentials = resolveDefaultGitHubAppCredentials(context);
+
+	return upsertGitHubConnectionForUser(context, userId, {
+		installationId: input.installationId,
+		appId: credentials.appId,
+		privateKey: credentials.privateKey,
+		webhookSecret: credentials.webhookSecret,
+		repositories: input.repositories,
+	});
 }
 
 export async function deleteGitHubConnectionForUser(

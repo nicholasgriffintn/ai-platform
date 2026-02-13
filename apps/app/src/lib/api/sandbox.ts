@@ -1,9 +1,11 @@
 import { apiService } from "./api-service";
 import { fetchApi, returnFetchedData } from "./fetch-wrapper";
 import type {
+	ConnectSandboxInstallationInput,
 	CreateSandboxConnectionInput,
 	ExecuteSandboxRunInput,
 	SandboxConnection,
+	SandboxInstallConfig,
 	SandboxRun,
 	SandboxRunEvent,
 } from "~/types/sandbox";
@@ -27,6 +29,22 @@ export async function fetchSandboxConnections(): Promise<SandboxConnection[]> {
 	return data.connections ?? [];
 }
 
+export async function fetchSandboxInstallConfig(): Promise<SandboxInstallConfig> {
+	const headers = await apiService.getHeaders();
+	const response = await fetchApi("/apps/sandbox/github/install-config", {
+		method: "GET",
+		headers,
+	});
+
+	if (!response.ok) {
+		throw new Error(
+			`Failed to fetch sandbox install configuration: ${response.statusText}`,
+		);
+	}
+
+	return returnFetchedData<SandboxInstallConfig>(response);
+}
+
 export async function upsertSandboxConnection(
 	input: CreateSandboxConnectionInput,
 ): Promise<void> {
@@ -41,6 +59,24 @@ export async function upsertSandboxConnection(
 		const errorText = await response.text();
 		throw new Error(
 			`Failed to save sandbox connection: ${errorText || response.statusText}`,
+		);
+	}
+}
+
+export async function connectSandboxInstallation(
+	input: ConnectSandboxInstallationInput,
+): Promise<void> {
+	const headers = await apiService.getHeaders();
+	const response = await fetchApi("/apps/sandbox/connections/auto", {
+		method: "POST",
+		headers,
+		body: input,
+	});
+
+	if (!response.ok) {
+		const errorText = await response.text();
+		throw new Error(
+			`Failed to connect GitHub installation: ${errorText || response.statusText}`,
 		);
 	}
 }
