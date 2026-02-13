@@ -93,7 +93,7 @@ export class AssistantError extends Error {
 			[ErrorType.AUTHENTICATION_ERROR]:
 				"Authentication failed. Please check your credentials.",
 			[ErrorType.RATE_LIMIT_ERROR]: this.message,
-			[ErrorType.PARAMS_ERROR]: "Invalid request parameters.",
+			[ErrorType.PARAMS_ERROR]: this.message,
 			[ErrorType.NOT_FOUND]: "Requested resource not found.",
 			[ErrorType.FORBIDDEN]: "Access denied.",
 			[ErrorType.UNAUTHORIZED]: "Authentication required.",

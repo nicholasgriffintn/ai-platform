@@ -20,5 +20,11 @@
 				"name": "Sandbox"
 			}
 		]
-	}
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["Sandbox"]
+		}
+	]
 }

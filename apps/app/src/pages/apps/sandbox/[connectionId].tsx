@@ -8,7 +8,7 @@ import {
 	TerminalSquare,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 import { BackLink } from "~/components/Core/BackLink";
@@ -36,8 +36,10 @@ import {
 import {
 	SANDBOX_QUERY_KEYS,
 	useSandboxConnections,
+	useSandboxRun,
 	useSandboxRuns,
 } from "~/hooks/useSandbox";
+import { useAuthStatus } from "~/hooks/useAuth";
 import { formatRelativeTime } from "~/lib/dates";
 import { streamSandboxRun } from "~/lib/api/sandbox";
 import { cn } from "~/lib/utils";
@@ -61,6 +63,7 @@ interface ChatMessage {
 }
 
 const REPO_PATTERN = /^[\w.-]+\/[\w.-]+$/;
+const REPO_STORAGE_PREFIX = "sandbox:last-repo";
 
 const statusBadgeVariant: Record<
 	SandboxRunStatus,
@@ -124,6 +127,70 @@ function summariseRunResult(run: SandboxRun): string {
 	return "Run in progress.";
 }
 
+function normaliseRepoInput(value: string): string {
+	const trimmed = value.trim();
+	if (!trimmed) {
+		return "";
+	}
+
+	if (REPO_PATTERN.test(trimmed)) {
+		return trimmed;
+	}
+
+	try {
+		const parsedUrl = new URL(trimmed);
+		if (parsedUrl.hostname !== "github.com") {
+			return trimmed;
+		}
+
+		const pathParts = parsedUrl.pathname
+			.split("/")
+			.map((part) => part.trim())
+			.filter(Boolean);
+		if (pathParts.length < 2) {
+			return trimmed;
+		}
+
+		const owner = pathParts[0];
+		const repo = pathParts[1].replace(/\.git$/i, "");
+		const candidate = `${owner}/${repo}`;
+		return REPO_PATTERN.test(candidate) ? candidate : trimmed;
+	} catch {
+		return trimmed;
+	}
+}
+
+function buildTimelineFromRun(run: SandboxRun): TimelineEvent[] {
+	return run.events.map((event, index) => ({
+		id: `${run.runId}-event-${index}`,
+		receivedAt:
+			typeof event.timestamp === "string" ? event.timestamp : run.updatedAt,
+		event,
+	}));
+}
+
+function buildMessagesFromRun(run: SandboxRun): ChatMessage[] {
+	const messages: ChatMessage[] = [
+		{
+			id: `${run.runId}-user`,
+			role: "user",
+			content: run.task,
+			createdAt: run.startedAt,
+		},
+	];
+
+	if (run.status === "completed" || run.status === "failed") {
+		messages.push({
+			id: `${run.runId}-assistant`,
+			role: "assistant",
+			content: summariseRunResult(run),
+			createdAt: run.completedAt ?? run.updatedAt,
+		});
+	}
+
+	return messages;
+}
+
 export function meta() {
 	return [
 		{ title: "Sandbox Run Console - Polychat" },
@@ -138,9 +205,13 @@ export function meta() {
 export default function SandboxConnectionPage() {
 	const navigate = useNavigate();
 	const params = useParams();
+	const [searchParams, setSearchParams] = useSearchParams();
 	const queryClient = useQueryClient();
+	const { userSettings } = useAuthStatus();
 	const abortControllerRef = useRef<AbortController | null>(null);
 	const activeRunIdRef = useRef<string | undefined>(undefined);
+	const searchParamsRef = useRef(searchParams);
+	const hydratedSnapshotRef = useRef<string | undefined>(undefined);
 
 	const installationId = Number(params.connectionId);
 	const hasValidInstallationId =
@@ -167,9 +238,12 @@ export default function SandboxConnectionPage() {
 	const [shouldCommit, setShouldCommit] = useState(true);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [activeRunId, setActiveRunId] = useState<string | undefined>();
-	const [selectedRunId, setSelectedRunId] = useState<string | undefined>();
 	const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
+
+	useEffect(() => {
+		searchParamsRef.current = searchParams;
+	}, [searchParams]);
 
 	const connection = useMemo(
 		() =>
@@ -180,31 +254,105 @@ export default function SandboxConnectionPage() {
 		[connections, hasValidInstallationId, installationId],
 	);
 
+	const repoSuggestions = useMemo(() => {
+		const scopedRepos = connection?.repositories ?? [];
+		const historyRepos = runs.map((run) => run.repo);
+		const unique = new Set<string>();
+		for (const entry of [...scopedRepos, ...historyRepos]) {
+			const normalized = normaliseRepoInput(entry);
+			if (REPO_PATTERN.test(normalized)) {
+				unique.add(normalized);
+			}
+		}
+		return Array.from(unique);
+	}, [connection?.repositories, runs]);
+
+	const normalisedRepo = useMemo(() => normaliseRepoInput(repo), [repo]);
+	const selectedRunId = searchParams.get("runId") || undefined;
+	const targetRunId = selectedRunId || activeRunId || runs[0]?.runId;
+	const repoStorageKey = hasValidInstallationId
+		? `${REPO_STORAGE_PREFIX}:${installationId}`
+		: undefined;
+
 	useEffect(() => {
-		if (!connection) {
+		const configuredModel = userSettings?.sandbox_model?.trim();
+		if (model.trim() || !configuredModel) {
 			return;
 		}
-		if (!repo && connection.repositories.length > 0) {
-			setRepo(connection.repositories[0]);
-		}
-	}, [connection, repo]);
+		setModel(configuredModel);
+	}, [model, userSettings?.sandbox_model]);
 
-	const selectedRun = useMemo(() => {
-		const targetRunId = selectedRunId || activeRunId;
+	useEffect(() => {
+		if (repo.trim()) {
+			return;
+		}
+		if (repoStorageKey) {
+			const storedRepo = window.localStorage.getItem(repoStorageKey);
+			if (storedRepo) {
+				setRepo(storedRepo);
+				return;
+			}
+		}
+		if (repoSuggestions.length > 0) {
+			setRepo(repoSuggestions[0]);
+		}
+	}, [repo, repoStorageKey, repoSuggestions]);
+
+	useEffect(() => {
+		if (!repoStorageKey || !REPO_PATTERN.test(normalisedRepo)) {
+			return;
+		}
+		window.localStorage.setItem(repoStorageKey, normalisedRepo);
+	}, [repoStorageKey, normalisedRepo]);
+
+	const selectedRunFromHistory = useMemo(() => {
 		if (!targetRunId) {
 			return undefined;
 		}
 		return runs.find((run) => run.runId === targetRunId);
-	}, [runs, selectedRunId, activeRunId]);
+	}, [runs, targetRunId]);
+
+	const {
+		data: selectedRunDetails,
+		isLoading: isSelectedRunLoading,
+		error: selectedRunError,
+	} = useSandboxRun(targetRunId);
+
+	const selectedRun = selectedRunDetails ?? selectedRunFromHistory;
+
+	useEffect(() => {
+		if (!selectedRun || isSubmitting) {
+			return;
+		}
+
+		const snapshotKey = `${selectedRun.runId}:${selectedRun.updatedAt}:${selectedRun.status}`;
+		if (hydratedSnapshotRef.current === snapshotKey) {
+			return;
+		}
+
+		setTimeline(buildTimelineFromRun(selectedRun));
+		setMessages(buildMessagesFromRun(selectedRun));
+		hydratedSnapshotRef.current = snapshotKey;
+	}, [isSubmitting, selectedRun]);
 
 	const canSubmit = useMemo(() => {
 		return (
 			!isSubmitting &&
 			Boolean(task.trim()) &&
-			Boolean(repo.trim()) &&
-			REPO_PATTERN.test(repo.trim())
+			Boolean(normalisedRepo) &&
+			REPO_PATTERN.test(normalisedRepo)
 		);
-	}, [isSubmitting, task, repo]);
+	}, [isSubmitting, normalisedRepo, task]);
+
+	const setSelectedRunInUrl = (runId?: string, replace = false) => {
+		const next = new URLSearchParams(searchParamsRef.current);
+		if (runId) {
+			next.set("runId", runId);
+		} else {
+			next.delete("runId");
+		}
+		setSearchParams(next, { replace });
+	};
 
 	const handleCancelRun = () => {
 		const controller = abortControllerRef.current;
@@ -228,7 +376,7 @@ export default function SandboxConnectionPage() {
 	};
 
 	const handleRunTask = async () => {
-		const trimmedRepo = repo.trim();
+		const trimmedRepo = normalisedRepo;
 		const trimmedTask = task.trim();
 		if (!REPO_PATTERN.test(trimmedRepo)) {
 			toast.error("Repository must be in owner/repo format");
@@ -246,12 +394,13 @@ export default function SandboxConnectionPage() {
 		const controller = new AbortController();
 		abortControllerRef.current = controller;
 		setIsSubmitting(true);
+		hydratedSnapshotRef.current = undefined;
 		setActiveRunId(undefined);
 		activeRunIdRef.current = undefined;
-		setSelectedRunId(undefined);
+		setSelectedRunInUrl(undefined, true);
+		setRepo(trimmedRepo);
 		setTimeline([]);
-		setMessages((prev) => [
-			...prev,
+		setMessages([
 			{
 				id: crypto.randomUUID(),
 				role: "user",
@@ -288,6 +437,7 @@ export default function SandboxConnectionPage() {
 							if (!activeRunIdRef.current) {
 								activeRunIdRef.current = event.runId;
 								setActiveRunId(event.runId);
+								setSelectedRunInUrl(event.runId, true);
 							}
 						}
 
@@ -324,9 +474,9 @@ export default function SandboxConnectionPage() {
 						abortControllerRef.current = null;
 
 						if (finalEvent?.runId) {
-							setSelectedRunId(finalEvent.runId);
+							setSelectedRunInUrl(finalEvent.runId, true);
 						} else if (activeRunIdRef.current) {
-							setSelectedRunId(activeRunIdRef.current);
+							setSelectedRunInUrl(activeRunIdRef.current, true);
 						}
 
 						queryClient.invalidateQueries({
@@ -434,13 +584,20 @@ export default function SandboxConnectionPage() {
 											list="sandbox-repo-options"
 											value={repo}
 											onChange={(event) => setRepo(event.target.value)}
+											onBlur={() => setRepo(normaliseRepoInput(repo))}
 											placeholder="owner/repo"
 										/>
 										<datalist id="sandbox-repo-options">
-											{connection.repositories.map((repository) => (
+											{repoSuggestions.map((repository) => (
 												<option key={repository} value={repository} />
 											))}
 										</datalist>
+										{repoSuggestions.length === 0 && (
+											<p className="text-xs text-muted-foreground">
+												No repo suggestions yet. Paste owner/repo or a GitHub
+												repo URL and we will remember it for this installation.
+											</p>
+										)}
 									</div>
 									<div className="space-y-2">
 										<Label htmlFor="sandbox-model-input">
@@ -452,6 +609,10 @@ export default function SandboxConnectionPage() {
 											onChange={(event) => setModel(event.target.value)}
 											placeholder="e.g. mistral-large"
 										/>
+										<p className="text-xs text-muted-foreground">
+											Leave blank to use your Sandbox model setting. If none is
+											set, backend defaults to <code>mistral-large</code>.
+										</p>
 									</div>
 								</div>
 								<div className="space-y-2">
@@ -472,7 +633,8 @@ export default function SandboxConnectionPage() {
 												setShouldCommit(Boolean(checked))
 											}
 										/>
-										Create commit inside the sandbox repo
+										Automatically commit changes to a new branch when the run
+										completes
 									</label>
 									<div className="flex items-center gap-2">
 										{isSubmitting && (
@@ -500,9 +662,9 @@ export default function SandboxConnectionPage() {
 										</Button>
 									</div>
 								</div>
-								{repo.trim() && !REPO_PATTERN.test(repo.trim()) && (
+								{repo.trim() && !REPO_PATTERN.test(normalisedRepo) && (
 									<p className="text-xs text-red-600 dark:text-red-400">
-										Repository must use owner/repo format.
+										Repository must use owner/repo format (or a GitHub URL).
 									</p>
 								)}
 							</CardContent>
@@ -512,7 +674,7 @@ export default function SandboxConnectionPage() {
 							<CardHeader>
 								<CardTitle>Conversation</CardTitle>
 								<CardDescription>
-									Request and outcome messages for this browser session.
+									Request and outcome messages for the selected run.
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
@@ -552,7 +714,8 @@ export default function SandboxConnectionPage() {
 							<CardHeader>
 								<CardTitle>Live stream</CardTitle>
 								<CardDescription>
-									Command-level progress events from the worker stream.
+									Command-level events from live execution or selected run
+									history.
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
@@ -618,11 +781,11 @@ export default function SandboxConnectionPage() {
 											<button
 												type="button"
 												key={run.runId}
-												onClick={() => setSelectedRunId(run.runId)}
+												onClick={() => setSelectedRunInUrl(run.runId)}
 												className={cn(
 													"w-full rounded-md border p-3 text-left transition",
 													"hover:border-blue-500/60",
-													selectedRunId === run.runId &&
+													targetRunId === run.runId &&
 														"border-blue-500 bg-blue-500/5",
 												)}
 											>
@@ -655,7 +818,20 @@ export default function SandboxConnectionPage() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								{selectedRun ? (
+								{isSelectedRunLoading && targetRunId ? (
+									<div className="text-sm text-muted-foreground">
+										Loading run details...
+									</div>
+								) : selectedRunError ? (
+									<Alert variant="destructive">
+										<AlertTitle>Unable to load selected run</AlertTitle>
+										<AlertDescription>
+											{selectedRunError instanceof Error
+												? selectedRunError.message
+												: "Unknown error"}
+										</AlertDescription>
+									</Alert>
+								) : selectedRun ? (
 									<div className="space-y-3 text-sm">
 										<div className="flex items-center justify-between gap-2">
 											<Badge variant={statusBadgeVariant[selectedRun.status]}>

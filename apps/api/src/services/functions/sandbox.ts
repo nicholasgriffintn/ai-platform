@@ -1,8 +1,5 @@
 import type { IFunction } from "~/types";
-import {
-	executeSandboxWorker,
-	resolveApiBaseUrl,
-} from "~/services/sandbox/worker";
+import { executeSandboxWorker } from "~/services/sandbox/worker";
 
 export const run_feature_implementation: IFunction = {
 	name: "run_feature_implementation",
@@ -72,7 +69,6 @@ export const run_feature_implementation: IFunction = {
 				"number"
 					? (args as { installationId: number }).installationId
 					: undefined,
-			apiBaseUrl: resolveApiBaseUrl(request.env, undefined, request.app_url),
 		});
 
 		if (!response.ok) {

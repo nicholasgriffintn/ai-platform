@@ -9,6 +9,7 @@ import {
 } from "~/services/github/connections";
 
 const SANDBOX_TOKEN_EXPIRATION_SECONDS = 60 * 60;
+const DEFAULT_SANDBOX_MODEL = "mistral-large";
 
 export interface ExecuteSandboxWorkerOptions {
 	env: IEnv;
@@ -23,31 +24,11 @@ export interface ExecuteSandboxWorkerOptions {
 	stream?: boolean;
 	runId?: string;
 	githubTokenOverride?: string;
-	apiBaseUrl?: string;
 }
 
-export function resolveApiBaseUrl(
-	env: IEnv,
-	requestUrl?: string,
-	fallback?: string,
-): string {
-	if (fallback?.trim()) {
-		return fallback.trim();
-	}
-	if (env.API_BASE_URL?.trim()) {
-		return env.API_BASE_URL.trim();
-	}
-	if (requestUrl) {
-		try {
-			return new URL(requestUrl).origin;
-		} catch {
-			// Ignore parse errors and use environment fallback.
-		}
-	}
-
-	return env.ENV === "production"
-		? "https://api.polychat.app"
-		: "http://localhost:8787";
+export function resolveApiBaseUrl(env: IEnv): string {
+	const apiBaseUrl = env.API_BASE_URL?.trim();
+	return apiBaseUrl || "https://api.polychat.app";
 }
 
 export async function resolveSandboxModel(params: {
@@ -67,10 +48,7 @@ export async function resolveSandboxModel(params: {
 		return settings.sandbox_model.trim();
 	}
 
-	throw new AssistantError(
-		"No model specified. Provide a model or configure one in settings.",
-		ErrorType.PARAMS_ERROR,
-	);
+	return DEFAULT_SANDBOX_MODEL;
 }
 
 async function resolveGitHubToken(params: {
@@ -116,7 +94,6 @@ export async function executeSandboxWorker(
 		stream,
 		runId,
 		githubTokenOverride,
-		apiBaseUrl,
 	} = options;
 
 	if (!env.SANDBOX_WORKER) {
@@ -167,7 +144,7 @@ export async function executeSandboxWorker(
 				task,
 				model,
 				shouldCommit: Boolean(shouldCommit),
-				polychatApiUrl: resolveApiBaseUrl(env, undefined, apiBaseUrl),
+				polychatApiUrl: resolveApiBaseUrl(env),
 				installationId,
 				runId,
 			}),

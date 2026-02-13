@@ -31,11 +31,6 @@ export async function executeFeatureImplementation(
 	env: Env,
 	emitEvent?: TaskEventEmitter,
 ): Promise<TaskResult> {
-	const sandbox = getSandbox(env.Sandbox, crypto.randomUUID().slice(0, 8));
-	const client = new PolychatClient(params.polychatApiUrl, secrets.userToken);
-	const executionLogs: string[] = [];
-	let branchName: string | undefined;
-	const runId = params.runId;
 	const emit = async (event: TaskEvent) => {
 		if (!emitEvent) {
 			return;
@@ -48,7 +43,22 @@ export async function executeFeatureImplementation(
 		await emitEvent(nextEvent);
 	};
 
+	const sandbox = getSandbox(env.Sandbox, crypto.randomUUID().slice(0, 8));
+	const client = new PolychatClient(params.polychatApiUrl, secrets.userToken);
+	const executionLogs: string[] = [];
+	let branchName: string | undefined;
+	const runId = params.runId;
+
 	try {
+		emit({
+			type: "task_started",
+			task: params.task,
+			repo: params.repo,
+			model: params.model || DEFAULT_MODEL,
+			installationId: params.installationId,
+			polychatUri: params.polychatApiUrl,
+		});
+
 		const task = params.task.trim();
 		if (!task) {
 			throw new Error("Task is required");

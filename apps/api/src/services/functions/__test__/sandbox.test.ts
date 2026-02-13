@@ -23,6 +23,7 @@ describe("run_feature_implementation", () => {
 	const request: IRequest = {
 		env: {
 			ENV: "production",
+			API_BASE_URL: "https://api.polychat.app",
 			JWT_SECRET: "secret",
 			SANDBOX_WORKER: {
 				fetch: sandboxFetch,
@@ -153,21 +154,29 @@ describe("run_feature_implementation", () => {
 		);
 	});
 
-	it("throws when no model is provided and no sandbox model is configured", async () => {
+	it("falls back to default model when no model and no sandbox setting are provided", async () => {
 		getUserSettings.mockResolvedValue({ sandbox_model: null });
+		sandboxFetch.mockResolvedValue({
+			ok: true,
+			status: 200,
+			json: vi.fn().mockResolvedValue({
+				success: true,
+				summary: "done",
+			}),
+		});
 
-		await expect(
-			run_feature_implementation.function(
-				"completion-id",
-				{
-					repo: "owner/repo",
-					task: "Add tests",
-				},
-				request,
-			),
-		).rejects.toThrow(
-			"No model specified. Provide a model or configure one in settings.",
+		await run_feature_implementation.function(
+			"completion-id",
+			{
+				repo: "owner/repo",
+				task: "Add tests",
+			},
+			request,
 		);
+
+		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
+		const workerBody = JSON.parse(await workerRequest.text());
+		expect(workerBody.model).toBe("mistral-large");
 	});
 
 	it("throws when sandbox worker responds with a non-2xx status", async () => {

@@ -3,10 +3,7 @@ import { type Context, Hono } from "hono";
 import { requireAuth } from "~/middleware/auth";
 import { requirePlan } from "~/middleware/requirePlan";
 import { getServiceContext } from "~/lib/context/serviceContext";
-import {
-	executeSandboxWorker,
-	resolveApiBaseUrl,
-} from "~/services/sandbox/worker";
+import { executeSandboxWorker } from "~/services/sandbox/worker";
 
 const sandbox = new Hono();
 sandbox.use("*", requireAuth);
@@ -54,7 +51,6 @@ sandbox.post("/execute", async (c: Context) => {
 		installationId,
 		stream: c.req.header("accept")?.includes("text/event-stream"),
 		runId: typeof body.runId === "string" ? body.runId : undefined,
-		apiBaseUrl: resolveApiBaseUrl(c.env, c.req.url),
 	});
 
 	return response;

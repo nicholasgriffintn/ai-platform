@@ -16,7 +16,6 @@ import {
 } from "~/services/github/manage-connections";
 import {
 	executeSandboxWorker,
-	resolveApiBaseUrl,
 	resolveSandboxModel,
 } from "~/services/sandbox/worker";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -81,6 +80,26 @@ interface SandboxRunData {
 	error?: string;
 	events?: Array<Record<string, unknown>>;
 	result?: Record<string, unknown>;
+}
+
+async function persistFailedRun(params: {
+	serviceContext: ReturnType<typeof getServiceContext>;
+	recordId: string;
+	initialRunData: SandboxRunData;
+	error: unknown;
+}): Promise<void> {
+	const { serviceContext, recordId, initialRunData, error } = params;
+	const errorMessage =
+		error instanceof Error ? error.message : "Sandbox execution failed";
+	const completedAt = new Date().toISOString();
+
+	await serviceContext.repositories.appData.updateAppData(recordId, {
+		...initialRunData,
+		status: "failed",
+		error: errorMessage.slice(0, 1000),
+		updatedAt: completedAt,
+		completedAt,
+	});
 }
 
 app.use("/*", (c, next) => {
@@ -357,19 +376,37 @@ app.post(
 			updatedAt: runningAt,
 		});
 
-		const workerResponse = await executeSandboxWorker({
-			env: c.env,
-			context: serviceContext,
-			user,
-			repo: payload.repo,
-			task: payload.task,
-			model,
-			shouldCommit: payload.shouldCommit,
-			installationId: payload.installationId,
-			stream: true,
-			runId,
-			apiBaseUrl: resolveApiBaseUrl(c.env, c.req.url),
-		});
+		let workerResponse: Response;
+		try {
+			workerResponse = await executeSandboxWorker({
+				env: c.env,
+				context: serviceContext,
+				user,
+				repo: payload.repo,
+				task: payload.task,
+				model,
+				shouldCommit: payload.shouldCommit,
+				installationId: payload.installationId,
+				stream: true,
+				runId,
+			});
+		} catch (error) {
+			await persistFailedRun({
+				serviceContext,
+				recordId: createdRecord.id,
+				initialRunData,
+				error,
+			});
+
+			const errorMessage =
+				error instanceof Error ? error.message : "Failed to start sandbox run";
+			routeLogger.error("Failed to start sandbox worker run", {
+				run_id: runId,
+				installation_id: payload.installationId,
+				error_message: errorMessage,
+			});
+			return c.json({ error: errorMessage }, 500);
+		}
 
 		if (!workerResponse.ok) {
 			const errorText = await workerResponse.text();
@@ -415,6 +452,14 @@ app.post(
 			try {
 				responseData = (await workerResponse.json()) as Record<string, unknown>;
 			} catch {
+				await persistFailedRun({
+					serviceContext,
+					recordId: createdRecord.id,
+					initialRunData,
+					error: new Error(
+						"Sandbox worker returned invalid non-stream response",
+					),
+				});
 				return c.json(
 					{ error: "Sandbox worker returned invalid non-stream response" },
 					500,

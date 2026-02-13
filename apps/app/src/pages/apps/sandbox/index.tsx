@@ -419,7 +419,7 @@ export default function SandboxConnectionsPage() {
 											>
 												<div className="flex items-center justify-between gap-3">
 													<Link
-														to={`/apps/sandbox/${run.installationId}`}
+														to={`/apps/sandbox/${run.installationId}?runId=${run.runId}`}
 														className="font-medium text-zinc-900 dark:text-zinc-100 no-underline hover:text-blue-600 dark:hover:text-blue-300"
 													>
 														{run.repo}

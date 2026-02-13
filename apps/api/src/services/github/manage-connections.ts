@@ -2,6 +2,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { GITHUB_CONNECTION_APP_ID } from "./connections";
 import { encryptGitHubConnectionPayload } from "./connection-crypto";
+import { validateGitHubPrivateKey } from "./app-jwt";
 
 export interface UpsertGitHubConnectionInput {
 	installationId: number;
@@ -47,9 +48,11 @@ function resolveDefaultGitHubAppCredentials(
 		);
 	}
 
+	const normalizedPrivateKey = validateGitHubPrivateKey(privateKeyRaw);
+
 	return {
 		appId,
-		privateKey: privateKeyRaw.replace(/\\n/g, "\n"),
+		privateKey: normalizedPrivateKey,
 		webhookSecret: webhookSecret || undefined,
 	};
 }
@@ -66,12 +69,14 @@ export async function upsertGitHubConnectionForUser(
 		);
 	}
 
+	const normalizedPrivateKey = validateGitHubPrivateKey(input.privateKey);
+
 	const encrypted = await encryptGitHubConnectionPayload({
 		jwtSecret: context.env.JWT_SECRET,
 		userId,
 		payload: {
 			app_id: input.appId.trim(),
-			private_key: input.privateKey.trim(),
+			private_key: normalizedPrivateKey,
 			installation_id: input.installationId,
 			webhook_secret: input.webhookSecret?.trim() || undefined,
 			repositories: normaliseRepositories(input.repositories),

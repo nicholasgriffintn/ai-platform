@@ -11,6 +11,23 @@ import {
 
 const JWT_SECRET = "jwt-secret";
 const USER_ID = 42;
+const TEST_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
+MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAOpYZtauJOBEzw8c
+E2WqXIP7K5hV/jUYb0/GyS1tTHUKokEsi4QLDoL6BuhwZzjmtleOJnZZh48U2GwF
+jtvaW8OHq/vqsVlXc5FSlWdJBqOMzq0ef085XLRT3sigfyJ9mWL6MRqTor/Aqk7T
+WChfb53l6iB9jBvG9gZewIVIcK31AgMBAAECgYEA5O59cGXpQmoV+UXNMTlPbeO2
+P/hqAUagn0esCsPGuGQuBAtXNCR1BcDpdLMyM6U3JquIqX9m7YFIt6ZqXB6iGrAP
+i8icTuOspEiTaJHntgnQsGlY+et83H4G68vt8a1XtrMKJdr/9wtqG0yEieWkb2ic
+X/RpNhc+5+9rm84CK4ECQQD+Sy6ZehtyhG5CW1/7REF7EXFz0+gCflYzDml5doU1
+8OW1Dq/dR4htWUge1CC3m0BpuiN+UlZ4PjXHZTVM4bnVAkEA6+rz93vRsn15Vuoc
+176d3Z53m+a7mBpBFkm/r7asY6un8ZbNrh+9xo75G4cB1kJxAH0gVEIpZc9LLINO
+HvAToQJAGAqbmT8GIUmL8xIYfPTzC+OWSlEaekHffGw8ZJNj/LmNvhRpZA5DQ7NR
+Mjjz7ufqqxRCDstSCYQ4KWXUKDSfEQJBAJ548i7BTsg+Pt7iXkOSOMsg4qmn4UW4
+BRaqrYekBsLhEOxY54raqYkSi0UxeEtr0CqK4seWteY8y/t3rGddz2ECQAFPTSve
+7K1zgE9MCx03fM+eoGHokyxjzYdNa5t64avGo6FVq/yrPPSFWSAKeeLdvlIb1GpO
+Gf3O5Idj3x/bOMk=
+-----END PRIVATE KEY-----`;
+const TEST_PRIVATE_KEY_ESCAPED = TEST_PRIVATE_KEY.replace(/\n/g, "\\n");
 
 describe("upsertGitHubConnectionForUser", () => {
 	it("creates a new encrypted connection record when one does not exist", async () => {
@@ -32,7 +49,7 @@ describe("upsertGitHubConnectionForUser", () => {
 		await upsertGitHubConnectionForUser(context, USER_ID, {
 			installationId: 5001,
 			appId: "123456",
-			privateKey: "private-key",
+			privateKey: TEST_PRIVATE_KEY,
 			webhookSecret: "secret",
 			repositories: ["Owner/Repo", "owner/repo", "owner/other"],
 		});
@@ -62,7 +79,7 @@ describe("upsertGitHubConnectionForUser", () => {
 
 		expect(decrypted).toMatchObject({
 			app_id: "123456",
-			private_key: "private-key",
+			private_key: TEST_PRIVATE_KEY,
 			installation_id: 5001,
 			webhook_secret: "secret",
 			repositories: ["owner/repo", "owner/other"],
@@ -92,7 +109,7 @@ describe("upsertGitHubConnectionForUser", () => {
 		await upsertGitHubConnectionForUser(context, USER_ID, {
 			installationId: 6001,
 			appId: "123456",
-			privateKey: "updated-private-key",
+			privateKey: TEST_PRIVATE_KEY,
 		});
 
 		expect(updateAppData).toHaveBeenCalledTimes(1);
@@ -148,7 +165,7 @@ describe("upsertGitHubConnectionForUser", () => {
 			env: {
 				JWT_SECRET,
 				GITHUB_APP_ID: "env-app-id",
-				GITHUB_APP_PRIVATE_KEY: "line-1\\nline-2",
+				GITHUB_APP_PRIVATE_KEY: TEST_PRIVATE_KEY_ESCAPED,
 				GITHUB_APP_WEBHOOK_SECRET: "env-webhook",
 			},
 			repositories: {
@@ -180,7 +197,7 @@ describe("upsertGitHubConnectionForUser", () => {
 
 		expect(decrypted).toMatchObject({
 			app_id: "env-app-id",
-			private_key: "line-1\nline-2",
+			private_key: TEST_PRIVATE_KEY,
 			installation_id: 8080,
 			webhook_secret: "env-webhook",
 		});

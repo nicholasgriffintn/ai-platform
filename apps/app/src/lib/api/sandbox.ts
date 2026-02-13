@@ -10,6 +10,42 @@ import type {
 	SandboxRunEvent,
 } from "~/types/sandbox";
 
+async function extractApiErrorMessage(
+	response: Response,
+	fallback: string,
+): Promise<string> {
+	const bodyText = await response.text();
+	if (!bodyText.trim()) {
+		return fallback;
+	}
+
+	try {
+		const parsed = JSON.parse(bodyText) as {
+			error?: string;
+			message?: string;
+			details?: unknown;
+		};
+		const topLevelMessage = parsed.error || parsed.message;
+		if (topLevelMessage?.trim()) {
+			return topLevelMessage;
+		}
+
+		if (Array.isArray(parsed.details) && parsed.details.length > 0) {
+			const firstDetail = parsed.details[0] as { message?: unknown };
+			if (
+				typeof firstDetail?.message === "string" &&
+				firstDetail.message.trim()
+			) {
+				return firstDetail.message;
+			}
+		}
+	} catch {
+		// Fall back to plain text body.
+	}
+
+	return bodyText;
+}
+
 export async function fetchSandboxConnections(): Promise<SandboxConnection[]> {
 	const headers = await apiService.getHeaders();
 	const response = await fetchApi("/apps/sandbox/connections", {
@@ -19,7 +55,10 @@ export async function fetchSandboxConnections(): Promise<SandboxConnection[]> {
 
 	if (!response.ok) {
 		throw new Error(
-			`Failed to fetch sandbox connections: ${response.statusText}`,
+			await extractApiErrorMessage(
+				response,
+				`Failed to fetch sandbox connections: ${response.statusText}`,
+			),
 		);
 	}
 
@@ -38,7 +77,10 @@ export async function fetchSandboxInstallConfig(): Promise<SandboxInstallConfig>
 
 	if (!response.ok) {
 		throw new Error(
-			`Failed to fetch sandbox install configuration: ${response.statusText}`,
+			await extractApiErrorMessage(
+				response,
+				`Failed to fetch sandbox install configuration: ${response.statusText}`,
+			),
 		);
 	}
 
@@ -56,9 +98,11 @@ export async function upsertSandboxConnection(
 	});
 
 	if (!response.ok) {
-		const errorText = await response.text();
 		throw new Error(
-			`Failed to save sandbox connection: ${errorText || response.statusText}`,
+			await extractApiErrorMessage(
+				response,
+				`Failed to save sandbox connection: ${response.statusText}`,
+			),
 		);
 	}
 }
@@ -74,9 +118,11 @@ export async function connectSandboxInstallation(
 	});
 
 	if (!response.ok) {
-		const errorText = await response.text();
 		throw new Error(
-			`Failed to connect GitHub installation: ${errorText || response.statusText}`,
+			await extractApiErrorMessage(
+				response,
+				`Failed to connect GitHub installation: ${response.statusText}`,
+			),
 		);
 	}
 }
@@ -94,9 +140,11 @@ export async function deleteSandboxConnection(
 	);
 
 	if (!response.ok) {
-		const errorText = await response.text();
 		throw new Error(
-			`Failed to delete sandbox connection: ${errorText || response.statusText}`,
+			await extractApiErrorMessage(
+				response,
+				`Failed to delete sandbox connection: ${response.statusText}`,
+			),
 		);
 	}
 }
@@ -129,7 +177,12 @@ export async function fetchSandboxRuns(params: {
 	);
 
 	if (!response.ok) {
-		throw new Error(`Failed to fetch sandbox runs: ${response.statusText}`);
+		throw new Error(
+			await extractApiErrorMessage(
+				response,
+				`Failed to fetch sandbox runs: ${response.statusText}`,
+			),
+		);
 	}
 
 	const data = await returnFetchedData<{ runs: SandboxRun[] }>(response);
@@ -144,7 +197,12 @@ export async function fetchSandboxRun(runId: string): Promise<SandboxRun> {
 	});
 
 	if (!response.ok) {
-		throw new Error(`Failed to fetch sandbox run: ${response.statusText}`);
+		throw new Error(
+			await extractApiErrorMessage(
+				response,
+				`Failed to fetch sandbox run: ${response.statusText}`,
+			),
+		);
 	}
 
 	const data = await returnFetchedData<{ run: SandboxRun }>(response);
@@ -177,10 +235,11 @@ export async function streamSandboxRun(
 	});
 
 	if (!response.ok) {
-		const errorText = await response.text();
-		throw new Error(
-			`Failed to execute sandbox run: ${errorText || response.statusText}`,
+		const message = await extractApiErrorMessage(
+			response,
+			`Failed to execute sandbox run: ${response.statusText}`,
 		);
+		throw new Error(message);
 	}
 
 	if (!response.body) {

@@ -1,3 +1,5 @@
+import { normalizeGitHubPrivateKey } from "./app-jwt";
+
 export interface GitHubAppConnection {
 	appId: string;
 	privateKey: string;
@@ -50,7 +52,7 @@ export function parseGitHubConnectionData(params: {
 	}
 
 	const normalizedAppId = root.app_id.trim();
-	const normalizedPrivateKey = root.private_key.trim();
+	const normalizedPrivateKey = normalizeGitHubPrivateKey(root.private_key);
 	const normalizedWebhookSecret =
 		typeof root.webhook_secret === "string" && root.webhook_secret.trim()
 			? root.webhook_secret.trim()
@@ -86,7 +88,7 @@ export function parseGitHubConnectionData(params: {
 		data: recordData,
 		connection: {
 			appId: recordData.app_id,
-			privateKey: recordData.private_key.replace(/\\n/g, "\n"),
+			privateKey: recordData.private_key,
 			installationId,
 			webhookSecret: recordData.webhook_secret,
 		},

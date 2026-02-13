@@ -1,3 +1,6 @@
+const POLYCHAT_SANDBOX_USER_AGENT =
+	"Polychat-Sandbox-Worker/1.0 (+https://polychat.app)";
+
 export class PolychatClient {
 	constructor(
 		private baseUrl: string,
@@ -15,6 +18,7 @@ export class PolychatClient {
 			method: "POST",
 			headers: {
 				Authorization: `Bearer ${this.userToken}`,
+				"User-Agent": POLYCHAT_SANDBOX_USER_AGENT,
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({

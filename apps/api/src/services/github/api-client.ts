@@ -1,4 +1,5 @@
 const GITHUB_API_VERSION = "2022-11-28";
+const GITHUB_USER_AGENT = "Polychat-Sandbox/1.0 (+https://polychat.app)";
 
 export async function githubApiRequest(params: {
 	url: string;
@@ -13,6 +14,7 @@ export async function githubApiRequest(params: {
 		headers: {
 			Authorization: `Bearer ${bearerToken}`,
 			Accept: "application/vnd.github+json",
+			"User-Agent": GITHUB_USER_AGENT,
 			"X-GitHub-Api-Version": GITHUB_API_VERSION,
 			...(body ? { "Content-Type": "application/json" } : {}),
 		},
