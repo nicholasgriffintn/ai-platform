@@ -118,7 +118,7 @@ export class ResponseFormatter {
 			if (match?.[1]) {
 				return match[1];
 			}
-		} catch (_error) {
+		} catch {
 			const sanitized = url.split("?")[0];
 			const match = sanitized.match(/\.([a-z0-9]+)$/i);
 			if (match?.[1]) {
@@ -766,7 +766,7 @@ export class ResponseFormatter {
 
 			const result: any = { ...data, response: responseContent };
 			if (metadata.length) {
-				result.data = { ...(data.data || {}), assets: metadata };
+				result.data = { ...data.data, assets: metadata };
 			}
 			return result;
 		}
@@ -804,7 +804,7 @@ export class ResponseFormatter {
 
 			const result: any = { ...data, response: responseContent };
 			if (metadata.length) {
-				result.data = { ...(data.data || {}), assets: metadata };
+				result.data = { ...data.data, assets: metadata };
 			}
 			return result;
 		}
@@ -844,7 +844,7 @@ export class ResponseFormatter {
 
 			const result: any = { ...data, response: responseContent };
 			if (metadata.length) {
-				result.data = { ...(data.data || {}), assets: metadata };
+				result.data = { ...data.data, assets: metadata };
 			}
 			return result;
 		}

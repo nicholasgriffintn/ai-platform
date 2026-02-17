@@ -76,8 +76,8 @@ async function handleCompletion(
 	});
 
 	const mergedData = {
-		...(message.data || {}),
-		...(formattedResult?.data || {}),
+		...message.data,
+		...formattedResult?.data,
 		asyncInvocation: mergedInvocation,
 	};
 
@@ -129,7 +129,7 @@ async function handleFailure(
 		content: failureContent,
 		status: "failed",
 		data: {
-			...(message.data || {}),
+			...message.data,
 			asyncInvocation: mergedInvocation,
 			error: raw?.error || raw?.status || "FAILED",
 		},
@@ -169,7 +169,7 @@ async function handleProgress(
 		...message,
 		content: progressContent,
 		data: {
-			...(message.data || {}),
+			...message.data,
 			asyncInvocation: mergedInvocation,
 		},
 		status: "in_progress",

@@ -67,7 +67,7 @@ export class ReplicateVideoProvider implements VideoProvider {
 				height: request.height,
 				duration: request.duration ?? request.videoLength,
 				guidance_scale: request.guidanceScale,
-				...(request.metadata ?? {}),
+				...request.metadata,
 			}).filter(([, value]) => value !== undefined && value !== null),
 		);
 

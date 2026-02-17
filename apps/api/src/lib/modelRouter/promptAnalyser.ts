@@ -180,7 +180,7 @@ Ensure the output is nothing but the JSON object itself.`;
 						ErrorType.PARAMS_ERROR,
 					);
 				}
-			} catch (_fallbackError) {
+			} catch {
 				throw new AssistantError(
 					"Invalid JSON response from AI analysis",
 					ErrorType.PROVIDER_ERROR,

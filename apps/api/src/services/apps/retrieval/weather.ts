@@ -48,7 +48,7 @@ export const getWeatherForLocation = async (
 			content: response,
 			data: weatherData,
 		};
-	} catch (_error) {
+	} catch {
 		throw new AssistantError("Error fetching weather results");
 	}
 };

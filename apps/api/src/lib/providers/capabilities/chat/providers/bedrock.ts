@@ -140,7 +140,7 @@ export class BedrockProvider extends BaseProvider {
 	}
 
 	protected async getHeaders(
-		params: ChatCompletionParameters,
+		_params: ChatCompletionParameters,
 	): Promise<Record<string, string>> {
 		return {
 			"Content-Type": "application/json",
@@ -503,7 +503,7 @@ export class BedrockProvider extends BaseProvider {
 		formatted: any,
 		raw: Record<string, any>,
 		params: ChatCompletionParameters,
-		userId?: number,
+		_userId?: number,
 	): Promise<any> {
 		try {
 			const modelConfig = await getModelConfigByMatchingModel(
@@ -526,7 +526,7 @@ export class BedrockProvider extends BaseProvider {
 			}
 
 			const mergedData: Record<string, any> = {
-				...(formatted?.data || {}),
+				...formatted?.data,
 			};
 
 			return {
@@ -534,9 +534,9 @@ export class BedrockProvider extends BaseProvider {
 				response: responseText,
 				data: mergedData,
 			};
-		} catch (error) {
+		} catch (_error) {
 			logger.error("Failed to enhance Bedrock async result", {
-				error,
+				error: _error,
 				model: params.model,
 			});
 
@@ -875,7 +875,7 @@ export class BedrockProvider extends BaseProvider {
 		);
 
 		const mergedData = {
-			...(initialResponse || {}),
+			...initialResponse,
 			...data,
 			invocationArn,
 		};

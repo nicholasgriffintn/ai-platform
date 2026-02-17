@@ -320,12 +320,15 @@ export const call_api: IFunction = {
 
 		let response: Response;
 		try {
-			response = await fetch(url.toString(), {
+			const fetchOptions: RequestInit = {
 				method,
 				headers,
-				...(body !== undefined ? { body } : {}),
 				signal: controller.signal,
-			});
+			};
+			if (body !== undefined) {
+				fetchOptions.body = body;
+			}
+			response = await fetch(url.toString(), fetchOptions);
 		} catch (error) {
 			logger.error("API request failed", {
 				error_message: error instanceof Error ? error.message : "Unknown error",

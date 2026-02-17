@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { search_functions, get_function_schema } from "../discovery";
 import type { IRequest } from "~/types";
 

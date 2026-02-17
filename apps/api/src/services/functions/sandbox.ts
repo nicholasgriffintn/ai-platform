@@ -39,8 +39,8 @@ export const run_feature_implementation: IFunction = {
 		completion_id,
 		args,
 		request,
-		app_url,
-		conversationManager,
+		_app_url,
+		_conversationManager,
 	) => {
 		const { repo, task, model, shouldCommit } = args as {
 			repo: string;

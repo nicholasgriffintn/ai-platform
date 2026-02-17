@@ -103,7 +103,7 @@ test.describe("Resilience and Error Handling", () => {
 				await homePage.waitForChatResponse(previousCount);
 				const newCount = await homePage.getAssistantMessageCount();
 				expect(newCount).toBeGreaterThanOrEqual(previousCount);
-			} catch (_error) {
+			} catch {
 				console.log("Long message handled with error (acceptable behavior)");
 			}
 		});
@@ -145,7 +145,7 @@ test.describe("Resilience and Error Handling", () => {
 							break;
 						}
 					}
-				} catch (_error) {
+				} catch {
 					console.log("Filled localStorage");
 				}
 			});
@@ -263,7 +263,7 @@ test.describe("Resilience and Error Handling", () => {
 				const chatInput = page.locator("#message-input");
 				const isVisible = await chatInput.isVisible({ timeout: 5000 });
 				expect(isVisible).toBeTruthy();
-			} catch (_error) {
+			} catch {
 				console.log("App requires localStorage (acceptable behavior)");
 			}
 		});

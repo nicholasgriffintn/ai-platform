@@ -18,7 +18,7 @@ export function sanitizeStrudelCode(code: string): string {
 	return code
 		.replace(/"([^"]*)"/g, (_, content) => {
 			const sanitized = content.replace(
-				/[^a-zA-Z0-9~*/!?[\]@<>(),:\.\^\_\-\s]/g,
+				/[^a-zA-Z0-9~*/!?[\]@<>(),:._^\-\s]/g,
 				"",
 			);
 			return `"${sanitized}"`;

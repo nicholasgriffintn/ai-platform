@@ -18,7 +18,6 @@ import {
 	type IEnv,
 	type IUser,
 	type IUserSettings,
-	type ParsedSSEData,
 	type Platform,
 	StreamState,
 	type ToolCall,
