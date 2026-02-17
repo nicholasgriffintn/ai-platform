@@ -7,11 +7,23 @@ export const SANDBOX_PROMPT_STRATEGIES = [
 	"refactor",
 	"test-hardening",
 ] as const;
+export const SANDBOX_TASK_TYPES = [
+	"feature-implementation",
+	"code-review",
+	"test-suite",
+	"bug-fix",
+] as const;
 
 export const SANDBOX_TIMEOUT_MIN_SECONDS = 30;
 export const SANDBOX_TIMEOUT_DEFAULT_SECONDS = 900;
 export const SANDBOX_TIMEOUT_MAX_SECONDS = 7200;
 
+export const sandboxWebhookCommandSchema = z.enum([
+	"implement",
+	"review",
+	"test",
+	"fix",
+]);
 export const sandboxRepoSchema = z
 	.string()
 	.trim()
@@ -30,6 +42,7 @@ export const executeSandboxRunSchema = z.object({
 	installationId: z.number().int().positive(),
 	repo: sandboxRepoSchema,
 	task: z.string().trim().min(1),
+	taskType: z.enum(SANDBOX_TASK_TYPES).optional(),
 	model: z.string().trim().min(1).optional(),
 	promptStrategy: z.enum(SANDBOX_PROMPT_STRATEGIES).optional(),
 	shouldCommit: z.boolean().optional(),
@@ -177,10 +190,7 @@ export const sandboxRunSchema = sandboxRunDataSchema.extend({
 	events: z.array(sandboxRunEventSchema).default([]),
 });
 
-export const sandboxTaskTypeSchema = z.enum([
-	"feature-implementation",
-	"code-review",
-]);
+export const sandboxTaskTypeSchema = z.enum(SANDBOX_TASK_TYPES);
 
 export const sandboxRunControlStateSchema = z.enum([
 	"running",
@@ -252,6 +262,7 @@ export type SandboxRunData = z.infer<typeof sandboxRunDataSchema>;
 export type SandboxRun = z.infer<typeof sandboxRunSchema>;
 export type SandboxTaskType = z.infer<typeof sandboxTaskTypeSchema>;
 export type SandboxPromptStrategy = z.infer<typeof sandboxPromptStrategySchema>;
+export type SandboxWebhookCommand = z.infer<typeof sandboxWebhookCommandSchema>;
 export type SandboxRunControlState = z.infer<
 	typeof sandboxRunControlStateSchema
 >;

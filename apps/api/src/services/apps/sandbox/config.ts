@@ -35,14 +35,14 @@ export interface SandboxExecutionQuotaConfig {
 }
 
 export function resolveSandboxTimeoutSeconds(
-	env: IEnv,
+	env: IEnv | undefined,
 	requestedTimeoutSeconds?: number,
 ): number {
 	const configuredDefault =
-		parsePositiveInteger(env.SANDBOX_DEFAULT_TIMEOUT_SECONDS) ??
+		parsePositiveInteger(env?.SANDBOX_DEFAULT_TIMEOUT_SECONDS) ??
 		SANDBOX_TIMEOUT_DEFAULT_SECONDS;
 	const configuredMax =
-		parsePositiveInteger(env.SANDBOX_MAX_TIMEOUT_SECONDS) ??
+		parsePositiveInteger(env?.SANDBOX_MAX_TIMEOUT_SECONDS) ??
 		SANDBOX_TIMEOUT_MAX_SECONDS;
 
 	const maxTimeoutSeconds = Math.max(
@@ -58,7 +58,7 @@ export function resolveSandboxTimeoutSeconds(
 }
 
 export function buildSandboxTimeoutConfig(params: {
-	env: IEnv;
+	env: IEnv | undefined;
 	requestedTimeoutSeconds?: number;
 	now?: Date;
 }): SandboxTimeoutConfig {
@@ -79,16 +79,16 @@ export function buildSandboxTimeoutConfig(params: {
 }
 
 export function resolveSandboxExecutionQuotaConfig(
-	env: IEnv,
+	env: IEnv | undefined,
 ): SandboxExecutionQuotaConfig {
 	const maxConcurrentRuns =
-		parsePositiveInteger(env.SANDBOX_MAX_CONCURRENT_RUNS) ??
+		parsePositiveInteger(env?.SANDBOX_MAX_CONCURRENT_RUNS) ??
 		DEFAULT_MAX_CONCURRENT_RUNS;
 	const maxRunsPerDay =
-		parsePositiveInteger(env.SANDBOX_MAX_RUNS_PER_DAY) ??
+		parsePositiveInteger(env?.SANDBOX_MAX_RUNS_PER_DAY) ??
 		DEFAULT_MAX_RUNS_PER_DAY;
 	const maxRunStartsPerMinute =
-		parsePositiveInteger(env.SANDBOX_MAX_RUN_STARTS_PER_MINUTE) ??
+		parsePositiveInteger(env?.SANDBOX_MAX_RUN_STARTS_PER_MINUTE) ??
 		DEFAULT_MAX_RUN_STARTS_PER_MINUTE;
 
 	return {

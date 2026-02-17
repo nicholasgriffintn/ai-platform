@@ -1,94 +1,48 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import type { SandboxWebhookCommand } from "@assistant/schemas";
 
-import { githubApiRequest } from "~/services/github/api-client";
-import { createGitHubAppJwt } from "~/services/github/app-jwt";
-import { getLogger } from "~/utils/logger";
+import {
+	defaultShouldCommitForSandboxCommand,
+	defaultTaskForSandboxCommand,
+	extractImplementTask,
+	extractSandboxCommand,
+	extractSandboxPushCommand,
+	getSandboxDynamicAppId,
+} from "./github/command";
+import {
+	formatSandboxResultComment,
+	postCommentToIssueOrPullRequest,
+} from "./github/comments";
+import {
+	parseIssueNumberFromAutomationPayload,
+	parseSandboxAutomationCommand,
+	parseSandboxShouldCommit,
+} from "./github/payload";
+import { getGitHubAppInstallationToken } from "./github/installation-token";
+import { validateGitHubWebhookSignature } from "./github/signature";
 
-const logger = getLogger({ prefix: "lib/github" });
-const GITHUB_API_BASE = "https://api.github.com";
-
-async function getInstallationIdForRepo(
-	repo: string,
-	appJwt: string,
-): Promise<number> {
-	const response = await githubApiRequest({
-		url: `${GITHUB_API_BASE}/repos/${repo}/installation`,
-		method: "GET",
-		bearerToken: appJwt,
-	});
-	const data = (await response.json()) as { id?: number };
-
-	if (!data.id) {
-		throw new Error(`No GitHub App installation found for ${repo}`);
-	}
-
-	return data.id;
-}
-
-export async function getGitHubAppInstallationToken({
-	appId,
-	privateKey,
-	repo,
-	installationId,
-}: {
-	appId: string;
-	privateKey: string;
-	repo?: string;
-	installationId?: number;
-}): Promise<string> {
-	try {
-		const appJwt = createGitHubAppJwt({ appId, privateKey });
-		const resolvedInstallationId = installationId
-			? installationId
-			: repo
-				? await getInstallationIdForRepo(repo, appJwt)
-				: null;
-
-		if (!resolvedInstallationId) {
-			throw new Error("installationId or repo is required");
-		}
-
-		const tokenResponse = await githubApiRequest({
-			url: `${GITHUB_API_BASE}/app/installations/${resolvedInstallationId}/access_tokens`,
-			method: "POST",
-			bearerToken: appJwt,
-			body: {},
-		});
-		const tokenData = (await tokenResponse.json()) as {
-			token?: string;
-			expires_at?: string;
-		};
-
-		if (!tokenData.token) {
-			throw new Error("GitHub App installation token was not returned");
-		}
-
-		return tokenData.token;
-	} catch (error) {
-		logger.error("Failed to create GitHub App installation token", {
-			app_id: appId,
-			repo,
-			installation_id: installationId,
-			error_message: error instanceof Error ? error.message : String(error),
-		});
-		throw error;
-	}
-}
+export {
+	defaultShouldCommitForSandboxCommand,
+	defaultTaskForSandboxCommand,
+	extractImplementTask,
+	extractSandboxCommand,
+	extractSandboxPushCommand,
+	getGitHubAppInstallationToken,
+	getSandboxDynamicAppId,
+	parseIssueNumberFromAutomationPayload,
+	parseSandboxAutomationCommand,
+	parseSandboxShouldCommit,
+};
 
 export function validateSignature(
 	payload: string,
 	signature: string | undefined,
 	secret: string,
 ): boolean {
-	if (!signature) return false;
-	const hmac = createHmac("sha256", secret);
-	const digest = `sha256=${hmac.update(payload).digest("hex")}`;
-
-	const provided = Buffer.from(signature);
-	const expected = Buffer.from(digest);
-	if (provided.length !== expected.length) return false;
-
-	return timingSafeEqual(provided, expected);
+	return validateGitHubWebhookSignature({
+		payload,
+		signature,
+		secret,
+	});
 }
 
 export async function postCommentToPR(
@@ -96,55 +50,36 @@ export async function postCommentToPR(
 	pr: number,
 	body: string,
 	token: string,
-) {
-	await githubApiRequest({
-		url: `${GITHUB_API_BASE}/repos/${repo}/issues/${pr}/comments`,
-		method: "POST",
-		bearerToken: token,
-		body: { body },
+): Promise<void> {
+	await postCommentToIssueOrPullRequest({
+		repo,
+		issueOrPrNumber: pr,
+		body,
+		token,
 	});
 }
 
-export function formatResultComment(result: {
+export async function postCommentToIssue(
+	repo: string,
+	issue: number,
+	body: string,
+	token: string,
+): Promise<void> {
+	await postCommentToIssueOrPullRequest({
+		repo,
+		issueOrPrNumber: issue,
+		body,
+		token,
+	});
+}
+
+export function formatResultComment(params: {
+	command?: SandboxWebhookCommand;
 	success: boolean;
 	summary?: string;
 	diff?: string;
 	error?: string;
 	responseId?: string;
 }): string {
-	if (!result.success) {
-		return [
-			"## Implementation Failed",
-			"",
-			result.error || "The sandbox task failed with an unknown error.",
-			"",
-			result.responseId
-				? `Response ID: \`${result.responseId}\``
-				: "No response ID was stored.",
-		].join("\n");
-	}
-
-	const safeDiff = (result.diff || "").slice(0, 12000);
-	return [
-		"## Implementation Complete",
-		"",
-		result.summary || "Sandbox run completed successfully.",
-		"",
-		result.responseId ? `Response ID: \`${result.responseId}\`` : "",
-		"",
-		"<details>",
-		"<summary>Diff</summary>",
-		"",
-		"```diff",
-		safeDiff || "(No diff generated)",
-		"```",
-		"</details>",
-	]
-		.filter(Boolean)
-		.join("\n");
-}
-
-export function extractImplementTask(commentBody: string): string | null {
-	const match = commentBody.match(/^\/implement\s+([\s\S]+)$/im);
-	return match?.[1]?.trim() || null;
+	return formatSandboxResultComment(params);
 }

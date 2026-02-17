@@ -1,4 +1,4 @@
-import { executeFeatureImplementation } from "./tasks/feature-implementation";
+import { executeSandboxTask } from "./tasks";
 import { verifySandboxJwt } from "./lib/auth";
 import { SandboxCancellationError } from "./lib/cancellation";
 import { sandboxWorkerExecuteRequestSchema } from "@assistant/schemas";
@@ -118,22 +118,17 @@ export default {
 			return Response.json({ error: "Invalid task payload" }, { status: 400 });
 		}
 
+		// TODO: Add code interpreter: https://developers.cloudflare.com/sandbox/guides/code-execution/
 		const executeTask = async (
 			emitEvent?: (event: TaskEvent) => Promise<void> | void,
 		) => {
-			// TODO: Add code interpreter: https://developers.cloudflare.com/sandbox/guides/code-execution/
-			switch (params.taskType) {
-				case "feature-implementation":
-					return executeFeatureImplementation(
-						params,
-						secrets,
-						env,
-						emitEvent,
-						request.signal,
-					);
-				default:
-					throw new Error("Unknown task type");
-			}
+			return executeSandboxTask(
+				params,
+				secrets,
+				env,
+				emitEvent,
+				request.signal,
+			);
 		};
 
 		const wantsStream = request.headers

@@ -57,12 +57,14 @@ import {
 import { normaliseGitHubRepoInput } from "~/lib/sandbox/repositories";
 import { cn } from "~/lib/utils";
 import {
+	SANDBOX_TASK_TYPES,
 	SANDBOX_TIMEOUT_DEFAULT_SECONDS,
 	SANDBOX_TIMEOUT_MAX_SECONDS,
 	SANDBOX_TIMEOUT_MIN_SECONDS,
 	type SandboxPromptStrategy,
 	type SandboxRun,
 	type SandboxRunEvent,
+	type SandboxTaskType,
 } from "~/types/sandbox";
 import {
 	REPO_PATTERN,
@@ -82,6 +84,33 @@ interface ChatMessage {
 	role: "user" | "assistant";
 	content: string;
 	createdAt: string;
+}
+
+const SANDBOX_TASK_TYPE_LABELS: Record<SandboxTaskType, string> = {
+	"feature-implementation": "Feature implementation",
+	"code-review": "Code review",
+	"test-suite": "Test suite",
+	"bug-fix": "Bug fix",
+};
+
+const SANDBOX_TASK_TYPE_DESCRIPTIONS: Record<SandboxTaskType, string> = {
+	"feature-implementation":
+		"Implement the requested feature and make code changes where required.",
+	"code-review":
+		"Perform a read-only code review focused on correctness, security, and test gaps.",
+	"test-suite":
+		"Run and analyse relevant test suites without modifying repository files.",
+	"bug-fix":
+		"Diagnose and fix a specific bug with targeted, maintainable changes.",
+};
+
+function parseSandboxTaskType(
+	value: string,
+	fallback: SandboxTaskType = "feature-implementation",
+): SandboxTaskType {
+	return SANDBOX_TASK_TYPES.includes(value as SandboxTaskType)
+		? (value as SandboxTaskType)
+		: fallback;
 }
 
 function summariseRunResult(run: SandboxRun): string {
@@ -198,6 +227,9 @@ export default function SandboxConnectionPage() {
 	const [repo, setRepo] = useState("");
 	const [task, setTask] = useState("");
 	const [model, setModel] = useState("");
+	const [taskType, setTaskType] = useState<SandboxTaskType>(
+		"feature-implementation",
+	);
 	const [promptStrategy, setPromptStrategy] =
 		useState<SandboxPromptStrategy>("auto");
 	const [timeoutSecondsInput, setTimeoutSecondsInput] = useState(
@@ -212,6 +244,8 @@ export default function SandboxConnectionPage() {
 	const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const timelineEndRef = useRef<HTMLDivElement>(null);
+	const isReadOnlyTaskType =
+		taskType === "code-review" || taskType === "test-suite";
 
 	const commandProgress = useMemo(() => {
 		const commandEvents = timeline.filter(
@@ -319,6 +353,12 @@ export default function SandboxConnectionPage() {
 		}
 		window.localStorage.setItem(repoStorageKey, normalisedRepo);
 	}, [repoStorageKey, normalisedRepo]);
+
+	useEffect(() => {
+		if (isReadOnlyTaskType && shouldCommit) {
+			setShouldCommit(false);
+		}
+	}, [isReadOnlyTaskType, shouldCommit]);
 
 	const selectedRunFromHistory = useMemo(() => {
 		if (!targetRunId) {
@@ -536,9 +576,10 @@ export default function SandboxConnectionPage() {
 					installationId: connection.installationId,
 					repo: trimmedRepo,
 					task: trimmedTask,
+					taskType,
 					model: model.trim() || undefined,
 					promptStrategy,
-					shouldCommit,
+					shouldCommit: isReadOnlyTaskType ? false : shouldCommit,
 					timeoutSeconds: parsedTimeoutSeconds,
 				},
 				{
@@ -745,6 +786,23 @@ export default function SandboxConnectionPage() {
 									</div>
 									<div className="space-y-2">
 										<FormSelect
+											id="sandbox-task-type"
+											label="Task type"
+											value={taskType}
+											onChange={(event) =>
+												setTaskType(parseSandboxTaskType(event.target.value))
+											}
+											options={SANDBOX_TASK_TYPES.map((type) => ({
+												value: type,
+												label: SANDBOX_TASK_TYPE_LABELS[type],
+											}))}
+										/>
+										<p className="text-xs text-muted-foreground">
+											{SANDBOX_TASK_TYPE_DESCRIPTIONS[taskType]}
+										</p>
+									</div>
+									<div className="space-y-2">
+										<FormSelect
 											id="sandbox-prompt-strategy"
 											label="Prompt strategy"
 											value={promptStrategy}
@@ -825,12 +883,14 @@ export default function SandboxConnectionPage() {
 									<label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
 										<Checkbox
 											checked={shouldCommit}
+											disabled={isReadOnlyTaskType}
 											onCheckedChange={(checked) =>
 												setShouldCommit(Boolean(checked))
 											}
 										/>
-										Automatically commit changes to a new branch when the run
-										completes
+										{isReadOnlyTaskType
+											? "Commits are disabled for read-only task types."
+											: "Automatically commit changes to a new branch when the run completes"}
 									</label>
 									<div className="flex items-center gap-2">
 										{isSubmitting && (

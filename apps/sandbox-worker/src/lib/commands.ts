@@ -1,4 +1,5 @@
 import { getSandbox } from "@cloudflare/sandbox";
+import type { SandboxTaskType } from "@assistant/schemas";
 
 const MAX_LOG_CHARS = 80000;
 
@@ -12,6 +13,14 @@ const FORBIDDEN_COMMAND_PATTERNS: RegExp[] = [
 	/\b(sudo|shutdown|reboot|mkfs|dd)\b/i,
 	/\b(curl|wget)\b[^\n]*\|/i,
 	/\bgit\s+push\b/i,
+];
+
+const READ_ONLY_MUTATING_PATTERNS: RegExp[] = [
+	/\bgit\s+(add|commit|merge|rebase|cherry-pick|reset|checkout|switch|restore|clean|stash|tag|branch|push|pull)\b/i,
+	/\b(rm|mv|cp|mkdir|rmdir|touch|truncate|chmod|chown)\b/i,
+	/\b(npm|pnpm|yarn|bun)\s+(install|add|remove|update)\b/i,
+	/\b(pip|pip3|poetry)\s+(install|add|remove)\b/i,
+	/\b(?:sed|perl)\s+-i\b/i,
 ];
 
 type SandboxInstance = ReturnType<typeof getSandbox>;
@@ -115,7 +124,10 @@ export function normaliseCommandLine(rawLine: string): string | null {
 	return line;
 }
 
-export function assertSafeCommand(command: string) {
+export function assertSafeCommand(
+	command: string,
+	options?: { readOnly?: boolean },
+) {
 	if (command.length > 500) {
 		throw new Error("Command is too long");
 	}
@@ -131,6 +143,13 @@ export function assertSafeCommand(command: string) {
 	for (const pattern of FORBIDDEN_COMMAND_PATTERNS) {
 		if (pattern.test(command)) {
 			throw new Error(`Command is blocked by sandbox policy: ${command}`);
+		}
+	}
+	if (options?.readOnly) {
+		for (const pattern of READ_ONLY_MUTATING_PATTERNS) {
+			if (pattern.test(command)) {
+				throw new Error(`Command is blocked in read-only mode: ${command}`);
+			}
 		}
 	}
 }
@@ -157,7 +176,21 @@ export function buildSummary(
 	repo: string,
 	commandCount: number,
 	branchName?: string,
+	taskType: SandboxTaskType = "feature-implementation",
 ): string {
+	if (taskType === "code-review") {
+		return `Completed code review for "${task}" in ${repo} with ${commandCount} commands.`;
+	}
+	if (taskType === "test-suite") {
+		return `Completed test-suite run for "${task}" in ${repo} with ${commandCount} commands.`;
+	}
+	if (taskType === "bug-fix") {
+		if (branchName) {
+			return `Completed bug fix "${task}" in ${repo} with ${commandCount} commands on branch ${branchName}.`;
+		}
+		return `Completed bug fix "${task}" in ${repo} with ${commandCount} commands.`;
+	}
+
 	if (branchName) {
 		return `Implemented "${task}" in ${repo} with ${commandCount} commands on branch ${branchName}.`;
 	}

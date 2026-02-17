@@ -210,6 +210,8 @@ const TASK_TYPE_DEFAULT_STRATEGY: Record<
 > = {
 	"feature-implementation": "feature-delivery",
 	"code-review": "test-hardening",
+	"test-suite": "test-hardening",
+	"bug-fix": "bug-fix",
 };
 
 const TASK_KEYWORD_STRATEGY_RULES: Array<{

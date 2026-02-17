@@ -298,6 +298,7 @@ export async function executeFeatureImplementation(
 					repo.displayName,
 					loopResult.commandCount,
 					branchName,
+					params.taskType || "feature-implementation",
 				),
 			qualityGateResult.summary,
 			storyTrackerResult.summary,

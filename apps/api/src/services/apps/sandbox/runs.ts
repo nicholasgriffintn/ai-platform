@@ -53,7 +53,6 @@ async function persistRunStateTransition(
 	await context.repositories.appData.updateAppData(runRecord.recordId, nextRun);
 	return nextRun;
 }
-
 function parseSandboxRunRecordData(value: string): SandboxRunData | null {
 	return parseSandboxRunData(safeParseJson(value));
 }
