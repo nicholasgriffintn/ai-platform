@@ -241,5 +241,7 @@ export async function executeFeatureImplementation(
 			branchName,
 			error: error instanceof Error ? error.message : String(error),
 		};
+	} finally {
+		await sandbox.destroy();
 	}
 }

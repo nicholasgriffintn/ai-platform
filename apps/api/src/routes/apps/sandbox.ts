@@ -607,18 +607,27 @@ app.post(
 						});
 					}
 
-					await serviceContext.repositories.appData.updateAppData(
-						createdRecord.id,
-						{
-							...initialRunData,
+					try {
+						await serviceContext.repositories.appData.updateAppData(
+							createdRecord.id,
+							{
+								...initialRunData,
+								status,
+								result,
+								error: errorMessage,
+								events,
+								updatedAt: new Date().toISOString(),
+								completedAt,
+							},
+						);
+					} catch (dbError) {
+						routeLogger.error("Failed to persist sandbox run final state", {
+							error_message:
+								dbError instanceof Error ? dbError.message : String(dbError),
+							runId,
 							status,
-							result,
-							error: errorMessage,
-							events,
-							updatedAt: new Date().toISOString(),
-							completedAt,
-						},
-					);
+						});
+					}
 
 					controller.close();
 				}
