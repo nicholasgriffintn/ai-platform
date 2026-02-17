@@ -323,7 +323,7 @@ export const call_api: IFunction = {
 			response = await fetch(url.toString(), {
 				method,
 				headers,
-				body,
+				...(body !== undefined ? { body } : {}),
 				signal: controller.signal,
 			});
 		} catch (error) {

@@ -174,7 +174,7 @@ export function truncateLog(logs: string): string {
 }
 
 export function quoteForShell(value: string): string {
-	return `'${value.replace(/'/g, `'\"'\"'`)}'`;
+	return `'${value.replace(/'/g, `'"'"'`)}'`;
 }
 
 export function extractCommands(text: string): string[] {

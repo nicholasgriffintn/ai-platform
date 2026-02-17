@@ -9,7 +9,7 @@ const logger = getLogger({ prefix: "services/apps/retrieval/hackernews" });
 export async function retrieveHackerNewsTopStories({
 	count,
 	env,
-	user,
+	user: _user,
 }: {
 	count: number;
 	env: IEnv;

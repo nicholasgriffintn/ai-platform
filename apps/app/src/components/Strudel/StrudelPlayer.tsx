@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Play, Pause } from "lucide-react";
 import { StrudelMirror } from "@strudel/codemirror";
-// @ts-expect-error - @strudel/webaudio has no type definitions
 import { getAudioContext, webaudioOutput } from "@strudel/webaudio";
-// @ts-expect-error - @strudel/transpiler has no type definitions
 import { transpiler } from "@strudel/transpiler";
 
 import { Button } from "~/components/ui/Button";
@@ -20,7 +18,7 @@ export function sanitizeStrudelCode(code: string): string {
 	return code
 		.replace(/"([^"]*)"/g, (_, content) => {
 			const sanitized = content.replace(
-				/[^a-zA-Z0-9~*\/!?\[\]@<>\(\),:\.\^\_\-\s]/g,
+				/[^a-zA-Z0-9~*/!?[\]@<>(),:\.\^\_\-\s]/g,
 				"",
 			);
 			return `"${sanitized}"`;

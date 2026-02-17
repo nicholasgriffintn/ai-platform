@@ -506,7 +506,6 @@ app.get(
 		const { completion_id } = context.req.valid("param" as never) as {
 			completion_id: string;
 		};
-		const userContext = context.get("user");
 		const limit = Number.parseInt(context.req.query("limit") || "50", 10);
 		const after = context.req.query("after");
 
@@ -564,7 +563,6 @@ app.get(
 	}),
 	async (context: Context) => {
 		const { message_id } = context.req.param();
-		const user = context.get("user");
 		const anonymousUser = context.get("anonymousUser");
 
 		const serviceContext = getServiceContext(context);

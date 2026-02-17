@@ -41,7 +41,7 @@ export class S3Service {
 
 			logger.info(`Detected bucket ${bucket} is in region: ${region}`);
 			return region;
-		} catch (error) {
+		} catch {
 			logger.warn(
 				`Could not detect region for bucket ${bucket}, using configured region: ${config.AWS_REGION}`,
 			);

@@ -1,6 +1,5 @@
 import { KeywordFilter } from "~/lib/keywords";
 import {
-	availableModalities,
 	getAuxiliaryModel,
 	getAvailableStrengths,
 } from "~/lib/providers/models";

@@ -114,7 +114,7 @@ export const ChatSettings = ({
 		setChatSettings({
 			...chatSettings,
 			reasoning: {
-				...(chatSettings.reasoning ?? {}),
+				...chatSettings.reasoning,
 				effort: nextValue,
 			},
 		});

@@ -93,7 +93,7 @@ export class AssistantError extends Error {
 			[ErrorType.AUTHENTICATION_ERROR]:
 				"Authentication failed. Please check your credentials.",
 			[ErrorType.RATE_LIMIT_ERROR]: this.message,
-			[ErrorType.PARAMS_ERROR]: this.message,
+			[ErrorType.PARAMS_ERROR]: "Invalid request parameters.",
 			[ErrorType.NOT_FOUND]: "Requested resource not found.",
 			[ErrorType.FORBIDDEN]: "Access denied.",
 			[ErrorType.UNAUTHORIZED]: "Authentication required.",
@@ -264,7 +264,7 @@ export function handleAIServiceError(error: AssistantError): Response {
 			};
 
 			if (error.context && Object.keys(error.context).length > 0) {
-				const { requestId, ...safeContext } = error.context;
+				const { requestId: _requestId, ...safeContext } = error.context;
 				if (Object.keys(safeContext).length > 0) {
 					errorResponse.context = safeContext;
 				}

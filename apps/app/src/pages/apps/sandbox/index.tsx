@@ -1,11 +1,4 @@
-import {
-	ExternalLink,
-	Hammer,
-	Link2,
-	Plus,
-	ShieldCheck,
-	Trash2,
-} from "lucide-react";
+import { Hammer, Link2, MonitorDot, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -27,28 +20,19 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	Input,
-	Label,
-	Textarea,
 } from "~/components/ui";
+import { SandboxAddGitHubConnection } from "~/components/Models/SandboxAddGitHubConnection";
 import {
 	useConnectSandboxInstallation,
 	useDeleteSandboxConnection,
 	useSandboxConnections,
 	useSandboxInstallConfig,
 	useSandboxRuns,
-	useUpsertSandboxConnection,
 } from "~/hooks/useSandbox";
 import { formatRelativeTime } from "~/lib/dates";
 import { getStatusBadgeVariant } from "./utils";
 
-interface ConnectionFormState {
+export interface ConnectionFormState {
 	installationId: string;
 	appId: string;
 	privateKey: string;
@@ -64,26 +48,13 @@ const INITIAL_FORM: ConnectionFormState = {
 	repositories: "",
 };
 
-function parseRepositories(value: string): string[] | undefined {
-	const repositories = value
-		.split(/[\n,]/g)
-		.map((item) => item.trim())
-		.filter(Boolean);
-
-	if (!repositories.length) {
-		return undefined;
-	}
-
-	return Array.from(new Set(repositories));
-}
-
 export function meta() {
 	return [
 		{ title: "Sandbox Worker - Polychat" },
 		{
 			name: "description",
 			content:
-				"Connect GitHub repositories and run sandboxed implementation workflows with streamed progress.",
+				"Connect to a GitHub repo to automate tasks in an isolated sandbox environment.",
 		},
 	];
 }
@@ -92,8 +63,8 @@ export default function SandboxConnectionsPage() {
 	const navigate = useNavigate();
 	const [searchParams, setSearchParams] = useSearchParams();
 	const [isConnectionModalOpen, setIsConnectionModalOpen] = useState(false);
-	const [form, setForm] = useState<ConnectionFormState>(INITIAL_FORM);
 	const processedInstallationRef = useRef<string | null>(null);
+	const [form, setForm] = useState<ConnectionFormState>(INITIAL_FORM);
 
 	const { data: connections = [], isLoading, error } = useSandboxConnections();
 	const { data: installConfig, isLoading: isInstallConfigLoading } =
@@ -103,7 +74,6 @@ export default function SandboxConnectionsPage() {
 		isLoading: isRunsLoading,
 		error: runsError,
 	} = useSandboxRuns({ limit: 12 });
-	const upsertConnectionMutation = useUpsertSandboxConnection();
 	const connectInstallationMutation = useConnectSandboxInstallation();
 	const deleteConnectionMutation = useDeleteSandboxConnection();
 
@@ -184,37 +154,6 @@ export default function SandboxConnectionsPage() {
 		setSearchParams,
 	]);
 
-	const handleSaveConnection = async () => {
-		const installationId = Number(form.installationId);
-		if (!Number.isFinite(installationId) || installationId <= 0) {
-			toast.error("Installation ID must be a positive number");
-			return;
-		}
-		if (!form.appId.trim() || !form.privateKey.trim()) {
-			toast.error("App ID and private key are required");
-			return;
-		}
-
-		try {
-			await upsertConnectionMutation.mutateAsync({
-				installationId,
-				appId: form.appId.trim(),
-				privateKey: form.privateKey.trim(),
-				webhookSecret: form.webhookSecret.trim() || undefined,
-				repositories: parseRepositories(form.repositories),
-			});
-			toast.success("GitHub connection saved");
-			setForm(INITIAL_FORM);
-			setIsConnectionModalOpen(false);
-		} catch (mutationError) {
-			toast.error(
-				mutationError instanceof Error
-					? mutationError.message
-					: "Failed to save connection",
-			);
-		}
-	};
-
 	const handleDeleteConnection = async (installationId: number) => {
 		if (
 			!window.confirm(
@@ -236,15 +175,6 @@ export default function SandboxConnectionsPage() {
 		}
 	};
 
-	const openGitHubInstall = () => {
-		if (!installConfig?.installUrl) {
-			toast.error("GitHub install URL is not configured");
-			return;
-		}
-
-		window.open(installConfig.installUrl, "_blank", "noopener");
-	};
-
 	return (
 		<>
 			<PageShell
@@ -256,9 +186,8 @@ export default function SandboxConnectionsPage() {
 							<BackLink to="/apps" label="Back to Apps" />
 							<PageTitle title="Sandbox Worker" />
 							<p className="text-sm text-muted-foreground max-w-3xl">
-								Connect your GitHub App installation and launch implementation
-								runs in an isolated sandbox. Each run streams progress and
-								stores output history.
+								Connect to your GitHub repositories and automate tasks in an
+								isolated sandbox environment.
 							</p>
 						</PageHeader>
 						<Button
@@ -277,6 +206,69 @@ export default function SandboxConnectionsPage() {
 							<CardHeader>
 								<div className="flex items-center gap-3">
 									<div className="rounded-lg bg-zinc-900/10 p-2 text-zinc-900 dark:text-zinc-100">
+										<MonitorDot className="h-5 w-5" />
+									</div>
+									<div>
+										<CardTitle>Recent sandbox runs</CardTitle>
+										<CardDescription>
+											Your most recent sandbox runs across all connections.
+										</CardDescription>
+									</div>
+								</div>
+							</CardHeader>
+							<CardContent className="max-h-[400px] overflow-y-auto">
+								{isRunsLoading ? (
+									<div className="text-sm text-muted-foreground">
+										Loading run history...
+									</div>
+								) : runsError ? (
+									<Alert variant="destructive">
+										<AlertTitle>Unable to load runs</AlertTitle>
+										<AlertDescription>
+											{runsError instanceof Error
+												? runsError.message
+												: "Unknown error"}
+										</AlertDescription>
+									</Alert>
+								) : runs.length === 0 ? (
+									<div className="text-sm text-muted-foreground">
+										No runs yet. Open a connection and submit your first task.
+									</div>
+								) : (
+									<div className="space-y-3">
+										{runs.map((run) => (
+											<div
+												key={run.runId}
+												className="rounded-lg border bg-card p-3 text-sm"
+											>
+												<div className="flex items-center justify-between gap-3">
+													<Link
+														to={`/apps/sandbox/${run.installationId}?runId=${run.runId}`}
+														className="font-medium text-zinc-900 dark:text-zinc-100 no-underline hover:text-blue-600 dark:hover:text-blue-300"
+													>
+														{run.repo}
+													</Link>
+													<Badge variant={getStatusBadgeVariant(run.status)}>
+														{run.status}
+													</Badge>
+												</div>
+												<p className="mt-1 text-muted-foreground line-clamp-2">
+													{run.task}
+												</p>
+												<p className="mt-1 text-xs text-muted-foreground">
+													Updated {formatRelativeTime(run.updatedAt)}
+												</p>
+											</div>
+										))}
+									</div>
+								)}
+							</CardContent>
+						</Card>
+
+						<Card>
+							<CardHeader>
+								<div className="flex items-center gap-3">
+									<div className="rounded-lg bg-zinc-900/10 p-2 text-zinc-900 dark:text-zinc-100">
 										<Link2 className="h-5 w-5" />
 									</div>
 									<div>
@@ -290,7 +282,7 @@ export default function SandboxConnectionsPage() {
 									</div>
 								</div>
 							</CardHeader>
-							<CardContent>
+							<CardContent className="max-h-[400px] overflow-y-auto">
 								{isLoading ? (
 									<div className="text-sm text-muted-foreground">
 										Loading connections...
@@ -333,7 +325,7 @@ export default function SandboxConnectionsPage() {
 													</div>
 													<div className="flex items-center gap-2">
 														<Button
-															variant="ghost"
+															variant="destructive"
 															size="sm"
 															icon={<Trash2 className="h-4 w-4" />}
 															onClick={() =>
@@ -384,214 +376,16 @@ export default function SandboxConnectionsPage() {
 								)}
 							</CardContent>
 						</Card>
-
-						<Card>
-							<CardHeader>
-								<CardTitle>Recent sandbox runs</CardTitle>
-								<CardDescription>
-									The latest execution history across your connected
-									repositories.
-								</CardDescription>
-							</CardHeader>
-							<CardContent>
-								{isRunsLoading ? (
-									<div className="text-sm text-muted-foreground">
-										Loading run history...
-									</div>
-								) : runsError ? (
-									<Alert variant="destructive">
-										<AlertTitle>Unable to load runs</AlertTitle>
-										<AlertDescription>
-											{runsError instanceof Error
-												? runsError.message
-												: "Unknown error"}
-										</AlertDescription>
-									</Alert>
-								) : runs.length === 0 ? (
-									<div className="text-sm text-muted-foreground">
-										No runs yet. Open a connection and submit your first task.
-									</div>
-								) : (
-									<div className="space-y-3">
-										{runs.map((run) => (
-											<div
-												key={run.runId}
-												className="rounded-lg border bg-card p-3 text-sm"
-											>
-												<div className="flex items-center justify-between gap-3">
-													<Link
-														to={`/apps/sandbox/${run.installationId}?runId=${run.runId}`}
-														className="font-medium text-zinc-900 dark:text-zinc-100 no-underline hover:text-blue-600 dark:hover:text-blue-300"
-													>
-														{run.repo}
-													</Link>
-													<Badge variant={getStatusBadgeVariant(run.status)}>
-														{run.status}
-													</Badge>
-												</div>
-												<p className="mt-1 text-muted-foreground line-clamp-2">
-													{run.task}
-												</p>
-												<p className="mt-1 text-xs text-muted-foreground">
-													Updated {formatRelativeTime(run.updatedAt)}
-												</p>
-											</div>
-										))}
-									</div>
-								)}
-							</CardContent>
-						</Card>
 					</div>
 				</div>
 			</PageShell>
 
-			<Dialog
-				open={isConnectionModalOpen}
-				onOpenChange={setIsConnectionModalOpen}
-			>
-				<DialogContent className="sm:max-w-xl">
-					<DialogHeader>
-						<DialogTitle>Add GitHub connection</DialogTitle>
-						<DialogDescription>
-							Use GitHub App installation for auto-setup, or enter credentials
-							manually as fallback.
-						</DialogDescription>
-					</DialogHeader>
-
-					<div className="space-y-4">
-						<div className="rounded-lg border bg-muted/30 p-3">
-							<p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-								Recommended: install GitHub App
-							</p>
-							<p className="mt-1 text-xs text-muted-foreground">
-								Install in GitHub and return to this page. If server defaults
-								are configured, we connect the installation automatically.
-							</p>
-							<div className="mt-3">
-								<Button
-									variant="secondary"
-									icon={<ExternalLink className="h-4 w-4" />}
-									onClick={openGitHubInstall}
-									disabled={!installConfig?.installUrl}
-								>
-									Install GitHub App
-								</Button>
-							</div>
-							{installConfig?.callbackUrl && (
-								<p className="mt-2 text-xs text-muted-foreground">
-									Setup URL: <code>{installConfig.callbackUrl}</code>
-								</p>
-							)}
-						</div>
-
-						<div className="grid gap-4 md:grid-cols-2">
-							<div className="space-y-2">
-								<Label htmlFor="sandbox-installation-id">Installation ID</Label>
-								<Input
-									id="sandbox-installation-id"
-									type="number"
-									placeholder="12345678"
-									value={form.installationId}
-									onChange={(event) =>
-										setForm((prev) => ({
-											...prev,
-											installationId: event.target.value,
-										}))
-									}
-								/>
-							</div>
-							<div className="space-y-2">
-								<Label htmlFor="sandbox-app-id">GitHub App ID</Label>
-								<Input
-									id="sandbox-app-id"
-									placeholder="123456"
-									value={form.appId}
-									onChange={(event) =>
-										setForm((prev) => ({
-											...prev,
-											appId: event.target.value,
-										}))
-									}
-								/>
-							</div>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="sandbox-private-key">
-								GitHub App private key
-							</Label>
-							<Textarea
-								id="sandbox-private-key"
-								rows={6}
-								placeholder="-----BEGIN PRIVATE KEY-----"
-								value={form.privateKey}
-								onChange={(event) =>
-									setForm((prev) => ({
-										...prev,
-										privateKey: event.target.value,
-									}))
-								}
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="sandbox-webhook-secret">
-								Webhook secret (optional)
-							</Label>
-							<Input
-								id="sandbox-webhook-secret"
-								placeholder="Webhook signing secret"
-								value={form.webhookSecret}
-								onChange={(event) =>
-									setForm((prev) => ({
-										...prev,
-										webhookSecret: event.target.value,
-									}))
-								}
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="sandbox-repositories">
-								Allowed repositories (optional)
-							</Label>
-							<Textarea
-								id="sandbox-repositories"
-								rows={3}
-								placeholder="owner/repo-a, owner/repo-b"
-								value={form.repositories}
-								onChange={(event) =>
-									setForm((prev) => ({
-										...prev,
-										repositories: event.target.value,
-									}))
-								}
-							/>
-							<p className="text-xs text-muted-foreground">
-								Leave blank to allow this installation to run against any
-								repository it can access.
-							</p>
-						</div>
-					</div>
-
-					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => setIsConnectionModalOpen(false)}
-						>
-							Cancel
-						</Button>
-						<Button
-							variant="primary"
-							icon={<ShieldCheck className="h-4 w-4" />}
-							onClick={handleSaveConnection}
-							isLoading={upsertConnectionMutation.isPending}
-						>
-							Save connection
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+			<SandboxAddGitHubConnection
+				isOpen={isConnectionModalOpen}
+				onClose={() => setIsConnectionModalOpen(false)}
+				form={form}
+				setForm={setForm}
+			/>
 		</>
 	);
 }

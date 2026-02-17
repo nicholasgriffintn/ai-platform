@@ -6,9 +6,7 @@ import {
 	augmentPrompt,
 } from "../helpers";
 import { providerLibrary } from "~/lib/providers/library";
-import { trackRagMetrics } from "~/lib/monitoring";
 import { getAuxiliaryModel } from "~/lib/providers/models";
-import * as chatCapability from "../../chat";
 
 const mockRepositoryManager = {} as any;
 

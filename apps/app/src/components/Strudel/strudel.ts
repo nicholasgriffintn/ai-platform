@@ -1,37 +1,23 @@
-import {
-	evalScope,
-	noteToMidi,
-	valueToMidi,
-	Pattern,
-	// @ts-expect-error - @strudel/core has no type definitions
-} from "@strudel/core";
+import { evalScope, noteToMidi, valueToMidi, Pattern } from "@strudel/core";
 import {
 	initAudioOnFirstClick,
 	registerSynthSounds,
 	samples,
 	aliasBank,
 	registerZZFXSounds,
-	// @ts-expect-error - @strudel/webstudio has no type definitions
 } from "@strudel/webaudio";
 
 async function prebake() {
 	initAudioOnFirstClick();
 
 	const modulesLoading = evalScope(
-		// @ts-expect-error - has no type definitions
 		import("@strudel/core"),
-		// @ts-expect-error - has no type definitions
 		import("@strudel/draw"),
-		// @ts-expect-error - has no type definitions
 		import("@strudel/mini"),
-		// @ts-expect-error - has no type definitions
 		import("@strudel/tonal"),
-		// @ts-expect-error - has no type definitions
 		import("@strudel/webaudio"),
 		import("@strudel/codemirror"),
-		// @ts-expect-error - has no type definitions
 		import("@strudel/hydra"),
-		// @ts-expect-error - has no type definitions
 		import("@strudel/midi"),
 	);
 

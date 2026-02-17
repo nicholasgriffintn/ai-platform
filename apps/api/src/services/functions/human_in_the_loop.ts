@@ -60,7 +60,7 @@ export const request_approval: IFunction = {
 			const normalizedOptions = options.replace(/'/g, '"');
 			try {
 				parsedOptions = JSON.parse(normalizedOptions);
-			} catch (error) {
+			} catch (_error) {
 				parsedOptions = options
 					.split(",")
 					.map((opt) => opt.trim())
@@ -79,7 +79,7 @@ export const request_approval: IFunction = {
 		if (typeof context === "string") {
 			try {
 				parsedContext = JSON.parse(context);
-			} catch (error) {
+			} catch (_error) {
 				throw new AssistantError(
 					"context must be valid JSON when provided as a string",
 					ErrorType.PARAMS_ERROR,
@@ -178,7 +178,7 @@ export const ask_user: IFunction = {
 			const normalizedSuggestions = suggestions.replace(/'/g, '"');
 			try {
 				parsedSuggestions = JSON.parse(normalizedSuggestions);
-			} catch (error) {
+			} catch (_error) {
 				parsedSuggestions = suggestions
 					.split(",")
 					.map((s) => s.trim())
@@ -194,7 +194,7 @@ export const ask_user: IFunction = {
 		if (typeof context === "string") {
 			try {
 				parsedContext = JSON.parse(context);
-			} catch (error) {
+			} catch (_error) {
 				throw new AssistantError(
 					"context must be valid JSON when provided as a string",
 					ErrorType.PARAMS_ERROR,

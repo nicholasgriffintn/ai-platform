@@ -228,7 +228,7 @@ function mapMediaTypeToFormat(
 	fallback: string,
 	mediaKind: MediaKind,
 ): string {
-	const [type, rawSubtype] = mediaType.split("/");
+	const [_type, rawSubtype] = mediaType.split("/");
 	const subtype = rawSubtype?.split("+")[0]?.toLowerCase();
 
 	if (!subtype) {
