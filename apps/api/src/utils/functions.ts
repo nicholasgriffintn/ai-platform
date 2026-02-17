@@ -35,7 +35,12 @@ export const getFunctionResponseType = (name: string): ResponseDisplayType => {
 	if (name.includes("extract")) return ResponseDisplayType.TEXT;
 	if (name.includes("speech")) return ResponseDisplayType.TEXT;
 	if (name.includes("prompt_coach")) return ResponseDisplayType.TEMPLATE;
-	if (name === "run_feature_implementation")
+	if (
+		name === "run_feature_implementation" ||
+		name === "run_code_review" ||
+		name === "run_test_suite" ||
+		name === "run_bug_fix"
+	)
 		return ResponseDisplayType.TEMPLATE;
 	if (name.includes("call_api")) return ResponseDisplayType.JSON;
 	if (name === "request_approval") return ResponseDisplayType.TEMPLATE;
@@ -173,7 +178,20 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         {{/if}}
       </div>
     `;
-	} else if (name === "run_feature_implementation") {
+	} else if (
+		name === "run_feature_implementation" ||
+		name === "run_code_review" ||
+		name === "run_test_suite" ||
+		name === "run_bug_fix"
+	) {
+		const sandboxHeading =
+			name === "run_code_review"
+				? "Sandbox Code Review"
+				: name === "run_test_suite"
+					? "Sandbox Test Suite"
+					: name === "run_bug_fix"
+						? "Sandbox Bug Fix"
+						: "Sandbox Implementation";
 		display.fields = [
 			{ key: "success", label: "Success" },
 			{ key: "summary", label: "Summary" },
@@ -184,7 +202,7 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
 		];
 		display.template = `
       <div class="sandbox-response prose dark:prose-invert">
-        <h2>Sandbox Implementation</h2>
+        <h2>${sandboxHeading}</h2>
         {{#if summary}}
           <p>{{summary}}</p>
         {{/if}}

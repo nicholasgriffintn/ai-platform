@@ -49,6 +49,17 @@ describe("feature prompt strategies", () => {
 		expect(selected.source).toBe("task-type");
 	});
 
+	it("uses refactor strategy defaults for migration tasks", () => {
+		const selected = resolvePromptStrategy({
+			requestedStrategy: "auto",
+			taskType: "migration",
+			task: "Upgrade package manager and lockfile layout",
+		});
+
+		expect(selected.strategy).toBe("refactor");
+		expect(selected.source).toBe("task-type");
+	});
+
 	it("injects strategy focus and examples into planning prompt", () => {
 		const strategy = resolvePromptStrategy({
 			requestedStrategy: "feature-delivery",

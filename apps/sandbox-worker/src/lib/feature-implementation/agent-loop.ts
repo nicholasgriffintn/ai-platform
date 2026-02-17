@@ -34,6 +34,7 @@ export async function executeAgentLoop(
 		repoDisplayName,
 		repoTargetDir,
 		task,
+		taskType,
 		promptStrategy,
 		initialPlan,
 		repoContext,
@@ -78,6 +79,8 @@ export async function executeAgentLoop(
 	let currentPlan = initialPlan;
 	let commandCount = 0;
 	let consecutiveCommandFailures = 0;
+	const readOnlyCommands =
+		taskType === "code-review" || taskType === "test-suite";
 
 	for (let step = 1; step <= MAX_AGENT_STEPS; step += 1) {
 		await guardExecution("Sandbox run cancelled during agent execution");
@@ -161,7 +164,9 @@ export async function executeAgentLoop(
 					);
 				}
 
-				assertSafeCommand(decision.command);
+				assertSafeCommand(decision.command, {
+					readOnly: readOnlyCommands,
+				});
 				commandCount += 1;
 				await emit({
 					type: "command_started",
@@ -228,7 +233,13 @@ export async function executeAgentLoop(
 			case "finish": {
 				const summary =
 					decision.summary.trim() ||
-					buildSummary(task, repoDisplayName, commandCount);
+					buildSummary(
+						task,
+						repoDisplayName,
+						commandCount,
+						undefined,
+						taskType,
+					);
 				await emit({
 					type: "agent_finished",
 					agentStep: step,

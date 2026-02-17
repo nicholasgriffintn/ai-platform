@@ -91,6 +91,9 @@ const SANDBOX_TASK_TYPE_LABELS: Record<SandboxTaskType, string> = {
 	"code-review": "Code review",
 	"test-suite": "Test suite",
 	"bug-fix": "Bug fix",
+	refactoring: "Refactoring",
+	documentation: "Documentation",
+	migration: "Migration",
 };
 
 const SANDBOX_TASK_TYPE_DESCRIPTIONS: Record<SandboxTaskType, string> = {
@@ -102,6 +105,12 @@ const SANDBOX_TASK_TYPE_DESCRIPTIONS: Record<SandboxTaskType, string> = {
 		"Run and analyse relevant test suites without modifying repository files.",
 	"bug-fix":
 		"Diagnose and fix a specific bug with targeted, maintainable changes.",
+	refactoring:
+		"Refactor existing code for maintainability while preserving behaviour.",
+	documentation:
+		"Create or update project documentation to reflect current implementation details.",
+	migration:
+		"Apply dependency or framework migrations with explicit validation and rollback awareness.",
 };
 
 function parseSandboxTaskType(
@@ -186,7 +195,7 @@ export function meta() {
 		{
 			name: "description",
 			content:
-				"Run implementation tasks against a connected GitHub repository and follow streamed sandbox progress.",
+				"Run sandbox tasks against a connected GitHub repository and follow streamed command progress.",
 		},
 	];
 }
@@ -701,8 +710,8 @@ export default function SandboxConnectionPage() {
 					<BackLink to="/apps/sandbox" label="Back to Sandbox Worker" />
 					<PageTitle title={`Installation ${installationId}`} />
 					<p className="text-sm text-muted-foreground">
-						Submit implementation tasks and stream command-level progress from
-						the sandbox worker.
+						Submit sandbox tasks and stream command-level progress from the
+						sandbox worker.
 					</p>
 				</PageHeader>
 			}

@@ -31,7 +31,12 @@ import { web_search } from "./web_search";
 import { research } from "./research";
 import { extract_text_from_document } from "./ocr";
 import { compose_functions, if_then_else, parallel_execute } from "./workflow";
-import { run_feature_implementation } from "./sandbox";
+import {
+	run_bug_fix,
+	run_code_review,
+	run_feature_implementation,
+	run_test_suite,
+} from "./sandbox";
 
 const logger = getLogger({ prefix: "services/functions" });
 
@@ -68,6 +73,9 @@ export const availableFunctions: IFunction[] = [
 	request_approval,
 	ask_user,
 	run_feature_implementation,
+	run_code_review,
+	run_test_suite,
+	run_bug_fix,
 ];
 
 export const handleFunctions = async ({

@@ -68,4 +68,52 @@ describe("resolveSandboxTaskProfile", () => {
 		expect(profile.readOnlyCommands).toBe(false);
 		expect(profile.task).toContain("Bug report:");
 	});
+
+	it("keeps refactoring tasks writable with refactor-specific instructions", () => {
+		const profile = resolveSandboxTaskProfile({
+			userId: 1,
+			repo: "owner/repo",
+			task: "Refactor duplicated auth validation code",
+			taskType: "refactoring",
+			shouldCommit: true,
+			polychatApiUrl: "https://api.polychat.app",
+		});
+
+		expect(profile.taskType).toBe("refactoring");
+		expect(profile.shouldCommit).toBe(true);
+		expect(profile.readOnlyCommands).toBe(false);
+		expect(profile.task).toContain("Refactoring scope:");
+	});
+
+	it("keeps documentation tasks writable with docs-specific instructions", () => {
+		const profile = resolveSandboxTaskProfile({
+			userId: 1,
+			repo: "owner/repo",
+			task: "Document sandbox webhook command behaviour",
+			taskType: "documentation",
+			shouldCommit: true,
+			polychatApiUrl: "https://api.polychat.app",
+		});
+
+		expect(profile.taskType).toBe("documentation");
+		expect(profile.shouldCommit).toBe(true);
+		expect(profile.readOnlyCommands).toBe(false);
+		expect(profile.task).toContain("Documentation request:");
+	});
+
+	it("keeps migration tasks writable with migration-specific instructions", () => {
+		const profile = resolveSandboxTaskProfile({
+			userId: 1,
+			repo: "owner/repo",
+			task: "Migrate sandbox stream parser to the new API format",
+			taskType: "migration",
+			shouldCommit: true,
+			polychatApiUrl: "https://api.polychat.app",
+		});
+
+		expect(profile.taskType).toBe("migration");
+		expect(profile.shouldCommit).toBe(true);
+		expect(profile.readOnlyCommands).toBe(false);
+		expect(profile.task).toContain("Migration scope:");
+	});
 });

@@ -182,13 +182,31 @@ export function buildSummary(
 		return `Completed code review for "${task}" in ${repo} with ${commandCount} commands.`;
 	}
 	if (taskType === "test-suite") {
-		return `Completed test-suite run for "${task}" in ${repo} with ${commandCount} commands.`;
+		return `Completed test suite run for "${task}" in ${repo} with ${commandCount} commands.`;
 	}
 	if (taskType === "bug-fix") {
 		if (branchName) {
 			return `Completed bug fix "${task}" in ${repo} with ${commandCount} commands on branch ${branchName}.`;
 		}
 		return `Completed bug fix "${task}" in ${repo} with ${commandCount} commands.`;
+	}
+	if (taskType === "refactoring") {
+		if (branchName) {
+			return `Completed refactoring "${task}" in ${repo} with ${commandCount} commands on branch ${branchName}.`;
+		}
+		return `Completed refactoring "${task}" in ${repo} with ${commandCount} commands.`;
+	}
+	if (taskType === "documentation") {
+		if (branchName) {
+			return `Completed documentation update "${task}" in ${repo} with ${commandCount} commands on branch ${branchName}.`;
+		}
+		return `Completed documentation update "${task}" in ${repo} with ${commandCount} commands.`;
+	}
+	if (taskType === "migration") {
+		if (branchName) {
+			return `Completed migration "${task}" in ${repo} with ${commandCount} commands on branch ${branchName}.`;
+		}
+		return `Completed migration "${task}" in ${repo} with ${commandCount} commands.`;
 	}
 
 	if (branchName) {

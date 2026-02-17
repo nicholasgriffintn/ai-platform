@@ -28,4 +28,17 @@ describe("buildSummary", () => {
 
 		expect(summary).toContain("Completed code review");
 	});
+
+	it("includes refactoring summary variants", () => {
+		const summary = buildSummary(
+			"Cleanup duplicated parsing",
+			"owner/repo",
+			4,
+			"sandbox/refactor-branch",
+			"refactoring",
+		);
+
+		expect(summary).toContain("Completed refactoring");
+		expect(summary).toContain("sandbox/refactor-branch");
+	});
 });

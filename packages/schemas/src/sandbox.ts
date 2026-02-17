@@ -12,6 +12,9 @@ export const SANDBOX_TASK_TYPES = [
 	"code-review",
 	"test-suite",
 	"bug-fix",
+	"refactoring",
+	"documentation",
+	"migration",
 ] as const;
 
 export const SANDBOX_TIMEOUT_MIN_SECONDS = 30;

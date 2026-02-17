@@ -87,6 +87,7 @@ export async function executeFeatureImplementation(
 		if (!task) {
 			throw new Error("Task is required");
 		}
+		const taskType = params.taskType || "feature-implementation";
 
 		const model = params.model || DEFAULT_MODEL;
 		const repo = resolveGitHubRepo(params.repo, secrets.githubToken);
@@ -148,7 +149,7 @@ export async function executeFeatureImplementation(
 
 		const promptStrategy = resolvePromptStrategy({
 			requestedStrategy: params.promptStrategy,
-			taskType: params.taskType || "feature-implementation",
+			taskType,
 			task,
 		});
 		await emit({
@@ -198,6 +199,7 @@ export async function executeFeatureImplementation(
 			repoDisplayName: repo.displayName,
 			repoTargetDir: repo.targetDir,
 			task,
+			taskType,
 			promptStrategy,
 			initialPlan: plan,
 			repoContext,
@@ -298,7 +300,7 @@ export async function executeFeatureImplementation(
 					repo.displayName,
 					loopResult.commandCount,
 					branchName,
-					params.taskType || "feature-implementation",
+					taskType,
 				),
 			qualityGateResult.summary,
 			storyTrackerResult.summary,

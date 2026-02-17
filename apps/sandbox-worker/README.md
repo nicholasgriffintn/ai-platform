@@ -155,16 +155,14 @@ This section outlines planned improvements to make the sandbox worker production
 
 ### Phase 6: Webhook Expansion
 
-**Current limitation:** Only handles `/implement` commands on PR comments.
+**Current status:** Handles `/implement`, `/review`, `/test`, and `/fix` commands from issue and PR comments.
 
 **Planned improvements:**
 
-- [ ] Support issue comments (not just PRs)
-- [ ] Add `/review` command for code review
-- [ ] Add `/test` command to run test suites
-- [ ] Add `/fix` command for automated bug fixes
-- [ ] Support triggering from GitHub Actions workflows
-- [ ] Handle push events for automated actions
+- [x] Support issue comments (not just PRs)
+- [x] Add `/review` command for code review
+- [x] Add `/test` command to run test suites
+- [x] Add `/fix` command for automated bug fixes
 
 ### Phase 7: Storage and Observability
 
@@ -175,42 +173,18 @@ This section outlines planned improvements to make the sandbox worker production
 - [ ] Store full execution logs in R2 with presigned URLs
 - [ ] Implement log retention policies (configurable per user/org)
 - [ ] Add user controls for log storage (auto-delete, archive)
-- [ ] Integrate with external logging (Datadog, etc.)
 - [ ] Add execution metrics and dashboards
 - [ ] Support log streaming to external systems
 
 ### Phase 8: Expanded Task Types
 
-**Current limitation:** Only supports feature implementation.
+**Current status:** Supports feature implementation, code review, test suite, bug fix, refactoring, documentation, and migration task modes.
 
 **Planned improvements:**
 
-- [ ] **Code Review** - Automated PR reviews with actionable feedback
-- [ ] **Bug Fix** - Diagnose and fix issues from error reports
-- [ ] **Refactoring** - Apply consistent code improvements
-- [ ] **Documentation** - Generate/update docs from code
-- [ ] **Testing** - Generate test cases for existing code
-- [ ] **Migration** - Automated dependency/framework upgrades
-
-### Phase 9: Alternative AI Backends
-
-**Current limitation:** Uses internal PolychatClient only.
-
-**Planned improvements:**
-
-- [ ] Support for Claude Code as execution backend
-- [ ] Support for OpenAI Codex
-- [ ] Support for other agentic coding tools
-- [ ] User-configurable model selection per task type
-- [ ] Fallback chain when primary model unavailable
-
-### Phase 10: Enterprise Features
-
-**Planned additions:**
-
-- [ ] Organisation-level configuration and policies
-- [ ] Audit logging for compliance
-- [ ] Custom sandbox environments (specific runtimes, tools)
-- [ ] Private repository support with fine-grained permissions
-- [ ] Cost tracking and budgets per team/project
-- [ ] SSO integration for GitHub Enterprise
+- [x] **Code Review** - Automated PR reviews with actionable feedback
+- [x] **Bug Fix** - Diagnose and fix issues from error reports
+- [x] **Refactoring** - Apply consistent code improvements
+- [x] **Documentation** - Generate/update docs from code
+- [x] **Testing** - Generate test cases for existing code
+- [x] **Migration** - Automated dependency/framework upgrades

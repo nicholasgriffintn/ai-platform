@@ -148,6 +148,24 @@ export const FUNCTION_APP_METADATA: Record<string, DynamicAppMetadata> = {
 		theme: "slate",
 		tags: ["sandbox", "github", "automation"],
 	},
+	run_code_review: {
+		category: "Code Assistance",
+		icon: "search-check",
+		theme: "slate",
+		tags: ["sandbox", "github", "review"],
+	},
+	run_test_suite: {
+		category: "Code Assistance",
+		icon: "flask-conical",
+		theme: "slate",
+		tags: ["sandbox", "github", "tests"],
+	},
+	run_bug_fix: {
+		category: "Code Assistance",
+		icon: "bug",
+		theme: "slate",
+		tags: ["sandbox", "github", "bug-fix"],
+	},
 	prompt_coach: {
 		category: "Productivity & Coaching",
 		icon: "sparkles",

@@ -212,6 +212,9 @@ const TASK_TYPE_DEFAULT_STRATEGY: Record<
 	"code-review": "test-hardening",
 	"test-suite": "test-hardening",
 	"bug-fix": "bug-fix",
+	refactoring: "refactor",
+	documentation: "feature-delivery",
+	migration: "refactor",
 };
 
 const TASK_KEYWORD_STRATEGY_RULES: Array<{

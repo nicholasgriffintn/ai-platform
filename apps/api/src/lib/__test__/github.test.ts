@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
 	defaultShouldCommitForSandboxCommand,
+	defaultTaskForSandboxCommand,
 	extractSandboxCommand,
 	extractSandboxPushCommand,
 	formatResultComment,
+	getSandboxDynamicAppId,
 	parseIssueNumberFromAutomationPayload,
 	parseSandboxAutomationCommand,
 	parseSandboxShouldCommit,
@@ -79,5 +81,20 @@ describe("github sandbox command helpers", () => {
 		expect(defaultShouldCommitForSandboxCommand("fix")).toBe(true);
 		expect(defaultShouldCommitForSandboxCommand("review")).toBe(false);
 		expect(defaultShouldCommitForSandboxCommand("test")).toBe(false);
+	});
+
+	it("maps commands to sandbox app ids", () => {
+		expect(getSandboxDynamicAppId("implement")).toBe(
+			"run_feature_implementation",
+		);
+		expect(getSandboxDynamicAppId("review")).toBe("run_code_review");
+		expect(getSandboxDynamicAppId("test")).toBe("run_test_suite");
+		expect(getSandboxDynamicAppId("fix")).toBe("run_bug_fix");
+	});
+
+	it("returns fallback tasks for empty slash commands", () => {
+		expect(defaultTaskForSandboxCommand("review")).toContain("Review");
+		expect(defaultTaskForSandboxCommand("test")).toContain("test suites");
+		expect(defaultTaskForSandboxCommand("fix")).toContain("Diagnose and fix");
 	});
 });

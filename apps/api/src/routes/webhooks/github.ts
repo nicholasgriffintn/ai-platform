@@ -1,22 +1,18 @@
 import { Hono } from "hono";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
-import { executeDynamicApp } from "~/services/dynamic-apps";
 import {
 	getGitHubAppConnectionForInstallation,
 	getGitHubAppConnectionForUserInstallation,
 } from "~/services/github/connections";
 import type { GitHubAppConnection } from "~/services/github/connection-parser";
-import type { IRequest, IEnv, IUser } from "~/types";
-import { generateId } from "~/utils/id";
+import type { IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
+import { validateSignature, extractSandboxCommand } from "~/lib/github";
 import {
-	validateSignature,
-	postCommentToPR,
-	formatResultComment,
-	extractImplementTask,
-	getGitHubAppInstallationToken,
-} from "~/lib/github";
+	executeWebhookSandboxCommand,
+	postWebhookSandboxResultComment,
+} from "./github-task-execution";
 
 const github = new Hono<{ Bindings: IEnv }>();
 const logger = getLogger({ prefix: "routes/webhooks/github" });
@@ -35,7 +31,6 @@ interface GithubIssueCommentEvent {
 	};
 	issue?: {
 		number?: number;
-		pull_request?: unknown;
 	};
 	repository?: {
 		full_name?: string;
@@ -82,44 +77,20 @@ github.post("/", async (c) => {
 		return c.json({ success: true });
 	}
 
-	if (
-		event.action !== "created" ||
-		!event.issue?.pull_request ||
-		!event.comment?.body
-	) {
+	if (event.action !== "created" || !event.comment?.body) {
 		return c.json({ success: true });
 	}
 
-	const task = extractImplementTask(event.comment.body);
-	if (!task) {
+	const parsedCommand = extractSandboxCommand(event.comment.body);
+	if (!parsedCommand) {
 		return c.json({ success: true });
 	}
 
 	const repo = event.repository?.full_name;
-	const prNumber = event.issue.number;
+	const issueNumber = event.issue?.number;
 	const commenterId = event.comment.user?.id;
-	if (!repo || !prNumber || !commenterId) {
+	if (!repo || !issueNumber || !commenterId) {
 		return c.json({ error: "Missing repository context" }, 400);
-	}
-
-	let githubInstallationToken: string;
-	try {
-		githubInstallationToken = await getGitHubAppInstallationToken({
-			appId: githubConnection.appId,
-			privateKey: githubConnection.privateKey,
-			installationId: githubConnection.installationId,
-		});
-	} catch (error) {
-		logger.error("Failed to resolve GitHub App installation token", {
-			repo,
-			pr: prNumber,
-			installation_id: installationId,
-			error_message: error instanceof Error ? error.message : String(error),
-		});
-		return c.json(
-			{ error: "GitHub App connection is not configured for this repository" },
-			503,
-		);
 	}
 
 	const linkedUser = await serviceContext.repositories.users.getUserByGithubId(
@@ -127,20 +98,22 @@ github.post("/", async (c) => {
 	);
 
 	if (!linkedUser) {
-		logger.warn("Ignoring /implement command from unlinked GitHub user", {
+		logger.warn("Ignoring sandbox command from unlinked GitHub user", {
+			command: parsedCommand.command,
 			github_user_id: commenterId,
 			repo,
-			pr: prNumber,
+			issue: issueNumber,
 		});
 		return c.json({ success: true });
 	}
 
 	const linkedUserId = Number((linkedUser as { id?: unknown }).id);
 	if (!Number.isFinite(linkedUserId) || linkedUserId <= 0) {
-		logger.warn("Ignoring /implement command for invalid linked user id", {
+		logger.warn("Ignoring sandbox command for invalid linked user id", {
+			command: parsedCommand.command,
 			github_user_id: commenterId,
 			repo,
-			pr: prNumber,
+			issue: issueNumber,
 		});
 		return c.json({ success: true });
 	}
@@ -153,102 +126,49 @@ github.post("/", async (c) => {
 		);
 	} catch {
 		logger.warn(
-			"Ignoring /implement command for installation not linked to user",
+			"Ignoring sandbox command for installation not linked to user",
 			{
+				command: parsedCommand.command,
 				user_id: linkedUserId,
 				installation_id: installationId,
 				repo,
-				pr: prNumber,
+				issue: issueNumber,
 			},
 		);
 		return c.json({ success: true });
 	}
-
-	const req: IRequest = {
-		app_url: c.env.APP_BASE_URL || "https://polychat.app",
+	const result = await executeWebhookSandboxCommand({
+		command: parsedCommand.command,
+		repo,
+		task: parsedCommand.task,
+		installationId,
 		env: c.env,
-		user: linkedUser as unknown as IUser,
 		context: serviceContext,
-		request: {
-			completion_id: generateId(),
-			input: "dynamic-app-execution",
-			date: new Date().toISOString(),
-			platform: "dynamic-apps",
-		},
-	};
-
-	let execution: Record<string, any>;
-	try {
-		execution = await executeDynamicApp(
-			"run_feature_implementation",
-			{
-				repo,
-				task,
-				installationId,
-			},
-			req,
-		);
-	} catch (error) {
-		const errorMessage =
-			error instanceof Error
-				? error.message
-				: "Unknown sandbox execution error";
-		logger.error("Failed to execute sandbox task from GitHub webhook", {
-			repo,
-			pr: prNumber,
-			error_message: errorMessage,
-		});
-
-		try {
-			await postCommentToPR(
-				repo,
-				prNumber,
-				formatResultComment({
-					success: false,
-					error: errorMessage,
-				}),
-				githubInstallationToken,
-			);
-		} catch (commentError) {
-			logger.error("Failed to post GitHub PR failure comment", {
-				repo,
-				pr: prNumber,
-				error_message:
-					commentError instanceof Error
-						? commentError.message
-						: String(commentError),
-			});
-		}
-
-		return c.json({ success: true });
-	}
-
-	const result = (execution.data?.result ?? {}) as {
-		success?: boolean;
-		summary?: string;
-		diff?: string;
-		error?: string;
-	};
-
-	const body = formatResultComment({
-		success: Boolean(result.success),
-		summary: result.summary,
-		diff: result.diff,
-		error: result.error,
-		responseId: execution.response_id,
+		user: linkedUser as unknown as IUser,
 	});
 
 	try {
-		await postCommentToPR(repo, prNumber, body, githubInstallationToken);
-	} catch (error) {
-		logger.error("Failed to post GitHub PR comment", {
+		await postWebhookSandboxResultComment({
+			command: parsedCommand.command,
 			repo,
-			pr: prNumber,
+			issueNumber,
+			result,
+			connection: {
+				appId: githubConnection.appId,
+				privateKey: githubConnection.privateKey,
+				installationId: githubConnection.installationId,
+			},
+		});
+	} catch (error) {
+		logger.error("Failed to post GitHub issue comment", {
+			command: parsedCommand.command,
+			repo,
+			issue: issueNumber,
 			error_message: error instanceof Error ? error.message : String(error),
 		});
 	}
 
-	return c.json({ success: true, response_id: execution.response_id });
+	return c.json({ success: true, response_id: result.responseId });
 });
 
 export default github;

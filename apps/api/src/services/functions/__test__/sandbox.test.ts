@@ -4,7 +4,12 @@ import { generateJwtToken } from "~/services/auth/jwt";
 import { getGitHubAppInstallationToken } from "~/lib/github";
 import { getGitHubAppConnectionForUserRepo } from "~/services/github/connections";
 import type { IRequest } from "~/types";
-import { run_feature_implementation } from "../sandbox";
+import {
+	run_bug_fix,
+	run_code_review,
+	run_feature_implementation,
+	run_test_suite,
+} from "../sandbox";
 
 vi.mock("~/services/auth/jwt", () => ({
 	generateJwtToken: vi.fn(),
@@ -215,5 +220,86 @@ describe("run_feature_implementation", () => {
 				request,
 			),
 		).rejects.toThrow("No GitHub App installation found for owner/repo");
+	});
+
+	it("maps code-review function calls to code-review task type and no commit", async () => {
+		getUserSettings.mockResolvedValue({ sandbox_model: "mistral-large" });
+		sandboxFetch.mockResolvedValue({
+			ok: true,
+			status: 200,
+			json: vi.fn().mockResolvedValue({
+				success: true,
+			}),
+		});
+
+		await run_code_review.function(
+			"completion-id",
+			{
+				repo: "owner/repo",
+				task: "Review auth middleware",
+				shouldCommit: true,
+			},
+			request,
+		);
+
+		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
+		const workerBody = JSON.parse(await workerRequest.text());
+
+		expect(workerBody.taskType).toBe("code-review");
+		expect(workerBody.shouldCommit).toBe(false);
+	});
+
+	it("maps test-suite function calls to test-suite task type and no commit", async () => {
+		getUserSettings.mockResolvedValue({ sandbox_model: "mistral-large" });
+		sandboxFetch.mockResolvedValue({
+			ok: true,
+			status: 200,
+			json: vi.fn().mockResolvedValue({
+				success: true,
+			}),
+		});
+
+		await run_test_suite.function(
+			"completion-id",
+			{
+				repo: "owner/repo",
+				task: "Run API tests",
+				shouldCommit: true,
+			},
+			request,
+		);
+
+		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
+		const workerBody = JSON.parse(await workerRequest.text());
+
+		expect(workerBody.taskType).toBe("test-suite");
+		expect(workerBody.shouldCommit).toBe(false);
+	});
+
+	it("maps bug-fix function calls to bug-fix task type", async () => {
+		getUserSettings.mockResolvedValue({ sandbox_model: "mistral-large" });
+		sandboxFetch.mockResolvedValue({
+			ok: true,
+			status: 200,
+			json: vi.fn().mockResolvedValue({
+				success: true,
+			}),
+		});
+
+		await run_bug_fix.function(
+			"completion-id",
+			{
+				repo: "owner/repo",
+				task: "Fix timeout handling",
+				shouldCommit: true,
+			},
+			request,
+		);
+
+		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
+		const workerBody = JSON.parse(await workerRequest.text());
+
+		expect(workerBody.taskType).toBe("bug-fix");
+		expect(workerBody.shouldCommit).toBe(true);
 	});
 });

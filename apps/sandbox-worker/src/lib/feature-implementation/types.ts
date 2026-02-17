@@ -1,4 +1,5 @@
 import { getSandbox } from "@cloudflare/sandbox";
+import type { SandboxTaskType } from "@assistant/schemas";
 
 import type { PolychatClient } from "../polychat-client";
 import type { TaskEvent } from "../../types";
@@ -89,6 +90,7 @@ export interface ExecuteAgentLoopParams {
 	repoDisplayName: string;
 	repoTargetDir: string;
 	task: string;
+	taskType: SandboxTaskType;
 	promptStrategy: PromptStrategySelection;
 	initialPlan: string;
 	repoContext: RepositoryContext;

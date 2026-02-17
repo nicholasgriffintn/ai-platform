@@ -35,6 +35,33 @@ function buildBugFixTask(task: string): string {
 	].join("\n");
 }
 
+function buildRefactoringTask(task: string): string {
+	return [
+		"Refactor the repository area described below.",
+		"Preserve existing behaviour while improving readability, structure, or maintainability.",
+		"Update or add tests if behavioural risk is introduced.",
+		`Refactoring scope: ${task}`,
+	].join("\n");
+}
+
+function buildDocumentationTask(task: string): string {
+	return [
+		"Create or update documentation for the requested scope.",
+		"Keep documentation aligned with current behaviour and repository conventions.",
+		"Prefer concise, practical documentation with examples where useful.",
+		`Documentation request: ${task}`,
+	].join("\n");
+}
+
+function buildMigrationTask(task: string): string {
+	return [
+		"Perform the requested migration safely.",
+		"Prefer incremental, reversible changes with clear validation steps.",
+		"Update tests and related docs to reflect the migrated behaviour.",
+		`Migration scope: ${task}`,
+	].join("\n");
+}
+
 export function resolveSandboxTaskProfile(
 	params: TaskParams,
 ): ResolvedSandboxTaskProfile {
@@ -64,6 +91,27 @@ export function resolveSandboxTaskProfile(
 			return {
 				taskType,
 				task: buildBugFixTask(trimmedTask),
+				shouldCommit: Boolean(params.shouldCommit),
+				readOnlyCommands: false,
+			};
+		case "refactoring":
+			return {
+				taskType,
+				task: buildRefactoringTask(trimmedTask),
+				shouldCommit: Boolean(params.shouldCommit),
+				readOnlyCommands: false,
+			};
+		case "documentation":
+			return {
+				taskType,
+				task: buildDocumentationTask(trimmedTask),
+				shouldCommit: Boolean(params.shouldCommit),
+				readOnlyCommands: false,
+			};
+		case "migration":
+			return {
+				taskType,
+				task: buildMigrationTask(trimmedTask),
 				shouldCommit: Boolean(params.shouldCommit),
 				readOnlyCommands: false,
 			};
