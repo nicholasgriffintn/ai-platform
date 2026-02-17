@@ -73,3 +73,42 @@ export function extractRelativePath(
 
 	return absolutePath;
 }
+
+export function isObjectRecord(
+	value: unknown,
+): value is Record<string, unknown> {
+	return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+export function parsePriority(value: unknown): number | undefined {
+	if (typeof value === "number" && Number.isFinite(value)) {
+		return value;
+	}
+	if (typeof value === "string") {
+		const parsed = Number.parseFloat(value);
+		if (Number.isFinite(parsed)) {
+			return parsed;
+		}
+	}
+
+	return undefined;
+}
+
+export function toPrioritySortValue(priority?: number): number {
+	if (typeof priority === "number" && Number.isFinite(priority)) {
+		return priority;
+	}
+
+	return Number.MAX_SAFE_INTEGER;
+}
+
+export function escapeRegExp(value: string): string {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function formatStoryLabel(story: {
+	id?: string;
+	title: string;
+}): string {
+	return story.id ? `${story.id} ${story.title}` : story.title;
+}

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
 	isImplementInstructionPath,
 	isPrdInstructionPath,
+	parseRalphPrdContext,
 	summariseRalphPrdJson,
 } from "../feature-implementation/context";
 
@@ -54,5 +55,25 @@ describe("feature-implementation context helpers", () => {
 
 	it("returns null for invalid PRD JSON", () => {
 		expect(summariseRalphPrdJson("not-json")).toBeNull();
+	});
+
+	it("preserves original story indexes from prd.json", () => {
+		const context = parseRalphPrdContext(
+			"prd.json",
+			JSON.stringify({
+				userStories: [
+					null,
+					{
+						id: "US-002",
+						title: "Second story",
+						description: "Second",
+						passes: false,
+					},
+				],
+			}),
+		);
+
+		expect(context).not.toBeNull();
+		expect(context?.userStories[0]?.index).toBe(1);
 	});
 });

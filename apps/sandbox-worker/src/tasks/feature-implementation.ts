@@ -18,6 +18,11 @@ import {
 import { collectRepositoryContext } from "../lib/feature-implementation/context";
 import { executeAgentLoop } from "../lib/feature-implementation/agent-loop";
 import { buildPlanningPrompt } from "../lib/feature-implementation/prompts";
+import {
+	deriveQualityGateCommands,
+	runQualityGate,
+} from "../lib/feature-implementation/quality-gate";
+import { runStoryTracker } from "../lib/feature-implementation/story-tracker";
 import { truncateForModel } from "../lib/feature-implementation/utils";
 import { PolychatClient } from "../lib/polychat-client";
 import type {
@@ -166,6 +171,33 @@ export async function executeFeatureImplementation(
 			emit,
 		});
 
+		const qualityGateCommands = deriveQualityGateCommands({
+			plans: [loopResult.finalPlan, plan],
+		});
+		await emit({
+			type: "quality_gate_commands_selected",
+			commandTotal: qualityGateCommands.length,
+			commands: qualityGateCommands,
+		});
+		const qualityGateResult = await runQualityGate({
+			sandbox,
+			repoTargetDir: repo.targetDir,
+			commands: qualityGateCommands,
+			executionLogs,
+			emit,
+		});
+
+		const storyTrackerResult = await runStoryTracker({
+			sandbox,
+			repoTargetDir: repo.targetDir,
+			prdContext: repoContext.prdContext,
+			task,
+			plan: loopResult.finalPlan,
+			qualityGatePassed: qualityGateResult.passed,
+			qualityGateSummary: qualityGateResult.summary,
+			emit,
+		});
+
 		const diffResult = await sandbox.exec(
 			`git -C ${quoteForShell(repo.targetDir)} diff --patch`,
 		);
@@ -178,7 +210,7 @@ export async function executeFeatureImplementation(
 			hasChanges: diff.trim().length > 0,
 		});
 
-		if (params.shouldCommit) {
+		if (params.shouldCommit && qualityGateResult.passed) {
 			await execOrThrow(
 				sandbox,
 				`git -C ${quoteForShell(repo.targetDir)} config user.name ${quoteForShell("Polychat Bot")}`,
@@ -209,11 +241,29 @@ export async function executeFeatureImplementation(
 					branchName,
 				});
 			}
+		} else if (params.shouldCommit && !qualityGateResult.passed) {
+			await emit({
+				type: "commit_skipped",
+				message: "Skipped commit because quality gate failed",
+			});
 		}
 
-		const summary =
+		const summary = [
 			loopResult.summary ||
-			buildSummary(task, repo.displayName, loopResult.commandCount, branchName);
+				buildSummary(
+					task,
+					repo.displayName,
+					loopResult.commandCount,
+					branchName,
+				),
+			qualityGateResult.summary,
+			storyTrackerResult.summary,
+			params.shouldCommit && !qualityGateResult.passed
+				? "Commit skipped due to failing quality gate."
+				: "",
+		]
+			.filter(Boolean)
+			.join(" ");
 
 		return {
 			success: true,

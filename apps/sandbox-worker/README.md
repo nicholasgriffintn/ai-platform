@@ -1,6 +1,6 @@
 # Sandbox Worker
 
-An automated coding tool that uses Cloudflare Sandboxes within a Worker environment to allow AI models to complete tasks against GitHub repositories. The worker clones a repo, generates an implementation plan, runs an iterative agent loop inside the sandbox, and can commit changes back to GitHub.
+An automated coding tool that uses Cloudflare Sandboxes within a Worker environment to allow AI models to complete tasks against GitHub repositories. The worker clones a repo, generates an implementation plan, runs an iterative agent loop inside the sandbox, runs a quality gate, tracks PRD story progress, and can commit changes back to GitHub.
 
 > [!NOTE]
 > This is an initial implementation to explore Cloudflare Sandbox capabilities. It demonstrates the core workflow but isn't feature-complete yet.
@@ -20,10 +20,12 @@ The current implementation focuses on just one task, feature implementation, but
 Here's the current workflow:
 
 1. **GitHub Integration** - Users install a GitHub App, then trigger tasks via `/implement {task}` PR comments, the main API handles the authentication and sends a request to this worker via the service binding. It will also receive webhook events from GitHub.
-2. **Repository Context + AI Planning** - The worker inspects repository structure, loads key files (including PRD files such as `prd.json` or `tasks/prd-*.md`), and asks the model to create an implementation plan.
+2. **Repository Context + AI Planning** - The worker inspects repository structure, loads key files (including PRD files such as `prd.json` or `tasks/prd-*.md`), and asks the model to create an implementation plan with explicit validation commands.
 3. **Agentic Isolated Execution** - An iterative loop runs in a Cloudflare Container sandbox. The agent can run a command, read files for more context, refine its plan, and finish only when done or blocked.
-4. **Git Operations** - Changes can be committed to a feature branch for PR review using the Sandbox SDK
-5. **Real-time Progress** - SSE events stream execution progress to the UI
+4. **Quality Gate** - After implementation, the worker derives validation commands from the plan and runs them as a post-implementation gate.
+5. **Story Tracking** - For `prd.json` workflows, the worker selects the implemented story, updates `passes` based on quality-gate results, and appends a run entry to `progress.txt`.
+6. **Git Operations** - Changes can be committed to a feature branch for PR review using the Sandbox SDK. Commits are skipped when the quality gate fails.
+7. **Real-time Progress** - SSE events stream execution progress to the UI
 
 ## Configuration
 
@@ -99,6 +101,8 @@ This section outlines planned improvements to make the sandbox worker production
   - Request additional context when needed
 - [x] Support iterative refinement of implementation plan
 - [x] Add ability to read file contents mid-execution for context
+- [x] Add a post-implementation quality gate that runs validation commands from the plan
+- [x] Gate commits on quality-gate outcomes
 
 ### Phase 2: Enhanced Prompting
 
@@ -109,6 +113,7 @@ This section outlines planned improvements to make the sandbox worker production
 - [x] Analyse repository structure before planning (package.json, config files)
 - [x] Include relevant code snippets in context
 - [x] Support for PRD-style task files (`prd.json`, `tasks/prd-*.md`) for repo-specific instructions (with `.implement` fallback)
+- [x] Track PRD story progress by updating `prd.json` `passes` and logging to `progress.txt`
 - [ ] Add examples of good implementations for the model to follow
 - [ ] Support different prompt strategies per task type
 

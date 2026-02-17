@@ -10,13 +10,19 @@ import {
 import type {
 	FileContextSnippet,
 	ReadFileResult,
+	RalphPrdContext,
+	RalphPrdUserStory,
 	RepositoryContext,
 	SandboxInstance,
 } from "./types";
 import {
 	extractRelativePath,
+	formatStoryLabel,
+	isObjectRecord,
 	normaliseRepoRelativePath,
+	parsePriority,
 	parsePositiveInteger,
+	toPrioritySortValue,
 	truncateForModel,
 } from "./utils";
 
@@ -29,18 +35,6 @@ const PRD_FILE_PATH_PATTERNS: RegExp[] = [
 ];
 
 const IMPLEMENT_FILE_PATH_PATTERNS: RegExp[] = [/^\.implement(?:\.md)?$/i];
-
-interface RalphPrdUserStory {
-	id?: unknown;
-	title?: unknown;
-	description?: unknown;
-	priority?: unknown;
-	passes?: unknown;
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-	return Boolean(value) && typeof value === "object" && !Array.isArray(value);
-}
 
 function discoverRepoFiles(params: {
 	sandbox: SandboxInstance;
@@ -86,24 +80,57 @@ export function isImplementInstructionPath(path: string): boolean {
 	);
 }
 
-function toPriorityValue(value: unknown): number {
-	if (typeof value === "number" && Number.isFinite(value)) {
-		return value;
-	}
-	if (typeof value === "string") {
-		const parsed = Number.parseFloat(value);
-		if (Number.isFinite(parsed)) {
-			return parsed;
-		}
-	}
-
-	return Number.MAX_SAFE_INTEGER;
+interface RawRalphPrdUserStory {
+	id?: unknown;
+	title?: unknown;
+	description?: unknown;
+	priority?: unknown;
+	passes?: unknown;
+	acceptanceCriteria?: unknown;
 }
 
-export function summariseRalphPrdJson(rawJson: string): string | null {
+function normaliseRalphPrdUserStory(
+	rawStory: RawRalphPrdUserStory,
+	index: number,
+): RalphPrdUserStory {
+	const id =
+		typeof rawStory.id === "string" && rawStory.id.trim()
+			? rawStory.id.trim()
+			: undefined;
+	const title =
+		typeof rawStory.title === "string" && rawStory.title.trim()
+			? rawStory.title.trim()
+			: "Untitled story";
+	const description =
+		typeof rawStory.description === "string" && rawStory.description.trim()
+			? rawStory.description.trim()
+			: "No description";
+	const priority = parsePriority(rawStory.priority);
+	const acceptanceCriteria = Array.isArray(rawStory.acceptanceCriteria)
+		? rawStory.acceptanceCriteria
+				.filter((item): item is string => typeof item === "string")
+				.map((item) => item.trim())
+				.filter(Boolean)
+		: [];
+
+	return {
+		index,
+		id,
+		title,
+		description,
+		priority,
+		passes: rawStory.passes === true,
+		acceptanceCriteria,
+	};
+}
+
+export function parseRalphPrdContext(
+	path: string,
+	rawJson: string,
+): RalphPrdContext | null {
 	let parsed: unknown;
 	try {
-		parsed = JSON.parse(rawJson);
+		parsed = JSON.parse(rawJson) as Record<string, unknown>;
 	} catch {
 		return null;
 	}
@@ -115,7 +142,7 @@ export function summariseRalphPrdJson(rawJson: string): string | null {
 	const project =
 		typeof parsed.project === "string" && parsed.project.trim()
 			? parsed.project.trim()
-			: "Unnamed project";
+			: undefined;
 	const description =
 		typeof parsed.description === "string" && parsed.description.trim()
 			? parsed.description.trim()
@@ -124,9 +151,27 @@ export function summariseRalphPrdJson(rawJson: string): string | null {
 	const userStoriesRaw = Array.isArray(parsed.userStories)
 		? parsed.userStories
 		: [];
-	const userStories = userStoriesRaw.filter(
-		(story): story is RalphPrdUserStory => isObjectRecord(story),
-	);
+
+	const userStories = userStoriesRaw.flatMap((story, index) => {
+		if (!isObjectRecord(story)) {
+			return [];
+		}
+
+		return [normaliseRalphPrdUserStory(story, index)];
+	});
+
+	return {
+		path,
+		project,
+		description,
+		userStories,
+	};
+}
+
+export function summariseRalphPrdContext(prdContext: RalphPrdContext): string {
+	const project = prdContext.project || "Unnamed project";
+	const description = prdContext.description;
+	const { userStories } = prdContext;
 
 	if (userStories.length === 0) {
 		return [
@@ -141,30 +186,21 @@ export function summariseRalphPrdJson(rawJson: string): string | null {
 
 	const pendingStories = userStories
 		.filter((story) => story.passes !== true)
-		.sort((a, b) => toPriorityValue(a.priority) - toPriorityValue(b.priority));
+		.sort(
+			(a, b) =>
+				toPrioritySortValue(a.priority) - toPrioritySortValue(b.priority),
+		);
 	const selectedStories = (pendingStories.length ? pendingStories : userStories)
 		.slice(0, 8)
 		.map((story) => {
-			const id =
-				typeof story.id === "string" && story.id.trim()
-					? story.id.trim()
-					: null;
-			const title =
-				typeof story.title === "string" && story.title.trim()
-					? story.title.trim()
-					: "Untitled story";
-			const summary =
-				typeof story.description === "string" && story.description.trim()
-					? story.description.trim()
-					: "No description";
-			const priorityValue = toPriorityValue(story.priority);
-			const priorityText = Number.isFinite(priorityValue)
-				? `priority ${priorityValue}`
-				: "no priority";
+			const priorityText =
+				typeof story.priority === "number" && Number.isFinite(story.priority)
+					? `priority ${story.priority}`
+					: "no priority";
 			const statusText = story.passes === true ? "passes=true" : "passes=false";
 
-			const storyLabel = id ? `${id} ${title}` : title;
-			return `- ${storyLabel} (${priorityText}, ${statusText}): ${summary}`;
+			const storyLabel = formatStoryLabel(story);
+			return `- ${storyLabel} (${priorityText}, ${statusText}): ${story.description}`;
 		});
 
 	return [
@@ -180,11 +216,21 @@ export function summariseRalphPrdJson(rawJson: string): string | null {
 		.join("\n");
 }
 
+export function summariseRalphPrdJson(rawJson: string): string | null {
+	const parsed = parseRalphPrdContext("prd.json", rawJson);
+	if (!parsed) {
+		return null;
+	}
+
+	return summariseRalphPrdContext(parsed);
+}
+
 function normaliseTaskInstructionSnippet(
 	entry: FileContextSnippet,
+	prdContext?: RalphPrdContext,
 ): FileContextSnippet {
-	if (entry.path.toLowerCase().endsWith("prd.json")) {
-		const prdSummary = summariseRalphPrdJson(entry.snippet);
+	if (entry.path.toLowerCase().endsWith("prd.json") && prdContext) {
+		const prdSummary = summariseRalphPrdContext(prdContext);
 		if (prdSummary) {
 			return {
 				path: entry.path,
@@ -197,6 +243,33 @@ function normaliseTaskInstructionSnippet(
 		path: entry.path,
 		snippet: truncateForModel(entry.snippet, MAX_SNIPPET_CHARS),
 	};
+}
+
+async function loadRalphPrdContextForPath(params: {
+	sandbox: SandboxInstance;
+	repoTargetDir: string;
+	path: string;
+	snippet: string;
+}): Promise<RalphPrdContext | undefined> {
+	const { sandbox, repoTargetDir, path, snippet } = params;
+	if (!path.toLowerCase().endsWith("prd.json")) {
+		return undefined;
+	}
+
+	const absolutePath = `${repoTargetDir}/${path}`;
+	const fullFileResult = await sandbox.readFile(absolutePath);
+	if (
+		fullFileResult.success &&
+		typeof fullFileResult.content === "string" &&
+		fullFileResult.content.trim()
+	) {
+		const parsed = parseRalphPrdContext(path, fullFileResult.content);
+		if (parsed) {
+			return parsed;
+		}
+	}
+
+	return parseRalphPrdContext(path, snippet) ?? undefined;
 }
 
 export async function readRepositoryFileSnippet(params: {
@@ -288,6 +361,7 @@ export async function collectRepositoryContext(params: {
 	const files: FileContextSnippet[] = [];
 	const prdInstructions: FileContextSnippet[] = [];
 	const implementInstructions: FileContextSnippet[] = [];
+	let prdContext: RalphPrdContext | undefined;
 
 	for (const candidatePath of contextPaths) {
 		const snippetResult = await readRepositoryFileSnippet({
@@ -319,12 +393,24 @@ export async function collectRepositoryContext(params: {
 			continue;
 		}
 
-		const contextEntry = normaliseTaskInstructionSnippet({
+		const parsedPrdContext = await loadRalphPrdContextForPath({
+			sandbox,
+			repoTargetDir,
 			path: snippetResult.path,
 			snippet: snippetResult.content,
 		});
+		const contextEntry = normaliseTaskInstructionSnippet(
+			{
+				path: snippetResult.path,
+				snippet: snippetResult.content,
+			},
+			parsedPrdContext,
+		);
 
 		if (isPrdInstructionPath(contextEntry.path)) {
+			if (!prdContext && parsedPrdContext) {
+				prdContext = parsedPrdContext;
+			}
 			prdInstructions.push(contextEntry);
 			continue;
 		}
@@ -339,6 +425,7 @@ export async function collectRepositoryContext(params: {
 			files,
 			taskInstructions: prdInstructions[0],
 			taskInstructionSource: "prd",
+			prdContext,
 		};
 	}
 

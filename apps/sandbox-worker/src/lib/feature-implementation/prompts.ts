@@ -52,10 +52,10 @@ export function buildPlanningPrompt(params: {
 		context,
 		"",
 		"Planning requirements:",
-		"1. If PRD user stories exist, prioritise stories where passes=false.",
+		"1. If PRD user stories exist, choose one passes=false story to implement first and cite its story id/title.",
 		"2. Explain what files should be changed and why.",
 		"3. Define key implementation steps and ordering.",
-		"4. Include validation/test commands to run.",
+		"4. Include a 'Validation commands' section with one shell command per line (no chaining).",
 		"5. Call out risks or assumptions to verify during execution.",
 	].join("\n");
 }

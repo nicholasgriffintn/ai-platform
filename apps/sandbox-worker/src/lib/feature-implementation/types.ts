@@ -4,6 +4,11 @@ import type { PolychatClient } from "../polychat-client";
 import type { TaskEvent } from "../../types";
 
 export type SandboxInstance = ReturnType<typeof getSandbox>;
+export type SandboxExecInstance = Pick<SandboxInstance, "exec">;
+export type SandboxFileInstance = Pick<
+	SandboxInstance,
+	"readFile" | "writeFile" | "exists"
+>;
 
 export interface RunCommandDecision {
 	action: "run_command";
@@ -42,11 +47,29 @@ export interface FileContextSnippet {
 	snippet: string;
 }
 
+export interface RalphPrdUserStory {
+	index: number;
+	id?: string;
+	title: string;
+	description: string;
+	priority?: number;
+	passes: boolean;
+	acceptanceCriteria: string[];
+}
+
+export interface RalphPrdContext {
+	path: string;
+	project?: string;
+	description?: string;
+	userStories: RalphPrdUserStory[];
+}
+
 export interface RepositoryContext {
 	topLevelEntries: string[];
 	files: FileContextSnippet[];
 	taskInstructions?: FileContextSnippet;
 	taskInstructionSource: "prd" | "implement" | "none";
+	prdContext?: RalphPrdContext;
 }
 
 export interface ReadFileResult {
@@ -69,4 +92,17 @@ export interface ExecuteAgentLoopParams {
 	repoContext: RepositoryContext;
 	executionLogs: string[];
 	emit: (event: TaskEvent) => Promise<void>;
+}
+
+export interface QualityGateCheckResult {
+	name: string;
+	command: string;
+	passed: boolean;
+	output: string;
+}
+
+export interface QualityGateResult {
+	passed: boolean;
+	checks: QualityGateCheckResult[];
+	summary: string;
 }
