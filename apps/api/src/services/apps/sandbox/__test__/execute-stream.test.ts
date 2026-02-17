@@ -18,12 +18,14 @@ vi.mock("~/utils/id", () => ({
 
 const mockCreateAppDataWithItem = vi.fn();
 const mockUpdateAppData = vi.fn();
+const mockGetAppDataById = vi.fn();
 
 const mockContext = {
 	repositories: {
 		appData: {
 			createAppDataWithItem: mockCreateAppDataWithItem,
 			updateAppData: mockUpdateAppData,
+			getAppDataById: mockGetAppDataById,
 		},
 	},
 } as any;
@@ -36,6 +38,7 @@ describe("executeSandboxRunStream", () => {
 		vi.clearAllMocks();
 		mockCreateAppDataWithItem.mockResolvedValue({ id: "record-1" });
 		mockUpdateAppData.mockResolvedValue(undefined);
+		mockGetAppDataById.mockResolvedValue(null);
 		vi.mocked(resolveSandboxModel).mockResolvedValue("mistral-large");
 	});
 
@@ -116,6 +119,55 @@ describe("executeSandboxRunStream", () => {
 				success: true,
 				result: { ok: true },
 			},
+		});
+	});
+
+	it("preserves cancelled status when a cancellation was already persisted", async () => {
+		vi.mocked(executeSandboxWorker).mockResolvedValue(
+			Response.json({
+				success: true,
+				result: { ok: true },
+			}),
+		);
+		mockGetAppDataById.mockResolvedValue({
+			data: JSON.stringify({
+				runId: "run-123",
+				installationId: 100,
+				repo: "owner/repo",
+				task: "Ship it",
+				model: "mistral-large",
+				shouldCommit: true,
+				status: "cancelled",
+				startedAt: "2026-02-17T12:00:00.000Z",
+				updatedAt: "2026-02-17T12:00:01.000Z",
+				completedAt: "2026-02-17T12:00:01.000Z",
+				cancelRequestedAt: "2026-02-17T12:00:01.000Z",
+				cancellationReason: "Cancelled by user request",
+			}),
+		});
+
+		const response = await executeSandboxRunStream({
+			env: mockEnv,
+			context: mockContext,
+			user: mockUser,
+			payload: {
+				installationId: 100,
+				repo: "owner/repo",
+				task: "Ship it",
+				shouldCommit: true,
+			},
+		});
+
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({
+			run: expect.objectContaining({
+				runId: "run-123",
+				status: "cancelled",
+				cancellationReason: "Cancelled by user request",
+			}),
+		});
+		expect(mockUpdateAppData.mock.calls[1]?.[1]).toMatchObject({
+			status: "cancelled",
 		});
 	});
 });

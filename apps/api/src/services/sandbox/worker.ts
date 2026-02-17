@@ -1,4 +1,8 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import type {
+	SandboxTaskType,
+	SandboxWorkerExecuteRequest,
+} from "@assistant/schemas";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateJwtToken } from "~/services/auth/jwt";
@@ -18,12 +22,13 @@ export interface ExecuteSandboxWorkerOptions {
 	repo: string;
 	task: string;
 	model?: string;
-	taskType?: string;
+	taskType?: SandboxTaskType;
 	shouldCommit?: boolean;
 	installationId?: number;
 	stream?: boolean;
 	runId?: string;
 	githubTokenOverride?: string;
+	signal?: AbortSignal;
 }
 
 export function resolveApiBaseUrl(env: IEnv): string {
@@ -94,6 +99,7 @@ export async function executeSandboxWorker(
 		stream,
 		runId,
 		githubTokenOverride,
+		signal,
 	} = options;
 
 	if (!env.SANDBOX_WORKER) {
@@ -127,27 +133,29 @@ export async function executeSandboxWorker(
 		installationId,
 		githubTokenOverride,
 	});
+	const workerPayload: SandboxWorkerExecuteRequest = {
+		userId: user.id,
+		taskType: taskType || "feature-implementation",
+		repo,
+		task,
+		model,
+		shouldCommit: Boolean(shouldCommit),
+		polychatApiUrl: resolveApiBaseUrl(env),
+		installationId,
+		runId,
+	};
 
 	const response = await env.SANDBOX_WORKER.fetch(
 		new Request("http://sandbox/execute", {
 			method: "POST",
+			signal,
 			headers: {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${sandboxToken}`,
 				"X-GitHub-Token": githubToken,
 				...(stream ? { Accept: "text/event-stream" } : {}),
 			},
-			body: JSON.stringify({
-				userId: user.id,
-				taskType: taskType || "feature-implementation",
-				repo,
-				task,
-				model,
-				shouldCommit: Boolean(shouldCommit),
-				polychatApiUrl: resolveApiBaseUrl(env),
-				installationId,
-				runId,
-			}),
+			body: JSON.stringify(workerPayload),
 		}),
 	);
 

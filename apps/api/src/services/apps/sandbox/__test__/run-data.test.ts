@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { parseSandboxRunData, toSandboxRunResponse } from "../run-data";
+import {
+	appendSandboxRunEvent,
+	parseSandboxRunData,
+	toSandboxRunResponse,
+} from "../run-data";
 
 describe("sandbox run data helpers", () => {
 	it("parses valid run payloads", () => {
@@ -49,5 +53,37 @@ describe("sandbox run data helpers", () => {
 
 		expect(response.events).toEqual([]);
 		expect(response.status).toBe("completed");
+	});
+
+	it("parses optional cancellation metadata", () => {
+		const parsed = parseSandboxRunData({
+			runId: "run-2",
+			installationId: 101,
+			repo: "owner/repo",
+			task: "Cancel run",
+			model: "mistral-large",
+			shouldCommit: false,
+			status: "cancelled",
+			startedAt: "2026-02-17T12:00:00.000Z",
+			updatedAt: "2026-02-17T12:00:01.000Z",
+			cancelRequestedAt: "2026-02-17T12:00:00.500Z",
+			cancellationReason: "Cancelled by user",
+		});
+
+		expect(parsed).toMatchObject({
+			status: "cancelled",
+			cancelRequestedAt: "2026-02-17T12:00:00.500Z",
+			cancellationReason: "Cancelled by user",
+		});
+	});
+
+	it("limits appended events to max length", () => {
+		const result = appendSandboxRunEvent(
+			[{ type: "event-1" }, { type: "event-2" }],
+			{ type: "event-3" },
+			2,
+		);
+
+		expect(result).toEqual([{ type: "event-2" }, { type: "event-3" }]);
 	});
 });

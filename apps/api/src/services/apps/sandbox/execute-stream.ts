@@ -1,9 +1,7 @@
+import type { ExecuteSandboxRunPayload as ExecuteSandboxRunStreamPayload } from "@assistant/schemas";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import {
-	MAX_STORED_STREAM_EVENTS,
-	SANDBOX_RUN_ITEM_TYPE,
-	SANDBOX_RUNS_APP_ID,
-} from "~/constants/app";
+import { SANDBOX_RUN_ITEM_TYPE, SANDBOX_RUNS_APP_ID } from "~/constants/app";
 import {
 	executeSandboxWorker,
 	resolveSandboxModel,
@@ -11,22 +9,21 @@ import {
 import type { IEnv, IUser } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
-import { parseSseBuffer } from "~/utils/streaming";
 import {
 	toSandboxRunResponse,
 	type SandboxRunData,
 	type SandboxRunStatus,
 } from "./run-data";
+import { registerActiveSandboxRun } from "./run-control";
+import {
+	getPersistedCancelledRun,
+	isAbortError,
+	persistFailedRun,
+	RUN_CANCELLATION_MESSAGE,
+} from "./run-state";
+import { createSandboxEventProxyStream } from "./stream-proxy";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/execute-stream" });
-
-export interface ExecuteSandboxRunStreamPayload {
-	installationId: number;
-	repo: string;
-	task: string;
-	model?: string;
-	shouldCommit?: boolean;
-}
 
 interface ExecuteSandboxRunStreamParams {
 	env: IEnv;
@@ -35,24 +32,64 @@ interface ExecuteSandboxRunStreamParams {
 	payload: ExecuteSandboxRunStreamPayload;
 }
 
-async function persistFailedRun(params: {
+async function handleNonStreamWorkerResponse(params: {
 	serviceContext: ServiceContext;
 	recordId: string;
-	initialRunData: SandboxRunData;
-	error: unknown;
-}): Promise<void> {
-	const { serviceContext, recordId, initialRunData, error } = params;
-	const errorMessage =
-		error instanceof Error ? error.message : "Sandbox execution failed";
-	const completedAt = new Date().toISOString();
+	runData: SandboxRunData;
+	workerResponse: Response;
+}): Promise<SandboxRunData> {
+	const { serviceContext, recordId, workerResponse } = params;
+	let runData = params.runData;
+	let responseData: Record<string, unknown>;
 
-	await serviceContext.repositories.appData.updateAppData(recordId, {
-		...initialRunData,
-		status: "failed",
-		error: errorMessage.slice(0, 1000),
+	try {
+		responseData = (await workerResponse.json()) as Record<string, unknown>;
+	} catch {
+		await persistFailedRun({
+			serviceContext,
+			recordId,
+			initialRunData: runData,
+			error: new Error("Sandbox worker returned invalid non-stream response"),
+		});
+		throw new Error("Sandbox worker returned invalid non-stream response");
+	}
+
+	let completedAt = new Date().toISOString();
+	let status: SandboxRunStatus = responseData.success ? "completed" : "failed";
+	const responseError =
+		typeof responseData.error === "string" ? responseData.error : undefined;
+	const cancelledRun = await getPersistedCancelledRun({
+		serviceContext,
+		recordId,
+	});
+	if (cancelledRun) {
+		status = "cancelled";
+		completedAt = cancelledRun.completedAt ?? completedAt;
+	}
+
+	runData = {
+		...runData,
+		status,
+		result: responseData,
+		error: status === "failed" ? responseError : undefined,
 		updatedAt: completedAt,
 		completedAt,
-	});
+		cancelRequestedAt:
+			status === "cancelled"
+				? (cancelledRun?.cancelRequestedAt ??
+					runData.cancelRequestedAt ??
+					completedAt)
+				: runData.cancelRequestedAt,
+		cancellationReason:
+			status === "cancelled"
+				? (cancelledRun?.cancellationReason ??
+					runData.cancellationReason ??
+					RUN_CANCELLATION_MESSAGE)
+				: runData.cancellationReason,
+	};
+
+	await serviceContext.repositories.appData.updateAppData(recordId, runData);
+	return runData;
 }
 
 export async function executeSandboxRunStream(
@@ -68,7 +105,7 @@ export async function executeSandboxRunStream(
 
 	const runId = generateId();
 	const now = new Date().toISOString();
-	const initialRunData: SandboxRunData = {
+	let runData: SandboxRunData = {
 		runId,
 		installationId: payload.installationId,
 		repo: payload.repo,
@@ -87,15 +124,24 @@ export async function executeSandboxRunStream(
 			SANDBOX_RUNS_APP_ID,
 			runId,
 			SANDBOX_RUN_ITEM_TYPE,
-			initialRunData,
+			runData,
 		);
 
-	const runningAt = new Date().toISOString();
-	await serviceContext.repositories.appData.updateAppData(createdRecord.id, {
-		...initialRunData,
+	runData = {
+		...runData,
 		status: "running",
-		updatedAt: runningAt,
-	});
+		updatedAt: new Date().toISOString(),
+	};
+	await serviceContext.repositories.appData.updateAppData(
+		createdRecord.id,
+		runData,
+	);
+
+	const workerAbortController = new AbortController();
+	const unregisterActiveRun = registerActiveSandboxRun(
+		runId,
+		workerAbortController,
+	);
 
 	let workerResponse: Response;
 	try {
@@ -110,12 +156,38 @@ export async function executeSandboxRunStream(
 			installationId: payload.installationId,
 			stream: true,
 			runId,
+			signal: workerAbortController.signal,
 		});
 	} catch (error) {
+		if (isAbortError(error) || workerAbortController.signal.aborted) {
+			const completedAt = new Date().toISOString();
+			runData = {
+				...runData,
+				status: "cancelled",
+				updatedAt: completedAt,
+				completedAt,
+				cancelRequestedAt: runData.cancelRequestedAt ?? completedAt,
+				cancellationReason:
+					runData.cancellationReason ?? RUN_CANCELLATION_MESSAGE,
+			};
+			await serviceContext.repositories.appData.updateAppData(
+				createdRecord.id,
+				runData,
+			);
+
+			unregisterActiveRun();
+			return Response.json(
+				{
+					run: toSandboxRunResponse(runData),
+				},
+				{ status: 200 },
+			);
+		}
+
 		await persistFailedRun({
 			serviceContext,
 			recordId: createdRecord.id,
-			initialRunData,
+			initialRunData: runData,
 			error,
 		});
 
@@ -126,19 +198,39 @@ export async function executeSandboxRunStream(
 			installation_id: payload.installationId,
 			error_message: errorMessage,
 		});
+		unregisterActiveRun();
 		return Response.json({ error: errorMessage }, { status: 500 });
 	}
 
 	if (!workerResponse.ok) {
+		const cancelledRun = await getPersistedCancelledRun({
+			serviceContext,
+			recordId: createdRecord.id,
+		});
+		if (cancelledRun) {
+			unregisterActiveRun();
+			return Response.json(
+				{
+					run: toSandboxRunResponse(cancelledRun),
+				},
+				{ status: 200 },
+			);
+		}
+
 		const errorText = await workerResponse.text();
-		await serviceContext.repositories.appData.updateAppData(createdRecord.id, {
-			...initialRunData,
+		runData = {
+			...runData,
 			status: "failed",
 			error: errorText.slice(0, 1000),
 			updatedAt: new Date().toISOString(),
 			completedAt: new Date().toISOString(),
-		});
+		};
+		await serviceContext.repositories.appData.updateAppData(
+			createdRecord.id,
+			runData,
+		);
 
+		unregisterActiveRun();
 		return Response.json(
 			{
 				error: `Sandbox worker error (${workerResponse.status}): ${errorText.slice(0, 500)}`,
@@ -148,13 +240,18 @@ export async function executeSandboxRunStream(
 	}
 
 	if (!workerResponse.body) {
-		await serviceContext.repositories.appData.updateAppData(createdRecord.id, {
-			...initialRunData,
+		runData = {
+			...runData,
 			status: "failed",
 			error: "Sandbox worker returned an empty response body",
 			updatedAt: new Date().toISOString(),
 			completedAt: new Date().toISOString(),
-		});
+		};
+		await serviceContext.repositories.appData.updateAppData(
+			createdRecord.id,
+			runData,
+		);
+		unregisterActiveRun();
 		return Response.json(
 			{ error: "Sandbox worker returned an empty response" },
 			{ status: 500 },
@@ -163,185 +260,43 @@ export async function executeSandboxRunStream(
 
 	const contentType = workerResponse.headers.get("content-type") || "";
 	if (!contentType.includes("text/event-stream")) {
-		let responseData: Record<string, unknown> | null = null;
 		try {
-			responseData = (await workerResponse.json()) as Record<string, unknown>;
-		} catch {
-			await persistFailedRun({
+			runData = await handleNonStreamWorkerResponse({
 				serviceContext,
 				recordId: createdRecord.id,
-				initialRunData,
-				error: new Error("Sandbox worker returned invalid non-stream response"),
+				runData,
+				workerResponse,
 			});
+		} catch (error) {
+			unregisterActiveRun();
 			return Response.json(
-				{ error: "Sandbox worker returned invalid non-stream response" },
+				{
+					error:
+						error instanceof Error
+							? error.message
+							: "Sandbox worker returned invalid non-stream response",
+				},
 				{ status: 500 },
 			);
 		}
 
-		const completedAt = new Date().toISOString();
-		const status: SandboxRunStatus = responseData?.success
-			? "completed"
-			: "failed";
-		const responseError =
-			typeof responseData?.error === "string" ? responseData.error : undefined;
-		await serviceContext.repositories.appData.updateAppData(createdRecord.id, {
-			...initialRunData,
-			status,
-			result: responseData,
-			error: responseError,
-			updatedAt: completedAt,
-			completedAt,
-		});
-
+		unregisterActiveRun();
 		return Response.json(
 			{
-				run: toSandboxRunResponse({
-					...initialRunData,
-					status,
-					result: responseData,
-					error: responseError,
-					updatedAt: completedAt,
-					completedAt,
-				}),
+				run: toSandboxRunResponse(runData),
 			},
 			{ status: 200 },
 		);
 	}
 
-	const decoder = new TextDecoder();
-	const encoder = new TextEncoder();
-	const reader = workerResponse.body.getReader();
-
-	const stream = new ReadableStream<Uint8Array>({
-		async start(controller) {
-			let status: SandboxRunStatus = "running";
-			let buffer = "";
-			const events: Array<Record<string, unknown>> = [];
-			let result: Record<string, unknown> | undefined;
-			let errorMessage: string | undefined;
-			let completedAt: string | undefined;
-
-			const pushEvent = (event: Record<string, unknown>) => {
-				events.push(event);
-				if (events.length > MAX_STORED_STREAM_EVENTS) {
-					events.shift();
-				}
-			};
-
-			const emit = (event: Record<string, unknown>) => {
-				pushEvent(event);
-				controller.enqueue(
-					encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
-				);
-			};
-
-			const handleParsedEvent = (parsed: Record<string, unknown>) => {
-				pushEvent(parsed);
-
-				if (parsed.type === "run_completed") {
-					status = "completed";
-					completedAt = new Date().toISOString();
-					result =
-						parsed.result &&
-						typeof parsed.result === "object" &&
-						!Array.isArray(parsed.result)
-							? (parsed.result as Record<string, unknown>)
-							: undefined;
-				} else if (parsed.type === "run_failed") {
-					status = "failed";
-					completedAt = new Date().toISOString();
-					errorMessage =
-						typeof parsed.error === "string"
-							? parsed.error
-							: "Sandbox run failed";
-				} else if (parsed.type === "run_started") {
-					status = "running";
-				}
-			};
-
-			try {
-				while (true) {
-					const { done, value } = await reader.read();
-					if (done) {
-						break;
-					}
-					if (!value) {
-						continue;
-					}
-
-					controller.enqueue(value);
-					buffer += decoder.decode(value, { stream: true });
-					buffer = parseSseBuffer(buffer, {
-						onEvent: handleParsedEvent,
-						onError: (error) => {
-							logger.error("Failed to parse sandbox stream event", {
-								error_message: error.message,
-							});
-						},
-					});
-				}
-
-				if (buffer.trim()) {
-					parseSseBuffer(buffer + "\n\n", {
-						onEvent: handleParsedEvent,
-						onError: () => {
-							// Ignore errors from final buffer flush
-						},
-					});
-				}
-			} catch (error) {
-				status = "failed";
-				completedAt = new Date().toISOString();
-				errorMessage =
-					error instanceof Error
-						? error.message
-						: "Sandbox stream unexpectedly terminated";
-
-				emit({
-					type: "run_failed",
-					runId,
-					error: errorMessage,
-				});
-			} finally {
-				reader.releaseLock();
-
-				if (status === "running") {
-					status = "failed";
-					completedAt = new Date().toISOString();
-					errorMessage = "Sandbox stream ended without a final status";
-					emit({
-						type: "run_failed",
-						runId,
-						error: errorMessage,
-					});
-				}
-
-				try {
-					await serviceContext.repositories.appData.updateAppData(
-						createdRecord.id,
-						{
-							...initialRunData,
-							status,
-							result,
-							error: errorMessage,
-							events,
-							updatedAt: new Date().toISOString(),
-							completedAt,
-						},
-					);
-				} catch (dbError) {
-					logger.error("Failed to persist sandbox run final state", {
-						error_message:
-							dbError instanceof Error ? dbError.message : String(dbError),
-						runId,
-						status,
-					});
-				}
-
-				controller.close();
-			}
-		},
+	const stream = createSandboxEventProxyStream({
+		reader: workerResponse.body.getReader(),
+		runId,
+		serviceContext,
+		recordId: createdRecord.id,
+		initialRunData: runData,
+		workerAbortController,
+		unregisterActiveRun,
 	});
 
 	return new Response(stream, {

@@ -5,8 +5,8 @@
 	"private": true,
 	"main": "src/index.ts",
 	"scripts": {
-		"dev": "wrangler dev src/index.ts",
-		"start": "wrangler dev src/index.ts",
+		"dev": "pnpm --filter @assistant/schemas build && wrangler dev src/index.ts",
+		"start": "pnpm --filter @assistant/schemas build && wrangler dev src/index.ts",
 		"test": "vitest",
 		"coverage": "vitest run --coverage",
 		"cf-typegen": "wrangler types",
@@ -14,11 +14,13 @@
 		"format:check": "pnpm prettier --check .",
 		"lint": "pnpm oxlint",
 		"check": "pnpm lint && pnpm format:check",
-		"typecheck": "tsc --noEmit",
-		"deploy": "pnpm typecheck && wrangler deploy src/index.ts --name=assistant-sandbox-worker"
+		"typecheck": "pnpm --filter @assistant/schemas build && tsc --noEmit",
+		"deploy": "pnpm --filter @assistant/schemas build && pnpm typecheck && wrangler deploy src/index.ts --name=assistant-sandbox-worker"
 	},
 	"dependencies": {
-		"@cloudflare/sandbox": "0.7.0"
+		"@assistant/schemas": "workspace:*",
+		"@cloudflare/sandbox": "0.7.0",
+		"zod": "4.3.6"
 	},
 	"devDependencies": {
 		"@prettier/plugin-oxc": "0.1.3",

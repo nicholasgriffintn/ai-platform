@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { SandboxCancellationError } from "../cancellation";
 import { classifySandboxError } from "../errors";
 import { PolychatApiError } from "../polychat-client";
 
@@ -27,6 +28,15 @@ describe("classifySandboxError", () => {
 		);
 
 		expect(classified.type).toBe("command_execution_error");
+		expect(classified.retryable).toBe(false);
+	});
+
+	it("classifies cancellation as a terminal cancelled state", () => {
+		const classified = classifySandboxError(
+			new SandboxCancellationError("Run cancelled by user"),
+		);
+
+		expect(classified.type).toBe("cancelled");
 		expect(classified.retryable).toBe(false);
 	});
 });

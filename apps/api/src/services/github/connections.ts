@@ -1,5 +1,6 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { AppData } from "~/repositories/AppDataRepository";
+import type { SandboxConnection } from "@assistant/schemas";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import {
 	parseGitHubConnectionData,
@@ -15,14 +16,7 @@ import { safeParseJson } from "~/utils/json";
 
 export const GITHUB_CONNECTION_APP_ID = "github_app_connection";
 
-export interface GitHubAppConnectionSummary {
-	installationId: number;
-	appId: string;
-	repositories: string[];
-	hasWebhookSecret: boolean;
-	createdAt: string;
-	updatedAt: string;
-}
+export type GitHubAppConnectionSummary = SandboxConnection;
 
 async function decodeConnectionRecord(
 	context: ServiceContext,

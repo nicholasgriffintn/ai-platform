@@ -1,5 +1,7 @@
 import { executeFeatureImplementation } from "./tasks/feature-implementation";
 import { verifySandboxJwt } from "./lib/auth";
+import { SandboxCancellationError } from "./lib/cancellation";
+import { sandboxWorkerExecuteRequestSchema } from "@assistant/schemas";
 import type { TaskEvent, TaskParams, TaskSecrets, Env } from "./types";
 
 const SSE_HEADERS = {
@@ -12,22 +14,9 @@ function toSseChunk(value: unknown): Uint8Array {
 	return new TextEncoder().encode(`data: ${JSON.stringify(value)}\n\n`);
 }
 
-function isValidTaskPayload(params: Omit<TaskParams, "userId">): boolean {
-	if (typeof params.repo !== "string" || !params.repo.trim()) {
-		return false;
-	}
-	if (typeof params.task !== "string" || !params.task.trim()) {
-		return false;
-	}
-	if (
-		typeof params.polychatApiUrl !== "string" ||
-		!params.polychatApiUrl.trim()
-	) {
-		return false;
-	}
-
+function isSafePolychatApiUrl(polychatApiUrl: string): boolean {
 	try {
-		const parsed = new URL(params.polychatApiUrl);
+		const parsed = new URL(polychatApiUrl);
 		if (!["http:", "https:"].includes(parsed.protocol)) {
 			return false;
 		}
@@ -62,7 +51,16 @@ export default {
 
 		let params: TaskParams;
 		try {
-			params = (await request.json()) as TaskParams;
+			const rawBody = (await request.json()) as unknown;
+			const parsedPayload =
+				sandboxWorkerExecuteRequestSchema.safeParse(rawBody);
+			if (!parsedPayload.success) {
+				return Response.json(
+					{ error: "Invalid task payload" },
+					{ status: 400 },
+				);
+			}
+			params = parsedPayload.data;
 		} catch {
 			return Response.json({ error: "Invalid JSON body" }, { status: 400 });
 		}
@@ -116,7 +114,7 @@ export default {
 			githubToken,
 		};
 
-		if (!isValidTaskPayload(params)) {
+		if (!isSafePolychatApiUrl(params.polychatApiUrl)) {
 			return Response.json({ error: "Invalid task payload" }, { status: 400 });
 		}
 
@@ -126,7 +124,13 @@ export default {
 			// TODO: Add code interpreter: https://developers.cloudflare.com/sandbox/guides/code-execution/
 			switch (params.taskType) {
 				case "feature-implementation":
-					return executeFeatureImplementation(params, secrets, env, emitEvent);
+					return executeFeatureImplementation(
+						params,
+						secrets,
+						env,
+						emitEvent,
+						request.signal,
+					);
 				default:
 					throw new Error("Unknown task type");
 			}
@@ -179,6 +183,14 @@ export default {
 							completedAt: new Date().toISOString(),
 							result,
 						});
+					} else if (result.errorType === "cancelled") {
+						emitEvent({
+							type: "run_cancelled",
+							runId: params.runId,
+							completedAt: new Date().toISOString(),
+							message: result.error || "Sandbox run cancelled",
+							result,
+						});
 					} else {
 						emitEvent({
 							type: "run_failed",
@@ -189,6 +201,24 @@ export default {
 						});
 					}
 				} catch (error) {
+					if (
+						error instanceof SandboxCancellationError ||
+						request.signal.aborted
+					) {
+						emitEvent({
+							type: "run_cancelled",
+							runId: params.runId,
+							completedAt: new Date().toISOString(),
+							message:
+								error instanceof Error
+									? error.message
+									: "Sandbox run cancelled",
+						});
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+						controller.close();
+						return;
+					}
+
 					emitEvent({
 						type: "run_failed",
 						runId: params.runId,

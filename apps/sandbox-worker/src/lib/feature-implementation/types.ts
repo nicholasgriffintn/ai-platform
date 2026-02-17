@@ -92,6 +92,7 @@ export interface ExecuteAgentLoopParams {
 	repoContext: RepositoryContext;
 	executionLogs: string[];
 	emit: (event: TaskEvent) => Promise<void>;
+	abortSignal?: AbortSignal;
 }
 
 export interface QualityGateCheckResult {

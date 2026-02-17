@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+	cancelSandboxRun,
 	connectSandboxInstallation,
 	fetchSandboxInstallConfig,
 	deleteSandboxConnection,
@@ -110,3 +111,18 @@ export const useSandboxRun = (runId?: string) =>
 		},
 		enabled: Boolean(runId),
 	});
+
+export const useCancelSandboxRun = () => {
+	const queryClient = useQueryClient();
+	return useMutation<SandboxRun, Error, { runId: string; reason?: string }>({
+		mutationFn: ({ runId, reason }) => cancelSandboxRun(runId, reason),
+		onSuccess: (_run, variables) => {
+			queryClient.invalidateQueries({
+				queryKey: SANDBOX_QUERY_KEYS.root,
+			});
+			queryClient.invalidateQueries({
+				queryKey: SANDBOX_QUERY_KEYS.run(variables.runId),
+			});
+		},
+	});
+};

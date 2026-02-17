@@ -1,6 +1,8 @@
 import { PolychatApiError } from "./polychat-client";
+import { SandboxCancellationError } from "./cancellation";
 
 export type SandboxErrorType =
+	| "cancelled"
 	| "validation_error"
 	| "repository_error"
 	| "model_request_error"
@@ -22,6 +24,14 @@ function messageIncludes(message: string, terms: string[]): boolean {
 }
 
 export function classifySandboxError(error: unknown): ClassifiedSandboxError {
+	if (error instanceof SandboxCancellationError) {
+		return {
+			type: "cancelled",
+			message: error.message || "Sandbox run cancelled",
+			retryable: false,
+		};
+	}
+
 	if (error instanceof PolychatApiError) {
 		const message = error.retryable
 			? "The AI model is temporarily unavailable. Please retry this run."

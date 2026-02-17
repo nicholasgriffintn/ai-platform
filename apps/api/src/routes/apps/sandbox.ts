@@ -1,7 +1,18 @@
 import { type Context, Hono } from "hono";
 import { validator as zValidator, describeRoute, resolver } from "hono-openapi";
-import z from "zod/v4";
-import { errorResponseSchema } from "@assistant/schemas";
+import {
+	autoConnectSchema,
+	cancelRunSchema,
+	errorResponseSchema,
+	executeSandboxRunSchema,
+	githubConnectionSchema,
+	listRunsQuerySchema,
+	type AutoConnectPayload,
+	type CancelRunPayload,
+	type ExecuteSandboxRunPayload,
+	type GitHubConnectionPayload,
+	type ListRunsQueryPayload,
+} from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
@@ -10,9 +21,10 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import type { IUser } from "~/types";
 import { executeSandboxRunStream } from "~/services/apps/sandbox/execute-stream";
 import {
-	parseSandboxRunData,
-	toSandboxRunResponse,
-} from "~/services/apps/sandbox/run-data";
+	getSandboxRunForUser,
+	listSandboxRunsForUser,
+	requestSandboxRunCancellation,
+} from "~/services/apps/sandbox/runs";
 import { listGitHubAppConnectionsForUser } from "~/services/github/connections";
 import {
 	deleteGitHubConnectionForUser,
@@ -20,42 +32,9 @@ import {
 	upsertGitHubConnectionForUser,
 } from "~/services/github/manage-connections";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { safeParseJson } from "~/utils/json";
-import { SANDBOX_RUNS_APP_ID, SANDBOX_RUN_ITEM_TYPE } from "~/constants/app";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("apps/sandbox");
-
-const githubConnectionSchema = z.object({
-	installationId: z.number().int().positive(),
-	appId: z.string().trim().min(1),
-	privateKey: z.string().trim().min(1),
-	webhookSecret: z.string().trim().min(1).optional(),
-	repositories: z.array(z.string().trim().min(1)).optional(),
-});
-
-const executeSandboxRunSchema = z.object({
-	installationId: z.number().int().positive(),
-	repo: z
-		.string()
-		.trim()
-		.min(1)
-		.regex(/^[\w.-]+\/[\w.-]+$/, "repo must be in owner/repo format"),
-	task: z.string().trim().min(1),
-	model: z.string().trim().min(1).optional(),
-	shouldCommit: z.boolean().optional(),
-});
-
-const autoConnectSchema = z.object({
-	installationId: z.number().int().positive(),
-	repositories: z.array(z.string().trim().min(1)).optional(),
-});
-
-const listRunsQuerySchema = z.object({
-	installationId: z.coerce.number().int().positive().optional(),
-	repo: z.string().trim().min(1).optional(),
-	limit: z.coerce.number().int().min(1).max(100).default(30),
-});
 
 app.use("/*", (c, next) => {
 	routeLogger.info(`Processing apps/sandbox route: ${c.req.path}`);
@@ -177,9 +156,7 @@ app.post(
 	zValidator("json", githubConnectionSchema),
 	async (c: Context) => {
 		const user = c.get("user") as IUser;
-		const payload = c.req.valid("json" as never) as z.infer<
-			typeof githubConnectionSchema
-		>;
+		const payload = c.req.valid("json" as never) as GitHubConnectionPayload;
 		const serviceContext = getServiceContext(c);
 
 		await upsertGitHubConnectionForUser(serviceContext, user.id, payload);
@@ -216,9 +193,7 @@ app.post(
 	zValidator("json", autoConnectSchema),
 	async (c: Context) => {
 		const user = c.get("user") as IUser;
-		const payload = c.req.valid("json" as never) as z.infer<
-			typeof autoConnectSchema
-		>;
+		const payload = c.req.valid("json" as never) as AutoConnectPayload;
 		const serviceContext = getServiceContext(c);
 
 		await upsertGitHubConnectionFromDefaultAppForUser(serviceContext, user.id, {
@@ -307,44 +282,16 @@ app.get(
 	zValidator("query", listRunsQuerySchema),
 	async (c: Context) => {
 		const user = c.get("user") as IUser;
-		const { installationId, repo, limit } = c.req.valid(
-			"query" as never,
-		) as z.infer<typeof listRunsQuerySchema>;
+		const payload = c.req.valid("query" as never) as ListRunsQueryPayload;
 		const serviceContext = getServiceContext(c);
-		const records =
-			await serviceContext.repositories.appData.getAppDataByUserAndApp(
-				user.id,
-				SANDBOX_RUNS_APP_ID,
-			);
 
-		const runs = records
-			.map((record) => {
-				const parsed = parseSandboxRunData(safeParseJson(record.data));
-				if (!parsed) {
-					return null;
-				}
-
-				if (
-					installationId !== undefined &&
-					parsed.installationId !== installationId
-				) {
-					return null;
-				}
-
-				if (repo && parsed.repo.toLowerCase() !== repo.toLowerCase()) {
-					return null;
-				}
-
-				return toSandboxRunResponse(parsed);
-			})
-			.filter((run): run is ReturnType<typeof toSandboxRunResponse> =>
-				Boolean(run),
-			)
-			.sort(
-				(a, b) =>
-					new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-			)
-			.slice(0, limit);
+		const runs = await listSandboxRunsForUser({
+			context: serviceContext,
+			userId: user.id,
+			installationId: payload.installationId,
+			repo: payload.repo,
+			limit: payload.limit,
+		});
 
 		return ResponseFactory.success(c, { runs });
 	},
@@ -375,33 +322,59 @@ app.get(
 	async (c: Context) => {
 		const user = c.get("user") as IUser;
 		const runId = c.req.param("runId");
-
 		if (!runId) {
 			throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
 		}
 
-		const serviceContext = getServiceContext(c);
-		const records =
-			await serviceContext.repositories.appData.getAppDataByUserAppAndItem(
-				user.id,
-				SANDBOX_RUNS_APP_ID,
-				runId,
-				SANDBOX_RUN_ITEM_TYPE,
-			);
+		const run = await getSandboxRunForUser({
+			context: getServiceContext(c),
+			userId: user.id,
+			runId,
+		});
 
-		if (!records.length) {
-			throw new AssistantError("Sandbox run not found", ErrorType.NOT_FOUND);
+		return ResponseFactory.success(c, { run });
+	},
+);
+
+app.post(
+	"/runs/:runId/cancel",
+	describeRoute({
+		tags: ["apps"],
+		description: "Cancel a running sandbox run",
+		responses: {
+			200: {
+				description: "Sandbox run cancellation was processed",
+				content: {
+					"application/json": {},
+				},
+			},
+			401: {
+				description: "Unauthorized",
+				content: {
+					"application/json": {
+						schema: resolver(errorResponseSchema),
+					},
+				},
+			},
+		},
+	}),
+	zValidator("json", cancelRunSchema),
+	async (c: Context) => {
+		const user = c.get("user") as IUser;
+		const runId = c.req.param("runId");
+		const payload = c.req.valid("json" as never) as CancelRunPayload;
+		if (!runId) {
+			throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
 		}
 
-		const run = parseSandboxRunData(safeParseJson(records[0].data));
-		if (!run) {
-			throw new AssistantError(
-				"Sandbox run payload is invalid",
-				ErrorType.NOT_FOUND,
-			);
-		}
+		const result = await requestSandboxRunCancellation({
+			context: getServiceContext(c),
+			userId: user.id,
+			runId,
+			reason: payload.reason,
+		});
 
-		return ResponseFactory.success(c, { run: toSandboxRunResponse(run) });
+		return ResponseFactory.success(c, result);
 	},
 );
 
@@ -431,9 +404,7 @@ app.post(
 	async (c: Context) => {
 		const user = c.get("user") as IUser;
 		const serviceContext = getServiceContext(c);
-		const payload = c.req.valid("json" as never) as z.infer<
-			typeof executeSandboxRunSchema
-		>;
+		const payload = c.req.valid("json" as never) as ExecuteSandboxRunPayload;
 
 		return executeSandboxRunStream({
 			env: c.env,

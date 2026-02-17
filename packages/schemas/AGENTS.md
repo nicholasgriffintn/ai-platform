@@ -282,6 +282,13 @@ export const exampleService = {
 - Use semantic naming: `{resource}{Action}RequestSchema` / `{resource}{Action}ResponseSchema`
 - Add JSDoc comments to complex schemas explaining their purpose and usage
 
+### Sandbox (Added: 2026-02-17)
+
+**Purpose**: Defines shared contracts for sandbox connection payloads, run execution requests, run status/result/event records, and worker execute request validation.
+**Used by**: `apps/api` routes/services, `apps/app` sandbox UI/API client types, and `apps/sandbox-worker` request/event/result typing.
+**Breaking changes**: Adds a new schema domain (`src/sandbox.ts`), no existing schema fields removed or renamed.
+**Migration**: Import sandbox contracts from `@assistant/schemas` instead of app-local duplicates (for example route validators, run data types, and worker request payloads).
+
 ---
 
 ## 📋 AGENTS.md Maintenance Protocol

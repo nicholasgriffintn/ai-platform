@@ -36,6 +36,7 @@ import {
 } from "~/components/ui";
 import {
 	SANDBOX_QUERY_KEYS,
+	useCancelSandboxRun,
 	useSandboxConnections,
 	useSandboxRun,
 	useSandboxRuns,
@@ -79,6 +80,9 @@ function summariseRunResult(run: SandboxRun): string {
 	if (run.status === "failed") {
 		return run.error || "Run failed.";
 	}
+	if (run.status === "cancelled") {
+		return run.cancellationReason || "Run cancelled.";
+	}
 	return "Run in progress.";
 }
 
@@ -110,7 +114,11 @@ function buildMessagesFromRun(run: SandboxRun): ChatMessage[] {
 		},
 	];
 
-	if (run.status === "completed" || run.status === "failed") {
+	if (
+		run.status === "completed" ||
+		run.status === "failed" ||
+		run.status === "cancelled"
+	) {
 		messages.push({
 			id: `${run.runId}-assistant`,
 			role: "assistant",
@@ -162,6 +170,7 @@ export default function SandboxConnectionPage() {
 			enabled: hasValidInstallationId,
 		},
 	);
+	const cancelRunMutation = useCancelSandboxRun();
 
 	const [repo, setRepo] = useState("");
 	const [task, setTask] = useState("");
@@ -319,13 +328,33 @@ export default function SandboxConnectionPage() {
 		setSearchParams(next, { replace });
 	};
 
-	const handleCancelRun = () => {
+	const handleCancelRun = async () => {
 		const controller = abortControllerRef.current;
 		if (!controller) {
 			return;
 		}
+
+		const runId = activeRunIdRef.current;
+		if (runId) {
+			try {
+				await cancelRunMutation.mutateAsync({
+					runId,
+					reason: "Cancelled from Sandbox run console",
+				});
+				toast.success("Cancellation requested");
+				setSelectedRunInUrl(runId, true);
+			} catch (cancelError) {
+				toast.error(
+					cancelError instanceof Error
+						? cancelError.message
+						: "Failed to cancel sandbox run",
+				);
+			}
+		}
+
 		controller.abort();
 		abortControllerRef.current = null;
+		setActiveRunId(undefined);
 		activeRunIdRef.current = undefined;
 		setIsSubmitting(false);
 		setMessages((prev) => [
@@ -333,8 +362,9 @@ export default function SandboxConnectionPage() {
 			{
 				id: crypto.randomUUID(),
 				role: "assistant",
-				content:
-					"Streaming was cancelled in this browser tab. The sandbox run may continue server-side.",
+				content: runId
+					? "Cancellation requested. Waiting for run status to update."
+					: "Stream stopped before a run id was assigned.",
 				createdAt: new Date().toISOString(),
 			},
 		]);
@@ -386,6 +416,15 @@ export default function SandboxConnectionPage() {
 				},
 				{
 					signal: controller.signal,
+					onRunStarted: (runId) => {
+						if (activeRunIdRef.current) {
+							return;
+						}
+
+						activeRunIdRef.current = runId;
+						setActiveRunId(runId);
+						setSelectedRunInUrl(runId, true);
+					},
 					onEvent: (event) => {
 						const eventId = crypto.randomUUID();
 						const receivedAt = new Date().toISOString();
@@ -429,6 +468,19 @@ export default function SandboxConnectionPage() {
 									id: crypto.randomUUID(),
 									role: "assistant",
 									content: event.error || "Sandbox run failed.",
+									createdAt: receivedAt,
+								},
+							]);
+						}
+
+						if (event.type === "run_cancelled") {
+							setMessages((prev) => [
+								...prev,
+								{
+									id: crypto.randomUUID(),
+									role: "assistant",
+									content:
+										event.message || event.error || "Sandbox run cancelled.",
 									createdAt: receivedAt,
 								},
 							]);
@@ -630,9 +682,10 @@ export default function SandboxConnectionPage() {
 											<Button
 												variant="secondary"
 												icon={<Square className="h-4 w-4" />}
-												onClick={handleCancelRun}
+												onClick={() => void handleCancelRun()}
+												isLoading={cancelRunMutation.isPending}
 											>
-												Stop stream
+												Cancel run
 											</Button>
 										)}
 										<Button

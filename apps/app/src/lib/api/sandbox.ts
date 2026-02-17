@@ -213,9 +213,39 @@ export async function fetchSandboxRun(runId: string): Promise<SandboxRun> {
 	return data.run;
 }
 
+export async function cancelSandboxRun(
+	runId: string,
+	reason?: string,
+): Promise<SandboxRun> {
+	const headers = await apiService.getHeaders();
+	const response = await fetchApi(`/apps/sandbox/runs/${runId}/cancel`, {
+		method: "POST",
+		headers,
+		body: {
+			reason,
+		},
+	});
+
+	if (!response.ok) {
+		throw new Error(
+			await extractApiErrorMessage(
+				response,
+				`Failed to cancel sandbox run: ${response.statusText}`,
+			),
+		);
+	}
+
+	const data = await returnFetchedData<{ run: SandboxRun }>(response);
+	if (!data.run) {
+		throw new Error("Sandbox run was not returned");
+	}
+	return data.run;
+}
+
 export interface StreamSandboxRunOptions {
 	signal?: AbortSignal;
 	onEvent: (event: SandboxRunEvent) => void;
+	onRunStarted?: (runId: string) => void;
 	onComplete?: (finalEvent?: SandboxRunEvent) => void;
 }
 
@@ -243,6 +273,11 @@ export async function streamSandboxRun(
 		throw new Error(message);
 	}
 
+	const responseRunId = response.headers.get("X-Sandbox-Run-Id")?.trim();
+	if (responseRunId) {
+		options.onRunStarted?.(responseRunId);
+	}
+
 	if (!response.body) {
 		throw new Error("Sandbox stream response body is empty");
 	}
@@ -251,10 +286,16 @@ export async function streamSandboxRun(
 	if (!contentType.includes("text/event-stream")) {
 		const data = await returnFetchedData<{ run: SandboxRun }>(response);
 		const syntheticEvent: SandboxRunEvent = {
-			type: data.run?.status === "completed" ? "run_completed" : "run_failed",
+			type:
+				data.run?.status === "completed"
+					? "run_completed"
+					: data.run?.status === "cancelled"
+						? "run_cancelled"
+						: "run_failed",
 			runId: data.run?.runId,
 			result: data.run?.result,
 			error: data.run?.error,
+			message: data.run?.cancellationReason,
 		};
 		options.onEvent(syntheticEvent);
 		options.onComplete?.(syntheticEvent);
@@ -267,7 +308,11 @@ export async function streamSandboxRun(
 	let finalEvent: SandboxRunEvent | undefined;
 	const handleEvent = (event: SandboxRunEvent) => {
 		options.onEvent(event);
-		if (event.type === "run_completed" || event.type === "run_failed") {
+		if (
+			event.type === "run_completed" ||
+			event.type === "run_failed" ||
+			event.type === "run_cancelled"
+		) {
 			finalEvent = event;
 		}
 	};

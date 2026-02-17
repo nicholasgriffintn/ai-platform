@@ -4,6 +4,7 @@ import {
 	formatCommandResult,
 	quoteForShell,
 } from "../commands";
+import { throwIfAborted } from "../cancellation";
 
 import {
 	MAX_COMMANDS,
@@ -37,6 +38,7 @@ export async function executeAgentLoop(
 		repoContext,
 		executionLogs,
 		emit,
+		abortSignal,
 	} = params;
 
 	type AgentMessage = {
@@ -64,6 +66,8 @@ export async function executeAgentLoop(
 	let consecutiveCommandFailures = 0;
 
 	for (let step = 1; step <= MAX_AGENT_STEPS; step += 1) {
+		throwIfAborted(abortSignal, "Sandbox run cancelled during agent execution");
+
 		await emit({
 			type: "agent_step_started",
 			agentStep: step,
@@ -135,6 +139,11 @@ export async function executeAgentLoop(
 				break;
 			}
 			case "run_command": {
+				throwIfAborted(
+					abortSignal,
+					"Sandbox run cancelled before command execution",
+				);
+
 				if (commandCount >= MAX_COMMANDS) {
 					throw new Error(
 						`Agent exceeded maximum command budget (${MAX_COMMANDS})`,
@@ -153,6 +162,10 @@ export async function executeAgentLoop(
 
 				const result = await sandbox.exec(
 					`cd ${quoteForShell(repoTargetDir)} && ${decision.command}`,
+				);
+				throwIfAborted(
+					abortSignal,
+					"Sandbox run cancelled after command execution",
 				);
 				executionLogs.push(formatCommandResult(decision.command, result));
 

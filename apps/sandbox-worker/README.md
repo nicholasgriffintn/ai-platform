@@ -139,7 +139,7 @@ This section outlines planned improvements to make the sandbox worker production
 - [ ] Allow user to provide feedback mid-execution
 - [ ] Show AI reasoning alongside command execution
 - [ ] Add ability to approve/reject individual commands before execution
-- [ ] Implement run cancellation from client (abort SSE stream and sandbox)
+- [x] Implement run cancellation from client (abort SSE stream and sandbox)
 - [ ] Better diff viewer with syntax highlighting
 
 ### Phase 5: Stream and Execution Control
@@ -148,7 +148,7 @@ This section outlines planned improvements to make the sandbox worker production
 
 **Planned improvements:**
 
-- [ ] Implement cancellation signal from client to API to worker
+- [x] Implement cancellation signal from client to API to worker
 - [ ] Add timeout configuration per task
 - [ ] Support pause/resume for long-running tasks
 - [ ] Add execution quotas and rate limiting per user

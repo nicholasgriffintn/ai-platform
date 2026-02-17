@@ -501,9 +501,15 @@ importers:
 
   apps/sandbox-worker:
     dependencies:
+      '@assistant/schemas':
+        specifier: workspace:*
+        version: link:../../packages/schemas
       '@cloudflare/sandbox':
         specifier: 0.7.0
         version: 0.7.0
+      zod:
+        specifier: 4.3.6
+        version: 4.3.6
     devDependencies:
       '@cloudflare/workers-types':
         specifier: 4.20260207.0

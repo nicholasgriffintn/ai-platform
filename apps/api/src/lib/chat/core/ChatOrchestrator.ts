@@ -11,6 +11,7 @@ import type { CoreChatOptions, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { isAbortError } from "~/utils/abort";
 
 const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
 
@@ -367,7 +368,7 @@ export class ChatOrchestrator {
 	private determineErrorType(error: any): ErrorType {
 		if (
 			error.name === "TimeoutError" ||
-			error.name === "AbortError" ||
+			isAbortError(error) ||
 			error.code === "ECONNRESET" ||
 			error.code === "ECONNABORTED" ||
 			error.code === "ETIMEDOUT" ||

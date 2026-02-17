@@ -42,6 +42,8 @@ export function describeEvent(event: SandboxRunEvent): string {
 			return "Agent marked execution complete";
 		case "task_failed":
 			return `Task failed: ${event.error ?? "Unknown error"}`;
+		case "task_cancelled":
+			return event.error || "Task cancelled";
 		case "command_batch_ready":
 			return `Prepared ${event.commandTotal ?? "?"} commands`;
 		case "command_started":
@@ -62,6 +64,8 @@ export function describeEvent(event: SandboxRunEvent): string {
 			return `Created commit on ${event.branchName ?? "feature branch"}`;
 		case "run_completed":
 			return "Run completed successfully";
+		case "run_cancelled":
+			return event.message || "Run cancelled";
 		case "run_failed":
 			return `Run failed: ${event.error ?? "Unknown error"}`;
 		default:

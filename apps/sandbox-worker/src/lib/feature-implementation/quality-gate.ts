@@ -4,6 +4,7 @@ import {
 	formatCommandResult,
 	quoteForShell,
 } from "../commands";
+import { throwIfAborted } from "../cancellation";
 
 import { MAX_OBSERVATION_CHARS } from "./constants";
 import type {
@@ -84,6 +85,7 @@ export async function runQualityGate(params: {
 	repoTargetDir: string;
 	commands: string[];
 	executionLogs: string[];
+	abortSignal?: AbortSignal;
 	emit: (event: {
 		type: string;
 		command?: string;
@@ -94,7 +96,10 @@ export async function runQualityGate(params: {
 		message?: string;
 	}) => Promise<void>;
 }): Promise<QualityGateResult> {
-	const { sandbox, repoTargetDir, commands, executionLogs, emit } = params;
+	const { sandbox, repoTargetDir, commands, executionLogs, emit, abortSignal } =
+		params;
+
+	throwIfAborted(abortSignal, "Sandbox run cancelled before quality gate");
 
 	if (commands.length === 0) {
 		await emit({
@@ -117,6 +122,11 @@ export async function runQualityGate(params: {
 
 	const checks: QualityGateCheckResult[] = [];
 	for (const [index, command] of commands.entries()) {
+		throwIfAborted(
+			abortSignal,
+			"Sandbox run cancelled during quality gate checks",
+		);
+
 		await emit({
 			type: "quality_gate_check_started",
 			command,
@@ -126,6 +136,10 @@ export async function runQualityGate(params: {
 
 		const result = await sandbox.exec(
 			`cd ${quoteForShell(repoTargetDir)} && ${command}`,
+		);
+		throwIfAborted(
+			abortSignal,
+			"Sandbox run cancelled during quality gate checks",
 		);
 		executionLogs.push(
 			formatCommandResult(`[quality-gate] ${command}`, result),

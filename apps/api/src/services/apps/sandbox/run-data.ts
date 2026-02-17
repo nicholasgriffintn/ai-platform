@@ -1,125 +1,32 @@
-export type SandboxRunStatus =
-	| "queued"
-	| "running"
-	| "completed"
-	| "failed"
-	| "cancelled";
+import {
+	type SandboxRun,
+	type SandboxRunData,
+	type SandboxRunEvent,
+	type SandboxRunStatus,
+	sandboxRunDataSchema,
+} from "@assistant/schemas";
 
-export interface SandboxRunData {
-	runId: string;
-	installationId: number;
-	repo: string;
-	task: string;
-	model: string;
-	shouldCommit: boolean;
-	status: SandboxRunStatus;
-	startedAt: string;
-	updatedAt: string;
-	completedAt?: string;
-	error?: string;
-	events?: Array<Record<string, unknown>>;
-	result?: Record<string, unknown>;
-}
-
-const SANDBOX_RUN_STATUSES = new Set<SandboxRunStatus>([
-	"queued",
-	"running",
-	"completed",
-	"failed",
-	"cancelled",
-]);
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-	return Boolean(value) && typeof value === "object" && !Array.isArray(value);
-}
-
-function toOptionalRecordArray(
-	value: unknown,
-): Array<Record<string, unknown>> | undefined {
-	if (!Array.isArray(value)) {
-		return undefined;
-	}
-
-	const records = value.filter((entry): entry is Record<string, unknown> =>
-		isObjectRecord(entry),
-	);
-	return records.length > 0 ? records : [];
-}
-
-function toOptionalRecord(value: unknown): Record<string, unknown> | undefined {
-	return isObjectRecord(value) ? value : undefined;
-}
+export { type SandboxRunData, type SandboxRunStatus };
 
 export function parseSandboxRunData(value: unknown): SandboxRunData | null {
-	if (!isObjectRecord(value)) {
-		return null;
-	}
-
-	const runId = value.runId;
-	const installationId = value.installationId;
-	const repo = value.repo;
-	const task = value.task;
-	const model = value.model;
-	const shouldCommit = value.shouldCommit;
-	const status = value.status;
-	const startedAt = value.startedAt;
-	const updatedAt = value.updatedAt;
-
-	if (typeof runId !== "string" || !runId.trim()) {
-		return null;
-	}
-	if (typeof installationId !== "number" || !Number.isFinite(installationId)) {
-		return null;
-	}
-	if (typeof repo !== "string" || !repo.trim()) {
-		return null;
-	}
-	if (typeof task !== "string" || !task.trim()) {
-		return null;
-	}
-	if (typeof model !== "string" || !model.trim()) {
-		return null;
-	}
-	if (typeof shouldCommit !== "boolean") {
-		return null;
-	}
-	if (
-		typeof status !== "string" ||
-		!SANDBOX_RUN_STATUSES.has(status as SandboxRunStatus)
-	) {
-		return null;
-	}
-	if (typeof startedAt !== "string" || !startedAt.trim()) {
-		return null;
-	}
-	if (typeof updatedAt !== "string" || !updatedAt.trim()) {
-		return null;
-	}
-
-	const completedAt =
-		typeof value.completedAt === "string" ? value.completedAt : undefined;
-	const error = typeof value.error === "string" ? value.error : undefined;
-	const events = toOptionalRecordArray(value.events);
-	const result = toOptionalRecord(value.result);
-
-	return {
-		runId,
-		installationId,
-		repo,
-		task,
-		model,
-		shouldCommit,
-		status: status as SandboxRunStatus,
-		startedAt,
-		updatedAt,
-		completedAt,
-		error,
-		events,
-		result,
-	};
+	const parsed = sandboxRunDataSchema.safeParse(value);
+	return parsed.success ? parsed.data : null;
 }
 
-export function toSandboxRunResponse(data: SandboxRunData) {
+export function appendSandboxRunEvent(
+	events: SandboxRunEvent[] | undefined,
+	event: SandboxRunEvent,
+	maxEvents: number,
+): SandboxRunEvent[] {
+	const next = [...(events ?? []), event];
+	if (next.length <= maxEvents) {
+		return next;
+	}
+
+	return next.slice(next.length - maxEvents);
+}
+
+export function toSandboxRunResponse(data: SandboxRunData): SandboxRun {
 	return {
 		runId: data.runId,
 		installationId: data.installationId,
@@ -134,5 +41,7 @@ export function toSandboxRunResponse(data: SandboxRunData) {
 		error: data.error,
 		result: data.result,
 		events: data.events ?? [],
+		cancelRequestedAt: data.cancelRequestedAt,
+		cancellationReason: data.cancellationReason,
 	};
 }

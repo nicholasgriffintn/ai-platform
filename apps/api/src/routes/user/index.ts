@@ -1,7 +1,7 @@
 import { type Context, Hono } from "hono";
 import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
-import z from "zod/v4";
 import {
+	githubConnectionSchema,
 	errorResponseSchema,
 	successResponseSchema,
 	storeProviderApiKeySchema,
@@ -9,6 +9,7 @@ import {
 	updateUserSettingsSchema,
 	userModelsResponseSchema,
 	providersResponseSchema,
+	type GitHubConnectionPayload,
 } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
@@ -29,14 +30,6 @@ import exportHistoryRoute from "./export-history";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("user");
-
-const githubConnectionSchema = z.object({
-	installationId: z.number().int().positive(),
-	appId: z.string().trim().min(1),
-	privateKey: z.string().trim().min(1),
-	webhookSecret: z.string().trim().min(1).optional(),
-	repositories: z.array(z.string().trim().min(1)).optional(),
-});
 
 app.use("/*", requireAuth);
 
@@ -226,9 +219,7 @@ app.post(
 			);
 		}
 
-		const payload = c.req.valid("json" as never) as z.infer<
-			typeof githubConnectionSchema
-		>;
+		const payload = c.req.valid("json" as never) as GitHubConnectionPayload;
 		const serviceContext = getServiceContext(c);
 		await upsertGitHubConnectionForUser(serviceContext, user.id, payload);
 
