@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+	abortActiveSandboxRun,
 	cancelActiveSandboxRun,
+	getSandboxRunAbortReason,
 	registerActiveSandboxRun,
 } from "../run-control";
 
@@ -14,6 +16,10 @@ describe("run-control", () => {
 
 		expect(cancelled).toBe(true);
 		expect(controller.signal.aborted).toBe(true);
+		expect(getSandboxRunAbortReason(controller.signal)).toEqual({
+			type: "cancelled",
+			message: "Run cancelled by user",
+		});
 		unregister();
 	});
 
@@ -37,5 +43,21 @@ describe("run-control", () => {
 		expect(second.signal.aborted).toBe(true);
 		expect(first.signal.aborted).toBe(false);
 		unregisterSecond();
+	});
+
+	it("records timeout abort metadata", () => {
+		const controller = new AbortController();
+		registerActiveSandboxRun("run-timeout", controller);
+
+		const aborted = abortActiveSandboxRun("run-timeout", {
+			type: "timeout",
+			message: "Sandbox run timed out after 45 seconds",
+		});
+
+		expect(aborted).toBe(true);
+		expect(getSandboxRunAbortReason(controller.signal)).toEqual({
+			type: "timeout",
+			message: "Sandbox run timed out after 45 seconds",
+		});
 	});
 });

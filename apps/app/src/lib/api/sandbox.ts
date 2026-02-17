@@ -217,8 +217,47 @@ export async function cancelSandboxRun(
 	runId: string,
 	reason?: string,
 ): Promise<SandboxRun> {
+	return mutateSandboxRunState({
+		runId,
+		action: "cancel",
+		reason,
+		errorFallback: "Failed to cancel sandbox run",
+	});
+}
+
+export async function pauseSandboxRun(
+	runId: string,
+	reason?: string,
+): Promise<SandboxRun> {
+	return mutateSandboxRunState({
+		runId,
+		action: "pause",
+		reason,
+		errorFallback: "Failed to pause sandbox run",
+	});
+}
+
+export async function resumeSandboxRun(
+	runId: string,
+	reason?: string,
+): Promise<SandboxRun> {
+	return mutateSandboxRunState({
+		runId,
+		action: "resume",
+		reason,
+		errorFallback: "Failed to resume sandbox run",
+	});
+}
+
+async function mutateSandboxRunState(params: {
+	runId: string;
+	action: "cancel" | "pause" | "resume";
+	reason?: string;
+	errorFallback: string;
+}): Promise<SandboxRun> {
+	const { runId, action, reason, errorFallback } = params;
 	const headers = await apiService.getHeaders();
-	const response = await fetchApi(`/apps/sandbox/runs/${runId}/cancel`, {
+	const response = await fetchApi(`/apps/sandbox/runs/${runId}/${action}`, {
 		method: "POST",
 		headers,
 		body: {
@@ -230,7 +269,7 @@ export async function cancelSandboxRun(
 		throw new Error(
 			await extractApiErrorMessage(
 				response,
-				`Failed to cancel sandbox run: ${response.statusText}`,
+				`${errorFallback}: ${response.statusText}`,
 			),
 		);
 	}
@@ -289,9 +328,11 @@ export async function streamSandboxRun(
 			type:
 				data.run?.status === "completed"
 					? "run_completed"
-					: data.run?.status === "cancelled"
-						? "run_cancelled"
-						: "run_failed",
+					: data.run?.status === "paused"
+						? "run_paused"
+						: data.run?.status === "cancelled"
+							? "run_cancelled"
+							: "run_failed",
 			runId: data.run?.runId,
 			result: data.run?.result,
 			error: data.run?.error,

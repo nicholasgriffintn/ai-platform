@@ -111,6 +111,31 @@ describe("sandbox run data helpers", () => {
 		).toBe("refactor");
 	});
 
+	it("parses pause and timeout metadata", () => {
+		const parsed = parseSandboxRunData({
+			runId: "run-3",
+			installationId: 101,
+			repo: "owner/repo",
+			task: "Pause run",
+			model: "mistral-large",
+			shouldCommit: false,
+			status: "paused",
+			startedAt: "2026-02-17T12:00:00.000Z",
+			updatedAt: "2026-02-17T12:00:10.000Z",
+			pausedAt: "2026-02-17T12:00:08.000Z",
+			pauseReason: "Paused from console",
+			timeoutSeconds: 900,
+			timeoutAt: "2026-02-17T12:15:00.000Z",
+		});
+
+		expect(parsed).toMatchObject({
+			status: "paused",
+			pausedAt: "2026-02-17T12:00:08.000Z",
+			pauseReason: "Paused from console",
+			timeoutSeconds: 900,
+		});
+	});
+
 	it("limits appended events to max length", () => {
 		const result = appendSandboxRunEvent(
 			[{ type: "event-1" }, { type: "event-2" }],

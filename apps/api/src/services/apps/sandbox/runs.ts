@@ -14,9 +14,44 @@ import {
 } from "./run-data";
 import { cancelActiveSandboxRun } from "./run-control";
 
+type SandboxRunControlState = "running" | "paused" | "cancelled";
+
 interface SandboxRunRecord {
 	recordId: string;
 	run: SandboxRunData;
+}
+
+interface PersistRunStateTransitionParams {
+	context: ServiceContext;
+	runRecord: SandboxRunRecord;
+	nextRun: SandboxRunData;
+}
+
+function toRunControlState(run: SandboxRunData): SandboxRunControlState {
+	switch (run.status) {
+		case "paused":
+			return "paused";
+		case "cancelled":
+		case "completed":
+		case "failed":
+			return "cancelled";
+		default:
+			return "running";
+	}
+}
+
+function isTerminalRunStatus(status: SandboxRunData["status"]): boolean {
+	return (
+		status === "completed" || status === "failed" || status === "cancelled"
+	);
+}
+
+async function persistRunStateTransition(
+	params: PersistRunStateTransitionParams,
+): Promise<SandboxRunData> {
+	const { context, runRecord, nextRun } = params;
+	await context.repositories.appData.updateAppData(runRecord.recordId, nextRun);
+	return nextRun;
 }
 
 function parseSandboxRunRecordData(value: string): SandboxRunData | null {
@@ -155,12 +190,141 @@ export async function requestSandboxRunCancellation(params: {
 		),
 	};
 
-	await context.repositories.appData.updateAppData(runRecord.recordId, nextRun);
+	await persistRunStateTransition({
+		context,
+		runRecord,
+		nextRun,
+	});
 
 	return {
 		cancelled: true,
 		aborted: cancelActiveSandboxRun(runId),
 		message: "Cancellation requested",
 		run: toSandboxRunResponse(nextRun),
+	};
+}
+
+export async function requestSandboxRunPause(params: {
+	context: ServiceContext;
+	userId: number;
+	runId: string;
+	reason?: string;
+}) {
+	const { context, userId, runId, reason } = params;
+	const runRecord = await getSandboxRunRecordForUser({
+		context,
+		userId,
+		runId,
+	});
+	const run = runRecord.run;
+
+	if (isTerminalRunStatus(run.status)) {
+		return {
+			paused: false,
+			message: `Run already ${run.status}`,
+			run: toSandboxRunResponse(run),
+		};
+	}
+
+	if (run.status === "paused") {
+		return {
+			paused: true,
+			message: "Run is already paused",
+			run: toSandboxRunResponse(run),
+		};
+	}
+
+	const pausedAt = new Date().toISOString();
+	const pauseReason = reason?.trim() || "Paused by user request";
+	const nextRun: SandboxRunData = {
+		...run,
+		status: "paused",
+		updatedAt: pausedAt,
+		pausedAt,
+		pauseReason,
+	};
+
+	await persistRunStateTransition({
+		context,
+		runRecord,
+		nextRun,
+	});
+
+	return {
+		paused: true,
+		message: "Pause requested",
+		run: toSandboxRunResponse(nextRun),
+	};
+}
+
+export async function requestSandboxRunResume(params: {
+	context: ServiceContext;
+	userId: number;
+	runId: string;
+	reason?: string;
+}) {
+	const { context, userId, runId, reason } = params;
+	const runRecord = await getSandboxRunRecordForUser({
+		context,
+		userId,
+		runId,
+	});
+	const run = runRecord.run;
+
+	if (isTerminalRunStatus(run.status)) {
+		return {
+			resumed: false,
+			message: `Run already ${run.status}`,
+			run: toSandboxRunResponse(run),
+		};
+	}
+
+	if (run.status !== "paused") {
+		return {
+			resumed: false,
+			message: "Run is not paused",
+			run: toSandboxRunResponse(run),
+		};
+	}
+
+	const resumedAt = new Date().toISOString();
+	const resumeReason = reason?.trim() || "Resumed by user request";
+	const nextRun: SandboxRunData = {
+		...run,
+		status: "running",
+		updatedAt: resumedAt,
+		resumedAt,
+		resumeReason,
+	};
+
+	await persistRunStateTransition({
+		context,
+		runRecord,
+		nextRun,
+	});
+
+	return {
+		resumed: true,
+		message: "Run resumed",
+		run: toSandboxRunResponse(nextRun),
+	};
+}
+
+export async function getSandboxRunControlState(params: {
+	context: ServiceContext;
+	userId: number;
+	runId: string;
+}) {
+	const runRecord = await getSandboxRunRecordForUser(params);
+	const run = runRecord.run;
+
+	return {
+		runId: run.runId,
+		state: toRunControlState(run),
+		updatedAt: run.updatedAt,
+		cancellationReason: run.cancellationReason,
+		pauseReason: run.pauseReason,
+		timeoutSeconds: run.timeoutSeconds,
+		timeoutAt: run.timeoutAt,
 	};
 }

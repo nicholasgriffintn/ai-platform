@@ -31,6 +31,18 @@ export async function getPersistedCancelledRun(params: {
 	serviceContext: ServiceContext;
 	recordId: string;
 }): Promise<SandboxRunData | null> {
+	const parsed = await getPersistedRunData(params);
+	if (!parsed || parsed.status !== "cancelled") {
+		return null;
+	}
+
+	return parsed;
+}
+
+export async function getPersistedRunData(params: {
+	serviceContext: ServiceContext;
+	recordId: string;
+}): Promise<SandboxRunData | null> {
 	const record =
 		await params.serviceContext.repositories.appData.getAppDataById(
 			params.recordId,
@@ -42,9 +54,5 @@ export async function getPersistedCancelledRun(params: {
 	const parsed = parseSandboxRunData(
 		typeof record.data === "string" ? safeParseJson(record.data) : record.data,
 	);
-	if (!parsed || parsed.status !== "cancelled") {
-		return null;
-	}
-
 	return parsed;
 }

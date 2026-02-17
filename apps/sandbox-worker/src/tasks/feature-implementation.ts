@@ -9,7 +9,7 @@ import {
 	quoteForShell,
 	buildCommitMessage,
 } from "../lib/commands";
-import { throwIfAborted } from "../lib/cancellation";
+import { createExecutionControl } from "../lib/execution-control";
 import { classifySandboxError } from "../lib/errors";
 import {
 	DEFAULT_MODEL,
@@ -60,9 +60,19 @@ export async function executeFeatureImplementation(
 	const executionLogs: string[] = [];
 	let branchName: string | undefined;
 	const runId = params.runId;
+	const executionControl = createExecutionControl({
+		runId,
+		timeoutSeconds: params.timeoutSeconds,
+		polychatApiUrl: params.polychatApiUrl,
+		userToken: secrets.userToken,
+		abortSignal,
+		emitEvent,
+	});
+	const checkpoint = (abortMessage: string) =>
+		executionControl.checkpoint(abortMessage);
 
 	try {
-		throwIfAborted(abortSignal, "Sandbox run cancelled before task start");
+		await checkpoint("Sandbox run cancelled before task start");
 
 		await emit({
 			type: "task_started",
@@ -80,10 +90,7 @@ export async function executeFeatureImplementation(
 
 		const model = params.model || DEFAULT_MODEL;
 		const repo = resolveGitHubRepo(params.repo, secrets.githubToken);
-		throwIfAborted(
-			abortSignal,
-			"Sandbox run cancelled before repository clone",
-		);
+		await checkpoint("Sandbox run cancelled before repository clone");
 		await emit({
 			type: "repo_clone_started",
 			repo: repo.displayName,
@@ -109,7 +116,7 @@ export async function executeFeatureImplementation(
 			repo: repo.displayName,
 			targetDir: repo.targetDir,
 		});
-		throwIfAborted(abortSignal, "Sandbox run cancelled after repository clone");
+		await checkpoint("Sandbox run cancelled after repository clone");
 
 		if (params.shouldCommit) {
 			branchName = `polychat/feature-${Date.now()}`;
@@ -128,8 +135,7 @@ export async function executeFeatureImplementation(
 			sandbox,
 			repoTargetDir: repo.targetDir,
 		});
-		throwIfAborted(
-			abortSignal,
+		await checkpoint(
 			"Sandbox run cancelled while collecting repository context",
 		);
 		await emit({
@@ -173,7 +179,7 @@ export async function executeFeatureImplementation(
 			},
 			MODEL_RETRY_OPTIONS,
 		);
-		throwIfAborted(abortSignal, "Sandbox run cancelled during planning");
+		await checkpoint("Sandbox run cancelled during planning");
 
 		await emit({
 			type: "planning_completed",
@@ -198,6 +204,7 @@ export async function executeFeatureImplementation(
 			executionLogs,
 			emit,
 			abortSignal,
+			checkpoint,
 		});
 
 		const qualityGateCommands = deriveQualityGateCommands({
@@ -215,8 +222,9 @@ export async function executeFeatureImplementation(
 			executionLogs,
 			emit,
 			abortSignal,
+			checkpoint,
 		});
-		throwIfAborted(abortSignal, "Sandbox run cancelled after quality gate");
+		await checkpoint("Sandbox run cancelled after quality gate");
 
 		const storyTrackerResult = await runStoryTracker({
 			sandbox,
@@ -228,12 +236,12 @@ export async function executeFeatureImplementation(
 			qualityGateSummary: qualityGateResult.summary,
 			emit,
 		});
-		throwIfAborted(abortSignal, "Sandbox run cancelled during story tracking");
+		await checkpoint("Sandbox run cancelled during story tracking");
 
 		const diffResult = await sandbox.exec(
 			`git -C ${quoteForShell(repo.targetDir)} diff --patch`,
 		);
-		throwIfAborted(abortSignal, "Sandbox run cancelled during diff generation");
+		await checkpoint("Sandbox run cancelled during diff generation");
 		if (!diffResult.success) {
 			throw new Error(diffResult.stderr || "Failed to generate git diff");
 		}
@@ -244,7 +252,7 @@ export async function executeFeatureImplementation(
 		});
 
 		if (params.shouldCommit && qualityGateResult.passed) {
-			throwIfAborted(abortSignal, "Sandbox run cancelled before commit");
+			await checkpoint("Sandbox run cancelled before commit");
 			await execOrThrow(
 				sandbox,
 				`git -C ${quoteForShell(repo.targetDir)} config user.name ${quoteForShell("Polychat Bot")}`,
@@ -264,7 +272,7 @@ export async function executeFeatureImplementation(
 			const stagedStatus = await sandbox.exec(
 				`git -C ${quoteForShell(repo.targetDir)} diff --cached --quiet`,
 			);
-			throwIfAborted(abortSignal, "Sandbox run cancelled before commit");
+			await checkpoint("Sandbox run cancelled before commit");
 			if (stagedStatus.exitCode !== 0) {
 				await execOrThrow(
 					sandbox,

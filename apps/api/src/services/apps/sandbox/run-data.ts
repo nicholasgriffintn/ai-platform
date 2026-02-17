@@ -44,5 +44,11 @@ export function toSandboxRunResponse(data: SandboxRunData): SandboxRun {
 		events: data.events ?? [],
 		cancelRequestedAt: data.cancelRequestedAt,
 		cancellationReason: data.cancellationReason,
+		timeoutSeconds: data.timeoutSeconds,
+		timeoutAt: data.timeoutAt,
+		pausedAt: data.pausedAt,
+		resumedAt: data.resumedAt,
+		pauseReason: data.pauseReason,
+		resumeReason: data.resumeReason,
 	};
 }

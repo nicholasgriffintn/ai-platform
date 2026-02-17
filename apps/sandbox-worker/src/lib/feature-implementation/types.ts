@@ -95,6 +95,7 @@ export interface ExecuteAgentLoopParams {
 	executionLogs: string[];
 	emit: (event: TaskEvent) => Promise<void>;
 	abortSignal?: AbortSignal;
+	checkpoint?: (abortMessage: string) => Promise<void>;
 }
 
 export interface QualityGateCheckResult {

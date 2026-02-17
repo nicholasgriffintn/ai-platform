@@ -38,6 +38,7 @@ sandbox.post(
 			model: payload.model,
 			promptStrategy: payload.promptStrategy,
 			shouldCommit: Boolean(payload.shouldCommit),
+			timeoutSeconds: payload.timeoutSeconds,
 			installationId: payload.installationId,
 			stream: c.req.header("accept")?.includes("text/event-stream"),
 			runId: payload.runId,

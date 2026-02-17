@@ -1,8 +1,10 @@
 import { PolychatApiError } from "./polychat-client";
 import { SandboxCancellationError } from "./cancellation";
+import { SandboxTimeoutError } from "./execution-control";
 
 export type SandboxErrorType =
 	| "cancelled"
+	| "timeout"
 	| "validation_error"
 	| "repository_error"
 	| "model_request_error"
@@ -28,6 +30,14 @@ export function classifySandboxError(error: unknown): ClassifiedSandboxError {
 		return {
 			type: "cancelled",
 			message: error.message || "Sandbox run cancelled",
+			retryable: false,
+		};
+	}
+
+	if (error instanceof SandboxTimeoutError) {
+		return {
+			type: "timeout",
+			message: error.message || "Sandbox run timed out",
 			retryable: false,
 		};
 	}

@@ -14,7 +14,10 @@ import {
 	type SandboxRunData,
 	type SandboxRunStatus,
 } from "./run-data";
-import { registerActiveSandboxRun } from "./run-control";
+import {
+	getSandboxRunAbortReason,
+	registerActiveSandboxRun,
+} from "./run-control";
 import {
 	getPersistedCancelledRun,
 	isAbortError,
@@ -22,6 +25,8 @@ import {
 	RUN_CANCELLATION_MESSAGE,
 } from "./run-state";
 import { createSandboxEventProxyStream } from "./stream-proxy";
+import { assertSandboxRunCanStart } from "./run-limits";
+import { buildSandboxTimeoutConfig } from "./config";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/execute-stream" });
 
@@ -96,11 +101,19 @@ export async function executeSandboxRunStream(
 	params: ExecuteSandboxRunStreamParams,
 ): Promise<Response> {
 	const { env, context: serviceContext, user, payload } = params;
+	await assertSandboxRunCanStart({
+		context: serviceContext,
+		userId: user.id,
+	});
 
 	const model = await resolveSandboxModel({
 		context: serviceContext,
 		userId: user.id,
 		model: payload.model,
+	});
+	const timeoutConfig = buildSandboxTimeoutConfig({
+		env,
+		requestedTimeoutSeconds: payload.timeoutSeconds,
 	});
 
 	const runId = generateId();
@@ -117,6 +130,8 @@ export async function executeSandboxRunStream(
 		startedAt: now,
 		updatedAt: now,
 		events: [],
+		timeoutSeconds: timeoutConfig.timeoutSeconds,
+		timeoutAt: timeoutConfig.timeoutAt,
 	};
 
 	const createdRecord =
@@ -139,10 +154,21 @@ export async function executeSandboxRunStream(
 	);
 
 	const workerAbortController = new AbortController();
-	const unregisterActiveRun = registerActiveSandboxRun(
+	const unregisterActiveRunInner = registerActiveSandboxRun(
 		runId,
 		workerAbortController,
 	);
+	const timeoutMessage = `Sandbox run timed out after ${timeoutConfig.timeoutSeconds} seconds`;
+	const timeoutHandle = setTimeout(() => {
+		workerAbortController.abort({
+			type: "timeout",
+			message: timeoutMessage,
+		});
+	}, timeoutConfig.timeoutMs);
+	const unregisterActiveRun = () => {
+		clearTimeout(timeoutHandle);
+		unregisterActiveRunInner();
+	};
 
 	let workerResponse: Response;
 	try {
@@ -158,19 +184,32 @@ export async function executeSandboxRunStream(
 			installationId: payload.installationId,
 			stream: true,
 			runId,
+			timeoutSeconds: timeoutConfig.timeoutSeconds,
 			signal: workerAbortController.signal,
 		});
 	} catch (error) {
 		if (isAbortError(error) || workerAbortController.signal.aborted) {
+			const abortReason = getSandboxRunAbortReason(
+				workerAbortController.signal,
+			);
 			const completedAt = new Date().toISOString();
+			const timedOut = abortReason?.type === "timeout";
 			runData = {
 				...runData,
-				status: "cancelled",
+				status: timedOut ? "failed" : "cancelled",
 				updatedAt: completedAt,
 				completedAt,
-				cancelRequestedAt: runData.cancelRequestedAt ?? completedAt,
-				cancellationReason:
-					runData.cancellationReason ?? RUN_CANCELLATION_MESSAGE,
+				error: timedOut
+					? abortReason?.message || timeoutMessage
+					: runData.error,
+				cancelRequestedAt: timedOut
+					? runData.cancelRequestedAt
+					: (runData.cancelRequestedAt ?? completedAt),
+				cancellationReason: timedOut
+					? runData.cancellationReason
+					: (runData.cancellationReason ??
+						abortReason?.message ??
+						RUN_CANCELLATION_MESSAGE),
 			};
 			await serviceContext.repositories.appData.updateAppData(
 				createdRecord.id,

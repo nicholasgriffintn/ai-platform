@@ -19,6 +19,7 @@ vi.mock("~/utils/id", () => ({
 const mockCreateAppDataWithItem = vi.fn();
 const mockUpdateAppData = vi.fn();
 const mockGetAppDataById = vi.fn();
+const mockGetAppDataByUserAndApp = vi.fn();
 
 const mockContext = {
 	repositories: {
@@ -26,6 +27,7 @@ const mockContext = {
 			createAppDataWithItem: mockCreateAppDataWithItem,
 			updateAppData: mockUpdateAppData,
 			getAppDataById: mockGetAppDataById,
+			getAppDataByUserAndApp: mockGetAppDataByUserAndApp,
 		},
 	},
 } as any;
@@ -39,6 +41,7 @@ describe("executeSandboxRunStream", () => {
 		mockCreateAppDataWithItem.mockResolvedValue({ id: "record-1" });
 		mockUpdateAppData.mockResolvedValue(undefined);
 		mockGetAppDataById.mockResolvedValue(null);
+		mockGetAppDataByUserAndApp.mockResolvedValue([]);
 		vi.mocked(resolveSandboxModel).mockResolvedValue("mistral-large");
 	});
 
@@ -68,6 +71,7 @@ describe("executeSandboxRunStream", () => {
 			expect.objectContaining({
 				runId: "run-123",
 				status: "queued",
+				timeoutSeconds: 900,
 			}),
 		);
 		expect(mockUpdateAppData).toHaveBeenCalledTimes(2);

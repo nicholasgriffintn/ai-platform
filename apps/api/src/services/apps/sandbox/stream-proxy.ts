@@ -12,8 +12,9 @@ import {
 	type SandboxRunData,
 	type SandboxRunStatus,
 } from "./run-data";
+import { getSandboxRunAbortReason } from "./run-control";
 import {
-	getPersistedCancelledRun,
+	getPersistedRunData,
 	isAbortError,
 	RUN_CANCELLATION_MESSAGE,
 } from "./run-state";
@@ -28,6 +29,12 @@ interface CreateSandboxEventProxyStreamParams {
 	initialRunData: SandboxRunData;
 	workerAbortController: AbortController;
 	unregisterActiveRun: () => void;
+}
+
+function isTerminalRunStatus(status: SandboxRunStatus): boolean {
+	return (
+		status === "completed" || status === "failed" || status === "cancelled"
+	);
 }
 
 export function createSandboxEventProxyStream(
@@ -57,6 +64,10 @@ export function createSandboxEventProxyStream(
 			let completedAt: string | undefined;
 			let cancellationReason: string | undefined;
 			let promptStrategy = runData.promptStrategy;
+			let pausedAt: string | undefined;
+			let resumedAt: string | undefined;
+			let pauseReason: string | undefined;
+			let resumeReason: string | undefined;
 
 			const pushEvent = (event: SandboxRunEvent) => {
 				const next = appendSandboxRunEvent(
@@ -105,6 +116,23 @@ export function createSandboxEventProxyStream(
 								? parsed.error
 								: RUN_CANCELLATION_MESSAGE;
 					errorMessage = undefined;
+					return;
+				}
+
+				if (parsed.type === "run_paused") {
+					status = "paused";
+					pausedAt = new Date().toISOString();
+					if (!pauseReason && typeof parsed.message === "string") {
+						pauseReason = parsed.message;
+					}
+					return;
+				}
+
+				if (parsed.type === "run_resumed") {
+					status = "running";
+					resumedAt = new Date().toISOString();
+					resumeReason =
+						typeof parsed.message === "string" ? parsed.message : resumeReason;
 					return;
 				}
 
@@ -161,15 +189,30 @@ export function createSandboxEventProxyStream(
 				}
 			} catch (error) {
 				if (isAbortError(error) || workerAbortController.signal.aborted) {
-					status = "cancelled";
-					completedAt = new Date().toISOString();
-					cancellationReason = cancellationReason ?? RUN_CANCELLATION_MESSAGE;
-					errorMessage = undefined;
-					emit({
-						type: "run_cancelled",
-						runId,
-						message: cancellationReason,
-					});
+					const abortReason = getSandboxRunAbortReason(
+						workerAbortController.signal,
+					);
+					if (abortReason?.type === "timeout") {
+						status = "failed";
+						completedAt = new Date().toISOString();
+						errorMessage = abortReason.message;
+						emit({
+							type: "run_failed",
+							runId,
+							error: errorMessage,
+							errorType: "timeout",
+						});
+					} else {
+						status = "cancelled";
+						completedAt = new Date().toISOString();
+						cancellationReason = cancellationReason ?? RUN_CANCELLATION_MESSAGE;
+						errorMessage = undefined;
+						emit({
+							type: "run_cancelled",
+							runId,
+							message: cancellationReason,
+						});
+					}
 				} else {
 					status = "failed";
 					completedAt = new Date().toISOString();
@@ -187,17 +230,33 @@ export function createSandboxEventProxyStream(
 			} finally {
 				reader.releaseLock();
 
-				if (status === "running") {
+				if (!isTerminalRunStatus(status)) {
 					if (workerAbortController.signal.aborted) {
-						status = "cancelled";
-						completedAt = new Date().toISOString();
-						cancellationReason = cancellationReason ?? RUN_CANCELLATION_MESSAGE;
-						errorMessage = undefined;
-						emit({
-							type: "run_cancelled",
-							runId,
-							message: cancellationReason,
-						});
+						const abortReason = getSandboxRunAbortReason(
+							workerAbortController.signal,
+						);
+						if (abortReason?.type === "timeout") {
+							status = "failed";
+							completedAt = new Date().toISOString();
+							errorMessage = abortReason.message;
+							emit({
+								type: "run_failed",
+								runId,
+								error: errorMessage,
+								errorType: "timeout",
+							});
+						} else {
+							status = "cancelled";
+							completedAt = new Date().toISOString();
+							cancellationReason =
+								cancellationReason ?? RUN_CANCELLATION_MESSAGE;
+							errorMessage = undefined;
+							emit({
+								type: "run_cancelled",
+								runId,
+								message: cancellationReason,
+							});
+						}
 					} else {
 						status = "failed";
 						completedAt = new Date().toISOString();
@@ -210,19 +269,20 @@ export function createSandboxEventProxyStream(
 					}
 				}
 
+				let latestPersistedRun: SandboxRunData | null = null;
 				try {
-					const cancelledRun = await getPersistedCancelledRun({
+					latestPersistedRun = await getPersistedRunData({
 						serviceContext,
 						recordId,
 					});
-					if (cancelledRun) {
+					if (latestPersistedRun?.status === "cancelled") {
 						status = "cancelled";
 						completedAt =
-							cancelledRun.completedAt ??
+							latestPersistedRun.completedAt ??
 							completedAt ??
 							new Date().toISOString();
 						cancellationReason =
-							cancelledRun.cancellationReason ??
+							latestPersistedRun.cancellationReason ??
 							cancellationReason ??
 							RUN_CANCELLATION_MESSAGE;
 						errorMessage = undefined;
@@ -247,14 +307,32 @@ export function createSandboxEventProxyStream(
 						events,
 						updatedAt: new Date().toISOString(),
 						completedAt,
+						pausedAt:
+							pausedAt ?? latestPersistedRun?.pausedAt ?? runData.pausedAt,
+						resumedAt:
+							resumedAt ?? latestPersistedRun?.resumedAt ?? runData.resumedAt,
+						pauseReason:
+							pauseReason ??
+							latestPersistedRun?.pauseReason ??
+							runData.pauseReason,
+						resumeReason:
+							resumeReason ??
+							latestPersistedRun?.resumeReason ??
+							runData.resumeReason,
 						cancelRequestedAt:
 							status === "cancelled"
-								? (runData.cancelRequestedAt ?? completedAt)
-								: runData.cancelRequestedAt,
+								? (latestPersistedRun?.cancelRequestedAt ??
+									runData.cancelRequestedAt ??
+									completedAt)
+								: (latestPersistedRun?.cancelRequestedAt ??
+									runData.cancelRequestedAt),
 						cancellationReason:
 							status === "cancelled"
-								? (cancellationReason ?? RUN_CANCELLATION_MESSAGE)
-								: runData.cancellationReason,
+								? (cancellationReason ??
+									latestPersistedRun?.cancellationReason ??
+									RUN_CANCELLATION_MESSAGE)
+								: (latestPersistedRun?.cancellationReason ??
+									runData.cancellationReason),
 					};
 					await serviceContext.repositories.appData.updateAppData(
 						recordId,

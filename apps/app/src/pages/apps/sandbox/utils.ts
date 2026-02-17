@@ -16,6 +16,7 @@ export const getStatusBadgeVariant = (
 		cancelled: "secondary",
 		queued: "secondary",
 		running: "secondary",
+		paused: "secondary",
 	};
 	return variants[status];
 };
@@ -70,6 +71,10 @@ export function describeEvent(event: SandboxRunEvent): string {
 			return "Run completed successfully";
 		case "run_cancelled":
 			return event.message || "Run cancelled";
+		case "run_paused":
+			return event.message || "Run paused";
+		case "run_resumed":
+			return event.message || "Run resumed";
 		case "run_failed":
 			return `Run failed: ${event.error ?? "Unknown error"}`;
 		default:

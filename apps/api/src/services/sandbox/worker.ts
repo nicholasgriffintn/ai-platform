@@ -26,6 +26,7 @@ export interface ExecuteSandboxWorkerOptions {
 	taskType?: SandboxTaskType;
 	promptStrategy?: SandboxPromptStrategy;
 	shouldCommit?: boolean;
+	timeoutSeconds?: number;
 	installationId?: number;
 	stream?: boolean;
 	runId?: string;
@@ -98,6 +99,7 @@ export async function executeSandboxWorker(
 		taskType,
 		promptStrategy,
 		shouldCommit,
+		timeoutSeconds,
 		installationId,
 		stream,
 		runId,
@@ -144,6 +146,7 @@ export async function executeSandboxWorker(
 		model,
 		promptStrategy,
 		shouldCommit: Boolean(shouldCommit),
+		timeoutSeconds,
 		polychatApiUrl: resolveApiBaseUrl(env),
 		installationId,
 		runId,

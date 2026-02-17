@@ -172,6 +172,7 @@ export default {
 					repo: params.repo,
 					installationId: params.installationId,
 					startedAt: new Date().toISOString(),
+					timeoutSeconds: params.timeoutSeconds,
 				});
 
 				try {
@@ -197,6 +198,7 @@ export default {
 							runId: params.runId,
 							completedAt: new Date().toISOString(),
 							error: result.error || "Sandbox task failed",
+							errorType: result.errorType,
 							result,
 						});
 					}

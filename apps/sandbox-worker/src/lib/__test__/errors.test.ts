@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { SandboxCancellationError } from "../cancellation";
+import { SandboxTimeoutError } from "../execution-control";
 import { classifySandboxError } from "../errors";
 import { PolychatApiError } from "../polychat-client";
 
@@ -37,6 +38,15 @@ describe("classifySandboxError", () => {
 		);
 
 		expect(classified.type).toBe("cancelled");
+		expect(classified.retryable).toBe(false);
+	});
+
+	it("classifies timeout as a terminal timeout state", () => {
+		const classified = classifySandboxError(
+			new SandboxTimeoutError("Sandbox run timed out after 120 seconds"),
+		);
+
+		expect(classified.type).toBe("timeout");
 		expect(classified.retryable).toBe(false);
 	});
 });

@@ -128,7 +128,6 @@ This section outlines planned improvements to make the sandbox worker production
 - [x] Retry logic for transient failures (network, rate limits)
 - [x] Graceful degradation when AI model unavailable
 - [x] Detailed error logging with context for debugging
-- [ ] Webhook notifications for failed runs
 
 ### Phase 4: UI and UX Improvements
 
@@ -145,14 +144,14 @@ This section outlines planned improvements to make the sandbox worker production
 
 ### Phase 5: Stream and Execution Control
 
-**Current limitation:** No way to cancel running tasks from the client.
+**Current limitation:** Core execution controls are now implemented; remaining work is production hardening and observability.
 
 **Planned improvements:**
 
 - [x] Implement cancellation signal from client to API to worker
-- [ ] Add timeout configuration per task
-- [ ] Support pause/resume for long-running tasks
-- [ ] Add execution quotas and rate limiting per user
+- [x] Add timeout configuration per task
+- [x] Support pause/resume for long-running tasks
+- [x] Add execution quotas and rate limiting per user
 
 ### Phase 6: Webhook Expansion
 

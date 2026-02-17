@@ -8,6 +8,10 @@ export const SANDBOX_PROMPT_STRATEGIES = [
 	"test-hardening",
 ] as const;
 
+export const SANDBOX_TIMEOUT_MIN_SECONDS = 30;
+export const SANDBOX_TIMEOUT_DEFAULT_SECONDS = 900;
+export const SANDBOX_TIMEOUT_MAX_SECONDS = 7200;
+
 export const sandboxRepoSchema = z
 	.string()
 	.trim()
@@ -29,6 +33,12 @@ export const executeSandboxRunSchema = z.object({
 	model: z.string().trim().min(1).optional(),
 	promptStrategy: z.enum(SANDBOX_PROMPT_STRATEGIES).optional(),
 	shouldCommit: z.boolean().optional(),
+	timeoutSeconds: z
+		.number()
+		.int()
+		.min(SANDBOX_TIMEOUT_MIN_SECONDS)
+		.max(SANDBOX_TIMEOUT_MAX_SECONDS)
+		.optional(),
 });
 
 export const autoConnectSchema = z.object({
@@ -43,6 +53,14 @@ export const listRunsQuerySchema = z.object({
 });
 
 export const cancelRunSchema = z.object({
+	reason: z.string().trim().min(1).max(280).optional(),
+});
+
+export const pauseRunSchema = z.object({
+	reason: z.string().trim().min(1).max(280).optional(),
+});
+
+export const resumeRunSchema = z.object({
 	reason: z.string().trim().min(1).max(280).optional(),
 });
 
@@ -64,6 +82,7 @@ export const sandboxInstallConfigSchema = z.object({
 export const sandboxRunStatusSchema = z.enum([
 	"queued",
 	"running",
+	"paused",
 	"completed",
 	"failed",
 	"cancelled",
@@ -123,6 +142,8 @@ export const sandboxRunEventSchema = z
 		endLine: z.number().optional(),
 		truncated: z.boolean().optional(),
 		timestamp: z.string().optional(),
+		timeoutSeconds: z.number().int().positive().optional(),
+		timeoutAt: z.string().optional(),
 		result: sandboxRunResultSchema.optional(),
 	})
 	.catchall(z.unknown());
@@ -144,6 +165,12 @@ export const sandboxRunDataSchema = z.object({
 	result: sandboxRunResultSchema.optional(),
 	cancelRequestedAt: z.string().optional(),
 	cancellationReason: z.string().optional(),
+	timeoutSeconds: z.number().int().positive().optional(),
+	timeoutAt: z.string().optional(),
+	pausedAt: z.string().optional(),
+	resumedAt: z.string().optional(),
+	pauseReason: z.string().optional(),
+	resumeReason: z.string().optional(),
 });
 
 export const sandboxRunSchema = sandboxRunDataSchema.extend({
@@ -155,6 +182,22 @@ export const sandboxTaskTypeSchema = z.enum([
 	"code-review",
 ]);
 
+export const sandboxRunControlStateSchema = z.enum([
+	"running",
+	"paused",
+	"cancelled",
+]);
+
+export const sandboxRunControlSchema = z.object({
+	runId: z.string().trim().min(1),
+	state: sandboxRunControlStateSchema,
+	updatedAt: z.string().trim().min(1),
+	cancellationReason: z.string().optional(),
+	pauseReason: z.string().optional(),
+	timeoutSeconds: z.number().int().positive().optional(),
+	timeoutAt: z.string().optional(),
+});
+
 export const executeSandboxWorkerProxySchema = z.object({
 	repo: sandboxRepoSchema,
 	task: z.string().trim().min(1),
@@ -162,6 +205,12 @@ export const executeSandboxWorkerProxySchema = z.object({
 	model: z.string().trim().min(1).optional(),
 	promptStrategy: sandboxPromptStrategySchema.optional(),
 	shouldCommit: z.boolean().optional(),
+	timeoutSeconds: z
+		.number()
+		.int()
+		.min(SANDBOX_TIMEOUT_MIN_SECONDS)
+		.max(SANDBOX_TIMEOUT_MAX_SECONDS)
+		.optional(),
 	installationId: z.number().int().positive().optional(),
 	runId: z.string().trim().min(1).optional(),
 });
@@ -174,6 +223,12 @@ export const sandboxWorkerExecuteRequestSchema = z.object({
 	model: z.string().trim().min(1).optional(),
 	promptStrategy: sandboxPromptStrategySchema.optional(),
 	shouldCommit: z.boolean().optional(),
+	timeoutSeconds: z
+		.number()
+		.int()
+		.min(SANDBOX_TIMEOUT_MIN_SECONDS)
+		.max(SANDBOX_TIMEOUT_MAX_SECONDS)
+		.optional(),
 	polychatApiUrl: z.url(),
 	installationId: z.number().int().positive().optional(),
 	runId: z.string().trim().min(1).optional(),
@@ -184,6 +239,8 @@ export type ExecuteSandboxRunPayload = z.infer<typeof executeSandboxRunSchema>;
 export type AutoConnectPayload = z.infer<typeof autoConnectSchema>;
 export type ListRunsQueryPayload = z.infer<typeof listRunsQuerySchema>;
 export type CancelRunPayload = z.infer<typeof cancelRunSchema>;
+export type PauseRunPayload = z.infer<typeof pauseRunSchema>;
+export type ResumeRunPayload = z.infer<typeof resumeRunSchema>;
 
 export type SandboxConnection = z.infer<typeof sandboxConnectionSchema>;
 export type SandboxInstallConfig = z.infer<typeof sandboxInstallConfigSchema>;
@@ -195,6 +252,10 @@ export type SandboxRunData = z.infer<typeof sandboxRunDataSchema>;
 export type SandboxRun = z.infer<typeof sandboxRunSchema>;
 export type SandboxTaskType = z.infer<typeof sandboxTaskTypeSchema>;
 export type SandboxPromptStrategy = z.infer<typeof sandboxPromptStrategySchema>;
+export type SandboxRunControlState = z.infer<
+	typeof sandboxRunControlStateSchema
+>;
+export type SandboxRunControl = z.infer<typeof sandboxRunControlSchema>;
 export type ExecuteSandboxWorkerProxyPayload = z.infer<
 	typeof executeSandboxWorkerProxySchema
 >;

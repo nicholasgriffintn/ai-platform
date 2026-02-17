@@ -4,6 +4,7 @@ import {
 	CheckCircle2,
 	Copy,
 	LoaderCircle,
+	Pause,
 	Play,
 	Square,
 	TerminalSquare,
@@ -38,6 +39,8 @@ import {
 import {
 	SANDBOX_QUERY_KEYS,
 	useCancelSandboxRun,
+	usePauseSandboxRun,
+	useResumeSandboxRun,
 	useSandboxConnections,
 	useSandboxRun,
 	useSandboxRuns,
@@ -53,10 +56,13 @@ import {
 } from "~/lib/sandbox/prompt-strategies";
 import { normaliseGitHubRepoInput } from "~/lib/sandbox/repositories";
 import { cn } from "~/lib/utils";
-import type {
-	SandboxPromptStrategy,
-	SandboxRun,
-	SandboxRunEvent,
+import {
+	SANDBOX_TIMEOUT_DEFAULT_SECONDS,
+	SANDBOX_TIMEOUT_MAX_SECONDS,
+	SANDBOX_TIMEOUT_MIN_SECONDS,
+	type SandboxPromptStrategy,
+	type SandboxRun,
+	type SandboxRunEvent,
 } from "~/types/sandbox";
 import {
 	REPO_PATTERN,
@@ -94,6 +100,9 @@ function summariseRunResult(run: SandboxRun): string {
 	if (run.status === "cancelled") {
 		return run.cancellationReason || "Run cancelled.";
 	}
+	if (run.status === "paused") {
+		return run.pauseReason || "Run paused.";
+	}
 	return "Run in progress.";
 }
 
@@ -128,7 +137,8 @@ function buildMessagesFromRun(run: SandboxRun): ChatMessage[] {
 	if (
 		run.status === "completed" ||
 		run.status === "failed" ||
-		run.status === "cancelled"
+		run.status === "cancelled" ||
+		run.status === "paused"
 	) {
 		messages.push({
 			id: `${run.runId}-assistant`,
@@ -182,15 +192,23 @@ export default function SandboxConnectionPage() {
 		},
 	);
 	const cancelRunMutation = useCancelSandboxRun();
+	const pauseRunMutation = usePauseSandboxRun();
+	const resumeRunMutation = useResumeSandboxRun();
 
 	const [repo, setRepo] = useState("");
 	const [task, setTask] = useState("");
 	const [model, setModel] = useState("");
 	const [promptStrategy, setPromptStrategy] =
 		useState<SandboxPromptStrategy>("auto");
+	const [timeoutSecondsInput, setTimeoutSecondsInput] = useState(
+		String(SANDBOX_TIMEOUT_DEFAULT_SECONDS),
+	);
 	const [shouldCommit, setShouldCommit] = useState(true);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [activeRunId, setActiveRunId] = useState<string | undefined>();
+	const [liveRunStatus, setLiveRunStatus] = useState<
+		"running" | "paused" | undefined
+	>(undefined);
 	const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const timelineEndRef = useRef<HTMLDivElement>(null);
@@ -249,6 +267,22 @@ export default function SandboxConnectionPage() {
 	}, [connection?.repositories, runs]);
 
 	const normalisedRepo = useMemo(() => normaliseGitHubRepoInput(repo), [repo]);
+	const parsedTimeoutSeconds = useMemo(() => {
+		const raw = timeoutSecondsInput.trim();
+		if (!raw) {
+			return undefined;
+		}
+		const parsed = Number.parseInt(raw, 10);
+		if (!Number.isFinite(parsed)) {
+			return Number.NaN;
+		}
+		return parsed;
+	}, [timeoutSecondsInput]);
+	const hasValidTimeout =
+		parsedTimeoutSeconds === undefined ||
+		(Number.isFinite(parsedTimeoutSeconds) &&
+			parsedTimeoutSeconds >= SANDBOX_TIMEOUT_MIN_SECONDS &&
+			parsedTimeoutSeconds <= SANDBOX_TIMEOUT_MAX_SECONDS);
 	const selectedRunId = searchParams.get("runId") || undefined;
 	const targetRunId = selectedRunId || activeRunId || runs[0]?.runId;
 	const repoStorageKey = hasValidInstallationId
@@ -327,9 +361,33 @@ export default function SandboxConnectionPage() {
 			!isSubmitting &&
 			Boolean(task.trim()) &&
 			Boolean(normalisedRepo) &&
-			REPO_PATTERN.test(normalisedRepo)
+			REPO_PATTERN.test(normalisedRepo) &&
+			hasValidTimeout
 		);
-	}, [isSubmitting, normalisedRepo, task]);
+	}, [hasValidTimeout, isSubmitting, normalisedRepo, task]);
+
+	const pushAssistantMessage = (content: string, createdAt: string) => {
+		setMessages((prev) => [
+			...prev,
+			{
+				id: crypto.randomUUID(),
+				role: "assistant",
+				content,
+				createdAt,
+			},
+		]);
+	};
+
+	const pushTimelineEvent = (event: SandboxRunEvent, receivedAt: string) => {
+		const eventId = crypto.randomUUID();
+		setTimeline((prev) => {
+			const next = [...prev, { id: eventId, receivedAt, event }];
+			if (next.length > 300) {
+				return next.slice(next.length - 300);
+			}
+			return next;
+		});
+	};
 
 	const setSelectedRunInUrl = (runId?: string, replace = false) => {
 		const next = new URLSearchParams(searchParamsRef.current);
@@ -370,6 +428,7 @@ export default function SandboxConnectionPage() {
 		setActiveRunId(undefined);
 		activeRunIdRef.current = undefined;
 		setIsSubmitting(false);
+		setLiveRunStatus(undefined);
 		setMessages((prev) => [
 			...prev,
 			{
@@ -383,6 +442,52 @@ export default function SandboxConnectionPage() {
 		]);
 	};
 
+	const handlePauseRun = async () => {
+		const runId = activeRunIdRef.current;
+		if (!runId) {
+			toast.error("Run id is not available yet");
+			return;
+		}
+
+		try {
+			await pauseRunMutation.mutateAsync({
+				runId,
+				reason: "Paused from Sandbox run console",
+			});
+			setLiveRunStatus("paused");
+			toast.success("Pause requested");
+		} catch (pauseError) {
+			toast.error(
+				pauseError instanceof Error
+					? pauseError.message
+					: "Failed to pause sandbox run",
+			);
+		}
+	};
+
+	const handleResumeRun = async () => {
+		const runId = activeRunIdRef.current;
+		if (!runId) {
+			toast.error("Run id is not available yet");
+			return;
+		}
+
+		try {
+			await resumeRunMutation.mutateAsync({
+				runId,
+				reason: "Resumed from Sandbox run console",
+			});
+			setLiveRunStatus("running");
+			toast.success("Resume requested");
+		} catch (resumeError) {
+			toast.error(
+				resumeError instanceof Error
+					? resumeError.message
+					: "Failed to resume sandbox run",
+			);
+		}
+	};
+
 	const handleRunTask = async () => {
 		const trimmedRepo = normalisedRepo;
 		const trimmedTask = task.trim();
@@ -392,6 +497,12 @@ export default function SandboxConnectionPage() {
 		}
 		if (!trimmedTask) {
 			toast.error("Describe the task you want to run");
+			return;
+		}
+		if (!hasValidTimeout) {
+			toast.error(
+				`Timeout must be between ${SANDBOX_TIMEOUT_MIN_SECONDS} and ${SANDBOX_TIMEOUT_MAX_SECONDS} seconds`,
+			);
 			return;
 		}
 		if (!connection) {
@@ -405,6 +516,7 @@ export default function SandboxConnectionPage() {
 		hydratedSnapshotRef.current = undefined;
 		setActiveRunId(undefined);
 		activeRunIdRef.current = undefined;
+		setLiveRunStatus("running");
 		setSelectedRunInUrl(undefined, true);
 		setRepo(trimmedRepo);
 		setTimeline([]);
@@ -427,6 +539,7 @@ export default function SandboxConnectionPage() {
 					model: model.trim() || undefined,
 					promptStrategy,
 					shouldCommit,
+					timeoutSeconds: parsedTimeoutSeconds,
 				},
 				{
 					signal: controller.signal,
@@ -440,16 +553,8 @@ export default function SandboxConnectionPage() {
 						setSelectedRunInUrl(runId, true);
 					},
 					onEvent: (event) => {
-						const eventId = crypto.randomUUID();
 						const receivedAt = new Date().toISOString();
-
-						setTimeline((prev) => {
-							const next = [...prev, { id: eventId, receivedAt, event }];
-							if (next.length > 300) {
-								return next.slice(next.length - 300);
-							}
-							return next;
-						});
+						pushTimelineEvent(event, receivedAt);
 
 						if (event.runId) {
 							if (!activeRunIdRef.current) {
@@ -460,48 +565,41 @@ export default function SandboxConnectionPage() {
 						}
 
 						if (event.type === "run_completed") {
+							setLiveRunStatus(undefined);
 							const summary =
 								typeof event.result?.summary === "string"
 									? event.result.summary
 									: "Sandbox run completed.";
-							setMessages((prev) => [
-								...prev,
-								{
-									id: crypto.randomUUID(),
-									role: "assistant",
-									content: summary,
-									createdAt: receivedAt,
-								},
-							]);
+							pushAssistantMessage(summary, receivedAt);
 						}
 
 						if (event.type === "run_failed") {
-							setMessages((prev) => [
-								...prev,
-								{
-									id: crypto.randomUUID(),
-									role: "assistant",
-									content: event.error || "Sandbox run failed.",
-									createdAt: receivedAt,
-								},
-							]);
+							setLiveRunStatus(undefined);
+							pushAssistantMessage(
+								event.error || "Sandbox run failed.",
+								receivedAt,
+							);
 						}
 
 						if (event.type === "run_cancelled") {
-							setMessages((prev) => [
-								...prev,
-								{
-									id: crypto.randomUUID(),
-									role: "assistant",
-									content:
-										event.message || event.error || "Sandbox run cancelled.",
-									createdAt: receivedAt,
-								},
-							]);
+							setLiveRunStatus(undefined);
+							pushAssistantMessage(
+								event.message || event.error || "Sandbox run cancelled.",
+								receivedAt,
+							);
+						}
+
+						if (event.type === "run_paused") {
+							setLiveRunStatus("paused");
+						}
+
+						if (event.type === "run_resumed") {
+							setLiveRunStatus("running");
 						}
 					},
 					onComplete: (finalEvent) => {
 						setIsSubmitting(false);
+						setLiveRunStatus(undefined);
 						abortControllerRef.current = null;
 
 						if (finalEvent?.runId) {
@@ -520,17 +618,13 @@ export default function SandboxConnectionPage() {
 			const asError = streamError as Error;
 			if (asError.name !== "AbortError") {
 				toast.error(asError.message || "Failed to run sandbox task");
-				setMessages((prev) => [
-					...prev,
-					{
-						id: crypto.randomUUID(),
-						role: "assistant",
-						content: asError.message || "Failed to run sandbox task",
-						createdAt: new Date().toISOString(),
-					},
-				]);
+				pushAssistantMessage(
+					asError.message || "Failed to run sandbox task",
+					new Date().toISOString(),
+				);
 			}
 			setIsSubmitting(false);
+			setLiveRunStatus(undefined);
 			abortControllerRef.current = null;
 			activeRunIdRef.current = undefined;
 			queryClient.invalidateQueries({ queryKey: SANDBOX_QUERY_KEYS.root });
@@ -668,6 +762,34 @@ export default function SandboxConnectionPage() {
 											{getSandboxPromptStrategyDescription(promptStrategy)}
 										</p>
 									</div>
+									<div className="space-y-2">
+										<Label htmlFor="sandbox-timeout-input">
+											Timeout (seconds)
+										</Label>
+										<Input
+											id="sandbox-timeout-input"
+											type="number"
+											min={SANDBOX_TIMEOUT_MIN_SECONDS}
+											max={SANDBOX_TIMEOUT_MAX_SECONDS}
+											step={1}
+											value={timeoutSecondsInput}
+											onChange={(event) =>
+												setTimeoutSecondsInput(event.target.value)
+											}
+											placeholder={String(SANDBOX_TIMEOUT_DEFAULT_SECONDS)}
+										/>
+										{!hasValidTimeout ? (
+											<p className="text-xs text-red-600 dark:text-red-400">
+												Timeout must be between {SANDBOX_TIMEOUT_MIN_SECONDS}{" "}
+												and {SANDBOX_TIMEOUT_MAX_SECONDS} seconds.
+											</p>
+										) : (
+											<p className="text-xs text-muted-foreground">
+												Per-run execution timeout; the run will fail once this
+												limit is reached.
+											</p>
+										)}
+									</div>
 								</div>
 								<div className="space-y-2">
 									<Label htmlFor="sandbox-task-input">Task</Label>
@@ -712,14 +834,37 @@ export default function SandboxConnectionPage() {
 									</label>
 									<div className="flex items-center gap-2">
 										{isSubmitting && (
-											<Button
-												variant="secondary"
-												icon={<Square className="h-4 w-4" />}
-												onClick={() => void handleCancelRun()}
-												isLoading={cancelRunMutation.isPending}
-											>
-												Cancel run
-											</Button>
+											<>
+												{liveRunStatus === "paused" ? (
+													<Button
+														variant="secondary"
+														icon={<Play className="h-4 w-4" />}
+														onClick={() => void handleResumeRun()}
+														isLoading={resumeRunMutation.isPending}
+														disabled={!activeRunId}
+													>
+														Resume run
+													</Button>
+												) : (
+													<Button
+														variant="secondary"
+														icon={<Pause className="h-4 w-4" />}
+														onClick={() => void handlePauseRun()}
+														isLoading={pauseRunMutation.isPending}
+														disabled={!activeRunId}
+													>
+														Pause run
+													</Button>
+												)}
+												<Button
+													variant="secondary"
+													icon={<Square className="h-4 w-4" />}
+													onClick={() => void handleCancelRun()}
+													isLoading={cancelRunMutation.isPending}
+												>
+													Cancel run
+												</Button>
+											</>
 										)}
 										<Button
 											variant="primary"
@@ -877,6 +1022,28 @@ export default function SandboxConnectionPage() {
 												selectedRun.promptStrategy,
 											)}
 										</p>
+										{typeof selectedRun.timeoutSeconds === "number" && (
+											<p>
+												<span className="font-medium">Timeout:</span>{" "}
+												{selectedRun.timeoutSeconds}s
+											</p>
+										)}
+										{selectedRun.status === "paused" &&
+											typeof selectedRun.pauseReason === "string" && (
+												<p>
+													<span className="font-medium">Pause reason:</span>{" "}
+													{selectedRun.pauseReason}
+												</p>
+											)}
+										{selectedRun.status === "cancelled" &&
+											typeof selectedRun.cancellationReason === "string" && (
+												<p>
+													<span className="font-medium">
+														Cancellation reason:
+													</span>{" "}
+													{selectedRun.cancellationReason}
+												</p>
+											)}
 										{typeof selectedRun.result?.branchName === "string" && (
 											<p>
 												<span className="font-medium">Branch:</span>{" "}

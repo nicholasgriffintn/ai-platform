@@ -40,7 +40,16 @@ export async function executeAgentLoop(
 		executionLogs,
 		emit,
 		abortSignal,
+		checkpoint,
 	} = params;
+
+	const guardExecution = async (abortMessage: string) => {
+		if (checkpoint) {
+			await checkpoint(abortMessage);
+			return;
+		}
+		throwIfAborted(abortSignal, abortMessage);
+	};
 
 	type AgentMessage = {
 		role: "system" | "user" | "assistant";
@@ -71,7 +80,7 @@ export async function executeAgentLoop(
 	let consecutiveCommandFailures = 0;
 
 	for (let step = 1; step <= MAX_AGENT_STEPS; step += 1) {
-		throwIfAborted(abortSignal, "Sandbox run cancelled during agent execution");
+		await guardExecution("Sandbox run cancelled during agent execution");
 
 		await emit({
 			type: "agent_step_started",
@@ -144,10 +153,7 @@ export async function executeAgentLoop(
 				break;
 			}
 			case "run_command": {
-				throwIfAborted(
-					abortSignal,
-					"Sandbox run cancelled before command execution",
-				);
+				await guardExecution("Sandbox run cancelled before command execution");
 
 				if (commandCount >= MAX_COMMANDS) {
 					throw new Error(
@@ -168,10 +174,7 @@ export async function executeAgentLoop(
 				const result = await sandbox.exec(
 					`cd ${quoteForShell(repoTargetDir)} && ${decision.command}`,
 				);
-				throwIfAborted(
-					abortSignal,
-					"Sandbox run cancelled after command execution",
-				);
+				await guardExecution("Sandbox run cancelled after command execution");
 				executionLogs.push(formatCommandResult(decision.command, result));
 
 				if (!result.success) {

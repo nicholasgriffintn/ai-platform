@@ -3,6 +3,8 @@ import { validator as zValidator, describeRoute, resolver } from "hono-openapi";
 import {
 	autoConnectSchema,
 	cancelRunSchema,
+	pauseRunSchema,
+	resumeRunSchema,
 	errorResponseSchema,
 	executeSandboxRunSchema,
 	githubConnectionSchema,
@@ -12,6 +14,8 @@ import {
 	type ExecuteSandboxRunPayload,
 	type GitHubConnectionPayload,
 	type ListRunsQueryPayload,
+	type PauseRunPayload,
+	type ResumeRunPayload,
 } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
@@ -22,8 +26,11 @@ import type { IUser } from "~/types";
 import { executeSandboxRunStream } from "~/services/apps/sandbox/execute-stream";
 import {
 	getSandboxRunForUser,
+	getSandboxRunControlState,
 	listSandboxRunsForUser,
 	requestSandboxRunCancellation,
+	requestSandboxRunPause,
+	requestSandboxRunResume,
 } from "~/services/apps/sandbox/runs";
 import { listGitHubAppConnectionsForUser } from "~/services/github/connections";
 import {
@@ -337,6 +344,90 @@ app.get(
 );
 
 app.post(
+	"/runs/:runId/pause",
+	describeRoute({
+		tags: ["apps"],
+		description: "Pause a running sandbox run",
+		responses: {
+			200: {
+				description: "Sandbox run pause was processed",
+				content: {
+					"application/json": {},
+				},
+			},
+			401: {
+				description: "Unauthorized",
+				content: {
+					"application/json": {
+						schema: resolver(errorResponseSchema),
+					},
+				},
+			},
+		},
+	}),
+	zValidator("json", pauseRunSchema),
+	async (c: Context) => {
+		const user = c.get("user") as IUser;
+		const runId = c.req.param("runId");
+		const payload = c.req.valid("json" as never) as PauseRunPayload;
+		if (!runId) {
+			throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
+		}
+
+		const result = await requestSandboxRunPause({
+			context: getServiceContext(c),
+			userId: user.id,
+			runId,
+			reason: payload.reason,
+		});
+
+		return ResponseFactory.success(c, result);
+	},
+);
+
+app.post(
+	"/runs/:runId/resume",
+	describeRoute({
+		tags: ["apps"],
+		description: "Resume a paused sandbox run",
+		responses: {
+			200: {
+				description: "Sandbox run resume was processed",
+				content: {
+					"application/json": {},
+				},
+			},
+			401: {
+				description: "Unauthorized",
+				content: {
+					"application/json": {
+						schema: resolver(errorResponseSchema),
+					},
+				},
+			},
+		},
+	}),
+	zValidator("json", resumeRunSchema),
+	async (c: Context) => {
+		const user = c.get("user") as IUser;
+		const runId = c.req.param("runId");
+		const payload = c.req.valid("json" as never) as ResumeRunPayload;
+		if (!runId) {
+			throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
+		}
+
+		const result = await requestSandboxRunResume({
+			context: getServiceContext(c),
+			userId: user.id,
+			runId,
+			reason: payload.reason,
+		});
+
+		return ResponseFactory.success(c, result);
+	},
+);
+
+app.post(
 	"/runs/:runId/cancel",
 	describeRoute({
 		tags: ["apps"],
@@ -375,6 +466,45 @@ app.post(
 		});
 
 		return ResponseFactory.success(c, result);
+	},
+);
+
+app.get(
+	"/runs/:runId/control",
+	describeRoute({
+		tags: ["apps"],
+		description: "Get run execution control state for worker coordination",
+		responses: {
+			200: {
+				description: "Sandbox run control state",
+				content: {
+					"application/json": {},
+				},
+			},
+			401: {
+				description: "Unauthorized",
+				content: {
+					"application/json": {
+						schema: resolver(errorResponseSchema),
+					},
+				},
+			},
+		},
+	}),
+	async (c: Context) => {
+		const user = c.get("user") as IUser;
+		const runId = c.req.param("runId");
+		if (!runId) {
+			throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
+		}
+
+		const control = await getSandboxRunControlState({
+			context: getServiceContext(c),
+			userId: user.id,
+			runId,
+		});
+
+		return ResponseFactory.success(c, control);
 	},
 );
 
