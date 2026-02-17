@@ -67,7 +67,7 @@ export class ReplicateMusicProvider implements MusicProvider {
 				prompt: request.prompt,
 				input_audio: request.inputAudio,
 				duration: request.duration,
-				...(request.metadata ?? {}),
+				...request.metadata,
 			}).filter(([, value]) => value !== undefined && value !== null),
 		);
 

@@ -20,6 +20,7 @@ export type IFunctionResponse = {
 	timestamp?: number;
 	model?: string;
 	platform?: Platform;
+	[key: string]: any;
 };
 
 export interface IFunction {
@@ -36,6 +37,7 @@ export interface IFunction {
 			[key: string]: {
 				type: string;
 				description: string;
+				pattern?: string;
 				default?: any;
 				minimum?: number;
 				maximum?: number;

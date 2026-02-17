@@ -46,7 +46,7 @@ export class UserSettingsRepository extends BaseRepository {
 				iv: bufferToBase64(iv),
 				data: bufferToBase64(new Uint8Array(encryptedData)),
 			};
-		} catch (_error) {
+		} catch {
 			throw new AssistantError(
 				"Failed to encrypt data",
 				ErrorType.UNKNOWN_ERROR,
@@ -73,7 +73,7 @@ export class UserSettingsRepository extends BaseRepository {
 			);
 
 			return new TextDecoder().decode(decryptedData);
-		} catch (_error) {
+		} catch {
 			throw new AssistantError(
 				"Failed to decrypt data",
 				ErrorType.UNKNOWN_ERROR,
@@ -121,7 +121,7 @@ export class UserSettingsRepository extends BaseRepository {
 			}
 
 			await this.executeRun(insert.query, insert.values);
-		} catch (_error) {
+		} catch {
 			throw new AssistantError(
 				"Failed to create user settings",
 				ErrorType.UNKNOWN_ERROR,
@@ -175,6 +175,7 @@ export class UserSettingsRepository extends BaseRepository {
 			transcription_provider: settings.transcription_provider ?? null,
 			transcription_model: settings.transcription_model ?? null,
 			search_provider: settings.search_provider ?? null,
+			sandbox_model: settings.sandbox_model ?? null,
 		};
 
 		const allowedFields = Object.keys(updates);
@@ -222,6 +223,7 @@ export class UserSettingsRepository extends BaseRepository {
 			"transcription_provider",
 			"transcription_model",
 			"search_provider",
+			"sandbox_model",
 		];
 		const { query, values } = this.buildSelectQuery(
 			"user_settings",

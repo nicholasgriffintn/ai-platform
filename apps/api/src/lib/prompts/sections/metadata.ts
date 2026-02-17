@@ -24,10 +24,6 @@ function asList(values?: string[]): string {
 	return values && values.length > 0 ? values.join(", ") : "unspecified";
 }
 
-function toBooleanString(value?: boolean): string {
-	return value ? "true" : "false";
-}
-
 export function buildAssistantMetadataSection({
 	request,
 	modelId,

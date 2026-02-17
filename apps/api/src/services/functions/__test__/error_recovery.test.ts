@@ -98,9 +98,9 @@ describe("retry_with_backoff", () => {
 	});
 
 	it("respects max_backoff limit", async () => {
-		const mockHandleFunctions = vi
-			.spyOn(functionsIndex, "handleFunctions")
-			.mockRejectedValue(new Error("Always fails"));
+		vi.spyOn(functionsIndex, "handleFunctions").mockRejectedValue(
+			new Error("Always fails"),
+		);
 
 		const resultPromise = retry_with_backoff.function(
 			"completion_id",
@@ -220,8 +220,7 @@ describe("fallback", () => {
 	});
 
 	it("excludes primary error when include_primary_error is false", async () => {
-		const mockHandleFunctions = vi
-			.spyOn(functionsIndex, "handleFunctions")
+		vi.spyOn(functionsIndex, "handleFunctions")
 			.mockRejectedValueOnce(new Error("Primary failed"))
 			.mockResolvedValueOnce({
 				status: "success",

@@ -96,7 +96,6 @@ app.post(
 	}),
 	zValidator("json", createApiKeySchema),
 	async (c: Context) => {
-		const user = c.get("user");
 		const { name } = c.req.valid("json" as never) as { name: string };
 		const serviceContext = getServiceContext(c);
 

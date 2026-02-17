@@ -49,6 +49,12 @@
 			"invocation_logs": false
 		}
 	},
+	"services": [
+		{
+			"binding": "SANDBOX_WORKER",
+			"service": "sandbox-worker",
+		},
+	],
 	"analytics_engine_datasets": [
 		{
 			"binding": "ANALYTICS",

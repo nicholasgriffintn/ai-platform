@@ -42,21 +42,19 @@ export async function completeTutorRequest(
 
 	const query = `I want to learn about ${topic}`;
 
-	const [webSearchResults] = await Promise.all([
-		// TODO: Maybe we need to scrape to get the full content or force include raw content?
-		handleWebSearch({
-			query,
-			options: {
-				search_depth: options.search_depth,
-				include_answer: options.include_answer,
-				include_raw_content: options.include_raw_content,
-				include_images: options.include_images,
-				max_results: 9,
-			},
-			env: env,
-			user: user,
-		}),
-	]);
+	// TODO: Maybe we need to scrape to get the full content or force include raw content?
+	const webSearchResults = await handleWebSearch({
+		query,
+		options: {
+			search_depth: options.search_depth,
+			include_answer: options.include_answer,
+			include_raw_content: options.include_raw_content,
+			include_images: options.include_images,
+			max_results: 9,
+		},
+		env: env,
+		user: user,
+	});
 
 	const searchData = webSearchResults.data || {};
 	const searchResults = Array.isArray(searchData.results)

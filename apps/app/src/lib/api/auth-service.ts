@@ -45,7 +45,7 @@ class AuthService {
 
 		try {
 			return await window.PublicKeyCredential.isConditionalMediationAvailable();
-		} catch (_e) {
+		} catch {
 			return false;
 		}
 	}

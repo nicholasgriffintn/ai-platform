@@ -61,7 +61,7 @@ export const handlePodcastUpload = async (
 				contentType: "audio/mpeg",
 				contentLength: length,
 			});
-		} catch (_error) {
+		} catch {
 			throw new AssistantError(
 				"Failed to upload podcast",
 				ErrorType.UNKNOWN_ERROR,

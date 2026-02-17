@@ -649,7 +649,7 @@ export class SharedAgentRepository extends BaseRepository {
 				for (const tag of tags) {
 					tagCounts[tag] = (tagCounts[tag] || 0) + 1;
 				}
-			} catch (e) {
+			} catch {
 				logger.error("Error parsing tags:", { error: "", tags: result.tags });
 			}
 		}

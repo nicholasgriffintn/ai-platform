@@ -27,8 +27,11 @@ export type IEnv = {
 	TRAINING_QUALITY_SCORING_ENABLED?: string;
 	ASSETS_BUCKET: any;
 	ACCOUNT_ID: string;
+	APP_BASE_URL?: string;
+	API_BASE_URL?: string;
 	ANTHROPIC_API_KEY?: string;
 	AI_GATEWAY_TOKEN?: string;
+	SANDBOX_WORKER?: Fetcher;
 	GROK_API_KEY?: string;
 	HUGGINGFACE_TOKEN?: string;
 	REPLICATE_API_TOKEN?: string;
@@ -62,6 +65,11 @@ export type IEnv = {
 	BROWSER_RENDERING_API_KEY?: string;
 	GITHUB_CLIENT_ID?: string;
 	GITHUB_CLIENT_SECRET?: string;
+	GITHUB_APP_ID?: string;
+	GITHUB_APP_PRIVATE_KEY?: string;
+	GITHUB_APP_WEBHOOK_SECRET?: string;
+	GITHUB_APP_INSTALL_URL?: string;
+	GITHUB_APP_SLUG?: string;
 	JWT_SECRET?: string;
 	EMAIL_JWT_SECRET?: string;
 	CARTESIA_API_KEY?: string;

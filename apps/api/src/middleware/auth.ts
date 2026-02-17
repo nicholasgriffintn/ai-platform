@@ -83,7 +83,11 @@ function parseCookies(cookieHeader: string): Record<string, string> {
  */
 export async function authMiddleware(context: Context, next: Next) {
 	const path = context.req.path;
-	if (path === "/status" || path === "/openapi") {
+	if (
+		path === "/status" ||
+		path === "/openapi" ||
+		path.startsWith("/webhooks/")
+	) {
 		return next();
 	}
 

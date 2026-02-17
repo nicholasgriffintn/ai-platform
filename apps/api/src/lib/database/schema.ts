@@ -254,6 +254,7 @@ export const userSettings = sqliteTable(
 		search_provider: text({
 			enum: ["duckduckgo", "tavily", "serper", "parallel", "perplexity", "exa"],
 		}),
+		sandbox_model: text(),
 		tracking_enabled: integer({ mode: "boolean" }).default(true),
 		public_key: text(),
 		private_key: text(),

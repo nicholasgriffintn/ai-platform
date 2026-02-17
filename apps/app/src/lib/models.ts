@@ -12,8 +12,8 @@ const filteredModelsFromWebLLM = modelsFromWebLLM.filter((model) => {
 	return model.model_id.includes("q0f16") || model.model_id.includes("q4f16");
 });
 
-export const webLLMModels: ModelConfig = {
-	...filteredModelsFromWebLLM.reduce((acc, model) => {
+export const webLLMModels: ModelConfig = filteredModelsFromWebLLM.reduce(
+	(acc, model) => {
 		const newModel = {
 			id: model.model_id,
 			matchingModel: model.model_id,
@@ -27,8 +27,9 @@ export const webLLMModels: ModelConfig = {
 		};
 		acc[model.model_id] = newModel;
 		return acc;
-	}, {} as ModelConfig),
-};
+	},
+	{} as ModelConfig,
+);
 
 export function getAvailableModels(
 	apiModels: ModelConfig,

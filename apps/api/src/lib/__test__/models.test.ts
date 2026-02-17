@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { KVCache } from "~/lib/cache";
-import { Database } from "~/lib/database";
 import type { ModelConfigItem, IUser } from "~/types";
 import {
 	filterModelsForUserAccess,
@@ -107,7 +106,6 @@ const mockUser = {
 
 describe("Models", () => {
 	let mockCache: any;
-	let mockDatabase: any;
 	let mockEnv: any;
 
 	beforeEach(async () => {

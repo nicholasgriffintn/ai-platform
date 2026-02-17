@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModel } from "~/lib/providers/models";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { AssistantError } from "~/utils/errors";
 import {
 	createNote,

@@ -1,7 +1,5 @@
 import { KVCache } from "~/lib/cache";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/user/operations" });

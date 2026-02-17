@@ -182,7 +182,7 @@ export function createMultiModelStream(
 								}
 							}
 						}
-					} catch (_e) {
+					} catch {
 						/* ignore parse errors during capture */
 					}
 
@@ -249,7 +249,7 @@ export function createMultiModelStream(
 							} else {
 								controller.enqueue(value);
 							}
-						} catch (_e) {
+						} catch {
 							controller.enqueue(value);
 						}
 					}

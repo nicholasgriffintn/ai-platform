@@ -1,8 +1,4 @@
-import {
-	type OcrParams,
-	type OcrResult,
-	performOcr,
-} from "~/services/apps/retrieval/ocr";
+import { type OcrParams, performOcr } from "~/services/apps/retrieval/ocr";
 import type { IFunction, IRequest } from "~/types";
 
 export const extract_text_from_document: IFunction = {
@@ -72,7 +68,7 @@ export const extract_text_from_document: IFunction = {
 			output_format?: "json" | "html" | "markdown";
 		},
 		req: IRequest,
-		app_url?: string,
+		_app_url?: string,
 	) => {
 		if (!args.document_url || !args.document_name) {
 			throw new Error("document_url and document_name are required parameters");

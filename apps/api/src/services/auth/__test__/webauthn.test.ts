@@ -13,7 +13,6 @@ import type {
 	VerifiedRegistrationResponse,
 } from "@simplewebauthn/server";
 
-import { AssistantError, ErrorType } from "~/utils/errors";
 import {
 	generatePasskeyRegistrationOptions,
 	getPasskeyWithUser,

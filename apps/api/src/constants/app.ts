@@ -28,6 +28,8 @@ export const ROUTES = {
 	AGENTS: "/agents",
 	ADMIN: "/admin",
 	MEMORIES: "/memories",
+	SANDBOX: "/sandbox",
+	WEBHOOKS: "/webhooks",
 } as const;
 
 const NON_AUTH_DAILY_MESSAGE_LIMIT = 10;
@@ -52,3 +54,7 @@ export const MAGIC_LINK_EXPIRATION_MINUTES = 15;
 export const MAX_CONTENT_LENGTH = 1000000; // 1MB
 export const MAX_THINKING_LENGTH = 500000; // 500KB
 export const MAX_BUFFER_LENGTH = 100000; // 100KB
+
+export const SANDBOX_RUNS_APP_ID = "sandbox_runs";
+export const SANDBOX_RUN_ITEM_TYPE = "sandbox_run";
+export const MAX_STORED_STREAM_EVENTS = 500;

@@ -81,7 +81,7 @@ export const handlePromptCoachSuggestion = async (req: {
 			content: string,
 			tagName: string,
 		): string | null => {
-			const regex = new RegExp(`<${tagName}>([\\\s\\\S]*?)<\/${tagName}>`, "i");
+			const regex = new RegExp(`<${tagName}>([\\s\\S]*?)</${tagName}>`, "i");
 			const match = regex.exec(content);
 			return match?.[1]?.trim() ?? null;
 		};

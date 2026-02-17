@@ -26,9 +26,11 @@ export function useTheme() {
 				: theme;
 
 		root.classList.add(effectiveTheme);
-		theme === "system"
-			? window.localStorage.removeItem("theme")
-			: window.localStorage.setItem("theme", theme);
+		if (theme === "system") {
+			window.localStorage.removeItem("theme");
+		} else {
+			window.localStorage.setItem("theme", theme);
+		}
 	}, [theme]);
 
 	return [theme, setTheme] as const;

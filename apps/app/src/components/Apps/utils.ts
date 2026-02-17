@@ -14,6 +14,7 @@ import {
 	FileText,
 	FolderOpen,
 	GraduationCap,
+	Hammer,
 	Image as ImageIcon,
 	Mail,
 	MessageSquare,
@@ -192,6 +193,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
 	"get-team-members": UsersRound,
 	"get-weather": Cloud,
 	"document-text": FileText,
+	hammer: Hammer,
 };
 
 const normaliseIconName = (value?: string): string | undefined => {

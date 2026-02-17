@@ -43,7 +43,6 @@ import {
 } from "~/services/apps/tutor";
 import {
 	getResearchTaskStatus,
-	handleResearchTask,
 	startResearchTask,
 } from "~/services/research/task";
 
@@ -165,7 +164,6 @@ app.post(
 	zValidator("json", captureScreenshotSchema),
 	requirePlan("pro"),
 	async (context: Context) => {
-		const user = context.get("user");
 		const body = context.req.valid("json" as never) as CaptureScreenshotParams;
 		const response = await captureScreenshot(body, {
 			env: context.env as IEnv,
