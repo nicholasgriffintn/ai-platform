@@ -42,6 +42,7 @@ This monorepo contains:
 
 - **[API](./apps/api)** - OpenAI-compatible API with 40+ models (served via [OpenAPI](https://api.polychat.app/openapi))
 - **[Web App](./apps/app)** - React-based PWA frontend
+- **[Sandbox Worker](./apps/sandbox-worker)** - Automated coding tool with Cloudflare Sandboxes
 - **[Metrics Dashboard](./apps/metrics)** - Usage analytics and monitoring
 - **[Mobile App](./apps/mobile/ios)** - iOS application ([TestFlight](https://testflight.apple.com/join/52xrwxRP))
 
@@ -63,10 +64,29 @@ This monorepo contains:
 - **[AI Podcasting](https://nicholasgriffin.dev/blog/launching-an-automated-podcasting-app)** - Generate podcasts with AI
 - **[Drawing Apps](https://nicholasgriffin.dev/blog/anyone-can-draw)** - AI-powered creative tools
 - **[Benchmarking](https://nicholasgriffin.dev/blog/building-a-tool-to-benchmark-ai)** - Model performance testing
+- **Automated Coding** - AI-powered code generation in sandboxed environments (see below)
 - **Web Search Integration** - Internet-grounded responses
 - **Media Uploads** - Images, documents via Cloudflare R2
 - **Tool Calling** - Multi-step function execution
 - **Web LLM Support** - Offline mode for web app
+
+### Automated Coding with Sandbox Worker
+
+The [Sandbox Worker](./apps/sandbox-worker) uses Cloudflare Sandboxes to run AI-powered code generation tasks against GitHub repositories. This enables automated feature implementation triggered via GitHub comments or the web UI.
+
+**How it works:**
+
+1. Install the GitHub App on your repository
+2. Comment `/implement {task description}` on a PR
+3. The AI generates an implementation plan and executes commands in an isolated sandbox
+4. Changes are committed to a feature branch for review
+
+**Key capabilities:**
+
+- Isolated command execution with security restrictions
+- Real-time progress streaming via SSE
+- Git operations (clone, branch, commit)
+- Web UI for installation and task tracking
 
 **See all features in the OpenAPI reference → [api.polychat.app/openapi](https://api.polychat.app/openapi)**
 
@@ -78,7 +98,7 @@ Polychat is configured with usage limits to prevent abuse. These limits are as f
 - 50 standard messages per day for authenticated users
 - 200 pro tokens per day for authenticated users
 
-Pro tokens are calculated based on a multiplier of the cost of the model. For example, if a model costs $0.01 per 1000 input tokens and $0.05 per 1000 output tokens, then the pro token limit is 200 * (0.01 + 0.05) / 2 = 6.
+Pro tokens are calculated based on a multiplier of the cost of the model. For example, if a model costs $0.01 per 1000 input tokens and $0.05 per 1000 output tokens, then the pro token limit is 200 \* (0.01 + 0.05) / 2 = 6.
 
 This equates to around:
 
@@ -94,6 +114,7 @@ If you are providing your own service and would like to change these limits, you
 
 1. Clone the repository
 2. Install dependencies
+
    ```bash
    pnpm install
    ```
@@ -104,10 +125,11 @@ If you are providing your own service and would like to change these limits, you
    - Adjust with your API keys and configuration values.
 
 4. Start the development servers:
+
    ```bash
    # Start all apps in development mode
    pnpm run dev
-   
+
    # Or start individual apps
    pnpm run dev:app
    pnpm run dev:api
