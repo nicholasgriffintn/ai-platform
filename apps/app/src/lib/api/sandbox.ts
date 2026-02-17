@@ -1,5 +1,6 @@
 import { apiService } from "./api-service";
 import { fetchApi, returnFetchedData } from "./fetch-wrapper";
+import { parseSseBuffer } from "~/lib/sandbox/sse";
 import type {
 	ConnectSandboxInstallationInput,
 	CreateSandboxConnectionInput,
@@ -264,6 +265,12 @@ export async function streamSandboxRun(
 	const decoder = new TextDecoder();
 	let buffer = "";
 	let finalEvent: SandboxRunEvent | undefined;
+	const handleEvent = (event: SandboxRunEvent) => {
+		options.onEvent(event);
+		if (event.type === "run_completed" || event.type === "run_failed") {
+			finalEvent = event;
+		}
+	};
 
 	try {
 		while (true) {
@@ -276,57 +283,18 @@ export async function streamSandboxRun(
 			}
 
 			buffer += decoder.decode(value, { stream: true });
-			const chunks = buffer.split("\n\n");
-			buffer = chunks.pop() || "";
-
-			for (const chunk of chunks) {
-				const lines = chunk
-					.split("\n")
-					.map((line) => line.trim())
-					.filter(Boolean);
-				const dataLine = lines.find((line) => line.startsWith("data: "));
-				if (!dataLine) {
-					continue;
-				}
-
-				const raw = dataLine.slice(6).trim();
-				if (!raw || raw === "[DONE]") {
-					continue;
-				}
-
-				let event: SandboxRunEvent;
-				try {
-					event = JSON.parse(raw) as SandboxRunEvent;
-				} catch {
-					continue;
-				}
-
-				options.onEvent(event);
-				if (event.type === "run_completed" || event.type === "run_failed") {
-					finalEvent = event;
-				}
-			}
+			buffer = parseSseBuffer<SandboxRunEvent>(buffer, {
+				onEvent: handleEvent,
+			});
 		}
 
 		if (buffer.trim()) {
-			try {
-				const maybeDataLine = buffer
-					.split("\n")
-					.map((line) => line.trim())
-					.find((line) => line.startsWith("data: "));
-				if (maybeDataLine) {
-					const raw = maybeDataLine.slice(6).trim();
-					if (raw && raw !== "[DONE]") {
-						const event = JSON.parse(raw) as SandboxRunEvent;
-						options.onEvent(event);
-						if (event.type === "run_completed" || event.type === "run_failed") {
-							finalEvent = event;
-						}
-					}
-				}
-			} catch {
-				// Ignore final parse errors from truncated buffers.
-			}
+			parseSseBuffer<SandboxRunEvent>(`${buffer}\n\n`, {
+				onEvent: handleEvent,
+				onError: () => {
+					// Ignore final parse errors from truncated buffers.
+				},
+			});
 		}
 	} finally {
 		reader.releaseLock();

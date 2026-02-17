@@ -1,6 +1,7 @@
 import type { SandboxRunStatus, SandboxRunEvent } from "~/types/sandbox";
+import { GITHUB_REPO_SLUG_PATTERN } from "~/lib/sandbox/repositories";
 
-export const REPO_PATTERN = /^[\w.-]+\/[\w.-]+$/;
+export const REPO_PATTERN = GITHUB_REPO_SLUG_PATTERN;
 export const REPO_STORAGE_PREFIX = "sandbox:last-repo";
 
 export const getStatusBadgeVariant = (
@@ -23,10 +24,24 @@ export function describeEvent(event: SandboxRunEvent): string {
 	switch (event.type) {
 		case "run_started":
 			return "Run started";
+		case "repo_context_collected":
+			return event.message || "Repository context collected";
 		case "planning_started":
 			return "Generating implementation plan";
 		case "planning_completed":
 			return "Plan generated";
+		case "plan_updated":
+			return "Plan updated during execution";
+		case "agent_step_started":
+			return `Agent step ${event.agentStep ?? "?"} started`;
+		case "agent_decision":
+			return `Agent action: ${event.action ?? "unknown"}`;
+		case "file_read":
+			return `Read ${event.path ?? "file"}${event.error ? ` (failed: ${event.error})` : ""}`;
+		case "agent_finished":
+			return "Agent marked execution complete";
+		case "task_failed":
+			return `Task failed: ${event.error ?? "Unknown error"}`;
 		case "command_batch_ready":
 			return `Prepared ${event.commandTotal ?? "?"} commands`;
 		case "command_started":

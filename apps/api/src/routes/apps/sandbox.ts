@@ -1,10 +1,7 @@
 import { type Context, Hono } from "hono";
 import { validator as zValidator, describeRoute, resolver } from "hono-openapi";
 import z from "zod/v4";
-import {
-	listArticlesResponseSchema,
-	errorResponseSchema,
-} from "@assistant/schemas";
+import { errorResponseSchema } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
@@ -12,6 +9,10 @@ import { requirePlan } from "~/middleware/requirePlan";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import type { IUser } from "~/types";
 import { executeSandboxRunStream } from "~/services/apps/sandbox/execute-stream";
+import {
+	parseSandboxRunData,
+	toSandboxRunResponse,
+} from "~/services/apps/sandbox/run-data";
 import { listGitHubAppConnectionsForUser } from "~/services/github/connections";
 import {
 	deleteGitHubConnectionForUser,
@@ -56,29 +57,6 @@ const listRunsQuerySchema = z.object({
 	limit: z.coerce.number().int().min(1).max(100).default(30),
 });
 
-type SandboxRunStatus =
-	| "queued"
-	| "running"
-	| "completed"
-	| "failed"
-	| "cancelled";
-
-interface SandboxRunData {
-	runId: string;
-	installationId: number;
-	repo: string;
-	task: string;
-	model: string;
-	shouldCommit: boolean;
-	status: SandboxRunStatus;
-	startedAt: string;
-	updatedAt: string;
-	completedAt?: string;
-	error?: string;
-	events?: Array<Record<string, unknown>>;
-	result?: Record<string, unknown>;
-}
-
 app.use("/*", (c, next) => {
 	routeLogger.info(`Processing apps/sandbox route: ${c.req.path}`);
 	return next();
@@ -98,45 +76,6 @@ const getGitHubInstallUrl = (context: Context): string | undefined => {
 	}
 
 	return `https://github.com/apps/${appSlug}/installations/new`;
-};
-
-const toRunResponse = (data: SandboxRunData) => ({
-	runId: data.runId,
-	installationId: data.installationId,
-	repo: data.repo,
-	task: data.task,
-	model: data.model,
-	shouldCommit: data.shouldCommit,
-	status: data.status,
-	startedAt: data.startedAt,
-	updatedAt: data.updatedAt,
-	completedAt: data.completedAt,
-	error: data.error,
-	result: data.result,
-	events: data.events ?? [],
-});
-
-const parseSandboxRunData = (value: unknown): SandboxRunData | null => {
-	if (!value || typeof value !== "object" || Array.isArray(value)) {
-		return null;
-	}
-
-	const raw = value as Record<string, unknown>;
-	if (
-		typeof raw.runId !== "string" ||
-		typeof raw.installationId !== "number" ||
-		typeof raw.repo !== "string" ||
-		typeof raw.task !== "string" ||
-		typeof raw.model !== "string" ||
-		typeof raw.shouldCommit !== "boolean" ||
-		typeof raw.status !== "string" ||
-		typeof raw.startedAt !== "string" ||
-		typeof raw.updatedAt !== "string"
-	) {
-		return null;
-	}
-
-	return raw as unknown as SandboxRunData;
 };
 
 app.get(
@@ -396,9 +335,11 @@ app.get(
 					return null;
 				}
 
-				return toRunResponse(parsed);
+				return toSandboxRunResponse(parsed);
 			})
-			.filter((run): run is ReturnType<typeof toRunResponse> => Boolean(run))
+			.filter((run): run is ReturnType<typeof toSandboxRunResponse> =>
+				Boolean(run),
+			)
 			.sort(
 				(a, b) =>
 					new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
@@ -460,7 +401,7 @@ app.get(
 			);
 		}
 
-		return ResponseFactory.success(c, { run: toRunResponse(run) });
+		return ResponseFactory.success(c, { run: toSandboxRunResponse(run) });
 	},
 );
 

@@ -43,6 +43,7 @@ import {
 import { useAuthStatus } from "~/hooks/useAuth";
 import { formatRelativeTime } from "~/lib/dates";
 import { streamSandboxRun } from "~/lib/api/sandbox";
+import { normaliseGitHubRepoInput } from "~/lib/sandbox/repositories";
 import { cn } from "~/lib/utils";
 import type { SandboxRun, SandboxRunEvent } from "~/types/sandbox";
 import {
@@ -87,39 +88,6 @@ async function copyToClipboard(text: string, label: string) {
 		toast.success(`${label} copied to clipboard`);
 	} catch {
 		toast.error("Failed to copy to clipboard");
-	}
-}
-
-function normaliseRepoInput(value: string): string {
-	const trimmed = value.trim();
-	if (!trimmed) {
-		return "";
-	}
-
-	if (REPO_PATTERN.test(trimmed)) {
-		return trimmed;
-	}
-
-	try {
-		const parsedUrl = new URL(trimmed);
-		if (parsedUrl.hostname !== "github.com") {
-			return trimmed;
-		}
-
-		const pathParts = parsedUrl.pathname
-			.split("/")
-			.map((part) => part.trim())
-			.filter(Boolean);
-		if (pathParts.length < 2) {
-			return trimmed;
-		}
-
-		const owner = pathParts[0];
-		const repo = pathParts[1].replace(/\.git$/i, "");
-		const candidate = `${owner}/${repo}`;
-		return REPO_PATTERN.test(candidate) ? candidate : trimmed;
-	} catch {
-		return trimmed;
 	}
 }
 
@@ -250,7 +218,7 @@ export default function SandboxConnectionPage() {
 		const historyRepos = runs.map((run) => run.repo);
 		const unique = new Set<string>();
 		for (const entry of [...scopedRepos, ...historyRepos]) {
-			const normalized = normaliseRepoInput(entry);
+			const normalized = normaliseGitHubRepoInput(entry);
 			if (REPO_PATTERN.test(normalized)) {
 				unique.add(normalized);
 			}
@@ -258,7 +226,7 @@ export default function SandboxConnectionPage() {
 		return Array.from(unique);
 	}, [connection?.repositories, runs]);
 
-	const normalisedRepo = useMemo(() => normaliseRepoInput(repo), [repo]);
+	const normalisedRepo = useMemo(() => normaliseGitHubRepoInput(repo), [repo]);
 	const selectedRunId = searchParams.get("runId") || undefined;
 	const targetRunId = selectedRunId || activeRunId || runs[0]?.runId;
 	const repoStorageKey = hasValidInstallationId
@@ -581,7 +549,7 @@ export default function SandboxConnectionPage() {
 											list="sandbox-repo-options"
 											value={repo}
 											onChange={(event) => setRepo(event.target.value)}
-											onBlur={() => setRepo(normaliseRepoInput(repo))}
+											onBlur={() => setRepo(normaliseGitHubRepoInput(repo))}
 											placeholder="owner/repo"
 										/>
 										<datalist id="sandbox-repo-options">

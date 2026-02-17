@@ -19,19 +19,7 @@ import {
 	useUpsertSandboxConnection,
 	useSandboxInstallConfig,
 } from "~/hooks/useSandbox";
-
-function parseRepositories(value: string): string[] | undefined {
-	const repositories = value
-		.split(/[\n,]/g)
-		.map((item) => item.trim())
-		.filter(Boolean);
-
-	if (!repositories.length) {
-		return undefined;
-	}
-
-	return Array.from(new Set(repositories));
-}
+import { parseGitHubRepositoryList } from "~/lib/sandbox/repositories";
 
 interface SandboxAddGitHubConnectionProps {
 	isOpen: boolean;
@@ -67,7 +55,7 @@ export const SandboxAddGitHubConnection = ({
 				appId: form.appId.trim(),
 				privateKey: form.privateKey.trim(),
 				webhookSecret: form.webhookSecret.trim() || undefined,
-				repositories: parseRepositories(form.repositories),
+				repositories: parseGitHubRepositoryList(form.repositories),
 			});
 			toast.success("GitHub connection saved");
 			onClose();

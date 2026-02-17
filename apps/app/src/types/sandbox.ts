@@ -20,6 +20,7 @@ export interface SandboxRunResult {
 	diff?: string;
 	logs?: string;
 	error?: string;
+	errorType?: string;
 	branchName?: string;
 	[key: string]: unknown;
 }
@@ -50,6 +51,11 @@ export interface SandboxRunEvent {
 	commandTotal?: number;
 	branchName?: string;
 	plan?: string;
+	path?: string;
+	agentStep?: number;
+	action?: string;
+	reasoning?: string;
+	retryable?: boolean;
 	result?: SandboxRunResult;
 	[key: string]: unknown;
 }

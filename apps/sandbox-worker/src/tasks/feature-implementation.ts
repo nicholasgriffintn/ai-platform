@@ -1,29 +1,33 @@
 import { getSandbox } from "@cloudflare/sandbox";
 
-import { PolychatClient } from "../lib/polychat-client";
-import type {
-	TaskEventEmitter,
-	TaskEvent,
-	TaskParams,
-	TaskResult,
-	TaskSecrets,
-	Env,
-} from "../types";
 import {
 	execOrThrow,
 	execOrThrowRedacted,
 	resolveGitHubRepo,
-	extractCommands,
-	assertSafeCommand,
-	formatCommandResult,
 	buildSummary,
 	truncateLog,
 	quoteForShell,
 	buildCommitMessage,
 } from "../lib/commands";
-
-const DEFAULT_MODEL = "mistral-large";
-const MAX_COMMANDS = 30;
+import { classifySandboxError } from "../lib/errors";
+import {
+	DEFAULT_MODEL,
+	MAX_COMMANDS,
+	MODEL_RETRY_OPTIONS,
+} from "../lib/feature-implementation/constants";
+import { collectRepositoryContext } from "../lib/feature-implementation/context";
+import { executeAgentLoop } from "../lib/feature-implementation/agent-loop";
+import { buildPlanningPrompt } from "../lib/feature-implementation/prompts";
+import { truncateForModel } from "../lib/feature-implementation/utils";
+import { PolychatClient } from "../lib/polychat-client";
+import type {
+	TaskEvent,
+	TaskEventEmitter,
+	TaskParams,
+	TaskResult,
+	TaskSecrets,
+	Env,
+} from "../types";
 
 export async function executeFeatureImplementation(
 	params: TaskParams,
@@ -50,7 +54,7 @@ export async function executeFeatureImplementation(
 	const runId = params.runId;
 
 	try {
-		emit({
+		await emit({
 			type: "task_started",
 			task: params.task,
 			repo: params.repo,
@@ -85,6 +89,7 @@ export async function executeFeatureImplementation(
 				depth: 1,
 			});
 		}
+
 		await emit({
 			type: "repo_clone_completed",
 			repo: repo.displayName,
@@ -104,78 +109,62 @@ export async function executeFeatureImplementation(
 			});
 		}
 
+		const repoContext = await collectRepositoryContext({
+			sandbox,
+			repoTargetDir: repo.targetDir,
+		});
+		await emit({
+			type: "repo_context_collected",
+			message: `Collected repository context from ${repoContext.files.length} files`,
+			taskInstructionSource: repoContext.taskInstructionSource,
+			hasTaskInstructions: Boolean(repoContext.taskInstructions),
+			hasPrdInstructions: repoContext.taskInstructionSource === "prd",
+		});
+
 		await emit({
 			type: "planning_started",
 			message: "Creating implementation plan",
 		});
-		const planPrompt =
-			`Implement this feature in the repository ${repo.displayName}: ${task}\n\n` +
-			"First, analyse the current code and produce a concise implementation plan.";
 
-		const plan = await client.chatCompletion({
-			messages: [{ role: "user", content: planPrompt }],
-			model,
-		});
+		const plan = await client.chatCompletion(
+			{
+				messages: [
+					{
+						role: "user",
+						content: buildPlanningPrompt({
+							repoName: repo.displayName,
+							task,
+							repoContext,
+						}),
+					},
+				],
+				model,
+			},
+			MODEL_RETRY_OPTIONS,
+		);
+
 		await emit({
 			type: "planning_completed",
-			plan: plan.slice(0, 1000),
+			plan: truncateForModel(plan, 1500),
 		});
-
-		const implPrompt =
-			`Based on this plan:\n${plan}\n\n` +
-			"Return only shell commands in a single ```bash``` block.\n" +
-			"Requirements: do not include explanations, do not include `cd`, and do not chain commands with `&&`, `||`, `;`, or pipes.";
-
-		const implementation = await client.chatCompletion({
-			messages: [{ role: "user", content: implPrompt }],
-			model,
-		});
-
-		const commands = extractCommands(implementation).slice(0, MAX_COMMANDS);
-		if (commands.length === 0) {
-			throw new Error("No executable commands were returned by the model");
-		}
 		await emit({
 			type: "command_batch_ready",
-			commandTotal: commands.length,
+			commandTotal: MAX_COMMANDS,
+			message: "Agent command budget initialised",
 		});
 
-		for (const [index, cmd] of commands.entries()) {
-			assertSafeCommand(cmd);
-			const commandIndex = index + 1;
-			await emit({
-				type: "command_started",
-				command: cmd,
-				commandIndex,
-				commandTotal: commands.length,
-			});
-
-			const result = await sandbox.exec(
-				`cd ${quoteForShell(repo.targetDir)} && ${cmd}`,
-			);
-			executionLogs.push(formatCommandResult(cmd, result));
-
-			if (!result.success) {
-				await emit({
-					type: "command_failed",
-					command: cmd,
-					commandIndex,
-					commandTotal: commands.length,
-					exitCode: result.exitCode,
-					error: result.stderr || result.stdout || "Unknown command failure",
-				});
-				throw new Error(
-					`Command failed (${result.exitCode}): ${cmd}\n${result.stderr || result.stdout}`,
-				);
-			}
-			await emit({
-				type: "command_completed",
-				command: cmd,
-				commandIndex,
-				commandTotal: commands.length,
-				exitCode: result.exitCode,
-			});
-		}
+		const loopResult = await executeAgentLoop({
+			sandbox,
+			client,
+			model,
+			repoDisplayName: repo.displayName,
+			repoTargetDir: repo.targetDir,
+			task,
+			initialPlan: plan,
+			repoContext,
+			executionLogs,
+			emit,
+		});
 
 		const diffResult = await sandbox.exec(
 			`git -C ${quoteForShell(repo.targetDir)} diff --patch`,
@@ -222,24 +211,31 @@ export async function executeFeatureImplementation(
 			}
 		}
 
+		const summary =
+			loopResult.summary ||
+			buildSummary(task, repo.displayName, loopResult.commandCount, branchName);
+
 		return {
 			success: true,
 			logs: truncateLog(executionLogs.join("\n")),
 			diff,
 			branchName,
-			summary: buildSummary(
-				task,
-				repo.displayName,
-				commands.length,
-				branchName,
-			),
+			summary,
 		};
 	} catch (error) {
+		const classified = classifySandboxError(error);
+		await emit({
+			type: "task_failed",
+			error: classified.message,
+			errorType: classified.type,
+			retryable: classified.retryable,
+		});
 		return {
 			success: false,
 			logs: truncateLog(executionLogs.join("\n")),
 			branchName,
-			error: error instanceof Error ? error.message : String(error),
+			error: classified.message,
+			errorType: classified.type,
 		};
 	} finally {
 		await sandbox.destroy();

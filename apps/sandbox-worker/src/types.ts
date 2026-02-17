@@ -21,6 +21,7 @@ export interface TaskResult {
 	diff?: string;
 	summary?: string;
 	error?: string;
+	errorType?: string;
 	branchName?: string;
 }
 
@@ -39,6 +40,16 @@ export interface TaskEvent {
 	branchName?: string;
 	plan?: string;
 	error?: string;
+	errorType?: string;
+	path?: string;
+	agentStep?: number;
+	action?: string;
+	reasoning?: string;
+	retryable?: boolean;
+	commandCount?: number;
+	startLine?: number;
+	endLine?: number;
+	truncated?: boolean;
 	result?: TaskResult;
 	[key: string]: unknown;
 }

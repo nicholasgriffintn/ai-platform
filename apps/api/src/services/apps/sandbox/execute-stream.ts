@@ -12,31 +12,13 @@ import type { IEnv, IUser } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { parseSseBuffer } from "~/utils/streaming";
+import {
+	toSandboxRunResponse,
+	type SandboxRunData,
+	type SandboxRunStatus,
+} from "./run-data";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/execute-stream" });
-
-type SandboxRunStatus =
-	| "queued"
-	| "running"
-	| "completed"
-	| "failed"
-	| "cancelled";
-
-interface SandboxRunData {
-	runId: string;
-	installationId: number;
-	repo: string;
-	task: string;
-	model: string;
-	shouldCommit: boolean;
-	status: SandboxRunStatus;
-	startedAt: string;
-	updatedAt: string;
-	completedAt?: string;
-	error?: string;
-	events?: Array<Record<string, unknown>>;
-	result?: Record<string, unknown>;
-}
 
 export interface ExecuteSandboxRunStreamPayload {
 	installationId: number;
@@ -72,22 +54,6 @@ async function persistFailedRun(params: {
 		completedAt,
 	});
 }
-
-const toRunResponse = (data: SandboxRunData) => ({
-	runId: data.runId,
-	installationId: data.installationId,
-	repo: data.repo,
-	task: data.task,
-	model: data.model,
-	shouldCommit: data.shouldCommit,
-	status: data.status,
-	startedAt: data.startedAt,
-	updatedAt: data.updatedAt,
-	completedAt: data.completedAt,
-	error: data.error,
-	result: data.result,
-	events: data.events ?? [],
-});
 
 export async function executeSandboxRunStream(
 	params: ExecuteSandboxRunStreamParams,
@@ -230,7 +196,7 @@ export async function executeSandboxRunStream(
 
 		return Response.json(
 			{
-				run: toRunResponse({
+				run: toSandboxRunResponse({
 					...initialRunData,
 					status,
 					result: responseData,
