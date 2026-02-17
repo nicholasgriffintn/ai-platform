@@ -231,9 +231,12 @@ export default function SandboxConnectionsPage() {
 										</AlertDescription>
 									</Alert>
 								) : runs.length === 0 ? (
-									<div className="text-sm text-muted-foreground">
-										No runs yet. Open a connection and submit your first task.
-									</div>
+									<EmptyState
+										icon={<MonitorDot className="h-8 w-8 text-zinc-400" />}
+										title="No runs yet"
+										message="Open a connected repository and trigger a sandbox task to see the run history here."
+										className="min-h-[260px]"
+									/>
 								) : (
 									<div className="space-y-3">
 										{runs.map((run) => (
@@ -296,7 +299,7 @@ export default function SandboxConnectionsPage() {
 									</Alert>
 								) : connections.length === 0 ? (
 									<EmptyState
-										icon={<Hammer className="h-8 w-8 text-zinc-400" />}
+										icon={<Link2 className="h-8 w-8 text-zinc-400" />}
 										title="No sandbox connections yet"
 										message="Install the GitHub App or add a connection manually to start running sandbox tasks."
 										className="min-h-[260px]"
