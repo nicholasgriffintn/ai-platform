@@ -59,7 +59,7 @@ Built-in content safety with Llamaguard and AWS Bedrock Guardrails.
 ## API Base URL
 
 ~~~
-https://api.polychat.app/v1
+https://api.polychat.app
 ~~~
 
 ## Support & Community
