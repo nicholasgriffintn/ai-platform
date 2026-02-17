@@ -1,5 +1,13 @@
 import z from "zod/v4";
 
+export const SANDBOX_PROMPT_STRATEGIES = [
+	"auto",
+	"feature-delivery",
+	"bug-fix",
+	"refactor",
+	"test-hardening",
+] as const;
+
 export const sandboxRepoSchema = z
 	.string()
 	.trim()
@@ -19,6 +27,7 @@ export const executeSandboxRunSchema = z.object({
 	repo: sandboxRepoSchema,
 	task: z.string().trim().min(1),
 	model: z.string().trim().min(1).optional(),
+	promptStrategy: z.enum(SANDBOX_PROMPT_STRATEGIES).optional(),
 	shouldCommit: z.boolean().optional(),
 });
 
@@ -84,6 +93,8 @@ export const sandboxTaskResultSchema = z
 	})
 	.catchall(z.unknown());
 
+export const sandboxPromptStrategySchema = z.enum(SANDBOX_PROMPT_STRATEGIES);
+
 export const sandboxRunEventSchema = z
 	.object({
 		type: z.string(),
@@ -105,6 +116,7 @@ export const sandboxRunEventSchema = z
 		agentStep: z.number().optional(),
 		action: z.string().optional(),
 		reasoning: z.string().optional(),
+		promptStrategy: sandboxPromptStrategySchema.optional(),
 		retryable: z.boolean().optional(),
 		commandCount: z.number().optional(),
 		startLine: z.number().optional(),
@@ -121,6 +133,7 @@ export const sandboxRunDataSchema = z.object({
 	repo: sandboxRepoSchema,
 	task: z.string().trim().min(1),
 	model: z.string().trim().min(1),
+	promptStrategy: sandboxPromptStrategySchema.optional(),
 	shouldCommit: z.boolean(),
 	status: sandboxRunStatusSchema,
 	startedAt: z.string().trim().min(1),
@@ -147,6 +160,7 @@ export const executeSandboxWorkerProxySchema = z.object({
 	task: z.string().trim().min(1),
 	taskType: sandboxTaskTypeSchema.optional(),
 	model: z.string().trim().min(1).optional(),
+	promptStrategy: sandboxPromptStrategySchema.optional(),
 	shouldCommit: z.boolean().optional(),
 	installationId: z.number().int().positive().optional(),
 	runId: z.string().trim().min(1).optional(),
@@ -158,6 +172,7 @@ export const sandboxWorkerExecuteRequestSchema = z.object({
 	repo: sandboxRepoSchema,
 	task: z.string().trim().min(1),
 	model: z.string().trim().min(1).optional(),
+	promptStrategy: sandboxPromptStrategySchema.optional(),
 	shouldCommit: z.boolean().optional(),
 	polychatApiUrl: z.url(),
 	installationId: z.number().int().positive().optional(),
@@ -179,6 +194,7 @@ export type SandboxRunEvent = z.infer<typeof sandboxRunEventSchema>;
 export type SandboxRunData = z.infer<typeof sandboxRunDataSchema>;
 export type SandboxRun = z.infer<typeof sandboxRunSchema>;
 export type SandboxTaskType = z.infer<typeof sandboxTaskTypeSchema>;
+export type SandboxPromptStrategy = z.infer<typeof sandboxPromptStrategySchema>;
 export type ExecuteSandboxWorkerProxyPayload = z.infer<
 	typeof executeSandboxWorkerProxySchema
 >;

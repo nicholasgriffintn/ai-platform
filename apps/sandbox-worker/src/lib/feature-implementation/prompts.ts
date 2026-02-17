@@ -4,6 +4,11 @@ import {
 	MAX_OBSERVATION_CHARS,
 	MAX_SNIPPET_CHARS,
 } from "./constants";
+import {
+	formatPromptStrategyExamples,
+	formatPromptStrategyFocus,
+	type PromptStrategySelection,
+} from "./prompt-strategy";
 import type { ReadFileResult, RepositoryContext } from "./types";
 import { truncateForModel } from "./utils";
 
@@ -37,19 +42,38 @@ function formatRepositoryContext(repoContext: RepositoryContext): string {
 	].join("\n");
 }
 
+function formatPromptStrategySection(
+	promptStrategy: PromptStrategySelection,
+): string {
+	return [
+		`Selected prompt strategy: ${promptStrategy.definition.label} (${promptStrategy.strategy})`,
+		`Selection reason: ${promptStrategy.reason}`,
+		"",
+		"Planning focus:",
+		formatPromptStrategyFocus(promptStrategy.definition, "planning"),
+		"",
+		"Good implementation examples to emulate:",
+		formatPromptStrategyExamples(promptStrategy.definition),
+	].join("\n");
+}
+
 export function buildPlanningPrompt(params: {
 	repoName: string;
 	task: string;
 	repoContext: RepositoryContext;
+	promptStrategy: PromptStrategySelection;
 }): string {
-	const { repoName, task, repoContext } = params;
+	const { repoName, task, repoContext, promptStrategy } = params;
 	const context = formatRepositoryContext(repoContext);
+	const promptStrategySection = formatPromptStrategySection(promptStrategy);
 
 	return [
 		`You are planning a code implementation for repository ${repoName}.`,
 		`Task: ${task}`,
 		"",
 		context,
+		"",
+		promptStrategySection,
 		"",
 		"Planning requirements:",
 		"1. If PRD user stories exist, choose one passes=false story to implement first and cite its story id/title.",
@@ -60,10 +84,20 @@ export function buildPlanningPrompt(params: {
 	].join("\n");
 }
 
-export function buildAgentSystemPrompt(repoTargetDir: string): string {
+export function buildAgentSystemPrompt(params: {
+	repoTargetDir: string;
+	promptStrategy: PromptStrategySelection;
+}): string {
+	const { repoTargetDir, promptStrategy } = params;
 	return [
 		"You are an autonomous coding agent running inside a sandboxed shell.",
 		`Repository root is '${repoTargetDir}'.`,
+		`Selected prompt strategy: ${promptStrategy.definition.label} (${promptStrategy.strategy}).`,
+		`Selection reason: ${promptStrategy.reason}`,
+		"",
+		"Execution focus:",
+		formatPromptStrategyFocus(promptStrategy.definition, "execution"),
+		"",
 		"Respond with exactly one JSON object per message and no markdown.",
 		"",
 		"Allowed actions:",
@@ -89,12 +123,16 @@ export function buildAgentKickoffPrompt(params: {
 	task: string;
 	plan: string;
 	repoContext: RepositoryContext;
+	promptStrategy: PromptStrategySelection;
 }): string {
 	const context = formatRepositoryContext(params.repoContext);
 
 	return [
 		`Repository: ${params.repoName}`,
 		`Task: ${params.task}`,
+		"",
+		`Prompt strategy: ${params.promptStrategy.definition.label} (${params.promptStrategy.strategy})`,
+		`Reason: ${params.promptStrategy.reason}`,
 		"",
 		"Current implementation plan:",
 		params.plan,

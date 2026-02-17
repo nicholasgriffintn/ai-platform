@@ -34,6 +34,7 @@ export async function executeAgentLoop(
 		repoDisplayName,
 		repoTargetDir,
 		task,
+		promptStrategy,
 		initialPlan,
 		repoContext,
 		executionLogs,
@@ -48,7 +49,10 @@ export async function executeAgentLoop(
 	const messages: AgentMessage[] = [
 		{
 			role: "system",
-			content: buildAgentSystemPrompt(repoTargetDir),
+			content: buildAgentSystemPrompt({
+				repoTargetDir,
+				promptStrategy,
+			}),
 		},
 		{
 			role: "user",
@@ -57,6 +61,7 @@ export async function executeAgentLoop(
 				task,
 				plan: initialPlan,
 				repoContext,
+				promptStrategy,
 			}),
 		},
 	];

@@ -1,5 +1,9 @@
 import type { IFunction } from "~/types";
 import { executeSandboxWorker } from "~/services/sandbox/worker";
+import {
+	sandboxPromptStrategySchema,
+	type SandboxPromptStrategy,
+} from "@assistant/schemas";
 
 export const run_feature_implementation: IFunction = {
 	name: "run_feature_implementation",
@@ -22,6 +26,11 @@ export const run_feature_implementation: IFunction = {
 				type: "string",
 				description: "Model to use (required if not configured in settings)",
 			},
+			promptStrategy: {
+				type: "string",
+				description:
+					"Optional prompting strategy (auto, feature-delivery, bug-fix, refactor, test-hardening)",
+			},
 			shouldCommit: {
 				type: "boolean",
 				description:
@@ -42,13 +51,21 @@ export const run_feature_implementation: IFunction = {
 		_app_url,
 		_conversationManager,
 	) => {
-		const { repo, task, model, shouldCommit } = args as {
+		const { repo, task, model, promptStrategy, shouldCommit } = args as {
 			repo: string;
 			task: string;
 			model?: string;
+			promptStrategy?: string;
 			shouldCommit?: boolean;
 			installationId?: number;
 		};
+		const parsedPromptStrategyResult = sandboxPromptStrategySchema.safeParse(
+			typeof promptStrategy === "string" ? promptStrategy.trim() : undefined,
+		);
+		const parsedPromptStrategy: SandboxPromptStrategy | undefined =
+			parsedPromptStrategyResult.success
+				? parsedPromptStrategyResult.data
+				: undefined;
 
 		if (!request.context || !request.user) {
 			throw new Error("User context is required for sandbox execution");
@@ -63,6 +80,7 @@ export const run_feature_implementation: IFunction = {
 			repo,
 			task,
 			model,
+			promptStrategy: parsedPromptStrategy,
 			shouldCommit,
 			installationId:
 				typeof (args as { installationId?: unknown }).installationId ===

@@ -77,6 +77,40 @@ describe("sandbox run data helpers", () => {
 		});
 	});
 
+	it("parses and returns optional prompt strategy metadata", () => {
+		const parsed = parseSandboxRunData({
+			runId: "run-3",
+			installationId: 101,
+			repo: "owner/repo",
+			task: "Fix flaky tests",
+			model: "mistral-large",
+			promptStrategy: "bug-fix",
+			shouldCommit: false,
+			status: "running",
+			startedAt: "2026-02-17T12:00:00.000Z",
+			updatedAt: "2026-02-17T12:00:01.000Z",
+		});
+
+		expect(parsed).toMatchObject({
+			promptStrategy: "bug-fix",
+		});
+
+		expect(
+			toSandboxRunResponse({
+				runId: "run-4",
+				installationId: 100,
+				repo: "owner/repo",
+				task: "Refactor duplicate code",
+				model: "mistral-large",
+				promptStrategy: "refactor",
+				shouldCommit: false,
+				status: "completed",
+				startedAt: "2026-02-17T12:00:00.000Z",
+				updatedAt: "2026-02-17T12:00:01.000Z",
+			}).promptStrategy,
+		).toBe("refactor");
+	});
+
 	it("limits appended events to max length", () => {
 		const result = appendSandboxRunEvent(
 			[{ type: "event-1" }, { type: "event-2" }],

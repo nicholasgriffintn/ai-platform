@@ -30,6 +30,10 @@ export function describeEvent(event: SandboxRunEvent): string {
 			return "Generating implementation plan";
 		case "planning_completed":
 			return "Plan generated";
+		case "prompt_strategy_selected":
+			return event.promptStrategy
+				? `Prompt strategy selected: ${event.promptStrategy}`
+				: event.message || "Prompt strategy selected";
 		case "plan_updated":
 			return "Plan updated during execution";
 		case "agent_step_started":

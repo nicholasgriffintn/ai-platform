@@ -96,6 +96,7 @@ describe("executeSandboxRunStream", () => {
 				installationId: 100,
 				repo: "owner/repo",
 				task: "Ship it",
+				promptStrategy: "bug-fix",
 				shouldCommit: true,
 			},
 		});
@@ -108,13 +109,20 @@ describe("executeSandboxRunStream", () => {
 				repo: "owner/repo",
 				task: "Ship it",
 				model: "mistral-large",
+				promptStrategy: "bug-fix",
 				shouldCommit: true,
 				status: "completed",
 			}),
 		});
+		expect(executeSandboxWorker).toHaveBeenCalledWith(
+			expect.objectContaining({
+				promptStrategy: "bug-fix",
+			}),
+		);
 		expect(mockUpdateAppData).toHaveBeenCalledTimes(2);
 		expect(mockUpdateAppData.mock.calls[1]?.[1]).toMatchObject({
 			status: "completed",
+			promptStrategy: "bug-fix",
 			result: {
 				success: true,
 				result: { ok: true },

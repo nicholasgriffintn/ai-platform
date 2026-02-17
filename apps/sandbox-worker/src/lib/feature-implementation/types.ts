@@ -2,6 +2,7 @@ import { getSandbox } from "@cloudflare/sandbox";
 
 import type { PolychatClient } from "../polychat-client";
 import type { TaskEvent } from "../../types";
+import type { PromptStrategySelection } from "./prompt-strategy";
 
 export type SandboxInstance = ReturnType<typeof getSandbox>;
 export type SandboxExecInstance = Pick<SandboxInstance, "exec">;
@@ -88,6 +89,7 @@ export interface ExecuteAgentLoopParams {
 	repoDisplayName: string;
 	repoTargetDir: string;
 	task: string;
+	promptStrategy: PromptStrategySelection;
 	initialPlan: string;
 	repoContext: RepositoryContext;
 	executionLogs: string[];

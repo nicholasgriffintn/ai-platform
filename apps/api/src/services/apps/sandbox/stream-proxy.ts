@@ -56,6 +56,7 @@ export function createSandboxEventProxyStream(
 			let errorMessage: string | undefined;
 			let completedAt: string | undefined;
 			let cancellationReason: string | undefined;
+			let promptStrategy = runData.promptStrategy;
 
 			const pushEvent = (event: SandboxRunEvent) => {
 				const next = appendSandboxRunEvent(
@@ -109,6 +110,10 @@ export function createSandboxEventProxyStream(
 
 				if (parsed.type === "run_started") {
 					status = "running";
+				}
+
+				if (parsed.promptStrategy) {
+					promptStrategy = parsed.promptStrategy;
 				}
 			};
 
@@ -238,6 +243,7 @@ export function createSandboxEventProxyStream(
 						status,
 						result,
 						error: status === "failed" ? errorMessage : undefined,
+						promptStrategy,
 						events,
 						updatedAt: new Date().toISOString(),
 						completedAt,

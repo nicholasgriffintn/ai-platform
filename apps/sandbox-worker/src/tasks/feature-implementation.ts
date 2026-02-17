@@ -19,6 +19,7 @@ import {
 import { collectRepositoryContext } from "../lib/feature-implementation/context";
 import { executeAgentLoop } from "../lib/feature-implementation/agent-loop";
 import { buildPlanningPrompt } from "../lib/feature-implementation/prompts";
+import { resolvePromptStrategy } from "../lib/feature-implementation/prompt-strategy";
 import {
 	deriveQualityGateCommands,
 	runQualityGate,
@@ -139,6 +140,17 @@ export async function executeFeatureImplementation(
 			hasPrdInstructions: repoContext.taskInstructionSource === "prd",
 		});
 
+		const promptStrategy = resolvePromptStrategy({
+			requestedStrategy: params.promptStrategy,
+			taskType: params.taskType || "feature-implementation",
+			task,
+		});
+		await emit({
+			type: "prompt_strategy_selected",
+			message: promptStrategy.reason,
+			promptStrategy: promptStrategy.strategy,
+		});
+
 		await emit({
 			type: "planning_started",
 			message: "Creating implementation plan",
@@ -153,6 +165,7 @@ export async function executeFeatureImplementation(
 							repoName: repo.displayName,
 							task,
 							repoContext,
+							promptStrategy,
 						}),
 					},
 				],
@@ -179,6 +192,7 @@ export async function executeFeatureImplementation(
 			repoDisplayName: repo.displayName,
 			repoTargetDir: repo.targetDir,
 			task,
+			promptStrategy,
 			initialPlan: plan,
 			repoContext,
 			executionLogs,

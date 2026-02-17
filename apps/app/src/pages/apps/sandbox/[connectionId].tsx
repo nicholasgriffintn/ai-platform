@@ -30,6 +30,7 @@ import {
 	CardHeader,
 	CardTitle,
 	Checkbox,
+	FormSelect,
 	Input,
 	Label,
 	Textarea,
@@ -44,9 +45,19 @@ import {
 import { useAuthStatus } from "~/hooks/useAuth";
 import { formatRelativeTime } from "~/lib/dates";
 import { streamSandboxRun } from "~/lib/api/sandbox";
+import {
+	getSandboxPromptStrategyDescription,
+	getSandboxPromptStrategyLabel,
+	parseSandboxPromptStrategy,
+	sandboxPromptStrategyOptions,
+} from "~/lib/sandbox/prompt-strategies";
 import { normaliseGitHubRepoInput } from "~/lib/sandbox/repositories";
 import { cn } from "~/lib/utils";
-import type { SandboxRun, SandboxRunEvent } from "~/types/sandbox";
+import type {
+	SandboxPromptStrategy,
+	SandboxRun,
+	SandboxRunEvent,
+} from "~/types/sandbox";
 import {
 	REPO_PATTERN,
 	REPO_STORAGE_PREFIX,
@@ -175,6 +186,8 @@ export default function SandboxConnectionPage() {
 	const [repo, setRepo] = useState("");
 	const [task, setTask] = useState("");
 	const [model, setModel] = useState("");
+	const [promptStrategy, setPromptStrategy] =
+		useState<SandboxPromptStrategy>("auto");
 	const [shouldCommit, setShouldCommit] = useState(true);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [activeRunId, setActiveRunId] = useState<string | undefined>();
@@ -412,6 +425,7 @@ export default function SandboxConnectionPage() {
 					repo: trimmedRepo,
 					task: trimmedTask,
 					model: model.trim() || undefined,
+					promptStrategy,
 					shouldCommit,
 				},
 				{
@@ -593,7 +607,7 @@ export default function SandboxConnectionPage() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
-								<div className="grid gap-4 md:grid-cols-2">
+								<div className="grid gap-4 md:grid-cols-3">
 									<div className="space-y-2">
 										<Label htmlFor="sandbox-repo-input">Repository</Label>
 										<Input
@@ -633,6 +647,25 @@ export default function SandboxConnectionPage() {
 										<p className="text-xs text-muted-foreground">
 											Leave blank to use your Sandbox model setting. If none is
 											set, backend defaults to <code>mistral-large</code>.
+										</p>
+									</div>
+									<div className="space-y-2">
+										<FormSelect
+											id="sandbox-prompt-strategy"
+											label="Prompt strategy"
+											value={promptStrategy}
+											onChange={(event) =>
+												setPromptStrategy(
+													parseSandboxPromptStrategy(event.target.value),
+												)
+											}
+											options={sandboxPromptStrategyOptions.map((option) => ({
+												value: option.value,
+												label: option.label,
+											}))}
+										/>
+										<p className="text-xs text-muted-foreground">
+											{getSandboxPromptStrategyDescription(promptStrategy)}
 										</p>
 									</div>
 								</div>
@@ -837,6 +870,12 @@ export default function SandboxConnectionPage() {
 										</div>
 										<p className="text-muted-foreground">
 											{summariseRunResult(selectedRun)}
+										</p>
+										<p>
+											<span className="font-medium">Prompt strategy:</span>{" "}
+											{getSandboxPromptStrategyLabel(
+												selectedRun.promptStrategy,
+											)}
 										</p>
 										{typeof selectedRun.result?.branchName === "string" && (
 											<p>

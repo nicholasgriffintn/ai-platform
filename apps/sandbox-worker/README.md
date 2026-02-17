@@ -55,6 +55,7 @@ Execute a feature implementation task.
 		"repo": "owner/repo",
 		"task": "Add a logout button to the navbar",
 		"model": "mistral-large",
+		"promptStrategy": "auto",
 		"shouldCommit": true
 	}
 }
@@ -114,8 +115,8 @@ This section outlines planned improvements to make the sandbox worker production
 - [x] Include relevant code snippets in context
 - [x] Support for PRD-style task files (`prd.json`, `tasks/prd-*.md`) for repo-specific instructions (with `.implement` fallback)
 - [x] Track PRD story progress by updating `prd.json` `passes` and logging to `progress.txt`
-- [ ] Add examples of good implementations for the model to follow
-- [ ] Support different prompt strategies per task type
+- [x] Add examples of good implementations for the model to follow
+- [x] Support different prompt strategies per task type
 
 ### Phase 3: Error Handling and Resilience
 

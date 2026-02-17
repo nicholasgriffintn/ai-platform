@@ -33,6 +33,7 @@ export function toSandboxRunResponse(data: SandboxRunData): SandboxRun {
 		repo: data.repo,
 		task: data.task,
 		model: data.model,
+		promptStrategy: data.promptStrategy,
 		shouldCommit: data.shouldCommit,
 		status: data.status,
 		startedAt: data.startedAt,

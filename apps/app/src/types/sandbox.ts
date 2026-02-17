@@ -4,6 +4,7 @@ export type {
 	ExecuteSandboxRunInput,
 	SandboxConnection,
 	SandboxInstallConfig,
+	SandboxPromptStrategy,
 	SandboxRun,
 	SandboxRunEvent,
 	SandboxRunResult,

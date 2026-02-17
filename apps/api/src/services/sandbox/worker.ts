@@ -1,5 +1,6 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
+	SandboxPromptStrategy,
 	SandboxTaskType,
 	SandboxWorkerExecuteRequest,
 } from "@assistant/schemas";
@@ -23,6 +24,7 @@ export interface ExecuteSandboxWorkerOptions {
 	task: string;
 	model?: string;
 	taskType?: SandboxTaskType;
+	promptStrategy?: SandboxPromptStrategy;
 	shouldCommit?: boolean;
 	installationId?: number;
 	stream?: boolean;
@@ -94,6 +96,7 @@ export async function executeSandboxWorker(
 		repo,
 		task,
 		taskType,
+		promptStrategy,
 		shouldCommit,
 		installationId,
 		stream,
@@ -139,6 +142,7 @@ export async function executeSandboxWorker(
 		repo,
 		task,
 		model,
+		promptStrategy,
 		shouldCommit: Boolean(shouldCommit),
 		polychatApiUrl: resolveApiBaseUrl(env),
 		installationId,

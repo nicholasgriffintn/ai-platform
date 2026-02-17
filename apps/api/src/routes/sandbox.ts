@@ -36,6 +36,7 @@ sandbox.post(
 			task: payload.task,
 			taskType: payload.taskType,
 			model: payload.model,
+			promptStrategy: payload.promptStrategy,
 			shouldCommit: Boolean(payload.shouldCommit),
 			installationId: payload.installationId,
 			stream: c.req.header("accept")?.includes("text/event-stream"),
