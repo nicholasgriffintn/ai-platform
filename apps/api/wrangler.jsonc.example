@@ -53,38 +53,12 @@
 			"remote": true
 		}
 	],
-<<<<<<< Updated upstream
-	"observability": {
-		"enabled": true,
-		"head_sampling_rate": 0.1,
-		"logs": {
-			"enabled": true,
-			"invocation_logs": false
-		}
-	},
-||||||| Stash base
-	"observability": {
-		"enabled": true,
-		"head_sampling_rate": 0.1,
-		"logs": {
-			"enabled": true,
-			"invocation_logs": false
-		}
-	},
 	"services": [
 		{
 			"binding": "SANDBOX_WORKER",
-			"service": "sandbox-worker",
-		},
+			"service": "assistant-sandbox-worker"
+		}
 	],
-=======
-	"services": [
-		{
-			"binding": "SANDBOX_WORKER",
-			"service": "sandbox-worker",
-		},
-	],
->>>>>>> Stashed changes
 	"analytics_engine_datasets": [
 		{
 			"binding": "ANALYTICS",
