@@ -2,6 +2,20 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "assistant-metrics",
 	"compatibility_date": "2025-02-07",
+	"workers_dev": false,
+	"preview_urls": false,
+	"placement": {
+		"mode": "smart"
+	},
+	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 0.1,
+		"logs": {
+			"enabled": true,
+			"head_sampling_rate": 0.1,
+			"invocation_logs": false
+		}
+	},
 	"assets": {
 		"directory": "./dist",
 		"not_found_handling": "single-page-application"

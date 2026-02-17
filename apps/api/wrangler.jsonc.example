@@ -8,6 +8,18 @@
 	],
 	"workers_dev": false,
 	"preview_urls": false,
+	"placement": {
+		"mode": "smart"
+	},
+	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 0.1,
+		"logs": {
+			"enabled": true,
+			"head_sampling_rate": 0.1,
+			"invocation_logs": false
+		}
+	},
 	"routes": [
 		{
 			"pattern": "api.polychat.app",
@@ -41,6 +53,16 @@
 			"remote": true
 		}
 	],
+<<<<<<< Updated upstream
+	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 0.1,
+		"logs": {
+			"enabled": true,
+			"invocation_logs": false
+		}
+	},
+||||||| Stash base
 	"observability": {
 		"enabled": true,
 		"head_sampling_rate": 0.1,
@@ -55,6 +77,14 @@
 			"service": "sandbox-worker",
 		},
 	],
+=======
+	"services": [
+		{
+			"binding": "SANDBOX_WORKER",
+			"service": "sandbox-worker",
+		},
+	],
+>>>>>>> Stashed changes
 	"analytics_engine_datasets": [
 		{
 			"binding": "ANALYTICS",
