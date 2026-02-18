@@ -319,6 +319,7 @@ export async function executeFeatureImplementation(
 			summary,
 		};
 	} catch (error) {
+		console.error("Error during sandbox task execution:", error);
 		const classified = classifySandboxError(error);
 		await emit({
 			type: classified.type === "cancelled" ? "task_cancelled" : "task_failed",

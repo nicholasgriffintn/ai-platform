@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { ErrorType } from "~/utils/errors";
 import {
 	decryptGitHubConnectionPayload,
 	encryptGitHubConnectionPayload,
@@ -49,6 +50,11 @@ describe("github connection crypto", () => {
 				userId: 43,
 				encrypted,
 			}),
-		).rejects.toThrow();
+		).rejects.toMatchObject({
+			message:
+				"GitHub App connection could not be decrypted. Reconnect the GitHub App installation.",
+			type: ErrorType.CONFLICT_ERROR,
+			statusCode: 409,
+		});
 	});
 });

@@ -65,24 +65,45 @@ export async function decryptGitHubConnectionPayload(params: {
 		);
 	}
 
-	const key = await deriveUserJwtScopedKey(jwtSecret, userId);
-	const iv = new Uint8Array(base64ToBuffer(encrypted.iv));
-	const ciphertext = new Uint8Array(base64ToBuffer(encrypted.data));
-	const decrypted = await crypto.subtle.decrypt(
-		{ name: "AES-GCM", iv },
-		key,
-		ciphertext,
-	);
-
-	const text = new TextDecoder().decode(decrypted);
-	const parsed = JSON.parse(text);
-
-	if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-		throw new AssistantError(
-			"GitHub App connection payload is invalid",
-			ErrorType.PARAMS_ERROR,
+	try {
+		const key = await deriveUserJwtScopedKey(jwtSecret, userId);
+		const iv = new Uint8Array(base64ToBuffer(encrypted.iv));
+		const ciphertext = new Uint8Array(base64ToBuffer(encrypted.data));
+		const decrypted = await crypto.subtle.decrypt(
+			{ name: "AES-GCM", iv },
+			key,
+			ciphertext,
 		);
-	}
+		const text = new TextDecoder().decode(decrypted);
+		const parsed = JSON.parse(text);
 
-	return parsed as Record<string, unknown>;
+		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+			throw new AssistantError(
+				"GitHub App connection could not be decrypted. Reconnect the GitHub App installation.",
+				ErrorType.CONFLICT_ERROR,
+				409,
+			);
+		}
+
+		return parsed as Record<string, unknown>;
+	} catch (error) {
+		if (error instanceof AssistantError) {
+			throw error;
+		}
+
+		if (
+			error instanceof SyntaxError ||
+			(error instanceof Error &&
+				(error.name === "OperationError" ||
+					error.name === "InvalidCharacterError"))
+		) {
+			throw new AssistantError(
+				"GitHub App connection could not be decrypted. Reconnect the GitHub App installation.",
+				ErrorType.CONFLICT_ERROR,
+				409,
+			);
+		}
+
+		throw error;
+	}
 }

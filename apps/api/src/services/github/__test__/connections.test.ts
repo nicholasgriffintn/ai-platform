@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { AppData } from "~/repositories/AppDataRepository";
+import { ErrorType } from "~/utils/errors";
 import { encryptGitHubConnectionPayload } from "../connection-crypto";
 import {
 	GITHUB_CONNECTION_APP_ID,
@@ -20,9 +21,10 @@ async function createEncryptedRecord(params: {
 	itemId?: string;
 	repositories?: string[];
 	webhookSecret?: string;
+	jwtSecret?: string;
 }): Promise<AppData> {
 	const encrypted = await encryptGitHubConnectionPayload({
-		jwtSecret: JWT_SECRET,
+		jwtSecret: params.jwtSecret ?? JWT_SECRET,
 		userId: USER_ID,
 		payload: {
 			app_id: "123456",
@@ -197,6 +199,34 @@ describe("github connections", () => {
 			installationId: 9101,
 			repositories: ["owner/old"],
 			hasWebhookSecret: false,
+		});
+	});
+
+	it("throws a reconnect error when a stored connection cannot be decrypted", async () => {
+		const getAppDataByUserAndApp = vi.fn().mockResolvedValue([
+			await createEncryptedRecord({
+				recordId: "record-old-secret",
+				installationId: 9201,
+				jwtSecret: "rotated-jwt-secret",
+			}),
+		]);
+
+		const context = {
+			env: { JWT_SECRET },
+			repositories: {
+				appData: {
+					getAppDataByUserAndApp,
+				},
+			},
+		} as unknown as ServiceContext;
+
+		await expect(
+			listGitHubAppConnectionsForUser(context, USER_ID),
+		).rejects.toMatchObject({
+			message:
+				"GitHub App connection could not be decrypted. Reconnect the GitHub App installation.",
+			type: ErrorType.CONFLICT_ERROR,
+			statusCode: 409,
 		});
 	});
 

@@ -163,6 +163,13 @@ export async function authMiddleware(context: Context, next: Next) {
 						context.env.JWT_SECRET!,
 					);
 				} catch (error) {
+					if (
+						error instanceof AssistantError &&
+						error.type === ErrorType.AUTHENTICATION_ERROR
+					) {
+						return null;
+					}
+
 					logger.error("JWT authentication failed:", { error });
 					return null;
 				}
