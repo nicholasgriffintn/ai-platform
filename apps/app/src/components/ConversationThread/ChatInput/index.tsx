@@ -525,7 +525,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			chatMode === "agent" && selectedAgentId !== null;
 
 		return (
-			<div className="relative rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-[#121212] shadow-sm hover:border-zinc-300 dark:hover:border-zinc-600 focus-within:border-zinc-300 dark:focus-within:border-zinc-500 transition-colors">
+			<div
+				data-chat-input-shell
+				className="relative rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-[#121212] shadow-sm hover:border-zinc-300 dark:hover:border-zinc-600 focus-within:border-zinc-300 dark:focus-within:border-zinc-500 transition-colors"
+			>
 				<div className="flex flex-col">
 					{selectedAttachment && (
 						<div className="px-3 pt-3">

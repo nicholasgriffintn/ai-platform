@@ -148,10 +148,10 @@ export function ModelsList({
 
 	return (
 		<div className="overflow-hidden rounded-lg border border-zinc-200/70 bg-white/60 dark:border-zinc-700/70 dark:bg-zinc-900/50">
-			<div className="flex max-h-[min(60vh,400px)] min-h-[280px] sm:max-h-[420px] sm:min-h-[320px]">
-				<div className="flex w-12 flex-col border-r border-zinc-200/70 dark:border-zinc-700/70 sm:w-16 md:w-20">
-					<div className="flex-1 overflow-y-auto overflow-x-hidden px-1.5 py-2 sm:px-2">
-						<div className="space-y-1">
+			<div className="flex max-h-[min(60vh,400px)] min-h-[280px] flex-col sm:max-h-[420px] sm:min-h-[320px] sm:flex-row">
+				<div className="border-b border-zinc-200/70 dark:border-zinc-700/70 sm:flex sm:w-16 sm:flex-col sm:border-b-0 sm:border-r md:w-20">
+					<div className="overflow-x-auto px-2 py-2 sm:flex-1 sm:overflow-x-hidden sm:overflow-y-auto sm:px-2">
+						<div className="flex gap-2 sm:space-y-1 sm:block">
 							{providerEntries.map((providerEntry) => {
 								const isFeaturedProvider =
 									providerEntry.key === FEATURED_PROVIDER_KEY;
@@ -165,7 +165,7 @@ export function ModelsList({
 											setSelectedProvider(providerEntry.key);
 										}}
 										className={cn(
-											"flex w-full flex-col items-center gap-1 rounded-lg border px-1 py-2 text-[10px] transition-colors sm:text-[11px]",
+											"flex min-w-[88px] flex-shrink-0 items-center gap-2 rounded-lg border px-2 py-2 text-left text-xs transition-colors sm:w-full sm:min-w-0 sm:flex-col sm:gap-1 sm:px-1 sm:text-[11px]",
 											isSelected
 												? "border-fuchsia-300 bg-fuchsia-50 text-fuchsia-700 dark:border-fuchsia-500/40 dark:bg-fuchsia-950/30 dark:text-fuchsia-200"
 												: "border-transparent text-zinc-500 hover:border-zinc-300 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:bg-zinc-800",
@@ -183,7 +183,7 @@ export function ModelsList({
 												mono={mono}
 											/>
 										)}
-										<span className="line-clamp-1 w-full text-center">
+										<span className="line-clamp-1 min-w-0 flex-1 text-left sm:w-full sm:flex-none sm:text-center">
 											{isFeaturedProvider
 												? "Featured"
 												: providerEntry.label.split(" ")[0]}
@@ -200,7 +200,7 @@ export function ModelsList({
 
 				<div className="flex min-w-0 flex-1 flex-col">
 					<div className="flex-shrink-0 border-b border-zinc-200/70 px-3 py-2 dark:border-zinc-700/70">
-						<div className="flex items-center justify-between gap-2">
+						<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
 							<h4 className="text-sm font-semibold text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
 								{selectedProviderEntry?.label || "Models"}
 							</h4>

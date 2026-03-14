@@ -54,6 +54,11 @@ interface HoverPreviewState {
 	top: number;
 }
 
+interface DialogLayout {
+	left: number;
+	width: number;
+}
+
 const HOVER_PREVIEW_WIDTH = 320;
 const HOVER_PREVIEW_HEIGHT = 460;
 const HOVER_PREVIEW_GUTTER = 12;
@@ -279,8 +284,10 @@ export const ModelSelector = ({
 	const [hoverPreview, setHoverPreview] = useState<HoverPreviewState | null>(
 		null,
 	);
+	const [dialogLayout, setDialogLayout] = useState<DialogLayout | null>(null);
 
 	const dropdownRef = useRef<HTMLDialogElement>(null);
+	const triggerWrapperRef = useRef<HTMLDivElement>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const [selectedTab, setSelectedTab] = useState<"auto" | "agent" | "models">(
 		() => {
@@ -429,6 +436,52 @@ export const ModelSelector = ({
 		(firstOpt as HTMLElement | null)?.focus();
 	}, [isOpen, isMobile]);
 
+	useEffect(() => {
+		if (!isOpen) {
+			setDialogLayout(null);
+			return;
+		}
+
+		const updateDialogLayout = () => {
+			const wrapper = triggerWrapperRef.current;
+			if (!wrapper) return;
+
+			const chatInputShell = wrapper.closest("[data-chat-input-shell]");
+			if (!(chatInputShell instanceof HTMLElement)) {
+				setDialogLayout(null);
+				return;
+			}
+
+			const shellRect = chatInputShell.getBoundingClientRect();
+			const wrapperRect = wrapper.getBoundingClientRect();
+			const maxWidth = Math.min(660, shellRect.width);
+
+			setDialogLayout({
+				left: shellRect.left - wrapperRect.left,
+				width: maxWidth,
+			});
+		};
+
+		updateDialogLayout();
+
+		if (typeof ResizeObserver === "undefined") {
+			window.addEventListener("resize", updateDialogLayout);
+			return () => window.removeEventListener("resize", updateDialogLayout);
+		}
+
+		const observer = new ResizeObserver(updateDialogLayout);
+		const wrapper = triggerWrapperRef.current;
+		const chatInputShell = wrapper?.closest("[data-chat-input-shell]");
+		if (wrapper) observer.observe(wrapper);
+		if (chatInputShell instanceof HTMLElement) observer.observe(chatInputShell);
+		window.addEventListener("resize", updateDialogLayout);
+
+		return () => {
+			observer.disconnect();
+			window.removeEventListener("resize", updateDialogLayout);
+		};
+	}, [isOpen]);
+
 	const handleToggleModelSource = (newChatMode: ChatMode) => {
 		setChatMode(newChatMode);
 
@@ -527,7 +580,7 @@ export const ModelSelector = ({
 	};
 
 	return (
-		<div className="relative">
+		<div ref={triggerWrapperRef} className="relative">
 			<button
 				type="button"
 				onClick={() => {
@@ -597,6 +650,14 @@ export const ModelSelector = ({
 					ref={dropdownRef}
 					open
 					onKeyDown={handleKeyDown}
+					style={
+						dialogLayout
+							? {
+									left: `${dialogLayout.left}px`,
+									width: `${dialogLayout.width}px`,
+								}
+							: undefined
+					}
 					className="absolute bottom-full left-0 z-50 mb-1 w-[min(96vw,600px)] max-w-[600px] rounded-xl border border-zinc-200 bg-off-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900 sm:w-[min(90vw,660px)] sm:max-w-[660px]"
 					aria-label="Model selection dialog"
 				>
@@ -675,16 +736,25 @@ export const ModelSelector = ({
 						}}
 						className="px-2 pb-2 pt-2"
 					>
-						<TabsList className="w-full">
-							<TabsTrigger value="auto">
+						<TabsList className="grid h-auto w-full grid-cols-3 gap-1">
+							<TabsTrigger
+								value="auto"
+								className="min-w-0 px-2 py-2 text-xs sm:text-sm"
+							>
 								<Wand2 className="h-4 w-4" />
 								Automatic
 							</TabsTrigger>
-							<TabsTrigger value="agent">
+							<TabsTrigger
+								value="agent"
+								className="min-w-0 px-2 py-2 text-xs sm:text-sm"
+							>
 								<Bot className="h-4 w-4" />
 								Agents
 							</TabsTrigger>
-							<TabsTrigger value="models">
+							<TabsTrigger
+								value="models"
+								className="min-w-0 px-2 py-2 text-xs sm:text-sm"
+							>
 								<Server className="h-4 w-4" />
 								Models
 							</TabsTrigger>
@@ -776,11 +846,11 @@ export const ModelSelector = ({
 						<TabsContent value="models">
 							<div className="space-y-3">
 								<div>
-									<div className="flex items-center justify-between">
+									<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 										<div className="text-xs text-zinc-500 dark:text-zinc-400">
 											Model Source:
 										</div>
-										<div className="flex items-center rounded-md bg-zinc-100 p-0.5 dark:bg-zinc-800">
+										<div className="inline-flex items-center rounded-md bg-zinc-100 p-0.5 dark:bg-zinc-800">
 											<button
 												type="button"
 												className={`cursor-pointer flex items-center justify-center gap-1 rounded px-2 py-1 text-xs ${

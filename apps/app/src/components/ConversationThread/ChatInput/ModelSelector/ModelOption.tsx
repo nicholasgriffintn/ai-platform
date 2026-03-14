@@ -83,7 +83,7 @@ export const ModelOption = ({
 						: "border-transparent hover:border-zinc-300 hover:bg-zinc-50 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/60",
 			)}
 		>
-			<div className="flex items-start justify-between gap-2">
+			<div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
 				<div className="flex min-w-0 flex-1 items-start gap-2.5">
 					<div className="flex h-6 w-6 flex-shrink-0 items-center justify-center">
 						<ModelIcon
@@ -95,7 +95,7 @@ export const ModelOption = ({
 						/>
 					</div>
 					<div className="min-w-0">
-						<div className="flex min-h-[1.4rem] items-center gap-1.5">
+						<div className="flex min-h-[1.4rem] flex-wrap items-center gap-1.5">
 							<span className="block min-w-0 font-medium text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
 								{model.name || model.matchingModel}
 							</span>
@@ -129,7 +129,7 @@ export const ModelOption = ({
 						) : null}
 					</div>
 				</div>
-				<div className="flex w-[108px] flex-shrink-0 items-center justify-end gap-1.5 sm:w-[124px]">
+				<div className="flex w-full flex-wrap items-center gap-1.5 pl-[2.6rem] sm:w-[124px] sm:flex-shrink-0 sm:justify-end sm:pl-0">
 					{model.reasoningConfig?.enabled && (
 						<div
 							className="rounded-full bg-blue-100 p-1 dark:bg-blue-900/30"
