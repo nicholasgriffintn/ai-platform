@@ -505,8 +505,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/schemas
       '@cloudflare/sandbox':
-        specifier: 0.7.0
-        version: 0.7.0
+        specifier: 0.7.17
+        version: 0.7.17
       zod:
         specifier: 4.3.6
         version: 4.3.6
@@ -945,22 +945,25 @@ packages:
       ai: ^6.0.0
       zod: ^3.25.0 || ^4.0.0
 
-  '@cloudflare/containers@0.0.30':
-    resolution: {integrity: sha512-i148xBgmyn/pje82ZIyuTr/Ae0BT/YWwa1/GTJcw6DxEjUHAzZLaBCiX446U9OeuJ2rBh/L/9FIzxX5iYNt1AQ==}
+  '@cloudflare/containers@0.1.1':
+    resolution: {integrity: sha512-YTdobRTnTlUOUPMFemufH367A9Z8pDfZ+UboYMLbGpO0VlvEXZDiioSmXPQMHld2vRtkL31mcRii3bcbQU6fdw==}
 
   '@cloudflare/kv-asset-handler@0.4.2':
     resolution: {integrity: sha512-SIOD2DxrRRwQ+jgzlXCqoEFiKOFqaPjhnNTGKXSRLvp1HiOvapLaFG2kEr9dYQTYe8rKrd9uvDUzmAITeNyaHQ==}
     engines: {node: '>=18.0.0'}
 
-  '@cloudflare/sandbox@0.7.0':
-    resolution: {integrity: sha512-U9e/fqc2R/epygMRoRFZxjM6z8ZSyJqQSFFykWTLWl2j+c9+kK9reBjp1G/RcvTAGtv8pH3Dac21jmvh4ZbGXg==}
+  '@cloudflare/sandbox@0.7.17':
+    resolution: {integrity: sha512-dS6IdIq8OHg7jg08wz18BtP6TkBSaVrixq+kN4Zm5/6N9Vir+PbfebEFL23lM5UcaPoKx6Gttnhby8e79PSMOA==}
     peerDependencies:
       '@openai/agents': ^0.3.3
-      '@opencode-ai/sdk': ^1.0.137
+      '@opencode-ai/sdk': ^1.1.40
+      '@xterm/xterm': '>=5.0.0'
     peerDependenciesMeta:
       '@openai/agents':
         optional: true
       '@opencode-ai/sdk':
+        optional: true
+      '@xterm/xterm':
         optional: true
 
   '@cloudflare/unenv-preset@2.12.0':
@@ -7530,13 +7533,14 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@cloudflare/containers@0.0.30': {}
+  '@cloudflare/containers@0.1.1': {}
 
   '@cloudflare/kv-asset-handler@0.4.2': {}
 
-  '@cloudflare/sandbox@0.7.0':
+  '@cloudflare/sandbox@0.7.17':
     dependencies:
-      '@cloudflare/containers': 0.0.30
+      '@cloudflare/containers': 0.1.1
+      aws4fetch: 1.0.20
 
   '@cloudflare/unenv-preset@2.12.0(unenv@2.0.0-rc.24)(workerd@1.20260205.0)':
     dependencies:

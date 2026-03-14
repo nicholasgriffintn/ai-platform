@@ -19,7 +19,7 @@
 	},
 	"dependencies": {
 		"@assistant/schemas": "workspace:*",
-		"@cloudflare/sandbox": "0.7.0",
+		"@cloudflare/sandbox": "0.7.17",
 		"zod": "4.3.6"
 	},
 	"devDependencies": {
