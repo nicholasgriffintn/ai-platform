@@ -658,7 +658,7 @@ export const ModelSelector = ({
 								}
 							: undefined
 					}
-					className="absolute bottom-full left-0 z-50 mb-1 flex max-h-[calc(100dvh-7.5rem)] w-[min(96vw,600px)] max-w-[600px] flex-col overflow-hidden rounded-xl border border-zinc-200 bg-off-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900 sm:max-h-[min(75dvh,48rem)] sm:w-[min(90vw,660px)] sm:max-w-[660px]"
+					className="absolute bottom-full left-0 z-50 mb-1 flex max-h-[min(78svh,40rem)] w-[min(96vw,600px)] max-w-[600px] flex-col overflow-hidden rounded-xl border border-zinc-200 bg-off-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900 sm:max-h-[min(75vh,48rem)] sm:w-[min(90vw,660px)] sm:max-w-[660px]"
 					aria-label="Model selection dialog"
 				>
 					{selectedTab !== "auto" && (
@@ -770,7 +770,7 @@ export const ModelSelector = ({
 
 						<TabsContent value="agent" className="min-h-0 overflow-hidden">
 							<div className="flex h-full min-h-0 flex-col gap-3 pt-2">
-								<div className="max-h-[120px] overflow-y-auto rounded-lg border border-zinc-200/70 p-2 dark:border-zinc-700/70 sm:max-h-[140px]">
+								<div className="max-h-[140px] overflow-y-auto rounded-lg border border-zinc-200/70 p-2 dark:border-zinc-700/70 sm:max-h-[140px]">
 									<h3
 										id="agents-heading"
 										className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100"
