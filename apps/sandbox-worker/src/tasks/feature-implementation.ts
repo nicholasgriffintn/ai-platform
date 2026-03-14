@@ -55,11 +55,12 @@ export async function executeFeatureImplementation(
 		await emitEvent(nextEvent);
 	};
 
-	const sandbox = getSandbox(env.Sandbox, crypto.randomUUID().slice(0, 8));
+	const runId = params.runId || crypto.randomUUID().slice(0, 8);
+	const sandbox = getSandbox(env.Sandbox, runId);
 	const client = new PolychatClient(params.polychatApiUrl, secrets.userToken);
 	const executionLogs: string[] = [];
 	let branchName: string | undefined;
-	const runId = params.runId;
+
 	const executionControl = createExecutionControl({
 		runId,
 		timeoutSeconds: params.timeoutSeconds,
