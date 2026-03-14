@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { convertToMarkdownViaCloudflare } from "../documentConverter";
 
 global.fetch = vi.fn();
@@ -159,6 +160,76 @@ describe("convertToMarkdownViaCloudflare", () => {
 
 		expect(result).toEqual({
 			error: "Invalid response from Cloudflare toMarkdown API",
+		});
+	});
+
+	it("should pass conversion options to Cloudflare", async () => {
+		const mockDocumentUrl = "https://example.com/document.html";
+		const mockMarkdownResult = "# Article\n\nContent";
+		const conversionOptions = {
+			html: { cssSelector: "article.content", hostname: "example.com" },
+			image: { descriptionLanguage: "es" as const },
+		};
+
+		const mockFileResponse = {
+			ok: true,
+			blob: vi.fn().mockResolvedValue(new Blob(["<article>test</article>"])),
+		};
+
+		(global.fetch as any).mockResolvedValue(mockFileResponse);
+		mockEnv.AI.toMarkdown.mockResolvedValue([
+			{
+				name: "document",
+				mimeType: "text/html",
+				tokens: 20,
+				data: mockMarkdownResult,
+			},
+		]);
+
+		const result = await convertToMarkdownViaCloudflare(
+			mockEnv,
+			mockDocumentUrl,
+			undefined,
+			conversionOptions,
+		);
+
+		expect(result).toEqual({ result: mockMarkdownResult });
+		expect(mockEnv.AI.toMarkdown).toHaveBeenCalledWith(
+			[
+				{
+					name: "document",
+					blob: expect.any(Blob),
+				},
+			],
+			{ conversionOptions },
+		);
+	});
+
+	it("should return Cloudflare conversion errors", async () => {
+		const mockDocumentUrl = "https://example.com/document.pdf";
+
+		const mockFileResponse = {
+			ok: true,
+			blob: vi.fn().mockResolvedValue(new Blob(["test content"])),
+		};
+
+		(global.fetch as any).mockResolvedValue(mockFileResponse);
+		mockEnv.AI.toMarkdown.mockResolvedValue([
+			{
+				name: "document",
+				mimeType: "application/pdf",
+				format: "error",
+				error: "Unsupported document",
+			},
+		]);
+
+		const result = await convertToMarkdownViaCloudflare(
+			mockEnv,
+			mockDocumentUrl,
+		);
+
+		expect(result).toEqual({
+			error: "Unsupported document",
 		});
 	});
 

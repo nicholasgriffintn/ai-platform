@@ -37,8 +37,22 @@ app.post(
 								type: "string",
 								format: "binary",
 							},
+							file_type: {
+								type: "string",
+								enum: ["image", "document", "audio", "code"],
+							},
+							convert_to_markdown: {
+								type: "boolean",
+								description:
+									"Convert supported image or document uploads to markdown.",
+							},
+							conversion_options: {
+								type: "string",
+								description:
+									"JSON string passed to Cloudflare toMarkdown conversionOptions.",
+							},
 						},
-						required: ["file"],
+						required: ["file", "file_type"],
 					},
 				},
 			},

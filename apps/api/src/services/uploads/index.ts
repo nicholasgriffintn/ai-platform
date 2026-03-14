@@ -1,3 +1,8 @@
+import {
+	type MarkdownConversionOptions,
+	markdownConversionOptionsSchema,
+} from "@assistant/schemas";
+
 import { convertToMarkdownViaCloudflare } from "~/lib/documentConverter";
 import { StorageService } from "~/lib/storage";
 import type { IEnv } from "~/types";
@@ -36,6 +41,84 @@ const CODE_EXTENSION_TO_LANG: Record<string, string> = {
 	cxx: "cpp",
 	hpp: "cpp",
 };
+
+function parseConversionOptions(
+	value: FormDataEntryValue | null,
+): MarkdownConversionOptions | undefined {
+	if (value == null) {
+		return undefined;
+	}
+
+	if (typeof value !== "string" || !value.trim()) {
+		throw new AssistantError(
+			"conversion_options must be a JSON object",
+			ErrorType.PARAMS_ERROR,
+			400,
+		);
+	}
+
+	let parsedOptions: unknown;
+	try {
+		parsedOptions = JSON.parse(value);
+	} catch {
+		throw new AssistantError(
+			"conversion_options must be valid JSON",
+			ErrorType.PARAMS_ERROR,
+			400,
+		);
+	}
+
+	const validationResult =
+		markdownConversionOptionsSchema.safeParse(parsedOptions);
+
+	if (!validationResult.success) {
+		const issue = validationResult.error.issues[0];
+		throw new AssistantError(
+			issue?.message || "Invalid conversion_options",
+			ErrorType.PARAMS_ERROR,
+			400,
+		);
+	}
+
+	return validationResult.data;
+}
+
+function buildMarkdownConversionOptions(
+	mimeType: string,
+	fileUrl: string,
+	conversionOptions?: MarkdownConversionOptions,
+): MarkdownConversionOptions | undefined {
+	let nextOptions = conversionOptions ? { ...conversionOptions } : undefined;
+
+	if (mimeType === "text/html" && !nextOptions?.html?.hostname) {
+		try {
+			nextOptions = {
+				...nextOptions,
+				html: {
+					...nextOptions?.html,
+					hostname: new URL(fileUrl).host,
+				},
+			};
+		} catch {
+			// Ignore invalid asset URLs and let Cloudflare use its default handling.
+		}
+	}
+
+	if (
+		mimeType === "application/pdf" &&
+		nextOptions?.pdf?.metadata === undefined
+	) {
+		nextOptions = {
+			...nextOptions,
+			pdf: {
+				...nextOptions?.pdf,
+				metadata: false,
+			},
+		};
+	}
+
+	return nextOptions;
+}
 
 export async function handleFileUpload(
 	env: IEnv,
@@ -147,8 +230,12 @@ export async function handleFileUpload(
 
 	const isPdf = file.type === "application/pdf";
 	const convertFlag = formData.get("convert_to_markdown") as string | null;
+	const conversionOptions = parseConversionOptions(
+		formData.get("conversion_options"),
+	);
 	const shouldConvert =
-		fileType === "document" && (!isPdf || convertFlag === "true");
+		(fileType === "document" && (!isPdf || convertFlag === "true")) ||
+		(fileType === "image" && convertFlag === "true");
 
 	const mimeExtension = (file.type.split("/")[1] || "").toLowerCase();
 	const fileExtension =
@@ -202,6 +289,9 @@ export async function handleFileUpload(
 
 	const baseUrl = env.PUBLIC_ASSETS_URL ?? "";
 	const fileUrl = `${baseUrl}/${key}`;
+	const effectiveConversionOptions = shouldConvert
+		? buildMarkdownConversionOptions(file.type, fileUrl, conversionOptions)
+		: undefined;
 
 	let markdownContent = "";
 	if (shouldConvert) {
@@ -210,6 +300,7 @@ export async function handleFileUpload(
 				env,
 				fileUrl,
 				file.name,
+				effectiveConversionOptions,
 			);
 			if (error) {
 				logger.error("Markdown conversion error", { error });

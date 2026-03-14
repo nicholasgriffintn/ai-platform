@@ -20,6 +20,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import type { MarkdownConversionOptions } from "@assistant/schemas";
 
 import { Button } from "~/components/ui";
 import { useModels } from "~/hooks/useModels";
@@ -31,6 +32,43 @@ import type { ModelConfigItem } from "~/types";
 import { ChatSettings as ChatSettingsComponent } from "./ChatSettings";
 import { ToolToggles } from "./ChatSettings/ToolToggles";
 import { ModelSelector } from "./ModelSelector";
+
+const SUPPORTED_MARKDOWN_IMAGE_LANGUAGES = [
+	"en",
+	"it",
+	"de",
+	"es",
+	"fr",
+	"pt",
+] as const satisfies ReadonlyArray<
+	NonNullable<
+		NonNullable<MarkdownConversionOptions["image"]>["descriptionLanguage"]
+	>
+>;
+
+type MarkdownDescriptionLanguage =
+	(typeof SUPPORTED_MARKDOWN_IMAGE_LANGUAGES)[number];
+
+function isMarkdownDescriptionLanguage(
+	value: string,
+): value is MarkdownDescriptionLanguage {
+	return SUPPORTED_MARKDOWN_IMAGE_LANGUAGES.some(
+		(language) => language === value,
+	);
+}
+
+function getPreferredMarkdownImageLanguage():
+	| MarkdownDescriptionLanguage
+	| undefined {
+	if (typeof navigator === "undefined") {
+		return undefined;
+	}
+
+	const preferredLanguage = navigator.language.split("-")[0]?.toLowerCase();
+	return preferredLanguage && isMarkdownDescriptionLanguage(preferredLanguage)
+		? preferredLanguage
+		: undefined;
+}
 
 export interface ChatInputHandle {
 	focus: () => void;
@@ -184,7 +222,42 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
 				if (file.type.startsWith("image/")) {
 					if (!isMultimodalModel && !isImageModel) {
-						alert("This model does not support image uploads");
+						if (!supportsDocuments) {
+							alert("This model does not support image uploads");
+							setIsUploading(false);
+							return;
+						}
+
+						const descriptionLanguage = getPreferredMarkdownImageLanguage();
+						const { url, name, markdown, type } = await apiService.uploadFile(
+							file,
+							"image",
+							{
+								convertToMarkdown: true,
+								conversionOptions: descriptionLanguage
+									? {
+											image: {
+												descriptionLanguage,
+											},
+										}
+									: undefined,
+							},
+						);
+
+						if (type === "markdown_document" && markdown) {
+							setSelectedAttachment({
+								type: "markdown_document",
+								data: url,
+								name: name || file.name,
+								markdown,
+							});
+							setIsUploading(false);
+							return;
+						}
+
+						alert(
+							"This model does not support image uploads and conversion failed",
+						);
 						setIsUploading(false);
 						return;
 					}

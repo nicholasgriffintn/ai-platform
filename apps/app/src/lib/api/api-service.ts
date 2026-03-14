@@ -14,6 +14,7 @@ import { SubscriptionService } from "./services/subscription-service";
 import { UploadService } from "./services/upload-service";
 import { UserService } from "./services/user-service";
 import { getHeaders } from "./utils/headers";
+import type { MarkdownConversionOptions } from "@assistant/schemas";
 
 /**
  * Main API service class that acts as a facade for all domain-specific services.
@@ -384,7 +385,10 @@ class ApiService {
 	uploadFile = (
 		file: File,
 		fileType: "image" | "document" | "audio" | "code",
-		options?: { convertToMarkdown?: boolean },
+		options?: {
+			convertToMarkdown?: boolean;
+			conversionOptions?: MarkdownConversionOptions;
+		},
 	): Promise<{
 		url: string;
 		type: string;

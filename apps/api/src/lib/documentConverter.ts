@@ -1,14 +1,38 @@
+import type { MarkdownConversionOptions } from "@assistant/schemas";
+
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/documentConverter" });
 
-interface ToMarkdownResult {
+interface ToMarkdownSuccessResult {
 	name: string;
 	mimeType: string;
 	tokens: number;
 	data: string;
+	format?: "markdown";
+}
+
+interface ToMarkdownErrorResult {
+	name: string;
+	mimeType: string;
+	format: "error";
+	error: string;
+}
+
+type ToMarkdownResult = ToMarkdownSuccessResult | ToMarkdownErrorResult;
+
+interface ToMarkdownBinding {
+	toMarkdown(
+		files: Array<{
+			name: string;
+			blob: Blob;
+		}>,
+		options?: {
+			conversionOptions?: MarkdownConversionOptions;
+		},
+	): Promise<ToMarkdownResult[]>;
 }
 
 /**
@@ -16,12 +40,14 @@ interface ToMarkdownResult {
  * @param env Environment variables
  * @param documentUrl The URL of the document to convert
  * @param documentName The name of the document (optional)
+ * @param conversionOptions Optional Cloudflare conversion controls
  * @returns The markdown content or error
  */
 export async function convertToMarkdownViaCloudflare(
 	env: IEnv,
 	documentUrl: string,
 	documentName?: string,
+	conversionOptions?: MarkdownConversionOptions,
 ): Promise<{ result?: string; error?: string }> {
 	if (!env.AI) {
 		return {
@@ -44,15 +70,30 @@ export async function convertToMarkdownViaCloudflare(
 		const name = documentName || "document";
 
 		try {
-			// @ts-ignore
-			const result = (await env.AI.toMarkdown([
+			const markdownBinding = env.AI as unknown as ToMarkdownBinding;
+			const files = [
 				{
 					name,
 					blob: fileBlob,
 				},
-			])) as unknown as ToMarkdownResult[];
+			];
+			const result = conversionOptions
+				? await markdownBinding.toMarkdown(files, { conversionOptions })
+				: await markdownBinding.toMarkdown(files);
 
 			if (!Array.isArray(result) || result.length === 0) {
+				return {
+					error: "Invalid response from Cloudflare toMarkdown API",
+				};
+			}
+
+			if (result[0].format === "error") {
+				return {
+					error: result[0].error || "Cloudflare toMarkdown API error",
+				};
+			}
+
+			if (typeof result[0].data !== "string") {
 				return {
 					error: "Invalid response from Cloudflare toMarkdown API",
 				};

@@ -291,6 +291,11 @@ describe("handleFileUpload", () => {
 				mockEnv,
 				`https://assets.example.com/uploads/1/documents/${mockUUID}.html`,
 				"test.html",
+				{
+					html: {
+						hostname: "assets.example.com",
+					},
+				},
 			);
 
 			expect(result).toEqual({
@@ -318,9 +323,98 @@ describe("handleFileUpload", () => {
 
 			const result = await handleFileUpload(mockEnv, 1, formData);
 
-			expect(mockConvertToMarkdownViaCloudflare).toHaveBeenCalled();
+			expect(mockConvertToMarkdownViaCloudflare).toHaveBeenCalledWith(
+				mockEnv,
+				`https://assets.example.com/uploads/1/documents/${mockUUID}.pdf`,
+				"test.pdf",
+				{
+					pdf: {
+						metadata: false,
+					},
+				},
+			);
 			expect(result.type).toBe("markdown_document");
 			expect(result.markdown).toBe("# PDF Converted");
+		});
+
+		it("should convert images to markdown when explicitly requested", async () => {
+			const file = new File(["image"], "diagram.png", {
+				type: "image/png",
+			});
+			const formData = new FormData();
+			formData.append("file", file);
+			formData.append("file_type", "image");
+			formData.append("convert_to_markdown", "true");
+			formData.append(
+				"conversion_options",
+				JSON.stringify({
+					image: {
+						descriptionLanguage: "fr",
+					},
+				}),
+			);
+
+			mockStorageService.uploadObject.mockResolvedValue("test-key");
+			mockConvertToMarkdownViaCloudflare.mockResolvedValue({
+				result: "![description](diagram)",
+				error: null,
+			});
+
+			const result = await handleFileUpload(mockEnv, 1, formData);
+
+			expect(mockConvertToMarkdownViaCloudflare).toHaveBeenCalledWith(
+				mockEnv,
+				`https://assets.example.com/uploads/1/images/${mockUUID}.png`,
+				"diagram.png",
+				{
+					image: {
+						descriptionLanguage: "fr",
+					},
+				},
+			);
+			expect(result).toEqual({
+				url: `https://assets.example.com/uploads/1/images/${mockUUID}.png`,
+				type: "markdown_document",
+				name: "diagram.png",
+				markdown: "![description](diagram)",
+			});
+		});
+
+		it("should merge explicit HTML conversion options with platform defaults", async () => {
+			const file = new File(["<article>test</article>"], "article.html", {
+				type: "text/html",
+			});
+			const formData = new FormData();
+			formData.append("file", file);
+			formData.append("file_type", "document");
+			formData.append(
+				"conversion_options",
+				JSON.stringify({
+					html: {
+						cssSelector: "article.content",
+					},
+				}),
+			);
+
+			mockStorageService.uploadObject.mockResolvedValue("test-key");
+			mockConvertToMarkdownViaCloudflare.mockResolvedValue({
+				result: "# Article",
+				error: null,
+			});
+
+			await handleFileUpload(mockEnv, 1, formData);
+
+			expect(mockConvertToMarkdownViaCloudflare).toHaveBeenCalledWith(
+				mockEnv,
+				`https://assets.example.com/uploads/1/documents/${mockUUID}.html`,
+				"article.html",
+				{
+					html: {
+						cssSelector: "article.content",
+						hostname: "assets.example.com",
+					},
+				},
+			);
 		});
 
 		it("should upload audio file successfully", async () => {
@@ -475,6 +569,18 @@ describe("handleFileUpload", () => {
 
 			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
 				"Failed to store file",
+			);
+		});
+
+		it("should reject invalid conversion options JSON", async () => {
+			const file = new File(["test"], "test.html", { type: "text/html" });
+			const formData = new FormData();
+			formData.append("file", file);
+			formData.append("file_type", "document");
+			formData.append("conversion_options", "{not-json");
+
+			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+				"conversion_options must be valid JSON",
 			);
 		});
 

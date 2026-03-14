@@ -1,3 +1,5 @@
+import type { MarkdownConversionOptions } from "@assistant/schemas";
+
 import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 
 export class UploadService {
@@ -30,7 +32,10 @@ export class UploadService {
 	async uploadFile(
 		file: File,
 		fileType: "image" | "document" | "audio" | "code",
-		options?: { convertToMarkdown?: boolean },
+		options?: {
+			convertToMarkdown?: boolean;
+			conversionOptions?: MarkdownConversionOptions;
+		},
 	): Promise<{
 		url: string;
 		type: string;
@@ -50,6 +55,12 @@ export class UploadService {
 
 		if (options?.convertToMarkdown) {
 			formData.append("convert_to_markdown", "true");
+		}
+		if (options?.conversionOptions) {
+			formData.append(
+				"conversion_options",
+				JSON.stringify(options.conversionOptions),
+			);
 		}
 
 		const response = await fetchApi("/uploads", {
