@@ -157,17 +157,18 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			const textOnlyToImage =
 				hasTextToImage && !hasImageToImage && !hasImageToText;
 			setIsTextToImageOnlyModel(textOnlyToImage);
-			const imageOnly = hasImageToImage || hasImageToText;
+			const supportsNativeDocuments =
+				!!modelData?.supportsDocuments && !textOnlyToImage;
+			const supportsNativeAudio =
+				!!modelData?.supportsAudio && !textOnlyToImage;
+			const imageOnly =
+				(hasImageToImage || hasImageToText) &&
+				!supportsNativeDocuments &&
+				!supportsNativeAudio;
 			setIsImageModel(imageOnly);
-			setSupportsDocuments(
-				!!modelData?.supportsDocuments && !imageOnly && !textOnlyToImage,
-			);
-			setSupportsAudio(
-				!!modelData?.supportsAudio && !imageOnly && !textOnlyToImage,
-			);
-			setSupportsCode(
-				!!modelData?.supportsDocuments && !imageOnly && !textOnlyToImage,
-			);
+			setSupportsDocuments(supportsNativeDocuments);
+			setSupportsAudio(supportsNativeAudio);
+			setSupportsCode(supportsNativeDocuments);
 			setsupportsToolCalls(!!modelData?.supportsToolCalls);
 		}, [model, apiModels]);
 
@@ -291,13 +292,16 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					return;
 				}
 
+				const isMarkdownDocument =
+					file.type === "text/markdown" || /\.mdx?$/i.test(file.name);
 				const codeLike =
-					file.type.startsWith("text/") ||
-					file.type === "application/javascript" ||
-					file.type === "application/typescript" ||
-					file.name.match(
-						/\.(ts|tsx|js|jsx|json|py|go|java|rb|php|rs|cs|kt|swift|scala|sh|yml|yaml|sql|toml|c|cc|cpp|cxx|hpp|h)$/i,
-					);
+					!isMarkdownDocument &&
+					(file.type.startsWith("text/") ||
+						file.type === "application/javascript" ||
+						file.type === "application/typescript" ||
+						file.name.match(
+							/\.(ts|tsx|js|jsx|json|py|go|java|rb|php|rs|cs|kt|swift|scala|sh|yml|yaml|sql|toml|c|cc|cpp|cxx|hpp|h)$/i,
+						));
 
 				if (codeLike) {
 					const { url, name, markdown, type } = await apiService.uploadFile(
