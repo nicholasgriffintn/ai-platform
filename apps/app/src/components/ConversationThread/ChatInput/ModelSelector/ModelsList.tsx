@@ -148,7 +148,7 @@ export function ModelsList({
 
 	return (
 		<div className="overflow-hidden rounded-lg border border-zinc-200/70 bg-white/60 dark:border-zinc-700/70 dark:bg-zinc-900/50">
-			<div className="flex max-h-[min(48svh,420px)] min-h-0 flex-col sm:max-h-[420px] sm:min-h-[320px] sm:flex-row">
+			<div className="flex min-h-0 flex-col sm:max-h-[420px] sm:min-h-[320px] sm:flex-row">
 				<div className="border-b border-zinc-200/70 dark:border-zinc-700/70 sm:flex sm:w-16 sm:flex-col sm:border-b-0 sm:border-r md:w-20">
 					<div className="overflow-x-auto px-2 py-2 sm:flex-1 sm:overflow-x-hidden sm:overflow-y-auto sm:px-2">
 						<div className="flex gap-2 sm:space-y-1 sm:block">

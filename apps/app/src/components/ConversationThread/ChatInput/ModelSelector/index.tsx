@@ -658,7 +658,7 @@ export const ModelSelector = ({
 								}
 							: undefined
 					}
-					className="absolute bottom-full left-0 z-50 mb-1 flex max-h-[min(78svh,40rem)] w-[min(96vw,600px)] max-w-[600px] flex-col overflow-hidden rounded-xl border border-zinc-200 bg-off-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900 sm:max-h-[min(75vh,48rem)] sm:w-[min(90vw,660px)] sm:max-w-[660px]"
+					className="absolute bottom-full left-0 z-50 mb-1 flex max-h-[70vh] w-[min(96vw,600px)] max-w-[600px] flex-col overflow-hidden rounded-xl border border-zinc-200 bg-off-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900 sm:max-h-[75vh] sm:w-[min(90vw,660px)] sm:max-w-[660px]"
 					aria-label="Model selection dialog"
 				>
 					{selectedTab !== "auto" && (
