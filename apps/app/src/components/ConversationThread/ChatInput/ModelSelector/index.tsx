@@ -286,7 +286,7 @@ export const ModelSelector = ({
 	);
 	const [dialogLayout, setDialogLayout] = useState<DialogLayout | null>(null);
 
-	const dropdownRef = useRef<HTMLDialogElement>(null);
+	const dropdownRef = useRef<HTMLDivElement>(null);
 	const triggerWrapperRef = useRef<HTMLDivElement>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const [selectedTab, setSelectedTab] = useState<"auto" | "agent" | "models">(
@@ -405,7 +405,7 @@ export const ModelSelector = ({
 		};
 	}, []);
 
-	const handleKeyDown = (e: KeyboardEvent<HTMLDialogElement>) => {
+	const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
 		if (e.key === "Escape") {
 			setIsOpen(false);
 			return;
@@ -646,10 +646,12 @@ export const ModelSelector = ({
 			</button>
 
 			{isOpen && (
-				<dialog
+				<div
 					ref={dropdownRef}
-					open
 					onKeyDown={handleKeyDown}
+					role="dialog"
+					tabIndex={-1}
+					aria-modal="false"
 					style={
 						dialogLayout
 							? {
@@ -904,7 +906,7 @@ export const ModelSelector = ({
 							</div>
 						</TabsContent>
 					</Tabs>
-				</dialog>
+				</div>
 			)}
 			<HoverPreview preview={hoverPreview} />
 		</div>
