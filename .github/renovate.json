@@ -23,8 +23,5 @@
 			],
 			"automerge": true
 		}
-	],
-	"ignore": {
-		"dependencyName": "@strudel/*"
-	}
+	]
 }
