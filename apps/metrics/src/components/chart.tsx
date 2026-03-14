@@ -222,7 +222,7 @@ export function CombinedMetricsChart({
 					width={80}
 				/>
 				<ChartTooltip
-					content={<ChartTooltipContent />}
+					content={(props) => <ChartTooltipContent {...props} />}
 					cursor={{ fill: "rgba(255, 255, 255, 0.1)" }}
 				/>
 				<Legend
