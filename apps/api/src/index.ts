@@ -12,6 +12,8 @@ import {
 	API_PROD_HOST,
 	LOCAL_HOST,
 	PROD_HOST,
+	METRICS_LOCAL_HOST,
+	METRICS_PROD_HOST,
 	ROUTES,
 } from "./constants/app";
 import { authMiddleware } from "./middleware/auth";
@@ -69,8 +71,12 @@ const getOriginHost = (origin: string) => {
 const isAllowedOrigin = (origin: string, environment: string) => {
 	const host = getOriginHost(origin);
 	if (!host) return false;
-	if (environment === "production") return host === PROD_HOST;
-	if (environment === "development") return host === LOCAL_HOST;
+	if (environment === "production") {
+		return host === PROD_HOST || host === METRICS_PROD_HOST;
+	}
+	if (environment === "development") {
+		return host === LOCAL_HOST || host === METRICS_LOCAL_HOST;
+	}
 	return false;
 };
 
