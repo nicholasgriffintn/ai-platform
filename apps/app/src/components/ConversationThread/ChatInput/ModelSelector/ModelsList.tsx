@@ -147,8 +147,8 @@ export function ModelsList({
 	}
 
 	return (
-		<div className="overflow-hidden rounded-lg border border-zinc-200/70 bg-white/60 dark:border-zinc-700/70 dark:bg-zinc-900/50">
-			<div className="flex min-h-0 flex-col sm:max-h-[420px] sm:min-h-[320px] sm:flex-row">
+		<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-zinc-200/70 bg-white/60 dark:border-zinc-700/70 dark:bg-zinc-900/50">
+			<div className="flex min-h-0 flex-1 flex-col max-h-[320px] sm:max-h-[420px] sm:min-h-[320px] sm:flex-row">
 				<div className="border-b border-zinc-200/70 dark:border-zinc-700/70 sm:flex sm:w-16 sm:flex-col sm:border-b-0 sm:border-r md:w-20">
 					<div className="overflow-x-auto px-2 py-2 sm:flex-1 sm:overflow-x-hidden sm:overflow-y-auto sm:px-2">
 						<div className="flex gap-2 sm:space-y-1 sm:block">
@@ -198,7 +198,7 @@ export function ModelsList({
 					</div>
 				</div>
 
-				<div className="flex min-w-0 flex-1 flex-col">
+				<div className="flex min-h-0 min-w-0 flex-1 flex-col">
 					<div className="flex-shrink-0 border-b border-zinc-200/70 px-3 py-2 dark:border-zinc-700/70">
 						<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
 							<h4 className="text-sm font-semibold text-zinc-900 whitespace-normal break-words dark:text-zinc-100">

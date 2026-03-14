@@ -770,8 +770,11 @@ export const ModelSelector = ({
 							</div>
 						</TabsContent>
 
-						<TabsContent value="agent" className="min-h-0 overflow-hidden">
-							<div className="flex h-full min-h-0 flex-col gap-3 pt-2">
+						<TabsContent
+							value="agent"
+							className="flex min-h-0 flex-col overflow-hidden"
+						>
+							<div className="flex min-h-0 flex-1 flex-col gap-3 pt-2">
 								<div className="max-h-[140px] overflow-y-auto rounded-lg border border-zinc-200/70 p-2 dark:border-zinc-700/70 sm:max-h-[140px]">
 									<h3
 										id="agents-heading"
@@ -845,8 +848,11 @@ export const ModelSelector = ({
 							</div>
 						</TabsContent>
 
-						<TabsContent value="models" className="min-h-0 overflow-hidden">
-							<div className="flex h-full min-h-0 flex-col gap-3">
+						<TabsContent
+							value="models"
+							className="flex min-h-0 flex-col overflow-hidden"
+						>
+							<div className="flex min-h-0 flex-1 flex-col gap-3">
 								<div>
 									<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 										<div className="text-xs text-zinc-500 dark:text-zinc-400">
