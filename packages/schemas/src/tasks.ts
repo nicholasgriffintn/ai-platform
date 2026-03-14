@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const TaskType = z.enum([
+export const taskTypeSchema = z.enum([
 	"memory_synthesis",
 	"research_polling",
 	"replicate_polling",
@@ -9,7 +9,7 @@ export const TaskType = z.enum([
 	"usage_update",
 ]);
 
-export const TaskStatus = z.enum([
+export const taskStatusSchema = z.enum([
 	"pending",
 	"queued",
 	"running",
@@ -18,23 +18,27 @@ export const TaskStatus = z.enum([
 	"cancelled",
 ]);
 
-export const ScheduleType = z.enum([
+export const scheduleTypeSchema = z.enum([
 	"immediate",
 	"scheduled",
 	"recurring",
 	"event_triggered",
 ]);
 
-export const TaskExecutionStatus = z.enum(["running", "completed", "failed"]);
+export const taskExecutionStatusSchema = z.enum([
+	"running",
+	"completed",
+	"failed",
+]);
 
-export const Task = z.object({
+export const taskSchema = z.object({
 	id: z.string(),
-	task_type: TaskType,
-	status: TaskStatus.optional(),
+	task_type: taskTypeSchema,
+	status: taskStatusSchema.optional(),
 	priority: z.number().min(1).max(10).optional(),
 	user_id: z.number().optional(),
 	task_data: z.record(z.string(), z.any()).optional(),
-	schedule_type: ScheduleType.optional(),
+	schedule_type: scheduleTypeSchema.optional(),
 	scheduled_at: z.string().optional(),
 	cron_expression: z.string().optional(),
 	created_by: z.enum(["system", "user"]),
@@ -48,10 +52,10 @@ export const Task = z.object({
 	updated_at: z.string().optional(),
 });
 
-export const TaskExecution = z.object({
+export const taskExecutionSchema = z.object({
 	id: z.string(),
 	task_id: z.string(),
-	status: TaskExecutionStatus,
+	status: taskExecutionStatusSchema,
 	started_at: z.string(),
 	completed_at: z.string().optional(),
 	execution_time_ms: z.number().optional(),
@@ -60,7 +64,7 @@ export const TaskExecution = z.object({
 	created_at: z.string(),
 });
 
-export const MemorySynthesis = z.object({
+export const memorySynthesisSchema = z.object({
 	id: z.string(),
 	user_id: z.number(),
 	synthesis_text: z.string(),
@@ -75,50 +79,50 @@ export const MemorySynthesis = z.object({
 	updated_at: z.string().optional(),
 });
 
-export const CreateTaskRequest = z.object({
-	task_type: TaskType,
+export const createTaskRequestSchema = z.object({
+	task_type: taskTypeSchema,
 	task_data: z.record(z.string(), z.any()),
-	schedule_type: ScheduleType.optional(),
+	schedule_type: scheduleTypeSchema.optional(),
 	scheduled_at: z.string().optional(),
 	priority: z.number().min(1).max(10).optional(),
 	metadata: z.record(z.string(), z.any()).optional(),
 });
 
-export const CreateTaskResponse = z.object({
+export const createTaskResponseSchema = z.object({
 	task_id: z.string(),
-	status: TaskStatus,
+	status: taskStatusSchema,
 	message: z.string().optional(),
 });
 
-export const GetTaskResponse = Task;
+export const getTaskResponseSchema = taskSchema;
 
-export const ListTasksResponse = z.object({
-	tasks: z.array(Task),
+export const listTasksResponseSchema = z.object({
+	tasks: z.array(taskSchema),
 	total: z.number(),
 });
 
-export const GetMemorySynthesisResponse = z.object({
-	synthesis: MemorySynthesis.optional(),
+export const getMemorySynthesisResponseSchema = z.object({
+	synthesis: memorySynthesisSchema.optional(),
 });
 
-export const TriggerMemorySynthesisRequest = z.object({
+export const triggerMemorySynthesisRequestSchema = z.object({
 	namespace: z.string().optional(),
 });
 
-export type TaskType = z.infer<typeof TaskType>;
-export type TaskStatus = z.infer<typeof TaskStatus>;
-export type ScheduleType = z.infer<typeof ScheduleType>;
-export type TaskExecutionStatus = z.infer<typeof TaskExecutionStatus>;
-export type Task = z.infer<typeof Task>;
-export type TaskExecution = z.infer<typeof TaskExecution>;
-export type MemorySynthesis = z.infer<typeof MemorySynthesis>;
-export type CreateTaskRequest = z.infer<typeof CreateTaskRequest>;
-export type CreateTaskResponse = z.infer<typeof CreateTaskResponse>;
-export type GetTaskResponse = z.infer<typeof GetTaskResponse>;
-export type ListTasksResponse = z.infer<typeof ListTasksResponse>;
+export type TaskType = z.infer<typeof taskTypeSchema>;
+export type TaskStatus = z.infer<typeof taskStatusSchema>;
+export type ScheduleType = z.infer<typeof scheduleTypeSchema>;
+export type TaskExecutionStatus = z.infer<typeof taskExecutionStatusSchema>;
+export type Task = z.infer<typeof taskSchema>;
+export type TaskExecution = z.infer<typeof taskExecutionSchema>;
+export type MemorySynthesis = z.infer<typeof memorySynthesisSchema>;
+export type CreateTaskRequest = z.infer<typeof createTaskRequestSchema>;
+export type CreateTaskResponse = z.infer<typeof createTaskResponseSchema>;
+export type GetTaskResponse = z.infer<typeof getTaskResponseSchema>;
+export type ListTasksResponse = z.infer<typeof listTasksResponseSchema>;
 export type GetMemorySynthesisResponse = z.infer<
-	typeof GetMemorySynthesisResponse
+	typeof getMemorySynthesisResponseSchema
 >;
 export type TriggerMemorySynthesisRequest = z.infer<
-	typeof TriggerMemorySynthesisRequest
+	typeof triggerMemorySynthesisRequestSchema
 >;

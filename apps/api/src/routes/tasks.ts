@@ -6,8 +6,8 @@ import { requireAuth } from "~/middleware/auth";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { TaskService } from "~/services/tasks/TaskService";
 import {
-	CreateTaskRequest,
-	TriggerMemorySynthesisRequest,
+	createTaskRequestSchema,
+	triggerMemorySynthesisRequestSchema,
 } from "@assistant/schemas";
 import { getLogger } from "~/utils/logger";
 import { ResponseFactory } from "../lib/http/ResponseFactory";
@@ -81,7 +81,7 @@ app.post(
 		tags: ["tasks"],
 		summary: "Create a memory synthesis task",
 	}),
-	zValidator("json", TriggerMemorySynthesisRequest),
+	zValidator("json", triggerMemorySynthesisRequestSchema),
 	async (c) => {
 		try {
 			const { user, env, repositories } = getServiceContext(c);
@@ -114,7 +114,7 @@ app.post(
 		tags: ["tasks"],
 		summary: "Create a new task",
 	}),
-	zValidator("json", CreateTaskRequest),
+	zValidator("json", createTaskRequestSchema),
 	async (c) => {
 		try {
 			const { user, env, repositories } = getServiceContext(c);

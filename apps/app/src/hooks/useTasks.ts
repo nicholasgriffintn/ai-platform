@@ -2,10 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { taskService } from "~/lib/api/task-service";
 import type {
-	Task,
 	CreateTaskResponse,
+	GetMemorySynthesisResponse,
+	ListTasksResponse,
 	TriggerMemorySynthesisRequest,
-	MemorySynthesis,
 } from "@assistant/schemas";
 
 export const TASK_QUERY_KEYS = {
@@ -21,19 +21,10 @@ export const TASK_QUERY_KEYS = {
 	],
 };
 
-interface ListTasksResponse {
-	tasks: Task[];
+type MemorySynthesisHistoryResponse = {
+	syntheses: NonNullable<GetMemorySynthesisResponse["synthesis"]>[];
 	total: number;
-}
-
-interface MemorySynthesisHistoryResponse {
-	syntheses: MemorySynthesis[];
-	total: number;
-}
-
-interface GetMemorySynthesisResponse {
-	synthesis?: MemorySynthesis;
-}
+};
 
 export function useTasks({ shouldRefetch = true }) {
 	const queryClient = useQueryClient();
