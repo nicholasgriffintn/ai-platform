@@ -29,11 +29,11 @@ function createMockContext(overrides: any = {}): Context {
 		...overrides,
 		req: {
 			...baseContext.req,
-			...(overrides.req ?? {}),
+			...overrides.req,
 		},
 		res: {
 			...baseContext.res,
-			...(overrides.res ?? {}),
+			...overrides.res,
 		},
 	} as any;
 

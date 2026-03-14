@@ -3,7 +3,6 @@ import {
 	type ServiceContext,
 } from "~/lib/context/serviceContext";
 import { generateJwtToken } from "~/services/auth/jwt";
-import { deleteSession } from "~/services/auth/user";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 

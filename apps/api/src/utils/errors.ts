@@ -264,7 +264,7 @@ export function handleAIServiceError(error: AssistantError): Response {
 			};
 
 			if (error.context && Object.keys(error.context).length > 0) {
-				const { requestId, ...safeContext } = error.context;
+				const { requestId: _requestId, ...safeContext } = error.context;
 				if (Object.keys(safeContext).length > 0) {
 					errorResponse.context = safeContext;
 				}

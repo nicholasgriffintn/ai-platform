@@ -1,4 +1,10 @@
-import type { ChatMode, ChatSettings, Conversation, Message } from "~/types";
+import type {
+	ChatMode,
+	ChatSettings,
+	Conversation,
+	Message,
+	MessageData,
+} from "~/types";
 import { normalizeMessage } from "../../messages";
 import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 
@@ -428,14 +434,14 @@ export class ChatService {
 		let buffer = "";
 
 		let content = "";
-		let messageData = null;
+		let messageData: MessageData | Record<string, any> | undefined = undefined;
 		let reasoning = "";
 		let thinking = "";
-		let citations = null;
-		let usage = null;
-		let id = null;
-		let created = null;
-		let logId = null;
+		let citations: string[] | null = null;
+		let usage: Message["usage"] = undefined;
+		let id: string = crypto.randomUUID();
+		let created: number | undefined = undefined;
+		let logId: string | undefined = undefined;
 		const toolCalls: any[] = [];
 		const pendingToolCalls: Record<string, any> = {};
 		const toolResponses: Message[] = [];
@@ -453,12 +459,12 @@ export class ChatService {
 				throw new Error(data.error.message || "Unknown error");
 			}
 
-			usage = data.usage || null;
+			usage = data.usage || undefined;
 			id = data.id || crypto.randomUUID();
 			created = data.created || Date.now();
-			logId = data.log_id || null;
+			logId = data.log_id || undefined;
 			content = data.choices?.[0]?.message?.content || "";
-			messageData = data.choices?.[0]?.message?.data || null;
+			messageData = data.choices?.[0]?.message?.data || undefined;
 			reasoning = data.choices?.[0]?.message?.reasoning || "";
 			toolCalls.push(...(data.choices?.[0]?.message?.tool_calls || []));
 			citations = data.choices?.[0]?.message?.citations || null;

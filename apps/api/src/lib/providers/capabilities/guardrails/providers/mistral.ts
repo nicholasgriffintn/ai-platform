@@ -23,7 +23,7 @@ export class MistralGuardProvider implements GuardrailsProvider {
 
 	async validateContent(
 		content: string,
-		source: "INPUT" | "OUTPUT",
+		_source: "INPUT" | "OUTPUT",
 	): Promise<GuardrailResult> {
 		try {
 			logger.debug("Validating content with Mistral Guard");

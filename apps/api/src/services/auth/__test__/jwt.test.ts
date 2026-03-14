@@ -121,6 +121,7 @@ describe("JWT Service", () => {
 			).rejects.toMatchObject({
 				message: "Invalid or expired authentication token",
 				type: ErrorType.AUTHENTICATION_ERROR,
+				statusCode: 401,
 				name: "AssistantError",
 			});
 		});
@@ -131,6 +132,7 @@ describe("JWT Service", () => {
 			await expect(verifyJwtToken("token", "secret")).rejects.toMatchObject({
 				message: "Invalid or expired authentication token",
 				type: ErrorType.AUTHENTICATION_ERROR,
+				statusCode: 401,
 				name: "AssistantError",
 			});
 		});

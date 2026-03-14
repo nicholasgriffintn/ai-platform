@@ -3,7 +3,7 @@ importScripts(
 );
 
 const { registerRoute, setDefaultHandler } = workbox.routing;
-const { NetworkFirst, CacheFirst, NetworkOnly } = workbox.strategies;
+const { CacheFirst, NetworkOnly } = workbox.strategies;
 const { CacheableResponsePlugin } = workbox.cacheableResponse;
 const { ExpirationPlugin } = workbox.expiration;
 

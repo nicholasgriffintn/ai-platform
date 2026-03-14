@@ -60,7 +60,6 @@ export const search_functions: IFunction = {
 				return true;
 			})
 			.map((fn) => {
-				const searchableText = `${fn.name} ${fn.description}`.toLowerCase();
 				let score = 0;
 
 				for (const term of searchTerms) {

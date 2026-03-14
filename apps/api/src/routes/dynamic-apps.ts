@@ -25,6 +25,7 @@ import type { IEnv } from "~/types/shared";
 import { getLogger } from "~/utils/logger";
 import type { IUser } from "../types";
 import { generateId } from "~/utils/id";
+import { getServiceContext } from "~/lib/context/serviceContext";
 
 const logger = getLogger({ prefix: "routes/dynamic-apps" });
 
@@ -299,6 +300,7 @@ dynamicApps.post(
 					platform: "dynamic-apps",
 				},
 				user,
+				context: getServiceContext(c),
 			};
 
 			const result = await executeDynamicApp(id, formData, req);

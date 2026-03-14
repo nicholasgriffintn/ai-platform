@@ -366,7 +366,7 @@ export class RequestPreparer {
 			if (options.completion_id) {
 				existingMessages = await conversationManager.get(options.completion_id);
 			}
-		} catch (_error) {
+		} catch {
 			// We can ignore this.
 		}
 

@@ -51,6 +51,7 @@ export interface IUserSettings {
 	transcription_model: string;
 	search_provider: string | null;
 	tracking_enabled: boolean;
+	sandbox_model: string | null;
 }
 
 export interface UserSettings {

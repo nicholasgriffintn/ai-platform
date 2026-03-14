@@ -83,7 +83,11 @@ function parseCookies(cookieHeader: string): Record<string, string> {
  */
 export async function authMiddleware(context: Context, next: Next) {
 	const path = context.req.path;
-	if (path === "/status" || path === "/openapi") {
+	if (
+		path === "/status" ||
+		path === "/openapi" ||
+		path.startsWith("/webhooks/")
+	) {
 		return next();
 	}
 
@@ -159,6 +163,13 @@ export async function authMiddleware(context: Context, next: Next) {
 						context.env.JWT_SECRET!,
 					);
 				} catch (error) {
+					if (
+						error instanceof AssistantError &&
+						error.type === ErrorType.AUTHENTICATION_ERROR
+					) {
+						return null;
+					}
+
 					logger.error("JWT authentication failed:", { error });
 					return null;
 				}

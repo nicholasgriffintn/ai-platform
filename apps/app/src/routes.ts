@@ -37,5 +37,7 @@ export default [
 	route("/apps/strudel", "pages/apps/strudel/index.tsx"),
 	route("/apps/strudel/new", "pages/apps/strudel/new.tsx"),
 	route("/apps/strudel/:id", "pages/apps/strudel/[id].tsx"),
+	route("/apps/sandbox", "pages/apps/sandbox/index.tsx"),
+	route("/apps/sandbox/:connectionId", "pages/apps/sandbox/[connectionId].tsx"),
 	route("*?", "pages/catchall.tsx"),
 ] satisfies RouteConfig;

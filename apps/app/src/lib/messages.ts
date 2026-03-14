@@ -3,7 +3,7 @@ import type { Message } from "~/types";
 export function normalizeMessage(message: Message): Message {
 	let content = message.content;
 	const reasoning = message.reasoning;
-	let newReasoning = null;
+	let newReasoning: string | null = null;
 
 	if (typeof content === "string") {
 		const formatted = formatMessageContent(content);
@@ -17,7 +17,7 @@ export function normalizeMessage(message: Message): Message {
 			(item: any) => item.type === "thinking" && item.thinking,
 		);
 		if (thinkingPart) {
-			newReasoning = thinkingPart.thinking;
+			newReasoning = thinkingPart.thinking ?? null;
 		}
 	} else if (
 		content &&
@@ -114,8 +114,17 @@ export const formattedMessageContent = (
 	originalContent: string,
 ) => {
 	let content = originalContent;
-	const reasoning = [];
-	const artifacts = [];
+	const reasoning: Array<{ type: string; content: string; isOpen: boolean }> =
+		[];
+	const artifacts: Array<{
+		identifier: string;
+		type: string;
+		language: string;
+		title: string | undefined;
+		content: string;
+		placeholder: string;
+		isOpen: boolean;
+	}> = [];
 
 	const thinkRegex = /<think>([\s\S]*?)(<\/think>|$)/g;
 	while (true) {
@@ -146,7 +155,7 @@ export const formattedMessageContent = (
 
 	if (role === "assistant") {
 		const artifactRegex = /<artifact\s+([^>]*)>([\s\S]*?)(<\/artifact>|$)/g;
-		let artifactMatch = null;
+		let artifactMatch: RegExpExecArray | null = null;
 		const tempContent = content;
 
 		artifactRegex.lastIndex = 0;

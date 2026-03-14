@@ -108,7 +108,7 @@ export const NoteEditorToolbar = memo(function NoteEditorToolbar({
 			try {
 				await onDelete();
 				setShowDeleteConfirm(false);
-			} catch (error) {
+			} catch {
 				toast.error("Failed to delete note");
 			} finally {
 				setIsDeleting(false);

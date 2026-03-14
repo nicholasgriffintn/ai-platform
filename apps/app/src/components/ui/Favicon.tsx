@@ -7,7 +7,7 @@ const getHost = (url: string) => {
 	try {
 		const urlObj = new URL(url);
 		return urlObj.hostname;
-	} catch (_e) {
+	} catch {
 		try {
 			const urlObj = new URL(`https://${url}`);
 			return urlObj.hostname;

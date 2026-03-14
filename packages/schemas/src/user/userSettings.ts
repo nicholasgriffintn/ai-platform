@@ -26,6 +26,7 @@ export const updateUserSettingsSchema = z.object({
 	transcription_provider: z.string().optional(),
 	transcription_model: z.string().optional(),
 	search_provider: z.string().optional(),
+	sandbox_model: z.string().optional(),
 });
 
 export const userModelsResponseSchema = z.object({

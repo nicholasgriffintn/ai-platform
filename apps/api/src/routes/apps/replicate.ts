@@ -11,7 +11,7 @@ import { listReplicatePredictions } from "~/services/apps/replicate/list";
 import { getReplicatePredictionDetails } from "~/services/apps/replicate/get-details";
 import { replicateModelConfig } from "~/data-model/models/replicate";
 import type { AppTheme } from "~/types/app-schema";
-import type { IEnv, IUser, ModelModalities, ModelModality } from "~/types";
+import type { IUser, ModelModalities, ModelModality } from "~/types";
 import { AssistantError } from "~/utils/errors";
 
 const signatureMetadata: Record<

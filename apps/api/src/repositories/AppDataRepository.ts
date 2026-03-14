@@ -122,6 +122,8 @@ export class AppDataRepository extends BaseRepository {
 			true,
 		);
 
+		await this.invalidateUserAppCache(userId, appId);
+
 		if (!created) {
 			throw new AssistantError(
 				"Failed to create app data",
@@ -168,6 +170,27 @@ export class AppDataRepository extends BaseRepository {
 	}
 
 	/**
+	 * Gets app data by app id and item id
+	 * @param appId - The app ID
+	 * @param itemId - The item ID
+	 * @returns The app data or null if not found
+	 */
+	public async getAppDataByAppAndItemId(
+		appId: string,
+		itemId: string,
+	): Promise<AppData | null> {
+		const { query, values } = this.buildSelectQuery(
+			"app_data",
+			{
+				app_id: appId,
+				item_id: itemId,
+			},
+			{ orderBy: "updated_at DESC" },
+		);
+		return this.runQuery<AppData>(query, values, true);
+	}
+
+	/**
 	 * Gets all app data for a user and specific app with caching
 	 * @param userId - The user ID
 	 * @param appId - The app ID
@@ -202,6 +225,20 @@ export class AppDataRepository extends BaseRepository {
 			"app_data",
 			{ user_id: userId, app_id: appId },
 			{ orderBy: "created_at DESC" },
+		);
+		return this.runQuery<AppData>(query, values);
+	}
+
+	/**
+	 * Gets all app data records for an app id
+	 * @param appId - The app ID
+	 * @returns Matching app data rows
+	 */
+	public async getAppDataByApp(appId: string): Promise<AppData[]> {
+		const { query, values } = this.buildSelectQuery(
+			"app_data",
+			{ app_id: appId },
+			{ orderBy: "updated_at DESC" },
 		);
 		return this.runQuery<AppData>(query, values);
 	}
@@ -296,8 +333,15 @@ export class AppDataRepository extends BaseRepository {
 	 * @param id - The ID of the app data
 	 */
 	public async deleteAppData(id: string): Promise<void> {
+		const existing = await this.getAppDataById(id);
 		const { query, values } = this.buildDeleteQuery("app_data", { id });
 		await this.executeRun(query, values);
+
+		if (this.cache && existing) {
+			const itemCacheKey = KVCache.createKey("app-data", id);
+			await this.cache.delete(itemCacheKey);
+			await this.invalidateUserAppCache(existing.user_id, existing.app_id);
+		}
 	}
 
 	/**
@@ -314,6 +358,8 @@ export class AppDataRepository extends BaseRepository {
 			app_id: appId,
 		});
 		await this.executeRun(query, values);
+
+		await this.invalidateUserAppCache(userId, appId);
 	}
 
 	/**
@@ -337,6 +383,8 @@ export class AppDataRepository extends BaseRepository {
 			item_type: itemType,
 		});
 		await this.executeRun(query, values);
+
+		await this.invalidateUserAppCache(userId, appId);
 	}
 
 	/**

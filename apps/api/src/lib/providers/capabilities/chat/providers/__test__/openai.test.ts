@@ -224,16 +224,4 @@ describe("OpenAIProvider", () => {
 			expect(result.text).toBeUndefined();
 		});
 	});
-
-	describe("validateParams", () => {
-		it("should validate params correctly", async () => {
-			const provider = new OpenAIProvider();
-
-			const validParams = {
-				model: "gpt-4",
-				messages: [],
-				env: { AI_GATEWAY_TOKEN: "test-token" },
-			};
-		});
-	});
 });

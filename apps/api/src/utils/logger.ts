@@ -79,7 +79,7 @@ class Logger {
 
 		try {
 			return JSON.stringify(logObject);
-		} catch (_e) {
+		} catch {
 			return JSON.stringify({
 				timestamp,
 				level: levelName,
@@ -224,7 +224,7 @@ export const getLogger = (options?: LoggerOptions) => {
 	const baseLogger = Logger.getInstance(instanceOptions);
 
 	const mergedMeta = {
-		...(options?.defaultMeta ?? {}),
+		...options?.defaultMeta,
 		...(options?.requestId ? { requestId: options.requestId } : {}),
 	};
 

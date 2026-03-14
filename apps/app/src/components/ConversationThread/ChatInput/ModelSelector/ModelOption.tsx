@@ -1,7 +1,18 @@
-import { BrainCircuit, Crown, Eye, Hammer, Info, Users } from "lucide-react";
-import { useState } from "react";
+import {
+	AudioWaveform,
+	BrainCircuit,
+	Code2,
+	Crown,
+	Eye,
+	Hammer,
+	Info,
+	Search,
+	Sparkles,
+	Users,
+} from "lucide-react";
 
 import { ModelIcon } from "~/components/ModelIcon";
+import { cn } from "~/lib/utils";
 import type { ModelConfigItem } from "~/types";
 
 interface ModelOptionProps {
@@ -12,6 +23,8 @@ interface ModelOptionProps {
 	disabled?: boolean;
 	mono?: boolean;
 	isTeamAgent?: boolean;
+	onInfoHoverStart?: (model: ModelConfigItem, anchorRect: DOMRect) => void;
+	onInfoHoverEnd?: () => void;
 }
 
 export const ModelOption = ({
@@ -22,8 +35,9 @@ export const ModelOption = ({
 	disabled,
 	mono = false,
 	isTeamAgent = false,
+	onInfoHoverStart,
+	onInfoHoverEnd,
 }: ModelOptionProps) => {
-	const [showDetails, setShowDetails] = useState(false);
 	const supportsVision =
 		model.modalities?.input?.some((modality) =>
 			["image", "video"].includes(modality),
@@ -31,11 +45,6 @@ export const ModelOption = ({
 		model.modalities?.output?.some((modality) =>
 			["image", "video"].includes(modality),
 		);
-
-	const handleInfoClick = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		setShowDetails(!showDetails);
-	};
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === "Enter" || e.key === " ") {
@@ -46,13 +55,13 @@ export const ModelOption = ({
 		}
 	};
 
-	const handleInfoKeyDown = (e: React.KeyboardEvent) => {
-		if (e.key === "Enter" || e.key === " ") {
-			e.preventDefault();
-			e.stopPropagation();
-			setShowDetails(!showDetails);
-		}
-	};
+	const showDetailsTrigger = Boolean(
+		model.description ||
+		(model.strengths && model.strengths.length > 0) ||
+		model.contextWindow ||
+		model.maxTokens,
+	);
+	const canShowHoverPreview = showDetailsTrigger && Boolean(onInfoHoverStart);
 
 	return (
 		<div
@@ -62,115 +71,144 @@ export const ModelOption = ({
 			aria-selected={isSelected}
 			id={`model-${model.matchingModel}`}
 			tabIndex={disabled ? -1 : 0}
-			className={`${
-				!disabled ? "cursor-pointer" : "cursor-not-allowed opacity-50"
-			} w-full text-left px-2 py-1.5 rounded-md text-sm ${
+			className={cn(
+				"w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+				!disabled
+					? "cursor-pointer"
+					: "cursor-not-allowed border-zinc-200/60 opacity-50 dark:border-zinc-700/60",
 				isSelected
-					? "bg-off-white-highlight dark:bg-zinc-800"
+					? "border-fuchsia-300/70 bg-fuchsia-50/70 dark:border-fuchsia-500/40 dark:bg-fuchsia-950/30"
 					: isActive
-						? "bg-zinc-50 dark:bg-zinc-800/50"
-						: "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-			}`}
+						? "border-zinc-300 bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800/70"
+						: "border-transparent hover:border-zinc-300 hover:bg-zinc-50 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/60",
+			)}
 		>
-			<div className="flex justify-between items-center">
-				<div className="flex items-center gap-1.5">
-					<ModelIcon
-						url={model.avatarUrl}
-						mono={mono}
-						modelName={model.name || model.matchingModel}
-						provider={model.provider}
-						size={20}
-					/>
-					<span className="text-zinc-900 dark:text-zinc-100">
-						{model.name || model.matchingModel}
-					</span>
-					{!model.isFree && (
-						<div
-							className="p-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30"
-							title="Pro"
-						>
-							<Crown
-								size={12}
-								className="text-purple-800 dark:text-purple-300"
-							/>
+			<div className="flex items-start justify-between gap-2">
+				<div className="flex min-w-0 flex-1 items-start gap-2.5">
+					<div className="flex h-6 w-6 flex-shrink-0 items-center justify-center">
+						<ModelIcon
+							url={model.avatarUrl}
+							mono={mono}
+							modelName={model.name || model.matchingModel}
+							provider={model.provider}
+							size={20}
+						/>
+					</div>
+					<div className="min-w-0">
+						<div className="flex min-h-[1.4rem] items-center gap-1.5">
+							<span className="block min-w-0 font-medium text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
+								{model.name || model.matchingModel}
+							</span>
+							{!model.isFree && (
+								<div
+									className="rounded-full bg-fuchsia-100 p-0.5 dark:bg-fuchsia-900/30"
+									title="Pro"
+								>
+									<Crown
+										size={12}
+										className="text-fuchsia-800 dark:text-fuchsia-300"
+									/>
+								</div>
+							)}
+							{isTeamAgent ? (
+								<div
+									className="rounded-full bg-blue-100 p-0.5 dark:bg-blue-900/30"
+									title="Team Agent"
+								>
+									<Users
+										size={12}
+										className="text-blue-600 dark:text-blue-400"
+									/>
+								</div>
+							) : null}
 						</div>
-					)}
-					{isTeamAgent ? (
-						<div
-							className="p-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30"
-							title="Team Agent"
-						>
-							<Users size={12} className="text-blue-600 dark:text-blue-400" />
-						</div>
-					) : null}
+						{model.description ? (
+							<p className="mt-0.5 text-xs leading-5 text-zinc-500 dark:text-zinc-400 whitespace-normal break-words">
+								{model.description}
+							</p>
+						) : null}
+					</div>
 				</div>
-				<div className="flex items-center gap-1.5">
+				<div className="flex w-[108px] flex-shrink-0 items-center justify-end gap-1.5 sm:w-[124px]">
 					{model.reasoningConfig?.enabled && (
-						<div className="p-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30">
+						<div
+							className="rounded-full bg-blue-100 p-1 dark:bg-blue-900/30"
+							title="Reasoning"
+						>
 							<BrainCircuit
-								size={14}
+								size={12}
 								className="text-blue-600 dark:text-blue-400"
 							/>
 						</div>
 					)}
 					{model.supportsToolCalls && (
-						<div className="p-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30">
+						<div
+							className="rounded-full bg-amber-100 p-1 dark:bg-amber-900/30"
+							title="Tool Calling"
+						>
 							<Hammer
-								size={14}
+								size={12}
 								className="text-amber-600 dark:text-amber-400"
 							/>
 						</div>
 					)}
 					{(model.multimodal || supportsVision) && (
-						<div className="p-0.5 rounded-full bg-green-100 dark:bg-green-900/30">
-							<Eye size={14} className="text-green-600 dark:text-green-400" />
+						<div className="rounded-full bg-blue-100 p-1 dark:bg-blue-900/30">
+							<Eye size={12} className="text-blue-600 dark:text-blue-400" />
 						</div>
 					)}
-					{(model.description ||
-						(model.strengths && model.strengths.length > 0)) && (
+					{model.supportsSearchGrounding && (
+						<div className="rounded-full bg-amber-100 p-1 dark:bg-amber-900/30">
+							<Search
+								size={12}
+								className="text-amber-600 dark:text-amber-400"
+							/>
+						</div>
+					)}
+					{model.supportsCodeExecution && (
+						<div className="rounded-full bg-emerald-100 p-1 dark:bg-emerald-900/30">
+							<Code2
+								size={12}
+								className="text-emerald-600 dark:text-emerald-400"
+							/>
+						</div>
+					)}
+					{model.supportsAudio && (
+						<div className="rounded-full bg-green-100 p-1 dark:bg-green-900/30">
+							<AudioWaveform
+								size={12}
+								className="text-green-600 dark:text-green-400"
+							/>
+						</div>
+					)}
+					{model.isFeatured && (
+						<div className="rounded-full bg-rose-100 p-1 dark:bg-rose-900/30">
+							<Sparkles
+								size={12}
+								className="text-rose-600 dark:text-rose-400"
+							/>
+						</div>
+					)}
+					{canShowHoverPreview && (
 						<button
 							type="button"
-							className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full cursor-pointer"
-							onClick={handleInfoClick}
-							onKeyDown={handleInfoKeyDown}
+							className="cursor-help rounded-full p-1 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+							onClick={(event) => event.stopPropagation()}
+							onMouseEnter={(event) => {
+								event.stopPropagation();
+								onInfoHoverStart?.(
+									model,
+									event.currentTarget.getBoundingClientRect(),
+								);
+							}}
+							onMouseLeave={() => onInfoHoverEnd?.()}
 							aria-label="View model details"
-							aria-pressed={showDetails}
 						>
-							<Info size={14} className="text-zinc-500" />
+							<Info size={13} className="text-zinc-500" />
 						</button>
 					)}
 				</div>
 			</div>
-
-			{showDetails && (
-				<div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-					{model.description && <div className="mb-1">{model.description}</div>}
-					{model.strengths && model.strengths.length > 0 && (
-						<div className="mt-1 flex flex-wrap gap-1">
-							{model.strengths?.map((capability) => {
-								const isImageCapable = capability.includes("vision");
-								const isCodingCapable = capability.includes("coding");
-								const isReasoningCapable = capability.includes("reasoning");
-								const color = isImageCapable
-									? "green"
-									: isCodingCapable
-										? "purple"
-										: isReasoningCapable
-											? "blue"
-											: "yellow";
-								return (
-									<span
-										key={`${model.matchingModel}-${capability}`}
-										className={`text-xs bg-${color}-100 dark:bg-${color}-900/30 text-${color}-600 dark:text-${color}-400 px-1.5 py-0.5 rounded`}
-									>
-										{capability}
-									</span>
-								);
-							})}
-						</div>
-					)}
-				</div>
-			)}
 		</div>
 	);
 };

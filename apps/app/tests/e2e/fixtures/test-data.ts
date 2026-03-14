@@ -67,7 +67,7 @@ export const CHAT_TEST_SCENARIOS = {
 		},
 		{
 			message: "Now format them as JSON",
-			expectation: /\{|\[|\"|languages/i,
+			expectation: /\{|\[|"|languages/i,
 		},
 	],
 } as const;
@@ -89,7 +89,7 @@ export const CORE_PROMPTS: PromptCheck[] = [
 		name: "structured summary",
 		message:
 			"Return valid JSON that includes the keys status and summary. Set status to \"ok\" and include the text 'e2e-check' inside the summary value. Reply with JSON only.",
-		expectations: [/\"status\"\s*:\s*\"ok\"/i, /e2e-check/i],
+		expectations: [/"status"\s*:\s*"ok"/i, /e2e-check/i],
 	},
 	{
 		name: "code generation",

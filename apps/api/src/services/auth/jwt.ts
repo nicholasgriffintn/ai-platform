@@ -63,23 +63,31 @@ export async function verifyJwtToken(
 	token: string,
 	secret: string,
 ): Promise<JwtData> {
+	const invalidTokenError = () =>
+		new AssistantError(
+			"Invalid or expired authentication token",
+			ErrorType.AUTHENTICATION_ERROR,
+			401,
+		);
+
 	try {
 		const decoded = await jwt.verify(token, secret, {
 			algorithm: "HS256",
 		});
 		if (!decoded) {
-			throw new AssistantError(
-				"Invalid or expired authentication token",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
+			throw invalidTokenError();
 		}
 		return decoded as JwtData;
 	} catch (error) {
+		if (
+			error instanceof AssistantError &&
+			error.type === ErrorType.AUTHENTICATION_ERROR
+		) {
+			throw invalidTokenError();
+		}
+
 		logger.error("Error verifying JWT token:", { error });
-		throw new AssistantError(
-			"Invalid or expired authentication token",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
+		throw invalidTokenError();
 	}
 }
 

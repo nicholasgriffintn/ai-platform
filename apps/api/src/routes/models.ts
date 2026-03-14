@@ -375,7 +375,7 @@ app.get(
 		try {
 			const model = await getModelDetails(context.env as IEnv, id, userId);
 			return ResponseFactory.success(context, model);
-		} catch (_error) {
+		} catch {
 			return ResponseFactory.error(
 				context,
 				"Model not found or user does not have access",

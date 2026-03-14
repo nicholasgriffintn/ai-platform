@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { ErrorType } from "~/utils/errors";
 import {
 	createOrUpdateGithubUser,
 	createSession,

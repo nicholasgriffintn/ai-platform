@@ -9,13 +9,14 @@ import {
 } from "~/components/ui";
 import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";
+import type { UserSettings } from "~/types";
 
 const transcriptionProviders = {
 	workers: ["whisper", "whisper-tiny"],
 };
 
 interface UserSettingsFormProps {
-	userSettings: any;
+	userSettings: UserSettings | null;
 	isAuthenticated: boolean;
 }
 
@@ -48,6 +49,7 @@ export function UserSettingsForm({
 		transcription_provider: userSettings?.transcription_provider || "workers",
 		transcription_model: userSettings?.transcription_model || "whisper-1",
 		search_provider: userSettings?.search_provider || "",
+		sandbox_model: userSettings?.sandbox_model || "",
 	});
 	const [saveSuccess, setSaveSuccess] = useState(false);
 	const [saveError, setSaveError] = useState("");
@@ -210,6 +212,49 @@ export function UserSettingsForm({
 						onChange={handleChange}
 						placeholder="Your preferences for chat interactions"
 						rows={4}
+					/>
+				</div>
+			</div>
+
+			<div>
+				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
+					Sandbox Worker
+				</h3>
+			</div>
+
+			<div className="space-y-4">
+				<div>
+					<label
+						htmlFor="sandbox_model"
+						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+					>
+						Default Sandbox Model
+					</label>
+					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+						Used for sandbox worker runs when no model override is provided in
+						the request.
+					</p>
+					<FormInput
+						id="sandbox_model"
+						name="sandbox_model"
+						value={formData.sandbox_model}
+						onChange={(e) => {
+							setFormData({
+								...formData,
+								sandbox_model: e.target.value,
+							});
+
+							trackEvent({
+								name: "sandbox_model_changed",
+								category: EventCategory.UI_INTERACTION,
+								properties: {
+									has_value:
+										e.target.value.trim().length > 0 ? "true" : "false",
+								},
+							});
+						}}
+						placeholder="e.g. mistral-large"
+						className="w-full"
 					/>
 				</div>
 			</div>

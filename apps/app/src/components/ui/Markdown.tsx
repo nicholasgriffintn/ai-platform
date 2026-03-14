@@ -15,7 +15,7 @@ type TableProps = ComponentPropsWithoutRef<"div"> & {
 };
 
 const components = {
-	code: ({ node, ...props }: CodeProps) => (
+	code: ({ node: _node, ...props }: CodeProps) => (
 		<code {...props}>{props.children}</code>
 	),
 	table: ({ children }: TableProps) => (

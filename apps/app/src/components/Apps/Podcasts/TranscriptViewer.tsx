@@ -12,7 +12,7 @@ export function formatTime(seconds: number): string {
 	const minutes = Math.floor((seconds % 3600) / 60);
 	const secs = Math.floor(seconds % 60);
 
-	const parts = [];
+	const parts: string[] = [];
 	if (hours > 0) {
 		parts.push(hours.toString().padStart(2, "0"));
 	}

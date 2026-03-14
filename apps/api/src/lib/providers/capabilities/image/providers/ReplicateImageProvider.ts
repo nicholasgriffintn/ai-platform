@@ -79,7 +79,7 @@ export class ReplicateImageProvider implements ImageProvider {
 				width: request.width,
 				height: request.height,
 				steps: request.steps,
-				...(request.metadata ?? {}),
+				...request.metadata,
 			}).filter(([, value]) => value !== undefined && value !== null),
 		);
 

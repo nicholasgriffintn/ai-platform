@@ -65,7 +65,7 @@ app.get(
 				status: 200,
 				headers: {
 					"Content-Type": "application/json",
-					"Content-Disposition": `attachment; filename=\"${filename}\"`,
+					"Content-Disposition": `attachment; filename="${filename}"`,
 					"Cache-Control": "no-store",
 				},
 			});

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { ErrorType } from "~/utils/errors";
 import { EMAIL_PROVIDERS } from "~/constants/email";
 import type { IEnv } from "~/types";
 import { sendEmail } from "../index";
@@ -241,14 +241,7 @@ describe("Email Service", () => {
 				expect(request.headers.get("Authorization")).toBe("Bearer re_test-key");
 				expect(request.headers.get("Content-Type")).toBe("application/json");
 
-				// Verify the request body contains expected values
-				const body = JSON.stringify({
-					from: "test@example.com",
-					to: ["recipient@example.com"],
-					subject: "Test Subject",
-					text: "Test body text",
-					html: "<p>Test body HTML</p>",
-				});
+				// Verify the request body is present
 				expect(request.body).toBeDefined();
 			});
 		});

@@ -85,7 +85,7 @@ export function useAgentForm() {
 						setUseServers(false);
 						setServers([{ id: generateId(), url: "", type: "sse" }]);
 					}
-				} catch (_e) {
+				} catch {
 					setUseServers(false);
 					setServers([{ id: generateId(), url: "", type: "sse" }]);
 				}
@@ -121,7 +121,7 @@ export function useAgentForm() {
 						setUseFewShotExamples(false);
 						setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
 					}
-				} catch (_e) {
+				} catch {
 					setUseFewShotExamples(false);
 					setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
 				}
@@ -140,7 +140,7 @@ export function useAgentForm() {
 							? parsedTools.filter((tool: unknown) => typeof tool === "string")
 							: [],
 					);
-				} catch (_e) {
+				} catch {
 					setEnabledTools([]);
 				}
 			} else {

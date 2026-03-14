@@ -145,7 +145,7 @@ export function useMessageOperations() {
 				const lastAssistantMessage = messages[lastAssistantIndex];
 				const updatedMessage = normalizeMessage({
 					...lastAssistantMessage,
-					...(messageData || {}),
+					...messageData,
 					role: "assistant",
 					content,
 					created: messageData?.created || lastAssistantMessage.created || now,

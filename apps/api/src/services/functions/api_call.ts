@@ -2,6 +2,7 @@ import type { ConversationManager } from "~/lib/conversationManager";
 import type { IFunction, IRequest } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { safeParseJson } from "~/utils/json";
+import { isAbortError } from "~/utils/abort";
 
 const logger = getLogger({ prefix: "services/functions/api_call" });
 
@@ -320,12 +321,15 @@ export const call_api: IFunction = {
 
 		let response: Response;
 		try {
-			response = await fetch(url.toString(), {
+			const fetchOptions: RequestInit = {
 				method,
 				headers,
-				body,
 				signal: controller.signal,
-			});
+			};
+			if (body !== undefined) {
+				fetchOptions.body = body;
+			}
+			response = await fetch(url.toString(), fetchOptions);
 		} catch (error) {
 			logger.error("API request failed", {
 				error_message: error instanceof Error ? error.message : "Unknown error",
@@ -334,10 +338,9 @@ export const call_api: IFunction = {
 			return {
 				status: "error",
 				name: "call_api",
-				content:
-					error instanceof Error && error.name === "AbortError"
-						? "API request timed out"
-						: "API request failed",
+				content: isAbortError(error)
+					? "API request timed out"
+					: "API request failed",
 				data: {
 					url: url.toString(),
 					method,

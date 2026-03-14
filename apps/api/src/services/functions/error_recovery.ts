@@ -1,5 +1,5 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import type { IFunction, IFunctionResponse, IRequest } from "~/types";
+import type { IFunction, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { handleFunctions } from "./index";
@@ -81,7 +81,7 @@ export const retry_with_backoff: IFunction = {
 		if (typeof functionArgs === "string") {
 			try {
 				parsedArgs = JSON.parse(functionArgs);
-			} catch (error) {
+			} catch {
 				throw new AssistantError(
 					"args must be valid JSON when provided as a string",
 					ErrorType.PARAMS_ERROR,
@@ -266,7 +266,7 @@ export const fallback: IFunction = {
 		if (typeof primary_args === "string") {
 			try {
 				parsedPrimaryArgs = JSON.parse(primary_args);
-			} catch (error) {
+			} catch {
 				throw new AssistantError(
 					"primary_args must be valid JSON when provided as a string",
 					ErrorType.PARAMS_ERROR,
@@ -278,7 +278,7 @@ export const fallback: IFunction = {
 		if (typeof fallback_args === "string") {
 			try {
 				parsedFallbackArgs = JSON.parse(fallback_args);
-			} catch (error) {
+			} catch {
 				throw new AssistantError(
 					"fallback_args must be valid JSON when provided as a string",
 					ErrorType.PARAMS_ERROR,

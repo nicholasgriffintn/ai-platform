@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import { describeRoute, validator as zValidator } from "hono-openapi";
 
 import type { IEnv } from "~/types";
 import { requireAuth } from "~/middleware/auth";

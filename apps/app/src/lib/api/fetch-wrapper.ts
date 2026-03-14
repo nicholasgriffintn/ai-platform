@@ -167,7 +167,7 @@ export async function returnFetchedData<T>(response: Response): Promise<T> {
 				: data;
 
 		return responseData;
-	} catch (error) {
+	} catch {
 		throw new Error("Failed to parse response JSON");
 	}
 }

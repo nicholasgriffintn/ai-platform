@@ -55,7 +55,7 @@ export class MelottsAudioProvider
 				response: maybeResponse,
 				url: maybeUrl,
 				metadata: {
-					...(request.metadata ?? {}),
+					...request.metadata,
 					raw: response,
 				},
 			};
@@ -63,7 +63,7 @@ export class MelottsAudioProvider
 
 		return {
 			metadata: {
-				...(request.metadata ?? {}),
+				...request.metadata,
 				raw: response,
 			},
 		};

@@ -5,10 +5,7 @@ import {
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
 import { safeParseJson } from "../../utils/json";
-
-const logger = getLogger({ prefix: "services/apps/shared" });
 
 export interface ShareItemParams {
 	userId: number;

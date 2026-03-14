@@ -1,0 +1,5 @@
+FROM docker.io/cloudflare/sandbox:0.7.0
+
+ENV COMMAND_TIMEOUT_MS=600000
+
+EXPOSE 3000

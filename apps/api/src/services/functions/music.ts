@@ -4,7 +4,7 @@ import {
 	generateMusic,
 } from "~/services/generate/music";
 import { replicateModelConfig } from "~/data-model/models/replicate";
-import type { IFunction, IRequest, ModelConfig } from "~/types";
+import type { IFunction, IRequest } from "~/types";
 import { getModelIdsByOutput } from "~/utils/models";
 
 const DEFAULT_DURATION = 8;

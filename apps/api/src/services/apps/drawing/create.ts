@@ -57,7 +57,7 @@ export async function generateImageFromDrawing({
 				contentLength: length,
 			},
 		);
-	} catch (_error) {
+	} catch {
 		throw new AssistantError("Error uploading drawing");
 	}
 
@@ -114,7 +114,7 @@ export async function generateImageFromDrawing({
 			contentType: "image/png",
 			contentLength: paintingLength,
 		});
-	} catch (_error) {
+	} catch {
 		throw new AssistantError("Error uploading painting");
 	}
 

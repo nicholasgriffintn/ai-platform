@@ -11,6 +11,7 @@ export * from "./models";
 export * from "./memories";
 export * from "./plans";
 export * from "./realtime";
+export * from "./sandbox";
 export * from "./search";
 export * from "./shared-agents";
 export * from "./shared";

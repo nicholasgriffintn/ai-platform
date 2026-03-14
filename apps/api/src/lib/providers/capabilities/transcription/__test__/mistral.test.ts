@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { ErrorType } from "~/utils/errors";
 import { MistralTranscriptionProvider } from "~/lib/providers/capabilities/transcription/providers/MistralTranscriptionProvider";
 
 const mockFetch = vi.fn();

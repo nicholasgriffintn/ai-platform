@@ -156,7 +156,7 @@ export const executeDynamicApp = async (
 							asyncInvocation: {
 								...asyncInvocation,
 								context: {
-									...(asyncInvocation.context ?? {}),
+									...asyncInvocation.context,
 									responseId: saved.id,
 								},
 							},

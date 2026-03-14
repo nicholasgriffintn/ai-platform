@@ -4,11 +4,8 @@ import {
 } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 import type { IPodcast } from "./list";
 import { safeParseJson } from "../../../utils/json";
-
-const logger = getLogger();
 
 export interface IPodcastDetailRequest {
 	context?: ServiceContext;

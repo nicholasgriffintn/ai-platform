@@ -32,7 +32,7 @@ export function TutorView({
 	const getDomain = (url: string) => {
 		try {
 			return url.replace(/(https?:\/\/)?(www\.)?/i, "").split("/")[0];
-		} catch (_e) {
+		} catch {
 			return url;
 		}
 	};

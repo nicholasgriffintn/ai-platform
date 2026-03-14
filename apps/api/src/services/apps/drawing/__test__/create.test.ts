@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { StorageService } from "~/lib/storage";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError } from "~/utils/errors";
 import { generateImageFromDrawing } from "../create";

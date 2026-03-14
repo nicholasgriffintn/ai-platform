@@ -20,7 +20,7 @@ const guardrailsProviders: ProviderRegistration<GuardrailsProvider>[] = [
 		name: "bedrock",
 		lifecycle: "transient",
 		create: (context) => {
-			const env = ensureEnv(context);
+			const _env = ensureEnv(context);
 			const config = ensureConfig<BedrockGuardrailsConfig>(
 				context,
 				"Bedrock guardrails config required",
@@ -37,7 +37,7 @@ const guardrailsProviders: ProviderRegistration<GuardrailsProvider>[] = [
 		name: "llamaguard",
 		lifecycle: "transient",
 		create: (context) => {
-			const env = ensureEnv(context);
+			const _env = ensureEnv(context);
 			const config = ensureConfig<LlamaGuardConfig>(
 				context,
 				"LlamaGuard config required",
@@ -54,7 +54,7 @@ const guardrailsProviders: ProviderRegistration<GuardrailsProvider>[] = [
 		name: "mistral",
 		lifecycle: "transient",
 		create: (context) => {
-			const env = ensureEnv(context);
+			const _env = ensureEnv(context);
 			const config = ensureConfig<MistralGuardConfig>(
 				context,
 				"Mistral guardrails config required",

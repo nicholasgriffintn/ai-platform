@@ -20,6 +20,7 @@ import retrieval from "./retrieval";
 import shared from "./shared";
 import replicate from "./replicate";
 import strudel from "./strudel";
+import sandbox from "./sandbox";
 
 const app = new Hono();
 
@@ -47,6 +48,8 @@ app.route("/retrieval", retrieval);
 app.route("/replicate", replicate);
 
 app.route("/strudel", strudel);
+
+app.route("/sandbox", sandbox);
 
 app.post(
 	"/prompt-coach",

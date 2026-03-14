@@ -64,7 +64,7 @@ export class ReplicateSpeechProvider implements SpeechProvider {
 				prompt: request.prompt,
 				voice: request.voice,
 				language: request.locale,
-				...(request.metadata ?? {}),
+				...request.metadata,
 			}).filter(([, value]) => value !== undefined && value !== null),
 		);
 

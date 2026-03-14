@@ -120,7 +120,7 @@ app.get(
 		const { code } = c.req.valid("query" as never) as { code: string };
 
 		const serviceContext = getServiceContext(c);
-		const { user, sessionId } = await handleGitHubOAuthCallback({
+		const { user: _user, sessionId } = await handleGitHubOAuthCallback({
 			context: serviceContext,
 			code,
 		});

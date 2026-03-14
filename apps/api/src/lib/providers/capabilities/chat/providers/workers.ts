@@ -296,7 +296,7 @@ export class WorkersProvider extends BaseProvider {
 		params: ChatCompletionParameters,
 		userId?: number,
 	): Promise<any> {
-		const { model, env, user } = params;
+		const { model, env, user: _user } = params;
 
 		if (!model) {
 			throw new AssistantError("Missing model", ErrorType.PARAMS_ERROR);

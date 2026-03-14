@@ -44,7 +44,7 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
 			provider,
 			mono = false,
 			size = 20,
-			fallbackSize = 20,
+			fallbackSize: _fallbackSize = 20,
 			showFallback = true,
 			url,
 			...rest
