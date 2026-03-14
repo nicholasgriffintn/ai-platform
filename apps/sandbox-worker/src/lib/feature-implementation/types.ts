@@ -38,11 +38,19 @@ export interface FinishDecision {
 	reasoning?: string;
 }
 
+export interface RunScriptDecision {
+	action: "run_script";
+	code: string;
+	language?: "python" | "javascript" | "typescript";
+	reasoning?: string;
+}
+
 export type AgentDecision =
 	| RunCommandDecision
 	| ReadFileDecision
 	| UpdatePlanDecision
-	| FinishDecision;
+	| FinishDecision
+	| RunScriptDecision;
 
 export interface FileContextSnippet {
 	path: string;

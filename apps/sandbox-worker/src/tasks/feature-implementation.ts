@@ -12,6 +12,10 @@ import {
 import { createExecutionControl } from "../lib/execution-control";
 import { classifySandboxError } from "../lib/errors";
 import {
+	startFileWatcher,
+	type FileWatcher,
+} from "../lib/feature-implementation/file-watcher";
+import {
 	DEFAULT_MODEL,
 	MAX_COMMANDS,
 	MODEL_RETRY_OPTIONS,
@@ -60,6 +64,7 @@ export async function executeFeatureImplementation(
 	const client = new PolychatClient(params.polychatApiUrl, secrets.userToken);
 	const executionLogs: string[] = [];
 	let branchName: string | undefined;
+	let fileWatcher: FileWatcher | undefined;
 
 	const executionControl = createExecutionControl({
 		runId,
@@ -118,6 +123,14 @@ export async function executeFeatureImplementation(
 			repo: repo.displayName,
 			targetDir: repo.targetDir,
 		});
+
+		fileWatcher = startFileWatcher({
+			sandbox,
+			watchPath: repo.targetDir,
+			emit,
+			abortSignal,
+		});
+
 		await checkpoint("Sandbox run cancelled after repository clone");
 
 		if (params.shouldCommit) {
@@ -336,6 +349,7 @@ export async function executeFeatureImplementation(
 			errorType: classified.type,
 		};
 	} finally {
+		fileWatcher?.stop();
 		await sandbox.destroy();
 	}
 }

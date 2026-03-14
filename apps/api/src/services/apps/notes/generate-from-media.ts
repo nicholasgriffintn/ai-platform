@@ -257,12 +257,10 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 		);
 
 		const content =
-			(aiResult as any)?.response ||
-			(Array.isArray((aiResult as any).choices) &&
-				(aiResult as any).choices[0]?.message?.content) ||
-			(typeof aiResult === "string"
-				? (aiResult as string)
-				: JSON.stringify(aiResult));
+			aiResult?.response ||
+			(Array.isArray(aiResult.choices) &&
+				aiResult.choices[0]?.message?.content) ||
+			(typeof aiResult === "string" ? aiResult : JSON.stringify(aiResult));
 
 		return { content };
 	} catch (error) {

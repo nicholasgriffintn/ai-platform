@@ -35,9 +35,7 @@ export class MemorySynthesisHandler implements TaskHandler {
 			const activeMemories = memories.filter(
 				(m) =>
 					(m.namespace === namespace || !m.namespace) &&
-					(m.is_active === true ||
-						(m.is_active as any) === 1 ||
-						m.is_active === null),
+					(m.is_active === true || m.is_active == null),
 			);
 
 			if (activeMemories.length === 0) {

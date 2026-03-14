@@ -1,6 +1,4 @@
 import type { MCPClientManager } from "agents/mcp/client";
-import z from "zod/v4";
-
 import type { ConversationManager } from "~/lib/conversationManager";
 import type { IFunctionResponse, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -58,7 +56,7 @@ export const handleMCPTool = async (
 			);
 		}
 
-		const toolsResponse = await client.unstable_getAITools();
+		const toolsResponse = await client.getAITools();
 		if (!toolsResponse || !Object.keys(toolsResponse).length) {
 			throw new AssistantError(
 				`No tools available for agent ${fullAgentId}`,
@@ -154,7 +152,7 @@ async function executeTool(
 				serverId: connectionId,
 				arguments: argsObj,
 			},
-			z.any() as any,
+			undefined,
 			{ signal: new AbortController().signal },
 		);
 

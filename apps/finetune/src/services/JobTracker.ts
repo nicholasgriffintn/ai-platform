@@ -7,6 +7,27 @@ import { createLogger } from "../utils/logger.js";
 
 const logger = createLogger("JobTracker");
 
+interface JobRow {
+	job_arn: string;
+	job_name: string;
+	base_model: string;
+	custom_model_name: string;
+	status: string;
+	created_at: number;
+	updated_at: number;
+	metadata: string | null;
+}
+
+interface DatasetRow {
+	id: number;
+	project: string;
+	train_path: string;
+	validation_path: string | null;
+	s3_uri: string | null;
+	created_at: number;
+	metadata: string | null;
+}
+
 export class JobTracker {
 	private db: Database.Database;
 
@@ -77,7 +98,11 @@ export class JobTracker {
 		logger.info(`Saved job: ${job.jobName}`);
 	}
 
-	updateJobStatus(jobArn: string, status: string, metadata?: any): void {
+	updateJobStatus(
+		jobArn: string,
+		status: string,
+		metadata?: Record<string, unknown>,
+	): void {
 		const stmt = this.db.prepare(`
       UPDATE jobs
       SET status = ?, updated_at = ?, metadata = ?
@@ -95,33 +120,33 @@ export class JobTracker {
 	}
 
 	getJob(jobArn: string): JobRecord | null {
-		const stmt = this.db.prepare(`
+		const stmt = this.db.prepare<unknown[], JobRow>(`
       SELECT * FROM jobs WHERE job_arn = ?
     `);
 
-		const row = stmt.get(jobArn) as any;
+		const row = stmt.get(jobArn);
 		return row ? this.mapJobRow(row) : null;
 	}
 
 	listJobs(limit: number = 50): JobRecord[] {
-		const stmt = this.db.prepare(`
+		const stmt = this.db.prepare<unknown[], JobRow>(`
       SELECT * FROM jobs
       ORDER BY created_at DESC
       LIMIT ?
     `);
 
-		const rows = stmt.all(limit) as any[];
+		const rows = stmt.all(limit);
 		return rows.map((row) => this.mapJobRow(row));
 	}
 
 	listJobsByStatus(status: string): JobRecord[] {
-		const stmt = this.db.prepare(`
+		const stmt = this.db.prepare<unknown[], JobRow>(`
       SELECT * FROM jobs
       WHERE status = ?
       ORDER BY created_at DESC
     `);
 
-		const rows = stmt.all(status) as any[];
+		const rows = stmt.all(status);
 		return rows.map((row) => this.mapJobRow(row));
 	}
 
@@ -149,25 +174,25 @@ export class JobTracker {
 	}
 
 	listDatasets(project: string): DatasetRecord[] {
-		const stmt = this.db.prepare(`
+		const stmt = this.db.prepare<unknown[], DatasetRow>(`
       SELECT * FROM datasets
       WHERE project = ?
       ORDER BY created_at DESC
     `);
 
-		const rows = stmt.all(project) as any[];
+		const rows = stmt.all(project);
 		return rows.map((row) => this.mapDatasetRow(row));
 	}
 
 	getLatestDataset(project: string): DatasetRecord | null {
-		const stmt = this.db.prepare(`
+		const stmt = this.db.prepare<unknown[], DatasetRow>(`
       SELECT * FROM datasets
       WHERE project = ?
       ORDER BY created_at DESC
       LIMIT 1
     `);
 
-		const row = stmt.get(project) as any;
+		const row = stmt.get(project);
 		return row ? this.mapDatasetRow(row) : null;
 	}
 
@@ -176,7 +201,7 @@ export class JobTracker {
 		logger.info("Closed database connection");
 	}
 
-	private mapJobRow(row: any): JobRecord {
+	private mapJobRow(row: JobRow): JobRecord {
 		return {
 			jobArn: row.job_arn,
 			jobName: row.job_name,
@@ -185,19 +210,19 @@ export class JobTracker {
 			status: row.status,
 			createdAt: row.created_at,
 			updatedAt: row.updated_at,
-			metadata: row.metadata,
+			metadata: row.metadata ?? undefined,
 		};
 	}
 
-	private mapDatasetRow(row: any): DatasetRecord {
+	private mapDatasetRow(row: DatasetRow): DatasetRecord {
 		return {
 			id: row.id,
 			project: row.project,
 			trainPath: row.train_path,
-			validationPath: row.validation_path,
-			s3Uri: row.s3_uri,
+			validationPath: row.validation_path ?? undefined,
+			s3Uri: row.s3_uri ?? undefined,
 			createdAt: row.created_at,
-			metadata: row.metadata,
+			metadata: row.metadata ?? undefined,
 		};
 	}
 }

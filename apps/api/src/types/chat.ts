@@ -128,7 +128,7 @@ export interface Message {
 	parts?: {
 		text: string;
 	}[];
-	content: string | MessageContent[];
+	content: string | MessageContent[] | Record<string, unknown>;
 	status?: string;
 	data?: MessageDataPayload | null;
 	model?: string;
@@ -180,6 +180,7 @@ export type RagOptions = {
 	returnValues?: boolean;
 	returnMetadata?: "none" | "indexed" | "all";
 	filter?: Record<string, any>;
+	rerankCandidates?: number;
 };
 
 export interface IRequest {

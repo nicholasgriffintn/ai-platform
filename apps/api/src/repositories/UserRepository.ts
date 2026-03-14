@@ -2,10 +2,8 @@ import type { User } from "~/types";
 import { BaseRepository } from "./BaseRepository";
 
 export class UserRepository extends BaseRepository {
-	public async getUserByGithubId(
-		githubId: string,
-	): Promise<Record<string, unknown> | null> {
-		const result = this.runQuery<Record<string, unknown>>(
+	public async getUserByGithubId(githubId: string): Promise<User | null> {
+		const result = this.runQuery<User>(
 			`SELECT u.* FROM user u
        JOIN oauth_account oa ON u.id = oa.user_id
        WHERE oa.provider_id = 'github' AND oa.provider_user_id = ?`,
@@ -15,10 +13,8 @@ export class UserRepository extends BaseRepository {
 		return result;
 	}
 
-	public async getUserBySessionId(
-		sessionId: string,
-	): Promise<Record<string, unknown> | null> {
-		const result = this.runQuery<Record<string, unknown>>(
+	public async getUserBySessionId(sessionId: string): Promise<User | null> {
+		const result = this.runQuery<User>(
 			`SELECT u.* FROM user u
        JOIN session s ON u.id = s.user_id
        WHERE s.id = ? AND s.expires_at > datetime('now')`,
@@ -60,8 +56,8 @@ export class UserRepository extends BaseRepository {
 
 	public async createUser(
 		userData: Record<string, unknown>,
-	): Promise<Record<string, unknown> | null> {
-		const result = this.runQuery<Record<string, unknown>>(
+	): Promise<User | null> {
+		const result = this.runQuery<User>(
 			`INSERT INTO user (
          name, 
          avatar_url, 
@@ -162,7 +158,7 @@ export class UserRepository extends BaseRepository {
 
 		if (existingUser) {
 			// Update existing user
-			await this.updateUser((existingUser as any).id, {
+			await this.updateUser(existingUser.id, {
 				name: userData.name || null,
 				avatar_url: userData.avatar_url || null,
 				email: userData.email,
@@ -175,7 +171,7 @@ export class UserRepository extends BaseRepository {
 			});
 
 			// Get updated user
-			const updatedUser = await this.getUserById((existingUser as any).id);
+			const updatedUser = await this.getUserById(existingUser.id);
 			if (!updatedUser) {
 				throw new Error("Failed to retrieve updated user");
 			}
@@ -214,14 +210,10 @@ export class UserRepository extends BaseRepository {
 		}
 
 		// Link GitHub account to new user
-		await this.createOauthAccount(
-			(result as any).id,
-			"github",
-			userData.githubId,
-		);
+		await this.createOauthAccount(result.id, "github", userData.githubId);
 
 		// Get created user
-		const newUser = await this.getUserById((result as any).id);
+		const newUser = await this.getUserById(result.id);
 		if (!newUser) {
 			throw new Error("Failed to retrieve created user");
 		}

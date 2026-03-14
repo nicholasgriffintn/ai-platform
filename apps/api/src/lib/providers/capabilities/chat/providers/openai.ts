@@ -107,11 +107,11 @@ export class OpenAIProvider extends BaseProvider {
 	): Promise<FormData> {
 		const messageWithImage = params.messages.find(
 			(message) =>
-				typeof message.content !== "string" &&
-				message.content.some((item: any) => item.type === "image_url"),
+				Array.isArray(message.content) &&
+				message.content.some((item) => item.type === "image_url"),
 		);
 
-		if (!messageWithImage || typeof messageWithImage.content === "string") {
+		if (!messageWithImage || !Array.isArray(messageWithImage.content)) {
 			throw new AssistantError(
 				"No valid image found for image editing",
 				ErrorType.PARAMS_ERROR,
@@ -119,7 +119,7 @@ export class OpenAIProvider extends BaseProvider {
 		}
 
 		const imageItem = messageWithImage.content.find(
-			(item: any) => item.type === "image_url",
+			(item) => item.type === "image_url",
 		);
 		if (!imageItem?.image_url?.url) {
 			throw new AssistantError(
@@ -146,7 +146,7 @@ export class OpenAIProvider extends BaseProvider {
 		params: ChatCompletionParameters,
 		prompt: string,
 	): Record<string, any> {
-		if (typeof params.messages[1].content === "string") {
+		if (!Array.isArray(params.messages[1].content)) {
 			throw new AssistantError(
 				"Image to image is not supported for text input",
 				ErrorType.PARAMS_ERROR,
@@ -154,8 +154,8 @@ export class OpenAIProvider extends BaseProvider {
 		}
 
 		const imageUrls = params.messages[1].content
-			.filter((item: any) => item.type === "image_url")
-			.map((item: any) => item.image_url.url);
+			.filter((item) => item.type === "image_url")
+			.map((item) => item.image_url?.url);
 
 		if (imageUrls.length === 0) {
 			throw new AssistantError("No image urls found", ErrorType.PARAMS_ERROR);
@@ -287,13 +287,18 @@ export class OpenAIProvider extends BaseProvider {
 				prompt = typeof content === "string" ? content : content[0]?.text || "";
 			} else {
 				const content = params.messages[0].content;
-				prompt = typeof content === "string" ? content : content[0]?.text || "";
+				prompt =
+					typeof content === "string"
+						? content
+						: Array.isArray(content)
+							? content[0]?.text || ""
+							: "";
 			}
 
 			const hasImages = params.messages.some(
 				(message) =>
-					typeof message.content !== "string" &&
-					message.content.some((item: any) => item.type === "image_url"),
+					Array.isArray(message.content) &&
+					message.content.some((item) => item.type === "image_url"),
 			);
 
 			const endpoint = await this.getEndpoint(params);

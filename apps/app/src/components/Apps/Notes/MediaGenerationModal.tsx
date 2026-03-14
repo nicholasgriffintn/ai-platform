@@ -13,6 +13,31 @@ import {
 } from "~/components/ui";
 import { useGenerateNotesFromMedia } from "~/hooks/useNotes";
 
+type OutputType =
+	| "concise_summary"
+	| "detailed_outline"
+	| "key_takeaways"
+	| "action_items"
+	| "meeting_minutes"
+	| "qa_extraction"
+	| "scene_analysis"
+	| "visual_insights"
+	| "smart_timestamps";
+
+type NoteType =
+	| "general"
+	| "meeting"
+	| "training"
+	| "lecture"
+	| "interview"
+	| "podcast"
+	| "webinar"
+	| "tutorial"
+	| "video_content"
+	| "educational_video"
+	| "documentary"
+	| "other";
+
 interface MediaGenerationModalProps {
 	isOpen: boolean;
 	onClose: () => void;
@@ -25,10 +50,10 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 	onNotesGenerated,
 }: MediaGenerationModalProps) {
 	const [mediaUrl, setMediaUrl] = useState("");
-	const [selectedOutputs, setSelectedOutputs] = useState<string[]>([
+	const [selectedOutputs, setSelectedOutputs] = useState<OutputType[]>([
 		"concise_summary",
 	]);
-	const [noteType, setNoteType] = useState<string>("general");
+	const [noteType, setNoteType] = useState<NoteType>("general");
 	const [extraPrompt, setExtraPrompt] = useState<string>("");
 	const [withTimestamps, setWithTimestamps] = useState<boolean>(false);
 	const [useVideoAnalysis, setUseVideoAnalysis] = useState<boolean>(false);
@@ -45,8 +70,8 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 			// TODO: type this
 			const result = await generateNotesMutation.mutateAsync({
 				url: mediaUrl,
-				outputs: selectedOutputs as any,
-				noteType: noteType as any,
+				outputs: selectedOutputs,
+				noteType: noteType,
 				extraPrompt,
 				timestamps: withTimestamps,
 				useVideoAnalysis,
@@ -91,7 +116,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 						<select
 							id="note-type"
 							value={noteType}
-							onChange={(e) => setNoteType(e.target.value)}
+							onChange={(e) => setNoteType(e.target.value as NoteType)}
 							className="mt-2 w-full bg-transparent border rounded p-2"
 						>
 							{[
@@ -132,29 +157,35 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 						<div>
 							<span className="text-sm font-medium">Outputs</span>
 							<div className="mt-2 grid grid-cols-1 gap-2">
-								{[
-									{ id: "concise_summary", label: "Concise summary" },
-									{ id: "detailed_outline", label: "Detailed outline" },
-									{ id: "key_takeaways", label: "Key takeaways" },
-									{ id: "action_items", label: "Action items" },
-									{ id: "meeting_minutes", label: "Meeting minutes" },
-									{ id: "qa_extraction", label: "Q&A extraction" },
-									{
-										id: "scene_analysis",
-										label: "Scene analysis",
-										videoOnly: true,
-									},
-									{
-										id: "visual_insights",
-										label: "Visual insights",
-										videoOnly: true,
-									},
-									{
-										id: "smart_timestamps",
-										label: "Smart timestamps",
-										videoOnly: true,
-									},
-								].map((opt) => (
+								{(
+									[
+										{ id: "concise_summary", label: "Concise summary" },
+										{ id: "detailed_outline", label: "Detailed outline" },
+										{ id: "key_takeaways", label: "Key takeaways" },
+										{ id: "action_items", label: "Action items" },
+										{ id: "meeting_minutes", label: "Meeting minutes" },
+										{ id: "qa_extraction", label: "Q&A extraction" },
+										{
+											id: "scene_analysis",
+											label: "Scene analysis",
+											videoOnly: true,
+										},
+										{
+											id: "visual_insights",
+											label: "Visual insights",
+											videoOnly: true,
+										},
+										{
+											id: "smart_timestamps",
+											label: "Smart timestamps",
+											videoOnly: true,
+										},
+									] satisfies {
+										id: OutputType;
+										label: string;
+										videoOnly?: boolean;
+									}[]
+								).map((opt) => (
 									<label
 										key={opt.id}
 										className={`flex items-center gap-2 text-sm ${

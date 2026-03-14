@@ -151,8 +151,7 @@ export async function augmentPrompt({
 			(trimmedQuery.length > 0 && trimmedQuery.length < 20 ? 1 : 3);
 		const scoreThreshold = options.scoreThreshold ?? DEFAULT_SCORE_THRESHOLD;
 		const rerankCandidates =
-			(options as any).rerankCandidates ??
-			Math.max(DEFAULT_RERANK_CANDIDATES, topK * 2);
+			options.rerankCandidates ?? Math.max(DEFAULT_RERANK_CANDIDATES, topK * 2);
 
 		const docs = await trackRagMetrics(
 			() =>

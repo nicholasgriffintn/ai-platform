@@ -118,7 +118,6 @@ export default {
 			return Response.json({ error: "Invalid task payload" }, { status: 400 });
 		}
 
-		// TODO: Add code interpreter: https://developers.cloudflare.com/sandbox/guides/code-execution/
 		const executeTask = async (
 			emitEvent?: (event: TaskEvent) => Promise<void> | void,
 		) => {

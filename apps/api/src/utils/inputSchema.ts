@@ -56,11 +56,12 @@ function extractPromptFromMessages(messages: Message[]): string {
 				return textParts.join("\n");
 			}
 		} else if (content && typeof content === "object") {
+			const obj: Record<string, unknown> = content;
 			const promptLike =
-				typeof (content as any).prompt === "string"
-					? (content as any).prompt
-					: typeof (content as any).text === "string"
-						? (content as any).text
+				typeof obj.prompt === "string"
+					? obj.prompt
+					: typeof obj.text === "string"
+						? obj.text
 						: undefined;
 
 			if (promptLike && promptLike.trim()) {
@@ -77,7 +78,7 @@ function extractAssetFromMessage(message?: Message): string | undefined {
 		return undefined;
 	}
 
-	const { content, data } = message as any;
+	const { content, data } = message;
 
 	if (Array.isArray(content)) {
 		for (const part of content) {
@@ -108,12 +109,12 @@ function extractAssetFromMessage(message?: Message): string | undefined {
 	}
 
 	if (content && typeof content === "object" && !Array.isArray(content)) {
-		if (typeof (content as any).url === "string") {
-			return (content as any).url;
+		if (typeof content.url === "string") {
+			return content.url;
 		}
 
-		if (typeof (content as any).file === "string") {
-			return (content as any).file;
+		if (typeof content.file === "string") {
+			return content.file;
 		}
 	}
 
@@ -285,7 +286,7 @@ export function buildInputSchemaInput(
 				const prompt = extractPromptFromMessages(params.messages || []);
 				return { input: prompt || "" };
 			}
-			return { input: fallbackContent as any };
+			return { input: fallbackContent };
 		}
 
 		return { input: "" };

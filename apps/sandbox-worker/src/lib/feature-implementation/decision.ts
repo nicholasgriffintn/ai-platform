@@ -103,6 +103,29 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 						reasoning,
 					};
 				}
+				case "run_script":
+				case "execute_script":
+				case "script": {
+					const code =
+						typeof parsed.code === "string" ? parsed.code.trim() : "";
+					if (!code) {
+						throw new Error("run_script action requires non-empty code");
+					}
+					const language =
+						typeof parsed.language === "string"
+							? (parsed.language.trim() as
+									| "python"
+									| "javascript"
+									| "typescript")
+							: "python";
+
+					return {
+						action: "run_script",
+						code,
+						language,
+						reasoning,
+					};
+				}
 			}
 		} catch {
 			// Fallback to command extraction below.

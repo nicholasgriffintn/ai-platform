@@ -566,8 +566,8 @@ export async function createStreamWithPostProcessing(
 									typeof lastUserRaw === "string"
 										? lastUserRaw
 										: Array.isArray(lastUserRaw)
-											? (lastUserRaw.find((b: any) => b.type === "text") as any)
-													?.text || ""
+											? lastUserRaw.find((b: any) => b.type === "text")?.text ||
+												""
 											: "";
 
 								if (lastUserText.trim()) {

@@ -11,35 +11,8 @@ const logger = getLogger({ prefix: "services/auth/user" });
  * @param result - The database result
  * @returns The User object
  */
-function mapToUser(result: Record<string, unknown>): User {
-	return {
-		id: result.id as number,
-		name: result.name as string | null,
-		avatar_url: result.avatar_url as string | null,
-		email: result.email as string,
-		github_username: result.github_username as string | null,
-		company: result.company as string | null,
-		site: result.site as string | null,
-		location: result.location as string | null,
-		bio: result.bio as string | null,
-		twitter_username: result.twitter_username as string | null,
-		role: result.role as string | null,
-		created_at: result.created_at as string,
-		updated_at: result.updated_at as string,
-		setup_at: result.setup_at as string | null,
-		terms_accepted_at: result.terms_accepted_at as string | null,
-		plan_id: result.plan_id as string | null,
-		message_count: result.message_count as number | undefined,
-		daily_message_count: result.daily_message_count as number | undefined,
-		daily_reset: result.daily_reset as string | null,
-		daily_pro_message_count: result.daily_pro_message_count as
-			| number
-			| undefined,
-		daily_pro_reset: result.daily_pro_reset as string | null,
-		last_active_at: result.last_active_at as string | null,
-		stripe_customer_id: result.stripe_customer_id as string | null,
-		stripe_subscription_id: result.stripe_subscription_id as string | null,
-	};
+function mapToUser(result: User): User {
+	return result;
 }
 
 /**
@@ -254,22 +227,18 @@ export async function createOrUpdateGithubUser(
 			);
 		}
 
-		if ("id" in result) {
-			try {
-				await repositories.userSettings.createUserSettings(result.id as number);
-			} catch (settingsError) {
-				logger.error("Failed to create user settings:", { settingsError });
-			}
+		try {
+			await repositories.userSettings.createUserSettings(result.id);
+		} catch (settingsError) {
+			logger.error("Failed to create user settings:", { settingsError });
+		}
 
-			try {
-				await repositories.userSettings.createUserProviderSettings(
-					result.id as number,
-				);
-			} catch (providerSettingsError) {
-				logger.error("Failed to create user provider settings:", {
-					providerSettingsError,
-				});
-			}
+		try {
+			await repositories.userSettings.createUserProviderSettings(result.id);
+		} catch (providerSettingsError) {
+			logger.error("Failed to create user provider settings:", {
+				providerSettingsError,
+			});
 		}
 
 		const newUser = mapToUser(result);

@@ -43,12 +43,12 @@ export class MelottsAudioProvider
 
 		if (response && typeof response === "object") {
 			const maybeUrl =
-				"url" in response && typeof (response as any).url === "string"
-					? ((response as any).url as string)
+				"url" in response && typeof response.url === "string"
+					? response.url
 					: undefined;
 			const maybeResponse =
-				"response" in response && typeof (response as any).response === "string"
-					? ((response as any).response as string)
+				"response" in response && typeof response.response === "string"
+					? response.response
 					: undefined;
 
 			return {

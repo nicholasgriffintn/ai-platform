@@ -109,7 +109,8 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
 				);
 			}
 
-			const response = await env.AI.run(modelToUse as any, body, {
+			// @ts-ignore – Workers AI types require literal model keys but we use dynamic config strings.
+			const response = await env.AI.run(modelToUse, body, {
 				gateway: {
 					id: gatewayId,
 					skipCache: false,

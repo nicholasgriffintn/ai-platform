@@ -109,7 +109,7 @@ export const handleGenerateChatCompletionTitle = async (
 		model: modelToUse,
 		messages: [{ role: "user", content: prompt }],
 		user: user,
-	} as any);
+	});
 
 	let newTitle = response.response.trim();
 

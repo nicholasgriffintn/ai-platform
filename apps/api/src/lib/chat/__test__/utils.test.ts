@@ -506,7 +506,6 @@ describe("chat utils", () => {
 			// @ts-expect-error - test data
 			const result = sanitiseMessages(messages);
 
-			// @ts-expect-error - test data
 			expect(result[0].content[0].text).toBe("Clean this");
 			expect(result[0].content[1]).toEqual({ type: "image", url: "test.jpg" });
 		});

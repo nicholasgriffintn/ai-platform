@@ -581,11 +581,16 @@ export class UsageManager {
 		logger.debug("Function usage incremented", { userId: this.user.id });
 	}
 
-	private incrementLocalCounts(fields: Array<keyof User>, increment = 1): void {
+	private incrementLocalCounts(
+		fields: Array<
+			"message_count" | "daily_message_count" | "daily_pro_message_count"
+		>,
+		increment = 1,
+	): void {
 		if (!this.user) return;
 		for (const field of fields) {
 			const current = Number(this.user[field] ?? 0);
-			(this.user as any)[field] = current + increment;
+			this.user[field] = current + increment;
 
 			if (field === "daily_message_count" && this.regularUsageSnapshot) {
 				this.regularUsageSnapshot.dailyCount += increment;

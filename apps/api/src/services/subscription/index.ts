@@ -53,7 +53,7 @@ export async function createCheckoutSession(
 		throw new AssistantError("Plan not found", ErrorType.NOT_FOUND);
 	}
 
-	const priceId = (plan as any).stripe_price_id as string;
+	const priceId = plan.stripe_price_id as string;
 	const stripe = getStripeClient(env);
 
 	let customerId = user.stripe_customer_id;

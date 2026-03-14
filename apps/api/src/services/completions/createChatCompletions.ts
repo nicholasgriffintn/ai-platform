@@ -194,7 +194,9 @@ export const handleCreateChatCompletions = async (req: {
 							name: toolResponse.name,
 							content: Array.isArray(toolResponse.content)
 								? toolResponse.content.map((c) => c.text || "").join("\n")
-								: toolResponse.content,
+								: typeof toolResponse.content === "string"
+									? toolResponse.content
+									: JSON.stringify(toolResponse.content),
 							citations: toolResponse.citations || null,
 							data: toolResponse.data || null,
 							status: toolResponse.status || "unknown",

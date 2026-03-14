@@ -1,7 +1,7 @@
 import type { D1Database } from "@cloudflare/workers-types";
 
 import { RepositoryManager } from "~/repositories";
-import type { IEnv } from "~/types";
+import type { IEnv, User } from "~/types";
 import { logError } from "~/utils/errorLogger";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -52,15 +52,13 @@ export class Database {
 
 	public async createUser(
 		userData: Record<string, unknown>,
-	): Promise<Record<string, unknown> | null> {
+	): Promise<User | null> {
 		try {
 			const user = await this._repositories.users.createUser(userData);
 
-			if (user && "id" in user) {
+			if (user) {
 				try {
-					await this._repositories.userSettings.createUserSettings(
-						user.id as number,
-					);
+					await this._repositories.userSettings.createUserSettings(user.id);
 				} catch (settingsError) {
 					logError(
 						"Failed to create user settings during user creation",
@@ -73,7 +71,7 @@ export class Database {
 
 				try {
 					await this._repositories.userSettings.createUserProviderSettings(
-						user.id as number,
+						user.id,
 					);
 				} catch (providerSettingsError) {
 					logError(

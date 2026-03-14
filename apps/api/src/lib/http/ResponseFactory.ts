@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 export type ResponseStatus = "success" | "error";
 
@@ -22,17 +23,25 @@ export interface PaginatedResponse<T = unknown> {
 }
 
 export class ResponseFactory {
-	static success<T>(context: Context, data: T, statusCode: number = 200) {
-		return context.json(data, statusCode as any);
+	static success<T>(
+		context: Context,
+		data: T,
+		statusCode: ContentfulStatusCode = 200,
+	) {
+		return context.json(data, statusCode);
 	}
 
-	static error(context: Context, message: string, statusCode: number = 400) {
+	static error(
+		context: Context,
+		message: string,
+		statusCode: ContentfulStatusCode = 400,
+	) {
 		return context.json(
 			{
 				status: "error" as const,
 				message,
 			},
-			statusCode as any,
+			statusCode,
 		);
 	}
 
@@ -44,7 +53,7 @@ export class ResponseFactory {
 			page: number;
 			limit: number;
 		},
-		statusCode: number = 200,
+		statusCode: ContentfulStatusCode = 200,
 	) {
 		const totalPages = Math.ceil(pagination.total / pagination.limit);
 
@@ -59,17 +68,21 @@ export class ResponseFactory {
 					totalPages,
 				},
 			},
-			statusCode as any,
+			statusCode,
 		);
 	}
 
-	static message(context: Context, message: string, statusCode: number = 200) {
+	static message(
+		context: Context,
+		message: string,
+		statusCode: ContentfulStatusCode = 200,
+	) {
 		return context.json(
 			{
 				status: "success" as const,
 				message,
 			},
-			statusCode as any,
+			statusCode,
 		);
 	}
 

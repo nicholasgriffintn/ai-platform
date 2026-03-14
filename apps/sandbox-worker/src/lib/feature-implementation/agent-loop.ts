@@ -1,3 +1,5 @@
+import { CodeInterpreter } from "@cloudflare/sandbox";
+
 import {
 	assertSafeCommand,
 	buildSummary,
@@ -227,6 +229,111 @@ export async function executeAgentLoop(
 						command: decision.command,
 						result,
 					}),
+				});
+				break;
+			}
+			case "run_script": {
+				await guardExecution("Sandbox run cancelled before script execution");
+
+				if (readOnlyCommands) {
+					messages.push({
+						role: "user",
+						content:
+							"Scripts are not allowed in read-only mode. Use run_command or read_file instead.",
+					});
+					break;
+				}
+
+				if (commandCount >= MAX_COMMANDS) {
+					throw new Error(
+						`Agent exceeded maximum command budget (${MAX_COMMANDS})`,
+					);
+				}
+
+				commandCount += 1;
+				const scriptLanguage = decision.language ?? "python";
+				await emit({
+					type: "script_started",
+					code: truncateForModel(decision.code, 2000),
+					language: scriptLanguage,
+					agentStep: step,
+					commandIndex: commandCount,
+					commandTotal: MAX_COMMANDS,
+				});
+
+				const interpreter = new CodeInterpreter(sandbox);
+				const execution = await interpreter.runCode(decision.code, {
+					language: scriptLanguage,
+				});
+
+				await guardExecution("Sandbox run cancelled after script execution");
+
+				const scriptStdout = execution.logs?.stdout?.join("\n") ?? "";
+				const scriptStderr = execution.logs?.stderr?.join("\n") ?? "";
+				const scriptOutput = [scriptStdout, scriptStderr]
+					.filter(Boolean)
+					.join("\n");
+
+				executionLogs.push(
+					`[script:${scriptLanguage}]\n${truncateForModel(decision.code, 1000)}\n---\n${truncateForModel(scriptOutput, MAX_OBSERVATION_CHARS)}`,
+				);
+
+				if (execution.error) {
+					consecutiveCommandFailures += 1;
+					const errorMessage =
+						execution.error.message || "Script execution failed";
+					await emit({
+						type: "script_failed",
+						agentStep: step,
+						commandIndex: commandCount,
+						commandTotal: MAX_COMMANDS,
+						error: truncateForModel(errorMessage, MAX_OBSERVATION_CHARS),
+					});
+
+					const errorParts = [
+						"Script execution failed.",
+						`Error: ${truncateForModel(errorMessage, MAX_OBSERVATION_CHARS)}`,
+					];
+					if (execution.error.traceback) {
+						const tracebackStr = Array.isArray(execution.error.traceback)
+							? execution.error.traceback.join("\n")
+							: String(execution.error.traceback);
+						errorParts.push(
+							`Traceback:\n${truncateForModel(tracebackStr, MAX_OBSERVATION_CHARS)}`,
+						);
+					}
+					errorParts.push("Fix the issue or try a different approach.");
+
+					messages.push({
+						role: "user",
+						content: errorParts.join("\n"),
+					});
+
+					if (consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
+						throw new Error(
+							`Agent reached ${MAX_CONSECUTIVE_COMMAND_FAILURES} consecutive command failures`,
+						);
+					}
+					break;
+				}
+
+				consecutiveCommandFailures = 0;
+				await emit({
+					type: "script_completed",
+					agentStep: step,
+					commandIndex: commandCount,
+					commandTotal: MAX_COMMANDS,
+				});
+
+				messages.push({
+					role: "user",
+					content: [
+						"Script executed successfully.",
+						"Output:",
+						"```",
+						truncateForModel(scriptOutput, MAX_OBSERVATION_CHARS),
+						"```",
+					].join("\n"),
 				});
 				break;
 			}

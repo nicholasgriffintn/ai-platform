@@ -410,7 +410,7 @@ export const MessageContent = memo(
 			onArtifactOpen,
 		]);
 
-		const asyncInvocation = (message.data as any)?.asyncInvocation;
+		const asyncInvocation = message.data?.asyncInvocation;
 		const isPending = message.status === "in_progress" && asyncInvocation;
 		const isFailed = message.status === "failed";
 		const errorMessage = message.data?.error;

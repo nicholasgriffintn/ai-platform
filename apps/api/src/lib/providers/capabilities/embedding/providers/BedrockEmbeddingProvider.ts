@@ -323,10 +323,18 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 			);
 		}
 
-		const data = (await response.json()) as any;
+		const data = (await response.json()) as {
+			retrievalResults: Array<{
+				title?: string;
+				content: { text?: string };
+				location?: { type?: string };
+				score?: number;
+				metadata?: Record<string, unknown>;
+			}>;
+		};
 
 		return {
-			matches: data.retrievalResults.map((result: any) => ({
+			matches: data.retrievalResults.map((result) => ({
 				title: result.title || "",
 				content: result.content.text || "",
 				id: result.location?.type || "",

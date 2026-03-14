@@ -53,7 +53,18 @@ export async function getAgentServers(
 				const { id } = await mcp.connect(server.url);
 
 				const connection = mcp.mcpConnections[id];
+				const deadline = Date.now() + 10_000;
 				while (connection.connectionState !== "ready") {
+					if (Date.now() > deadline) {
+						logger.error("MCP connection timed out waiting for ready state", {
+							server_url: server.url,
+						});
+						return {
+							id,
+							connectionState: "timeout",
+							error: "Connection timed out waiting for ready state",
+						};
+					}
 					await new Promise((resolve) => setTimeout(resolve, 50));
 				}
 

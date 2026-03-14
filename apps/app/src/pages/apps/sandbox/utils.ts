@@ -77,6 +77,14 @@ export function describeEvent(event: SandboxRunEvent): string {
 			return event.message || "Run resumed";
 		case "run_failed":
 			return `Run failed: ${event.error ?? "Unknown error"}`;
+		case "file_changed":
+			return `File ${event.changeType ?? "changed"}: ${event.path ?? "unknown"}`;
+		case "script_started":
+			return `Running ${event.language ?? "script"} (${event.commandIndex ?? "?"}/${event.commandTotal ?? "?"})`;
+		case "script_completed":
+			return `Script completed (${event.commandIndex ?? "?"}/${event.commandTotal ?? "?"})`;
+		case "script_failed":
+			return `Script failed: ${event.error ?? "unknown error"}`;
 		default:
 			return event.message || event.type;
 	}

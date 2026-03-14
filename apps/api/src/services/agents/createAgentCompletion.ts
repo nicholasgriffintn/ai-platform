@@ -253,11 +253,21 @@ async function setupMCPFunctions(agent: any, env: IEnv) {
 						continue;
 					}
 
+					const connectionDeadline = Date.now() + 10_000;
 					while (connection.connectionState !== "ready") {
+						if (Date.now() > connectionDeadline) {
+							logger.error("MCP connection timed out waiting for ready state", {
+								server_url: cfg.url,
+							});
+							break;
+						}
 						await new Promise((resolve) => setTimeout(resolve, 50));
 					}
+					if (connection.connectionState !== "ready") {
+						continue;
+					}
 
-					const rawTools = (await mcp.unstable_getAITools()) as any;
+					const rawTools = await mcp.getAITools();
 					const defs = Object.entries(rawTools) as [string, any][];
 
 					for (const [name, def] of defs) {

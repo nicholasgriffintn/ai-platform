@@ -41,9 +41,10 @@ export const handleWebSearch = async (
 		throw new AssistantError("No response from the web search service");
 	}
 
-	const resultsArray = Array.isArray((response as any)?.results)
-		? (response as any).results
-		: [];
+	const resultsArray =
+		"results" in response && Array.isArray(response.results)
+			? response.results
+			: [];
 
 	const warning =
 		providerToUse === "duckduckgo"
