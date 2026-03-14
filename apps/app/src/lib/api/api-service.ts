@@ -12,6 +12,7 @@ import { ChatService } from "./services/chat-service";
 import { ResearchService } from "./services/research-service";
 import { SubscriptionService } from "./services/subscription-service";
 import { UploadService } from "./services/upload-service";
+import type { ProviderSetting } from "./services/user-service";
 import { UserService } from "./services/user-service";
 import { getHeaders } from "./utils/headers";
 import type { MarkdownConversionOptions } from "@assistant/schemas";
@@ -313,9 +314,7 @@ class ApiService {
 		return this.userService.storeProviderApiKey(providerId, apiKey, secretKey);
 	};
 
-	getProviderSettings = (): Promise<{
-		providers: Record<string, any>;
-	}> => {
+	getProviderSettings = (): Promise<ProviderSetting[]> => {
 		return this.userService.getProviderSettings();
 	};
 

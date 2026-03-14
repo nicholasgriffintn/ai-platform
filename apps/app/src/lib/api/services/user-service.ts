@@ -1,6 +1,14 @@
 import type { ModelConfig } from "~/types";
 import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 
+export interface ProviderSetting {
+	id: string;
+	provider_id: string;
+	name?: string;
+	description?: string;
+	enabled: boolean;
+}
+
 export class UserService {
 	constructor(private getHeaders: () => Promise<Record<string, string>>) {}
 
@@ -109,9 +117,7 @@ export class UserService {
 		}
 	}
 
-	async getProviderSettings(): Promise<{
-		providers: Record<string, any>;
-	}> {
+	async getProviderSettings(): Promise<ProviderSetting[]> {
 		let headers = {};
 		try {
 			headers = await this.getHeaders();
@@ -131,7 +137,7 @@ export class UserService {
 			);
 		}
 
-		return await returnFetchedData<any>(response);
+		return await returnFetchedData<ProviderSetting[]>(response);
 	}
 
 	async syncProviders(): Promise<void> {

@@ -7,15 +7,8 @@ import { PageTitle } from "~/components/Core/PageTitle";
 import { HoverActions, ListItem } from "~/components/ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useUser } from "~/hooks/useUser";
+import type { ProviderSetting } from "~/lib/api/services/user-service";
 import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal";
-
-interface ProviderSetting {
-	id: string;
-	provider_id: string;
-	name?: string;
-	description?: string;
-	enabled: boolean;
-}
 
 interface ProviderModalState {
 	open: boolean;
@@ -91,24 +84,21 @@ export function ProfileProvidersTab() {
 					<div className="flex justify-center py-10">
 						<div className="h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent" />
 					</div>
-				) : !providerSettings || Object.keys(providerSettings).length === 0 ? (
+				) : providerSettings.length === 0 ? (
 					<EmptyState
 						message="No providers available"
 						className="bg-transparent dark:bg-transparent border-none py-10 px-0"
 					/>
 				) : (
 					<ul className="space-y-2">
-						{Object.entries(providerSettings).map(([providerId, provider]) => (
+						{providerSettings.map((provider: ProviderSetting) => (
 							<ListItem
-								key={providerId}
+								key={provider.id}
 								className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750"
-								label={
-									(provider as ProviderSetting).name ||
-									(provider as ProviderSetting).provider_id
-								}
-								sublabel={(provider as ProviderSetting).description}
+								label={provider.name || provider.provider_id}
+								sublabel={provider.description}
 								badge={
-									(provider as ProviderSetting).enabled ? (
+									provider.enabled ? (
 										<span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300">
 											<Power className="h-3 w-3 mr-1" /> Enabled
 										</span>
@@ -120,20 +110,17 @@ export function ProfileProvidersTab() {
 										actions={[
 											{
 												id: "configure",
-												icon: (provider as ProviderSetting).enabled ? (
+												icon: provider.enabled ? (
 													<Power size={14} />
 												) : (
 													<Plus size={14} />
 												),
-												label: (provider as ProviderSetting).enabled
-													? "Configure"
-													: "Enable",
+												label: provider.enabled ? "Configure" : "Enable",
 												onClick: (e) => {
 													e.stopPropagation();
 													handleEnableProvider(
-														(provider as ProviderSetting).id,
-														(provider as ProviderSetting).name ||
-															(provider as ProviderSetting).provider_id,
+														provider.provider_id,
+														provider.name || provider.provider_id,
 													);
 												},
 											},

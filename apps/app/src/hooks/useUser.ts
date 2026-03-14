@@ -46,7 +46,7 @@ export function useUser() {
 	});
 
 	return {
-		providerSettings: providerSettings?.providers,
+		providerSettings: providerSettings ?? [],
 		isLoadingProviderSettings,
 		storeProviderApiKey: storeProviderApiKeyMutation.mutate,
 		isStoringProviderApiKey: storeProviderApiKeyMutation.isPending,
