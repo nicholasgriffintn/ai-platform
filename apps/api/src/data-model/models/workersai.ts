@@ -43,61 +43,6 @@ export const workersAiModelConfig: ModelConfig = {
 			output: ["speech"],
 		},
 	},
-	// TODO: These require responses API support
-	/* "gpt-oss-120b": {
-    name: "GPT OSS 120B",
-    matchingModel: "@cf/openai/gpt-oss-120b",
-    description:
-      "Large 120B parameter open-source GPT model optimized for reasoning and complex tasks.",
-    provider: "workers-ai",
-    releaseDate: "August 5, 2025",
-    lastUpdated: "August 5, 2025",
-    modalities: {
-      input: ["text"],
-      output: ["text"],
-    },
-    supportsAttachments: false,
-    supportsTemperature: true,
-    reasoningConfig: { enabled: true },
-    supportsToolCalls: true,
-    contextWindow: 131072,
-    maxTokens: 32768,
-    costPer1kInputTokens: 0.00015,
-    costPer1kOutputTokens: 0.0006,
-    strengths: ["reasoning", "analysis", "coding", "multilingual"],
-    contextComplexity: 5,
-    reliability: 4,
-    speed: 2,
-    includedInRouter: true,
-    supportsArtifacts: true,
-  },
-  "gpt-oss-20b": {
-    name: "GPT OSS 20B",
-    matchingModel: "@cf/openai/gpt-oss-20b",
-    description:
-      "Efficient 20B parameter open-source GPT model for fast reasoning and general tasks.",
-    provider: "workers-ai",
-    releaseDate: "August 5, 2025",
-    lastUpdated: "August 5, 2025",
-    modalities: {
-      input: ["text"],
-      output: ["text"],
-    },
-    supportsAttachments: false,
-    supportsTemperature: true,
-    reasoningConfig: { enabled: true },
-    supportsToolCalls: true,
-    contextWindow: 131072,
-    maxTokens: 32768,
-    costPer1kInputTokens: 0.00005,
-    costPer1kOutputTokens: 0.0002,
-    strengths: ["reasoning", "analysis", "coding"],
-    contextComplexity: 4,
-    reliability: 4,
-    speed: 4,
-    includedInRouter: true,
-    supportsArtifacts: true,
-  }, */
 	melotts: {
 		name: "MyShell MeloTTS",
 		matchingModel: "@cf/myshell-ai/melotts",
@@ -339,6 +284,34 @@ export const workersAiModelConfig: ModelConfig = {
 		matchingModel: "@cf/black-forest-labs/flux-2-dev",
 		description:
 			"Flux 2 is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
+		provider: "workers-ai",
+		strengths: ["creative"],
+		speed: 4,
+		reliability: 4,
+		contextComplexity: 3,
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
+	},
+	"@cf/black-forest-labs/flux-2-klein-4b": {
+		name: "Black Forest Labs Flux 2 Klein 4B",
+		matchingModel: "@cf/black-forest-labs/flux-2-klein-4b",
+		description: "",
+		provider: "workers-ai",
+		strengths: ["creative"],
+		speed: 4,
+		reliability: 4,
+		contextComplexity: 3,
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
+	},
+	"@cf/black-forest-labs/flux-2-klein-9b": {
+		name: "Black Forest Labs Flux 2 Klein 9B",
+		matchingModel: "@cf/black-forest-labs/flux-2-klein-9b",
+		description: "",
 		provider: "workers-ai",
 		strengths: ["creative"],
 		speed: 4,
@@ -1179,6 +1152,34 @@ export const workersAiModelConfig: ModelConfig = {
 		reasoningConfig: {
 			enabled: false,
 		},
+	},
+
+	"@cf/nvidia/nemotron-3-120b-a12b": {
+		name: "Nemotron 3 Super",
+		description:
+			"NVIDIA Nemotron 3 Super is a hybrid MoE model with leading accuracy for multi-agent applications and specialized agentic AI systems.",
+		matchingModel: "@cf/nvidia/nemotron-3-120b-a12b",
+		provider: "workers-ai",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		contextWindow: 32000,
+		supportsToolCalls: true,
+	},
+
+	"@cf/zai-org/glm-4.7-flash": {
+		name: "GLM 4.7 Flash",
+		description:
+			"GLM-4.7-Flash is a fast and efficient multilingual text generation model with a 131,072 token context window. Optimized for dialogue, instruction-following, and multi-turn tool calling across 100+ languages.",
+		matchingModel: "@cf/zai-org/glm-4.7-flash",
+		provider: "workers-ai",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		contextWindow: 131072,
+		supportsToolCalls: true,
 	},
 
 	"@cf/openai/gpt-oss-120b": {
