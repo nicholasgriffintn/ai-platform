@@ -658,7 +658,7 @@ export const ModelSelector = ({
 								}
 							: undefined
 					}
-					className="absolute bottom-full left-0 z-50 mb-1 w-[min(96vw,600px)] max-w-[600px] rounded-xl border border-zinc-200 bg-off-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900 sm:w-[min(90vw,660px)] sm:max-w-[660px]"
+					className="absolute bottom-full left-0 z-50 mb-1 flex max-h-[calc(100dvh-7.5rem)] w-[min(96vw,600px)] max-w-[600px] flex-col overflow-hidden rounded-xl border border-zinc-200 bg-off-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900 sm:max-h-[min(75dvh,48rem)] sm:w-[min(90vw,660px)] sm:max-w-[660px]"
 					aria-label="Model selection dialog"
 				>
 					{selectedTab !== "auto" && (
@@ -734,7 +734,7 @@ export const ModelSelector = ({
 								});
 							}
 						}}
-						className="px-2 pb-2 pt-2"
+						className="min-h-0 flex-1 px-2 pb-2 pt-2"
 					>
 						<TabsList className="grid h-auto w-full grid-cols-3 gap-1">
 							<TabsTrigger
@@ -761,16 +761,16 @@ export const ModelSelector = ({
 						</TabsList>
 						<div className="w-full border-b border-zinc-200 dark:border-zinc-700" />
 
-						<TabsContent value="auto">
+						<TabsContent value="auto" className="min-h-0 overflow-y-auto">
 							<div className="p-4 text-sm text-zinc-700 dark:text-zinc-300">
 								Automatic automatically selects the best agent or model based on
 								your query.
 							</div>
 						</TabsContent>
 
-						<TabsContent value="agent">
-							<div className="space-y-3 pt-2">
-								<div className="max-h-[140px] overflow-y-auto rounded-lg border border-zinc-200/70 p-2 dark:border-zinc-700/70">
+						<TabsContent value="agent" className="min-h-0 overflow-hidden">
+							<div className="flex h-full min-h-0 flex-col gap-3 pt-2">
+								<div className="max-h-[120px] overflow-y-auto rounded-lg border border-zinc-200/70 p-2 dark:border-zinc-700/70 sm:max-h-[140px]">
 									<h3
 										id="agents-heading"
 										className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100"
@@ -843,8 +843,8 @@ export const ModelSelector = ({
 							</div>
 						</TabsContent>
 
-						<TabsContent value="models">
-							<div className="space-y-3">
+						<TabsContent value="models" className="min-h-0 overflow-hidden">
+							<div className="flex h-full min-h-0 flex-col gap-3">
 								<div>
 									<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 										<div className="text-xs text-zinc-500 dark:text-zinc-400">
