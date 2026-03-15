@@ -149,7 +149,7 @@ export async function createAgentCompletion({
 		system_prompt: systemPrompt,
 		model: modelToUse,
 		tools: formattedTools,
-		stream: true,
+		stream: false,
 		mode: "agent",
 		max_steps: agent.max_steps || body.max_steps || 20,
 		temperature:

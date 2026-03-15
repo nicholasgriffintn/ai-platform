@@ -117,4 +117,53 @@ describe("createAgentCompletion", () => {
 			}),
 		);
 	});
+
+	it("forces stream to false for agent mode", async () => {
+		const agent = {
+			id: "agent_stream",
+			user_id: 1,
+			model: null,
+			temperature: null,
+			max_steps: null,
+			system_prompt: null,
+			few_shot_examples: null,
+			enabled_tools: null,
+			servers: null,
+			team_role: null,
+		};
+
+		const context = {
+			env: {} as IEnv,
+			ensureDatabase: vi.fn(),
+			repositories: {
+				agents: {
+					getAgentById: vi.fn(async () => agent),
+				},
+			},
+		} as any;
+
+		const body = {
+			messages: [{ role: "user", content: "hi" }],
+			model: "gpt-4",
+			stream: true,
+		} as ChatCompletionRequestBody;
+
+		await createAgentCompletion({
+			env: {} as IEnv,
+			context,
+			body,
+			agentId: agent.id,
+			user: { id: 1 } as any,
+			anonymousUser: null,
+		});
+
+		expect(handleCreateChatCompletions).toHaveBeenCalledWith(
+			expect.objectContaining({
+				request: expect.objectContaining({
+					stream: false,
+					mode: "agent",
+				}),
+			}),
+		);
+	});
 });
