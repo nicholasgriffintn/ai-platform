@@ -71,4 +71,18 @@ Proceeding next.`,
 
 		expect(decision.action).toBe("finish");
 	});
+
+	it("infers action from fields when action is missing", () => {
+		const decision = parseAgentDecision(
+			JSON.stringify({
+				command: "pnpm -r test --filter sandbox-worker",
+				reasoning: "run tests",
+			}),
+		);
+
+		expect(decision.action).toBe("run_command");
+		if (decision.action === "run_command") {
+			expect(decision.command).toContain("pnpm -r test");
+		}
+	});
 });

@@ -24,7 +24,12 @@ describe("executeAgentLoop", () => {
 
 		const result = await executeAgentLoop({
 			sandbox: {
-				exec: vi.fn(),
+				exec: vi.fn().mockResolvedValue({
+					success: false,
+					exitCode: 1,
+					stdout: "",
+					stderr: "invalid command",
+				}),
 			} as any,
 			client: {
 				chatCompletion,
@@ -61,5 +66,156 @@ describe("executeAgentLoop", () => {
 		expect(result.summary).toBe("done");
 		expect(emitted.some((event) => event.type === "command_failed")).toBe(true);
 		expect(chatCompletion).toHaveBeenCalledTimes(2);
+	});
+
+	it("recovers from malformed decision responses by requesting replanning", async () => {
+		const emitted: Array<Record<string, unknown>> = [];
+		const chatCompletion = vi
+			.fn()
+			.mockResolvedValueOnce("I cannot decide yet")
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "update_plan",
+					plan: "1. Inspect target file\n2. Apply focused fix\n3. Verify",
+					reasoning: "recovered plan",
+				}),
+			)
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "finish",
+					summary: "done",
+				}),
+			);
+
+		const result = await executeAgentLoop({
+			sandbox: {
+				exec: vi.fn().mockResolvedValue({
+					success: false,
+					exitCode: 1,
+					stdout: "",
+					stderr: "invalid command",
+				}),
+			} as any,
+			client: {
+				chatCompletion,
+			} as any,
+			model: "test-model",
+			repoDisplayName: "owner/repo",
+			repoTargetDir: "repo",
+			task: "test",
+			taskType: "feature-implementation",
+			promptStrategy: {
+				strategy: "feature-delivery",
+				definition: {
+					strategy: "feature-delivery",
+					label: "Feature delivery",
+					planningFocus: ["focus"],
+					executionFocus: ["focus"],
+					examples: [],
+				},
+				reason: "test",
+				source: "explicit",
+			},
+			initialPlan: "plan",
+			repoContext: {
+				topLevelEntries: [],
+				files: [],
+				taskInstructionSource: "none",
+			},
+			executionLogs: [],
+			emit: async (event) => {
+				emitted.push(event as unknown as Record<string, unknown>);
+			},
+		});
+
+		expect(result.summary).toBe("done");
+		expect(chatCompletion).toHaveBeenCalledTimes(3);
+		expect(emitted.some((event) => event.type === "plan_updated")).toBe(true);
+	});
+
+	it("requires update_plan after repeated command failures instead of hard failing", async () => {
+		const emitted: Array<Record<string, unknown>> = [];
+		const chatCompletion = vi
+			.fn()
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "run_command",
+					command: "npm run bad-command",
+				}),
+			)
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "run_command",
+					command: "npm run bad-command",
+				}),
+			)
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "run_command",
+					command: "npm run bad-command",
+				}),
+			)
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "update_plan",
+					plan: "Use a safer inspection-first approach before retrying commands.",
+				}),
+			)
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "finish",
+					summary: "recovered",
+				}),
+			);
+
+		const exec = vi.fn().mockResolvedValue({
+			success: false,
+			exitCode: 1,
+			stdout: "",
+			stderr: "command not found",
+		});
+
+		const result = await executeAgentLoop({
+			sandbox: {
+				exec,
+			} as any,
+			client: {
+				chatCompletion,
+			} as any,
+			model: "test-model",
+			repoDisplayName: "owner/repo",
+			repoTargetDir: "repo",
+			task: "test",
+			taskType: "feature-implementation",
+			promptStrategy: {
+				strategy: "feature-delivery",
+				definition: {
+					strategy: "feature-delivery",
+					label: "Feature delivery",
+					planningFocus: ["focus"],
+					executionFocus: ["focus"],
+					examples: [],
+				},
+				reason: "test",
+				source: "explicit",
+			},
+			initialPlan: "plan",
+			repoContext: {
+				topLevelEntries: [],
+				files: [],
+				taskInstructionSource: "none",
+			},
+			executionLogs: [],
+			emit: async (event) => {
+				emitted.push(event as unknown as Record<string, unknown>);
+			},
+		});
+
+		expect(result.summary).toBe("recovered");
+		expect(exec).toHaveBeenCalledTimes(3);
+		expect(
+			emitted.filter((event) => event.type === "command_failed"),
+		).toHaveLength(3);
+		expect(emitted.some((event) => event.type === "plan_updated")).toBe(true);
 	});
 });

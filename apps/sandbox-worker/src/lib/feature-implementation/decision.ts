@@ -171,15 +171,36 @@ function parseDecisionPayload(payload: string): Record<string, unknown> {
 	throw new Error("Unable to parse decision payload as JSON");
 }
 
+function inferActionFromFields(parsed: Record<string, unknown>): string {
+	if (typeof parsed.action === "string" && parsed.action.trim()) {
+		return parsed.action.trim().toLowerCase();
+	}
+
+	if (typeof parsed.command === "string" && parsed.command.trim()) {
+		return "run_command";
+	}
+	if (typeof parsed.path === "string" && parsed.path.trim()) {
+		return "read_file";
+	}
+	if (typeof parsed.plan === "string" && parsed.plan.trim()) {
+		return "update_plan";
+	}
+	if (typeof parsed.code === "string" && parsed.code.trim()) {
+		return "run_script";
+	}
+	if (typeof parsed.summary === "string" && parsed.summary.trim()) {
+		return "finish";
+	}
+
+	return "";
+}
+
 export function parseAgentDecision(rawResponse: string): AgentDecision {
 	const payloads = extractJsonPayloadCandidates(rawResponse);
 	for (const payload of payloads) {
 		try {
 			const parsed = parseDecisionPayload(payload);
-			const actionRaw =
-				typeof parsed.action === "string"
-					? parsed.action.trim().toLowerCase()
-					: "";
+			const actionRaw = inferActionFromFields(parsed);
 			const reasoning =
 				typeof parsed.reasoning === "string"
 					? parsed.reasoning.trim()

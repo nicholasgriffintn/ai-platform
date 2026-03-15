@@ -11,8 +11,10 @@ import { resolveCommandApproval } from "./command-approval";
 import {
 	MAX_COMMANDS,
 	MAX_CONSECUTIVE_COMMAND_FAILURES,
+	MAX_CONSECUTIVE_DECISION_FAILURES,
 	MAX_AGENT_STEPS,
 	MAX_OBSERVATION_CHARS,
+	MAX_RECOVERY_REPLANS,
 	MODEL_RETRY_OPTIONS,
 } from "./constants";
 import { parseAgentDecision } from "./decision";
@@ -86,6 +88,23 @@ export async function executeAgentLoop(
 	let currentPlan = initialPlan;
 	let commandCount = 0;
 	let consecutiveCommandFailures = 0;
+	let consecutiveDecisionFailures = 0;
+	let recoveryReplans = 0;
+	let requiresPlanRecovery = false;
+	let recoveryReason: string | undefined;
+
+	const beginPlanRecovery = (reason: string) => {
+		recoveryReplans += 1;
+		if (recoveryReplans > MAX_RECOVERY_REPLANS) {
+			throw new Error(
+				`Agent exhausted recovery replans (${MAX_RECOVERY_REPLANS})`,
+			);
+		}
+		requiresPlanRecovery = true;
+		recoveryReason = truncateForModel(reason, MAX_OBSERVATION_CHARS);
+		consecutiveCommandFailures = 0;
+		consecutiveDecisionFailures = 0;
+	};
 
 	for (let step = 1; step <= MAX_AGENT_STEPS; step += 1) {
 		await guardExecution("Sandbox run cancelled during agent execution");
@@ -96,14 +115,65 @@ export async function executeAgentLoop(
 			commandCount,
 		});
 
-		const decisionResponse = await client.chatCompletion(
-			{
-				messages,
-				model,
-			},
-			MODEL_RETRY_OPTIONS,
-		);
-		const decision = parseAgentDecision(decisionResponse);
+		let decisionResponse = "";
+		let decision: ReturnType<typeof parseAgentDecision>;
+		try {
+			decisionResponse = await client.chatCompletion(
+				{
+					messages,
+					model,
+				},
+				MODEL_RETRY_OPTIONS,
+			);
+			decision = parseAgentDecision(decisionResponse);
+			consecutiveDecisionFailures = 0;
+		} catch (error) {
+			consecutiveDecisionFailures += 1;
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: "Failed to parse or produce an agent decision";
+			messages.push({
+				role: "user",
+				content: [
+					"Your previous response could not be used as a valid decision.",
+					`Error: ${truncateForModel(errorMessage, MAX_OBSERVATION_CHARS)}`,
+					"Respond with exactly one JSON object using a supported action.",
+					"If uncertain, use update_plan first to revise the next steps.",
+				].join("\n"),
+			});
+
+			if (
+				consecutiveDecisionFailures >= MAX_CONSECUTIVE_DECISION_FAILURES &&
+				!requiresPlanRecovery
+			) {
+				beginPlanRecovery(
+					`Model produced ${MAX_CONSECUTIVE_DECISION_FAILURES} unusable decisions in a row.`,
+				);
+				messages.push({
+					role: "user",
+					content: [
+						"Execution has entered recovery mode.",
+						"First action must be update_plan with a corrected, safer command strategy.",
+						`Recovery reason: ${recoveryReason}`,
+					].join("\n"),
+				});
+			}
+			continue;
+		}
+
+		if (requiresPlanRecovery && decision.action !== "update_plan") {
+			messages.push({
+				role: "user",
+				content: [
+					"Recovery mode is active after recent failures.",
+					`Recovery reason: ${recoveryReason ?? "Repeated execution failures."}`,
+					"Before any other action, return update_plan with a revised approach and safer next steps.",
+				].join("\n"),
+			});
+			continue;
+		}
+
 		await emit({
 			type: "agent_decision",
 			agentStep: step,
@@ -119,6 +189,8 @@ export async function executeAgentLoop(
 		switch (decision.action) {
 			case "update_plan": {
 				currentPlan = truncateForModel(decision.plan, 2500);
+				requiresPlanRecovery = false;
+				recoveryReason = undefined;
 				await emit({
 					type: "plan_updated",
 					agentStep: step,
@@ -221,9 +293,16 @@ export async function executeAgentLoop(
 						].join("\n"),
 					});
 					if (consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
-						throw new Error(
-							`Agent reached ${MAX_CONSECUTIVE_COMMAND_FAILURES} consecutive command failures`,
+						beginPlanRecovery(
+							`Command policy/validation failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${truncateForModel(errorMessage, 600)}`,
 						);
+						messages.push({
+							role: "user",
+							content: [
+								"Multiple command attempts were blocked.",
+								"Use update_plan now to revise the execution strategy before trying another action.",
+							].join("\n"),
+						});
 					}
 					break;
 				}
@@ -265,9 +344,16 @@ export async function executeAgentLoop(
 					});
 
 					if (consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
-						throw new Error(
-							`Agent reached ${MAX_CONSECUTIVE_COMMAND_FAILURES} consecutive command failures`,
+						beginPlanRecovery(
+							`Command execution failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last failure: ${truncateForModel(failureMessage, 600)}`,
 						);
+						messages.push({
+							role: "user",
+							content: [
+								"Commands have failed repeatedly.",
+								"Use update_plan to revise the approach with safer, more targeted steps before running more commands.",
+							].join("\n"),
+						});
 					}
 					break;
 				}
@@ -346,9 +432,16 @@ export async function executeAgentLoop(
 					});
 
 					if (consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
-						throw new Error(
-							`Agent reached ${MAX_CONSECUTIVE_COMMAND_FAILURES} consecutive command failures`,
+						beginPlanRecovery(
+							`Script execution threw ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${truncateForModel(errorMessage, 600)}`,
 						);
+						messages.push({
+							role: "user",
+							content: [
+								"Script attempts are failing repeatedly.",
+								"Use update_plan now to choose a safer next approach before further execution.",
+							].join("\n"),
+						});
 					}
 					break;
 				}
@@ -397,9 +490,16 @@ export async function executeAgentLoop(
 					});
 
 					if (consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
-						throw new Error(
-							`Agent reached ${MAX_CONSECUTIVE_COMMAND_FAILURES} consecutive command failures`,
+						beginPlanRecovery(
+							`Script execution failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${truncateForModel(errorMessage, 600)}`,
 						);
+						messages.push({
+							role: "user",
+							content: [
+								"Script execution has failed repeatedly.",
+								"Use update_plan with a revised strategy before attempting more commands or scripts.",
+							].join("\n"),
+						});
 					}
 					break;
 				}

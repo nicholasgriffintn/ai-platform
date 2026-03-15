@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { buildPlanningPrompt } from "../feature-implementation/prompts";
+import {
+	buildAgentSystemPrompt,
+	buildPlanningPrompt,
+} from "../feature-implementation/prompts";
 import { resolvePromptStrategy } from "../feature-implementation/prompt-strategy";
 import type { RepositoryContext } from "../feature-implementation/types";
 
@@ -77,5 +80,21 @@ describe("feature prompt strategies", () => {
 		expect(prompt).toContain("Selected prompt strategy");
 		expect(prompt).toContain("Good implementation examples to emulate");
 		expect(prompt).toContain("Example 1:");
+	});
+
+	it("includes tool-use heuristics in the execution system prompt", () => {
+		const strategy = resolvePromptStrategy({
+			requestedStrategy: "feature-delivery",
+			taskType: "feature-implementation",
+			task: "Add a new settings panel",
+		});
+
+		const prompt = buildAgentSystemPrompt({
+			repoTargetDir: "repo",
+			promptStrategy: strategy,
+		});
+
+		expect(prompt).toContain("Tool-use heuristics:");
+		expect(prompt).toContain("If a command/script is blocked or fails");
 	});
 });
