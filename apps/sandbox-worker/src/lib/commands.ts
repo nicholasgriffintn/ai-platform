@@ -161,7 +161,12 @@ export function normaliseCommandLine(rawLine: string): string | null {
 
 export function assertSafeCommand(
 	command: string,
-	options?: { readOnly?: boolean; trustLevel?: SandboxTrustLevel },
+	options?: {
+		readOnly?: boolean;
+		trustLevel?: SandboxTrustLevel;
+		allowNetwork?: boolean;
+		allowRisky?: boolean;
+	},
 ) {
 	if (command.length > 500) {
 		throw new Error("Command is too long");
@@ -203,22 +208,30 @@ export function assertSafeCommand(
 	}
 
 	const trustLevel = options?.trustLevel ?? "balanced";
+	const allowNetwork = options?.allowNetwork === true;
+	const allowRisky = options?.allowRisky === true;
 	if (trustLevel === "strict") {
-		for (const pattern of NETWORK_COMMAND_PATTERNS) {
-			if (pattern.test(command)) {
-				throw new Error(
-					`Command requires network or dependency installation and is blocked in strict mode: ${command}`,
-				);
+		if (!allowNetwork) {
+			for (const pattern of NETWORK_COMMAND_PATTERNS) {
+				if (pattern.test(command)) {
+					throw new Error(
+						`Command requires network or dependency installation and is blocked in strict mode: ${command}`,
+					);
+				}
 			}
 		}
-		for (const pattern of RISKY_COMMAND_PATTERNS) {
-			if (pattern.test(command)) {
-				throw new Error(`Risky command is blocked in strict mode: ${command}`);
+		if (!allowRisky) {
+			for (const pattern of RISKY_COMMAND_PATTERNS) {
+				if (pattern.test(command)) {
+					throw new Error(
+						`Risky command is blocked in strict mode: ${command}`,
+					);
+				}
 			}
 		}
 	}
 
-	if (trustLevel === "balanced") {
+	if (trustLevel === "balanced" && !allowNetwork) {
 		for (const pattern of NETWORK_COMMAND_PATTERNS) {
 			if (pattern.test(command)) {
 				throw new Error(
@@ -227,6 +240,22 @@ export function assertSafeCommand(
 			}
 		}
 	}
+}
+
+export type CommandRiskLevel = "low" | "network" | "risky";
+
+export function getCommandRiskLevel(command: string): CommandRiskLevel {
+	for (const pattern of NETWORK_COMMAND_PATTERNS) {
+		if (pattern.test(command)) {
+			return "network";
+		}
+	}
+	for (const pattern of RISKY_COMMAND_PATTERNS) {
+		if (pattern.test(command)) {
+			return "risky";
+		}
+	}
+	return "low";
 }
 
 export function formatCommandResult(

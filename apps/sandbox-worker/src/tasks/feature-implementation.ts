@@ -31,6 +31,7 @@ import {
 import { runStoryTracker } from "../lib/feature-implementation/story-tracker";
 import { truncateForModel } from "../lib/feature-implementation/utils";
 import { PolychatClient } from "../lib/polychat-client";
+import { RunControlClient } from "../lib/run-control-client";
 import type {
 	TaskEvent,
 	TaskEventEmitter,
@@ -74,6 +75,13 @@ export async function executeFeatureImplementation(
 		abortSignal,
 		emitEvent,
 	});
+	const approvalClient = params.runId
+		? new RunControlClient({
+				polychatApiUrl: params.polychatApiUrl,
+				userToken: secrets.userToken,
+				runId: params.runId,
+			})
+		: undefined;
 	const checkpoint = (abortMessage: string) =>
 		executionControl.checkpoint(abortMessage);
 
@@ -221,6 +229,7 @@ export async function executeFeatureImplementation(
 			repoContext,
 			executionLogs,
 			emit,
+			approvalClient,
 			abortSignal,
 			checkpoint,
 		});

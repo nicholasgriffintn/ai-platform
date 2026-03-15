@@ -2,6 +2,7 @@ import { getSandbox } from "@cloudflare/sandbox";
 import type { SandboxTaskType, SandboxTrustLevel } from "@assistant/schemas";
 
 import type { PolychatClient } from "../polychat-client";
+import type { RunControlClient } from "../run-control-client";
 import type { TaskEvent } from "../../types";
 import type { PromptStrategySelection } from "./prompt-strategy";
 
@@ -105,6 +106,7 @@ export interface ExecuteAgentLoopParams {
 	repoContext: RepositoryContext;
 	executionLogs: string[];
 	emit: (event: TaskEvent) => Promise<void>;
+	approvalClient?: RunControlClient;
 	abortSignal?: AbortSignal;
 	checkpoint?: (abortMessage: string) => Promise<void>;
 }

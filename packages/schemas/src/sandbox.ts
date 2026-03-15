@@ -74,6 +74,16 @@ export const cancelRunSchema = z.object({
 	reason: z.string().trim().min(1).max(280).optional(),
 });
 
+export const requestRunApprovalSchema = z.object({
+	command: z.string().trim().min(1).max(500),
+	reason: z.string().trim().min(1).max(280).optional(),
+});
+
+export const resolveRunApprovalSchema = z.object({
+	status: z.enum(["approved", "rejected"]),
+	reason: z.string().trim().min(1).max(280).optional(),
+});
+
 export const pauseRunSchema = z.object({
 	reason: z.string().trim().min(1).max(280).optional(),
 });
@@ -219,6 +229,23 @@ export const sandboxRunControlSchema = z.object({
 	timeoutAt: z.string().optional(),
 });
 
+export const sandboxRunApprovalStatusSchema = z.enum([
+	"pending",
+	"approved",
+	"rejected",
+]);
+
+export const sandboxRunApprovalSchema = z.object({
+	id: z.string().trim().min(1),
+	runId: z.string().trim().min(1),
+	command: z.string().trim().min(1),
+	status: sandboxRunApprovalStatusSchema,
+	requestedAt: z.string().trim().min(1),
+	resolvedAt: z.string().optional(),
+	resolutionReason: z.string().optional(),
+	requestReason: z.string().optional(),
+});
+
 export const executeSandboxWorkerProxySchema = z.object({
 	repo: sandboxRepoSchema,
 	task: z.string().trim().min(1),
@@ -262,6 +289,12 @@ export type ExecuteSandboxRunPayload = z.infer<typeof executeSandboxRunSchema>;
 export type AutoConnectPayload = z.infer<typeof autoConnectSchema>;
 export type ListRunsQueryPayload = z.infer<typeof listRunsQuerySchema>;
 export type CancelRunPayload = z.infer<typeof cancelRunSchema>;
+export type RequestRunApprovalPayload = z.infer<
+	typeof requestRunApprovalSchema
+>;
+export type ResolveRunApprovalPayload = z.infer<
+	typeof resolveRunApprovalSchema
+>;
 export type PauseRunPayload = z.infer<typeof pauseRunSchema>;
 export type ResumeRunPayload = z.infer<typeof resumeRunSchema>;
 
@@ -281,6 +314,10 @@ export type SandboxRunControlState = z.infer<
 	typeof sandboxRunControlStateSchema
 >;
 export type SandboxRunControl = z.infer<typeof sandboxRunControlSchema>;
+export type SandboxRunApprovalStatus = z.infer<
+	typeof sandboxRunApprovalStatusSchema
+>;
+export type SandboxRunApproval = z.infer<typeof sandboxRunApprovalSchema>;
 export type ExecuteSandboxWorkerProxyPayload = z.infer<
 	typeof executeSandboxWorkerProxySchema
 >;

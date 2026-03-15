@@ -1,6 +1,8 @@
 import {
 	sandboxRunControlSchema,
+	sandboxRunApprovalSchema,
 	type SandboxRunControl,
+	type SandboxRunApproval,
 } from "@assistant/schemas";
 
 const DEFAULT_CONTROL_REQUEST_TIMEOUT_MS = 8000;
@@ -120,5 +122,85 @@ export class RunControlClient {
 		}
 
 		return parsed.data;
+	}
+
+	public async requestCommandApproval(
+		command: string,
+		reason?: string,
+		signal?: AbortSignal,
+	): Promise<SandboxRunApproval | null> {
+		if (!this.runId || !command.trim()) {
+			return null;
+		}
+
+		const url = `${this.polychatApiUrl}/apps/sandbox/runs/${encodeURIComponent(this.runId)}/approvals/request`;
+		const request = new Request(url, {
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				Authorization: `Bearer ${this.userToken}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ command, reason }),
+		});
+
+		let response: Response;
+		try {
+			response = await fetchWithTimeout(request, this.requestTimeoutMs, signal);
+		} catch {
+			return null;
+		}
+
+		if (!response.ok) {
+			return null;
+		}
+
+		let payload: unknown;
+		try {
+			payload = await response.json();
+		} catch {
+			return null;
+		}
+
+		const approval = (payload as { approval?: unknown }).approval;
+		const parsed = sandboxRunApprovalSchema.safeParse(approval);
+		return parsed.success ? parsed.data : null;
+	}
+
+	public async fetchApproval(
+		approvalId: string,
+		signal?: AbortSignal,
+	): Promise<SandboxRunApproval | null> {
+		if (!this.runId || !approvalId.trim()) {
+			return null;
+		}
+		const url = `${this.polychatApiUrl}/apps/sandbox/runs/${encodeURIComponent(this.runId)}/approvals/${encodeURIComponent(approvalId)}`;
+		const request = new Request(url, {
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+				Authorization: `Bearer ${this.userToken}`,
+			},
+		});
+
+		let response: Response;
+		try {
+			response = await fetchWithTimeout(request, this.requestTimeoutMs, signal);
+		} catch {
+			return null;
+		}
+		if (!response.ok) {
+			return null;
+		}
+
+		let payload: unknown;
+		try {
+			payload = await response.json();
+		} catch {
+			return null;
+		}
+		const approval = (payload as { approval?: unknown }).approval;
+		const parsed = sandboxRunApprovalSchema.safeParse(approval);
+		return parsed.success ? parsed.data : null;
 	}
 }

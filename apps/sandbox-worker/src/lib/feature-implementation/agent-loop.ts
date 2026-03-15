@@ -4,9 +4,11 @@ import {
 	assertSafeCommand,
 	buildSummary,
 	formatCommandResult,
+	getCommandRiskLevel,
 	quoteForShell,
 } from "../commands";
 import { throwIfAborted } from "../cancellation";
+import { resolveCommandApproval } from "./command-approval";
 
 import {
 	MAX_COMMANDS,
@@ -42,6 +44,7 @@ export async function executeAgentLoop(
 		repoContext,
 		executionLogs,
 		emit,
+		approvalClient,
 		abortSignal,
 		checkpoint,
 	} = params;
@@ -168,9 +171,30 @@ export async function executeAgentLoop(
 					);
 				}
 
+				const riskLevel = getCommandRiskLevel(decision.command);
+				const approval = await resolveCommandApproval({
+					command: decision.command,
+					riskLevel,
+					trustLevel,
+					agentStep: step,
+					emit,
+					approvalClient,
+					abortSignal,
+					guardExecution,
+				});
+				if (approval.rejected) {
+					messages.push({
+						role: "user",
+						content: `Command approval rejected for: ${decision.command}. Choose a safer alternative command or continue with read_file/update_plan.`,
+					});
+					break;
+				}
+
 				assertSafeCommand(decision.command, {
 					readOnly: readOnlyCommands,
 					trustLevel,
+					allowNetwork: approval.allowNetwork,
+					allowRisky: approval.allowRisky,
 				});
 				commandCount += 1;
 				await emit({

@@ -15,6 +15,10 @@ import {
 import { cancelActiveSandboxRun } from "./run-control";
 import {
 	getRunCoordinatorControl,
+	getRunCoordinatorApproval,
+	listRunCoordinatorApprovals,
+	requestRunCoordinatorApproval,
+	resolveRunCoordinatorApproval,
 	updateRunCoordinatorControl,
 } from "./run-coordinator";
 
@@ -90,6 +94,89 @@ async function getSandboxRunRecordForUser(params: {
 		recordId: records[0].id,
 		run: parsed,
 	};
+}
+
+export async function requestSandboxRunApproval(params: {
+	context: ServiceContext;
+	userId: number;
+	runId: string;
+	command: string;
+	reason?: string;
+}) {
+	const { context, userId, runId, command, reason } = params;
+	await getSandboxRunRecordForUser({ context, userId, runId });
+
+	const approval = await requestRunCoordinatorApproval({
+		env: context.env,
+		runId,
+		command,
+		reason,
+	});
+	if (!approval) {
+		throw new AssistantError(
+			"Failed to create run approval request",
+			ErrorType.UNKNOWN_ERROR,
+		);
+	}
+
+	return approval;
+}
+
+export async function resolveSandboxRunApproval(params: {
+	context: ServiceContext;
+	userId: number;
+	runId: string;
+	approvalId: string;
+	status: "approved" | "rejected";
+	reason?: string;
+}) {
+	const { context, userId, runId, approvalId, status, reason } = params;
+	await getSandboxRunRecordForUser({ context, userId, runId });
+	const updated = await resolveRunCoordinatorApproval({
+		env: context.env,
+		runId,
+		approvalId,
+		status,
+		reason,
+	});
+	if (!updated) {
+		throw new AssistantError(
+			"Failed to resolve run approval",
+			ErrorType.UNKNOWN_ERROR,
+		);
+	}
+	return {
+		success: true,
+	};
+}
+
+export async function listSandboxRunApprovalsForUser(params: {
+	context: ServiceContext;
+	userId: number;
+	runId: string;
+}) {
+	const { context, userId, runId } = params;
+	await getSandboxRunRecordForUser({ context, userId, runId });
+	return listRunCoordinatorApprovals(context.env, runId);
+}
+
+export async function getSandboxRunApprovalForUser(params: {
+	context: ServiceContext;
+	userId: number;
+	runId: string;
+	approvalId: string;
+}) {
+	const { context, userId, runId, approvalId } = params;
+	await getSandboxRunRecordForUser({ context, userId, runId });
+	const approval = await getRunCoordinatorApproval({
+		env: context.env,
+		runId,
+		approvalId,
+	});
+	if (!approval) {
+		throw new AssistantError("Approval not found", ErrorType.NOT_FOUND);
+	}
+	return approval;
 }
 
 export async function listSandboxRunsForUser(params: {
