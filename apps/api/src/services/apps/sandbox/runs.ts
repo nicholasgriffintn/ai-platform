@@ -82,7 +82,7 @@ function applyEventStatus(
 async function mergeCoordinatorEventsIfNewer(params: {
 	context: ServiceContext;
 	run: SandboxRunData;
-}): Promise<SandboxRunData> {
+}): Promise<{ run: SandboxRunData; merged: boolean }> {
 	const { context, run } = params;
 	const coordinatorEvents = await listRunCoordinatorEvents({
 		env: context.env,
@@ -90,13 +90,13 @@ async function mergeCoordinatorEventsIfNewer(params: {
 		after: 0,
 	});
 	if (!coordinatorEvents.length) {
-		return run;
+		return { run, merged: false };
 	}
 
 	const events = coordinatorEvents.map((entry) => entry.event);
 	const existingCount = run.events?.length ?? 0;
 	if (events.length <= existingCount) {
-		return run;
+		return { run, merged: false };
 	}
 
 	const terminalEvent = [...events]
@@ -118,30 +118,33 @@ async function mergeCoordinatorEventsIfNewer(params: {
 		terminalEvent?.completedAt ?? terminalEvent?.timestamp ?? run.completedAt;
 
 	return {
-		...run,
-		events,
-		status: derivedStatus,
-		updatedAt: latestEventWithTimestamp?.timestamp ?? run.updatedAt,
-		completedAt:
-			derivedStatus === "completed" ||
-			derivedStatus === "failed" ||
-			derivedStatus === "cancelled"
-				? completedAt
-				: run.completedAt,
-		error:
-			derivedStatus === "failed"
-				? (terminalEvent?.error ?? run.error)
-				: undefined,
-		result:
-			derivedStatus === "completed" || derivedStatus === "failed"
-				? (terminalEvent?.result ?? run.result)
-				: run.result,
-		cancellationReason:
-			derivedStatus === "cancelled"
-				? (terminalEvent?.message ??
-					terminalEvent?.error ??
-					run.cancellationReason)
-				: run.cancellationReason,
+		run: {
+			...run,
+			events,
+			status: derivedStatus,
+			updatedAt: latestEventWithTimestamp?.timestamp ?? run.updatedAt,
+			completedAt:
+				derivedStatus === "completed" ||
+				derivedStatus === "failed" ||
+				derivedStatus === "cancelled"
+					? completedAt
+					: run.completedAt,
+			error:
+				derivedStatus === "failed"
+					? (terminalEvent?.error ?? run.error)
+					: undefined,
+			result:
+				derivedStatus === "completed" || derivedStatus === "failed"
+					? (terminalEvent?.result ?? run.result)
+					: run.result,
+			cancellationReason:
+				derivedStatus === "cancelled"
+					? (terminalEvent?.message ??
+						terminalEvent?.error ??
+						run.cancellationReason)
+					: run.cancellationReason,
+		},
+		merged: true,
 	};
 }
 
@@ -346,7 +349,13 @@ export async function getSandboxRunForUser(params: {
 		context: params.context,
 		run: runRecord.run,
 	});
-	return toSandboxRunResponse(merged);
+	if (merged.merged) {
+		await params.context.repositories.appData.updateAppData(
+			runRecord.recordId,
+			merged.run,
+		);
+	}
+	return toSandboxRunResponse(merged.run);
 }
 
 export async function requestSandboxRunCancellation(params: {
