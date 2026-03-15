@@ -351,6 +351,13 @@ export interface StreamSandboxRunOptions {
 	onComplete?: (finalEvent?: SandboxRunEvent) => void;
 }
 
+export interface StreamSandboxRunEventsOptions {
+	signal?: AbortSignal;
+	after?: number;
+	onEvent: (event: SandboxRunEvent) => void;
+	onComplete?: (finalEvent?: SandboxRunEvent) => void;
+}
+
 export async function streamSandboxRun(
 	input: ExecuteSandboxRunInput,
 	options: StreamSandboxRunOptions,
@@ -404,6 +411,88 @@ export async function streamSandboxRun(
 		options.onEvent(syntheticEvent);
 		options.onComplete?.(syntheticEvent);
 		return;
+	}
+
+	const reader = response.body.getReader();
+	const decoder = new TextDecoder();
+	let buffer = "";
+	let finalEvent: SandboxRunEvent | undefined;
+	const handleEvent = (event: SandboxRunEvent) => {
+		options.onEvent(event);
+		if (
+			event.type === "run_completed" ||
+			event.type === "run_failed" ||
+			event.type === "run_cancelled"
+		) {
+			finalEvent = event;
+		}
+	};
+
+	try {
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) {
+				break;
+			}
+			if (!value) {
+				continue;
+			}
+
+			buffer += decoder.decode(value, { stream: true });
+			buffer = parseSseBuffer<SandboxRunEvent>(buffer, {
+				onEvent: handleEvent,
+			});
+		}
+
+		if (buffer.trim()) {
+			parseSseBuffer<SandboxRunEvent>(`${buffer}\n\n`, {
+				onEvent: handleEvent,
+				onError: () => {
+					// Ignore final parse errors from truncated buffers.
+				},
+			});
+		}
+	} finally {
+		reader.releaseLock();
+		options.onComplete?.(finalEvent);
+	}
+}
+
+export async function streamSandboxRunEvents(
+	runId: string,
+	options: StreamSandboxRunEventsOptions,
+): Promise<void> {
+	const headers = await apiService.getHeaders();
+	const params = new URLSearchParams();
+	if (typeof options.after === "number" && options.after > 0) {
+		params.set("after", String(options.after));
+	}
+	const query = params.toString();
+	const response = await fetchApi(
+		`/apps/sandbox/runs/${encodeURIComponent(runId)}/events/stream${
+			query ? `?${query}` : ""
+		}`,
+		{
+			method: "GET",
+			headers: {
+				...headers,
+				Accept: "text/event-stream",
+			},
+			timeoutMs: null,
+			signal: options.signal,
+		},
+	);
+
+	if (!response.ok) {
+		const message = await extractApiErrorMessage(
+			response,
+			`Failed to stream sandbox run events: ${response.statusText}`,
+		);
+		throw new Error(message);
+	}
+
+	if (!response.body) {
+		throw new Error("Sandbox events stream response body is empty");
 	}
 
 	const reader = response.body.getReader();

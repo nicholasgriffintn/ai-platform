@@ -167,7 +167,17 @@ export function createCoordinatorEventSseStream(
 				after = Math.max(after, envelope.index);
 			};
 
-			if (openSocket && !signal?.aborted) {
+			const initialEnvelopes = await listEvents(after);
+			for (const envelope of initialEnvelopes) {
+				applyEnvelope(envelope);
+				controller.enqueue(toSseChunk(envelope.event));
+				if (isTerminalSandboxEventType(envelope.event.type)) {
+					terminalSeen = true;
+					break;
+				}
+			}
+
+			if (!terminalSeen && openSocket && !signal?.aborted) {
 				try {
 					const socket = await openSocket();
 					if (socket) {

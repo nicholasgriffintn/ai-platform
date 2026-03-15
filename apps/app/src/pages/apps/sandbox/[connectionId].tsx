@@ -50,7 +50,7 @@ import {
 } from "~/hooks/useSandbox";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { formatRelativeTime } from "~/lib/dates";
-import { streamSandboxRun } from "~/lib/api/sandbox";
+import { streamSandboxRun, streamSandboxRunEvents } from "~/lib/api/sandbox";
 import {
 	getSandboxPromptStrategyDescription,
 	getSandboxPromptStrategyLabel,
@@ -177,21 +177,76 @@ function buildMessagesFromRun(run: SandboxRun): ChatMessage[] {
 		},
 	];
 
-	if (
-		run.status === "completed" ||
-		run.status === "failed" ||
-		run.status === "cancelled" ||
-		run.status === "paused"
-	) {
+	for (const event of run.events) {
+		const content = getAssistantMessageFromEvent(event);
+		if (!content) {
+			continue;
+		}
 		messages.push({
-			id: `${run.runId}-assistant`,
+			id: `${run.runId}-assistant-${messages.length}`,
 			role: "assistant",
-			content: summariseRunResult(run),
-			createdAt: run.completedAt ?? run.updatedAt,
+			content,
+			createdAt:
+				typeof event.timestamp === "string" ? event.timestamp : run.updatedAt,
 		});
 	}
 
+	if (messages.length === 1) {
+		if (
+			run.status === "completed" ||
+			run.status === "failed" ||
+			run.status === "cancelled" ||
+			run.status === "paused"
+		) {
+			messages.push({
+				id: `${run.runId}-assistant`,
+				role: "assistant",
+				content: summariseRunResult(run),
+				createdAt: run.completedAt ?? run.updatedAt,
+			});
+		}
+	}
+
 	return messages;
+}
+
+function getAssistantMessageFromEvent(event: SandboxRunEvent): string | null {
+	if (event.type === "run_completed") {
+		return typeof event.result?.summary === "string"
+			? event.result.summary
+			: "Sandbox run completed.";
+	}
+
+	if (event.type === "run_failed") {
+		return event.error || "Sandbox run failed.";
+	}
+
+	if (event.type === "run_cancelled") {
+		return event.message || event.error || "Sandbox run cancelled.";
+	}
+
+	if (event.type === "command_approval_requested") {
+		return (
+			event.message ||
+			`Approval requested for command: ${event.command ?? "unknown command"}`
+		);
+	}
+
+	if (event.type === "command_approval_escalated") {
+		return (
+			event.message ||
+			`Approval escalated for command: ${event.command ?? "unknown command"}`
+		);
+	}
+
+	if (event.type === "command_approval_timed_out") {
+		return (
+			event.message ||
+			`Approval timed out for command: ${event.command ?? "unknown command"}`
+		);
+	}
+
+	return null;
 }
 
 function getApprovalStatusBadgeVariant(
@@ -234,9 +289,11 @@ export default function SandboxConnectionPage() {
 	const queryClient = useQueryClient();
 	const { userSettings } = useAuthStatus();
 	const abortControllerRef = useRef<AbortController | null>(null);
+	const runEventsAbortControllerRef = useRef<AbortController | null>(null);
+	const runEventOffsetRef = useRef<Map<string, number>>(new Map());
 	const activeRunIdRef = useRef<string | undefined>(undefined);
 	const searchParamsRef = useRef(searchParams);
-	const hydratedSnapshotRef = useRef<string | undefined>(undefined);
+	const hydratedRunIdRef = useRef<string | undefined>(undefined);
 
 	const installationId = Number(params.connectionId);
 	const hasValidInstallationId =
@@ -362,38 +419,17 @@ export default function SandboxConnectionPage() {
 		}
 		return runs.find((run) => run.runId === targetRunId);
 	}, [runs, targetRunId]);
-	const selectedRunStatusHint =
-		targetRunId === activeRunId ? liveRunStatus : undefined;
 	const {
 		data: selectedRunDetails,
 		isLoading: isSelectedRunLoading,
 		error: selectedRunError,
-	} = useSandboxRun(targetRunId, {
-		refetchInterval: (query) => {
-			if (!targetRunId || isSubmitting) {
-				return false;
-			}
-
-			const status = query.state.data?.status ?? selectedRunStatusHint;
-			return isRunStatusActive(status) ? 1500 : false;
-		},
-		refetchIntervalInBackground: true,
-	});
+	} = useSandboxRun(targetRunId);
 	const {
 		data: approvals = [],
 		isLoading: isApprovalsLoading,
 		error: approvalsError,
 	} = useSandboxRunApprovals(approvalsRunId, {
 		enabled: Boolean(approvalsRunId),
-		refetchInterval: (query) => {
-			if (isSubmitting || isRunStatusActive(selectedRunDetails?.status)) {
-				return 3000;
-			}
-			const hasPending = (query.state.data ?? []).some((approval) =>
-				isApprovalPendingStatus(approval.status),
-			);
-			return hasPending ? 3000 : false;
-		},
 	});
 	const pendingApprovals = useMemo(
 		() =>
@@ -448,21 +484,138 @@ export default function SandboxConnectionPage() {
 	}, [isReadOnlyTaskType, shouldCommit]);
 
 	const selectedRun = selectedRunDetails ?? selectedRunFromHistory;
+	const shouldSubscribeToRunEvents =
+		!isSubmitting &&
+		Boolean(targetRunId) &&
+		(isRunStatusActive(selectedRun?.status) || pendingApprovals.length > 0);
+
+	useEffect(() => {
+		if (!targetRunId || !shouldSubscribeToRunEvents) {
+			return;
+		}
+
+		runEventsAbortControllerRef.current?.abort();
+		const controller = new AbortController();
+		runEventsAbortControllerRef.current = controller;
+		const knownEventCount =
+			runEventOffsetRef.current.get(targetRunId) ??
+			selectedRun?.events?.length ??
+			0;
+
+		void streamSandboxRunEvents(targetRunId, {
+			signal: controller.signal,
+			after: knownEventCount,
+			onEvent: (event) => {
+				const receivedAt = new Date().toISOString();
+				runEventOffsetRef.current.set(
+					targetRunId,
+					(runEventOffsetRef.current.get(targetRunId) ?? knownEventCount) + 1,
+				);
+				const eventId = crypto.randomUUID();
+				setTimeline((prev) => {
+					const next = [...prev, { id: eventId, receivedAt, event }];
+					if (next.length > 300) {
+						return next.slice(next.length - 300);
+					}
+					return next;
+				});
+				const assistantMessage = getAssistantMessageFromEvent(event);
+				if (assistantMessage) {
+					pushAssistantMessage(assistantMessage, receivedAt);
+				}
+
+				queryClient.setQueryData<SandboxRun | undefined>(
+					SANDBOX_QUERY_KEYS.run(targetRunId),
+					(current) => {
+						if (!current) {
+							return current;
+						}
+
+						let nextStatus = current.status;
+						if (event.type === "run_completed") {
+							nextStatus = "completed";
+						} else if (event.type === "run_failed") {
+							nextStatus = "failed";
+						} else if (event.type === "run_cancelled") {
+							nextStatus = "cancelled";
+						} else if (event.type === "run_paused") {
+							nextStatus = "paused";
+						} else if (event.type === "run_resumed") {
+							nextStatus = "running";
+						}
+
+						return {
+							...current,
+							status: nextStatus,
+							updatedAt: receivedAt,
+							completedAt:
+								nextStatus === "completed" ||
+								nextStatus === "failed" ||
+								nextStatus === "cancelled"
+									? (event.completedAt ?? receivedAt)
+									: current.completedAt,
+							error: event.error ?? current.error,
+							result: event.result ?? current.result,
+							events: [...(current.events ?? []), event],
+						};
+					},
+				);
+
+				if (
+					event.type === "command_approval_requested" ||
+					event.type === "command_approval_escalated" ||
+					event.type === "command_approval_timed_out" ||
+					event.type === "command_approval_resolved"
+				) {
+					queryClient.invalidateQueries({
+						queryKey: SANDBOX_QUERY_KEYS.runApprovals(targetRunId),
+					});
+				}
+			},
+			onComplete: () => {
+				if (runEventsAbortControllerRef.current === controller) {
+					runEventsAbortControllerRef.current = null;
+				}
+			},
+		}).catch((error) => {
+			if ((error as Error).name === "AbortError") {
+				return;
+			}
+			console.error("Sandbox run events stream failed:", error);
+		});
+
+		return () => {
+			controller.abort();
+			if (runEventsAbortControllerRef.current === controller) {
+				runEventsAbortControllerRef.current = null;
+			}
+		};
+	}, [
+		pendingApprovals.length,
+		queryClient,
+		shouldSubscribeToRunEvents,
+		targetRunId,
+	]);
 
 	useEffect(() => {
 		if (!selectedRun || isSubmitting) {
 			return;
 		}
 
-		const snapshotKey = `${selectedRun.runId}:${selectedRun.updatedAt}:${selectedRun.status}`;
-		if (hydratedSnapshotRef.current === snapshotKey) {
+		const isSameRunHydrated =
+			hydratedRunIdRef.current === selectedRun.runId && timeline.length > 0;
+		const hasRicherServerSnapshot =
+			selectedRunDetails?.runId === selectedRun.runId &&
+			selectedRunDetails.events.length > timeline.length;
+		if (isSameRunHydrated && !hasRicherServerSnapshot) {
 			return;
 		}
 
 		setTimeline(buildTimelineFromRun(selectedRun));
 		setMessages(buildMessagesFromRun(selectedRun));
-		hydratedSnapshotRef.current = snapshotKey;
-	}, [isSubmitting, selectedRun]);
+		runEventOffsetRef.current.set(selectedRun.runId, selectedRun.events.length);
+		hydratedRunIdRef.current = selectedRun.runId;
+	}, [isSubmitting, selectedRun, selectedRunDetails, timeline.length]);
 
 	useEffect(() => {
 		if (isSubmitting && timeline.length > 0) {
@@ -658,7 +811,7 @@ export default function SandboxConnectionPage() {
 		const controller = new AbortController();
 		abortControllerRef.current = controller;
 		setIsSubmitting(true);
-		hydratedSnapshotRef.current = undefined;
+		hydratedRunIdRef.current = undefined;
 		setActiveRunId(undefined);
 		activeRunIdRef.current = undefined;
 		setLiveRunStatus("running");
@@ -712,27 +865,26 @@ export default function SandboxConnectionPage() {
 
 						if (event.type === "run_completed") {
 							setLiveRunStatus(undefined);
-							const summary =
-								typeof event.result?.summary === "string"
-									? event.result.summary
-									: "Sandbox run completed.";
-							pushAssistantMessage(summary, receivedAt);
+							const summary = getAssistantMessageFromEvent(event);
+							if (summary) {
+								pushAssistantMessage(summary, receivedAt);
+							}
 						}
 
 						if (event.type === "run_failed") {
 							setLiveRunStatus(undefined);
-							pushAssistantMessage(
-								event.error || "Sandbox run failed.",
-								receivedAt,
-							);
+							const failure = getAssistantMessageFromEvent(event);
+							if (failure) {
+								pushAssistantMessage(failure, receivedAt);
+							}
 						}
 
 						if (event.type === "run_cancelled") {
 							setLiveRunStatus(undefined);
-							pushAssistantMessage(
-								event.message || event.error || "Sandbox run cancelled.",
-								receivedAt,
-							);
+							const cancellation = getAssistantMessageFromEvent(event);
+							if (cancellation) {
+								pushAssistantMessage(cancellation, receivedAt);
+							}
 						}
 
 						if (event.type === "run_paused") {
@@ -744,27 +896,24 @@ export default function SandboxConnectionPage() {
 						}
 
 						if (event.type === "command_approval_requested") {
-							pushAssistantMessage(
-								event.message ||
-									`Approval requested for command: ${event.command ?? "unknown command"}`,
-								receivedAt,
-							);
+							const approval = getAssistantMessageFromEvent(event);
+							if (approval) {
+								pushAssistantMessage(approval, receivedAt);
+							}
 						}
 
 						if (event.type === "command_approval_escalated") {
-							pushAssistantMessage(
-								event.message ||
-									`Approval escalated for command: ${event.command ?? "unknown command"}`,
-								receivedAt,
-							);
+							const escalation = getAssistantMessageFromEvent(event);
+							if (escalation) {
+								pushAssistantMessage(escalation, receivedAt);
+							}
 						}
 
 						if (event.type === "command_approval_timed_out") {
-							pushAssistantMessage(
-								event.message ||
-									`Approval timed out for command: ${event.command ?? "unknown command"}`,
-								receivedAt,
-							);
+							const timeout = getAssistantMessageFromEvent(event);
+							if (timeout) {
+								pushAssistantMessage(timeout, receivedAt);
+							}
 						}
 					},
 					onComplete: (finalEvent) => {

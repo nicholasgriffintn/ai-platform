@@ -11,6 +11,7 @@ import {
 	parseSandboxRunData,
 	toSandboxRunResponse,
 	type SandboxRunData,
+	type SandboxRunStatus,
 } from "./run-data";
 import { cancelActiveSandboxRun } from "./run-control";
 import {
@@ -55,6 +56,93 @@ function isTerminalRunStatus(status: SandboxRunData["status"]): boolean {
 	return (
 		status === "completed" || status === "failed" || status === "cancelled"
 	);
+}
+
+function applyEventStatus(
+	run: SandboxRunData,
+	eventType: string,
+): SandboxRunStatus {
+	switch (eventType) {
+		case "run_completed":
+			return "completed";
+		case "run_failed":
+			return "failed";
+		case "run_cancelled":
+			return "cancelled";
+		case "run_paused":
+			return "paused";
+		case "run_resumed":
+		case "run_started":
+			return "running";
+		default:
+			return run.status;
+	}
+}
+
+async function mergeCoordinatorEventsIfNewer(params: {
+	context: ServiceContext;
+	run: SandboxRunData;
+}): Promise<SandboxRunData> {
+	const { context, run } = params;
+	const coordinatorEvents = await listRunCoordinatorEvents({
+		env: context.env,
+		runId: run.runId,
+		after: 0,
+	});
+	if (!coordinatorEvents.length) {
+		return run;
+	}
+
+	const events = coordinatorEvents.map((entry) => entry.event);
+	const existingCount = run.events?.length ?? 0;
+	if (events.length <= existingCount) {
+		return run;
+	}
+
+	const terminalEvent = [...events]
+		.reverse()
+		.find(
+			(event) =>
+				event.type === "run_completed" ||
+				event.type === "run_failed" ||
+				event.type === "run_cancelled",
+		);
+	const latestEventWithTimestamp = [...events]
+		.reverse()
+		.find((event) => typeof event.timestamp === "string");
+	const derivedStatus = applyEventStatus(
+		run,
+		events[events.length - 1]?.type ?? "",
+	);
+	const completedAt =
+		terminalEvent?.completedAt ?? terminalEvent?.timestamp ?? run.completedAt;
+
+	return {
+		...run,
+		events,
+		status: derivedStatus,
+		updatedAt: latestEventWithTimestamp?.timestamp ?? run.updatedAt,
+		completedAt:
+			derivedStatus === "completed" ||
+			derivedStatus === "failed" ||
+			derivedStatus === "cancelled"
+				? completedAt
+				: run.completedAt,
+		error:
+			derivedStatus === "failed"
+				? (terminalEvent?.error ?? run.error)
+				: undefined,
+		result:
+			derivedStatus === "completed" || derivedStatus === "failed"
+				? (terminalEvent?.result ?? run.result)
+				: run.result,
+		cancellationReason:
+			derivedStatus === "cancelled"
+				? (terminalEvent?.message ??
+					terminalEvent?.error ??
+					run.cancellationReason)
+				: run.cancellationReason,
+	};
 }
 
 async function persistRunStateTransition(
@@ -254,7 +342,11 @@ export async function getSandboxRunForUser(params: {
 	runId: string;
 }) {
 	const runRecord = await getSandboxRunRecordForUser(params);
-	return toSandboxRunResponse(runRecord.run);
+	const merged = await mergeCoordinatorEventsIfNewer({
+		context: params.context,
+		run: runRecord.run,
+	});
+	return toSandboxRunResponse(merged);
 }
 
 export async function requestSandboxRunCancellation(params: {
