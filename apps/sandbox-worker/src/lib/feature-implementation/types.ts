@@ -42,7 +42,7 @@ export interface FinishDecision {
 export interface RunScriptDecision {
 	action: "run_script";
 	code: string;
-	language?: "python" | "javascript" | "typescript";
+	language?: "javascript" | "typescript";
 	reasoning?: string;
 }
 

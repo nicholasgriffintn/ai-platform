@@ -6,17 +6,13 @@ import { truncateForModel } from "./utils";
 
 function parseScriptLanguage(
 	rawLanguage: unknown,
-): "python" | "javascript" | "typescript" {
+): "javascript" | "typescript" {
 	if (typeof rawLanguage !== "string" || !rawLanguage.trim()) {
-		return "python";
+		return "javascript";
 	}
 
 	const normalised = rawLanguage.trim().toLowerCase();
-	if (
-		normalised === "python" ||
-		normalised === "javascript" ||
-		normalised === "typescript"
-	) {
+	if (normalised === "javascript" || normalised === "typescript") {
 		return normalised;
 	}
 

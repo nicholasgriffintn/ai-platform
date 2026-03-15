@@ -8,13 +8,13 @@ describe("parseAgentDecision", () => {
 			JSON.stringify({
 				action: "run_script",
 				code: "print('ok')",
-				language: "python",
+				language: "javascript",
 			}),
 		);
 
 		expect(decision.action).toBe("run_script");
 		if (decision.action === "run_script") {
-			expect(decision.language).toBe("python");
+			expect(decision.language).toBe("javascript");
 		}
 	});
 

@@ -309,7 +309,7 @@ export async function executeAgentLoop(
 				}
 
 				commandCount += 1;
-				const scriptLanguage = decision.language ?? "python";
+				const scriptLanguage = decision.language ?? "javascript";
 				await emit({
 					type: "script_started",
 					code: truncateForModel(decision.code, 2000),
@@ -319,9 +319,39 @@ export async function executeAgentLoop(
 					commandTotal: MAX_COMMANDS,
 				});
 
-				const execution = await sandbox.runCode(decision.code, {
-					language: scriptLanguage,
-				});
+				let execution: Awaited<ReturnType<typeof sandbox.runCode>>;
+				try {
+					execution = await sandbox.runCode(decision.code, {
+						language: scriptLanguage,
+					});
+				} catch (error) {
+					consecutiveCommandFailures += 1;
+					const errorMessage =
+						error instanceof Error ? error.message : "Script execution failed";
+					await emit({
+						type: "script_failed",
+						agentStep: step,
+						commandIndex: commandCount,
+						commandTotal: MAX_COMMANDS,
+						error: truncateForModel(errorMessage, MAX_OBSERVATION_CHARS),
+					});
+
+					messages.push({
+						role: "user",
+						content: [
+							"Script execution failed.",
+							`Error: ${truncateForModel(errorMessage, MAX_OBSERVATION_CHARS)}`,
+							"Use javascript/typescript run_script, run_command, or read_file instead.",
+						].join("\n"),
+					});
+
+					if (consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
+						throw new Error(
+							`Agent reached ${MAX_CONSECUTIVE_COMMAND_FAILURES} consecutive command failures`,
+						);
+					}
+					break;
+				}
 
 				await guardExecution("Sandbox run cancelled after script execution");
 
