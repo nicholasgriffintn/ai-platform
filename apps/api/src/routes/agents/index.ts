@@ -24,11 +24,23 @@ import {
 	getAgentServers,
 	createAgentCompletion,
 } from "~/services/agents";
-import type { ChatCompletionParameters, IEnv } from "~/types";
+import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import sharedAgents from "./shared";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("agents");
+
+function requireAuthenticatedUser(ctx: Context): IUser {
+	const user = ctx.get("user") as IUser | undefined;
+	if (!user?.id) {
+		throw new AssistantError(
+			"This endpoint requires authentication. Please provide a valid access token.",
+			ErrorType.AUTHENTICATION_ERROR,
+		);
+	}
+	return user;
+}
 
 app.use("/*", async (ctx, next) => {
 	logger.info(`Processing agents route: ${ctx.req.method} ${ctx.req.path}`);
@@ -53,11 +65,7 @@ app.get(
 		},
 	}),
 	async (ctx: Context) => {
-		const user = ctx.get("user");
-
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
+		requireAuthenticatedUser(ctx);
 
 		const serviceContext = getServiceContext(ctx);
 		const agents = await getUserAgents(serviceContext);
@@ -89,11 +97,7 @@ app.post(
 		const body = ctx.req.valid("json" as never) as z.infer<
 			typeof createAgentSchema
 		>;
-		const user = ctx.get("user");
-
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
+		requireAuthenticatedUser(ctx);
 
 		const serviceContext = getServiceContext(ctx);
 		const agent = await createAgent(serviceContext, {
@@ -135,11 +139,7 @@ app.get(
 		},
 	}),
 	async (ctx: Context) => {
-		const user = ctx.get("user");
-
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
+		requireAuthenticatedUser(ctx);
 
 		const serviceContext = getServiceContext(ctx);
 		const agents = await getUserTeamAgents(serviceContext);
@@ -169,11 +169,7 @@ app.get(
 	}),
 	async (ctx: Context) => {
 		const { teamId } = ctx.req.param();
-		const user = ctx.get("user");
-
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
+		requireAuthenticatedUser(ctx);
 
 		const serviceContext = getServiceContext(ctx);
 		const agents = await getAgentsByTeam(serviceContext, teamId);
@@ -204,11 +200,7 @@ app.get(
 	}),
 	async (ctx: Context) => {
 		const { agentId } = ctx.req.param();
-		const user = ctx.get("user");
-
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
+		requireAuthenticatedUser(ctx);
 
 		const serviceContext = getServiceContext(ctx);
 		const agent = await getAgentById(serviceContext, agentId);
@@ -237,11 +229,7 @@ app.get(
 	}),
 	async (ctx: Context) => {
 		const { agentId } = ctx.req.param();
-		const user = ctx.get("user");
-
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
+		requireAuthenticatedUser(ctx);
 
 		const serviceContext = getServiceContext(ctx);
 		const serverDetails = await getAgentServers(serviceContext, agentId);
@@ -274,11 +262,7 @@ app.put(
 		const body = ctx.req.valid("json" as never) as z.infer<
 			typeof updateAgentSchema
 		>;
-		const user = ctx.get("user");
-
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
+		requireAuthenticatedUser(ctx);
 
 		const serviceContext = getServiceContext(ctx);
 		const agent = await updateAgent(serviceContext, agentId, body);
@@ -307,11 +291,7 @@ app.delete(
 	}),
 	async (ctx: Context) => {
 		const { agentId } = ctx.req.param();
-		const user = ctx.get("user");
-
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
+		requireAuthenticatedUser(ctx);
 
 		const serviceContext = getServiceContext(ctx);
 		await deleteAgent(serviceContext, agentId);

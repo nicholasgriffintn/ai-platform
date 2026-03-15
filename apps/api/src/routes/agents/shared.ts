@@ -13,6 +13,7 @@ import {
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
+import { requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
@@ -32,10 +33,22 @@ import {
 	uninstallSharedAgent,
 	updateSharedAgent,
 } from "~/services/agents/shared";
-import type { IEnv } from "~/types";
+import type { IEnv, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("agents/shared");
+
+function requireAuthenticatedUser(ctx: Context): IUser {
+	const user = ctx.get("user") as IUser | undefined;
+	if (!user?.id) {
+		throw new AssistantError(
+			"This endpoint requires authentication. Please provide a valid access token.",
+			ErrorType.AUTHENTICATION_ERROR,
+		);
+	}
+	return user;
+}
 
 app.use("/*", async (ctx, next) => {
 	logger.info(
@@ -213,24 +226,10 @@ app.post(
 	}),
 	async (ctx: Context) => {
 		const { id } = ctx.req.param();
-		const user = ctx.get("user");
-
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
-
-		try {
-			const serviceContext = getServiceContext(ctx);
-			const result = await installSharedAgent(serviceContext, id, user.id);
-
-			return ResponseFactory.success(ctx, result);
-		} catch (error) {
-			return ResponseFactory.error(
-				ctx,
-				error instanceof Error ? error.message : "Failed to install agent",
-				400,
-			);
-		}
+		const user = requireAuthenticatedUser(ctx);
+		const serviceContext = getServiceContext(ctx);
+		const result = await installSharedAgent(serviceContext, id, user.id);
+		return ResponseFactory.success(ctx, result);
 	},
 );
 
@@ -254,12 +253,7 @@ app.post(
 	}),
 	async (ctx: Context) => {
 		const { id } = ctx.req.param();
-		const user = ctx.get("user");
-
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
-
+		const user = requireAuthenticatedUser(ctx);
 		const serviceContext = getServiceContext(ctx);
 		await uninstallSharedAgent(serviceContext, id, user.id);
 
@@ -293,30 +287,16 @@ app.post(
 		const body = ctx.req.valid("json" as never) as z.infer<
 			typeof rateAgentSchema
 		>;
-		const user = ctx.get("user");
-
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
-
-		try {
-			const serviceContext = getServiceContext(ctx);
-			const rating = await rateSharedAgent(
-				serviceContext,
-				id,
-				body.rating,
-				body.review,
-				user.id,
-			);
-
-			return ResponseFactory.success(ctx, rating);
-		} catch (error) {
-			return ResponseFactory.error(
-				ctx,
-				error instanceof Error ? error.message : "Failed to rate agent",
-				400,
-			);
-		}
+		const user = requireAuthenticatedUser(ctx);
+		const serviceContext = getServiceContext(ctx);
+		const rating = await rateSharedAgent(
+			serviceContext,
+			id,
+			body.rating,
+			body.review,
+			user.id,
+		);
+		return ResponseFactory.success(ctx, rating);
 	},
 );
 
@@ -371,12 +351,7 @@ app.get(
 	}),
 	async (ctx: Context) => {
 		const { agentId } = ctx.req.param();
-		const user = ctx.get("user");
-
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
-
+		requireAuthenticatedUser(ctx);
 		const serviceContext = getServiceContext(ctx);
 		const sharedAgent = await getSharedAgentByAgentId(serviceContext, agentId);
 
@@ -410,35 +385,22 @@ app.post(
 		const body = ctx.req.valid("json" as never) as z.infer<
 			typeof shareAgentSchema
 		>;
-		const user = ctx.get("user");
+		const user = requireAuthenticatedUser(ctx);
+		const serviceContext = getServiceContext(ctx);
+		const sharedAgent = await shareAgent(
+			serviceContext,
+			{
+				agentId: body.agent_id,
+				name: body.name,
+				description: body.description,
+				avatarUrl: body.avatar_url,
+				category: body.category,
+				tags: body.tags,
+			},
+			user.id,
+		);
 
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
-
-		try {
-			const serviceContext = getServiceContext(ctx);
-			const sharedAgent = await shareAgent(
-				serviceContext,
-				{
-					agentId: body.agent_id,
-					name: body.name,
-					description: body.description,
-					avatarUrl: body.avatar_url,
-					category: body.category,
-					tags: body.tags,
-				},
-				user.id,
-			);
-
-			return ResponseFactory.success(ctx, sharedAgent);
-		} catch (error) {
-			return ResponseFactory.error(
-				ctx,
-				error instanceof Error ? error.message : "Failed to share agent",
-				400,
-			);
-		}
+		return ResponseFactory.success(ctx, sharedAgent);
 	},
 );
 
@@ -466,26 +428,13 @@ app.put(
 		const body = ctx.req.valid("json" as never) as z.infer<
 			typeof updateSharedAgentSchema
 		>;
-		const user = ctx.get("user");
+		const user = requireAuthenticatedUser(ctx);
+		const serviceContext = getServiceContext(ctx);
+		await updateSharedAgent(serviceContext, id, body, user.id);
 
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
-
-		try {
-			const serviceContext = getServiceContext(ctx);
-			await updateSharedAgent(serviceContext, id, body, user.id);
-
-			return ResponseFactory.success(ctx, {
-				message: "Shared agent updated successfully",
-			});
-		} catch (error) {
-			return ResponseFactory.error(
-				ctx,
-				error instanceof Error ? error.message : "Failed to update agent",
-				400,
-			);
-		}
+		return ResponseFactory.success(ctx, {
+			message: "Shared agent updated successfully",
+		});
 	},
 );
 
@@ -509,32 +458,20 @@ app.delete(
 	}),
 	async (ctx: Context) => {
 		const { id } = ctx.req.param();
-		const user = ctx.get("user");
+		const user = requireAuthenticatedUser(ctx);
+		const serviceContext = getServiceContext(ctx);
+		await deleteSharedAgent(serviceContext, id, user.id);
 
-		if (!user?.id) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
-		}
-
-		try {
-			const serviceContext = getServiceContext(ctx);
-			await deleteSharedAgent(serviceContext, id, user.id);
-
-			return ResponseFactory.success(ctx, {
-				message: "Shared agent deleted successfully",
-			});
-		} catch (error) {
-			return ResponseFactory.error(
-				ctx,
-				error instanceof Error ? error.message : "Failed to delete agent",
-				400,
-			);
-		}
+		return ResponseFactory.success(ctx, {
+			message: "Shared agent deleted successfully",
+		});
 	},
 );
 
 app.post(
 	"/:id/featured",
 	requireAuth,
+	requireStrictAdmin,
 	describeRoute({
 		tags: ["shared-agents"],
 		summary: "Set featured status",
@@ -574,6 +511,7 @@ app.post(
 app.post(
 	"/:id/moderate",
 	requireAuth,
+	requireStrictAdmin,
 	describeRoute({
 		tags: ["shared-agents"],
 		summary: "Moderate shared agent",

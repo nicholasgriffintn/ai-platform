@@ -68,6 +68,33 @@ import type {
 const app = new Hono();
 
 const routeLogger = createRouteLogger("chat");
+const STREAM_RESPONSE_HEADERS = {
+	"Content-Type": "text/event-stream",
+	"Cache-Control": "no-cache",
+	Connection: "keep-alive",
+} as const;
+
+const chatMessageListQuerySchema = z.object({
+	limit: z.coerce.number().int().min(1).max(100).optional().default(50),
+	after: z.string().optional(),
+});
+
+const chatCompletionsListQuerySchema = z.object({
+	limit: z.coerce.number().int().min(1).max(100).optional().default(25),
+	page: z.coerce.number().int().min(1).optional().default(1),
+	include_archived: z.enum(["true", "false"]).optional().default("false"),
+});
+
+function respondWithStreamOrJson(
+	context: Context,
+	result: unknown,
+	stream?: boolean,
+): Response {
+	if (stream) {
+		return context.body(result as ReadableStream, 200, STREAM_RESPONSE_HEADERS);
+	}
+	return ResponseFactory.success(context, result);
+}
 
 app.use("/*", async (context: Context, next: Next) => {
 	routeLogger.info(`Processing chat route: ${context.req.path}`);
@@ -207,15 +234,7 @@ app.post(
 			...body,
 		});
 
-		if (body.stream) {
-			return context.body(result as ReadableStream, 200, {
-				"Content-Type": "text/event-stream",
-				"Cache-Control": "no-cache",
-				Connection: "keep-alive",
-			});
-		}
-
-		return ResponseFactory.success(context, result);
+		return respondWithStreamOrJson(context, result, body.stream);
 	},
 );
 
@@ -261,15 +280,7 @@ app.post(
 			...body,
 		});
 
-		if (body.stream) {
-			return context.body(result as ReadableStream, 200, {
-				"Content-Type": "text/event-stream",
-				"Cache-Control": "no-cache",
-				Connection: "keep-alive",
-			});
-		}
-
-		return ResponseFactory.success(context, result);
+		return respondWithStreamOrJson(context, result, body.stream);
 	},
 );
 
@@ -315,15 +326,7 @@ app.post(
 			...body,
 		});
 
-		if (body.stream) {
-			return context.body(result as ReadableStream, 200, {
-				"Content-Type": "text/event-stream",
-				"Cache-Control": "no-cache",
-				Connection: "keep-alive",
-			});
-		}
-
-		return ResponseFactory.success(context, result);
+		return respondWithStreamOrJson(context, result, body.stream);
 	},
 );
 
@@ -502,12 +505,14 @@ app.get(
 		},
 	}),
 	zValidator("param", getChatCompletionParamsSchema),
+	zValidator("query", chatMessageListQuerySchema),
 	async (context: Context) => {
 		const { completion_id } = context.req.valid("param" as never) as {
 			completion_id: string;
 		};
-		const limit = Number.parseInt(context.req.query("limit") || "50", 10);
-		const after = context.req.query("after");
+		const { limit, after } = context.req.valid("query" as never) as z.infer<
+			typeof chatMessageListQuerySchema
+		>;
 
 		const anonymousUser = context.get("anonymousUser");
 
@@ -626,12 +631,13 @@ app.get(
 			},
 		},
 	}),
+	zValidator("query", chatCompletionsListQuerySchema),
 	async (context: Context) => {
 		const userContext = context.get("user");
-
-		const limit = Number.parseInt(context.req.query("limit") || "25", 10);
-		const page = Number.parseInt(context.req.query("page") || "1", 10);
-		const includeArchived = context.req.query("include_archived") === "true";
+		const { limit, page, include_archived } = context.req.valid(
+			"query" as never,
+		) as z.infer<typeof chatCompletionsListQuerySchema>;
+		const includeArchived = include_archived === "true";
 
 		const serviceContext = getServiceContext(context);
 
@@ -1159,13 +1165,14 @@ app.get(
 		},
 	}),
 	zValidator("param", getSharedConversationParamsSchema),
+	zValidator("query", chatMessageListQuerySchema),
 	async (context: Context) => {
 		const { share_id } = context.req.valid("param" as never) as {
 			share_id: string;
 		};
-
-		const limit = Number.parseInt(context.req.query("limit") || "50", 10);
-		const after = context.req.query("after");
+		const { limit, after } = context.req.valid("query" as never) as z.infer<
+			typeof chatMessageListQuerySchema
+		>;
 
 		const serviceContext = getServiceContext(context);
 

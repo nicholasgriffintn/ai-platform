@@ -18,7 +18,7 @@ export function registerSandboxRunExecutionRoutes(app: Hono): void {
 			responses: {
 				200: {
 					description: "Sandbox run executed successfully",
-					content: { "application/json": {} },
+					content: { "text/event-stream": {} },
 				},
 			},
 		}),
