@@ -212,6 +212,10 @@ function isApprovalPendingStatus(status: SandboxRunApprovalStatus): boolean {
 	return status === "pending" || status === "escalated";
 }
 
+function isRunStatusActive(status: SandboxRun["status"] | undefined): boolean {
+	return status === "queued" || status === "running";
+}
+
 export function meta() {
 	return [
 		{ title: "Sandbox Run Console - Polychat" },
@@ -352,13 +356,44 @@ export default function SandboxConnectionPage() {
 	const selectedRunId = searchParams.get("runId") || undefined;
 	const targetRunId = selectedRunId || activeRunId || runs[0]?.runId;
 	const approvalsRunId = activeRunId || targetRunId;
+	const selectedRunFromHistory = useMemo(() => {
+		if (!targetRunId) {
+			return undefined;
+		}
+		return runs.find((run) => run.runId === targetRunId);
+	}, [runs, targetRunId]);
+	const selectedRunStatusHint =
+		targetRunId === activeRunId ? liveRunStatus : undefined;
+	const {
+		data: selectedRunDetails,
+		isLoading: isSelectedRunLoading,
+		error: selectedRunError,
+	} = useSandboxRun(targetRunId, {
+		refetchInterval: (query) => {
+			if (!targetRunId || isSubmitting) {
+				return false;
+			}
+
+			const status = query.state.data?.status ?? selectedRunStatusHint;
+			return isRunStatusActive(status) ? 1500 : false;
+		},
+		refetchIntervalInBackground: true,
+	});
 	const {
 		data: approvals = [],
 		isLoading: isApprovalsLoading,
 		error: approvalsError,
 	} = useSandboxRunApprovals(approvalsRunId, {
 		enabled: Boolean(approvalsRunId),
-		refetchInterval: isSubmitting ? 2000 : 5000,
+		refetchInterval: (query) => {
+			if (isSubmitting || isRunStatusActive(selectedRunDetails?.status)) {
+				return 3000;
+			}
+			const hasPending = (query.state.data ?? []).some((approval) =>
+				isApprovalPendingStatus(approval.status),
+			);
+			return hasPending ? 3000 : false;
+		},
 	});
 	const pendingApprovals = useMemo(
 		() =>
@@ -411,19 +446,6 @@ export default function SandboxConnectionPage() {
 			setShouldCommit(false);
 		}
 	}, [isReadOnlyTaskType, shouldCommit]);
-
-	const selectedRunFromHistory = useMemo(() => {
-		if (!targetRunId) {
-			return undefined;
-		}
-		return runs.find((run) => run.runId === targetRunId);
-	}, [runs, targetRunId]);
-
-	const {
-		data: selectedRunDetails,
-		isLoading: isSelectedRunLoading,
-		error: selectedRunError,
-	} = useSandboxRun(targetRunId);
 
 	const selectedRun = selectedRunDetails ?? selectedRunFromHistory;
 

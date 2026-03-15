@@ -107,7 +107,17 @@ export const useSandboxRuns = (
 		enabled: options?.enabled ?? true,
 	});
 
-export const useSandboxRun = (runId?: string) =>
+export const useSandboxRun = (
+	runId?: string,
+	options?: {
+		enabled?: boolean;
+		refetchInterval?:
+			| number
+			| false
+			| ((query: { state: { data?: SandboxRun } }) => number | false);
+		refetchIntervalInBackground?: boolean;
+	},
+) =>
 	useQuery<SandboxRun, Error>({
 		queryKey: SANDBOX_QUERY_KEYS.run(runId),
 		queryFn: () => {
@@ -116,12 +126,20 @@ export const useSandboxRun = (runId?: string) =>
 			}
 			return fetchSandboxRun(runId);
 		},
-		enabled: Boolean(runId),
+		enabled: Boolean(runId) && (options?.enabled ?? true),
+		refetchInterval: options?.refetchInterval,
+		refetchIntervalInBackground: options?.refetchIntervalInBackground,
 	});
 
 export const useSandboxRunApprovals = (
 	runId?: string,
-	options?: { enabled?: boolean; refetchInterval?: number },
+	options?: {
+		enabled?: boolean;
+		refetchInterval?:
+			| number
+			| false
+			| ((query: { state: { data?: SandboxRunApproval[] } }) => number | false);
+	},
 ) =>
 	useQuery<SandboxRunApproval[], Error>({
 		queryKey: SANDBOX_QUERY_KEYS.runApprovals(runId),
