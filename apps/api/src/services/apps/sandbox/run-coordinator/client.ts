@@ -131,6 +131,33 @@ export async function listRunCoordinatorEvents(params: {
 	return Array.isArray(payload.events) ? payload.events : [];
 }
 
+export async function openRunCoordinatorEventsSocket(params: {
+	env: IEnv | undefined;
+	runId: string;
+}): Promise<WebSocket | null> {
+	if (!params.env?.SANDBOX_RUN_COORDINATOR) {
+		return null;
+	}
+
+	const stub = getCoordinatorStub(params.env, params.runId);
+	const response = await stub.fetch(
+		"https://sandbox-run-coordinator/events/ws",
+		{
+			headers: {
+				Upgrade: "websocket",
+			},
+		},
+	);
+
+	const socket = response.webSocket;
+	if (!socket) {
+		return null;
+	}
+
+	socket.accept();
+	return socket;
+}
+
 export async function requestRunCoordinatorApproval(params: {
 	env: IEnv | undefined;
 	runId: string;

@@ -20,7 +20,7 @@ export interface TaskDefinition {
 
 export interface TaskMessage {
 	taskId: string;
-	task_type: string;
+	task_type: TaskType;
 	user_id?: number;
 	task_data: Record<string, any>;
 	priority: number;

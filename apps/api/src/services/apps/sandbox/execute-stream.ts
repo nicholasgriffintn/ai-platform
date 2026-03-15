@@ -9,87 +9,29 @@ import { assertSandboxRunCanStart } from "./run-limits";
 import { buildSandboxTimeoutConfig } from "./config";
 import { type SandboxRunData } from "./run-data";
 import {
-	isTerminalSandboxEventType,
 	SANDBOX_SSE_HEADERS,
-	sleep,
-	toSseChunk,
-	toSseDoneChunk,
-	toSsePingChunk,
+	createCoordinatorEventSseStream,
 } from "./streaming";
 import {
 	appendRunCoordinatorEvent,
 	initRunCoordinatorControl,
 	listRunCoordinatorEvents,
+	openRunCoordinatorEventsSocket,
 	updateRunCoordinatorControl,
 } from "./run-coordinator";
 import {
 	buildSandboxRunDispatchMessage,
-	enqueueSandboxRunDispatch,
+	enqueueSandboxRunDispatchTask,
 } from "./dispatch";
 import { resolveSandboxModel } from "~/services/sandbox/worker";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/execute-stream" });
-
-const COORDINATOR_POLL_INTERVAL_MS = 900;
-const COORDINATOR_HEARTBEAT_INTERVAL_MS = 15000;
 
 interface ExecuteSandboxRunStreamParams {
 	env: IEnv;
 	context: ServiceContext;
 	user: IUser;
 	payload: ExecuteSandboxRunStreamPayload;
-}
-
-function createCoordinatorEventStream(params: {
-	env: IEnv;
-	runId: string;
-	signal?: AbortSignal;
-}): ReadableStream<Uint8Array> {
-	const { env, runId, signal } = params;
-
-	return new ReadableStream<Uint8Array>({
-		async start(controller) {
-			let after = 0;
-			let terminalSeen = false;
-			let lastHeartbeatAt = Date.now();
-
-			while (!terminalSeen && !signal?.aborted) {
-				let envelopes = await listRunCoordinatorEvents({
-					env,
-					runId,
-					after,
-				});
-
-				if (envelopes.length === 0) {
-					if (
-						Date.now() - lastHeartbeatAt >=
-						COORDINATOR_HEARTBEAT_INTERVAL_MS
-					) {
-						lastHeartbeatAt = Date.now();
-						controller.enqueue(toSsePingChunk());
-					}
-					await sleep(COORDINATOR_POLL_INTERVAL_MS);
-					continue;
-				}
-
-				for (const envelope of envelopes) {
-					after = Math.max(after, envelope.index);
-					controller.enqueue(toSseChunk(envelope.event));
-					if (isTerminalSandboxEventType(envelope.event.type)) {
-						terminalSeen = true;
-						break;
-					}
-				}
-				envelopes = [];
-			}
-
-			controller.enqueue(toSseDoneChunk());
-			controller.close();
-		},
-		cancel() {
-			// Run continues in background via queue; stream cancellation only detaches client.
-		},
-	});
 }
 
 export async function executeSandboxRunStream(
@@ -163,7 +105,7 @@ export async function executeSandboxRunStream(
 	});
 
 	try {
-		const dispatchMessage = await buildSandboxRunDispatchMessage({
+		const dispatchMessage = buildSandboxRunDispatchMessage({
 			recordId: createdRecord.id,
 			runId,
 			userId: user.id,
@@ -178,14 +120,25 @@ export async function executeSandboxRunStream(
 				trustLevel: payload.trustLevel ?? "balanced",
 			},
 		});
-		await enqueueSandboxRunDispatch({
-			env,
+		await enqueueSandboxRunDispatchTask({
+			context: serviceContext,
 			message: dispatchMessage,
+		});
+		const dispatchedAt = new Date().toISOString();
+		await appendRunCoordinatorEvent({
+			env,
+			runId,
+			event: {
+				type: "run_dispatched",
+				runId,
+				timestamp: dispatchedAt,
+				message: "Run dispatch enqueued via shared task system",
+			},
 		});
 		await serviceContext.repositories.appData.updateAppData(createdRecord.id, {
 			...runData,
-			queueDispatchedAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
+			queueDispatchedAt: dispatchedAt,
+			updatedAt: dispatchedAt,
 			workflowPhase: "dispatching",
 		});
 	} catch (error) {
@@ -238,9 +191,18 @@ export async function executeSandboxRunStream(
 		return Response.json({ error: errorMessage }, { status: 500 });
 	}
 
-	const stream = createCoordinatorEventStream({
-		env,
-		runId,
+	const stream = createCoordinatorEventSseStream({
+		openSocket: () =>
+			openRunCoordinatorEventsSocket({
+				env,
+				runId,
+			}),
+		listEvents: (after) =>
+			listRunCoordinatorEvents({
+				env,
+				runId,
+				after,
+			}),
 	});
 	return new Response(stream, {
 		headers: {

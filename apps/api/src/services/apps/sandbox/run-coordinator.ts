@@ -6,6 +6,7 @@ export {
 	initRunCoordinatorControl,
 	listRunCoordinatorEvents,
 	listRunCoordinatorApprovals,
+	openRunCoordinatorEventsSocket,
 	requestRunCoordinatorApproval,
 	resolveRunCoordinatorApproval,
 	updateRunCoordinatorControl,

@@ -1,3 +1,7 @@
+import {
+	SANDBOX_RUN_DISPATCH_TASK_TYPE,
+	type TaskType,
+} from "@assistant/schemas";
 import { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { TaskMessage } from "./TaskService";
@@ -8,6 +12,7 @@ import { ReplicatePollingHandler } from "./handlers/ReplicatePollingHandler";
 import { AsyncMessagePollingHandler } from "./handlers/AsyncMessagePollingHandler";
 import { TrainingQualityHandler } from "./handlers/TrainingQualityHandler";
 import { UsageUpdateHandler } from "./handlers/UsageUpdateHandler";
+import { SandboxRunDispatchHandler } from "./handlers/SandboxRunDispatchHandler";
 import { TaskExecutor } from "./TaskExecutor";
 
 const logger = getLogger({ prefix: "services/tasks/queue-executor" });
@@ -19,13 +24,14 @@ export class QueueExecutor {
 	): Promise<void> {
 		logger.info(`Processing batch of ${batch.messages.length} tasks`);
 
-		const handlers = new Map<string, TaskHandler>([
+		const handlers = new Map<TaskType, TaskHandler>([
 			["memory_synthesis", new MemorySynthesisHandler()],
 			["research_polling", new ResearchPollingHandler()],
 			["replicate_polling", new ReplicatePollingHandler()],
 			["async_message_polling", new AsyncMessagePollingHandler()],
 			["training_quality_scoring", new TrainingQualityHandler()],
 			["usage_update", new UsageUpdateHandler()],
+			[SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler()],
 		]);
 
 		const taskExecutor = new TaskExecutor(env, handlers);

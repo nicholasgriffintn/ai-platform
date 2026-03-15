@@ -26,18 +26,12 @@ import {
 	requestSandboxRunResume,
 } from "~/services/apps/sandbox/runs";
 import {
-	isTerminalSandboxEventType,
-	sleep,
-	toSseChunk,
-	toSseDoneChunk,
-	toSsePingChunk,
+	createCoordinatorEventSseStream,
 	SANDBOX_SSE_HEADERS,
 } from "~/services/apps/sandbox/streaming";
+import { openRunCoordinatorEventsSocket } from "~/services/apps/sandbox/run-coordinator";
 import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-
-const EVENTS_POLL_INTERVAL_MS = 900;
-const EVENTS_HEARTBEAT_INTERVAL_MS = 15000;
 
 export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 	app.get(
@@ -140,45 +134,21 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 			}
 
 			const context = getServiceContext(c);
-			const stream = new ReadableStream<Uint8Array>({
-				async start(controller) {
-					let after = query.after ?? 0;
-					let terminalSeen = false;
-					let lastHeartbeatAt = Date.now();
-
-					while (!terminalSeen && !c.req.raw.signal.aborted) {
-						const events = await listSandboxRunEventsForUser({
-							context,
-							userId: user.id,
-							runId,
-							after,
-						});
-
-						if (events.length === 0) {
-							if (
-								Date.now() - lastHeartbeatAt >=
-								EVENTS_HEARTBEAT_INTERVAL_MS
-							) {
-								lastHeartbeatAt = Date.now();
-								controller.enqueue(toSsePingChunk());
-							}
-							await sleep(EVENTS_POLL_INTERVAL_MS);
-							continue;
-						}
-
-						for (const envelope of events) {
-							after = Math.max(after, envelope.index);
-							controller.enqueue(toSseChunk(envelope.event));
-							if (isTerminalSandboxEventType(envelope.event.type)) {
-								terminalSeen = true;
-								break;
-							}
-						}
-					}
-
-					controller.enqueue(toSseDoneChunk());
-					controller.close();
-				},
+			const stream = createCoordinatorEventSseStream({
+				signal: c.req.raw.signal,
+				initialAfter: query.after ?? 0,
+				openSocket: () =>
+					openRunCoordinatorEventsSocket({
+						env: c.env,
+						runId,
+					}),
+				listEvents: (after) =>
+					listSandboxRunEventsForUser({
+						context,
+						userId: user.id,
+						runId,
+						after,
+					}),
 			});
 
 			return new Response(stream, {

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
 	listRunCoordinatorEvents,
+	openRunCoordinatorEventsSocket,
 	updateRunCoordinatorControl,
 } from "../run-coordinator/client";
 
@@ -85,5 +86,31 @@ describe("run coordinator client", () => {
 		});
 
 		expect(result).toBeNull();
+	});
+
+	it("opens and accepts coordinator websocket subscriptions", async () => {
+		const accept = vi.fn();
+		const fetchMock = vi.fn().mockResolvedValue({
+			webSocket: {
+				accept,
+			},
+		});
+		const env = createCoordinatorEnv(fetchMock);
+
+		const socket = await openRunCoordinatorEventsSocket({
+			env,
+			runId: "run-123",
+		});
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"https://sandbox-run-coordinator/events/ws",
+			expect.objectContaining({
+				headers: {
+					Upgrade: "websocket",
+				},
+			}),
+		);
+		expect(socket).not.toBeNull();
+		expect(accept).toHaveBeenCalledTimes(1);
 	});
 });

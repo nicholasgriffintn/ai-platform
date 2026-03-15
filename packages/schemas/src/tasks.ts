@@ -1,13 +1,18 @@
 import { z } from "zod";
 
-export const taskTypeSchema = z.enum([
+export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
+
+export const TASK_TYPES = [
 	"memory_synthesis",
 	"research_polling",
 	"replicate_polling",
 	"async_message_polling",
 	"training_quality_scoring",
 	"usage_update",
-]);
+	SANDBOX_RUN_DISPATCH_TASK_TYPE,
+] as const;
+
+export const taskTypeSchema = z.enum(TASK_TYPES);
 
 export const taskStatusSchema = z.enum([
 	"pending",

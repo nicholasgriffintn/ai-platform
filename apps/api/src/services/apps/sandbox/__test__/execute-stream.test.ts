@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "@assistant/schemas";
 
 import { SANDBOX_RUN_ITEM_TYPE, SANDBOX_RUNS_APP_ID } from "~/constants/app";
 import { resolveSandboxModel } from "~/services/sandbox/worker";
@@ -9,6 +10,8 @@ import {
 	listRunCoordinatorEvents,
 	updateRunCoordinatorControl,
 } from "../run-coordinator";
+
+const mockEnqueueTask = vi.fn();
 
 vi.mock("~/services/sandbox/worker", () => ({
 	resolveSandboxModel: vi.fn(),
@@ -22,7 +25,13 @@ vi.mock("../run-coordinator", () => ({
 	appendRunCoordinatorEvent: vi.fn(),
 	initRunCoordinatorControl: vi.fn(),
 	listRunCoordinatorEvents: vi.fn(),
+	openRunCoordinatorEventsSocket: vi.fn(async () => null),
 	updateRunCoordinatorControl: vi.fn(),
+}));
+vi.mock("~/services/tasks/TaskService", () => ({
+	TaskService: class {
+		public enqueueTask = mockEnqueueTask;
+	},
 }));
 
 const mockCreateAppDataWithItem = vi.fn();
@@ -30,6 +39,7 @@ const mockUpdateAppData = vi.fn();
 const mockGetAppDataByUserAndApp = vi.fn();
 
 const mockContext = {
+	env: {},
 	repositories: {
 		appData: {
 			createAppDataWithItem: mockCreateAppDataWithItem,
@@ -47,6 +57,8 @@ describe("executeSandboxRunStream", () => {
 		mockCreateAppDataWithItem.mockResolvedValue({ id: "record-1" });
 		mockUpdateAppData.mockResolvedValue(undefined);
 		mockGetAppDataByUserAndApp.mockResolvedValue([]);
+		mockEnqueueTask.mockResolvedValue("task-123");
+		mockContext.env = { TASK_QUEUE: { send: vi.fn() } };
 		vi.mocked(resolveSandboxModel).mockResolvedValue("mistral-large");
 		vi.mocked(listRunCoordinatorEvents).mockResolvedValue([
 			{
@@ -62,13 +74,8 @@ describe("executeSandboxRunStream", () => {
 	});
 
 	it("queues sandbox runs and returns a coordinator-backed stream", async () => {
-		const queueSend = vi.fn().mockResolvedValue(undefined);
 		const response = await executeSandboxRunStream({
-			env: {
-				TASK_QUEUE: {
-					send: queueSend,
-				},
-			} as any,
+			env: {} as any,
 			context: mockContext,
 			user: mockUser,
 			payload: {
@@ -80,7 +87,12 @@ describe("executeSandboxRunStream", () => {
 
 		expect(response.status).toBe(200);
 		expect(response.headers.get("x-sandbox-run-id")).toBe("run-123");
-		expect(queueSend).toHaveBeenCalledTimes(1);
+		expect(mockEnqueueTask).toHaveBeenCalledWith(
+			expect.objectContaining({
+				task_type: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+				user_id: 42,
+			}),
+		);
 		expect(mockCreateAppDataWithItem).toHaveBeenCalledWith(
 			42,
 			SANDBOX_RUNS_APP_ID,
@@ -111,6 +123,7 @@ describe("executeSandboxRunStream", () => {
 	});
 
 	it("marks runs as failed when dispatch cannot be queued", async () => {
+		mockContext.env = {};
 		const response = await executeSandboxRunStream({
 			env: {} as any,
 			context: mockContext,
@@ -167,13 +180,8 @@ describe("executeSandboxRunStream", () => {
 				},
 			]);
 
-		const queueSend = vi.fn().mockResolvedValue(undefined);
 		const response = await executeSandboxRunStream({
-			env: {
-				TASK_QUEUE: {
-					send: queueSend,
-				},
-			} as any,
+			env: {} as any,
 			context: mockContext,
 			user: mockUser,
 			payload: {

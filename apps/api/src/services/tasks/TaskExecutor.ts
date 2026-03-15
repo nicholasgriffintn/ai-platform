@@ -1,4 +1,5 @@
 import type { IEnv } from "~/types";
+import type { TaskType } from "@assistant/schemas";
 import type { TaskMessage } from "./TaskService";
 import type { TaskHandler, TaskResult } from "./TaskHandler";
 import { TaskRepository } from "~/repositories/TaskRepository";
@@ -10,13 +11,24 @@ import {
 } from "~/constants/schedules";
 
 const logger = getLogger({ prefix: "services/tasks/executor" });
+const ALWAYS_ENABLED_TASK_SET = new Set<TaskType>(ALWAYS_ENABLED_SCHEDULES);
+
+function isAlwaysEnabledTask(taskType: TaskType): boolean {
+	return ALWAYS_ENABLED_TASK_SET.has(taskType);
+}
+
+function hasFeatureFlag(
+	taskType: TaskType,
+): taskType is keyof typeof ENABLED_SCHEDULES_FLAGS {
+	return taskType in ENABLED_SCHEDULES_FLAGS;
+}
 
 export class TaskExecutor {
 	private env: IEnv;
-	private handlers: Map<string, TaskHandler>;
+	private handlers: Map<TaskType, TaskHandler>;
 	private taskRepository: TaskRepository;
 
-	constructor(env: IEnv, handlers: Map<string, TaskHandler>) {
+	constructor(env: IEnv, handlers: Map<TaskType, TaskHandler>) {
 		this.env = env;
 		this.handlers = handlers;
 		this.taskRepository = new TaskRepository(env);
@@ -26,7 +38,13 @@ export class TaskExecutor {
 		const startTime = Date.now();
 
 		try {
-			if (!ALWAYS_ENABLED_SCHEDULES.includes(message.task_type)) {
+			if (!isAlwaysEnabledTask(message.task_type)) {
+				if (!hasFeatureFlag(message.task_type)) {
+					logger.warn(
+						`Task type ${message.task_type} has no feature-flag configuration and is disabled`,
+					);
+					return;
+				}
 				const isEnabledEnvVar = ENABLED_SCHEDULES_FLAGS[message.task_type];
 				if (this.env[isEnabledEnvVar] !== "true") {
 					logger.info(

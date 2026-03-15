@@ -1,6 +1,8 @@
 import {
+	SANDBOX_RUN_DISPATCH_TASK_TYPE,
+	sandboxRunDispatchMessageSchema,
 	sandboxRunEventSchema,
-	type ExecuteSandboxRunPayload,
+	type SandboxRunDispatchMessage,
 	type SandboxRunData,
 	type SandboxRunEvent,
 	type SandboxRunStatus,
@@ -11,12 +13,16 @@ import {
 	SANDBOX_RUN_ITEM_TYPE,
 	SANDBOX_RUNS_APP_ID,
 } from "~/constants/app";
-import { createServiceContext } from "~/lib/context/serviceContext";
+import {
+	createServiceContext,
+	type ServiceContext,
+} from "~/lib/context/serviceContext";
 import { executeSandboxWorker } from "~/services/sandbox/worker";
 import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 import { parseSseBuffer } from "~/utils/streaming";
+import { TaskService } from "~/services/tasks/TaskService";
 import {
 	appendSandboxRunEvent,
 	parseSandboxRunData,
@@ -30,28 +36,6 @@ import {
 import { indexSandboxRunResult } from "./run-indexing";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/dispatch" });
-
-const RUN_DISPATCH_KIND = "sandbox_run_dispatch" as const;
-
-type RunDispatchPayload = Pick<
-	ExecuteSandboxRunPayload,
-	| "installationId"
-	| "repo"
-	| "task"
-	| "model"
-	| "promptStrategy"
-	| "shouldCommit"
-	| "timeoutSeconds"
-	| "trustLevel"
->;
-
-export interface SandboxRunDispatchMessage {
-	kind: typeof RUN_DISPATCH_KIND;
-	runId: string;
-	recordId: string;
-	userId: number;
-	payload: RunDispatchPayload;
-}
 
 function isTerminalStatus(status: SandboxRunStatus): boolean {
 	return (
@@ -77,31 +61,31 @@ function toCoordinatorState(
 export function isSandboxRunDispatchMessage(
 	message: unknown,
 ): message is SandboxRunDispatchMessage {
-	if (!message || typeof message !== "object") {
-		return false;
-	}
-	const value = message as Record<string, unknown>;
-	return (
-		value.kind === RUN_DISPATCH_KIND &&
-		typeof value.runId === "string" &&
-		typeof value.recordId === "string" &&
-		typeof value.userId === "number" &&
-		value.payload !== null &&
-		typeof value.payload === "object"
-	);
+	return sandboxRunDispatchMessageSchema.safeParse(message).success;
 }
 
-export async function enqueueSandboxRunDispatch(params: {
-	env: IEnv;
+export async function enqueueSandboxRunDispatchTask(params: {
+	context: ServiceContext;
 	message: SandboxRunDispatchMessage;
-}): Promise<void> {
-	const { env, message } = params;
-	if (!env.TASK_QUEUE) {
+}): Promise<string> {
+	const { context, message } = params;
+	if (!context.env.TASK_QUEUE) {
 		throw new Error(
 			"TASK_QUEUE binding is not configured for sandbox run dispatch",
 		);
 	}
-	await env.TASK_QUEUE.send(message);
+	const taskService = new TaskService(context.env, context.repositories.tasks);
+	return taskService.enqueueTask({
+		task_type: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+		user_id: message.userId,
+		task_data: message,
+		priority: 8,
+		metadata: {
+			runId: message.runId,
+			recordId: message.recordId,
+			repo: message.payload.repo,
+		},
+	});
 }
 
 async function loadRunData(params: {
@@ -473,14 +457,14 @@ export async function processSandboxRunDispatch(params: {
 	});
 }
 
-export async function buildSandboxRunDispatchMessage(params: {
+export function buildSandboxRunDispatchMessage(params: {
 	recordId: string;
 	runId: string;
 	userId: number;
-	payload: RunDispatchPayload;
-}): Promise<SandboxRunDispatchMessage> {
+	payload: SandboxRunDispatchMessage["payload"];
+}): SandboxRunDispatchMessage {
 	return {
-		kind: RUN_DISPATCH_KIND,
+		kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
 		recordId: params.recordId,
 		runId: params.runId,
 		userId: params.userId,

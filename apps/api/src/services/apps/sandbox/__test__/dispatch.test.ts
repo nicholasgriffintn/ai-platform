@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "@assistant/schemas";
 
 import {
-	enqueueSandboxRunDispatch,
+	enqueueSandboxRunDispatchTask,
 	isSandboxRunDispatchMessage,
 	processSandboxRunDispatch,
 } from "../dispatch";
@@ -13,6 +14,8 @@ import {
 } from "../run-coordinator";
 import { persistSandboxRunArtifact } from "../run-artifacts";
 import { indexSandboxRunResult } from "../run-indexing";
+
+const mockEnqueueTask = vi.fn();
 
 vi.mock("~/lib/context/serviceContext", () => ({
 	createServiceContext: vi.fn(),
@@ -30,6 +33,11 @@ vi.mock("../run-artifacts", () => ({
 vi.mock("../run-indexing", () => ({
 	indexSandboxRunResult: vi.fn(async () => undefined),
 }));
+vi.mock("~/services/tasks/TaskService", () => ({
+	TaskService: class {
+		public enqueueTask = mockEnqueueTask;
+	},
+}));
 
 const mockGetUserById = vi.fn();
 const mockGetAppDataById = vi.fn();
@@ -45,6 +53,7 @@ const mockServiceContext = {
 			getAppDataById: mockGetAppDataById,
 			updateAppData: mockUpdateAppData,
 		},
+		tasks: {},
 	},
 } as any;
 
@@ -75,6 +84,7 @@ describe("sandbox dispatch", () => {
 		mockGetAppDataById.mockResolvedValue({
 			data: JSON.stringify(baseRunRecord),
 		});
+		mockEnqueueTask.mockResolvedValue("task-123");
 		mockUpdateAppData.mockResolvedValue(undefined);
 		vi.mocked(executeSandboxWorker).mockResolvedValue(
 			Response.json({
@@ -87,7 +97,7 @@ describe("sandbox dispatch", () => {
 	it("validates sandbox dispatch message shape", () => {
 		expect(
 			isSandboxRunDispatchMessage({
-				kind: "sandbox_run_dispatch",
+				kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
 				runId: "run-1",
 				recordId: "record-1",
 				userId: 1,
@@ -107,12 +117,18 @@ describe("sandbox dispatch", () => {
 		).toBe(false);
 	});
 
-	it("enqueues dispatch message via TASK_QUEUE", async () => {
-		const send = vi.fn().mockResolvedValue(undefined);
-		await enqueueSandboxRunDispatch({
-			env: { TASK_QUEUE: { send } } as any,
+	it("enqueues dispatch message via shared task service", async () => {
+		const taskId = await enqueueSandboxRunDispatchTask({
+			context: {
+				env: {
+					TASK_QUEUE: { send: vi.fn() },
+				},
+				repositories: {
+					tasks: {},
+				},
+			} as any,
 			message: {
-				kind: "sandbox_run_dispatch",
+				kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
 				runId: "run-1",
 				recordId: "record-1",
 				userId: 1,
@@ -124,14 +140,51 @@ describe("sandbox dispatch", () => {
 				},
 			},
 		});
-		expect(send).toHaveBeenCalledTimes(1);
+		expect(taskId).toBe("task-123");
+		expect(mockEnqueueTask).toHaveBeenCalledWith(
+			expect.objectContaining({
+				task_type: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+				user_id: 1,
+				task_data: expect.objectContaining({
+					kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+					runId: "run-1",
+				}),
+			}),
+		);
+	});
+
+	it("rejects dispatch enqueue when TASK_QUEUE is unavailable", async () => {
+		await expect(
+			enqueueSandboxRunDispatchTask({
+				context: {
+					env: {},
+					repositories: {
+						tasks: {},
+					},
+				} as any,
+				message: {
+					kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+					runId: "run-1",
+					recordId: "record-1",
+					userId: 1,
+					payload: {
+						installationId: 1,
+						repo: "owner/repo",
+						task: "Task",
+						shouldCommit: false,
+					},
+				},
+			}),
+		).rejects.toThrow(
+			"TASK_QUEUE binding is not configured for sandbox run dispatch",
+		);
 	});
 
 	it("processes queued runs and persists completed state", async () => {
 		await processSandboxRunDispatch({
 			env: {} as any,
 			message: {
-				kind: "sandbox_run_dispatch",
+				kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
 				runId: "run-123",
 				recordId: "record-1",
 				userId: 42,
@@ -184,7 +237,7 @@ describe("sandbox dispatch", () => {
 		await processSandboxRunDispatch({
 			env: {} as any,
 			message: {
-				kind: "sandbox_run_dispatch",
+				kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
 				runId: "run-123",
 				recordId: "record-1",
 				userId: 42,

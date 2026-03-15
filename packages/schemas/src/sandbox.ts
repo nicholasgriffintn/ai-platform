@@ -1,4 +1,5 @@
 import z from "zod/v4";
+import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "./tasks";
 
 export const SANDBOX_PROMPT_STRATEGIES = [
 	"auto",
@@ -57,6 +58,25 @@ export const executeSandboxRunSchema = z.object({
 		.max(SANDBOX_TIMEOUT_MAX_SECONDS)
 		.optional(),
 	trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
+});
+
+export const sandboxRunDispatchPayloadSchema = z.object({
+	installationId: z.number().int().positive(),
+	repo: sandboxRepoSchema,
+	task: z.string().trim().min(1),
+	model: z.string().trim().min(1).optional(),
+	promptStrategy: z.enum(SANDBOX_PROMPT_STRATEGIES).optional(),
+	shouldCommit: z.boolean(),
+	timeoutSeconds: z.number().int().positive().optional(),
+	trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
+});
+
+export const sandboxRunDispatchMessageSchema = z.object({
+	kind: z.literal(SANDBOX_RUN_DISPATCH_TASK_TYPE),
+	runId: z.string().trim().min(1),
+	recordId: z.string().trim().min(1),
+	userId: z.number().int().positive(),
+	payload: sandboxRunDispatchPayloadSchema,
 });
 
 export const autoConnectSchema = z.object({
@@ -321,6 +341,12 @@ export const sandboxWorkerExecuteRequestSchema = z.object({
 
 export type GitHubConnectionPayload = z.infer<typeof githubConnectionSchema>;
 export type ExecuteSandboxRunPayload = z.infer<typeof executeSandboxRunSchema>;
+export type SandboxRunDispatchPayload = z.infer<
+	typeof sandboxRunDispatchPayloadSchema
+>;
+export type SandboxRunDispatchMessage = z.infer<
+	typeof sandboxRunDispatchMessageSchema
+>;
 export type AutoConnectPayload = z.infer<typeof autoConnectSchema>;
 export type ListRunsQueryPayload = z.infer<typeof listRunsQuerySchema>;
 export type ListRunEventsQueryPayload = z.infer<
