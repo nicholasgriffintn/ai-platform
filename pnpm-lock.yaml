@@ -193,8 +193,8 @@ importers:
         specifier: 1.2.5
         version: 1.2.5
       '@strudel/transpiler':
-        specifier: 1.2.5
-        version: 1.2.5
+        specifier: 1.2.6
+        version: 1.2.6
       '@strudel/webaudio':
         specifier: 1.2.5
         version: 1.2.5
@@ -1949,6 +1949,15 @@ packages:
   '@jsdevtools/ono@7.1.3':
     resolution: {integrity: sha512-4JQNk+3mVzK3xh2rqd6RB4J46qUR19azEHBneZyTZM+c456qOrbbM/5xcR8huNCCcbVt7+UmizG6GuUvPvKUYg==}
 
+  '@kabelsalat/core@0.4.0':
+    resolution: {integrity: sha512-5zV8nh8HffW8aexObXs5pE0xgL0jb1cHc3o8UN6AvK0mBt87fjZvW65E4rMslHyq+OuCscoBJW7B3MbYfWrwMQ==}
+
+  '@kabelsalat/lib@0.4.1':
+    resolution: {integrity: sha512-gBCjrZKD9huTKNJuBC6BXM4PMQSg8otL8A/vp8j98P9v6yWTX1TuyaqdLg/1PrIAMV4hlWoav9ZD3YMFlrvouw==}
+
+  '@kabelsalat/web@0.4.1':
+    resolution: {integrity: sha512-ASkFhePJLx3GjadYOueI7sHKXBbRPk/a1pfslFeQNI9gU7yZq/KrnkmOmLrgrtixAsy7gyi1vWqkmRRvH3Ki6w==}
+
   '@levischuck/tiny-cbor@0.2.11':
     resolution: {integrity: sha512-llBRm4dT4Z89aRsm6u2oEZ8tfwL/2l6BwpZ7JcyieouniDECM5AqNgr/y08zalEIvW3RSK4upYyybDcmjXqAow==}
 
@@ -3509,6 +3518,10 @@ packages:
   '@strudel/core@1.2.5':
     resolution: {integrity: sha512-XO6ICbfuGfvaQ4sZmfIFsPDcjFez/+AVpNgJnmks5gtMMQNXpr0reuee61tvMiu2k5QYKzxWgzDl2FF9pJeIgA==}
 
+  '@strudel/core@1.2.6':
+    resolution: {integrity: sha512-FA5Kxv3U+UhNRLIeuEpXck2o2J5AjHZbkAdSAK9Q2N3Az1G9Vnc+bXXfgDFyY3yRH9mXXQvTerz8jr876pGGng==}
+    engines: {node: '>=18.0.0'}
+
   '@strudel/draw@1.2.4':
     resolution: {integrity: sha512-9ui5+ZQQB+EEgwJQueGVMgpnPSHnFgRgivlAZbdjEoMdSm5vULWvKK3Psml8WKtOBNiuL+5Bci7a0INRTRusOA==}
 
@@ -3527,6 +3540,10 @@ packages:
   '@strudel/mini@1.2.5':
     resolution: {integrity: sha512-GmTWSBt49C3ogBy0hjM3bmf6K12PaJ1JJLsEvQu7j5J+lUd2n7GmLYR1UL6fntY4yVqT8ZwMhfUf6vIgUCTNbw==}
 
+  '@strudel/mini@1.2.6':
+    resolution: {integrity: sha512-I5GFPLHI3TPcJuD2RdDcurA+lTogaSQ0TB+EimKTgEtSAbU6ZMEkSUOXZIFO5eaAcJcMucgKaBcmTKpD4oZjPA==}
+    engines: {node: '>=18.0.0'}
+
   '@strudel/soundfonts@1.2.5':
     resolution: {integrity: sha512-/4wZYwCxKPziGhmiLswPHjI73L60A4j6IF9L4BDojkRwLUaCfqiFIL2dOUvknBWPI7VEAxrRVTB/3ZVZ2wn8fg==}
 
@@ -3536,8 +3553,9 @@ packages:
   '@strudel/transpiler@1.2.4':
     resolution: {integrity: sha512-VC5MF6vpSVfQRAN713Q3vBVRiYGEOzAT/XEkVca/4ycK9LTSN37f7neHb8VFZZs3zE/7KJhf52tvQCRyWg8DAg==}
 
-  '@strudel/transpiler@1.2.5':
-    resolution: {integrity: sha512-mBZWfQBzknvnIYsjjzR8D67A+uIZ1iZ60U2WoXT21q5luXKz2c95RcTpqdx3oOGpLK9K00lDzcKjhQDJtj4OKw==}
+  '@strudel/transpiler@1.2.6':
+    resolution: {integrity: sha512-NzmyQDS4BqjafOPzHGFowxILDx3ZRAPD47YszxNaPB7PggMA2rMo9t3rLz80G0GxA0ZAyMbVMR3px9jDWnJ5hg==}
+    engines: {node: '>=18.0.0'}
 
   '@strudel/webaudio@1.2.5':
     resolution: {integrity: sha512-ilcyBsuwkH6Ghz0egaqIJ5DZi0xFBZwVWvZb0vnfU7kVESroD2j6yptyFMysJFZhQ5pfRiZs2ZeF6yTsviUjng==}
@@ -8158,6 +8176,17 @@ snapshots:
 
   '@jsdevtools/ono@7.1.3': {}
 
+  '@kabelsalat/core@0.4.0': {}
+
+  '@kabelsalat/lib@0.4.1':
+    dependencies:
+      '@kabelsalat/core': 0.4.0
+
+  '@kabelsalat/web@0.4.1':
+    dependencies:
+      '@kabelsalat/core': 0.4.0
+      '@kabelsalat/lib': 0.4.1
+
   '@levischuck/tiny-cbor@0.2.11': {}
 
   '@lezer/common@1.5.1': {}
@@ -9741,6 +9770,11 @@ snapshots:
     dependencies:
       fraction.js: 5.3.4
 
+  '@strudel/core@1.2.6':
+    dependencies:
+      '@kabelsalat/web': 0.4.1
+      fraction.js: 5.3.4
+
   '@strudel/draw@1.2.4':
     dependencies:
       '@strudel/core': 1.2.4
@@ -9772,6 +9806,10 @@ snapshots:
     dependencies:
       '@strudel/core': 1.2.5
 
+  '@strudel/mini@1.2.6':
+    dependencies:
+      '@strudel/core': 1.2.6
+
   '@strudel/soundfonts@1.2.5':
     dependencies:
       '@strudel/core': 1.2.4
@@ -9794,10 +9832,10 @@ snapshots:
       escodegen: 2.1.0
       estree-walker: 3.0.3
 
-  '@strudel/transpiler@1.2.5':
+  '@strudel/transpiler@1.2.6':
     dependencies:
-      '@strudel/core': 1.2.5
-      '@strudel/mini': 1.2.5
+      '@strudel/core': 1.2.6
+      '@strudel/mini': 1.2.6
       acorn: 8.15.0
       escodegen: 2.1.0
       estree-walker: 3.0.3
