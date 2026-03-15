@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { ChatCompletionRequestBody } from "@assistant/schemas";
 import { createAgentCompletion } from "../createAgentCompletion";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
-import type { ChatCompletionParameters, IEnv } from "~/types";
+import type { IEnv } from "~/types";
 
 vi.mock("~/lib/providers/models", () => ({
 	getModelConfig: vi.fn(async () => ({ provider: "openai" })),
@@ -49,7 +50,7 @@ describe("createAgentCompletion", () => {
 			messages: [{ role: "user", content: "hi" }],
 			model: "gpt-4",
 			enabled_tools: ["create_image"],
-		} as ChatCompletionParameters;
+		} as ChatCompletionRequestBody;
 
 		await createAgentCompletion({
 			env: {} as IEnv,
@@ -97,7 +98,7 @@ describe("createAgentCompletion", () => {
 			messages: [{ role: "user", content: "hi" }],
 			model: "gpt-4",
 			enabled_tools: ["create_image"],
-		} as ChatCompletionParameters;
+		} as ChatCompletionRequestBody;
 
 		await createAgentCompletion({
 			env: {} as IEnv,

@@ -410,7 +410,7 @@ export interface AssistantMessageData {
 	annotations?: unknown;
 }
 
-export type CoreChatOptions = ChatCompletionParameters & {
+export type CoreChatOptions = AIResponseParamsBase & {
 	use_multi_model?: boolean;
 	anonymousUser?: any;
 	current_step?: number;

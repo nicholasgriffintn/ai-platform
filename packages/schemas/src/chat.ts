@@ -385,6 +385,10 @@ export const createChatCompletionsJsonSchema = z.object({
 		}),
 });
 
+export type ChatCompletionRequestBody = z.infer<
+	typeof createChatCompletionsJsonSchema
+>;
+
 export const getChatCompletionParamsSchema = z.object({
 	completion_id: z.string().meta({
 		description: "The ID of the chat completion to retrieve.",

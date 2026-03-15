@@ -2,6 +2,7 @@ import type { ExecutionContext } from "@cloudflare/workers-types";
 import { processChatRequest } from "~/lib/chat/core";
 import { buildMessageParts } from "~/lib/chat/messageParts";
 import { formatAssistantMessage } from "~/lib/chat/responses";
+import { sseResponse } from "~/lib/http/streaming";
 import type {
 	AnonymousUser,
 	ChatCompletionParameters,
@@ -20,7 +21,7 @@ const logger = getLogger({
 
 export const handleCreateChatCompletions = async (req: {
 	env: IEnv;
-	request: ChatCompletionParameters;
+	request: Omit<ChatCompletionParameters, "env">;
 	user?: IUser;
 	anonymousUser?: AnonymousUser;
 	app_url?: string;
@@ -42,51 +43,14 @@ export const handleCreateChatCompletions = async (req: {
 		request.completion_id || `chat_${Date.now()}`;
 
 	const result = await processChatRequest({
-		platform: request.platform,
+		...request,
 		app_url,
-		system_prompt: request.system_prompt,
 		env,
 		user,
 		anonymousUser,
-		disable_functions: request.disable_functions,
 		completion_id: completionIdWithFallback,
-		messages: request.messages,
-		model: request.model,
-		mode: request.mode,
-		should_think: request.should_think,
-		response_format: request.response_format,
-		use_rag: request.use_rag,
-		rag_options: request.rag_options,
-		budget_constraint: request.budget_constraint,
-		location: request.location || undefined,
-		lang: request.lang,
-		temperature: request.temperature,
-		max_tokens: request.max_tokens,
-		top_p: request.top_p,
-		top_k: request.top_k,
-		seed: request.seed,
-		repetition_penalty: request.repetition_penalty,
-		frequency_penalty: request.frequency_penalty,
-		presence_penalty: request.presence_penalty,
-		n: request.n,
 		stream: isStreaming,
-		stop: request.stop,
-		logit_bias: request.logit_bias,
-		metadata: request.metadata,
-		reasoning_effort: request.reasoning_effort,
-		store: request.store,
-		verbosity: request.verbosity,
-		tools: request.tools,
-		enabled_tools: request.enabled_tools,
-		approved_tools: request.approved_tools,
-		parallel_tool_calls: request.parallel_tool_calls,
-		tool_choice: request.tool_choice,
-		use_multi_model: request.use_multi_model,
-		current_step: request.current_step,
-		max_steps: request.max_steps,
-		current_agent_id: request.current_agent_id,
-		delegation_stack: request.delegation_stack,
-		max_delegation_depth: request.max_delegation_depth,
+		location: request.location || undefined,
 		options: request.options || {},
 		context,
 		executionCtx,
@@ -128,13 +92,7 @@ export const handleCreateChatCompletions = async (req: {
 	}
 
 	if (isStreaming && "stream" in result) {
-		return new Response(result.stream, {
-			headers: {
-				"Content-Type": "text/event-stream",
-				"Cache-Control": "no-cache",
-				Connection: "keep-alive",
-			},
-		});
+		return sseResponse(result.stream);
 	}
 
 	if (!("response" in result)) {

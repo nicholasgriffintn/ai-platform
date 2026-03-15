@@ -1,6 +1,5 @@
-import { type Context, Hono } from "hono";
-import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
-import type z from "zod/v4";
+import { Hono } from "hono";
+import z from "zod/v4";
 import {
 	createAgentSchema,
 	updateAgentSchema,
@@ -8,12 +7,10 @@ import {
 	apiResponseSchema,
 } from "@assistant/schemas";
 
-import { getServiceContext } from "~/lib/context/serviceContext";
-import { requireAuth } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import { requireAuthenticatedUser } from "~/lib/http/auth";
+import { addRoute } from "~/lib/http/routeBuilder";
 import {
 	getUserAgents,
 	getUserTeamAgents,
@@ -25,7 +22,7 @@ import {
 	getAgentServers,
 	createAgentCompletion,
 } from "~/services/agents";
-import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
+import type { IEnv } from "~/types";
 import sharedAgents from "./shared";
 
 const app = new Hono<{ Bindings: IEnv }>();
@@ -36,60 +33,29 @@ app.use("/*", async (ctx, next) => {
 	return next();
 });
 
-app.get(
-	"/",
-	describeRoute({
-		tags: ["agents"],
-		summary: "Get all agents",
-		description: "Get all agents for the current user",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (ctx: Context) => {
-		requireAuthenticatedUser(ctx);
+const agentIdParamSchema = z.object({ agentId: z.string().min(1) });
+const teamIdParamSchema = z.object({ teamId: z.string().min(1) });
 
-		const serviceContext = getServiceContext(ctx);
-		const agents = await getUserAgents(serviceContext);
-
-		return ResponseFactory.success(ctx, agents);
+addRoute(app, "get", "/", {
+	tags: ["agents"],
+	summary: "Get all agents",
+	description: "Get all agents for the current user",
+	auth: true,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext }) => {
+		return getUserAgents(serviceContext);
 	},
-);
+});
 
-app.post(
-	"/",
-	requireAuth,
-	describeRoute({
-		tags: ["agents"],
-		summary: "Create an agent",
-		description: "Create an agent for the current user",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator("json", createAgentSchema),
-	async (ctx: Context) => {
-		const body = ctx.req.valid("json" as never) as z.infer<
-			typeof createAgentSchema
-		>;
-		requireAuthenticatedUser(ctx);
-
-		const serviceContext = getServiceContext(ctx);
-		const agent = await createAgent(serviceContext, {
+addRoute(app, "post", "/", {
+	tags: ["agents"],
+	summary: "Create an agent",
+	description: "Create an agent for the current user",
+	auth: true,
+	bodySchema: createAgentSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, body }) => {
+		return createAgent(serviceContext, {
 			name: body.name,
 			description: body.description ?? "",
 			avatar_url: body.avatar_url ?? null,
@@ -104,238 +70,110 @@ app.post(
 			team_role: body.team_role,
 			is_team_agent: body.is_team_agent,
 		});
-
-		return ResponseFactory.success(ctx, agent);
 	},
-);
+});
 
-app.get(
-	"/teams",
-	requireAuth,
-	describeRoute({
-		tags: ["agents"],
-		summary: "Get team agents",
-		description: "Get all team agents for the current user",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (ctx: Context) => {
-		requireAuthenticatedUser(ctx);
-
-		const serviceContext = getServiceContext(ctx);
-		const agents = await getUserTeamAgents(serviceContext);
-
-		return ResponseFactory.success(ctx, agents);
+addRoute(app, "get", "/teams", {
+	tags: ["agents"],
+	summary: "Get team agents",
+	description: "Get all team agents for the current user",
+	auth: true,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext }) => {
+		return getUserTeamAgents(serviceContext);
 	},
-);
+});
 
-app.get(
-	"/teams/:teamId",
-	requireAuth,
-	describeRoute({
-		tags: ["agents"],
-		summary: "Get agents by team ID",
-		description:
-			"Get all agents belonging to a specific team for the current user",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (ctx: Context) => {
-		const { teamId } = ctx.req.param();
-		requireAuthenticatedUser(ctx);
-
-		const serviceContext = getServiceContext(ctx);
-		const agents = await getAgentsByTeam(serviceContext, teamId);
-
-		return ResponseFactory.success(ctx, agents);
+addRoute(app, "get", "/teams/:teamId", {
+	tags: ["agents"],
+	summary: "Get agents by team ID",
+	description:
+		"Get all agents belonging to a specific team for the current user",
+	auth: true,
+	paramSchema: teamIdParamSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params }) => {
+		return getAgentsByTeam(serviceContext, params.teamId);
 	},
-);
+});
 
 app.route("/shared", sharedAgents);
 
-app.get(
-	"/:agentId",
-	requireAuth,
-	describeRoute({
-		tags: ["agents"],
-		summary: "Get an agent by ID",
-		description: "Get an agent by ID",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (ctx: Context) => {
-		const { agentId } = ctx.req.param();
-		requireAuthenticatedUser(ctx);
-
-		const serviceContext = getServiceContext(ctx);
-		const agent = await getAgentById(serviceContext, agentId);
-
-		return ResponseFactory.success(ctx, agent);
+addRoute(app, "get", "/:agentId", {
+	tags: ["agents"],
+	summary: "Get an agent by ID",
+	auth: true,
+	paramSchema: agentIdParamSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params }) => {
+		return getAgentById(serviceContext, params.agentId);
 	},
-);
+});
 
-app.get(
-	"/:agentId/servers",
-	requireAuth,
-	describeRoute({
-		tags: ["agents"],
-		summary: "Get servers for an agent",
-		description: "Get servers for an agent",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (ctx: Context) => {
-		const { agentId } = ctx.req.param();
-		requireAuthenticatedUser(ctx);
-
-		const serviceContext = getServiceContext(ctx);
-		const serverDetails = await getAgentServers(serviceContext, agentId);
-
-		return ResponseFactory.success(ctx, serverDetails);
+addRoute(app, "get", "/:agentId/servers", {
+	tags: ["agents"],
+	summary: "Get servers for an agent",
+	auth: true,
+	paramSchema: agentIdParamSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params }) => {
+		return getAgentServers(serviceContext, params.agentId);
 	},
-);
+});
 
-app.put(
-	"/:agentId",
-	requireAuth,
-	describeRoute({
-		tags: ["agents"],
-		summary: "Update an agent",
-		description: "Update an agent",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator("json", updateAgentSchema),
-	async (ctx: Context) => {
-		const { agentId } = ctx.req.param();
-		const body = ctx.req.valid("json" as never) as z.infer<
-			typeof updateAgentSchema
-		>;
-		requireAuthenticatedUser(ctx);
-
-		const serviceContext = getServiceContext(ctx);
-		const agent = await updateAgent(serviceContext, agentId, body);
-
-		return ResponseFactory.success(ctx, agent);
+addRoute(app, "put", "/:agentId", {
+	tags: ["agents"],
+	summary: "Update an agent",
+	auth: true,
+	paramSchema: agentIdParamSchema,
+	bodySchema: updateAgentSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params, body }) => {
+		return updateAgent(serviceContext, params.agentId, body);
 	},
-);
+});
 
-app.delete(
-	"/:agentId",
-	requireAuth,
-	describeRoute({
-		tags: ["agents"],
-		summary: "Delete an agent",
-		description: "Delete an agent",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (ctx: Context) => {
-		const { agentId } = ctx.req.param();
-		requireAuthenticatedUser(ctx);
-
-		const serviceContext = getServiceContext(ctx);
-		await deleteAgent(serviceContext, agentId);
-
-		return ResponseFactory.success(ctx, {
-			message: "Agent deleted successfully",
-		});
+addRoute(app, "delete", "/:agentId", {
+	tags: ["agents"],
+	summary: "Delete an agent",
+	auth: true,
+	paramSchema: agentIdParamSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params }) => {
+		await deleteAgent(serviceContext, params.agentId);
+		return { message: "Agent deleted successfully" };
 	},
-);
+});
 
-app.post(
-	"/:agentId/completions",
-	validateCaptcha,
-	describeRoute({
-		tags: ["agents"],
-		summary: "Create a completion for an agent",
-		description: "Create a completion for an agent",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator("json", createChatCompletionsJsonSchema),
-	async (ctx: Context) => {
-		const { agentId } = ctx.req.param();
-		const user = ctx.get("user");
-		const anonymousUser = ctx.get("anonymousUser");
-
+addRoute(app, "post", "/:agentId/completions", {
+	tags: ["agents"],
+	summary: "Create agent completion",
+	description: "Run a chat completion against a specific agent",
+	paramSchema: agentIdParamSchema,
+	bodySchema: createChatCompletionsJsonSchema,
+	middleware: [validateCaptcha],
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({
+		serviceContext,
+		raw,
+		params,
+		body,
+		user,
+		anonymousUser,
+	}) => {
 		if (!user && !anonymousUser) {
-			return ResponseFactory.error(ctx, "Unauthorized", 401);
+			return ResponseFactory.error(raw, "Unauthorized", 401);
 		}
 
-		const body = ctx.req.valid("json" as never) as ChatCompletionParameters;
-
-		const serviceContext = getServiceContext(ctx);
-
-		const response = await createAgentCompletion({
-			env: ctx.env,
+		return createAgentCompletion({
+			env: raw.env,
 			context: serviceContext,
 			body,
-			agentId,
+			agentId: params.agentId,
 			user,
 			anonymousUser,
 		});
-
-		return response instanceof Response
-			? response
-			: ResponseFactory.success(ctx, response);
 	},
-);
+});
 
 export default app;

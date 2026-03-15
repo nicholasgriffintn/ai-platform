@@ -31,20 +31,27 @@ import {
 	delegateToTeamMemberByRole,
 	getTeamMembers,
 } from "~/services/functions/teamDelegation";
-import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
+import type { ApiToolDefinition } from "~/services/functions/types";
+import type { ChatCompletionRequestBody } from "@assistant/schemas";
+import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { safeParseJson } from "../../utils/json";
-import z from "zod/v4";
 
 const logger = getLogger({ prefix: "services/agents/completions" });
 
-export interface AgentCompletionParams {
-	body: ChatCompletionParameters;
-	agentId: string;
-	user: IUser | undefined;
-	anonymousUser: any;
-}
+const CORE_AGENT_TOOLS: ApiToolDefinition[] = [
+	add_reasoning_step,
+	compose_functions,
+	if_then_else,
+	parallel_execute,
+	request_approval,
+	ask_user,
+	retry_with_backoff,
+	fallback,
+	search_functions,
+	get_function_schema,
+];
 
 export async function createAgentCompletion({
 	env,
@@ -56,7 +63,7 @@ export async function createAgentCompletion({
 }: {
 	env: IEnv;
 	context?: ServiceContext;
-	body: ChatCompletionParameters;
+	body: ChatCompletionRequestBody;
 	agentId: string;
 	user: IUser | undefined;
 	anonymousUser: any;
@@ -77,62 +84,9 @@ export async function createAgentCompletion({
 	const teamDelegationTools = setupTeamDelegationTools(agent);
 
 	const functionSchemas = [
-		{
-			name: add_reasoning_step.name,
-			description: add_reasoning_step.description,
-			parameters: z.toJSONSchema(add_reasoning_step.inputSchema),
-		},
-		{
-			name: compose_functions.name,
-			description: compose_functions.description,
-			parameters: z.toJSONSchema(compose_functions.inputSchema),
-		},
-		{
-			name: if_then_else.name,
-			description: if_then_else.description,
-			parameters: z.toJSONSchema(if_then_else.inputSchema),
-		},
-		{
-			name: parallel_execute.name,
-			description: parallel_execute.description,
-			parameters: z.toJSONSchema(parallel_execute.inputSchema),
-		},
-		{
-			name: request_approval.name,
-			description: request_approval.description,
-			parameters: z.toJSONSchema(request_approval.inputSchema),
-		},
-		{
-			name: ask_user.name,
-			description: ask_user.description,
-			parameters: z.toJSONSchema(ask_user.inputSchema),
-		},
-		{
-			name: retry_with_backoff.name,
-			description: retry_with_backoff.description,
-			parameters: z.toJSONSchema(retry_with_backoff.inputSchema),
-		},
-		{
-			name: fallback.name,
-			description: fallback.description,
-			parameters: z.toJSONSchema(fallback.inputSchema),
-		},
-		{
-			name: search_functions.name,
-			description: search_functions.description,
-			parameters: z.toJSONSchema(search_functions.inputSchema),
-		},
-		{
-			name: get_function_schema.name,
-			description: get_function_schema.description,
-			parameters: z.toJSONSchema(get_function_schema.inputSchema),
-		},
+		...CORE_AGENT_TOOLS,
 		...teamDelegationTools,
-		...mcpFunctions.map((fn) => ({
-			name: fn.name,
-			description: fn.description,
-			parameters: fn.parameters,
-		})),
+		...mcpFunctions,
 	];
 
 	const modelToUse = agent.model || body.model;
@@ -176,18 +130,38 @@ export async function createAgentCompletion({
 		systemPrompt = `${systemPrompt}\n\n${fewShotExamples}`;
 	}
 
-	const requestParams: ChatCompletionParameters = {
-		...body,
+	const {
+		user: _requestUser,
+		platform: requestPlatform,
+		stop: requestStop,
+		tool_choice: requestToolChoice,
+		messages: requestMessages,
+		...requestBody
+	} = body;
+	const normalizedMessages: Message[] = requestMessages.map((message) => ({
+		...message,
+		content: message.content ?? "",
+	}));
+
+	const requestParams: Omit<ChatCompletionParameters, "env"> = {
+		...requestBody,
+		messages: normalizedMessages,
 		system_prompt: systemPrompt,
 		model: modelToUse,
 		tools: formattedTools,
-		enabled_tools: body.enabled_tools,
 		stream: true,
 		mode: "agent",
 		max_steps: agent.max_steps || body.max_steps || 20,
 		temperature:
 			Number.parseFloat(agent.temperature) || body.temperature || 0.8,
 		current_agent_id: agentId,
+		platform: requestPlatform === "obsidian" ? "api" : requestPlatform,
+		stop: requestStop
+			? Array.isArray(requestStop)
+				? requestStop
+				: [requestStop]
+			: undefined,
+		tool_choice: normaliseToolChoice(requestToolChoice),
 	};
 
 	const response = await handleCreateChatCompletions({
@@ -307,28 +281,33 @@ async function setupMCPFunctions(agent: any, env: IEnv) {
 	return mcpFunctions;
 }
 
-function setupTeamDelegationTools(agent: any) {
+function setupTeamDelegationTools(agent: any): ApiToolDefinition[] {
 	if (agent.team_role !== "orchestrator") {
 		return [];
 	}
 
-	return [
-		{
-			name: delegateToTeamMember.name,
-			description: delegateToTeamMember.description,
-			parameters: z.toJSONSchema(delegateToTeamMember.inputSchema),
-		},
-		{
-			name: delegateToTeamMemberByRole.name,
-			description: delegateToTeamMemberByRole.description,
-			parameters: z.toJSONSchema(delegateToTeamMemberByRole.inputSchema),
-		},
-		{
-			name: getTeamMembers.name,
-			description: getTeamMembers.description,
-			parameters: z.toJSONSchema(getTeamMembers.inputSchema),
-		},
-	];
+	return [delegateToTeamMember, delegateToTeamMemberByRole, getTeamMembers];
+}
+
+function normaliseToolChoice(
+	toolChoice: ChatCompletionRequestBody["tool_choice"],
+): Omit<ChatCompletionParameters, "env">["tool_choice"] {
+	if (!toolChoice) {
+		return undefined;
+	}
+
+	if (
+		toolChoice === "auto" ||
+		toolChoice === "none" ||
+		toolChoice === "required"
+	) {
+		return toolChoice;
+	}
+
+	return {
+		type: "function",
+		name: toolChoice.function.name,
+	};
 }
 
 async function getValidatedAgent(
