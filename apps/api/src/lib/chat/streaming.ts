@@ -141,6 +141,7 @@ export async function createStreamWithPostProcessing(
 		current_step?: number;
 		tools?: any[];
 		enabled_tools?: string[];
+		approved_tools?: string[];
 		current_agent_id?: string;
 		delegation_stack?: string[];
 		max_delegation_depth?: number;
@@ -160,6 +161,7 @@ export async function createStreamWithPostProcessing(
 		current_step = 1,
 		tools,
 		enabled_tools,
+		approved_tools,
 	} = options;
 
 	const fullContentChunks: string[] = [];
@@ -821,6 +823,7 @@ export async function createStreamWithPostProcessing(
 										model,
 										mode: options.mode,
 										date: new Date().toISOString().split("T")[0],
+										approved_tools: approved_tools,
 										current_agent_id: options.current_agent_id,
 										delegation_stack: options.delegation_stack,
 										max_delegation_depth: options.max_delegation_depth,

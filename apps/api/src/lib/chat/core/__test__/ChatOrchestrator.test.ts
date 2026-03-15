@@ -221,6 +221,32 @@ describe("ChatOrchestrator", () => {
 				});
 			});
 
+			it("should reject streaming for agent modes", async () => {
+				mockPreparer.prepare.mockResolvedValue({
+					modelConfigs: [{ model: "test-model" }],
+					primaryModel: "test-model",
+					primaryProvider: "test-provider",
+					conversationManager: mockConversationManager,
+					messages: [{ role: "user", content: "Hello" }],
+					systemPrompt: "Test system prompt",
+					messageWithContext: "Hello with context",
+					userSettings: {},
+					currentMode: "agent",
+				});
+
+				await expect(
+					orchestrator.process({
+						...mockOptions,
+						stream: true,
+					}),
+				).rejects.toMatchObject({
+					type: ErrorType.PARAMS_ERROR,
+					statusCode: 400,
+					message:
+						"Agent modes (agent, plan, build, explore) do not support streaming. Set stream: false.",
+				});
+			});
+
 			it("should handle multi-model streaming request", async () => {
 				const multiModelConfig = [{ model: "model-1" }, { model: "model-2" }];
 

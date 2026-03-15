@@ -111,6 +111,7 @@ export class ChatOrchestrator {
 			parallel_tool_calls,
 			tool_choice,
 			enabled_tools = [],
+			approved_tools = [],
 			current_step,
 			max_steps,
 		} = chatOptions;
@@ -156,6 +157,13 @@ export class ChatOrchestrator {
 			messageWithContext,
 			primaryModelConfig,
 		);
+		if (AGENT_EXECUTION_MODES.has(currentMode) && stream) {
+			throw new AssistantError(
+				"Agent modes (agent, plan, build, explore) do not support streaming. Set stream: false.",
+				ErrorType.PARAMS_ERROR,
+				400,
+			);
+		}
 
 		if (modelConfigs.length > 1 && stream) {
 			const transformedStream = createMultiModelStream(
@@ -270,6 +278,7 @@ export class ChatOrchestrator {
 				model: primaryModel,
 				mode: currentMode,
 				date: new Date().toISOString().split("T")[0]!,
+				approved_tools: approved_tools,
 				current_agent_id: chatOptions.current_agent_id,
 				delegation_stack: chatOptions.delegation_stack,
 				max_delegation_depth: chatOptions.max_delegation_depth,
@@ -311,6 +320,7 @@ export class ChatOrchestrator {
 					current_step: chatOptions.current_step,
 					tools,
 					enabled_tools,
+					approved_tools,
 					current_agent_id: chatOptions.current_agent_id,
 					delegation_stack: chatOptions.delegation_stack,
 					max_delegation_depth: chatOptions.max_delegation_depth,

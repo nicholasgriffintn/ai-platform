@@ -1,6 +1,6 @@
 export interface AgentMessage {
 	role: "system" | "user" | "assistant" | "tool" | "developer";
-	content: any;
+	content: string | null | Record<string, unknown> | unknown[];
 }
 
 export interface RunCommandDecision {

@@ -32,6 +32,20 @@ const freeUser: IUser = {
 };
 
 describe("PermissionChecker", () => {
+	it("allows unrestricted access in chat mode", () => {
+		const checker = new PermissionChecker();
+		const result = checker.checkToolAccess({
+			toolName: "run_refactoring",
+			mode: "normal",
+			user: proUser,
+			toolType: "premium",
+			toolPermissions: ["sandbox", "write"],
+		});
+
+		expect(result.allowed).toBe(true);
+		expect(result.requiresApproval).toBe(false);
+	});
+
 	it("allows read-only tools in plan mode", () => {
 		const checker = new PermissionChecker();
 		const result = checker.checkToolAccess({
@@ -58,6 +72,20 @@ describe("PermissionChecker", () => {
 
 		expect(result.allowed).toBe(false);
 		expect(result.reason).toContain("plan");
+	});
+
+	it("blocks write tools in explore mode", () => {
+		const checker = new PermissionChecker();
+		const result = checker.checkToolAccess({
+			toolName: "create_note",
+			mode: "explore",
+			user: proUser,
+			toolType: "normal",
+			toolPermissions: ["write"],
+		});
+
+		expect(result.allowed).toBe(false);
+		expect(result.reason).toContain("explore");
 	});
 
 	it("flags risky tools as approval-required in build mode", () => {

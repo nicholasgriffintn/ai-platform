@@ -10,6 +10,7 @@
 		".": "./src/index.ts"
 	},
 	"scripts": {
+		"test": "vitest run --config vitest.config.ts",
 		"typecheck": "tsc --noEmit",
 		"format": "pnpm prettier --write .",
 		"format:check": "pnpm prettier --check .",

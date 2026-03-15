@@ -47,6 +47,23 @@ describe("session compaction planning", () => {
 		);
 	});
 
+	it("respects keepRecentMessages override", () => {
+		const largeContent = "x".repeat(1200);
+		const messages = Array.from({ length: 36 }, (_, index) =>
+			createMessage(`m-${index}`, `${largeContent}-${index}`),
+		);
+
+		const plan = buildCompactionPlan(messages, "latest", {
+			contextWindow: 4096,
+			keepRecentMessages: 4,
+		});
+
+		expect(plan.shouldCompact).toBe(true);
+		expect(plan.messagesToKeep.slice(-4).map((message) => message.id)).toEqual(
+			messages.slice(-4).map((message) => message.id),
+		);
+	});
+
 	it("preserves existing snapshot messages", () => {
 		const largeContent = "x".repeat(800);
 		const messages: Message[] = [

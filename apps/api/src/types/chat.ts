@@ -166,6 +166,7 @@ export interface IBody {
 	model?: string;
 	platform?: Platform;
 	mode?: ChatMode;
+	approved_tools?: string[];
 	verbosity?: VerbosityLevel;
 	role?: ChatRole;
 	[other: string]: any;
@@ -303,6 +304,8 @@ interface AIResponseParamsBase extends AIControlParams {
 	tools?: Record<string, any>[];
 	// The tools that should be enabled for the response.
 	enabled_tools?: string[];
+	// Tool names pre-approved for approval-gated modes.
+	approved_tools?: string[];
 	// The tool choice to use for the response.
 	tool_choice?:
 		| "required"

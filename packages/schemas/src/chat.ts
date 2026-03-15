@@ -252,6 +252,10 @@ export const createChatCompletionsJsonSchema = z.object({
 	enabled_tools: z.array(z.string()).optional().meta({
 		description: "The tools that should be enabled for this message.",
 	}),
+	approved_tools: z.array(z.string()).optional().meta({
+		description:
+			"Tool names pre-approved by the caller for this request (used for approval-gated modes).",
+	}),
 	tools: z
 		.array(
 			z.object({

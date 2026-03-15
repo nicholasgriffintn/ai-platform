@@ -2,8 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("~/services/functions", () => ({
 	handleFunctions: vi.fn(),
-	resolveFunctionTool: vi.fn(() => ({ inputSchema: { safeParse: vi.fn() } })),
-	validateFunctionArgs: vi.fn((_tool, args) => args),
 }));
 
 vi.mock("~/utils/id", () => ({
@@ -29,11 +27,7 @@ vi.mock("~/utils/tool-responses", () => ({
 	})),
 }));
 
-import {
-	handleFunctions,
-	resolveFunctionTool,
-	validateFunctionArgs,
-} from "~/services/functions";
+import { handleFunctions } from "~/services/functions";
 import { formatToolErrorResponse } from "~/utils/tool-responses";
 import { formatToolCalls, handleToolCalls } from "../tools";
 
@@ -50,11 +44,6 @@ describe("tools", () => {
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
-		vi.mocked(resolveFunctionTool).mockReturnValue({
-			name: "test_tool",
-			inputSchema: { safeParse: vi.fn() },
-		} as any);
-		vi.mocked(validateFunctionArgs).mockImplementation((_tool, args) => args);
 	});
 
 	describe("handleToolCalls", () => {

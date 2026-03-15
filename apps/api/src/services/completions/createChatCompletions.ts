@@ -78,6 +78,7 @@ export const handleCreateChatCompletions = async (req: {
 		verbosity: request.verbosity,
 		tools: request.tools,
 		enabled_tools: request.enabled_tools,
+		approved_tools: request.approved_tools,
 		parallel_tool_calls: request.parallel_tool_calls,
 		tool_choice: request.tool_choice,
 		use_multi_model: request.use_multi_model,

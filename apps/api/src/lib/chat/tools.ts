@@ -1,9 +1,5 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import {
-	handleFunctions,
-	resolveFunctionTool,
-	validateFunctionArgs,
-} from "~/services/functions";
+import { handleFunctions } from "~/services/functions";
 import type { IRequest, Message } from "~/types";
 import { generateId } from "~/utils/id";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -113,22 +109,13 @@ export const handleToolCalls = async (
 				);
 			}
 
-			let validatedFunctionArgs: unknown = functionArgs;
-			if (!functionName.startsWith("mcp_")) {
-				const toolDefinition = resolveFunctionTool(functionName);
-				validatedFunctionArgs = validateFunctionArgs(
-					toolDefinition,
-					functionArgs,
-				);
-			}
-
 			let result: any;
 			try {
 				result = await handleFunctions({
 					completion_id,
 					app_url: req.app_url,
 					functionName,
-					args: validatedFunctionArgs,
+					args: functionArgs,
 					request: req,
 					conversationManager,
 				});

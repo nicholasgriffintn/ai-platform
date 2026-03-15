@@ -8,7 +8,7 @@ import {
 import type { ConversationManager } from "~/lib/conversationManager";
 import { getAIResponse } from "~/lib/chat/responses";
 import { handleToolCalls } from "~/lib/chat/tools";
-import type { IRequest, Message } from "~/types";
+import type { IRequest, Message, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
@@ -74,6 +74,38 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function isMessageContentArray(value: unknown[]): value is MessageContent[] {
+	return value.every(
+		(entry) =>
+			typeof entry === "object" &&
+			entry !== null &&
+			"type" in entry &&
+			typeof (entry as { type?: unknown }).type === "string",
+	);
+}
+
+function normaliseAgentContentForProvider(
+	content: AgentMessage["content"],
+): Message["content"] {
+	if (typeof content === "string") {
+		return content;
+	}
+
+	if (content === null) {
+		return "";
+	}
+
+	if (Array.isArray(content)) {
+		if (isMessageContentArray(content)) {
+			return content;
+		}
+
+		return JSON.stringify(content);
+	}
+
+	return content;
+}
+
 function isMessage(value: unknown): value is Message {
 	if (!isRecord(value)) {
 		return false;
@@ -112,7 +144,7 @@ function toProviderMessages(messages: AgentMessage[]): Message[] {
 	return messages.map((message) => {
 		const providerMessage: Message = {
 			role: message.role,
-			content: message.content,
+			content: normaliseAgentContentForProvider(message.content),
 		};
 
 		if ("name" in message && typeof message.name === "string") {

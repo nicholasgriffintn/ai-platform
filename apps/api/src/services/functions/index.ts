@@ -158,6 +158,20 @@ export const validateFunctionArgs = (
 	return validation.data;
 };
 
+function hasToolApproval(request: IRequest, functionName: string): boolean {
+	const approvedTools = request.request?.approved_tools;
+	if (!Array.isArray(approvedTools) || approvedTools.length === 0) {
+		return false;
+	}
+
+	const normalisedTarget = functionName.trim().toLowerCase();
+	return approvedTools.some(
+		(tool): tool is string =>
+			typeof tool === "string" &&
+			tool.trim().toLowerCase() === normalisedTarget,
+	);
+}
+
 export const handleFunctions = async ({
 	completion_id,
 	app_url,
@@ -174,6 +188,7 @@ export const handleFunctions = async ({
 	conversationManager?: ConversationManager;
 }): Promise<IFunctionResponse> => {
 	const requestMode = request.request?.mode || request.mode;
+	const toolPreApproved = hasToolApproval(request, functionName);
 
 	if (functionName.startsWith("mcp_")) {
 		const mcpPermissionResult = permissionChecker.checkToolAccess({
@@ -197,7 +212,7 @@ export const handleFunctions = async ({
 			);
 		}
 
-		if (mcpPermissionResult.requiresApproval) {
+		if (mcpPermissionResult.requiresApproval && !toolPreApproved) {
 			throw new AssistantError(
 				mcpPermissionResult.reason ||
 					`Tool "${functionName}" requires approval before execution`,
@@ -253,7 +268,7 @@ export const handleFunctions = async ({
 		);
 	}
 
-	if (permissionResult.requiresApproval) {
+	if (permissionResult.requiresApproval && !toolPreApproved) {
 		throw new AssistantError(
 			permissionResult.reason ||
 				`Tool "${functionName}" requires approval before execution`,
