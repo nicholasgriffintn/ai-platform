@@ -135,6 +135,7 @@ export const startResearchTask = async (
 					userId: user.id,
 					options,
 					startedAt: new Date().toISOString(),
+					pollAttempt: 0,
 				},
 				priority: 7,
 			});

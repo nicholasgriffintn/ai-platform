@@ -8,6 +8,7 @@ import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { safeParseJson } from "~/utils/json";
 import { TaskService } from "../TaskService";
 import { TaskRepository } from "~/repositories/TaskRepository";
+import { getNextPollingSchedule } from "./polling";
 
 const logger = getLogger({ prefix: "services/tasks/replicate-polling" });
 
@@ -16,6 +17,7 @@ interface ReplicatePollingData {
 	userId: number;
 	modelId: string;
 	startedAt: string;
+	pollAttempt?: number;
 }
 
 export class ReplicatePollingHandler implements TaskHandler {
@@ -137,13 +139,17 @@ export class ReplicatePollingHandler implements TaskHandler {
 
 			const taskRepository = new TaskRepository(env);
 			const taskService = new TaskService(env, taskRepository);
+			const polling = getNextPollingSchedule(data.pollAttempt);
 
 			await taskService.enqueueTask({
 				task_type: "replicate_polling",
 				user_id: message.user_id,
-				task_data: data,
+				task_data: {
+					...data,
+					pollAttempt: polling.pollAttempt,
+				},
 				schedule_type: "scheduled",
-				scheduled_at: new Date(Date.now() + 5000).toISOString(),
+				scheduled_at: polling.scheduledAt,
 				priority: message.priority || 5,
 			});
 

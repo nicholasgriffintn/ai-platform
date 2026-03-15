@@ -15,6 +15,7 @@ import { safeParseJson } from "~/utils/json";
 import { TaskService } from "../TaskService";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { getResearchProvider } from "~/lib/providers/capabilities/research";
+import { getNextPollingSchedule } from "./polling";
 
 const logger = getLogger({ prefix: "services/tasks/research-polling" });
 
@@ -24,6 +25,7 @@ interface ResearchPollingData {
 	userId: number;
 	options?: ResearchOptions;
 	startedAt: string;
+	pollAttempt?: number;
 }
 
 export class ResearchPollingHandler implements TaskHandler {
@@ -90,13 +92,17 @@ export class ResearchPollingHandler implements TaskHandler {
 			logger.info(`Research task ${data.runId} still ${status}, re-queuing`);
 			const taskRepository = new TaskRepository(env);
 			const taskService = new TaskService(env, taskRepository);
+			const polling = getNextPollingSchedule(data.pollAttempt);
 
 			await taskService.enqueueTask({
 				task_type: "research_polling",
 				user_id: message.user_id,
-				task_data: data,
+				task_data: {
+					...data,
+					pollAttempt: polling.pollAttempt,
+				},
 				schedule_type: "scheduled",
-				scheduled_at: new Date(Date.now() + 5000).toISOString(),
+				scheduled_at: polling.scheduledAt,
 				priority: message.priority || 5,
 			});
 

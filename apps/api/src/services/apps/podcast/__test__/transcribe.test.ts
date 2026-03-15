@@ -13,6 +13,7 @@ const mockRepositories = {
 const mockProvider = {
 	getResponse: vi.fn(),
 };
+const mockEnqueueTask = vi.fn();
 
 vi.mock("~/repositories", () => ({
 	RepositoryManager: {
@@ -51,6 +52,16 @@ vi.mock("~/lib/providers/models", () => ({
 	getModelConfigByModel: vi.fn(async () => mockModelConfig),
 }));
 
+vi.mock("~/repositories/TaskRepository", () => ({
+	TaskRepository: class {},
+}));
+
+vi.mock("~/services/tasks/TaskService", () => ({
+	TaskService: class {
+		public enqueueTask = mockEnqueueTask;
+	},
+}));
+
 describe("handlePodcastTranscribe", () => {
 	const mockEnv = { DB: {} } as any;
 	const mockUser = { id: "user-123", email: "test@example.com" } as any;
@@ -66,6 +77,7 @@ describe("handlePodcastTranscribe", () => {
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
+		mockEnqueueTask.mockResolvedValue("task-1");
 		const { getModelConfigByModel } = await import("~/lib/providers/models");
 		vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig as any);
 	});
@@ -137,6 +149,12 @@ describe("handlePodcastTranscribe", () => {
 		expect(result.status).toBe("success");
 		expect(result.content).toBe(
 			"Podcast transcription started: transcription-123",
+		);
+		expect(mockEnqueueTask).toHaveBeenCalledWith(
+			expect.objectContaining({
+				task_type: "podcast_transcription_polling",
+				user_id: mockUser.id,
+			}),
 		);
 		expect(mockProvider.getResponse).toHaveBeenCalledWith(
 			expect.objectContaining({

@@ -10,6 +10,7 @@ import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
 import { TaskService } from "../TaskService";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { UserRepository } from "~/repositories/UserRepository";
+import { getNextPollingSchedule } from "./polling";
 
 const logger = getLogger({ prefix: "services/tasks/async-message-polling" });
 
@@ -18,6 +19,7 @@ interface AsyncMessagePollingData {
 	messageId: string;
 	asyncInvocation: AsyncInvocationMetadata;
 	userId: number;
+	pollAttempt?: number;
 }
 
 export class AsyncMessagePollingHandler implements TaskHandler {
@@ -115,13 +117,17 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 
 			const taskRepository = new TaskRepository(env);
 			const taskService = new TaskService(env, taskRepository);
+			const polling = getNextPollingSchedule(data.pollAttempt);
 
 			await taskService.enqueueTask({
 				task_type: "async_message_polling",
 				user_id: message.user_id,
-				task_data: data,
+				task_data: {
+					...data,
+					pollAttempt: polling.pollAttempt,
+				},
 				schedule_type: "scheduled",
-				scheduled_at: new Date(Date.now() + 5000).toISOString(),
+				scheduled_at: polling.scheduledAt,
 				priority: message.priority || 5,
 			});
 

@@ -7,10 +7,13 @@ export const TASK_TYPES = [
 	"research_polling",
 	"replicate_polling",
 	"async_message_polling",
+	"podcast_transcription_polling",
 	"training_quality_scoring",
 	"usage_update",
 	SANDBOX_RUN_DISPATCH_TASK_TYPE,
 ] as const;
+
+export const PUBLIC_TASK_TYPES = ["memory_synthesis"] as const;
 
 export const taskTypeSchema = z.enum(TASK_TYPES);
 
@@ -93,6 +96,17 @@ export const createTaskRequestSchema = z.object({
 	metadata: z.record(z.string(), z.any()).optional(),
 });
 
+export const publicTaskTypeSchema = z.enum(PUBLIC_TASK_TYPES);
+
+export const createPublicTaskRequestSchema = z.object({
+	task_type: publicTaskTypeSchema,
+	task_data: z.record(z.string(), z.any()),
+	schedule_type: scheduleTypeSchema.optional(),
+	scheduled_at: z.string().optional(),
+	priority: z.number().min(1).max(10).optional(),
+	metadata: z.record(z.string(), z.any()).optional(),
+});
+
 export const createTaskResponseSchema = z.object({
 	task_id: z.string(),
 	status: taskStatusSchema,
@@ -122,6 +136,9 @@ export type Task = z.infer<typeof taskSchema>;
 export type TaskExecution = z.infer<typeof taskExecutionSchema>;
 export type MemorySynthesis = z.infer<typeof memorySynthesisSchema>;
 export type CreateTaskRequest = z.infer<typeof createTaskRequestSchema>;
+export type CreatePublicTaskRequest = z.infer<
+	typeof createPublicTaskRequestSchema
+>;
 export type CreateTaskResponse = z.infer<typeof createTaskResponseSchema>;
 export type GetTaskResponse = z.infer<typeof getTaskResponseSchema>;
 export type ListTasksResponse = z.infer<typeof listTasksResponseSchema>;

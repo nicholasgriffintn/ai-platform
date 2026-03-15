@@ -6,7 +6,7 @@ import { requireAuth } from "~/middleware/auth";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { TaskService } from "~/services/tasks/TaskService";
 import {
-	createTaskRequestSchema,
+	createPublicTaskRequestSchema,
 	triggerMemorySynthesisRequestSchema,
 } from "@assistant/schemas";
 import { getLogger } from "~/utils/logger";
@@ -58,7 +58,7 @@ app.get(
 				return c.json({ error: "Task not found" }, 404);
 			}
 
-			if (task.user_id && task.user_id !== user.id) {
+			if (task.user_id !== user.id) {
 				return c.json({ error: "Unauthorized" }, 403);
 			}
 
@@ -114,7 +114,7 @@ app.post(
 		tags: ["tasks"],
 		summary: "Create a new task",
 	}),
-	zValidator("json", createTaskRequestSchema),
+	zValidator("json", createPublicTaskRequestSchema),
 	async (c) => {
 		try {
 			const { user, env, repositories } = getServiceContext(c);

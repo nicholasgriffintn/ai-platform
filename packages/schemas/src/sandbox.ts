@@ -64,6 +64,7 @@ export const sandboxRunDispatchPayloadSchema = z.object({
 	installationId: z.number().int().positive(),
 	repo: sandboxRepoSchema,
 	task: z.string().trim().min(1),
+	taskType: z.enum(SANDBOX_TASK_TYPES).optional(),
 	model: z.string().trim().min(1).optional(),
 	promptStrategy: z.enum(SANDBOX_PROMPT_STRATEGIES).optional(),
 	shouldCommit: z.boolean(),
@@ -216,6 +217,7 @@ export const sandboxRunDataSchema = z.object({
 	installationId: z.number().int().positive(),
 	repo: sandboxRepoSchema,
 	task: z.string().trim().min(1),
+	taskType: z.enum(SANDBOX_TASK_TYPES).optional(),
 	model: z.string().trim().min(1),
 	trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
 	promptStrategy: sandboxPromptStrategySchema.optional(),
@@ -301,24 +303,6 @@ export const sandboxRunApprovalSchema = z.object({
 	timedOutAt: z.string().optional(),
 });
 
-export const executeSandboxWorkerProxySchema = z.object({
-	repo: sandboxRepoSchema,
-	task: z.string().trim().min(1),
-	taskType: sandboxTaskTypeSchema.optional(),
-	model: z.string().trim().min(1).optional(),
-	promptStrategy: sandboxPromptStrategySchema.optional(),
-	shouldCommit: z.boolean().optional(),
-	timeoutSeconds: z
-		.number()
-		.int()
-		.min(SANDBOX_TIMEOUT_MIN_SECONDS)
-		.max(SANDBOX_TIMEOUT_MAX_SECONDS)
-		.optional(),
-	trustLevel: sandboxTrustLevelSchema.optional(),
-	installationId: z.number().int().positive().optional(),
-	runId: z.string().trim().min(1).optional(),
-});
-
 export const sandboxWorkerExecuteRequestSchema = z.object({
 	userId: z.number().int().positive(),
 	taskType: sandboxTaskTypeSchema.optional(),
@@ -382,9 +366,6 @@ export type SandboxRunApprovalStatus = z.infer<
 	typeof sandboxRunApprovalStatusSchema
 >;
 export type SandboxRunApproval = z.infer<typeof sandboxRunApprovalSchema>;
-export type ExecuteSandboxWorkerProxyPayload = z.infer<
-	typeof executeSandboxWorkerProxySchema
->;
 export type SandboxWorkerExecuteRequest = z.infer<
 	typeof sandboxWorkerExecuteRequestSchema
 >;

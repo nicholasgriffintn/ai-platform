@@ -40,6 +40,12 @@ export class TaskExecutor {
 		try {
 			if (!isAlwaysEnabledTask(message.task_type)) {
 				if (!hasFeatureFlag(message.task_type)) {
+					const completedAt = new Date().toISOString();
+					await this.taskRepository.updateTask(message.taskId, {
+						status: "cancelled",
+						completed_at: completedAt,
+						error_message: `Task type ${message.task_type} has no feature-flag configuration`,
+					});
 					logger.warn(
 						`Task type ${message.task_type} has no feature-flag configuration and is disabled`,
 					);
@@ -47,6 +53,12 @@ export class TaskExecutor {
 				}
 				const isEnabledEnvVar = ENABLED_SCHEDULES_FLAGS[message.task_type];
 				if (this.env[isEnabledEnvVar] !== "true") {
+					const completedAt = new Date().toISOString();
+					await this.taskRepository.updateTask(message.taskId, {
+						status: "cancelled",
+						completed_at: completedAt,
+						error_message: `Task type ${message.task_type} is disabled via environment variable ${isEnabledEnvVar}`,
+					});
 					logger.info(
 						`Task type ${message.task_type} is disabled via environment variable`,
 					);

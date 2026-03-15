@@ -24,7 +24,12 @@ export interface TaskMessage {
 	user_id?: number;
 	task_data: Record<string, any>;
 	priority: number;
+	schedule_type?: ScheduleType;
+	scheduled_at?: string;
+	max_attempts?: number;
 }
+
+const MAX_QUEUE_DELAY_SECONDS = 60 * 60 * 12;
 
 export class TaskService {
 	private env: IEnv;
@@ -61,6 +66,9 @@ export class TaskService {
 				user_id: taskDef.user_id,
 				task_data: taskDef.task_data,
 				priority: taskDef.priority ?? 5,
+				schedule_type: taskDef.schedule_type ?? "immediate",
+				scheduled_at: taskDef.scheduled_at,
+				max_attempts: task.max_attempts ?? 3,
 			};
 
 			if (!this.env.TASK_QUEUE) {
@@ -71,7 +79,25 @@ export class TaskService {
 				return task.id;
 			}
 
-			await this.env.TASK_QUEUE.send(message);
+			let delaySeconds: number | undefined;
+			if (message.schedule_type === "scheduled" && message.scheduled_at) {
+				const scheduledAtMs = Date.parse(message.scheduled_at);
+				if (Number.isFinite(scheduledAtMs)) {
+					const delayMs = scheduledAtMs - Date.now();
+					if (delayMs > 0) {
+						delaySeconds = Math.min(
+							MAX_QUEUE_DELAY_SECONDS,
+							Math.ceil(delayMs / 1000),
+						);
+					}
+				}
+			}
+
+			if (delaySeconds) {
+				await this.env.TASK_QUEUE.send(message, { delaySeconds });
+			} else {
+				await this.env.TASK_QUEUE.send(message);
+			}
 
 			logger.info("Task enqueued successfully", {
 				taskId: task.id,

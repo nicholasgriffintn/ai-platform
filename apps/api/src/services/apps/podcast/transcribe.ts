@@ -9,6 +9,8 @@ import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { safeParseJson } from "~/utils/json";
+import { TaskRepository } from "~/repositories/TaskRepository";
+import { TaskService } from "~/services/tasks/TaskService";
 
 const logger = getLogger({ prefix: "services/apps/podcast/transcribe" });
 
@@ -156,6 +158,24 @@ export const handlePodcastTranscribe = async (
 			"transcribe",
 			appData,
 		);
+
+		if (isAsync) {
+			const taskService = new TaskService(
+				runtimeEnv,
+				new TaskRepository(runtimeEnv),
+			);
+			await taskService.enqueueTask({
+				task_type: "podcast_transcription_polling",
+				user_id: user.id,
+				task_data: {
+					podcastId: request.podcastId,
+					userId: user.id,
+					startedAt: new Date().toISOString(),
+					pollAttempt: 0,
+				},
+				priority: 6,
+			});
+		}
 
 		return {
 			status: "success",

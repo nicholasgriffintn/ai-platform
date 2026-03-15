@@ -125,6 +125,7 @@ export const executeReplicateModel = async (
 					userId: user.id,
 					modelId: params.modelId,
 					startedAt: new Date().toISOString(),
+					pollAttempt: 0,
 				},
 				priority: 6,
 			});

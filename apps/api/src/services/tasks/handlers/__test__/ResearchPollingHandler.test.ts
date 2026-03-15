@@ -212,7 +212,12 @@ describe("ResearchPollingHandler", () => {
 		expect(mockEnqueueTask).toHaveBeenCalledWith(
 			expect.objectContaining({
 				task_type: "research_polling",
-				task_data: baseMessage.task_data,
+				task_data: expect.objectContaining({
+					runId: "test-run-id",
+					provider: "parallel",
+					userId: 1,
+					pollAttempt: 1,
+				}),
 			}),
 		);
 	});

@@ -705,7 +705,10 @@ export const tasks = sqliteTable(
 				"research_polling",
 				"replicate_polling",
 				"async_message_polling",
+				"podcast_transcription_polling",
 				"training_quality_scoring",
+				"usage_update",
+				"sandbox_run_dispatch",
 			],
 		}).notNull(),
 		status: text({

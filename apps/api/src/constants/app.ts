@@ -31,7 +31,6 @@ export const ROUTES = {
 	AGENTS: "/agents",
 	ADMIN: "/admin",
 	MEMORIES: "/memories",
-	SANDBOX: "/sandbox",
 	WEBHOOKS: "/webhooks",
 } as const;
 

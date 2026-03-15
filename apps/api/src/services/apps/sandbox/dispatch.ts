@@ -180,6 +180,7 @@ export async function processSandboxRunDispatch(params: {
 			user,
 			repo: message.payload.repo,
 			task: message.payload.task,
+			taskType: message.payload.taskType,
 			model: message.payload.model,
 			promptStrategy: message.payload.promptStrategy,
 			shouldCommit: message.payload.shouldCommit,

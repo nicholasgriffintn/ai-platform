@@ -37,7 +37,6 @@ import tools from "./routes/tools";
 import uploads from "./routes/uploads";
 import user from "./routes/user";
 import memories from "./routes/memories";
-import sandbox from "./routes/sandbox";
 import webhook from "./routes/webhooks";
 import { serviceContextMiddleware } from "./lib/context/serviceContext";
 import { ResponseFactory } from "./lib/http/ResponseFactory";
@@ -349,7 +348,6 @@ app.route(ROUTES.REALTIME, realtime);
 app.route(ROUTES.AGENTS, agents);
 app.route(ROUTES.ADMIN, admin);
 app.route(ROUTES.MEMORIES, memories);
-app.route(ROUTES.SANDBOX, sandbox);
 app.route(ROUTES.WEBHOOKS, webhook);
 
 app.notFound((c) => c.json({ status: "not found" }, 404));
