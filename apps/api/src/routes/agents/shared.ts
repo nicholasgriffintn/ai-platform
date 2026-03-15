@@ -15,6 +15,7 @@ import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
 import { requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
+import { requireAuthenticatedUser } from "~/lib/http/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
 	deleteSharedAgent,
@@ -34,21 +35,9 @@ import {
 	updateSharedAgent,
 } from "~/services/agents/shared";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("agents/shared");
-
-function requireAuthenticatedUser(ctx: Context): IUser {
-	const user = ctx.get("user") as IUser | undefined;
-	if (!user?.id) {
-		throw new AssistantError(
-			"This endpoint requires authentication. Please provide a valid access token.",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
-	}
-	return user;
-}
 
 app.use("/*", async (ctx, next) => {
 	logger.info(

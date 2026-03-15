@@ -45,6 +45,7 @@ describe("countTokens", () => {
 	let mockEnv: IEnv;
 	let mockUser: IUser;
 	let mockMessages: Message[];
+	let mockServiceContext: any;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -69,6 +70,25 @@ describe("countTokens", () => {
 				content: "I'm doing well, thank you!",
 			},
 		];
+
+		mockServiceContext = {
+			env: mockEnv,
+			user: mockUser,
+			requireUser: vi.fn().mockReturnValue(mockUser),
+			ensureDatabase: vi.fn(),
+			database: {} as any,
+			repositories: {} as any,
+			requestCache: new Map(),
+			userSettings: null,
+			getUserSettings: vi.fn(),
+			setUserSettings: vi.fn(),
+			getLogger: vi.fn().mockReturnValue({
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+				debug: vi.fn(),
+			}),
+		};
 	});
 
 	describe("successful token counting", () => {
@@ -85,14 +105,11 @@ describe("countTokens", () => {
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
-			const result = await handleCountTokens(
-				{ env: mockEnv, user: mockUser },
-				{
-					model: "claude-3-sonnet",
-					messages: mockMessages,
-					system_prompt: "You are a helpful assistant.",
-				},
-			);
+			const result = await handleCountTokens(mockServiceContext, {
+				model: "claude-3-sonnet",
+				messages: mockMessages,
+				system_prompt: "You are a helpful assistant.",
+			});
 
 			expect(result).toEqual({
 				status: "success",
@@ -125,13 +142,12 @@ describe("countTokens", () => {
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
-			const result = await handleCountTokens(
-				{ env: mockEnv },
-				{
-					model: "claude-3-sonnet",
-					messages: mockMessages,
-				},
-			);
+			const ctxWithoutUser = { ...mockServiceContext, user: undefined };
+
+			const result = await handleCountTokens(ctxWithoutUser, {
+				model: "claude-3-sonnet",
+				messages: mockMessages,
+			});
 
 			expect(result).toEqual({
 				status: "success",
@@ -164,13 +180,10 @@ describe("countTokens", () => {
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
-			const result = await handleCountTokens(
-				{ env: mockEnv, user: mockUser },
-				{
-					model: "claude-3-sonnet",
-					messages: mockMessages,
-				},
-			);
+			const result = await handleCountTokens(mockServiceContext, {
+				model: "claude-3-sonnet",
+				messages: mockMessages,
+			});
 
 			expect(result).toEqual({
 				status: "success",
@@ -186,13 +199,10 @@ describe("countTokens", () => {
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(null);
 
-			const result = await handleCountTokens(
-				{ env: mockEnv, user: mockUser },
-				{
-					model: "unknown-model",
-					messages: mockMessages,
-				},
-			);
+			const result = await handleCountTokens(mockServiceContext, {
+				model: "unknown-model",
+				messages: mockMessages,
+			});
 
 			expect(result).toEqual({
 				status: "error",
@@ -214,13 +224,10 @@ describe("countTokens", () => {
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(null);
 
-			const result = await handleCountTokens(
-				{ env: mockEnv, user: mockUser },
-				{
-					model: "some-model",
-					messages: mockMessages,
-				},
-			);
+			const result = await handleCountTokens(mockServiceContext, {
+				model: "some-model",
+				messages: mockMessages,
+			});
 
 			expect(result).toEqual({
 				status: "error",
@@ -237,13 +244,10 @@ describe("countTokens", () => {
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
 
-			const result = await handleCountTokens(
-				{ env: mockEnv, user: mockUser },
-				{
-					model: "gpt-4",
-					messages: mockMessages,
-				},
-			);
+			const result = await handleCountTokens(mockServiceContext, {
+				model: "gpt-4",
+				messages: mockMessages,
+			});
 
 			expect(result).toEqual({
 				status: "error",
@@ -263,13 +267,10 @@ describe("countTokens", () => {
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
-			const result = await handleCountTokens(
-				{ env: mockEnv, user: mockUser },
-				{
-					model: "gpt-4",
-					messages: mockMessages,
-				},
-			);
+			const result = await handleCountTokens(mockServiceContext, {
+				model: "gpt-4",
+				messages: mockMessages,
+			});
 
 			expect(result).toEqual({
 				status: "error",
@@ -297,23 +298,17 @@ describe("countTokens", () => {
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			await expect(
-				handleCountTokens(
-					{ env: mockEnv, user: mockUser },
-					{
-						model: "claude-3-sonnet",
-						messages: mockMessages,
-					},
-				),
+				handleCountTokens(mockServiceContext, {
+					model: "claude-3-sonnet",
+					messages: mockMessages,
+				}),
 			).rejects.toThrow(AssistantError);
 
 			await expect(
-				handleCountTokens(
-					{ env: mockEnv, user: mockUser },
-					{
-						model: "claude-3-sonnet",
-						messages: mockMessages,
-					},
-				),
+				handleCountTokens(mockServiceContext, {
+					model: "claude-3-sonnet",
+					messages: mockMessages,
+				}),
 			).rejects.toThrow("Failed to count tokens");
 		});
 	});
@@ -332,13 +327,10 @@ describe("countTokens", () => {
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
-			const result = await handleCountTokens(
-				{ env: mockEnv, user: mockUser },
-				{
-					model: "claude-3-sonnet",
-					messages: [],
-				},
-			);
+			const result = await handleCountTokens(mockServiceContext, {
+				model: "claude-3-sonnet",
+				messages: [],
+			});
 
 			expect(result).toEqual({
 				status: "success",
@@ -373,13 +365,10 @@ describe("countTokens", () => {
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
-			const result = await handleCountTokens(
-				{ env: mockEnv, user: mockUser },
-				{
-					model: "claude-3-sonnet",
-					messages: complexMessages,
-				},
-			);
+			const result = await handleCountTokens(mockServiceContext, {
+				model: "claude-3-sonnet",
+				messages: complexMessages,
+			});
 
 			expect(result).toEqual({
 				status: "success",
@@ -410,14 +399,11 @@ describe("countTokens", () => {
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
-			const result = await handleCountTokens(
-				{ env: mockEnv, user: mockUser },
-				{
-					model: "claude-4-sonnet",
-					messages: [{ role: "user", content: "Count these tokens please" }],
-					system_prompt: "You are a helpful assistant",
-				},
-			);
+			const result = await handleCountTokens(mockServiceContext, {
+				model: "claude-4-sonnet",
+				messages: [{ role: "user", content: "Count these tokens please" }],
+				system_prompt: "You are a helpful assistant",
+			});
 
 			expect(result).toEqual({
 				status: "success",
@@ -448,13 +434,10 @@ describe("countTokens", () => {
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
-			const result = await handleCountTokens(
-				{ env: mockEnv, user: mockUser },
-				{
-					model: "claude-3.5-haiku",
-					messages: [{ role: "user", content: "Hello Claude" }],
-				},
-			);
+			const result = await handleCountTokens(mockServiceContext, {
+				model: "claude-3.5-haiku",
+				messages: [{ role: "user", content: "Hello Claude" }],
+			});
 
 			expect(result).toEqual({
 				status: "success",

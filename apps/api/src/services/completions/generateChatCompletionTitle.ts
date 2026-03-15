@@ -1,22 +1,20 @@
 import { sanitiseMessages } from "~/lib/chat/utils";
 import { ConversationManager } from "~/lib/conversationManager";
-import { resolveServiceContext } from "~/lib/context/serviceContext";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import type { IRequest, Message } from "~/types";
+import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 const TITLE_MAX_MESSAGES = 3;
 
 export const handleGenerateChatCompletionTitle = async (
-	req: IRequest,
+	context: ServiceContext,
 	completion_id: string,
 	messages?: Message[],
 	store?: boolean,
 ): Promise<{ title: string }> => {
-	const { env, user, context } = req;
-	const serviceContext = resolveServiceContext({ context, env, user });
-	const runtimeEnv = serviceContext.env;
+	const runtimeEnv = context.env;
 
 	if (!runtimeEnv.AI) {
 		throw new AssistantError(
@@ -25,16 +23,11 @@ export const handleGenerateChatCompletionTitle = async (
 		);
 	}
 
-	if (!user || !user.id) {
-		throw new AssistantError(
-			"Authentication required",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
-	}
+	const user = context.requireUser();
 
-	serviceContext.ensureDatabase();
+	context.ensureDatabase();
 	const conversationManager = ConversationManager.getInstance({
-		database: serviceContext.database,
+		database: context.database,
 		user,
 		store,
 	});
@@ -91,7 +84,7 @@ export const handleGenerateChatCompletionTitle = async (
 	const prompt = `You are a title generator. Your only job is to create a short, concise title (maximum 5 words) for a conversation.
     Do not include any explanations, prefixes, or quotes in your response.
     Output only the title itself.
-    
+
     Conversation:
     ${messagesToUse
 			.map(

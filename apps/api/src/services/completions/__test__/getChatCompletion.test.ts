@@ -2,10 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleGetChatCompletion } from "../getChatCompletion";
 
-vi.mock("~/lib/context/serviceContext", () => ({
-	resolveServiceContext: vi.fn(),
-}));
-
 vi.mock("~/lib/conversationManager", () => ({
 	ConversationManager: {
 		getInstance: vi.fn(),
@@ -21,13 +17,7 @@ const mockUser = {
 	email: "test@example.com",
 };
 
-const mockRequest = {
-	env: mockEnv,
-	user: mockUser,
-};
-
 let mockServiceContext: any;
-let resolveServiceContext: any;
 
 describe("handleGetChatCompletion", () => {
 	let mockConversationManager: any;
@@ -35,7 +25,6 @@ describe("handleGetChatCompletion", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
 
 		mockConversationManager = {
@@ -48,9 +37,9 @@ describe("handleGetChatCompletion", () => {
 			ensureDatabase: vi.fn(),
 			database: {} as any,
 			repositories: {} as any,
+			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(resolveServiceContext).mockReturnValue(mockServiceContext);
 		vi.mocked(ConversationManager.getInstance).mockReturnValue(
 			mockConversationManager,
 		);
@@ -62,28 +51,22 @@ describe("handleGetChatCompletion", () => {
 
 	describe("parameter validation", () => {
 		it("should throw error for missing user ID", async () => {
-			const requestWithoutUser = {
-				env: mockEnv,
-				user: null,
-			} as any;
+			mockServiceContext.requireUser.mockImplementationOnce(() => {
+				throw new Error("User is not authenticated");
+			});
 
 			await expect(() =>
-				handleGetChatCompletion(requestWithoutUser, "completion-123"),
-			).rejects.toThrow("User ID is required to get a conversation");
+				handleGetChatCompletion(mockServiceContext, "completion-123"),
+			).rejects.toThrow("User is not authenticated");
 		});
 
-		it("should surface errors from service context creation", async () => {
-			const requestWithoutDB = {
-				env: {},
-				user: mockUser,
-			} as any;
-
-			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
+		it("should surface errors from ensureDatabase", async () => {
+			mockServiceContext.ensureDatabase.mockImplementationOnce(() => {
 				throw new Error("Database not configured");
 			});
 
 			await expect(() =>
-				handleGetChatCompletion(requestWithoutDB, "completion-123"),
+				handleGetChatCompletion(mockServiceContext, "completion-123"),
 			).rejects.toThrow("Database not configured");
 		});
 	});
@@ -105,8 +88,10 @@ describe("handleGetChatCompletion", () => {
 				mockConversation,
 			);
 
-			// @ts-expect-error - mock request
-			const result = await handleGetChatCompletion(mockRequest, completionId);
+			const result = await handleGetChatCompletion(
+				mockServiceContext,
+				completionId,
+			);
 
 			expect(
 				mockConversationManager.getConversationDetails,
@@ -127,8 +112,10 @@ describe("handleGetChatCompletion", () => {
 				mockEmptyConversation,
 			);
 
-			// @ts-expect-error - mock request
-			const result = await handleGetChatCompletion(mockRequest, completionId);
+			const result = await handleGetChatCompletion(
+				mockServiceContext,
+				completionId,
+			);
 
 			expect(result.messages).toEqual([]);
 			expect(result.id).toBe(completionId);
@@ -145,8 +132,7 @@ describe("handleGetChatCompletion", () => {
 				mockConversation,
 			);
 
-			// @ts-expect-error - mock request
-			const result = await handleGetChatCompletion(mockRequest, "");
+			const result = await handleGetChatCompletion(mockServiceContext, "");
 
 			expect(
 				mockConversationManager.getConversationDetails,
@@ -164,20 +150,8 @@ describe("handleGetChatCompletion", () => {
 			);
 
 			await expect(() =>
-				// @ts-expect-error - mock request
-				handleGetChatCompletion(mockRequest, completionId),
+				handleGetChatCompletion(mockServiceContext, completionId),
 			).rejects.toThrow("Conversation not found");
-		});
-
-		it("should handle service context errors", async () => {
-			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
-				throw new Error("Database connection failed");
-			});
-
-			await expect(() =>
-				// @ts-expect-error - mock request
-				handleGetChatCompletion(mockRequest, "completion-123"),
-			).rejects.toThrow("Database connection failed");
 		});
 	});
 });

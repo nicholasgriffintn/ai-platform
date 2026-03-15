@@ -13,6 +13,7 @@ import { requireAuth } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
+import { requireAuthenticatedUser } from "~/lib/http/auth";
 import {
 	getUserAgents,
 	getUserTeamAgents,
@@ -25,22 +26,10 @@ import {
 	createAgentCompletion,
 } from "~/services/agents";
 import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import sharedAgents from "./shared";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("agents");
-
-function requireAuthenticatedUser(ctx: Context): IUser {
-	const user = ctx.get("user") as IUser | undefined;
-	if (!user?.id) {
-		throw new AssistantError(
-			"This endpoint requires authentication. Please provide a valid access token.",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
-	}
-	return user;
-}
 
 app.use("/*", async (ctx, next) => {
 	logger.info(`Processing agents route: ${ctx.req.method} ${ctx.req.path}`);

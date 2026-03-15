@@ -1,9 +1,3 @@
-export const SANDBOX_SSE_HEADERS = {
-	"Content-Type": "text/event-stream",
-	"Cache-Control": "no-cache, no-transform",
-	Connection: "keep-alive",
-} as const;
-
 interface EventEnvelopeLike {
 	index: number;
 	event: {

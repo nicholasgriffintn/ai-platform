@@ -1,33 +1,16 @@
 import { ConversationManager } from "~/lib/conversationManager";
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
-import type { IEnv, User } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-
-interface ShareConversationRequest {
-	env: IEnv;
-	user: User;
-	context?: ServiceContext;
-}
+import type { ServiceContext } from "~/lib/context/serviceContext";
 
 export async function handleShareConversation(
-	{ env, user, context }: ShareConversationRequest,
+	context: ServiceContext,
 	completion_id: string,
 ): Promise<{ share_id: string }> {
-	if (!user || !user.id) {
-		throw new AssistantError(
-			"Authentication required",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
-	}
+	const user = context.requireUser();
 
-	const serviceContext = resolveServiceContext({ context, env, user });
-	serviceContext.ensureDatabase();
+	context.ensureDatabase();
 
 	const conversationManager = ConversationManager.getInstance({
-		database: serviceContext.database,
+		database: context.database,
 		user,
 	});
 

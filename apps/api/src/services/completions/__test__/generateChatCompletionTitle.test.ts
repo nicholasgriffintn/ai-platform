@@ -2,10 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleGenerateChatCompletionTitle } from "../generateChatCompletionTitle";
 
-vi.mock("~/lib/context/serviceContext", () => ({
-	resolveServiceContext: vi.fn(),
-}));
-
 vi.mock("~/lib/conversationManager", () => ({
 	ConversationManager: {
 		getInstance: vi.fn(),
@@ -34,13 +30,7 @@ const mockUser = {
 	email: "test@example.com",
 };
 
-const mockRequest = {
-	env: mockEnv,
-	user: mockUser,
-};
-
 let mockServiceContext: any;
-let resolveServiceContext: any;
 
 describe("handleGenerateChatCompletionTitle", () => {
 	let mockConversationManager: any;
@@ -51,7 +41,6 @@ describe("handleGenerateChatCompletionTitle", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
 		const { getAuxiliaryModel } = await import("~/lib/providers/models");
 		const chatCapability = await import("~/lib/providers/capabilities/chat");
@@ -72,9 +61,9 @@ describe("handleGenerateChatCompletionTitle", () => {
 			ensureDatabase: vi.fn(),
 			database: { getUserSettings: vi.fn() },
 			repositories: {} as any,
+			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(resolveServiceContext).mockReturnValue(mockServiceContext);
 		vi.mocked(ConversationManager.getInstance).mockReturnValue(
 			mockConversationManager,
 		);
@@ -97,48 +86,31 @@ describe("handleGenerateChatCompletionTitle", () => {
 
 	describe("parameter validation", () => {
 		it("should throw error for missing AI binding", async () => {
-			const requestWithoutAI = {
-				env: { DB: "test-db" },
-				user: mockUser,
-			} as any;
-
-			vi.mocked(resolveServiceContext).mockImplementationOnce(() => ({
-				env: { DB: "test-db" },
-				user: mockUser,
-				ensureDatabase: vi.fn(),
-				database: { getUserSettings: vi.fn() },
-				repositories: {} as any,
-			}));
+			mockServiceContext.env = { DB: "test-db" };
 
 			await expect(() =>
-				handleGenerateChatCompletionTitle(requestWithoutAI, "completion-123"),
+				handleGenerateChatCompletionTitle(mockServiceContext, "completion-123"),
 			).rejects.toThrow("AI binding is not available");
 		});
 
-		it("should throw error for missing DB binding", async () => {
-			const requestWithoutDB = {
-				env: { AI: "test-ai" },
-				user: mockUser,
-			} as any;
+		it("should throw error for missing user", async () => {
+			mockServiceContext.requireUser.mockImplementationOnce(() => {
+				throw new Error("Authentication required");
+			});
 
-			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
+			await expect(() =>
+				handleGenerateChatCompletionTitle(mockServiceContext, "completion-123"),
+			).rejects.toThrow("Authentication required");
+		});
+
+		it("should throw error for missing DB binding", async () => {
+			mockServiceContext.ensureDatabase.mockImplementationOnce(() => {
 				throw new Error("Database not configured");
 			});
 
 			await expect(() =>
-				handleGenerateChatCompletionTitle(requestWithoutDB, "completion-123"),
+				handleGenerateChatCompletionTitle(mockServiceContext, "completion-123"),
 			).rejects.toThrow("Database not configured");
-		});
-
-		it("should throw error for missing user", async () => {
-			const requestWithoutUser = {
-				env: mockEnv,
-				user: null,
-			} as any;
-
-			await expect(() =>
-				handleGenerateChatCompletionTitle(requestWithoutUser, "completion-123"),
-			).rejects.toThrow("Authentication required");
 		});
 	});
 
@@ -146,16 +118,15 @@ describe("handleGenerateChatCompletionTitle", () => {
 		it("should generate title with provided messages", async () => {
 			const completionId = "completion-123";
 			const messages = [
-				{ role: "user", content: "Hello" },
-				{ role: "assistant", content: "Hi there!" },
+				{ role: "user" as const, content: "Hello" },
+				{ role: "assistant" as const, content: "Hi there!" },
 			];
 
 			mockConversationManager.get.mockResolvedValue([]);
 			mockSanitiseMessages.mockReturnValue(messages);
 
 			const result = await handleGenerateChatCompletionTitle(
-				// @ts-expect-error - mock request
-				mockRequest,
+				mockServiceContext,
 				completionId,
 				messages,
 			);
@@ -182,8 +153,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 			mockConversationManager.get.mockResolvedValue(conversationMessages);
 
 			const result = await handleGenerateChatCompletionTitle(
-				// @ts-expect-error - mock request
-				mockRequest,
+				mockServiceContext,
 				completionId,
 			);
 
@@ -201,8 +171,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 			mockConversationManager.get.mockResolvedValue([]);
 
 			const result = await handleGenerateChatCompletionTitle(
-				// @ts-expect-error - mock request
-				mockRequest,
+				mockServiceContext,
 				completionId,
 			);
 
@@ -212,7 +181,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 
 		it("should trim quotes from generated title", async () => {
 			const completionId = "completion-123";
-			const messages = [{ role: "user", content: "Test" }];
+			const messages = [{ role: "user" as const, content: "Test" }];
 
 			mockConversationManager.get.mockResolvedValue([]);
 			mockSanitiseMessages.mockReturnValue(messages);
@@ -223,8 +192,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 			});
 
 			const result = await handleGenerateChatCompletionTitle(
-				// @ts-expect-error - mock request
-				mockRequest,
+				mockServiceContext,
 				completionId,
 				messages,
 			);
@@ -234,7 +202,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 
 		it("should truncate long titles", async () => {
 			const completionId = "completion-123";
-			const messages = [{ role: "user", content: "Test" }];
+			const messages = [{ role: "user" as const, content: "Test" }];
 			const longTitle = "A".repeat(60);
 
 			mockConversationManager.get.mockResolvedValue([]);
@@ -246,8 +214,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 			});
 
 			const result = await handleGenerateChatCompletionTitle(
-				// @ts-expect-error - mock request
-				mockRequest,
+				mockServiceContext,
 				completionId,
 				messages,
 			);
@@ -263,8 +230,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 			mockConversationManager.get.mockRejectedValue(new Error("Not found"));
 
 			await expect(() =>
-				// @ts-expect-error - mock request
-				handleGenerateChatCompletionTitle(mockRequest, completionId),
+				handleGenerateChatCompletionTitle(mockServiceContext, completionId),
 			).rejects.toThrow(
 				"Conversation not found or you don't have access to it",
 			);
@@ -272,7 +238,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 
 		it("should handle AI provider errors", async () => {
 			const completionId = "completion-123";
-			const messages = [{ role: "user", content: "Test" }];
+			const messages = [{ role: "user" as const, content: "Test" }];
 
 			mockConversationManager.get.mockResolvedValue([]);
 			mockSanitiseMessages.mockReturnValue(messages);
@@ -283,20 +249,12 @@ describe("handleGenerateChatCompletionTitle", () => {
 			);
 
 			await expect(() =>
-				// @ts-expect-error - mock request
-				handleGenerateChatCompletionTitle(mockRequest, completionId, messages),
+				handleGenerateChatCompletionTitle(
+					mockServiceContext,
+					completionId,
+					messages,
+				),
 			).rejects.toThrow("AI provider failed");
-		});
-
-		it("should handle service context errors", async () => {
-			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
-				throw new Error("Database connection failed");
-			});
-
-			await expect(() =>
-				// @ts-expect-error - mock request
-				handleGenerateChatCompletionTitle(mockRequest, "completion-123"),
-			).rejects.toThrow("Database connection failed");
 		});
 	});
 });

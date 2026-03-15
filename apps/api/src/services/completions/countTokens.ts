@@ -1,6 +1,7 @@
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { ChatCompletionParameters, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
@@ -20,10 +21,11 @@ interface CountTokensResponse {
 }
 
 export async function handleCountTokens(
-	{ env, user }: { env: IEnv; user?: IUser },
+	context: ServiceContext,
 	request: CountTokensRequest,
 ): Promise<CountTokensResponse> {
 	const { model, messages, system_prompt } = request;
+	const { env, user } = context;
 
 	logger.info("Processing token count request", { model });
 

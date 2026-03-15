@@ -1,7 +1,5 @@
 import { ConversationManager } from "~/lib/conversationManager";
-import { resolveServiceContext } from "~/lib/context/serviceContext";
-import type { IRequest } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 
 interface ListChatCompletionsOptions {
 	limit?: number;
@@ -10,7 +8,7 @@ interface ListChatCompletionsOptions {
 }
 
 export const handleListChatCompletions = async (
-	req: IRequest,
+	context: ServiceContext,
 	options: ListChatCompletionsOptions = {},
 ): Promise<{
 	conversations: Record<string, unknown>[];
@@ -18,21 +16,14 @@ export const handleListChatCompletions = async (
 	pageNumber: number;
 	pageSize: number;
 }> => {
-	const { env, user, context } = req;
 	const { limit = 25, page = 1, includeArchived = false } = options;
 
-	if (!user?.id) {
-		throw new AssistantError(
-			"User ID is required to list conversations",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
-	}
+	const user = context.requireUser();
 
-	const serviceContext = resolveServiceContext({ context, env, user });
-	serviceContext.ensureDatabase();
+	context.ensureDatabase();
 
 	const conversationManager = ConversationManager.getInstance({
-		database: serviceContext.database,
+		database: context.database,
 		user,
 	});
 

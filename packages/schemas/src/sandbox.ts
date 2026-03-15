@@ -85,6 +85,21 @@ export const autoConnectSchema = z.object({
 	repositories: z.array(z.string().trim().min(1)).optional(),
 });
 
+export const sandboxRunParamsSchema = z.object({
+	runId: z.string().trim().min(1),
+});
+
+export type SandboxRunParams = z.infer<typeof sandboxRunParamsSchema>;
+
+export const sandboxRunApprovalParamsSchema = z.object({
+	runId: z.string().trim().min(1),
+	approvalId: z.string().trim().min(1),
+});
+
+export type SandboxRunApprovalParams = z.infer<
+	typeof sandboxRunApprovalParamsSchema
+>;
+
 export const listRunsQuerySchema = z.object({
 	installationId: z.coerce.number().int().positive().optional(),
 	repo: z.string().trim().min(1).optional(),

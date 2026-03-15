@@ -2,10 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleGetSharedConversation } from "../getSharedConversation";
 
-vi.mock("~/lib/context/serviceContext", () => ({
-	resolveServiceContext: vi.fn(),
-}));
-
 vi.mock("~/lib/conversationManager", () => ({
 	ConversationManager: {
 		getInstance: vi.fn(),
@@ -17,7 +13,6 @@ const mockEnv = {
 };
 
 let mockServiceContext: any;
-let resolveServiceContext: any;
 
 describe("handleGetSharedConversation", () => {
 	let mockConversationManager: any;
@@ -25,7 +20,6 @@ describe("handleGetSharedConversation", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
 
 		mockConversationManager = {
@@ -39,7 +33,6 @@ describe("handleGetSharedConversation", () => {
 			repositories: {} as any,
 		};
 
-		vi.mocked(resolveServiceContext).mockReturnValue(mockServiceContext);
 		vi.mocked(ConversationManager.getInstance).mockReturnValue(
 			mockConversationManager,
 		);
@@ -62,8 +55,7 @@ describe("handleGetSharedConversation", () => {
 			);
 
 			const result = await handleGetSharedConversation(
-				// @ts-expect-error - mock request
-				{ env: mockEnv },
+				mockServiceContext,
 				shareId,
 			);
 
@@ -82,8 +74,7 @@ describe("handleGetSharedConversation", () => {
 			mockConversationManager.getPublicConversation.mockResolvedValue([]);
 
 			const result = await handleGetSharedConversation(
-				// @ts-expect-error - mock request
-				{ env: mockEnv },
+				mockServiceContext,
 				shareId,
 			);
 
@@ -94,8 +85,7 @@ describe("handleGetSharedConversation", () => {
 		it("should handle empty share ID", async () => {
 			mockConversationManager.getPublicConversation.mockResolvedValue([]);
 
-			// @ts-expect-error - mock request
-			const result = await handleGetSharedConversation({ env: mockEnv }, "");
+			const result = await handleGetSharedConversation(mockServiceContext, "");
 
 			expect(result.messages).toEqual([]);
 			expect(result.share_id).toBe("");
@@ -112,8 +102,7 @@ describe("handleGetSharedConversation", () => {
 			);
 
 			const result = await handleGetSharedConversation(
-				// @ts-expect-error - mock request
-				{ env: mockEnv },
+				mockServiceContext,
 				shareId,
 				limit,
 				after,
@@ -138,19 +127,17 @@ describe("handleGetSharedConversation", () => {
 			);
 
 			await expect(() =>
-				// @ts-expect-error - mock request
-				handleGetSharedConversation({ env: mockEnv }, shareId),
+				handleGetSharedConversation(mockServiceContext, shareId),
 			).rejects.toThrow("Shared conversation not found");
 		});
 
-		it("should handle service context errors", async () => {
-			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
+		it("should surface errors from ensureDatabase", async () => {
+			mockServiceContext.ensureDatabase.mockImplementationOnce(() => {
 				throw new Error("Database connection failed");
 			});
 
 			await expect(() =>
-				// @ts-expect-error - mock request
-				handleGetSharedConversation({ env: mockEnv }, "share-123"),
+				handleGetSharedConversation(mockServiceContext, "share-123"),
 			).rejects.toThrow("Database connection failed");
 		});
 	});

@@ -1,25 +1,17 @@
 import { ConversationManager } from "~/lib/conversationManager";
-import { resolveServiceContext } from "~/lib/context/serviceContext";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
-import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export const handleCheckChatCompletion = async (
-	req: IRequest,
+	context: ServiceContext,
 	completion_id: string,
 	role: string,
 ): Promise<{
 	content: string;
 	data: any;
 }> => {
-	const { env, user, context } = req;
-
-	if (!user?.id) {
-		throw new AssistantError(
-			"Authentication required",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
-	}
+	const user = context.requireUser();
 
 	if (!completion_id || !role) {
 		throw new AssistantError(
@@ -28,13 +20,12 @@ export const handleCheckChatCompletion = async (
 		);
 	}
 
-	const serviceContext = resolveServiceContext({ context, env, user });
-	serviceContext.ensureDatabase();
+	context.ensureDatabase();
 
 	const conversationManager = ConversationManager.getInstance({
-		database: serviceContext.database,
+		database: context.database,
 		user,
-		requestCache: serviceContext.requestCache,
+		requestCache: context.requestCache,
 	});
 
 	let messages;
@@ -60,8 +51,8 @@ export const handleCheckChatCompletion = async (
 
 	const roleToCheck = role || "user";
 
-	const userSettings = await serviceContext.getUserSettings();
-	const guardrails = new Guardrails(serviceContext.env, user, userSettings);
+	const userSettings = await context.getUserSettings();
+	const guardrails = new Guardrails(context.env, user, userSettings);
 	const validation =
 		roleToCheck === "user"
 			? await guardrails.validateInput(

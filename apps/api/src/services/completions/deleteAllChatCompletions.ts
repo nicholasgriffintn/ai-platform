@@ -1,7 +1,5 @@
 import { ConversationManager } from "~/lib/conversationManager";
-import { resolveServiceContext } from "~/lib/context/serviceContext";
-import type { IRequest } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 
 interface DeleteChatCompletionResult {
 	success: boolean;
@@ -9,26 +7,18 @@ interface DeleteChatCompletionResult {
 }
 
 export const handleDeleteAllChatCompletions = async (
-	req: IRequest,
+	context: ServiceContext,
 ): Promise<DeleteChatCompletionResult> => {
-	const { env, user, context } = req;
+	const user = context.requireUser();
 
-	if (!user?.id) {
-		throw new AssistantError(
-			"User ID is required to delete a conversation",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
-	}
-
-	const serviceContext = resolveServiceContext({ context, env, user });
-	serviceContext.ensureDatabase();
+	context.ensureDatabase();
 
 	const conversationManager = ConversationManager.getInstance({
-		database: serviceContext.database,
+		database: context.database,
 		user,
 	});
 
-	await conversationManager.deleteAllChatCompletions(user?.id);
+	await conversationManager.deleteAllChatCompletions(user.id);
 
 	return {
 		success: true,

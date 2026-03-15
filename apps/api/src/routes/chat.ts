@@ -36,6 +36,7 @@ import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
+import { sseResponse } from "~/lib/http/streaming";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
@@ -68,12 +69,6 @@ import type {
 const app = new Hono();
 
 const routeLogger = createRouteLogger("chat");
-const STREAM_RESPONSE_HEADERS = {
-	"Content-Type": "text/event-stream",
-	"Cache-Control": "no-cache",
-	Connection: "keep-alive",
-} as const;
-
 const chatMessageListQuerySchema = z.object({
 	limit: z.coerce.number().int().min(1).max(100).optional().default(50),
 	after: z.string().optional(),
@@ -86,14 +81,14 @@ const chatCompletionsListQuerySchema = z.object({
 });
 
 function respondWithStreamOrJson(
-	context: Context,
+	_context: Context,
 	result: unknown,
 	stream?: boolean,
 ): Response {
 	if (stream) {
-		return context.body(result as ReadableStream, 200, STREAM_RESPONSE_HEADERS);
+		return sseResponse(result as ReadableStream);
 	}
-	return ResponseFactory.success(context, result);
+	return ResponseFactory.success(_context, result);
 }
 
 app.use("/*", async (context: Context, next: Next) => {
@@ -373,15 +368,9 @@ app.post(
 			system_prompt?: string;
 		};
 
-		const userContext = context.get("user");
+		const serviceContext = getServiceContext(context);
 
-		const response = await handleCountTokens(
-			{
-				env: context.env as IEnv,
-				user: userContext,
-			},
-			body,
-		);
+		const response = await handleCountTokens(serviceContext, body);
 
 		return ResponseFactory.success(context, response);
 	},
@@ -400,15 +389,9 @@ app.delete(
 		},
 	}),
 	async (context: Context) => {
-		const userContext = context.get("user");
-
 		const serviceContext = getServiceContext(context);
 
-		const response = await handleDeleteAllChatCompletions({
-			env: context.env as IEnv,
-			user: userContext,
-			context: serviceContext,
-		});
+		const response = await handleDeleteAllChatCompletions(serviceContext);
 
 		return ResponseFactory.success(context, response);
 	},
@@ -453,18 +436,10 @@ app.get(
 		const { completion_id } = context.req.valid("param" as never) as {
 			completion_id: string;
 		};
-		const userContext = context.get("user");
 
 		const serviceContext = getServiceContext(context);
 
-		const data = await handleGetChatCompletion(
-			{
-				env: context.env as IEnv,
-				user: userContext,
-				context: serviceContext,
-			},
-			completion_id,
-		);
+		const data = await handleGetChatCompletion(serviceContext, completion_id);
 
 		return ResponseFactory.success(context, data);
 	},
@@ -633,7 +608,6 @@ app.get(
 	}),
 	zValidator("query", chatCompletionsListQuerySchema),
 	async (context: Context) => {
-		const userContext = context.get("user");
 		const { limit, page, include_archived } = context.req.valid(
 			"query" as never,
 		) as z.infer<typeof chatCompletionsListQuerySchema>;
@@ -641,18 +615,11 @@ app.get(
 
 		const serviceContext = getServiceContext(context);
 
-		const response = await handleListChatCompletions(
-			{
-				env: context.env as IEnv,
-				user: userContext,
-				context: serviceContext,
-			},
-			{
-				limit,
-				page,
-				includeArchived,
-			},
-		);
+		const response = await handleListChatCompletions(serviceContext, {
+			limit,
+			page,
+			includeArchived,
+		});
 
 		return ResponseFactory.success(context, response);
 	},
@@ -708,18 +675,11 @@ app.post(
 			messages: Message[];
 			store: boolean;
 		};
-		const userContext = context.get("user");
 
 		const serviceContext = getServiceContext(context);
 
-		const requestObj = {
-			env: context.env as IEnv,
-			user: userContext,
-			context: serviceContext,
-		};
-
 		const response = await handleGenerateChatCompletionTitle(
-			requestObj,
+			serviceContext,
 			completion_id,
 			messages,
 			store,
@@ -784,18 +744,11 @@ app.put(
 			completion_id: string;
 		};
 		const updates = context.req.valid("json" as never);
-		const userContext = context.get("user");
 
 		const serviceContext = getServiceContext(context);
 
-		const requestObj = {
-			env: context.env as IEnv,
-			user: userContext,
-			context: serviceContext,
-		};
-
 		const response = await handleUpdateChatCompletion(
-			requestObj,
+			serviceContext,
 			completion_id,
 			updates,
 		);
@@ -847,18 +800,11 @@ app.delete(
 		const { completion_id } = context.req.valid("param" as never) as {
 			completion_id: string;
 		};
-		const userContext = context.get("user");
 
 		const serviceContext = getServiceContext(context);
 
-		const requestObj = {
-			env: context.env as IEnv,
-			user: userContext,
-			context: serviceContext,
-		};
-
 		const response = await handleDeleteChatCompletion(
-			requestObj,
+			serviceContext,
 			completion_id,
 		);
 
@@ -916,15 +862,11 @@ app.post(
 		const { role } = context.req.valid("json" as never) as {
 			role: ChatRole;
 		};
-		const userContext = context.get("user");
 
-		const requestObj = {
-			env: context.env as IEnv,
-			user: userContext,
-		};
+		const serviceContext = getServiceContext(context);
 
 		const response = await handleCheckChatCompletion(
-			requestObj,
+			serviceContext,
 			completion_id,
 			role,
 		);
@@ -982,16 +924,13 @@ app.post(
 			completion_id: string;
 		};
 		const body = context.req.valid("json" as never) as IFeedbackBody;
-		const userContext = context.get("user");
 
-		const requestObj = {
-			request: body,
-			env: context.env as IEnv,
-			user: userContext,
-			completion_id,
-		};
+		const serviceContext = getServiceContext(context);
 
-		const response = await handleChatCompletionFeedbackSubmission(requestObj);
+		const response = await handleChatCompletionFeedbackSubmission(
+			serviceContext,
+			{ request: body, completion_id },
+		);
 
 		return ResponseFactory.success(context, {
 			response,
@@ -1043,18 +982,10 @@ app.post(
 		const { completion_id } = context.req.valid("param" as never) as {
 			completion_id: string;
 		};
-		const userContext = context.get("user");
 
 		const serviceContext = getServiceContext(context);
 
-		const result = await handleShareConversation(
-			{
-				env: context.env as IEnv,
-				user: userContext,
-				context: serviceContext,
-			},
-			completion_id,
-		);
+		const result = await handleShareConversation(serviceContext, completion_id);
 
 		return ResponseFactory.success(context, result);
 	},
@@ -1102,16 +1033,11 @@ app.delete(
 		const { completion_id } = context.req.valid("param" as never) as {
 			completion_id: string;
 		};
-		const userContext = context.get("user");
 
 		const serviceContext = getServiceContext(context);
 
 		const result = await handleUnshareConversation(
-			{
-				env: context.env as IEnv,
-				user: userContext,
-				context: serviceContext,
-			},
+			serviceContext,
 			completion_id,
 		);
 
@@ -1177,10 +1103,7 @@ app.get(
 		const serviceContext = getServiceContext(context);
 
 		const result = await handleGetSharedConversation(
-			{
-				env: context.env as IEnv,
-				context: serviceContext,
-			},
+			serviceContext,
 			share_id,
 			limit,
 			after,

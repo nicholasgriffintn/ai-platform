@@ -2,10 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleCheckChatCompletion } from "../checkChatCompletion";
 
-vi.mock("~/lib/context/serviceContext", () => ({
-	resolveServiceContext: vi.fn(),
-}));
-
 vi.mock("~/lib/conversationManager", () => ({
 	ConversationManager: {
 		getInstance: vi.fn(),
@@ -29,13 +25,7 @@ const mockUser = {
 	email: "test@example.com",
 } as any;
 
-const mockRequest = {
-	env: mockEnv,
-	user: mockUser,
-} as any;
-
 let mockServiceContext: any;
-let resolveServiceContext: any;
 let guardrailsFactory: (() => any) | undefined;
 let mockGuardrails: any;
 
@@ -46,7 +36,6 @@ describe("handleCheckChatCompletion", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
 
 		mockDatabase = {
@@ -77,9 +66,9 @@ describe("handleCheckChatCompletion", () => {
 			requestCache: new Map(),
 			getUserSettings: vi.fn().mockResolvedValue({}),
 			setUserSettings: vi.fn(),
+			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(resolveServiceContext).mockReturnValue(mockServiceContext);
 		vi.mocked(ConversationManager.getInstance).mockReturnValue(
 			mockConversationManager,
 		);
@@ -91,55 +80,34 @@ describe("handleCheckChatCompletion", () => {
 
 	describe("parameter validation", () => {
 		it("should throw error for missing user ID", async () => {
-			const requestWithoutUser = {
-				env: mockEnv,
-				user: null,
-			} as any;
+			mockServiceContext.requireUser.mockImplementationOnce(() => {
+				throw new Error("Authentication required");
+			});
 
 			await expect(() =>
-				handleCheckChatCompletion(requestWithoutUser, "completion-123", "user"),
+				handleCheckChatCompletion(mockServiceContext, "completion-123", "user"),
 			).rejects.toThrow("Authentication required");
 		});
 
 		it("should throw error for user without ID", async () => {
-			const requestWithInvalidUser = {
-				env: mockEnv,
-				user: { email: "test@example.com" },
-			} as any;
-
-			await expect(() =>
-				handleCheckChatCompletion(
-					requestWithInvalidUser,
-					"completion-123",
-					"user",
-				),
-			).rejects.toThrow("Authentication required");
-		});
-
-		it("should surface errors from service context creation", async () => {
-			const requestWithoutDB = {
-				env: {},
-				user: mockUser,
-			} as any;
-
-			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
-				throw new Error("Database not configured");
+			mockServiceContext.requireUser.mockImplementationOnce(() => {
+				throw new Error("Authentication required");
 			});
 
 			await expect(() =>
-				handleCheckChatCompletion(requestWithoutDB, "completion-123", "user"),
-			).rejects.toThrow("Database not configured");
+				handleCheckChatCompletion(mockServiceContext, "completion-123", "user"),
+			).rejects.toThrow("Authentication required");
 		});
 
 		it("should throw error for missing completion_id", async () => {
 			await expect(() =>
-				handleCheckChatCompletion(mockRequest, "", "user"),
+				handleCheckChatCompletion(mockServiceContext, "", "user"),
 			).rejects.toThrow("Missing completion_id or role");
 		});
 
 		it("should throw error for missing role", async () => {
 			await expect(() =>
-				handleCheckChatCompletion(mockRequest, "completion-123", ""),
+				handleCheckChatCompletion(mockServiceContext, "completion-123", ""),
 			).rejects.toThrow("Missing completion_id or role");
 		});
 	});
@@ -173,7 +141,7 @@ describe("handleCheckChatCompletion", () => {
 			mockServiceContext.getUserSettings.mockResolvedValue({});
 
 			const result = await handleCheckChatCompletion(
-				mockRequest,
+				mockServiceContext,
 				completionId,
 				"user",
 			);
@@ -218,7 +186,7 @@ describe("handleCheckChatCompletion", () => {
 			mockGuardrails.validateOutput.mockResolvedValue(mockValidation);
 
 			const result = await handleCheckChatCompletion(
-				mockRequest,
+				mockServiceContext,
 				completionId,
 				"assistant",
 			);
@@ -258,7 +226,7 @@ describe("handleCheckChatCompletion", () => {
 			mockGuardrails.validateInput.mockResolvedValue(mockValidation);
 
 			const result = await handleCheckChatCompletion(
-				mockRequest,
+				mockServiceContext,
 				completionId,
 				"user",
 			);
@@ -297,7 +265,7 @@ describe("handleCheckChatCompletion", () => {
 			mockGuardrails.validateOutput.mockResolvedValue(mockValidation);
 
 			const result = await handleCheckChatCompletion(
-				mockRequest,
+				mockServiceContext,
 				completionId,
 				"assistant",
 			);
@@ -342,7 +310,7 @@ describe("handleCheckChatCompletion", () => {
 			mockConversationManager.get.mockResolvedValue(mockMessages);
 			mockGuardrails.validateInput.mockResolvedValue(mockValidation);
 
-			await handleCheckChatCompletion(mockRequest, completionId, "user");
+			await handleCheckChatCompletion(mockServiceContext, completionId, "user");
 
 			expect(mockGuardrails.validateInput).toHaveBeenCalledWith(
 				expect.not.stringContaining("Error occurred"),
@@ -383,7 +351,7 @@ describe("handleCheckChatCompletion", () => {
 			mockConversationManager.get.mockResolvedValue(mockMessages);
 			mockGuardrails.validateInput.mockResolvedValue(mockValidation);
 
-			await handleCheckChatCompletion(mockRequest, completionId, "user");
+			await handleCheckChatCompletion(mockServiceContext, completionId, "user");
 
 			const calledWith = mockGuardrails.validateInput.mock.calls[0][0];
 			expect(calledWith).not.toContain("null");
@@ -416,7 +384,7 @@ describe("handleCheckChatCompletion", () => {
 			mockConversationManager.get.mockResolvedValue(mockMessages);
 			mockGuardrails.validateInput.mockResolvedValue(mockValidation);
 
-			await handleCheckChatCompletion(mockRequest, completionId, "user");
+			await handleCheckChatCompletion(mockServiceContext, completionId, "user");
 
 			expect(mockGuardrails.validateInput).toHaveBeenCalledWith(
 				expect.stringContaining(JSON.stringify(complexContent)),
@@ -435,7 +403,7 @@ describe("handleCheckChatCompletion", () => {
 			);
 
 			await expect(() =>
-				handleCheckChatCompletion(mockRequest, completionId, "user"),
+				handleCheckChatCompletion(mockServiceContext, completionId, "user"),
 			).rejects.toThrow(
 				"Conversation not found or you don't have access to it",
 			);
@@ -447,7 +415,7 @@ describe("handleCheckChatCompletion", () => {
 			mockConversationManager.get.mockResolvedValue([]);
 
 			await expect(() =>
-				handleCheckChatCompletion(mockRequest, completionId, "user"),
+				handleCheckChatCompletion(mockServiceContext, completionId, "user"),
 			).rejects.toThrow("No messages found");
 		});
 
@@ -468,7 +436,7 @@ describe("handleCheckChatCompletion", () => {
 			);
 
 			await expect(() =>
-				handleCheckChatCompletion(mockRequest, completionId, "user"),
+				handleCheckChatCompletion(mockServiceContext, completionId, "user"),
 			).rejects.toThrow("Guardrails service unavailable");
 		});
 
@@ -489,34 +457,17 @@ describe("handleCheckChatCompletion", () => {
 			);
 
 			await expect(() =>
-				handleCheckChatCompletion(mockRequest, completionId, "user"),
+				handleCheckChatCompletion(mockServiceContext, completionId, "user"),
 			).rejects.toThrow("Settings retrieval failed");
 		});
 	});
 
 	describe("role validation", () => {
-		it("should default to user role when role is empty", async () => {
+		it("should throw for missing role", async () => {
 			const completionId = "completion-default-role";
-			const mockMessages = [
-				{
-					id: "msg-1",
-					role: "user",
-					content: "Test message",
-					status: "completed",
-				},
-			];
-
-			const mockValidation = {
-				isValid: true,
-				score: 0.95,
-				flags: [],
-			};
-
-			mockConversationManager.get.mockResolvedValue(mockMessages);
-			mockGuardrails.validateInput.mockResolvedValue(mockValidation);
 
 			await expect(() =>
-				handleCheckChatCompletion(mockRequest, completionId, ""),
+				handleCheckChatCompletion(mockServiceContext, completionId, ""),
 			).rejects.toThrow("Missing completion_id or role");
 		});
 
@@ -541,7 +492,7 @@ describe("handleCheckChatCompletion", () => {
 			mockGuardrails.validateOutput.mockResolvedValue(mockValidation);
 
 			const result = await handleCheckChatCompletion(
-				mockRequest,
+				mockServiceContext,
 				completionId,
 				"system",
 			);

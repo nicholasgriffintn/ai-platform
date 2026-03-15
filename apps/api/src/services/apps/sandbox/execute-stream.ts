@@ -8,10 +8,8 @@ import { getLogger } from "~/utils/logger";
 import { assertSandboxRunCanStart } from "./run-limits";
 import { buildSandboxTimeoutConfig } from "./config";
 import { type SandboxRunData } from "./run-data";
-import {
-	SANDBOX_SSE_HEADERS,
-	createCoordinatorEventSseStream,
-} from "./streaming";
+import { createCoordinatorEventSseStream } from "./streaming";
+import { SSE_HEADERS } from "~/lib/http/streaming";
 import {
 	appendRunCoordinatorEvent,
 	initRunCoordinatorControl,
@@ -208,7 +206,7 @@ export async function executeSandboxRunStream(
 	});
 	return new Response(stream, {
 		headers: {
-			...SANDBOX_SSE_HEADERS,
+			...SSE_HEADERS,
 			"X-Sandbox-Run-Id": runId,
 		},
 	});

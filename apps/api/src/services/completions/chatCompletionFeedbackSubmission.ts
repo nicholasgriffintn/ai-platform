@@ -1,5 +1,6 @@
 import { gatewayId } from "~/constants/app";
-import type { IEnv, IFeedbackBody } from "~/types";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { IFeedbackBody } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { RepositoryManager } from "~/repositories";
 import { getLogger } from "~/utils/logger";
@@ -8,15 +9,16 @@ const logger = getLogger({
 	prefix: "services/chatCompletionFeedbackSubmission",
 });
 
-export const handleChatCompletionFeedbackSubmission = async (req: {
+interface FeedbackParams {
 	request: IFeedbackBody;
-	env: IEnv;
-	user: {
-		email: string;
-	};
 	completion_id: string;
-}): Promise<{ success: boolean; message: string; completion_id: string }> => {
-	const { request, env, user, completion_id } = req;
+}
+
+export const handleChatCompletionFeedbackSubmission = async (
+	context: ServiceContext,
+	{ request, completion_id }: FeedbackParams,
+): Promise<{ success: boolean; message: string; completion_id: string }> => {
+	const { env, user } = context;
 
 	if (!request) {
 		throw new AssistantError("Missing request", ErrorType.PARAMS_ERROR);

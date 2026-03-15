@@ -1,7 +1,5 @@
 import { ConversationManager } from "~/lib/conversationManager";
-import { resolveServiceContext } from "~/lib/context/serviceContext";
-import type { IRequest } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 
 interface ChatCompletionUpdateParams {
 	title?: string;
@@ -9,24 +7,16 @@ interface ChatCompletionUpdateParams {
 }
 
 export const handleUpdateChatCompletion = async (
-	req: IRequest,
+	context: ServiceContext,
 	completion_id: string,
 	updates: ChatCompletionUpdateParams,
 ): Promise<Record<string, unknown>> => {
-	const { env, user, context } = req;
+	const user = context.requireUser();
 
-	if (!user?.id) {
-		throw new AssistantError(
-			"User ID is required to update a conversation",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
-	}
-
-	const serviceContext = resolveServiceContext({ context, env, user });
-	serviceContext.ensureDatabase();
+	context.ensureDatabase();
 
 	const conversationManager = ConversationManager.getInstance({
-		database: serviceContext.database,
+		database: context.database,
 		user,
 	});
 

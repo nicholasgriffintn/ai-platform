@@ -2,10 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleShareConversation } from "../shareConversation";
 
-vi.mock("~/lib/context/serviceContext", () => ({
-	resolveServiceContext: vi.fn(),
-}));
-
 vi.mock("~/lib/conversationManager", () => ({
 	ConversationManager: {
 		getInstance: vi.fn(),
@@ -22,7 +18,6 @@ const mockUser = {
 };
 
 let mockServiceContext: any;
-let resolveServiceContext: any;
 
 describe("handleShareConversation", () => {
 	let mockConversationManager: any;
@@ -30,7 +25,6 @@ describe("handleShareConversation", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
 
 		mockConversationManager = {
@@ -43,9 +37,9 @@ describe("handleShareConversation", () => {
 			ensureDatabase: vi.fn(),
 			database: {} as any,
 			repositories: {} as any,
+			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(resolveServiceContext).mockReturnValue(mockServiceContext);
 		vi.mocked(ConversationManager.getInstance).mockReturnValue(
 			mockConversationManager,
 		);
@@ -57,21 +51,12 @@ describe("handleShareConversation", () => {
 
 	describe("parameter validation", () => {
 		it("should throw error for missing user", async () => {
-			await expect(() =>
-				// @ts-expect-error - mock request
-				handleShareConversation({ env: mockEnv, user: null }, "completion-123"),
-			).rejects.toThrow("Authentication required");
-		});
-
-		it("should throw error for user without ID", async () => {
-			const userWithoutId = { email: "test@example.com" } as any;
+			mockServiceContext.requireUser.mockImplementationOnce(() => {
+				throw new Error("Authentication required");
+			});
 
 			await expect(() =>
-				handleShareConversation(
-					// @ts-expect-error - mock request
-					{ env: mockEnv, user: userWithoutId },
-					"completion-123",
-				),
+				handleShareConversation(mockServiceContext, "completion-123"),
 			).rejects.toThrow("Authentication required");
 		});
 	});
@@ -86,8 +71,7 @@ describe("handleShareConversation", () => {
 			mockConversationManager.shareConversation.mockResolvedValue(mockResult);
 
 			const result = await handleShareConversation(
-				// @ts-expect-error - mock request
-				{ env: mockEnv, user: mockUser },
+				mockServiceContext,
 				completionId,
 			);
 
@@ -104,11 +88,7 @@ describe("handleShareConversation", () => {
 
 			mockConversationManager.shareConversation.mockResolvedValue(mockResult);
 
-			const result = await handleShareConversation(
-				// @ts-expect-error - mock request
-				{ env: mockEnv, user: mockUser },
-				"",
-			);
+			const result = await handleShareConversation(mockServiceContext, "");
 
 			expect(mockConversationManager.shareConversation).toHaveBeenCalledWith(
 				"",
@@ -125,8 +105,7 @@ describe("handleShareConversation", () => {
 			mockConversationManager.shareConversation.mockResolvedValue(mockResult);
 
 			const result = await handleShareConversation(
-				// @ts-expect-error - mock request
-				{ env: mockEnv, user: mockUser },
+				mockServiceContext,
 				completionId,
 			);
 
@@ -143,23 +122,8 @@ describe("handleShareConversation", () => {
 			);
 
 			await expect(() =>
-				// @ts-expect-error - mock request
-				handleShareConversation({ env: mockEnv, user: mockUser }, completionId),
+				handleShareConversation(mockServiceContext, completionId),
 			).rejects.toThrow("Conversation not found");
-		});
-
-		it("should handle service context errors", async () => {
-			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
-				throw new Error("Database connection failed");
-			});
-
-			await expect(() =>
-				handleShareConversation(
-					// @ts-expect-error - mock request
-					{ env: mockEnv, user: mockUser },
-					"completion-123",
-				),
-			).rejects.toThrow("Database connection failed");
 		});
 	});
 });

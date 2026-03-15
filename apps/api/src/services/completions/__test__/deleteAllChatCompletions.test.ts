@@ -2,10 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleDeleteAllChatCompletions } from "../deleteAllChatCompletions";
 
-vi.mock("~/lib/context/serviceContext", () => ({
-	resolveServiceContext: vi.fn(),
-}));
-
 vi.mock("~/lib/conversationManager", () => ({
 	ConversationManager: {
 		getInstance: vi.fn(),
@@ -21,13 +17,7 @@ const mockUser = {
 	email: "test@example.com",
 };
 
-const mockRequest = {
-	env: mockEnv,
-	user: mockUser,
-};
-
 let mockServiceContext: any;
-let resolveServiceContext: any;
 
 describe("handleDeleteAllChatCompletions", () => {
 	let mockConversationManager: any;
@@ -35,7 +25,6 @@ describe("handleDeleteAllChatCompletions", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		({ resolveServiceContext } = await import("~/lib/context/serviceContext"));
 		const { ConversationManager } = await import("~/lib/conversationManager");
 
 		mockConversationManager = {
@@ -48,9 +37,9 @@ describe("handleDeleteAllChatCompletions", () => {
 			ensureDatabase: vi.fn(),
 			database: {} as any,
 			repositories: {} as any,
+			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(resolveServiceContext).mockReturnValue(mockServiceContext);
 		vi.mocked(ConversationManager.getInstance).mockReturnValue(
 			mockConversationManager,
 		);
@@ -62,28 +51,22 @@ describe("handleDeleteAllChatCompletions", () => {
 
 	describe("parameter validation", () => {
 		it("should throw error for missing user ID", async () => {
-			const requestWithoutUser = {
-				env: mockEnv,
-				user: null,
-			} as any;
+			mockServiceContext.requireUser.mockImplementationOnce(() => {
+				throw new Error("User is not authenticated");
+			});
 
 			await expect(() =>
-				handleDeleteAllChatCompletions(requestWithoutUser),
-			).rejects.toThrow("User ID is required to delete a conversation");
+				handleDeleteAllChatCompletions(mockServiceContext),
+			).rejects.toThrow("User is not authenticated");
 		});
 
-		it("should surface errors from service context creation", async () => {
-			const requestWithoutDB = {
-				env: {},
-				user: mockUser,
-			} as any;
-
-			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
+		it("should surface errors from ensureDatabase", async () => {
+			mockServiceContext.ensureDatabase.mockImplementationOnce(() => {
 				throw new Error("Database not configured");
 			});
 
 			await expect(() =>
-				handleDeleteAllChatCompletions(requestWithoutDB),
+				handleDeleteAllChatCompletions(mockServiceContext),
 			).rejects.toThrow("Database not configured");
 		});
 	});
@@ -94,8 +77,7 @@ describe("handleDeleteAllChatCompletions", () => {
 				undefined,
 			);
 
-			// @ts-expect-error - mock request
-			const result = await handleDeleteAllChatCompletions(mockRequest);
+			const result = await handleDeleteAllChatCompletions(mockServiceContext);
 
 			expect(
 				mockConversationManager.deleteAllChatCompletions,
@@ -114,20 +96,8 @@ describe("handleDeleteAllChatCompletions", () => {
 			);
 
 			await expect(() =>
-				// @ts-expect-error - mock request
-				handleDeleteAllChatCompletions(mockRequest),
+				handleDeleteAllChatCompletions(mockServiceContext),
 			).rejects.toThrow("Deletion failed");
-		});
-
-		it("should handle service context errors", async () => {
-			vi.mocked(resolveServiceContext).mockImplementationOnce(() => {
-				throw new Error("Database connection failed");
-			});
-
-			await expect(() =>
-				// @ts-expect-error - mock request
-				handleDeleteAllChatCompletions(mockRequest),
-			).rejects.toThrow("Database connection failed");
 		});
 	});
 });

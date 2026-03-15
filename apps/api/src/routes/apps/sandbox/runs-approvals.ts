@@ -3,11 +3,16 @@ import { validator as zValidator } from "hono-openapi";
 import {
 	requestRunApprovalSchema,
 	resolveRunApprovalSchema,
+	sandboxRunParamsSchema,
+	sandboxRunApprovalParamsSchema,
 	type RequestRunApprovalPayload,
 	type ResolveRunApprovalPayload,
+	type SandboxRunParams,
+	type SandboxRunApprovalParams,
 } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
+import { requireAuthenticatedUser } from "~/lib/http/auth";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	getSandboxRunApprovalForUser,
@@ -15,52 +20,48 @@ import {
 	requestSandboxRunApproval,
 	resolveSandboxRunApproval,
 } from "~/services/apps/sandbox/runs";
-import type { IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export function registerSandboxRunApprovalRoutes(app: Hono): void {
-	app.get("/runs/:runId/approvals", async (c: Context) => {
-		const user = c.get("user") as IUser;
-		const runId = c.req.param("runId");
-		if (!runId) {
-			throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
-		}
-		const approvals = await listSandboxRunApprovalsForUser({
-			context: getServiceContext(c),
-			userId: user.id,
-			runId,
-		});
-		return ResponseFactory.success(c, { approvals });
-	});
+	app.get(
+		"/runs/:runId/approvals",
+		zValidator("param", sandboxRunParamsSchema),
+		async (c: Context) => {
+			const user = requireAuthenticatedUser(c);
+			const { runId } = c.req.valid("param" as never) as SandboxRunParams;
+			const approvals = await listSandboxRunApprovalsForUser({
+				context: getServiceContext(c),
+				userId: user.id,
+				runId,
+			});
+			return ResponseFactory.success(c, { approvals });
+		},
+	);
 
-	app.get("/runs/:runId/approvals/:approvalId", async (c: Context) => {
-		const user = c.get("user") as IUser;
-		const runId = c.req.param("runId");
-		const approvalId = c.req.param("approvalId");
-		if (!runId || !approvalId) {
-			throw new AssistantError(
-				"runId and approvalId are required",
-				ErrorType.PARAMS_ERROR,
-			);
-		}
-		const approval = await getSandboxRunApprovalForUser({
-			context: getServiceContext(c),
-			userId: user.id,
-			runId,
-			approvalId,
-		});
-		return ResponseFactory.success(c, { approval });
-	});
+	app.get(
+		"/runs/:runId/approvals/:approvalId",
+		zValidator("param", sandboxRunApprovalParamsSchema),
+		async (c: Context) => {
+			const user = requireAuthenticatedUser(c);
+			const { runId, approvalId } = c.req.valid(
+				"param" as never,
+			) as SandboxRunApprovalParams;
+			const approval = await getSandboxRunApprovalForUser({
+				context: getServiceContext(c),
+				userId: user.id,
+				runId,
+				approvalId,
+			});
+			return ResponseFactory.success(c, { approval });
+		},
+	);
 
 	app.post(
 		"/runs/:runId/approvals/request",
+		zValidator("param", sandboxRunParamsSchema),
 		zValidator("json", requestRunApprovalSchema),
 		async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const runId = c.req.param("runId");
-			if (!runId) {
-				throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
-			}
+			const user = requireAuthenticatedUser(c);
+			const { runId } = c.req.valid("param" as never) as SandboxRunParams;
 			const payload = c.req.valid("json" as never) as RequestRunApprovalPayload;
 			const approval = await requestSandboxRunApproval({
 				context: getServiceContext(c),
@@ -77,17 +78,13 @@ export function registerSandboxRunApprovalRoutes(app: Hono): void {
 
 	app.post(
 		"/runs/:runId/approvals/:approvalId/resolve",
+		zValidator("param", sandboxRunApprovalParamsSchema),
 		zValidator("json", resolveRunApprovalSchema),
 		async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const runId = c.req.param("runId");
-			const approvalId = c.req.param("approvalId");
-			if (!runId || !approvalId) {
-				throw new AssistantError(
-					"runId and approvalId are required",
-					ErrorType.PARAMS_ERROR,
-				);
-			}
+			const user = requireAuthenticatedUser(c);
+			const { runId, approvalId } = c.req.valid(
+				"param" as never,
+			) as SandboxRunApprovalParams;
 			const payload = c.req.valid("json" as never) as ResolveRunApprovalPayload;
 			const result = await resolveSandboxRunApproval({
 				context: getServiceContext(c),

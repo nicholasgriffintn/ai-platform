@@ -7,15 +7,19 @@ import {
 	listRunsQuerySchema,
 	pauseRunSchema,
 	resumeRunSchema,
+	sandboxRunParamsSchema,
 	type CancelRunPayload,
 	type ListRunEventsQueryPayload,
 	type ListRunsQueryPayload,
 	type PauseRunPayload,
 	type ResumeRunPayload,
+	type SandboxRunParams,
 } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
+import { requireAuthenticatedUser } from "~/lib/http/auth";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
+import { sseResponse } from "~/lib/http/streaming";
 import {
 	getSandboxRunControlState,
 	getSandboxRunForUser,
@@ -25,13 +29,8 @@ import {
 	requestSandboxRunPause,
 	requestSandboxRunResume,
 } from "~/services/apps/sandbox/runs";
-import {
-	createCoordinatorEventSseStream,
-	SANDBOX_SSE_HEADERS,
-} from "~/services/apps/sandbox/streaming";
+import { createCoordinatorEventSseStream } from "~/services/apps/sandbox/streaming";
 import { openRunCoordinatorEventsSocket } from "~/services/apps/sandbox/run-coordinator";
-import type { IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 	app.get(
@@ -55,7 +54,7 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 		}),
 		zValidator("query", listRunsQuerySchema),
 		async (c: Context) => {
-			const user = c.get("user") as IUser;
+			const user = requireAuthenticatedUser(c);
 			const payload = c.req.valid("query" as never) as ListRunsQueryPayload;
 			const serviceContext = getServiceContext(c);
 			const runs = await listSandboxRunsForUser({
@@ -87,12 +86,10 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 				},
 			},
 		}),
+		zValidator("param", sandboxRunParamsSchema),
 		async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const runId = c.req.param("runId");
-			if (!runId) {
-				throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
-			}
+			const user = requireAuthenticatedUser(c);
+			const { runId } = c.req.valid("param" as never) as SandboxRunParams;
 			const run = await getSandboxRunForUser({
 				context: getServiceContext(c),
 				userId: user.id,
@@ -104,14 +101,12 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 
 	app.get(
 		"/runs/:runId/events",
+		zValidator("param", sandboxRunParamsSchema),
 		zValidator("query", listRunEventsQuerySchema),
 		async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const runId = c.req.param("runId");
+			const user = requireAuthenticatedUser(c);
+			const { runId } = c.req.valid("param" as never) as SandboxRunParams;
 			const query = c.req.valid("query" as never) as ListRunEventsQueryPayload;
-			if (!runId) {
-				throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
-			}
 			const events = await listSandboxRunEventsForUser({
 				context: getServiceContext(c),
 				userId: user.id,
@@ -124,14 +119,12 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 
 	app.get(
 		"/runs/:runId/events/stream",
+		zValidator("param", sandboxRunParamsSchema),
 		zValidator("query", listRunEventsQuerySchema),
 		async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const runId = c.req.param("runId");
+			const user = requireAuthenticatedUser(c);
+			const { runId } = c.req.valid("param" as never) as SandboxRunParams;
 			const query = c.req.valid("query" as never) as ListRunEventsQueryPayload;
-			if (!runId) {
-				throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
-			}
 
 			const context = getServiceContext(c);
 			const stream = createCoordinatorEventSseStream({
@@ -151,35 +144,34 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 					}),
 			});
 
-			return new Response(stream, {
-				headers: SANDBOX_SSE_HEADERS,
-			});
+			return sseResponse(stream);
 		},
 	);
 
-	app.get("/runs/:runId/events/ws", async (c: Context) => {
-		const user = c.get("user") as IUser;
-		const runId = c.req.param("runId");
-		if (!runId) {
-			throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
-		}
-		await getSandboxRunForUser({
-			context: getServiceContext(c),
-			userId: user.id,
-			runId,
-		});
+	app.get(
+		"/runs/:runId/events/ws",
+		zValidator("param", sandboxRunParamsSchema),
+		async (c: Context) => {
+			const user = requireAuthenticatedUser(c);
+			const { runId } = c.req.valid("param" as never) as SandboxRunParams;
+			await getSandboxRunForUser({
+				context: getServiceContext(c),
+				userId: user.id,
+				runId,
+			});
 
-		if (!c.env.SANDBOX_RUN_COORDINATOR) {
-			return c.json({ error: "Run coordinator is not configured" }, 503);
-		}
-		if (c.req.header("upgrade")?.toLowerCase() !== "websocket") {
-			return c.json({ error: "Expected websocket upgrade request" }, 426);
-		}
+			if (!c.env.SANDBOX_RUN_COORDINATOR) {
+				return c.json({ error: "Run coordinator is not configured" }, 503);
+			}
+			if (c.req.header("upgrade")?.toLowerCase() !== "websocket") {
+				return c.json({ error: "Expected websocket upgrade request" }, 426);
+			}
 
-		const id = c.env.SANDBOX_RUN_COORDINATOR.idFromName(runId);
-		const stub = c.env.SANDBOX_RUN_COORDINATOR.get(id);
-		return stub.fetch("https://sandbox-run-coordinator/events/ws", c.req.raw);
-	});
+			const id = c.env.SANDBOX_RUN_COORDINATOR.idFromName(runId);
+			const stub = c.env.SANDBOX_RUN_COORDINATOR.get(id);
+			return stub.fetch("https://sandbox-run-coordinator/events/ws", c.req.raw);
+		},
+	);
 
 	app.post(
 		"/runs/:runId/pause",
@@ -193,14 +185,12 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 				},
 			},
 		}),
+		zValidator("param", sandboxRunParamsSchema),
 		zValidator("json", pauseRunSchema),
 		async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const runId = c.req.param("runId");
+			const user = requireAuthenticatedUser(c);
+			const { runId } = c.req.valid("param" as never) as SandboxRunParams;
 			const payload = c.req.valid("json" as never) as PauseRunPayload;
-			if (!runId) {
-				throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
-			}
 			const result = await requestSandboxRunPause({
 				context: getServiceContext(c),
 				userId: user.id,
@@ -223,14 +213,12 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 				},
 			},
 		}),
+		zValidator("param", sandboxRunParamsSchema),
 		zValidator("json", resumeRunSchema),
 		async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const runId = c.req.param("runId");
+			const user = requireAuthenticatedUser(c);
+			const { runId } = c.req.valid("param" as never) as SandboxRunParams;
 			const payload = c.req.valid("json" as never) as ResumeRunPayload;
-			if (!runId) {
-				throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
-			}
 			const result = await requestSandboxRunResume({
 				context: getServiceContext(c),
 				userId: user.id,
@@ -253,14 +241,12 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 				},
 			},
 		}),
+		zValidator("param", sandboxRunParamsSchema),
 		zValidator("json", cancelRunSchema),
 		async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const runId = c.req.param("runId");
+			const user = requireAuthenticatedUser(c);
+			const { runId } = c.req.valid("param" as never) as SandboxRunParams;
 			const payload = c.req.valid("json" as never) as CancelRunPayload;
-			if (!runId) {
-				throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
-			}
 			const result = await requestSandboxRunCancellation({
 				context: getServiceContext(c),
 				userId: user.id,
@@ -283,12 +269,10 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 				},
 			},
 		}),
+		zValidator("param", sandboxRunParamsSchema),
 		async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const runId = c.req.param("runId");
-			if (!runId) {
-				throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
-			}
+			const user = requireAuthenticatedUser(c);
+			const { runId } = c.req.valid("param" as never) as SandboxRunParams;
 			const control = await getSandboxRunControlState({
 				context: getServiceContext(c),
 				userId: user.id,
