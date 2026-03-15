@@ -296,4 +296,79 @@ describe("executeAgentLoop", () => {
 			emitted.filter((event) => event.type === "command_completed"),
 		).toHaveLength(2);
 	});
+
+	it("reads multiple files in one step via read_files", async () => {
+		const emitted: Array<Record<string, unknown>> = [];
+		const chatCompletion = vi
+			.fn()
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "read_files",
+					files: [{ path: "src/a.ts" }, { path: "src/b.ts", startLine: 5 }],
+				}),
+			)
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "finish",
+					summary: "read batch complete",
+				}),
+			);
+
+		const exec = vi
+			.fn()
+			.mockResolvedValueOnce({
+				success: true,
+				exitCode: 0,
+				stdout: "const a = 1;\n",
+				stderr: "",
+			})
+			.mockResolvedValueOnce({
+				success: true,
+				exitCode: 0,
+				stdout: "const b = 2;\n",
+				stderr: "",
+			});
+
+		const result = await executeAgentLoop({
+			sandbox: {
+				exec,
+			} as any,
+			client: {
+				chatCompletion,
+			} as any,
+			model: "test-model",
+			repoDisplayName: "owner/repo",
+			repoTargetDir: "repo",
+			task: "test",
+			taskType: "feature-implementation",
+			promptStrategy: {
+				strategy: "feature-delivery",
+				definition: {
+					strategy: "feature-delivery",
+					label: "Feature delivery",
+					planningFocus: ["focus"],
+					executionFocus: ["focus"],
+					examples: [],
+				},
+				reason: "test",
+				source: "explicit",
+			},
+			initialPlan: "plan",
+			repoContext: {
+				topLevelEntries: [],
+				files: [],
+				taskInstructionSource: "none",
+			},
+			executionLogs: [],
+			emit: async (event) => {
+				emitted.push(event as unknown as Record<string, unknown>);
+			},
+		});
+
+		expect(result.summary).toBe("read batch complete");
+		expect(exec).toHaveBeenCalledTimes(2);
+		expect(emitted.filter((event) => event.type === "file_read")).toHaveLength(
+			2,
+		);
+	});
 });

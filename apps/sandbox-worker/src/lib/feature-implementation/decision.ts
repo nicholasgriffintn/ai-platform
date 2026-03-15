@@ -171,6 +171,40 @@ function parseDecisionPayload(payload: string): Record<string, unknown> {
 	throw new Error("Unable to parse decision payload as JSON");
 }
 
+function parseReadFileTarget(rawTarget: unknown): {
+	path: string;
+	startLine?: number;
+	endLine?: number;
+} {
+	if (
+		typeof rawTarget === "object" &&
+		rawTarget !== null &&
+		!Array.isArray(rawTarget)
+	) {
+		const record = rawTarget as Record<string, unknown>;
+		const path = typeof record.path === "string" ? record.path.trim() : "";
+		if (!path) {
+			throw new Error("read_files target requires a non-empty path");
+		}
+		return {
+			path,
+			startLine:
+				typeof record.startLine === "number" ? record.startLine : undefined,
+			endLine: typeof record.endLine === "number" ? record.endLine : undefined,
+		};
+	}
+
+	if (typeof rawTarget === "string") {
+		const path = rawTarget.trim();
+		if (!path) {
+			throw new Error("read_files target requires a non-empty path");
+		}
+		return { path };
+	}
+
+	throw new Error("read_files target must be a path string or object");
+}
+
 function inferActionFromFields(parsed: Record<string, unknown>): string {
 	if (typeof parsed.action === "string" && parsed.action.trim()) {
 		return parsed.action.trim().toLowerCase();
@@ -181,6 +215,9 @@ function inferActionFromFields(parsed: Record<string, unknown>): string {
 	}
 	if (Array.isArray(parsed.commands) && parsed.commands.length > 0) {
 		return "run_parallel";
+	}
+	if (Array.isArray(parsed.files) && parsed.files.length > 0) {
+		return "read_files";
 	}
 	if (typeof parsed.path === "string" && parsed.path.trim()) {
 		return "read_file";
@@ -268,6 +305,26 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 								: undefined,
 						endLine:
 							typeof parsed.endLine === "number" ? parsed.endLine : undefined,
+						reasoning,
+					};
+				}
+				case "read_files":
+				case "batch_read":
+				case "read_batch": {
+					if (!Array.isArray(parsed.files)) {
+						throw new Error("read_files action requires a files array");
+					}
+
+					const files = parsed.files.map((entry) => parseReadFileTarget(entry));
+					if (!files.length) {
+						throw new Error(
+							"read_files action requires at least one file target",
+						);
+					}
+
+					return {
+						action: "read_files",
+						files,
 						reasoning,
 					};
 				}

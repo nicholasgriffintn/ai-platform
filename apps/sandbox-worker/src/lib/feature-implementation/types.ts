@@ -19,11 +19,20 @@ export interface RunCommandDecision {
 	reasoning?: string;
 }
 
-export interface ReadFileDecision {
-	action: "read_file";
+export interface ReadFileTarget {
 	path: string;
 	startLine?: number;
 	endLine?: number;
+}
+
+export interface ReadFileDecision extends ReadFileTarget {
+	action: "read_file";
+	reasoning?: string;
+}
+
+export interface ReadFilesDecision {
+	action: "read_files";
+	files: ReadFileTarget[];
 	reasoning?: string;
 }
 
@@ -56,6 +65,7 @@ export type AgentDecision =
 	| RunCommandDecision
 	| RunParallelDecision
 	| ReadFileDecision
+	| ReadFilesDecision
 	| UpdatePlanDecision
 	| FinishDecision
 	| RunScriptDecision;

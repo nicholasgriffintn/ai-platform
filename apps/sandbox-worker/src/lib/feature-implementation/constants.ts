@@ -4,6 +4,7 @@ export const DEFAULT_MODEL = "mistral-large";
 export const MAX_COMMANDS = 30;
 export const MAX_AGENT_STEPS = 48;
 export const MAX_PARALLEL_COMMANDS = 4;
+export const MAX_READ_FILES_BATCH = 6;
 export const MAX_CONSECUTIVE_COMMAND_FAILURES = 3;
 export const MAX_CONSECUTIVE_DECISION_FAILURES = 3;
 export const MAX_RECOVERY_REPLANS = 4;

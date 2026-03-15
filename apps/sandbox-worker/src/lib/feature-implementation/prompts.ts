@@ -2,6 +2,7 @@ import {
 	MAX_AGENT_STEPS,
 	MAX_COMMANDS,
 	MAX_OBSERVATION_CHARS,
+	MAX_READ_FILES_BATCH,
 	MAX_SNIPPET_CHARS,
 } from "./constants";
 import {
@@ -81,6 +82,7 @@ export function buildPlanningPrompt(params: {
 		"3. Define key implementation steps and ordering.",
 		"4. Include a 'Validation commands' section with one shell command per line (no chaining).",
 		"5. Call out risks or assumptions to verify during execution.",
+		"6. If checks are independent and safe to run together, call out a run_parallel batch candidate (for example: git status --short, rg --files, lint, test).",
 	].join("\n");
 }
 
@@ -105,6 +107,7 @@ export function buildAgentSystemPrompt(params: {
 		'- run_command: {"action":"run_command","command":"...","reasoning":"..."}',
 		'- run_parallel: {"action":"run_parallel","commands":["...","..."],"reasoning":"..."}',
 		'- read_file: {"action":"read_file","path":"path/from/repo/root","startLine":1,"endLine":120,"reasoning":"..."}',
+		'- read_files: {"action":"read_files","files":[{"path":"path/from/repo/root","startLine":1,"endLine":120},{"path":"another/path"}],"reasoning":"..."}',
 		'- run_script: {"action":"run_script","code":"...","language":"javascript","reasoning":"..."}',
 		'- update_plan: {"action":"update_plan","plan":"...","reasoning":"..."}',
 		'- finish: {"action":"finish","summary":"...","reasoning":"..."}',
@@ -124,6 +127,11 @@ export function buildAgentSystemPrompt(params: {
 		"- Each command must follow all run_command safety rules.",
 		"- Do not use run_parallel for mutating commands.",
 		"",
+		"Rules for read_files:",
+		`- Maximum ${MAX_READ_FILES_BATCH} files per read_files action.`,
+		"- Use for parallel context gathering across independent files.",
+		"- Each file target accepts path and optional startLine/endLine.",
+		"",
 		"Rules for run_script:",
 		"- Write a script that performs multiple file operations or shell commands in one step.",
 		"- Supported languages: javascript, typescript (default: javascript).",
@@ -135,6 +143,8 @@ export function buildAgentSystemPrompt(params: {
 		"",
 		"Tool-use heuristics:",
 		"- Prefer read_file first when the target file or exact edit location is uncertain.",
+		"- Prefer read_files for fast multi-file context gathering before writing code.",
+		"- Prefer run_parallel for independent, safe checks (for example: git status --short plus rg/ls/test/lint).",
 		"- Prefer run_script for coordinated edits across multiple files or when a command pipeline would otherwise be required.",
 		"- Prefer deterministic inspection commands (rg, ls, cat, git status, git diff) before build/test commands.",
 		"- If a command/script is blocked or fails, do not repeat it unchanged: update_plan with a revised approach before continuing.",

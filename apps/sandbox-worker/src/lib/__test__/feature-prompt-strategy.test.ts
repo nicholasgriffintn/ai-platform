@@ -80,6 +80,7 @@ describe("feature prompt strategies", () => {
 		expect(prompt).toContain("Selected prompt strategy");
 		expect(prompt).toContain("Good implementation examples to emulate");
 		expect(prompt).toContain("Example 1:");
+		expect(prompt).toContain("run_parallel batch candidate");
 	});
 
 	it("includes tool-use heuristics in the execution system prompt", () => {
@@ -97,5 +98,6 @@ describe("feature prompt strategies", () => {
 		expect(prompt).toContain("Tool-use heuristics:");
 		expect(prompt).toContain("If a command/script is blocked or fails");
 		expect(prompt).toContain("run_parallel");
+		expect(prompt).toContain("read_files");
 	});
 });

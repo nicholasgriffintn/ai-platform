@@ -99,4 +99,20 @@ Proceeding next.`,
 			expect(decision.commands).toHaveLength(2);
 		}
 	});
+
+	it("parses read_files targets as objects and strings", () => {
+		const decision = parseAgentDecision(
+			JSON.stringify({
+				action: "read_files",
+				files: [{ path: "src/a.ts", startLine: 1, endLine: 80 }, "src/b.ts"],
+			}),
+		);
+
+		expect(decision.action).toBe("read_files");
+		if (decision.action === "read_files") {
+			expect(decision.files).toHaveLength(2);
+			expect(decision.files[0].path).toBe("src/a.ts");
+			expect(decision.files[1].path).toBe("src/b.ts");
+		}
+	});
 });
