@@ -1,5 +1,3 @@
-import { CodeInterpreter } from "@cloudflare/sandbox";
-
 import {
 	assertSafeCommand,
 	buildSummary,
@@ -292,8 +290,7 @@ export async function executeAgentLoop(
 					commandTotal: MAX_COMMANDS,
 				});
 
-				const interpreter = new CodeInterpreter(sandbox);
-				const execution = await interpreter.runCode(decision.code, {
+				const execution = await sandbox.runCode(decision.code, {
 					language: scriptLanguage,
 				});
 
