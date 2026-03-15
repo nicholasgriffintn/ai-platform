@@ -12,9 +12,15 @@ export interface SandboxRunApprovalRecord {
 	id: string;
 	runId: string;
 	command: string;
-	status: "pending" | "approved" | "rejected";
+	status: "pending" | "escalated" | "timed_out" | "approved" | "rejected";
 	requestedAt: string;
 	resolvedAt?: string;
 	resolutionReason?: string;
 	requestReason?: string;
+	timeoutSeconds?: number;
+	escalateAfterSeconds?: number;
+	expiresAt?: string;
+	escalationAt?: string;
+	escalatedAt?: string;
+	timedOutAt?: string;
 }

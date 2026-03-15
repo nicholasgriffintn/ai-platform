@@ -107,6 +107,8 @@ export async function requestRunCoordinatorApproval(params: {
 	runId: string;
 	command: string;
 	reason?: string;
+	timeoutSeconds?: number;
+	escalateAfterSeconds?: number;
 }): Promise<SandboxRunApprovalRecord | null> {
 	if (!params.env?.SANDBOX_RUN_COORDINATOR) {
 		return null;
@@ -120,6 +122,8 @@ export async function requestRunCoordinatorApproval(params: {
 			body: JSON.stringify({
 				command: params.command,
 				reason: params.reason,
+				timeoutSeconds: params.timeoutSeconds,
+				escalateAfterSeconds: params.escalateAfterSeconds,
 			}),
 		},
 	);
@@ -138,9 +142,9 @@ export async function resolveRunCoordinatorApproval(params: {
 	approvalId: string;
 	status: "approved" | "rejected";
 	reason?: string;
-}): Promise<boolean> {
+}): Promise<SandboxRunApprovalRecord | null> {
 	if (!params.env?.SANDBOX_RUN_COORDINATOR) {
-		return false;
+		return null;
 	}
 	const stub = getCoordinatorStub(params.env, params.runId);
 	const response = await stub.fetch(
@@ -155,7 +159,13 @@ export async function resolveRunCoordinatorApproval(params: {
 			}),
 		},
 	);
-	return response.ok;
+	if (!response.ok) {
+		return null;
+	}
+	const payload = (await response.json()) as {
+		approval?: SandboxRunApprovalRecord;
+	};
+	return payload.approval ?? null;
 }
 
 export async function listRunCoordinatorApprovals(

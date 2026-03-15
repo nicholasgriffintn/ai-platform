@@ -68,6 +68,8 @@ export function registerSandboxRunApprovalRoutes(app: Hono): void {
 				runId,
 				command: payload.command,
 				reason: payload.reason,
+				timeoutSeconds: payload.timeoutSeconds,
+				escalateAfterSeconds: payload.escalateAfterSeconds,
 			});
 			return ResponseFactory.success(c, { approval });
 		},

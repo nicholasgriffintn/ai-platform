@@ -77,6 +77,8 @@ export const cancelRunSchema = z.object({
 export const requestRunApprovalSchema = z.object({
 	command: z.string().trim().min(1).max(500),
 	reason: z.string().trim().min(1).max(280).optional(),
+	timeoutSeconds: z.number().int().min(5).max(1800).optional(),
+	escalateAfterSeconds: z.number().int().min(1).max(900).optional(),
 });
 
 export const resolveRunApprovalSchema = z.object({
@@ -175,6 +177,13 @@ export const sandboxRunEventSchema = z
 		timeoutSeconds: z.number().int().positive().optional(),
 		timeoutAt: z.string().optional(),
 		result: sandboxRunResultSchema.optional(),
+		approvalId: z.string().optional(),
+		approvalStatus: z
+			.enum(["pending", "escalated", "timed_out", "approved", "rejected"])
+			.optional(),
+		approvalExpiresAt: z.string().optional(),
+		approvalEscalatedAt: z.string().optional(),
+		approvalTimedOutAt: z.string().optional(),
 	})
 	.catchall(z.unknown());
 
@@ -231,6 +240,8 @@ export const sandboxRunControlSchema = z.object({
 
 export const sandboxRunApprovalStatusSchema = z.enum([
 	"pending",
+	"escalated",
+	"timed_out",
 	"approved",
 	"rejected",
 ]);
@@ -244,6 +255,12 @@ export const sandboxRunApprovalSchema = z.object({
 	resolvedAt: z.string().optional(),
 	resolutionReason: z.string().optional(),
 	requestReason: z.string().optional(),
+	timeoutSeconds: z.number().int().positive().optional(),
+	escalateAfterSeconds: z.number().int().positive().optional(),
+	expiresAt: z.string().optional(),
+	escalationAt: z.string().optional(),
+	escalatedAt: z.string().optional(),
+	timedOutAt: z.string().optional(),
 });
 
 export const executeSandboxWorkerProxySchema = z.object({

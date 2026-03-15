@@ -3,6 +3,11 @@ import {
 	type SandboxRunEvent,
 } from "@assistant/schemas";
 import { safeParseJson } from "~/utils/json";
+import {
+	applyApprovalLifecycleTransitions,
+	buildApprovalRecord,
+	parseApprovalRecords,
+} from "./approvals";
 import type {
 	CoordinatorEventEnvelope,
 	CoordinatorState,
@@ -56,10 +61,7 @@ export class SandboxRunCoordinator implements DurableObject {
 
 	private async getApprovals(): Promise<SandboxRunApprovalRecord[]> {
 		const raw = await this.state.storage.get<string>(APPROVALS_KEY);
-		if (!raw) {
-			return [];
-		}
-		return safeParseJson<SandboxRunApprovalRecord[]>(raw) ?? [];
+		return parseApprovalRecords(raw ?? null);
 	}
 
 	private async putApprovals(
@@ -69,6 +71,26 @@ export class SandboxRunCoordinator implements DurableObject {
 			APPROVALS_KEY,
 			JSON.stringify(approvals.slice(-200)),
 		);
+	}
+
+	private applyApprovalLifecycleTransitions(
+		approvals: SandboxRunApprovalRecord[],
+	): {
+		approvals: SandboxRunApprovalRecord[];
+		changed: boolean;
+	} {
+		return applyApprovalLifecycleTransitions(approvals);
+	}
+
+	private async getApprovalsWithLifecycle(): Promise<
+		SandboxRunApprovalRecord[]
+	> {
+		const approvals = await this.getApprovals();
+		const transitioned = this.applyApprovalLifecycleTransitions(approvals);
+		if (transitioned.changed) {
+			await this.putApprovals(transitioned.approvals);
+		}
+		return transitioned.approvals;
 	}
 
 	public async fetch(request: Request): Promise<Response> {
@@ -173,17 +195,13 @@ export class SandboxRunCoordinator implements DurableObject {
 				return Response.json({ error: "command is required" }, { status: 400 });
 			}
 
-			const approvals = await this.getApprovals();
+			const approvals = await this.getApprovalsWithLifecycle();
 			const control = await this.getControl();
-			const approval: SandboxRunApprovalRecord = {
-				id: crypto.randomUUID(),
+			const approval = buildApprovalRecord({
 				runId: control?.runId ?? "unknown",
 				command,
-				status: "pending",
-				requestedAt: new Date().toISOString(),
-				requestReason:
-					typeof body.reason === "string" ? body.reason : undefined,
-			};
+				body,
+			});
 			approvals.push(approval);
 			await this.putApprovals(approvals);
 			return Response.json({ approval });
@@ -203,14 +221,32 @@ export class SandboxRunCoordinator implements DurableObject {
 				);
 			}
 
-			const approvals = await this.getApprovals();
+			const approvals = await this.getApprovalsWithLifecycle();
+			const approval = approvals.find((entry) => entry.id === id);
+			if (!approval) {
+				return Response.json({ error: "Approval not found" }, { status: 404 });
+			}
+			if (approval.status === "timed_out") {
+				return Response.json(
+					{ error: "Approval already timed out" },
+					{ status: 409 },
+				);
+			}
+			if (approval.status === "approved" || approval.status === "rejected") {
+				return Response.json(
+					{ error: "Approval already resolved" },
+					{ status: 409 },
+				);
+			}
+
+			const resolvedAt = new Date().toISOString();
 			const nextApprovals: SandboxRunApprovalRecord[] = approvals.map(
 				(entry) =>
 					entry.id === id
 						? {
 								...entry,
 								status,
-								resolvedAt: new Date().toISOString(),
+								resolvedAt,
 								resolutionReason:
 									typeof body.reason === "string"
 										? body.reason
@@ -219,7 +255,8 @@ export class SandboxRunCoordinator implements DurableObject {
 						: entry,
 			);
 			await this.putApprovals(nextApprovals);
-			return Response.json({ success: true });
+			const updated = nextApprovals.find((entry) => entry.id === id);
+			return Response.json({ success: true, approval: updated });
 		}
 
 		if (pathname.startsWith("/approval/") && request.method === "GET") {
@@ -230,7 +267,7 @@ export class SandboxRunCoordinator implements DurableObject {
 					{ status: 400 },
 				);
 			}
-			const approvals = await this.getApprovals();
+			const approvals = await this.getApprovalsWithLifecycle();
 			const approval = approvals.find((entry) => entry.id === approvalId);
 			if (!approval) {
 				return Response.json({ error: "Approval not found" }, { status: 404 });
@@ -239,7 +276,7 @@ export class SandboxRunCoordinator implements DurableObject {
 		}
 
 		if (pathname === "/approval" && request.method === "GET") {
-			const approvals = await this.getApprovals();
+			const approvals = await this.getApprovalsWithLifecycle();
 			return Response.json({ approvals });
 		}
 

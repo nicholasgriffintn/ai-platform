@@ -102,8 +102,18 @@ export async function requestSandboxRunApproval(params: {
 	runId: string;
 	command: string;
 	reason?: string;
+	timeoutSeconds?: number;
+	escalateAfterSeconds?: number;
 }) {
-	const { context, userId, runId, command, reason } = params;
+	const {
+		context,
+		userId,
+		runId,
+		command,
+		reason,
+		timeoutSeconds,
+		escalateAfterSeconds,
+	} = params;
 	await getSandboxRunRecordForUser({ context, userId, runId });
 
 	const approval = await requestRunCoordinatorApproval({
@@ -111,6 +121,8 @@ export async function requestSandboxRunApproval(params: {
 		runId,
 		command,
 		reason,
+		timeoutSeconds,
+		escalateAfterSeconds,
 	});
 	if (!approval) {
 		throw new AssistantError(
@@ -147,6 +159,7 @@ export async function resolveSandboxRunApproval(params: {
 	}
 	return {
 		success: true,
+		approval: updated,
 	};
 }
 

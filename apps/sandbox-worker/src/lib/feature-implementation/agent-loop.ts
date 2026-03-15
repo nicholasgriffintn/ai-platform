@@ -185,7 +185,11 @@ export async function executeAgentLoop(
 				if (approval.rejected) {
 					messages.push({
 						role: "user",
-						content: `Command approval rejected for: ${decision.command}. Choose a safer alternative command or continue with read_file/update_plan.`,
+						content: [
+							`Command approval was not granted for: ${decision.command}.`,
+							approval.rejectedMessage ?? "No decision details provided.",
+							"Choose a safer alternative command or continue with read_file/update_plan.",
+						].join(" "),
 					});
 					break;
 				}

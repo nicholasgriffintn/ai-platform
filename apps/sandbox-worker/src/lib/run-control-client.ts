@@ -52,6 +52,11 @@ export interface RunControlClientOptions {
 	requestTimeoutMs?: number;
 }
 
+export interface RequestCommandApprovalOptions {
+	timeoutSeconds?: number;
+	escalateAfterSeconds?: number;
+}
+
 export class RunControlClient {
 	private readonly polychatApiUrl: string;
 	private readonly userToken: string;
@@ -127,6 +132,7 @@ export class RunControlClient {
 	public async requestCommandApproval(
 		command: string,
 		reason?: string,
+		options?: RequestCommandApprovalOptions,
 		signal?: AbortSignal,
 	): Promise<SandboxRunApproval | null> {
 		if (!this.runId || !command.trim()) {
@@ -134,6 +140,13 @@ export class RunControlClient {
 		}
 
 		const url = `${this.polychatApiUrl}/apps/sandbox/runs/${encodeURIComponent(this.runId)}/approvals/request`;
+		const requestBody: Record<string, unknown> = { command, reason };
+		if (typeof options?.timeoutSeconds === "number") {
+			requestBody.timeoutSeconds = options.timeoutSeconds;
+		}
+		if (typeof options?.escalateAfterSeconds === "number") {
+			requestBody.escalateAfterSeconds = options.escalateAfterSeconds;
+		}
 		const request = new Request(url, {
 			method: "POST",
 			headers: {
@@ -141,9 +154,8 @@ export class RunControlClient {
 				Authorization: `Bearer ${this.userToken}`,
 				"Content-Type": "application/json",
 			},
-			body: JSON.stringify({ command, reason }),
+			body: JSON.stringify(requestBody),
 		});
-
 		let response: Response;
 		try {
 			response = await fetchWithTimeout(request, this.requestTimeoutMs, signal);

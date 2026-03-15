@@ -4,6 +4,10 @@ import type { TaskEvent } from "../../types";
 import type { RunControlClient } from "../run-control-client";
 
 const APPROVAL_POLL_INTERVAL_MS = 2000;
+const NETWORK_APPROVAL_TIMEOUT_SECONDS = 120;
+const NETWORK_APPROVAL_ESCALATE_AFTER_SECONDS = 30;
+const RISKY_APPROVAL_TIMEOUT_SECONDS = 180;
+const RISKY_APPROVAL_ESCALATE_AFTER_SECONDS = 45;
 
 function shouldRequireApproval(params: {
 	trustLevel: SandboxTrustLevel;
@@ -22,6 +26,22 @@ function wait(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function approvalWindowForRiskLevel(riskLevel: "low" | "network" | "risky"): {
+	timeoutSeconds: number;
+	escalateAfterSeconds: number;
+} {
+	if (riskLevel === "risky") {
+		return {
+			timeoutSeconds: RISKY_APPROVAL_TIMEOUT_SECONDS,
+			escalateAfterSeconds: RISKY_APPROVAL_ESCALATE_AFTER_SECONDS,
+		};
+	}
+	return {
+		timeoutSeconds: NETWORK_APPROVAL_TIMEOUT_SECONDS,
+		escalateAfterSeconds: NETWORK_APPROVAL_ESCALATE_AFTER_SECONDS,
+	};
+}
+
 export interface ResolveCommandApprovalParams {
 	command: string;
 	riskLevel: "low" | "network" | "risky";
@@ -37,6 +57,7 @@ export interface ResolveCommandApprovalResult {
 	allowNetwork: boolean;
 	allowRisky: boolean;
 	rejected: boolean;
+	rejectedMessage?: string;
 }
 
 export async function resolveCommandApproval(
@@ -54,7 +75,11 @@ export async function resolveCommandApproval(
 	} = params;
 
 	if (!shouldRequireApproval({ trustLevel, riskLevel })) {
-		return { allowNetwork: false, allowRisky: false, rejected: false };
+		return {
+			allowNetwork: false,
+			allowRisky: false,
+			rejected: false,
+		};
 	}
 
 	if (!approvalClient) {
@@ -63,16 +88,10 @@ export async function resolveCommandApproval(
 		);
 	}
 
-	await emit({
-		type: "command_approval_requested",
-		command,
-		agentStep,
-		message: `Approval requested for ${riskLevel} command`,
-	});
-
 	const approval = await approvalClient.requestCommandApproval(
 		command,
 		`${riskLevel} command in ${trustLevel} trust mode`,
+		approvalWindowForRiskLevel(riskLevel),
 		abortSignal,
 	);
 	if (!approval) {
@@ -80,7 +99,18 @@ export async function resolveCommandApproval(
 			`Failed to create approval request for command: ${command}`,
 		);
 	}
+	await emit({
+		type: "command_approval_requested",
+		command,
+		agentStep,
+		message: `Approval requested for ${riskLevel} command`,
+		approvalId: approval.id,
+		approvalStatus: approval.status,
+		approvalExpiresAt: approval.expiresAt,
+		approvalEscalatedAt: approval.escalatedAt,
+	});
 
+	let previousStatus = approval.status;
 	while (true) {
 		await guardExecution(
 			"Sandbox run cancelled while waiting for command approval",
@@ -97,12 +127,31 @@ export async function resolveCommandApproval(
 			approval.id,
 			abortSignal,
 		);
+		if (
+			latestApproval?.status === "escalated" &&
+			previousStatus !== "escalated"
+		) {
+			await emit({
+				type: "command_approval_escalated",
+				command,
+				agentStep,
+				message: "Command approval escalated",
+				approvalId: latestApproval.id,
+				approvalStatus: latestApproval.status,
+				approvalEscalatedAt: latestApproval.escalatedAt,
+				approvalExpiresAt: latestApproval.expiresAt,
+			});
+		}
 		if (latestApproval?.status === "approved") {
 			await emit({
 				type: "command_approval_resolved",
 				command,
 				agentStep,
 				message: "Command approval granted",
+				approvalId: latestApproval.id,
+				approvalStatus: latestApproval.status,
+				approvalEscalatedAt: latestApproval.escalatedAt,
+				approvalExpiresAt: latestApproval.expiresAt,
 			});
 			return {
 				allowNetwork: riskLevel === "network",
@@ -117,8 +166,45 @@ export async function resolveCommandApproval(
 				command,
 				agentStep,
 				message: "Command approval rejected",
+				approvalId: latestApproval.id,
+				approvalStatus: latestApproval.status,
+				approvalEscalatedAt: latestApproval.escalatedAt,
+				approvalExpiresAt: latestApproval.expiresAt,
 			});
-			return { allowNetwork: false, allowRisky: false, rejected: true };
+			return {
+				allowNetwork: false,
+				allowRisky: false,
+				rejected: true,
+				rejectedMessage:
+					latestApproval.resolutionReason || "Command approval rejected",
+			};
+		}
+
+		if (latestApproval?.status === "timed_out") {
+			await emit({
+				type: "command_approval_timed_out",
+				command,
+				agentStep,
+				message:
+					latestApproval.resolutionReason || "Command approval timed out",
+				approvalId: latestApproval.id,
+				approvalStatus: latestApproval.status,
+				approvalEscalatedAt: latestApproval.escalatedAt,
+				approvalTimedOutAt: latestApproval.timedOutAt,
+				approvalExpiresAt: latestApproval.expiresAt,
+			});
+			return {
+				allowNetwork: false,
+				allowRisky: false,
+				rejected: true,
+				rejectedMessage:
+					latestApproval.resolutionReason ||
+					"Command approval timed out before a decision was made.",
+			};
+		}
+
+		if (latestApproval) {
+			previousStatus = latestApproval.status;
 		}
 
 		await wait(APPROVAL_POLL_INTERVAL_MS);
