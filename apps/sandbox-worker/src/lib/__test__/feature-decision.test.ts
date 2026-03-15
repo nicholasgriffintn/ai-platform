@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseAgentDecision } from "../feature-implementation/decision";
+import { parseAgentDecision } from "@assistant/agent-core";
 
 describe("parseAgentDecision", () => {
 	it("accepts supported run_script languages", () => {

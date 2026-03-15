@@ -26,6 +26,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@assistant/agent-core':
+        specifier: workspace:*
+        version: link:../../packages/agent-core
       '@assistant/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
@@ -501,6 +504,9 @@ importers:
 
   apps/sandbox-worker:
     dependencies:
+      '@assistant/agent-core':
+        specifier: workspace:*
+        version: link:../../packages/agent-core
       '@assistant/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
@@ -532,6 +538,24 @@ importers:
       wrangler:
         specifier: 4.63.0
         version: 4.63.0(@cloudflare/workers-types@4.20260313.1)
+
+  packages/agent-core:
+    devDependencies:
+      '@prettier/plugin-oxc':
+        specifier: 0.1.3
+        version: 0.1.3
+      '@types/node':
+        specifier: 25.2.3
+        version: 25.2.3
+      oxlint:
+        specifier: 1.47.0
+        version: 1.47.0
+      prettier:
+        specifier: 3.8.1
+        version: 3.8.1
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
 
   packages/schemas:
     dependencies:

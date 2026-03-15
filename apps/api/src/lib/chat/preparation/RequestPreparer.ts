@@ -40,7 +40,7 @@ export interface PreparedRequest {
 	systemPrompt: string;
 	messageWithContext: string;
 	userSettings: any;
-	currentMode: string;
+	currentMode: ChatMode;
 	isProUser: boolean;
 }
 

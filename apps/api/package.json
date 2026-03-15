@@ -29,6 +29,7 @@
 		"db:studio:prod": "drizzle-kit studio"
 	},
 	"dependencies": {
+		"@assistant/agent-core": "workspace:*",
 		"@assistant/schemas": "workspace:*",
 		"@hono/standard-validator": "0.2.2",
 		"@hono/zod-validator": "0.7.6",

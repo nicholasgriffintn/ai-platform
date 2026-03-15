@@ -1,8 +1,5 @@
-import { extractCommands } from "../commands";
-import { safeParseJson } from "../json";
-
-import type { AgentDecision } from "./types";
-import { truncateForModel } from "./utils";
+import type { AgentDecision, ReadFileTarget } from "./types";
+import { extractCommands, safeParseJson, truncateForModel } from "./utils";
 
 function parseScriptLanguage(
 	rawLanguage: unknown,
@@ -171,11 +168,7 @@ function parseDecisionPayload(payload: string): Record<string, unknown> {
 	throw new Error("Unable to parse decision payload as JSON");
 }
 
-function parseReadFileTarget(rawTarget: unknown): {
-	path: string;
-	startLine?: number;
-	endLine?: number;
-} {
+function parseReadFileTarget(rawTarget: unknown): ReadFileTarget {
 	if (
 		typeof rawTarget === "object" &&
 		rawTarget !== null &&

@@ -1,13 +1,20 @@
 import { createMultiModelStream } from "~/lib/chat/multiModalStreaming";
-import { RequestPreparer } from "~/lib/chat/preparation/RequestPreparer";
+import {
+	RequestPreparer,
+	type PreparedRequest,
+} from "~/lib/chat/preparation/RequestPreparer";
 import { getAIResponse } from "~/lib/chat/responses";
+import {
+	runAgentLoop,
+	type ModelResponse,
+} from "~/lib/chat/agent/runAgentLoop";
 import { createStreamWithPostProcessing } from "~/lib/chat/streaming";
 import { handleToolCalls } from "~/lib/chat/tools";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { captureTrainingExample } from "~/services/training/captureTrainingExample";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
-import type { CoreChatOptions, Message } from "~/types";
+import type { CoreChatOptions, IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -70,7 +77,10 @@ export class ChatOrchestrator {
 		}
 	}
 
-	private async executeRequest(chatOptions: CoreChatOptions, prepared: any) {
+	private async executeRequest(
+		chatOptions: CoreChatOptions,
+		prepared: PreparedRequest,
+	) {
 		const {
 			platform = "api",
 			stream = false,
@@ -182,7 +192,7 @@ export class ChatOrchestrator {
 			};
 		}
 
-		const params = {
+		const requestParams: Parameters<typeof getAIResponse>[0] = {
 			app_url: chatOptions.app_url,
 			system_prompt: systemPrompt,
 			env: chatOptions.env,
@@ -218,11 +228,39 @@ export class ChatOrchestrator {
 			tool_choice,
 			current_step,
 			max_steps,
-			provider: primaryProvider,
 			options: chatOptions.options || {},
 		};
 
-		const response = await getAIResponse(params);
+		const toolRequestContext: IRequest = {
+			env: chatOptions.env,
+			request: {
+				completion_id: chatOptions.completion_id!,
+				input: messageWithContext,
+				model: primaryModel,
+				date: new Date().toISOString().split("T")[0]!,
+				current_agent_id: chatOptions.current_agent_id,
+				delegation_stack: chatOptions.delegation_stack,
+				max_delegation_depth: chatOptions.max_delegation_depth,
+			},
+			app_url: chatOptions.app_url,
+			user: chatOptions.user?.id ? chatOptions.user : undefined,
+		};
+
+		const toolResponses: Message[] = [];
+		let response: ModelResponse | ReadableStream;
+		if (currentMode === "agent" && !stream) {
+			const agentResult = await runAgentLoop({
+				requestParams,
+				completionId: chatOptions.completion_id!,
+				conversationManager,
+				toolRequestContext,
+				maxSteps: max_steps,
+			});
+			response = agentResult.response;
+			toolResponses.push(...agentResult.toolResponses);
+		} else {
+			response = await getAIResponse(requestParams);
+		}
 
 		if (response instanceof ReadableStream) {
 			const transformedStream = await createStreamWithPostProcessing(
@@ -287,26 +325,12 @@ export class ChatOrchestrator {
 			}
 		}
 
-		const toolResponses: Message[] = [];
 		if (response.tool_calls?.length > 0) {
 			const toolResults = await handleToolCalls(
 				chatOptions.completion_id!,
 				response,
 				conversationManager,
-				{
-					env: chatOptions.env,
-					request: {
-						completion_id: chatOptions.completion_id!,
-						input: messageWithContext,
-						model: primaryModel,
-						date: new Date().toISOString().split("T")[0]!,
-						current_agent_id: chatOptions.current_agent_id,
-						delegation_stack: chatOptions.delegation_stack,
-						max_delegation_depth: chatOptions.max_delegation_depth,
-					},
-					app_url: chatOptions.app_url,
-					user: chatOptions.user?.id ? chatOptions.user : undefined,
-				},
+				toolRequestContext,
 			);
 
 			toolResponses.push(...toolResults);

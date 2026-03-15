@@ -18,6 +18,7 @@
 		"deploy": "pnpm --filter @assistant/schemas build && pnpm typecheck && wrangler deploy src/index.ts --name=assistant-sandbox-worker"
 	},
 	"dependencies": {
+		"@assistant/agent-core": "workspace:*",
 		"@assistant/schemas": "workspace:*",
 		"@cloudflare/sandbox": "0.7.17",
 		"zod": "4.3.6"

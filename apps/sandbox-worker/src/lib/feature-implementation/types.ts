@@ -13,63 +13,6 @@ export type SandboxFileInstance = Pick<
 	"readFile" | "writeFile" | "exists"
 >;
 
-export interface RunCommandDecision {
-	action: "run_command";
-	command: string;
-	reasoning?: string;
-}
-
-export interface ReadFileTarget {
-	path: string;
-	startLine?: number;
-	endLine?: number;
-}
-
-export interface ReadFileDecision extends ReadFileTarget {
-	action: "read_file";
-	reasoning?: string;
-}
-
-export interface ReadFilesDecision {
-	action: "read_files";
-	files: ReadFileTarget[];
-	reasoning?: string;
-}
-
-export interface UpdatePlanDecision {
-	action: "update_plan";
-	plan: string;
-	reasoning?: string;
-}
-
-export interface FinishDecision {
-	action: "finish";
-	summary: string;
-	reasoning?: string;
-}
-
-export interface RunScriptDecision {
-	action: "run_script";
-	code: string;
-	language?: "javascript" | "typescript";
-	reasoning?: string;
-}
-
-export interface RunParallelDecision {
-	action: "run_parallel";
-	commands: string[];
-	reasoning?: string;
-}
-
-export type AgentDecision =
-	| RunCommandDecision
-	| RunParallelDecision
-	| ReadFileDecision
-	| ReadFilesDecision
-	| UpdatePlanDecision
-	| FinishDecision
-	| RunScriptDecision;
-
 export interface FileContextSnippet {
 	path: string;
 	snippet: string;

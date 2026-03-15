@@ -1,4 +1,12 @@
 import type { SandboxTrustLevel } from "@assistant/schemas";
+import type {
+	AgentMessage,
+	ReadFileDecision,
+	ReadFilesDecision,
+	RunCommandDecision,
+	RunParallelDecision,
+	RunScriptDecision,
+} from "@assistant/agent-core";
 
 import {
 	assertSafeCommand,
@@ -16,20 +24,8 @@ import {
 } from "./constants";
 import { readRepositoryFileSnippet } from "./context";
 import { formatCommandObservation, formatReadObservation } from "./prompts";
-import type {
-	ExecuteAgentLoopParams,
-	ReadFileDecision,
-	ReadFilesDecision,
-	RunCommandDecision,
-	RunParallelDecision,
-	RunScriptDecision,
-} from "./types";
+import type { ExecuteAgentLoopParams } from "./types";
 import { truncateForModel } from "./utils";
-
-export type AgentMessage = {
-	role: "system" | "user" | "assistant";
-	content: string;
-};
 
 export interface AgentLoopMutableState {
 	commandCount: number;
