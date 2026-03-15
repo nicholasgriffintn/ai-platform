@@ -58,7 +58,16 @@ describe("TaskExecutor", () => {
 		await executor.execute(createTaskMessage("memory_synthesis"));
 
 		expect(handler.handle).not.toHaveBeenCalled();
-		expect(mockTaskRepository.updateTask).not.toHaveBeenCalled();
+		expect(mockTaskRepository.updateTask).toHaveBeenCalledTimes(1);
+		expect(mockTaskRepository.updateTask).toHaveBeenCalledWith(
+			"task-1",
+			expect.objectContaining({
+				status: "cancelled",
+				error_message: expect.stringContaining(
+					"memory_synthesis is disabled via environment variable",
+				),
+			}),
+		);
 	});
 
 	it("executes always-enabled sandbox dispatch tasks without feature flags", async () => {
@@ -97,6 +106,14 @@ describe("TaskExecutor", () => {
 		await executor.execute(createTaskMessage("invalid_type"));
 
 		expect(handler.handle).not.toHaveBeenCalled();
-		expect(mockTaskRepository.updateTask).not.toHaveBeenCalled();
+		expect(mockTaskRepository.updateTask).toHaveBeenCalledTimes(1);
+		expect(mockTaskRepository.updateTask).toHaveBeenCalledWith(
+			"task-1",
+			expect.objectContaining({
+				status: "cancelled",
+				error_message:
+					"Task type invalid_type has no feature-flag configuration",
+			}),
+		);
 	});
 });

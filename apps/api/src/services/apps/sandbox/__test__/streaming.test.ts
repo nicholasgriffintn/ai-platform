@@ -62,23 +62,25 @@ describe("sandbox streaming helpers", () => {
 		const listEvents = async () => [];
 
 		const stream = createCoordinatorEventSseStream({
-			openSocket: async () => socket as unknown as WebSocket,
-			listEvents,
-		});
+			openSocket: async () => {
+				setTimeout(() => {
+					socket.emit("message", {
+						data: JSON.stringify({
+							index: 1,
+							event: { type: "run_started", runId: "run-1" },
+						}),
+					});
+					socket.emit("message", {
+						data: JSON.stringify({
+							index: 2,
+							event: { type: "run_completed", runId: "run-1" },
+						}),
+					});
+				}, 0);
 
-		queueMicrotask(() => {
-			socket.emit("message", {
-				data: JSON.stringify({
-					index: 1,
-					event: { type: "run_started", runId: "run-1" },
-				}),
-			});
-			socket.emit("message", {
-				data: JSON.stringify({
-					index: 2,
-					event: { type: "run_completed", runId: "run-1" },
-				}),
-			});
+				return socket as unknown as WebSocket;
+			},
+			listEvents,
 		});
 
 		const output = await new Response(stream).text();
