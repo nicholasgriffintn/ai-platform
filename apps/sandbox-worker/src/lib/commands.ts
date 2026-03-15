@@ -17,10 +17,26 @@ const FORBIDDEN_COMMAND_PATTERNS: RegExp[] = [
 
 const READ_ONLY_MUTATING_PATTERNS: RegExp[] = [
 	/\bgit\s+(add|commit|merge|rebase|cherry-pick|reset|checkout|switch|restore|clean|stash|tag|branch|push|pull)\b/i,
+	/\bgit\s+(apply|am)\b/i,
 	/\b(rm|mv|cp|mkdir|rmdir|touch|truncate|chmod|chown)\b/i,
 	/\b(npm|pnpm|yarn|bun)\s+(install|add|remove|update)\b/i,
 	/\b(pip|pip3|poetry)\s+(install|add|remove)\b/i,
 	/\b(?:sed|perl)\s+-i\b/i,
+	/\btee\b/i,
+];
+
+const READ_ONLY_BLOCKED_OPERATOR_PATTERNS: RegExp[] = [
+	/(^|[^<])>(>|&)?/i,
+	/<</i,
+	/\bexec\b/i,
+];
+
+const READ_ONLY_ALLOWED_COMMAND_PATTERNS: RegExp[] = [
+	/^git\s+(status|diff|log|show|rev-parse|ls-files|branch(?:\s+--show-current)?)(?:\s|$)/i,
+	/^(ls|pwd|find|cat|head|tail|wc|sort|uniq|cut|grep|rg|awk)\b/i,
+	/^sed\s+-n\b/i,
+	/^(npm|pnpm|yarn|bun)\s+(test|lint|check|verify|build|run\s+(test|lint|typecheck|type-check|check|verify|build))\b/i,
+	/^(pytest|tox|go\s+test|cargo\s+(test|check|clippy|fmt\s+--check)|jest|vitest|npx\s+vitest|tsc(?:\s|$)|eslint(?:\s|$)|ruff(?:\s|$)|mypy(?:\s|$)|uv\s+run\s+pytest)\b/i,
 ];
 
 type SandboxInstance = ReturnType<typeof getSandbox>;
@@ -146,10 +162,24 @@ export function assertSafeCommand(
 		}
 	}
 	if (options?.readOnly) {
+		for (const pattern of READ_ONLY_BLOCKED_OPERATOR_PATTERNS) {
+			if (pattern.test(command)) {
+				throw new Error(`Command is blocked in read-only mode: ${command}`);
+			}
+		}
+
 		for (const pattern of READ_ONLY_MUTATING_PATTERNS) {
 			if (pattern.test(command)) {
 				throw new Error(`Command is blocked in read-only mode: ${command}`);
 			}
+		}
+
+		if (
+			!READ_ONLY_ALLOWED_COMMAND_PATTERNS.some((pattern) =>
+				pattern.test(command),
+			)
+		) {
+			throw new Error(`Command is not allowed in read-only mode: ${command}`);
 		}
 	}
 }

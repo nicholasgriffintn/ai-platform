@@ -14,6 +14,20 @@ describe("assertSafeCommand", () => {
 			/read-only/,
 		);
 	});
+
+	it("blocks shell redirection in read-only mode", () => {
+		expect(() =>
+			assertSafeCommand("echo hi > /tmp/test.txt", { readOnly: true }),
+		).toThrow(/read-only/);
+	});
+
+	it("blocks interpreter commands in read-only mode", () => {
+		expect(() =>
+			assertSafeCommand("python -c \"open('tmp.txt','w').write('x')\"", {
+				readOnly: true,
+			}),
+		).toThrow(/not allowed|read-only/);
+	});
 });
 
 describe("buildSummary", () => {

@@ -58,12 +58,15 @@ export async function executeAgentLoop(
 		role: "system" | "user" | "assistant";
 		content: string;
 	};
+	const readOnlyCommands =
+		taskType === "code-review" || taskType === "test-suite";
 	const messages: AgentMessage[] = [
 		{
 			role: "system",
 			content: buildAgentSystemPrompt({
 				repoTargetDir,
 				promptStrategy,
+				readOnlyCommands,
 			}),
 		},
 		{
@@ -81,8 +84,6 @@ export async function executeAgentLoop(
 	let currentPlan = initialPlan;
 	let commandCount = 0;
 	let consecutiveCommandFailures = 0;
-	const readOnlyCommands =
-		taskType === "code-review" || taskType === "test-suite";
 
 	for (let step = 1; step <= MAX_AGENT_STEPS; step += 1) {
 		await guardExecution("Sandbox run cancelled during agent execution");

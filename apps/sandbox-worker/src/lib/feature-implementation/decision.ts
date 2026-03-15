@@ -3,6 +3,25 @@ import { extractCommands } from "../commands";
 import type { AgentDecision } from "./types";
 import { truncateForModel } from "./utils";
 
+function parseScriptLanguage(
+	rawLanguage: unknown,
+): "python" | "javascript" | "typescript" {
+	if (typeof rawLanguage !== "string" || !rawLanguage.trim()) {
+		return "python";
+	}
+
+	const normalised = rawLanguage.trim().toLowerCase();
+	if (
+		normalised === "python" ||
+		normalised === "javascript" ||
+		normalised === "typescript"
+	) {
+		return normalised;
+	}
+
+	throw new Error(`run_script action has unsupported language: ${rawLanguage}`);
+}
+
 function extractJsonPayload(rawResponse: string): string | null {
 	const codeBlockMatch = rawResponse.match(/```(?:json)?\s*([\s\S]*?)```/i);
 	const candidate = codeBlockMatch
@@ -111,13 +130,7 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 					if (!code) {
 						throw new Error("run_script action requires non-empty code");
 					}
-					const language =
-						typeof parsed.language === "string"
-							? (parsed.language.trim() as
-									| "python"
-									| "javascript"
-									| "typescript")
-							: "python";
+					const language = parseScriptLanguage(parsed.language);
 
 					return {
 						action: "run_script",

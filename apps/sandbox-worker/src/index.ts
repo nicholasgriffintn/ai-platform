@@ -151,6 +151,16 @@ export default {
 
 		const stream = new ReadableStream<Uint8Array>({
 			async start(controller) {
+				let streamClosed = false;
+				const closeStream = () => {
+					if (streamClosed) {
+						return;
+					}
+					streamClosed = true;
+					controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+					controller.close();
+				};
+
 				const emitEvent = (event: TaskEvent) => {
 					controller.enqueue(
 						toSseChunk({
@@ -210,8 +220,7 @@ export default {
 									? error.message
 									: "Sandbox run cancelled",
 						});
-						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
-						controller.close();
+						closeStream();
 						return;
 					}
 
@@ -225,8 +234,7 @@ export default {
 								: "Unknown task execution error",
 					});
 				} finally {
-					controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
-					controller.close();
+					closeStream();
 				}
 			},
 		});

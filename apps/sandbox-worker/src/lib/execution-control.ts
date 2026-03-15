@@ -4,6 +4,7 @@ import { RunControlClient } from "./run-control-client";
 
 const PAUSE_POLL_INTERVAL_MS = 2000;
 const PAUSE_HEARTBEAT_INTERVAL_MS = 30000;
+const CONTROL_STATE_MIN_REFRESH_MS = 1000;
 
 export class SandboxTimeoutError extends Error {
 	constructor(message: string) {
@@ -57,6 +58,10 @@ export function createExecutionControl(
 				runId,
 			})
 		: null;
+	let lastControlStateFetchedAt = 0;
+	let lastControlState: Awaited<
+		ReturnType<RunControlClient["fetchControlState"]>
+	> | null = null;
 
 	const throwIfTimedOut = () => {
 		if (deadlineMs === undefined) {
@@ -90,8 +95,9 @@ export function createExecutionControl(
 			throwIfTimedOut();
 
 			await wait(PAUSE_POLL_INTERVAL_MS);
-			const nextControlState =
-				await runControlClient.fetchControlState(abortSignal);
+			const nextControlState = await fetchControlState({
+				minRefreshMs: PAUSE_POLL_INTERVAL_MS,
+			});
 
 			if (!nextControlState) {
 				continue;
@@ -125,6 +131,29 @@ export function createExecutionControl(
 		}
 	};
 
+	const fetchControlState = async (options?: {
+		minRefreshMs?: number;
+	}): Promise<Awaited<
+		ReturnType<RunControlClient["fetchControlState"]>
+	> | null> => {
+		if (!runControlClient) {
+			return null;
+		}
+
+		const now = Date.now();
+		const minRefreshMs = options?.minRefreshMs ?? CONTROL_STATE_MIN_REFRESH_MS;
+		if (
+			lastControlStateFetchedAt > 0 &&
+			now - lastControlStateFetchedAt < minRefreshMs
+		) {
+			return lastControlState;
+		}
+
+		lastControlState = await runControlClient.fetchControlState(abortSignal);
+		lastControlStateFetchedAt = Date.now();
+		return lastControlState;
+	};
+
 	return {
 		checkpoint: async (abortMessage: string) => {
 			throwIfAborted(abortSignal, abortMessage);
@@ -134,8 +163,7 @@ export function createExecutionControl(
 				return;
 			}
 
-			const controlState =
-				await runControlClient.fetchControlState(abortSignal);
+			const controlState = await fetchControlState();
 			if (!controlState) {
 				return;
 			}

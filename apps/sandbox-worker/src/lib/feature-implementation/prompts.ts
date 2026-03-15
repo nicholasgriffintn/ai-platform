@@ -87,8 +87,9 @@ export function buildPlanningPrompt(params: {
 export function buildAgentSystemPrompt(params: {
 	repoTargetDir: string;
 	promptStrategy: PromptStrategySelection;
+	readOnlyCommands?: boolean;
 }): string {
-	const { repoTargetDir, promptStrategy } = params;
+	const { repoTargetDir, promptStrategy, readOnlyCommands } = params;
 	return [
 		"You are an autonomous coding agent running inside a sandboxed shell.",
 		`Repository root is '${repoTargetDir}'.`,
@@ -112,6 +113,9 @@ export function buildAgentSystemPrompt(params: {
 		"- Do not include cd.",
 		"- Do not chain commands with &&, ||, ;, pipes, or command substitution.",
 		"- Prefer safe inspection/edit/build/test commands.",
+		readOnlyCommands
+			? "- This run is read-only: use only inspection and test/lint/typecheck commands."
+			: "",
 		"",
 		"Rules for run_script:",
 		"- Write a script that performs multiple file operations or shell commands in one step.",
@@ -120,11 +124,14 @@ export function buildAgentSystemPrompt(params: {
 		"- Use run_script when you need to batch multiple file reads, writes, or edits in one step.",
 		"- Prefer run_script over sequential run_command calls when making changes to 3+ files.",
 		"- The script's stdout/stderr will be returned as the observation.",
+		readOnlyCommands ? "- Scripts are not allowed for this read-only run." : "",
 		"",
 		"Use read_file when you need more context before deciding on commands.",
 		"After each command result, adapt the next action based on the output.",
 		"Use finish only when the task is implemented and validated, or when blocked with a clear reason.",
-	].join("\n");
+	]
+		.filter(Boolean)
+		.join("\n");
 }
 
 export function buildAgentKickoffPrompt(params: {

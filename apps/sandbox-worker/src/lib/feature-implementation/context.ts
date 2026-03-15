@@ -311,14 +311,14 @@ export async function readRepositoryFileSnippet(params: {
 		};
 	}
 
-	const trimmedContent = result.stdout.trim();
-	const truncated = trimmedContent.length > MAX_SNIPPET_CHARS;
+	const rawContent = result.stdout;
+	const truncated = rawContent.length > MAX_SNIPPET_CHARS;
 
 	return {
 		path,
 		startLine,
 		endLine: boundedEndLine,
-		content: truncateForModel(trimmedContent, MAX_SNIPPET_CHARS),
+		content: truncateForModel(rawContent, MAX_SNIPPET_CHARS),
 		truncated,
 	};
 }

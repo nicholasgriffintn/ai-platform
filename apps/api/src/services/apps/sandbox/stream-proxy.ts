@@ -52,6 +52,7 @@ export function createSandboxEventProxyStream(
 
 	const decoder = new TextDecoder();
 	const encoder = new TextEncoder();
+	let clientDisconnected = false;
 
 	return new ReadableStream<Uint8Array>({
 		async start(controller) {
@@ -81,9 +82,17 @@ export function createSandboxEventProxyStream(
 
 			const emit = (event: SandboxRunEvent) => {
 				pushEvent(event);
-				controller.enqueue(
-					encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
-				);
+				if (clientDisconnected) {
+					return;
+				}
+				try {
+					controller.enqueue(
+						encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
+					);
+				} catch {
+					// Client stream disconnected; continue processing and persisting run state.
+					clientDisconnected = true;
+				}
 			};
 
 			const handleParsedEvent = (parsed: SandboxRunEvent) => {
@@ -155,7 +164,14 @@ export function createSandboxEventProxyStream(
 						continue;
 					}
 
-					controller.enqueue(value);
+					if (!clientDisconnected) {
+						try {
+							controller.enqueue(value);
+						} catch {
+							// Client stream disconnected; continue processing and persisting run state.
+							clientDisconnected = true;
+						}
+					}
 					buffer += decoder.decode(value, { stream: true });
 					buffer = parseSseBuffer(buffer, {
 						onEvent: (event) => {
@@ -348,8 +364,18 @@ export function createSandboxEventProxyStream(
 				}
 
 				unregisterActiveRun();
-				controller.close();
+				if (!clientDisconnected) {
+					try {
+						controller.close();
+					} catch {
+						// Stream may already be closed/cancelled.
+					}
+				}
 			}
+		},
+		cancel() {
+			// Do not stop the worker run; allow completion and persistence for later retrieval.
+			clientDisconnected = true;
 		},
 	});
 }
