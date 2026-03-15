@@ -4,6 +4,7 @@ export {
 	getRunCoordinatorApproval,
 	getRunCoordinatorControl,
 	initRunCoordinatorControl,
+	listRunCoordinatorEvents,
 	listRunCoordinatorApprovals,
 	requestRunCoordinatorApproval,
 	resolveRunCoordinatorApproval,

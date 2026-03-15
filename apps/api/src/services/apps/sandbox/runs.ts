@@ -15,6 +15,7 @@ import {
 import { cancelActiveSandboxRun } from "./run-control";
 import {
 	getRunCoordinatorControl,
+	listRunCoordinatorEvents,
 	getRunCoordinatorApproval,
 	listRunCoordinatorApprovals,
 	requestRunCoordinatorApproval,
@@ -22,7 +23,7 @@ import {
 	updateRunCoordinatorControl,
 } from "./run-coordinator";
 
-type SandboxRunControlState = "running" | "paused" | "cancelled";
+type SandboxRunControlState = "queued" | "running" | "paused" | "cancelled";
 
 interface SandboxRunRecord {
 	recordId: string;
@@ -37,6 +38,8 @@ interface PersistRunStateTransitionParams {
 
 function toRunControlState(run: SandboxRunData): SandboxRunControlState {
 	switch (run.status) {
+		case "queued":
+			return "queued";
 		case "paused":
 			return "paused";
 		case "cancelled":
@@ -190,6 +193,21 @@ export async function getSandboxRunApprovalForUser(params: {
 		throw new AssistantError("Approval not found", ErrorType.NOT_FOUND);
 	}
 	return approval;
+}
+
+export async function listSandboxRunEventsForUser(params: {
+	context: ServiceContext;
+	userId: number;
+	runId: string;
+	after?: number;
+}) {
+	const { context, userId, runId, after } = params;
+	await getSandboxRunRecordForUser({ context, userId, runId });
+	return listRunCoordinatorEvents({
+		env: context.env,
+		runId,
+		after,
+	});
 }
 
 export async function listSandboxRunsForUser(params: {

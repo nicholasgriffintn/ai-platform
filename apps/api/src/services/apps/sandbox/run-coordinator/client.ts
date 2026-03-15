@@ -4,7 +4,10 @@ import {
 	type SandboxRunEvent,
 } from "@assistant/schemas";
 import type { IEnv } from "~/types";
-import type { SandboxRunApprovalRecord } from "./types";
+import type {
+	CoordinatorEventEnvelope,
+	SandboxRunApprovalRecord,
+} from "./types";
 
 function getCoordinatorStub(
 	env: IEnv | undefined,
@@ -100,6 +103,32 @@ export async function appendRunCoordinatorEvent(params: {
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(params.event),
 	});
+}
+
+export async function listRunCoordinatorEvents(params: {
+	env: IEnv | undefined;
+	runId: string;
+	after?: number;
+}): Promise<CoordinatorEventEnvelope[]> {
+	if (!params.env?.SANDBOX_RUN_COORDINATOR) {
+		return [];
+	}
+	const stub = getCoordinatorStub(params.env, params.runId);
+	const url = new URL("https://sandbox-run-coordinator/events");
+	if (typeof params.after === "number" && Number.isFinite(params.after)) {
+		url.searchParams.set("after", String(params.after));
+	}
+	const response = await stub.fetch(url.toString(), {
+		method: "GET",
+		headers: { Accept: "application/json" },
+	});
+	if (!response.ok) {
+		return [];
+	}
+	const payload = (await response.json()) as {
+		events?: CoordinatorEventEnvelope[];
+	};
+	return Array.isArray(payload.events) ? payload.events : [];
 }
 
 export async function requestRunCoordinatorApproval(params: {

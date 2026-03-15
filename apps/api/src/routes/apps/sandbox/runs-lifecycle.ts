@@ -3,10 +3,12 @@ import { validator as zValidator, describeRoute, resolver } from "hono-openapi";
 import {
 	cancelRunSchema,
 	errorResponseSchema,
+	listRunEventsQuerySchema,
 	listRunsQuerySchema,
 	pauseRunSchema,
 	resumeRunSchema,
 	type CancelRunPayload,
+	type ListRunEventsQueryPayload,
 	type ListRunsQueryPayload,
 	type PauseRunPayload,
 	type ResumeRunPayload,
@@ -17,13 +19,25 @@ import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	getSandboxRunControlState,
 	getSandboxRunForUser,
+	listSandboxRunEventsForUser,
 	listSandboxRunsForUser,
 	requestSandboxRunCancellation,
 	requestSandboxRunPause,
 	requestSandboxRunResume,
 } from "~/services/apps/sandbox/runs";
+import {
+	isTerminalSandboxEventType,
+	sleep,
+	toSseChunk,
+	toSseDoneChunk,
+	toSsePingChunk,
+	SANDBOX_SSE_HEADERS,
+} from "~/services/apps/sandbox/streaming";
 import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+
+const EVENTS_POLL_INTERVAL_MS = 900;
+const EVENTS_HEARTBEAT_INTERVAL_MS = 15000;
 
 export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 	app.get(
@@ -93,6 +107,109 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 			return ResponseFactory.success(c, { run });
 		},
 	);
+
+	app.get(
+		"/runs/:runId/events",
+		zValidator("query", listRunEventsQuerySchema),
+		async (c: Context) => {
+			const user = c.get("user") as IUser;
+			const runId = c.req.param("runId");
+			const query = c.req.valid("query" as never) as ListRunEventsQueryPayload;
+			if (!runId) {
+				throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
+			}
+			const events = await listSandboxRunEventsForUser({
+				context: getServiceContext(c),
+				userId: user.id,
+				runId,
+				after: query.after,
+			});
+			return ResponseFactory.success(c, { events });
+		},
+	);
+
+	app.get(
+		"/runs/:runId/events/stream",
+		zValidator("query", listRunEventsQuerySchema),
+		async (c: Context) => {
+			const user = c.get("user") as IUser;
+			const runId = c.req.param("runId");
+			const query = c.req.valid("query" as never) as ListRunEventsQueryPayload;
+			if (!runId) {
+				throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
+			}
+
+			const context = getServiceContext(c);
+			const stream = new ReadableStream<Uint8Array>({
+				async start(controller) {
+					let after = query.after ?? 0;
+					let terminalSeen = false;
+					let lastHeartbeatAt = Date.now();
+
+					while (!terminalSeen && !c.req.raw.signal.aborted) {
+						const events = await listSandboxRunEventsForUser({
+							context,
+							userId: user.id,
+							runId,
+							after,
+						});
+
+						if (events.length === 0) {
+							if (
+								Date.now() - lastHeartbeatAt >=
+								EVENTS_HEARTBEAT_INTERVAL_MS
+							) {
+								lastHeartbeatAt = Date.now();
+								controller.enqueue(toSsePingChunk());
+							}
+							await sleep(EVENTS_POLL_INTERVAL_MS);
+							continue;
+						}
+
+						for (const envelope of events) {
+							after = Math.max(after, envelope.index);
+							controller.enqueue(toSseChunk(envelope.event));
+							if (isTerminalSandboxEventType(envelope.event.type)) {
+								terminalSeen = true;
+								break;
+							}
+						}
+					}
+
+					controller.enqueue(toSseDoneChunk());
+					controller.close();
+				},
+			});
+
+			return new Response(stream, {
+				headers: SANDBOX_SSE_HEADERS,
+			});
+		},
+	);
+
+	app.get("/runs/:runId/events/ws", async (c: Context) => {
+		const user = c.get("user") as IUser;
+		const runId = c.req.param("runId");
+		if (!runId) {
+			throw new AssistantError("runId is required", ErrorType.PARAMS_ERROR);
+		}
+		await getSandboxRunForUser({
+			context: getServiceContext(c),
+			userId: user.id,
+			runId,
+		});
+
+		if (!c.env.SANDBOX_RUN_COORDINATOR) {
+			return c.json({ error: "Run coordinator is not configured" }, 503);
+		}
+		if (c.req.header("upgrade")?.toLowerCase() !== "websocket") {
+			return c.json({ error: "Expected websocket upgrade request" }, 426);
+		}
+
+		const id = c.env.SANDBOX_RUN_COORDINATOR.idFromName(runId);
+		const stub = c.env.SANDBOX_RUN_COORDINATOR.get(id);
+		return stub.fetch("https://sandbox-run-coordinator/events/ws", c.req.raw);
+	});
 
 	app.post(
 		"/runs/:runId/pause",

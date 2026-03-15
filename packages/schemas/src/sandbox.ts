@@ -70,6 +70,10 @@ export const listRunsQuerySchema = z.object({
 	limit: z.coerce.number().int().min(1).max(100).default(30),
 });
 
+export const listRunEventsQuerySchema = z.object({
+	after: z.coerce.number().int().min(0).optional(),
+});
+
 export const cancelRunSchema = z.object({
 	reason: z.string().trim().min(1).max(280).optional(),
 });
@@ -213,6 +217,19 @@ export const sandboxRunDataSchema = z.object({
 	resumeReason: z.string().optional(),
 	artifactKey: z.string().optional(),
 	artifactUrl: z.string().optional(),
+	workflowPhase: z
+		.enum([
+			"queued",
+			"dispatching",
+			"executing",
+			"finalizing",
+			"completed",
+			"failed",
+			"cancelled",
+		])
+		.optional(),
+	queueDispatchedAt: z.string().optional(),
+	processingStartedAt: z.string().optional(),
 });
 
 export const sandboxRunSchema = sandboxRunDataSchema.extend({
@@ -223,6 +240,7 @@ export const sandboxTaskTypeSchema = z.enum(SANDBOX_TASK_TYPES);
 export const sandboxTrustLevelSchema = z.enum(SANDBOX_TRUST_LEVELS);
 
 export const sandboxRunControlStateSchema = z.enum([
+	"queued",
 	"running",
 	"paused",
 	"cancelled",
@@ -305,6 +323,9 @@ export type GitHubConnectionPayload = z.infer<typeof githubConnectionSchema>;
 export type ExecuteSandboxRunPayload = z.infer<typeof executeSandboxRunSchema>;
 export type AutoConnectPayload = z.infer<typeof autoConnectSchema>;
 export type ListRunsQueryPayload = z.infer<typeof listRunsQuerySchema>;
+export type ListRunEventsQueryPayload = z.infer<
+	typeof listRunEventsQuerySchema
+>;
 export type CancelRunPayload = z.infer<typeof cancelRunSchema>;
 export type RequestRunApprovalPayload = z.infer<
 	typeof requestRunApprovalSchema

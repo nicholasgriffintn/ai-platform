@@ -56,6 +56,10 @@ import { TaskMessage } from "./services/tasks/TaskService";
 import { ScheduleExecutor } from "./services/tasks/ScheduleExecutor";
 import { QueueExecutor } from "./services/tasks/QueueExecutor";
 import { SandboxRunCoordinator } from "./services/apps/sandbox/run-coordinator";
+import {
+	isSandboxRunDispatchMessage,
+	processSandboxRunDispatch,
+} from "./services/apps/sandbox/dispatch";
 
 const app = new Hono<{
 	Bindings: IEnv;
@@ -380,8 +384,48 @@ export default {
 	async scheduled(event: ScheduledEvent, env: IEnv): Promise<void> {
 		await ScheduleExecutor.respondToCronSchedules(env, event);
 	},
-	async queue(batch: MessageBatch<TaskMessage>, env: IEnv): Promise<void> {
-		await QueueExecutor.respondToCronQueue(env, batch);
+	async queue(batch: MessageBatch<unknown>, env: IEnv): Promise<void> {
+		const taskMessages: Message<TaskMessage>[] = [];
+		const queueLogger = getLogger({ prefix: "api/queue" });
+
+		for (const message of batch.messages) {
+			if (isSandboxRunDispatchMessage(message.body)) {
+				try {
+					await processSandboxRunDispatch({
+						env,
+						message: message.body,
+					});
+					message.ack();
+				} catch (error) {
+					queueLogger.error("Sandbox run dispatch failed", {
+						error_message:
+							error instanceof Error ? error.message : String(error),
+						run_id:
+							typeof message.body === "object" &&
+							message.body &&
+							"runId" in message.body
+								? String((message.body as { runId?: unknown }).runId ?? "")
+								: "",
+					});
+					if (message.attempts < 3) {
+						message.retry();
+					} else {
+						message.ack();
+					}
+				}
+				continue;
+			}
+			taskMessages.push(message as Message<TaskMessage>);
+		}
+
+		if (taskMessages.length === 0) {
+			return;
+		}
+
+		await QueueExecutor.respondToCronQueue(env, {
+			...batch,
+			messages: taskMessages,
+		} as MessageBatch<TaskMessage>);
 	},
 };
 

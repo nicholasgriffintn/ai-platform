@@ -17,6 +17,41 @@ import {
 const SANDBOX_TOKEN_EXPIRATION_SECONDS = 60 * 60;
 const DEFAULT_SANDBOX_MODEL = "mistral-large";
 
+function parseModelPolicyList(input: string | undefined): Set<string> {
+	if (!input?.trim()) {
+		return new Set();
+	}
+	return new Set(
+		input
+			.split(",")
+			.map((entry) => entry.trim())
+			.filter(Boolean)
+			.map((entry) => entry.toLowerCase()),
+	);
+}
+
+function enforceSandboxModelPolicy(env: IEnv, model: string): string {
+	const normalisedModel = model.trim();
+	const lower = normalisedModel.toLowerCase();
+	const blockedModels = parseModelPolicyList(env.SANDBOX_BLOCKED_MODELS);
+	if (blockedModels.has(lower)) {
+		throw new AssistantError(
+			`Sandbox model "${normalisedModel}" is blocked by policy`,
+			ErrorType.PARAMS_ERROR,
+		);
+	}
+
+	const allowedModels = parseModelPolicyList(env.SANDBOX_ALLOWED_MODELS);
+	if (allowedModels.size > 0 && !allowedModels.has(lower)) {
+		throw new AssistantError(
+			`Sandbox model "${normalisedModel}" is not allowed by policy`,
+			ErrorType.PARAMS_ERROR,
+		);
+	}
+
+	return normalisedModel;
+}
+
 export interface ExecuteSandboxWorkerOptions {
 	env: IEnv;
 	context: ServiceContext;
@@ -49,16 +84,19 @@ export async function resolveSandboxModel(params: {
 	const { context, userId, model } = params;
 
 	if (model?.trim()) {
-		return model.trim();
+		return enforceSandboxModelPolicy(context.env, model.trim());
 	}
 
 	const settings =
 		await context.repositories.userSettings.getUserSettings(userId);
 	if (settings?.sandbox_model?.trim()) {
-		return settings.sandbox_model.trim();
+		return enforceSandboxModelPolicy(
+			context.env,
+			settings.sandbox_model.trim(),
+		);
 	}
 
-	return DEFAULT_SANDBOX_MODEL;
+	return enforceSandboxModelPolicy(context.env, DEFAULT_SANDBOX_MODEL);
 }
 
 async function resolveGitHubToken(params: {

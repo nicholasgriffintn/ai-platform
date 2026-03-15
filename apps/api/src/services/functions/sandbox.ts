@@ -179,3 +179,24 @@ export const run_bug_fix: IFunction = createSandboxFunction({
 		"Diagnose and fix a bug in a GitHub repository using the sandbox worker",
 	taskType: "bug-fix",
 });
+
+export const run_refactoring: IFunction = createSandboxFunction({
+	name: "run_refactoring",
+	description:
+		"Refactor existing code in a GitHub repository while preserving behaviour",
+	taskType: "refactoring",
+});
+
+export const run_documentation: IFunction = createSandboxFunction({
+	name: "run_documentation",
+	description:
+		"Create or update documentation in a GitHub repository using the sandbox worker",
+	taskType: "documentation",
+});
+
+export const run_migration: IFunction = createSandboxFunction({
+	name: "run_migration",
+	description:
+		"Run a migration workflow in a GitHub repository using the sandbox worker",
+	taskType: "migration",
+});

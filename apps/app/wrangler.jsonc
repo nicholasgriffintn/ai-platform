@@ -1,7 +1,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "assistant-app",
-	"compatibility_date": "2025-02-07",
+	"compatibility_date": "2026-03-15",
 	"main": "./build/server/index.js",
 	"workers_dev": false,
 	"preview_urls": false,

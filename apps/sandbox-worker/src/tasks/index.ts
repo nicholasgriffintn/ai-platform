@@ -1,5 +1,6 @@
-import { executeFeatureImplementation } from "./feature-implementation";
 import { resolveSandboxTaskProfile } from "./task-profile";
+import { SandboxTaskRunnerRegistry } from "./runner";
+import { AgentTaskRunner } from "./runners/feature-implementation-runner";
 import type {
 	Env,
 	TaskEventEmitter,
@@ -7,6 +8,19 @@ import type {
 	TaskResult,
 	TaskSecrets,
 } from "../types";
+
+const runnerRegistry = new SandboxTaskRunnerRegistry();
+for (const taskType of [
+	"feature-implementation",
+	"code-review",
+	"test-suite",
+	"bug-fix",
+	"refactoring",
+	"documentation",
+	"migration",
+] as const) {
+	runnerRegistry.register(new AgentTaskRunner(taskType));
+}
 
 export async function executeSandboxTask(
 	params: TaskParams,
@@ -23,11 +37,12 @@ export async function executeSandboxTask(
 		shouldCommit: profile.shouldCommit,
 	};
 
-	return executeFeatureImplementation(
-		taskParams,
+	const runner = runnerRegistry.resolve(profile.taskType);
+	return runner.execute({
+		params: taskParams,
 		secrets,
 		env,
 		emitEvent,
 		abortSignal,
-	);
+	});
 }

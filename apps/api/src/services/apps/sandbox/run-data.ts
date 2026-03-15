@@ -53,5 +53,8 @@ export function toSandboxRunResponse(data: SandboxRunData): SandboxRun {
 		resumeReason: data.resumeReason,
 		artifactKey: data.artifactKey,
 		artifactUrl: data.artifactUrl,
+		workflowPhase: data.workflowPhase,
+		queueDispatchedAt: data.queueDispatchedAt,
+		processingStartedAt: data.processingStartedAt,
 	};
 }

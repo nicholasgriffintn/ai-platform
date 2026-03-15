@@ -22,6 +22,21 @@ const APPROVALS_KEY = "approvals";
 export class SandboxRunCoordinator implements DurableObject {
 	constructor(private readonly state: DurableObjectState) {}
 
+	private broadcastEnvelope(envelope: CoordinatorEventEnvelope): void {
+		const payload = JSON.stringify(envelope);
+		for (const socket of this.state.getWebSockets()) {
+			try {
+				socket.send(payload);
+			} catch {
+				try {
+					socket.close(1011, "Coordinator broadcast failed");
+				} catch {
+					// Ignore socket close failures.
+				}
+			}
+		}
+	}
+
 	private async getControl(): Promise<CoordinatorState | null> {
 		const raw = await this.state.storage.get<string>(CONTROL_KEY);
 		if (!raw) {
@@ -56,6 +71,7 @@ export class SandboxRunCoordinator implements DurableObject {
 
 		await this.state.storage.put(EVENT_INDEX_KEY, nextIndex);
 		await this.state.storage.put(EVENTS_KEY, JSON.stringify(nextEvents));
+		this.broadcastEnvelope(envelope);
 		return envelope;
 	}
 
@@ -97,6 +113,26 @@ export class SandboxRunCoordinator implements DurableObject {
 		const url = new URL(request.url);
 		const pathname = url.pathname;
 
+		if (
+			pathname === "/events/ws" &&
+			request.headers.get("Upgrade")?.toLowerCase() === "websocket"
+		) {
+			const pair = new WebSocketPair();
+			const client = pair[0];
+			const server = pair[1];
+			this.state.acceptWebSocket(server);
+			server.send(
+				JSON.stringify({
+					type: "ready",
+					recordedAt: new Date().toISOString(),
+				}),
+			);
+			return new Response(null, {
+				status: 101,
+				webSocket: client,
+			});
+		}
+
 		if (pathname === "/control" && request.method === "GET") {
 			const control = await this.getControl();
 			if (!control) {
@@ -131,6 +167,7 @@ export class SandboxRunCoordinator implements DurableObject {
 			}
 			const payload = (await request.json()) as Record<string, unknown>;
 			const nextState =
+				payload.state === "queued" ||
 				payload.state === "running" ||
 				payload.state === "paused" ||
 				payload.state === "cancelled"
@@ -281,5 +318,20 @@ export class SandboxRunCoordinator implements DurableObject {
 		}
 
 		return Response.json({ error: "Not found" }, { status: 404 });
+	}
+
+	public webSocketMessage(
+		_ws: WebSocket,
+		_message: ArrayBuffer | string,
+	): void {
+		// Inbound messages are currently ignored; websocket clients subscribe-only.
+	}
+
+	public webSocketClose(ws: WebSocket): void {
+		try {
+			ws.close(1000, "Closed");
+		} catch {
+			// Ignore close errors.
+		}
 	}
 }

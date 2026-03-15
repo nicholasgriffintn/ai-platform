@@ -34,7 +34,10 @@ import { compose_functions, if_then_else, parallel_execute } from "./workflow";
 import {
 	run_bug_fix,
 	run_code_review,
+	run_documentation,
 	run_feature_implementation,
+	run_migration,
+	run_refactoring,
 	run_test_suite,
 } from "./sandbox";
 
@@ -76,6 +79,9 @@ export const availableFunctions: IFunction[] = [
 	run_code_review,
 	run_test_suite,
 	run_bug_fix,
+	run_refactoring,
+	run_documentation,
+	run_migration,
 ];
 
 export const handleFunctions = async ({

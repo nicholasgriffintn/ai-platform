@@ -39,7 +39,10 @@ export const getFunctionResponseType = (name: string): ResponseDisplayType => {
 		name === "run_feature_implementation" ||
 		name === "run_code_review" ||
 		name === "run_test_suite" ||
-		name === "run_bug_fix"
+		name === "run_bug_fix" ||
+		name === "run_refactoring" ||
+		name === "run_documentation" ||
+		name === "run_migration"
 	)
 		return ResponseDisplayType.TEMPLATE;
 	if (name.includes("call_api")) return ResponseDisplayType.JSON;
@@ -182,7 +185,10 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
 		name === "run_feature_implementation" ||
 		name === "run_code_review" ||
 		name === "run_test_suite" ||
-		name === "run_bug_fix"
+		name === "run_bug_fix" ||
+		name === "run_refactoring" ||
+		name === "run_documentation" ||
+		name === "run_migration"
 	) {
 		const sandboxHeading =
 			name === "run_code_review"
@@ -191,7 +197,13 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
 					? "Sandbox Test Suite"
 					: name === "run_bug_fix"
 						? "Sandbox Bug Fix"
-						: "Sandbox Implementation";
+						: name === "run_refactoring"
+							? "Sandbox Refactoring"
+							: name === "run_documentation"
+								? "Sandbox Documentation"
+								: name === "run_migration"
+									? "Sandbox Migration"
+									: "Sandbox Implementation";
 		display.fields = [
 			{ key: "success", label: "Success" },
 			{ key: "summary", label: "Summary" },
