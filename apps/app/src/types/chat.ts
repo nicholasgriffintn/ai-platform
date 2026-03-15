@@ -1,3 +1,5 @@
+import type { MessagePart as SchemaMessagePart } from "@assistant/schemas";
+
 export type ChatRole = "user" | "assistant" | "system" | "tool";
 
 export type ChatMode = "remote" | "local" | "tool" | "agent";
@@ -142,6 +144,7 @@ export interface Message {
 	completion_id?: string;
 	role: ChatRole;
 	content: string | MessageContent[];
+	parts?: SchemaMessagePart[];
 	reasoning?: {
 		collapsed: boolean;
 		content: string;

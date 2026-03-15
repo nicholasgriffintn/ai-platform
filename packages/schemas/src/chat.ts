@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { messageSchema } from "./shared";
+import { messagePartsSchema } from "./message-parts";
 
 export const chatCompletionResponseSchema = z.object({
 	id: z.string(),
@@ -154,6 +155,10 @@ export const createChatCompletionsJsonSchema = z.object({
 					.meta({
 						description: "The contents of the message.",
 					}),
+				parts: messagePartsSchema.optional().meta({
+					description:
+						"Structured message parts including text, reasoning, tools, and files.",
+				}),
 				refusal: z.string().optional().meta({
 					description: "The refusal reason if the message was refused.",
 				}),
@@ -396,6 +401,7 @@ export const generateChatCompletionTitleJsonSchema = z.object({
 			z.object({
 				role: z.enum(["user", "assistant", "system", "tool", "developer"]),
 				content: z.union([z.string(), z.array(z.any())]),
+				parts: messagePartsSchema.optional(),
 			}),
 		)
 		.optional(),
@@ -479,6 +485,7 @@ export const getMessageResponseSchema = z.object({
 	id: z.string(),
 	role: z.enum(["user", "assistant", "system", "function"]),
 	content: z.union([z.string(), z.array(z.any())]),
+	parts: messagePartsSchema.optional(),
 	name: z.string().optional(),
 	function_call: z.any().optional(),
 	timestamp: z.number().optional(),

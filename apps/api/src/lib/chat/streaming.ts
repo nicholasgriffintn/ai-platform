@@ -4,6 +4,11 @@ import {
 	MAX_THINKING_LENGTH,
 } from "~/constants/app";
 import { formatAssistantMessage, getAIResponse } from "~/lib/chat/responses";
+import {
+	appendReasoningPart,
+	appendTextPart,
+	buildMessageParts,
+} from "~/lib/chat/messageParts";
 import { handleToolCalls } from "~/lib/chat/tools";
 import { getToolEventPayload } from "~/lib/chat/utils";
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
@@ -18,6 +23,8 @@ import {
 	type IEnv,
 	type IUser,
 	type IUserSettings,
+	type Message,
+	type MessagePart,
 	type Platform,
 	StreamState,
 	type ToolCall,
@@ -52,6 +59,62 @@ function emitToolEvents(
 
 	const payload = getToolEventPayload(toolCall, stage, parameters);
 	emitEvent(controller, eventType, payload);
+}
+
+function mergeMessageParts(
+	streamedParts: MessagePart[],
+	derivedParts?: MessagePart[],
+): MessagePart[] | undefined {
+	if (
+		streamedParts.length === 0 &&
+		(!derivedParts || derivedParts.length === 0)
+	) {
+		return undefined;
+	}
+
+	const merged: MessagePart[] = [...streamedParts];
+	if (!derivedParts || derivedParts.length === 0) {
+		return merged;
+	}
+
+	let hasTextPart = merged.some((part) => part.type === "text");
+	let hasReasoningPart = merged.some((part) => part.type === "reasoning");
+
+	const seenToolUse = new Set(
+		merged
+			.filter(
+				(part): part is Extract<MessagePart, { type: "tool_use" }> =>
+					part.type === "tool_use",
+			)
+			.map((part) => `${part.toolCallId || ""}:${part.name}`),
+	);
+
+	for (const part of derivedParts) {
+		if (part.type === "text") {
+			if (hasTextPart) {
+				continue;
+			}
+			hasTextPart = true;
+		}
+
+		if (part.type === "reasoning") {
+			if (hasReasoningPart) {
+				continue;
+			}
+			hasReasoningPart = true;
+		}
+
+		if (part.type === "tool_use") {
+			const key = `${part.toolCallId || ""}:${part.name}`;
+			if (seenToolUse.has(key)) {
+				continue;
+			}
+			seenToolUse.add(key);
+		}
+		merged.push(part);
+	}
+
+	return merged;
 }
 
 /**
@@ -118,6 +181,7 @@ export async function createStreamWithPostProcessing(
 	let qwqThinkTagAdded = false;
 	let refusalData: string | null = null;
 	let annotationsData: any = null;
+	const streamedParts: MessagePart[] = [];
 
 	const getFullContent = () => fullContentChunks.join("");
 	const getFullThinking = () => fullThinkingChunks.join("");
@@ -330,6 +394,7 @@ export async function createStreamWithPostProcessing(
 								}
 
 								addToFullContent(contentDelta);
+								appendTextPart(streamedParts, contentDelta, Date.now());
 								isFirstContentChunk = false;
 
 								emitEvent(controller, "content_block_delta", {
@@ -345,6 +410,7 @@ export async function createStreamWithPostProcessing(
 							if (thinkingData) {
 								if (typeof thinkingData === "string") {
 									addToFullThinking(thinkingData);
+									appendReasoningPart(streamedParts, thinkingData, Date.now());
 
 									emitEvent(controller, "thinking_delta", {
 										thinking: thinkingData,
@@ -653,6 +719,18 @@ export async function createStreamWithPostProcessing(
 							annotations: annotationsData,
 						});
 
+						const derivedParts = buildMessageParts({
+							role: "assistant",
+							content:
+								(assistantMessage.content as Message["content"]) ||
+								processedContent,
+							tool_calls: assistantMessage.tool_calls,
+							data: assistantMessage.data,
+							timestamp: assistantMessage.timestamp,
+						} as Message);
+
+						const messageParts = mergeMessageParts(streamedParts, derivedParts);
+
 						const contentForStorage =
 							typeof assistantMessage.content === "string" ||
 							Array.isArray(assistantMessage.content)
@@ -671,6 +749,7 @@ export async function createStreamWithPostProcessing(
 							platform: assistantMessage.platform,
 							usage: assistantMessage.usage,
 							tool_calls: assistantMessage.tool_calls,
+							parts: messageParts,
 						});
 
 						emitEvent(controller, "message_delta", {
@@ -687,6 +766,7 @@ export async function createStreamWithPostProcessing(
 							citations: assistantMessage.citations,
 							finish_reason: assistantMessage.finish_reason,
 							data: assistantMessage.data,
+							parts: messageParts,
 						});
 
 						emitEvent(controller, "message_stop", {});

@@ -1,4 +1,5 @@
 import z from "zod/v4";
+import { messagePartsSchema } from "./message-parts";
 
 export const messageSchema = z.object({
 	role: z.enum(["user", "assistant", "tool"]),
@@ -13,8 +14,12 @@ export const messageSchema = z.object({
 			}),
 		)
 		.optional(),
-	parts: z.array(z.object({ text: z.string() })).optional(),
-	content: z.string(),
+	parts: messagePartsSchema.optional(),
+	content: z.union([
+		z.string(),
+		z.array(z.unknown()),
+		z.record(z.string(), z.unknown()),
+	]),
 	status: z.string().optional(),
 	data: z.record(z.string(), z.any()).optional(),
 	model: z.string().optional(),

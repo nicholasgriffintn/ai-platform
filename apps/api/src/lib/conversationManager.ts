@@ -1,11 +1,4 @@
-import type {
-	AnonymousUser,
-	Message,
-	MessageContent,
-	Platform,
-	User,
-	IEnv,
-} from "~/types";
+import type { AnonymousUser, Message, Platform, User, IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -21,6 +14,7 @@ import type { AsyncInvocationMetadata } from "./async/asyncInvocation";
 import { isAsyncInvocationPending } from "./async/asyncInvocation";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { TaskService } from "~/services/tasks/TaskService";
+import { buildMessageParts, normaliseMessageParts } from "./chat/messageParts";
 
 const logger = getLogger({ prefix: "lib/conversationManager" });
 
@@ -210,7 +204,28 @@ export class ConversationManager {
 			platform: message.platform || this.platform,
 		}));
 
-		for (const message of newMessages) {
+		const normalisedMessages = newMessages.map((message) => {
+			const normalisedParts = normaliseMessageParts(
+				message.parts,
+				message.timestamp,
+			);
+
+			if (normalisedParts && normalisedParts.length > 0) {
+				return { ...message, parts: normalisedParts };
+			}
+
+			const derivedParts = buildMessageParts({
+				...message,
+				parts: undefined,
+			});
+
+			return {
+				...message,
+				parts: derivedParts,
+			};
+		});
+
+		for (const message of normalisedMessages) {
 			if (message.role === "assistant" && this.usageManager) {
 				try {
 					const modelUsed = message.model || this.model;
@@ -228,7 +243,7 @@ export class ConversationManager {
 		}
 
 		if (!this.store) {
-			return newMessages;
+			return normalisedMessages;
 		}
 
 		if (!this.user?.id) {
@@ -277,27 +292,20 @@ export class ConversationManager {
 			);
 		}
 
-		const createPromises = newMessages.map((message) => {
-			let content: string;
-			if (typeof message.content === "object") {
-				content = JSON.stringify(message.content);
-			} else {
-				content = message.content || "";
-			}
-
+		const createPromises = normalisedMessages.map((message) => {
 			return this.database.repositories.messages.createMessage(
 				message.id as string,
 				conversation_id,
 				message.role,
-				content,
+				this.serializeMessageContent(message.content),
 				message,
 			);
 		});
 
 		await Promise.all(createPromises);
 
-		if (newMessages.length > 0) {
-			const lastMessage = newMessages[newMessages.length - 1];
+		if (normalisedMessages.length > 0) {
+			const lastMessage = normalisedMessages[normalisedMessages.length - 1];
 			await this.database.repositories.conversations.updateConversationAfterMessage(
 				conversation_id,
 				lastMessage.id as string,
@@ -305,7 +313,7 @@ export class ConversationManager {
 		}
 
 		if (this.taskService && this.user?.id) {
-			for (const message of newMessages) {
+			for (const message of normalisedMessages) {
 				const asyncInvocation = (
 					message.data as Record<string, any> | undefined
 				)?.asyncInvocation as AsyncInvocationMetadata | undefined;
@@ -334,7 +342,7 @@ export class ConversationManager {
 			}
 		}
 
-		return newMessages;
+		return normalisedMessages;
 	}
 
 	/**
@@ -425,20 +433,18 @@ export class ConversationManager {
 				continue;
 			}
 
-			let content: string | undefined;
-			if (typeof message.content === "object") {
-				content = JSON.stringify(message.content);
-			} else {
-				content = message.content;
+			const updates: Record<string, unknown> = {};
+			if (message.content !== undefined) {
+				updates.content = this.serializeMessageContent(message.content);
 			}
 
-			const updates: Record<string, unknown> = {};
-			if (content !== undefined) {
-				updates.content = content;
+			if (Array.isArray(message.parts)) {
+				updates.parts =
+					normaliseMessageParts(message.parts, message.timestamp) || [];
 			}
 
 			for (const [key, value] of Object.entries(message)) {
-				if (!["id", "content"].includes(key)) {
+				if (!["id", "content", "parts"].includes(key)) {
 					updates[key] = value;
 				}
 			}
@@ -700,7 +706,7 @@ export class ConversationManager {
 	 * @returns The formatted Message object
 	 */
 	private formatMessage(dbMessage: Record<string, unknown>): Message {
-		let content: string | MessageContent[] = dbMessage.content as string;
+		let content: Message["content"] = dbMessage.content as Message["content"];
 
 		try {
 			if (
@@ -729,7 +735,17 @@ export class ConversationManager {
 			parsedData = safeParseJson(dbMessage.data as string);
 		}
 
-		return {
+		let parsedParts = dbMessage.parts;
+		if (dbMessage.parts) {
+			parsedParts = safeParseJson(dbMessage.parts as string);
+		}
+
+		const normalisedParts = normaliseMessageParts(
+			parsedParts,
+			dbMessage.timestamp as number | undefined,
+		);
+
+		const formattedMessage = {
 			...dbMessage,
 			id: dbMessage.id,
 			role: dbMessage.role as string,
@@ -743,11 +759,25 @@ export class ConversationManager {
 			platform: dbMessage.platform as string,
 			mode: dbMessage.mode as string,
 			data: parsedData,
+			parts: normalisedParts,
 			usage: dbMessage.usage
 				? safeParseJson(dbMessage.usage as string)
 				: undefined,
 			log_id: dbMessage.log_id as string,
 		} as Message;
+
+		if (!formattedMessage.parts || formattedMessage.parts.length === 0) {
+			formattedMessage.parts = buildMessageParts(formattedMessage);
+		}
+
+		return formattedMessage;
+	}
+
+	private serializeMessageContent(messageContent: Message["content"]): string {
+		if (typeof messageContent === "object") {
+			return JSON.stringify(messageContent);
+		}
+		return messageContent || "";
 	}
 
 	/**

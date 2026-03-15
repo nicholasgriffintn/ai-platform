@@ -7,6 +7,7 @@ export * from "./chat";
 export * from "./edit";
 export * from "./fim";
 export * from "./magicLink";
+export * from "./message-parts";
 export * from "./models";
 export * from "./memories";
 export * from "./plans";

@@ -19,6 +19,7 @@ export class MessageRepository extends BaseRepository {
 			: null;
 		const data = messageData.data ? JSON.stringify(messageData.data) : null;
 		const usage = messageData.usage ? JSON.stringify(messageData.usage) : null;
+		const parts = messageData.parts ? JSON.stringify(messageData.parts) : null;
 
 		const result = this.runQuery<Record<string, unknown>>(
 			`INSERT INTO message (
@@ -67,7 +68,7 @@ export class MessageRepository extends BaseRepository {
 				messageData.tool_call_id || null,
 				messageData.tool_call_arguments || null,
 				messageData.app || null,
-				messageData.parts || null,
+				parts,
 			],
 			true,
 		);
@@ -154,7 +155,7 @@ export class MessageRepository extends BaseRepository {
 			"id = ?",
 			[messageId],
 			{
-				jsonFields: ["tool_calls", "citations", "data", "usage"],
+				jsonFields: ["tool_calls", "citations", "data", "usage", "parts"],
 				transformer: (field, value) => {
 					if (field === "content" && typeof value === "object") {
 						return JSON.stringify(value);
@@ -257,6 +258,7 @@ export class MessageRepository extends BaseRepository {
 				platform: result.platform,
 				mode: result.mode,
 				data: result.data,
+				parts: result.parts,
 				usage: result.usage,
 				log_id: result.log_id,
 			},

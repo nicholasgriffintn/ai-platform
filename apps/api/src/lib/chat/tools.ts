@@ -13,6 +13,7 @@ import {
 	formatToolResponse,
 } from "~/utils/tool-responses";
 import { safeParseJson } from "~/utils/json";
+import { buildMessageParts } from "./messageParts";
 import z from "zod/v4";
 
 const logger = getLogger({ prefix: "lib/chat/tools" });
@@ -29,6 +30,11 @@ export const handleToolCalls = async (
 	conversationManager: ConversationManager,
 	req: IRequest,
 ): Promise<Message[]> => {
+	const withDerivedParts = (message: Message): Message => ({
+		...message,
+		parts: message.parts || buildMessageParts(message),
+	});
+
 	const functionResults: Message[] = [];
 	const modelResponseLogId = req.env.AI.aiGatewayLogId;
 	const timestamp = Date.now();
@@ -84,7 +90,7 @@ export const handleToolCalls = async (
 					model: req.request?.model || "unknown",
 					platform: req.request?.platform || "api",
 				};
-				functionResults.push(memMessage);
+				functionResults.push(withDerivedParts(memMessage));
 				continue;
 			}
 
@@ -154,7 +160,7 @@ export const handleToolCalls = async (
 					platform: req.request?.platform || "api",
 				};
 
-				functionResults.push(errorMessage);
+				functionResults.push(withDerivedParts(errorMessage));
 				continue;
 			}
 
@@ -166,21 +172,23 @@ export const handleToolCalls = async (
 					"EMPTY_RESULT",
 				);
 
-				functionResults.push({
-					role: "tool",
-					name: functionName,
-					content: nullResultError.content,
-					status: "error",
-					data: nullResultError.data,
-					log_id: modelResponseLogId || "",
-					id: generateId(),
-					tool_call_id: toolCall.id,
-					tool_call_arguments:
-						toolCall.arguments || toolCall.function?.arguments,
-					timestamp,
-					model: req.request?.model || "unknown",
-					platform: req.request?.platform || "api",
-				});
+				functionResults.push(
+					withDerivedParts({
+						role: "tool",
+						name: functionName,
+						content: nullResultError.content,
+						status: "error",
+						data: nullResultError.data,
+						log_id: modelResponseLogId || "",
+						id: generateId(),
+						tool_call_id: toolCall.id,
+						tool_call_arguments:
+							toolCall.arguments || toolCall.function?.arguments,
+						timestamp,
+						model: req.request?.model || "unknown",
+						platform: req.request?.platform || "api",
+					}),
+				);
 				continue;
 			}
 
@@ -205,7 +213,7 @@ export const handleToolCalls = async (
 				platform: req.request?.platform || "api",
 			};
 
-			functionResults.push(message);
+			functionResults.push(withDerivedParts(message));
 		} catch (error) {
 			const functionError = error as ToolCallError;
 			const errorType = functionError.type || "TOOL_CALL_ERROR";
@@ -237,7 +245,7 @@ export const handleToolCalls = async (
 				platform: req.request?.platform || "api",
 			};
 
-			functionResults.push(errorMessage);
+			functionResults.push(withDerivedParts(errorMessage));
 		}
 	}
 

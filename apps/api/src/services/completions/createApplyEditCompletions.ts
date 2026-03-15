@@ -16,7 +16,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 interface HandleCreateApplyEditCompletionsRequest {
 	env: IEnv;
 	model?: string;
-	messages: Array<{ role: string; content: any; [key: string]: any }>;
+	messages: Array<{ role: string; content?: any; [key: string]: any }>;
 	stream?: boolean;
 	user?: IUser;
 }
@@ -59,7 +59,7 @@ export const handleCreateApplyEditCompletions = async ({
 
 	const normalizedMessages: Message[] = messages.map((message) => ({
 		role: message.role as ChatRole,
-		content: message.content,
+		content: message.content ?? "",
 		name: message.name,
 		tool_calls: message.tool_calls,
 		parts: message.parts,

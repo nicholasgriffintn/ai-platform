@@ -109,28 +109,39 @@ describe("tools", () => {
 			);
 
 			expect(result).toHaveLength(1);
-			expect(result[0]).toEqual({
-				role: "tool",
-				name: "memory",
-				content: "📝 Stored facts memory: Important information",
-				status: "success",
-				data: {
-					type: "store",
-					category: "facts",
-					text: "Important information",
-				},
-				log_id: "log-123",
-				id: "test-id-123",
-				tool_call_id: "call-1",
-				tool_call_arguments: JSON.stringify({
-					type: "store",
-					category: "facts",
-					text: "Important information",
+			expect(result[0]).toEqual(
+				expect.objectContaining({
+					role: "tool",
+					name: "memory",
+					content: "📝 Stored facts memory: Important information",
+					status: "success",
+					data: {
+						type: "store",
+						category: "facts",
+						text: "Important information",
+					},
+					log_id: "log-123",
+					id: "test-id-123",
+					tool_call_id: "call-1",
+					tool_call_arguments: JSON.stringify({
+						type: "store",
+						category: "facts",
+						text: "Important information",
+					}),
+					timestamp: expect.any(Number),
+					model: "gpt-4",
+					platform: "api",
 				}),
-				timestamp: expect.any(Number),
-				model: "gpt-4",
-				platform: "api",
-			});
+			);
+			expect(result[0].parts).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						type: "tool_result",
+						name: "memory",
+						toolCallId: "call-1",
+					}),
+				]),
+			);
 		});
 
 		it("should handle memory tool with snapshot type", async () => {

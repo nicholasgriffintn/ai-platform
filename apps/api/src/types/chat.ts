@@ -1,4 +1,5 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
+import type { MessagePart as SchemaMessagePart } from "@assistant/schemas";
 import type { ServiceContext } from "../lib/context/serviceContext";
 import type {
 	IEnv,
@@ -22,6 +23,7 @@ export type ContentType =
 	| "tool_result";
 export type ChatRole = "user" | "assistant" | "tool" | "developer" | "system";
 export type ChatMode = "normal" | "local" | "remote" | "no_system" | "agent";
+export type MessagePart = SchemaMessagePart;
 
 export interface ReasoningControls {
 	effort?: ReasoningEffortLevel;
@@ -125,9 +127,7 @@ export interface Message {
 	role: ChatRole;
 	name?: string;
 	tool_calls?: Record<string, any>[];
-	parts?: {
-		text: string;
-	}[];
+	parts?: MessagePart[];
 	content: string | MessageContent[] | Record<string, unknown>;
 	status?: string;
 	data?: MessageDataPayload | null;
@@ -342,6 +342,7 @@ export interface CreateChatCompletionsResponse {
 		message: {
 			role: ChatRole;
 			content: string | MessageContent[];
+			parts?: MessagePart[];
 			data?: Record<string, any>;
 			tool_calls?: Record<string, any>[];
 			citations?: string[] | null;

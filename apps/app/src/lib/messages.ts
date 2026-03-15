@@ -1,9 +1,41 @@
 import type { Message } from "~/types";
 
+function normaliseMessageParts(parts: unknown): Message["parts"] | undefined {
+	if (!Array.isArray(parts)) {
+		return undefined;
+	}
+
+	const normalised = parts.flatMap((part) => {
+		if (!part || typeof part !== "object") {
+			return [];
+		}
+
+		if ("type" in part && typeof part.type === "string") {
+			return [part as NonNullable<Message["parts"]>[number]];
+		}
+
+		if ("text" in part && typeof part.text === "string") {
+			return [
+				{
+					type: "text",
+					text: part.text,
+				} as NonNullable<Message["parts"]>[number],
+			];
+		}
+
+		return [];
+	});
+
+	return normalised.length > 0 ? normalised : undefined;
+}
+
 export function normalizeMessage(message: Message): Message {
 	let content = message.content;
 	const reasoning = message.reasoning;
 	let newReasoning: string | null = null;
+	const parts = normaliseMessageParts(
+		(message as Message & { parts?: unknown }).parts,
+	);
 
 	if (typeof content === "string") {
 		const formatted = formatMessageContent(content);
@@ -27,6 +59,46 @@ export function normalizeMessage(message: Message): Message {
 		content = JSON.stringify(content);
 	}
 
+	if (!newReasoning && parts?.length) {
+		const reasoningFromParts = parts
+			.filter(
+				(
+					part,
+				): part is Extract<
+					NonNullable<Message["parts"]>[number],
+					{ type: "reasoning" }
+				> => part.type === "reasoning",
+			)
+			.map((part) => part.text)
+			.join("\n")
+			.trim();
+		if (reasoningFromParts) {
+			newReasoning = reasoningFromParts;
+		}
+	}
+
+	if (
+		typeof content === "string" &&
+		(!content || content.trim() === "") &&
+		parts?.length
+	) {
+		const textFromParts = parts
+			.filter(
+				(
+					part,
+				): part is Extract<
+					NonNullable<Message["parts"]>[number],
+					{ type: "text" }
+				> => part.type === "text",
+			)
+			.map((part) => part.text)
+			.join("\n")
+			.trim();
+		if (textFromParts) {
+			content = textFromParts;
+		}
+	}
+
 	const now = Date.now();
 
 	const finalReasoning = newReasoning
@@ -46,6 +118,7 @@ export function normalizeMessage(message: Message): Message {
 		model: message.model || "",
 		citations: message.citations || null,
 		reasoning: finalReasoning,
+		parts,
 		log_id: message.log_id,
 		tool_calls: message.tool_calls,
 		usage: message.usage,

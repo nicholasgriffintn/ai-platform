@@ -1,5 +1,6 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import { processChatRequest } from "~/lib/chat/core";
+import { buildMessageParts } from "~/lib/chat/messageParts";
 import { formatAssistantMessage } from "~/lib/chat/responses";
 import type {
 	AnonymousUser,
@@ -7,6 +8,7 @@ import type {
 	CreateChatCompletionsResponse,
 	IEnv,
 	IUser,
+	Message,
 } from "~/types";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -165,6 +167,14 @@ export const handleCreateChatCompletions = async (req: {
 		annotations: result.response?.annotations ?? null,
 	});
 
+	const assistantParts = buildMessageParts({
+		role: "assistant",
+		content: assistantMessage.content,
+		tool_calls: assistantMessage.tool_calls,
+		data: assistantMessage.data,
+		timestamp: Date.now(),
+	} as Message);
+
 	return {
 		id: env.AI.aiGatewayLogId || completionIdWithFallback,
 		log_id: env.AI.aiGatewayLogId,
@@ -177,6 +187,7 @@ export const handleCreateChatCompletions = async (req: {
 				message: {
 					role: "assistant",
 					content: assistantMessage.content,
+					parts: assistantParts,
 					data: assistantMessage.data,
 					tool_calls: assistantMessage.tool_calls,
 					citations: assistantMessage.citations,
@@ -197,6 +208,7 @@ export const handleCreateChatCompletions = async (req: {
 								: typeof toolResponse.content === "string"
 									? toolResponse.content
 									: JSON.stringify(toolResponse.content),
+							parts: toolResponse.parts || buildMessageParts(toolResponse),
 							citations: toolResponse.citations || null,
 							data: toolResponse.data || null,
 							status: toolResponse.status || "unknown",

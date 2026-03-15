@@ -123,9 +123,16 @@ describe("handleCreateChatCompletions", () => {
 						message: {
 							role: "assistant",
 							content: "Hello! How can I help you?",
+							parts: expect.arrayContaining([
+								expect.objectContaining({
+									type: "text",
+									text: "Hello! How can I help you?",
+								}),
+							]),
 							data: undefined,
 							tool_calls: undefined,
 							citations: undefined,
+							status: undefined,
 						},
 						finish_reason: "stop",
 					},
@@ -466,6 +473,12 @@ describe("handleCreateChatCompletions", () => {
 					role: "tool",
 					name: "test_tool",
 					content: "Tool result",
+					parts: expect.arrayContaining([
+						expect.objectContaining({
+							type: "tool_result",
+							name: "test_tool",
+						}),
+					]),
 					citations: null,
 					data: null,
 					status: "success",

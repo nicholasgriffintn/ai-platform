@@ -61,26 +61,42 @@ export const ChatMessage = ({
 	const isSystemMessage =
 		message.role === ("system" as ChatRole) ||
 		message.role === ("developer" as ChatRole);
+	const hasPartContent =
+		Array.isArray(message.parts) && message.parts.length > 0;
 
 	if (isSystemMessage) {
 		return null;
 	}
 
-	if (!message.content && !message.reasoning && !isToolResponse) {
+	if (
+		!message.content &&
+		!message.reasoning &&
+		!hasPartContent &&
+		!isToolResponse
+	) {
 		return null;
 	}
 
 	const copyMessageToClipboard = () => {
-		if (message.content) {
-			const textContent =
-				typeof message.content === "string"
+		const textFromContent =
+			typeof message.content === "string"
+				? message.content
+				: Array.isArray(message.content)
 					? message.content
-					: message.content
 							.filter((item) => item.type === "text")
 							.map((item) => item.text)
-							.join("\n");
-
-			copy(textContent);
+							.join("\n")
+					: "";
+		const textFromParts =
+			Array.isArray(message.parts) && message.parts.length > 0
+				? message.parts
+						.filter((part) => part.type === "text")
+						.map((part) => part.text)
+						.join("\n")
+				: "";
+		const copyText = textFromContent || textFromParts;
+		if (copyText) {
+			copy(copyText);
 		}
 	};
 
@@ -170,7 +186,7 @@ export const ChatMessage = ({
 					</div>
 
 					{conversationId &&
-						message.content &&
+						(message.content || hasPartContent) &&
 						(message.log_id || message.created) && (
 							<MessageActions
 								message={message}

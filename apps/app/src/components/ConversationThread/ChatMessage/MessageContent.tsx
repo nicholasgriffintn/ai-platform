@@ -259,6 +259,82 @@ const renderAudioContent = (
 	);
 };
 
+const renderToolUsePart = (
+	part: Extract<NonNullable<Message["parts"]>[number], { type: "tool_use" }>,
+	index: number,
+): ReactNode => {
+	const formattedInput =
+		typeof part.input === "string"
+			? part.input
+			: part.input
+				? JSON.stringify(part.input, null, 2)
+				: "{}";
+
+	return (
+		<div
+			key={`tool-use-${part.toolCallId || part.name}-${index}`}
+			className="rounded border border-amber-200/60 bg-amber-50/80 p-3 dark:border-amber-900/50 dark:bg-amber-950/20"
+		>
+			<div className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+				Tool call: {part.name}
+			</div>
+			<pre className="mt-2 overflow-x-auto text-xs text-zinc-700 dark:text-zinc-300">
+				{formattedInput}
+			</pre>
+		</div>
+	);
+};
+
+const renderToolResultPart = (
+	part: Extract<NonNullable<Message["parts"]>[number], { type: "tool_result" }>,
+	index: number,
+): ReactNode => {
+	const content =
+		typeof part.content === "string"
+			? part.content
+			: part.content
+				? JSON.stringify(part.content, null, 2)
+				: "";
+
+	return (
+		<div
+			key={`tool-result-${part.toolCallId || part.name || "tool"}-${index}`}
+			className="rounded border border-blue-200/60 bg-blue-50/80 p-3 dark:border-blue-900/50 dark:bg-blue-950/20"
+		>
+			<div className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+				Tool result{part.name ? `: ${part.name}` : ""}
+				{part.status ? ` (${part.status})` : ""}
+			</div>
+			{content ? (
+				<MemoizedMarkdown className="mt-2 text-sm">{content}</MemoizedMarkdown>
+			) : (
+				<div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+					No tool output
+				</div>
+			)}
+		</div>
+	);
+};
+
+const renderSnapshotPart = (
+	part: Extract<NonNullable<Message["parts"]>[number], { type: "snapshot" }>,
+	index: number,
+): ReactNode => {
+	return (
+		<div
+			key={`snapshot-${index}`}
+			className="rounded border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/40"
+		>
+			{part.title ? (
+				<div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+					{part.title}
+				</div>
+			) : null}
+			<MemoizedMarkdown className="text-sm">{part.summary}</MemoizedMarkdown>
+		</div>
+	);
+};
+
 export const MessageContent = memo(
 	({ message, onArtifactOpen }: MessageContentProps) => {
 		const content = useMemo(() => {
@@ -284,6 +360,83 @@ export const MessageContent = memo(
 				if (thinkingBlock) {
 					thinkingContent = thinkingBlock.thinking || "";
 				}
+			}
+
+			const messageParts = Array.isArray(message.parts) ? message.parts : [];
+			const hasReasoningPart = messageParts.some(
+				(part) => part.type === "reasoning",
+			);
+
+			if (messageParts.length > 0) {
+				return (
+					<div className="space-y-4">
+						{message.citations && message.citations.length > 0 && (
+							<CitationList citations={message.citations} />
+						)}
+						{message.data?.searchGrounding && (
+							<SearchGroundingSection
+								searchGrounding={message.data.searchGrounding}
+							/>
+						)}
+						{message.reasoning && !hasReasoningPart && (
+							<ReasoningSection reasoning={message.reasoning} />
+						)}
+						{messageParts.map((part, index) => {
+							if (part.type === "text") {
+								return renderTextContent(
+									message.role,
+									part.text,
+									undefined,
+									undefined,
+									undefined,
+									handleArtifactOpen,
+									`part-text-${index}`,
+								);
+							}
+
+							if (part.type === "reasoning") {
+								return (
+									<ReasoningSection
+										key={`part-reasoning-${index}`}
+										reasoning={{
+											content: part.text,
+											collapsed: part.collapsed ?? true,
+										}}
+									/>
+								);
+							}
+
+							if (part.type === "tool_use") {
+								return renderToolUsePart(part, index);
+							}
+
+							if (part.type === "tool_result") {
+								return renderToolResultPart(part, index);
+							}
+
+							if (part.type === "snapshot") {
+								return renderSnapshotPart(part, index);
+							}
+
+							if (part.type === "file") {
+								if (part.mimeType?.startsWith("image/") && part.url) {
+									return renderImageContent(part.url, index);
+								}
+								if (part.mimeType?.startsWith("audio/") && part.url) {
+									return renderAudioContent(part.url, part.name, index);
+								}
+								return renderDocumentContent(
+									part.url || "",
+									part.name,
+									index,
+									part.mimeType === "text/markdown",
+								);
+							}
+
+							return null;
+						})}
+					</div>
+				);
 			}
 
 			return (
@@ -404,6 +557,7 @@ export const MessageContent = memo(
 		}, [
 			message.role,
 			message.content,
+			message.parts,
 			message.reasoning,
 			message.data,
 			message.citations,

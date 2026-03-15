@@ -437,6 +437,8 @@ export class ChatService {
 		let messageData: MessageData | Record<string, any> | undefined = undefined;
 		let reasoning = "";
 		let thinking = "";
+		const streamedParts: NonNullable<Message["parts"]> = [];
+		let finalParts: Message["parts"] | undefined = undefined;
 		let citations: string[] | null = null;
 		let usage: Message["usage"] = undefined;
 		let id: string = crypto.randomUUID();
@@ -445,6 +447,35 @@ export class ChatService {
 		const toolCalls: any[] = [];
 		const pendingToolCalls: Record<string, any> = {};
 		const toolResponses: Message[] = [];
+
+		const appendTextPart = (text: string) => {
+			if (!text) return;
+			const lastPart = streamedParts[streamedParts.length - 1];
+			if (lastPart?.type === "text") {
+				lastPart.text += text;
+				return;
+			}
+			streamedParts.push({
+				type: "text",
+				text,
+				timestamp: Date.now(),
+			});
+		};
+
+		const appendReasoningPart = (text: string) => {
+			if (!text) return;
+			const lastPart = streamedParts[streamedParts.length - 1];
+			if (lastPart?.type === "reasoning") {
+				lastPart.text += text;
+				return;
+			}
+			streamedParts.push({
+				type: "reasoning",
+				text,
+				collapsed: true,
+				timestamp: Date.now(),
+			});
+		};
 
 		let responseModel = model;
 
@@ -504,9 +535,11 @@ export class ChatService {
 
 								if (parsedData.type === "content_block_delta") {
 									content += parsedData.content;
+									appendTextPart(parsedData.content);
 									onProgress(content, reasoning, undefined, false);
 								} else if (parsedData.choices?.[0]?.delta?.content) {
 									content += parsedData.choices[0].delta.content;
+									appendTextPart(parsedData.choices[0].delta.content);
 									onProgress(content, reasoning, undefined, false);
 								} else if (parsedData.type === "message_stop") {
 									onProgress(content, reasoning, undefined, true);
@@ -514,6 +547,7 @@ export class ChatService {
 									onStateChange(parsedData.state, parsedData);
 								} else if (parsedData.type === "thinking_delta") {
 									thinking += parsedData.thinking || "";
+									appendReasoningPart(parsedData.thinking || "");
 									onProgress(content, thinking, undefined, false);
 								} else if (parsedData.type === "tool_use_start") {
 									pendingToolCalls[parsedData.tool_id] = {
@@ -524,14 +558,30 @@ export class ChatService {
 									onStateChange("tool_use_start", parsedData);
 								} else if (parsedData.type === "tool_use_delta") {
 									if (pendingToolCalls[parsedData.tool_id]) {
+										let parameters = parsedData.parameters;
+										if (typeof parameters === "string") {
+											try {
+												parameters = JSON.parse(parameters);
+											} catch {
+												// Keep original string when JSON parsing fails
+											}
+										}
+
 										pendingToolCalls[parsedData.tool_id].parameters = {
 											...pendingToolCalls[parsedData.tool_id].parameters,
-											...parsedData.parameters,
+											...(typeof parameters === "object" ? parameters : {}),
 										};
 									}
 								} else if (parsedData.type === "tool_use_stop") {
 									if (pendingToolCalls[parsedData.tool_id]) {
 										toolCalls.push(pendingToolCalls[parsedData.tool_id]);
+										streamedParts.push({
+											type: "tool_use",
+											name: pendingToolCalls[parsedData.tool_id].name || "tool",
+											toolCallId: parsedData.tool_id,
+											input: pendingToolCalls[parsedData.tool_id].parameters,
+											timestamp: Date.now(),
+										});
 										delete pendingToolCalls[parsedData.tool_id];
 									}
 									onStateChange("tool_use_stop", parsedData);
@@ -573,6 +623,9 @@ export class ChatService {
 									if (parsedData.model) {
 										responseModel = parsedData.model;
 									}
+									if (Array.isArray(parsedData.parts)) {
+										finalParts = parsedData.parts as Message["parts"];
+									}
 								}
 							} catch (e) {
 								console.error("Error parsing SSE data:", e, data);
@@ -597,6 +650,12 @@ export class ChatService {
 		return normalizeMessage({
 			role: "assistant",
 			content,
+			parts:
+				finalParts && finalParts.length > 0
+					? finalParts
+					: streamedParts.length > 0
+						? streamedParts
+						: undefined,
 			data: messageData,
 			reasoning: reasoning
 				? {
