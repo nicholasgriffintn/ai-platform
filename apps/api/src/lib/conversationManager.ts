@@ -471,6 +471,9 @@ export class ConversationManager {
 		message?: Message,
 		limit?: number,
 		after?: string,
+		options?: {
+			includeArchived?: boolean;
+		},
 	): Promise<Message[]> {
 		if (!this.store) {
 			return message ? [message] : [];
@@ -503,9 +506,48 @@ export class ConversationManager {
 				conversation_id,
 				limit,
 				after,
+				{
+					includeArchived: options?.includeArchived ?? false,
+				},
 			);
 
 		return messages.map((dbMessage) => this.formatMessage(dbMessage));
+	}
+
+	async archiveMessages(
+		conversation_id: string,
+		messageIds: string[],
+	): Promise<void> {
+		if (!this.store || messageIds.length === 0) {
+			return;
+		}
+
+		if (!this.user?.id) {
+			throw new AssistantError(
+				"User ID is required to archive messages",
+				ErrorType.AUTHENTICATION_ERROR,
+			);
+		}
+
+		const conversation =
+			await this.database.repositories.conversations.getConversation(
+				conversation_id,
+			);
+		if (!conversation) {
+			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
+		}
+
+		if (conversation.user_id !== this.user?.id) {
+			throw new AssistantError(
+				"You don't have permission to archive messages in this conversation",
+				ErrorType.FORBIDDEN,
+			);
+		}
+
+		await this.database.repositories.messages.archiveMessages(
+			conversation_id,
+			messageIds,
+		);
 	}
 
 	/**
@@ -896,6 +938,9 @@ export class ConversationManager {
 		share_id: string,
 		limit = 50,
 		after?: string,
+		options?: {
+			includeArchived?: boolean;
+		},
 	): Promise<Message[]> {
 		const conversation =
 			await this.database.repositories.conversations.getConversationByShareId(
@@ -920,6 +965,9 @@ export class ConversationManager {
 			conversation.id as string,
 			limit,
 			after,
+			{
+				includeArchived: options?.includeArchived ?? false,
+			},
 		);
 		return messages.map((message) => this.formatMessage(message));
 	}

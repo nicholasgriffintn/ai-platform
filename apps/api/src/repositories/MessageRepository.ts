@@ -90,9 +90,14 @@ export class MessageRepository extends BaseRepository {
 		conversationId: string,
 		limit = 50,
 		after?: string,
+		options?: {
+			includeArchived?: boolean;
+		},
 	): Promise<Record<string, unknown>[]> {
+		const includeArchived = options?.includeArchived ?? false;
+		const archivedClause = includeArchived ? "" : " AND is_archived = 0";
 		let query = `
-      SELECT * FROM message WHERE conversation_id = ?
+      SELECT * FROM message WHERE conversation_id = ?${archivedClause}
       ORDER BY created_at ASC
     `;
 
@@ -101,7 +106,7 @@ export class MessageRepository extends BaseRepository {
 		if (after) {
 			query = `
         SELECT * FROM message
-        WHERE conversation_id = ? AND id > ?
+        WHERE conversation_id = ?${archivedClause} AND id > ?
         ORDER BY created_at ASC
       `;
 			params.push(after);
@@ -120,8 +125,30 @@ export class MessageRepository extends BaseRepository {
 		conversationId: string,
 		limit = 50,
 		after?: string,
+		options?: {
+			includeArchived?: boolean;
+		},
 	): Promise<Record<string, unknown>[]> {
-		return this.getConversationMessages(conversationId, limit, after);
+		return this.getConversationMessages(conversationId, limit, after, options);
+	}
+
+	public async archiveMessages(
+		conversationId: string,
+		messageIds: string[],
+	): Promise<void> {
+		if (messageIds.length === 0) {
+			return;
+		}
+
+		const placeholders = messageIds.map(() => "?").join(", ");
+		await this.executeRun(
+			`UPDATE message
+			 SET is_archived = 1,
+			     updated_at = datetime('now')
+			 WHERE conversation_id = ?
+			   AND id IN (${placeholders})`,
+			[conversationId, ...messageIds],
+		);
 	}
 
 	public async updateMessage(
@@ -129,6 +156,7 @@ export class MessageRepository extends BaseRepository {
 		updates: Record<string, unknown>,
 	): Promise<void> {
 		const allowedFields = [
+			"is_archived",
 			"content",
 			"status",
 			"tool_calls",
@@ -257,6 +285,7 @@ export class MessageRepository extends BaseRepository {
 				timestamp: result.timestamp,
 				platform: result.platform,
 				mode: result.mode,
+				is_archived: result.is_archived,
 				data: result.data,
 				parts: result.parts,
 				usage: result.usage,

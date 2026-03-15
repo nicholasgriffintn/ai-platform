@@ -165,6 +165,7 @@ export const message = sqliteTable(
 			.notNull()
 			.references(() => conversation.id),
 		parent_message_id: text(),
+		is_archived: integer({ mode: "boolean" }).default(false),
 		role: text({
 			enum: ["user", "assistant", "system", "tool", "developer"],
 		}).notNull(),
@@ -221,6 +222,7 @@ export const message = sqliteTable(
 		conversationIdx: index("message_conversation_id_idx").on(
 			table.conversation_id,
 		),
+		archivedIdx: index("message_archived_idx").on(table.is_archived),
 		parentMessageIdx: index("message_parent_message_id_idx").on(
 			table.parent_message_id,
 		),

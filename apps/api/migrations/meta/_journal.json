@@ -288,6 +288,13 @@
       "when": 1770764044885,
       "tag": "0040_motionless_hobgoblin",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "6",
+      "when": 1773604540677,
+      "tag": "0041_new_stellaris",
+      "breakpoints": true
     }
   ]
 }

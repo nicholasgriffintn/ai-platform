@@ -54,7 +54,13 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 				env,
 			});
 
-			const messages = await conversationManager.get(data.conversationId);
+			const messages = await conversationManager.get(
+				data.conversationId,
+				undefined,
+				undefined,
+				undefined,
+				{ includeArchived: true },
+			);
 			const targetMessage = messages.find((m) => m.id === data.messageId);
 
 			if (!targetMessage) {

@@ -10,9 +10,11 @@ import {
 } from "~/lib/chat/agent/runAgentLoop";
 import { createStreamWithPostProcessing } from "~/lib/chat/streaming";
 import { handleToolCalls } from "~/lib/chat/tools";
+import { pruneMessagesToFitContext } from "~/lib/chat/utils";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { resolveModeMaxSteps } from "~/lib/permissions/PermissionChecker";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
+import { SessionManager } from "~/lib/session/SessionManager";
 import { captureTrainingExample } from "~/services/training/captureTrainingExample";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions, IRequest, Message } from "~/types";
@@ -118,9 +120,10 @@ export class ChatOrchestrator {
 		const {
 			modelConfigs,
 			primaryModel,
+			primaryModelConfig,
 			primaryProvider,
 			conversationManager,
-			messages,
+			messages: preparedMessages,
 			systemPrompt,
 			messageWithContext,
 			userSettings,
@@ -128,6 +131,31 @@ export class ChatOrchestrator {
 		} = prepared;
 
 		await conversationManager.checkUsageLimits(primaryModel);
+
+		let messages = preparedMessages;
+		if (chatOptions.completion_id && messages.length > 0) {
+			const sessionManager = new SessionManager({
+				env: chatOptions.env,
+				conversationManager,
+				user: chatOptions.user?.id ? chatOptions.user : undefined,
+			});
+			const compactedSession = await sessionManager.compact({
+				completionId: chatOptions.completion_id,
+				messages,
+				latestUserMessage: messageWithContext,
+				mode: currentMode,
+				modelConfig: {
+					contextWindow: (primaryModelConfig as { contextWindow?: number })
+						?.contextWindow,
+				},
+			});
+			messages = compactedSession.messages;
+		}
+		messages = pruneMessagesToFitContext(
+			messages,
+			messageWithContext,
+			primaryModelConfig,
+		);
 
 		if (modelConfigs.length > 1 && stream) {
 			const transformedStream = createMultiModelStream(
