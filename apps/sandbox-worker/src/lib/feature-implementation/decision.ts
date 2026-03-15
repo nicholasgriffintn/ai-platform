@@ -23,26 +23,87 @@ function parseScriptLanguage(
 	throw new Error(`run_script action has unsupported language: ${rawLanguage}`);
 }
 
-function extractJsonPayload(rawResponse: string): string | null {
-	const codeBlockMatch = rawResponse.match(/```(?:json)?\s*([\s\S]*?)```/i);
-	const candidate = codeBlockMatch
-		? codeBlockMatch[1].trim()
-		: rawResponse.trim();
-	if (!candidate) {
-		return null;
+function extractBalancedObjectCandidates(input: string): string[] {
+	const candidates: string[] = [];
+	let startIndex = -1;
+	let depth = 0;
+	let inString = false;
+	let isEscaped = false;
+
+	for (let index = 0; index < input.length; index += 1) {
+		const char = input[index];
+
+		if (inString) {
+			if (isEscaped) {
+				isEscaped = false;
+				continue;
+			}
+			if (char === "\\") {
+				isEscaped = true;
+				continue;
+			}
+			if (char === '"') {
+				inString = false;
+			}
+			continue;
+		}
+
+		if (char === '"') {
+			inString = true;
+			continue;
+		}
+		if (char === "{") {
+			if (depth === 0) {
+				startIndex = index;
+			}
+			depth += 1;
+			continue;
+		}
+		if (char === "}") {
+			if (depth === 0) {
+				continue;
+			}
+			depth -= 1;
+			if (depth === 0 && startIndex !== -1) {
+				candidates.push(input.slice(startIndex, index + 1));
+				startIndex = -1;
+			}
+		}
 	}
 
-	if (candidate.startsWith("{") && candidate.endsWith("}")) {
-		return candidate;
+	return candidates;
+}
+
+function extractJsonPayloadCandidates(rawResponse: string): string[] {
+	const candidates: string[] = [];
+	const seen = new Set<string>();
+	const pushUnique = (value: string | null) => {
+		if (!value) {
+			return;
+		}
+		const trimmed = value.trim();
+		if (!trimmed || seen.has(trimmed)) {
+			return;
+		}
+		seen.add(trimmed);
+		candidates.push(trimmed);
+	};
+
+	const codeBlockMatches = rawResponse.matchAll(
+		/```(?:json)?\s*([\s\S]*?)```/gi,
+	);
+	for (const match of codeBlockMatches) {
+		pushUnique(match[1] ?? "");
 	}
 
-	const firstBrace = candidate.indexOf("{");
-	const lastBrace = candidate.lastIndexOf("}");
-	if (firstBrace !== -1 && lastBrace > firstBrace) {
-		return candidate.slice(firstBrace, lastBrace + 1);
+	const trimmed = rawResponse.trim();
+	pushUnique(trimmed);
+
+	for (const candidate of extractBalancedObjectCandidates(rawResponse)) {
+		pushUnique(candidate);
 	}
 
-	return null;
+	return candidates;
 }
 
 function escapeControlCharsInJsonStrings(input: string): string {
@@ -115,8 +176,8 @@ function parseDecisionPayload(payload: string): Record<string, unknown> {
 }
 
 export function parseAgentDecision(rawResponse: string): AgentDecision {
-	const payload = extractJsonPayload(rawResponse);
-	if (payload) {
+	const payloads = extractJsonPayloadCandidates(rawResponse);
+	for (const payload of payloads) {
 		try {
 			const parsed = parseDecisionPayload(payload);
 			const actionRaw =
@@ -211,7 +272,7 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 				}
 			}
 		} catch {
-			// Fallback to command extraction below.
+			continue;
 		}
 	}
 

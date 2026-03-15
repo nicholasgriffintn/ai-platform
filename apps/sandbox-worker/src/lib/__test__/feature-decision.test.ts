@@ -43,4 +43,32 @@ console.log(value);","reasoning":"edit file"}`);
 			expect(decision.code).toContain("const value = 1;");
 		}
 	});
+
+	it("parses update_plan payload wrapped in surrounding prose", () => {
+		const decision = parseAgentDecision(
+			`I updated the plan:
+
+{"action":"update_plan","plan":"### Updated Implementation Plan for SW-101
+
+#### 1. Update \`src/worklog.js\`
+- Modify listOpenWorkItems to accept an optional assignee.
+- Keep backward compatibility.","reasoning":"Need to refine implementation steps."}
+
+Proceeding next.`,
+		);
+
+		expect(decision.action).toBe("update_plan");
+		if (decision.action === "update_plan") {
+			expect(decision.plan).toContain("Updated Implementation Plan for SW-101");
+		}
+	});
+
+	it("parses action JSON when multiple brace sections exist", () => {
+		const decision = parseAgentDecision(
+			`Context: {not valid json}
+{"action":"finish","summary":"Done","reasoning":"All checks passed"}`,
+		);
+
+		expect(decision.action).toBe("finish");
+	});
 });

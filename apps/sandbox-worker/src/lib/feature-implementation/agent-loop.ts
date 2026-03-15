@@ -192,12 +192,41 @@ export async function executeAgentLoop(
 					break;
 				}
 
-				assertSafeCommand(decision.command, {
-					readOnly: readOnlyCommands,
-					trustLevel,
-					allowNetwork: approval.allowNetwork,
-					allowRisky: approval.allowRisky,
-				});
+				try {
+					assertSafeCommand(decision.command, {
+						readOnly: readOnlyCommands,
+						trustLevel,
+						allowNetwork: approval.allowNetwork,
+						allowRisky: approval.allowRisky,
+					});
+				} catch (error) {
+					consecutiveCommandFailures += 1;
+					const errorMessage =
+						error instanceof Error
+							? error.message
+							: "Command blocked by sandbox policy";
+					await emit({
+						type: "command_failed",
+						command: decision.command,
+						commandTotal: MAX_COMMANDS,
+						agentStep: step,
+						error: truncateForModel(errorMessage, MAX_OBSERVATION_CHARS),
+					});
+					messages.push({
+						role: "user",
+						content: [
+							`Command blocked: ${decision.command}`,
+							`Error: ${truncateForModel(errorMessage, MAX_OBSERVATION_CHARS)}`,
+							"Choose a single safe command without shell chaining, pipes, or substitution.",
+						].join("\n"),
+					});
+					if (consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
+						throw new Error(
+							`Agent reached ${MAX_CONSECUTIVE_COMMAND_FAILURES} consecutive command failures`,
+						);
+					}
+					break;
+				}
 				commandCount += 1;
 				await emit({
 					type: "command_started",
