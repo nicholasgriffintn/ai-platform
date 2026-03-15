@@ -1,4 +1,5 @@
 import { quoteForShell } from "../commands";
+import { safeParseJson } from "../json";
 
 import {
 	MAX_CONTEXT_FILES,
@@ -128,10 +129,8 @@ export function parseRalphPrdContext(
 	path: string,
 	rawJson: string,
 ): RalphPrdContext | null {
-	let parsed: unknown;
-	try {
-		parsed = JSON.parse(rawJson) as Record<string, unknown>;
-	} catch {
+	const parsed = safeParseJson<Record<string, unknown>>(rawJson);
+	if (!parsed) {
 		return null;
 	}
 

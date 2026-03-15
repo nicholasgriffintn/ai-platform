@@ -29,4 +29,18 @@ describe("parseAgentDecision", () => {
 			),
 		).toThrow(/Invalid agent decision/);
 	});
+
+	it("accepts JSON payloads with raw newlines in string values", () => {
+		const decision =
+			parseAgentDecision(`{"action":"run_script","language":"javascript","code":"import fs from 'fs';
+
+const value = 1;
+console.log(value);","reasoning":"edit file"}`);
+
+		expect(decision.action).toBe("run_script");
+		if (decision.action === "run_script") {
+			expect(decision.language).toBe("javascript");
+			expect(decision.code).toContain("const value = 1;");
+		}
+	});
 });

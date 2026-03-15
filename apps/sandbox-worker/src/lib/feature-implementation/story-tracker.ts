@@ -3,6 +3,7 @@ import type {
 	RalphPrdUserStory,
 	SandboxFileInstance,
 } from "./types";
+import { safeParseJson } from "../json";
 import {
 	escapeRegExp,
 	formatStoryLabel,
@@ -119,10 +120,10 @@ export async function updatePrdStoryPassStatus(params: {
 		};
 	}
 
-	let parsedPrd: unknown;
-	try {
-		parsedPrd = JSON.parse(prdReadResult.content) as Record<string, unknown>;
-	} catch {
+	const parsedPrd = safeParseJson<Record<string, unknown>>(
+		prdReadResult.content,
+	);
+	if (!parsedPrd) {
 		return {
 			updated: false,
 			reason: "prd.json is not valid JSON",

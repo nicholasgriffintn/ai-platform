@@ -1,4 +1,5 @@
 import { extractCommands } from "../commands";
+import { safeParseJson } from "../json";
 
 import type { AgentDecision } from "./types";
 import { truncateForModel } from "./utils";
@@ -44,11 +45,80 @@ function extractJsonPayload(rawResponse: string): string | null {
 	return null;
 }
 
+function escapeControlCharsInJsonStrings(input: string): string {
+	let output = "";
+	let inString = false;
+	let isEscaped = false;
+
+	for (let index = 0; index < input.length; index += 1) {
+		const char = input[index];
+
+		if (inString) {
+			if (isEscaped) {
+				output += char;
+				isEscaped = false;
+				continue;
+			}
+
+			if (char === "\\") {
+				output += char;
+				isEscaped = true;
+				continue;
+			}
+
+			if (char === '"') {
+				output += char;
+				inString = false;
+				continue;
+			}
+
+			if (char === "\n") {
+				output += "\\n";
+				continue;
+			}
+			if (char === "\r") {
+				output += "\\r";
+				continue;
+			}
+			if (char === "\t") {
+				output += "\\t";
+				continue;
+			}
+
+			output += char;
+			continue;
+		}
+
+		if (char === '"') {
+			inString = true;
+		}
+		output += char;
+	}
+
+	return output;
+}
+
+function parseDecisionPayload(payload: string): Record<string, unknown> {
+	const parsed = safeParseJson<Record<string, unknown>>(payload);
+	if (parsed) {
+		return parsed;
+	}
+
+	const repairedPayload = escapeControlCharsInJsonStrings(payload);
+	const repairedParsed =
+		safeParseJson<Record<string, unknown>>(repairedPayload);
+	if (repairedParsed) {
+		return repairedParsed;
+	}
+
+	throw new Error("Unable to parse decision payload as JSON");
+}
+
 export function parseAgentDecision(rawResponse: string): AgentDecision {
 	const payload = extractJsonPayload(rawResponse);
 	if (payload) {
 		try {
-			const parsed = JSON.parse(payload) as Record<string, unknown>;
+			const parsed = parseDecisionPayload(payload);
 			const actionRaw =
 				typeof parsed.action === "string"
 					? parsed.action.trim().toLowerCase()
