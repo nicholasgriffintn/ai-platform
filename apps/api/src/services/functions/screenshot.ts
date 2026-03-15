@@ -1,5 +1,7 @@
 import { captureScreenshot } from "~/services/apps/retrieval/screenshot";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
 const DEFAULT_VIEWPORT = {
 	width: 1740,
@@ -14,12 +16,12 @@ const DEFAULT_GOTO_OPTIONS = {
 	waitUntil: "networkidle0" as const,
 };
 
-export const capture_screenshot: IFunction = {
+export const capture_screenshot: ApiToolDefinition = {
 	name: "capture_screenshot",
 	description:
 		"Captures visual renderings of webpages or custom HTML content. Use when users need to visualize a webpage or when explaining web-based concepts.",
 	strict: true,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			url: {
@@ -84,15 +86,12 @@ export const capture_screenshot: IFunction = {
 			},
 		},
 		required: ["url"],
-	},
+	}),
 	type: "premium",
 	costPerCall: 0.5,
-	function: async (
-		_completion_id: string,
-		args: any,
-		req: IRequest,
-		_app_url?: string,
-	) => {
+	execute: async (args, context) => {
+		const req = context.request;
+
 		const addScriptTag = args.addScriptTag
 			? [{ content: args.addScriptTag }]
 			: undefined;

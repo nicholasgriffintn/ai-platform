@@ -1,5 +1,7 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import type { IFunction, IFunctionResponse, IRequest } from "~/types";
+import type { IFunctionResponse, IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { handleFunctions } from "./index";
@@ -357,14 +359,14 @@ const runParallelSteps = async ({
 	return { steps: stepResults, outputs, duration_ms: Date.now() - startedAt };
 };
 
-export const compose_functions: IFunction = {
+export const compose_functions: ApiToolDefinition = {
 	name: "compose_functions",
 	description:
 		"Chain multiple tool calls together with data passing. Use output_var to name a step's result, then reference it via $output_var or { $ref: '$output_var.data' } in later args.",
 	type: "normal",
 	isDefault: true,
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			steps: {
@@ -378,14 +380,13 @@ export const compose_functions: IFunction = {
 			},
 		},
 		required: ["steps"],
-	},
-	function: async (
-		completion_id: string,
-		args: any,
-		req: IRequest,
-		app_url?: string,
-		conversationManager?: ConversationManager,
-	) => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+		const app_url = context.appUrl;
+		const conversationManager = context.conversationManager;
+
 		const steps = parseJsonArray(args?.steps, "steps");
 		if (!Array.isArray(steps) || steps.length === 0) {
 			throw new AssistantError(
@@ -429,14 +430,14 @@ export const compose_functions: IFunction = {
 	},
 };
 
-export const if_then_else: IFunction = {
+export const if_then_else: ApiToolDefinition = {
 	name: "if_then_else",
 	description:
 		"Run a condition tool and branch into then_steps or else_steps. Condition must return a boolean via data.result, data.value, data.condition, or content 'true'/'false'.",
 	type: "normal",
 	isDefault: true,
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			condition: {
@@ -458,14 +459,13 @@ export const if_then_else: IFunction = {
 			},
 		},
 		required: ["condition", "then_steps", "else_steps"],
-	},
-	function: async (
-		completion_id: string,
-		args: any,
-		req: IRequest,
-		app_url?: string,
-		conversationManager?: ConversationManager,
-	) => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+		const app_url = context.appUrl;
+		const conversationManager = context.conversationManager;
+
 		const condition = parseJsonObject(args?.condition, "condition");
 		const thenSteps = parseJsonArray(args?.then_steps, "then_steps");
 		const elseSteps = parseJsonArray(args?.else_steps, "else_steps");
@@ -571,14 +571,14 @@ export const if_then_else: IFunction = {
 	},
 };
 
-export const parallel_execute: IFunction = {
+export const parallel_execute: ApiToolDefinition = {
 	name: "parallel_execute",
 	description:
 		"Execute multiple tool calls concurrently. Each task must include { function } and may include { args, output_var }. args can reference prior outputs via $output_var or { $ref: '$output_var.data' }.",
 	type: "normal",
 	isDefault: true,
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			tasks: {
@@ -592,14 +592,13 @@ export const parallel_execute: IFunction = {
 			},
 		},
 		required: ["tasks"],
-	},
-	function: async (
-		completion_id: string,
-		args: any,
-		req: IRequest,
-		app_url?: string,
-		conversationManager?: ConversationManager,
-	) => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+		const app_url = context.appUrl;
+		const conversationManager = context.conversationManager;
+
 		const tasks = parseJsonArray(args?.tasks, "tasks");
 		if (!Array.isArray(tasks) || tasks.length === 0) {
 			throw new AssistantError(

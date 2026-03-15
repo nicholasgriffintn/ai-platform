@@ -1,11 +1,13 @@
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
-export const v0_code_generation: IFunction = {
+export const v0_code_generation: ApiToolDefinition = {
 	name: "v0_code_generation",
 	description:
 		"Generate code for a web application using the v0 AI model, which is specifically designed for creating frontend and fullstack apps using frameworks like Next.JS.",
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			prompt: {
@@ -23,15 +25,12 @@ export const v0_code_generation: IFunction = {
 			},
 		},
 		required: ["prompt"],
-	},
+	}),
 	type: "premium",
 	costPerCall: 0,
-	function: async (
-		_completion_id: string,
-		args: any,
-		req: IRequest,
-		_app_url?: string,
-	) => {
+	execute: async (args, context) => {
+		const req = context.request;
+
 		if (!args.prompt) {
 			return {
 				status: "error",

@@ -1,15 +1,18 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { availableFunctions } from "./index";
+import z from "zod/v4";
+import { listFunctionTools } from "./index";
 
-export const search_functions: IFunction = {
+export const search_functions: ApiToolDefinition = {
 	name: "search_functions",
 	description:
 		"Search available functions by keywords or description. Use this to discover what capabilities are available when you're unsure which function to use.",
 	type: "normal",
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			query: {
@@ -29,14 +32,10 @@ export const search_functions: IFunction = {
 			},
 		},
 		required: ["query"],
-	},
-	function: async (
-		_completion_id: string,
-		args: any,
-		req: IRequest,
-		_app_url?: string,
-		_conversationManager?: ConversationManager,
-	) => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+
 		const { query, limit = 10, include_premium = true } = args;
 
 		if (!query || typeof query !== "string" || query.trim().length === 0) {
@@ -48,6 +47,7 @@ export const search_functions: IFunction = {
 
 		const isProUser = req.user?.plan_id === "pro";
 		const searchTerms = query.toLowerCase().split(/\s+/);
+		const availableFunctions = listFunctionTools();
 
 		const scoredFunctions = availableFunctions
 			.filter((fn) => {
@@ -91,7 +91,7 @@ export const search_functions: IFunction = {
 			type: fn.type,
 			costPerCall: fn.costPerCall,
 			isDefault: fn.isDefault || false,
-			parameters: fn.parameters,
+			parameters: z.toJSONSchema(fn.inputSchema),
 			available: fn.type === "normal" || isProUser,
 		}));
 
@@ -109,13 +109,13 @@ export const search_functions: IFunction = {
 	},
 };
 
-export const get_function_schema: IFunction = {
+export const get_function_schema: ApiToolDefinition = {
 	name: "get_function_schema",
 	description:
 		"Retrieve the complete schema and documentation for a specific function. Use this to understand the exact parameters, types, and requirements before calling a function.",
 	type: "normal",
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			function_name: {
@@ -124,14 +124,10 @@ export const get_function_schema: IFunction = {
 			},
 		},
 		required: ["function_name"],
-	},
-	function: async (
-		_completion_id: string,
-		args: any,
-		req: IRequest,
-		_app_url?: string,
-		_conversationManager?: ConversationManager,
-	) => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+
 		const { function_name } = args;
 
 		if (
@@ -145,6 +141,7 @@ export const get_function_schema: IFunction = {
 			);
 		}
 
+		const availableFunctions = listFunctionTools();
 		const foundFunction = availableFunctions.find(
 			(fn) => fn && fn.name === function_name,
 		);
@@ -177,7 +174,7 @@ export const get_function_schema: IFunction = {
 				costPerCall: foundFunction.costPerCall,
 				isDefault: foundFunction.isDefault || false,
 				strict: foundFunction.strict,
-				parameters: foundFunction.parameters,
+				parameters: z.toJSONSchema(foundFunction.inputSchema),
 				available: isAvailable,
 				requires_upgrade: !isAvailable,
 			},

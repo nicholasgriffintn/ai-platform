@@ -8,6 +8,16 @@ const baseRequest: IRequest = {
 	user: { id: 1, plan_id: "pro" } as any,
 };
 
+const createToolContext = (
+	request: IRequest,
+	completionId = "completion_id",
+) => ({
+	completionId,
+	env: request.env,
+	user: request.user,
+	request,
+});
+
 describe("retry_with_backoff", () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
@@ -26,14 +36,13 @@ describe("retry_with_backoff", () => {
 				content: "Function succeeded",
 			});
 
-		const resultPromise = retry_with_backoff.function(
-			"completion_id",
+		const resultPromise = retry_with_backoff.execute(
 			{
 				function_name: "web_search",
 				args: { query: "test" },
 				max_attempts: 3,
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		const result = await resultPromise;
@@ -53,15 +62,14 @@ describe("retry_with_backoff", () => {
 				content: "Third attempt succeeded",
 			});
 
-		const resultPromise = retry_with_backoff.function(
-			"completion_id",
+		const resultPromise = retry_with_backoff.execute(
 			{
 				function_name: "web_search",
 				args: { query: "test" },
 				max_attempts: 3,
 				backoff_factor: 1,
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		await vi.runAllTimersAsync();
@@ -78,14 +86,13 @@ describe("retry_with_backoff", () => {
 			.spyOn(functionsIndex, "handleFunctions")
 			.mockRejectedValue(new Error("Always fails"));
 
-		const resultPromise = retry_with_backoff.function(
-			"completion_id",
+		const resultPromise = retry_with_backoff.execute(
 			{
 				function_name: "web_search",
 				args: { query: "test" },
 				max_attempts: 2,
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		await vi.runAllTimersAsync();
@@ -102,8 +109,7 @@ describe("retry_with_backoff", () => {
 			new Error("Always fails"),
 		);
 
-		const resultPromise = retry_with_backoff.function(
-			"completion_id",
+		const resultPromise = retry_with_backoff.execute(
 			{
 				function_name: "web_search",
 				args: { query: "test" },
@@ -111,7 +117,7 @@ describe("retry_with_backoff", () => {
 				backoff_factor: 10,
 				max_backoff: 5,
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		await vi.runAllTimersAsync();
@@ -129,10 +135,9 @@ describe("retry_with_backoff", () => {
 
 	it("throws error for invalid function_name", async () => {
 		await expect(
-			retry_with_backoff.function(
-				"completion_id",
+			retry_with_backoff.execute(
 				{ function_name: "", args: {} },
-				baseRequest,
+				createToolContext(baseRequest),
 			),
 		).rejects.toThrow();
 	});
@@ -151,15 +156,14 @@ describe("fallback", () => {
 				content: "Primary succeeded",
 			});
 
-		const result = await fallback.function(
-			"completion_id",
+		const result = await fallback.execute(
 			{
 				primary_function: "web_search",
 				primary_args: { query: "test" },
 				fallback_function: "research",
 				fallback_args: { input: "test" },
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -177,15 +181,14 @@ describe("fallback", () => {
 				content: "Fallback succeeded",
 			});
 
-		const result = await fallback.function(
-			"completion_id",
+		const result = await fallback.execute(
 			{
 				primary_function: "web_search",
 				primary_args: { query: "test" },
 				fallback_function: "research",
 				fallback_args: { input: "test" },
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -201,15 +204,14 @@ describe("fallback", () => {
 			.mockRejectedValueOnce(new Error("Primary failed"))
 			.mockRejectedValueOnce(new Error("Fallback failed"));
 
-		const result = await fallback.function(
-			"completion_id",
+		const result = await fallback.execute(
 			{
 				primary_function: "web_search",
 				primary_args: { query: "test" },
 				fallback_function: "research",
 				fallback_args: { input: "test" },
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("error");
@@ -227,8 +229,7 @@ describe("fallback", () => {
 				content: "Fallback succeeded",
 			});
 
-		const result = await fallback.function(
-			"completion_id",
+		const result = await fallback.execute(
 			{
 				primary_function: "web_search",
 				primary_args: { query: "test" },
@@ -236,7 +237,7 @@ describe("fallback", () => {
 				fallback_args: { input: "test" },
 				include_primary_error: false,
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -245,28 +246,26 @@ describe("fallback", () => {
 
 	it("throws error for missing primary_function", async () => {
 		await expect(
-			fallback.function(
-				"completion_id",
+			fallback.execute(
 				{
 					primary_args: {},
 					fallback_function: "research",
 					fallback_args: {},
 				},
-				baseRequest,
+				createToolContext(baseRequest),
 			),
 		).rejects.toThrow();
 	});
 
 	it("throws error for missing fallback_function", async () => {
 		await expect(
-			fallback.function(
-				"completion_id",
+			fallback.execute(
 				{
 					primary_function: "web_search",
 					primary_args: {},
 					fallback_args: {},
 				},
-				baseRequest,
+				createToolContext(baseRequest),
 			),
 		).rejects.toThrow();
 	});

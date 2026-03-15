@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ChatOrchestrator } from "~/lib/chat/core/ChatOrchestrator";
 import type { CoreChatOptions, Message } from "~/types";
+import z from "zod/v4";
 import {
 	delegateToTeamMember,
 	delegateToTeamMemberByRole,
@@ -45,6 +46,17 @@ let preparerFactory: ((env: any) => any) | undefined;
 let guardrailsFactory: (() => any) | undefined;
 let agentRepositoryFactory: (() => any) | undefined;
 let teamDelegationFactory: (() => any) | undefined;
+
+const createToolContext = (
+	request: any,
+	completionId = "test-completion-id",
+) => ({
+	completionId,
+	env: request.env,
+	user: request.user,
+	request,
+	appUrl: request.app_url,
+});
 
 vi.mock("~/lib/chat/validation/ValidationPipeline", () => ({
 	ValidationPipeline: class {
@@ -203,13 +215,12 @@ describe("Team Delegation Integration", () => {
 				app_url: "https://test.com",
 			};
 
-			const result = await delegateToTeamMember.function(
-				"test-completion-id",
+			const result = await delegateToTeamMember.execute(
 				{
 					agent_id: "agent-456",
 					task_description: "Please complete this task",
 				},
-				mockRequest as any,
+				createToolContext(mockRequest),
 			);
 
 			expect(result).toEqual({
@@ -242,13 +253,12 @@ describe("Team Delegation Integration", () => {
 				app_url: "https://test.com",
 			};
 
-			const result = await delegateToTeamMember.function(
-				"test-completion-id",
+			const result = await delegateToTeamMember.execute(
 				{
 					agent_id: "agent-456",
 					task_description: "Please complete this task",
 				},
-				mockRequest as any,
+				createToolContext(mockRequest),
 			);
 
 			expect(result).toEqual({
@@ -304,13 +314,12 @@ describe("Team Delegation Integration", () => {
 				app_url: "https://test.com",
 			};
 
-			const result = await delegateToTeamMemberByRole.function(
-				"test-completion-id",
+			const result = await delegateToTeamMemberByRole.execute(
 				{
 					role: "specialist",
 					task_description: "Please handle this specialized task",
 				},
-				mockRequest as any,
+				createToolContext(mockRequest),
 			);
 
 			expect(result).toEqual({
@@ -337,13 +346,12 @@ describe("Team Delegation Integration", () => {
 				app_url: "https://test.com",
 			};
 
-			const result = await delegateToTeamMemberByRole.function(
-				"test-completion-id",
+			const result = await delegateToTeamMemberByRole.execute(
 				{
 					role: "specialist",
 					task_description: "Please handle this specialized task",
 				},
-				mockRequest as any,
+				createToolContext(mockRequest),
 			);
 
 			expect(result).toEqual({
@@ -424,7 +432,7 @@ describe("Team Delegation Integration", () => {
 						function: {
 							name: "delegate_to_team_member",
 							description: delegateToTeamMember.description,
-							parameters: delegateToTeamMember.parameters,
+							parameters: z.toJSONSchema(delegateToTeamMember.inputSchema),
 						},
 					},
 				],
@@ -502,7 +510,7 @@ describe("Team Delegation Integration", () => {
 						function: {
 							name: "delegate_to_team_member",
 							description: delegateToTeamMember.description,
-							parameters: delegateToTeamMember.parameters,
+							parameters: z.toJSONSchema(delegateToTeamMember.inputSchema),
 						},
 					},
 				],

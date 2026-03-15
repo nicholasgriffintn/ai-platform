@@ -5,7 +5,9 @@ import {
 } from "~/services/generate/speech";
 import { replicateModelConfig } from "~/data-model/models/replicate";
 import { workersAiModelConfig } from "~/data-model/models/workersai";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 import { getModelIdsByOutput } from "~/utils/models";
 
 const SPEECH_PROVIDERS = ["workers-ai", "replicate"] as const;
@@ -15,11 +17,11 @@ const SPEECH_MODELS = [
 	...getModelIdsByOutput(replicateModelConfig, "replicate", "audio"),
 ].sort();
 
-export const create_speech: IFunction = {
+export const create_speech: ApiToolDefinition = {
 	name: "create_speech",
 	description:
 		"Converts text to spoken audio with customizable voice characteristics. Use when users need audio narration, pronunciation guidance, or accessibility options.",
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			prompt: {
@@ -49,15 +51,14 @@ export const create_speech: IFunction = {
 			},
 		},
 		required: ["prompt"],
-	},
+	}),
 	type: "premium",
 	costPerCall: 1,
-	function: async (
-		completion_id: string,
-		args: SpeechGenerationParams,
-		req: IRequest,
-		app_url?: string,
-	): Promise<SpeechResponse> => {
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+		const app_url = context.appUrl;
+
 		const response = await generateSpeech({
 			completion_id,
 			app_url,

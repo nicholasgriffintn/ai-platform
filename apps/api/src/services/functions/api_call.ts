@@ -1,5 +1,7 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 import { getLogger } from "~/utils/logger";
 import { safeParseJson } from "~/utils/json";
 import { isAbortError } from "~/utils/abort";
@@ -112,14 +114,14 @@ const readResponseBody = async (
 	return { parsed, raw };
 };
 
-export const call_api: IFunction = {
+export const call_api: ApiToolDefinition = {
 	name: "call_api",
 	description:
 		"Calls a REST or GraphQL API and returns a structured response. Use this when you need to fetch data from external APIs.",
 	type: "normal",
 	costPerCall: 0,
 	isDefault: true,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			request_type: {
@@ -172,14 +174,8 @@ export const call_api: IFunction = {
 			},
 		},
 		required: ["url"],
-	},
-	function: async (
-		_completion_id: string,
-		args: any,
-		_req: IRequest,
-		_app_url?: string,
-		_conversationManager?: ConversationManager,
-	) => {
+	}),
+	execute: async (args, context) => {
 		const urlInput = typeof args?.url === "string" ? args.url.trim() : "";
 		if (!urlInput) {
 			return {

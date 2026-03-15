@@ -3,18 +3,20 @@ import {
 	resolveServiceContext,
 	createServiceContext,
 } from "~/lib/context/serviceContext";
-import type { IFunction, IFunctionResponse, IRequest, Message } from "~/types";
+import type { IFunctionResponse, IRequest, Message } from "~/types";
 import { getLogger } from "~/utils/logger";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
 const logger = getLogger({ prefix: "services/functions/teamDelegation" });
 
-export const delegateToTeamMember: IFunction = {
+export const delegateToTeamMember: ApiToolDefinition = {
 	name: "delegate_to_team_member",
 	description:
 		"Call a specific team member agent to handle a task. Use this when you need specialized expertise from your team.",
 	type: "normal",
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			agent_id: {
@@ -33,12 +35,11 @@ export const delegateToTeamMember: IFunction = {
 			},
 		},
 		required: ["agent_id", "task_description"],
-	},
-	function: async (
-		completion_id: string,
-		args: any,
-		req: IRequest,
-	): Promise<IFunctionResponse> => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+
 		try {
 			const serviceContext = resolveServiceContext({
 				context: req.context,
@@ -159,13 +160,13 @@ export const delegateToTeamMember: IFunction = {
 	},
 };
 
-export const delegateToTeamMemberByRole: IFunction = {
+export const delegateToTeamMemberByRole: ApiToolDefinition = {
 	name: "delegate_to_team_member_by_role",
 	description:
 		"Find and call a team member by their role (specialist, coordinator, member). Use when you know what type of expertise you need.",
 	type: "normal",
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			role: {
@@ -184,12 +185,11 @@ export const delegateToTeamMemberByRole: IFunction = {
 			},
 		},
 		required: ["role", "task_description"],
-	},
-	function: async (
-		completion_id: string,
-		args: any,
-		req: IRequest,
-	): Promise<IFunctionResponse> => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+
 		try {
 			const serviceContext = resolveServiceContext({
 				context: req.context,
@@ -241,14 +241,13 @@ export const delegateToTeamMemberByRole: IFunction = {
 				};
 			}
 
-			return await delegateToTeamMember.function(
-				completion_id,
+			return await delegateToTeamMember.execute(
 				{
 					agent_id: agent.id,
 					task_description: args.task_description,
 					context_messages: args.context_messages,
 				},
-				req,
+				context,
 			);
 		} catch (error) {
 			logger.error("Team delegation by role failed:", {
@@ -263,22 +262,21 @@ export const delegateToTeamMemberByRole: IFunction = {
 	},
 };
 
-export const getTeamMembers: IFunction = {
+export const getTeamMembers: ApiToolDefinition = {
 	name: "get_team_members",
 	description:
 		"Get list of available team members with their roles and capabilities. Use this to see who's available for delegation.",
 	type: "normal",
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {},
 		required: [],
-	},
-	function: async (
-		completion_id: string,
-		_args: any,
-		req: IRequest,
-	): Promise<IFunctionResponse> => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+
 		try {
 			const serviceContext = createServiceContext({
 				env: req.env,

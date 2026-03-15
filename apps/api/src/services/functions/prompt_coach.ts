@@ -1,11 +1,13 @@
 import { handlePromptCoachSuggestion } from "~/services/apps/prompt-coach";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
-export const prompt_coach: IFunction = {
+export const prompt_coach: ApiToolDefinition = {
 	name: "prompt_coach",
 	description:
 		"Given a prompt, this function will return an enhanced variant with suggestions for improvement.",
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			prompt: {
@@ -22,15 +24,12 @@ export const prompt_coach: IFunction = {
 			},
 		},
 		required: ["prompt"],
-	},
+	}),
 	type: "normal",
 	costPerCall: 0,
-	function: async (
-		_completion_id: string,
-		args: any,
-		req: IRequest,
-		_app_url?: string,
-	) => {
+	execute: async (args, context) => {
+		const req = context.request;
+
 		if (!args.prompt) {
 			return {
 				status: "error",

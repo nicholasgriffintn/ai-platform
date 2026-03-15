@@ -1,5 +1,7 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { handleFunctions } from "./index";
@@ -8,13 +10,13 @@ const logger = getLogger({ prefix: "services/functions/error_recovery" });
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export const retry_with_backoff: IFunction = {
+export const retry_with_backoff: ApiToolDefinition = {
 	name: "retry_with_backoff",
 	description:
 		"Retry a function call with exponential backoff if it fails. Useful for handling transient errors, rate limits, or network issues.",
 	type: "normal",
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			function_name: {
@@ -46,14 +48,13 @@ export const retry_with_backoff: IFunction = {
 			},
 		},
 		required: ["function_name", "args"],
-	},
-	function: async (
-		completion_id: string,
-		args: any,
-		req: IRequest,
-		app_url?: string,
-		conversationManager?: ConversationManager,
-	) => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+		const app_url = context.appUrl;
+		const conversationManager = context.conversationManager;
+
 		logger.info("retry_with_backoff called with args:", { args });
 
 		const {
@@ -190,13 +191,13 @@ export const retry_with_backoff: IFunction = {
 	},
 };
 
-export const fallback: IFunction = {
+export const fallback: ApiToolDefinition = {
 	name: "fallback",
 	description:
 		"Try a primary function, and if it fails, automatically call a fallback function instead. Useful for graceful degradation or trying alternative approaches.",
 	type: "normal",
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			primary_function: {
@@ -232,14 +233,13 @@ export const fallback: IFunction = {
 			"fallback_function",
 			"fallback_args",
 		],
-	},
-	function: async (
-		completion_id: string,
-		args: any,
-		req: IRequest,
-		app_url?: string,
-		conversationManager?: ConversationManager,
-	) => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+		const app_url = context.appUrl;
+		const conversationManager = context.conversationManager;
+
 		const {
 			primary_function,
 			primary_args,

@@ -1,11 +1,4 @@
-import type { ConversationManager } from "~/lib/conversationManager";
-import type {
-	ChatMode,
-	ChatRole,
-	IRequest,
-	MessageContent,
-	Platform,
-} from "./chat";
+import type { ChatMode, ChatRole, MessageContent, Platform } from "./chat";
 
 export type IFunctionResponse = {
 	status?: string;
@@ -22,50 +15,6 @@ export type IFunctionResponse = {
 	platform?: Platform;
 	[key: string]: any;
 };
-
-export interface IFunction {
-	name: string;
-	app_url?: string;
-	description: string;
-	strict?: boolean;
-	type: "normal" | "premium";
-	isDefault?: boolean;
-	costPerCall: number;
-	parameters: {
-		type: "object";
-		properties: {
-			[key: string]: {
-				type: string;
-				description: string;
-				pattern?: string;
-				default?: any;
-				minimum?: number;
-				maximum?: number;
-				multipleOf?: number;
-				enum?: string[];
-				properties?: {
-					[key: string]: {
-						type: string;
-						description: string;
-						enum?: string[];
-					};
-				};
-				items?: {
-					type: string;
-					description?: string;
-				};
-			};
-		};
-		required?: string[];
-	};
-	function: (
-		completion_id: string,
-		params: any,
-		req: IRequest,
-		app_url?: string,
-		conversationManager?: ConversationManager,
-	) => Promise<IFunctionResponse>;
-}
 
 export interface IWeather {
 	cod: number;

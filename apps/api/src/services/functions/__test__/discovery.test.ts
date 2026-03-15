@@ -12,12 +12,21 @@ const freeUserRequest: IRequest = {
 	user: { id: 2, plan_id: "free" } as any,
 };
 
+const createToolContext = (
+	request: IRequest,
+	completionId = "completion_id",
+) => ({
+	completionId,
+	env: request.env,
+	user: request.user,
+	request,
+});
+
 describe("search_functions", () => {
 	it("finds functions by name match", async () => {
-		const result = await search_functions.function(
-			"completion_id",
+		const result = await search_functions.execute(
 			{ query: "weather" },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -29,10 +38,9 @@ describe("search_functions", () => {
 	});
 
 	it("finds functions by description keywords", async () => {
-		const result = await search_functions.function(
-			"completion_id",
+		const result = await search_functions.execute(
 			{ query: "search web information" },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -44,10 +52,9 @@ describe("search_functions", () => {
 	});
 
 	it("limits results based on limit parameter", async () => {
-		const result = await search_functions.function(
-			"completion_id",
+		const result = await search_functions.execute(
 			{ query: "create", limit: 3 },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -55,10 +62,9 @@ describe("search_functions", () => {
 	});
 
 	it("excludes premium functions for free users when include_premium is false", async () => {
-		const result = await search_functions.function(
-			"completion_id",
+		const result = await search_functions.execute(
 			{ query: "research", include_premium: false },
-			freeUserRequest,
+			createToolContext(freeUserRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -69,10 +75,9 @@ describe("search_functions", () => {
 	});
 
 	it("marks premium functions as unavailable for free users", async () => {
-		const result = await search_functions.function(
-			"completion_id",
+		const result = await search_functions.execute(
 			{ query: "research", include_premium: true },
-			freeUserRequest,
+			createToolContext(freeUserRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -86,17 +91,16 @@ describe("search_functions", () => {
 
 	it("throws error for empty query", async () => {
 		await expect(
-			search_functions.function("completion_id", { query: "" }, baseRequest),
+			search_functions.execute({ query: "" }, createToolContext(baseRequest)),
 		).rejects.toThrow();
 	});
 });
 
 describe("get_function_schema", () => {
 	it("retrieves schema for existing function", async () => {
-		const result = await get_function_schema.function(
-			"completion_id",
+		const result = await get_function_schema.execute(
 			{ function_name: "web_search" },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -108,10 +112,9 @@ describe("get_function_schema", () => {
 	});
 
 	it("returns error for non-existent function", async () => {
-		const result = await get_function_schema.function(
-			"completion_id",
+		const result = await get_function_schema.execute(
 			{ function_name: "nonexistent_function" },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("error");
@@ -120,10 +123,9 @@ describe("get_function_schema", () => {
 	});
 
 	it("marks premium function as unavailable for free users", async () => {
-		const result = await get_function_schema.function(
-			"completion_id",
+		const result = await get_function_schema.execute(
 			{ function_name: "research" },
-			freeUserRequest,
+			createToolContext(freeUserRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -134,10 +136,9 @@ describe("get_function_schema", () => {
 
 	it("throws error for empty function name", async () => {
 		await expect(
-			get_function_schema.function(
-				"completion_id",
+			get_function_schema.execute(
 				{ function_name: "" },
-				baseRequest,
+				createToolContext(baseRequest),
 			),
 		).rejects.toThrow();
 	});

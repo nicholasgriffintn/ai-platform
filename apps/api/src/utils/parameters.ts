@@ -1,4 +1,4 @@
-import { availableFunctions } from "~/services/functions";
+import { listFunctionTools } from "~/services/functions";
 import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { formatToolCalls } from "../lib/chat/tools";
@@ -213,10 +213,11 @@ export function getToolsForProvider(
 	try {
 		const enabledTools = params.enabled_tools || [];
 		let tools: any[] = [];
+		const availableTools = listFunctionTools();
 
 		if (params.tools) {
 			const providedTools = params.tools;
-			const filteredFunctions = availableFunctions
+			const filteredFunctions = availableTools
 				.filter((func) => enabledTools.includes(func.name))
 				.filter(
 					(func) =>
@@ -228,7 +229,7 @@ export function getToolsForProvider(
 			);
 			tools = [...availableToolDeclarations, ...providedTools];
 		} else {
-			const filteredFunctions = availableFunctions.filter((func) =>
+			const filteredFunctions = availableTools.filter((func) =>
 				enabledTools.includes(func.name),
 			);
 			tools = formatToolCalls(providerName, filteredFunctions);

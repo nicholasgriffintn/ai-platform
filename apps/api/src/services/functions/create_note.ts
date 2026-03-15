@@ -1,13 +1,15 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { insertEmbedding } from "~/services/apps/embeddings/insert";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 import { AssistantError, ErrorType } from "../../utils/errors";
 
-export const create_note: IFunction = {
+export const create_note: ApiToolDefinition = {
 	name: "create_note",
 	description:
 		"Stores user information, content, or AI-generated material as a retrievable note. Use when users want to save content for future reference, build a knowledge base, or maintain project information across sessions.",
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			title: {
@@ -25,15 +27,12 @@ export const create_note: IFunction = {
 			},
 		},
 		required: ["title", "content"],
-	},
+	}),
 	type: "premium",
 	costPerCall: 0,
-	function: async (
-		_completion_id: string,
-		args: any,
-		req: IRequest,
-		_app_url?: string,
-	) => {
+	execute: async (args, context) => {
+		const req = context.request;
+
 		// TODO: Remove this once we have a proper way to handle this
 		if (req.user?.github_username !== "nicholasgriffintn") {
 			throw new AssistantError(

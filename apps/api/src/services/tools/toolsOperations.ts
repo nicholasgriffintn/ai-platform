@@ -1,4 +1,4 @@
-import { availableFunctions } from "~/services/functions";
+import { listFunctionTools } from "~/services/functions";
 
 export function getAvailableTools(isPro = false): Array<{
 	id: string;
@@ -6,7 +6,7 @@ export function getAvailableTools(isPro = false): Array<{
 	description: string;
 	isDefault: boolean;
 }> {
-	return availableFunctions
+	return listFunctionTools()
 		.filter((tool) => {
 			if (tool.type === "premium" && !isPro) {
 				return false;

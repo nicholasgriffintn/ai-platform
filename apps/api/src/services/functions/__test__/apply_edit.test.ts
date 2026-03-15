@@ -16,16 +16,22 @@ const baseRequest: IRequest = {
 	user: { id: 9 } as any,
 };
 
+const createToolContext = (request: IRequest, completionId = "id") => ({
+	completionId,
+	env: request.env,
+	user: request.user,
+	request,
+});
+
 describe("apply_edit_completion function", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
 	it("validates prompt presence", async () => {
-		const result = await apply_edit_completion.function(
-			"id",
+		const result = await apply_edit_completion.execute(
 			{ prompt: "" },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("error");
@@ -41,10 +47,9 @@ describe("apply_edit_completion function", () => {
 			],
 		});
 
-		const result = await apply_edit_completion.function(
-			"id",
+		const result = await apply_edit_completion.execute(
 			{ prompt: "<apply>" },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(mockHandleApplyEdit).toHaveBeenCalledWith({
@@ -60,10 +65,9 @@ describe("apply_edit_completion function", () => {
 	it("handles empty response", async () => {
 		mockHandleApplyEdit.mockResolvedValue({});
 
-		const result = await apply_edit_completion.function(
-			"id",
+		const result = await apply_edit_completion.execute(
 			{ prompt: "<apply>" },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("error");

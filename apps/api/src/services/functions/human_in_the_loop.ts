@@ -1,17 +1,19 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/functions/human_in_the_loop" });
 
-export const request_approval: IFunction = {
+export const request_approval: ApiToolDefinition = {
 	name: "request_approval",
 	description:
 		"Request human approval before proceeding with an action. Use this for critical operations, irreversible changes, or when user confirmation is needed. Returns approval/rejection status.",
 	type: "normal",
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			message: {
@@ -34,15 +36,12 @@ export const request_approval: IFunction = {
 			},
 		},
 		required: ["message"],
-	},
-	function: async (
-		completion_id: string,
-		args: any,
-		req: IRequest,
-		_app_url?: string,
-		_conversationManager?: ConversationManager,
-	) => {
-		const { message, options, context } = args || {};
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+
+		const { message, options, context: requestContext } = args || {};
 
 		if (
 			!message ||
@@ -75,10 +74,10 @@ export const request_approval: IFunction = {
 			}
 		}
 
-		let parsedContext = context;
-		if (typeof context === "string") {
+		let parsedContext = requestContext;
+		if (typeof requestContext === "string") {
 			try {
-				parsedContext = JSON.parse(context);
+				parsedContext = JSON.parse(requestContext);
 			} catch {
 				throw new AssistantError(
 					"context must be valid JSON when provided as a string",
@@ -118,13 +117,13 @@ export const request_approval: IFunction = {
 	},
 };
 
-export const ask_user: IFunction = {
+export const ask_user: ApiToolDefinition = {
 	name: "ask_user",
 	description:
 		"Ask the user a question and wait for their response. Use this when you need additional information, clarification, or input from the user to continue. Returns the user's answer.",
 	type: "normal",
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			question: {
@@ -152,15 +151,17 @@ export const ask_user: IFunction = {
 			},
 		},
 		required: ["question"],
-	},
-	function: async (
-		completion_id: string,
-		args: any,
-		req: IRequest,
-		_app_url?: string,
-		_conversationManager?: ConversationManager,
-	) => {
-		const { question, expected_format, suggestions, context } = args || {};
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+
+		const {
+			question,
+			expected_format,
+			suggestions,
+			context: requestContext,
+		} = args || {};
 
 		if (
 			!question ||
@@ -190,10 +191,10 @@ export const ask_user: IFunction = {
 			}
 		}
 
-		let parsedContext = context;
-		if (typeof context === "string") {
+		let parsedContext = requestContext;
+		if (typeof requestContext === "string") {
 			try {
-				parsedContext = JSON.parse(context);
+				parsedContext = JSON.parse(requestContext);
 			} catch {
 				throw new AssistantError(
 					"context must be valid JSON when provided as a string",

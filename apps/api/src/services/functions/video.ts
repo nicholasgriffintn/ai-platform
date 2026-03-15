@@ -4,7 +4,9 @@ import {
 	generateVideo,
 } from "~/services/generate/video";
 import { replicateModelConfig } from "~/data-model/models/replicate";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 import { getModelIdsByOutput } from "~/utils/models";
 
 const DEFAULT_HEIGHT = 320;
@@ -22,12 +24,12 @@ const VIDEO_MODELS = [
 	...getModelIdsByOutput(replicateModelConfig, "replicate", "video"),
 ].sort();
 
-export const create_video: IFunction = {
+export const create_video: ApiToolDefinition = {
 	name: "create_video",
 	description:
 		"Produces video content from descriptive prompts. Use when users request animations, visual sequences, or dynamic visual content.",
 	type: "premium",
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			prompt: {
@@ -92,14 +94,13 @@ export const create_video: IFunction = {
 			},
 		},
 		required: ["prompt"],
-	},
+	}),
 	costPerCall: 2,
-	function: async (
-		completion_id: string,
-		args: VideoGenerationParams,
-		req: IRequest,
-		app_url?: string,
-	): Promise<VideoResponse> => {
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+		const app_url = context.appUrl;
+
 		const response = await generateVideo({
 			completion_id,
 			app_url,

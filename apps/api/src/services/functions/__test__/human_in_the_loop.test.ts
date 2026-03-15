@@ -7,12 +7,21 @@ const baseRequest: IRequest = {
 	user: { id: 1, plan_id: "pro" } as any,
 };
 
+const createToolContext = (
+	request: IRequest,
+	completionId = "completion_id",
+) => ({
+	completionId,
+	env: request.env,
+	user: request.user,
+	request,
+});
+
 describe("request_approval", () => {
 	it("creates an approval request with minimal parameters", async () => {
-		const result = await request_approval.function(
-			"completion_id",
+		const result = await request_approval.execute(
 			{ message: "Do you want to proceed with this action?" },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("pending");
@@ -26,13 +35,12 @@ describe("request_approval", () => {
 	});
 
 	it("creates an approval request with custom options", async () => {
-		const result = await request_approval.function(
-			"completion_id",
+		const result = await request_approval.execute(
 			{
 				message: "Choose an action",
 				options: ["Yes", "No", "Maybe"],
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("pending");
@@ -40,13 +48,12 @@ describe("request_approval", () => {
 	});
 
 	it("includes context data when provided", async () => {
-		const result = await request_approval.function(
-			"completion_id",
+		const result = await request_approval.execute(
 			{
 				message: "Approve deletion?",
 				context: { resource_id: "123", action: "delete" },
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.data?.context).toEqual({
@@ -56,13 +63,12 @@ describe("request_approval", () => {
 	});
 
 	it("parses JSON string options", async () => {
-		const result = await request_approval.function(
-			"completion_id",
+		const result = await request_approval.execute(
 			{
 				message: "Test",
 				options: JSON.stringify(["Option A", "Option B"]),
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.data?.options).toEqual(["Option A", "Option B"]);
@@ -70,23 +76,22 @@ describe("request_approval", () => {
 
 	it("throws error for empty message", async () => {
 		await expect(
-			request_approval.function("completion_id", { message: "" }, baseRequest),
+			request_approval.execute({ message: "" }, createToolContext(baseRequest)),
 		).rejects.toThrow("non-empty string");
 	});
 
 	it("throws error for missing message", async () => {
 		await expect(
-			request_approval.function("completion_id", {}, baseRequest),
+			request_approval.execute({}, createToolContext(baseRequest)),
 		).rejects.toThrow();
 	});
 });
 
 describe("ask_user", () => {
 	it("creates a question with minimal parameters", async () => {
-		const result = await ask_user.function(
-			"completion_id",
+		const result = await ask_user.execute(
 			{ question: "What is your email address?" },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("pending");
@@ -99,13 +104,12 @@ describe("ask_user", () => {
 	});
 
 	it("creates a question with expected format", async () => {
-		const result = await ask_user.function(
-			"completion_id",
+		const result = await ask_user.execute(
 			{
 				question: "How many items?",
 				expected_format: "a number between 1-100",
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("pending");
@@ -113,13 +117,12 @@ describe("ask_user", () => {
 	});
 
 	it("creates a question with suggestions", async () => {
-		const result = await ask_user.function(
-			"completion_id",
+		const result = await ask_user.execute(
 			{
 				question: "Which color?",
 				suggestions: ["Red", "Green", "Blue"],
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("pending");
@@ -127,13 +130,12 @@ describe("ask_user", () => {
 	});
 
 	it("includes context data when provided", async () => {
-		const result = await ask_user.function(
-			"completion_id",
+		const result = await ask_user.execute(
 			{
 				question: "Confirm details?",
 				context: { step: 3, workflow: "onboarding" },
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.data?.context).toEqual({
@@ -143,13 +145,12 @@ describe("ask_user", () => {
 	});
 
 	it("parses JSON string suggestions", async () => {
-		const result = await ask_user.function(
-			"completion_id",
+		const result = await ask_user.execute(
 			{
 				question: "Test",
 				suggestions: JSON.stringify(["Yes", "No"]),
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.data?.suggestions).toEqual(["Yes", "No"]);
@@ -157,13 +158,13 @@ describe("ask_user", () => {
 
 	it("throws error for empty question", async () => {
 		await expect(
-			ask_user.function("completion_id", { question: "" }, baseRequest),
+			ask_user.execute({ question: "" }, createToolContext(baseRequest)),
 		).rejects.toThrow("non-empty string");
 	});
 
 	it("throws error for missing question", async () => {
 		await expect(
-			ask_user.function("completion_id", {}, baseRequest),
+			ask_user.execute({}, createToolContext(baseRequest)),
 		).rejects.toThrow();
 	});
 });

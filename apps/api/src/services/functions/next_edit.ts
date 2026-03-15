@@ -1,13 +1,15 @@
 import { handleCreateNextEditCompletions } from "~/services/completions/createNextEditCompletions";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
-export const next_edit_completion: IFunction = {
+export const next_edit_completion: ApiToolDefinition = {
 	name: "next_edit_completion",
 	description:
 		"Request the next code edit suggestion from Mercury Coder using contextual project snippets.",
 	type: "premium",
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			prompt: {
@@ -22,8 +24,10 @@ export const next_edit_completion: IFunction = {
 			},
 		},
 		required: ["prompt"],
-	},
-	function: async (_completionId, args: any, req: IRequest) => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+
 		if (!args.prompt || typeof args.prompt !== "string") {
 			return {
 				status: "error",

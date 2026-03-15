@@ -8,6 +8,16 @@ const baseRequest: IRequest = {
 	user: { id: 1, plan_id: "pro" } as any,
 };
 
+const createToolContext = (
+	request: IRequest,
+	completionId = "completion_id",
+) => ({
+	completionId,
+	env: request.env,
+	user: request.user,
+	request,
+});
+
 describe("compose_functions", () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
@@ -34,8 +44,7 @@ describe("compose_functions", () => {
 				throw new Error("unexpected");
 			});
 
-		const result = await compose_functions.function(
-			"completion_id",
+		const result = await compose_functions.execute(
 			{
 				steps: [
 					{
@@ -50,7 +59,7 @@ describe("compose_functions", () => {
 					},
 				],
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -69,14 +78,13 @@ describe("compose_functions", () => {
 				content: "ok",
 			});
 
-		const result = await compose_functions.function(
-			"completion_id",
+		const result = await compose_functions.execute(
 			{
 				steps: JSON.stringify([
 					{ function: "web_search", args: { query: "test" } },
 				]),
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -92,8 +100,7 @@ describe("compose_functions", () => {
 				content: "fallback",
 			});
 
-		const result = await compose_functions.function(
-			"completion_id",
+		const result = await compose_functions.execute(
 			{
 				steps: [
 					{
@@ -107,7 +114,7 @@ describe("compose_functions", () => {
 					},
 				],
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -134,14 +141,13 @@ describe("if_then_else", () => {
 				content: "then",
 			});
 
-		const result = await if_then_else.function(
-			"completion_id",
+		const result = await if_then_else.execute(
 			{
 				condition: { function: "check_condition", args: { value: 1 } },
 				then_steps: [{ function: "web_search", args: { query: "ok" } }],
 				else_steps: [{ function: "research", args: { input: "no" } }],
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -162,8 +168,7 @@ describe("if_then_else", () => {
 				content: "then",
 			});
 
-		const result = await if_then_else.function(
-			"completion_id",
+		const result = await if_then_else.execute(
 			{
 				condition: JSON.stringify({
 					function: "check_condition",
@@ -172,7 +177,7 @@ describe("if_then_else", () => {
 				then_steps: [{ function: "web_search", args: { query: "ok" } }],
 				else_steps: [{ function: "research", args: { input: "no" } }],
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -195,15 +200,14 @@ describe("parallel_execute", () => {
 			})
 			.mockRejectedValueOnce(new Error("fail"));
 
-		const result = await parallel_execute.function(
-			"completion_id",
+		const result = await parallel_execute.execute(
 			{
 				tasks: [
 					{ function: "web_search", args: { query: "test" } },
 					{ function: "research", args: { input: "test" } },
 				],
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("error");
@@ -219,14 +223,13 @@ describe("parallel_execute", () => {
 				content: "ok",
 			});
 
-		const result = await parallel_execute.function(
-			"completion_id",
+		const result = await parallel_execute.execute(
 			{
 				tasks: JSON.stringify([
 					{ function: "web_search", args: { query: "test" } },
 				]),
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");

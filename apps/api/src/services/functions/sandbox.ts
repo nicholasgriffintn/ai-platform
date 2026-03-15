@@ -5,7 +5,9 @@ import {
 } from "@assistant/schemas";
 
 import { executeSandboxWorker } from "~/services/sandbox/worker";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
 interface SandboxFunctionArgs {
 	repo: string;
@@ -25,7 +27,7 @@ interface SandboxWorkerSuccessResult {
 	branchName?: string;
 }
 
-const sandboxFunctionParameters: IFunction["parameters"] = {
+const sandboxFunctionParameters = {
 	type: "object",
 	properties: {
 		repo: {
@@ -58,7 +60,7 @@ const sandboxFunctionParameters: IFunction["parameters"] = {
 		},
 	},
 	required: ["repo", "task"],
-};
+} as const;
 
 function parsePromptStrategy(
 	value: string | undefined,
@@ -134,16 +136,16 @@ function createSandboxFunction(params: {
 	description: string;
 	taskType: SandboxTaskType;
 	forceShouldCommit?: boolean;
-}): IFunction {
+}): ApiToolDefinition {
 	return {
 		name: params.name,
 		description: params.description,
 		type: "premium",
 		costPerCall: 0.1,
-		parameters: sandboxFunctionParameters,
-		function: async (_completionId, args, request) => {
+		inputSchema: jsonSchemaToZod(sandboxFunctionParameters),
+		execute: async (args, context) => {
 			return executeSandboxFunction({
-				request,
+				request: context.request,
 				args: args as SandboxFunctionArgs,
 				taskType: params.taskType,
 				forceShouldCommit: params.forceShouldCommit,
@@ -152,49 +154,50 @@ function createSandboxFunction(params: {
 	};
 }
 
-export const run_feature_implementation: IFunction = createSandboxFunction({
-	name: "run_feature_implementation",
-	description:
-		"Implement a feature in a GitHub repository using the sandbox worker",
-	taskType: "feature-implementation",
-});
+export const run_feature_implementation: ApiToolDefinition =
+	createSandboxFunction({
+		name: "run_feature_implementation",
+		description:
+			"Implement a feature in a GitHub repository using the sandbox worker",
+		taskType: "feature-implementation",
+	});
 
-export const run_code_review: IFunction = createSandboxFunction({
+export const run_code_review: ApiToolDefinition = createSandboxFunction({
 	name: "run_code_review",
 	description: "Run a read-only code review task in a GitHub repository",
 	taskType: "code-review",
 	forceShouldCommit: false,
 });
 
-export const run_test_suite: IFunction = createSandboxFunction({
+export const run_test_suite: ApiToolDefinition = createSandboxFunction({
 	name: "run_test_suite",
 	description: "Run a read-only test-suite task in a GitHub repository",
 	taskType: "test-suite",
 	forceShouldCommit: false,
 });
 
-export const run_bug_fix: IFunction = createSandboxFunction({
+export const run_bug_fix: ApiToolDefinition = createSandboxFunction({
 	name: "run_bug_fix",
 	description:
 		"Diagnose and fix a bug in a GitHub repository using the sandbox worker",
 	taskType: "bug-fix",
 });
 
-export const run_refactoring: IFunction = createSandboxFunction({
+export const run_refactoring: ApiToolDefinition = createSandboxFunction({
 	name: "run_refactoring",
 	description:
 		"Refactor existing code in a GitHub repository while preserving behaviour",
 	taskType: "refactoring",
 });
 
-export const run_documentation: IFunction = createSandboxFunction({
+export const run_documentation: ApiToolDefinition = createSandboxFunction({
 	name: "run_documentation",
 	description:
 		"Create or update documentation in a GitHub repository using the sandbox worker",
 	taskType: "documentation",
 });
 
-export const run_migration: IFunction = createSandboxFunction({
+export const run_migration: ApiToolDefinition = createSandboxFunction({
 	name: "run_migration",
 	description:
 		"Run a migration workflow in a GitHub repository using the sandbox worker",

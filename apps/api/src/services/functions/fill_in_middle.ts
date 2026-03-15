@@ -1,5 +1,7 @@
 import { handleCreateFimCompletions } from "~/services/completions/createFimCompletions";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
 const toOptionalNumber = (value: unknown): number | undefined => {
 	if (typeof value === "number") {
@@ -19,13 +21,13 @@ const toOptionalNumber = (value: unknown): number | undefined => {
 	return undefined;
 };
 
-export const fill_in_middle_completion: IFunction = {
+export const fill_in_middle_completion: ApiToolDefinition = {
 	name: "fill_in_middle_completion",
 	description:
 		"Generate a fill-in-the-middle completion for code or text by providing the prefix (prompt) and optional suffix. Works across all FIM-capable models.",
 	type: "premium",
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			prompt: {
@@ -78,8 +80,10 @@ export const fill_in_middle_completion: IFunction = {
 			},
 		},
 		required: ["prompt"],
-	},
-	function: async (_completion_id: string, args: any, req: IRequest) => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+
 		if (!args.prompt || typeof args.prompt !== "string") {
 			return {
 				status: "error",

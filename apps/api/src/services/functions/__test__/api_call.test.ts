@@ -8,6 +8,13 @@ const baseRequest: IRequest = {
 	user: { id: 1 } as any,
 };
 
+const createToolContext = (request: IRequest, completionId = "id") => ({
+	completionId,
+	env: request.env,
+	user: request.user,
+	request,
+});
+
 const createMockResponse = ({
 	ok = true,
 	status = 200,
@@ -47,10 +54,9 @@ describe("call_api function", () => {
 	});
 
 	it("returns an error for invalid URLs", async () => {
-		const result = await call_api.function(
-			"id",
+		const result = await call_api.execute(
 			{ url: "not-a-url" },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("error");
@@ -65,13 +71,12 @@ describe("call_api function", () => {
 			}),
 		);
 
-		const result = await call_api.function(
-			"id",
+		const result = await call_api.execute(
 			{
 				url: "https://example.com/api",
 				query_params: { q: "test", page: 2 },
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(fetch).toHaveBeenCalledWith(
@@ -90,8 +95,7 @@ describe("call_api function", () => {
 			}),
 		);
 
-		const result = await call_api.function(
-			"id",
+		const result = await call_api.execute(
 			{
 				request_type: "graphql",
 				url: "https://example.com/graphql",
@@ -99,7 +103,7 @@ describe("call_api function", () => {
 				graphql_variables: { id: "1" },
 				headers: { Authorization: "Bearer token" },
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(fetch).toHaveBeenCalledWith(

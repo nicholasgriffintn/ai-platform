@@ -35,6 +35,7 @@ import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { safeParseJson } from "../../utils/json";
+import z from "zod/v4";
 
 const logger = getLogger({ prefix: "services/agents/completions" });
 
@@ -79,52 +80,52 @@ export async function createAgentCompletion({
 		{
 			name: add_reasoning_step.name,
 			description: add_reasoning_step.description,
-			parameters: add_reasoning_step.parameters,
+			parameters: z.toJSONSchema(add_reasoning_step.inputSchema),
 		},
 		{
 			name: compose_functions.name,
 			description: compose_functions.description,
-			parameters: compose_functions.parameters,
+			parameters: z.toJSONSchema(compose_functions.inputSchema),
 		},
 		{
 			name: if_then_else.name,
 			description: if_then_else.description,
-			parameters: if_then_else.parameters,
+			parameters: z.toJSONSchema(if_then_else.inputSchema),
 		},
 		{
 			name: parallel_execute.name,
 			description: parallel_execute.description,
-			parameters: parallel_execute.parameters,
+			parameters: z.toJSONSchema(parallel_execute.inputSchema),
 		},
 		{
 			name: request_approval.name,
 			description: request_approval.description,
-			parameters: request_approval.parameters,
+			parameters: z.toJSONSchema(request_approval.inputSchema),
 		},
 		{
 			name: ask_user.name,
 			description: ask_user.description,
-			parameters: ask_user.parameters,
+			parameters: z.toJSONSchema(ask_user.inputSchema),
 		},
 		{
 			name: retry_with_backoff.name,
 			description: retry_with_backoff.description,
-			parameters: retry_with_backoff.parameters,
+			parameters: z.toJSONSchema(retry_with_backoff.inputSchema),
 		},
 		{
 			name: fallback.name,
 			description: fallback.description,
-			parameters: fallback.parameters,
+			parameters: z.toJSONSchema(fallback.inputSchema),
 		},
 		{
 			name: search_functions.name,
 			description: search_functions.description,
-			parameters: search_functions.parameters,
+			parameters: z.toJSONSchema(search_functions.inputSchema),
 		},
 		{
 			name: get_function_schema.name,
 			description: get_function_schema.description,
-			parameters: get_function_schema.parameters,
+			parameters: z.toJSONSchema(get_function_schema.inputSchema),
 		},
 		...teamDelegationTools,
 		...mcpFunctions.map((fn) => ({
@@ -315,17 +316,17 @@ function setupTeamDelegationTools(agent: any) {
 		{
 			name: delegateToTeamMember.name,
 			description: delegateToTeamMember.description,
-			parameters: delegateToTeamMember.parameters,
+			parameters: z.toJSONSchema(delegateToTeamMember.inputSchema),
 		},
 		{
 			name: delegateToTeamMemberByRole.name,
 			description: delegateToTeamMemberByRole.description,
-			parameters: delegateToTeamMemberByRole.parameters,
+			parameters: z.toJSONSchema(delegateToTeamMemberByRole.inputSchema),
 		},
 		{
 			name: getTeamMembers.name,
 			description: getTeamMembers.description,
-			parameters: getTeamMembers.parameters,
+			parameters: z.toJSONSchema(getTeamMembers.inputSchema),
 		},
 	];
 }

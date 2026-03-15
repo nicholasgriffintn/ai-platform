@@ -1,5 +1,9 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import { handleFunctions } from "~/services/functions";
+import {
+	handleFunctions,
+	resolveFunctionTool,
+	validateFunctionArgs,
+} from "~/services/functions";
 import type { IRequest, Message } from "~/types";
 import { generateId } from "~/utils/id";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -9,6 +13,7 @@ import {
 	formatToolResponse,
 } from "~/utils/tool-responses";
 import { safeParseJson } from "~/utils/json";
+import z from "zod/v4";
 
 const logger = getLogger({ prefix: "lib/chat/tools" });
 
@@ -102,13 +107,22 @@ export const handleToolCalls = async (
 				);
 			}
 
+			let validatedFunctionArgs: unknown = functionArgs;
+			if (!functionName.startsWith("mcp_")) {
+				const toolDefinition = resolveFunctionTool(functionName);
+				validatedFunctionArgs = validateFunctionArgs(
+					toolDefinition,
+					functionArgs,
+				);
+			}
+
 			let result: any;
 			try {
 				result = await handleFunctions({
 					completion_id,
 					app_url: req.app_url,
 					functionName,
-					args: functionArgs,
+					args: validatedFunctionArgs,
 					request: req,
 					conversationManager,
 				});
@@ -250,7 +264,7 @@ export function formatToolCalls(provider: string, functions: any[]) {
 	if (provider === "bedrock") {
 		return functions
 			.map((func) => {
-				const parameters = func.parameters?.jsonSchema || func.parameters;
+				const parameters = resolveFunctionParameters(func);
 				if (!parameters) {
 					logger.warn(`Missing parameters for function ${func.name}`);
 					return null;
@@ -272,7 +286,8 @@ export function formatToolCalls(provider: string, functions: any[]) {
 	if (provider === "anthropic") {
 		return functions
 			.map((func) => {
-				if (!func.parameters) {
+				const parameters = resolveFunctionParameters(func);
+				if (!parameters) {
 					logger.warn(`Missing parameters for function ${func.name}`);
 					return null;
 				}
@@ -280,7 +295,7 @@ export function formatToolCalls(provider: string, functions: any[]) {
 				return {
 					name: func.name,
 					description: func.description,
-					input_schema: func.parameters,
+					input_schema: parameters,
 				};
 			})
 			.filter(Boolean);
@@ -288,7 +303,7 @@ export function formatToolCalls(provider: string, functions: any[]) {
 
 	return functions
 		.map((func) => {
-			const parameters = func.parameters?.jsonSchema || func.parameters;
+			const parameters = resolveFunctionParameters(func);
 
 			if (!parameters) {
 				logger.warn(`Missing parameters for function ${func.name}`);
@@ -305,4 +320,24 @@ export function formatToolCalls(provider: string, functions: any[]) {
 			};
 		})
 		.filter(Boolean);
+}
+
+function resolveFunctionParameters(func: any): Record<string, unknown> | null {
+	if (func.parameters) {
+		return func.parameters?.jsonSchema || func.parameters;
+	}
+
+	if (!func.inputSchema) {
+		return null;
+	}
+
+	try {
+		return z.toJSONSchema(func.inputSchema);
+	} catch (error) {
+		logger.warn("Failed to convert tool input schema to JSON schema", {
+			name: func.name,
+			error_message: error instanceof Error ? error.message : "Unknown error",
+		});
+		return null;
+	}
 }

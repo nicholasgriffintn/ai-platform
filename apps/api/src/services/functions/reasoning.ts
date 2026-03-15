@@ -1,17 +1,19 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/functions/reasoning" });
 
-export const add_reasoning_step: IFunction = {
+export const add_reasoning_step: ApiToolDefinition = {
 	name: "add_reasoning_step",
 	description:
 		"Adds a step to the reasoning process, allowing the AI to document its thought process and decide whether to continue with additional tool calls or provide a final answer. Use this to analyze previous tool results and determine next actions.",
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			title: {
@@ -31,18 +33,12 @@ export const add_reasoning_step: IFunction = {
 			},
 		},
 		required: ["title", "content", "nextStep"],
-	},
+	}),
 	type: "normal",
 	costPerCall: 0,
-	function: async (
-		_completion_id: string,
-		args: {
-			title: string;
-			content: string;
-			nextStep: "continue" | "finalAnswer";
-		},
-		req: IRequest,
-	) => {
+	execute: async (args, context) => {
+		const req = context.request;
+
 		try {
 			const sanitisedTitle = sanitiseInput(args.title);
 			const sanitisedContent = sanitiseInput(args.content);

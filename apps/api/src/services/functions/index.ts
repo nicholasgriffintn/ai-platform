@@ -1,5 +1,6 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import type { IFunction, IFunctionResponse, IRequest } from "~/types";
+import { ToolRegistry } from "~/lib/tools/ToolRegistry";
+import type { IFunctionResponse, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { analyse_hacker_news } from "./analyse_hacker_news";
@@ -40,10 +41,12 @@ import {
 	run_refactoring,
 	run_test_suite,
 } from "./sandbox";
+import type { ApiToolDefinition } from "./types";
 
 const logger = getLogger({ prefix: "services/functions" });
+const FUNCTIONS_TOOL_CATEGORY = "functions";
 
-export const availableFunctions: IFunction[] = [
+const functionDefinitions: ApiToolDefinition[] = [
 	get_weather,
 	create_video,
 	create_music,
@@ -83,6 +86,61 @@ export const availableFunctions: IFunction[] = [
 	run_documentation,
 	run_migration,
 ];
+export type RegisteredFunctionTool = ApiToolDefinition;
+
+export const toolRegistry = new ToolRegistry();
+
+for (const fn of functionDefinitions) {
+	if (!fn) {
+		continue;
+	}
+
+	toolRegistry.register(FUNCTIONS_TOOL_CATEGORY, {
+		name: fn.name,
+		metadata: {
+			type: fn.type,
+			costPerCall: fn.costPerCall,
+			isDefault: fn.isDefault ?? false,
+		},
+		create: () => fn,
+	});
+}
+
+export const listFunctionTools = (): RegisteredFunctionTool[] =>
+	toolRegistry.listDefinitions(
+		FUNCTIONS_TOOL_CATEGORY,
+	) as RegisteredFunctionTool[];
+
+export const resolveFunctionTool = (
+	functionName: string,
+): RegisteredFunctionTool =>
+	toolRegistry.resolve(
+		FUNCTIONS_TOOL_CATEGORY,
+		functionName,
+	) as RegisteredFunctionTool;
+
+export const validateFunctionArgs = (
+	toolDefinition: RegisteredFunctionTool,
+	args: unknown,
+) => {
+	const validation = toolDefinition.inputSchema.safeParse(args);
+
+	if (!validation.success) {
+		const validationErrors = validation.error.issues.map((issue) => ({
+			path: issue.path.join("."),
+			message: issue.message,
+		}));
+
+		throw new AssistantError(
+			`Invalid arguments for ${toolDefinition.name}`,
+			ErrorType.PARAMS_ERROR,
+			400,
+			{ validationErrors },
+		);
+	}
+
+	return validation.data;
+};
 
 export const handleFunctions = async ({
 	completion_id,
@@ -114,16 +172,7 @@ export const handleFunctions = async ({
 		);
 	}
 
-	const foundFunction = availableFunctions.find(
-		(func) => func.name === functionName,
-	);
-
-	if (!foundFunction) {
-		throw new AssistantError(
-			`Function ${functionName} not found`,
-			ErrorType.PARAMS_ERROR,
-		);
-	}
+	const foundFunction = resolveFunctionTool(functionName);
 
 	const isProUser = request.user?.plan_id === "pro";
 
@@ -145,13 +194,16 @@ export const handleFunctions = async ({
 		}
 	}
 
-	const response = await foundFunction.function(
-		completion_id,
-		args,
+	const validatedArgs = validateFunctionArgs(foundFunction, args);
+
+	const response = await foundFunction.execute(validatedArgs, {
+		completionId: completion_id,
+		env: request.env,
+		user: request.user,
 		request,
-		app_url,
+		appUrl: app_url,
 		conversationManager,
-	);
+	});
 
 	if (conversationManager) {
 		try {

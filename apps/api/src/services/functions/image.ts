@@ -6,7 +6,9 @@ import {
 	type ImageResponse,
 	generateImage,
 } from "~/services/generate/image";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 import { getModelIdsByOutput } from "~/utils/models";
 
 const IMAGE_PROVIDERS = ["workers-ai", "replicate"] as const;
@@ -16,11 +18,11 @@ const IMAGE_MODELS = [
 	...getModelIdsByOutput(workersAiModelConfig, "workers-ai", "image"),
 ].sort();
 
-export const create_image: IFunction = {
+export const create_image: ApiToolDefinition = {
 	name: "create_image",
 	description:
 		"Generates visual imagery based on detailed text descriptions. Use when users request illustrations, artwork, diagrams, or visual representations.",
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			prompt: {
@@ -63,15 +65,14 @@ export const create_image: IFunction = {
 			},
 		},
 		required: ["prompt"],
-	},
+	}),
 	type: "premium",
 	costPerCall: 1,
-	function: async (
-		completion_id: string,
-		args: ImageGenerationParams,
-		req: IRequest,
-		app_url?: string,
-	): Promise<ImageResponse> => {
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+		const app_url = context.appUrl;
+
 		const response = await generateImage({
 			completion_id,
 			app_url,

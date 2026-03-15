@@ -1,5 +1,4 @@
-import { availableFunctions } from "~/services/functions";
-import type { IFunction } from "~/types";
+import { listFunctionTools } from "~/services/functions";
 import type { AppSchema } from "~/types/app-schema";
 import { FieldType } from "~/types/app-schema";
 import {
@@ -11,19 +10,23 @@ import {
 import { getLogger } from "~/utils/logger";
 import { registerDynamicApp } from "./index";
 import { getFunctionMetadata } from "./config";
+import z from "zod/v4";
 
 const logger = getLogger({
 	prefix: "services/dynamic-apps/auto-register-apps",
 });
 
 export const autoRegisterDynamicApps = (): void => {
-	for (const func of availableFunctions) {
+	for (const func of listFunctionTools()) {
 		registerFunctionAsDynamicApp(func);
 	}
 };
 
-const registerFunctionAsDynamicApp = (func: IFunction): void => {
-	const { name, description, parameters, type, isDefault, costPerCall } = func;
+const registerFunctionAsDynamicApp = (
+	func: ReturnType<typeof listFunctionTools>[number],
+): void => {
+	const { name, description, type, isDefault, costPerCall } = func;
+	const parameters = z.toJSONSchema(func.inputSchema);
 
 	const metadata = getFunctionMetadata(name);
 

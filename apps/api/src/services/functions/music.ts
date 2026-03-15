@@ -4,7 +4,9 @@ import {
 	generateMusic,
 } from "~/services/generate/music";
 import { replicateModelConfig } from "~/data-model/models/replicate";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 import { getModelIdsByOutput } from "~/utils/models";
 
 const DEFAULT_DURATION = 8;
@@ -14,11 +16,11 @@ const MUSIC_MODELS = [
 	...getModelIdsByOutput(replicateModelConfig, "replicate", "audio"),
 ].sort();
 
-export const create_music: IFunction = {
+export const create_music: ApiToolDefinition = {
 	name: "create_music",
 	description:
 		"Composes musical pieces based on stylistic and emotional prompts. Use when users request songs, melodies, or audio compositions.",
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			prompt: {
@@ -48,15 +50,14 @@ export const create_music: IFunction = {
 			},
 		},
 		required: ["prompt"],
-	},
+	}),
 	type: "premium",
 	costPerCall: 1,
-	function: async (
-		completion_id: string,
-		args: MusicGenerationParams,
-		req: IRequest,
-		app_url?: string,
-	): Promise<MusicResponse> => {
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+		const app_url = context.appUrl;
+
 		const response = await generateMusic({
 			completion_id,
 			app_url,

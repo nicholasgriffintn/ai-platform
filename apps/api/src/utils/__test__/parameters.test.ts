@@ -11,11 +11,11 @@ import {
 } from "../parameters";
 
 vi.mock("~/services/functions", () => ({
-	availableFunctions: [
+	listFunctionTools: vi.fn(() => [
 		{ name: "web_search", description: "Search the web" },
 		{ name: "get_weather", description: "Get weather info" },
 		{ name: "create_image", description: "Generate an image" },
-	],
+	]),
 }));
 
 vi.mock("../../lib/chat/tools", () => ({

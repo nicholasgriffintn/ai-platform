@@ -1,15 +1,17 @@
 import type { ConversationManager } from "~/lib/conversationManager";
 import { performDeepWebSearch } from "~/services/apps/retrieval/web-search";
-import type { IFunction, IRequest, SearchOptions } from "~/types";
+import type { IRequest, SearchOptions } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
-export const web_search: IFunction = {
+export const web_search: ApiToolDefinition = {
 	name: "web_search",
 	description:
 		"Performs a web search to find current information on any topic. Use for retrieving recent news, facts, or information beyond your knowledge cutoff.",
 	type: "normal",
 	isDefault: true,
 	costPerCall: 1,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			query: {
@@ -41,14 +43,12 @@ export const web_search: IFunction = {
 			},
 		},
 		required: ["query"],
-	},
-	function: async (
-		completion_id: string,
-		args: any,
-		req: IRequest,
-		_app_url?: string,
-		conversationManager?: ConversationManager,
-	) => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+		const conversationManager = context.conversationManager;
+
 		const {
 			query,
 			search_depth,

@@ -1,5 +1,5 @@
 import { gatewayId } from "~/constants/app";
-import { availableFunctions } from "~/services/functions";
+import { listFunctionTools } from "~/services/functions";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -39,7 +39,7 @@ export async function fetchAIResponse<
 	const isFormData = body instanceof FormData;
 	const isStreaming = isFormData ? false : detectStreaming(body, endpointOrUrl);
 
-	const tools = provider === "tool-use" ? availableFunctions : undefined;
+	const tools = provider === "tool-use" ? listFunctionTools() : undefined;
 	const bodyWithTools = isFormData ? body : tools ? { ...body, tools } : body;
 
 	let response: Response;

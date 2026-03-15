@@ -1,13 +1,15 @@
 import type { ConversationManager } from "~/lib/conversationManager";
 import { completeTutorRequest } from "~/services/apps/tutor";
-import type { IFunction, IRequest, SearchOptions } from "~/types";
+import type { IRequest, SearchOptions } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
-export const tutor: IFunction = {
+export const tutor: ApiToolDefinition = {
 	name: "tutor",
 	description:
 		"Provides structured, interactive learning experiences on requested topics. Use when users express a desire to learn about a subject or develop skills. Creates personalized learning paths with explanations, examples, exercises, and adaptive feedback based on user responses.",
 	isDefault: true,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			topic: {
@@ -21,16 +23,14 @@ export const tutor: IFunction = {
 			},
 		},
 		required: ["topic"],
-	},
+	}),
 	type: "normal",
 	costPerCall: 1,
-	function: async (
-		completion_id: string,
-		args: any,
-		req: IRequest,
-		_app_url?: string,
-		conversationManager?: ConversationManager,
-	) => {
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+		const conversationManager = context.conversationManager;
+
 		const { topic, level } = args;
 		const options: SearchOptions = {
 			search_depth: "basic",

@@ -4,7 +4,6 @@ import {
 	startResearchTask,
 } from "~/services/research/task";
 import type {
-	IFunction,
 	IRequest,
 	ResearchOptions,
 	ParallelTaskSpec,
@@ -12,6 +11,8 @@ import type {
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "../../utils/json";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
 function coercePollingOptions(
 	args: any,
@@ -65,13 +66,13 @@ function buildTaskSpec(args: any): ParallelTaskSpec | undefined {
 	return undefined;
 }
 
-export const research: IFunction = {
+export const research: ApiToolDefinition = {
 	name: "research",
 	description:
 		"Executes deep web research using the configured provider. Ideal for market analysis, due diligence, and multi-source synthesis.",
 	type: "premium",
 	costPerCall: 3,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			input: {
@@ -154,14 +155,11 @@ export const research: IFunction = {
 					"Set to false to return immediately with a task handle and poll for results separately. Defaults to true for chats, false for dynamic apps.",
 			},
 		},
-	},
-	function: async (
-		completion_id: string,
-		args: any,
-		req: IRequest,
-		_app_url?: string,
-		_conversationManager?: ConversationManager,
-	) => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+
 		const {
 			input,
 			structured_input,

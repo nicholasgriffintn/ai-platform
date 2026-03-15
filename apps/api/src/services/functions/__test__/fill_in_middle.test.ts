@@ -16,16 +16,22 @@ const baseRequest: IRequest = {
 	user: { id: 42, plan_id: "pro" } as any,
 };
 
+const createToolContext = (request: IRequest, completionId = "completion") => ({
+	completionId,
+	env: request.env,
+	user: request.user,
+	request,
+});
+
 describe("fill_in_middle_completion function", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
 	it("returns an error when prompt is missing", async () => {
-		const result = await fill_in_middle_completion.function(
-			"completion",
+		const result = await fill_in_middle_completion.execute(
 			{ suffix: "world" },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("error");
@@ -38,8 +44,7 @@ describe("fill_in_middle_completion function", () => {
 			response: "generated content",
 		});
 
-		const result = await fill_in_middle_completion.function(
-			"completion",
+		const result = await fill_in_middle_completion.execute(
 			{
 				prompt: "console.log(",
 				suffix: ");",
@@ -50,7 +55,7 @@ describe("fill_in_middle_completion function", () => {
 				top_p: "0.9",
 				stop: "END,STOP",
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(mockHandleCreateFim).toHaveBeenCalledTimes(1);
@@ -78,13 +83,12 @@ describe("fill_in_middle_completion function", () => {
 			choices: [{ text: "fill me in", index: 0 }],
 		});
 
-		const result = await fill_in_middle_completion.function(
-			"completion",
+		const result = await fill_in_middle_completion.execute(
 			{
 				prompt: "function main() {",
 				stop: ["}"],
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");
@@ -107,12 +111,11 @@ describe("fill_in_middle_completion function", () => {
 	it("handles string response from provider", async () => {
 		mockHandleCreateFim.mockResolvedValueOnce("filled content");
 
-		const result = await fill_in_middle_completion.function(
-			"completion",
+		const result = await fill_in_middle_completion.execute(
 			{
 				prompt: "SELECT * FROM users WHERE",
 			},
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.status).toBe("success");

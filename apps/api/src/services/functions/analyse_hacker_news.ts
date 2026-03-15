@@ -2,12 +2,14 @@ import {
 	analyseHackerNewsStories,
 	retrieveHackerNewsTopStories,
 } from "~/services/apps/retrieval/hackernews";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
-export const analyse_hacker_news: IFunction = {
+export const analyse_hacker_news: ApiToolDefinition = {
 	name: "analyse_hacker_news",
 	description: "Extracts and analyses the top stories from Hacker News today.",
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			count: {
@@ -28,15 +30,12 @@ export const analyse_hacker_news: IFunction = {
 			},
 		},
 		required: ["count"],
-	},
+	}),
 	type: "normal",
 	costPerCall: 0.2,
-	function: async (
-		_completion_id: string,
-		args: any,
-		req: IRequest,
-		_app_url?: string,
-	) => {
+	execute: async (args, context) => {
+		const req = context.request;
+
 		const stories = await retrieveHackerNewsTopStories({
 			count: args.count,
 			env: req.env,

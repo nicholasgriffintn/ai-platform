@@ -1,13 +1,15 @@
 import { handleCreateApplyEditCompletions } from "~/services/completions/createApplyEditCompletions";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
-export const apply_edit_completion: IFunction = {
+export const apply_edit_completion: ApiToolDefinition = {
 	name: "apply_edit_completion",
 	description:
 		"Apply a code snippet update using Mercury Coder's apply-edit capability.",
 	type: "premium",
 	costPerCall: 0,
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			prompt: {
@@ -22,8 +24,10 @@ export const apply_edit_completion: IFunction = {
 			},
 		},
 		required: ["prompt"],
-	},
-	function: async (_completionId, args: any, req: IRequest) => {
+	}),
+	execute: async (args, context) => {
+		const req = context.request;
+
 		if (!args.prompt || typeof args.prompt !== "string") {
 			return {
 				status: "error",

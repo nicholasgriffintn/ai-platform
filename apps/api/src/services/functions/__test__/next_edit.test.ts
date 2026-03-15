@@ -16,13 +16,23 @@ const baseRequest: IRequest = {
 	user: { id: 1 } as any,
 };
 
+const createToolContext = (request: IRequest, completionId = "id") => ({
+	completionId,
+	env: request.env,
+	user: request.user,
+	request,
+});
+
 describe("next_edit_completion function", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
 	it("returns error when prompt missing", async () => {
-		const result = await next_edit_completion.function("id", {}, baseRequest);
+		const result = await next_edit_completion.execute(
+			{},
+			createToolContext(baseRequest),
+		);
 
 		expect(result.status).toBe("error");
 		expect(mockHandleNextEdit).not.toHaveBeenCalled();
@@ -37,10 +47,9 @@ describe("next_edit_completion function", () => {
 			],
 		});
 
-		const result = await next_edit_completion.function(
-			"id",
+		const result = await next_edit_completion.execute(
 			{ prompt: "<ctx>" },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(mockHandleNextEdit).toHaveBeenCalledWith({
@@ -58,10 +67,9 @@ describe("next_edit_completion function", () => {
 			choices: [{ text: "fallback" }],
 		});
 
-		const result = await next_edit_completion.function(
-			"id",
+		const result = await next_edit_completion.execute(
 			{ prompt: "content", model: "mercury-coder" },
-			baseRequest,
+			createToolContext(baseRequest),
 		);
 
 		expect(result.content).toBe("fallback");

@@ -4,11 +4,12 @@ import {
 	getAvailableStrengths,
 } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { availableFunctions } from "~/services/functions";
+import { listFunctionTools } from "~/services/functions";
 import type { Attachment, IEnv, IUser, PromptRequirements } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { safeParseJson } from "~/utils/json";
+import z from "zod/v4";
 
 const logger = getLogger({ prefix: "lib/modelRouter/promptAnalyser" });
 
@@ -71,6 +72,12 @@ export class PromptAnalyzer {
 	}
 
 	private static constructsystem_prompt(keywords: string[]): string {
+		const availableFunctions = listFunctionTools().map((tool) => ({
+			name: tool.name,
+			description: tool.description,
+			parameters: z.toJSONSchema(tool.inputSchema),
+		}));
+
 		const categorizedKeywords = keywords.reduce(
 			(acc, keyword) => {
 				for (const [domain, filter] of Object.entries(PromptAnalyzer.FILTERS)) {

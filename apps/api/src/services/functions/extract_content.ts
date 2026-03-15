@@ -1,13 +1,15 @@
 import { getAIResponse } from "~/lib/chat";
 import { extractContentsystem_prompt } from "~/lib/prompts";
 import { extractContent } from "~/services/apps/retrieval/content-extract";
-import type { IFunction, IRequest, Message } from "~/types";
+import type { IRequest, Message } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
-export const extract_content: IFunction = {
+export const extract_content: ApiToolDefinition = {
 	name: "extract_content",
 	description:
 		"Extracts and analyzes web content from provided URLs. Supports Tavily extraction and Cloudflare Browser Rendering endpoints (including crawl). Can process multiple URLs and optionally store content in vector memory.",
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			urls: {
@@ -67,15 +69,14 @@ export const extract_content: IFunction = {
 			},
 		},
 		required: ["urls"],
-	},
+	}),
 	type: "premium",
 	costPerCall: 0.5,
-	function: async (
-		completion_id: string,
-		args: any,
-		req: IRequest,
-		app_url?: string,
-	) => {
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+		const app_url = context.appUrl;
+
 		const urls = args.urls.includes(",")
 			? args.urls.split(",").map((u: string) => u.trim())
 			: args.urls;

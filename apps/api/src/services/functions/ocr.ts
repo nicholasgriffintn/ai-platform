@@ -1,11 +1,13 @@
 import { type OcrParams, performOcr } from "~/services/apps/retrieval/ocr";
-import type { IFunction, IRequest } from "~/types";
+import type { IRequest } from "~/types";
+import { jsonSchemaToZod } from "./jsonSchema";
+import type { ApiToolDefinition } from "./types";
 
-export const extract_text_from_document: IFunction = {
+export const extract_text_from_document: ApiToolDefinition = {
 	name: "extract_text_from_document",
 	description:
 		"Extracts text content from documents and images using OCR (Optical Character Recognition). Supports PDF files, scanned documents, and images containing text. Returns the extracted content in various formats (JSON, HTML, or Markdown).",
-	parameters: {
+	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
 			document_url: {
@@ -52,24 +54,13 @@ export const extract_text_from_document: IFunction = {
 			},
 		},
 		required: ["document_url", "document_name"],
-	},
+	}),
 	type: "premium",
 	costPerCall: 2,
-	function: async (
-		completion_id: string,
-		args: {
-			document_url: string;
-			document_name: string;
-			model?: string;
-			pages?: number[];
-			include_image_base64?: boolean;
-			image_limit?: number;
-			image_min_size?: number;
-			output_format?: "json" | "html" | "markdown";
-		},
-		req: IRequest,
-		_app_url?: string,
-	) => {
+	execute: async (args, context) => {
+		const req = context.request;
+		const completion_id = context.completionId;
+
 		if (!args.document_url || !args.document_name) {
 			throw new Error("document_url and document_name are required parameters");
 		}

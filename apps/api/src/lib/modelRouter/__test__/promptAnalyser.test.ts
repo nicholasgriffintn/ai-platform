@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import z from "zod/v4";
 
 import * as chatCapability from "~/lib/providers/capabilities/chat";
 import type { IEnv, IUser } from "~/types";
@@ -43,7 +44,23 @@ vi.mock("~/lib/providers/capabilities/chat", () => ({
 }));
 
 vi.mock("~/services/functions", () => ({
-	availableFunctions: ["search", "calculator", "file_reader"],
+	listFunctionTools: vi.fn(() => [
+		{
+			name: "search",
+			description: "Search tool",
+			inputSchema: z.object({}),
+		},
+		{
+			name: "calculator",
+			description: "Calculator tool",
+			inputSchema: z.object({}),
+		},
+		{
+			name: "file_reader",
+			description: "Read file tool",
+			inputSchema: z.object({}),
+		},
+	]),
 }));
 
 vi.mock("~/utils/errors", () => ({

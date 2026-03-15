@@ -49,6 +49,13 @@ describe("run_feature_implementation", () => {
 		} as any,
 	};
 
+	const createToolContext = (completionId = "completion-id") => ({
+		completionId,
+		env: request.env,
+		user: request.user,
+		request,
+	});
+
 	beforeEach(() => {
 		vi.clearAllMocks();
 		vi.mocked(generateJwtToken).mockResolvedValue("sandbox-jwt");
@@ -75,14 +82,13 @@ describe("run_feature_implementation", () => {
 			}),
 		});
 
-		const result = await run_feature_implementation.function(
-			"completion-id",
+		const result = await run_feature_implementation.execute(
 			{
 				repo: "owner/repo",
 				task: "Add tests",
 				shouldCommit: true,
 			},
-			request,
+			createToolContext(),
 		);
 
 		expect(generateJwtToken).toHaveBeenCalledWith(
@@ -127,13 +133,12 @@ describe("run_feature_implementation", () => {
 			}),
 		});
 
-		await run_feature_implementation.function(
-			"completion-id",
+		await run_feature_implementation.execute(
 			{
 				repo: "owner/repo",
 				task: "Add tests",
 			},
-			request,
+			createToolContext(),
 		);
 
 		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
@@ -170,13 +175,12 @@ describe("run_feature_implementation", () => {
 			}),
 		});
 
-		await run_feature_implementation.function(
-			"completion-id",
+		await run_feature_implementation.execute(
 			{
 				repo: "owner/repo",
 				task: "Add tests",
 			},
-			request,
+			createToolContext(),
 		);
 
 		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
@@ -193,13 +197,12 @@ describe("run_feature_implementation", () => {
 		});
 
 		await expect(
-			run_feature_implementation.function(
-				"completion-id",
+			run_feature_implementation.execute(
 				{
 					repo: "owner/repo",
 					task: "Add tests",
 				},
-				request,
+				createToolContext(),
 			),
 		).rejects.toThrow("Sandbox worker error (500): sandbox failed");
 	});
@@ -211,13 +214,12 @@ describe("run_feature_implementation", () => {
 		);
 
 		await expect(
-			run_feature_implementation.function(
-				"completion-id",
+			run_feature_implementation.execute(
 				{
 					repo: "owner/repo",
 					task: "Add tests",
 				},
-				request,
+				createToolContext(),
 			),
 		).rejects.toThrow("No GitHub App installation found for owner/repo");
 	});
@@ -232,14 +234,13 @@ describe("run_feature_implementation", () => {
 			}),
 		});
 
-		await run_code_review.function(
-			"completion-id",
+		await run_code_review.execute(
 			{
 				repo: "owner/repo",
 				task: "Review auth middleware",
 				shouldCommit: true,
 			},
-			request,
+			createToolContext(),
 		);
 
 		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
@@ -259,14 +260,13 @@ describe("run_feature_implementation", () => {
 			}),
 		});
 
-		await run_test_suite.function(
-			"completion-id",
+		await run_test_suite.execute(
 			{
 				repo: "owner/repo",
 				task: "Run API tests",
 				shouldCommit: true,
 			},
-			request,
+			createToolContext(),
 		);
 
 		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
@@ -286,14 +286,13 @@ describe("run_feature_implementation", () => {
 			}),
 		});
 
-		await run_bug_fix.function(
-			"completion-id",
+		await run_bug_fix.execute(
 			{
 				repo: "owner/repo",
 				task: "Fix timeout handling",
 				shouldCommit: true,
 			},
-			request,
+			createToolContext(),
 		);
 
 		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
