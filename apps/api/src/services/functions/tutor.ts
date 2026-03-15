@@ -26,6 +26,7 @@ export const tutor: ApiToolDefinition = {
 	}),
 	type: "normal",
 	costPerCall: 1,
+	permissions: ["reasoning"],
 	execute: async (args, context) => {
 		const req = context.request;
 		const completion_id = context.completionId;

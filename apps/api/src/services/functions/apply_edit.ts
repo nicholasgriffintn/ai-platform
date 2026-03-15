@@ -9,6 +9,7 @@ export const apply_edit_completion: ApiToolDefinition = {
 		"Apply a code snippet update using Mercury Coder's apply-edit capability.",
 	type: "premium",
 	costPerCall: 0,
+	permissions: ["network"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {

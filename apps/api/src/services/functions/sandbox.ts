@@ -135,6 +135,7 @@ function createSandboxFunction(params: {
 	name: string;
 	description: string;
 	taskType: SandboxTaskType;
+	permissions: ApiToolDefinition["permissions"];
 	forceShouldCommit?: boolean;
 }): ApiToolDefinition {
 	return {
@@ -142,6 +143,7 @@ function createSandboxFunction(params: {
 		description: params.description,
 		type: "premium",
 		costPerCall: 0.1,
+		permissions: params.permissions,
 		inputSchema: jsonSchemaToZod(sandboxFunctionParameters),
 		execute: async (args, context) => {
 			return executeSandboxFunction({
@@ -160,12 +162,14 @@ export const run_feature_implementation: ApiToolDefinition =
 		description:
 			"Implement a feature in a GitHub repository using the sandbox worker",
 		taskType: "feature-implementation",
+		permissions: ["sandbox", "write"],
 	});
 
 export const run_code_review: ApiToolDefinition = createSandboxFunction({
 	name: "run_code_review",
 	description: "Run a read-only code review task in a GitHub repository",
 	taskType: "code-review",
+	permissions: ["sandbox"],
 	forceShouldCommit: false,
 });
 
@@ -173,6 +177,7 @@ export const run_test_suite: ApiToolDefinition = createSandboxFunction({
 	name: "run_test_suite",
 	description: "Run a read-only test-suite task in a GitHub repository",
 	taskType: "test-suite",
+	permissions: ["sandbox"],
 	forceShouldCommit: false,
 });
 
@@ -181,6 +186,7 @@ export const run_bug_fix: ApiToolDefinition = createSandboxFunction({
 	description:
 		"Diagnose and fix a bug in a GitHub repository using the sandbox worker",
 	taskType: "bug-fix",
+	permissions: ["sandbox", "write"],
 });
 
 export const run_refactoring: ApiToolDefinition = createSandboxFunction({
@@ -188,6 +194,7 @@ export const run_refactoring: ApiToolDefinition = createSandboxFunction({
 	description:
 		"Refactor existing code in a GitHub repository while preserving behaviour",
 	taskType: "refactoring",
+	permissions: ["sandbox", "write"],
 });
 
 export const run_documentation: ApiToolDefinition = createSandboxFunction({
@@ -195,6 +202,7 @@ export const run_documentation: ApiToolDefinition = createSandboxFunction({
 	description:
 		"Create or update documentation in a GitHub repository using the sandbox worker",
 	taskType: "documentation",
+	permissions: ["sandbox", "write"],
 });
 
 export const run_migration: ApiToolDefinition = createSandboxFunction({
@@ -202,4 +210,5 @@ export const run_migration: ApiToolDefinition = createSandboxFunction({
 	description:
 		"Run a migration workflow in a GitHub repository using the sandbox worker",
 	taskType: "migration",
+	permissions: ["sandbox", "write"],
 });

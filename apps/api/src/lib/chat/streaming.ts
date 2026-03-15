@@ -814,10 +814,12 @@ export async function createStreamWithPostProcessing(
 								conversationManager,
 								{
 									env,
+									mode: options.mode,
 									request: {
 										completion_id,
 										input: fullContent || "",
 										model,
+										mode: options.mode,
 										date: new Date().toISOString().split("T")[0],
 										current_agent_id: options.current_agent_id,
 										delegation_stack: options.delegation_stack,

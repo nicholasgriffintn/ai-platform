@@ -68,6 +68,7 @@ export const create_image: ApiToolDefinition = {
 	}),
 	type: "premium",
 	costPerCall: 1,
+	permissions: ["network"],
 	execute: async (args, context) => {
 		const req = context.request;
 		const completion_id = context.completionId;

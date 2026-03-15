@@ -366,6 +366,7 @@ export const compose_functions: ApiToolDefinition = {
 	type: "normal",
 	isDefault: true,
 	costPerCall: 0,
+	permissions: ["orchestration"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
@@ -437,6 +438,7 @@ export const if_then_else: ApiToolDefinition = {
 	type: "normal",
 	isDefault: true,
 	costPerCall: 0,
+	permissions: ["orchestration"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
@@ -578,6 +580,7 @@ export const parallel_execute: ApiToolDefinition = {
 	type: "normal",
 	isDefault: true,
 	costPerCall: 0,
+	permissions: ["orchestration"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {

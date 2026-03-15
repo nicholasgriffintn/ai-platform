@@ -1,5 +1,14 @@
 export { executeAgentLoop } from "./agent-loop";
 export { parseAgentDecision } from "./decision";
+export {
+	resolveApproval,
+	type ApprovalClient,
+	type ApprovalControlState,
+	type ApprovalRecord,
+	type ApprovalWindow,
+	type ResolveApprovalParams,
+	type ResolveApprovalResult,
+} from "./approval";
 
 export {
 	createCommandActionHandler,

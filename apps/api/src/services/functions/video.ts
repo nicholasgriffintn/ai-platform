@@ -96,6 +96,7 @@ export const create_video: ApiToolDefinition = {
 		required: ["prompt"],
 	}),
 	costPerCall: 2,
+	permissions: ["network"],
 	execute: async (args, context) => {
 		const req = context.request;
 		const completion_id = context.completionId;

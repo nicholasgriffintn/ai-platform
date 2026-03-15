@@ -36,6 +36,7 @@ export const add_reasoning_step: ApiToolDefinition = {
 	}),
 	type: "normal",
 	costPerCall: 0,
+	permissions: ["reasoning"],
 	execute: async (args, context) => {
 		const req = context.request;
 

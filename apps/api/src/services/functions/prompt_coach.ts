@@ -27,6 +27,7 @@ export const prompt_coach: ApiToolDefinition = {
 	}),
 	type: "normal",
 	costPerCall: 0,
+	permissions: ["reasoning"],
 	execute: async (args, context) => {
 		const req = context.request;
 

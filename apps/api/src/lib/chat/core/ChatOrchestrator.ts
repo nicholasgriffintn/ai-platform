@@ -11,6 +11,7 @@ import {
 import { createStreamWithPostProcessing } from "~/lib/chat/streaming";
 import { handleToolCalls } from "~/lib/chat/tools";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
+import { resolveModeMaxSteps } from "~/lib/permissions/PermissionChecker";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { captureTrainingExample } from "~/services/training/captureTrainingExample";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
@@ -21,6 +22,7 @@ import { getLogger } from "~/utils/logger";
 import { isAbortError } from "~/utils/abort";
 
 const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
+const AGENT_EXECUTION_MODES = new Set(["agent", "plan", "build", "explore"]);
 
 export class ChatOrchestrator {
 	private validator: ValidationPipeline;
@@ -233,10 +235,12 @@ export class ChatOrchestrator {
 
 		const toolRequestContext: IRequest = {
 			env: chatOptions.env,
+			mode: currentMode,
 			request: {
 				completion_id: chatOptions.completion_id!,
 				input: messageWithContext,
 				model: primaryModel,
+				mode: currentMode,
 				date: new Date().toISOString().split("T")[0]!,
 				current_agent_id: chatOptions.current_agent_id,
 				delegation_stack: chatOptions.delegation_stack,
@@ -248,13 +252,13 @@ export class ChatOrchestrator {
 
 		const toolResponses: Message[] = [];
 		let response: ModelResponse | ReadableStream;
-		if (currentMode === "agent" && !stream) {
+		if (AGENT_EXECUTION_MODES.has(currentMode) && !stream) {
 			const agentResult = await runAgentLoop({
 				requestParams,
 				completionId: chatOptions.completion_id!,
 				conversationManager,
 				toolRequestContext,
-				maxSteps: max_steps,
+				maxSteps: resolveModeMaxSteps(currentMode, max_steps),
 			});
 			response = agentResult.response;
 			toolResponses.push(...agentResult.toolResponses);

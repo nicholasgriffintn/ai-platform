@@ -57,6 +57,7 @@ export const extract_text_from_document: ApiToolDefinition = {
 	}),
 	type: "premium",
 	costPerCall: 2,
+	permissions: ["read"],
 	execute: async (args, context) => {
 		const req = context.request;
 		const completion_id = context.completionId;

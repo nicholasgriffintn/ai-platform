@@ -16,6 +16,7 @@ export const retry_with_backoff: ApiToolDefinition = {
 		"Retry a function call with exponential backoff if it fails. Useful for handling transient errors, rate limits, or network issues.",
 	type: "normal",
 	costPerCall: 0,
+	permissions: ["orchestration"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
@@ -197,6 +198,7 @@ export const fallback: ApiToolDefinition = {
 		"Try a primary function, and if it fails, automatically call a fallback function instead. Useful for graceful degradation or trying alternative approaches.",
 	type: "normal",
 	costPerCall: 0,
+	permissions: ["orchestration"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {

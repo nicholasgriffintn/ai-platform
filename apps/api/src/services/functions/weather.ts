@@ -23,6 +23,7 @@ export const get_weather: ApiToolDefinition = {
 	}),
 	type: "normal",
 	costPerCall: 0,
+	permissions: ["read"],
 	execute: async (args, context) => {
 		const req = context.request;
 		const location = {

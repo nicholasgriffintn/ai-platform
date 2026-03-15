@@ -20,6 +20,7 @@ export const get_note: ApiToolDefinition = {
 	}),
 	type: "premium",
 	costPerCall: 0,
+	permissions: ["read"],
 	execute: async (args, context) => {
 		const req = context.request;
 

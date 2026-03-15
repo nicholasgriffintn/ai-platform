@@ -33,6 +33,7 @@ export const analyse_hacker_news: ApiToolDefinition = {
 	}),
 	type: "normal",
 	costPerCall: 0.2,
+	permissions: ["read"],
 	execute: async (args, context) => {
 		const req = context.request;
 

@@ -13,6 +13,7 @@ export const request_approval: ApiToolDefinition = {
 		"Request human approval before proceeding with an action. Use this for critical operations, irreversible changes, or when user confirmation is needed. Returns approval/rejection status.",
 	type: "normal",
 	costPerCall: 0,
+	permissions: ["human"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
@@ -123,6 +124,7 @@ export const ask_user: ApiToolDefinition = {
 		"Ask the user a question and wait for their response. Use this when you need additional information, clarification, or input from the user to continue. Returns the user's answer.",
 	type: "normal",
 	costPerCall: 0,
+	permissions: ["human"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {

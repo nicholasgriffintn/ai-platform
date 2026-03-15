@@ -72,6 +72,7 @@ export const extract_content: ApiToolDefinition = {
 	}),
 	type: "premium",
 	costPerCall: 0.5,
+	permissions: ["read"],
 	execute: async (args, context) => {
 		const req = context.request;
 		const completion_id = context.completionId;

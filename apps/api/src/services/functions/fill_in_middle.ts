@@ -27,6 +27,7 @@ export const fill_in_middle_completion: ApiToolDefinition = {
 		"Generate a fill-in-the-middle completion for code or text by providing the prefix (prompt) and optional suffix. Works across all FIM-capable models.",
 	type: "premium",
 	costPerCall: 0,
+	permissions: ["network"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {

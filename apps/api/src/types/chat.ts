@@ -22,7 +22,15 @@ export type ContentType =
 	| "markdown_document"
 	| "tool_result";
 export type ChatRole = "user" | "assistant" | "tool" | "developer" | "system";
-export type ChatMode = "normal" | "local" | "remote" | "no_system" | "agent";
+export type ChatMode =
+	| "normal"
+	| "local"
+	| "remote"
+	| "no_system"
+	| "agent"
+	| "plan"
+	| "build"
+	| "explore";
 export type MessagePart = SchemaMessagePart;
 
 export interface ReasoningControls {

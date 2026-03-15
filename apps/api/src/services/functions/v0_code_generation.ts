@@ -28,6 +28,7 @@ export const v0_code_generation: ApiToolDefinition = {
 	}),
 	type: "premium",
 	costPerCall: 0,
+	permissions: ["network"],
 	execute: async (args, context) => {
 		const req = context.request;
 

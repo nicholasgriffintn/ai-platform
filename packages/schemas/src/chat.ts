@@ -2,6 +2,7 @@ import z from "zod/v4";
 
 import { messageSchema } from "./shared";
 import { messagePartsSchema } from "./message-parts";
+import { chatRequestModeSchema } from "./agent-modes";
 
 export const chatCompletionResponseSchema = z.object({
 	id: z.string(),
@@ -54,12 +55,9 @@ export const createChatCompletionsJsonSchema = z.object({
 	model: z.string().optional().meta({
 		description: "The model to use for the request.",
 	}),
-	mode: z
-		.enum(["normal", "thinking", "no_system", "local", "remote", "agent"])
-		.optional()
-		.meta({
-			description: "The mode of the chat completion.",
-		}),
+	mode: chatRequestModeSchema.optional().meta({
+		description: "The mode of the chat completion.",
+	}),
 	should_think: z.boolean().optional().meta({
 		description:
 			"Whether to enable thinking mode for the model. (Used for Claude Sonnet 3.7).",

@@ -53,6 +53,7 @@ export const create_music: ApiToolDefinition = {
 	}),
 	type: "premium",
 	costPerCall: 1,
+	permissions: ["network"],
 	execute: async (args, context) => {
 		const req = context.request;
 		const completion_id = context.completionId;

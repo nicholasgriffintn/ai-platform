@@ -72,6 +72,7 @@ export const research: ApiToolDefinition = {
 		"Executes deep web research using the configured provider. Ideal for market analysis, due diligence, and multi-source synthesis.",
 	type: "premium",
 	costPerCall: 3,
+	permissions: ["read"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {

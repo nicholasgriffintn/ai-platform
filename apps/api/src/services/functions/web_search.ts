@@ -11,6 +11,7 @@ export const web_search: ApiToolDefinition = {
 	type: "normal",
 	isDefault: true,
 	costPerCall: 1,
+	permissions: ["read"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {

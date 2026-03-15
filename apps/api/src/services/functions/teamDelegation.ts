@@ -16,6 +16,7 @@ export const delegateToTeamMember: ApiToolDefinition = {
 		"Call a specific team member agent to handle a task. Use this when you need specialized expertise from your team.",
 	type: "normal",
 	costPerCall: 0,
+	permissions: ["delegate"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
@@ -166,6 +167,7 @@ export const delegateToTeamMemberByRole: ApiToolDefinition = {
 		"Find and call a team member by their role (specialist, coordinator, member). Use when you know what type of expertise you need.",
 	type: "normal",
 	costPerCall: 0,
+	permissions: ["delegate"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
@@ -268,6 +270,7 @@ export const getTeamMembers: ApiToolDefinition = {
 		"Get list of available team members with their roles and capabilities. Use this to see who's available for delegation.",
 	type: "normal",
 	costPerCall: 0,
+	permissions: ["read"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {},

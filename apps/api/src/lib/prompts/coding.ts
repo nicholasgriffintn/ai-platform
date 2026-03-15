@@ -33,7 +33,11 @@ export function returnCodingPrompt(
 	const verbosity = request.text?.verbosity ?? request.verbosity ?? "medium";
 	const preferredLanguage = request.lang?.trim() || null;
 
-	const isAgent = chatMode === "agent";
+	const isAgent =
+		chatMode === "agent" ||
+		chatMode === "plan" ||
+		chatMode === "build" ||
+		chatMode === "explore";
 
 	const latitude = request.location?.latitude ?? null;
 	const longitude = request.location?.longitude ?? null;

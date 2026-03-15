@@ -1,4 +1,8 @@
 import type { ConversationManager } from "~/lib/conversationManager";
+import {
+	PermissionChecker,
+	resolveToolPermissions,
+} from "~/lib/permissions/PermissionChecker";
 import { ToolRegistry } from "~/lib/tools/ToolRegistry";
 import type { IFunctionResponse, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -45,6 +49,7 @@ import type { ApiToolDefinition } from "./types";
 
 const logger = getLogger({ prefix: "services/functions" });
 const FUNCTIONS_TOOL_CATEGORY = "functions";
+const permissionChecker = new PermissionChecker();
 
 const functionDefinitions: ApiToolDefinition[] = [
 	get_weather,
@@ -95,6 +100,14 @@ for (const fn of functionDefinitions) {
 		continue;
 	}
 
+	const resolvedPermissions = resolveToolPermissions(fn.name, fn.permissions);
+	if (resolvedPermissions.length === 0) {
+		throw new AssistantError(
+			`Tool "${fn.name}" is missing explicit permissions`,
+			ErrorType.CONFIGURATION_ERROR,
+		);
+	}
+
 	toolRegistry.register(FUNCTIONS_TOOL_CATEGORY, {
 		name: fn.name,
 		metadata: {
@@ -102,7 +115,10 @@ for (const fn of functionDefinitions) {
 			costPerCall: fn.costPerCall,
 			isDefault: fn.isDefault ?? false,
 		},
-		create: () => fn,
+		create: () => ({
+			...fn,
+			permissions: resolvedPermissions,
+		}),
 	});
 }
 
@@ -157,7 +173,44 @@ export const handleFunctions = async ({
 	request: IRequest;
 	conversationManager?: ConversationManager;
 }): Promise<IFunctionResponse> => {
+	const requestMode = request.request?.mode || request.mode;
+
 	if (functionName.startsWith("mcp_")) {
+		const mcpPermissionResult = permissionChecker.checkToolAccess({
+			toolName: functionName,
+			mode: requestMode,
+			user: request.user,
+			toolType: "normal",
+			toolPermissions: ["network"],
+		});
+
+		if (!mcpPermissionResult.allowed) {
+			throw new AssistantError(
+				mcpPermissionResult.reason ||
+					`Tool "${functionName}" is not allowed in this mode`,
+				ErrorType.AUTHORISATION_ERROR,
+				403,
+				{
+					toolName: functionName,
+					mode: mcpPermissionResult.mode,
+				},
+			);
+		}
+
+		if (mcpPermissionResult.requiresApproval) {
+			throw new AssistantError(
+				mcpPermissionResult.reason ||
+					`Tool "${functionName}" requires approval before execution`,
+				ErrorType.AUTHORISATION_ERROR,
+				403,
+				{
+					toolName: functionName,
+					mode: mcpPermissionResult.mode,
+					requiresApproval: true,
+				},
+			);
+		}
+
 		request.request = {
 			...request.request,
 			functionName,
@@ -173,15 +226,48 @@ export const handleFunctions = async ({
 	}
 
 	const foundFunction = resolveFunctionTool(functionName);
+	const permissionResult = permissionChecker.checkToolAccess({
+		toolName: functionName,
+		mode: requestMode,
+		user: request.user,
+		toolType: foundFunction.type,
+		toolPermissions: foundFunction.permissions,
+	});
 
-	const isProUser = request.user?.plan_id === "pro";
+	if (!permissionResult.allowed) {
+		const isPremiumAccessError =
+			foundFunction.type === "premium" &&
+			permissionResult.reason === "This tool requires a premium subscription";
 
-	if (foundFunction.type === "premium" && !isProUser) {
 		throw new AssistantError(
-			"This function requires a premium subscription",
-			ErrorType.AUTHENTICATION_ERROR,
+			permissionResult.reason ||
+				`Tool "${functionName}" is not allowed in this mode`,
+			isPremiumAccessError
+				? ErrorType.AUTHENTICATION_ERROR
+				: ErrorType.AUTHORISATION_ERROR,
+			isPremiumAccessError ? 401 : 403,
+			{
+				toolName: functionName,
+				mode: permissionResult.mode,
+			},
 		);
 	}
+
+	if (permissionResult.requiresApproval) {
+		throw new AssistantError(
+			permissionResult.reason ||
+				`Tool "${functionName}" requires approval before execution`,
+			ErrorType.AUTHORISATION_ERROR,
+			403,
+			{
+				toolName: functionName,
+				mode: permissionResult.mode,
+				requiresApproval: true,
+			},
+		);
+	}
+
+	const isProUser = request.user?.plan_id === "pro";
 
 	if (conversationManager) {
 		try {

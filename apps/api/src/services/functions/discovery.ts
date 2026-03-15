@@ -12,6 +12,7 @@ export const search_functions: ApiToolDefinition = {
 		"Search available functions by keywords or description. Use this to discover what capabilities are available when you're unsure which function to use.",
 	type: "normal",
 	costPerCall: 0,
+	permissions: ["read"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
@@ -115,6 +116,7 @@ export const get_function_schema: ApiToolDefinition = {
 		"Retrieve the complete schema and documentation for a specific function. Use this to understand the exact parameters, types, and requirements before calling a function.",
 	type: "normal",
 	costPerCall: 0,
+	permissions: ["read"],
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {

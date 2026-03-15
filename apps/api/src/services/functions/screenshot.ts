@@ -89,6 +89,7 @@ export const capture_screenshot: ApiToolDefinition = {
 	}),
 	type: "premium",
 	costPerCall: 0.5,
+	permissions: ["read"],
 	execute: async (args, context) => {
 		const req = context.request;
 
