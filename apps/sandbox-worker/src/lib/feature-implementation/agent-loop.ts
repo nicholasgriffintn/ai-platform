@@ -14,6 +14,7 @@ import {
 	MAX_CONSECUTIVE_DECISION_FAILURES,
 	MAX_AGENT_STEPS,
 	MAX_OBSERVATION_CHARS,
+	MAX_PARALLEL_COMMANDS,
 	MAX_RECOVERY_REPLANS,
 	MODEL_RETRY_OPTIONS,
 } from "./constants";
@@ -133,6 +134,12 @@ export async function executeAgentLoop(
 				error instanceof Error
 					? error.message
 					: "Failed to parse or produce an agent decision";
+			await emit({
+				type: "agent_decision_invalid",
+				agentStep: step,
+				error: truncateForModel(errorMessage, MAX_OBSERVATION_CHARS),
+				message: truncateForModel(decisionResponse, 600),
+			});
 			messages.push({
 				role: "user",
 				content: [
@@ -163,6 +170,12 @@ export async function executeAgentLoop(
 		}
 
 		if (requiresPlanRecovery && decision.action !== "update_plan") {
+			await emit({
+				type: "agent_decision_invalid",
+				agentStep: step,
+				error: "Recovery mode requires update_plan before other actions.",
+				action: decision.action,
+			});
 			messages.push({
 				role: "user",
 				content: [
@@ -373,6 +386,179 @@ export async function executeAgentLoop(
 						command: decision.command,
 						result,
 					}),
+				});
+				break;
+			}
+			case "run_parallel": {
+				await guardExecution(
+					"Sandbox run cancelled before parallel command execution",
+				);
+
+				const requestedCommands = decision.commands
+					.map((entry) => entry.trim())
+					.filter(Boolean);
+				if (!requestedCommands.length) {
+					messages.push({
+						role: "user",
+						content:
+							"run_parallel requires at least one non-empty command. Use update_plan or provide valid commands.",
+					});
+					break;
+				}
+
+				const commands = requestedCommands.slice(0, MAX_PARALLEL_COMMANDS);
+				if (commandCount + commands.length > MAX_COMMANDS) {
+					throw new Error(
+						`Agent exceeded maximum command budget (${MAX_COMMANDS})`,
+					);
+				}
+
+				let blockedCommand: { command: string; error: string } | null = null;
+				for (const command of commands) {
+					try {
+						assertSafeCommand(command, {
+							readOnly: true,
+							trustLevel,
+							allowNetwork: false,
+							allowRisky: false,
+						});
+					} catch (error) {
+						blockedCommand = {
+							command,
+							error:
+								error instanceof Error
+									? error.message
+									: "Command blocked by sandbox policy",
+						};
+						break;
+					}
+				}
+
+				if (blockedCommand) {
+					consecutiveCommandFailures += 1;
+					await emit({
+						type: "command_failed",
+						command: blockedCommand.command,
+						commandTotal: MAX_COMMANDS,
+						agentStep: step,
+						error: truncateForModel(
+							blockedCommand.error,
+							MAX_OBSERVATION_CHARS,
+						),
+					});
+					messages.push({
+						role: "user",
+						content: [
+							`Parallel command blocked: ${blockedCommand.command}`,
+							`Error: ${truncateForModel(blockedCommand.error, MAX_OBSERVATION_CHARS)}`,
+							"run_parallel supports safe read-only commands only. Revise with update_plan before retrying.",
+						].join("\n"),
+					});
+					if (consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
+						beginPlanRecovery(
+							`Parallel command validation failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${truncateForModel(blockedCommand.error, 600)}`,
+						);
+					}
+					break;
+				}
+
+				const firstCommandIndex = commandCount + 1;
+				commandCount += commands.length;
+
+				for (let index = 0; index < commands.length; index += 1) {
+					await emit({
+						type: "command_started",
+						command: commands[index],
+						commandIndex: firstCommandIndex + index,
+						commandTotal: MAX_COMMANDS,
+						agentStep: step,
+					});
+				}
+
+				const results = await Promise.all(
+					commands.map((command) =>
+						sandbox.exec(`cd ${quoteForShell(repoTargetDir)} && ${command}`),
+					),
+				);
+				await guardExecution(
+					"Sandbox run cancelled after parallel command execution",
+				);
+
+				let failedCount = 0;
+				const observationParts: string[] = [];
+				for (let index = 0; index < commands.length; index += 1) {
+					const command = commands[index];
+					const result = results[index];
+					const commandIndex = firstCommandIndex + index;
+					executionLogs.push(formatCommandResult(command, result));
+					observationParts.push(
+						formatCommandObservation({
+							command,
+							result,
+						}),
+					);
+					if (!result.success) {
+						failedCount += 1;
+						const failureMessage =
+							result.stderr || result.stdout || "Unknown command failure";
+						await emit({
+							type: "command_failed",
+							command,
+							commandIndex,
+							commandTotal: MAX_COMMANDS,
+							agentStep: step,
+							exitCode: result.exitCode,
+							error: truncateForModel(failureMessage, MAX_OBSERVATION_CHARS),
+						});
+						continue;
+					}
+
+					await emit({
+						type: "command_completed",
+						command,
+						commandIndex,
+						commandTotal: MAX_COMMANDS,
+						agentStep: step,
+						exitCode: result.exitCode,
+					});
+				}
+
+				if (failedCount > 0) {
+					consecutiveCommandFailures += failedCount;
+					const failureLine =
+						failedCount === 1
+							? "1 command failed in the parallel batch."
+							: `${failedCount} commands failed in the parallel batch.`;
+					messages.push({
+						role: "user",
+						content: [
+							failureLine,
+							"Review outputs and revise with update_plan before retrying.",
+							...observationParts,
+						].join("\n\n"),
+					});
+					if (consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
+						beginPlanRecovery(
+							`Parallel commands produced repeated failures. Failed commands in last batch: ${failedCount}.`,
+						);
+					}
+					break;
+				}
+
+				consecutiveCommandFailures = 0;
+				const truncationLine =
+					requestedCommands.length > commands.length
+						? `Only the first ${MAX_PARALLEL_COMMANDS} commands were executed.`
+						: "";
+				messages.push({
+					role: "user",
+					content: [
+						`Parallel command batch succeeded (${commands.length} commands).`,
+						truncationLine,
+						...observationParts,
+					]
+						.filter(Boolean)
+						.join("\n\n"),
 				});
 				break;
 			}

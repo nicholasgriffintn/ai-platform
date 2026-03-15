@@ -85,4 +85,18 @@ Proceeding next.`,
 			expect(decision.command).toContain("pnpm -r test");
 		}
 	});
+
+	it("parses run_parallel command arrays", () => {
+		const decision = parseAgentDecision(
+			JSON.stringify({
+				action: "run_parallel",
+				commands: ["git status", "rg --files"],
+			}),
+		);
+
+		expect(decision.action).toBe("run_parallel");
+		if (decision.action === "run_parallel") {
+			expect(decision.commands).toHaveLength(2);
+		}
+	});
 });

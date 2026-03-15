@@ -72,7 +72,7 @@ describe("executeAgentLoop", () => {
 		const emitted: Array<Record<string, unknown>> = [];
 		const chatCompletion = vi
 			.fn()
-			.mockResolvedValueOnce("I cannot decide yet")
+			.mockResolvedValueOnce("first invalid line\nsecond invalid line")
 			.mockResolvedValueOnce(
 				JSON.stringify({
 					action: "update_plan",
@@ -130,6 +130,9 @@ describe("executeAgentLoop", () => {
 
 		expect(result.summary).toBe("done");
 		expect(chatCompletion).toHaveBeenCalledTimes(3);
+		expect(
+			emitted.some((event) => event.type === "agent_decision_invalid"),
+		).toBe(true);
 		expect(emitted.some((event) => event.type === "plan_updated")).toBe(true);
 	});
 
@@ -217,5 +220,80 @@ describe("executeAgentLoop", () => {
 			emitted.filter((event) => event.type === "command_failed"),
 		).toHaveLength(3);
 		expect(emitted.some((event) => event.type === "plan_updated")).toBe(true);
+	});
+
+	it("executes safe command batches via run_parallel", async () => {
+		const emitted: Array<Record<string, unknown>> = [];
+		const chatCompletion = vi
+			.fn()
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "run_parallel",
+					commands: ["git status --short", "rg --files"],
+				}),
+			)
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "finish",
+					summary: "parallel complete",
+				}),
+			);
+
+		const exec = vi
+			.fn()
+			.mockResolvedValueOnce({
+				success: true,
+				exitCode: 0,
+				stdout: " M file.ts",
+				stderr: "",
+			})
+			.mockResolvedValueOnce({
+				success: true,
+				exitCode: 0,
+				stdout: "a.ts\nb.ts",
+				stderr: "",
+			});
+
+		const result = await executeAgentLoop({
+			sandbox: {
+				exec,
+			} as any,
+			client: {
+				chatCompletion,
+			} as any,
+			model: "test-model",
+			repoDisplayName: "owner/repo",
+			repoTargetDir: "repo",
+			task: "test",
+			taskType: "feature-implementation",
+			promptStrategy: {
+				strategy: "feature-delivery",
+				definition: {
+					strategy: "feature-delivery",
+					label: "Feature delivery",
+					planningFocus: ["focus"],
+					executionFocus: ["focus"],
+					examples: [],
+				},
+				reason: "test",
+				source: "explicit",
+			},
+			initialPlan: "plan",
+			repoContext: {
+				topLevelEntries: [],
+				files: [],
+				taskInstructionSource: "none",
+			},
+			executionLogs: [],
+			emit: async (event) => {
+				emitted.push(event as unknown as Record<string, unknown>);
+			},
+		});
+
+		expect(result.summary).toBe("parallel complete");
+		expect(exec).toHaveBeenCalledTimes(2);
+		expect(
+			emitted.filter((event) => event.type === "command_completed"),
+		).toHaveLength(2);
 	});
 });

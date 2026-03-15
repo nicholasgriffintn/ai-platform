@@ -96,5 +96,6 @@ describe("feature prompt strategies", () => {
 
 		expect(prompt).toContain("Tool-use heuristics:");
 		expect(prompt).toContain("If a command/script is blocked or fails");
+		expect(prompt).toContain("run_parallel");
 	});
 });

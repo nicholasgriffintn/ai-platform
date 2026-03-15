@@ -46,8 +46,15 @@ export interface RunScriptDecision {
 	reasoning?: string;
 }
 
+export interface RunParallelDecision {
+	action: "run_parallel";
+	commands: string[];
+	reasoning?: string;
+}
+
 export type AgentDecision =
 	| RunCommandDecision
+	| RunParallelDecision
 	| ReadFileDecision
 	| UpdatePlanDecision
 	| FinishDecision

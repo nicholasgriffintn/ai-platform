@@ -179,6 +179,9 @@ function inferActionFromFields(parsed: Record<string, unknown>): string {
 	if (typeof parsed.command === "string" && parsed.command.trim()) {
 		return "run_command";
 	}
+	if (Array.isArray(parsed.commands) && parsed.commands.length > 0) {
+		return "run_parallel";
+	}
 	if (typeof parsed.path === "string" && parsed.path.trim()) {
 		return "read_file";
 	}
@@ -219,6 +222,32 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 					return {
 						action: "run_command",
 						command,
+						reasoning,
+					};
+				}
+				case "run_parallel":
+				case "run_commands":
+				case "parallel_commands":
+				case "batch_commands": {
+					if (!Array.isArray(parsed.commands)) {
+						throw new Error(
+							"run_parallel action requires a commands string array",
+						);
+					}
+
+					const commands = parsed.commands
+						.filter((entry): entry is string => typeof entry === "string")
+						.map((entry) => entry.trim())
+						.filter(Boolean);
+					if (!commands.length) {
+						throw new Error(
+							"run_parallel action requires at least one non-empty command",
+						);
+					}
+
+					return {
+						action: "run_parallel",
+						commands,
 						reasoning,
 					};
 				}

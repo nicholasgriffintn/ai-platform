@@ -103,6 +103,7 @@ export function buildAgentSystemPrompt(params: {
 		"",
 		"Allowed actions:",
 		'- run_command: {"action":"run_command","command":"...","reasoning":"..."}',
+		'- run_parallel: {"action":"run_parallel","commands":["...","..."],"reasoning":"..."}',
 		'- read_file: {"action":"read_file","path":"path/from/repo/root","startLine":1,"endLine":120,"reasoning":"..."}',
 		'- run_script: {"action":"run_script","code":"...","language":"javascript","reasoning":"..."}',
 		'- update_plan: {"action":"update_plan","plan":"...","reasoning":"..."}',
@@ -116,6 +117,12 @@ export function buildAgentSystemPrompt(params: {
 		readOnlyCommands
 			? "- This run is read-only: use only inspection and test/lint/typecheck commands."
 			: "",
+		"",
+		"Rules for run_parallel:",
+		"- Use only independent read-only inspection/verification commands.",
+		"- Maximum 4 commands per run_parallel action.",
+		"- Each command must follow all run_command safety rules.",
+		"- Do not use run_parallel for mutating commands.",
 		"",
 		"Rules for run_script:",
 		"- Write a script that performs multiple file operations or shell commands in one step.",
