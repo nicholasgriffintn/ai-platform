@@ -33,6 +33,7 @@ export function toSandboxRunResponse(data: SandboxRunData): SandboxRun {
 		repo: data.repo,
 		task: data.task,
 		model: data.model,
+		trustLevel: data.trustLevel,
 		promptStrategy: data.promptStrategy,
 		shouldCommit: data.shouldCommit,
 		status: data.status,
@@ -50,5 +51,7 @@ export function toSandboxRunResponse(data: SandboxRunData): SandboxRun {
 		resumedAt: data.resumedAt,
 		pauseReason: data.pauseReason,
 		resumeReason: data.resumeReason,
+		artifactKey: data.artifactKey,
+		artifactUrl: data.artifactUrl,
 	};
 }

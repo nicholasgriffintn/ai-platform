@@ -85,6 +85,7 @@ export async function executeFeatureImplementation(
 			task: params.task,
 			repo: params.repo,
 			model: params.model || DEFAULT_MODEL,
+			trustLevel: params.trustLevel ?? "balanced",
 			installationId: params.installationId,
 			polychatUri: params.polychatApiUrl,
 		});
@@ -215,6 +216,7 @@ export async function executeFeatureImplementation(
 			task,
 			taskType,
 			promptStrategy,
+			trustLevel: params.trustLevel,
 			initialPlan: plan,
 			repoContext,
 			executionLogs,

@@ -20,6 +20,7 @@ export const SANDBOX_TASK_TYPES = [
 export const SANDBOX_TIMEOUT_MIN_SECONDS = 30;
 export const SANDBOX_TIMEOUT_DEFAULT_SECONDS = 900;
 export const SANDBOX_TIMEOUT_MAX_SECONDS = 7200;
+export const SANDBOX_TRUST_LEVELS = ["strict", "balanced", "trusted"] as const;
 
 export const sandboxWebhookCommandSchema = z.enum([
 	"implement",
@@ -55,6 +56,7 @@ export const executeSandboxRunSchema = z.object({
 		.min(SANDBOX_TIMEOUT_MIN_SECONDS)
 		.max(SANDBOX_TIMEOUT_MAX_SECONDS)
 		.optional(),
+	trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
 });
 
 export const autoConnectSchema = z.object({
@@ -110,6 +112,8 @@ export const sandboxRunResultSchema = z
 		summary: z.string().optional(),
 		diff: z.string().optional(),
 		logs: z.string().optional(),
+		logsArtifactKey: z.string().optional(),
+		logsArtifactUrl: z.string().optional(),
 		error: z.string().optional(),
 		errorType: z.string().optional(),
 		branchName: z.string().optional(),
@@ -170,6 +174,7 @@ export const sandboxRunDataSchema = z.object({
 	repo: sandboxRepoSchema,
 	task: z.string().trim().min(1),
 	model: z.string().trim().min(1),
+	trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
 	promptStrategy: sandboxPromptStrategySchema.optional(),
 	shouldCommit: z.boolean(),
 	status: sandboxRunStatusSchema,
@@ -187,6 +192,8 @@ export const sandboxRunDataSchema = z.object({
 	resumedAt: z.string().optional(),
 	pauseReason: z.string().optional(),
 	resumeReason: z.string().optional(),
+	artifactKey: z.string().optional(),
+	artifactUrl: z.string().optional(),
 });
 
 export const sandboxRunSchema = sandboxRunDataSchema.extend({
@@ -194,6 +201,7 @@ export const sandboxRunSchema = sandboxRunDataSchema.extend({
 });
 
 export const sandboxTaskTypeSchema = z.enum(SANDBOX_TASK_TYPES);
+export const sandboxTrustLevelSchema = z.enum(SANDBOX_TRUST_LEVELS);
 
 export const sandboxRunControlStateSchema = z.enum([
 	"running",
@@ -224,6 +232,7 @@ export const executeSandboxWorkerProxySchema = z.object({
 		.min(SANDBOX_TIMEOUT_MIN_SECONDS)
 		.max(SANDBOX_TIMEOUT_MAX_SECONDS)
 		.optional(),
+	trustLevel: sandboxTrustLevelSchema.optional(),
 	installationId: z.number().int().positive().optional(),
 	runId: z.string().trim().min(1).optional(),
 });
@@ -242,6 +251,7 @@ export const sandboxWorkerExecuteRequestSchema = z.object({
 		.min(SANDBOX_TIMEOUT_MIN_SECONDS)
 		.max(SANDBOX_TIMEOUT_MAX_SECONDS)
 		.optional(),
+	trustLevel: sandboxTrustLevelSchema.optional(),
 	polychatApiUrl: z.url(),
 	installationId: z.number().int().positive().optional(),
 	runId: z.string().trim().min(1).optional(),
@@ -265,6 +275,7 @@ export type SandboxRunData = z.infer<typeof sandboxRunDataSchema>;
 export type SandboxRun = z.infer<typeof sandboxRunSchema>;
 export type SandboxTaskType = z.infer<typeof sandboxTaskTypeSchema>;
 export type SandboxPromptStrategy = z.infer<typeof sandboxPromptStrategySchema>;
+export type SandboxTrustLevel = z.infer<typeof sandboxTrustLevelSchema>;
 export type SandboxWebhookCommand = z.infer<typeof sandboxWebhookCommandSchema>;
 export type SandboxRunControlState = z.infer<
 	typeof sandboxRunControlStateSchema

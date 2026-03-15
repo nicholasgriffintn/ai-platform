@@ -1,5 +1,6 @@
 import { getSandbox } from "@cloudflare/sandbox";
 import type { SandboxTaskType } from "@assistant/schemas";
+import type { SandboxTrustLevel } from "@assistant/schemas";
 
 const MAX_LOG_CHARS = 80000;
 
@@ -23,6 +24,24 @@ const READ_ONLY_MUTATING_PATTERNS: RegExp[] = [
 	/\b(pip|pip3|poetry)\s+(install|add|remove)\b/i,
 	/\b(?:sed|perl)\s+-i\b/i,
 	/\btee\b/i,
+];
+
+const NETWORK_COMMAND_PATTERNS: RegExp[] = [
+	/\b(curl|wget|httpie)\b/i,
+	/\b(npm|pnpm|yarn|bun)\s+(install|add|update|upgrade)\b/i,
+	/\b(pip|pip3|poetry)\s+(install|add)\b/i,
+	/\b(cargo)\s+(add|install)\b/i,
+	/\b(go)\s+(get|install)\b/i,
+];
+
+const RISKY_COMMAND_PATTERNS: RegExp[] = [
+	/\bgit\s+reset\b/i,
+	/\bgit\s+clean\b/i,
+	/\brm\s+-rf\b/i,
+	/\bmv\b/i,
+	/\bchmod\b/i,
+	/\bchown\b/i,
+	/\bdocker\b/i,
 ];
 
 const READ_ONLY_BLOCKED_OPERATOR_PATTERNS: RegExp[] = [
@@ -142,7 +161,7 @@ export function normaliseCommandLine(rawLine: string): string | null {
 
 export function assertSafeCommand(
 	command: string,
-	options?: { readOnly?: boolean },
+	options?: { readOnly?: boolean; trustLevel?: SandboxTrustLevel },
 ) {
 	if (command.length > 500) {
 		throw new Error("Command is too long");
@@ -180,6 +199,32 @@ export function assertSafeCommand(
 			)
 		) {
 			throw new Error(`Command is not allowed in read-only mode: ${command}`);
+		}
+	}
+
+	const trustLevel = options?.trustLevel ?? "balanced";
+	if (trustLevel === "strict") {
+		for (const pattern of NETWORK_COMMAND_PATTERNS) {
+			if (pattern.test(command)) {
+				throw new Error(
+					`Command requires network or dependency installation and is blocked in strict mode: ${command}`,
+				);
+			}
+		}
+		for (const pattern of RISKY_COMMAND_PATTERNS) {
+			if (pattern.test(command)) {
+				throw new Error(`Risky command is blocked in strict mode: ${command}`);
+			}
+		}
+	}
+
+	if (trustLevel === "balanced") {
+		for (const pattern of NETWORK_COMMAND_PATTERNS) {
+			if (pattern.test(command)) {
+				throw new Error(
+					`Network/dependency command is blocked in balanced mode: ${command}`,
+				);
+			}
 		}
 	}
 }

@@ -59,6 +59,14 @@
 			"service": "assistant-sandbox-worker"
 		}
 	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "SANDBOX_RUN_COORDINATOR",
+				"class_name": "SandboxRunCoordinator"
+			}
+		]
+	},
 	"analytics_engine_datasets": [
 		{
 			"binding": "ANALYTICS",

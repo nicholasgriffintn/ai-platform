@@ -60,6 +60,7 @@ export async function executeAgentLoop(
 	};
 	const readOnlyCommands =
 		taskType === "code-review" || taskType === "test-suite";
+	const trustLevel = params.trustLevel ?? "balanced";
 	const messages: AgentMessage[] = [
 		{
 			role: "system",
@@ -169,6 +170,7 @@ export async function executeAgentLoop(
 
 				assertSafeCommand(decision.command, {
 					readOnly: readOnlyCommands,
+					trustLevel,
 				});
 				commandCount += 1;
 				await emit({
@@ -236,11 +238,11 @@ export async function executeAgentLoop(
 			case "run_script": {
 				await guardExecution("Sandbox run cancelled before script execution");
 
-				if (readOnlyCommands) {
+				if (readOnlyCommands || trustLevel === "strict") {
 					messages.push({
 						role: "user",
 						content:
-							"Scripts are not allowed in read-only mode. Use run_command or read_file instead.",
+							"Scripts are not allowed in this run mode. Use run_command or read_file instead.",
 					});
 					break;
 				}

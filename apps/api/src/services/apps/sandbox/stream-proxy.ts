@@ -18,6 +18,11 @@ import {
 	isAbortError,
 	RUN_CANCELLATION_MESSAGE,
 } from "./run-state";
+import {
+	appendRunCoordinatorEvent,
+	updateRunCoordinatorControl,
+} from "./run-coordinator";
+import { persistSandboxRunArtifact } from "./run-artifacts";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/stream-proxy" });
 
@@ -78,6 +83,11 @@ export function createSandboxEventProxyStream(
 				);
 				events.length = 0;
 				events.push(...next);
+				void appendRunCoordinatorEvent({
+					env: serviceContext.env,
+					runId,
+					event,
+				});
 			};
 
 			const emit = (event: SandboxRunEvent) => {
@@ -350,10 +360,27 @@ export function createSandboxEventProxyStream(
 								: (latestPersistedRun?.cancellationReason ??
 									runData.cancellationReason),
 					};
+					runData = await persistSandboxRunArtifact({
+						serviceContext,
+						run: runData,
+					});
 					await serviceContext.repositories.appData.updateAppData(
 						recordId,
 						runData,
 					);
+					const nextControlState =
+						status === "running" ? "running" : "cancelled";
+					await updateRunCoordinatorControl({
+						env: serviceContext.env,
+						runId,
+						state: nextControlState,
+						updatedAt: runData.updatedAt,
+						cancellationReason:
+							status === "cancelled" ? runData.cancellationReason : undefined,
+						pauseReason: undefined,
+						timeoutSeconds: runData.timeoutSeconds,
+						timeoutAt: runData.timeoutAt,
+					});
 				} catch (dbError) {
 					logger.error("Failed to persist sandbox run final state", {
 						error_message:

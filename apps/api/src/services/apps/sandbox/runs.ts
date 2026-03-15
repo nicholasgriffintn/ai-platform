@@ -13,6 +13,10 @@ import {
 	type SandboxRunData,
 } from "./run-data";
 import { cancelActiveSandboxRun } from "./run-control";
+import {
+	getRunCoordinatorControl,
+	updateRunCoordinatorControl,
+} from "./run-coordinator";
 
 type SandboxRunControlState = "running" | "paused" | "cancelled";
 
@@ -194,6 +198,15 @@ export async function requestSandboxRunCancellation(params: {
 		runRecord,
 		nextRun,
 	});
+	await updateRunCoordinatorControl({
+		env: context.env,
+		runId,
+		state: "cancelled",
+		updatedAt: cancelledAt,
+		cancellationReason,
+		timeoutSeconds: nextRun.timeoutSeconds,
+		timeoutAt: nextRun.timeoutAt,
+	});
 
 	return {
 		cancelled: true,
@@ -248,6 +261,15 @@ export async function requestSandboxRunPause(params: {
 		runRecord,
 		nextRun,
 	});
+	await updateRunCoordinatorControl({
+		env: context.env,
+		runId,
+		state: "paused",
+		updatedAt: pausedAt,
+		pauseReason,
+		timeoutSeconds: nextRun.timeoutSeconds,
+		timeoutAt: nextRun.timeoutAt,
+	});
 
 	return {
 		paused: true,
@@ -301,6 +323,15 @@ export async function requestSandboxRunResume(params: {
 		runRecord,
 		nextRun,
 	});
+	await updateRunCoordinatorControl({
+		env: context.env,
+		runId,
+		state: "running",
+		updatedAt: resumedAt,
+		pauseReason: undefined,
+		timeoutSeconds: nextRun.timeoutSeconds,
+		timeoutAt: nextRun.timeoutAt,
+	});
 
 	return {
 		resumed: true,
@@ -314,6 +345,14 @@ export async function getSandboxRunControlState(params: {
 	userId: number;
 	runId: string;
 }) {
+	const coordinator = await getRunCoordinatorControl(
+		params.context.env,
+		params.runId,
+	);
+	if (coordinator) {
+		return coordinator;
+	}
+
 	const runRecord = await getSandboxRunRecordForUser(params);
 	const run = runRecord.run;
 

@@ -27,6 +27,11 @@ import {
 import { createSandboxEventProxyStream } from "./stream-proxy";
 import { assertSandboxRunCanStart } from "./run-limits";
 import { buildSandboxTimeoutConfig } from "./config";
+import {
+	initRunCoordinatorControl,
+	updateRunCoordinatorControl,
+} from "./run-coordinator";
+import { persistSandboxRunArtifact } from "./run-artifacts";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/execute-stream" });
 
@@ -93,6 +98,10 @@ async function handleNonStreamWorkerResponse(params: {
 				: runData.cancellationReason,
 	};
 
+	runData = await persistSandboxRunArtifact({
+		serviceContext,
+		run: runData,
+	});
 	await serviceContext.repositories.appData.updateAppData(recordId, runData);
 	return runData;
 }
@@ -124,6 +133,7 @@ export async function executeSandboxRunStream(
 		repo: payload.repo,
 		task: payload.task,
 		model,
+		trustLevel: payload.trustLevel ?? "balanced",
 		promptStrategy: payload.promptStrategy,
 		shouldCommit: Boolean(payload.shouldCommit),
 		status: "queued",
@@ -152,6 +162,14 @@ export async function executeSandboxRunStream(
 		createdRecord.id,
 		runData,
 	);
+
+	await initRunCoordinatorControl(env, {
+		runId,
+		state: "running",
+		updatedAt: runData.updatedAt,
+		timeoutSeconds: runData.timeoutSeconds,
+		timeoutAt: runData.timeoutAt,
+	});
 
 	const workerAbortController = new AbortController();
 	const unregisterActiveRunInner = registerActiveSandboxRun(
@@ -185,6 +203,7 @@ export async function executeSandboxRunStream(
 			stream: true,
 			runId,
 			timeoutSeconds: timeoutConfig.timeoutSeconds,
+			trustLevel: payload.trustLevel ?? "balanced",
 			signal: workerAbortController.signal,
 		});
 	} catch (error) {
@@ -215,6 +234,17 @@ export async function executeSandboxRunStream(
 				createdRecord.id,
 				runData,
 			);
+			await updateRunCoordinatorControl({
+				env,
+				runId,
+				state: timedOut ? "cancelled" : "cancelled",
+				updatedAt: completedAt,
+				cancellationReason: timedOut
+					? abortReason?.message
+					: runData.cancellationReason,
+				timeoutSeconds: runData.timeoutSeconds,
+				timeoutAt: runData.timeoutAt,
+			});
 
 			unregisterActiveRun();
 			return Response.json(
@@ -230,6 +260,16 @@ export async function executeSandboxRunStream(
 			recordId: createdRecord.id,
 			initialRunData: runData,
 			error,
+		});
+		await updateRunCoordinatorControl({
+			env,
+			runId,
+			state: "cancelled",
+			updatedAt: new Date().toISOString(),
+			cancellationReason:
+				error instanceof Error ? error.message : "Failed to start sandbox run",
+			timeoutSeconds: runData.timeoutSeconds,
+			timeoutAt: runData.timeoutAt,
 		});
 
 		const errorMessage =
@@ -270,6 +310,15 @@ export async function executeSandboxRunStream(
 			createdRecord.id,
 			runData,
 		);
+		await updateRunCoordinatorControl({
+			env,
+			runId,
+			state: "cancelled",
+			updatedAt: runData.updatedAt,
+			cancellationReason: runData.error,
+			timeoutSeconds: runData.timeoutSeconds,
+			timeoutAt: runData.timeoutAt,
+		});
 
 		unregisterActiveRun();
 		return Response.json(
@@ -292,6 +341,15 @@ export async function executeSandboxRunStream(
 			createdRecord.id,
 			runData,
 		);
+		await updateRunCoordinatorControl({
+			env,
+			runId,
+			state: "cancelled",
+			updatedAt: runData.updatedAt,
+			cancellationReason: runData.error,
+			timeoutSeconds: runData.timeoutSeconds,
+			timeoutAt: runData.timeoutAt,
+		});
 		unregisterActiveRun();
 		return Response.json(
 			{ error: "Sandbox worker returned an empty response" },

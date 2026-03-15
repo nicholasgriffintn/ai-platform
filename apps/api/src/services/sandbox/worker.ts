@@ -2,6 +2,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
 	SandboxPromptStrategy,
 	SandboxTaskType,
+	SandboxTrustLevel,
 	SandboxWorkerExecuteRequest,
 } from "@assistant/schemas";
 import type { IEnv, IUser } from "~/types";
@@ -27,6 +28,7 @@ export interface ExecuteSandboxWorkerOptions {
 	promptStrategy?: SandboxPromptStrategy;
 	shouldCommit?: boolean;
 	timeoutSeconds?: number;
+	trustLevel?: SandboxTrustLevel;
 	installationId?: number;
 	stream?: boolean;
 	runId?: string;
@@ -100,6 +102,7 @@ export async function executeSandboxWorker(
 		promptStrategy,
 		shouldCommit,
 		timeoutSeconds,
+		trustLevel,
 		installationId,
 		stream,
 		runId,
@@ -147,6 +150,7 @@ export async function executeSandboxWorker(
 		promptStrategy,
 		shouldCommit: Boolean(shouldCommit),
 		timeoutSeconds,
+		trustLevel,
 		polychatApiUrl: resolveApiBaseUrl(env),
 		installationId,
 		runId,

@@ -55,6 +55,7 @@ import { apiInfoDescription } from "./openapi/content/apiDescription";
 import { TaskMessage } from "./services/tasks/TaskService";
 import { ScheduleExecutor } from "./services/tasks/ScheduleExecutor";
 import { QueueExecutor } from "./services/tasks/QueueExecutor";
+import { SandboxRunCoordinator } from "./services/apps/sandbox/run-coordinator";
 
 const app = new Hono<{
 	Bindings: IEnv;
@@ -383,3 +384,5 @@ export default {
 		await QueueExecutor.respondToCronQueue(env, batch);
 	},
 };
+
+export { SandboxRunCoordinator };
