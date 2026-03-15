@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import {
 	AlertCircle,
+	AlertTriangle,
 	CheckCircle2,
 	Copy,
 	LoaderCircle,
@@ -40,9 +41,11 @@ import {
 	SANDBOX_QUERY_KEYS,
 	useCancelSandboxRun,
 	usePauseSandboxRun,
+	useResolveSandboxRunApproval,
 	useResumeSandboxRun,
 	useSandboxConnections,
 	useSandboxRun,
+	useSandboxRunApprovals,
 	useSandboxRuns,
 } from "~/hooks/useSandbox";
 import { useAuthStatus } from "~/hooks/useAuth";
@@ -62,6 +65,8 @@ import {
 	SANDBOX_TIMEOUT_MAX_SECONDS,
 	SANDBOX_TIMEOUT_MIN_SECONDS,
 	type SandboxPromptStrategy,
+	type SandboxRunApproval,
+	type SandboxRunApprovalStatus,
 	type SandboxRun,
 	type SandboxRunEvent,
 	type SandboxTaskType,
@@ -189,6 +194,24 @@ function buildMessagesFromRun(run: SandboxRun): ChatMessage[] {
 	return messages;
 }
 
+function getApprovalStatusBadgeVariant(
+	status: SandboxRunApprovalStatus,
+): "outline" | "secondary" | "destructive" {
+	switch (status) {
+		case "approved":
+			return "outline";
+		case "rejected":
+		case "timed_out":
+			return "destructive";
+		default:
+			return "secondary";
+	}
+}
+
+function isApprovalPendingStatus(status: SandboxRunApprovalStatus): boolean {
+	return status === "pending" || status === "escalated";
+}
+
 export function meta() {
 	return [
 		{ title: "Sandbox Run Console - Polychat" },
@@ -232,6 +255,7 @@ export default function SandboxConnectionPage() {
 	const cancelRunMutation = useCancelSandboxRun();
 	const pauseRunMutation = usePauseSandboxRun();
 	const resumeRunMutation = useResumeSandboxRun();
+	const resolveApprovalMutation = useResolveSandboxRunApproval();
 
 	const [repo, setRepo] = useState("");
 	const [task, setTask] = useState("");
@@ -282,7 +306,6 @@ export default function SandboxConnectionPage() {
 
 		return null;
 	}, [timeline]);
-
 	useEffect(() => {
 		searchParamsRef.current = searchParams;
 	}, [searchParams]);
@@ -328,6 +351,26 @@ export default function SandboxConnectionPage() {
 			parsedTimeoutSeconds <= SANDBOX_TIMEOUT_MAX_SECONDS);
 	const selectedRunId = searchParams.get("runId") || undefined;
 	const targetRunId = selectedRunId || activeRunId || runs[0]?.runId;
+	const approvalsRunId = activeRunId || targetRunId;
+	const {
+		data: approvals = [],
+		isLoading: isApprovalsLoading,
+		error: approvalsError,
+	} = useSandboxRunApprovals(approvalsRunId, {
+		enabled: Boolean(approvalsRunId),
+		refetchInterval: isSubmitting ? 2000 : 5000,
+	});
+	const pendingApprovals = useMemo(
+		() =>
+			approvals
+				.filter((approval) => isApprovalPendingStatus(approval.status))
+				.sort(
+					(a, b) =>
+						new Date(a.requestedAt).getTime() -
+						new Date(b.requestedAt).getTime(),
+				),
+		[approvals],
+	);
 	const repoStorageKey = hasValidInstallationId
 		? `${REPO_STORAGE_PREFIX}:${installationId}`
 		: undefined;
@@ -537,6 +580,37 @@ export default function SandboxConnectionPage() {
 		}
 	};
 
+	const handleResolveApproval = async (
+		approval: SandboxRunApproval,
+		status: "approved" | "rejected",
+	) => {
+		if (!approvalsRunId) {
+			toast.error("Run id is not available yet");
+			return;
+		}
+
+		try {
+			await resolveApprovalMutation.mutateAsync({
+				runId: approvalsRunId,
+				approvalId: approval.id,
+				status,
+				reason:
+					status === "approved"
+						? "Approved from Sandbox run console"
+						: "Rejected from Sandbox run console",
+			});
+			toast.success(
+				status === "approved" ? "Command approved" : "Command rejected",
+			);
+		} catch (resolveError) {
+			toast.error(
+				resolveError instanceof Error
+					? resolveError.message
+					: "Failed to resolve command approval",
+			);
+		}
+	};
+
 	const handleRunTask = async () => {
 		const trimmedRepo = normalisedRepo;
 		const trimmedTask = task.trim();
@@ -645,6 +719,30 @@ export default function SandboxConnectionPage() {
 
 						if (event.type === "run_resumed") {
 							setLiveRunStatus("running");
+						}
+
+						if (event.type === "command_approval_requested") {
+							pushAssistantMessage(
+								event.message ||
+									`Approval requested for command: ${event.command ?? "unknown command"}`,
+								receivedAt,
+							);
+						}
+
+						if (event.type === "command_approval_escalated") {
+							pushAssistantMessage(
+								event.message ||
+									`Approval escalated for command: ${event.command ?? "unknown command"}`,
+								receivedAt,
+							);
+						}
+
+						if (event.type === "command_approval_timed_out") {
+							pushAssistantMessage(
+								event.message ||
+									`Approval timed out for command: ${event.command ?? "unknown command"}`,
+								receivedAt,
+							);
 						}
 					},
 					onComplete: (finalEvent) => {
@@ -1049,6 +1147,132 @@ export default function SandboxConnectionPage() {
 					</div>
 
 					<div className="space-y-6">
+						<Card>
+							<CardHeader>
+								<CardTitle>Command approvals</CardTitle>
+								<CardDescription>
+									Approve or reject high-risk commands for the active run.
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="space-y-3">
+								{pendingApprovals.length > 0 && (
+									<div className="rounded-md border border-amber-300/60 bg-amber-50/70 p-3 text-xs text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/20 dark:text-amber-100">
+										<div className="flex items-center gap-2 font-medium">
+											<AlertTriangle className="h-4 w-4" />
+											Awaiting approval: {pendingApprovals.length} command
+											{pendingApprovals.length === 1 ? "" : "s"}
+										</div>
+									</div>
+								)}
+								{isApprovalsLoading ? (
+									<div className="text-sm text-muted-foreground">
+										Loading approvals...
+									</div>
+								) : approvalsError ? (
+									<Alert variant="destructive">
+										<AlertTitle>Unable to load approvals</AlertTitle>
+										<AlertDescription>
+											{approvalsError instanceof Error
+												? approvalsError.message
+												: "Unknown error"}
+										</AlertDescription>
+									</Alert>
+								) : approvalsRunId && approvals.length === 0 ? (
+									<div className="text-sm text-muted-foreground">
+										No command approvals requested for this run.
+									</div>
+								) : !approvalsRunId ? (
+									<div className="text-sm text-muted-foreground">
+										Start or select a run to manage approvals.
+									</div>
+								) : (
+									<div className="space-y-2">
+										{approvals
+											.slice()
+											.sort(
+												(a, b) =>
+													new Date(b.requestedAt).getTime() -
+													new Date(a.requestedAt).getTime(),
+											)
+											.map((approval) => (
+												<div
+													key={approval.id}
+													className="rounded-md border p-3 text-xs"
+												>
+													<div className="mb-2 flex items-center justify-between gap-2">
+														<Badge
+															variant={getApprovalStatusBadgeVariant(
+																approval.status,
+															)}
+														>
+															{approval.status}
+														</Badge>
+														<span className="text-muted-foreground">
+															{formatRelativeTime(approval.requestedAt)}
+														</span>
+													</div>
+													<p className="mb-2 break-words font-mono">
+														{approval.command}
+													</p>
+													<div className="space-y-1 text-muted-foreground">
+														{approval.escalatedAt && (
+															<p>
+																Escalated{" "}
+																{formatRelativeTime(approval.escalatedAt)}
+															</p>
+														)}
+														{approval.expiresAt && (
+															<p>
+																Expires {formatRelativeTime(approval.expiresAt)}
+															</p>
+														)}
+														{approval.timedOutAt && (
+															<p>
+																Timed out{" "}
+																{formatRelativeTime(approval.timedOutAt)}
+															</p>
+														)}
+														{approval.resolutionReason && (
+															<p>{approval.resolutionReason}</p>
+														)}
+													</div>
+													{isApprovalPendingStatus(approval.status) && (
+														<div className="mt-2 flex items-center gap-2">
+															<Button
+																variant="primary"
+																size="sm"
+																onClick={() =>
+																	void handleResolveApproval(
+																		approval,
+																		"approved",
+																	)
+																}
+																isLoading={resolveApprovalMutation.isPending}
+															>
+																Approve
+															</Button>
+															<Button
+																variant="destructive"
+																size="sm"
+																onClick={() =>
+																	void handleResolveApproval(
+																		approval,
+																		"rejected",
+																	)
+																}
+																isLoading={resolveApprovalMutation.isPending}
+															>
+																Reject
+															</Button>
+														</div>
+													)}
+												</div>
+											))}
+									</div>
+								)}
+							</CardContent>
+						</Card>
+
 						<Card>
 							<CardHeader>
 								<CardTitle>Selected run details</CardTitle>

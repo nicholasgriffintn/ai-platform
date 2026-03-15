@@ -2,7 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
 	cancelSandboxRun,
+	fetchSandboxRunApprovals,
 	pauseSandboxRun,
+	resolveSandboxRunApproval,
 	resumeSandboxRun,
 	connectSandboxInstallation,
 	fetchSandboxInstallConfig,
@@ -16,6 +18,7 @@ import type {
 	ConnectSandboxInstallationInput,
 	CreateSandboxConnectionInput,
 	SandboxRun,
+	SandboxRunApproval,
 } from "~/types/sandbox";
 
 export const SANDBOX_QUERY_KEYS = {
@@ -32,6 +35,8 @@ export const SANDBOX_QUERY_KEYS = {
 		] as const,
 	run: (runId?: string) =>
 		[...SANDBOX_QUERY_KEYS.root, "run", runId ?? null] as const,
+	runApprovals: (runId?: string) =>
+		[...SANDBOX_QUERY_KEYS.root, "run-approvals", runId ?? null] as const,
 };
 
 export const useSandboxConnections = () =>
@@ -114,6 +119,22 @@ export const useSandboxRun = (runId?: string) =>
 		enabled: Boolean(runId),
 	});
 
+export const useSandboxRunApprovals = (
+	runId?: string,
+	options?: { enabled?: boolean; refetchInterval?: number },
+) =>
+	useQuery<SandboxRunApproval[], Error>({
+		queryKey: SANDBOX_QUERY_KEYS.runApprovals(runId),
+		queryFn: () => {
+			if (!runId) {
+				throw new Error("Run ID is required");
+			}
+			return fetchSandboxRunApprovals(runId);
+		},
+		enabled: Boolean(runId) && (options?.enabled ?? true),
+		refetchInterval: options?.refetchInterval,
+	});
+
 export const useCancelSandboxRun = () => {
 	const queryClient = useQueryClient();
 	return useMutation<SandboxRun, Error, { runId: string; reason?: string }>({
@@ -154,6 +175,33 @@ export const useResumeSandboxRun = () => {
 			});
 			queryClient.invalidateQueries({
 				queryKey: SANDBOX_QUERY_KEYS.run(variables.runId),
+			});
+		},
+	});
+};
+
+export const useResolveSandboxRunApproval = () => {
+	const queryClient = useQueryClient();
+	return useMutation<
+		SandboxRunApproval,
+		Error,
+		{
+			runId: string;
+			approvalId: string;
+			status: "approved" | "rejected";
+			reason?: string;
+		}
+	>({
+		mutationFn: (input) => resolveSandboxRunApproval(input),
+		onSuccess: (_approval, variables) => {
+			queryClient.invalidateQueries({
+				queryKey: SANDBOX_QUERY_KEYS.runApprovals(variables.runId),
+			});
+			queryClient.invalidateQueries({
+				queryKey: SANDBOX_QUERY_KEYS.run(variables.runId),
+			});
+			queryClient.invalidateQueries({
+				queryKey: SANDBOX_QUERY_KEYS.root,
 			});
 		},
 	});

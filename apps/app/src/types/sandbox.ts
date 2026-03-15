@@ -5,6 +5,8 @@ export type {
 	SandboxConnection,
 	SandboxInstallConfig,
 	SandboxPromptStrategy,
+	SandboxRunApproval,
+	SandboxRunApprovalStatus,
 	SandboxRun,
 	SandboxRunEvent,
 	SandboxRunResult,

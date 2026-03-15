@@ -57,6 +57,14 @@ export function describeEvent(event: SandboxRunEvent): string {
 			return `Completed command ${event.commandIndex ?? "?"}/${event.commandTotal ?? "?"}`;
 		case "command_failed":
 			return `Command failed: ${event.command ?? "unknown command"}`;
+		case "command_approval_requested":
+			return `Approval requested for command: ${event.command ?? "unknown command"}`;
+		case "command_approval_escalated":
+			return `Approval escalated for command: ${event.command ?? "unknown command"}`;
+		case "command_approval_timed_out":
+			return `Approval timed out for command: ${event.command ?? "unknown command"}`;
+		case "command_approval_resolved":
+			return `Approval ${event.approvalStatus ?? "resolved"} for command: ${event.command ?? "unknown command"}`;
 		case "repo_clone_started":
 			return "Cloning repository";
 		case "repo_clone_completed":
