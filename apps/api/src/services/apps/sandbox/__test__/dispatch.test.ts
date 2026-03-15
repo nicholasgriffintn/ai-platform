@@ -175,4 +175,53 @@ describe("sandbox dispatch", () => {
 		expect(persistSandboxRunArtifact).toHaveBeenCalled();
 		expect(indexSandboxRunResult).toHaveBeenCalled();
 	});
+
+	it("marks queued runs as failed when worker startup throws", async () => {
+		vi.mocked(executeSandboxWorker).mockRejectedValueOnce(
+			new Error("worker startup failed"),
+		);
+
+		await processSandboxRunDispatch({
+			env: {} as any,
+			message: {
+				kind: "sandbox_run_dispatch",
+				runId: "run-123",
+				recordId: "record-1",
+				userId: 42,
+				payload: {
+					installationId: 99,
+					repo: "owner/repo",
+					task: "Implement feature",
+					model: "mistral-large",
+					shouldCommit: true,
+				},
+			},
+		});
+
+		expect(mockUpdateAppData).toHaveBeenLastCalledWith(
+			"record-1",
+			expect.objectContaining({
+				status: "failed",
+				workflowPhase: "failed",
+				error: "worker startup failed",
+			}),
+		);
+		expect(appendRunCoordinatorEvent).toHaveBeenCalledWith(
+			expect.objectContaining({
+				runId: "run-123",
+				event: expect.objectContaining({
+					type: "run_failed",
+					error: "worker startup failed",
+				}),
+			}),
+		);
+		expect(updateRunCoordinatorControl).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				runId: "run-123",
+				state: "cancelled",
+				cancellationReason: "worker startup failed",
+			}),
+		);
+		expect(indexSandboxRunResult).not.toHaveBeenCalled();
+	});
 });
