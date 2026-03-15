@@ -120,6 +120,44 @@ export const contentExtractSchema = z.object({
 	include_images: z.boolean().optional(),
 	should_vectorize: z.boolean().optional(),
 	namespace: z.string().optional(),
+	provider: z.enum(["auto", "tavily", "cloudflare"]).optional(),
+	cloudflareFormat: z
+		.enum(["markdown", "content", "json", "links", "scrape", "snapshot"])
+		.optional(),
+	cloudflareJsonOptions: z.record(z.string(), z.unknown()).optional(),
+	cloudflareScrapeOptions: z
+		.object({
+			elements: z.array(
+				z.object({
+					selector: z.string(),
+					name: z.string().optional(),
+					attribute: z.string().optional(),
+				}),
+			),
+		})
+		.optional(),
+	cloudflareCrawlOptions: z
+		.object({
+			enabled: z.boolean().optional(),
+			limit: z.number().optional(),
+			depth: z.number().optional(),
+			source: z.enum(["all", "sitemaps", "links"]).optional(),
+			formats: z.array(z.enum(["html", "markdown", "json"])).optional(),
+			render: z.boolean().optional(),
+			maxAge: z.number().optional(),
+			modifiedSince: z.number().optional(),
+			options: z
+				.object({
+					includeExternalLinks: z.boolean().optional(),
+					includeSubdomains: z.boolean().optional(),
+					includePatterns: z.array(z.string()).optional(),
+					excludePatterns: z.array(z.string()).optional(),
+				})
+				.optional(),
+			pollIntervalMs: z.number().optional(),
+			maxPollAttempts: z.number().optional(),
+		})
+		.optional(),
 });
 
 export const captureScreenshotSchema = z.object({

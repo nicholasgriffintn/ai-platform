@@ -6,6 +6,7 @@ import type {
 	EmbeddingVector,
 	IRequest,
 } from "~/types";
+import type { ContentExtractParams } from "../content-extract";
 import { extractContent } from "../content-extract";
 
 const mockRepositories = {
@@ -50,6 +51,8 @@ describe("extractContent", () => {
 	const mockEnv = {
 		DB: {} as any,
 		TAVILY_API_KEY: "test-tavily-key",
+		ACCOUNT_ID: "test-account-id",
+		BROWSER_RENDERING_API_KEY: "test-browser-key",
 		ASSETS_BUCKET: "test-bucket",
 	} as any;
 
@@ -443,5 +446,110 @@ describe("extractContent", () => {
 			success: false,
 			error: "Mutation ID is undefined",
 		});
+	});
+
+	it("should extract content with cloudflare markdown endpoint", async () => {
+		const params = {
+			urls: "https://example.com/docs",
+			provider: "cloudflare" as const,
+			cloudflareFormat: "markdown" as const,
+		};
+
+		(fetch as any).mockResolvedValue({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					success: true,
+					result: {
+						markdown: "# Example Docs\nHello world",
+					},
+				}),
+		} as Response);
+
+		const result = await extractContent(params, mockRequest);
+
+		expect(result.status).toBe("success");
+		expect(result.data?.extracted.results).toEqual([
+			{
+				url: "https://example.com/docs",
+				raw_content: "# Example Docs\nHello world",
+			},
+		]);
+		expect(fetch).toHaveBeenCalledWith(
+			"https://api.cloudflare.com/client/v4/accounts/test-account-id/browser-rendering/markdown",
+			expect.objectContaining({
+				method: "POST",
+				headers: expect.objectContaining({
+					Authorization: "Bearer test-browser-key",
+				}),
+			}),
+		);
+	});
+
+	it("should crawl content with cloudflare crawl endpoint", async () => {
+		const params: ContentExtractParams = {
+			urls: "https://example.com/docs",
+			provider: "cloudflare" as const,
+			cloudflareCrawlOptions: {
+				enabled: true,
+				pollIntervalMs: 0,
+				maxPollAttempts: 2,
+				formats: ["markdown"],
+			},
+		};
+
+		(fetch as any)
+			.mockResolvedValueOnce({
+				ok: true,
+				json: () => Promise.resolve({ success: true, result: "job-123" }),
+			} as Response)
+			.mockResolvedValueOnce({
+				ok: true,
+				json: () =>
+					Promise.resolve({
+						result: {
+							id: "job-123",
+							status: "completed",
+							browserSecondsUsed: 12.4,
+						},
+					}),
+			} as Response)
+			.mockResolvedValueOnce({
+				ok: true,
+				json: () =>
+					Promise.resolve({
+						result: {
+							id: "job-123",
+							status: "completed",
+							records: [
+								{
+									url: "https://example.com/docs",
+									status: "completed",
+									markdown: "Page 1 content",
+								},
+								{
+									url: "https://example.com/private",
+									status: "disallowed",
+								},
+							],
+						},
+					}),
+			} as Response);
+
+		const result = await extractContent(params, mockRequest);
+
+		expect(result.status).toBe("success");
+		expect(result.data?.extracted.results).toEqual([
+			{
+				url: "https://example.com/docs",
+				raw_content: "Page 1 content",
+			},
+		]);
+		expect(result.data?.extracted.failed_results).toEqual([
+			{
+				url: "https://example.com/private",
+				error: "Cloudflare crawl status: disallowed",
+			},
+		]);
 	});
 });
