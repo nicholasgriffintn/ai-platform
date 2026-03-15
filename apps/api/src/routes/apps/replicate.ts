@@ -1,5 +1,6 @@
+import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
-import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+
 import z from "zod/v4";
 import { apiResponseSchema } from "@assistant/schemas";
 
@@ -113,199 +114,171 @@ const executeReplicateSchema = z.object({
 	input: z.record(z.string(), z.any()),
 });
 
-app.get(
-	"/models",
-	describeRoute({
-		tags: ["apps"],
-		description: "List all available Replicate models",
-		responses: {
-			200: {
-				description: "List of Replicate models",
-				content: {
-					"application/json": {
-						schema: resolver(z.array(z.any())),
-					},
-				},
-			},
-		},
-	}),
-	async (context: Context) => {
-		const models = Object.entries(replicateModelConfig).map(([id, model]) => {
-			const metadata = replicateModelMetadata[id] || {};
-			const { signature, label } = getModalitySignature(model.modalities);
-			const signatureDefaults = signatureMetadata[signature] || null;
-
-			const category =
-				metadata.category ||
-				signatureDefaults?.category ||
-				(DEFAULT_CATEGORY as string);
-			const icon = metadata.icon || signatureDefaults?.icon || DEFAULT_ICON;
-			const theme = metadata.theme || signatureDefaults?.theme || DEFAULT_THEME;
-			const tags = Array.from(
-				new Set([label, ...(model.strengths ?? []), ...(metadata.tags ?? [])]),
-			);
-
-			return {
-				id,
-				name: model.name,
-				description: model.description,
-				modalities: model.modalities,
-				modalitySignature: signature,
-				modalityLabel: label,
-				costPerRun: model.costPerRun,
-				inputSchema: model.inputSchema,
-				reference: model.inputSchema?.reference,
-				category,
-				icon,
-				theme,
-				tags,
-				featured: metadata.featured ?? false,
-				href: `/apps/replicate/${id}`,
-				kind: "frontend" as const,
-			};
-		});
-
-		return ResponseFactory.success(context, { models });
+addRoute(app, "get", "/models", {
+	tags: ["apps"],
+	description: "List all available Replicate models",
+	responses: {
+		200: { description: "List of Replicate models", schema: z.array(z.any()) },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const models = Object.entries(replicateModelConfig).map(([id, model]) => {
+				const metadata = replicateModelMetadata[id] || {};
+				const { signature, label } = getModalitySignature(model.modalities);
+				const signatureDefaults = signatureMetadata[signature] || null;
 
-app.get(
-	"/predictions",
-	describeRoute({
-		tags: ["apps"],
-		description: "List user's Replicate predictions",
-		responses: {
-			200: {
-				description: "List of predictions",
-				content: {
-					"application/json": {
-						schema: resolver(z.any()),
-					},
-				},
-			},
-		},
-	}),
-	async (context: Context) => {
-		const user = context.get("user") as IUser;
+				const category =
+					metadata.category ||
+					signatureDefaults?.category ||
+					(DEFAULT_CATEGORY as string);
+				const icon = metadata.icon || signatureDefaults?.icon || DEFAULT_ICON;
+				const theme =
+					metadata.theme || signatureDefaults?.theme || DEFAULT_THEME;
+				const tags = Array.from(
+					new Set([
+						label,
+						...(model.strengths ?? []),
+						...(metadata.tags ?? []),
+					]),
+				);
 
-		if (!user?.id) {
-			return ResponseFactory.error(context, "User not authenticated", 401);
-		}
-
-		try {
-			const serviceContext = getServiceContext(context);
-			const predictions = await listReplicatePredictions({
-				context: serviceContext,
-				userId: user.id,
+				return {
+					id,
+					name: model.name,
+					description: model.description,
+					modalities: model.modalities,
+					modalitySignature: signature,
+					modalityLabel: label,
+					costPerRun: model.costPerRun,
+					inputSchema: model.inputSchema,
+					reference: model.inputSchema?.reference,
+					category,
+					icon,
+					theme,
+					tags,
+					featured: metadata.featured ?? false,
+					href: `/apps/replicate/${id}`,
+					kind: "frontend" as const,
+				};
 			});
 
-			return ResponseFactory.success(context, { predictions });
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
+			return ResponseFactory.success(context, { models });
+		})(raw),
+});
+
+addRoute(app, "get", "/predictions", {
+	tags: ["apps"],
+	description: "List user's Replicate predictions",
+	responses: {
+		200: { description: "List of predictions", schema: z.any() },
+	},
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const user = context.get("user") as IUser;
+
+			if (!user?.id) {
+				return ResponseFactory.error(context, "User not authenticated", 401);
 			}
 
-			routeLogger.error("Error fetching predictions:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError("Failed to fetch predictions");
-		}
+			try {
+				const serviceContext = getServiceContext(context);
+				const predictions = await listReplicatePredictions({
+					context: serviceContext,
+					userId: user.id,
+				});
+
+				return ResponseFactory.success(context, { predictions });
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+
+				routeLogger.error("Error fetching predictions:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
+				throw new AssistantError("Failed to fetch predictions");
+			}
+		})(raw),
+});
+
+addRoute(app, "get", "/predictions/:id", {
+	tags: ["apps"],
+	description: "Get Replicate prediction details",
+	responses: {
+		200: { description: "Prediction details", schema: z.any() },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const user = context.get("user") as IUser;
+			const predictionId = context.req.param("id");
 
-app.get(
-	"/predictions/:id",
-	describeRoute({
-		tags: ["apps"],
-		description: "Get Replicate prediction details",
-		responses: {
-			200: {
-				description: "Prediction details",
-				content: {
-					"application/json": {
-						schema: resolver(z.any()),
-					},
-				},
-			},
-		},
-	}),
-	async (context: Context) => {
-		const user = context.get("user") as IUser;
-		const predictionId = context.req.param("id");
-
-		if (!user?.id) {
-			return ResponseFactory.error(context, "User not authenticated", 401);
-		}
-
-		try {
-			const serviceContext = getServiceContext(context);
-			const prediction = await getReplicatePredictionDetails({
-				context: serviceContext,
-				predictionId,
-				userId: user.id,
-			});
-
-			return ResponseFactory.success(context, { prediction });
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
+			if (!user?.id) {
+				return ResponseFactory.error(context, "User not authenticated", 401);
 			}
 
-			routeLogger.error("Error fetching prediction:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError("Failed to fetch prediction");
-		}
+			try {
+				const serviceContext = getServiceContext(context);
+				const prediction = await getReplicatePredictionDetails({
+					context: serviceContext,
+					predictionId,
+					userId: user.id,
+				});
+
+				return ResponseFactory.success(context, { prediction });
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+
+				routeLogger.error("Error fetching prediction:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
+				throw new AssistantError("Failed to fetch prediction");
+			}
+		})(raw),
+});
+
+addRoute(app, "post", "/execute", {
+	tags: ["apps"],
+	description: "Execute a Replicate model",
+	bodySchema: executeReplicateSchema,
+	responses: {
+		200: { description: "Execution result", schema: apiResponseSchema },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const user = context.get("user") as IUser;
+			const body = context.req.valid("json" as never) as z.infer<
+				typeof executeReplicateSchema
+			>;
 
-app.post(
-	"/execute",
-	describeRoute({
-		tags: ["apps"],
-		description: "Execute a Replicate model",
-		responses: {
-			200: {
-				description: "Execution result",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator("json", executeReplicateSchema),
-	async (context: Context) => {
-		const user = context.get("user") as IUser;
-		const body = context.req.valid("json" as never) as z.infer<
-			typeof executeReplicateSchema
-		>;
-
-		if (!user?.id) {
-			return ResponseFactory.error(context, "User not authenticated", 401);
-		}
-
-		try {
-			const serviceContext = getServiceContext(context);
-			const result = await executeReplicateModel({
-				context: serviceContext,
-				params: body,
-				user,
-			});
-
-			return ResponseFactory.success(context, { response: result });
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
+			if (!user?.id) {
+				return ResponseFactory.error(context, "User not authenticated", 401);
 			}
 
-			routeLogger.error("Error executing model:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError("Failed to execute model");
-		}
-	},
-);
+			try {
+				const serviceContext = getServiceContext(context);
+				const result = await executeReplicateModel({
+					context: serviceContext,
+					params: body,
+					user,
+				});
+
+				return ResponseFactory.success(context, { response: result });
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+
+				routeLogger.error("Error executing model:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
+				throw new AssistantError("Failed to execute model");
+			}
+		})(raw),
+});
 
 export default app;

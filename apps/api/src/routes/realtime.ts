@@ -1,5 +1,6 @@
+import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
-import { describeRoute, resolver } from "hono-openapi";
+
 import {
 	errorResponseSchema,
 	realtimeSessionResponseSchema,
@@ -18,76 +19,74 @@ app.use("/*", (c, next) => {
 	return next();
 });
 
-app.post(
-	"/session/:type",
-	describeRoute({
-		tags: ["realtime"],
-		summary: "Create a new realtime session",
-		responses: {
-			200: {
-				description: "Realtime session created",
-				content: {
-					"application/json": {
-						schema: resolver(realtimeSessionResponseSchema),
-					},
-				},
-			},
-			400: {
-				description: "Bad request",
-				content: {
-					"application/json": { schema: resolver(errorResponseSchema) },
-				},
-			},
+addRoute(app, "post", "/session/:type", {
+	tags: ["realtime"],
+	summary: "Create a new realtime session",
+	responses: {
+		200: {
+			description: "Realtime session created",
+			schema: realtimeSessionResponseSchema,
 		},
-	}),
-	async (c: Context) => {
-		const env = c.env as IEnv;
-		const user = c.get("user");
-		const type = c.req.param("type");
-		const model = c.req.query("model") || "gpt-4o-mini-transcribe";
-
-		const availableModels = [
-			"gpt-4o-mini-transcribe",
-			"gpt-4o-transcribe",
-			"whisper",
-		];
-
-		if (!availableModels.includes(model)) {
-			return ResponseFactory.error(c, "Invalid model specified", 400);
-		}
-
-		if (!user?.id) {
-			return ResponseFactory.error(c, "Unauthorized", 401);
-		}
-
-		if (type !== "transcription") {
-			return ResponseFactory.error(c, "Invalid session type", 400);
-		}
-
-		const body: Record<string, any> = {};
-
-		if (type === "transcription") {
-			body.input_audio_transcription = {
-				model,
-				language: "en",
-			};
-			body.turn_detection = {
-				type: "server_vad",
-				threshold: 0.4,
-				prefix_padding_ms: 400,
-				silence_duration_ms: 1000,
-			};
-		}
-
-		const provider = getChatProvider("openai", { env, user });
-		const session = await provider.createRealtimeSession(env, user, type, body);
-
-		if (!session) {
-			return ResponseFactory.error(c, "Failed to create realtime session", 500);
-		}
-
-		return ResponseFactory.success(c, session);
+		400: { description: "Bad request", schema: errorResponseSchema },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const env = c.env as IEnv;
+			const user = c.get("user");
+			const type = c.req.param("type");
+			const model = c.req.query("model") || "gpt-4o-mini-transcribe";
+
+			const availableModels = [
+				"gpt-4o-mini-transcribe",
+				"gpt-4o-transcribe",
+				"whisper",
+			];
+
+			if (!availableModels.includes(model)) {
+				return ResponseFactory.error(c, "Invalid model specified", 400);
+			}
+
+			if (!user?.id) {
+				return ResponseFactory.error(c, "Unauthorized", 401);
+			}
+
+			if (type !== "transcription") {
+				return ResponseFactory.error(c, "Invalid session type", 400);
+			}
+
+			const body: Record<string, any> = {};
+
+			if (type === "transcription") {
+				body.input_audio_transcription = {
+					model,
+					language: "en",
+				};
+				body.turn_detection = {
+					type: "server_vad",
+					threshold: 0.4,
+					prefix_padding_ms: 400,
+					silence_duration_ms: 1000,
+				};
+			}
+
+			const provider = getChatProvider("openai", { env, user });
+			const session = await provider.createRealtimeSession(
+				env,
+				user,
+				type,
+				body,
+			);
+
+			if (!session) {
+				return ResponseFactory.error(
+					c,
+					"Failed to create realtime session",
+					500,
+				);
+			}
+
+			return ResponseFactory.success(c, session);
+		})(raw),
+});
 
 export default app;

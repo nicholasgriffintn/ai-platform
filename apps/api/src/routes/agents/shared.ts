@@ -1,5 +1,4 @@
-import { type Context, Hono } from "hono";
-import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+import { Hono } from "hono";
 import * as z from "zod/v4";
 import {
 	apiResponseSchema,
@@ -11,11 +10,9 @@ import {
 	updateSharedAgentSchema,
 } from "@assistant/schemas";
 
-import { getServiceContext } from "~/lib/context/serviceContext";
-import { requireAuth } from "~/middleware/auth";
 import { requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import { requireAuthenticatedUser } from "~/lib/http/auth";
+import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
 	deleteSharedAgent,
@@ -34,10 +31,15 @@ import {
 	uninstallSharedAgent,
 	updateSharedAgent,
 } from "~/services/agents/shared";
-import type { IEnv, IUser } from "~/types";
+import type { IEnv } from "~/types";
 
 const app = new Hono<{ Bindings: IEnv }>();
 const logger = createRouteLogger("agents/shared");
+
+const sharedAgentIdParamSchema = z.object({ id: z.string().min(1) });
+const agentIdParamSchema = z.object({ agentId: z.string().min(1) });
+const setFeaturedBodySchema = z.object({ featured: z.boolean() });
+const moderateBodySchema = z.object({ is_public: z.boolean() });
 
 app.use("/*", async (ctx, next) => {
 	logger.info(
@@ -46,337 +48,162 @@ app.use("/*", async (ctx, next) => {
 	return next();
 });
 
-app.get(
-	"/",
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Get a list of shared agents",
-		description:
-			"Get a list of shared agents with optional filtering and sorting",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator("query", sharedAgentFiltersSchema),
-	async (ctx: Context) => {
-		const filters = ctx.req.valid("query" as never) as z.infer<
-			typeof sharedAgentFiltersSchema
-		>;
-
-		const serviceContext = getServiceContext(ctx);
-		const agents = await getSharedAgents(serviceContext, {
-			category: filters.category,
-			tags: filters.tags,
-			search: filters.search,
-			featured: filters.featured,
-			limit: filters.limit,
-			offset: filters.offset,
-			sortBy: filters.sort_by,
+addRoute(app, "get", "/", {
+	tags: ["shared-agents"],
+	summary: "Get a list of shared agents",
+	description:
+		"Get a list of shared agents with optional filtering and sorting",
+	querySchema: sharedAgentFiltersSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, query }) => {
+		return getSharedAgents(serviceContext, {
+			category: query.category,
+			tags: query.tags,
+			search: query.search,
+			featured: query.featured,
+			limit: query.limit,
+			offset: query.offset,
+			sortBy: query.sort_by,
 		});
-
-		return ResponseFactory.success(ctx, agents);
 	},
-);
+});
 
-app.get(
-	"/featured",
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Get a list of featured agents",
-		description: "Get a list of featured agents",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator("query", featuredAgentsSchema),
-	async (ctx: Context) => {
-		const { limit } = ctx.req.valid("query" as never) as z.infer<
-			typeof featuredAgentsSchema
-		>;
-		const serviceContext = getServiceContext(ctx);
-		const agents = await getFeaturedAgents(serviceContext, limit);
-
-		return ResponseFactory.success(ctx, agents);
+addRoute(app, "get", "/featured", {
+	tags: ["shared-agents"],
+	summary: "Get a list of featured agents",
+	description: "Get a list of featured agents",
+	querySchema: featuredAgentsSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, query }) => {
+		return getFeaturedAgents(serviceContext, query.limit);
 	},
-);
+});
 
-app.get(
-	"/categories",
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Get a list of agent categories",
-		description: "Get a list of all available agent categories",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (ctx: Context) => {
-		const serviceContext = getServiceContext(ctx);
-		const categories = await getSharedAgentCategories(serviceContext);
-
-		return ResponseFactory.success(ctx, categories);
+addRoute(app, "get", "/categories", {
+	tags: ["shared-agents"],
+	summary: "Get a list of agent categories",
+	description: "Get a list of all available agent categories",
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext }) => {
+		return getSharedAgentCategories(serviceContext);
 	},
-);
+});
 
-app.get(
-	"/tags",
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Get a list of popular tags",
-		description: "Get a list of popular agent tags",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (ctx: Context) => {
-		const serviceContext = getServiceContext(ctx);
-		const tags = await getSharedAgentPopularTags(serviceContext);
-
-		return ResponseFactory.success(ctx, tags);
+addRoute(app, "get", "/tags", {
+	tags: ["shared-agents"],
+	summary: "Get a list of popular tags",
+	description: "Get a list of popular agent tags",
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext }) => {
+		return getSharedAgentPopularTags(serviceContext);
 	},
-);
+});
 
-app.get(
-	"/:id",
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Get a shared agent by ID",
-		description: "Get details of a specific shared agent",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (ctx: Context) => {
-		const { id } = ctx.req.param();
-		const serviceContext = getServiceContext(ctx);
-
-		const agent = await getSharedAgentById(serviceContext, id);
+addRoute(app, "get", "/:id", {
+	tags: ["shared-agents"],
+	summary: "Get a shared agent by ID",
+	description: "Get details of a specific shared agent",
+	paramSchema: sharedAgentIdParamSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params, raw }) => {
+		const agent = await getSharedAgentById(serviceContext, params.id);
 
 		if (!agent) {
-			return ResponseFactory.error(ctx, "Shared agent not found", 404);
+			return ResponseFactory.error(raw, "Shared agent not found", 404);
 		}
 
-		return ResponseFactory.success(ctx, agent);
+		return agent;
 	},
-);
+});
 
-app.post(
-	"/:id/install",
-	requireAuth,
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Install shared agent",
-		description: "Install a shared agent as a template into your account",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (ctx: Context) => {
-		const { id } = ctx.req.param();
-		const user = requireAuthenticatedUser(ctx);
-		const serviceContext = getServiceContext(ctx);
-		const result = await installSharedAgent(serviceContext, id, user.id);
-		return ResponseFactory.success(ctx, result);
+addRoute(app, "post", "/:id/install", {
+	tags: ["shared-agents"],
+	summary: "Install shared agent",
+	description: "Install a shared agent as a template into your account",
+	auth: true,
+	paramSchema: sharedAgentIdParamSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params, user }) => {
+		return installSharedAgent(serviceContext, params.id, user.id);
 	},
-);
+});
 
-app.post(
-	"/:id/uninstall",
-	requireAuth,
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Uninstall shared agent",
-		description: "Remove a shared agent template from your account",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (ctx: Context) => {
-		const { id } = ctx.req.param();
-		const user = requireAuthenticatedUser(ctx);
-		const serviceContext = getServiceContext(ctx);
-		await uninstallSharedAgent(serviceContext, id, user.id);
+addRoute(app, "post", "/:id/uninstall", {
+	tags: ["shared-agents"],
+	summary: "Uninstall shared agent",
+	description: "Remove a shared agent template from your account",
+	auth: true,
+	paramSchema: sharedAgentIdParamSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params, user }) => {
+		await uninstallSharedAgent(serviceContext, params.id, user.id);
 
-		return ResponseFactory.success(ctx, {
+		return {
 			message: "Agent uninstalled successfully",
-		});
+		};
 	},
-);
+});
 
-app.post(
-	"/:id/rate",
-	requireAuth,
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Rate shared agent",
-		description: "Rate and review a shared agent",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator("json", rateAgentSchema),
-	async (ctx: Context) => {
-		const { id } = ctx.req.param();
-		const body = ctx.req.valid("json" as never) as z.infer<
-			typeof rateAgentSchema
-		>;
-		const user = requireAuthenticatedUser(ctx);
-		const serviceContext = getServiceContext(ctx);
-		const rating = await rateSharedAgent(
+addRoute(app, "post", "/:id/rate", {
+	tags: ["shared-agents"],
+	summary: "Rate shared agent",
+	description: "Rate and review a shared agent",
+	auth: true,
+	paramSchema: sharedAgentIdParamSchema,
+	bodySchema: rateAgentSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params, body, user }) => {
+		return rateSharedAgent(
 			serviceContext,
-			id,
+			params.id,
 			body.rating,
 			body.review,
 			user.id,
 		);
-		return ResponseFactory.success(ctx, rating);
 	},
-);
+});
 
-app.get(
-	"/:id/ratings",
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Get agent ratings",
-		description: "Get ratings and reviews for a shared agent",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator("query", agentRatingsSchema),
-	async (ctx: Context) => {
-		const { id } = ctx.req.param();
-		const { limit } = ctx.req.valid("query" as never) as z.infer<
-			typeof agentRatingsSchema
-		>;
-		const serviceContext = getServiceContext(ctx);
-		const ratings = await getSharedAgentRatings(serviceContext, id, limit);
-
-		return ResponseFactory.success(ctx, ratings);
+addRoute(app, "get", "/:id/ratings", {
+	tags: ["shared-agents"],
+	summary: "Get agent ratings",
+	description: "Get ratings and reviews for a shared agent",
+	paramSchema: sharedAgentIdParamSchema,
+	querySchema: agentRatingsSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params, query }) => {
+		return getSharedAgentRatings(serviceContext, params.id, query.limit);
 	},
-);
+});
 
-app.get(
-	"/check/:agentId",
-	requireAuth,
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Check if agent is shared",
-		description:
-			"Check if a specific agent is already shared to the marketplace",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (ctx: Context) => {
-		const { agentId } = ctx.req.param();
-		requireAuthenticatedUser(ctx);
-		const serviceContext = getServiceContext(ctx);
-		const sharedAgent = await getSharedAgentByAgentId(serviceContext, agentId);
+addRoute(app, "get", "/check/:agentId", {
+	tags: ["shared-agents"],
+	summary: "Check if agent is shared",
+	description: "Check if a specific agent is already shared to the marketplace",
+	auth: true,
+	paramSchema: agentIdParamSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params }) => {
+		const sharedAgent = await getSharedAgentByAgentId(
+			serviceContext,
+			params.agentId,
+		);
 
-		return ResponseFactory.success(ctx, {
+		return {
 			isShared: !!sharedAgent,
 			sharedAgent: sharedAgent || null,
-		});
+		};
 	},
-);
+});
 
-app.post(
-	"/share",
-	requireAuth,
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Share an agent",
-		description: "Share one of your agents",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator("json", shareAgentSchema),
-	async (ctx: Context) => {
-		const body = ctx.req.valid("json" as never) as z.infer<
-			typeof shareAgentSchema
-		>;
-		const user = requireAuthenticatedUser(ctx);
-		const serviceContext = getServiceContext(ctx);
-		const sharedAgent = await shareAgent(
+addRoute(app, "post", "/share", {
+	tags: ["shared-agents"],
+	summary: "Share an agent",
+	description: "Share one of your agents",
+	auth: true,
+	bodySchema: shareAgentSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, body, user }) => {
+		return shareAgent(
 			serviceContext,
 			{
 				agentId: body.agent_id,
@@ -388,153 +215,76 @@ app.post(
 			},
 			user.id,
 		);
-
-		return ResponseFactory.success(ctx, sharedAgent);
 	},
-);
+});
 
-app.put(
-	"/:id",
-	requireAuth,
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Update shared agent",
-		description: "Update your shared agent details",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator("json", updateSharedAgentSchema),
-	async (ctx: Context) => {
-		const { id } = ctx.req.param();
-		const body = ctx.req.valid("json" as never) as z.infer<
-			typeof updateSharedAgentSchema
-		>;
-		const user = requireAuthenticatedUser(ctx);
-		const serviceContext = getServiceContext(ctx);
-		await updateSharedAgent(serviceContext, id, body, user.id);
+addRoute(app, "put", "/:id", {
+	tags: ["shared-agents"],
+	summary: "Update shared agent",
+	description: "Update your shared agent details",
+	auth: true,
+	paramSchema: sharedAgentIdParamSchema,
+	bodySchema: updateSharedAgentSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params, body, user }) => {
+		await updateSharedAgent(serviceContext, params.id, body, user.id);
 
-		return ResponseFactory.success(ctx, {
+		return {
 			message: "Shared agent updated successfully",
-		});
+		};
 	},
-);
+});
 
-app.delete(
-	"/:id",
-	requireAuth,
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Delete shared agent",
-		description: "Remove your agent from the marketplace",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (ctx: Context) => {
-		const { id } = ctx.req.param();
-		const user = requireAuthenticatedUser(ctx);
-		const serviceContext = getServiceContext(ctx);
-		await deleteSharedAgent(serviceContext, id, user.id);
+addRoute(app, "delete", "/:id", {
+	tags: ["shared-agents"],
+	summary: "Delete shared agent",
+	description: "Remove your agent from the marketplace",
+	auth: true,
+	paramSchema: sharedAgentIdParamSchema,
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params, user }) => {
+		await deleteSharedAgent(serviceContext, params.id, user.id);
 
-		return ResponseFactory.success(ctx, {
+		return {
 			message: "Shared agent deleted successfully",
-		});
-	},
-);
-
-app.post(
-	"/:id/featured",
-	requireAuth,
-	requireStrictAdmin,
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Set featured status",
-		description: "Toggle the featured status for a shared agent",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator(
-		"json",
-		z.object({
-			featured: z.boolean(),
-		}),
-	),
-	async (ctx: Context) => {
-		const { id } = ctx.req.param();
-		const { featured } = ctx.req.valid("json" as never) as {
-			featured: boolean;
 		};
+	},
+});
 
-		const serviceContext = getServiceContext(ctx);
-		await setFeaturedStatus(serviceContext, id, featured);
+addRoute(app, "post", "/:id/featured", {
+	tags: ["shared-agents"],
+	summary: "Set featured status",
+	description: "Toggle the featured status for a shared agent",
+	auth: true,
+	paramSchema: sharedAgentIdParamSchema,
+	bodySchema: setFeaturedBodySchema,
+	middleware: [requireStrictAdmin],
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params, body }) => {
+		await setFeaturedStatus(serviceContext, params.id, body.featured);
 
-		return ResponseFactory.success(ctx, {
+		return {
 			message: "Featured status updated successfully",
-		});
-	},
-);
-
-app.post(
-	"/:id/moderate",
-	requireAuth,
-	requireStrictAdmin,
-	describeRoute({
-		tags: ["shared-agents"],
-		summary: "Moderate shared agent",
-		description: "Approve or reject a shared agent listing",
-		responses: {
-			"200": {
-				description: "Success",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator(
-		"json",
-		z.object({
-			is_public: z.boolean(),
-		}),
-	),
-	async (ctx: Context) => {
-		const { id } = ctx.req.param();
-		const { is_public } = ctx.req.valid("json" as never) as {
-			is_public: boolean;
 		};
-
-		const serviceContext = getServiceContext(ctx);
-		await moderateSharedAgent(serviceContext, id, is_public);
-
-		return ResponseFactory.success(ctx, {
-			message: "Shared agent moderated successfully",
-		});
 	},
-);
+});
+
+addRoute(app, "post", "/:id/moderate", {
+	tags: ["shared-agents"],
+	summary: "Moderate shared agent",
+	description: "Approve or reject a shared agent listing",
+	auth: true,
+	paramSchema: sharedAgentIdParamSchema,
+	bodySchema: moderateBodySchema,
+	middleware: [requireStrictAdmin],
+	responses: { 200: { description: "Success", schema: apiResponseSchema } },
+	handler: async ({ serviceContext, params, body }) => {
+		await moderateSharedAgent(serviceContext, params.id, body.is_public);
+
+		return {
+			message: "Shared agent moderated successfully",
+		};
+	},
+});
 
 export default app;

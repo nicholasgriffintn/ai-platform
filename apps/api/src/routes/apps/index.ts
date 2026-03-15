@@ -1,5 +1,6 @@
+import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
-import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+
 import {
 	promptCoachJsonSchema,
 	promptCoachResponseSchema,
@@ -51,58 +52,44 @@ app.route("/strudel", strudel);
 
 app.route("/sandbox", sandbox);
 
-app.post(
-	"/prompt-coach",
-	describeRoute({
-		tags: ["chat"],
-		summary: "Get prompt suggestion using coaching system",
-		description:
-			"Takes a user prompt, runs it through the existing coaching system prompt, and returns the suggested revised prompt.",
-		responses: {
-			200: {
-				description: "Suggested revised prompt extracted from AI response",
-				content: {
-					"application/json": {
-						schema: resolver(promptCoachResponseSchema),
-					},
-				},
-			},
-			400: {
-				description: "Bad request or validation error",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
-			500: {
-				description:
-					"Internal server error during suggestion generation or extraction",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+addRoute(app, "post", "/prompt-coach", {
+	tags: ["chat"],
+	summary: "Get prompt suggestion using coaching system",
+	description:
+		"Takes a user prompt, runs it through the existing coaching system prompt, and returns the suggested revised prompt.",
+	bodySchema: promptCoachJsonSchema,
+	responses: {
+		200: {
+			description: "Suggested revised prompt extracted from AI response",
+			schema: promptCoachResponseSchema,
 		},
-	}),
-	zValidator("json", promptCoachJsonSchema),
-	async (context: Context) => {
-		const { prompt: userPrompt } = context.req.valid("json" as never) as {
-			prompt: string;
-		};
-		const userContext = context.get("user") as IUser | undefined;
-		const env = context.env as IEnv;
-
-		const result = await handlePromptCoachSuggestion({
-			env,
-			user: userContext,
-			prompt: userPrompt,
-		});
-
-		return ResponseFactory.success(context, result);
+		400: {
+			description: "Bad request or validation error",
+			schema: errorResponseSchema,
+		},
+		500: {
+			description:
+				"Internal server error during suggestion generation or extraction",
+			schema: errorResponseSchema,
+		},
 	},
-);
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const { prompt: userPrompt } = context.req.valid("json" as never) as {
+				prompt: string;
+			};
+			const userContext = context.get("user") as IUser | undefined;
+			const env = context.env as IEnv;
+
+			const result = await handlePromptCoachSuggestion({
+				env,
+				user: userContext,
+				prompt: userPrompt,
+			});
+
+			return ResponseFactory.success(context, result);
+		})(raw),
+});
 
 app.route("/shared", shared);
 

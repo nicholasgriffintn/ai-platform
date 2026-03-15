@@ -1,5 +1,6 @@
+import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
-import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+
 import { z } from "zod";
 import {
 	strudelGenerateSchema,
@@ -38,366 +39,301 @@ app.use("/*", (c, next) => {
 	return next();
 });
 
-app.get(
-	"/",
-	describeRoute({
-		tags: ["apps"],
-		description: "List user's saved Strudel patterns",
-		responses: {
-			200: {
-				description: "List of user's Strudel patterns",
-				content: {
-					"application/json": {
-						schema: resolver(strudelListPatternsResponseSchema),
-					},
-				},
-			},
-			401: {
-				description: "Unauthorized",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+addRoute(app, "get", "/", {
+	tags: ["apps"],
+	description: "List user's saved Strudel patterns",
+	responses: {
+		200: {
+			description: "List of user's Strudel patterns",
+			schema: strudelListPatternsResponseSchema,
 		},
-	}),
-	async (c: Context) => {
-		const user = c.get("user") as IUser;
-
-		try {
-			const serviceContext = getServiceContext(c);
-			const patterns = await listPatterns({
-				context: serviceContext,
-				userId: user.id,
-			});
-
-			return ResponseFactory.success(c, { patterns });
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-			routeLogger.error("Error listing Strudel patterns:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError(
-				"Failed to list Strudel patterns",
-				ErrorType.UNKNOWN_ERROR,
-			);
-		}
+		401: { description: "Unauthorized", schema: errorResponseSchema },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user") as IUser;
 
-app.get(
-	"/:id",
-	describeRoute({
-		tags: ["apps"],
-		description: "Get Strudel pattern details",
-		responses: {
-			200: {
-				description: "Pattern details",
-				content: {
-					"application/json": {
-						schema: resolver(strudelPatternDetailResponseSchema),
-					},
-				},
-			},
-			404: {
-				description: "Pattern not found",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+			try {
+				const serviceContext = getServiceContext(c);
+				const patterns = await listPatterns({
+					context: serviceContext,
+					userId: user.id,
+				});
+
+				return ResponseFactory.success(c, { patterns });
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+				routeLogger.error("Error listing Strudel patterns:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
+				throw new AssistantError(
+					"Failed to list Strudel patterns",
+					ErrorType.UNKNOWN_ERROR,
+				);
+			}
+		})(raw),
+});
+
+addRoute(app, "get", "/:id", {
+	tags: ["apps"],
+	description: "Get Strudel pattern details",
+	responses: {
+		200: {
+			description: "Pattern details",
+			schema: strudelPatternDetailResponseSchema,
 		},
-	}),
-	async (c: Context) => {
-		const id = c.req.param("id");
-		const user = c.get("user") as IUser;
-
-		try {
-			const serviceContext = getServiceContext(c);
-			const pattern = await getPatternDetails({
-				context: serviceContext,
-				userId: user.id,
-				patternId: id,
-			});
-
-			return ResponseFactory.success(c, { pattern });
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-			routeLogger.error("Error fetching Strudel pattern:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError(
-				"Failed to fetch Strudel pattern",
-				ErrorType.UNKNOWN_ERROR,
-			);
-		}
+		404: { description: "Pattern not found", schema: errorResponseSchema },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const id = c.req.param("id");
+			const user = c.get("user") as IUser;
 
-app.post(
-	"/generate",
-	describeRoute({
-		tags: ["apps"],
-		description: "Generate Strudel code from natural language prompt using AI",
-		responses: {
-			200: {
-				description: "Generated Strudel code",
-				content: {
-					"application/json": {
-						schema: resolver(strudelGenerateResponseSchema),
-					},
-				},
-			},
+			try {
+				const serviceContext = getServiceContext(c);
+				const pattern = await getPatternDetails({
+					context: serviceContext,
+					userId: user.id,
+					patternId: id,
+				});
+
+				return ResponseFactory.success(c, { pattern });
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+				routeLogger.error("Error fetching Strudel pattern:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
+				throw new AssistantError(
+					"Failed to fetch Strudel pattern",
+					ErrorType.UNKNOWN_ERROR,
+				);
+			}
+		})(raw),
+});
+
+addRoute(app, "post", "/generate", {
+	tags: ["apps"],
+	description: "Generate Strudel code from natural language prompt using AI",
+	bodySchema: strudelGenerateSchema,
+	responses: {
+		200: {
+			description: "Generated Strudel code",
+			schema: strudelGenerateResponseSchema,
 		},
-	}),
-	zValidator("json", strudelGenerateSchema),
-	async (c: Context) => {
-		const body = c.req.valid("json" as never) as StrudelGenerateBody;
-		const user = c.get("user") as IUser;
-
-		try {
-			const serviceContext = getServiceContext(c);
-			const response = await generateStrudelCode({
-				context: serviceContext,
-				request: body,
-				user,
-			});
-
-			return ResponseFactory.success(c, response);
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-			routeLogger.error("Error generating Strudel code:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-				error_stack: error instanceof Error ? error.stack : undefined,
-				error_cause: error instanceof Error ? error.cause : undefined,
-			});
-			throw new AssistantError(
-				`Failed to generate Strudel code: ${error instanceof Error ? error.message : "Unknown error"}`,
-				ErrorType.UNKNOWN_ERROR,
-				500,
-				{
-					originalError: error instanceof Error ? error.message : String(error),
-					stack: error instanceof Error ? error.stack : undefined,
-				},
-			);
-		}
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const body = c.req.valid("json" as never) as StrudelGenerateBody;
+			const user = c.get("user") as IUser;
 
-app.post(
-	"/",
-	describeRoute({
-		tags: ["apps"],
-		description: "Save a new Strudel pattern",
-		responses: {
-			200: {
-				description: "Pattern saved successfully",
-				content: {
-					"application/json": {
-						schema: resolver(strudelPatternDetailResponseSchema),
+			try {
+				const serviceContext = getServiceContext(c);
+				const response = await generateStrudelCode({
+					context: serviceContext,
+					request: body,
+					user,
+				});
+
+				return ResponseFactory.success(c, response);
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+				routeLogger.error("Error generating Strudel code:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+					error_stack: error instanceof Error ? error.stack : undefined,
+					error_cause: error instanceof Error ? error.cause : undefined,
+				});
+				throw new AssistantError(
+					`Failed to generate Strudel code: ${error instanceof Error ? error.message : "Unknown error"}`,
+					ErrorType.UNKNOWN_ERROR,
+					500,
+					{
+						originalError:
+							error instanceof Error ? error.message : String(error),
+						stack: error instanceof Error ? error.stack : undefined,
 					},
-				},
-			},
+				);
+			}
+		})(raw),
+});
+
+addRoute(app, "post", "/", {
+	tags: ["apps"],
+	description: "Save a new Strudel pattern",
+	bodySchema: strudelSavePatternSchema,
+	responses: {
+		200: {
+			description: "Pattern saved successfully",
+			schema: strudelPatternDetailResponseSchema,
 		},
-	}),
-	zValidator("json", strudelSavePatternSchema),
-	async (c: Context) => {
-		const body = c.req.valid("json" as never) as StrudelSaveBody;
-		const user = c.get("user") as IUser;
-
-		try {
-			const serviceContext = getServiceContext(c);
-			const pattern = await savePattern({
-				context: serviceContext,
-				request: body,
-				user,
-			});
-
-			return ResponseFactory.success(c, { pattern });
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-			routeLogger.error("Error saving Strudel pattern:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError(
-				"Failed to save Strudel pattern",
-				ErrorType.UNKNOWN_ERROR,
-			);
-		}
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const body = c.req.valid("json" as never) as StrudelSaveBody;
+			const user = c.get("user") as IUser;
 
-app.put(
-	"/:id",
-	describeRoute({
-		tags: ["apps"],
-		description: "Update an existing Strudel pattern",
-		responses: {
-			200: {
-				description: "Pattern updated successfully",
-				content: {
-					"application/json": {
-						schema: resolver(strudelPatternDetailResponseSchema),
-					},
-				},
-			},
+			try {
+				const serviceContext = getServiceContext(c);
+				const pattern = await savePattern({
+					context: serviceContext,
+					request: body,
+					user,
+				});
+
+				return ResponseFactory.success(c, { pattern });
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+				routeLogger.error("Error saving Strudel pattern:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
+				throw new AssistantError(
+					"Failed to save Strudel pattern",
+					ErrorType.UNKNOWN_ERROR,
+				);
+			}
+		})(raw),
+});
+
+addRoute(app, "put", "/:id", {
+	tags: ["apps"],
+	description: "Update an existing Strudel pattern",
+	bodySchema: strudelUpdatePatternSchema,
+	responses: {
+		200: {
+			description: "Pattern updated successfully",
+			schema: strudelPatternDetailResponseSchema,
 		},
-	}),
-	zValidator("json", strudelUpdatePatternSchema),
-	async (c: Context) => {
-		const id = c.req.param("id");
-		const body = c.req.valid("json" as never) as StrudelUpdateBody;
-		const user = c.get("user") as IUser;
-
-		try {
-			const serviceContext = getServiceContext(c);
-			const pattern = await updatePattern({
-				context: serviceContext,
-				request: body,
-				user,
-				patternId: id,
-			});
-
-			return ResponseFactory.success(c, { pattern });
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-			routeLogger.error("Error updating Strudel pattern:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError(
-				"Failed to update Strudel pattern",
-				ErrorType.UNKNOWN_ERROR,
-			);
-		}
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const id = c.req.param("id");
+			const body = c.req.valid("json" as never) as StrudelUpdateBody;
+			const user = c.get("user") as IUser;
 
-app.delete(
-	"/:id",
-	describeRoute({
-		tags: ["apps"],
-		description: "Delete a Strudel pattern",
-		responses: {
-			200: {
-				description: "Pattern deleted successfully",
-				content: {
-					"application/json": {
-						schema: resolver(successResponseSchema),
-					},
-				},
-			},
+			try {
+				const serviceContext = getServiceContext(c);
+				const pattern = await updatePattern({
+					context: serviceContext,
+					request: body,
+					user,
+					patternId: id,
+				});
+
+				return ResponseFactory.success(c, { pattern });
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+				routeLogger.error("Error updating Strudel pattern:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
+				throw new AssistantError(
+					"Failed to update Strudel pattern",
+					ErrorType.UNKNOWN_ERROR,
+				);
+			}
+		})(raw),
+});
+
+addRoute(app, "delete", "/:id", {
+	tags: ["apps"],
+	description: "Delete a Strudel pattern",
+	responses: {
+		200: {
+			description: "Pattern deleted successfully",
+			schema: successResponseSchema,
 		},
-	}),
-	async (c: Context) => {
-		const id = c.req.param("id");
-		const user = c.get("user") as IUser;
-
-		try {
-			const serviceContext = getServiceContext(c);
-			await deletePattern({
-				context: serviceContext,
-				userId: user.id,
-				patternId: id,
-			});
-
-			return ResponseFactory.message(c, "Pattern deleted successfully");
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-			routeLogger.error("Error deleting Strudel pattern:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError(
-				"Failed to delete Strudel pattern",
-				ErrorType.UNKNOWN_ERROR,
-			);
-		}
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const id = c.req.param("id");
+			const user = c.get("user") as IUser;
 
-app.post(
-	"/feedback",
-	describeRoute({
-		tags: ["apps"],
-		description: "Submit feedback for a Strudel generation",
-		responses: {
-			200: {
-				description: "Feedback submitted successfully",
-				content: {
-					"application/json": {
-						schema: resolver(successResponseSchema),
-					},
-				},
-			},
-			400: {
-				description: "Bad request",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
-			404: {
-				description: "Generation not found",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+			try {
+				const serviceContext = getServiceContext(c);
+				await deletePattern({
+					context: serviceContext,
+					userId: user.id,
+					patternId: id,
+				});
+
+				return ResponseFactory.message(c, "Pattern deleted successfully");
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+				routeLogger.error("Error deleting Strudel pattern:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
+				throw new AssistantError(
+					"Failed to delete Strudel pattern",
+					ErrorType.UNKNOWN_ERROR,
+				);
+			}
+		})(raw),
+});
+
+addRoute(app, "post", "/feedback", {
+	tags: ["apps"],
+	description: "Submit feedback for a Strudel generation",
+	bodySchema: z.object({
+		generationId: z.string(),
+		score: z.number().min(1).max(5).optional(),
+		feedback: z.string().optional(),
+	}),
+	responses: {
+		200: {
+			description: "Feedback submitted successfully",
+			schema: successResponseSchema,
 		},
-	}),
-	zValidator(
-		"json",
-		z.object({
-			generationId: z.string(),
-			score: z.number().min(1).max(5).optional(),
-			feedback: z.string().optional(),
-		}),
-	),
-	async (c: Context) => {
-		const body = c.req.valid("json" as never) as {
-			generationId: string;
-			score?: number;
-			feedback?: string;
-		};
-
-		try {
-			const serviceContext = getServiceContext(c);
-			const result = await submitStrudelFeedback({
-				context: serviceContext,
-				generationId: body.generationId,
-				score: body.score,
-				feedback: body.feedback,
-			});
-
-			return ResponseFactory.success(c, result);
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-			routeLogger.error("Error submitting Strudel feedback:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError(
-				"Failed to submit feedback",
-				ErrorType.UNKNOWN_ERROR,
-			);
-		}
+		400: { description: "Bad request", schema: errorResponseSchema },
+		404: { description: "Generation not found", schema: errorResponseSchema },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const body = c.req.valid("json" as never) as {
+				generationId: string;
+				score?: number;
+				feedback?: string;
+			};
+
+			try {
+				const serviceContext = getServiceContext(c);
+				const result = await submitStrudelFeedback({
+					context: serviceContext,
+					generationId: body.generationId,
+					score: body.score,
+					feedback: body.feedback,
+				});
+
+				return ResponseFactory.success(c, result);
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+				routeLogger.error("Error submitting Strudel feedback:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
+				throw new AssistantError(
+					"Failed to submit feedback",
+					ErrorType.UNKNOWN_ERROR,
+				);
+			}
+		})(raw),
+});
 
 export default app;

@@ -1,5 +1,6 @@
+import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
-import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+
 import { errorResponseSchema, checkoutSchema } from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
@@ -23,187 +24,129 @@ app.use("/*", (c: Context, next) => {
 	return next();
 });
 
-app.post(
-	"/checkout",
-	describeRoute({
-		tags: ["stripe"],
-		summary: "Create a Stripe Checkout Session for a subscription",
-		responses: {
-			200: {
-				description: "Stripe Checkout Session created",
-				content: { "application/json": {} },
-			},
-			400: {
-				description: "Invalid request data",
-				content: {
-					"application/json": { schema: resolver(errorResponseSchema) },
-				},
-			},
-			500: {
-				description: "Server error",
-				content: {
-					"application/json": { schema: resolver(errorResponseSchema) },
-				},
-			},
-		},
-	}),
-	zValidator("json", checkoutSchema),
-	requireAuth,
-	async (c: Context) => {
-		const { plan_id, success_url, cancel_url } = c.req.valid(
-			"json" as never,
-		) as {
-			plan_id: string;
-			success_url: string;
-			cancel_url: string;
-		};
-
-		const user = c.get("user");
-		if (!user?.id) {
-			throw new AssistantError(
-				"Authentication required",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
-
-		const env = c.env;
-
-		const session = await createCheckoutSession(
-			env,
-			user,
-			plan_id,
-			success_url,
-			cancel_url,
-		);
-		return ResponseFactory.success(c, session);
+addRoute(app, "post", "/checkout", {
+	tags: ["stripe"],
+	summary: "Create a Stripe Checkout Session for a subscription",
+	bodySchema: checkoutSchema,
+	responses: {
+		200: { description: "Stripe Checkout Session created" },
+		400: { description: "Invalid request data", schema: errorResponseSchema },
+		500: { description: "Server error", schema: errorResponseSchema },
 	},
-);
+	middleware: [requireAuth],
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const { plan_id, success_url, cancel_url } = c.req.valid(
+				"json" as never,
+			) as {
+				plan_id: string;
+				success_url: string;
+				cancel_url: string;
+			};
 
-app.get(
-	"/subscription",
-	describeRoute({
-		tags: ["stripe"],
-		summary: "Get the authenticated user's subscription status",
-		responses: {
-			200: {
-				description: "Subscription details",
-				content: { "application/json": {} },
-			},
-			404: {
-				description: "No subscription found",
-				content: {
-					"application/json": { schema: resolver(errorResponseSchema) },
-				},
-			},
-			500: {
-				description: "Server error",
-				content: {
-					"application/json": { schema: resolver(errorResponseSchema) },
-				},
-			},
-		},
-	}),
-	requireAuth,
-	async (c: Context) => {
-		const user = c.get("user");
-		if (!user?.id) {
-			throw new AssistantError(
-				"Authentication required",
-				ErrorType.AUTHENTICATION_ERROR,
+			const user = c.get("user");
+			if (!user?.id) {
+				throw new AssistantError(
+					"Authentication required",
+					ErrorType.AUTHENTICATION_ERROR,
+				);
+			}
+
+			const env = c.env;
+
+			const session = await createCheckoutSession(
+				env,
+				user,
+				plan_id,
+				success_url,
+				cancel_url,
 			);
-		}
+			return ResponseFactory.success(c, session);
+		})(raw),
+});
 
-		const status = await getSubscriptionStatus(c.env, user);
-		return ResponseFactory.success(c, status);
+addRoute(app, "get", "/subscription", {
+	tags: ["stripe"],
+	summary: "Get the authenticated user's subscription status",
+	responses: {
+		200: { description: "Subscription details" },
+		404: { description: "No subscription found", schema: errorResponseSchema },
+		500: { description: "Server error", schema: errorResponseSchema },
 	},
-);
+	middleware: [requireAuth],
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user");
+			if (!user?.id) {
+				throw new AssistantError(
+					"Authentication required",
+					ErrorType.AUTHENTICATION_ERROR,
+				);
+			}
 
-app.post(
-	"/subscription/cancel",
-	describeRoute({
-		tags: ["stripe"],
-		summary: "Cancel the authenticated user's subscription at period end",
-		responses: {
-			200: {
-				description: "Subscription canceled",
-				content: {
-					"application/json": { schema: resolver(errorResponseSchema) },
-				},
-			},
-			404: {
-				description: "No subscription found",
-				content: {
-					"application/json": { schema: resolver(errorResponseSchema) },
-				},
-			},
-			500: {
-				description: "Server error",
-				content: {
-					"application/json": { schema: resolver(errorResponseSchema) },
-				},
-			},
+			const status = await getSubscriptionStatus(c.env, user);
+			return ResponseFactory.success(c, status);
+		})(raw),
+});
+
+addRoute(app, "post", "/subscription/cancel", {
+	tags: ["stripe"],
+	summary: "Cancel the authenticated user's subscription at period end",
+	responses: {
+		200: { description: "Subscription canceled", schema: errorResponseSchema },
+		404: { description: "No subscription found", schema: errorResponseSchema },
+		500: { description: "Server error", schema: errorResponseSchema },
+	},
+	middleware: [requireAuth],
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user");
+			if (!user?.id) {
+				throw new AssistantError(
+					"Authentication required",
+					ErrorType.AUTHENTICATION_ERROR,
+				);
+			}
+
+			const result = await cancelSubscription(c.env, user);
+			return ResponseFactory.success(c, result);
+		})(raw),
+});
+
+addRoute(app, "post", "/subscription/reactivate", {
+	tags: ["stripe"],
+	summary: "Reactivate a subscription that was scheduled for cancellation",
+	responses: {
+		200: {
+			description: "Subscription reactivated",
+			schema: errorResponseSchema,
 		},
-	}),
-	requireAuth,
-	async (c: Context) => {
-		const user = c.get("user");
-		if (!user?.id) {
-			throw new AssistantError(
-				"Authentication required",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
-
-		const result = await cancelSubscription(c.env, user);
-		return ResponseFactory.success(c, result);
+		404: { description: "No subscription found", schema: errorResponseSchema },
+		500: { description: "Server error", schema: errorResponseSchema },
 	},
-);
+	middleware: [requireAuth],
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user");
+			if (!user?.id) {
+				throw new AssistantError(
+					"Authentication required",
+					ErrorType.AUTHENTICATION_ERROR,
+				);
+			}
+			const result = await reactivateSubscription(c.env, user);
+			return ResponseFactory.success(c, result);
+		})(raw),
+});
 
-app.post(
-	"/subscription/reactivate",
-	describeRoute({
-		tags: ["stripe"],
-		summary: "Reactivate a subscription that was scheduled for cancellation",
-		responses: {
-			200: {
-				description: "Subscription reactivated",
-				content: {
-					"application/json": { schema: resolver(errorResponseSchema) },
-				},
-			},
-			404: {
-				description: "No subscription found",
-				content: {
-					"application/json": { schema: resolver(errorResponseSchema) },
-				},
-			},
-			500: {
-				description: "Server error",
-				content: {
-					"application/json": { schema: resolver(errorResponseSchema) },
-				},
-			},
-		},
-	}),
-	requireAuth,
-	async (c: Context) => {
-		const user = c.get("user");
-		if (!user?.id) {
-			throw new AssistantError(
-				"Authentication required",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
-		const result = await reactivateSubscription(c.env, user);
-		return ResponseFactory.success(c, result);
+addRoute(app, "post", "/webhook", {
+	tags: ["stripe"],
+	handler: async ({ raw }) => {
+		const signature = raw.req.header("stripe-signature");
+		const payload = await raw.req.text();
+		const response = await handleStripeWebhook(raw.env, signature, payload);
+		return raw.json(response);
 	},
-);
-
-app.post("/webhook", async (c: Context) => {
-	const signature = c.req.header("stripe-signature");
-	const payload = await c.req.text();
-	const response = await handleStripeWebhook(c.env, signature, payload);
-	return c.json(response);
 });
 
 export default app;

@@ -1,5 +1,6 @@
+import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
-import { describeRoute, resolver } from "hono-openapi";
+
 import { errorResponseSchema, toolsResponseSchema } from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -15,35 +16,24 @@ app.use("/*", (c, next) => {
 	return next();
 });
 
-app.get(
-	"/",
-	describeRoute({
-		tags: ["tools"],
-		summary: "List Tools",
-		description: "Lists the currently available tools.",
-		responses: {
-			200: {
-				description: "List of available tools with their details",
-				content: {
-					"application/json": {
-						schema: resolver(toolsResponseSchema),
-					},
-				},
-			},
-			500: {
-				description: "Server error",
-				content: {
-					"application/json": { schema: resolver(errorResponseSchema) },
-				},
-			},
+addRoute(app, "get", "/", {
+	tags: ["tools"],
+	summary: "List Tools",
+	description: "Lists the currently available tools.",
+	responses: {
+		200: {
+			description: "List of available tools with their details",
+			schema: toolsResponseSchema,
 		},
-	}),
-	async (context: Context) => {
-		const user = context.get("user");
-		const isPro = user?.plan_id === "pro";
-		const tools = getAvailableTools(isPro);
-		return ResponseFactory.success(context, tools);
+		500: { description: "Server error", schema: errorResponseSchema },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const user = context.get("user");
+			const isPro = user?.plan_id === "pro";
+			const tools = getAvailableTools(isPro);
+			return ResponseFactory.success(context, tools);
+		})(raw),
+});
 
 export default app;

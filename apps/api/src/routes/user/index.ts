@@ -1,5 +1,6 @@
+import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
-import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+
 import {
 	githubConnectionSchema,
 	errorResponseSchema,
@@ -38,360 +39,236 @@ app.use("/*", (c, next) => {
 	return next();
 });
 
-app.put(
-	"/settings",
-	describeRoute({
-		tags: ["user"],
-		summary: "Update user settings",
-		description: "Updates various user preferences and settings",
-		requestBody: {
-			description: "User settings to update",
-			required: true,
-			content: {
-				"application/json": {
-					schema: {
-						type: "object",
-						properties: {
-							default_model: { type: "string" },
-							default_mode: {
-								type: "string",
-								enum: ["normal", "local", "remote"],
-							},
-							appearance: { type: "string", enum: ["system", "light", "dark"] },
-							enabled_models: { type: "array", items: { type: "string" } },
-							enabled_tools: { type: "array", items: { type: "string" } },
-						},
-					},
-				},
-			},
+addRoute(app, "put", "/settings", {
+	tags: ["user"],
+	summary: "Update user settings",
+	description: "Updates various user preferences and settings",
+	bodySchema: updateUserSettingsSchema,
+	responses: {
+		200: {
+			description: "User settings updated successfully",
+			schema: updateUserSettingsResponseSchema,
 		},
-		responses: {
-			200: {
-				description: "User settings updated successfully",
-				content: {
-					"application/json": {
-						schema: resolver(updateUserSettingsResponseSchema),
-					},
-				},
-			},
-			400: {
-				description: "Bad request or validation error",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
-			401: {
-				description: "Authentication required",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+		400: {
+			description: "Bad request or validation error",
+			schema: errorResponseSchema,
 		},
-	}),
-	zValidator("json", updateUserSettingsSchema),
-	async (c: Context) => {
-		const settings = c.req.valid(
-			"json" as never,
-		) as typeof updateUserSettingsSchema;
-		const user = c.get("user");
-
-		if (!user) {
-			throw new AssistantError(
-				"Authentication required",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
-
-		const serviceContext = getServiceContext(c);
-		const result = await updateUserSettings(serviceContext, settings, user.id);
-
-		return ResponseFactory.success(c, result);
+		401: {
+			description: "Authentication required",
+			schema: errorResponseSchema,
+		},
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const settings = c.req.valid(
+				"json" as never,
+			) as typeof updateUserSettingsSchema;
+			const user = c.get("user");
 
-app.get(
-	"/models",
-	describeRoute({
-		tags: ["user"],
-		summary: "Get the models that the user has enabled",
-		description:
-			"Returns a list of model IDs that the user has enabled for use",
-		responses: {
-			200: {
-				description: "List of enabled models",
-				content: {
-					"application/json": {
-						schema: resolver(userModelsResponseSchema),
-					},
-				},
-			},
-			401: {
-				description: "Authentication required",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	async (c: Context) => {
-		const user = c.get("user");
+			if (!user) {
+				throw new AssistantError(
+					"Authentication required",
+					ErrorType.AUTHENTICATION_ERROR,
+				);
+			}
 
-		if (!user) {
-			throw new AssistantError(
-				"Authentication required",
-				ErrorType.AUTHENTICATION_ERROR,
+			const serviceContext = getServiceContext(c);
+			const result = await updateUserSettings(
+				serviceContext,
+				settings,
+				user.id,
 			);
-		}
 
-		const serviceContext = getServiceContext(c);
-		const models = await getUserEnabledModels(serviceContext, user.id);
+			return ResponseFactory.success(c, result);
+		})(raw),
+});
 
-		return ResponseFactory.success(c, models);
+addRoute(app, "get", "/models", {
+	tags: ["user"],
+	summary: "Get the models that the user has enabled",
+	description: "Returns a list of model IDs that the user has enabled for use",
+	responses: {
+		200: {
+			description: "List of enabled models",
+			schema: userModelsResponseSchema,
+		},
+		401: {
+			description: "Authentication required",
+			schema: errorResponseSchema,
+		},
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user");
 
-app.post(
-	"/github-app-connection",
-	describeRoute({
-		tags: ["user"],
-		summary: "Create or update GitHub App connection",
-		description:
-			"Stores encrypted GitHub App credentials for the authenticated user and installation",
-		requestBody: {
-			description: "GitHub App connection details",
-			required: true,
-			content: {
-				"application/json": {
-					schema: {
-						type: "object",
-						properties: {
-							installationId: { type: "number" },
-							appId: { type: "string" },
-							privateKey: { type: "string" },
-							webhookSecret: { type: "string" },
-							repositories: { type: "array", items: { type: "string" } },
-						},
-						required: ["installationId", "appId", "privateKey"],
-					},
-				},
-			},
+			if (!user) {
+				throw new AssistantError(
+					"Authentication required",
+					ErrorType.AUTHENTICATION_ERROR,
+				);
+			}
+
+			const serviceContext = getServiceContext(c);
+			const models = await getUserEnabledModels(serviceContext, user.id);
+
+			return ResponseFactory.success(c, models);
+		})(raw),
+});
+
+addRoute(app, "post", "/github-app-connection", {
+	tags: ["user"],
+	summary: "Create or update GitHub App connection",
+	description:
+		"Stores encrypted GitHub App credentials for the authenticated user and installation",
+	bodySchema: githubConnectionSchema,
+	responses: {
+		200: {
+			description: "Connection saved successfully",
+			schema: successResponseSchema,
 		},
-		responses: {
-			200: {
-				description: "Connection saved successfully",
-				content: {
-					"application/json": {
-						schema: resolver(successResponseSchema),
-					},
-				},
-			},
-			400: {
-				description: "Bad request or validation error",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
-			401: {
-				description: "Authentication required",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+		400: {
+			description: "Bad request or validation error",
+			schema: errorResponseSchema,
 		},
-	}),
-	zValidator("json", githubConnectionSchema),
-	async (c: Context) => {
-		const user = c.get("user");
-		if (!user?.id) {
-			throw new AssistantError(
-				"Authentication required",
-				ErrorType.AUTHENTICATION_ERROR,
+		401: {
+			description: "Authentication required",
+			schema: errorResponseSchema,
+		},
+	},
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user");
+			if (!user?.id) {
+				throw new AssistantError(
+					"Authentication required",
+					ErrorType.AUTHENTICATION_ERROR,
+				);
+			}
+
+			const payload = c.req.valid("json" as never) as GitHubConnectionPayload;
+			const serviceContext = getServiceContext(c);
+			await upsertGitHubConnectionForUser(serviceContext, user.id, payload);
+
+			return ResponseFactory.success(c, {
+				success: true,
+				message: "GitHub App connection saved successfully",
+			});
+		})(raw),
+});
+
+addRoute(app, "post", "/store-provider-api-key", {
+	tags: ["user"],
+	summary: "Store provider API key",
+	description: "Stores a provider API key for the authenticated user",
+	bodySchema: storeProviderApiKeySchema,
+	responses: {
+		200: {
+			description: "Provider API key stored successfully",
+			schema: successResponseSchema,
+		},
+		400: {
+			description: "Bad request or validation error",
+			schema: errorResponseSchema,
+		},
+		401: {
+			description: "Authentication required",
+			schema: errorResponseSchema,
+		},
+	},
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user");
+			const { providerId, apiKey, secretKey } = c.req.valid(
+				"json" as never,
+			) as {
+				providerId: string;
+				apiKey: string;
+				secretKey?: string;
+			};
+
+			if (!user) {
+				throw new AssistantError(
+					"Authentication required",
+					ErrorType.AUTHENTICATION_ERROR,
+				);
+			}
+
+			const serviceContext = getServiceContext(c);
+			const result = await storeProviderApiKey(
+				serviceContext,
+				providerId,
+				apiKey,
+				secretKey,
+				user.id,
 			);
-		}
 
-		const payload = c.req.valid("json" as never) as GitHubConnectionPayload;
-		const serviceContext = getServiceContext(c);
-		await upsertGitHubConnectionForUser(serviceContext, user.id, payload);
+			return ResponseFactory.success(c, result);
+		})(raw),
+});
 
-		return ResponseFactory.success(c, {
-			success: true,
-			message: "GitHub App connection saved successfully",
-		});
-	},
-);
-
-app.post(
-	"/store-provider-api-key",
-	describeRoute({
-		tags: ["user"],
-		summary: "Store provider API key",
-		description: "Stores a provider API key for the authenticated user",
-		requestBody: {
-			description: "Provider API key details",
-			required: true,
-			content: {
-				"application/json": {
-					schema: {
-						type: "object",
-						properties: {
-							providerId: { type: "string" },
-							apiKey: { type: "string" },
-							secretKey: { type: "string" },
-						},
-						required: ["providerId", "apiKey"],
-					},
-				},
-			},
+addRoute(app, "get", "/providers", {
+	tags: ["user"],
+	summary: "Get the providers that the user has enabled",
+	description: "Returns a list of providers and their settings for the user",
+	responses: {
+		200: {
+			description: "List of provider settings",
+			schema: providersResponseSchema,
 		},
-		responses: {
-			200: {
-				description: "Provider API key stored successfully",
-				content: {
-					"application/json": {
-						schema: resolver(successResponseSchema),
-					},
-				},
-			},
-			400: {
-				description: "Bad request or validation error",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
-			401: {
-				description: "Authentication required",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+		401: {
+			description: "Authentication required",
+			schema: errorResponseSchema,
 		},
-	}),
-	zValidator("json", storeProviderApiKeySchema),
-	async (c: Context) => {
-		const user = c.get("user");
-		const { providerId, apiKey, secretKey } = c.req.valid("json" as never) as {
-			providerId: string;
-			apiKey: string;
-			secretKey?: string;
-		};
-
-		if (!user) {
-			throw new AssistantError(
-				"Authentication required",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
-
-		const serviceContext = getServiceContext(c);
-		const result = await storeProviderApiKey(
-			serviceContext,
-			providerId,
-			apiKey,
-			secretKey,
-			user.id,
-		);
-
-		return ResponseFactory.success(c, result);
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user");
 
-app.get(
-	"/providers",
-	describeRoute({
-		tags: ["user"],
-		summary: "Get the providers that the user has enabled",
-		description: "Returns a list of providers and their settings for the user",
-		responses: {
-			200: {
-				description: "List of provider settings",
-				content: {
-					"application/json": {
-						schema: resolver(providersResponseSchema),
-					},
-				},
-			},
-			401: {
-				description: "Authentication required",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+			if (!user) {
+				throw new AssistantError(
+					"Authentication required",
+					ErrorType.AUTHENTICATION_ERROR,
+				);
+			}
+
+			const serviceContext = getServiceContext(c);
+			const providers = await getUserProviderSettings(serviceContext, user.id);
+
+			return ResponseFactory.success(c, providers);
+		})(raw),
+});
+
+addRoute(app, "post", "/sync-providers", {
+	tags: ["user"],
+	summary: "Sync providers",
+	description: "Synchronizes available providers for the user",
+	responses: {
+		200: {
+			description: "Providers synced successfully",
+			schema: successResponseSchema,
 		},
-	}),
-	async (c: Context) => {
-		const user = c.get("user");
-
-		if (!user) {
-			throw new AssistantError(
-				"Authentication required",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
-
-		const serviceContext = getServiceContext(c);
-		const providers = await getUserProviderSettings(serviceContext, user.id);
-
-		return ResponseFactory.success(c, providers);
-	},
-);
-
-app.post(
-	"/sync-providers",
-	describeRoute({
-		tags: ["user"],
-		summary: "Sync providers",
-		description: "Synchronizes available providers for the user",
-		responses: {
-			200: {
-				description: "Providers synced successfully",
-				content: {
-					"application/json": {
-						schema: resolver(successResponseSchema),
-					},
-				},
-			},
-			401: {
-				description: "Authentication required",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+		401: {
+			description: "Authentication required",
+			schema: errorResponseSchema,
 		},
-	}),
-	async (c: Context) => {
-		const user = c.get("user");
-
-		if (!user) {
-			throw new AssistantError(
-				"Authentication required",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
-
-		const serviceContext = getServiceContext(c);
-		const result = await syncUserProviders(serviceContext, user.id);
-
-		return ResponseFactory.success(c, result);
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user");
+
+			if (!user) {
+				throw new AssistantError(
+					"Authentication required",
+					ErrorType.AUTHENTICATION_ERROR,
+				);
+			}
+
+			const serviceContext = getServiceContext(c);
+			const result = await syncUserProviders(serviceContext, user.id);
+
+			return ResponseFactory.success(c, result);
+		})(raw),
+});
 
 app.route("/api-keys", apiKeys);
 app.route("/export-chat-history", exportHistoryRoute);

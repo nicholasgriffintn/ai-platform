@@ -1,7 +1,7 @@
 import { Scalar } from "@scalar/hono-api-reference";
 import { type Context, Hono } from "hono";
-import { describeRoute, openAPIRouteHandler } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi";
+import { openAPIRouteHandler } from "hono-openapi";
+
 import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
 import z from "zod/v4";
@@ -40,6 +40,7 @@ import memories from "./routes/memories";
 import webhook from "./routes/webhooks";
 import { serviceContextMiddleware } from "./lib/context/serviceContext";
 import { ResponseFactory } from "./lib/http/ResponseFactory";
+import { addRoute } from "./lib/http/routeBuilder";
 import { autoRegisterDynamicApps } from "./services/dynamic-apps/auto-register-apps";
 import { handleGetMetrics } from "./services/metrics/getMetrics";
 import type { IEnv } from "./types";
@@ -129,208 +130,188 @@ app.use("*", serviceContextMiddleware);
 
 autoRegisterDynamicApps();
 
-app.get(
-	"/",
-	Scalar({
-		pageTitle: "Polychat API Reference",
-		theme: "saturn",
-		url: "/openapi",
-	}),
-);
-
-app.get(
-	"/openapi",
-	openAPIRouteHandler(app, {
-		documentation: {
-			info: {
-				title: "Polychat API",
-				version: "0.0.1",
-				description: apiInfoDescription,
-			},
-			tags: Object.entries(tagDescriptions).map(([name, description]) => ({
-				name,
-				description,
-			})),
-			components: {
-				securitySchemes: {
-					bearerAuth: {
-						type: "http",
-						scheme: "bearer",
-						bearerFormat: "JWT",
-					},
-				},
-			},
-			security: [
-				{
-					bearerAuth: [],
-				},
-			],
-			servers: [
-				{
-					url: `https://${API_PROD_HOST}`,
-					description: "production",
-				},
-				{
-					url: `http://${API_LOCAL_HOST}`,
-					description: "development",
-				},
-			],
-		},
-	}),
-);
-
-app.get(
-	"/status",
-	describeRoute({
-		tags: ["system"],
-		description: "Check if the API is running with optional health information",
-		responses: {
-			200: {
-				description: "API is running",
-				content: {
-					"application/json": {
-						schema: resolver(statusResponseSchema),
-					},
-				},
-			},
-			503: {
-				description: "API is unhealthy",
-				content: {
-					"application/json": {
-						schema: resolver(statusResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator(
-		"query",
-		z.object({
-			detailed: z.enum(["true", "false"]).optional().default("false"),
+addRoute(app, "get", "/", {
+	tags: ["system"],
+	middleware: [
+		Scalar({
+			pageTitle: "Polychat API Reference",
+			theme: "saturn",
+			url: "/openapi",
 		}),
-	),
-	async (c) => {
-		const query = c.req.query();
+	],
+	handler: async ({ raw }) => raw.body(null),
+});
 
-		if (query.detailed !== "true") {
-			const response = {
-				status: "ok",
-				timestamp: new Date().toISOString(),
-				version: packageJson.version,
-				environment: c.env.ENV || "unknown",
-			};
+addRoute(app, "get", "/openapi", {
+	tags: ["system"],
+	middleware: [
+		openAPIRouteHandler(app, {
+			documentation: {
+				info: {
+					title: "Polychat API",
+					version: "0.0.1",
+					description: apiInfoDescription,
+				},
+				tags: Object.entries(tagDescriptions).map(([name, description]) => ({
+					name,
+					description,
+				})),
+				components: {
+					securitySchemes: {
+						bearerAuth: {
+							type: "http",
+							scheme: "bearer",
+							bearerFormat: "JWT",
+						},
+					},
+				},
+				security: [
+					{
+						bearerAuth: [],
+					},
+				],
+				servers: [
+					{
+						url: `https://${API_PROD_HOST}`,
+						description: "production",
+					},
+					{
+						url: `http://${API_LOCAL_HOST}`,
+						description: "development",
+					},
+				],
+			},
+		}),
+	],
+	handler: async ({ raw }) => raw.body(null),
+});
 
-			return c.json(response);
-		}
+addRoute(app, "get", "/status", {
+	tags: ["system"],
+	description: "Check if the API is running with optional health information",
+	querySchema: z.object({
+		detailed: z.enum(["true", "false"]).optional().default("false"),
+	}),
+	responses: {
+		200: { description: "API is running", schema: statusResponseSchema },
+		503: { description: "API is unhealthy", schema: statusResponseSchema },
+	},
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const query = c.req.query();
 
-		const startTime = Date.now();
-		const healthChecks: Record<
-			string,
-			{ status: string; responseTime?: number; error?: string }
-		> = {};
-
-		if (c.env.DB) {
-			try {
-				const dbStart = Date.now();
-				await c.env.DB.prepare("SELECT 1").first();
-				healthChecks.database = {
-					status: "healthy",
-					responseTime: Date.now() - dbStart,
+			if (query.detailed !== "true") {
+				const response = {
+					status: "ok",
+					timestamp: new Date().toISOString(),
+					version: packageJson.version,
+					environment: c.env.ENV || "unknown",
 				};
-			} catch (error) {
+
+				return c.json(response);
+			}
+
+			const startTime = Date.now();
+			const healthChecks: Record<
+				string,
+				{ status: string; responseTime?: number; error?: string }
+			> = {};
+
+			if (c.env.DB) {
+				try {
+					const dbStart = Date.now();
+					await c.env.DB.prepare("SELECT 1").first();
+					healthChecks.database = {
+						status: "healthy",
+						responseTime: Date.now() - dbStart,
+					};
+				} catch (error) {
+					healthChecks.database = {
+						status: "unhealthy",
+						error: error instanceof Error ? error.message : "Unknown error",
+					};
+				}
+			} else {
 				healthChecks.database = {
+					status: "not_configured",
+				};
+			}
+
+			try {
+				if (c.env.CACHE) {
+					const cacheStart = Date.now();
+					await c.env.CACHE.get("health-check");
+					healthChecks.cache = {
+						status: "healthy",
+						responseTime: Date.now() - cacheStart,
+					};
+				} else {
+					healthChecks.cache = {
+						status: "not_configured",
+					};
+				}
+			} catch (error) {
+				healthChecks.cache = {
 					status: "unhealthy",
 					error: error instanceof Error ? error.message : "Unknown error",
 				};
 			}
-		} else {
-			healthChecks.database = {
-				status: "not_configured",
-			};
-		}
 
-		try {
-			if (c.env.CACHE) {
-				const cacheStart = Date.now();
-				await c.env.CACHE.get("health-check");
-				healthChecks.cache = {
-					status: "healthy",
-					responseTime: Date.now() - cacheStart,
+			if (c.env.FREE_RATE_LIMITER && c.env.PRO_RATE_LIMITER) {
+				healthChecks.rateLimiter = {
+					status: "configured",
 				};
 			} else {
-				healthChecks.cache = {
+				healthChecks.rateLimiter = {
 					status: "not_configured",
 				};
 			}
-		} catch (error) {
-			healthChecks.cache = {
-				status: "unhealthy",
-				error: error instanceof Error ? error.message : "Unknown error",
+
+			const totalResponseTime = Date.now() - startTime;
+			const allHealthy = Object.values(healthChecks).every(
+				(check) =>
+					check.status === "healthy" || check.status === "not_configured",
+			);
+
+			const response = {
+				status: allHealthy ? "ok" : "degraded",
+				timestamp: new Date().toISOString(),
+				version: packageJson.version,
+				responseTime: totalResponseTime,
+				checks: healthChecks,
+				environment: c.env.ENV || "unknown",
 			};
-		}
 
-		if (c.env.FREE_RATE_LIMITER && c.env.PRO_RATE_LIMITER) {
-			healthChecks.rateLimiter = {
-				status: "configured",
-			};
-		} else {
-			healthChecks.rateLimiter = {
-				status: "not_configured",
-			};
-		}
+			return c.json(response, allHealthy ? 200 : 503);
+		})(raw),
+});
 
-		const totalResponseTime = Date.now() - startTime;
-		const allHealthy = Object.values(healthChecks).every(
-			(check) =>
-				check.status === "healthy" || check.status === "not_configured",
-		);
-
-		const response = {
-			status: allHealthy ? "ok" : "degraded",
-			timestamp: new Date().toISOString(),
-			version: packageJson.version,
-			responseTime: totalResponseTime,
-			checks: healthChecks,
-			environment: c.env.ENV || "unknown",
-		};
-
-		return c.json(response, allHealthy ? 200 : 503);
+addRoute(app, "get", "/metrics", {
+	tags: ["system"],
+	description: "Get metrics from Analytics Engine",
+	querySchema: metricsParamsSchema,
+	responses: {
+		200: { description: "Metrics retrieved successfully" },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const query = context.req.query();
 
-app.get(
-	"/metrics",
-	describeRoute({
-		tags: ["system"],
-		description: "Get metrics from Analytics Engine",
-		responses: {
-			200: {
-				description: "Metrics retrieved successfully",
-				content: {
-					"application/json": {},
-				},
-			},
-		},
-	}),
-	zValidator("query", metricsParamsSchema),
-	async (context: Context) => {
-		const query = context.req.query();
+			const boundedLimit = Math.min(Number(query.limit) || 100, 500);
+			const boundedInterval = Math.min(Number(query.interval) || 1, 60);
+			const boundedTimeframe = Math.min(Number(query.timeframe) || 24, 72);
 
-		const boundedLimit = Math.min(Number(query.limit) || 100, 500);
-		const boundedInterval = Math.min(Number(query.interval) || 1, 60);
-		const boundedTimeframe = Math.min(Number(query.timeframe) || 24, 72);
+			const metricsResponse = await handleGetMetrics(context, {
+				limit: boundedLimit,
+				interval: boundedInterval.toString(),
+				timeframe: boundedTimeframe.toString(),
+				type: query.type,
+				status: query.status,
+			});
 
-		const metricsResponse = await handleGetMetrics(context, {
-			limit: boundedLimit,
-			interval: boundedInterval.toString(),
-			timeframe: boundedTimeframe.toString(),
-			type: query.type,
-			status: query.status,
-		});
-
-		return ResponseFactory.success(context, { metrics: metricsResponse });
-	},
-);
+			return ResponseFactory.success(context, { metrics: metricsResponse });
+		})(raw),
+});
 
 app.route(ROUTES.AUTH, auth);
 app.route(ROUTES.CHAT, chat);

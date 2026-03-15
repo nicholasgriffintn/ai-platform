@@ -56,6 +56,8 @@ interface RouteConfig<TBody, TParams, TQuery> {
 	middleware?: MiddlewareHandler[];
 	/** Zod schema for JSON request body validation. */
 	bodySchema?: ZodType<TBody>;
+	/** Zod schema for form-data request body validation. */
+	formSchema?: ZodType;
 	/** Zod schema for route parameter validation. */
 	paramSchema?: ZodType<TParams>;
 	/** Zod schema for query string validation. */
@@ -102,7 +104,7 @@ export function addRoute<TBody = unknown, TParams = unknown, TQuery = unknown>(
 		}
 		middlewares.push(
 			describeRoute({
-				tags: config.tags,
+				tags: config.tags || ["uncategorised"],
 				summary: config.summary,
 				description: config.description,
 				responses,
@@ -123,6 +125,11 @@ export function addRoute<TBody = unknown, TParams = unknown, TQuery = unknown>(
 	if (config.bodySchema) {
 		middlewares.push(
 			zValidator("json", config.bodySchema) as unknown as MiddlewareHandler,
+		);
+	}
+	if (config.formSchema) {
+		middlewares.push(
+			zValidator("form", config.formSchema) as unknown as MiddlewareHandler,
 		);
 	}
 

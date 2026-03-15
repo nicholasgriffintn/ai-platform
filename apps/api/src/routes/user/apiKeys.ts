@@ -1,5 +1,6 @@
+import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
-import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+
 import {
 	errorResponseSchema,
 	successResponseSchema,
@@ -24,154 +25,124 @@ const app = new Hono();
 
 app.use("*", requireAuth);
 
-app.get(
-	"/",
-	describeRoute({
-		tags: ["user"],
-		summary: "Get API Keys",
-		description: "Get all API keys for the user",
-		responses: {
-			200: {
-				description: "API keys fetched successfully",
-				content: {
-					"application/json": {
-						schema: resolver(successResponseSchema),
-					},
-				},
-			},
-			401: {
-				description: "Authentication required",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+addRoute(app, "get", "/", {
+	tags: ["user"],
+	summary: "Get API Keys",
+	description: "Get all API keys for the user",
+	responses: {
+		200: {
+			description: "API keys fetched successfully",
+			schema: successResponseSchema,
 		},
-	}),
-	async (c: Context) => {
-		const user = c.get("user");
-		const serviceContext = getServiceContext(c);
-
-		try {
-			const keys = await getUserApiKeys(serviceContext, user.id);
-			return ResponseFactory.success(c, keys);
-		} catch (error) {
-			logger.error("Error fetching API keys:", { error });
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-			throw new AssistantError(
-				"Failed to fetch API keys",
-				ErrorType.UNKNOWN_ERROR,
-			);
-		}
-	},
-);
-
-app.post(
-	"/",
-	describeRoute({
-		tags: ["user"],
-		summary: "Create API Key",
-		description: "Create a new API key for the user",
-		responses: {
-			201: {
-				description: "API key created successfully",
-				content: {
-					"application/json": {
-						schema: resolver(successResponseSchema),
-					},
-				},
-			},
-			401: {
-				description: "Authentication required",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+		401: {
+			description: "Authentication required",
+			schema: errorResponseSchema,
 		},
-	}),
-	zValidator("json", createApiKeySchema),
-	async (c: Context) => {
-		const { name } = c.req.valid("json" as never) as { name: string };
-		const serviceContext = getServiceContext(c);
-
-		try {
-			const { plaintextKey, metadata } = await createUserApiKey(
-				serviceContext,
-				name,
-			);
-
-			return ResponseFactory.success(
-				c,
-				{ apiKey: plaintextKey, ...metadata },
-				201,
-			);
-		} catch (error) {
-			logger.error("Error creating API key:", { error });
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-			throw new AssistantError(
-				"Failed to create API key",
-				ErrorType.UNKNOWN_ERROR,
-			);
-		}
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user");
+			const serviceContext = getServiceContext(c);
 
-app.delete(
-	"/:keyId",
-	describeRoute({
-		tags: ["user"],
-		summary: "Delete API Key",
-		description: "Delete an API key for the user",
-		responses: {
-			200: {
-				description: "API key deleted successfully",
-				content: {
-					"application/json": {
-						schema: resolver(successResponseSchema),
-					},
-				},
-			},
-			401: {
-				description: "Authentication required",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+			try {
+				const keys = await getUserApiKeys(serviceContext, user.id);
+				return ResponseFactory.success(c, keys);
+			} catch (error) {
+				logger.error("Error fetching API keys:", { error });
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+				throw new AssistantError(
+					"Failed to fetch API keys",
+					ErrorType.UNKNOWN_ERROR,
+				);
+			}
+		})(raw),
+});
+
+addRoute(app, "post", "/", {
+	tags: ["user"],
+	summary: "Create API Key",
+	description: "Create a new API key for the user",
+	bodySchema: createApiKeySchema,
+	responses: {
+		201: {
+			description: "API key created successfully",
+			schema: successResponseSchema,
 		},
-	}),
-	zValidator("param", deleteApiKeyParamsSchema),
-	async (c: Context) => {
-		const user = c.get("user");
-		const { keyId } = c.req.valid("param" as never) as { keyId: string };
-		const serviceContext = getServiceContext(c);
-
-		try {
-			await deleteUserApiKey(serviceContext, keyId, user.id);
-			return ResponseFactory.success(
-				c,
-				{ message: "API key deleted successfully" },
-				200,
-			);
-		} catch (error) {
-			logger.error("Error deleting API key:", { error });
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-			throw new AssistantError(
-				"Failed to delete API key",
-				ErrorType.UNKNOWN_ERROR,
-			);
-		}
+		401: {
+			description: "Authentication required",
+			schema: errorResponseSchema,
+		},
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const { name } = c.req.valid("json" as never) as { name: string };
+			const serviceContext = getServiceContext(c);
+
+			try {
+				const { plaintextKey, metadata } = await createUserApiKey(
+					serviceContext,
+					name,
+				);
+
+				return ResponseFactory.success(
+					c,
+					{ apiKey: plaintextKey, ...metadata },
+					201,
+				);
+			} catch (error) {
+				logger.error("Error creating API key:", { error });
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+				throw new AssistantError(
+					"Failed to create API key",
+					ErrorType.UNKNOWN_ERROR,
+				);
+			}
+		})(raw),
+});
+
+addRoute(app, "delete", "/:keyId", {
+	tags: ["user"],
+	summary: "Delete API Key",
+	description: "Delete an API key for the user",
+	paramSchema: deleteApiKeyParamsSchema,
+	responses: {
+		200: {
+			description: "API key deleted successfully",
+			schema: successResponseSchema,
+		},
+		401: {
+			description: "Authentication required",
+			schema: errorResponseSchema,
+		},
+	},
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user");
+			const { keyId } = c.req.valid("param" as never) as { keyId: string };
+			const serviceContext = getServiceContext(c);
+
+			try {
+				await deleteUserApiKey(serviceContext, keyId, user.id);
+				return ResponseFactory.success(
+					c,
+					{ message: "API key deleted successfully" },
+					200,
+				);
+			} catch (error) {
+				logger.error("Error deleting API key:", { error });
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+				throw new AssistantError(
+					"Failed to delete API key",
+					ErrorType.UNKNOWN_ERROR,
+				);
+			}
+		})(raw),
+});
 
 export default app;

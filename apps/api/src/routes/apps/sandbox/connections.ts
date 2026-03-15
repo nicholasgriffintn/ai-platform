@@ -1,5 +1,6 @@
+import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, type Hono } from "hono";
-import { validator as zValidator, describeRoute, resolver } from "hono-openapi";
+
 import {
 	autoConnectSchema,
 	errorResponseSchema,
@@ -34,184 +35,137 @@ function getGitHubInstallUrl(context: Context): string | undefined {
 }
 
 export function registerSandboxConnectionRoutes(app: Hono): void {
-	app.get(
-		"/connections",
-		describeRoute({
-			tags: ["apps"],
-			description: "List user's GitHub App connections",
-			responses: {
-				200: {
-					description: "List of GitHub App connections",
-					content: { "application/json": {} },
-				},
-				401: {
-					description: "Unauthorized",
-					content: {
-						"application/json": { schema: resolver(errorResponseSchema) },
-					},
-				},
-			},
-		}),
-		async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const serviceContext = getServiceContext(c);
-			const connections = await listGitHubAppConnectionsForUser(
-				serviceContext,
-				user.id,
-			);
-			return ResponseFactory.success(c, { connections });
+	addRoute(app, "get", "/connections", {
+		tags: ["apps"],
+		description: "List user's GitHub App connections",
+		responses: {
+			200: { description: "List of GitHub App connections" },
+			401: { description: "Unauthorized", schema: errorResponseSchema },
 		},
-	);
-
-	app.get(
-		"/github/install-config",
-		describeRoute({
-			tags: ["apps"],
-			description:
-				"List the GitHub App installation URL and auto-connect capability",
-			responses: {
-				200: {
-					description:
-						"GitHub App installation URL and auto-connect capability",
-					content: { "application/json": {} },
-				},
-				401: {
-					description: "Unauthorized",
-					content: {
-						"application/json": { schema: resolver(errorResponseSchema) },
-					},
-				},
-			},
-		}),
-		async (c: Context) => {
-			const canAutoConnect = Boolean(
-				c.env.GITHUB_APP_ID?.trim() && c.env.GITHUB_APP_PRIVATE_KEY?.trim(),
-			);
-			const callbackUrl = c.env.APP_BASE_URL
-				? `${c.env.APP_BASE_URL.replace(/\/$/, "")}/apps/sandbox`
-				: undefined;
-
-			return ResponseFactory.success(c, {
-				installUrl: getGitHubInstallUrl(c),
-				canAutoConnect,
-				callbackUrl,
-			});
-		},
-	);
-
-	app.post(
-		"/connections",
-		describeRoute({
-			tags: ["apps"],
-			description: "Add or update a GitHub App connection for the user",
-			responses: {
-				200: {
-					description: "GitHub App connection added or updated successfully",
-					content: { "application/json": {} },
-				},
-				401: {
-					description: "Unauthorized",
-					content: {
-						"application/json": { schema: resolver(errorResponseSchema) },
-					},
-				},
-			},
-		}),
-		zValidator("json", githubConnectionSchema),
-		async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const payload = c.req.valid("json" as never) as GitHubConnectionPayload;
-			const serviceContext = getServiceContext(c);
-
-			await upsertGitHubConnectionForUser(serviceContext, user.id, payload);
-
-			return ResponseFactory.success(c, {
-				success: true,
-				message: "GitHub App connection saved successfully",
-			});
-		},
-	);
-
-	app.post(
-		"/connections/auto",
-		describeRoute({
-			tags: ["apps"],
-			description: "Connect user's GitHub App installation automatically",
-			responses: {
-				200: {
-					description: "GitHub App installation connected successfully",
-					content: { "application/json": {} },
-				},
-				401: {
-					description: "Unauthorized",
-					content: {
-						"application/json": { schema: resolver(errorResponseSchema) },
-					},
-				},
-			},
-		}),
-		zValidator("json", autoConnectSchema),
-		async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const payload = c.req.valid("json" as never) as AutoConnectPayload;
-			const serviceContext = getServiceContext(c);
-
-			await upsertGitHubConnectionFromDefaultAppForUser(
-				serviceContext,
-				user.id,
-				{
-					installationId: payload.installationId,
-					repositories: payload.repositories,
-				},
-			);
-
-			return ResponseFactory.success(c, {
-				success: true,
-				message: "GitHub App installation connected successfully",
-			});
-		},
-	);
-
-	app.delete(
-		"/connections/:installationId",
-		describeRoute({
-			tags: ["apps"],
-			description: "Delete a user's GitHub App connection",
-			responses: {
-				200: {
-					description: "GitHub App connection deleted successfully",
-					content: { "application/json": {} },
-				},
-				401: {
-					description: "Unauthorized",
-					content: {
-						"application/json": { schema: resolver(errorResponseSchema) },
-					},
-				},
-			},
-		}),
-		async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const installationIdRaw = c.req.param("installationId");
-			const installationId = Number.parseInt(installationIdRaw || "", 10);
-			if (!Number.isFinite(installationId) || installationId <= 0) {
-				throw new AssistantError(
-					"installationId must be a positive integer",
-					ErrorType.PARAMS_ERROR,
+		handler: async ({ raw }) =>
+			(async (c: Context) => {
+				const user = c.get("user") as IUser;
+				const serviceContext = getServiceContext(c);
+				const connections = await listGitHubAppConnectionsForUser(
+					serviceContext,
+					user.id,
 				);
-			}
+				return ResponseFactory.success(c, { connections });
+			})(raw),
+	});
 
-			const serviceContext = getServiceContext(c);
-			await deleteGitHubConnectionForUser(
-				serviceContext,
-				user.id,
-				installationId,
-			);
-
-			return ResponseFactory.success(c, {
-				success: true,
-				message: "GitHub App connection deleted",
-			});
+	addRoute(app, "get", "/github/install-config", {
+		tags: ["apps"],
+		description:
+			"List the GitHub App installation URL and auto-connect capability",
+		responses: {
+			200: {
+				description: "GitHub App installation URL and auto-connect capability",
+			},
+			401: { description: "Unauthorized", schema: errorResponseSchema },
 		},
-	);
+		handler: async ({ raw }) =>
+			(async (c: Context) => {
+				const canAutoConnect = Boolean(
+					c.env.GITHUB_APP_ID?.trim() && c.env.GITHUB_APP_PRIVATE_KEY?.trim(),
+				);
+				const callbackUrl = c.env.APP_BASE_URL
+					? `${c.env.APP_BASE_URL.replace(/\/$/, "")}/apps/sandbox`
+					: undefined;
+
+				return ResponseFactory.success(c, {
+					installUrl: getGitHubInstallUrl(c),
+					canAutoConnect,
+					callbackUrl,
+				});
+			})(raw),
+	});
+
+	addRoute(app, "post", "/connections", {
+		tags: ["apps"],
+		description: "Add or update a GitHub App connection for the user",
+		bodySchema: githubConnectionSchema,
+		responses: {
+			200: {
+				description: "GitHub App connection added or updated successfully",
+			},
+			401: { description: "Unauthorized", schema: errorResponseSchema },
+		},
+		handler: async ({ raw }) =>
+			(async (c: Context) => {
+				const user = c.get("user") as IUser;
+				const payload = c.req.valid("json" as never) as GitHubConnectionPayload;
+				const serviceContext = getServiceContext(c);
+
+				await upsertGitHubConnectionForUser(serviceContext, user.id, payload);
+
+				return ResponseFactory.success(c, {
+					success: true,
+					message: "GitHub App connection saved successfully",
+				});
+			})(raw),
+	});
+
+	addRoute(app, "post", "/connections/auto", {
+		tags: ["apps"],
+		description: "Connect user's GitHub App installation automatically",
+		bodySchema: autoConnectSchema,
+		responses: {
+			200: { description: "GitHub App installation connected successfully" },
+			401: { description: "Unauthorized", schema: errorResponseSchema },
+		},
+		handler: async ({ raw }) =>
+			(async (c: Context) => {
+				const user = c.get("user") as IUser;
+				const payload = c.req.valid("json" as never) as AutoConnectPayload;
+				const serviceContext = getServiceContext(c);
+
+				await upsertGitHubConnectionFromDefaultAppForUser(
+					serviceContext,
+					user.id,
+					{
+						installationId: payload.installationId,
+						repositories: payload.repositories,
+					},
+				);
+
+				return ResponseFactory.success(c, {
+					success: true,
+					message: "GitHub App installation connected successfully",
+				});
+			})(raw),
+	});
+
+	addRoute(app, "delete", "/connections/:installationId", {
+		tags: ["apps"],
+		description: "Delete a user's GitHub App connection",
+		responses: {
+			200: { description: "GitHub App connection deleted successfully" },
+			401: { description: "Unauthorized", schema: errorResponseSchema },
+		},
+		handler: async ({ raw }) =>
+			(async (c: Context) => {
+				const user = c.get("user") as IUser;
+				const installationIdRaw = c.req.param("installationId");
+				const installationId = Number.parseInt(installationIdRaw || "", 10);
+				if (!Number.isFinite(installationId) || installationId <= 0) {
+					throw new AssistantError(
+						"installationId must be a positive integer",
+						ErrorType.PARAMS_ERROR,
+					);
+				}
+
+				const serviceContext = getServiceContext(c);
+				await deleteGitHubConnectionForUser(
+					serviceContext,
+					user.id,
+					installationId,
+				);
+
+				return ResponseFactory.success(c, {
+					success: true,
+					message: "GitHub App connection deleted",
+				});
+			})(raw),
+	});
 }

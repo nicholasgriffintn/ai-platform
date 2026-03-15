@@ -1,5 +1,6 @@
+import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
-import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+
 import {
 	planParamsSchema,
 	planResponseSchema,
@@ -20,52 +21,33 @@ app.use("/*", (c, next) => {
 	return next();
 });
 
-app.get(
-	"/",
-	describeRoute({
-		tags: ["plans"],
-		summary: "List subscription plans",
-		responses: {
-			200: {
-				description: "Subscription plans",
-				content: {
-					"application/json": { schema: resolver(plansResponseSchema) },
-				},
-			},
-		},
-	}),
-	async (c: Context) => {
-		const plans = await listPlans(c.env as IEnv);
-		return ResponseFactory.success(c, plans);
+addRoute(app, "get", "/", {
+	tags: ["plans"],
+	summary: "List subscription plans",
+	responses: {
+		200: { description: "Subscription plans", schema: plansResponseSchema },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const plans = await listPlans(c.env as IEnv);
+			return ResponseFactory.success(c, plans);
+		})(raw),
+});
 
-app.get(
-	"/:id",
-	describeRoute({
-		tags: ["plans"],
-		summary: "Get subscription plan",
-		responses: {
-			200: {
-				description: "Plan found",
-				content: {
-					"application/json": { schema: resolver(planResponseSchema) },
-				},
-			},
-			404: {
-				description: "Not found",
-				content: {
-					"application/json": { schema: resolver(errorResponseSchema) },
-				},
-			},
-		},
-	}),
-	zValidator("param", planParamsSchema),
-	async (c: Context) => {
-		const { id } = c.req.valid("param" as never) as { id: string };
-		const plan = await getPlanDetails(c.env as IEnv, id);
-		return ResponseFactory.success(c, plan);
+addRoute(app, "get", "/:id", {
+	tags: ["plans"],
+	summary: "Get subscription plan",
+	paramSchema: planParamsSchema,
+	responses: {
+		200: { description: "Plan found", schema: planResponseSchema },
+		404: { description: "Not found", schema: errorResponseSchema },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const { id } = c.req.valid("param" as never) as { id: string };
+			const plan = await getPlanDetails(c.env as IEnv, id);
+			return ResponseFactory.success(c, plan);
+		})(raw),
+});
 
 export default app;

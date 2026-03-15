@@ -1,5 +1,6 @@
+import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
-import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+
 import {
 	listPodcastsResponseSchema,
 	podcastDetailResponseSchema,
@@ -36,269 +37,224 @@ app.use("/*", (c, next) => {
 	return next();
 });
 
-app.get(
-	"/",
-	describeRoute({
-		tags: ["apps"],
-		description: "List user's podcasts",
-		responses: {
-			200: {
-				description: "List of user's podcasts",
-				content: {
-					"application/json": {
-						schema: resolver(listPodcastsResponseSchema),
-					},
-				},
-			},
+addRoute(app, "get", "/", {
+	tags: ["apps"],
+	description: "List user's podcasts",
+	responses: {
+		200: {
+			description: "List of user's podcasts",
+			schema: listPodcastsResponseSchema,
 		},
-	}),
-	requirePlan("pro"),
-	async (context: Context) => {
-		const user = context.get("user");
-
-		try {
-			const serviceContext = getServiceContext(context);
-			const podcasts = await handlePodcastList({
-				context: serviceContext,
-				user,
-			});
-
-			return ResponseFactory.success(context, { podcasts });
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-
-			routeLogger.error("Error fetching podcasts:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError(
-				"Failed to fetch podcasts",
-				ErrorType.UNKNOWN_ERROR,
-			);
-		}
 	},
-);
-
-app.get(
-	"/:id",
-	describeRoute({
-		tags: ["apps"],
-		description: "Get podcast details",
-		responses: {
-			200: {
-				description: "Podcast details",
-				content: {
-					"application/json": {
-						schema: resolver(podcastDetailResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	requirePlan("pro"),
-	async (context: Context) => {
-		const id = context.req.param("id");
-		const user = context.get("user");
-
-		try {
-			const serviceContext = getServiceContext(context);
-			const podcast = await handlePodcastDetail({
-				context: serviceContext,
-				podcastId: id,
-				user,
-			});
-
-			return ResponseFactory.success(context, { podcast });
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-
-			routeLogger.error("Error fetching podcast:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError(
-				"Failed to fetch podcast",
-				ErrorType.UNKNOWN_ERROR,
-			);
-		}
-	},
-);
-
-app.post(
-	"/upload",
-	describeRoute({
-		tags: ["apps"],
-		description: "Upload a podcast",
-		responses: {
-			200: {
-				description: "Response",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	requirePlan("pro"),
-	async (context: Context) => {
-		try {
-			const formData = await context.req.formData();
-			const title = formData.get("title") as string;
-			const description = formData.get("description") as string | null;
-			const audio = formData.get("audio") as File | null;
-			const audioUrl = formData.get("audioUrl") as string | null;
-
-			if (!audio && !audioUrl) {
-				throw new AssistantError(
-					"Missing audio file or URL",
-					ErrorType.PARAMS_ERROR,
-				);
-			}
-
+	middleware: [requirePlan("pro")],
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
 			const user = context.get("user");
-			const serviceContext = getServiceContext(context);
 
-			const response = await handlePodcastUpload({
-				context: serviceContext,
-				request: {
-					audio,
-					audioUrl,
-					title,
-					description: description || undefined,
-				},
-				user,
-			});
+			try {
+				const serviceContext = getServiceContext(context);
+				const podcasts = await handlePodcastList({
+					context: serviceContext,
+					user,
+				});
 
-			if (response.status === "error") {
+				return ResponseFactory.success(context, { podcasts });
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+
+				routeLogger.error("Error fetching podcasts:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
 				throw new AssistantError(
-					"Something went wrong, we are working on it",
+					"Failed to fetch podcasts",
 					ErrorType.UNKNOWN_ERROR,
 				);
 			}
+		})(raw),
+});
 
-			return ResponseFactory.success(context, {
-				response,
-			});
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
+addRoute(app, "get", "/:id", {
+	tags: ["apps"],
+	description: "Get podcast details",
+	responses: {
+		200: {
+			description: "Podcast details",
+			schema: podcastDetailResponseSchema,
+		},
+	},
+	middleware: [requirePlan("pro")],
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const id = context.req.param("id");
+			const user = context.get("user");
+
+			try {
+				const serviceContext = getServiceContext(context);
+				const podcast = await handlePodcastDetail({
+					context: serviceContext,
+					podcastId: id,
+					user,
+				});
+
+				return ResponseFactory.success(context, { podcast });
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+
+				routeLogger.error("Error fetching podcast:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
+				throw new AssistantError(
+					"Failed to fetch podcast",
+					ErrorType.UNKNOWN_ERROR,
+				);
 			}
-			routeLogger.error("Error uploading podcast:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
+		})(raw),
+});
+
+addRoute(app, "post", "/upload", {
+	tags: ["apps"],
+	description: "Upload a podcast",
+	responses: {
+		200: { description: "Response", schema: apiResponseSchema },
+	},
+	middleware: [requirePlan("pro")],
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			try {
+				const formData = await context.req.formData();
+				const title = formData.get("title") as string;
+				const description = formData.get("description") as string | null;
+				const audio = formData.get("audio") as File | null;
+				const audioUrl = formData.get("audioUrl") as string | null;
+
+				if (!audio && !audioUrl) {
+					throw new AssistantError(
+						"Missing audio file or URL",
+						ErrorType.PARAMS_ERROR,
+					);
+				}
+
+				const user = context.get("user");
+				const serviceContext = getServiceContext(context);
+
+				const response = await handlePodcastUpload({
+					context: serviceContext,
+					request: {
+						audio,
+						audioUrl,
+						title,
+						description: description || undefined,
+					},
+					user,
+				});
+
+				if (response.status === "error") {
+					throw new AssistantError(
+						"Something went wrong, we are working on it",
+						ErrorType.UNKNOWN_ERROR,
+					);
+				}
+
+				return ResponseFactory.success(context, {
+					response,
+				});
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+				routeLogger.error("Error uploading podcast:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
+				throw new AssistantError(
+					"Failed to upload podcast",
+					ErrorType.UNKNOWN_ERROR,
+				);
+			}
+		})(raw),
+});
+
+addRoute(app, "post", "/transcribe", {
+	tags: ["apps"],
+	description: "Transcribe a podcast",
+	bodySchema: podcastTranscribeSchema,
+	responses: {
+		200: { description: "Response", schema: apiResponseSchema },
+	},
+	middleware: [requirePlan("pro")],
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const body = context.req.valid("json" as never) as IPodcastTranscribeBody;
+			const user = context.get("user");
+			const newUrl = new URL(context.req.url);
+			const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
+			const serviceContext = getServiceContext(context);
+
+			const response = await handlePodcastTranscribe({
+				context: serviceContext,
+				request: body,
+				user,
+				app_url,
 			});
-			throw new AssistantError(
-				"Failed to upload podcast",
-				ErrorType.UNKNOWN_ERROR,
-			);
-		}
+
+			return ResponseFactory.success(context, { response });
+		})(raw),
+});
+
+addRoute(app, "post", "/summarise", {
+	tags: ["apps"],
+	description: "Summarise a podcast",
+	bodySchema: podcastSummarizeSchema,
+	responses: {
+		200: { description: "Response", schema: apiResponseSchema },
 	},
-);
+	middleware: [requirePlan("pro")],
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const body = context.req.valid("json" as never) as IPodcastSummariseBody;
+			const user = context.get("user");
 
-app.post(
-	"/transcribe",
-	describeRoute({
-		tags: ["apps"],
-		description: "Transcribe a podcast",
-		responses: {
-			200: {
-				description: "Response",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator("json", podcastTranscribeSchema),
-	requirePlan("pro"),
-	async (context: Context) => {
-		const body = context.req.valid("json" as never) as IPodcastTranscribeBody;
-		const user = context.get("user");
-		const newUrl = new URL(context.req.url);
-		const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
-		const serviceContext = getServiceContext(context);
+			const serviceContext = getServiceContext(context);
+			const response = await handlePodcastSummarise({
+				context: serviceContext,
+				request: body,
+				user,
+			});
 
-		const response = await handlePodcastTranscribe({
-			context: serviceContext,
-			request: body,
-			user,
-			app_url,
-		});
+			return ResponseFactory.success(context, { response });
+		})(raw),
+});
 
-		return ResponseFactory.success(context, { response });
+addRoute(app, "post", "/generate-image", {
+	tags: ["apps"],
+	description: "Generate an image for a podcast",
+	bodySchema: podcastGenerateImageSchema,
+	responses: {
+		200: { description: "Response", schema: apiResponseSchema },
 	},
-);
+	middleware: [requirePlan("pro")],
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const body = context.req.valid("json" as never) as {
+				podcastId: string;
+				prompt?: string;
+			};
+			const user = context.get("user");
+			const serviceContext = getServiceContext(context);
+			const response = await handlePodcastGenerateImage({
+				context: serviceContext,
+				request: body,
+				user,
+			});
 
-app.post(
-	"/summarise",
-	describeRoute({
-		tags: ["apps"],
-		description: "Summarise a podcast",
-		responses: {
-			200: {
-				description: "Response",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator("json", podcastSummarizeSchema),
-	requirePlan("pro"),
-	async (context: Context) => {
-		const body = context.req.valid("json" as never) as IPodcastSummariseBody;
-		const user = context.get("user");
-
-		const serviceContext = getServiceContext(context);
-		const response = await handlePodcastSummarise({
-			context: serviceContext,
-			request: body,
-			user,
-		});
-
-		return ResponseFactory.success(context, { response });
-	},
-);
-
-app.post(
-	"/generate-image",
-	describeRoute({
-		tags: ["apps"],
-		description: "Generate an image for a podcast",
-		responses: {
-			200: {
-				description: "Response",
-				content: {
-					"application/json": {
-						schema: resolver(apiResponseSchema),
-					},
-				},
-			},
-		},
-	}),
-	zValidator("json", podcastGenerateImageSchema),
-	requirePlan("pro"),
-	async (context: Context) => {
-		const body = context.req.valid("json" as never) as {
-			podcastId: string;
-			prompt?: string;
-		};
-		const user = context.get("user");
-		const serviceContext = getServiceContext(context);
-		const response = await handlePodcastGenerateImage({
-			context: serviceContext,
-			request: body,
-			user,
-		});
-
-		return ResponseFactory.success(context, { response });
-	},
-);
+			return ResponseFactory.success(context, { response });
+		})(raw),
+});
 
 export default app;

@@ -1,5 +1,6 @@
+import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
-import { describeRoute, resolver, validator as zValidator } from "hono-openapi";
+
 import {
 	errorResponseSchema,
 	memoryListResponseSchema,
@@ -21,259 +22,198 @@ import { handleDeleteGroup } from "~/services/memories/deleteGroup";
 const app = new Hono();
 const routeLogger = createRouteLogger("memories");
 
-app.get(
-	"/",
-	describeRoute({
-		tags: ["memories"],
-		summary: "List user memories",
-		description:
-			"Get all memories for the authenticated user, optionally filtered by group",
-		responses: {
-			200: {
-				description: "List of user memories",
-				content: {
-					"application/json": {
-						schema: resolver(memoryListResponseSchema),
-					},
-				},
-			},
-			401: {
-				description: "Authentication error",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+addRoute(app, "get", "/", {
+	tags: ["memories"],
+	summary: "List user memories",
+	description:
+		"Get all memories for the authenticated user, optionally filtered by group",
+	responses: {
+		200: {
+			description: "List of user memories",
+			schema: memoryListResponseSchema,
 		},
-	}),
-	async (context: Context) => {
-		try {
-			const userContext = context.get("user");
-			const groupId = context.req.query("group_id");
-
-			if (!userContext) {
-				return ResponseFactory.error(context, "User not authenticated", 401);
-			}
-
-			const serviceContext = getServiceContext(context);
-
-			const result = await handleListMemories(serviceContext, groupId);
-
-			return ResponseFactory.success(context, result);
-		} catch (error) {
-			routeLogger.error("Failed to list memories", { error });
-			return ResponseFactory.error(context, "Failed to retrieve memories", 500);
-		}
+		401: { description: "Authentication error", schema: errorResponseSchema },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			try {
+				const userContext = context.get("user");
+				const groupId = context.req.query("group_id");
 
-app.post(
-	"/groups",
-	describeRoute({
-		tags: ["memories"],
-		summary: "Create memory group",
-		description: "Create a new group for organizing memories",
-		responses: {
-			201: {
-				description: "Group created successfully",
-				content: {
-					"application/json": {
-						schema: resolver(memoryGroupResponseSchema),
-					},
-				},
-			},
-			400: {
-				description: "Bad request",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+				if (!userContext) {
+					return ResponseFactory.error(context, "User not authenticated", 401);
+				}
+
+				const serviceContext = getServiceContext(context);
+
+				const result = await handleListMemories(serviceContext, groupId);
+
+				return ResponseFactory.success(context, result);
+			} catch (error) {
+				routeLogger.error("Failed to list memories", { error });
+				return ResponseFactory.error(
+					context,
+					"Failed to retrieve memories",
+					500,
+				);
+			}
+		})(raw),
+});
+
+addRoute(app, "post", "/groups", {
+	tags: ["memories"],
+	summary: "Create memory group",
+	description: "Create a new group for organizing memories",
+	bodySchema: memoryGroupCreateSchema,
+	responses: {
+		201: {
+			description: "Group created successfully",
+			schema: memoryGroupResponseSchema,
 		},
-	}),
-	zValidator("json", memoryGroupCreateSchema),
-	async (context: Context) => {
-		try {
-			const userContext = context.get("user");
-			const { title, description, category } = context.req.valid(
-				"json" as never,
-			) as {
-				title: string;
-				description?: string;
-				category?: string;
-			};
-
-			if (!userContext) {
-				return ResponseFactory.error(context, "User not authenticated", 401);
-			}
-
-			const serviceContext = getServiceContext(context);
-
-			const result = await handleCreateMemoryGroup(
-				serviceContext,
-				title,
-				description,
-				category,
-			);
-
-			return ResponseFactory.success(context, result, 201);
-		} catch (error) {
-			routeLogger.error("Failed to create memory group", { error });
-			return ResponseFactory.error(context, "Failed to create group", 500);
-		}
+		400: { description: "Bad request", schema: errorResponseSchema },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			try {
+				const userContext = context.get("user");
+				const { title, description, category } = context.req.valid(
+					"json" as never,
+				) as {
+					title: string;
+					description?: string;
+					category?: string;
+				};
 
-app.post(
-	"/groups/:group_id/memories",
-	describeRoute({
-		tags: ["memories"],
-		summary: "Add memories to group",
-		description: "Manually add specific memories to a group",
-		responses: {
-			200: {
-				description: "Memories added to group",
-				content: {
-					"application/json": {
-						schema: resolver(memoryOperationResponseSchema),
-					},
-				},
-			},
-			404: {
-				description: "Group not found",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+				if (!userContext) {
+					return ResponseFactory.error(context, "User not authenticated", 401);
+				}
+
+				const serviceContext = getServiceContext(context);
+
+				const result = await handleCreateMemoryGroup(
+					serviceContext,
+					title,
+					description,
+					category,
+				);
+
+				return ResponseFactory.success(context, result, 201);
+			} catch (error) {
+				routeLogger.error("Failed to create memory group", { error });
+				return ResponseFactory.error(context, "Failed to create group", 500);
+			}
+		})(raw),
+});
+
+addRoute(app, "post", "/groups/:group_id/memories", {
+	tags: ["memories"],
+	summary: "Add memories to group",
+	description: "Manually add specific memories to a group",
+	bodySchema: memoryGroupAddSchema,
+	responses: {
+		200: {
+			description: "Memories added to group",
+			schema: memoryOperationResponseSchema,
 		},
-	}),
-	zValidator("json", memoryGroupAddSchema),
-	async (context: Context) => {
-		try {
-			const userContext = context.get("user");
-			const groupId = context.req.param("group_id");
-			const { memory_ids } = context.req.valid("json" as never) as {
-				memory_ids: string[];
-			};
-
-			if (!userContext) {
-				return ResponseFactory.error(context, "User not authenticated", 401);
-			}
-
-			const serviceContext = getServiceContext(context);
-
-			const result = await handleAddMemoriesToGroup(
-				serviceContext,
-				groupId,
-				memory_ids,
-			);
-
-			return ResponseFactory.success(context, result);
-		} catch (error) {
-			routeLogger.error("Failed to add memories to group", { error });
-			return ResponseFactory.error(
-				context,
-				"Failed to add memories to group",
-				500,
-			);
-		}
+		404: { description: "Group not found", schema: errorResponseSchema },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			try {
+				const userContext = context.get("user");
+				const groupId = context.req.param("group_id");
+				const { memory_ids } = context.req.valid("json" as never) as {
+					memory_ids: string[];
+				};
 
-app.delete(
-	"/:memory_id",
-	describeRoute({
-		tags: ["memories"],
-		summary: "Delete a memory",
-		description: "Delete a specific memory for the authenticated user",
-		responses: {
-			200: {
-				description: "Memory deleted successfully",
-				content: {
-					"application/json": {
-						schema: resolver(memoryOperationResponseSchema),
-					},
-				},
-			},
-			404: {
-				description: "Memory not found",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+				if (!userContext) {
+					return ResponseFactory.error(context, "User not authenticated", 401);
+				}
+
+				const serviceContext = getServiceContext(context);
+
+				const result = await handleAddMemoriesToGroup(
+					serviceContext,
+					groupId,
+					memory_ids,
+				);
+
+				return ResponseFactory.success(context, result);
+			} catch (error) {
+				routeLogger.error("Failed to add memories to group", { error });
+				return ResponseFactory.error(
+					context,
+					"Failed to add memories to group",
+					500,
+				);
+			}
+		})(raw),
+});
+
+addRoute(app, "delete", "/:memory_id", {
+	tags: ["memories"],
+	summary: "Delete a memory",
+	description: "Delete a specific memory for the authenticated user",
+	responses: {
+		200: {
+			description: "Memory deleted successfully",
+			schema: memoryOperationResponseSchema,
 		},
-	}),
-	async (context: Context) => {
-		try {
-			const userContext = context.get("user");
-			const memoryId = context.req.param("memory_id");
-
-			if (!userContext) {
-				return ResponseFactory.error(context, "User not authenticated", 401);
-			}
-
-			const serviceContext = getServiceContext(context);
-
-			const result = await handleDeleteMemory(serviceContext, memoryId);
-
-			return ResponseFactory.success(context, result);
-		} catch (error) {
-			routeLogger.error("Failed to delete memory", { error });
-			return ResponseFactory.error(context, "Failed to delete memory", 500);
-		}
+		404: { description: "Memory not found", schema: errorResponseSchema },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			try {
+				const userContext = context.get("user");
+				const memoryId = context.req.param("memory_id");
 
-app.delete(
-	"/groups/:group_id",
-	describeRoute({
-		tags: ["memories"],
-		summary: "Delete a memory group",
-		description: "Delete a specific memory group for the authenticated user",
-		responses: {
-			200: {
-				description: "Group deleted successfully",
-				content: {
-					"application/json": {
-						schema: resolver(memoryOperationResponseSchema),
-					},
-				},
-			},
-			404: {
-				description: "Group not found",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+				if (!userContext) {
+					return ResponseFactory.error(context, "User not authenticated", 401);
+				}
+
+				const serviceContext = getServiceContext(context);
+
+				const result = await handleDeleteMemory(serviceContext, memoryId);
+
+				return ResponseFactory.success(context, result);
+			} catch (error) {
+				routeLogger.error("Failed to delete memory", { error });
+				return ResponseFactory.error(context, "Failed to delete memory", 500);
+			}
+		})(raw),
+});
+
+addRoute(app, "delete", "/groups/:group_id", {
+	tags: ["memories"],
+	summary: "Delete a memory group",
+	description: "Delete a specific memory group for the authenticated user",
+	responses: {
+		200: {
+			description: "Group deleted successfully",
+			schema: memoryOperationResponseSchema,
 		},
-	}),
-	async (context: Context) => {
-		try {
-			const userContext = context.get("user");
-			const groupId = context.req.param("group_id");
-
-			if (!userContext) {
-				return ResponseFactory.error(context, "User not authenticated", 401);
-			}
-
-			const serviceContext = getServiceContext(context);
-
-			const result = await handleDeleteGroup(serviceContext, groupId);
-
-			return ResponseFactory.success(context, result);
-		} catch (error) {
-			routeLogger.error("Failed to delete group", { error });
-			return ResponseFactory.error(context, "Failed to delete group", 500);
-		}
+		404: { description: "Group not found", schema: errorResponseSchema },
 	},
-);
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			try {
+				const userContext = context.get("user");
+				const groupId = context.req.param("group_id");
+
+				if (!userContext) {
+					return ResponseFactory.error(context, "User not authenticated", 401);
+				}
+
+				const serviceContext = getServiceContext(context);
+
+				const result = await handleDeleteGroup(serviceContext, groupId);
+
+				return ResponseFactory.success(context, result);
+			} catch (error) {
+				routeLogger.error("Failed to delete group", { error });
+				return ResponseFactory.error(context, "Failed to delete group", 500);
+			}
+		})(raw),
+});
 
 export default app;

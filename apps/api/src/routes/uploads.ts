@@ -1,5 +1,6 @@
+import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
-import { describeRoute, resolver } from "hono-openapi";
+
 import { errorResponseSchema, uploadResponseSchema } from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
@@ -19,99 +20,49 @@ app.use("/*", (c, next) => {
 	return next();
 });
 
-app.post(
-	"/",
-	describeRoute({
-		tags: ["uploads"],
-		summary: "Upload file",
-		description: "Upload an image, audio, code, or document to the server",
-		requestBody: {
-			description: "Multipart form data containing file",
-			required: true,
-			content: {
-				"multipart/form-data": {
-					schema: {
-						type: "object",
-						properties: {
-							file: {
-								type: "string",
-								format: "binary",
-							},
-							file_type: {
-								type: "string",
-								enum: ["image", "document", "audio", "code"],
-							},
-							convert_to_markdown: {
-								type: "boolean",
-								description:
-									"Convert supported image or document uploads to markdown.",
-							},
-							conversion_options: {
-								type: "string",
-								description:
-									"JSON string passed to Cloudflare toMarkdown conversionOptions.",
-							},
-						},
-						required: ["file", "file_type"],
-					},
-				},
-			},
+addRoute(app, "post", "/", {
+	tags: ["uploads"],
+	summary: "Upload file",
+	description: "Upload an image, audio, code, or document to the server",
+	responses: {
+		200: {
+			description: "File upload successful, returns the URL",
+			schema: uploadResponseSchema,
 		},
-		responses: {
-			200: {
-				description: "File upload successful, returns the URL",
-				content: {
-					"application/json": {
-						schema: resolver(uploadResponseSchema),
-					},
-				},
-			},
-			400: {
-				description: "Bad request or invalid file",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
-			401: {
-				description: "Authentication required",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
-			500: {
-				description: "Server error or storage failure",
-				content: {
-					"application/json": {
-						schema: resolver(errorResponseSchema),
-					},
-				},
-			},
+		400: {
+			description: "Bad request or invalid file",
+			schema: errorResponseSchema,
 		},
-	}),
-	async (context: Context) => {
-		const env = context.env as IEnv;
-
-		let formData: FormData;
-		try {
-			formData = await context.req.formData();
-		} catch {
-			throw new AssistantError(
-				"Failed to parse upload data",
-				ErrorType.PARAMS_ERROR,
-				400,
-			);
-		}
-
-		const user = context.get("user");
-		const userId = user?.id;
-
-		const response = await handleFileUpload(env, userId, formData);
-		return ResponseFactory.success(context, response);
+		401: {
+			description: "Authentication required",
+			schema: errorResponseSchema,
+		},
+		500: {
+			description: "Server error or storage failure",
+			schema: errorResponseSchema,
+		},
 	},
-);
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const env = context.env as IEnv;
+
+			let formData: FormData;
+			try {
+				formData = await context.req.formData();
+			} catch {
+				throw new AssistantError(
+					"Failed to parse upload data",
+					ErrorType.PARAMS_ERROR,
+					400,
+				);
+			}
+
+			const user = context.get("user");
+			const userId = user?.id;
+
+			const response = await handleFileUpload(env, userId, formData);
+			return ResponseFactory.success(context, response);
+		})(raw),
+});
 
 export default app;
