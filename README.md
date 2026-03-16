@@ -5,8 +5,7 @@ A complete AI platform that makes multiple models available from a single applic
 Check out my write up on this project [here](https://nicholasgriffin.dev/blog/building-my-own-ai-assistant). I've also launched a version of this to try out at [polychat.app](https://polychat.app).
 
 > [!NOTE]
-> Please note that this project is still in active development so there are a few features that are not yet fully working or fully imagined.
-> You can [check out our roadmap here](https://github.com/users/nicholasgriffintn/projects/4/views/2).
+> Please note that this project is still in active development so there are a few features that are not yet fully working or fully imagined. I'm also constantly testing stuff and re working, this is meant to be a playground for me.
 
 ![A screenshot of a chat in the frontend application](./docs/images/chat.png)
 
@@ -44,6 +43,7 @@ This monorepo contains:
 - **[Web App](./apps/app)** - React-based PWA frontend
 - **[Sandbox Worker](./apps/sandbox-worker)** - Automated coding tool with Cloudflare Sandboxes
 - **[Metrics Dashboard](./apps/metrics)** - Usage analytics and monitoring
+- **[Fine-tuning Toolkit](./apps/finetune)** - CLI for fine-tuning models via AWS Bedrock
 - **[Mobile App](./apps/mobile/ios)** - iOS application ([TestFlight](https://testflight.apple.com/join/52xrwxRP))
 
 ## Features
@@ -51,7 +51,7 @@ This monorepo contains:
 ### Core API Features
 
 - **Chat Completions** - OpenAI-compatible chat with streaming, tools, and multi-turn conversations (tag: `chat`)
-- **40+ AI Models** - Anthropic, OpenAI, Google, Mistral, Meta, and [many more](https://github.com/nicholasgriffintn/assistant/blob/main/apps/api/src/lib/providers/index.ts) (tag: `models`)
+- **40+ AI Models** - Anthropic, OpenAI, Google, Mistral, Meta, and [many more](https://github.com/nicholasgriffintn/assistant/blob/main/apps/api/src/lib/providers/library.ts) (tag: `models`)
 - **Code Generation** - FIM completions, edit suggestions, and code application (tag: `code`)
 - **AI Agents** - Custom agents with MCP server integrations (tag: `agents`)
 - **RAG & Memories** - Vector-based context retrieval with Cloudflare Vectorize (tag: `memories`)
@@ -127,7 +127,7 @@ If you are providing your own service and would like to change these limits, you
 4. Start the development servers:
 
    ```bash
-   # Start all apps in development mode
+   # Start the API and web app
    pnpm run dev
 
    # Or start individual apps
@@ -142,12 +142,12 @@ The applications are designed to be deployed to Cloudflare:
 
 ```bash
 # Deploy all applications
-npm run deploy
+pnpm run deploy
 
 # Deploy individual applications
-npm run deploy:app
-npm run deploy:api
-npm run deploy:metrics
+pnpm run deploy:app
+pnpm run deploy:api
+pnpm run deploy:metrics
 ```
 
 ## API Documentation
