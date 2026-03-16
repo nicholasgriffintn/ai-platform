@@ -146,6 +146,39 @@ describe("story tracker helpers", () => {
 		expect(nextPrd).toContain('"passes": true');
 	});
 
+	it("returns a non-fatal result when prd.json read throws", async () => {
+		const sandbox: SandboxFileInstance = {
+			readFile: async () => {
+				throw new Error("File not found: repo/prd.json");
+			},
+			writeFile: async (path) => ({
+				success: true,
+				path,
+				timestamp: new Date().toISOString(),
+			}),
+			exists: async (path) => ({
+				success: true,
+				path,
+				exists: false,
+				timestamp: new Date().toISOString(),
+			}),
+		};
+
+		const update = await updatePrdStoryPassStatus({
+			sandbox,
+			repoTargetDir: "repo",
+			prdContext: {
+				...prdContext,
+				userStories: [prdContext.userStories[0]],
+			},
+			story: prdContext.userStories[0],
+			passes: true,
+		});
+
+		expect(update.updated).toBe(false);
+		expect(update.reason).toContain("File not found: repo/prd.json");
+	});
+
 	it("runs full tracker and appends progress entry", async () => {
 		const { sandbox, files } = createFileSandbox({
 			"repo/prd.json": JSON.stringify(

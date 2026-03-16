@@ -41,6 +41,17 @@ import type {
 	Env,
 } from "../types";
 
+function resolveAbsoluteRepoTargetDir(
+	sandboxRoot: string,
+	repoTargetDir: string,
+): string {
+	if (repoTargetDir.startsWith("/")) {
+		return repoTargetDir;
+	}
+
+	return `${sandboxRoot.replace(/\/+$/, "")}/${repoTargetDir.replace(/^\/+/, "")}`;
+}
+
 export async function executeFeatureImplementation(
 	params: TaskParams,
 	secrets: TaskSecrets,
@@ -133,9 +144,29 @@ export async function executeFeatureImplementation(
 			targetDir: repo.targetDir,
 		});
 
+		const sandboxRootResult = await sandbox.exec("pwd");
+		if (!sandboxRootResult.success) {
+			throw new Error(
+				sandboxRootResult.stderr ||
+					"Failed to resolve sandbox working directory",
+			);
+		}
+		const sandboxRoot = sandboxRootResult.stdout
+			.split("\n")
+			.map((entry) => entry.trim())
+			.filter(Boolean)
+			.at(-1);
+		if (!sandboxRoot) {
+			throw new Error("Failed to resolve sandbox working directory");
+		}
+		const repoTargetDir = resolveAbsoluteRepoTargetDir(
+			sandboxRoot,
+			repo.targetDir,
+		);
+
 		fileWatcher = startFileWatcher({
 			sandbox,
-			watchPath: repo.targetDir,
+			watchPath: repoTargetDir,
 			emit,
 			abortSignal,
 		});
@@ -146,7 +177,7 @@ export async function executeFeatureImplementation(
 			branchName = `polychat/feature-${Date.now()}`;
 			await execOrThrow(
 				sandbox,
-				`git -C ${quoteForShell(repo.targetDir)} checkout -b ${quoteForShell(branchName)}`,
+				`git -C ${quoteForShell(repoTargetDir)} checkout -b ${quoteForShell(branchName)}`,
 				executionLogs,
 			);
 			await emit({
@@ -157,7 +188,7 @@ export async function executeFeatureImplementation(
 
 		const repoContext = await collectRepositoryContext({
 			sandbox,
-			repoTargetDir: repo.targetDir,
+			repoTargetDir,
 		});
 		await checkpoint(
 			"Sandbox run cancelled while collecting repository context",
@@ -220,7 +251,7 @@ export async function executeFeatureImplementation(
 			client,
 			model,
 			repoDisplayName: repo.displayName,
-			repoTargetDir: repo.targetDir,
+			repoTargetDir,
 			task,
 			taskType,
 			promptStrategy,
@@ -244,7 +275,7 @@ export async function executeFeatureImplementation(
 		});
 		const qualityGateResult = await runQualityGate({
 			sandbox,
-			repoTargetDir: repo.targetDir,
+			repoTargetDir,
 			commands: qualityGateCommands,
 			executionLogs,
 			emit,
@@ -255,7 +286,7 @@ export async function executeFeatureImplementation(
 
 		const storyTrackerResult = await runStoryTracker({
 			sandbox,
-			repoTargetDir: repo.targetDir,
+			repoTargetDir,
 			prdContext: repoContext.prdContext,
 			task,
 			plan: loopResult.finalPlan,
@@ -266,7 +297,7 @@ export async function executeFeatureImplementation(
 		await checkpoint("Sandbox run cancelled during story tracking");
 
 		const diffResult = await sandbox.exec(
-			`git -C ${quoteForShell(repo.targetDir)} diff --patch`,
+			`git -C ${quoteForShell(repoTargetDir)} diff --patch`,
 		);
 		await checkpoint("Sandbox run cancelled during diff generation");
 		if (!diffResult.success) {
@@ -282,28 +313,28 @@ export async function executeFeatureImplementation(
 			await checkpoint("Sandbox run cancelled before commit");
 			await execOrThrow(
 				sandbox,
-				`git -C ${quoteForShell(repo.targetDir)} config user.name ${quoteForShell("Polychat Bot")}`,
+				`git -C ${quoteForShell(repoTargetDir)} config user.name ${quoteForShell("Polychat Bot")}`,
 				executionLogs,
 			);
 			await execOrThrow(
 				sandbox,
-				`git -C ${quoteForShell(repo.targetDir)} config user.email ${quoteForShell("bot@polychat.app")}`,
+				`git -C ${quoteForShell(repoTargetDir)} config user.email ${quoteForShell("bot@polychat.app")}`,
 				executionLogs,
 			);
 			await execOrThrow(
 				sandbox,
-				`git -C ${quoteForShell(repo.targetDir)} add -A`,
+				`git -C ${quoteForShell(repoTargetDir)} add -A`,
 				executionLogs,
 			);
 
 			const stagedStatus = await sandbox.exec(
-				`git -C ${quoteForShell(repo.targetDir)} diff --cached --quiet`,
+				`git -C ${quoteForShell(repoTargetDir)} diff --cached --quiet`,
 			);
 			await checkpoint("Sandbox run cancelled before commit");
 			if (stagedStatus.exitCode !== 0) {
 				await execOrThrow(
 					sandbox,
-					`git -C ${quoteForShell(repo.targetDir)} commit -m ${quoteForShell(buildCommitMessage(task))}`,
+					`git -C ${quoteForShell(repoTargetDir)} commit -m ${quoteForShell(buildCommitMessage(task))}`,
 					executionLogs,
 				);
 				await emit({

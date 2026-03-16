@@ -297,6 +297,101 @@ describe("executeAgentLoop", () => {
 		).toHaveLength(2);
 	});
 
+	it("runs scripts inside repo root with isolated scope", async () => {
+		const emitted: Array<Record<string, unknown>> = [];
+		const chatCompletion = vi
+			.fn()
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "run_script",
+					language: "javascript",
+					code: "const fs = require('node:fs');\nconsole.log(fs.existsSync('README.md'));",
+				}),
+			)
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "finish",
+					summary: "script complete",
+				}),
+			);
+
+		const runCode = vi.fn().mockResolvedValue({
+			logs: {
+				stdout: ["true"],
+				stderr: [],
+			},
+			error: null,
+		});
+		const createCodeContext = vi.fn().mockResolvedValue({
+			id: "ctx-1",
+			language: "javascript",
+			cwd: "/workspace/repo",
+			createdAt: new Date(),
+			lastUsed: new Date(),
+		});
+		const deleteCodeContext = vi.fn().mockResolvedValue(undefined);
+
+		const result = await executeAgentLoop({
+			sandbox: {
+				exec: vi.fn(),
+				createCodeContext,
+				runCode,
+				deleteCodeContext,
+			} as any,
+			client: {
+				chatCompletion,
+			} as any,
+			model: "test-model",
+			repoDisplayName: "owner/repo",
+			repoTargetDir: "/workspace/repo",
+			task: "test",
+			taskType: "feature-implementation",
+			promptStrategy: {
+				strategy: "feature-delivery",
+				definition: {
+					strategy: "feature-delivery",
+					label: "Feature delivery",
+					planningFocus: ["focus"],
+					executionFocus: ["focus"],
+					examples: [],
+				},
+				reason: "test",
+				source: "explicit",
+			},
+			initialPlan: "plan",
+			repoContext: {
+				topLevelEntries: [],
+				files: [],
+				taskInstructionSource: "none",
+			},
+			executionLogs: [],
+			emit: async (event) => {
+				emitted.push(event as unknown as Record<string, unknown>);
+			},
+		});
+
+		expect(result.summary).toBe("script complete");
+		expect(createCodeContext).toHaveBeenCalledTimes(1);
+		expect(createCodeContext).toHaveBeenCalledWith({
+			language: "javascript",
+			cwd: "/workspace/repo",
+		});
+		expect(runCode).toHaveBeenCalledTimes(1);
+		expect(runCode.mock.calls[0]?.[0]).toContain(
+			"const fs = require('node:fs');",
+		);
+		expect(runCode.mock.calls[0]?.[1]).toEqual({
+			context: expect.objectContaining({
+				id: "ctx-1",
+			}),
+			language: "javascript",
+		});
+		expect(deleteCodeContext).toHaveBeenCalledWith("ctx-1");
+		expect(emitted.some((event) => event.type === "script_completed")).toBe(
+			true,
+		);
+	});
+
 	it("reads multiple files in one step via read_files", async () => {
 		const emitted: Array<Record<string, unknown>> = [];
 		const chatCompletion = vi
