@@ -9,6 +9,7 @@ import {
 	buildFallbackSummary,
 	formatMessagesForSummary,
 } from "./compaction";
+import { getSummarisePrompt } from "~/lib/prompts/summarise";
 
 const logger = getLogger({ prefix: "lib/session/SessionManager" });
 
@@ -59,7 +60,7 @@ export class SessionManager {
 			};
 		}
 
-		const summary = await this.summarise(plan.messagesToArchive);
+		const summary = await this.summarise(plan.messagesToArchive, input.mode);
 		const snapshotMessage = this.snapshot(
 			summary,
 			input.mode || plan.messagesToArchive.at(-1)?.mode,
@@ -81,7 +82,10 @@ export class SessionManager {
 		};
 	}
 
-	public async summarise(messages: Message[]): Promise<string> {
+	public async summarise(
+		messages: Message[],
+		mode?: ChatMode,
+	): Promise<string> {
 		if (messages.length === 0) {
 			return "Conversation snapshot recorded.";
 		}
@@ -98,6 +102,8 @@ export class SessionManager {
 				user: this.user,
 			});
 
+			const modeHint = mode ? `The conversation was in "${mode}" mode.` : "";
+
 			const response = await chatProvider.getResponse({
 				env: this.env,
 				user: this.user,
@@ -105,8 +111,7 @@ export class SessionManager {
 				messages: [
 					{
 						role: "system",
-						content:
-							"Summarise the archived conversation segment in 5 short bullet points. Keep key decisions, facts, pending tasks, and constraints.",
+						content: getSummarisePrompt({ modeHint }),
 					},
 					{
 						role: "user",

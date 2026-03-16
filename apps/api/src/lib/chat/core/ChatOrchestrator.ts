@@ -26,6 +26,21 @@ import { isAbortError } from "~/utils/abort";
 const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
 const AGENT_EXECUTION_MODES = new Set(["agent", "plan", "build", "explore"]);
 
+function buildToolPermissionsMap(
+	tools?: Record<string, any>[],
+): Record<string, string[]> {
+	if (!tools?.length) return {};
+	const map: Record<string, string[]> = {};
+	for (const tool of tools) {
+		const name = tool.name || tool.function?.name;
+		const permissions = tool.permissions;
+		if (name && Array.isArray(permissions) && permissions.length > 0) {
+			map[name] = permissions;
+		}
+	}
+	return map;
+}
+
 export class ChatOrchestrator {
 	private validator: ValidationPipeline;
 	private preparer: RequestPreparer;
@@ -269,6 +284,8 @@ export class ChatOrchestrator {
 			options: chatOptions.options || {},
 		};
 
+		const toolPermissionsMap = buildToolPermissionsMap(chatOptions.tools);
+
 		const toolRequestContext: IRequest = {
 			env: chatOptions.env,
 			mode: currentMode,
@@ -279,6 +296,7 @@ export class ChatOrchestrator {
 				mode: currentMode,
 				date: new Date().toISOString().split("T")[0]!,
 				approved_tools: approved_tools,
+				tool_permissions_map: toolPermissionsMap,
 				current_agent_id: chatOptions.current_agent_id,
 				delegation_stack: chatOptions.delegation_stack,
 				max_delegation_depth: chatOptions.max_delegation_depth,

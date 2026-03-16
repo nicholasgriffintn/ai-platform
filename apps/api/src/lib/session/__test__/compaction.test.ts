@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Message } from "~/types";
-import { buildCompactionPlan, estimateConversationTokens } from "../compaction";
+import {
+	buildCompactionPlan,
+	buildFallbackSummary,
+	estimateConversationTokens,
+	estimateMessageTokens,
+	formatMessagesForSummary,
+} from "../compaction";
 
 function createMessage(
 	id: string,
@@ -104,5 +110,104 @@ describe("session compaction planning", () => {
 
 		const estimate = estimateConversationTokens(messages, "latest");
 		expect(estimate).toBeGreaterThan(0);
+	});
+
+	it("does not compact when token count is below the default 32k threshold", () => {
+		// 24 messages with short content should be well below 32000 * 0.7
+		const messages = Array.from({ length: 24 }, (_, index) =>
+			createMessage(`m-${index}`, "hello world"),
+		);
+
+		const plan = buildCompactionPlan(messages, "hello");
+
+		expect(plan.shouldCompact).toBe(false);
+	});
+});
+
+describe("token estimation", () => {
+	it("estimates prose at ~4 chars per token", () => {
+		const msg = createMessage("1", "a".repeat(400));
+		// 400 / 4 + 4 = 104
+		expect(estimateMessageTokens(msg)).toBe(104);
+	});
+
+	it("estimates tool results at ~6 chars per token", () => {
+		const msg: Message = {
+			id: "t1",
+			role: "tool",
+			content: "a".repeat(600),
+		} as Message;
+		// 400 truncated (TOOL_RESULT_SUMMARY_LIMIT) / 6 + 4 ≈ 71
+		expect(estimateMessageTokens(msg)).toBe(71);
+	});
+
+	it("tool messages are estimated lower than equivalent user messages", () => {
+		const content = "x".repeat(800);
+		const userMsg = createMessage("u", content, "user");
+		const toolMsg: Message = { id: "t", role: "tool", content } as Message;
+		expect(estimateMessageTokens(toolMsg)).toBeLessThan(
+			estimateMessageTokens(userMsg),
+		);
+	});
+});
+
+describe("formatMessagesForSummary", () => {
+	it("labels messages by role", () => {
+		const messages: Message[] = [
+			createMessage("1", "what is the answer?", "user"),
+			createMessage("2", "the answer is 42", "assistant"),
+		];
+		const output = formatMessagesForSummary(messages);
+		expect(output).toContain("[User]");
+		expect(output).toContain("[Assistant]");
+	});
+
+	it("includes tool name in tool result label", () => {
+		const msg: Message = {
+			id: "t",
+			role: "tool",
+			name: "web_search",
+			content: "some result",
+		} as Message;
+		const output = formatMessagesForSummary([msg]);
+		expect(output).toContain("[Tool result](web_search)");
+	});
+
+	it("truncates tool output to TOOL_RESULT_SUMMARY_LIMIT", () => {
+		const msg: Message = {
+			id: "t",
+			role: "tool",
+			name: "bash",
+			content: "z".repeat(2000),
+		} as Message;
+		const output = formatMessagesForSummary([msg]);
+		// Should contain truncation indicator
+		expect(output).toContain("…");
+		// Should not contain the full 2000-char string
+		expect(output.length).toBeLessThan(600);
+	});
+
+	it("respects maxCharacters limit", () => {
+		const messages = Array.from({ length: 10 }, (_, i) =>
+			createMessage(`m-${i}`, "a".repeat(200)),
+		);
+		const output = formatMessagesForSummary(messages, 500);
+		expect(output.length).toBeLessThanOrEqual(520); // small slack for label overhead
+	});
+});
+
+describe("buildFallbackSummary", () => {
+	it("returns a placeholder for empty messages", () => {
+		expect(buildFallbackSummary([])).toBe("Conversation snapshot recorded.");
+	});
+
+	it("labels messages with role prefixes", () => {
+		const messages: Message[] = [
+			createMessage("1", "hello", "user"),
+			createMessage("2", "hi there", "assistant"),
+		];
+		const summary = buildFallbackSummary(messages);
+		expect(summary).toContain("[User]");
+		expect(summary).toContain("[Assistant]");
 	});
 });

@@ -15,19 +15,30 @@ export interface CompactionPlan {
 	snapshotInsertionIndex: number;
 }
 
-const DEFAULT_CONTEXT_WINDOW = 8000;
+const DEFAULT_CONTEXT_WINDOW = 32000;
 const DEFAULT_TRIGGER_RATIO = 0.7;
 const DEFAULT_MIN_MESSAGES = 24;
 const DEFAULT_KEEP_RECENT_MESSAGES = 8;
 const DEFAULT_MIN_ARCHIVE_COUNT = 6;
+const TOOL_RESULT_SUMMARY_LIMIT = 400;
 
-function contentToText(content: Message["content"]): string {
+function contentToText(
+	content: Message["content"],
+	role?: Message["role"],
+): string {
+	const truncateForTool = (text: string) => {
+		if (role === "tool" && text.length > TOOL_RESULT_SUMMARY_LIMIT) {
+			return text.slice(0, TOOL_RESULT_SUMMARY_LIMIT) + "…";
+		}
+		return text;
+	};
+
 	if (typeof content === "string") {
-		return content;
+		return truncateForTool(content);
 	}
 
 	if (Array.isArray(content)) {
-		return content
+		const text = content
 			.map((part) =>
 				part.type === "text"
 					? part.text || ""
@@ -36,18 +47,22 @@ function contentToText(content: Message["content"]): string {
 						: "",
 			)
 			.join("\n");
+		return truncateForTool(text);
 	}
 
 	try {
-		return JSON.stringify(content);
+		return truncateForTool(JSON.stringify(content));
 	} catch {
 		return "";
 	}
 }
 
 export function estimateMessageTokens(message: Message): number {
-	const text = contentToText(message.content);
-	return Math.ceil(text.length / 4) + 4;
+	const text = contentToText(message.content, message.role);
+	// Tool results are often repetitive structured output; they compress more in
+	// practice than prose (~5–6 chars/token vs ~4 for natural language).
+	const charsPerToken = message.role === "tool" ? 6 : 4;
+	return Math.ceil(text.length / charsPerToken) + 4;
 }
 
 export function estimateConversationTokens(
@@ -142,39 +157,55 @@ export function buildCompactionPlan(
 	};
 }
 
+const ROLE_LABELS: Partial<Record<Message["role"], string>> = {
+	user: "[User]",
+	assistant: "[Assistant]",
+	tool: "[Tool result]",
+	system: "[System]",
+};
+
 export function buildFallbackSummary(messages: Message[]): string {
-	const important = messages
+	const lines = messages
 		.slice(-6)
-		.map((message) =>
-			`${message.role}: ${contentToText(message.content)}`.trim(),
-		)
+		.map((message) => {
+			const label = ROLE_LABELS[message.role] ?? `[${message.role}]`;
+			const text = contentToText(message.content, message.role);
+			return `${label} ${text}`.trim();
+		})
 		.filter((line) => line.length > 0);
 
-	if (important.length === 0) {
+	if (lines.length === 0) {
 		return "Conversation snapshot recorded.";
 	}
 
-	return `Earlier context summary:\n${important.join("\n")}`;
+	return `Earlier context summary:\n${lines.join("\n")}`;
 }
 
 export function formatMessagesForSummary(
 	messages: Message[],
-	maxCharacters = 12000,
+	maxCharacters = 16000,
 ): string {
 	const lines: string[] = [];
 	let remaining = maxCharacters;
 
 	for (const message of messages) {
-		const line = `${message.role}: ${contentToText(message.content)}`.trim();
-		if (!line) {
+		const label = ROLE_LABELS[message.role] ?? `[${message.role}]`;
+		const body = contentToText(message.content, message.role);
+		if (!body) {
 			continue;
 		}
+
+		const prefix =
+			message.role === "tool" && message.name
+				? `${label}(${message.name})`
+				: label;
+		const line = `${prefix}: ${body}`;
 
 		if (line.length > remaining) {
 			if (remaining <= 0) {
 				break;
 			}
-			lines.push(`${line.slice(0, remaining)}...`);
+			lines.push(`${line.slice(0, remaining)}…`);
 			break;
 		}
 

@@ -167,6 +167,7 @@ export interface IBody {
 	platform?: Platform;
 	mode?: ChatMode;
 	approved_tools?: string[];
+	tool_permissions_map?: Record<string, string[]>;
 	verbosity?: VerbosityLevel;
 	role?: ChatRole;
 	[other: string]: any;

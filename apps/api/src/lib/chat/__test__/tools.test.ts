@@ -471,6 +471,171 @@ describe("tools", () => {
 			expect(result[0].status).toBe("success");
 		});
 
+		describe("permission enforcement", () => {
+			it("blocks tools denied by the current mode", async () => {
+				// "plan" mode denies network permission
+				const planRequest = {
+					...mockRequest,
+					mode: "plan",
+					request: {
+						...mockRequest.request,
+						mode: "plan",
+						tool_permissions_map: { call_api: ["network"] },
+					},
+				};
+
+				const modelResponse = {
+					tool_calls: [
+						{
+							id: "call-1",
+							function: {
+								name: "call_api",
+								arguments: JSON.stringify({ url: "https://example.com" }),
+							},
+						},
+					],
+				};
+
+				const result = await handleToolCalls(
+					"completion-123",
+					modelResponse,
+					mockConversationManager as any,
+					planRequest as any,
+				);
+
+				expect(result).toHaveLength(1);
+				expect(result[0].status).toBe("error");
+				expect(formatToolErrorResponse).toHaveBeenCalledWith(
+					"call_api",
+					expect.stringContaining("plan"),
+					"PERMISSION_DENIED",
+				);
+				expect(handleFunctions).not.toHaveBeenCalled();
+			});
+
+			it("blocks tools that require approval when not pre-approved", async () => {
+				// "build" mode requires approval for sandbox tools
+				const buildRequest = {
+					...mockRequest,
+					mode: "build",
+					request: {
+						...mockRequest.request,
+						mode: "build",
+						approved_tools: [],
+						tool_permissions_map: { run_code: ["sandbox"] },
+					},
+				};
+
+				const modelResponse = {
+					tool_calls: [
+						{
+							id: "call-1",
+							function: {
+								name: "run_code",
+								arguments: JSON.stringify({ code: "console.log('hi')" }),
+							},
+						},
+					],
+				};
+
+				const result = await handleToolCalls(
+					"completion-123",
+					modelResponse,
+					mockConversationManager as any,
+					buildRequest as any,
+				);
+
+				expect(result).toHaveLength(1);
+				expect(result[0].status).toBe("error");
+				expect(formatToolErrorResponse).toHaveBeenCalledWith(
+					"run_code",
+					expect.stringContaining("approval"),
+					"APPROVAL_REQUIRED",
+				);
+				expect(handleFunctions).not.toHaveBeenCalled();
+			});
+
+			it("executes tools that require approval when pre-approved", async () => {
+				vi.mocked(handleFunctions).mockResolvedValue({
+					content: "Code ran successfully",
+					status: "success",
+				});
+
+				const buildRequest = {
+					...mockRequest,
+					mode: "build",
+					request: {
+						...mockRequest.request,
+						mode: "build",
+						approved_tools: ["run_code"],
+						tool_permissions_map: { run_code: ["sandbox"] },
+					},
+				};
+
+				const modelResponse = {
+					tool_calls: [
+						{
+							id: "call-1",
+							function: {
+								name: "run_code",
+								arguments: JSON.stringify({ code: "console.log('hi')" }),
+							},
+						},
+					],
+				};
+
+				const result = await handleToolCalls(
+					"completion-123",
+					modelResponse,
+					mockConversationManager as any,
+					buildRequest as any,
+				);
+
+				expect(result).toHaveLength(1);
+				expect(result[0].status).toBe("success");
+				expect(handleFunctions).toHaveBeenCalled();
+			});
+
+			it("allows tools without declared permissions in all modes", async () => {
+				vi.mocked(handleFunctions).mockResolvedValue({
+					content: "ok",
+					status: "success",
+				});
+
+				const exploreRequest = {
+					...mockRequest,
+					mode: "explore",
+					request: {
+						...mockRequest.request,
+						mode: "explore",
+						// no tool_permissions_map — defaults to ["read"] which explore allows
+					},
+				};
+
+				const modelResponse = {
+					tool_calls: [
+						{
+							id: "call-1",
+							function: {
+								name: "search",
+								arguments: JSON.stringify({ query: "test" }),
+							},
+						},
+					],
+				};
+
+				const result = await handleToolCalls(
+					"completion-123",
+					modelResponse,
+					mockConversationManager as any,
+					exploreRequest as any,
+				);
+
+				expect(result).toHaveLength(1);
+				expect(result[0].status).toBe("success");
+			});
+		});
+
 		it("should handle missing env.AI.aiGatewayLogId", async () => {
 			vi.mocked(handleFunctions).mockResolvedValue({
 				content: "Success",

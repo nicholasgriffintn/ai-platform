@@ -1,4 +1,5 @@
 import type { ConversationManager } from "~/lib/conversationManager";
+import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
 import { handleFunctions } from "~/services/functions";
 import type { IRequest, Message } from "~/types";
 import { generateId } from "~/utils/id";
@@ -13,6 +14,7 @@ import { buildMessageParts } from "./messageParts";
 import z from "zod/v4";
 
 const logger = getLogger({ prefix: "lib/chat/tools" });
+const permissionChecker = new PermissionChecker();
 
 interface ToolCallError extends Error {
 	functionName?: string;
@@ -40,6 +42,10 @@ export const handleToolCalls = async (
 		return [];
 	}
 
+	const mode = req.mode || req.request?.mode;
+	const approvedTools = new Set(req.request?.approved_tools ?? []);
+	const toolPermissionsMap = req.request?.tool_permissions_map ?? {};
+
 	for (const toolCall of toolCalls) {
 		const functionName = toolCall.function?.name || toolCall.name || "unknown";
 		logger.info(`Tool call: ${functionName}`);
@@ -50,6 +56,80 @@ export const handleToolCalls = async (
 					"Missing tool call ID",
 					ErrorType.TOOL_CALL_ERROR,
 				);
+			}
+
+			const permissionResult = permissionChecker.checkToolAccess({
+				toolName: functionName,
+				mode,
+				user: req.user,
+				toolPermissions: toolPermissionsMap[functionName],
+			});
+
+			if (!permissionResult.allowed) {
+				logger.warn(`Tool "${functionName}" blocked by permission check`, {
+					reason: permissionResult.reason,
+					mode,
+				});
+				const blockedError = formatToolErrorResponse(
+					functionName,
+					permissionResult.reason ??
+						`Tool "${functionName}" is not permitted in ${permissionResult.mode} mode`,
+					"PERMISSION_DENIED",
+				);
+				functionResults.push(
+					withDerivedParts({
+						role: "tool",
+						name: functionName,
+						content: blockedError.content,
+						status: "error",
+						data: blockedError.data,
+						log_id: modelResponseLogId || "",
+						id: generateId(),
+						tool_call_id: toolCall.id,
+						tool_call_arguments:
+							toolCall.arguments || toolCall.function?.arguments,
+						timestamp,
+						model: req.request?.model || "unknown",
+						platform: req.request?.platform || "api",
+					}),
+				);
+				continue;
+			}
+
+			if (
+				permissionResult.requiresApproval &&
+				!approvedTools.has(functionName)
+			) {
+				logger.warn(
+					`Tool "${functionName}" requires approval but was not pre-approved`,
+					{
+						mode,
+					},
+				);
+				const approvalError = formatToolErrorResponse(
+					functionName,
+					permissionResult.reason ??
+						`Tool "${functionName}" requires explicit approval before it can run. Ask the user to confirm.`,
+					"APPROVAL_REQUIRED",
+				);
+				functionResults.push(
+					withDerivedParts({
+						role: "tool",
+						name: functionName,
+						content: approvalError.content,
+						status: "error",
+						data: approvalError.data,
+						log_id: modelResponseLogId || "",
+						id: generateId(),
+						tool_call_id: toolCall.id,
+						tool_call_arguments:
+							toolCall.arguments || toolCall.function?.arguments,
+						timestamp,
+						model: req.request?.model || "unknown",
+						platform: req.request?.platform || "api",
+					}),
+				);
+				continue;
 			}
 
 			if (functionName === "memory") {
