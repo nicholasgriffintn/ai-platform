@@ -1,4 +1,4 @@
-import { executeFeatureImplementation } from "../feature-implementation";
+import { executeFeatureImplementation } from "./feature-implementation";
 import type { SandboxTaskType } from "@assistant/schemas";
 import type { SandboxTaskRunner, SandboxTaskRunnerContext } from "../runner";
 

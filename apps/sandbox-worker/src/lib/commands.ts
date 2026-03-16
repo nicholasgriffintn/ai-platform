@@ -58,7 +58,7 @@ const READ_ONLY_ALLOWED_COMMAND_PATTERNS: RegExp[] = [
 	/^(pytest|tox|go\s+test|cargo\s+(test|check|clippy|fmt\s+--check)|jest|vitest|npx\s+vitest|tsc(?:\s|$)|eslint(?:\s|$)|ruff(?:\s|$)|mypy(?:\s|$)|uv\s+run\s+pytest)\b/i,
 ];
 
-type SandboxInstance = ReturnType<typeof getSandbox>;
+export type SandboxExecInstance = Pick<ReturnType<typeof getSandbox>, "exec">;
 
 interface RepoInfo {
 	displayName: string;
@@ -68,7 +68,7 @@ interface RepoInfo {
 }
 
 export async function execOrThrow(
-	sandbox: SandboxInstance,
+	sandbox: SandboxExecInstance,
 	command: string,
 	logs: string[],
 ) {
@@ -80,7 +80,7 @@ export async function execOrThrow(
 }
 
 export async function execOrThrowRedacted(
-	sandbox: SandboxInstance,
+	sandbox: SandboxExecInstance,
 	command: string,
 	logs: string[],
 	redactedCommand: string,

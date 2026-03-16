@@ -8,30 +8,31 @@ import {
 	truncateLog,
 	quoteForShell,
 	buildCommitMessage,
-} from "../lib/commands";
-import { createExecutionControl } from "../lib/execution-control";
-import { classifySandboxError } from "../lib/errors";
+} from "../../lib/commands";
+import { createExecutionControl } from "../../lib/execution-control";
+import { classifySandboxError } from "../../lib/errors";
 import {
 	startFileWatcher,
 	type FileWatcher,
-} from "../lib/feature-implementation/file-watcher";
+} from "../../lib/feature-implementation/file-watcher";
 import {
 	DEFAULT_MODEL,
 	MAX_COMMANDS,
 	MODEL_RETRY_OPTIONS,
-} from "../lib/feature-implementation/constants";
-import { collectRepositoryContext } from "../lib/feature-implementation/context";
-import { executeAgentLoop } from "../lib/feature-implementation/agent-loop";
-import { buildPlanningPrompt } from "../lib/feature-implementation/prompts";
-import { resolvePromptStrategy } from "../lib/feature-implementation/prompt-strategy";
+} from "../../lib/feature-implementation/constants";
+import { collectRepositoryContext } from "../../lib/feature-implementation/context";
+import { executeAgentLoop } from "../../lib/feature-implementation/agent-loop";
+import { buildPlanningPrompt } from "../../lib/feature-implementation/prompts";
+import { resolvePromptStrategy } from "../../lib/feature-implementation/prompt-strategy";
 import {
 	deriveQualityGateCommands,
 	runQualityGate,
-} from "../lib/feature-implementation/quality-gate";
-import { runStoryTracker } from "../lib/feature-implementation/story-tracker";
-import { truncateForModel } from "../lib/feature-implementation/utils";
-import { PolychatClient } from "../lib/polychat-client";
-import { RunControlClient } from "../lib/run-control-client";
+} from "../../lib/feature-implementation/quality-gate";
+import { runStoryTracker } from "../../lib/feature-implementation/story-tracker";
+import { truncateForModel } from "../../lib/feature-implementation/utils";
+import { PolychatClient } from "../../lib/polychat-client";
+import { RunControlClient } from "../../lib/run-control-client";
+import { pushBranchToRemote } from "../../lib/push-branch";
 import type {
 	TaskEvent,
 	TaskEventEmitter,
@@ -39,7 +40,7 @@ import type {
 	TaskResult,
 	TaskSecrets,
 	Env,
-} from "../types";
+} from "../../types";
 
 function resolveAbsoluteRepoTargetDir(
 	sandboxRoot: string,
@@ -341,6 +342,18 @@ export async function executeFeatureImplementation(
 					type: "commit_created",
 					branchName,
 				});
+
+				if (branchName) {
+					await pushBranchToRemote({
+						sandbox,
+						repoTargetDir,
+						branchName,
+						checkoutAuthHeader: repo.checkoutAuthHeader,
+						executionLogs,
+						checkpoint,
+						emit,
+					});
+				}
 			}
 		} else if (params.shouldCommit && !qualityGateResult.passed) {
 			await emit({
