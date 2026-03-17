@@ -30,6 +30,6 @@
 		"oxlint": "1.56.0",
 		"prettier": "3.8.1",
 		"typescript": "5.9.3",
-		"wrangler": "4.73.0"
+		"wrangler": "4.75.0"
 	}
 }
