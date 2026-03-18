@@ -38,7 +38,7 @@
 		"@radix-ui/react-toggle-group": "1.1.11",
 		"@react-router/node": "7.13.1",
 		"@react-router/serve": "7.13.1",
-		"@simplewebauthn/browser": "13.2.2",
+		"@simplewebauthn/browser": "13.3.0",
 		"@strudel/codemirror": "1.2.5",
 		"@strudel/core": "1.2.5",
 		"@strudel/draw": "1.2.5",
