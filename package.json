@@ -31,5 +31,5 @@
     "@vitest/coverage-v8": "4.0.18",
     "vitest": "4.0.18"
   },
-  "packageManager": "pnpm@10.29.3"
+  "packageManager": "pnpm@10.32.1"
 }
