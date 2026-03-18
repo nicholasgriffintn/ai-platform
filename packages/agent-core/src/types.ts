@@ -77,6 +77,7 @@ export type AgentDecision =
 
 export interface AgentConfig {
 	maxSteps: number;
+	maxStepExtensions: number;
 	maxRecoveryReplans: number;
 	maxConsecutiveDecisionFailures: number;
 	maxObservationChars: number;
@@ -165,6 +166,17 @@ export interface ExecuteAgentLoopParams<
 	formatRecoveryRequiredMessage?: (recoveryReason: string) => string;
 	formatRecoveryEnforcementMessage?: (recoveryReason: string) => string;
 	formatPlanUpdatedMessage?: (plan: string) => string;
+	onStepBudgetExceeded?: (context: {
+		step: number;
+		maxSteps: number;
+		currentPlan: string;
+		messages: AgentMessage[];
+		shared: TShared;
+		state: TState;
+	}) =>
+		| Promise<{ extendBy: number; reason?: string } | null>
+		| { extendBy: number; reason?: string }
+		| null;
 	onPlanRecovery?: (context: {
 		reason: string;
 		recoveryReplans: number;

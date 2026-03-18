@@ -239,7 +239,7 @@ export async function executeFeatureImplementation(
 
 		await emit({
 			type: "planning_completed",
-			plan: truncateForModel(plan, 1500),
+			plan: truncateForModel(plan, 4000),
 		});
 		await emit({
 			type: "command_batch_ready",

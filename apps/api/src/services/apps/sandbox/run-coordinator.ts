@@ -1,14 +1,15 @@
 export { SandboxRunCoordinator } from "./run-coordinator/object";
 export {
 	appendRunCoordinatorEvent,
-	getRunCoordinatorApproval,
 	getRunCoordinatorControl,
 	initRunCoordinatorControl,
 	listRunCoordinatorEvents,
-	listRunCoordinatorApprovals,
+	listRunCoordinatorInstructions,
 	openRunCoordinatorEventsSocket,
-	requestRunCoordinatorApproval,
-	resolveRunCoordinatorApproval,
+	submitRunCoordinatorInstruction,
 	updateRunCoordinatorControl,
 } from "./run-coordinator/client";
-export type { SandboxRunApprovalRecord } from "./run-coordinator/types";
+export type {
+	SandboxRunInstructionRecord,
+	CoordinatorInstructionEnvelope,
+} from "./run-coordinator/types";

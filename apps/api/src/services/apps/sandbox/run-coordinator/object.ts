@@ -1,23 +1,47 @@
 import {
 	sandboxRunControlSchema,
+	sandboxRunInstructionKindSchema,
 	type SandboxRunEvent,
+	type SandboxRunInstruction,
 } from "@assistant/schemas";
 import { safeParseJson } from "~/utils/json";
-import {
-	applyApprovalLifecycleTransitions,
-	buildApprovalRecord,
-	parseApprovalRecords,
-} from "./approvals";
 import type {
 	CoordinatorEventEnvelope,
+	CoordinatorInstructionEnvelope,
 	CoordinatorState,
-	SandboxRunApprovalRecord,
+	SandboxRunInstructionRecord,
 } from "./types";
 
 const CONTROL_KEY = "control";
 const EVENTS_KEY = "events";
 const EVENT_INDEX_KEY = "event-index";
-const APPROVALS_KEY = "approvals";
+const INSTRUCTIONS_KEY = "instructions";
+const INSTRUCTION_INDEX_KEY = "instruction-index";
+const DEFAULT_APPROVAL_TIMEOUT_SECONDS = 120;
+const DEFAULT_APPROVAL_ESCALATE_AFTER_SECONDS = 30;
+const MIN_APPROVAL_TIMEOUT_SECONDS = 5;
+const MAX_APPROVAL_TIMEOUT_SECONDS = 1800;
+const MIN_APPROVAL_ESCALATE_SECONDS = 1;
+const MAX_APPROVAL_ESCALATE_SECONDS = 900;
+const APPROVAL_TIMEOUT_REASON = "Approval request timed out";
+
+function parsePositiveInt(
+	value: unknown,
+	min: number,
+	max: number,
+): number | undefined {
+	if (typeof value !== "number" || !Number.isInteger(value)) {
+		return undefined;
+	}
+	if (value < min || value > max) {
+		return undefined;
+	}
+	return value;
+}
+
+function addSecondsIso(isoTimestamp: string, seconds: number): string {
+	return new Date(Date.parse(isoTimestamp) + seconds * 1000).toISOString();
+}
 
 export class SandboxRunCoordinator implements DurableObject {
 	constructor(private readonly state: DurableObjectState) {}
@@ -75,38 +99,124 @@ export class SandboxRunCoordinator implements DurableObject {
 		return envelope;
 	}
 
-	private async getApprovals(): Promise<SandboxRunApprovalRecord[]> {
-		const raw = await this.state.storage.get<string>(APPROVALS_KEY);
-		return parseApprovalRecords(raw ?? null);
+	private async appendInstruction(
+		instruction: SandboxRunInstructionRecord,
+	): Promise<CoordinatorInstructionEnvelope> {
+		const currentIndex =
+			(await this.state.storage.get<number>(INSTRUCTION_INDEX_KEY)) ?? 0;
+		const nextIndex = currentIndex + 1;
+		const envelope: CoordinatorInstructionEnvelope = {
+			index: nextIndex,
+			instruction,
+			recordedAt: new Date().toISOString(),
+		};
+
+		const raw = await this.state.storage.get<string>(INSTRUCTIONS_KEY);
+		const existing = raw
+			? (safeParseJson<CoordinatorInstructionEnvelope[]>(raw) ?? [])
+			: [];
+		const nextInstructions = [...existing, envelope].slice(-500);
+
+		await this.state.storage.put(INSTRUCTION_INDEX_KEY, nextIndex);
+		await this.state.storage.put(
+			INSTRUCTIONS_KEY,
+			JSON.stringify(nextInstructions),
+		);
+		return envelope;
 	}
 
-	private async putApprovals(
-		approvals: SandboxRunApprovalRecord[],
+	private async getInstructions(): Promise<CoordinatorInstructionEnvelope[]> {
+		const raw = await this.state.storage.get<string>(INSTRUCTIONS_KEY);
+		return raw
+			? (safeParseJson<CoordinatorInstructionEnvelope[]>(raw) ?? [])
+			: [];
+	}
+
+	private async putInstructions(
+		instructions: CoordinatorInstructionEnvelope[],
 	): Promise<void> {
 		await this.state.storage.put(
-			APPROVALS_KEY,
-			JSON.stringify(approvals.slice(-200)),
+			INSTRUCTIONS_KEY,
+			JSON.stringify(instructions.slice(-500)),
 		);
 	}
 
-	private applyApprovalLifecycleTransitions(
-		approvals: SandboxRunApprovalRecord[],
+	private applyInstructionLifecycleTransitions(
+		instructions: CoordinatorInstructionEnvelope[],
+		now: Date = new Date(),
 	): {
-		approvals: SandboxRunApprovalRecord[];
+		instructions: CoordinatorInstructionEnvelope[];
 		changed: boolean;
 	} {
-		return applyApprovalLifecycleTransitions(approvals);
+		let changed = false;
+		const nowMs = now.getTime();
+		const nowIso = now.toISOString();
+		const nextInstructions = instructions.map((entry) => {
+			const instruction = entry.instruction;
+			if (instruction.kind !== "approval_request") {
+				return entry;
+			}
+			if (
+				instruction.approvalStatus === "approved" ||
+				instruction.approvalStatus === "rejected" ||
+				instruction.approvalStatus === "timed_out"
+			) {
+				return entry;
+			}
+
+			let nextInstruction = instruction;
+			if (
+				instruction.approvalStatus === "pending" &&
+				instruction.escalationAt &&
+				Date.parse(instruction.escalationAt) <= nowMs
+			) {
+				nextInstruction = {
+					...nextInstruction,
+					approvalStatus: "escalated",
+					escalatedAt: nextInstruction.escalatedAt ?? nowIso,
+				};
+				changed = true;
+			}
+
+			if (
+				(nextInstruction.approvalStatus === "pending" ||
+					nextInstruction.approvalStatus === "escalated") &&
+				nextInstruction.expiresAt &&
+				Date.parse(nextInstruction.expiresAt) <= nowMs
+			) {
+				nextInstruction = {
+					...nextInstruction,
+					approvalStatus: "timed_out",
+					timedOutAt: nextInstruction.timedOutAt ?? nowIso,
+					resolvedAt: nextInstruction.resolvedAt ?? nowIso,
+					resolutionReason:
+						nextInstruction.resolutionReason ?? APPROVAL_TIMEOUT_REASON,
+				};
+				changed = true;
+			}
+
+			return {
+				...entry,
+				instruction: nextInstruction,
+			};
+		});
+
+		return {
+			instructions: nextInstructions,
+			changed,
+		};
 	}
 
-	private async getApprovalsWithLifecycle(): Promise<
-		SandboxRunApprovalRecord[]
+	private async getInstructionsWithLifecycle(): Promise<
+		CoordinatorInstructionEnvelope[]
 	> {
-		const approvals = await this.getApprovals();
-		const transitioned = this.applyApprovalLifecycleTransitions(approvals);
+		const instructions = await this.getInstructions();
+		const transitioned =
+			this.applyInstructionLifecycleTransitions(instructions);
 		if (transitioned.changed) {
-			await this.putApprovals(transitioned.approvals);
+			await this.putInstructions(transitioned.instructions);
 		}
-		return transitioned.approvals;
+		return transitioned.instructions;
 	}
 
 	public async fetch(request: Request): Promise<Response> {
@@ -224,97 +334,148 @@ export class SandboxRunCoordinator implements DurableObject {
 			});
 		}
 
-		if (pathname === "/approval/request" && request.method === "POST") {
+		if (pathname === "/instructions" && request.method === "POST") {
 			const body = (await request.json()) as Record<string, unknown>;
-			const command =
-				typeof body.command === "string" ? body.command.trim() : "";
-			if (!command) {
-				return Response.json({ error: "command is required" }, { status: 400 });
+			const parsedKind = sandboxRunInstructionKindSchema.safeParse(body.kind);
+			const kind = parsedKind.success ? parsedKind.data : "message";
+			const contentRaw =
+				typeof body.content === "string" ? body.content.trim() : "";
+			if (kind === "message" && !contentRaw) {
+				return Response.json(
+					{ error: "content is required for message instructions" },
+					{ status: 400 },
+				);
 			}
 
-			const approvals = await this.getApprovalsWithLifecycle();
 			const control = await this.getControl();
-			const approval = buildApprovalRecord({
+			const nowIso = new Date().toISOString();
+
+			if (kind === "approval_request") {
+				const command =
+					typeof body.command === "string" ? body.command.trim() : "";
+				if (!command) {
+					return Response.json(
+						{ error: "command is required" },
+						{ status: 400 },
+					);
+				}
+				const timeoutSeconds =
+					parsePositiveInt(
+						body.timeoutSeconds,
+						MIN_APPROVAL_TIMEOUT_SECONDS,
+						MAX_APPROVAL_TIMEOUT_SECONDS,
+					) ?? DEFAULT_APPROVAL_TIMEOUT_SECONDS;
+				const requestedEscalateAfterSeconds = parsePositiveInt(
+					body.escalateAfterSeconds,
+					MIN_APPROVAL_ESCALATE_SECONDS,
+					MAX_APPROVAL_ESCALATE_SECONDS,
+				);
+				const escalateAfterSeconds = Math.min(
+					requestedEscalateAfterSeconds ??
+						DEFAULT_APPROVAL_ESCALATE_AFTER_SECONDS,
+					Math.max(1, timeoutSeconds - 1),
+				);
+				const instruction: SandboxRunInstruction = {
+					id: crypto.randomUUID(),
+					runId: control?.runId ?? "unknown",
+					kind,
+					content: contentRaw || undefined,
+					command,
+					approvalStatus: "pending",
+					timeoutSeconds,
+					escalateAfterSeconds,
+					expiresAt: addSecondsIso(nowIso, timeoutSeconds),
+					escalationAt: addSecondsIso(nowIso, escalateAfterSeconds),
+					createdAt: nowIso,
+				};
+				const envelope = await this.appendInstruction(instruction);
+				return Response.json({ instruction: envelope.instruction, envelope });
+			}
+
+			if (kind === "approval_response") {
+				const requestId =
+					typeof body.requestId === "string" ? body.requestId.trim() : "";
+				const approvalStatus =
+					body.approvalStatus === "approved" ||
+					body.approvalStatus === "rejected"
+						? body.approvalStatus
+						: undefined;
+				if (!requestId || !approvalStatus) {
+					return Response.json(
+						{ error: "requestId and approvalStatus are required" },
+						{ status: 400 },
+					);
+				}
+
+				const instructions = await this.getInstructionsWithLifecycle();
+				const requestIndex = instructions.findIndex(
+					(entry) =>
+						entry.instruction.kind === "approval_request" &&
+						entry.instruction.id === requestId,
+				);
+				if (requestIndex < 0) {
+					return Response.json(
+						{ error: "Approval request not found" },
+						{ status: 404 },
+					);
+				}
+
+				const requestInstruction = instructions[requestIndex].instruction;
+				if (
+					requestInstruction.approvalStatus === "approved" ||
+					requestInstruction.approvalStatus === "rejected" ||
+					requestInstruction.approvalStatus === "timed_out"
+				) {
+					return Response.json(
+						{ error: "Approval request already resolved" },
+						{ status: 409 },
+					);
+				}
+
+				instructions[requestIndex] = {
+					...instructions[requestIndex],
+					instruction: {
+						...requestInstruction,
+						approvalStatus,
+						resolvedAt: nowIso,
+						resolutionReason: contentRaw || requestInstruction.resolutionReason,
+					},
+				};
+				await this.putInstructions(instructions);
+
+				const instruction: SandboxRunInstruction = {
+					id: crypto.randomUUID(),
+					runId: control?.runId ?? "unknown",
+					kind,
+					requestId,
+					approvalStatus,
+					content: contentRaw || undefined,
+					createdAt: nowIso,
+				};
+				const envelope = await this.appendInstruction(instruction);
+				return Response.json({ instruction: envelope.instruction, envelope });
+			}
+
+			const instruction: SandboxRunInstruction = {
+				id: crypto.randomUUID(),
 				runId: control?.runId ?? "unknown",
-				command,
-				body,
+				kind,
+				content: contentRaw || undefined,
+				createdAt: nowIso,
+			};
+			const envelope = await this.appendInstruction(instruction);
+			return Response.json({ instruction: envelope.instruction, envelope });
+		}
+
+		if (pathname === "/instructions" && request.method === "GET") {
+			const afterRaw = url.searchParams.get("after");
+			const after = afterRaw ? Number.parseInt(afterRaw, 10) : 0;
+			const instructions = await this.getInstructionsWithLifecycle();
+			return Response.json({
+				instructions: instructions.filter(
+					(entry) => entry.index > (Number.isFinite(after) ? after : 0),
+				),
 			});
-			approvals.push(approval);
-			await this.putApprovals(approvals);
-			return Response.json({ approval });
-		}
-
-		if (pathname === "/approval/resolve" && request.method === "POST") {
-			const body = (await request.json()) as Record<string, unknown>;
-			const id = typeof body.id === "string" ? body.id.trim() : "";
-			const status =
-				body.status === "approved" || body.status === "rejected"
-					? body.status
-					: undefined;
-			if (!id || !status) {
-				return Response.json(
-					{ error: "id and status are required" },
-					{ status: 400 },
-				);
-			}
-
-			const approvals = await this.getApprovalsWithLifecycle();
-			const approval = approvals.find((entry) => entry.id === id);
-			if (!approval) {
-				return Response.json({ error: "Approval not found" }, { status: 404 });
-			}
-			if (approval.status === "timed_out") {
-				return Response.json(
-					{ error: "Approval already timed out" },
-					{ status: 409 },
-				);
-			}
-			if (approval.status === "approved" || approval.status === "rejected") {
-				return Response.json(
-					{ error: "Approval already resolved" },
-					{ status: 409 },
-				);
-			}
-
-			const resolvedAt = new Date().toISOString();
-			const nextApprovals: SandboxRunApprovalRecord[] = approvals.map(
-				(entry) =>
-					entry.id === id
-						? {
-								...entry,
-								status,
-								resolvedAt,
-								resolutionReason:
-									typeof body.reason === "string"
-										? body.reason
-										: entry.resolutionReason,
-							}
-						: entry,
-			);
-			await this.putApprovals(nextApprovals);
-			const updated = nextApprovals.find((entry) => entry.id === id);
-			return Response.json({ success: true, approval: updated });
-		}
-
-		if (pathname.startsWith("/approval/") && request.method === "GET") {
-			const approvalId = pathname.slice("/approval/".length).trim();
-			if (!approvalId) {
-				return Response.json(
-					{ error: "approvalId is required" },
-					{ status: 400 },
-				);
-			}
-			const approvals = await this.getApprovalsWithLifecycle();
-			const approval = approvals.find((entry) => entry.id === approvalId);
-			if (!approval) {
-				return Response.json({ error: "Approval not found" }, { status: 404 });
-			}
-			return Response.json({ approval });
-		}
-
-		if (pathname === "/approval" && request.method === "GET") {
-			const approvals = await this.getApprovalsWithLifecycle();
-			return Response.json({ approvals });
 		}
 
 		return Response.json({ error: "Not found" }, { status: 404 });

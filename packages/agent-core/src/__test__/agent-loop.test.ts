@@ -106,6 +106,39 @@ describe("executeAgentLoop", () => {
 		).rejects.toThrow("Agent exceeded maximum step budget (2)");
 	});
 
+	it("extends step budget when continuation is requested", async () => {
+		let attempts = 0;
+		const result = await executeAgentLoop({
+			initialMessages: [{ role: "user", content: "start" }],
+			initialPlan: "Initial plan",
+			shared: {},
+			state: { commandCount: 0 },
+			config: {
+				maxSteps: 2,
+				maxStepExtensions: 1,
+			},
+			onStepBudgetExceeded: () => ({
+				extendBy: 2,
+				reason: "continue requested",
+			}),
+			resolveDecision: async () => {
+				attempts += 1;
+				if (attempts < 4) {
+					return {
+						decision: { action: "run_command", command: "echo progress" },
+					};
+				}
+				return {
+					decision: { action: "finish", summary: "done after extension" },
+				};
+			},
+			handlers: [createRunCommandHandler()],
+		});
+
+		expect(result.summary).toBe("done after extension");
+		expect(result.stepsTaken).toBe(4);
+	});
+
 	it("requires update_plan on the step after beginPlanRecovery", async () => {
 		const contexts: AgentDecisionContext[] = [];
 		let callCount = 0;

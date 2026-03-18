@@ -215,10 +215,13 @@ describe("executeAgentLoop", () => {
 		});
 
 		expect(result.summary).toBe("recovered");
-		expect(exec).toHaveBeenCalledTimes(3);
+		expect(exec).toHaveBeenCalledTimes(2);
 		expect(
 			emitted.filter((event) => event.type === "command_failed"),
-		).toHaveLength(3);
+		).toHaveLength(2);
+		expect(
+			emitted.some((event) => event.type === "agent_repetition_detected"),
+		).toBe(true);
 		expect(emitted.some((event) => event.type === "plan_updated")).toBe(true);
 	});
 
@@ -465,5 +468,161 @@ describe("executeAgentLoop", () => {
 		expect(emitted.filter((event) => event.type === "file_read")).toHaveLength(
 			2,
 		);
+	});
+
+	it("detects repeated actions and forces recovery", async () => {
+		const emitted: Array<Record<string, unknown>> = [];
+		const chatCompletion = vi
+			.fn()
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "read_file",
+					path: "src/worklog.js",
+				}),
+			)
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "read_file",
+					path: "src/worklog.js",
+				}),
+			)
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "read_file",
+					path: "src/worklog.js",
+				}),
+			)
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "update_plan",
+					plan: "Use a different approach",
+				}),
+			)
+			.mockResolvedValueOnce(
+				JSON.stringify({
+					action: "finish",
+					summary: "recovered",
+				}),
+			);
+
+		const exec = vi.fn().mockResolvedValue({
+			success: true,
+			exitCode: 0,
+			stdout: "export const value = 1;\n",
+			stderr: "",
+		});
+
+		const result = await executeAgentLoop({
+			sandbox: {
+				exec,
+			} as any,
+			client: {
+				chatCompletion,
+			} as any,
+			model: "test-model",
+			repoDisplayName: "owner/repo",
+			repoTargetDir: "repo",
+			task: "test",
+			taskType: "feature-implementation",
+			promptStrategy: {
+				strategy: "feature-delivery",
+				definition: {
+					strategy: "feature-delivery",
+					label: "Feature delivery",
+					planningFocus: ["focus"],
+					executionFocus: ["focus"],
+					examples: [],
+				},
+				reason: "test",
+				source: "explicit",
+			},
+			initialPlan: "plan",
+			repoContext: {
+				topLevelEntries: [],
+				files: [],
+				taskInstructionSource: "none",
+			},
+			executionLogs: [],
+			emit: async (event) => {
+				emitted.push(event as unknown as Record<string, unknown>);
+			},
+		});
+
+		expect(result.summary).toBe("recovered");
+		expect(exec).toHaveBeenCalledTimes(2);
+		expect(
+			emitted.some((event) => event.type === "agent_repetition_detected"),
+		).toBe(true);
+	});
+
+	it("ingests operator instructions into model context", async () => {
+		const chatCompletion = vi.fn().mockResolvedValue(
+			JSON.stringify({
+				action: "finish",
+				summary: "done",
+			}),
+		);
+		const approvalClient = {
+			listInstructions: vi
+				.fn()
+				.mockResolvedValueOnce([
+					{
+						index: 1,
+						recordedAt: new Date().toISOString(),
+						instruction: {
+							id: "ins-1",
+							runId: "run-1",
+							kind: "message",
+							content: "Focus on adding tests before finishing.",
+							createdAt: new Date().toISOString(),
+						},
+					},
+				])
+				.mockResolvedValueOnce([]),
+		};
+
+		await executeAgentLoop({
+			sandbox: {
+				exec: vi.fn(),
+			} as any,
+			client: {
+				chatCompletion,
+			} as any,
+			model: "test-model",
+			repoDisplayName: "owner/repo",
+			repoTargetDir: "repo",
+			task: "test",
+			taskType: "feature-implementation",
+			promptStrategy: {
+				strategy: "feature-delivery",
+				definition: {
+					strategy: "feature-delivery",
+					label: "Feature delivery",
+					planningFocus: ["focus"],
+					executionFocus: ["focus"],
+					examples: [],
+				},
+				reason: "test",
+				source: "explicit",
+			},
+			initialPlan: "plan",
+			repoContext: {
+				topLevelEntries: [],
+				files: [],
+				taskInstructionSource: "none",
+			},
+			executionLogs: [],
+			approvalClient: approvalClient as any,
+			emit: vi.fn(),
+		});
+
+		const firstCallMessages = chatCompletion.mock.calls[0]?.[0]?.messages ?? [];
+		expect(
+			firstCallMessages.some(
+				(message: { content?: string }) =>
+					typeof message.content === "string" &&
+					message.content.includes("Operator message:"),
+			),
+		).toBe(true);
 	});
 });

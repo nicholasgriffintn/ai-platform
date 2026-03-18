@@ -30,6 +30,8 @@ import { truncateForModel } from "./utils";
 export interface AgentLoopMutableState {
 	commandCount: number;
 	consecutiveCommandFailures: number;
+	lastActionSignature?: string;
+	repeatedActionCount?: number;
 }
 
 export interface AgentLoopActionContext {
@@ -55,10 +57,70 @@ function pushUserMessage(messages: AgentMessage[], content: string) {
 	});
 }
 
+async function guardAgainstRepeatedAction(
+	context: AgentLoopActionContext,
+	params: {
+		signature: string;
+		threshold: number;
+		action: string;
+		description: string;
+	},
+): Promise<boolean> {
+	const signature = params.signature.trim();
+	if (!signature) {
+		return false;
+	}
+
+	if (context.state.lastActionSignature === signature) {
+		context.state.repeatedActionCount =
+			(context.state.repeatedActionCount ?? 1) + 1;
+	} else {
+		context.state.lastActionSignature = signature;
+		context.state.repeatedActionCount = 1;
+	}
+
+	const repeatCount = context.state.repeatedActionCount ?? 1;
+	if (repeatCount < params.threshold) {
+		return false;
+	}
+
+	const reason =
+		`Detected repeated action "${params.action}" ${repeatCount} times in a row.` +
+		` Last repeated target: ${truncateForModel(params.description, 300)}`;
+	await context.emit({
+		type: "agent_repetition_detected",
+		agentStep: context.step,
+		action: params.action,
+		repeatCount,
+		message: reason,
+		error: truncateForModel(params.description, 300),
+	});
+	context.beginPlanRecovery(reason);
+	pushUserMessage(
+		context.messages,
+		[
+			reason,
+			"Do not repeat the same action again.",
+			"Use update_plan now with a new approach before continuing.",
+		].join("\n"),
+	);
+	return true;
+}
+
 export async function handleReadFileAction(
 	context: AgentLoopActionContext,
 	decision: ReadFileDecision,
 ): Promise<void> {
+	const repeated = await guardAgainstRepeatedAction(context, {
+		signature: `read_file:${decision.path}:${decision.startLine ?? ""}:${decision.endLine ?? ""}`,
+		threshold: 3,
+		action: "read_file",
+		description: `${decision.path} (${decision.startLine ?? "start"}-${decision.endLine ?? "end"})`,
+	});
+	if (repeated) {
+		return;
+	}
+
 	const readResult = await readRepositoryFileSnippet({
 		sandbox: context.sandbox,
 		repoTargetDir: context.repoTargetDir,
@@ -82,6 +144,20 @@ export async function handleReadFilesAction(
 	context: AgentLoopActionContext,
 	decision: ReadFilesDecision,
 ): Promise<void> {
+	const repeated = await guardAgainstRepeatedAction(context, {
+		signature: `read_files:${decision.files
+			.map(
+				(file) => `${file.path}:${file.startLine ?? ""}:${file.endLine ?? ""}`,
+			)
+			.join("|")}`,
+		threshold: 3,
+		action: "read_files",
+		description: decision.files.map((file) => file.path).join(", "),
+	});
+	if (repeated) {
+		return;
+	}
+
 	const requestedFiles = decision.files.filter(
 		(file) => typeof file.path === "string" && file.path.trim().length > 0,
 	);
@@ -148,6 +224,16 @@ export async function handleRunCommandAction(
 	await context.guardExecution(
 		"Sandbox run cancelled before command execution",
 	);
+
+	const repeated = await guardAgainstRepeatedAction(context, {
+		signature: `run_command:${decision.command}`,
+		threshold: 3,
+		action: "run_command",
+		description: decision.command,
+	});
+	if (repeated) {
+		return;
+	}
 
 	if (context.state.commandCount >= MAX_COMMANDS) {
 		throw new Error(`Agent exceeded maximum command budget (${MAX_COMMANDS})`);
@@ -302,6 +388,16 @@ export async function handleRunParallelAction(
 	await context.guardExecution(
 		"Sandbox run cancelled before parallel command execution",
 	);
+
+	const repeated = await guardAgainstRepeatedAction(context, {
+		signature: `run_parallel:${decision.commands.join("|")}`,
+		threshold: 2,
+		action: "run_parallel",
+		description: decision.commands.join(" | "),
+	});
+	if (repeated) {
+		return;
+	}
 
 	const requestedCommands = decision.commands
 		.map((entry) => entry.trim())
@@ -478,6 +574,16 @@ export async function handleRunScriptAction(
 	decision: RunScriptDecision,
 ): Promise<void> {
 	await context.guardExecution("Sandbox run cancelled before script execution");
+
+	const repeated = await guardAgainstRepeatedAction(context, {
+		signature: `run_script:${decision.language ?? "javascript"}:${decision.code}`,
+		threshold: 2,
+		action: "run_script",
+		description: truncateForModel(decision.code, 200),
+	});
+	if (repeated) {
+		return;
+	}
 
 	if (context.readOnlyCommands || context.trustLevel === "strict") {
 		pushUserMessage(

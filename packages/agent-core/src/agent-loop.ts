@@ -11,6 +11,7 @@ import { truncateForModel } from "./utils";
 
 const DEFAULT_CONFIG: AgentConfig = {
 	maxSteps: 48,
+	maxStepExtensions: 2,
 	maxRecoveryReplans: 4,
 	maxConsecutiveDecisionFailures: 3,
 	maxObservationChars: 5000,
@@ -131,7 +132,64 @@ export async function executeAgentLoop<
 		});
 	};
 
-	for (let step = 1; step <= config.maxSteps; step += 1) {
+	let maxSteps = config.maxSteps;
+	let step = 1;
+	let stepExtensions = 0;
+
+	const tryExtendStepBudget = async (): Promise<boolean> => {
+		if (
+			typeof params.onStepBudgetExceeded !== "function" ||
+			stepExtensions >= config.maxStepExtensions
+		) {
+			return false;
+		}
+
+		const extension = await params.onStepBudgetExceeded({
+			step,
+			maxSteps,
+			currentPlan,
+			messages,
+			shared: params.shared,
+			state: params.state,
+		});
+		if (
+			!extension ||
+			!Number.isFinite(extension.extendBy) ||
+			extension.extendBy <= 0
+		) {
+			return false;
+		}
+
+		const extendBy = Math.max(1, Math.floor(extension.extendBy));
+		maxSteps += extendBy;
+		stepExtensions += 1;
+		await emit({
+			type: "agent_step_budget_extended",
+			agentStep: step,
+			maxSteps,
+			extendedBy: extendBy,
+			message:
+				extension.reason || `Agent step budget extended by ${extendBy} steps.`,
+		});
+		return true;
+	};
+
+	while (true) {
+		if (step > maxSteps) {
+			const extended = await tryExtendStepBudget();
+			if (extended) {
+				continue;
+			}
+
+			await emit({
+				type: "agent_step_budget_exhausted",
+				agentStep: step,
+				maxSteps,
+				error: `Agent exceeded maximum step budget (${maxSteps})`,
+			});
+			throw new Error(`Agent exceeded maximum step budget (${maxSteps})`);
+		}
+
 		await guardExecution("Agent run cancelled during execution");
 
 		await emit({
@@ -183,6 +241,7 @@ export async function executeAgentLoop<
 					),
 				});
 			}
+			step += 1;
 			continue;
 		}
 
@@ -200,6 +259,7 @@ export async function executeAgentLoop<
 					recoveryReason ?? "Repeated execution failures.",
 				),
 			});
+			step += 1;
 			continue;
 		}
 
@@ -228,6 +288,7 @@ export async function executeAgentLoop<
 				role: "user",
 				content: formatPlanUpdatedMessage(currentPlan),
 			});
+			step += 1;
 			continue;
 		}
 
@@ -272,7 +333,7 @@ export async function executeAgentLoop<
 			guardExecution,
 			beginPlanRecovery,
 		});
-	}
 
-	throw new Error(`Agent exceeded maximum step budget (${config.maxSteps})`);
+		step += 1;
+	}
 }

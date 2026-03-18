@@ -2,23 +2,24 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
 	cancelSandboxRun,
-	fetchSandboxRunApprovals,
 	pauseSandboxRun,
-	resolveSandboxRunApproval,
 	resumeSandboxRun,
 	connectSandboxInstallation,
 	fetchSandboxInstallConfig,
 	deleteSandboxConnection,
 	fetchSandboxConnections,
 	fetchSandboxRun,
+	fetchSandboxRunInstructions,
 	fetchSandboxRuns,
+	submitSandboxRunInstruction,
 	upsertSandboxConnection,
 } from "~/lib/api/sandbox";
 import type {
 	ConnectSandboxInstallationInput,
 	CreateSandboxConnectionInput,
+	SandboxRunInstructionKind,
 	SandboxRun,
-	SandboxRunApproval,
+	SandboxRunInstruction,
 } from "~/types/sandbox";
 
 export const SANDBOX_QUERY_KEYS = {
@@ -35,8 +36,8 @@ export const SANDBOX_QUERY_KEYS = {
 		] as const,
 	run: (runId?: string) =>
 		[...SANDBOX_QUERY_KEYS.root, "run", runId ?? null] as const,
-	runApprovals: (runId?: string) =>
-		[...SANDBOX_QUERY_KEYS.root, "run-approvals", runId ?? null] as const,
+	runInstructions: (runId?: string) =>
+		[...SANDBOX_QUERY_KEYS.root, "run-instructions", runId ?? null] as const,
 };
 
 export const useSandboxConnections = () =>
@@ -131,23 +132,25 @@ export const useSandboxRun = (
 		refetchIntervalInBackground: options?.refetchIntervalInBackground,
 	});
 
-export const useSandboxRunApprovals = (
+export const useSandboxRunInstructions = (
 	runId?: string,
 	options?: {
 		enabled?: boolean;
 		refetchInterval?:
 			| number
 			| false
-			| ((query: { state: { data?: SandboxRunApproval[] } }) => number | false);
+			| ((query: {
+					state: { data?: SandboxRunInstruction[] };
+			  }) => number | false);
 	},
 ) =>
-	useQuery<SandboxRunApproval[], Error>({
-		queryKey: SANDBOX_QUERY_KEYS.runApprovals(runId),
+	useQuery<SandboxRunInstruction[], Error>({
+		queryKey: SANDBOX_QUERY_KEYS.runInstructions(runId),
 		queryFn: () => {
 			if (!runId) {
 				throw new Error("Run ID is required");
 			}
-			return fetchSandboxRunApprovals(runId);
+			return fetchSandboxRunInstructions(runId);
 		},
 		enabled: Boolean(runId) && (options?.enabled ?? true),
 		refetchInterval: options?.refetchInterval,
@@ -198,28 +201,31 @@ export const useResumeSandboxRun = () => {
 	});
 };
 
-export const useResolveSandboxRunApproval = () => {
+export const useSubmitSandboxRunInstruction = () => {
 	const queryClient = useQueryClient();
 	return useMutation<
-		SandboxRunApproval,
+		void,
 		Error,
 		{
 			runId: string;
-			approvalId: string;
-			status: "approved" | "rejected";
-			reason?: string;
+			kind?: SandboxRunInstructionKind;
+			content?: string;
+			command?: string;
+			requestId?: string;
+			approvalStatus?: "approved" | "rejected";
+			timeoutSeconds?: number;
+			escalateAfterSeconds?: number;
 		}
 	>({
-		mutationFn: (input) => resolveSandboxRunApproval(input),
-		onSuccess: (_approval, variables) => {
-			queryClient.invalidateQueries({
-				queryKey: SANDBOX_QUERY_KEYS.runApprovals(variables.runId),
-			});
+		mutationFn: async (payload) => {
+			await submitSandboxRunInstruction(payload);
+		},
+		onSuccess: (_result, variables) => {
 			queryClient.invalidateQueries({
 				queryKey: SANDBOX_QUERY_KEYS.run(variables.runId),
 			});
 			queryClient.invalidateQueries({
-				queryKey: SANDBOX_QUERY_KEYS.root,
+				queryKey: SANDBOX_QUERY_KEYS.runInstructions(variables.runId),
 			});
 		},
 	});

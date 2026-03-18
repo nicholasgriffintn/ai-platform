@@ -4,10 +4,11 @@ import { parseSseBuffer } from "~/lib/sandbox/sse";
 import type {
 	ConnectSandboxInstallationInput,
 	CreateSandboxConnectionInput,
-	SandboxRunApproval,
 	ExecuteSandboxRunInput,
 	SandboxConnection,
 	SandboxInstallConfig,
+	SandboxRunInstruction,
+	SandboxRunInstructionKind,
 	SandboxRun,
 	SandboxRunEvent,
 } from "~/types/sandbox";
@@ -214,11 +215,11 @@ export async function fetchSandboxRun(runId: string): Promise<SandboxRun> {
 	return data.run;
 }
 
-export async function fetchSandboxRunApprovals(
+export async function fetchSandboxRunInstructions(
 	runId: string,
-): Promise<SandboxRunApproval[]> {
+): Promise<SandboxRunInstruction[]> {
 	const headers = await apiService.getHeaders();
-	const response = await fetchApi(`/apps/sandbox/runs/${runId}/approvals`, {
+	const response = await fetchApi(`/apps/sandbox/runs/${runId}/instructions`, {
 		method: "GET",
 		headers,
 	});
@@ -227,53 +228,18 @@ export async function fetchSandboxRunApprovals(
 		throw new Error(
 			await extractApiErrorMessage(
 				response,
-				`Failed to fetch sandbox run approvals: ${response.statusText}`,
-			),
-		);
-	}
-
-	const data = await returnFetchedData<{ approvals: SandboxRunApproval[] }>(
-		response,
-	);
-	return data.approvals ?? [];
-}
-
-export async function resolveSandboxRunApproval(params: {
-	runId: string;
-	approvalId: string;
-	status: "approved" | "rejected";
-	reason?: string;
-}): Promise<SandboxRunApproval> {
-	const headers = await apiService.getHeaders();
-	const response = await fetchApi(
-		`/apps/sandbox/runs/${params.runId}/approvals/${params.approvalId}/resolve`,
-		{
-			method: "POST",
-			headers,
-			body: {
-				status: params.status,
-				reason: params.reason,
-			},
-		},
-	);
-
-	if (!response.ok) {
-		throw new Error(
-			await extractApiErrorMessage(
-				response,
-				`Failed to resolve sandbox run approval: ${response.statusText}`,
+				`Failed to fetch sandbox run instructions: ${response.statusText}`,
 			),
 		);
 	}
 
 	const data = await returnFetchedData<{
-		success?: boolean;
-		approval?: SandboxRunApproval;
+		instructions?: Array<{ instruction?: SandboxRunInstruction }>;
 	}>(response);
-	if (!data.approval) {
-		throw new Error("Resolved approval was not returned");
-	}
-	return data.approval;
+	const envelopes = Array.isArray(data.instructions) ? data.instructions : [];
+	return envelopes
+		.map((entry) => entry.instruction)
+		.filter((entry): entry is SandboxRunInstruction => Boolean(entry));
 }
 
 export async function cancelSandboxRun(
@@ -342,6 +308,52 @@ async function mutateSandboxRunState(params: {
 		throw new Error("Sandbox run was not returned");
 	}
 	return data.run;
+}
+
+export async function submitSandboxRunInstruction(params: {
+	runId: string;
+	kind?: SandboxRunInstructionKind;
+	content?: string;
+	command?: string;
+	requestId?: string;
+	approvalStatus?: "approved" | "rejected";
+	timeoutSeconds?: number;
+	escalateAfterSeconds?: number;
+}): Promise<SandboxRunInstruction> {
+	const headers = await apiService.getHeaders();
+	const response = await fetchApi(
+		`/apps/sandbox/runs/${params.runId}/instructions`,
+		{
+			method: "POST",
+			headers,
+			body: {
+				kind: params.kind ?? "message",
+				content: params.content,
+				command: params.command,
+				requestId: params.requestId,
+				approvalStatus: params.approvalStatus,
+				timeoutSeconds: params.timeoutSeconds,
+				escalateAfterSeconds: params.escalateAfterSeconds,
+			},
+		},
+	);
+
+	if (!response.ok) {
+		throw new Error(
+			await extractApiErrorMessage(
+				response,
+				`Failed to submit run instruction: ${response.statusText}`,
+			),
+		);
+	}
+
+	const data = await returnFetchedData<{ instruction?: SandboxRunInstruction }>(
+		response,
+	);
+	if (!data.instruction) {
+		throw new Error("Submitted instruction was not returned");
+	}
+	return data.instruction;
 }
 
 export interface StreamSandboxRunOptions {

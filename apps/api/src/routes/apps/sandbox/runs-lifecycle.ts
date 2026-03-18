@@ -5,15 +5,19 @@ import {
 	cancelRunSchema,
 	errorResponseSchema,
 	listRunEventsQuerySchema,
+	listRunInstructionsQuerySchema,
 	listRunsQuerySchema,
 	pauseRunSchema,
 	resumeRunSchema,
 	sandboxRunParamsSchema,
+	submitRunInstructionSchema,
 	type CancelRunPayload,
 	type ListRunEventsQueryPayload,
+	type ListRunInstructionsQueryPayload,
 	type ListRunsQueryPayload,
 	type PauseRunPayload,
 	type ResumeRunPayload,
+	type SubmitRunInstructionPayload,
 	type SandboxRunParams,
 } from "@assistant/schemas";
 
@@ -25,8 +29,10 @@ import {
 	getSandboxRunControlState,
 	getSandboxRunForUser,
 	listSandboxRunEventsForUser,
+	listSandboxRunInstructionsForUser,
 	listSandboxRunsForUser,
 	requestSandboxRunCancellation,
+	requestSandboxRunInstruction,
 	requestSandboxRunPause,
 	requestSandboxRunResume,
 } from "~/services/apps/sandbox/runs";
@@ -98,6 +104,27 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 					after: query.after,
 				});
 				return ResponseFactory.success(c, { events });
+			})(raw),
+	});
+
+	addRoute(app, "get", "/runs/:runId/instructions", {
+		tags: ["apps"],
+		paramSchema: sandboxRunParamsSchema,
+		querySchema: listRunInstructionsQuerySchema,
+		handler: async ({ raw }) =>
+			(async (c: Context) => {
+				const user = requireAuthenticatedUser(c);
+				const { runId } = c.req.valid("param" as never) as SandboxRunParams;
+				const query = c.req.valid(
+					"query" as never,
+				) as ListRunInstructionsQueryPayload;
+				const instructions = await listSandboxRunInstructionsForUser({
+					context: getServiceContext(c),
+					userId: user.id,
+					runId,
+					after: query.after,
+				});
+				return ResponseFactory.success(c, { instructions });
 			})(raw),
 	});
 
@@ -230,6 +257,37 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 					reason: payload.reason,
 				});
 				return ResponseFactory.success(c, result);
+			})(raw),
+	});
+
+	addRoute(app, "post", "/runs/:runId/instructions", {
+		tags: ["apps"],
+		description: "Submit an operator instruction to a running sandbox run",
+		bodySchema: submitRunInstructionSchema,
+		paramSchema: sandboxRunParamsSchema,
+		responses: {
+			200: { description: "Instruction accepted" },
+		},
+		handler: async ({ raw }) =>
+			(async (c: Context) => {
+				const user = requireAuthenticatedUser(c);
+				const { runId } = c.req.valid("param" as never) as SandboxRunParams;
+				const payload = c.req.valid(
+					"json" as never,
+				) as SubmitRunInstructionPayload;
+				const instruction = await requestSandboxRunInstruction({
+					context: getServiceContext(c),
+					userId: user.id,
+					runId,
+					kind: payload.kind,
+					content: payload.content,
+					command: payload.command,
+					requestId: payload.requestId,
+					approvalStatus: payload.approvalStatus,
+					timeoutSeconds: payload.timeoutSeconds,
+					escalateAfterSeconds: payload.escalateAfterSeconds,
+				});
+				return ResponseFactory.success(c, { instruction });
 			})(raw),
 	});
 

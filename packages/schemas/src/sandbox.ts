@@ -91,15 +91,6 @@ export const sandboxRunParamsSchema = z.object({
 
 export type SandboxRunParams = z.infer<typeof sandboxRunParamsSchema>;
 
-export const sandboxRunApprovalParamsSchema = z.object({
-	runId: z.string().trim().min(1),
-	approvalId: z.string().trim().min(1),
-});
-
-export type SandboxRunApprovalParams = z.infer<
-	typeof sandboxRunApprovalParamsSchema
->;
-
 export const listRunsQuerySchema = z.object({
 	installationId: z.coerce.number().int().positive().optional(),
 	repo: z.string().trim().min(1).optional(),
@@ -110,20 +101,29 @@ export const listRunEventsQuerySchema = z.object({
 	after: z.coerce.number().int().min(0).optional(),
 });
 
+export const listRunInstructionsQuerySchema = z.object({
+	after: z.coerce.number().int().min(0).optional(),
+});
+
 export const cancelRunSchema = z.object({
 	reason: z.string().trim().min(1).max(280).optional(),
 });
 
-export const requestRunApprovalSchema = z.object({
-	command: z.string().trim().min(1).max(500),
-	reason: z.string().trim().min(1).max(280).optional(),
+export const sandboxRunInstructionKindSchema = z.enum([
+	"message",
+	"continue",
+	"approval_request",
+	"approval_response",
+]);
+
+export const submitRunInstructionSchema = z.object({
+	kind: sandboxRunInstructionKindSchema.default("message"),
+	content: z.string().trim().max(2000).optional(),
+	command: z.string().trim().min(1).max(500).optional(),
+	requestId: z.string().trim().min(1).optional(),
+	approvalStatus: z.enum(["approved", "rejected"]).optional(),
 	timeoutSeconds: z.number().int().min(5).max(1800).optional(),
 	escalateAfterSeconds: z.number().int().min(1).max(900).optional(),
-});
-
-export const resolveRunApprovalSchema = z.object({
-	status: z.enum(["approved", "rejected"]),
-	reason: z.string().trim().min(1).max(280).optional(),
 });
 
 export const pauseRunSchema = z.object({
@@ -224,6 +224,12 @@ export const sandboxRunEventSchema = z
 		approvalExpiresAt: z.string().optional(),
 		approvalEscalatedAt: z.string().optional(),
 		approvalTimedOutAt: z.string().optional(),
+		instructionId: z.string().optional(),
+		instructionKind: sandboxRunInstructionKindSchema.optional(),
+		instructionContent: z.string().optional(),
+		repeatCount: z.number().int().positive().optional(),
+		maxSteps: z.number().int().positive().optional(),
+		extendedBy: z.number().int().positive().optional(),
 	})
 	.catchall(z.unknown());
 
@@ -293,29 +299,31 @@ export const sandboxRunControlSchema = z.object({
 	timeoutAt: z.string().optional(),
 });
 
-export const sandboxRunApprovalStatusSchema = z.enum([
-	"pending",
-	"escalated",
-	"timed_out",
-	"approved",
-	"rejected",
-]);
-
-export const sandboxRunApprovalSchema = z.object({
+export const sandboxRunInstructionSchema = z.object({
 	id: z.string().trim().min(1),
 	runId: z.string().trim().min(1),
-	command: z.string().trim().min(1),
-	status: sandboxRunApprovalStatusSchema,
-	requestedAt: z.string().trim().min(1),
-	resolvedAt: z.string().optional(),
-	resolutionReason: z.string().optional(),
-	requestReason: z.string().optional(),
+	kind: sandboxRunInstructionKindSchema,
+	content: z.string().optional(),
+	command: z.string().optional(),
+	requestId: z.string().optional(),
+	approvalStatus: z
+		.enum(["pending", "escalated", "timed_out", "approved", "rejected"])
+		.optional(),
 	timeoutSeconds: z.number().int().positive().optional(),
 	escalateAfterSeconds: z.number().int().positive().optional(),
 	expiresAt: z.string().optional(),
 	escalationAt: z.string().optional(),
 	escalatedAt: z.string().optional(),
 	timedOutAt: z.string().optional(),
+	resolvedAt: z.string().optional(),
+	resolutionReason: z.string().optional(),
+	createdAt: z.string().trim().min(1),
+});
+
+export const sandboxRunInstructionEnvelopeSchema = z.object({
+	index: z.number().int().positive(),
+	recordedAt: z.string().trim().min(1),
+	instruction: sandboxRunInstructionSchema,
 });
 
 export const sandboxWorkerExecuteRequestSchema = z.object({
@@ -351,12 +359,12 @@ export type ListRunsQueryPayload = z.infer<typeof listRunsQuerySchema>;
 export type ListRunEventsQueryPayload = z.infer<
 	typeof listRunEventsQuerySchema
 >;
-export type CancelRunPayload = z.infer<typeof cancelRunSchema>;
-export type RequestRunApprovalPayload = z.infer<
-	typeof requestRunApprovalSchema
+export type ListRunInstructionsQueryPayload = z.infer<
+	typeof listRunInstructionsQuerySchema
 >;
-export type ResolveRunApprovalPayload = z.infer<
-	typeof resolveRunApprovalSchema
+export type CancelRunPayload = z.infer<typeof cancelRunSchema>;
+export type SubmitRunInstructionPayload = z.infer<
+	typeof submitRunInstructionSchema
 >;
 export type PauseRunPayload = z.infer<typeof pauseRunSchema>;
 export type ResumeRunPayload = z.infer<typeof resumeRunSchema>;
@@ -377,10 +385,13 @@ export type SandboxRunControlState = z.infer<
 	typeof sandboxRunControlStateSchema
 >;
 export type SandboxRunControl = z.infer<typeof sandboxRunControlSchema>;
-export type SandboxRunApprovalStatus = z.infer<
-	typeof sandboxRunApprovalStatusSchema
+export type SandboxRunInstructionKind = z.infer<
+	typeof sandboxRunInstructionKindSchema
 >;
-export type SandboxRunApproval = z.infer<typeof sandboxRunApprovalSchema>;
+export type SandboxRunInstruction = z.infer<typeof sandboxRunInstructionSchema>;
+export type SandboxRunInstructionEnvelope = z.infer<
+	typeof sandboxRunInstructionEnvelopeSchema
+>;
 export type SandboxWorkerExecuteRequest = z.infer<
 	typeof sandboxWorkerExecuteRequestSchema
 >;

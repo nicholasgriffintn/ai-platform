@@ -13,6 +13,7 @@ import { throwIfAborted } from "../cancellation";
 import {
 	MAX_CONSECUTIVE_DECISION_FAILURES,
 	MAX_AGENT_STEPS,
+	MAX_COMMANDS,
 	MAX_OBSERVATION_CHARS,
 	MAX_RECOVERY_REPLANS,
 	MODEL_RETRY_OPTIONS,
@@ -30,6 +31,11 @@ import {
 interface SandboxAgentLoopState extends AgentLoopState {
 	commandCount: number;
 	consecutiveCommandFailures: number;
+	lastActionSignature?: string;
+	repeatedActionCount: number;
+	instructionCursor: number;
+	pendingStepExtensions: number;
+	autoStepExtensionsUsed: number;
 }
 
 interface SandboxAgentSharedContext {
@@ -119,6 +125,10 @@ export async function executeAgentLoop(
 	const state: SandboxAgentLoopState = {
 		commandCount: 0,
 		consecutiveCommandFailures: 0,
+		repeatedActionCount: 0,
+		instructionCursor: 0,
+		pendingStepExtensions: 0,
+		autoStepExtensionsUsed: 0,
 	};
 
 	const shared: SandboxAgentSharedContext = {
@@ -130,6 +140,67 @@ export async function executeAgentLoop(
 		emit,
 		approvalClient,
 		abortSignal,
+	};
+
+	const ingestOperatorInstructions = async (
+		currentMessages: AgentMessage[],
+		agentStep: number,
+	): Promise<void> => {
+		if (!approvalClient) {
+			return;
+		}
+
+		const instructions = await approvalClient.listInstructions(
+			state.instructionCursor,
+			abortSignal,
+		);
+		if (!instructions.length) {
+			return;
+		}
+
+		for (const envelope of instructions) {
+			if (envelope.index <= state.instructionCursor) {
+				continue;
+			}
+			state.instructionCursor = envelope.index;
+			const instruction = envelope.instruction;
+			if (instruction.kind !== "message" && instruction.kind !== "continue") {
+				continue;
+			}
+			const content = instruction.content?.trim();
+
+			if (instruction.kind === "continue") {
+				state.pendingStepExtensions += 1;
+			}
+
+			if (content) {
+				currentMessages.push({
+					role: "user",
+					content:
+						instruction.kind === "continue"
+							? `Operator requested continuation with guidance: ${content}`
+							: `Operator message: ${content}`,
+				});
+			} else if (instruction.kind === "continue") {
+				currentMessages.push({
+					role: "user",
+					content:
+						"Operator requested continuation. Keep moving and prioritise finishing with clear validation.",
+				});
+			}
+
+			await emit({
+				type: "run_instruction_received",
+				agentStep,
+				instructionId: instruction.id,
+				instructionKind: instruction.kind,
+				instructionContent: content ? content.slice(0, 500) : undefined,
+				message:
+					instruction.kind === "continue"
+						? "Continue instruction received by worker"
+						: "Operator message received by worker",
+			});
+		}
 	};
 
 	const result = await executeSharedAgentLoop({
@@ -146,7 +217,9 @@ export async function executeAgentLoop(
 			maxObservationChars: MAX_OBSERVATION_CHARS,
 		},
 		getCommandCount: (runtimeState) => runtimeState.commandCount,
-		resolveDecision: async ({ messages: currentMessages }) => {
+		resolveDecision: async ({ messages: currentMessages, step }) => {
+			await ingestOperatorInstructions(currentMessages, step);
+
 			const decisionResponse = await client.chatCompletion(
 				{
 					messages: currentMessages.map((message) => ({
@@ -207,6 +280,40 @@ export async function executeAgentLoop(
 		],
 		onPlanRecovery: ({ state: runtimeState }) => {
 			runtimeState.consecutiveCommandFailures = 0;
+			runtimeState.lastActionSignature = undefined;
+			runtimeState.repeatedActionCount = 0;
+		},
+		onStepBudgetExceeded: async ({
+			step,
+			state: runtimeState,
+			messages: currentMessages,
+		}) => {
+			await ingestOperatorInstructions(currentMessages, step);
+
+			if (
+				runtimeState.pendingStepExtensions > 0 &&
+				runtimeState.commandCount < MAX_COMMANDS
+			) {
+				runtimeState.pendingStepExtensions -= 1;
+				return {
+					extendBy: 24,
+					reason: "Continuing execution after operator instruction",
+				};
+			}
+
+			if (
+				runtimeState.autoStepExtensionsUsed < 1 &&
+				runtimeState.commandCount > 0 &&
+				runtimeState.commandCount < MAX_COMMANDS
+			) {
+				runtimeState.autoStepExtensionsUsed += 1;
+				return {
+					extendBy: 12,
+					reason: "Applying one automatic extension to allow completion",
+				};
+			}
+
+			return null;
 		},
 		buildSummary: ({ decision, state: runtimeState }) => {
 			return (

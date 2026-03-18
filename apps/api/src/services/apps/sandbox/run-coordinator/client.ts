@@ -1,12 +1,15 @@
 import {
 	sandboxRunControlSchema,
+	sandboxRunInstructionEnvelopeSchema,
+	sandboxRunInstructionSchema,
 	type SandboxRunControl,
 	type SandboxRunEvent,
+	type SandboxRunInstruction,
 } from "@assistant/schemas";
 import type { IEnv } from "~/types";
 import type {
 	CoordinatorEventEnvelope,
-	SandboxRunApprovalRecord,
+	CoordinatorInstructionEnvelope,
 } from "./types";
 
 function getCoordinatorStub(
@@ -158,26 +161,32 @@ export async function openRunCoordinatorEventsSocket(params: {
 	return socket;
 }
 
-export async function requestRunCoordinatorApproval(params: {
+export async function submitRunCoordinatorInstruction(params: {
 	env: IEnv | undefined;
 	runId: string;
-	command: string;
-	reason?: string;
+	kind: "message" | "continue" | "approval_request" | "approval_response";
+	content?: string;
+	command?: string;
+	requestId?: string;
+	approvalStatus?: "approved" | "rejected";
 	timeoutSeconds?: number;
 	escalateAfterSeconds?: number;
-}): Promise<SandboxRunApprovalRecord | null> {
+}): Promise<SandboxRunInstruction | null> {
 	if (!params.env?.SANDBOX_RUN_COORDINATOR) {
 		return null;
 	}
 	const stub = getCoordinatorStub(params.env, params.runId);
 	const response = await stub.fetch(
-		"https://sandbox-run-coordinator/approval/request",
+		"https://sandbox-run-coordinator/instructions",
 		{
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
+				kind: params.kind,
+				content: params.content,
 				command: params.command,
-				reason: params.reason,
+				requestId: params.requestId,
+				approvalStatus: params.approvalStatus,
 				timeoutSeconds: params.timeoutSeconds,
 				escalateAfterSeconds: params.escalateAfterSeconds,
 			}),
@@ -187,78 +196,45 @@ export async function requestRunCoordinatorApproval(params: {
 		return null;
 	}
 	const payload = (await response.json()) as {
-		approval?: SandboxRunApprovalRecord;
+		instruction?: unknown;
 	};
-	return payload.approval ?? null;
+	const parsed = sandboxRunInstructionSchema.safeParse(payload.instruction);
+	return parsed.success ? parsed.data : null;
 }
 
-export async function resolveRunCoordinatorApproval(params: {
+export async function listRunCoordinatorInstructions(params: {
 	env: IEnv | undefined;
 	runId: string;
-	approvalId: string;
-	status: "approved" | "rejected";
-	reason?: string;
-}): Promise<SandboxRunApprovalRecord | null> {
+	after?: number;
+}): Promise<CoordinatorInstructionEnvelope[]> {
 	if (!params.env?.SANDBOX_RUN_COORDINATOR) {
-		return null;
-	}
-	const stub = getCoordinatorStub(params.env, params.runId);
-	const response = await stub.fetch(
-		"https://sandbox-run-coordinator/approval/resolve",
-		{
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				id: params.approvalId,
-				status: params.status,
-				reason: params.reason,
-			}),
-		},
-	);
-	if (!response.ok) {
-		return null;
-	}
-	const payload = (await response.json()) as {
-		approval?: SandboxRunApprovalRecord;
-	};
-	return payload.approval ?? null;
-}
-
-export async function listRunCoordinatorApprovals(
-	env: IEnv | undefined,
-	runId: string,
-): Promise<SandboxRunApprovalRecord[]> {
-	if (!env?.SANDBOX_RUN_COORDINATOR) {
 		return [];
 	}
-	const stub = getCoordinatorStub(env, runId);
-	const response = await stub.fetch("https://sandbox-run-coordinator/approval");
+	const stub = getCoordinatorStub(params.env, params.runId);
+	const url = new URL("https://sandbox-run-coordinator/instructions");
+	if (typeof params.after === "number" && Number.isFinite(params.after)) {
+		url.searchParams.set("after", String(params.after));
+	}
+	const response = await stub.fetch(url.toString(), {
+		method: "GET",
+		headers: { Accept: "application/json" },
+	});
 	if (!response.ok) {
 		return [];
 	}
 	const payload = (await response.json()) as {
-		approvals?: SandboxRunApprovalRecord[];
+		instructions?: unknown[];
 	};
-	return payload.approvals ?? [];
-}
+	if (!Array.isArray(payload.instructions)) {
+		return [];
+	}
 
-export async function getRunCoordinatorApproval(params: {
-	env: IEnv | undefined;
-	runId: string;
-	approvalId: string;
-}): Promise<SandboxRunApprovalRecord | null> {
-	if (!params.env?.SANDBOX_RUN_COORDINATOR) {
-		return null;
+	const instructions: CoordinatorInstructionEnvelope[] = [];
+	for (const entry of payload.instructions) {
+		const parsed = sandboxRunInstructionEnvelopeSchema.safeParse(entry);
+		if (parsed.success) {
+			instructions.push(parsed.data);
+		}
 	}
-	const stub = getCoordinatorStub(params.env, params.runId);
-	const response = await stub.fetch(
-		`https://sandbox-run-coordinator/approval/${encodeURIComponent(params.approvalId)}`,
-	);
-	if (!response.ok) {
-		return null;
-	}
-	const payload = (await response.json()) as {
-		approval?: SandboxRunApprovalRecord;
-	};
-	return payload.approval ?? null;
+	return instructions;
 }

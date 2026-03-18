@@ -1,8 +1,9 @@
 import {
 	sandboxRunControlSchema,
-	sandboxRunApprovalSchema,
+	sandboxRunInstructionEnvelopeSchema,
 	type SandboxRunControl,
-	type SandboxRunApproval,
+	type SandboxRunInstruction,
+	type SandboxRunInstructionEnvelope,
 } from "@assistant/schemas";
 
 const DEFAULT_CONTROL_REQUEST_TIMEOUT_MS = 8000;
@@ -55,6 +56,49 @@ export interface RunControlClientOptions {
 export interface RequestCommandApprovalOptions {
 	timeoutSeconds?: number;
 	escalateAfterSeconds?: number;
+}
+
+interface CommandApproval {
+	id: string;
+	runId: string;
+	command: string;
+	status: "pending" | "escalated" | "timed_out" | "approved" | "rejected";
+	requestedAt: string;
+	resolvedAt?: string;
+	resolutionReason?: string;
+	requestReason?: string;
+	timeoutSeconds?: number;
+	escalateAfterSeconds?: number;
+	expiresAt?: string;
+	escalationAt?: string;
+	escalatedAt?: string;
+	timedOutAt?: string;
+}
+
+function mapApprovalInstructionToApproval(
+	instruction: SandboxRunInstruction | null,
+	fallbackCommand?: string,
+): CommandApproval | null {
+	if (!instruction || instruction.kind !== "approval_request") {
+		return null;
+	}
+
+	return {
+		id: instruction.id,
+		runId: instruction.runId,
+		command: instruction.command || fallbackCommand || "",
+		status: instruction.approvalStatus ?? "pending",
+		requestedAt: instruction.createdAt,
+		resolvedAt: instruction.resolvedAt,
+		resolutionReason: instruction.resolutionReason,
+		requestReason: instruction.content,
+		timeoutSeconds: instruction.timeoutSeconds,
+		escalateAfterSeconds: instruction.escalateAfterSeconds,
+		expiresAt: instruction.expiresAt,
+		escalationAt: instruction.escalationAt,
+		escalatedAt: instruction.escalatedAt,
+		timedOutAt: instruction.timedOutAt,
+	};
 }
 
 export class RunControlClient {
@@ -134,13 +178,17 @@ export class RunControlClient {
 		reason?: string,
 		options?: RequestCommandApprovalOptions,
 		signal?: AbortSignal,
-	): Promise<SandboxRunApproval | null> {
+	): Promise<CommandApproval | null> {
 		if (!this.runId || !command.trim()) {
 			return null;
 		}
 
-		const url = `${this.polychatApiUrl}/apps/sandbox/runs/${encodeURIComponent(this.runId)}/approvals/request`;
-		const requestBody: Record<string, unknown> = { command, reason };
+		const url = `${this.polychatApiUrl}/apps/sandbox/runs/${encodeURIComponent(this.runId)}/instructions`;
+		const requestBody: Record<string, unknown> = {
+			kind: "approval_request",
+			command,
+			content: reason,
+		};
 		if (typeof options?.timeoutSeconds === "number") {
 			requestBody.timeoutSeconds = options.timeoutSeconds;
 		}
@@ -174,20 +222,46 @@ export class RunControlClient {
 			return null;
 		}
 
-		const approval = (payload as { approval?: unknown }).approval;
-		const parsed = sandboxRunApprovalSchema.safeParse(approval);
-		return parsed.success ? parsed.data : null;
+		const instruction = (payload as { instruction?: SandboxRunInstruction })
+			.instruction;
+		return mapApprovalInstructionToApproval(instruction ?? null, command);
 	}
 
 	public async fetchApproval(
 		approvalId: string,
 		signal?: AbortSignal,
-	): Promise<SandboxRunApproval | null> {
+	): Promise<CommandApproval | null> {
 		if (!this.runId || !approvalId.trim()) {
 			return null;
 		}
-		const url = `${this.polychatApiUrl}/apps/sandbox/runs/${encodeURIComponent(this.runId)}/approvals/${encodeURIComponent(approvalId)}`;
-		const request = new Request(url, {
+
+		const instructions = await this.listInstructions(0, signal);
+		const match = instructions
+			.slice()
+			.reverse()
+			.find(
+				(entry) =>
+					entry.instruction.kind === "approval_request" &&
+					entry.instruction.id === approvalId,
+			);
+		return mapApprovalInstructionToApproval(match?.instruction ?? null);
+	}
+
+	public async listInstructions(
+		after = 0,
+		signal?: AbortSignal,
+	): Promise<SandboxRunInstructionEnvelope[]> {
+		if (!this.runId) {
+			return [];
+		}
+
+		const instructionsUrl = new URL(
+			`${this.polychatApiUrl}/apps/sandbox/runs/${encodeURIComponent(this.runId)}/instructions`,
+		);
+		if (Number.isFinite(after) && after > 0) {
+			instructionsUrl.searchParams.set("after", String(after));
+		}
+		const request = new Request(instructionsUrl.toString(), {
 			method: "GET",
 			headers: {
 				Accept: "application/json",
@@ -199,20 +273,32 @@ export class RunControlClient {
 		try {
 			response = await fetchWithTimeout(request, this.requestTimeoutMs, signal);
 		} catch {
-			return null;
+			return [];
 		}
 		if (!response.ok) {
-			return null;
+			return [];
 		}
 
 		let payload: unknown;
 		try {
 			payload = await response.json();
 		} catch {
-			return null;
+			return [];
 		}
-		const approval = (payload as { approval?: unknown }).approval;
-		const parsed = sandboxRunApprovalSchema.safeParse(approval);
-		return parsed.success ? parsed.data : null;
+		const rawInstructions = (
+			payload as { instructions?: unknown[] | undefined }
+		).instructions;
+		if (!Array.isArray(rawInstructions)) {
+			return [];
+		}
+
+		const instructions: SandboxRunInstructionEnvelope[] = [];
+		for (const entry of rawInstructions) {
+			const parsed = sandboxRunInstructionEnvelopeSchema.safeParse(entry);
+			if (parsed.success) {
+				instructions.push(parsed.data);
+			}
+		}
+		return instructions;
 	}
 }

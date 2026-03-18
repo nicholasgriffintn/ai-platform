@@ -40,7 +40,17 @@ export function describeEvent(event: SandboxRunEvent): string {
 		case "agent_step_started":
 			return `Agent step ${event.agentStep ?? "?"} started`;
 		case "agent_decision":
-			return `Agent action: ${event.action ?? "unknown"}`;
+			return `Agent action: ${event.action ?? "unknown"}${event.reasoning ? ` (${event.reasoning})` : ""}`;
+		case "agent_decision_invalid":
+			return event.error
+				? `Agent decision invalid: ${event.error}`
+				: "Agent decision invalid";
+		case "agent_repetition_detected":
+			return event.message || "Repeated action detected; forcing replanning";
+		case "agent_step_budget_extended":
+			return `Step budget extended by ${event.extendedBy ?? "?"} (new max ${event.maxSteps ?? "?"})`;
+		case "agent_step_budget_exhausted":
+			return event.error || "Agent step budget exhausted";
 		case "file_read":
 			return `Read ${event.path ?? "file"}${event.error ? ` (failed: ${event.error})` : ""}`;
 		case "agent_finished":
@@ -93,6 +103,14 @@ export function describeEvent(event: SandboxRunEvent): string {
 			return `Script completed (${event.commandIndex ?? "?"}/${event.commandTotal ?? "?"})`;
 		case "script_failed":
 			return `Script failed: ${event.error ?? "unknown error"}`;
+		case "run_instruction_submitted":
+			return event.instructionKind === "continue"
+				? "Continue instruction sent"
+				: "Operator instruction sent";
+		case "run_instruction_received":
+			return event.instructionKind === "continue"
+				? "Worker received continue instruction"
+				: "Worker received operator message";
 		default:
 			return event.message || event.type;
 	}
