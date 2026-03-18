@@ -42,8 +42,8 @@ importers:
         specifier: 22.0.1
         version: 22.0.1
       '@scalar/hono-api-reference':
-        specifier: 0.9.40
-        version: 0.9.40(hono@4.12.8)
+        specifier: 0.10.4
+        version: 0.10.4(hono@4.12.8)
       '@simplewebauthn/server':
         specifier: 13.2.2
         version: 13.2.2
@@ -2976,23 +2976,23 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@scalar/core@0.3.37':
-    resolution: {integrity: sha512-cQWMHsGD9jCiYHi91acR3tOsj+qGk+dRQ2W+N5+au1NZ/GkUNT5TUEufekn/sj1S8af+lOnn3y0xXoTI34jCog==}
-    engines: {node: '>=20'}
+  '@scalar/core@0.4.4':
+    resolution: {integrity: sha512-eXIG0opyQn45FzpTp0dAWFP1Vjcx+helgUAsa0uN36tyUR7DSmz2kRwHqqedzvPWryeRCKPz7/vwzKpETZp5lg==}
+    engines: {node: '>=22'}
 
-  '@scalar/helpers@0.2.11':
-    resolution: {integrity: sha512-Y7DLt1bIZF9dvHzJwSJTcC1lpSr1Tbf4VBhHOCRIHu23Rr7/lhQnddRxFmPV1tZXwEQKz7F7yRrubwCfKPCucw==}
-    engines: {node: '>=20'}
+  '@scalar/helpers@0.4.2':
+    resolution: {integrity: sha512-IrgrGVSahCfYDNWITazz4Q1BOndp5eEzlimRkfxiYn++KqeWyLfALyym1omqcdKGYtiSx1KIbKaUJL9vkjaN7w==}
+    engines: {node: '>=22'}
 
-  '@scalar/hono-api-reference@0.9.40':
-    resolution: {integrity: sha512-0tQOxyEwuu1QGcoA5aCJg2eSmNfF35mxeGx13TND9ud5ZBeuOqli8jyfykgkqV3gFTnDDlQYgQcOvB6Rgk2beA==}
-    engines: {node: '>=20'}
+  '@scalar/hono-api-reference@0.10.4':
+    resolution: {integrity: sha512-mRH3GAx5sfXB0e9bHhjaRORzX/Hct1Gmj6s0wVAEMVpYm31dsR4om4Qu5zLAVbYroc0QWpo2h19+vu9pg/lG2w==}
+    engines: {node: '>=22'}
     peerDependencies:
-      hono: ^4.11.5
+      hono: ^4.12.5
 
-  '@scalar/types@0.6.2':
-    resolution: {integrity: sha512-VWfY/z9R5NT8PpKVmvmIj6QSh56MMcl8x3JsGiNxR+w7txGQEq+QzEl35aU56uSBFmLfPk1oyInoaHhkosKooA==}
-    engines: {node: '>=20'}
+  '@scalar/types@0.7.4':
+    resolution: {integrity: sha512-1o9uf42lZ9YD0XP/HMWrwXN0unx6vFTTgtduA1F28Yloea9Pfv9N2R/t0wO91iSIzw4+NubEFolunbdb2QcgHA==}
+    engines: {node: '>=22'}
 
   '@simplewebauthn/browser@13.2.2':
     resolution: {integrity: sha512-FNW1oLQpTJyqG5kkDg5ZsotvWgmBaC6jCHR7Ej0qUNep36Wl9tj2eZu7J5rP+uhXgHaLk+QQ3lqcw2vS5MX1IA==}
@@ -8939,20 +8939,20 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.57.1':
     optional: true
 
-  '@scalar/core@0.3.37':
+  '@scalar/core@0.4.4':
     dependencies:
-      '@scalar/types': 0.6.2
+      '@scalar/types': 0.7.4
 
-  '@scalar/helpers@0.2.11': {}
+  '@scalar/helpers@0.4.2': {}
 
-  '@scalar/hono-api-reference@0.9.40(hono@4.12.8)':
+  '@scalar/hono-api-reference@0.10.4(hono@4.12.8)':
     dependencies:
-      '@scalar/core': 0.3.37
+      '@scalar/core': 0.4.4
       hono: 4.12.8
 
-  '@scalar/types@0.6.2':
+  '@scalar/types@0.7.4':
     dependencies:
-      '@scalar/helpers': 0.2.11
+      '@scalar/helpers': 0.4.2
       nanoid: 5.1.6
       type-fest: 5.4.4
       zod: 4.3.6
