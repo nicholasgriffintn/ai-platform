@@ -4,13 +4,13 @@ import { BaseProvider } from "./base";
 import { fetchAIResponse } from "../../../lib/fetch";
 
 export class CertesiaProvider extends BaseProvider {
-	name = "certesia";
+	name = "cartesia";
 	supportsStreaming = false;
 	voice_id = "87748186-23bb-4158-a1eb-332911b0b708"; // Wizardman
 	isOpenAiCompatible = false;
 
 	protected getProviderKeyName(): string {
-		return "CERTESIA_API_TOKEN";
+		return "CARTESIA_API_KEY";
 	}
 
 	protected validateParams(params: ChatCompletionParameters): void {
@@ -27,10 +27,12 @@ export class CertesiaProvider extends BaseProvider {
 	): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 		const baseHeaders = this.buildAiGatewayHeaders(params, apiKey);
+		delete baseHeaders.Authorization;
+		delete baseHeaders.authorization;
 
 		return {
 			...baseHeaders,
-			"X-API-Key": `Bearer ${apiKey}`,
+			"X-API-Key": apiKey,
 			"Cartesia-Version": "2024-06-10",
 		};
 	}
@@ -70,9 +72,12 @@ export class CertesiaProvider extends BaseProvider {
 					headers,
 					body,
 					params.env,
+					{
+						responseType: "raw",
+					},
 				);
 
-				return await this.formatResponse(data, params);
+				return data;
 			},
 			analyticsEngine: params.env?.ANALYTICS,
 			settings: this.buildMetricsSettings(params),

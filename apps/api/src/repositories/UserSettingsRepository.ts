@@ -309,9 +309,10 @@ export class UserSettingsRepository extends BaseRepository {
 			const { query: providerQuery, values: providerValues } =
 				this.buildSelectQuery(
 					"provider_settings",
-					{ user_id: userId, id: providerId },
+					{ user_id: userId, provider_id: providerId },
 					{ columns: ["id"] },
 				);
+
 			const existingProviderSettings = await this.runQuery<{ id: string }>(
 				providerQuery,
 				providerValues,

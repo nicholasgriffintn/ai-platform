@@ -27,10 +27,12 @@ export class ElevenLabsProvider extends BaseProvider {
 	): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 		const baseHeaders = this.buildAiGatewayHeaders(params, apiKey);
+		delete baseHeaders.Authorization;
+		delete baseHeaders.authorization;
 
 		return {
 			...baseHeaders,
-			"xi-api-key": `Bearer ${apiKey}`,
+			"xi-api-key": apiKey,
 		};
 	}
 
@@ -60,9 +62,12 @@ export class ElevenLabsProvider extends BaseProvider {
 					headers,
 					body,
 					params.env,
+					{
+						responseType: "raw",
+					},
 				);
 
-				return await this.formatResponse(data, params);
+				return data;
 			},
 			analyticsEngine: params.env?.ANALYTICS,
 			settings: this.buildMetricsSettings(params),

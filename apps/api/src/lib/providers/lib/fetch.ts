@@ -27,11 +27,13 @@ export async function fetchAIResponse<
 		retryDelay?: number;
 		maxAttempts?: number;
 		backoff?: "exponential" | "linear";
+		responseType?: "json" | "raw";
 	} = {
 		requestTimeout: 100000,
 		retryDelay: 500,
 		maxAttempts: 2,
 		backoff: "exponential",
+		responseType: "json",
 	},
 ): Promise<T> {
 	const isUrl = endpointOrUrl.startsWith("http");
@@ -121,11 +123,21 @@ export async function fetchAIResponse<
 		return response.body as unknown as T;
 	}
 
+	if (options.responseType === "raw") {
+		return response as unknown as T;
+	}
+
 	let data: Record<string, any>;
+	const responseForLogging = response.clone();
 	try {
 		data = (await response.json()) as Record<string, any>;
 	} catch (jsonError) {
-		const responseText = await response.text();
+		let responseText = "[unavailable]";
+		try {
+			responseText = await responseForLogging.text();
+		} catch {
+			// Ignore secondary body read errors in logging path.
+		}
 		logger.error(`Failed to parse JSON response from ${provider}`, {
 			error: jsonError,
 			responseText: responseText.substring(0, 200),

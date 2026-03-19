@@ -55,7 +55,7 @@ export const workersAiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["audio"],
 		},
 		releaseDate: "November 14, 2025",
 		lastUpdated: "November 14, 2025",

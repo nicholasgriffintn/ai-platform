@@ -85,9 +85,10 @@ addRoute(app, "post", "/speech", {
 	},
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const { input, provider } = context.req.valid("json" as never) as {
+			const { input, provider, lang } = context.req.valid("json" as never) as {
 				input: string;
-				provider?: "polly" | "cartesia" | "elevenlabs";
+				provider?: "polly" | "cartesia" | "elevenlabs" | "melotts";
+				lang?: string;
 			};
 			const user = context.get("user");
 
@@ -95,6 +96,7 @@ addRoute(app, "post", "/speech", {
 				env: context.env as IEnv,
 				input,
 				provider,
+				lang,
 				user,
 			});
 

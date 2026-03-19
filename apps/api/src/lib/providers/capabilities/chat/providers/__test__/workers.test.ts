@@ -56,6 +56,35 @@ describe("WorkersProvider", () => {
 	});
 
 	describe("mapParameters", () => {
+		it("should map MeloTTS requests to prompt/lang payload", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "MyShell MeloTTS",
+				modalities: { input: ["text"], output: ["audio"] },
+			});
+
+			const provider = new WorkersProvider();
+			const params = {
+				model: "@cf/myshell-ai/melotts",
+				lang: "es",
+				messages: [
+					{
+						role: "user",
+						content: [{ type: "text", text: "Hola mundo" }],
+					},
+				],
+				env: {},
+			};
+
+			const result = await provider.mapParameters(params as any);
+
+			expect(result).toEqual({
+				prompt: "Hola mundo",
+				lang: "es",
+			});
+			expect(createCommonParameters).not.toHaveBeenCalled();
+		});
+
 		it("should handle image-to-text processing in mapParameters", async () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({

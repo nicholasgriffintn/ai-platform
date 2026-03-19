@@ -167,7 +167,8 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
 		metadata: { vendor: "Replicate", categories: ["chat"] },
 	},
 	{
-		name: "certesia",
+		name: "cartesia",
+		aliases: ["certesia"],
 		create: () => new CertesiaProvider(),
 		metadata: { vendor: "Cartesia", categories: ["chat", "audio"] },
 	},
