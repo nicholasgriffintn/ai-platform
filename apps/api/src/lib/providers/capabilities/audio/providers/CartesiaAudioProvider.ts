@@ -22,7 +22,7 @@ export class CartesiaAudioProvider
 		const objectKey = this.buildObjectKey(slugBase);
 
 		const response = await this.provider.getResponse({
-			model: request.voice ?? "sonic",
+			model: request.voice ?? "sonic-3",
 			message: request.input,
 			env: request.env,
 			messages: [],

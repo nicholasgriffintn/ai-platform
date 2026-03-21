@@ -6,7 +6,7 @@ import { fetchAIResponse } from "../../../lib/fetch";
 export class CertesiaProvider extends BaseProvider {
 	name = "cartesia";
 	supportsStreaming = false;
-	voice_id = "87748186-23bb-4158-a1eb-332911b0b708"; // Wizardman
+	voice_id = "4f7f1324-1853-48a6-b294-4e78e8036a83"; // Casper
 	isOpenAiCompatible = false;
 
 	protected getProviderKeyName(): string {
@@ -33,7 +33,7 @@ export class CertesiaProvider extends BaseProvider {
 		return {
 			...baseHeaders,
 			"X-API-Key": apiKey,
-			"Cartesia-Version": "2024-06-10",
+			"Cartesia-Version": "2026-03-01",
 		};
 	}
 
