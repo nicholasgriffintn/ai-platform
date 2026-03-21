@@ -70,6 +70,23 @@ export const workersAiModelConfig: ModelConfig = {
 			enabled: false,
 		},
 	},
+	"@cf/moonshotai/kimi-k2.5": {
+		name: "Moonshot Kimi K2.5",
+		matchingModel: "@cf/moonshotai/kimi-k2.5",
+		description:
+			"Kimi K2.5 is a frontier-scale open-source model with a 256k context window, multi-turn tool calling, vision inputs, and structured outputs for agentic workloads.",
+		provider: "workers-ai",
+		supportsToolCalls: true,
+		supportsAttachments: true,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		reasoningConfig: {
+			enabled: true,
+		},
+		contextWindow: 256000,
+	},
 	"llama-3.3-70b-instruct": {
 		name: "Llama 3.3 70B Instruct FP8 Fast",
 		matchingModel: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
