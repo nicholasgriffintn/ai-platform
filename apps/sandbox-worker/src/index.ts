@@ -49,6 +49,13 @@ export default {
 			);
 		}
 
+		if (!env.POLYCHAT_API) {
+			return Response.json(
+				{ error: "Polychat API service binding is not configured" },
+				{ status: 503 },
+			);
+		}
+
 		let params: TaskParams;
 		try {
 			const rawBody = (await request.json()) as unknown;

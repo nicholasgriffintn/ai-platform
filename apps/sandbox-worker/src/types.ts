@@ -17,4 +17,5 @@ export interface TaskSecrets {
 export interface Env {
 	Sandbox: DurableObjectNamespace<import("./index").Sandbox>;
 	JWT_SECRET?: string;
+	POLYCHAT_API: Fetcher;
 }

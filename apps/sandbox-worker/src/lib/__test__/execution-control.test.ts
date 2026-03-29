@@ -27,9 +27,10 @@ describe("execution control", () => {
 
 	it("throws a timeout error once deadline is exceeded", async () => {
 		vi.useFakeTimers();
+		const serviceFetchMock = vi.fn();
 		const control = createExecutionControl({
-			polychatApiUrl: "https://api.polychat.app",
 			userToken: "token",
+			apiService: { fetch: serviceFetchMock },
 			timeoutSeconds: 1,
 		});
 
@@ -42,7 +43,7 @@ describe("execution control", () => {
 
 	it("waits while paused and emits paused/resumed events", async () => {
 		vi.useFakeTimers();
-		const fetchMock = vi
+		const serviceFetchMock = vi
 			.fn()
 			.mockResolvedValueOnce(
 				toJsonResponse({
@@ -65,13 +66,12 @@ describe("execution control", () => {
 					updatedAt: "2026-02-17T12:00:04.000Z",
 				}),
 			);
-		vi.stubGlobal("fetch", fetchMock);
 
 		const emitEvent = vi.fn();
 		const control = createExecutionControl({
 			runId: "run-1",
-			polychatApiUrl: "https://api.polychat.app",
 			userToken: "token",
+			apiService: { fetch: serviceFetchMock },
 			emitEvent,
 		});
 
@@ -96,22 +96,19 @@ describe("execution control", () => {
 	});
 
 	it("throws cancellation error when control state is cancelled", async () => {
-		vi.stubGlobal(
-			"fetch",
-			vi.fn().mockResolvedValue(
-				toJsonResponse({
-					runId: "run-1",
-					state: "cancelled",
-					updatedAt: "2026-02-17T12:00:00.000Z",
-					cancellationReason: "Cancelled from dashboard",
-				}),
-			),
+		const serviceFetchMock = vi.fn().mockResolvedValue(
+			toJsonResponse({
+				runId: "run-1",
+				state: "cancelled",
+				updatedAt: "2026-02-17T12:00:00.000Z",
+				cancellationReason: "Cancelled from dashboard",
+			}),
 		);
 
 		const control = createExecutionControl({
 			runId: "run-1",
-			polychatApiUrl: "https://api.polychat.app",
 			userToken: "token",
+			apiService: { fetch: serviceFetchMock },
 		});
 
 		await expect(

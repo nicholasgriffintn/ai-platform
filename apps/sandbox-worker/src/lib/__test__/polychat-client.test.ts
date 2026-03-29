@@ -9,7 +9,7 @@ describe("PolychatClient", () => {
 	});
 
 	it("sends authorization and user-agent headers", async () => {
-		const fetchMock = vi.fn().mockResolvedValue(
+		const serviceFetchMock = vi.fn().mockResolvedValue(
 			new Response(
 				JSON.stringify({
 					choices: [{ message: { content: "ok" } }],
@@ -20,31 +20,27 @@ describe("PolychatClient", () => {
 				},
 			),
 		);
-		vi.stubGlobal("fetch", fetchMock);
-
-		const client = new PolychatClient("http://localhost:8787", "token-123");
+		const client = new PolychatClient("token-123", {
+			fetch: serviceFetchMock,
+		});
 		const result = await client.chatCompletion({
 			messages: [{ role: "user", content: "hello" }],
 			model: "mistral-large",
 		});
 
 		expect(result).toBe("ok");
-		expect(fetchMock).toHaveBeenCalledTimes(1);
+		expect(serviceFetchMock).toHaveBeenCalledTimes(1);
+		const request = serviceFetchMock.mock.calls[0][0] as Request;
 
-		const [, requestInit] = fetchMock.mock.calls[0] as [
-			string,
-			RequestInit | undefined,
-		];
-		const headers = requestInit?.headers as Record<string, string>;
-
-		expect(headers.Authorization).toBe("Bearer token-123");
-		expect(headers["User-Agent"]).toBe(
+		expect(request.url).toBe("http://polychat-api/chat/completions");
+		expect(request.headers.get("Authorization")).toBe("Bearer token-123");
+		expect(request.headers.get("User-Agent")).toBe(
 			"Polychat-Sandbox-Worker/1.0 (+https://polychat.app)",
 		);
 	});
 
 	it("retries retryable API failures", async () => {
-		const fetchMock = vi
+		const serviceFetchMock = vi
 			.fn()
 			.mockResolvedValueOnce(
 				new Response("temporary outage", {
@@ -63,9 +59,9 @@ describe("PolychatClient", () => {
 					},
 				),
 			);
-		vi.stubGlobal("fetch", fetchMock);
-
-		const client = new PolychatClient("http://localhost:8787", "token-123");
+		const client = new PolychatClient("token-123", {
+			fetch: serviceFetchMock,
+		});
 		const result = await client.chatCompletion(
 			{
 				messages: [{ role: "user", content: "hello" }],
@@ -79,19 +75,19 @@ describe("PolychatClient", () => {
 		);
 
 		expect(result).toBe("recovered");
-		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(serviceFetchMock).toHaveBeenCalledTimes(2);
 	});
 
 	it("does not retry non-retryable API failures", async () => {
-		const fetchMock = vi.fn().mockResolvedValue(
+		const serviceFetchMock = vi.fn().mockResolvedValue(
 			new Response("bad request", {
 				status: 400,
 				headers: { "Content-Type": "text/plain" },
 			}),
 		);
-		vi.stubGlobal("fetch", fetchMock);
-
-		const client = new PolychatClient("http://localhost:8787", "token-123");
+		const client = new PolychatClient("token-123", {
+			fetch: serviceFetchMock,
+		});
 
 		await expect(
 			client.chatCompletion(
@@ -106,6 +102,6 @@ describe("PolychatClient", () => {
 				},
 			),
 		).rejects.toBeInstanceOf(PolychatApiError);
-		expect(fetchMock).toHaveBeenCalledTimes(1);
+		expect(serviceFetchMock).toHaveBeenCalledTimes(1);
 	});
 });

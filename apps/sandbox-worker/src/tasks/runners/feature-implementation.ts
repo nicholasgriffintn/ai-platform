@@ -72,9 +72,13 @@ export async function executeFeatureImplementation(
 		await emitEvent(nextEvent);
 	};
 
+	if (!env.POLYCHAT_API) {
+		throw new Error("POLYCHAT_API service binding is required");
+	}
+
 	const runId = params.runId || crypto.randomUUID().slice(0, 8);
 	const sandbox = getSandbox(env.Sandbox, runId);
-	const client = new PolychatClient(params.polychatApiUrl, secrets.userToken);
+	const client = new PolychatClient(secrets.userToken, env.POLYCHAT_API);
 	const executionLogs: string[] = [];
 	let branchName: string | undefined;
 	let fileWatcher: FileWatcher | undefined;
@@ -82,16 +86,16 @@ export async function executeFeatureImplementation(
 	const executionControl = createExecutionControl({
 		runId,
 		timeoutSeconds: params.timeoutSeconds,
-		polychatApiUrl: params.polychatApiUrl,
 		userToken: secrets.userToken,
+		apiService: env.POLYCHAT_API,
 		abortSignal,
 		emitEvent,
 	});
 	const approvalClient = params.runId
 		? new RunControlClient({
-				polychatApiUrl: params.polychatApiUrl,
 				userToken: secrets.userToken,
 				runId: params.runId,
+				apiService: env.POLYCHAT_API,
 			})
 		: undefined;
 	const checkpoint = (abortMessage: string) =>

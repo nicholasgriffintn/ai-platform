@@ -17,6 +17,12 @@
 			"invocation_logs": false
 		}
 	},
+	"services": [
+		{
+			"binding": "POLYCHAT_API",
+			"service": "assistant"
+		}
+	],
 	"containers": [
 		{
 			"class_name": "Sandbox",

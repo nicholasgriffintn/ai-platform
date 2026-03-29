@@ -32,10 +32,22 @@ function sleep(ms: number): Promise<void> {
 }
 
 export class PolychatClient {
-	constructor(
-		private baseUrl: string,
-		private userToken: string,
-	) {}
+	private readonly userToken: string;
+	private readonly polychatApi: Pick<Fetcher, "fetch">;
+
+	constructor(userToken: string, polychatApi: Pick<Fetcher, "fetch">) {
+		this.userToken = userToken;
+		this.polychatApi = polychatApi;
+	}
+
+	private async fetchPolychat(
+		path: string,
+		init: RequestInit,
+	): Promise<Response> {
+		return this.polychatApi.fetch(
+			new Request(`http://polychat-api${path}`, init),
+		);
+	}
 
 	private isRetryableError(error: unknown): boolean {
 		if (error instanceof PolychatApiError) {
@@ -60,7 +72,7 @@ export class PolychatClient {
 	}): Promise<string> {
 		const chatId = crypto.randomUUID();
 
-		const response = await fetch(`${this.baseUrl}/chat/completions`, {
+		const response = await this.fetchPolychat("/chat/completions", {
 			method: "POST",
 			headers: {
 				Authorization: `Bearer ${this.userToken}`,

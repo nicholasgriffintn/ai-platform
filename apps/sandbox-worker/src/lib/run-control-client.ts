@@ -8,12 +8,8 @@ import {
 
 const DEFAULT_CONTROL_REQUEST_TIMEOUT_MS = 8000;
 
-function trimTrailingSlash(value: string): string {
-	return value.replace(/\/+$/, "");
-}
-
 async function fetchWithTimeout(
-	request: Request,
+	execute: (signal: AbortSignal) => Promise<Response>,
 	timeoutMs: number,
 	signal?: AbortSignal,
 ): Promise<Response> {
@@ -35,9 +31,7 @@ async function fetchWithTimeout(
 	}
 
 	try {
-		return await fetch(request, {
-			signal: controller.signal,
-		});
+		return await execute(controller.signal);
 	} finally {
 		clearTimeout(timeoutHandle);
 		if (signal) {
@@ -47,10 +41,10 @@ async function fetchWithTimeout(
 }
 
 export interface RunControlClientOptions {
-	polychatApiUrl: string;
 	userToken: string;
 	runId?: string;
 	requestTimeoutMs?: number;
+	apiService: Pick<Fetcher, "fetch">;
 }
 
 export interface RequestCommandApprovalOptions {
@@ -102,17 +96,34 @@ function mapApprovalInstructionToApproval(
 }
 
 export class RunControlClient {
-	private readonly polychatApiUrl: string;
 	private readonly userToken: string;
 	private readonly runId?: string;
 	private readonly requestTimeoutMs: number;
+	private readonly apiService: Pick<Fetcher, "fetch">;
 
 	constructor(options: RunControlClientOptions) {
-		this.polychatApiUrl = trimTrailingSlash(options.polychatApiUrl);
 		this.userToken = options.userToken;
 		this.runId = options.runId;
 		this.requestTimeoutMs =
 			options.requestTimeoutMs ?? DEFAULT_CONTROL_REQUEST_TIMEOUT_MS;
+		this.apiService = options.apiService;
+	}
+
+	private resolveApiRequestUrl(path: string): string {
+		return `http://polychat-api${path}`;
+	}
+
+	private async fetchApi(
+		path: string,
+		init: RequestInit,
+		signal: AbortSignal,
+	): Promise<Response> {
+		const request = new Request(this.resolveApiRequestUrl(path), {
+			...init,
+			signal,
+		});
+
+		return this.apiService.fetch(request);
 	}
 
 	public async fetchControlState(
@@ -122,18 +133,26 @@ export class RunControlClient {
 			return null;
 		}
 
-		const controlUrl = `${this.polychatApiUrl}/apps/sandbox/runs/${encodeURIComponent(this.runId)}/control`;
-		const request = new Request(controlUrl, {
-			method: "GET",
-			headers: {
-				Accept: "application/json",
-				Authorization: `Bearer ${this.userToken}`,
-			},
-		});
+		const controlPath = `/apps/sandbox/runs/${encodeURIComponent(this.runId)}/control`;
 
 		let response: Response;
 		try {
-			response = await fetchWithTimeout(request, this.requestTimeoutMs, signal);
+			response = await fetchWithTimeout(
+				(timeoutSignal) =>
+					this.fetchApi(
+						controlPath,
+						{
+							method: "GET",
+							headers: {
+								Accept: "application/json",
+								Authorization: `Bearer ${this.userToken}`,
+							},
+						},
+						timeoutSignal,
+					),
+				this.requestTimeoutMs,
+				signal,
+			);
 		} catch {
 			if (signal?.aborted) {
 				return {
@@ -183,7 +202,7 @@ export class RunControlClient {
 			return null;
 		}
 
-		const url = `${this.polychatApiUrl}/apps/sandbox/runs/${encodeURIComponent(this.runId)}/instructions`;
+		const instructionsPath = `/apps/sandbox/runs/${encodeURIComponent(this.runId)}/instructions`;
 		const requestBody: Record<string, unknown> = {
 			kind: "approval_request",
 			command,
@@ -195,18 +214,26 @@ export class RunControlClient {
 		if (typeof options?.escalateAfterSeconds === "number") {
 			requestBody.escalateAfterSeconds = options.escalateAfterSeconds;
 		}
-		const request = new Request(url, {
-			method: "POST",
-			headers: {
-				Accept: "application/json",
-				Authorization: `Bearer ${this.userToken}`,
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(requestBody),
-		});
 		let response: Response;
 		try {
-			response = await fetchWithTimeout(request, this.requestTimeoutMs, signal);
+			response = await fetchWithTimeout(
+				(timeoutSignal) =>
+					this.fetchApi(
+						instructionsPath,
+						{
+							method: "POST",
+							headers: {
+								Accept: "application/json",
+								Authorization: `Bearer ${this.userToken}`,
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify(requestBody),
+						},
+						timeoutSignal,
+					),
+				this.requestTimeoutMs,
+				signal,
+			);
 		} catch {
 			return null;
 		}
@@ -255,23 +282,33 @@ export class RunControlClient {
 			return [];
 		}
 
-		const instructionsUrl = new URL(
-			`${this.polychatApiUrl}/apps/sandbox/runs/${encodeURIComponent(this.runId)}/instructions`,
-		);
+		const instructionsPath = `/apps/sandbox/runs/${encodeURIComponent(this.runId)}/instructions`;
+		const searchParams = new URLSearchParams();
 		if (Number.isFinite(after) && after > 0) {
-			instructionsUrl.searchParams.set("after", String(after));
+			searchParams.set("after", String(after));
 		}
-		const request = new Request(instructionsUrl.toString(), {
-			method: "GET",
-			headers: {
-				Accept: "application/json",
-				Authorization: `Bearer ${this.userToken}`,
-			},
-		});
+		const requestPath = searchParams.size
+			? `${instructionsPath}?${searchParams.toString()}`
+			: instructionsPath;
 
 		let response: Response;
 		try {
-			response = await fetchWithTimeout(request, this.requestTimeoutMs, signal);
+			response = await fetchWithTimeout(
+				(timeoutSignal) =>
+					this.fetchApi(
+						requestPath,
+						{
+							method: "GET",
+							headers: {
+								Accept: "application/json",
+								Authorization: `Bearer ${this.userToken}`,
+							},
+						},
+						timeoutSignal,
+					),
+				this.requestTimeoutMs,
+				signal,
+			);
 		} catch {
 			return [];
 		}

@@ -16,8 +16,8 @@ export class SandboxTimeoutError extends Error {
 interface CreateExecutionControlOptions {
 	runId?: string;
 	timeoutSeconds?: number;
-	polychatApiUrl: string;
 	userToken: string;
+	apiService: Pick<Fetcher, "fetch">;
 	abortSignal?: AbortSignal;
 	emitEvent?: TaskEventEmitter;
 }
@@ -38,8 +38,8 @@ export function createExecutionControl(
 	const {
 		runId,
 		timeoutSeconds,
-		polychatApiUrl,
 		userToken,
+		apiService,
 		abortSignal,
 		emitEvent,
 	} = options;
@@ -53,9 +53,9 @@ export function createExecutionControl(
 
 	const runControlClient = runId
 		? new RunControlClient({
-				polychatApiUrl,
 				userToken,
 				runId,
+				apiService,
 			})
 		: null;
 	let lastControlStateFetchedAt = 0;
