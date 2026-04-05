@@ -62,7 +62,7 @@ describe("CertesiaProvider", () => {
 			expect(headers["X-API-Key"]).toBe("test-cartesia-key");
 			expect(headers.Authorization).toBeUndefined();
 			expect(headers.authorization).toBeUndefined();
-			expect(headers["Cartesia-Version"]).toBe("2024-06-10");
+			expect(headers["Cartesia-Version"]).toBe("2026-03-01");
 			expect(headers["cf-aig-authorization"]).toBe("test-gateway-token");
 		});
 	});

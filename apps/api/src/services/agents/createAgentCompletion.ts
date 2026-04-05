@@ -1,4 +1,4 @@
-import { MCPClientManager } from "agents/mcp/client";
+import type { MCPClientManager } from "agents/mcp/client";
 
 import { formatToolCalls } from "~/lib/chat/tools";
 import {
@@ -206,6 +206,8 @@ async function setupMCPFunctions(agent: any, env: IEnv) {
 					ErrorType.CONFIGURATION_ERROR,
 				);
 			}
+
+			const { MCPClientManager } = await import("agents/mcp/client");
 
 			mcp = new MCPClientManager(agent.id, "1.0.0", {
 				storage: env.MCP_STORAGE,

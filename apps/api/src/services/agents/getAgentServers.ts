@@ -1,4 +1,4 @@
-import { MCPClientManager } from "agents/mcp/client";
+import type { MCPClientManager } from "agents/mcp/client";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -43,7 +43,8 @@ export async function getAgentServers(
 		);
 	}
 
-	const mcp = new MCPClientManager(agent.id, "1.0.0", {
+	const { MCPClientManager } = await import("agents/mcp/client");
+	const mcp: MCPClientManager = new MCPClientManager(agent.id, "1.0.0", {
 		storage: context.env.MCP_STORAGE,
 	});
 

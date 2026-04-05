@@ -237,6 +237,13 @@ export class WorkersProvider extends BaseProvider {
 				}
 			}
 
+			if (flags.isTextToSpeech) {
+				return {
+					prompt: prompt || "",
+					lang: params.lang ?? "en",
+				};
+			}
+
 			if (!imageData && !flags.isTextToImage) {
 				throw new AssistantError(
 					"No image data found in the request",
