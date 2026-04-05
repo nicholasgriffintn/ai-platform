@@ -437,4 +437,174 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			],
 		},
 	}),
+	createModelConfig("replicate-xai-grok-imagine-video", PROVIDER, {
+		name: "Grok Imagine Video",
+		matchingModel: "xai/grok-imagine-video",
+		description: "Generate videos using xAI's Grok Imagine Video model",
+		strengths: ["creative", "video"],
+		supportsStreaming: false,
+		supportsAttachments: false,
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["video"],
+		},
+		inputSchema: {
+			reference: "https://replicate.com/xai/grok-imagine-video",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "Text prompt for video generation",
+					required: true,
+				},
+				{
+					name: "image",
+					type: ["file", "string"],
+					description:
+						"Input image to generate video from (image-to-video). Supports jpg, jpeg, png, webp.",
+				},
+				{
+					name: "video",
+					type: "string",
+					description:
+						"Input video to edit (video editing mode). Must be a direct link, max 8.7 seconds. Supports mp4, mov, webm.",
+				},
+				{
+					name: "duration",
+					type: "integer",
+					description:
+						"Duration of the video in seconds (1-15). Ignored when editing a video.",
+				},
+				{
+					name: "aspect_ratio",
+					type: "string",
+					description:
+						"Aspect ratio of the video. For text-to-video, defaults to 16:9. For image-to-video, defaults to the input image's native aspect ratio. Ignored when editing a video.",
+					enum: ["16:9", "9:16", "1:1", "4:3", "3:4", "3:2", "2:3"],
+				},
+				{
+					name: "resolution",
+					type: "string",
+					description: "Resolution of the video. Ignored when editing a video.",
+					enum: ["480p", "720p"],
+				},
+			],
+		},
+	}),
+	createModelConfig("replicate-runway-gen-4-5", PROVIDER, {
+		name: "Runway Gen-4.5",
+		matchingModel: "runwayml/gen-4.5",
+		description:
+			"State-of-the-art video motion quality, prompt adherence and visual fidelity",
+		strengths: ["creative", "video"],
+		supportsStreaming: false,
+		supportsAttachments: false,
+		modalities: {
+			input: ["text", "image"],
+			output: ["video"],
+		},
+		inputSchema: {
+			reference: "https://replicate.com/runwayml/gen-4.5",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "Text prompt for video generation",
+					required: true,
+				},
+				{
+					name: "image",
+					type: ["file", "string"],
+					description:
+						"Optional initial image for video generation (first frame). If not provided, video will be generated from text only.",
+				},
+				{
+					name: "aspect_ratio",
+					type: "string",
+					description: "Video aspect ratio",
+				},
+				{
+					name: "duration",
+					type: "integer",
+					description: "Duration of the output video in seconds",
+				},
+				{
+					name: "seed",
+					type: "integer",
+					description: "Random seed. Set for reproducible generation",
+				},
+			],
+		},
+	}),
+	createModelConfig("replicate-kwaivgi-kling-v3-video", PROVIDER, {
+		name: "Kling Video 3.0",
+		matchingModel: "kwaivgi/kling-v3-video",
+		description:
+			"Generate cinematic videos up to 15 seconds with multi-shot control, native audio, and improved consistency",
+		strengths: ["creative", "video"],
+		supportsStreaming: false,
+		supportsAttachments: false,
+		modalities: {
+			input: ["text", "image"],
+			output: ["video"],
+		},
+		inputSchema: {
+			reference: "https://replicate.com/kwaivgi/kling-v3-video",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "Text prompt for video generation. Max 2500 characters.",
+					required: true,
+				},
+				{
+					name: "negative_prompt",
+					type: "string",
+					description:
+						"Things you do not want to see in the video. Max 2500 characters.",
+				},
+				{
+					name: "start_image",
+					type: ["file", "string"],
+					description:
+						"First frame image. Supports .jpg/.jpeg/.png, max 10MB, min 300px, aspect ratio 1:2.5 to 2.5:1.",
+				},
+				{
+					name: "end_image",
+					type: ["file", "string"],
+					description:
+						"Last frame image. Requires start_image. Supports .jpg/.jpeg/.png, max 10MB, min 300px.",
+				},
+				{
+					name: "mode",
+					type: "string",
+					description: "'standard' generates 720p, 'pro' generates 1080p.",
+					default: "standard",
+					enum: ["standard", "pro"],
+				},
+				{
+					name: "aspect_ratio",
+					type: "string",
+					description: "Aspect ratio. Ignored when start_image is provided.",
+					enum: ["16:9", "9:16", "1:1"],
+				},
+				{
+					name: "duration",
+					type: "integer",
+					description: "Video duration in seconds.",
+				},
+				{
+					name: "generate_audio",
+					type: "boolean",
+					description: "Generate native audio for the video.",
+				},
+				{
+					name: "multi_prompt",
+					type: "string",
+					description:
+						'JSON array of shot definitions for multi-shot mode. Each shot: {"prompt": "...", "duration": N}. Max 6 shots, min 1s per shot, total must equal duration.',
+				},
+			],
+		},
+	}),
 ]);

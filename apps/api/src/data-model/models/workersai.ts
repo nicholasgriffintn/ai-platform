@@ -565,6 +565,20 @@ export const workersAiModelConfig: ModelConfig = {
 			enabled: false,
 		},
 	},
+	"gemma-4-26b-a4b-it": {
+		name: "Gemma 4 26B A4B IT",
+		matchingModel: "@cf/google/gemma-4-26b-a4b-it",
+		description:
+			"Gemma 4 is Google's most intelligent family of open models, built from Gemini 3 research to maximize intelligence-per-parameter.",
+		provider: "workers-ai",
+		contextWindow: 256000,
+		maxTokens: 256000,
+		multimodal: true,
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+	},
 	"qwq-32b": {
 		name: "QwQ 32B",
 		matchingModel: "@cf/qwen/qwq-32b",

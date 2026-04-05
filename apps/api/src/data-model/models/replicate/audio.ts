@@ -362,6 +362,58 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			],
 		},
 	}),
+	createModelConfig("replicate-minimax-music-1.5", PROVIDER, {
+		name: "Music-1.5",
+		matchingModel: "minimax/music-1.5",
+		description:
+			"Full-length songs (up to 4 mins) with natural vocals & rich instrumentation",
+		strengths: ["creative", "audio"],
+		supportsStreaming: false,
+		supportsAttachments: false,
+		costPerRun: 0.025,
+		modalities: {
+			input: ["text"],
+			output: ["audio"],
+		},
+		inputSchema: {
+			reference: "https://replicate.com/minimax/music-1.5",
+			fields: [
+				{
+					name: "sample_rate",
+					type: "integer",
+					description: "Sample rate for the generated music",
+					default: 44100,
+				},
+				{
+					name: "bitrate",
+					type: "integer",
+					description: "Bitrate for the generated music",
+					default: 256000,
+				},
+				{
+					name: "audio_format",
+					type: "string",
+					description: "Audio format for the generated music",
+					default: "mp3",
+					enum: ["mp3", "wav", "flac"],
+				},
+				{
+					name: "lyrics",
+					type: "string",
+					description:
+						"Use \\n to separate lines. Supports [intro][verse][chorus][bridge][outro]. Valid input: 10-600 characters.",
+					required: true,
+				},
+				{
+					name: "prompt",
+					type: "string",
+					description:
+						"Control music generation with a text prompt. Valid input: 10-300 characters.",
+					required: true,
+				},
+			],
+		},
+	}),
 	createModelConfig("replicate-chatterbox-turbo", PROVIDER, {
 		name: "Chatterbox Turbo",
 		matchingModel: "resemble-ai/chatterbox-turbo",
