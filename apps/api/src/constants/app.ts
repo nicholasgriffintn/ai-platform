@@ -59,4 +59,6 @@ export const MAX_BUFFER_LENGTH = 100000; // 100KB
 
 export const SANDBOX_RUNS_APP_ID = "sandbox_runs";
 export const SANDBOX_RUN_ITEM_TYPE = "sandbox_run";
+export const DYNAMIC_WORKER_RUNS_APP_ID = "dynamic_worker_runs";
+export const DYNAMIC_WORKER_RUN_ITEM_TYPE = "dynamic_worker_run";
 export const MAX_STORED_STREAM_EVENTS = 500;

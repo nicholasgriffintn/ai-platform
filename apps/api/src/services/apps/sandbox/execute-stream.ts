@@ -55,6 +55,7 @@ export async function executeSandboxRunStream(
 	const now = new Date().toISOString();
 	const runData: SandboxRunData = {
 		runId,
+		runtimeBackend: "container",
 		installationId: payload.installationId,
 		repo: payload.repo,
 		task: payload.task,

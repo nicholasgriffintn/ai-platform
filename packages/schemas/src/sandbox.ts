@@ -22,6 +22,10 @@ export const SANDBOX_TIMEOUT_MIN_SECONDS = 30;
 export const SANDBOX_TIMEOUT_DEFAULT_SECONDS = 900;
 export const SANDBOX_TIMEOUT_MAX_SECONDS = 7200;
 export const SANDBOX_TRUST_LEVELS = ["strict", "balanced", "trusted"] as const;
+export const SANDBOX_RUNTIME_BACKENDS = [
+	"container",
+	"dynamic-worker",
+] as const;
 
 export const sandboxWebhookCommandSchema = z.enum([
 	"implement",
@@ -189,6 +193,7 @@ export const sandboxPromptStrategySchema = z.enum(SANDBOX_PROMPT_STRATEGIES);
 export const sandboxRunEventSchema = z
 	.object({
 		type: z.string(),
+		runtimeBackend: z.enum(SANDBOX_RUNTIME_BACKENDS).optional(),
 		runId: z.string().optional(),
 		repo: z.string().optional(),
 		installationId: z.number().int().positive().optional(),
@@ -235,6 +240,7 @@ export const sandboxRunEventSchema = z
 
 export const sandboxRunDataSchema = z.object({
 	runId: z.string().trim().min(1),
+	runtimeBackend: z.enum(SANDBOX_RUNTIME_BACKENDS).optional(),
 	installationId: z.number().int().positive(),
 	repo: sandboxRepoSchema,
 	task: z.string().trim().min(1),
@@ -281,6 +287,7 @@ export const sandboxRunSchema = sandboxRunDataSchema.extend({
 
 export const sandboxTaskTypeSchema = z.enum(SANDBOX_TASK_TYPES);
 export const sandboxTrustLevelSchema = z.enum(SANDBOX_TRUST_LEVELS);
+export const sandboxRuntimeBackendSchema = z.enum(SANDBOX_RUNTIME_BACKENDS);
 
 export const sandboxRunControlStateSchema = z.enum([
 	"queued",
@@ -380,6 +387,7 @@ export type SandboxRun = z.infer<typeof sandboxRunSchema>;
 export type SandboxTaskType = z.infer<typeof sandboxTaskTypeSchema>;
 export type SandboxPromptStrategy = z.infer<typeof sandboxPromptStrategySchema>;
 export type SandboxTrustLevel = z.infer<typeof sandboxTrustLevelSchema>;
+export type SandboxRuntimeBackend = z.infer<typeof sandboxRuntimeBackendSchema>;
 export type SandboxWebhookCommand = z.infer<typeof sandboxWebhookCommandSchema>;
 export type SandboxRunControlState = z.infer<
 	typeof sandboxRunControlStateSchema

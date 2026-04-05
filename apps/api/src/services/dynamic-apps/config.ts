@@ -261,6 +261,19 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 		kind: "frontend",
 	},
 	{
+		id: "featured-dynamic-workers",
+		name: "Dynamic Workers",
+		description:
+			"Run isolated dynamic worker tasks with capability-based bindings and streaming output",
+		icon: "cpu",
+		category: "Code Assistance",
+		theme: "slate",
+		tags: ["dynamic-workers", "sandbox", "automation"],
+		href: "/apps/dynamic-workers",
+		type: "premium",
+		kind: "frontend",
+	},
+	{
 		id: "featured-strudel",
 		name: "Strudel Music Patterns",
 		description:

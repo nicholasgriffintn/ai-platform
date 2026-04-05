@@ -57,6 +57,10 @@
 		{
 			"binding": "SANDBOX_WORKER",
 			"service": "assistant-sandbox-worker"
+		},
+		{
+			"binding": "DYNAMIC_RUNTIME_WORKER",
+			"service": "assistant-dynamic-runtime-worker"
 		}
 	],
 	"durable_objects": {

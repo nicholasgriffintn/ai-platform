@@ -22,6 +22,7 @@ import shared from "./shared";
 import replicate from "./replicate";
 import strudel from "./strudel";
 import sandbox from "./sandbox";
+import dynamicWorkers from "./dynamic-workers";
 
 const app = new Hono();
 
@@ -51,6 +52,7 @@ app.route("/replicate", replicate);
 app.route("/strudel", strudel);
 
 app.route("/sandbox", sandbox);
+app.route("/dynamic-workers", dynamicWorkers);
 
 addRoute(app, "post", "/prompt-coach", {
 	tags: ["chat"],

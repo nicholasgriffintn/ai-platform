@@ -29,6 +29,7 @@ export function appendSandboxRunEvent(
 export function toSandboxRunResponse(data: SandboxRunData): SandboxRun {
 	return {
 		runId: data.runId,
+		runtimeBackend: data.runtimeBackend,
 		installationId: data.installationId,
 		repo: data.repo,
 		task: data.task,

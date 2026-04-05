@@ -32,6 +32,7 @@ export type IEnv = {
 	ANTHROPIC_API_KEY?: string;
 	AI_GATEWAY_TOKEN?: string;
 	SANDBOX_WORKER?: Fetcher;
+	DYNAMIC_RUNTIME_WORKER?: Fetcher;
 	SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;
 	GROK_API_KEY?: string;
 	HUGGINGFACE_TOKEN?: string;

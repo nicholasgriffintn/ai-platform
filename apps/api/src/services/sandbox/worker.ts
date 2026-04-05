@@ -1,6 +1,7 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
 	SandboxPromptStrategy,
+	SandboxRuntimeBackend,
 	SandboxTaskType,
 	SandboxTrustLevel,
 	SandboxWorkerExecuteRequest,
@@ -16,6 +17,7 @@ import {
 
 const SANDBOX_TOKEN_EXPIRATION_SECONDS = 60 * 60;
 const DEFAULT_SANDBOX_MODEL = "mistral-large";
+const DYNAMIC_SANDBOX_TASK_TYPES: SandboxTaskType[] = ["code-review"];
 
 function parseModelPolicyList(input: string | undefined): Set<string> {
 	if (!input?.trim()) {
@@ -69,6 +71,35 @@ export interface ExecuteSandboxWorkerOptions {
 	runId?: string;
 	githubTokenOverride?: string;
 	signal?: AbortSignal;
+}
+
+function withRuntimeBackendHeader(
+	response: Response,
+	backend: SandboxRuntimeBackend,
+): Response {
+	const headers = new Headers(response.headers);
+	headers.set("X-Sandbox-Runtime-Backend", backend);
+	return new Response(response.body, {
+		status: response.status,
+		statusText: response.statusText,
+		headers,
+	});
+}
+
+function shouldUseDynamicSandboxBackend(
+	env: IEnv,
+	options: ExecuteSandboxWorkerOptions,
+): boolean {
+	if (!env.DYNAMIC_RUNTIME_WORKER) {
+		return false;
+	}
+
+	const taskType = options.taskType ?? "feature-implementation";
+	if (!DYNAMIC_SANDBOX_TASK_TYPES.includes(taskType)) {
+		return false;
+	}
+
+	return options.shouldCommit !== true;
 }
 
 export function resolveApiBaseUrl(env: IEnv): string {
@@ -148,7 +179,8 @@ export async function executeSandboxWorker(
 		signal,
 	} = options;
 
-	if (!env.SANDBOX_WORKER) {
+	const useDynamicSandboxBackend = shouldUseDynamicSandboxBackend(env, options);
+	if (!useDynamicSandboxBackend && !env.SANDBOX_WORKER) {
 		throw new AssistantError(
 			"Sandbox worker not available",
 			ErrorType.NOT_FOUND,
@@ -194,7 +226,24 @@ export async function executeSandboxWorker(
 		runId,
 	};
 
-	const response = await env.SANDBOX_WORKER.fetch(
+	if (useDynamicSandboxBackend) {
+		const dynamicResponse = await env.DYNAMIC_RUNTIME_WORKER!.fetch(
+			new Request("http://dynamic-runtime/execute", {
+				method: "POST",
+				signal,
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${sandboxToken}`,
+					"X-GitHub-Token": githubToken,
+					...(stream ? { Accept: "text/event-stream" } : {}),
+				},
+				body: JSON.stringify(workerPayload),
+			}),
+		);
+		return withRuntimeBackendHeader(dynamicResponse, "dynamic-worker");
+	}
+
+	const response = await env.SANDBOX_WORKER!.fetch(
 		new Request("http://sandbox/execute", {
 			method: "POST",
 			signal,
@@ -208,5 +257,5 @@ export async function executeSandboxWorker(
 		}),
 	);
 
-	return response;
+	return withRuntimeBackendHeader(response, "container");
 }

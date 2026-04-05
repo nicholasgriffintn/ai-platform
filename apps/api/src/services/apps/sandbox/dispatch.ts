@@ -250,6 +250,7 @@ export async function processSandboxRunDispatch(params: {
 	let pauseReason: string | undefined;
 	let resumeReason: string | undefined;
 	let promptStrategy = runData.promptStrategy;
+	let runtimeBackend = runData.runtimeBackend ?? "container";
 	const coordinatorWritePromises: Promise<void>[] = [];
 
 	const appendEvent = (event: SandboxRunEvent) => {
@@ -287,6 +288,16 @@ export async function processSandboxRunDispatch(params: {
 		completedAt = failedAt;
 		errorMessage = "Sandbox worker returned an empty response";
 	} else {
+		const responseBackend = workerResponse.headers
+			.get("X-Sandbox-Runtime-Backend")
+			?.trim()
+			.toLowerCase();
+		if (
+			responseBackend === "dynamic-worker" ||
+			responseBackend === "container"
+		) {
+			runtimeBackend = responseBackend;
+		}
 		const contentType = workerResponse.headers.get("content-type") || "";
 		if (!contentType.includes("text/event-stream")) {
 			const payload = (await workerResponse.json()) as Record<string, unknown>;
@@ -406,6 +417,7 @@ export async function processSandboxRunDispatch(params: {
 	const finalUpdatedAt = new Date().toISOString();
 	const nextRunData: PersistedSandboxRunData = {
 		...runData,
+		runtimeBackend,
 		status: resolvedStatus,
 		result,
 		error: resolvedStatus === "failed" ? errorMessage : undefined,
