@@ -356,7 +356,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				},
 				{
 					name: "guidance",
-					type: "integer",
+					type: "number",
 					description:
 						"Guidance scale for generation. Controls how closely the output follows the prompt",
 					default: 4.5,

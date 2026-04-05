@@ -48,12 +48,18 @@ export class ReplicateProvider extends BaseProvider {
 		params: ChatCompletionParameters,
 	): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
+		const waitSecondsOption = params.options?.replicateWaitSeconds;
+		const waitSeconds =
+			typeof waitSecondsOption === "number" &&
+			Number.isFinite(waitSecondsOption)
+				? Math.max(0, Math.min(60, Math.floor(waitSecondsOption)))
+				: 30;
 
 		return {
 			"cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
 			Authorization: `Token ${apiKey}`,
 			"Content-Type": "application/json",
-			Prefer: "wait=30",
+			Prefer: `wait=${waitSeconds}`,
 			"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
 			"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
 		};

@@ -247,6 +247,7 @@ interface AIControlParams {
 
 export interface ChatRequestOptions extends Record<string, any> {
 	cache_ttl_seconds?: number;
+	replicateWaitSeconds?: number;
 }
 
 interface AIResponseParamsBase extends AIControlParams {

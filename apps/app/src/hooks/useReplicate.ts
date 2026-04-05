@@ -28,8 +28,16 @@ export function useReplicatePredictions() {
 			const data = query.state.data as ReplicatePrediction[] | undefined;
 			if (!data) return false;
 
-			const hasProcessing = data.some((pred) => pred.status === "processing");
-			return hasProcessing ? 10000 : false;
+			const activeStatuses = new Set([
+				"processing",
+				"queued",
+				"in_progress",
+				"starting",
+			]);
+			const hasActivePredictions = data.some((pred) =>
+				activeStatuses.has(String(pred.status).toLowerCase()),
+			);
+			return hasActivePredictions ? 10000 : false;
 		},
 	});
 }

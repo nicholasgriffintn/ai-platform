@@ -17,6 +17,7 @@ const logger = getLogger({ prefix: "services/apps/replicate/execute" });
 export interface ExecuteReplicateModelParams {
 	modelId: string;
 	input: Record<string, any>;
+	replicateWaitSeconds?: number;
 }
 
 export interface ExecuteReplicateModelRequest {
@@ -81,18 +82,28 @@ export const executeReplicateModel = async (
 			body: {
 				input: params.input,
 			},
+			options: {
+				replicateWaitSeconds: params.replicateWaitSeconds,
+			},
 			env: serviceContext.env,
 			user,
 			store: false,
 		});
 
 		const isAsync = predictionData?.status === "in_progress";
+		const predictionOutput = predictionData?.response;
+		const predictionError =
+			typeof predictionData?.error === "string"
+				? predictionData.error
+				: undefined;
 
 		const appData = {
 			modelId: params.modelId,
 			modelName: modelConfig.name,
 			input: params.input,
 			predictionData,
+			output: predictionOutput,
+			error: predictionError,
 			status: isAsync ? "processing" : "completed",
 			createdAt: new Date().toISOString(),
 		};

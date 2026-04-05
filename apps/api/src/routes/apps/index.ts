@@ -20,6 +20,7 @@ import podcasts from "./podcasts";
 import retrieval from "./retrieval";
 import shared from "./shared";
 import replicate from "./replicate";
+import canvas from "./canvas";
 import strudel from "./strudel";
 import sandbox from "./sandbox";
 
@@ -47,6 +48,8 @@ app.route("/notes", notes);
 app.route("/retrieval", retrieval);
 
 app.route("/replicate", replicate);
+
+app.route("/canvas", canvas);
 
 app.route("/strudel", strudel);
 

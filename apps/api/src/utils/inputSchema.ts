@@ -3,7 +3,6 @@ import type {
 	ModelConfigItem,
 	InputSchemaInputFieldDescriptor,
 	Message,
-	ChatCompletionParameters,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -19,6 +18,13 @@ type InputSchemaFieldType =
 type InputSchemaInputBuildResult = {
 	input: Record<string, any> | string;
 };
+
+export interface InputSchemaBuildParameters {
+	body?: Record<string, any>;
+	options?: Record<string, any>;
+	message?: string | Record<string, any>;
+	messages?: Message[];
+}
 
 function normalizeFieldTypes(
 	field: InputSchemaInputFieldDescriptor,
@@ -199,7 +205,7 @@ function pickFromSources(
 
 function buildFieldValue(
 	field: InputSchemaInputFieldDescriptor,
-	params: ChatCompletionParameters,
+	params: InputSchemaBuildParameters,
 	modelConfig: ModelConfigItem,
 ): unknown {
 	const lastMessage = params.messages?.[params.messages.length - 1];
@@ -273,7 +279,7 @@ function buildFieldValue(
 }
 
 export function buildInputSchemaInput(
-	params: ChatCompletionParameters,
+	params: InputSchemaBuildParameters,
 	modelConfig: ModelConfigItem,
 ): InputSchemaInputBuildResult {
 	const schema = modelConfig.inputSchema;
