@@ -1,6 +1,12 @@
 import type { ModelConfigItem } from "~/types";
 
 export type CanvasMode = "image" | "video";
+export type CanvasGenerationStatus =
+	| "queued"
+	| "processing"
+	| "completed"
+	| "succeeded"
+	| "failed";
 
 export interface CanvasGenerationInput {
 	mode: CanvasMode;
@@ -17,6 +23,22 @@ export interface CanvasGenerationInput {
 
 export interface CanvasGenerateParams extends CanvasGenerationInput {
 	modelIds: string[];
+}
+
+export interface CanvasGenerationListItem {
+	id: string;
+	itemId?: string;
+	modelId: string;
+	modelName?: string;
+	provider?: string;
+	mode?: CanvasMode;
+	status: CanvasGenerationStatus;
+	createdAt?: string;
+	updatedAt?: string;
+	input?: Record<string, unknown>;
+	output?: unknown;
+	error?: string;
+	predictionData?: unknown;
 }
 
 export interface CanvasModelListItem {

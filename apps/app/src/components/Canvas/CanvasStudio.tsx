@@ -2,36 +2,22 @@ import { Film, Image, Layers, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button, Card } from "~/components/ui";
-import { useCanvasModels, useGenerateCanvasOutputs } from "~/hooks/useCanvas";
-import { useReplicatePredictions } from "~/hooks/useReplicate";
+import {
+	useCanvasGenerations,
+	useCanvasModels,
+	useGenerateCanvasOutputs,
+} from "~/hooks/useCanvas";
 import { cn } from "~/lib/utils";
 import type {
+	CanvasGeneration,
 	CanvasGenerateRequest,
 	CanvasGenerationResult,
 	CanvasMode,
 } from "~/types/canvas";
-import type { ReplicatePrediction } from "~/types/replicate";
 import { GenerationCard, type CanvasRun } from "./GenerationCard";
-import {
-	collectFieldEnumOptions,
-	getPredictionOutput,
-	parseReferenceImages,
-} from "./utils";
+import { collectFieldEnumOptions, parseReferenceImages } from "./utils";
 
-function mapGenerationToRun(generation: CanvasGenerationResult): CanvasRun {
-	return {
-		key: generation.predictionId
-			? `prediction-${generation.predictionId}`
-			: `generation-${generation.modelId}`,
-		modelId: generation.modelId,
-		modelName: generation.modelName,
-		predictionId: generation.predictionId,
-		status: generation.status === "failed" ? "failed" : "queued",
-		error: generation.error,
-	};
-}
-
-function mapPredictionStatus(status: string | undefined): CanvasRun["status"] {
+function mapGenerationStatus(status: string | undefined): CanvasRun["status"] {
 	const normalized = (status || "").toLowerCase();
 
 	switch (normalized) {
@@ -54,25 +40,42 @@ function mapPredictionStatus(status: string | undefined): CanvasRun["status"] {
 	}
 }
 
-function mapPredictionToRun(
-	prediction: ReplicatePrediction,
+function mapQueuedGenerationToRun(
+	generation: CanvasGenerationResult,
+): CanvasRun {
+	const generationId = generation.generationId;
+
+	return {
+		key: generationId
+			? `generation-${generationId}`
+			: `generation-${generation.modelId}`,
+		modelId: generation.modelId,
+		modelName: generation.modelName,
+		generationId,
+		status: mapGenerationStatus(generation.status),
+		error: generation.error,
+	};
+}
+
+function mapStoredGenerationToRun(
+	generation: CanvasGeneration,
 	modelName: string,
 ): CanvasRun {
 	return {
-		key: `prediction-${prediction.id}`,
-		modelId: prediction.modelId,
+		key: `generation-${generation.id}`,
+		modelId: generation.modelId,
 		modelName,
-		predictionId: prediction.id,
-		status: mapPredictionStatus(prediction.status),
-		output: getPredictionOutput(prediction),
-		error: prediction.error,
-		createdAt: prediction.created_at || prediction.createdAt,
+		generationId: generation.id,
+		status: mapGenerationStatus(generation.status),
+		output: generation.output,
+		error: generation.error,
+		createdAt: generation.createdAt,
 	};
 }
 
 function sortRunsDescendingByCreatedAt(a: CanvasRun, b: CanvasRun): number {
-	const aPending = !a.predictionId;
-	const bPending = !b.predictionId;
+	const aPending = !a.generationId;
+	const bPending = !b.generationId;
 	if (aPending && !bPending) {
 		return -1;
 	}
@@ -108,8 +111,8 @@ export function CanvasStudio() {
 		isPending,
 		error: generateError,
 	} = useGenerateCanvasOutputs();
-	const { data: predictions, refetch: refetchPredictions } =
-		useReplicatePredictions();
+	const { data: generations, refetch: refetchGenerations } =
+		useCanvasGenerations(mode);
 
 	const visibleModels = useMemo(() => {
 		const source = models ?? [];
@@ -145,25 +148,25 @@ export function CanvasStudio() {
 
 	const historicalRuns = useMemo(() => {
 		if (
-			!predictions ||
-			predictions.length === 0 ||
+			!generations ||
+			generations.length === 0 ||
 			canvasModelLookup.size === 0
 		) {
 			return [];
 		}
 
-		return predictions
-			.filter((prediction) => canvasModelLookup.has(prediction.modelId))
-			.map((prediction) =>
-				mapPredictionToRun(
-					prediction,
-					canvasModelLookup.get(prediction.modelId)?.name ||
-						prediction.modelName ||
-						prediction.modelId,
+		return generations
+			.filter((generation) => canvasModelLookup.has(generation.modelId))
+			.map((generation) =>
+				mapStoredGenerationToRun(
+					generation,
+					canvasModelLookup.get(generation.modelId)?.name ||
+						generation.modelName ||
+						generation.modelId,
 				),
 			)
 			.sort(sortRunsDescendingByCreatedAt);
-	}, [predictions, canvasModelLookup]);
+	}, [generations, canvasModelLookup]);
 
 	const optionModels =
 		selectedModels.length > 0 ? selectedModels : (models ?? []);
@@ -240,7 +243,7 @@ export function CanvasStudio() {
 					key: `${modelId}-pending-${index}`,
 					modelId,
 					modelName: model?.name ?? modelId,
-					predictionId: undefined,
+					generationId: undefined,
 					status: "queued",
 				};
 			},
@@ -266,9 +269,11 @@ export function CanvasStudio() {
 		try {
 			const result = await generate(payload);
 			setRuns(
-				result.generations.map((generation) => mapGenerationToRun(generation)),
+				result.generations.map((generation) =>
+					mapQueuedGenerationToRun(generation),
+				),
 			);
-			await refetchPredictions();
+			await refetchGenerations();
 		} catch {
 			setRuns([]);
 		}
@@ -282,7 +287,7 @@ export function CanvasStudio() {
 		}
 
 		for (const run of runs) {
-			const key = run.predictionId ? `prediction-${run.predictionId}` : run.key;
+			const key = run.generationId ? `generation-${run.generationId}` : run.key;
 			if (!byKey.has(key)) {
 				byKey.set(key, { ...run, key });
 			}

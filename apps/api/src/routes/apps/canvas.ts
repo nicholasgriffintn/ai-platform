@@ -10,6 +10,8 @@ import { AssistantError } from "~/utils/errors";
 import { generateCanvasBatch } from "~/services/apps/canvas/generate";
 import { listCanvasModels } from "~/services/apps/canvas/list-models";
 import type { CanvasMode } from "~/services/apps/canvas/types";
+import { listCanvasGenerations } from "~/services/apps/canvas/list-generations";
+import { getCanvasGenerationDetails } from "~/services/apps/canvas/get-generation";
 
 const app = new Hono();
 
@@ -22,6 +24,10 @@ app.use("/*", (c, next) => {
 
 const listCanvasModelsQuerySchema = z.object({
 	mode: z.enum(["image", "video"]).default("image"),
+});
+
+const listCanvasGenerationsQuerySchema = z.object({
+	mode: z.enum(["image", "video"]).optional(),
 });
 
 const generateCanvasSchema = z.object({
@@ -101,6 +107,86 @@ addRoute(app, "post", "/generate", {
 						error instanceof Error ? error.message : "Unknown error",
 				});
 				throw new AssistantError("Failed to generate canvas outputs");
+			}
+		})(raw),
+});
+
+addRoute(app, "get", "/generations", {
+	tags: ["apps"],
+	description:
+		"List a user's Canvas generations with provider-agnostic status and outputs",
+	querySchema: listCanvasGenerationsQuerySchema,
+	responses: {
+		200: { description: "List of Canvas generations", schema: z.any() },
+	},
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const user = context.get("user") as IUser;
+			const query = context.req.valid("query" as never) as z.infer<
+				typeof listCanvasGenerationsQuerySchema
+			>;
+
+			if (!user?.id) {
+				return ResponseFactory.error(context, "User not authenticated", 401);
+			}
+
+			try {
+				const serviceContext = getServiceContext(context);
+				const generations = await listCanvasGenerations({
+					context: serviceContext,
+					userId: user.id,
+					mode: query.mode,
+				});
+
+				return ResponseFactory.success(context, { generations });
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+
+				routeLogger.error("Error listing Canvas generations:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
+				throw new AssistantError("Failed to list Canvas generations");
+			}
+		})(raw),
+});
+
+addRoute(app, "get", "/generations/:id", {
+	tags: ["apps"],
+	description: "Get a specific Canvas generation",
+	responses: {
+		200: { description: "Canvas generation details", schema: z.any() },
+	},
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const user = context.get("user") as IUser;
+			const generationId = context.req.param("id");
+
+			if (!user?.id) {
+				return ResponseFactory.error(context, "User not authenticated", 401);
+			}
+
+			try {
+				const serviceContext = getServiceContext(context);
+				const generation = await getCanvasGenerationDetails({
+					context: serviceContext,
+					userId: user.id,
+					generationId,
+				});
+
+				return ResponseFactory.success(context, { generation });
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					throw error;
+				}
+
+				routeLogger.error("Error fetching Canvas generation:", {
+					error_message:
+						error instanceof Error ? error.message : "Unknown error",
+				});
+				throw new AssistantError("Failed to fetch Canvas generation");
 			}
 		})(raw),
 });

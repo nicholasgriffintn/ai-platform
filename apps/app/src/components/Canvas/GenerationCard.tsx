@@ -13,7 +13,7 @@ export interface CanvasRun {
 	key: string;
 	modelId: string;
 	modelName: string;
-	predictionId?: string;
+	generationId?: string;
 	status: "queued" | "processing" | "succeeded" | "completed" | "failed";
 	output?: unknown;
 	error?: string;

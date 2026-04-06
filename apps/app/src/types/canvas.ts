@@ -1,6 +1,19 @@
-import type { ReplicateInputField } from "~/types/replicate";
-
 export type CanvasMode = "image" | "video";
+export type CanvasGenerationStatus =
+	| "queued"
+	| "processing"
+	| "succeeded"
+	| "completed"
+	| "failed";
+
+export interface CanvasInputField {
+	name: string;
+	type: string | string[];
+	description?: string;
+	required: boolean;
+	default?: unknown;
+	enum?: unknown[];
+}
 
 export interface CanvasModel {
 	id: string;
@@ -16,7 +29,7 @@ export interface CanvasModel {
 	strengths?: string[];
 	isFeatured?: boolean;
 	inputSchema?: {
-		fields: ReplicateInputField[];
+		fields: CanvasInputField[];
 		reference?: string;
 	};
 }
@@ -38,11 +51,32 @@ export interface CanvasGenerateRequest {
 export interface CanvasGenerationResult {
 	modelId: string;
 	modelName: string;
-	status: "queued" | "failed";
-	predictionId?: string;
+	provider?: string;
+	status: CanvasGenerationStatus;
+	generationId?: string;
 	error?: string;
+}
+
+export interface CanvasGeneration {
+	id: string;
+	itemId?: string;
+	modelId: string;
+	modelName?: string;
+	provider?: string;
+	mode?: CanvasMode;
+	status: CanvasGenerationStatus;
+	createdAt?: string;
+	updatedAt?: string;
+	input?: Record<string, unknown>;
+	output?: unknown;
+	error?: string;
+	predictionData?: unknown;
 }
 
 export interface CanvasGenerateResponse {
 	generations: CanvasGenerationResult[];
+}
+
+export interface CanvasGenerationsResponse {
+	generations: CanvasGeneration[];
 }

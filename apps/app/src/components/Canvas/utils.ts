@@ -1,5 +1,4 @@
 import type { CanvasMode, CanvasModel } from "~/types/canvas";
-import type { ReplicatePrediction } from "~/types/replicate";
 
 interface MediaPreview {
 	url: string;
@@ -97,14 +96,6 @@ function inferMediaType(url: string): MediaPreview["type"] {
 	}
 
 	return "unknown";
-}
-
-export function getPredictionOutput(prediction: ReplicatePrediction): unknown {
-	return (
-		prediction.output ||
-		prediction.predictionData?.response ||
-		prediction.predictionData?.output
-	);
 }
 
 export function getMediaPreview(output: unknown): MediaPreview | null {

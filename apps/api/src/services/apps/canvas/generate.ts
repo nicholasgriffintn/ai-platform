@@ -10,8 +10,9 @@ import { validateCanvasModelInputRequirements } from "./input-requirements";
 export interface CanvasGenerationResultItem {
 	modelId: string;
 	modelName: string;
-	status: "queued" | "failed";
-	predictionId?: string;
+	provider?: string;
+	status: "processing" | "completed" | "failed";
+	generationId?: string;
 	error?: string;
 }
 
@@ -86,26 +87,56 @@ export async function generateCanvasBatch(
 						input,
 						replicateWaitSeconds: 0,
 					},
+					storage: {
+						appId: "canvas",
+						itemType: "generation",
+						extraData: {
+							mode: params.mode,
+						},
+					},
 				});
 
-				const predictionId = prediction?.data?.id;
-				if (typeof predictionId !== "string" || !predictionId) {
+				const responseData = prediction?.data;
+				const generationId =
+					responseData && typeof responseData === "object"
+						? (responseData.id as string | undefined)
+						: undefined;
+
+				if (typeof generationId !== "string" || !generationId) {
 					throw new AssistantError(
-						"Queued prediction missing id",
+						"Queued generation missing id",
 						ErrorType.PROVIDER_ERROR,
 					);
 				}
 
+				const statusCandidate =
+					responseData && typeof responseData === "object"
+						? (responseData.status as string | undefined)
+						: undefined;
+				const normalizedStatus: "processing" | "completed" =
+					statusCandidate === "completed" ? "completed" : "processing";
+
+				const generationError =
+					responseData && typeof responseData === "object"
+						? (responseData.error as string | undefined)
+						: undefined;
+				const status: CanvasGenerationResultItem["status"] = generationError
+					? "failed"
+					: normalizedStatus;
+
 				return {
 					modelId,
 					modelName: modelConfig.name ?? modelId,
-					status: "queued" as const,
-					predictionId,
+					provider: modelConfig.provider,
+					status,
+					generationId,
+					error: generationError,
 				};
 			} catch (error) {
 				return {
 					modelId,
 					modelName: modelConfig.name ?? modelId,
+					provider: modelConfig.provider,
 					status: "failed" as const,
 					error: getErrorMessage(error, "Failed to queue generation"),
 				};

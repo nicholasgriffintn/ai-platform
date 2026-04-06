@@ -1,6 +1,7 @@
 import { apiService } from "./api-service";
 import { fetchApi, returnFetchedData } from "./fetch-wrapper";
 import type {
+	CanvasGeneration,
 	CanvasGenerateRequest,
 	CanvasGenerateResponse,
 	CanvasMode,
@@ -53,4 +54,32 @@ export async function generateCanvasOutputs(
 	}
 
 	return await returnFetchedData<CanvasGenerateResponse>(response);
+}
+
+export async function fetchCanvasGenerations(
+	mode?: CanvasMode,
+): Promise<CanvasGeneration[]> {
+	let headers = {};
+	try {
+		headers = await apiService.getHeaders();
+	} catch (error) {
+		console.error("Error getting headers for canvas generations:", error);
+	}
+
+	const query = mode ? `?mode=${mode}` : "";
+	const response = await fetchApi(`/apps/canvas/generations${query}`, {
+		method: "GET",
+		headers,
+	});
+
+	if (!response.ok) {
+		throw new Error(
+			`Failed to fetch Canvas generations: ${response.statusText}`,
+		);
+	}
+
+	const data = await returnFetchedData<{ generations: CanvasGeneration[] }>(
+		response,
+	);
+	return data.generations || [];
 }
