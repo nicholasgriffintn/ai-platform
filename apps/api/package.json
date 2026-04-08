@@ -54,7 +54,7 @@
 		"@types/node": "25.5.2",
 		"better-sqlite3": "12.8.0",
 		"drizzle-kit": "0.31.10",
-		"oxlint": "1.56.0",
+		"oxlint": "1.59.0",
 		"prettier": "3.8.1",
 		"typescript": "5.9.3",
 		"vite-tsconfig-paths": "6.1.1",
