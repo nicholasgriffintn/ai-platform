@@ -511,8 +511,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/schemas
       '@cloudflare/sandbox':
-        specifier: 0.8.7
-        version: 0.8.7
+        specifier: 0.8.8
+        version: 0.8.8
       zod:
         specifier: 4.3.6
         version: 4.3.6
@@ -959,15 +959,15 @@ packages:
   '@cfworker/json-schema@4.1.1':
     resolution: {integrity: sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==}
 
-  '@cloudflare/containers@0.2.4':
-    resolution: {integrity: sha512-G/Wsl0EuLbSgXyr9zv7cetUO90NyinKIMZvXae/C5R5BY3XMl9ZUdplvcofylAwRZjBEUm+aUugWxIiiKQU0ZA==}
+  '@cloudflare/containers@0.3.0':
+    resolution: {integrity: sha512-8HM1NgXThWCTk7SH28QFxqMNLJwl6RrMkj3qd0KvDA59BALsn3mZXNDT94i1JaGZnP4Bc8sPGs1u9UAl/mVUVg==}
 
   '@cloudflare/kv-asset-handler@0.4.2':
     resolution: {integrity: sha512-SIOD2DxrRRwQ+jgzlXCqoEFiKOFqaPjhnNTGKXSRLvp1HiOvapLaFG2kEr9dYQTYe8rKrd9uvDUzmAITeNyaHQ==}
     engines: {node: '>=18.0.0'}
 
-  '@cloudflare/sandbox@0.8.7':
-    resolution: {integrity: sha512-3TbzHKdJxSXCkf38ZjfrY4MGBauVWKD4UG2uvSjUgXO//FK6jLbnTAc8MYxSsrD0JDG3I+oY9+PPelsSqgS2wQ==}
+  '@cloudflare/sandbox@0.8.8':
+    resolution: {integrity: sha512-660ITSuweTQ1vDrTfqqfzq4eWAv1eVW5DKZHvzvJBnvAf8QlFYwenZLr/tvJ/jZ4n/jl+U22hJ1gbUBvkIAlLw==}
     peerDependencies:
       '@openai/agents': ^0.3.3
       '@opencode-ai/sdk': ^1.1.40
@@ -7258,13 +7258,13 @@ snapshots:
 
   '@cfworker/json-schema@4.1.1': {}
 
-  '@cloudflare/containers@0.2.4': {}
+  '@cloudflare/containers@0.3.0': {}
 
   '@cloudflare/kv-asset-handler@0.4.2': {}
 
-  '@cloudflare/sandbox@0.8.7':
+  '@cloudflare/sandbox@0.8.8':
     dependencies:
-      '@cloudflare/containers': 0.2.4
+      '@cloudflare/containers': 0.3.0
       aws4fetch: 1.0.20
 
   '@cloudflare/unenv-preset@2.16.0(unenv@2.0.0-rc.24)(workerd@1.20260409.1)':
