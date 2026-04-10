@@ -100,8 +100,8 @@ importers:
         specifier: 1.59.0
         version: 1.59.0
       prettier:
-        specifier: 3.8.1
-        version: 3.8.1
+        specifier: 3.8.2
+        version: 3.8.2
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -317,8 +317,8 @@ importers:
         specifier: 1.59.0
         version: 1.59.0
       prettier:
-        specifier: 3.8.1
-        version: 3.8.1
+        specifier: 3.8.2
+        version: 3.8.2
       rollup-plugin-visualizer:
         specifier: 6.0.11
         version: 6.0.11(rollup@4.57.1)
@@ -387,8 +387,8 @@ importers:
         specifier: 1.59.0
         version: 1.59.0
       prettier:
-        specifier: 3.8.1
-        version: 3.8.1
+        specifier: 3.8.2
+        version: 3.8.2
       tsx:
         specifier: 4.21.0
         version: 4.21.0
@@ -481,8 +481,8 @@ importers:
         specifier: 1.59.0
         version: 1.59.0
       prettier:
-        specifier: 3.8.1
-        version: 3.8.1
+        specifier: 3.8.2
+        version: 3.8.2
       rollup-plugin-visualizer:
         specifier: 6.0.11
         version: 6.0.11(rollup@4.57.1)
@@ -530,8 +530,8 @@ importers:
         specifier: 1.59.0
         version: 1.59.0
       prettier:
-        specifier: 3.8.1
-        version: 3.8.1
+        specifier: 3.8.2
+        version: 3.8.2
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -551,8 +551,8 @@ importers:
         specifier: 1.59.0
         version: 1.59.0
       prettier:
-        specifier: 3.8.1
-        version: 3.8.1
+        specifier: 3.8.2
+        version: 3.8.2
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -573,8 +573,8 @@ importers:
         specifier: 1.59.0
         version: 1.59.0
       prettier:
-        specifier: 3.8.1
-        version: 3.8.1
+        specifier: 3.8.2
+        version: 3.8.2
       tsup:
         specifier: 8.5.1
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)
@@ -5480,8 +5480,8 @@ packages:
     deprecated: No longer maintained. Please contact the author of the relevant native addon; alternatives are available.
     hasBin: true
 
-  prettier@3.8.1:
-    resolution: {integrity: sha512-UOnG6LftzbdaHZcKoPFtOcCKztrQ57WkHDeRD9t/PTQtmT0NHSeWWepj6pS0z/N7+08BHFDQVUrfmfMRcZwbMg==}
+  prettier@3.8.2:
+    resolution: {integrity: sha512-8c3mgTe0ASwWAJK+78dpviD+A8EqhndQPUBpNUIPt6+xWlIigCwfN01lWr9MAede4uqXGTEKeQWTvzb3vjia0Q==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -8725,7 +8725,7 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.1.1
       pkg-types: 2.3.0
-      prettier: 3.8.1
+      prettier: 3.8.2
       react-refresh: 0.14.2
       react-router: 7.13.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       semver: 7.7.4
@@ -11013,7 +11013,7 @@ snapshots:
       js-yaml: 4.1.1
       lodash: 4.17.23
       minimist: 1.2.8
-      prettier: 3.8.1
+      prettier: 3.8.2
       tinyglobby: 0.2.15
 
   json-schema-traverse@1.0.0: {}
@@ -11813,7 +11813,7 @@ snapshots:
       tar-fs: 2.1.4
       tunnel-agent: 0.6.0
 
-  prettier@3.8.1: {}
+  prettier@3.8.2: {}
 
   pretty-format@27.5.1:
     dependencies:
