@@ -20,7 +20,7 @@
 	"dependencies": {
 		"@assistant/agent-core": "workspace:*",
 		"@assistant/schemas": "workspace:*",
-		"@cloudflare/sandbox": "0.8.8",
+		"@cloudflare/sandbox": "0.8.9",
 		"zod": "4.3.6"
 	},
 	"devDependencies": {

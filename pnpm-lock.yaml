@@ -511,8 +511,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/schemas
       '@cloudflare/sandbox':
-        specifier: 0.8.8
-        version: 0.8.8
+        specifier: 0.8.9
+        version: 0.8.9
       zod:
         specifier: 4.3.6
         version: 4.3.6
@@ -966,8 +966,8 @@ packages:
     resolution: {integrity: sha512-SIOD2DxrRRwQ+jgzlXCqoEFiKOFqaPjhnNTGKXSRLvp1HiOvapLaFG2kEr9dYQTYe8rKrd9uvDUzmAITeNyaHQ==}
     engines: {node: '>=18.0.0'}
 
-  '@cloudflare/sandbox@0.8.8':
-    resolution: {integrity: sha512-660ITSuweTQ1vDrTfqqfzq4eWAv1eVW5DKZHvzvJBnvAf8QlFYwenZLr/tvJ/jZ4n/jl+U22hJ1gbUBvkIAlLw==}
+  '@cloudflare/sandbox@0.8.9':
+    resolution: {integrity: sha512-4lmMo96fOVck9lcmjJAJYRf2NNspcoGy8pNuEdBTary3WWuFeXBQLmzuid4ay5i6aGu2AeRegPSmjD+Z1K6qJw==}
     peerDependencies:
       '@openai/agents': ^0.3.3
       '@opencode-ai/sdk': ^1.1.40
@@ -7266,7 +7266,7 @@ snapshots:
 
   '@cloudflare/kv-asset-handler@0.4.2': {}
 
-  '@cloudflare/sandbox@0.8.8':
+  '@cloudflare/sandbox@0.8.9':
     dependencies:
       '@cloudflare/containers': 0.3.0
       aws4fetch: 1.0.20
