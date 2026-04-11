@@ -347,14 +347,14 @@ importers:
   apps/finetune:
     dependencies:
       '@aws-sdk/client-bedrock':
-        specifier: 3.1027.0
-        version: 3.1027.0
+        specifier: 3.1029.0
+        version: 3.1029.0
       '@aws-sdk/client-s3':
-        specifier: 3.1027.0
-        version: 3.1027.0
+        specifier: 3.1029.0
+        version: 3.1029.0
       '@aws-sdk/s3-request-presigner':
-        specifier: 3.1027.0
-        version: 3.1027.0
+        specifier: 3.1029.0
+        version: 3.1029.0
       better-sqlite3:
         specifier: 12.8.0
         version: 12.8.0
@@ -643,12 +643,12 @@ packages:
   '@aws-crypto/util@5.2.0':
     resolution: {integrity: sha512-4RkU9EsI6ZpBve5fseQlGNUWKMa1RLPQ1dnjnQoe07ldfIzcsGb5hC5W0Dm7u423KWzawlrpbjXBrXCEv9zazQ==}
 
-  '@aws-sdk/client-bedrock@3.1027.0':
-    resolution: {integrity: sha512-OIfba4CHeafVilT6ytUcyBgw1R9X58Yr8YikOgdW9tQ8+4sLMgoFV6g8qCAqVqk9NdBh7tkGiu7kgc4Lyr28Sw==}
+  '@aws-sdk/client-bedrock@3.1029.0':
+    resolution: {integrity: sha512-Z7YJTonT4lCbkU8ViH+A2DNzQjei+9+gGCOQjk/WVZwjGBc+riw+ExSlG+dQ0Juor9MrqtcwjWzHvQ37l3ZZ/Q==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-s3@3.1027.0':
-    resolution: {integrity: sha512-g6kaFE/pW0Tsoq/BYg8PfXa1hIZQBmyoKtmJTgcbdyzYWiOOu8vj4PZUE2kS8myita6avaY8Ama5IodHJ39lPA==}
+  '@aws-sdk/client-s3@3.1029.0':
+    resolution: {integrity: sha512-OuA8RZTxsAaHDcI25j2NGLMaYFI2WpJdDzK3uLmVBmaHwjQKQZOUDVVBcln8pNo3IgkY+HRSJhRR4/xlM//UyQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.973.27':
@@ -739,8 +739,8 @@ packages:
     resolution: {integrity: sha512-6Q8B1dcx6BBqUTY1Mc/eROKA0FImEEY5VPSd6AGPEUf0ErjExz4snVqa9kNJSoVDV1rKaNf3qrWojgcKW+SdDg==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/s3-request-presigner@3.1027.0':
-    resolution: {integrity: sha512-CkP0x3O/B9z0Y7jGx8ccfva8exKcSyVoRIBhdneDRLcQWBl6VQ0TvzqCxM3qwqCnDxbcLuG3ekUd5MykFbIVxQ==}
+  '@aws-sdk/s3-request-presigner@3.1029.0':
+    resolution: {integrity: sha512-YbHPaha4DYgJWdPorGV5ZSCCqHafGj4GiyqXmXFlCJSsqlOd3xEcemhOZGjrB9epdiVEUtB3DDJXGYYj55ITdQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/signature-v4-multi-region@3.996.16':
@@ -751,8 +751,8 @@ packages:
     resolution: {integrity: sha512-Ieq/HiRrbEtrYP387Nes0XlR7H1pJiJOZKv+QyQzMYpvTiDs0VKy2ZB3E2Zf+aFovWmeE7lRE4lXyF7dYM6GgA==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/token-providers@3.1027.0':
-    resolution: {integrity: sha512-mI3Jm14cM5sNKc7aNX3cqJe/rFQ2Zzx7x5W8WUtxj2lVxcH2RGYhqI3hK9nnImY6Ec5MeGXCVPjl/q6Mz5HmSA==}
+  '@aws-sdk/token-providers@3.1029.0':
+    resolution: {integrity: sha512-oU3a9wEBUYHuWsoMpahiRIIQMUy2RSRb9NhlJ9DtKTwYWV2OXZ0hEM+RTjIC8T8I8v/C83OqbZrj7NBg1ATAhw==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/types@3.973.7':
@@ -6731,7 +6731,7 @@ snapshots:
       '@smithy/util-utf8': 2.3.0
       tslib: 2.8.1
 
-  '@aws-sdk/client-bedrock@3.1027.0':
+  '@aws-sdk/client-bedrock@3.1029.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
@@ -6742,7 +6742,7 @@ snapshots:
       '@aws-sdk/middleware-recursion-detection': 3.972.10
       '@aws-sdk/middleware-user-agent': 3.972.29
       '@aws-sdk/region-config-resolver': 3.972.11
-      '@aws-sdk/token-providers': 3.1027.0
+      '@aws-sdk/token-providers': 3.1029.0
       '@aws-sdk/types': 3.973.7
       '@aws-sdk/util-endpoints': 3.996.6
       '@aws-sdk/util-user-agent-browser': 3.972.9
@@ -6776,7 +6776,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/client-s3@3.1027.0':
+  '@aws-sdk/client-s3@3.1029.0':
     dependencies:
       '@aws-crypto/sha1-browser': 5.2.0
       '@aws-crypto/sha256-browser': 5.2.0
@@ -7107,7 +7107,7 @@ snapshots:
       '@smithy/types': 4.14.0
       tslib: 2.8.1
 
-  '@aws-sdk/s3-request-presigner@3.1027.0':
+  '@aws-sdk/s3-request-presigner@3.1029.0':
     dependencies:
       '@aws-sdk/signature-v4-multi-region': 3.996.16
       '@aws-sdk/types': 3.973.7
@@ -7139,7 +7139,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/token-providers@3.1027.0':
+  '@aws-sdk/token-providers@3.1029.0':
     dependencies:
       '@aws-sdk/core': 3.973.27
       '@aws-sdk/nested-clients': 3.996.19
