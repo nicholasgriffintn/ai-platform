@@ -51,8 +51,8 @@ importers:
         specifier: 3.2.1
         version: 3.2.1
       agents:
-        specifier: 0.10.0
-        version: 0.10.0(@babel/core@7.29.0)(@babel/runtime@7.28.6)(@cloudflare/workers-types@4.20260410.1)(ai@6.0.77(zod@4.3.6))(react@19.2.5)(rolldown@1.0.0-rc.15)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)(tsx@4.21.0))(zod@4.3.6)
+        specifier: 0.10.1
+        version: 0.10.1(@babel/core@7.29.0)(@babel/runtime@7.28.6)(@cloudflare/workers-types@4.20260410.1)(ai@6.0.77(zod@4.3.6))(react@19.2.5)(rolldown@1.0.0-rc.15)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)(tsx@4.21.0))(zod@4.3.6)
       aws4fetch:
         specifier: 1.0.20
         version: 1.0.20
@@ -3886,13 +3886,13 @@ packages:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
-  agents@0.10.0:
-    resolution: {integrity: sha512-N1eHE0u1ECn5yJuAr98Z9prBUTrJCK7ya9expqaGbpYat7n+lraeI9JUS0Y+ANI2msqUaDZD5gdNEpg7GoQJlA==}
+  agents@0.10.1:
+    resolution: {integrity: sha512-mGy8IoaLQ1Pq2HzO1QRlILAN36VekbwUdoSD2vnrBKzcJ44l9TsM3bXAui0GKtf/dL7xp4cH79LYpOAUa2WmLQ==}
     hasBin: true
     peerDependencies:
       '@ai-sdk/openai': ^3.0.0
       '@ai-sdk/react': ^3.0.0
-      '@cloudflare/ai-chat': ^0.4.0
+      '@cloudflare/ai-chat': ^0.4.1
       '@cloudflare/codemode': ^0.3.4
       '@x402/core': ^2.0.0
       '@x402/evm': ^2.0.0
@@ -10189,7 +10189,7 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  agents@0.10.0(@babel/core@7.29.0)(@babel/runtime@7.28.6)(@cloudflare/workers-types@4.20260410.1)(ai@6.0.77(zod@4.3.6))(react@19.2.5)(rolldown@1.0.0-rc.15)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)(tsx@4.21.0))(zod@4.3.6):
+  agents@0.10.1(@babel/core@7.29.0)(@babel/runtime@7.28.6)(@cloudflare/workers-types@4.20260410.1)(ai@6.0.77(zod@4.3.6))(react@19.2.5)(rolldown@1.0.0-rc.15)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)(tsx@4.21.0))(zod@4.3.6):
     dependencies:
       '@babel/plugin-proposal-decorators': 7.29.0(@babel/core@7.29.0)
       '@cfworker/json-schema': 4.1.1
