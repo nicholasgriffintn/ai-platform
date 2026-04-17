@@ -4,15 +4,17 @@ import {
 	generateMusic,
 } from "~/services/generate/music";
 import { replicateModelConfig } from "~/data-model/models/replicate";
+import { workersAiModelConfig } from "~/data-model/models/workersai";
 import type { IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 import { getModelIdsByOutput } from "~/utils/models";
 
 const DEFAULT_DURATION = 8;
-const MUSIC_PROVIDERS = ["replicate", "elevenlabs"] as const;
+const MUSIC_PROVIDERS = ["workers-ai", "replicate", "elevenlabs"] as const;
 
 const MUSIC_MODELS = [
+	...getModelIdsByOutput(workersAiModelConfig, "workers-ai", "audio"),
 	...getModelIdsByOutput(replicateModelConfig, "replicate", "audio"),
 ].sort();
 

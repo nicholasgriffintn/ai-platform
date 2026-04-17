@@ -305,6 +305,46 @@ describe("RequestPreparer", () => {
 				},
 			]);
 		});
+
+		it("should keep duplicate matching models when providers differ", async () => {
+			const workersModel = {
+				matchingModel: "alibaba/qwen3-max",
+				provider: "workers-ai",
+				name: "Qwen3 Max (Workers AI)",
+			};
+
+			const vercelModel = {
+				matchingModel: "alibaba/qwen3-max",
+				provider: "vercel",
+				name: "Qwen3 Max",
+			};
+
+			const multiProviderContext = {
+				...baseValidationContext,
+				modelConfig: workersModel,
+				selectedModels: ["workers-ai-alibaba-qwen3-max", "alibaba/qwen3-max"],
+			};
+
+			vi.mocked(getModelConfig).mockResolvedValueOnce(vercelModel as any);
+
+			const result = await (preparer as any).buildModelConfigs(
+				baseOptions,
+				multiProviderContext,
+			);
+
+			expect(result).toEqual([
+				{
+					model: "alibaba/qwen3-max",
+					provider: "workers-ai",
+					displayName: "Qwen3 Max (Workers AI)",
+				},
+				{
+					model: "alibaba/qwen3-max",
+					provider: "vercel",
+					displayName: "Qwen3 Max",
+				},
+			]);
+		});
 	});
 
 	describe("processMessageContent", () => {

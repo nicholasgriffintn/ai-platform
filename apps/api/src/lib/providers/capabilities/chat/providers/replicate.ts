@@ -70,7 +70,11 @@ export class ReplicateProvider extends BaseProvider {
 		_storageService?: StorageService,
 		_assetsUrl?: string,
 	): Promise<Record<string, any>> {
-		const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+		const modelConfig = await getModelConfigByMatchingModel(
+			params.model || "",
+			params.env,
+			this.name,
+		);
 		if (!modelConfig) {
 			throw new AssistantError(
 				`Model configuration not found for ${params.model}`,

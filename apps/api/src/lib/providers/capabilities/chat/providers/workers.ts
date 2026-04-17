@@ -11,6 +11,7 @@ import {
 	getToolsForProvider,
 	shouldEnableStreaming,
 } from "~/utils/parameters";
+import { buildInputSchemaInput } from "~/utils/inputSchema";
 import { BaseProvider } from "./base";
 import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
@@ -23,7 +24,9 @@ function getModalityFlags(modelConfig?: ModelConfigItem) {
 		isImageToText: inputs.includes("image") && outputs.includes("text"),
 		isImageToImage: inputs.includes("image") && outputs.includes("image"),
 		isTextToImage: !inputs.includes("image") && outputs.includes("image"),
-		isTextToSpeech: inputs.includes("text") && outputs.includes("audio"),
+		isTextToSpeech:
+			inputs.includes("text") &&
+			(outputs.includes("audio") || outputs.includes("speech")),
 	};
 }
 
@@ -53,12 +56,21 @@ export class WorkersProvider extends BaseProvider {
 		storageService?: StorageService,
 		assetsUrl?: string,
 	): Promise<Record<string, any>> {
-		const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+		const modelConfig = await getModelConfigByMatchingModel(
+			params.model || "",
+			params.env,
+			this.name,
+		);
 		if (!modelConfig) {
 			throw new AssistantError(
 				`Model configuration not found for ${params.model}`,
 				ErrorType.CONFIGURATION_ERROR,
 			);
+		}
+
+		if (params.body?.input && modelConfig.inputSchema?.fields?.length) {
+			const { input } = buildInputSchemaInput(params, modelConfig);
+			return typeof input === "string" ? { prompt: input } : input;
 		}
 
 		const flags = getModalityFlags(modelConfig);
@@ -331,7 +343,11 @@ export class WorkersProvider extends BaseProvider {
 					},
 				});
 
-				const modelConfig = await getModelConfigByMatchingModel(model);
+				const modelConfig = await getModelConfigByMatchingModel(
+					model,
+					env,
+					this.name,
+				);
 				const responseFlags = getModalityFlags(modelConfig);
 
 				const responseWasStreamed = body.stream;

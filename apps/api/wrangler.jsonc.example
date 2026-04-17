@@ -39,8 +39,7 @@
 		"REQUIRE_CAPTCHA_SECRET_KEY": "false",
 		"ALWAYS_ENABLED_PROVIDERS": "workers-ai,mistral,deepseek,google-ai-studio",
 		"LOG_LEVEL": "warn",
-		"ENV": "production",
-		"EMAIL_PROVIDER": "aws_ses"
+		"ENV": "production"
 	},
 	"ai": {
 		"binding": "AI",
@@ -53,6 +52,11 @@
 			"remote": true
 		}
 	],
+	"send_email": [
+    {
+      "name": "SEND_EMAIL"
+    }
+  ],
 	"services": [
 		{
 			"binding": "SANDBOX_WORKER",

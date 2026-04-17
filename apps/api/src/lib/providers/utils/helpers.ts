@@ -109,6 +109,66 @@ export async function safeParseJSON<T = any>(
 	}
 }
 
+type AssetReference = {
+	key?: string;
+	url?: string;
+};
+
+type AssetResponseShape = {
+	url?: unknown;
+	output?: unknown;
+	attachments?: unknown;
+	data?: {
+		attachments?: unknown;
+	};
+};
+
+/**
+ * Extracts the first generated asset from provider responses that may return
+ * attachments, a direct URL, or an output array.
+ */
+export function extractGeneratedAsset(
+	response: AssetResponseShape,
+): AssetReference {
+	const attachments = response?.data?.attachments ?? response?.attachments;
+	if (Array.isArray(attachments) && attachments.length > 0) {
+		const [first] = attachments;
+		if (first && typeof first === "object") {
+			const asset = first as AssetReference;
+			return {
+				url: asset.url,
+				key: asset.key,
+			};
+		}
+	}
+
+	if (typeof response?.url === "string") {
+		return { url: response.url };
+	}
+
+	if (typeof response?.output === "string") {
+		return { url: response.output };
+	}
+
+	if (Array.isArray(response?.output) && response.output.length > 0) {
+		const [first] = response.output;
+		if (typeof first === "string") {
+			return { url: first };
+		}
+		if (first && typeof first === "object") {
+			const asset = first as AssetReference;
+			if (asset.url) {
+				return {
+					url: asset.url,
+					key: asset.key,
+				};
+			}
+		}
+	}
+
+	return {};
+}
+
 /**
  * Normalizes async operation status strings to standard values
  * @param status - Raw status string from provider

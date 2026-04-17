@@ -1,18 +1,18 @@
-import { getModelConfigByModel } from "~/lib/providers/models";
-import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { getModelConfigByModel } from "~/lib/providers/models";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { buildInputSchemaInput } from "~/utils/inputSchema";
 import type {
 	VideoGenerationRequest,
 	VideoGenerationResult,
 	VideoProvider,
 } from "../index";
 
-const DEFAULT_MODEL = "replicate-google-veo-3-1-fast";
+const DEFAULT_MODEL = "workers-ai-google-veo-3-fast";
 
-export class ReplicateVideoProvider implements VideoProvider {
-	name = "replicate";
+export class WorkersAiVideoProvider implements VideoProvider {
+	name = "workers-ai";
 	models = [DEFAULT_MODEL];
 
 	async generate(
@@ -28,42 +28,37 @@ export class ReplicateVideoProvider implements VideoProvider {
 			);
 		}
 
-		const replicatePayload = Object.fromEntries(
-			Object.entries({
-				prompt: request.prompt,
-				negative_prompt: request.negativePrompt,
-				aspect_ratio: request.aspectRatio,
-				width: request.width,
-				height: request.height,
-				duration: request.duration ?? request.videoLength,
-				guidance_scale: request.guidanceScale,
-				...request.metadata,
-			}).filter(([, value]) => value !== undefined && value !== null),
-		);
-
-		validateReplicatePayload({
-			payload: replicatePayload,
-			schema: modelConfig.inputSchema,
-			modelName: modelConfig.name || modelId,
-		});
-
-		const provider = getChatProvider(modelConfig.provider || "replicate", {
+		const provider = getChatProvider("workers-ai", {
 			env: request.env,
 			user: request.user,
 		});
+
+		const input = buildInputSchemaInput(
+			{
+				messages: [{ role: "user", content: request.prompt }],
+				body: {
+					input: {
+						prompt: request.prompt,
+						negative_prompt: request.negativePrompt,
+						aspect_ratio: request.aspectRatio,
+						duration: request.duration ?? request.videoLength,
+						width: request.width,
+						height: request.height,
+						guidance_scale: request.guidanceScale,
+						...request.metadata,
+					},
+				},
+			},
+			modelConfig,
+		).input;
 
 		const response = await provider.getResponse({
 			completion_id: request.completion_id,
 			app_url: request.app_url,
 			model: modelConfig.matchingModel,
-			messages: [
-				{
-					role: "user",
-					content: request.prompt,
-				},
-			],
+			messages: [{ role: "user", content: request.prompt }],
 			body: {
-				input: replicatePayload,
+				input,
 			},
 			env: request.env,
 			user: request.user,

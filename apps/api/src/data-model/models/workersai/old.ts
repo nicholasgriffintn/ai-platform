@@ -1,7 +1,6 @@
 import type { ModelConfig } from "~/types";
 
-// TODO: THere are some issues with the image models, probably whisper too, need to go over these
-export const workersAiModelConfig: ModelConfig = {
+export const oldWorkersAiModelConfig: ModelConfig = {
 	"whisper-tiny": {
 		name: "OpenAI Whisper",
 		matchingModel: "@cf/openai/whisper-tiny-en",

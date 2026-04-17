@@ -1,6 +1,7 @@
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type {
 	SpeechGenerationRequest,
@@ -9,37 +10,6 @@ import type {
 } from "../index";
 
 const DEFAULT_MODEL = "replicate-chatterbox-turbo";
-
-function extractAttachment(response: any) {
-	const attachments = response?.data?.attachments ?? response?.attachments;
-	if (Array.isArray(attachments) && attachments.length > 0) {
-		const [first] = attachments;
-		return {
-			url: first?.url,
-			key: first?.key,
-		};
-	}
-
-	if (typeof response?.url === "string") {
-		return { url: response.url };
-	}
-
-	if (typeof response?.output === "string") {
-		return { url: response.output };
-	}
-
-	if (Array.isArray(response?.output) && response.output.length > 0) {
-		const [first] = response.output;
-		if (typeof first === "string") {
-			return { url: first };
-		}
-		if (first?.url) {
-			return { url: first.url, key: first.key };
-		}
-	}
-
-	return {};
-}
 
 export class ReplicateSpeechProvider implements SpeechProvider {
 	name = "replicate";
@@ -96,7 +66,7 @@ export class ReplicateSpeechProvider implements SpeechProvider {
 			user: request.user,
 		});
 
-		const attachment = extractAttachment(response);
+		const attachment = extractGeneratedAsset(response);
 
 		return {
 			url: attachment.url,

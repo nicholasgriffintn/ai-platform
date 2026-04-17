@@ -238,10 +238,13 @@ export class RequestPreparer {
 		const successfulConfigs: ModelConfigInfo[] = [];
 		const seenModels = new Set<string>();
 		const addConfig = (config: ProviderModelConfig | null) => {
-			if (!config || seenModels.has(config.matchingModel)) {
+			const modelKey = config
+				? `${config.provider}::${config.matchingModel}`
+				: undefined;
+			if (!config || !modelKey || seenModels.has(modelKey)) {
 				return;
 			}
-			seenModels.add(config.matchingModel);
+			seenModels.add(modelKey);
 			successfulConfigs.push({
 				model: config.matchingModel,
 				provider: config.provider,

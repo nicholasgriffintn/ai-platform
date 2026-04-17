@@ -127,8 +127,9 @@ describe("Magic Link Service", () => {
 	describe("sendMagicLinkEmail", () => {
 		const mockEnv = {
 			DB: {} as any,
-			AWS_SES_ACCESS_KEY_ID: "test-key",
-			AWS_SES_SECRET_ACCESS_KEY: "test-secret",
+			SEND_EMAIL: {
+				send: vi.fn(),
+			} as any,
 			SES_EMAIL_FROM: "test@example.com",
 		} as any;
 
@@ -149,11 +150,11 @@ describe("Magic Link Service", () => {
 		});
 
 		it("should throw error for missing AWS configuration", async () => {
-			const incompleteEnv = { AWS_SES_ACCESS_KEY_ID: "test-key" } as any;
+			const incompleteEnv = { SEND_EMAIL: { send: vi.fn() } } as any;
 
 			mockSendMagicLinkEmail.mockRejectedValue(
 				new AssistantError(
-					"AWS SES configuration missing",
+					"Email configuration missing",
 					ErrorType.CONFIGURATION_ERROR,
 				),
 			);

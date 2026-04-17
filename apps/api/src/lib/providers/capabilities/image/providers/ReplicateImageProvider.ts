@@ -2,6 +2,7 @@ import { getTextToImageSystemPrompt, imagePrompts } from "~/lib/prompts/image";
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type {
 	ImageGenerationRequest,
@@ -17,37 +18,6 @@ function resolveStylePrompt(style?: string): string {
 			? (style as keyof typeof imagePrompts)
 			: "default";
 	return getTextToImageSystemPrompt(styleKey);
-}
-
-function extractAttachment(response: any) {
-	const attachments = response?.data?.attachments ?? response?.attachments;
-	if (Array.isArray(attachments) && attachments.length > 0) {
-		const [first] = attachments;
-		return {
-			url: first?.url,
-			key: first?.key,
-		};
-	}
-
-	if (typeof response?.url === "string") {
-		return { url: response.url };
-	}
-
-	if (typeof response?.output === "string") {
-		return { url: response.output };
-	}
-
-	if (Array.isArray(response?.output) && response.output.length > 0) {
-		const [first] = response.output;
-		if (typeof first === "string") {
-			return { url: first };
-		}
-		if (first?.url) {
-			return { url: first.url, key: first.key };
-		}
-	}
-
-	return {};
 }
 
 export class ReplicateImageProvider implements ImageProvider {
@@ -111,7 +81,7 @@ export class ReplicateImageProvider implements ImageProvider {
 			user: request.user,
 		});
 
-		const attachment = extractAttachment(response);
+		const attachment = extractGeneratedAsset(response);
 
 		return {
 			url: attachment.url,

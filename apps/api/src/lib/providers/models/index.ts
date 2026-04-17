@@ -108,6 +108,29 @@ const DEFAULT_MODALITIES: ModelModalities = {
 	output: ["text"],
 };
 
+function findModelConfigByMatchingModel(
+	matchingModel: string,
+	provider?: string,
+) {
+	let fallbackMatch: ModelConfigItem | null = null;
+
+	for (const model of Object.values(modelConfig)) {
+		if (model.matchingModel !== matchingModel) {
+			continue;
+		}
+
+		if (!fallbackMatch) {
+			fallbackMatch = model;
+		}
+
+		if (!provider || model.provider === provider) {
+			return model;
+		}
+	}
+
+	return fallbackMatch;
+}
+
 function getModelModalities(model: ModelConfigItem): ModelModalities {
 	return model.modalities ?? DEFAULT_MODALITIES;
 }
@@ -204,18 +227,15 @@ export async function getMatchingModel(
 export async function getModelConfigByMatchingModel(
 	matchingModel: string,
 	env?: IEnv,
+	provider?: string,
 ) {
-	return withCache(env, "model-by-matching", [matchingModel], () => {
-		for (const model in modelConfig) {
-			if (
-				modelConfig[model as keyof typeof modelConfig].matchingModel ===
-				matchingModel
-			) {
-				return modelConfig[model as keyof typeof modelConfig];
-			}
-		}
-		return null;
-	});
+	const cacheParts = provider ? [matchingModel, provider] : [matchingModel];
+	return withCache(
+		env,
+		"model-by-matching",
+		cacheParts,
+		() => findModelConfigByMatchingModel(matchingModel, provider) ?? null,
+	);
 }
 
 export function getModels(

@@ -1,4 +1,8 @@
+import { getModelConfigByModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
+import { buildInputSchemaInput } from "~/utils/inputSchema";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import type {
 	SpeechGenerationRequest,
 	SpeechGenerationResult,
@@ -7,37 +11,6 @@ import type {
 
 const DEFAULT_MODEL = "@cf/myshell-ai/melotts";
 
-function extractAttachment(response: any) {
-	const attachments = response?.data?.attachments ?? response?.attachments;
-	if (Array.isArray(attachments) && attachments.length > 0) {
-		const [first] = attachments;
-		return {
-			url: first?.url,
-			key: first?.key,
-		};
-	}
-
-	if (typeof response?.url === "string") {
-		return { url: response.url };
-	}
-
-	if (typeof response?.output === "string") {
-		return { url: response.output };
-	}
-
-	if (Array.isArray(response?.output) && response.output.length > 0) {
-		const [first] = response.output;
-		if (typeof first === "string") {
-			return { url: first };
-		}
-		if (first?.url) {
-			return { url: first.url, key: first.key };
-		}
-	}
-
-	return {};
-}
-
 export class WorkersAiSpeechProvider implements SpeechProvider {
 	name = "workers-ai";
 	models = [DEFAULT_MODEL];
@@ -45,14 +18,40 @@ export class WorkersAiSpeechProvider implements SpeechProvider {
 	async generate(
 		request: SpeechGenerationRequest,
 	): Promise<SpeechGenerationResult> {
+		const modelId = request.model || DEFAULT_MODEL;
+		const modelConfig = await getModelConfigByModel(modelId);
+		if (!modelConfig) {
+			throw new AssistantError(
+				`Model configuration not found for ${modelId}`,
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+
 		const provider = getChatProvider("workers-ai", {
 			env: request.env,
 			user: request.user,
 		});
+		const input = buildInputSchemaInput(
+			{
+				messages: [{ role: "user", content: request.prompt }],
+				body: {
+					input: {
+						text: request.prompt,
+						prompt: request.prompt,
+						voice: request.voice,
+						voice_id: request.voice,
+						language: request.locale,
+						lang: request.locale,
+						...request.metadata,
+					},
+				},
+			},
+			modelConfig,
+		).input;
 
 		const response = await provider.getResponse({
 			completion_id: request.completion_id,
-			model: request.model || DEFAULT_MODEL,
+			model: modelConfig.matchingModel,
 			app_url: request.app_url,
 			messages: [
 				{
@@ -65,12 +64,15 @@ export class WorkersAiSpeechProvider implements SpeechProvider {
 					],
 				},
 			],
+			body: {
+				input,
+			},
 			lang: request.locale,
 			env: request.env,
 			user: request.user,
 		});
 
-		const attachment = extractAttachment(response);
+		const attachment = extractGeneratedAsset(response);
 
 		return {
 			url: attachment.url,

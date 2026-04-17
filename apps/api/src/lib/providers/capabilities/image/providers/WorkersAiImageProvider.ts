@@ -1,5 +1,9 @@
+import { getModelConfigByModel } from "~/lib/providers/models";
 import { getTextToImageSystemPrompt, imagePrompts } from "~/lib/prompts/image";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
+import { buildInputSchemaInput } from "~/utils/inputSchema";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import type {
 	ImageGenerationRequest,
 	ImageGenerationResult,
@@ -16,37 +20,6 @@ function resolveStylePrompt(style?: string): string {
 	return getTextToImageSystemPrompt(styleKey);
 }
 
-function extractAttachment(response: any) {
-	const attachments = response?.data?.attachments ?? response?.attachments;
-	if (Array.isArray(attachments) && attachments.length > 0) {
-		const [first] = attachments;
-		return {
-			url: first?.url,
-			key: first?.key,
-		};
-	}
-
-	if (typeof response?.url === "string") {
-		return { url: response.url };
-	}
-
-	if (typeof response?.output === "string") {
-		return { url: response.output };
-	}
-
-	if (Array.isArray(response?.output) && response.output.length > 0) {
-		const [first] = response.output;
-		if (typeof first === "string") {
-			return { url: first };
-		}
-		if (first?.url) {
-			return { url: first.url, key: first.key };
-		}
-	}
-
-	return {};
-}
-
 export class WorkersAiImageProvider implements ImageProvider {
 	name = "workers-ai";
 	models = [DEFAULT_MODEL];
@@ -54,6 +27,15 @@ export class WorkersAiImageProvider implements ImageProvider {
 	async generate(
 		request: ImageGenerationRequest,
 	): Promise<ImageGenerationResult> {
+		const modelId = request.model || DEFAULT_MODEL;
+		const modelConfig = await getModelConfigByModel(modelId);
+		if (!modelConfig) {
+			throw new AssistantError(
+				`Model configuration not found for ${modelId}`,
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+
 		const provider = getChatProvider("workers-ai", {
 			env: request.env,
 			user: request.user,
@@ -63,10 +45,28 @@ export class WorkersAiImageProvider implements ImageProvider {
 		const prompt = stylePrompt
 			? `${stylePrompt}\n\n${request.prompt}`
 			: request.prompt;
+		const input = buildInputSchemaInput(
+			{
+				messages: [{ role: "user", content: prompt }],
+				body: {
+					input: {
+						prompt,
+						style: request.style,
+						aspect_ratio: request.aspectRatio,
+						width: request.width,
+						height: request.height,
+						steps: request.steps,
+						num_steps: request.steps,
+						...request.metadata,
+					},
+				},
+			},
+			modelConfig,
+		).input;
 
 		const response = await provider.getResponse({
 			completion_id: request.completion_id,
-			model: request.model || DEFAULT_MODEL,
+			model: modelConfig.matchingModel,
 			app_url: request.app_url,
 			messages: [
 				{
@@ -79,11 +79,14 @@ export class WorkersAiImageProvider implements ImageProvider {
 					],
 				},
 			],
+			body: {
+				input,
+			},
 			env: request.env,
 			user: request.user,
 		});
 
-		const attachment = extractAttachment(response);
+		const attachment = extractGeneratedAsset(response);
 
 		return {
 			url: attachment.url,

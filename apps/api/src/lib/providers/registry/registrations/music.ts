@@ -4,9 +4,16 @@ import type { MusicProvider } from "../../capabilities/music";
 import {
 	ElevenLabsMusicProvider,
 	ReplicateMusicProvider,
+	WorkersAiMusicProvider,
 } from "../../capabilities/music/providers";
 
 const musicProviders: ProviderRegistration<MusicProvider>[] = [
+	{
+		name: "workers-ai",
+		aliases: ["workers"],
+		create: () => new WorkersAiMusicProvider(),
+		metadata: { vendor: "Cloudflare", categories: ["music"] },
+	},
 	{
 		name: "replicate",
 		create: () => new ReplicateMusicProvider(),

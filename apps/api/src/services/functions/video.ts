@@ -4,6 +4,7 @@ import {
 	generateVideo,
 } from "~/services/generate/video";
 import { replicateModelConfig } from "~/data-model/models/replicate";
+import { workersAiModelConfig } from "~/data-model/models/workersai";
 import type { IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
@@ -18,9 +19,10 @@ const MIN_GUIDANCE_SCALE = 1;
 const DEFAULT_INFER_STEPS = 50;
 const MIN_INFER_STEPS = 1;
 const DEFAULT_FLOW_SHIFT = 7;
-const VIDEO_PROVIDERS = ["replicate"] as const;
+const VIDEO_PROVIDERS = ["workers-ai", "replicate"] as const;
 
 const VIDEO_MODELS = [
+	...getModelIdsByOutput(workersAiModelConfig, "workers-ai", "video"),
 	...getModelIdsByOutput(replicateModelConfig, "replicate", "video"),
 ].sort();
 

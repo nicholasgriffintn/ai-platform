@@ -244,6 +244,18 @@ describe("Models", () => {
 				"model-by-matching:test-matching-model",
 			);
 		});
+
+		it("should return the provider-specific config when duplicates exist", async () => {
+			const result = await getModelConfigByMatchingModel(
+				"alibaba/qwen3-max",
+				undefined,
+				"workers-ai",
+			);
+
+			expect(result).toBeDefined();
+			expect(result?.provider).toBe("workers-ai");
+			expect(result?.matchingModel).toBe("alibaba/qwen3-max");
+		});
 	});
 
 	describe("getModels", () => {
