@@ -166,7 +166,7 @@ describe("Magic Link Service", () => {
 					"https://example.com/magic",
 				),
 			).rejects.toMatchObject({
-				message: "AWS SES configuration missing",
+				message: "Email configuration missing",
 				type: ErrorType.CONFIGURATION_ERROR,
 				name: "AssistantError",
 			});
