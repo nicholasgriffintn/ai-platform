@@ -676,9 +676,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 												<Button
 													type="button"
 													onClick={() =>
-														!isCavemanEnabled &&
 														setCavemanMode({
-															enabled: true,
+															enabled: !isCavemanEnabled,
 															level: cavemanMode.level || CAVEMAN_DEFAULT_LEVEL,
 														})
 													}
@@ -689,12 +688,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 													}`}
 													title={
 														isCavemanEnabled
-															? `Caveman mode on (${cavemanMode.level})`
+															? `Disable caveman mode (${cavemanMode.level})`
 															: "Enable caveman mode"
 													}
 													aria-label={
 														isCavemanEnabled
-															? `Caveman mode on (${cavemanMode.level})`
+															? `Disable caveman mode (${cavemanMode.level})`
 															: "Enable caveman mode"
 													}
 													variant="icon"
