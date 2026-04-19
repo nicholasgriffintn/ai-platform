@@ -96,6 +96,32 @@ describe("prompts utils", () => {
 					normalResult.answerFormatInstructions,
 				);
 			});
+
+			it("should replace default response style when caveman ultra is enabled", () => {
+				const result = getResponseStyle(
+					"medium",
+					false,
+					false,
+					false,
+					false,
+					false,
+					false,
+					undefined,
+					undefined,
+					false,
+					"full",
+					{ enabled: true, level: "ultra" },
+				);
+				expect(result.preferences).toContain(
+					"Use caveman mode for the main answer.",
+				);
+				expect(result.preferences).toContain("Active caveman level: ultra.");
+				expect(result.preferences).not.toContain(
+					"Include 'Key steps' for complex tasks.",
+				);
+				expect(result.answerFormatInstructions).toContain("minimal wording");
+				expect(result.problemBreakdownInstructions).toContain("minimal");
+			});
 		});
 
 		describe("agent mode handling", () => {

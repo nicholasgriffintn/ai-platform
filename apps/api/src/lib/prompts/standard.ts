@@ -78,6 +78,7 @@ export async function returnStandardPrompt(
 			userPreferences,
 			false,
 			layout.instructionVariant,
+			request.caveman_mode,
 		);
 
 		const metadataSection = buildAssistantMetadataSection({

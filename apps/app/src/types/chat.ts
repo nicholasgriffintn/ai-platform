@@ -42,6 +42,7 @@ export interface ChatSettings {
 	reasoning?: ChatReasoningSettings;
 	verbosity?: VerbosityLevel;
 	system_prompt?: string;
+	caveman_mode?: CavemanModeSettings;
 }
 
 export interface MessageContent {

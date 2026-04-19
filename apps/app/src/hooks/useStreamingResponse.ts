@@ -2,7 +2,6 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { apiService } from "~/lib/api/api-service";
-import { buildCavemanSystemPrompt } from "~/lib/chat/caveman-mode";
 import { normalizeMessage } from "~/lib/messages";
 import type { Message, MessageContent } from "~/types";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
@@ -129,9 +128,8 @@ export function useStreamingResponse(
 					const normalizedMessages = messages.map(normalizeMessage);
 
 					const modelToSend = model === null ? undefined : model;
-					const cavemanSystemPrompt = buildCavemanSystemPrompt(cavemanMode);
-					const effectiveChatSettings = cavemanSystemPrompt
-						? { ...chatSettings, system_prompt: cavemanSystemPrompt }
+					const effectiveChatSettings = cavemanMode.enabled
+						? { ...chatSettings, caveman_mode: cavemanMode }
 						: chatSettings;
 
 					const handleStateChange = (state: string, data?: any) => {

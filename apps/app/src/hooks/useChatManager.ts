@@ -2,7 +2,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
-import { CAVEMAN_DEFAULT_LEVEL, parseCavemanCommand } from "~/lib/chat/caveman-mode";
+import {
+	CAVEMAN_DEFAULT_LEVEL,
+	parseCavemanCommand,
+} from "~/lib/chat/caveman-mode";
 import { normalizeMessage } from "~/lib/messages";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";

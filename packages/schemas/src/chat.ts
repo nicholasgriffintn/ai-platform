@@ -58,6 +58,23 @@ export const createChatCompletionsJsonSchema = z.object({
 	mode: chatRequestModeSchema.optional().meta({
 		description: "The mode of the chat completion.",
 	}),
+	caveman_mode: z
+		.object({
+			enabled: z.boolean(),
+			level: z.enum([
+				"lite",
+				"full",
+				"ultra",
+				"wenyan-lite",
+				"wenyan-full",
+				"wenyan-ultra",
+			]),
+		})
+		.optional()
+		.meta({
+			description:
+				"Optional backend-owned response style hint for caveman mode.",
+		}),
 	should_think: z.boolean().optional().meta({
 		description:
 			"Whether to enable thinking mode for the model. (Used for Claude Sonnet 3.7).",

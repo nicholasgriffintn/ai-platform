@@ -668,6 +668,28 @@ describe("RequestPreparer", () => {
 			expect(result).toBe("Custom system prompt");
 		});
 
+		it("should leave a provided system_prompt unchanged even when caveman_mode is set", async () => {
+			const systemPromptOptions = {
+				...baseOptions,
+				system_prompt: "Custom system prompt",
+				caveman_mode: {
+					enabled: true,
+					level: "ultra",
+				},
+			};
+
+			const result = await (preparer as any).buildSystemPrompt(
+				systemPromptOptions,
+				[],
+				"test message",
+				"claude-3-sonnet",
+				{},
+				false,
+			);
+
+			expect(result).toBe("Custom system prompt");
+		});
+
 		it("should use system message from sanitized messages", async () => {
 			const messagesWithSystem = [
 				{
@@ -691,6 +713,35 @@ describe("RequestPreparer", () => {
 			expect(result).toBe("System message from conversation");
 		});
 
+		it("should leave a system message unchanged even when caveman_mode is set", async () => {
+			const messagesWithSystem = [
+				{
+					role: "system",
+					content: "System message from conversation",
+					id: "sys-1",
+					timestamp: Date.now(),
+				},
+				...baseValidationContext.sanitizedMessages!,
+			];
+
+			const result = await (preparer as any).buildSystemPrompt(
+				{
+					...baseOptions,
+					caveman_mode: {
+						enabled: true,
+						level: "full",
+					},
+				},
+				messagesWithSystem,
+				"test message",
+				"claude-3-sonnet",
+				{},
+				false,
+			);
+
+			expect(result).toBe("System message from conversation");
+		});
+
 		it("should generate system prompt when none provided", async () => {
 			const result = await (preparer as any).buildSystemPrompt(
 				baseOptions,
@@ -702,6 +753,37 @@ describe("RequestPreparer", () => {
 			);
 
 			expect(result).toBe("Generated system prompt");
+		});
+
+		it("should pass caveman_mode through the system prompt builder", async () => {
+			const optionsWithCaveman = {
+				...baseOptions,
+				caveman_mode: {
+					enabled: true,
+					level: "full",
+				},
+			};
+
+			await (preparer as any).buildSystemPrompt(
+				optionsWithCaveman,
+				[],
+				"test message",
+				"claude-3-sonnet",
+				{},
+				false,
+			);
+
+			expect(getSystemPrompt).toHaveBeenCalledWith(
+				expect.objectContaining({
+					caveman_mode: {
+						enabled: true,
+						level: "full",
+					},
+				}),
+				"claude-3-sonnet",
+				expect.anything(),
+				{},
+			);
 		});
 	});
 	describe("enhanceSystemPromptWithMemory", () => {
