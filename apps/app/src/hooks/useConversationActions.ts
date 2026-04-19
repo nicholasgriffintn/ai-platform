@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
+import { buildCavemanSystemPrompt } from "~/lib/chat/caveman-mode";
 import { normalizeMessage } from "~/lib/messages";
 import type { Conversation, Message } from "~/types";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -35,6 +36,7 @@ export function useConversationActions(
 		localOnlyMode,
 		useMultiModel,
 		selectedAgentId,
+		cavemanMode,
 		setCurrentConversationId,
 	} = useChatStore();
 
@@ -209,6 +211,7 @@ export function useConversationActions(
 					const chatSettingsWithMetadata = {
 						...chatSettings,
 						metadata: branchMetadata,
+						system_prompt: buildCavemanSystemPrompt(cavemanMode),
 					};
 
 					let lastContent = "";
@@ -286,6 +289,7 @@ export function useConversationActions(
 			chatMode,
 			useMultiModel,
 			selectedAgentId,
+			cavemanMode,
 			updateConversation,
 			updateAssistantMessage,
 			setCurrentConversationId,

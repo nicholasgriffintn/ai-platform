@@ -9,6 +9,7 @@ import {
 	Volume2,
 	X,
 	FileCode,
+	Flame,
 } from "lucide-react";
 import {
 	type ChangeEvent,
@@ -26,9 +27,10 @@ import { Button } from "~/components/ui";
 import { useModels } from "~/hooks/useModels";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
 import { apiService } from "~/lib/api/api-service";
+import { CAVEMAN_DEFAULT_LEVEL } from "~/lib/chat/caveman-mode";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
-import type { ModelConfigItem } from "~/types";
+import type { CavemanLevel, ModelConfigItem } from "~/types";
 import { ChatSettings as ChatSettingsComponent } from "./ChatSettings";
 import { ToolToggles } from "./ChatSettings/ToolToggles";
 import { ModelSelector } from "./ModelSelector";
@@ -91,8 +93,15 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		ref,
 	) => {
 		const { isMobile } = useUIStore();
-		const { model, chatInput, setChatInput, chatMode, selectedAgentId } =
-			useChatStore();
+		const {
+			model,
+			chatInput,
+			setChatInput,
+			chatMode,
+			selectedAgentId,
+			cavemanMode,
+			setCavemanMode,
+		} = useChatStore();
 		const { isPro, currentConversationId } = useChatStore();
 		const { isRecording, isTranscribing, startRecording, stopRecording } =
 			useVoiceRecorder({ onTranscribe });
@@ -527,6 +536,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
 		const isToolSelectionLocked =
 			chatMode === "agent" && selectedAgentId !== null;
+		const isCavemanEnabled = cavemanMode.enabled;
 
 		return (
 			<div
@@ -663,6 +673,34 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 														<Mic className="h-4 w-4" />
 													</Button>
 												)}
+												<Button
+													type="button"
+													onClick={() =>
+														!isCavemanEnabled &&
+														setCavemanMode({
+															enabled: true,
+															level: cavemanMode.level || CAVEMAN_DEFAULT_LEVEL,
+														})
+													}
+													className={`cursor-pointer p-1.5 rounded-md disabled:cursor-not-allowed ${
+														isCavemanEnabled
+															? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+															: "hover:bg-off-white-highlight dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+													}`}
+													title={
+														isCavemanEnabled
+															? `Caveman mode on (${cavemanMode.level})`
+															: "Enable caveman mode"
+													}
+													aria-label={
+														isCavemanEnabled
+															? `Caveman mode on (${cavemanMode.level})`
+															: "Enable caveman mode"
+													}
+													variant="icon"
+												>
+													<Flame className="h-4 w-4" />
+												</Button>
 											</div>
 										)}
 
@@ -698,6 +736,35 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								<ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
 							</div>
 							<div className="flex-shrink-0 flex items-center gap-2">
+								{isCavemanEnabled && (
+									<div className="flex items-center gap-2">
+										<label
+											htmlFor="caveman-level"
+											className="text-xs text-zinc-500 dark:text-zinc-400"
+										>
+											Caveman
+										</label>
+										<select
+											id="caveman-level"
+											value={cavemanMode.level}
+											onChange={(event) =>
+												setCavemanMode({
+													enabled: true,
+													level: event.target.value as CavemanLevel,
+												})
+											}
+											className="h-8 rounded-md border border-zinc-200 bg-white px-2 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+											aria-label="Select caveman mode level"
+										>
+											<option value="lite">lite</option>
+											<option value="full">full</option>
+											<option value="ultra">ultra</option>
+											<option value="wenyan-lite">wenyan-lite</option>
+											<option value="wenyan-full">wenyan-full</option>
+											<option value="wenyan-ultra">wenyan-ultra</option>
+										</select>
+									</div>
+								)}
 								{!isMobile && (
 									<span className="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">
 										Shift+Enter for new line

@@ -6,6 +6,18 @@ export type ChatMode = "remote" | "local" | "tool" | "agent";
 
 export type ReasoningEffort = "none" | "low" | "medium" | "high";
 export type VerbosityLevel = "low" | "medium" | "high";
+export type CavemanLevel =
+	| "lite"
+	| "full"
+	| "ultra"
+	| "wenyan-lite"
+	| "wenyan-full"
+	| "wenyan-ultra";
+
+export interface CavemanModeSettings {
+	enabled: boolean;
+	level: CavemanLevel;
+}
 
 export interface ChatReasoningSettings {
 	effort?: ReasoningEffort;
@@ -29,6 +41,7 @@ export interface ChatSettings {
 	};
 	reasoning?: ChatReasoningSettings;
 	verbosity?: VerbosityLevel;
+	system_prompt?: string;
 }
 
 export interface MessageContent {
