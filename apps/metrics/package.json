@@ -34,7 +34,7 @@
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "4.20260410.1",
-		"@prettier/plugin-oxc": "0.1.3",
+		"@prettier/plugin-oxc": "0.1.4",
 		"@tailwindcss/typography": "0.5.19",
 		"@tailwindcss/vite": "4.2.2",
 		"@testing-library/jest-dom": "6.9.1",
