@@ -1,4 +1,4 @@
-FROM docker.io/cloudflare/sandbox:0.8.9
+FROM docker.io/cloudflare/sandbox:0.8.11
 
 ENV COMMAND_TIMEOUT_MS=600000
 
