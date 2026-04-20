@@ -55,7 +55,7 @@
 		"better-sqlite3": "12.8.0",
 		"drizzle-kit": "0.31.10",
 		"oxlint": "1.59.0",
-		"prettier": "3.8.2",
+		"prettier": "3.8.3",
 		"typescript": "5.9.3",
 		"vite-tsconfig-paths": "6.1.1",
 		"vitest": "4.1.4",
