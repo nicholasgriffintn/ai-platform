@@ -1,4 +1,4 @@
-import type { VerbosityLevel } from "~/types";
+import type { CavemanModeSettings, VerbosityLevel } from "~/types";
 import type { PromptModelMetadata } from "./sections/metadata";
 
 export interface PromptCapabilities {
@@ -46,6 +46,7 @@ export function getResponseStyle(
 	userPreferences?: string,
 	isCoding = false,
 	instructionVariant: "full" | "compact" = "full",
+	cavemanMode?: CavemanModeSettings,
 ): {
 	traits: string;
 	preferences: string;
@@ -54,6 +55,21 @@ export function getResponseStyle(
 } {
 	const normalizedVerbosity: VerbosityLevel =
 		verbosity === "low" || verbosity === "high" ? verbosity : "medium";
+
+	if (cavemanMode?.enabled) {
+		return getCavemanResponseStyle({
+			level: cavemanMode.level,
+			isCoding,
+			isAgent,
+			supportsToolCalls,
+			supportsArtifacts,
+			memoriesEnabled,
+			reasoningEnabled,
+			requiresThinkingPrompt,
+			instructionVariant,
+			userTraits,
+		});
+	}
 
 	const DEFAULT_TRAITS =
 		userTraits ||
@@ -356,6 +372,134 @@ export function getResponseStyle(
 			};
 	}
 }
+
+interface CavemanStyleArgs {
+	level: CavemanModeSettings["level"];
+	isCoding: boolean;
+	isAgent: boolean;
+	supportsToolCalls: boolean;
+	supportsArtifacts: boolean;
+	memoriesEnabled: boolean;
+	reasoningEnabled: boolean;
+	requiresThinkingPrompt: boolean;
+	instructionVariant: "full" | "compact";
+	userTraits?: string;
+}
+
+function getCavemanResponseStyle({
+	level,
+	isCoding,
+	isAgent,
+	supportsToolCalls,
+	supportsArtifacts,
+	memoriesEnabled,
+	reasoningEnabled,
+	requiresThinkingPrompt,
+	instructionVariant,
+	userTraits,
+}: CavemanStyleArgs): {
+	traits: string;
+	preferences: string;
+	problemBreakdownInstructions: string;
+	answerFormatInstructions: string;
+} {
+	const deliverable = isCoding ? "code" : "answer";
+	const traits =
+		userTraits ||
+		(level === "ultra" || level === "wenyan-ultra"
+			? "direct, terse, compressed, exact with technical terms, minimal wording"
+			: "direct, terse, exact with technical terms, low fluff");
+
+	const baseLines = [
+		"Use caveman mode for the main answer.",
+		`Active caveman level: ${level}.`,
+		"Drop articles, filler, pleasantries, and hedging.",
+		"Prefer short words. Fragments are allowed when clear.",
+		"Keep technical terms exact.",
+		"Keep code unchanged. Keep error text exact.",
+		"Follow this pattern when practical: [thing] [action] [reason]. [next step].",
+		"Disable caveman style for safety warnings, irreversible operations, and complex ordered steps. Resume afterwards.",
+		`Level guidance: ${CAVEMAN_LEVEL_GUIDANCE[level]}`,
+	];
+
+	if (!reasoningEnabled || requiresThinkingPrompt) {
+		baseLines.push(
+			level === "ultra" || level === "wenyan-ultra"
+				? "If you must show steps, keep them minimal and compressed."
+				: "If you show steps, keep them short and compressed.",
+		);
+	}
+
+	if (supportsToolCalls) {
+		baseLines.push(
+			"Use tools only when needed. Summarise tool outcomes in the same caveman style.",
+		);
+	}
+
+	if (supportsArtifacts) {
+		baseLines.push(
+			"Put long reusable deliverables in artifacts. Keep chat summary short.",
+		);
+	}
+
+	if (isCoding) {
+		baseLines.push(
+			"Outside code blocks, stay in caveman style. Do not compress the code itself.",
+		);
+	}
+
+	if (memoriesEnabled) {
+		baseLines.push("Ask before storing memories. Do not store sensitive data.");
+	} else {
+		baseLines.push(
+			"If asked to remember something, say memories are disabled.",
+		);
+	}
+
+	const preferences = baseLines.map((line) => `- ${line}`).join("\n");
+
+	const problemBreakdownInstructions =
+		level === "ultra" || level === "wenyan-ultra"
+			? "Keep breakdown minimal. Only key facts or steps."
+			: level === "full" || level === "wenyan-full"
+				? "Keep breakdown short and compressed. Only important steps."
+				: "Keep breakdown concise but readable. No filler.";
+
+	const answerFormatInstructions =
+		level === "ultra" || level === "wenyan-ultra"
+			? `Deliver the ${deliverable} with minimal wording. No overview unless safety or clarity requires it.`
+			: level === "full" || level === "wenyan-full"
+				? `Deliver the ${deliverable} in compressed form with little explanation.`
+				: `Deliver the ${deliverable} in clear short sentences with no filler.`;
+
+	if (isAgent && instructionVariant === "compact") {
+		return {
+			traits,
+			preferences,
+			problemBreakdownInstructions,
+			answerFormatInstructions,
+		};
+	}
+
+	return {
+		traits,
+		preferences,
+		problemBreakdownInstructions,
+		answerFormatInstructions,
+	};
+}
+
+const CAVEMAN_LEVEL_GUIDANCE: Record<CavemanModeSettings["level"], string> = {
+	lite: "Use full sentences. Remove filler.",
+	full: "Use fragments when helpful. Drop articles and filler.",
+	ultra: "Use minimal words, abbreviations, and arrows when clear.",
+	"wenyan-lite":
+		"Use classical-style compression while keeping modern readability.",
+	"wenyan-full":
+		"Use heavier classical compression with terse compact statements.",
+	"wenyan-ultra":
+		"Use maximal classical compression with the shortest clear phrasing.",
+};
 
 /**
  * Returns an example artifact based on context

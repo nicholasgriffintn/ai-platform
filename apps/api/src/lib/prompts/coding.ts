@@ -75,6 +75,7 @@ export function returnCodingPrompt(
 		userPreferences,
 		true,
 		layout.instructionVariant,
+		request.caveman_mode,
 	);
 
 	const metadataSection = buildAssistantMetadataSection({

@@ -30,6 +30,7 @@ export function useStreamingResponse(
 		localOnlyMode,
 		useMultiModel,
 		selectedAgentId,
+		cavemanMode,
 		setModel,
 	} = useChatStore();
 
@@ -127,6 +128,9 @@ export function useStreamingResponse(
 					const normalizedMessages = messages.map(normalizeMessage);
 
 					const modelToSend = model === null ? undefined : model;
+					const effectiveChatSettings = cavemanMode.enabled
+						? { ...chatSettings, caveman_mode: cavemanMode }
+						: chatSettings;
 
 					const handleStateChange = (state: string, data?: any) => {
 						let msg: string | undefined;
@@ -156,7 +160,7 @@ export function useStreamingResponse(
 						normalizedMessages,
 						modelToSend,
 						chatMode,
-						chatSettings,
+						effectiveChatSettings,
 						controller.signal,
 						handleMessageUpdate,
 						handleStateChange,
@@ -207,6 +211,7 @@ export function useStreamingResponse(
 			isPro,
 			localOnlyMode,
 			chatSettings,
+			cavemanMode,
 			model,
 			controller,
 			addMessageToConversation,

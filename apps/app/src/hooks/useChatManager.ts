@@ -2,10 +2,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
+import {
+	CAVEMAN_DEFAULT_LEVEL,
+	parseCavemanCommand,
+} from "~/lib/chat/caveman-mode";
 import { normalizeMessage } from "~/lib/messages";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { Conversation, Message } from "~/types";
+import type { CavemanLevel, Conversation, Message } from "~/types";
 import { useGenerateTitle } from "./useChat";
 import { useModels } from "./useModels";
 import { useConversationActions } from "./useConversationActions";
@@ -24,7 +28,13 @@ export function useChatManager() {
 	const { data: apiModels = {} } = useModels();
 	const { startLoading } = useLoadingActions();
 
-	const { currentConversationId, startNewConversation, model } = useChatStore();
+	const {
+		currentConversationId,
+		startNewConversation,
+		model,
+		cavemanMode,
+		setCavemanMode,
+	} = useChatStore();
 
 	const { webLLMService } = useWebLLMInitialization(apiModels);
 	const { updateConversation } = useConversationStorage();
@@ -131,6 +141,18 @@ export function useChatManager() {
 					status: "error",
 					response: "",
 				};
+			}
+			if (!attachmentData) {
+				const command = parseCavemanCommand(input);
+				if (command.type === "disable") {
+					setCavemanMode({ ...cavemanMode, enabled: false });
+					return { status: "success", response: "Caveman mode disabled." };
+				}
+				if (command.type === "enable") {
+					const level: CavemanLevel = command.level || CAVEMAN_DEFAULT_LEVEL;
+					setCavemanMode({ enabled: true, level });
+					return { status: "success", response: `Caveman mode: ${level}` };
+				}
 			}
 
 			setStreamStarted(true);
@@ -254,6 +276,8 @@ export function useChatManager() {
 		},
 		[
 			model,
+			cavemanMode,
+			setCavemanMode,
 			currentConversationId,
 			startNewConversation,
 			queryClient,

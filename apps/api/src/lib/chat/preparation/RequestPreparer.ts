@@ -400,6 +400,7 @@ export class RequestPreparer {
 	): Promise<string> {
 		const {
 			system_prompt,
+			caveman_mode,
 			mode = "normal",
 			verbosity,
 			location,
@@ -447,6 +448,7 @@ export class RequestPreparer {
 				location,
 				mode: currentMode,
 				verbosity,
+				caveman_mode,
 			},
 			primaryModel,
 			user || undefined,

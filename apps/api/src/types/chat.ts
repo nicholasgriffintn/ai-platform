@@ -37,6 +37,19 @@ export interface ReasoningControls {
 	effort?: ReasoningEffortLevel;
 }
 
+export type CavemanLevel =
+	| "lite"
+	| "full"
+	| "ultra"
+	| "wenyan-lite"
+	| "wenyan-full"
+	| "wenyan-ultra";
+
+export interface CavemanModeSettings {
+	enabled: boolean;
+	level: CavemanLevel;
+}
+
 export type MessageContent = {
 	type: ContentType;
 	text?: string;
@@ -167,6 +180,7 @@ export interface IBody {
 	platform?: Platform;
 	mode?: ChatMode;
 	approved_tools?: string[];
+	caveman_mode?: CavemanModeSettings;
 	tool_permissions_map?: Record<string, string[]>;
 	verbosity?: VerbosityLevel;
 	role?: ChatRole;
@@ -257,6 +271,8 @@ interface AIResponseParamsBase extends AIControlParams {
 	app_url?: string;
 	// The system prompt to use for the response.
 	system_prompt?: string;
+	// Optional backend-owned response style hint for caveman mode.
+	caveman_mode?: CavemanModeSettings;
 	// The environment variables to use for the response.
 	env: IEnv;
 	// The user to use for the response.

@@ -82,6 +82,17 @@ describe("returnStandardPrompt", () => {
 			expect(result).toContain("<response_preferences>");
 			expect(result).toContain("Favor brevity");
 		});
+
+		it("should include caveman guidance in response preferences", async () => {
+			// @ts-expect-error - mock implementation
+			const request: IBody = {
+				caveman_mode: { enabled: true, level: "full" },
+			};
+			const result = await returnStandardPrompt(request);
+			expect(result).toContain("<response_preferences>");
+			expect(result).toContain("Use caveman mode for the main answer.");
+			expect(result).toContain("Active caveman level: full.");
+		});
 	});
 
 	describe("user context handling", () => {

@@ -1,8 +1,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { CAVEMAN_DEFAULT_LEVEL } from "~/lib/chat/caveman-mode";
 import { apiKeyService } from "~/lib/api/api-key";
-import type { ChatMode, ChatSettings } from "~/types";
+import type { CavemanModeSettings, ChatMode, ChatSettings } from "~/types";
 
 const defaultSettings: ChatSettings = {
 	temperature: 0.7,
@@ -47,6 +48,8 @@ export interface ChatStore {
 	setSelectedAgentId: (agentId: string | null) => void;
 	chatSettings: ChatSettings;
 	setChatSettings: (settings: ChatSettings) => void;
+	cavemanMode: CavemanModeSettings;
+	setCavemanMode: (settings: CavemanModeSettings) => void;
 	showSearch: boolean;
 	setShowSearch: (showSearch: boolean) => void;
 	chatInput: string;
@@ -88,6 +91,8 @@ export const useChatStore = create<ChatStore>()(
 			setSelectedAgentId: (agentId) => set({ selectedAgentId: agentId }),
 			chatSettings: defaultSettings,
 			setChatSettings: (settings) => set({ chatSettings: settings }),
+			cavemanMode: { enabled: false, level: CAVEMAN_DEFAULT_LEVEL },
+			setCavemanMode: (settings) => set({ cavemanMode: settings }),
 			chatInput: "",
 			setChatInput: (query) => set({ chatInput: query }),
 			showSearch: false,
@@ -138,6 +143,7 @@ export const useChatStore = create<ChatStore>()(
 				model: state.model,
 				useMultiModel: state.useMultiModel,
 				chatSettings: state.chatSettings,
+				cavemanMode: state.cavemanMode,
 				selectedAgentId: state.selectedAgentId,
 			}),
 		},

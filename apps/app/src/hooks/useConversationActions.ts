@@ -35,6 +35,7 @@ export function useConversationActions(
 		localOnlyMode,
 		useMultiModel,
 		selectedAgentId,
+		cavemanMode,
 		setCurrentConversationId,
 	} = useChatStore();
 
@@ -209,6 +210,7 @@ export function useConversationActions(
 					const chatSettingsWithMetadata = {
 						...chatSettings,
 						metadata: branchMetadata,
+						caveman_mode: cavemanMode.enabled ? cavemanMode : undefined,
 					};
 
 					let lastContent = "";
@@ -286,6 +288,7 @@ export function useConversationActions(
 			chatMode,
 			useMultiModel,
 			selectedAgentId,
+			cavemanMode,
 			updateConversation,
 			updateAssistantMessage,
 			setCurrentConversationId,
