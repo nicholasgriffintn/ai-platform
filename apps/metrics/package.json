@@ -33,7 +33,7 @@
 		"tailwindcss": "4.2.4"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "4.20260410.1",
+		"@cloudflare/workers-types": "4.20260503.1",
 		"@prettier/plugin-oxc": "0.1.4",
 		"@tailwindcss/typography": "0.5.19",
 		"@tailwindcss/vite": "4.2.4",
