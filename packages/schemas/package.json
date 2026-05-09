@@ -35,7 +35,7 @@
 		"oxlint": "1.61.0",
 		"prettier": "3.8.3",
 		"tsup": "8.5.1",
-		"typescript": "5.9.3"
+		"typescript": "6.0.3"
 	},
 	"peerDependencies": {
 		"zod": "4.3.6"
