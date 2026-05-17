@@ -21,12 +21,40 @@ function getModalityFlags(modelConfig?: ModelConfigItem) {
 	const inputs = modelConfig?.modalities?.input ?? ["text"];
 	const outputs = modelConfig?.modalities?.output ?? inputs;
 	return {
+		supportsTextInput: inputs.includes("text"),
 		isImageToText: inputs.includes("image") && outputs.includes("text"),
 		isImageToImage: inputs.includes("image") && outputs.includes("image"),
 		isTextToImage: !inputs.includes("image") && outputs.includes("image"),
 		isTextToSpeech:
 			inputs.includes("text") && (outputs.includes("audio") || outputs.includes("speech")),
 	};
+}
+
+function messageContentHasImage(content: unknown): boolean {
+	if (Array.isArray(content)) {
+		return content.some((item) => {
+			return (
+				item &&
+				typeof item === "object" &&
+				"image_url" in item &&
+				typeof item.image_url === "object" &&
+				item.image_url !== null &&
+				"url" in item.image_url
+			);
+		});
+	}
+
+	return (
+		content !== null &&
+		typeof content === "object" &&
+		"image" in content &&
+		typeof content.image === "string" &&
+		content.image.length > 0
+	);
+}
+
+function requestHasImageInput(params: ChatCompletionParameters): boolean {
+	return params.messages?.some((message) => messageContentHasImage(message.content)) ?? false;
 }
 
 export class WorkersProvider extends BaseProvider {
@@ -73,14 +101,14 @@ export class WorkersProvider extends BaseProvider {
 		}
 
 		const flags = getModalityFlags(modelConfig);
+		const shouldUseMediaPayload =
+			flags.isTextToImage ||
+			flags.isTextToSpeech ||
+			flags.isImageToImage ||
+			(flags.isImageToText && (!flags.supportsTextInput || requestHasImageInput(params)));
 
 		let imageData: any;
-		if (
-			flags.isImageToText ||
-			flags.isImageToImage ||
-			flags.isTextToImage ||
-			flags.isTextToSpeech
-		) {
+		if (shouldUseMediaPayload) {
 			if (
 				params.messages.length > 2 ||
 				(params.messages.length === 2 && params.messages[0].role !== "system")

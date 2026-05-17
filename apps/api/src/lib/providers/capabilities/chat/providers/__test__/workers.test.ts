@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { createCommonParameters } from "~/utils/parameters";
 import { WorkersProvider } from "../workers";
@@ -27,11 +27,17 @@ vi.mock("~/lib/providers/models", () => ({
 
 vi.mock("~/utils/parameters", () => ({
 	createCommonParameters: vi.fn(),
+	getToolsForProvider: vi.fn().mockReturnValue({}),
+	shouldEnableStreaming: vi.fn().mockReturnValue(false),
 }));
 
 global.atob = vi.fn();
 
 describe("WorkersProvider", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
 	describe("validateParams", () => {
 		it("should validate params correctly", async () => {
 			const provider = new WorkersProvider();
@@ -56,6 +62,36 @@ describe("WorkersProvider", () => {
 	});
 
 	describe("mapParameters", () => {
+		it("should keep text-only requests on the chat payload for multimodal text models", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "MiniMax M2.7",
+				modalities: { input: ["text", "image"], output: ["text"] },
+				supportsToolCalls: true,
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({
+				model: "minimax/m2.7",
+				messages: [{ role: "user", content: "Hello" }],
+			});
+
+			const provider = new WorkersProvider();
+			const params = {
+				model: "minimax/m2.7",
+				messages: [{ role: "user", content: "Hello" }],
+				env: {},
+			};
+
+			const result = await provider.mapParameters(params as any);
+
+			expect(result).toMatchObject({
+				model: "minimax/m2.7",
+				messages: [{ role: "user", content: "Hello" }],
+			});
+			expect(result).not.toHaveProperty("prompt");
+			expect(result).not.toHaveProperty("image");
+		});
+
 		it("should map MeloTTS requests to prompt/lang payload", async () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
