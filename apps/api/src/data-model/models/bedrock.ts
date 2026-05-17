@@ -517,7 +517,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "cohere.embed-english-v3",
 		costPer1kInputTokens: 0.0001,
 		modalities: {
-			input: ["embedding"],
+			input: ["text"],
 			output: ["embedding"],
 		},
 	}),
@@ -527,7 +527,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "cohere.embed-multilingual-v3",
 		costPer1kInputTokens: 0.0001,
 		modalities: {
-			input: ["embedding"],
+			input: ["text"],
 			output: ["embedding"],
 		},
 	}),

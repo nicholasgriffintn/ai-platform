@@ -585,7 +585,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		description: "An embedding model for text content",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		releaseDate: "December 11, 2023",
 		lastUpdated: "December 11, 2023",
@@ -606,7 +606,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "codestral-embed",
 		description: "An embedding model for code content",
 		modalities: {
-			input: ["embedding"],
+			input: ["text"],
 			output: ["embedding"],
 		},
 	}),

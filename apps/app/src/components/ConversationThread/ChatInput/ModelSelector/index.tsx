@@ -332,6 +332,7 @@ export const ModelSelector = ({
 			return matchesSearch && matchesCapability;
 		});
 	}, [filteredModels, searchQuery, selectedCapability]);
+	const isModelSearchActive = searchQuery.trim().length > 0;
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -773,6 +774,7 @@ export const ModelSelector = ({
 										setIsOpen(false);
 									}}
 									mono={mono}
+									isSearchActive={isModelSearchActive}
 									onInfoHoverStart={handleInfoHoverStart}
 									onInfoHoverEnd={handleInfoHoverEnd}
 								/>
@@ -826,6 +828,7 @@ export const ModelSelector = ({
 										setIsOpen(false);
 									}}
 									mono={mono}
+									isSearchActive={isModelSearchActive}
 									onInfoHoverStart={handleInfoHoverStart}
 									onInfoHoverEnd={handleInfoHoverEnd}
 								/>

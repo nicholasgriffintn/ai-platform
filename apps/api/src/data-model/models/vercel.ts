@@ -875,7 +875,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "November 14, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -896,7 +896,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "June 5, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -917,7 +917,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "June 5, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -1114,7 +1114,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "April 2024",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -1538,7 +1538,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "April 15, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -1959,7 +1959,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "May 20, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -2037,7 +2037,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "August 2024",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -2058,7 +2058,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "March 2024",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -2427,7 +2427,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "May 28, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -2532,7 +2532,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "December 11, 2023",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -3301,7 +3301,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "January 25, 2024",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -3322,7 +3322,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "January 25, 2024",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -3343,7 +3343,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "December 15, 2022",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -4478,7 +4478,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "March 23, 2026",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,

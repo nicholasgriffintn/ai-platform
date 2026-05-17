@@ -568,7 +568,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "April 15, 2025",
 		modalities: {
 			input: ["text", "image"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: true,
 		supportsTemperature: false,
@@ -589,7 +589,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "November 7, 2023",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -610,7 +610,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "November 7, 2023",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -1939,7 +1939,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "January 25, 2024",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsToolCalls: false,
@@ -1959,7 +1959,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "January 25, 2024",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsToolCalls: false,
@@ -1979,7 +1979,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "December 15, 2022",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsToolCalls: false,

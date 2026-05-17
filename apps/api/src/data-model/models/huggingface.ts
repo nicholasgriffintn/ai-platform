@@ -307,7 +307,7 @@ export const huggingfaceModelConfig: ModelConfig = {
 		lastUpdated: "January 1, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -330,7 +330,7 @@ export const huggingfaceModelConfig: ModelConfig = {
 		lastUpdated: "January 1, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,

@@ -446,8 +446,8 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		reliability: 5,
 		contextComplexity: 3,
 		modalities: {
-			input: ["text"],
-			output: ["text"],
+			input: ["embedding"],
+			output: ["embedding"],
 		},
 		releaseDate: "April 3, 2025",
 		lastUpdated: "April 3, 2025",
@@ -472,7 +472,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		releaseDate: "April 3, 2025",
 		lastUpdated: "April 3, 2025",
@@ -499,7 +499,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		releaseDate: "April 3, 2025",
 		lastUpdated: "April 3, 2025",
@@ -526,7 +526,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		releaseDate: "April 9, 2025",
 		lastUpdated: "April 9, 2025",
@@ -778,7 +778,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		reliability: 4,
 		contextComplexity: 3,
 		modalities: {
-			input: ["embedding"],
+			input: ["text"],
 			output: ["embedding"],
 		},
 	},
@@ -834,7 +834,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		lastUpdated: "April 3, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -922,7 +922,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		lastUpdated: "April 9, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -1301,7 +1301,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		lastUpdated: "September 25, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -1345,7 +1345,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		lastUpdated: "November 14, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,

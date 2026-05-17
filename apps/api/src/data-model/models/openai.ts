@@ -1285,7 +1285,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "January 25, 2024",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -1307,7 +1307,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "January 25, 2024",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -1329,7 +1329,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "December 15, 2022",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["embedding"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,

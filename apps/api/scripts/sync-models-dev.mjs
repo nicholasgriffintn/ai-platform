@@ -570,7 +570,7 @@ function buildUpdateValues(
 	const modalities = normalizeModalities(remoteModel.modalities, {
 		defaultToText: isNewEntry,
 	});
-	if (modalities) {
+	if (modalities && isNewEntry) {
 		values.modalities = modalities;
 	}
 
