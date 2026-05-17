@@ -74,8 +74,8 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 40000,
-		costPer1kInputTokens: 0,
-		costPer1kOutputTokens: 0,
+		costPer1kInputTokens: 0.00225,
+		costPer1kOutputTokens: 0.00275,
 		reasoningConfig: {
 			enabled: false,
 		},

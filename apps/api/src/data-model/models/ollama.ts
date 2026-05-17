@@ -173,12 +173,12 @@ export const ollamaModelConfig: ModelConfig = {
 		provider: "ollama",
 		knowledgeCutoffDate: "January 2025",
 		releaseDate: "December 17, 2025",
-		lastUpdated: "January 19, 2026",
+		lastUpdated: "April 8, 2026",
 		modalities: {
-			input: ["text"],
+			input: ["text", "image"],
 			output: ["text"],
 		},
-		supportsAttachments: false,
+		supportsAttachments: true,
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 65536,
@@ -604,6 +604,178 @@ export const ollamaModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		reasoningConfig: {
 			enabled: false,
+		},
+	},
+	"deepseek-v4-flash": {
+		name: "deepseek-v4-flash",
+		matchingModel: "deepseek-v4-flash",
+		provider: "ollama",
+		releaseDate: "April 24, 2026",
+		lastUpdated: "April 24, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: true,
+		contextWindow: 1048576,
+		maxTokens: 1048576,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"deepseek-v4-pro": {
+		name: "deepseek-v4-pro",
+		matchingModel: "deepseek-v4-pro",
+		provider: "ollama",
+		releaseDate: "April 24, 2026",
+		lastUpdated: "April 24, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: true,
+		contextWindow: 1048576,
+		maxTokens: 1048576,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"gemma4:31b": {
+		name: "gemma4:31b",
+		matchingModel: "gemma4:31b",
+		provider: "ollama",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "April 2, 2026",
+		lastUpdated: "April 8, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"glm-5.1": {
+		name: "glm-5.1",
+		matchingModel: "glm-5.1",
+		provider: "ollama",
+		releaseDate: "March 27, 2026",
+		lastUpdated: "April 7, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: true,
+		contextWindow: 202752,
+		maxTokens: 131072,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"kimi-k2.6": {
+		name: "kimi-k2.6",
+		matchingModel: "kimi-k2.6",
+		provider: "ollama",
+		releaseDate: "April 20, 2026",
+		lastUpdated: "April 20, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"minimax-m2.5": {
+		name: "minimax-m2.5",
+		matchingModel: "minimax-m2.5",
+		provider: "ollama",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "February 12, 2026",
+		lastUpdated: "February 12, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: true,
+		contextWindow: 204800,
+		maxTokens: 131072,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"minimax-m2.7": {
+		name: "minimax-m2.7",
+		matchingModel: "minimax-m2.7",
+		provider: "ollama",
+		releaseDate: "March 18, 2026",
+		lastUpdated: "March 18, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: true,
+		contextWindow: 196608,
+		maxTokens: 196608,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"nemotron-3-super": {
+		name: "nemotron-3-super",
+		matchingModel: "nemotron-3-super",
+		provider: "ollama",
+		releaseDate: "March 11, 2026",
+		lastUpdated: "March 12, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 65536,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+
+	"qwen3.5:397b": {
+		name: "qwen3.5:397b",
+		matchingModel: "qwen3.5:397b",
+		provider: "ollama",
+		releaseDate: "February 15, 2026",
+		lastUpdated: "February 17, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 65536,
+		reasoningConfig: {
+			enabled: true,
 		},
 	},
 };

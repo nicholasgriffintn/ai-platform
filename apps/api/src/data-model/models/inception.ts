@@ -64,4 +64,47 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 	}),
+	createModelConfig("mercury-2", PROVIDER, {
+		name: "Mercury 2",
+		matchingModel: "mercury-2",
+		knowledgeCutoffDate: "January 1, 2025",
+		releaseDate: "February 24, 2026",
+		lastUpdated: "February 24, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 50000,
+		costPer1kInputTokens: 0.00025,
+		costPer1kOutputTokens: 0.00075,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("mercury-edit-2", PROVIDER, {
+		name: "Mercury Edit 2",
+		matchingModel: "mercury-edit-2",
+		releaseDate: "March 30, 2026",
+		lastUpdated: "March 30, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 128000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.00025,
+		costPer1kOutputTokens: 0.00075,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
 ]);

@@ -9,14 +9,14 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "claude-opus-4-6",
 		description:
 			"The Claude 4.6 Opus is intelligent, efficient, and the best model in the world for coding, agents, and computer use.",
-		knowledgeCutoffDate: "May 2025",
+		knowledgeCutoffDate: "May 31, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		contextWindow: 200000,
+		contextWindow: 1000000,
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005, // $5.00 per million tokens
 		costPer1kOutputTokens: 0.025, // $25.00 per million tokens
@@ -33,7 +33,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsTokenCounting: true,
 		supportsTopP: false,
 		releaseDate: "February 5, 2026",
-		lastUpdated: "February 5, 2026",
+		lastUpdated: "March 13, 2026",
 		reasoningConfig: {
 			enabled: true,
 		},
@@ -636,6 +636,49 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+	createModelConfig("claude-opus-4-7", PROVIDER, {
+		name: "Claude Opus 4.7",
+		matchingModel: "claude-opus-4-7",
+		knowledgeCutoffDate: "January 31, 2026",
+		releaseDate: "April 16, 2026",
+		lastUpdated: "April 16, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("claude-sonnet-4-6", PROVIDER, {
+		name: "Claude Sonnet 4.6",
+		matchingModel: "claude-sonnet-4-6",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "February 17, 2026",
+		lastUpdated: "March 13, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
 		reasoningConfig: {
 			enabled: true,
 		},

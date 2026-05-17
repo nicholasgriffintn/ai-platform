@@ -21,6 +21,17 @@ export const perplexityModelConfig: ModelConfig = {
 			input: ["text"],
 			output: ["text"],
 		},
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "February 1, 2025",
+		lastUpdated: "September 1, 2025",
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		contextWindow: 128000,
+		maxTokens: 32768,
+		reasoningConfig: {
+			enabled: true,
+		},
 	},
 	"sonar-reasoning-pro": {
 		name: "Sonar Reasoning Pro",

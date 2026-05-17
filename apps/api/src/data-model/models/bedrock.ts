@@ -176,18 +176,19 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["text"],
 		},
-		releaseDate: "December 1, 2024",
-		lastUpdated: "December 1, 2024",
+		releaseDate: "October 29, 2025",
+		lastUpdated: "October 29, 2025",
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 128000,
-		maxTokens: 4096,
+		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai.gpt-oss-safeguard-20b", PROVIDER, {
@@ -199,18 +200,19 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["text"],
 		},
-		releaseDate: "December 1, 2024",
-		lastUpdated: "December 1, 2024",
+		releaseDate: "October 29, 2025",
+		lastUpdated: "October 29, 2025",
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 128000,
-		maxTokens: 4096,
+		maxTokens: 16384,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0002,
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("minimax.minimax-m2", PROVIDER, {
@@ -256,6 +258,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0025,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("nvidia.nemotron-nano-12b-v2", PROVIDER, {
@@ -279,6 +282,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("nvidia.nemotron-nano-9b-v2", PROVIDER, {
@@ -302,6 +306,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4.5", PROVIDER, {
@@ -337,6 +342,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsCodeExecution: true,
 		supportsDocuments: true,
 		supportsPromptCaching: true,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4", PROVIDER, {
@@ -1067,6 +1073,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("anthropic.claude-instant-v1", PROVIDER, {
@@ -1155,14 +1162,15 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("anthropic.claude-opus-4-6-v1", PROVIDER, {
 		name: "Claude Opus 4.6",
 		matchingModel: "anthropic.claude-opus-4-6-v1",
-		knowledgeCutoffDate: "May 2025",
+		knowledgeCutoffDate: "May 31, 2025",
 		releaseDate: "February 5, 2026",
-		lastUpdated: "February 5, 2026",
+		lastUpdated: "March 13, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -1177,6 +1185,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4-20250514-v1:0", PROVIDER, {
@@ -1221,6 +1230,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("anthropic.claude-v2", PROVIDER, {
@@ -1331,6 +1341,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("eu.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -1353,6 +1364,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
@@ -1375,14 +1387,15 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-6-v1", PROVIDER, {
 		name: "Claude Opus 4.6 (EU)",
 		matchingModel: "eu.anthropic.claude-opus-4-6-v1",
-		knowledgeCutoffDate: "May 2025",
+		knowledgeCutoffDate: "May 31, 2025",
 		releaseDate: "February 5, 2026",
-		lastUpdated: "February 5, 2026",
+		lastUpdated: "March 13, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -1397,6 +1410,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("eu.anthropic.claude-sonnet-4-20250514-v1:0", PROVIDER, {
@@ -1441,6 +1455,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("global.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -1463,6 +1478,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
@@ -1485,14 +1501,15 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-6-v1", PROVIDER, {
 		name: "Claude Opus 4.6 (Global)",
 		matchingModel: "global.anthropic.claude-opus-4-6-v1",
-		knowledgeCutoffDate: "May 2025",
+		knowledgeCutoffDate: "May 31, 2025",
 		releaseDate: "February 5, 2026",
-		lastUpdated: "February 5, 2026",
+		lastUpdated: "March 13, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -1507,6 +1524,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("global.anthropic.claude-sonnet-4-20250514-v1:0", PROVIDER, {
@@ -1551,6 +1569,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("google.gemma-3-12b-it", PROVIDER, {
@@ -1573,6 +1592,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("google.gemma-3-27b-it", PROVIDER, {
@@ -1595,6 +1615,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("google.gemma-3-4b-it", PROVIDER, {
@@ -1857,6 +1878,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("mistral.ministral-3-8b-instruct", PROVIDER, {
@@ -1878,6 +1900,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("mistral.mistral-7b-instruct-v0:2", PROVIDER, {
@@ -1964,6 +1987,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("mistral.voxtral-small-24b-2507", PROVIDER, {
@@ -1985,6 +2009,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("moonshotai.kimi-k2.5", PROVIDER, {
@@ -2006,13 +2031,14 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai.gpt-oss-120b-1:0", PROVIDER, {
 		name: "gpt-oss-120b",
 		matchingModel: "openai.gpt-oss-120b-1:0",
-		releaseDate: "December 1, 2024",
-		lastUpdated: "December 1, 2024",
+		releaseDate: "August 5, 2025",
+		lastUpdated: "August 5, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -2021,19 +2047,20 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 128000,
-		maxTokens: 4096,
+		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai.gpt-oss-20b-1:0", PROVIDER, {
 		name: "gpt-oss-20b",
 		matchingModel: "openai.gpt-oss-20b-1:0",
-		releaseDate: "December 1, 2024",
-		lastUpdated: "December 1, 2024",
+		releaseDate: "August 5, 2025",
+		lastUpdated: "August 5, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -2042,12 +2069,13 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 128000,
-		maxTokens: 4096,
+		maxTokens: 16384,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0003,
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("qwen.qwen3-235b-a22b-2507-v1:0", PROVIDER, {
@@ -2070,6 +2098,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("qwen.qwen3-32b-v1:0", PROVIDER, {
@@ -2092,6 +2121,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("qwen.qwen3-coder-30b-a3b-v1:0", PROVIDER, {
@@ -2114,6 +2144,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("qwen.qwen3-coder-480b-a35b-v1:0", PROVIDER, {
@@ -2136,6 +2167,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: false,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("qwen.qwen3-next-80b-a3b", PROVIDER, {
@@ -2202,6 +2234,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("us.anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
@@ -2224,14 +2257,15 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("us.anthropic.claude-opus-4-6-v1", PROVIDER, {
 		name: "Claude Opus 4.6 (US)",
 		matchingModel: "us.anthropic.claude-opus-4-6-v1",
-		knowledgeCutoffDate: "May 2025",
+		knowledgeCutoffDate: "May 31, 2025",
 		releaseDate: "February 5, 2026",
-		lastUpdated: "February 5, 2026",
+		lastUpdated: "March 13, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -2246,6 +2280,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("zai.glm-4.7", PROVIDER, {
@@ -2268,6 +2303,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("zai.glm-4.7-flash", PROVIDER, {
@@ -2287,6 +2323,696 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			enabled: true,
+		},
+		supportsResponseFormat: true,
+	}),
+	createModelConfig("anthropic.claude-opus-4-7", PROVIDER, {
+		name: "Claude Opus 4.7",
+		matchingModel: "anthropic.claude-opus-4-7",
+		knowledgeCutoffDate: "January 31, 2026",
+		releaseDate: "April 16, 2026",
+		lastUpdated: "April 16, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("anthropic.claude-sonnet-4-6", PROVIDER, {
+		name: "Claude Sonnet 4.6",
+		matchingModel: "anthropic.claude-sonnet-4-6",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "February 17, 2026",
+		lastUpdated: "March 13, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("au.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
+		name: "Claude Haiku 4.5 (AU)",
+		matchingModel: "au.anthropic.claude-haiku-4-5-20251001-v1:0",
+		knowledgeCutoffDate: "February 28, 2025",
+		releaseDate: "October 15, 2025",
+		lastUpdated: "October 15, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.001,
+		costPer1kOutputTokens: 0.005,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("au.anthropic.claude-opus-4-6-v1", PROVIDER, {
+		name: "AU Anthropic Claude Opus 4.6",
+		matchingModel: "au.anthropic.claude-opus-4-6-v1",
+		knowledgeCutoffDate: "May 2025",
+		releaseDate: "February 5, 2026",
+		lastUpdated: "February 5, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0165,
+		costPer1kOutputTokens: 0.0825,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("au.anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
+		name: "Claude Sonnet 4.5 (AU)",
+		matchingModel: "au.anthropic.claude-sonnet-4-5-20250929-v1:0",
+		knowledgeCutoffDate: "July 31, 2025",
+		releaseDate: "September 29, 2025",
+		lastUpdated: "September 29, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("au.anthropic.claude-sonnet-4-6", PROVIDER, {
+		name: "AU Anthropic Claude Sonnet 4.6",
+		matchingModel: "au.anthropic.claude-sonnet-4-6",
+		knowledgeCutoffDate: "August 2025",
+		releaseDate: "February 17, 2026",
+		lastUpdated: "February 17, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0033,
+		costPer1kOutputTokens: 0.0165,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("deepseek.v3.2", PROVIDER, {
+		name: "DeepSeek-V3.2",
+		matchingModel: "deepseek.v3.2",
+		knowledgeCutoffDate: "July 2024",
+		releaseDate: "February 6, 2026",
+		lastUpdated: "February 6, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 163840,
+		maxTokens: 81920,
+		costPer1kInputTokens: 0.00062,
+		costPer1kOutputTokens: 0.00185,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("eu.anthropic.claude-opus-4-7", PROVIDER, {
+		name: "Claude Opus 4.7 (EU)",
+		matchingModel: "eu.anthropic.claude-opus-4-7",
+		knowledgeCutoffDate: "January 31, 2026",
+		releaseDate: "April 16, 2026",
+		lastUpdated: "April 16, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("eu.anthropic.claude-sonnet-4-6", PROVIDER, {
+		name: "Claude Sonnet 4.6 (EU)",
+		matchingModel: "eu.anthropic.claude-sonnet-4-6",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "February 17, 2026",
+		lastUpdated: "March 13, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("global.anthropic.claude-opus-4-7", PROVIDER, {
+		name: "Claude Opus 4.7 (Global)",
+		matchingModel: "global.anthropic.claude-opus-4-7",
+		knowledgeCutoffDate: "January 31, 2026",
+		releaseDate: "April 16, 2026",
+		lastUpdated: "April 16, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("global.anthropic.claude-sonnet-4-6", PROVIDER, {
+		name: "Claude Sonnet 4.6 (Global)",
+		matchingModel: "global.anthropic.claude-sonnet-4-6",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "February 17, 2026",
+		lastUpdated: "March 13, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("jp.anthropic.claude-opus-4-7", PROVIDER, {
+		name: "Claude Opus 4.7 (JP)",
+		matchingModel: "jp.anthropic.claude-opus-4-7",
+		knowledgeCutoffDate: "January 31, 2026",
+		releaseDate: "April 16, 2026",
+		lastUpdated: "April 16, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("jp.anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
+		name: "Claude Sonnet 4.5 (JP)",
+		matchingModel: "jp.anthropic.claude-sonnet-4-5-20250929-v1:0",
+		knowledgeCutoffDate: "July 31, 2025",
+		releaseDate: "September 29, 2025",
+		lastUpdated: "September 29, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("jp.anthropic.claude-sonnet-4-6", PROVIDER, {
+		name: "Claude Sonnet 4.6 (JP)",
+		matchingModel: "jp.anthropic.claude-sonnet-4-6",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "February 17, 2026",
+		lastUpdated: "March 13, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("minimax.minimax-m2.5", PROVIDER, {
+		name: "MiniMax M2.5",
+		matchingModel: "minimax.minimax-m2.5",
+		releaseDate: "March 18, 2026",
+		lastUpdated: "March 18, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: false,
+		contextWindow: 196608,
+		maxTokens: 98304,
+		costPer1kInputTokens: 0.0003,
+		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("mistral.devstral-2-123b", PROVIDER, {
+		name: "Devstral 2 123B",
+		matchingModel: "mistral.devstral-2-123b",
+		releaseDate: "February 17, 2026",
+		lastUpdated: "February 17, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 256000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.0004,
+		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral.magistral-small-2509", PROVIDER, {
+		name: "Magistral Small 1.2",
+		matchingModel: "mistral.magistral-small-2509",
+		releaseDate: "December 2, 2025",
+		lastUpdated: "December 2, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 40000,
+		costPer1kInputTokens: 0.0005,
+		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("mistral.ministral-3-3b-instruct", PROVIDER, {
+		name: "Ministral 3 3B",
+		matchingModel: "mistral.ministral-3-3b-instruct",
+		releaseDate: "December 2, 2025",
+		lastUpdated: "December 2, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 256000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.0001,
+		costPer1kOutputTokens: 0.0001,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral.mistral-large-3-675b-instruct", PROVIDER, {
+		name: "Mistral Large 3",
+		matchingModel: "mistral.mistral-large-3-675b-instruct",
+		releaseDate: "December 2, 2025",
+		lastUpdated: "December 2, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 256000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.0005,
+		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("mistral.pixtral-large-2502-v1:0", PROVIDER, {
+		name: "Pixtral Large (25.02)",
+		matchingModel: "mistral.pixtral-large-2502-v1:0",
+		releaseDate: "April 8, 2025",
+		lastUpdated: "April 8, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("nvidia.nemotron-nano-3-30b", PROVIDER, {
+		name: "NVIDIA Nemotron Nano 3 30B",
+		matchingModel: "nvidia.nemotron-nano-3-30b",
+		releaseDate: "December 23, 2025",
+		lastUpdated: "December 23, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00006,
+		costPer1kOutputTokens: 0.00024,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("nvidia.nemotron-super-3-120b", PROVIDER, {
+		name: "NVIDIA Nemotron 3 Super 120B A12B",
+		matchingModel: "nvidia.nemotron-super-3-120b",
+		releaseDate: "March 11, 2026",
+		lastUpdated: "March 11, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262144,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.00065,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("qwen.qwen3-coder-next", PROVIDER, {
+		name: "Qwen3 Coder Next",
+		matchingModel: "qwen.qwen3-coder-next",
+		releaseDate: "February 6, 2026",
+		lastUpdated: "February 6, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 131072,
+		maxTokens: 65536,
+		costPer1kInputTokens: 0.00022,
+		costPer1kOutputTokens: 0.0018,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("us.anthropic.claude-opus-4-7", PROVIDER, {
+		name: "Claude Opus 4.7 (US)",
+		matchingModel: "us.anthropic.claude-opus-4-7",
+		knowledgeCutoffDate: "January 31, 2026",
+		releaseDate: "April 16, 2026",
+		lastUpdated: "April 16, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("us.anthropic.claude-sonnet-4-6", PROVIDER, {
+		name: "Claude Sonnet 4.6 (US)",
+		matchingModel: "us.anthropic.claude-sonnet-4-6",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "February 17, 2026",
+		lastUpdated: "March 13, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("us.deepseek.r1-v1:0", PROVIDER, {
+		name: "DeepSeek-R1 (US)",
+		matchingModel: "us.deepseek.r1-v1:0",
+		knowledgeCutoffDate: "July 2024",
+		releaseDate: "January 20, 2025",
+		lastUpdated: "May 29, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0.00135,
+		costPer1kOutputTokens: 0.0054,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("us.meta.llama4-maverick-17b-instruct-v1:0", PROVIDER, {
+		name: "Llama 4 Maverick 17B Instruct (US)",
+		matchingModel: "us.meta.llama4-maverick-17b-instruct-v1:0",
+		knowledgeCutoffDate: "August 2024",
+		releaseDate: "April 5, 2025",
+		lastUpdated: "April 5, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.00024,
+		costPer1kOutputTokens: 0.00097,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("us.meta.llama4-scout-17b-instruct-v1:0", PROVIDER, {
+		name: "Llama 4 Scout 17B Instruct (US)",
+		matchingModel: "us.meta.llama4-scout-17b-instruct-v1:0",
+		knowledgeCutoffDate: "August 2024",
+		releaseDate: "April 5, 2025",
+		lastUpdated: "April 5, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 3500000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.00017,
+		costPer1kOutputTokens: 0.00066,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("writer.palmyra-x4-v1:0", PROVIDER, {
+		name: "Palmyra X4",
+		matchingModel: "writer.palmyra-x4-v1:0",
+		releaseDate: "April 28, 2025",
+		lastUpdated: "April 28, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 122880,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("writer.palmyra-x5-v1:0", PROVIDER, {
+		name: "Palmyra X5",
+		matchingModel: "writer.palmyra-x5-v1:0",
+		releaseDate: "April 28, 2025",
+		lastUpdated: "April 28, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1040000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.0006,
+		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("zai.glm-5", PROVIDER, {
+		name: "GLM-5",
+		matchingModel: "zai.glm-5",
+		releaseDate: "March 18, 2026",
+		lastUpdated: "March 18, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 202752,
+		maxTokens: 101376,
+		costPer1kInputTokens: 0.001,
+		costPer1kOutputTokens: 0.0032,
 		reasoningConfig: {
 			enabled: true,
 		},

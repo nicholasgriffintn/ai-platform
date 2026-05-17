@@ -113,7 +113,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("mistral-large", PROVIDER, {
-		name: "Mistral Large",
+		name: "Mistral Large (latest)",
 		matchingModel: "mistral-large-latest",
 		description:
 			"Capable in code generation, mathematics, and reasoning with support for dozens of languages.",
@@ -171,7 +171,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("pixtral-large", PROVIDER, {
-		name: "Pixtral Large",
+		name: "Pixtral Large (latest)",
 		matchingModel: "pixtral-large-latest",
 		description:
 			"Latest multimodal model with advanced vision capabilities for image understanding and analysis.",
@@ -202,26 +202,26 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("mistral-medium", PROVIDER, {
-		name: "Mistral Medium",
+		name: "Mistral Medium (latest)",
 		matchingModel: "mistral-medium-latest",
 		description:
 			"Capable in code generation, mathematics, and reasoning with support for dozens of languages.",
 		knowledgeCutoffDate: "May 2025",
-		releaseDate: "May 7, 2025",
-		lastUpdated: "May 10, 2025",
+		releaseDate: "April 29, 2026",
+		lastUpdated: "April 29, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
 		},
-		supportsAttachments: false,
+		supportsAttachments: true,
 		supportsTemperature: true,
 		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/mistral-medium",
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.0004,
-		costPer1kOutputTokens: 0.002,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.0075,
 		strengths: ["chat", "general_knowledge", "analysis", "creative", "vision"],
 		contextComplexity: 4,
 		reliability: 4,
@@ -230,10 +230,11 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("codestral", PROVIDER, {
-		name: "Codestral",
+		name: "Codestral (latest)",
 		matchingModel: "codestral-latest",
 		description:
 			"Codestral is Mistral AI's first-ever code model designed for code generation tasks.",
@@ -349,26 +350,26 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("mistral-small", PROVIDER, {
-		name: "Mistral Small",
+		name: "Mistral Small (latest)",
 		matchingModel: "mistral-small-latest",
 		description:
 			"Mistral Small is a lightweight model designed for cost-effective use in tasks like translation and summarization.",
-		knowledgeCutoffDate: "March 2025",
-		releaseDate: "September 1, 2024",
-		lastUpdated: "September 4, 2024",
+		knowledgeCutoffDate: "June 2025",
+		releaseDate: "March 16, 2026",
+		lastUpdated: "March 16, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
 		},
-		supportsAttachments: false,
+		supportsAttachments: true,
 		supportsTemperature: true,
 		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/mistral-small",
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.0001,
-		costPer1kOutputTokens: 0.0003,
+		contextWindow: 256000,
+		maxTokens: 256000,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.0006,
 		strengths: ["chat", "general_knowledge", "analysis", "creative", "multilingual", "vision"],
 		contextComplexity: 3,
 		reliability: 3,
@@ -407,7 +408,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("ministral-8b", PROVIDER, {
-		name: "Ministral 8B",
+		name: "Ministral 8B (latest)",
 		matchingModel: "ministral-8b-latest",
 		description:
 			"Ministral 3 8B is a powerful and efficient model in the Ministral 3 family, offering best-in-class text and vision capabilities. Built for edge deployment, it delivers high performance across diverse hardware, including local setups.",
@@ -437,7 +438,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("ministral-3-3b", PROVIDER, {
-		name: "Ministral 3B",
+		name: "Ministral 3B (latest)",
 		matchingModel: "ministral-3b-latest",
 		description:
 			"Ministral 3 3B is the smallest and most efficient model in the Ministral 3 family, offering robust language and vision capabilities in a compact package. Designed for edge deployment, it delivers high performance across diverse hardware, including local setups.",
@@ -495,7 +496,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("magistral-medium", PROVIDER, {
-		name: "Magistral Medium",
+		name: "Magistral Medium (latest)",
 		matchingModel: "magistral-medium-latest",
 		description:
 			"Enhanced reasoning model by Mistral AI with improved capabilities for complex problem-solving.",
@@ -642,7 +643,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("devstral-medium-latest", PROVIDER, {
-		name: "Devstral 2",
+		name: "Devstral 2 (latest)",
 		matchingModel: "devstral-medium-latest",
 		knowledgeCutoffDate: "December 2025",
 		releaseDate: "December 2, 2025",
@@ -858,6 +859,49 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kOutputTokens: 0.0003,
 		reasoningConfig: {
 			enabled: false,
+		},
+	}),
+	createModelConfig("mistral-medium-2604", PROVIDER, {
+		name: "Mistral Medium 3.5",
+		matchingModel: "mistral-medium-2604",
+		releaseDate: "April 29, 2026",
+		lastUpdated: "April 29, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.0075,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("mistral-small-2603", PROVIDER, {
+		name: "Mistral Small 4",
+		matchingModel: "mistral-small-2603",
+		knowledgeCutoffDate: "June 2025",
+		releaseDate: "March 16, 2026",
+		lastUpdated: "March 16, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 256000,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			enabled: true,
 		},
 	}),
 ]);

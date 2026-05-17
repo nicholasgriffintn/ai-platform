@@ -62,7 +62,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		knowledgeCutoffDate: "May 2024",
+		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
 		modalities: { input: ["text", "image"], output: ["text"] },
@@ -147,7 +147,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		knowledgeCutoffDate: "May 2024",
+		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
 		modalities: { input: ["text", "image"], output: ["text"] },
@@ -232,7 +232,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		knowledgeCutoffDate: "November 2023",
+		knowledgeCutoffDate: "December 2023",
 		releaseDate: "November 6, 2023",
 		lastUpdated: "April 9, 2024",
 		modalities: { input: ["text", "image"], output: ["text"] },
@@ -300,7 +300,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		knowledgeCutoffDate: "May 2024",
+		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
 		modalities: { input: ["text", "image"], output: ["text"] },
@@ -319,7 +319,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "September 2023",
 		releaseDate: "May 13, 2024",
-		lastUpdated: "May 13, 2024",
+		lastUpdated: "August 6, 2024",
 		modalities: { input: ["text", "image"], output: ["text"] },
 		contextWindow: 128000,
 		maxTokens: 16384,
@@ -431,7 +431,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic/claude-opus-4-6", PROVIDER, {
 		name: "Claude Opus 4.6",
 		matchingModel: "claude-opus-4-6",
-		knowledgeCutoffDate: "May 2025",
+		knowledgeCutoffDate: "May 31, 2025",
 		releaseDate: "February 5, 2026",
 		lastUpdated: "February 5, 2026",
 		modalities: {
@@ -909,6 +909,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.1-chat", PROVIDER, {
@@ -931,6 +932,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex", PROVIDER, {
@@ -953,6 +955,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-max", PROVIDER, {
@@ -998,6 +1001,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.2", PROVIDER, {
@@ -1020,6 +1024,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.2-chat", PROVIDER, {
@@ -1065,6 +1070,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			enabled: true,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("xai/grok-3", PROVIDER, {
@@ -1983,6 +1989,298 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kOutputTokens: 0,
 		reasoningConfig: {
 			enabled: false,
+		},
+	}),
+	createModelConfig("claude-sonnet-4-6", PROVIDER, {
+		name: "Claude Sonnet 4.6",
+		matchingModel: "claude-sonnet-4-6",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "February 17, 2026",
+		lastUpdated: "March 13, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.3-chat", PROVIDER, {
+		name: "GPT-5.3 Chat",
+		matchingModel: "gpt-5.3-chat",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "March 3, 2026",
+		lastUpdated: "March 3, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.00175,
+		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.3-codex", PROVIDER, {
+		name: "GPT-5.3 Codex",
+		matchingModel: "gpt-5.3-codex",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "February 24, 2026",
+		lastUpdated: "February 24, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.00175,
+		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.4", PROVIDER, {
+		name: "GPT-5.4",
+		matchingModel: "gpt-5.4",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "March 5, 2026",
+		lastUpdated: "March 5, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1050000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.4-mini", PROVIDER, {
+		name: "GPT-5.4 Mini",
+		matchingModel: "gpt-5.4-mini",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "March 17, 2026",
+		lastUpdated: "March 17, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.00075,
+		costPer1kOutputTokens: 0.0045,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.4-nano", PROVIDER, {
+		name: "GPT-5.4 Nano",
+		matchingModel: "gpt-5.4-nano",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "March 17, 2026",
+		lastUpdated: "March 17, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.00125,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.4-pro", PROVIDER, {
+		name: "GPT-5.4 Pro",
+		matchingModel: "gpt-5.4-pro",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "March 5, 2026",
+		lastUpdated: "March 5, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: false,
+		contextWindow: 1050000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.03,
+		costPer1kOutputTokens: 0.18,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("gpt-5.5", PROVIDER, {
+		name: "GPT-5.5",
+		matchingModel: "gpt-5.5",
+		knowledgeCutoffDate: "December 1, 2025",
+		releaseDate: "April 24, 2026",
+		lastUpdated: "April 24, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1050000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.03,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("grok-4-1-fast-non-reasoning", PROVIDER, {
+		name: "Grok 4.1 Fast (Non-Reasoning)",
+		matchingModel: "grok-4-1-fast-non-reasoning",
+		releaseDate: "June 27, 2025",
+		lastUpdated: "June 27, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("grok-4-1-fast-reasoning", PROVIDER, {
+		name: "Grok 4.1 Fast (Reasoning)",
+		matchingModel: "grok-4-1-fast-reasoning",
+		releaseDate: "June 27, 2025",
+		lastUpdated: "June 27, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("grok-4-20-non-reasoning", PROVIDER, {
+		name: "Grok 4.20 (Non-Reasoning)",
+		matchingModel: "grok-4-20-non-reasoning",
+		knowledgeCutoffDate: "September 2025",
+		releaseDate: "April 8, 2026",
+		lastUpdated: "April 8, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 262000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("grok-4-20-reasoning", PROVIDER, {
+		name: "Grok 4.20 (Reasoning)",
+		matchingModel: "grok-4-20-reasoning",
+		knowledgeCutoffDate: "September 2025",
+		releaseDate: "April 8, 2026",
+		lastUpdated: "April 8, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 262000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
+
+	createModelConfig("kimi-k2.6", PROVIDER, {
+		name: "Kimi K2.6",
+		matchingModel: "kimi-k2.6",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "April 22, 2026",
+		lastUpdated: "April 22, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.00095,
+		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			enabled: true,
 		},
 	}),
 ]);
