@@ -133,17 +133,33 @@ export default {
 		const stream = new ReadableStream<Uint8Array>({
 			async start(controller) {
 				let streamClosed = false;
+				const safeEnqueue = (chunk: Uint8Array): boolean => {
+					if (streamClosed) {
+						return false;
+					}
+					try {
+						controller.enqueue(chunk);
+						return true;
+					} catch {
+						streamClosed = true;
+						return false;
+					}
+				};
 				const closeStream = () => {
 					if (streamClosed) {
 						return;
 					}
 					streamClosed = true;
-					controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
-					controller.close();
+					try {
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+						controller.close();
+					} catch {
+						// Client disconnected before the terminal SSE frame could be sent.
+					}
 				};
 
 				const emitEvent = (event: TaskEvent) => {
-					controller.enqueue(
+					safeEnqueue(
 						toSseChunk({
 							...event,
 							runId: event.runId ?? params.runId,

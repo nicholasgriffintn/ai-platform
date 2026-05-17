@@ -13,6 +13,7 @@ import {
 	formatCommandResult,
 	getCommandRiskLevel,
 	quoteForShell,
+	runSandboxCommand,
 } from "../commands";
 import { resolveCommandApproval } from "./command-approval";
 import {
@@ -299,8 +300,23 @@ export async function handleRunCommandAction(
 		agentStep: context.step,
 	});
 
-	const result = await context.sandbox.exec(
+	const result = await runSandboxCommand(
+		context.sandbox,
 		`cd ${quoteForShell(context.repoTargetDir)} && ${decision.command}`,
+		{
+			abortSignal: context.abortSignal,
+			onOutput: async (output) => {
+				await context.emit({
+					type: "command_output",
+					command: decision.command,
+					commandIndex: context.state.commandCount,
+					commandTotal: MAX_COMMANDS,
+					agentStep: context.step,
+					stream: output.stream,
+					output: truncateForModel(output.data, MAX_OBSERVATION_CHARS),
+				});
+			},
+		},
 	);
 	await context.guardExecution("Sandbox run cancelled after command execution");
 	context.executionLogs.push(formatCommandResult(decision.command, result));
@@ -446,8 +462,25 @@ export async function handleRunParallelAction(
 	}
 
 	const results = await Promise.all(
-		commands.map((command) =>
-			context.sandbox.exec(`cd ${quoteForShell(context.repoTargetDir)} && ${command}`),
+		commands.map((command, index) =>
+			runSandboxCommand(
+				context.sandbox,
+				`cd ${quoteForShell(context.repoTargetDir)} && ${command}`,
+				{
+					abortSignal: context.abortSignal,
+					onOutput: async (output) => {
+						await context.emit({
+							type: "command_output",
+							command,
+							commandIndex: firstCommandIndex + index,
+							commandTotal: MAX_COMMANDS,
+							agentStep: context.step,
+							stream: output.stream,
+							output: truncateForModel(output.data, MAX_OBSERVATION_CHARS),
+						});
+					},
+				},
+			),
 		),
 	);
 	await context.guardExecution("Sandbox run cancelled after parallel command execution");

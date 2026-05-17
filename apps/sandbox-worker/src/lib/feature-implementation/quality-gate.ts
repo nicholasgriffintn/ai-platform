@@ -3,6 +3,7 @@ import {
 	extractCommands,
 	formatCommandResult,
 	quoteForShell,
+	runSandboxCommand,
 } from "../commands";
 import { throwIfAborted } from "../cancellation";
 
@@ -89,6 +90,8 @@ export async function runQualityGate(params: {
 		exitCode?: number;
 		error?: string;
 		message?: string;
+		stream?: "stdout" | "stderr";
+		output?: string;
 	}) => Promise<void>;
 }): Promise<QualityGateResult> {
 	const { sandbox, repoTargetDir, commands, executionLogs, emit, abortSignal, checkpoint } = params;
@@ -132,7 +135,23 @@ export async function runQualityGate(params: {
 			commandTotal: commands.length,
 		});
 
-		const result = await sandbox.exec(`cd ${quoteForShell(repoTargetDir)} && ${command}`);
+		const result = await runSandboxCommand(
+			sandbox,
+			`cd ${quoteForShell(repoTargetDir)} && ${command}`,
+			{
+				abortSignal,
+				onOutput: async (output) => {
+					await emit({
+						type: "quality_gate_output",
+						command,
+						commandIndex: index + 1,
+						commandTotal: commands.length,
+						stream: output.stream,
+						output: truncateForModel(output.data, MAX_OBSERVATION_CHARS),
+					});
+				},
+			},
+		);
 		await guardExecution("Sandbox run cancelled during quality gate checks");
 		executionLogs.push(formatCommandResult(`[quality-gate] ${command}`, result));
 

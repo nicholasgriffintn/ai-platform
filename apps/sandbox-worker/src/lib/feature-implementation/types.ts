@@ -7,7 +7,8 @@ import type { TaskEvent } from "../../types";
 import type { PromptStrategySelection } from "./prompt-strategy";
 
 export type SandboxInstance = ReturnType<typeof getSandbox>;
-export type SandboxExecInstance = Pick<SandboxInstance, "exec">;
+export type SandboxExecInstance = Pick<SandboxInstance, "exec"> &
+	Partial<Pick<SandboxInstance, "execStream">>;
 export type SandboxFileInstance = Pick<SandboxInstance, "readFile" | "writeFile" | "exists">;
 
 export interface FileContextSnippet {

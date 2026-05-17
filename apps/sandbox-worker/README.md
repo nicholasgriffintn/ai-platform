@@ -21,19 +21,28 @@ Here's the current workflow:
 
 1. **GitHub Integration** - Users install a GitHub App, then trigger tasks via `/implement {task}` PR comments, the main API handles the authentication and sends a request to this worker via the service binding. It will also receive webhook events from GitHub.
 2. **Repository Context + AI Planning** - The worker inspects repository structure, loads key files (including PRD files such as `prd.json` or `tasks/prd-*.md`), and asks the model to create an implementation plan with explicit validation commands.
-3. **Agentic Isolated Execution** - An iterative loop runs in a Cloudflare Container sandbox. The agent can run a command, read files for more context, refine its plan, and finish only when done or blocked.
+3. **Agentic Isolated Execution** - An iterative loop runs in a Cloudflare Container sandbox. The agent can run commands with streamed output, execute JavaScript or TypeScript scripts through the Sandbox code interpreter, read files for more context, refine its plan, and finish only when done or blocked.
 4. **Quality Gate** - After implementation, the worker derives validation commands from the plan and runs them as a post-implementation gate.
 5. **Story Tracking** - For `prd.json` workflows, the worker selects the implemented story, updates `passes` based on quality-gate results, and appends a run entry to `progress.txt`.
 6. **Git Operations** - Changes can be committed to a feature branch for PR review using the Sandbox SDK. Commits are skipped when the quality gate fails.
-7. **Real-time Progress** - SSE events stream execution progress to the UI
+7. **Real-time Progress** - SSE events stream execution progress, command output, file changes, approvals, pause/resume state, and terminal run status to the UI.
 
 ## Configuration
 
 ### Environment Variables
 
-| Variable             | Description                                                  |
-| -------------------- | ------------------------------------------------------------ |
-| `SANDBOX_JWT_SECRET` | Secret for JWT token verification, this should match the API |
+| Variable     | Description                                             |
+| ------------ | ------------------------------------------------------- |
+| `JWT_SECRET` | Secret for JWT token verification. This must match API. |
+
+### Bindings
+
+| Binding        | Type            | Description                                      |
+| -------------- | --------------- | ------------------------------------------------ |
+| `Sandbox`      | Durable Object  | Cloudflare Sandbox SDK Durable Object binding.   |
+| `POLYCHAT_API` | Service binding | Internal API service used for model completions. |
+
+The worker name is `assistant-sandbox-worker` so the API service binding in `apps/api/wrangler.json` can target it directly.
 
 ## API Endpoint
 
@@ -50,18 +59,19 @@ Execute a feature implementation task.
 
 ```json
 {
-	"task": "feature-implementation",
-	"params": {
-		"repo": "owner/repo",
-		"task": "Add a logout button to the navbar",
-		"model": "mistral-large",
-		"promptStrategy": "auto",
-		"shouldCommit": true
-	}
+	"userId": 123,
+	"taskType": "feature-implementation",
+	"repo": "owner/repo",
+	"task": "Add a logout button to the navbar",
+	"model": "mistral-large",
+	"promptStrategy": "auto",
+	"shouldCommit": true,
+	"polychatApiUrl": "https://api.polychat.app",
+	"runId": "run_123"
 }
 ```
 
-**Response:** SSE stream with execution events.
+**Response:** JSON for standard requests, or an SSE stream with execution events when the request includes `Accept: text/event-stream`.
 
 ## Development
 
@@ -76,13 +86,13 @@ pnpm run dev
 pnpm run deploy
 ```
 
-## Known Limitations (that we plan to address in future iterations)
+## Current Boundaries
 
-- Commands only (no Python scripts, interactive tools)
-- Command isolation (no chaining with `&&`, pipes)
+- Command isolation blocks shell chaining, pipes, and substitution for agent-generated commands.
 - Shallow clone only (full history not available)
 - Log truncation at 80,000 characters
-- No code interpreter support
+- Python code interpreter execution is not exposed to agent decisions yet.
+- Full execution logs are still returned inline until R2 artifact storage is wired.
 
 ## Roadmap - Generated with AI Assistance
 
@@ -120,7 +130,7 @@ This section outlines planned improvements to make the sandbox worker production
 
 ### Phase 3: Error Handling and Resilience
 
-**Current limitation:** Error handling is now structured for runs, but outbound notifications still need expansion.
+**Current status:** Error handling is structured for runs, with typed failures, cancellation, timeout handling, and transient model retry support.
 
 **Planned improvements:**
 
@@ -144,7 +154,7 @@ This section outlines planned improvements to make the sandbox worker production
 
 ### Phase 5: Stream and Execution Control
 
-**Current limitation:** Core execution controls are now implemented; remaining work is production hardening and observability.
+**Current status:** Core execution controls are implemented; remaining work is production hardening and artifact-backed observability.
 
 **Planned improvements:**
 

@@ -5,8 +5,28 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { detectStreaming } from "~/utils/streaming";
 import { safeParseJson } from "~/utils/json";
+import { omitUndefinedValues } from "~/utils/objects";
+import { appendUrlPath } from "~/utils/urls";
 
 const logger = getLogger({ prefix: "lib/providers/fetch" });
+
+function getAiGatewayRequestHeaders(
+	headers: Record<string, string>,
+	options: {
+		requestTimeout?: number;
+		retryDelay?: number;
+		maxAttempts?: number;
+		backoff?: "exponential" | "linear";
+	},
+): Record<string, string> {
+	return omitUndefinedValues({
+		...headers,
+		"cf-aig-request-timeout": options.requestTimeout?.toString(),
+		"cf-aig-max-attempts": options.maxAttempts?.toString(),
+		"cf-aig-retry-delay": options.retryDelay?.toString(),
+		"cf-aig-backoff": options.backoff,
+	});
+}
 
 export async function fetchAIResponse<
 	T = {
@@ -43,6 +63,7 @@ export async function fetchAIResponse<
 
 	const tools = provider === "tool-use" ? listFunctionTools() : undefined;
 	const bodyWithTools = isFormData ? body : tools ? { ...body, tools } : body;
+	const requestBody = isFormData ? bodyWithTools : omitUndefinedValues(bodyWithTools);
 
 	let response: Response;
 	if (!isUrl) {
@@ -63,26 +84,18 @@ export async function fetchAIResponse<
 		const gateway = env.AI.gateway(gatewayId);
 
 		const providerName = isOpenAiCompatible ? "compat" : provider;
+		const providerBaseUrl = await gateway.getUrl(providerName);
 
-		// @ts-expect-error - types seem to be wrong
-		response = await gateway.run({
-			provider: providerName,
-			endpoint: endpointOrUrl,
-			headers,
-			query: bodyWithTools,
-			// @ts-expect-error - types seem to be wrong
-			config: {
-				requestTimeout: options.requestTimeout,
-				maxAttempts: options.maxAttempts,
-				retryDelay: options.retryDelay,
-				backoff: options.backoff,
-			},
+		response = await fetch(appendUrlPath(providerBaseUrl, endpointOrUrl), {
+			method: "POST",
+			headers: getAiGatewayRequestHeaders(headers, options),
+			body: JSON.stringify(requestBody),
 		});
 	} else {
 		response = await fetch(endpointOrUrl, {
 			method: "POST",
 			headers,
-			body: isFormData ? (bodyWithTools as FormData) : JSON.stringify(bodyWithTools),
+			body: isFormData ? (requestBody as FormData) : JSON.stringify(requestBody),
 		});
 	}
 

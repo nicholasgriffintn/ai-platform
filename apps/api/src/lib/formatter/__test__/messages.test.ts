@@ -344,6 +344,21 @@ describe("MessageFormatter", () => {
 			]);
 		});
 
+		it("should not add cache_control to empty anthropic text blocks", () => {
+			const messages: Message[] = [{ role: "assistant", content: "" }];
+
+			const result = MessageFormatter.formatMessages(messages, {
+				provider: "anthropic",
+			});
+
+			expect(result[0].content).toEqual([
+				{
+					type: "text",
+					text: "",
+				},
+			]);
+		});
+
 		it("should preserve array content when multiple items for anthropic", () => {
 			const messages: Message[] = [
 				{

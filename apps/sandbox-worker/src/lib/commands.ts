@@ -1,4 +1,4 @@
-import { getSandbox } from "@cloudflare/sandbox";
+import { getSandbox, parseSSEStream, type ExecEvent } from "@cloudflare/sandbox";
 import type { SandboxTaskType } from "@assistant/schemas";
 import type { SandboxTrustLevel } from "@assistant/schemas";
 
@@ -53,7 +53,15 @@ const READ_ONLY_ALLOWED_COMMAND_PATTERNS: RegExp[] = [
 	/^(pytest|tox|go\s+test|cargo\s+(test|check|clippy|fmt\s+--check)|jest|vitest|npx\s+vitest|tsc(?:\s|$)|eslint(?:\s|$)|ruff(?:\s|$)|mypy(?:\s|$)|uv\s+run\s+pytest)\b/i,
 ];
 
-export type SandboxExecInstance = Pick<ReturnType<typeof getSandbox>, "exec">;
+export type SandboxCommandResult = {
+	success: boolean;
+	exitCode: number;
+	stdout: string;
+	stderr: string;
+};
+
+export type SandboxExecInstance = Pick<ReturnType<typeof getSandbox>, "exec"> &
+	Partial<Pick<ReturnType<typeof getSandbox>, "execStream">>;
 
 interface RepoInfo {
 	displayName: string;
@@ -62,8 +70,71 @@ interface RepoInfo {
 	checkoutAuthHeader?: string;
 }
 
+export async function runSandboxCommand(
+	sandbox: SandboxExecInstance,
+	command: string,
+	options?: {
+		abortSignal?: AbortSignal;
+		onOutput?: (output: { stream: "stdout" | "stderr"; data: string }) => Promise<void> | void;
+	},
+): Promise<SandboxCommandResult> {
+	if (!sandbox.execStream) {
+		return sandbox.exec(command);
+	}
+
+	const stdout: string[] = [];
+	const stderr: string[] = [];
+	let completedResult: SandboxCommandResult | undefined;
+	const stream = await sandbox.execStream(command, {
+		signal: options?.abortSignal,
+	});
+
+	for await (const event of parseSSEStream<ExecEvent>(stream, options?.abortSignal)) {
+		if (event.type === "stdout" && event.data) {
+			stdout.push(event.data);
+			await options?.onOutput?.({ stream: "stdout", data: event.data });
+			continue;
+		}
+
+		if (event.type === "stderr" && event.data) {
+			stderr.push(event.data);
+			await options?.onOutput?.({ stream: "stderr", data: event.data });
+			continue;
+		}
+
+		if (event.type === "complete") {
+			completedResult = event.result ?? {
+				success: (event.exitCode ?? 1) === 0,
+				exitCode: event.exitCode ?? 1,
+				stdout: stdout.join(""),
+				stderr: stderr.join(""),
+			};
+			continue;
+		}
+
+		if (event.type === "error") {
+			stderr.push(event.error ?? "Sandbox command stream failed");
+			completedResult = {
+				success: false,
+				exitCode: 1,
+				stdout: stdout.join(""),
+				stderr: stderr.join(""),
+			};
+		}
+	}
+
+	return (
+		completedResult ?? {
+			success: false,
+			exitCode: 1,
+			stdout: stdout.join(""),
+			stderr: stderr.join("") || "Sandbox command stream ended without completion",
+		}
+	);
+}
+
 export async function execOrThrow(sandbox: SandboxExecInstance, command: string, logs: string[]) {
-	const result = await sandbox.exec(command);
+	const result = await runSandboxCommand(sandbox, command);
 	logs.push(formatCommandResult(command, result));
 	if (!result.success) {
 		throw new Error(result.stderr || `Command failed (${result.exitCode})`);
@@ -76,7 +147,7 @@ export async function execOrThrowRedacted(
 	logs: string[],
 	redactedCommand: string,
 ) {
-	const result = await sandbox.exec(command);
+	const result = await runSandboxCommand(sandbox, command);
 	logs.push(formatCommandResult(redactedCommand, result));
 	if (!result.success) {
 		throw new Error(result.stderr || `Command failed (${result.exitCode})`);

@@ -1,7 +1,7 @@
 {
-	"name": "sandbox-worker",
+	"name": "assistant-sandbox-worker",
 	"main": "src/index.ts",
-	"compatibility_date": "2026-03-15",
+	"compatibility_date": "2026-05-18",
 	"compatibility_flags": ["nodejs_compat"],
 	"workers_dev": false,
 	"preview_urls": false,

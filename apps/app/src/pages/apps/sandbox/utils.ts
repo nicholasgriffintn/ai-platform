@@ -58,6 +58,8 @@ export function describeEvent(event: SandboxRunEvent): string {
 			return `Prepared ${event.commandTotal ?? "?"} commands`;
 		case "command_started":
 			return `Running command ${event.commandIndex ?? "?"}/${event.commandTotal ?? "?"}: ${event.command ?? ""}`;
+		case "command_output":
+			return `${event.stream ?? "output"}: ${event.output ?? ""}`.trim();
 		case "command_completed":
 			return `Completed command ${event.commandIndex ?? "?"}/${event.commandTotal ?? "?"}`;
 		case "command_failed":
@@ -98,6 +100,8 @@ export function describeEvent(event: SandboxRunEvent): string {
 			return `Script completed (${event.commandIndex ?? "?"}/${event.commandTotal ?? "?"})`;
 		case "script_failed":
 			return `Script failed: ${event.error ?? "unknown error"}`;
+		case "quality_gate_output":
+			return `${event.stream ?? "quality gate output"}: ${event.output ?? ""}`.trim();
 		case "run_instruction_submitted":
 			return event.instructionKind === "continue"
 				? "Continue instruction sent"

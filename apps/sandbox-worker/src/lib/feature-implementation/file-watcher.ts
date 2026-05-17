@@ -37,7 +37,7 @@ export function startFileWatcher(params: {
 		}
 	};
 
-	run();
+	void run();
 
 	abortSignal?.addEventListener("abort", () => controller.abort(), {
 		once: true,

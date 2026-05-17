@@ -7,7 +7,8 @@
 	"scripts": {
 		"dev": "pnpm --filter @assistant/schemas build && wrangler dev src/index.ts",
 		"start": "pnpm --filter @assistant/schemas build && wrangler dev src/index.ts",
-		"test": "vitest",
+		"test": "vitest run",
+		"test:watch": "vitest",
 		"coverage": "vitest run --coverage",
 		"cf-typegen": "wrangler types",
 		"format": "oxfmt",
@@ -15,7 +16,7 @@
 		"lint": "pnpm oxlint",
 		"check": "pnpm lint && pnpm format:check",
 		"typecheck": "pnpm --filter @assistant/schemas build && tsc --noEmit",
-		"deploy": "pnpm --filter @assistant/schemas build && pnpm typecheck && wrangler deploy src/index.ts --name=assistant-sandbox-worker"
+		"deploy": "pnpm --filter @assistant/schemas build && pnpm typecheck && wrangler deploy"
 	},
 	"dependencies": {
 		"@assistant/agent-core": "workspace:*",

@@ -147,27 +147,18 @@ export class MessageFormatter {
 					let formattedContent: any;
 
 					if (Array.isArray(content) && content.length === 1 && typeof content[0] === "string") {
-						formattedContent = [
-							{
-								type: "text" as ContentType,
-								text: content[0],
-								cache_control: { type: "ephemeral" },
-							},
-						];
+						formattedContent = [MessageFormatter.createAnthropicTextBlock(content[0])];
 					} else if (typeof content === "string") {
-						formattedContent = [
-							{
-								type: "text" as ContentType,
-								text: content,
-								cache_control: { type: "ephemeral" },
-							},
-						];
+						formattedContent = [MessageFormatter.createAnthropicTextBlock(content)];
 					} else if (Array.isArray(content)) {
 						formattedContent = content;
 						if (formattedContent.length > 0) {
 							const lastBlock = formattedContent[formattedContent.length - 1];
 							if (lastBlock && typeof lastBlock === "object") {
-								lastBlock.cache_control = { type: "ephemeral" };
+								formattedContent = [
+									...formattedContent.slice(0, -1),
+									MessageFormatter.addAnthropicCacheControl(lastBlock),
+								];
 							}
 						}
 					} else {
@@ -207,6 +198,24 @@ export class MessageFormatter {
 			}
 		}
 		return formattedMessages;
+	}
+
+	private static createAnthropicTextBlock(text: string): Record<string, unknown> {
+		return MessageFormatter.addAnthropicCacheControl({
+			type: "text" as ContentType,
+			text,
+		});
+	}
+
+	private static addAnthropicCacheControl(block: Record<string, unknown>): Record<string, unknown> {
+		if (block.type === "text" && block.text === "") {
+			return block;
+		}
+
+		return {
+			...block,
+			cache_control: { type: "ephemeral" },
+		};
 	}
 
 	private static formatContent(content: Message["content"], provider: string): any {
